@@ -1,6 +1,6 @@
 ﻿{
-    "name": "node_diary",
-    "short_name": "node_diary",
+    "name": "Jotsy",
+    "short_name": "Jotsy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
@@ -33,4 +33,5 @@
         }
     ]
 }
+
 

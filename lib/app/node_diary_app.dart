@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -21,6 +21,7 @@ class NodeDiaryApp extends ConsumerWidget {
     return settingsAsync.when(
       loading:
           () => const MaterialApp(
+            debugShowCheckedModeBanner: true,
             home: Scaffold(body: Center(child: CircularProgressIndicator())),
           ),
       error:
@@ -34,7 +35,8 @@ class NodeDiaryApp extends ConsumerWidget {
           valueListenable: settingsService.themeModeNotifier,
           builder: (BuildContext context, ThemeMode themeMode, Widget? child) {
             return MaterialApp(
-              title: 'Node Diary',
+              debugShowCheckedModeBanner: true,
+              title: 'Jotsy',
               theme: materialTheme.light(),
               darkTheme: materialTheme.dark(),
               themeMode: themeMode,
@@ -46,3 +48,4 @@ class NodeDiaryApp extends ConsumerWidget {
     );
   }
 }
+

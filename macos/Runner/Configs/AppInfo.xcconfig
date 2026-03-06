@@ -5,11 +5,12 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = node_diary
+PRODUCT_NAME = Jotsy
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.nodeDiary
+PRODUCT_BUNDLE_IDENTIFIER = com.jotsy.diary
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+
 

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:node_note/core/database/app_database.dart';
-import 'package:node_note/core/database/content_codec.dart';
-import 'package:node_note/core/services/app_service.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/content_codec.dart';
+import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 
+/// 单条日记详情 provider（含标签聚合）。
 final diaryDetailProvider = FutureProvider.family<DiaryWithTags?, int>((
   Ref ref,
   int diaryId,
@@ -12,23 +14,33 @@ final diaryDetailProvider = FutureProvider.family<DiaryWithTags?, int>((
   return db.getDiaryWithTagsById(diaryId);
 });
 
-class EditNotePage extends ConsumerStatefulWidget {
-  const EditNotePage({super.key, this.diaryId});
+/// 日记编辑页。
+///
+/// - `diaryId == null`：新建模式
+/// - `diaryId != null`：编辑模式
+class EditDiaryPage extends ConsumerStatefulWidget {
+  const EditDiaryPage({super.key, this.diaryId});
 
   final int? diaryId;
 
   @override
-  ConsumerState<EditNotePage> createState() => _EditNotePageState();
+  ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
 }
 
-class _EditNotePageState extends ConsumerState<EditNotePage> {
+class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
+  /// 表单控制器：标题 / 正文 / metadata。
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _metadataController = TextEditingController(text: '{}');
   final _formKey = GlobalKey<FormState>();
 
+  /// 当前已选标签 id 集合。
   final Set<int> _selectedTagIds = <int>{};
+
+  /// 是否完成编辑态初始化（防止重复回填）。
   bool _initialized = false;
+
+  /// 保存中的互斥标志，防止重复提交。
   bool _saving = false;
 
   @override
@@ -39,14 +51,16 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
     super.dispose();
   }
 
+  /// 保存日记（新建或更新）。
+  ///
+  /// 流程：
+  /// 1. 表单校验；
+  /// 2. metadata JSON 校验；
+  /// 3. 调用数据库写入；
+  /// 4. 成功后返回上一页并触发列表刷新。
   Future<void> _save() async {
-    if (_saving) {
-      return;
-    }
-
-    if (!(_formKey.currentState?.validate() ?? false)) {
-      return;
-    }
+    if (_saving) return;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
     if (!isValidMetadataJsonObject(_metadataController.text)) {
       ScaffoldMessenger.of(
@@ -55,9 +69,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
       return;
     }
 
-    setState(() {
-      _saving = true;
-    });
+    setState(() => _saving = true);
 
     final db = ref.read(appDatabaseProvider);
     final title = _titleController.text;
@@ -82,45 +94,38 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
         );
       }
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('保存失败: $error')));
     } finally {
       if (mounted) {
-        setState(() {
-          _saving = false;
-        });
+        setState(() => _saving = false);
       }
     }
   }
 
+  /// 执行软删除并返回上一页。
   Future<void> _softDelete() async {
     final diaryId = widget.diaryId;
-    if (diaryId == null || _saving) {
-      return;
-    }
+    if (diaryId == null || _saving) return;
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('删除日记'),
           content: const Text('将执行软删除，后续可恢复。确定继续吗？'),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('取消'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('删除'),
             ),
           ],
@@ -128,88 +133,27 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
       },
     );
 
-    if (confirmed != true) {
-      return;
-    }
+    if (confirmed != true) return;
 
     final db = ref.read(appDatabaseProvider);
     await db.softDeleteDiary(diaryId);
 
-    if (!mounted) {
-      return;
-    }
+    if (!mounted) return;
     Navigator.of(context).pop(true);
   }
 
+  /// 弹窗内联创建标签，并自动加入当前已选集合。
   Future<void> _createTagInline() async {
-    final nameController = TextEditingController();
-    final colorController = TextEditingController(text: '#4CAF50');
-
-    final draft = await showDialog<_NewTagDraft>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('新建标签'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                decoration: const InputDecoration(labelText: '标签名'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: colorController,
-                decoration: const InputDecoration(
-                  labelText: '颜色(HEX，如 #4CAF50)',
-                ),
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                if (name.isEmpty) {
-                  return;
-                }
-                final parsedColor = _parseHexColor(colorController.text);
-                if (parsedColor == null) {
-                  return;
-                }
-                Navigator.of(
-                  context,
-                ).pop(_NewTagDraft(name: name, color: parsedColor));
-              },
-              child: const Text('创建'),
-            ),
-          ],
-        );
-      },
-    );
-
-    nameController.dispose();
-    colorController.dispose();
-
-    if (draft == null) {
-      return;
-    }
+    final draft = await showCreateTagDialog(context);
+    if (draft == null) return;
 
     try {
       final db = ref.read(appDatabaseProvider);
       final tagId = await db.createTag(name: draft.name, color: draft.color);
-      setState(() {
-        _selectedTagIds.add(tagId);
-      });
+      if (!mounted) return;
+      setState(() => _selectedTagIds.add(tagId));
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('标签创建失败: $error')));
@@ -218,6 +162,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
 
   @override
   Widget build(BuildContext context) {
+    // 标签流用于渲染可选标签 Chip。
     final tagsAsync = ref.watch(tagListProvider);
 
     if (widget.diaryId == null) {
@@ -247,6 +192,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
         }
 
         if (!_initialized && detail != null) {
+          // 仅首次进入编辑态时回填，避免每次 build 覆盖用户输入。
           _titleController.text = detail.diary.title;
           _contentController.text = deltaJsonToPlainText(detail.diary.content);
           try {
@@ -282,6 +228,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
           body: Form(
             key: _formKey,
             child: SingleChildScrollView(
+              // 使用滚动容器避免输入法抬起时页面挤压溢出。
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,6 +293,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                                 ),
                                 label: Text(tag.name),
                                 onSelected: (bool selected) {
+                                  // 维护本地已选标签集合，保存时统一提交。
                                   setState(() {
                                     if (selected) {
                                       _selectedTagIds.add(tag.id);
@@ -373,6 +321,7 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
                   ),
                   const SizedBox(height: 12),
                   ExpansionTile(
+                    // metadata 作为高级区，默认折叠避免干扰主编辑流程。
                     tilePadding: EdgeInsets.zero,
                     title: const Text('高级：Metadata JSON'),
                     subtitle: const Text('例如 {"weather":"rainy","mood":4}'),
@@ -402,35 +351,4 @@ class _EditNotePageState extends ConsumerState<EditNotePage> {
       },
     );
   }
-
-  int? _parseHexColor(String raw) {
-    final normalized = raw.trim().replaceFirst('#', '');
-    if (normalized.length != 6 && normalized.length != 8) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('颜色格式错误，应为 #RRGGBB 或 #AARRGGBB')),
-        );
-      }
-      return null;
-    }
-
-    final withAlpha = normalized.length == 6 ? 'FF$normalized' : normalized;
-    final value = int.tryParse(withAlpha, radix: 16);
-    if (value == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('颜色值解析失败')));
-      }
-      return null;
-    }
-    return value;
-  }
-}
-
-class _NewTagDraft {
-  const _NewTagDraft({required this.name, required this.color});
-
-  final String name;
-  final int color;
 }

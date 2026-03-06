@@ -1,67 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:node_note/core/database/app_database.dart';
-import 'package:node_note/core/services/app_service.dart';
-import 'package:node_note/ui/notes/pages/edit_note.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 
-class NotesFilterState {
-  const NotesFilterState({
-    this.keyword = '',
-    this.selectedTagIds = const <int>{},
-  });
-
-  final String keyword;
-  final Set<int> selectedTagIds;
-
-  NotesFilterState copyWith({String? keyword, Set<int>? selectedTagIds}) {
-    return NotesFilterState(
-      keyword: keyword ?? this.keyword,
-      selectedTagIds: selectedTagIds ?? this.selectedTagIds,
-    );
-  }
-}
-
-class NotesFilterNotifier extends Notifier<NotesFilterState> {
-  @override
-  NotesFilterState build() {
-    return const NotesFilterState();
-  }
-
-  void setKeyword(String value) {
-    state = state.copyWith(keyword: value);
-  }
-
-  void toggleTag(int tagId, bool selected) {
-    final next = <int>{...state.selectedTagIds};
-    if (selected) {
-      next.add(tagId);
-    } else {
-      next.remove(tagId);
-    }
-    state = state.copyWith(selectedTagIds: next);
-  }
-}
-
-final notesFilterProvider =
-    NotifierProvider<NotesFilterNotifier, NotesFilterState>(
-      NotesFilterNotifier.new,
-    );
-
-final filteredDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
-  final db = ref.watch(appDatabaseProvider);
-  final filter = ref.watch(notesFilterProvider);
-  final tagIds = filter.selectedTagIds.toList()..sort();
-  return db.watchDiaries(keyword: filter.keyword, requiredTagIds: tagIds);
-});
-
-class NotesPage extends ConsumerWidget {
-  const NotesPage({super.key});
+/// 日记列表页。
+///
+/// 提供关键词搜索、标签筛选、列表展示与进入编辑页能力。
+class DiariesPage extends ConsumerWidget {
+  const DiariesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 标签与日记列表分别独立监听，避免相互阻塞。
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
-    final selectedTagIds = ref.watch(notesFilterProvider).selectedTagIds;
+    final selectedTagIds = ref.watch(diaryFilterProvider).selectedTagIds;
 
     return Column(
       children: <Widget>[
@@ -74,7 +29,8 @@ class NotesPage extends ConsumerWidget {
               border: OutlineInputBorder(),
             ),
             onChanged: (String value) {
-              ref.read(notesFilterProvider.notifier).setKeyword(value);
+              // 输入即触发筛选条件更新，列表自动重算。
+              ref.read(diaryFilterProvider.notifier).setKeyword(value);
             },
           ),
         ),
@@ -101,8 +57,9 @@ class NotesPage extends ConsumerWidget {
                           ),
                           label: Text(tag.name),
                           onSelected: (bool value) {
+                            // 标签筛选采用可叠加的 AND 语义。
                             ref
-                                .read(notesFilterProvider.notifier)
+                                .read(diaryFilterProvider.notifier)
                                 .toggleTag(tag.id, value);
                           },
                         ),
@@ -184,9 +141,10 @@ class NotesPage extends ConsumerWidget {
                       ],
                     ),
                     onTap: () async {
+                      // 点击条目进入编辑页，返回后列表会自动流式刷新。
                       await Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => EditNotePage(diaryId: item.diary.id),
+                          builder: (_) => EditDiaryPage(diaryId: item.diary.id),
                         ),
                       );
                     },
@@ -205,6 +163,7 @@ class NotesPage extends ConsumerWidget {
   }
 }
 
+/// 统一时间展示格式。
 String _formatDateTime(DateTime dateTime) {
   final local = dateTime.toLocal();
   final yyyy = local.year.toString().padLeft(4, '0');

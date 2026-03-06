@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:node_note/core/database/content_codec.dart';
+﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/content_codec.dart';
 
 void main() {
   test('plain text and delta json codec should round-trip', () {
@@ -15,3 +15,4 @@ void main() {
     expect(isValidMetadataJsonObject('[1,2,3]'), isFalse);
   });
 }
+

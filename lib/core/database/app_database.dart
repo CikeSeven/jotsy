@@ -9,58 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'content_codec.dart';
 
 part 'app_database.g.dart';
-
-class Diaries extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  TextColumn get title =>
-      text().withLength(min: 0, max: 200).withDefault(const Constant(''))();
-
-  TextColumn get content => text()();
-
-  TextColumn get contentText => text().named('content_text')();
-
-  TextColumn get metadata => text().withDefault(const Constant('{}'))();
-
-  DateTimeColumn get createdAt => dateTime().named('created_at')();
-
-  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
-
-  BoolColumn get isDeleted =>
-      boolean().named('is_deleted').withDefault(const Constant(false))();
-
-  DateTimeColumn get deletedAt => dateTime().named('deleted_at').nullable()();
-}
-
-class Tags extends Table {
-  IntColumn get id => integer().autoIncrement()();
-
-  TextColumn get name => text().withLength(min: 1, max: 40).unique()();
-
-  IntColumn get color => integer()();
-}
-
-class DiaryTags extends Table {
-  IntColumn get diaryId =>
-      integer()
-          .named('diary_id')
-          .references(Diaries, #id, onDelete: KeyAction.cascade)();
-
-  IntColumn get tagId =>
-      integer()
-          .named('tag_id')
-          .references(Tags, #id, onDelete: KeyAction.cascade)();
-
-  @override
-  Set<Column<Object>> get primaryKey => <Column<Object>>{diaryId, tagId};
-}
-
-class DiaryWithTags {
-  const DiaryWithTags({required this.diary, required this.tags});
-
-  final Diary diary;
-  final List<Tag> tags;
-}
+part 'app_database_schema.dart';
 
 @DriftDatabase(tables: <Type>[Diaries, Tags, DiaryTags])
 class AppDatabase extends _$AppDatabase {
@@ -69,12 +18,16 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  /// 按名称升序实时监听全部标签。
   Stream<List<Tag>> watchAllTags() {
     return (select(tags)..orderBy(<OrderingTerm Function(Tags)>[
       (Tags t) => OrderingTerm.asc(t.name),
     ])).watch();
   }
 
+  /// 创建标签。
+  ///
+  /// 若同名标签已存在，则直接返回已有标签 id，避免重复记录。
   Future<int> createTag({required String name, required int color}) async {
     final normalizedName = name.trim();
     if (normalizedName.isEmpty) {
@@ -93,10 +46,14 @@ class AppDatabase extends _$AppDatabase {
     ).insert(TagsCompanion.insert(name: normalizedName, color: color));
   }
 
+  /// 删除标签（关联关系由外键级联删除）。
   Future<void> deleteTag(int tagId) async {
     await (delete(tags)..where((Tags t) => t.id.equals(tagId))).go();
   }
 
+  /// 创建日记并写入关联标签。
+  ///
+  /// 事务内完成“主表插入 + 关联表写入”，保证一致性。
   Future<int> createDiary({
     required String title,
     required String plainTextContent,
@@ -124,6 +81,9 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// 更新日记并覆盖标签绑定关系。
+  ///
+  /// 事务内先更新主表，再重建关联表数据。
   Future<void> updateDiary({
     required int diaryId,
     required String title,
@@ -151,6 +111,7 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// 软删除日记（不物理删除）。
   Future<void> softDeleteDiary(int diaryId) async {
     final now = DateTime.now();
     await (update(diaries)..where((Diaries t) => t.id.equals(diaryId))).write(
@@ -162,6 +123,7 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// 恢复软删除日记。
   Future<void> restoreDiary(int diaryId) async {
     await (update(diaries)..where((Diaries t) => t.id.equals(diaryId))).write(
       DiariesCompanion(
@@ -172,6 +134,7 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// 按主键获取单条日记及其标签。
   Future<DiaryWithTags?> getDiaryWithTagsById(int diaryId) async {
     final diary =
         await (select(diaries)
@@ -184,6 +147,13 @@ class AppDatabase extends _$AppDatabase {
     return DiaryWithTags(diary: diary, tags: relatedTags);
   }
 
+  /// 监听日记列表（支持关键词 + 标签 AND 过滤）。
+  ///
+  /// 查询说明：
+  /// 1. 默认仅返回未软删除记录；
+  /// 2. 关键词匹配 `title` 与 `content_text`；
+  /// 3. 多标签过滤采用 AND 语义；
+  /// 4. 通过 SQL 聚合一次性带回标签，减少 N+1 查询。
   Stream<List<DiaryWithTags>> watchDiaries({
     String keyword = '',
     List<int> requiredTagIds = const <int>[],
@@ -263,6 +233,9 @@ ORDER BY d.updated_at DESC
     });
   }
 
+  /// 示例：按 metadata 指定路径和值检索日记。
+  ///
+  /// `jsonPath` 形如 `$.weather`，底层使用 SQLite JSON1 的 `json_extract`。
   Future<List<Diary>> findDiariesByMetadataValue({
     required String jsonPath,
     required String expectedValue,
@@ -286,6 +259,7 @@ ORDER BY updated_at DESC
     return rows.map(_mapDiaryFromRow).toList();
   }
 
+  /// 覆盖写入某条日记的标签关系。
   Future<void> _replaceDiaryTags(int diaryId, List<int> tagIds) async {
     await (delete(diaryTags)
       ..where((DiaryTags t) => t.diaryId.equals(diaryId))).go();
@@ -305,6 +279,7 @@ ORDER BY updated_at DESC
     });
   }
 
+  /// 查询某条日记绑定的全部标签。
   Future<List<Tag>> _getTagsForDiary(int diaryId) async {
     final rows =
         await (select(
@@ -317,6 +292,7 @@ ORDER BY updated_at DESC
     return rows.map((TypedResult row) => row.readTable(tags)).toList();
   }
 
+  /// 解析 SQL 聚合得到的标签 JSON 字符串。
   List<Tag> _parseTagsJson(String rawJson) {
     try {
       final decoded = jsonDecode(rawJson);
@@ -336,6 +312,7 @@ ORDER BY updated_at DESC
     }
   }
 
+  /// 将 `customSelect` 行记录映射为 Drift 的 `Diary` 数据对象。
   Diary _mapDiaryFromRow(QueryRow row) {
     return Diary(
       id: row.read<int>('id'),
@@ -350,6 +327,7 @@ ORDER BY updated_at DESC
     );
   }
 
+  /// 兼容 bool 在不同 SQL 场景下的读取类型（bool/int）。
   bool _readBool(QueryRow row, String columnName) {
     final boolValue = row.readNullable<bool>(columnName);
     if (boolValue != null) {
@@ -358,6 +336,7 @@ ORDER BY updated_at DESC
     return row.read<int>(columnName) != 0;
   }
 
+  /// 兼容 DateTime 在不同 SQL 场景下的读取类型（DateTime/int）。
   DateTime _readDateTime(QueryRow row, String columnName) {
     final dateTimeValue = row.readNullable<DateTime>(columnName);
     if (dateTimeValue != null) {
@@ -370,6 +349,7 @@ ORDER BY updated_at DESC
     return DateTime.fromMillisecondsSinceEpoch(intValue * 1000);
   }
 
+  /// 读取可空 DateTime 字段。
   DateTime? _readNullableDateTime(QueryRow row, String columnName) {
     final dateTimeValue = row.readNullable<DateTime>(columnName);
     if (dateTimeValue != null) {
@@ -386,10 +366,14 @@ ORDER BY updated_at DESC
   }
 }
 
+/// 打开 SQLite 连接。
+///
+/// 数据库存储在应用文档目录，文件名固定为 `node_diary.sqlite`。
+/// 使用后台 isolate 建库，避免阻塞主线程。
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final root = await getApplicationDocumentsDirectory();
-    final file = File(p.join(root.path, 'node_note.sqlite'));
+    final file = File(p.join(root.path, 'node_diary.sqlite'));
     return NativeDatabase.createInBackground(file);
   });
 }

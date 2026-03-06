@@ -1,8 +1,8 @@
-# Repository Guidelines
+﻿# Repository Guidelines
 
 ## Project Structure & Module Organization
 This repository is a Flutter application. Main entry is `lib/main.dart`.
-- `lib/app/`: app shell and theme setup (`node_note_app.dart`, theme files).
+- `lib/app/`: app shell and theme setup (`node_diary_app.dart`, theme files).
 - `lib/core/services/`: shared services and app-level logic.
 - `lib/ui/<feature>/pages/`: feature pages (home, notes, settings).
 - `test/`: automated tests (`widget_test.dart` currently).
@@ -50,3 +50,4 @@ Local workspace does not include `.git` history, so follow this default conventi
 - Do not commit secrets, tokens, or machine-local config values.
 - Treat files like `android/local.properties` as local-only.
 - Review dependency and lockfile changes in `pubspec.yaml` and `pubspec.lock` before merge.
+

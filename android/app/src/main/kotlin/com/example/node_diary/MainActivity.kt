@@ -1,5 +1,6 @@
-package com.example.node_note
+﻿package com.example.node_diary
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()
+

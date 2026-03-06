@@ -1,6 +1,6 @@
-{
-    "name": "node_note",
-    "short_name": "node_note",
+﻿{
+    "name": "node_diary",
+    "short_name": "node_diary",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
@@ -33,3 +33,4 @@
         }
     ]
 }
+

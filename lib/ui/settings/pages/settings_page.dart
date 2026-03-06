@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:node_note/core/database/app_database.dart';
-import 'package:node_note/core/services/app_service.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_service.dart';
 
+/// 设置页：
+/// 1. 主题模式切换；
+/// 2. 标签删除管理。
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // 设置与标签分开监听，确保局部更新。
     final settingsAsync = ref.watch(settingsServiceProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final db = ref.watch(appDatabaseProvider);
@@ -18,6 +22,7 @@ class SettingsPage extends ConsumerWidget {
         settingsAsync.when(
           data: (settingsService) {
             return ValueListenableBuilder<ThemeMode>(
+              // 直接绑定设置服务中的主题状态，切换后即时生效。
               valueListenable: settingsService.themeModeNotifier,
               builder: (BuildContext context, ThemeMode mode, Widget? child) {
                 return Padding(
@@ -85,6 +90,7 @@ class SettingsPage extends ConsumerWidget {
                         icon: const Icon(Icons.delete_outline),
                         tooltip: '删除标签',
                         onPressed: () async {
+                          // 删除前二次确认，避免误操作。
                           final confirmed = await showDialog<bool>(
                             context: context,
                             builder: (BuildContext context) {

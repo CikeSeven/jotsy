@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:node_note/ui/calendar/pages/calendar_page.dart';
-import 'package:node_note/ui/notes/pages/edit_note.dart';
-import 'package:node_note/ui/notes/pages/notes_page.dart';
-import 'package:node_note/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
+import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
+import 'package:node_diary/ui/settings/pages/settings_page.dart';
 
+/// 主框架页：承载底部三栏导航（列表/日历/设置）。
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -12,23 +13,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  /// 当前选中的底部导航索引。
   int _index = 0;
 
   static const _titles = <String>['日记列表', '日历', '设置'];
 
+  /// 从列表页进入“新建日记”编辑流程。
   Future<void> _openCreateDiary() async {
     await Navigator.of(
       context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const EditNotePage()));
+    ).push(MaterialPageRoute<void>(builder: (_) => const EditDiaryPage()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_titles[_index])),
+      // 使用 IndexedStack 保留各 tab 状态，切换时不销毁页面。
       body: IndexedStack(
         index: _index,
-        children: const <Widget>[NotesPage(), CalendarPage(), SettingsPage()],
+        children: const <Widget>[DiariesPage(), CalendarPage(), SettingsPage()],
       ),
       floatingActionButton:
           _index == 0

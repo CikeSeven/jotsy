@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService {
-  SettingsService._({
-    required SharedPreferences prefs,
-    required ThemeMode mode
-  }) : _prefs = prefs,
+  SettingsService._({required SharedPreferences prefs, required ThemeMode mode})
+    : _prefs = prefs,
       themeModeNotifier = ValueNotifier<ThemeMode>(mode);
-  
+
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
 
@@ -16,10 +14,7 @@ class SettingsService {
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
     final mode = _parseMode(prefs.getString(_keyThemeMode));
-    return SettingsService._(
-        prefs: prefs,
-        mode: mode
-      );
+    return SettingsService._(prefs: prefs, mode: mode);
   }
 
   /// 设置主题模式
@@ -36,7 +31,7 @@ class SettingsService {
         return ThemeMode.dark;
       case 'system':
       default:
-      return ThemeMode.system;
+        return ThemeMode.system;
     }
   }
 }

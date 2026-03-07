@@ -8,7 +8,8 @@ part of 'app_database.dart';
 /// 3. `content` 存 Delta JSON（可扩展富文本）；
 /// 4. `contentText` 存纯文本镜像（用于关键词检索）；
 /// 5. `metadata` 存 JSON 对象字符串（用于扩展字段）；
-/// 6. 采用软删除字段，便于恢复与审计。
+/// 6. 归档与删除分离：归档用于隐藏到归档列表，删除用于回收站语义；
+/// 7. 采用软删除字段，便于恢复与审计。
 class Diaries extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -26,6 +27,12 @@ class Diaries extends Table {
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+
+  BoolColumn get isArchived =>
+      boolean().named('is_archived').withDefault(const Constant(false))();
+
+  DateTimeColumn get archivedAt =>
+      dateTime().named('archived_at').nullable()();
 
   BoolColumn get isDeleted =>
       boolean().named('is_deleted').withDefault(const Constant(false))();

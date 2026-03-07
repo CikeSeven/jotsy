@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -27,6 +27,10 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
         await _migrateDiariesAddBusinessId();
+        return;
+      }
+      if (from < 3) {
+        await _migrateDiariesAddArchiveFields();
       }
     },
   );
@@ -126,6 +130,8 @@ class AppDatabase extends _$AppDatabase {
           contentText: Value<String>(plainTextContent),
           metadata: Value<String>(normalizedMetadata),
           updatedAt: Value<DateTime>(DateTime.now()),
+          isArchived: const Value<bool>(false),
+          archivedAt: const Value<DateTime?>(null),
           isDeleted: const Value<bool>(false),
           deletedAt: const Value<DateTime?>(null),
         ),
@@ -135,6 +141,33 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  /// 归档日记（不删除，仅从主列表隐藏）。
+  Future<void> archiveDiary(String diaryId) async {
+    final now = DateTime.now();
+    await (update(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId)))
+        .write(
+      DiariesCompanion(
+        isArchived: const Value<bool>(true),
+        archivedAt: Value<DateTime?>(now),
+        updatedAt: Value<DateTime>(now),
+      ),
+    );
+  }
+
+  /// 取消归档日记。
+  Future<void> unarchiveDiary(String diaryId) async {
+    await (update(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId)))
+        .write(
+      DiariesCompanion(
+        isArchived: const Value<bool>(false),
+        archivedAt: const Value<DateTime?>(null),
+        updatedAt: Value<DateTime>(DateTime.now()),
+      ),
+    );
+  }
+
   /// 软删除日记（不物理删除）。
   Future<void> softDeleteDiary(String diaryId) async {
     final now = DateTime.now();
@@ -142,6 +175,8 @@ class AppDatabase extends _$AppDatabase {
           ..where((Diaries t) => t.diaryId.equals(diaryId)))
         .write(
       DiariesCompanion(
+        isArchived: const Value<bool>(false),
+        archivedAt: const Value<DateTime?>(null),
         isDeleted: const Value<bool>(true),
         deletedAt: Value<DateTime?>(now),
         updatedAt: Value<DateTime>(now),
@@ -155,6 +190,8 @@ class AppDatabase extends _$AppDatabase {
           ..where((Diaries t) => t.diaryId.equals(diaryId)))
         .write(
       DiariesCompanion(
+        isArchived: const Value<bool>(false),
+        archivedAt: const Value<DateTime?>(null),
         isDeleted: const Value<bool>(false),
         deletedAt: const Value<DateTime?>(null),
         updatedAt: Value<DateTime>(DateTime.now()),
@@ -200,6 +237,8 @@ SELECT
   d.metadata,
   d.created_at,
   d.updated_at,
+  d.is_archived,
+  d.archived_at,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -214,6 +253,7 @@ FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
+  AND d.is_archived = 0
   AND (? = '' OR d.title LIKE ? OR d.content_text LIKE ?)
 ''');
 
@@ -275,6 +315,7 @@ ORDER BY d.updated_at DESC
 SELECT *
 FROM diaries
 WHERE is_deleted = 0
+  AND is_archived = 0
   AND json_extract(metadata, ?) = ?
 ORDER BY updated_at DESC
 ''',
@@ -352,6 +393,8 @@ ORDER BY updated_at DESC
       metadata: row.read<String>('metadata'),
       createdAt: _readDateTime(row, 'created_at'),
       updatedAt: _readDateTime(row, 'updated_at'),
+      isArchived: _readBool(row, 'is_archived'),
+      archivedAt: _readNullableDateTime(row, 'archived_at'),
       isDeleted: _readBool(row, 'is_deleted'),
       deletedAt: _readNullableDateTime(row, 'deleted_at'),
     );
@@ -409,6 +452,8 @@ CREATE TABLE diaries (
   metadata TEXT NOT NULL DEFAULT '{}',
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
+  is_archived INTEGER NOT NULL DEFAULT 0,
+  archived_at INTEGER NULL,
   is_deleted INTEGER NOT NULL DEFAULT 0,
   deleted_at INTEGER NULL
 )
@@ -423,6 +468,8 @@ SELECT
   metadata,
   created_at,
   updated_at,
+  0 AS is_archived,
+  NULL AS archived_at,
   is_deleted,
   deleted_at
 FROM diaries_old
@@ -440,6 +487,10 @@ ORDER BY id
             metadata: Value<String>(row.read<String>('metadata')),
             createdAt: Value<DateTime>(_readDateTime(row, 'created_at')),
             updatedAt: Value<DateTime>(_readDateTime(row, 'updated_at')),
+            isArchived: Value<bool>(_readBool(row, 'is_archived')),
+            archivedAt: Value<DateTime?>(
+              _readNullableDateTime(row, 'archived_at'),
+            ),
             isDeleted: Value<bool>(_readBool(row, 'is_deleted')),
             deletedAt: Value<DateTime?>(
               _readNullableDateTime(row, 'deleted_at'),
@@ -451,6 +502,17 @@ ORDER BY id
       await customStatement('DROP TABLE diaries_old');
     });
     await customStatement('PRAGMA foreign_keys = ON');
+  }
+
+  Future<void> _migrateDiariesAddArchiveFields() async {
+    await customStatement('''
+ALTER TABLE diaries
+ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0
+''');
+    await customStatement('''
+ALTER TABLE diaries
+ADD COLUMN archived_at INTEGER NULL
+''');
   }
 
   String _generateDiaryId() {

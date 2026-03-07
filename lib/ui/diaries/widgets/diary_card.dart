@@ -30,7 +30,7 @@ class DiaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-
+    final preview = diary.diary.contentText.replaceAll('\n', ' ');
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
@@ -45,7 +45,7 @@ class DiaryCard extends StatelessWidget {
           onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -72,7 +72,7 @@ class DiaryCard extends StatelessWidget {
                 if (diary.diary.content.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
-                    diary.diary.content,
+                    preview,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium,

@@ -103,6 +103,32 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _isArchivedMeta = const VerificationMeta(
+    'isArchived',
+  );
+  @override
+  late final GeneratedColumn<bool> isArchived = GeneratedColumn<bool>(
+    'is_archived',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_archived" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _archivedAtMeta = const VerificationMeta(
+    'archivedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> archivedAt = GeneratedColumn<DateTime>(
+    'archived_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isDeletedMeta = const VerificationMeta(
     'isDeleted',
   );
@@ -139,6 +165,8 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     metadata,
     createdAt,
     updatedAt,
+    isArchived,
+    archivedAt,
     isDeleted,
     deletedAt,
   ];
@@ -212,6 +240,18 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('is_archived')) {
+      context.handle(
+        _isArchivedMeta,
+        isArchived.isAcceptableOrUnknown(data['is_archived']!, _isArchivedMeta),
+      );
+    }
+    if (data.containsKey('archived_at')) {
+      context.handle(
+        _archivedAtMeta,
+        archivedAt.isAcceptableOrUnknown(data['archived_at']!, _archivedAtMeta),
+      );
+    }
     if (data.containsKey('is_deleted')) {
       context.handle(
         _isDeletedMeta,
@@ -273,6 +313,15 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
             DriftSqlType.dateTime,
             data['${effectivePrefix}updated_at'],
           )!,
+      isArchived:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_archived'],
+          )!,
+      archivedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}archived_at'],
+      ),
       isDeleted:
           attachedDatabase.typeMapping.read(
             DriftSqlType.bool,
@@ -300,6 +349,8 @@ class Diary extends DataClass implements Insertable<Diary> {
   final String metadata;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isArchived;
+  final DateTime? archivedAt;
   final bool isDeleted;
   final DateTime? deletedAt;
   const Diary({
@@ -311,6 +362,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
+    required this.isArchived,
+    this.archivedAt,
     required this.isDeleted,
     this.deletedAt,
   });
@@ -325,6 +378,10 @@ class Diary extends DataClass implements Insertable<Diary> {
     map['metadata'] = Variable<String>(metadata);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['is_archived'] = Variable<bool>(isArchived);
+    if (!nullToAbsent || archivedAt != null) {
+      map['archived_at'] = Variable<DateTime>(archivedAt);
+    }
     map['is_deleted'] = Variable<bool>(isDeleted);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
@@ -342,6 +399,11 @@ class Diary extends DataClass implements Insertable<Diary> {
       metadata: Value(metadata),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      isArchived: Value(isArchived),
+      archivedAt:
+          archivedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(archivedAt),
       isDeleted: Value(isDeleted),
       deletedAt:
           deletedAt == null && nullToAbsent
@@ -364,6 +426,8 @@ class Diary extends DataClass implements Insertable<Diary> {
       metadata: serializer.fromJson<String>(json['metadata']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      isArchived: serializer.fromJson<bool>(json['isArchived']),
+      archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -380,6 +444,8 @@ class Diary extends DataClass implements Insertable<Diary> {
       'metadata': serializer.toJson<String>(metadata),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'isArchived': serializer.toJson<bool>(isArchived),
+      'archivedAt': serializer.toJson<DateTime?>(archivedAt),
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -394,6 +460,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     String? metadata,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? isArchived,
+    Value<DateTime?> archivedAt = const Value.absent(),
     bool? isDeleted,
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => Diary(
@@ -405,6 +473,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     metadata: metadata ?? this.metadata,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    isArchived: isArchived ?? this.isArchived,
+    archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
     isDeleted: isDeleted ?? this.isDeleted,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -419,6 +489,10 @@ class Diary extends DataClass implements Insertable<Diary> {
       metadata: data.metadata.present ? data.metadata.value : this.metadata,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      isArchived:
+          data.isArchived.present ? data.isArchived.value : this.isArchived,
+      archivedAt:
+          data.archivedAt.present ? data.archivedAt.value : this.archivedAt,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -435,6 +509,8 @@ class Diary extends DataClass implements Insertable<Diary> {
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('archivedAt: $archivedAt, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -451,6 +527,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     metadata,
     createdAt,
     updatedAt,
+    isArchived,
+    archivedAt,
     isDeleted,
     deletedAt,
   );
@@ -466,6 +544,8 @@ class Diary extends DataClass implements Insertable<Diary> {
           other.metadata == this.metadata &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
+          other.isArchived == this.isArchived &&
+          other.archivedAt == this.archivedAt &&
           other.isDeleted == this.isDeleted &&
           other.deletedAt == this.deletedAt);
 }
@@ -479,6 +559,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   final Value<String> metadata;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<bool> isArchived;
+  final Value<DateTime?> archivedAt;
   final Value<bool> isDeleted;
   final Value<DateTime?> deletedAt;
   const DiariesCompanion({
@@ -490,6 +572,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     this.metadata = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.isArchived = const Value.absent(),
+    this.archivedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
   });
@@ -502,6 +586,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     this.metadata = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.isArchived = const Value.absent(),
+    this.archivedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
   }) : diaryId = Value(diaryId),
@@ -518,6 +604,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     Expression<String>? metadata,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<bool>? isArchived,
+    Expression<DateTime>? archivedAt,
     Expression<bool>? isDeleted,
     Expression<DateTime>? deletedAt,
   }) {
@@ -530,6 +618,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
       if (metadata != null) 'metadata': metadata,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (isArchived != null) 'is_archived': isArchived,
+      if (archivedAt != null) 'archived_at': archivedAt,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (deletedAt != null) 'deleted_at': deletedAt,
     });
@@ -544,6 +634,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     Value<String>? metadata,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<bool>? isArchived,
+    Value<DateTime?>? archivedAt,
     Value<bool>? isDeleted,
     Value<DateTime?>? deletedAt,
   }) {
@@ -556,6 +648,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
       metadata: metadata ?? this.metadata,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isArchived: isArchived ?? this.isArchived,
+      archivedAt: archivedAt ?? this.archivedAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
     );
@@ -588,6 +682,12 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (isArchived.present) {
+      map['is_archived'] = Variable<bool>(isArchived.value);
+    }
+    if (archivedAt.present) {
+      map['archived_at'] = Variable<DateTime>(archivedAt.value);
+    }
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
     }
@@ -608,6 +708,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('isArchived: $isArchived, ')
+          ..write('archivedAt: $archivedAt, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -1122,6 +1224,8 @@ typedef $$DiariesTableCreateCompanionBuilder =
       Value<String> metadata,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<bool> isArchived,
+      Value<DateTime?> archivedAt,
       Value<bool> isDeleted,
       Value<DateTime?> deletedAt,
     });
@@ -1135,6 +1239,8 @@ typedef $$DiariesTableUpdateCompanionBuilder =
       Value<String> metadata,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<bool> isArchived,
+      Value<DateTime?> archivedAt,
       Value<bool> isDeleted,
       Value<DateTime?> deletedAt,
     });
@@ -1208,6 +1314,16 @@ class $$DiariesTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1296,6 +1412,16 @@ class $$DiariesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isDeleted => $composableBuilder(
     column: $table.isDeleted,
     builder: (column) => ColumnOrderings(column),
@@ -1341,6 +1467,16 @@ class $$DiariesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isArchived => $composableBuilder(
+    column: $table.isArchived,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get archivedAt => $composableBuilder(
+    column: $table.archivedAt,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
@@ -1410,6 +1546,8 @@ class $$DiariesTableTableManager
                 Value<String> metadata = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<bool> isArchived = const Value.absent(),
+                Value<DateTime?> archivedAt = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
               }) => DiariesCompanion(
@@ -1421,6 +1559,8 @@ class $$DiariesTableTableManager
                 metadata: metadata,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                isArchived: isArchived,
+                archivedAt: archivedAt,
                 isDeleted: isDeleted,
                 deletedAt: deletedAt,
               ),
@@ -1434,6 +1574,8 @@ class $$DiariesTableTableManager
                 Value<String> metadata = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<bool> isArchived = const Value.absent(),
+                Value<DateTime?> archivedAt = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
               }) => DiariesCompanion.insert(
@@ -1445,6 +1587,8 @@ class $$DiariesTableTableManager
                 metadata: metadata,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                isArchived: isArchived,
+                archivedAt: archivedAt,
                 isDeleted: isDeleted,
                 deletedAt: deletedAt,
               ),

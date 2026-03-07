@@ -68,6 +68,7 @@ class DiariesListSection extends StatelessWidget {
           if (index == 0) {
             final hintStyle = Theme.of(context).textTheme.bodyMedium;
             final textStyle = Theme.of(context).textTheme.bodyLarge;
+            final colorScheme = Theme.of(context).colorScheme;
             final displayedText = searchPreviewText.trim();
             final hasText = displayedText.isNotEmpty;
             final targetHeight = 48.0;
@@ -200,7 +201,7 @@ class DiariesListSection extends StatelessWidget {
             background: SwipeActionBackground(
               label: '归档',
               icon: CupertinoIcons.archivebox_fill,
-              color: const Color(0xFF9C6BD8),
+              color: Theme.of(context).colorScheme.primary,
             ),
             onDismissed: (_) async {
               await onArchiveBySwipe(diary);

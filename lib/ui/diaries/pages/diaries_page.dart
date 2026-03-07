@@ -27,9 +27,6 @@ class DiariesPage extends ConsumerStatefulWidget {
 class _DiariesPage extends ConsumerState<DiariesPage>
     with SingleTickerProviderStateMixin {
 
-      
-  final Set<String> _selectedDiariesIds = <String>{};
-
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
@@ -165,15 +162,22 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                       data: (tags) {
                         return diariesAsync.when(
                           data: (items) {
+                            final visibleItems =
+                                items.where((DiaryWithTags item) {
+                                  return !_optimisticHiddenDiaryIds.contains(
+                                    item.diary.diaryId,
+                                  );
+                                }).toList();
+
                             return DiariesListSection(
                               tags: tags,
                               searchFieldKey: _listSearchFieldKey,
                               searchPreviewText: _searchInput,
                               animateSearchRow: true,
                               searchEnabled: true,
-                              diaries: items,
+                              diaries: visibleItems,
                               isSelectionMode: _isSelectionMode,
-                              selectedDiaryIds: _selectedDiariesIds,
+                              selectedDiaryIds: _selectedDiaryIds,
                               listBottomOffset: listBottomOffset,
                               onCreate: _openEditor,
                               onOpenEditor: _openEditor,
@@ -184,7 +188,23 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     forceSelect: forceSelect,
                                   ),
                               onArchiveBySwipe: (note) async {
-                                
+                                final diaryId = note.diary.diaryId;
+                                setState(() {
+                                  _optimisticHiddenDiaryIds.add(diaryId);
+                                  _selectedDiaryIds.remove(diaryId);
+                                });
+                                try {
+                                  await ref
+                                      .read(appDatabaseProvider)
+                                      .archiveDiary(diaryId);
+                                } catch (_) {
+                                  if (!mounted) {
+                                    return;
+                                  }
+                                  setState(() {
+                                    _optimisticHiddenDiaryIds.remove(diaryId);
+                                  });
+                                }
                               },
                             );
                           },
@@ -209,133 +229,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                           (Object error, StackTrace stackTrace) =>
                               Center(child: Text('日记加载失败: $error')),
                     )
-                    
-                    // tagsAsync.when(
-                    //   data: (List<Tag> tags) {
-                    //     if (tags.isEmpty) {
-                    //       return const SizedBox.shrink();
-                    //     }
-                    //     return SizedBox(
-                    //       height: 46,
-                    //       child: ListView(
-                    //         scrollDirection: Axis.horizontal,
-                    //         padding: const EdgeInsets.symmetric(horizontal: 12),
-                    //         children:
-                    //             tags.map((Tag tag) {
-                    //               final selected = selectedTagIds.contains(tag.id);
-                    //               return Padding(
-                    //                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                    //                 child: FilterChip(
-                    //                   selected: selected,
-                    //                   avatar: CircleAvatar(
-                    //                     radius: 8,
-                    //                     backgroundColor: Color(tag.color),
-                    //                   ),
-                    //                   label: Text(tag.name),
-                    //                   onSelected: (bool value) {
-                    //                     // 标签筛选采用可叠加的 AND 语义。
-                    //                     ref
-                    //                         .read(diaryFilterProvider.notifier)
-                    //                         .toggleTag(tag.id, value);
-                    //                   },
-                    //                 ),
-                    //               );
-                    //             }).toList(),
-                    //       ),
-                    //     );
-                    //   },
-                    //   loading:
-                    //       () => const Padding(
-                    //         padding: EdgeInsets.symmetric(vertical: 8),
-                    //         child: SizedBox(
-                    //           height: 22,
-                    //           width: 22,
-                    //           child: CircularProgressIndicator(strokeWidth: 2),
-                    //         ),
-                    //       ),
-                    //   error:
-                    //       (Object error, StackTrace stackTrace) => Padding(
-                    //         padding: const EdgeInsets.only(bottom: 8),
-                    //         child: Text('标签加载失败: $error'),
-                    //       ),
-                    // ),
-                    // Expanded(
-                    //   child: diariesAsync.when(
-                    //     data: (List<DiaryWithTags> items) {
-                    //       if (items.isEmpty) {
-                    //         return const Center(child: Text('暂无日记'));
-                    //       }
-                
-                    //       return ListView.separated(
-                    //         itemCount: items.length,
-                    //         separatorBuilder: (_, __) => const Divider(height: 1),
-                    //         itemBuilder: (BuildContext context, int index) {
-                    //           final item = items[index];
-                    //           final title =
-                    //               item.diary.title.trim().isEmpty
-                    //                   ? '未命名日记'
-                    //                   : item.diary.title;
-                    //           final preview = item.diary.contentText.replaceAll('\n', ' ');
-                    //           final updatedAt = _formatDateTime(item.diary.updatedAt);
-                
-                    //           return ListTile(
-                    //             title: Text(
-                    //               title,
-                    //               maxLines: 1,
-                    //               overflow: TextOverflow.ellipsis,
-                    //             ),
-                    //             subtitle: Column(
-                    //               crossAxisAlignment: CrossAxisAlignment.start,
-                    //               children: <Widget>[
-                    //                 Text(
-                    //                   preview,
-                    //                   maxLines: 2,
-                    //                   overflow: TextOverflow.ellipsis,
-                    //                 ),
-                    //                 const SizedBox(height: 4),
-                    //                 Text(
-                    //                   updatedAt,
-                    //                   style: Theme.of(context).textTheme.bodySmall,
-                    //                 ),
-                    //                 if (item.tags.isNotEmpty) ...<Widget>[
-                    //                   const SizedBox(height: 4),
-                    //                   Wrap(
-                    //                     spacing: 6,
-                    //                     runSpacing: -8,
-                    //                     children:
-                    //                         item.tags.map((Tag tag) {
-                    //                           return Chip(
-                    //                             avatar: CircleAvatar(
-                    //                               radius: 7,
-                    //                               backgroundColor: Color(tag.color),
-                    //                             ),
-                    //                             label: Text(tag.name),
-                    //                           );
-                    //                         }).toList(),
-                    //                   ),
-                    //                 ],
-                    //               ],
-                    //             ),
-                    //             onTap: () async {
-                    //               // 点击条目进入编辑页，返回后列表会自动流式刷新。
-                    //               await Navigator.of(context).push(
-                    //                 MaterialPageRoute<void>(
-                    //                   builder: (_) => EditDiaryPage(
-                    //                     diaryId: item.diary.diaryId,
-                    //                   ),
-                    //                 ),
-                    //               );
-                    //             },
-                    //           );
-                    //         },
-                    //       );
-                    //     },
-                    //     loading: () => const Center(child: CircularProgressIndicator()),
-                    //     error:
-                    //         (Object error, StackTrace stackTrace) =>
-                    //             Center(child: Text('日记加载失败: $error')),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),

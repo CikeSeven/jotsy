@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
@@ -16,7 +17,19 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await _migrateDiariesAddBusinessId();
+      }
+    },
+  );
 
   /// 按名称升序实时监听全部标签。
   Stream<List<Tag>> watchAllTags() {
@@ -54,19 +67,21 @@ class AppDatabase extends _$AppDatabase {
   /// 创建日记并写入关联标签。
   ///
   /// 事务内完成“主表插入 + 关联表写入”，保证一致性。
-  Future<int> createDiary({
+  Future<String> createDiary({
     required String title,
     required String plainTextContent,
     required String metadataJson,
     List<int> tagIds = const <int>[],
   }) async {
     final now = DateTime.now();
+    final diaryId = _generateDiaryId();
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
     final normalizedTagIds = tagIds.toSet().toList();
 
-    return transaction<int>(() async {
-      final diaryId = await into(diaries).insert(
+    return transaction<String>(() async {
+      final localDiaryId = await into(diaries).insert(
         DiariesCompanion.insert(
+          diaryId: diaryId,
           title: Value<String>(title.trim()),
           content: plainTextToDeltaJson(plainTextContent),
           contentText: plainTextContent,
@@ -76,7 +91,7 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
 
-      await _replaceDiaryTags(diaryId, normalizedTagIds);
+      await _replaceDiaryTags(localDiaryId, normalizedTagIds);
       return diaryId;
     });
   }
@@ -85,7 +100,7 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// 事务内先更新主表，再重建关联表数据。
   Future<void> updateDiary({
-    required int diaryId,
+    required String diaryId,
     required String title,
     required String plainTextContent,
     required String metadataJson,
@@ -95,7 +110,16 @@ class AppDatabase extends _$AppDatabase {
     final normalizedTagIds = tagIds.toSet().toList();
 
     await transaction<void>(() async {
-      await (update(diaries)..where((Diaries t) => t.id.equals(diaryId))).write(
+      final diary = await (select(diaries)
+            ..where((Diaries t) => t.diaryId.equals(diaryId)))
+          .getSingleOrNull();
+      if (diary == null) {
+        throw StateError('未找到 diaryId=$diaryId 对应的日记');
+      }
+
+      await (update(diaries)
+            ..where((Diaries t) => t.diaryId.equals(diaryId)))
+          .write(
         DiariesCompanion(
           title: Value<String>(title.trim()),
           content: Value<String>(plainTextToDeltaJson(plainTextContent)),
@@ -107,14 +131,16 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
 
-      await _replaceDiaryTags(diaryId, normalizedTagIds);
+      await _replaceDiaryTags(diary.id, normalizedTagIds);
     });
   }
 
   /// 软删除日记（不物理删除）。
-  Future<void> softDeleteDiary(int diaryId) async {
+  Future<void> softDeleteDiary(String diaryId) async {
     final now = DateTime.now();
-    await (update(diaries)..where((Diaries t) => t.id.equals(diaryId))).write(
+    await (update(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId)))
+        .write(
       DiariesCompanion(
         isDeleted: const Value<bool>(true),
         deletedAt: Value<DateTime?>(now),
@@ -124,8 +150,10 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// 恢复软删除日记。
-  Future<void> restoreDiary(int diaryId) async {
-    await (update(diaries)..where((Diaries t) => t.id.equals(diaryId))).write(
+  Future<void> restoreDiary(String diaryId) async {
+    await (update(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId)))
+        .write(
       DiariesCompanion(
         isDeleted: const Value<bool>(false),
         deletedAt: const Value<DateTime?>(null),
@@ -134,16 +162,16 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  /// 按主键获取单条日记及其标签。
-  Future<DiaryWithTags?> getDiaryWithTagsById(int diaryId) async {
+  /// 按业务 diaryId 获取单条日记及其标签。
+  Future<DiaryWithTags?> getDiaryWithTagsByDiaryId(String diaryId) async {
     final diary =
         await (select(diaries)
-          ..where((Diaries t) => t.id.equals(diaryId))).getSingleOrNull();
+          ..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
     if (diary == null) {
       return null;
     }
 
-    final relatedTags = await _getTagsForDiary(diaryId);
+    final relatedTags = await _getTagsForDiary(diary.id);
     return DiaryWithTags(diary: diary, tags: relatedTags);
   }
 
@@ -165,6 +193,7 @@ class AppDatabase extends _$AppDatabase {
     final sql = StringBuffer('''
 SELECT
   d.id,
+  d.diary_id,
   d.title,
   d.content,
   d.content_text,
@@ -316,6 +345,7 @@ ORDER BY updated_at DESC
   Diary _mapDiaryFromRow(QueryRow row) {
     return Diary(
       id: row.read<int>('id'),
+      diaryId: row.read<String>('diary_id'),
       title: row.read<String>('title'),
       content: row.read<String>('content'),
       contentText: row.read<String>('content_text'),
@@ -363,6 +393,79 @@ ORDER BY updated_at DESC
       return DateTime.fromMillisecondsSinceEpoch(intValue);
     }
     return DateTime.fromMillisecondsSinceEpoch(intValue * 1000);
+  }
+
+  Future<void> _migrateDiariesAddBusinessId() async {
+    await customStatement('PRAGMA foreign_keys = OFF');
+    await transaction(() async {
+      await customStatement('ALTER TABLE diaries RENAME TO diaries_old');
+      await customStatement('''
+CREATE TABLE diaries (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  diary_id TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL DEFAULT '',
+  content TEXT NOT NULL,
+  content_text TEXT NOT NULL,
+  metadata TEXT NOT NULL DEFAULT '{}',
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  is_deleted INTEGER NOT NULL DEFAULT 0,
+  deleted_at INTEGER NULL
+)
+''');
+
+      final rows = await customSelect('''
+SELECT
+  id,
+  title,
+  content,
+  content_text,
+  metadata,
+  created_at,
+  updated_at,
+  is_deleted,
+  deleted_at
+FROM diaries_old
+ORDER BY id
+''').get();
+
+      for (final row in rows) {
+        await into(diaries).insert(
+          DiariesCompanion(
+            id: Value<int>(row.read<int>('id')),
+            diaryId: Value<String>(_generateDiaryId()),
+            title: Value<String>(row.read<String>('title')),
+            content: Value<String>(row.read<String>('content')),
+            contentText: Value<String>(row.read<String>('content_text')),
+            metadata: Value<String>(row.read<String>('metadata')),
+            createdAt: Value<DateTime>(_readDateTime(row, 'created_at')),
+            updatedAt: Value<DateTime>(_readDateTime(row, 'updated_at')),
+            isDeleted: Value<bool>(_readBool(row, 'is_deleted')),
+            deletedAt: Value<DateTime?>(
+              _readNullableDateTime(row, 'deleted_at'),
+            ),
+          ),
+        );
+      }
+
+      await customStatement('DROP TABLE diaries_old');
+    });
+    await customStatement('PRAGMA foreign_keys = ON');
+  }
+
+  String _generateDiaryId() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    final hex = bytes
+        .map((int byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
+    return '${hex.substring(0, 8)}-'
+        '${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-'
+        '${hex.substring(16, 20)}-'
+        '${hex.substring(20)}';
   }
 }
 

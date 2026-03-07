@@ -1,8 +1,11 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+
+import '../l10n/app_localizations.dart';
 
 /// 应用根组件。
 ///
@@ -21,7 +24,7 @@ class NodeDiaryApp extends ConsumerWidget {
     return settingsAsync.when(
       loading:
           () => const MaterialApp(
-            debugShowCheckedModeBanner: true,
+            debugShowCheckedModeBanner: false,
             home: Scaffold(body: Center(child: CircularProgressIndicator())),
           ),
       error:
@@ -35,11 +38,22 @@ class NodeDiaryApp extends ConsumerWidget {
           valueListenable: settingsService.themeModeNotifier,
           builder: (BuildContext context, ThemeMode themeMode, Widget? child) {
             return MaterialApp(
-              debugShowCheckedModeBanner: true,
+              debugShowCheckedModeBanner: false,
               title: 'Jotsy',
               theme: materialTheme.light(),
               darkTheme: materialTheme.dark(),
               themeMode: themeMode,
+              supportedLocales: const [
+                Locale('en'),
+                Locale('zh'),
+                Locale('zh', 'CN'),
+              ],
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+              ],
               home: const HomePage(),
             );
           },

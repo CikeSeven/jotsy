@@ -21,6 +21,18 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
+  static const VerificationMeta _diaryIdMeta = const VerificationMeta(
+    'diaryId',
+  );
+  @override
+  late final GeneratedColumn<String> diaryId = GeneratedColumn<String>(
+    'diary_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -120,6 +132,7 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    diaryId,
     title,
     content,
     contentText,
@@ -143,6 +156,14 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('diary_id')) {
+      context.handle(
+        _diaryIdMeta,
+        diaryId.isAcceptableOrUnknown(data['diary_id']!, _diaryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaryIdMeta);
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -217,6 +238,11 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
             DriftSqlType.int,
             data['${effectivePrefix}id'],
           )!,
+      diaryId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}diary_id'],
+          )!,
       title:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -267,6 +293,7 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
 
 class Diary extends DataClass implements Insertable<Diary> {
   final int id;
+  final String diaryId;
   final String title;
   final String content;
   final String contentText;
@@ -277,6 +304,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   final DateTime? deletedAt;
   const Diary({
     required this.id,
+    required this.diaryId,
     required this.title,
     required this.content,
     required this.contentText,
@@ -290,6 +318,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    map['diary_id'] = Variable<String>(diaryId);
     map['title'] = Variable<String>(title);
     map['content'] = Variable<String>(content);
     map['content_text'] = Variable<String>(contentText);
@@ -306,6 +335,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   DiariesCompanion toCompanion(bool nullToAbsent) {
     return DiariesCompanion(
       id: Value(id),
+      diaryId: Value(diaryId),
       title: Value(title),
       content: Value(content),
       contentText: Value(contentText),
@@ -327,6 +357,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Diary(
       id: serializer.fromJson<int>(json['id']),
+      diaryId: serializer.fromJson<String>(json['diaryId']),
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       contentText: serializer.fromJson<String>(json['contentText']),
@@ -342,6 +373,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'diaryId': serializer.toJson<String>(diaryId),
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'contentText': serializer.toJson<String>(contentText),
@@ -355,6 +387,7 @@ class Diary extends DataClass implements Insertable<Diary> {
 
   Diary copyWith({
     int? id,
+    String? diaryId,
     String? title,
     String? content,
     String? contentText,
@@ -365,6 +398,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => Diary(
     id: id ?? this.id,
+    diaryId: diaryId ?? this.diaryId,
     title: title ?? this.title,
     content: content ?? this.content,
     contentText: contentText ?? this.contentText,
@@ -377,6 +411,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   Diary copyWithCompanion(DiariesCompanion data) {
     return Diary(
       id: data.id.present ? data.id.value : this.id,
+      diaryId: data.diaryId.present ? data.diaryId.value : this.diaryId,
       title: data.title.present ? data.title.value : this.title,
       content: data.content.present ? data.content.value : this.content,
       contentText:
@@ -393,6 +428,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   String toString() {
     return (StringBuffer('Diary(')
           ..write('id: $id, ')
+          ..write('diaryId: $diaryId, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('contentText: $contentText, ')
@@ -408,6 +444,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   @override
   int get hashCode => Object.hash(
     id,
+    diaryId,
     title,
     content,
     contentText,
@@ -422,6 +459,7 @@ class Diary extends DataClass implements Insertable<Diary> {
       identical(this, other) ||
       (other is Diary &&
           other.id == this.id &&
+          other.diaryId == this.diaryId &&
           other.title == this.title &&
           other.content == this.content &&
           other.contentText == this.contentText &&
@@ -434,6 +472,7 @@ class Diary extends DataClass implements Insertable<Diary> {
 
 class DiariesCompanion extends UpdateCompanion<Diary> {
   final Value<int> id;
+  final Value<String> diaryId;
   final Value<String> title;
   final Value<String> content;
   final Value<String> contentText;
@@ -444,6 +483,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   final Value<DateTime?> deletedAt;
   const DiariesCompanion({
     this.id = const Value.absent(),
+    this.diaryId = const Value.absent(),
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.contentText = const Value.absent(),
@@ -455,6 +495,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   });
   DiariesCompanion.insert({
     this.id = const Value.absent(),
+    required String diaryId,
     this.title = const Value.absent(),
     required String content,
     required String contentText,
@@ -463,12 +504,14 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     required DateTime updatedAt,
     this.isDeleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
-  }) : content = Value(content),
+  }) : diaryId = Value(diaryId),
+       content = Value(content),
        contentText = Value(contentText),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<Diary> custom({
     Expression<int>? id,
+    Expression<String>? diaryId,
     Expression<String>? title,
     Expression<String>? content,
     Expression<String>? contentText,
@@ -480,6 +523,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (diaryId != null) 'diary_id': diaryId,
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (contentText != null) 'content_text': contentText,
@@ -493,6 +537,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
 
   DiariesCompanion copyWith({
     Value<int>? id,
+    Value<String>? diaryId,
     Value<String>? title,
     Value<String>? content,
     Value<String>? contentText,
@@ -504,6 +549,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   }) {
     return DiariesCompanion(
       id: id ?? this.id,
+      diaryId: diaryId ?? this.diaryId,
       title: title ?? this.title,
       content: content ?? this.content,
       contentText: contentText ?? this.contentText,
@@ -520,6 +566,9 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (diaryId.present) {
+      map['diary_id'] = Variable<String>(diaryId.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -552,6 +601,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   String toString() {
     return (StringBuffer('DiariesCompanion(')
           ..write('id: $id, ')
+          ..write('diaryId: $diaryId, ')
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('contentText: $contentText, ')
@@ -1065,6 +1115,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$DiariesTableCreateCompanionBuilder =
     DiariesCompanion Function({
       Value<int> id,
+      required String diaryId,
       Value<String> title,
       required String content,
       required String contentText,
@@ -1077,6 +1128,7 @@ typedef $$DiariesTableCreateCompanionBuilder =
 typedef $$DiariesTableUpdateCompanionBuilder =
     DiariesCompanion Function({
       Value<int> id,
+      Value<String> diaryId,
       Value<String> title,
       Value<String> content,
       Value<String> contentText,
@@ -1121,6 +1173,11 @@ class $$DiariesTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get diaryId => $composableBuilder(
+    column: $table.diaryId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1204,6 +1261,11 @@ class $$DiariesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -1256,6 +1318,9 @@ class $$DiariesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get diaryId =>
+      $composableBuilder(column: $table.diaryId, builder: (column) => column);
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
@@ -1338,6 +1403,7 @@ class $$DiariesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String> diaryId = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<String> contentText = const Value.absent(),
@@ -1348,6 +1414,7 @@ class $$DiariesTableTableManager
                 Value<DateTime?> deletedAt = const Value.absent(),
               }) => DiariesCompanion(
                 id: id,
+                diaryId: diaryId,
                 title: title,
                 content: content,
                 contentText: contentText,
@@ -1360,6 +1427,7 @@ class $$DiariesTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                required String diaryId,
                 Value<String> title = const Value.absent(),
                 required String content,
                 required String contentText,
@@ -1370,6 +1438,7 @@ class $$DiariesTableTableManager
                 Value<DateTime?> deletedAt = const Value.absent(),
               }) => DiariesCompanion.insert(
                 id: id,
+                diaryId: diaryId,
                 title: title,
                 content: content,
                 contentText: contentText,

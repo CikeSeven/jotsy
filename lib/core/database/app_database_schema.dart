@@ -3,12 +3,16 @@ part of 'app_database.dart';
 /// 日记主表。
 ///
 /// 设计要点：
-/// 1. `content` 存 Delta JSON（可扩展富文本）；
-/// 2. `contentText` 存纯文本镜像（用于关键词检索）；
-/// 3. `metadata` 存 JSON 对象字符串（用于扩展字段）；
-/// 4. 采用软删除字段，便于恢复与审计。
+/// 1. `id` 是本地数据库自增主键，仅用于本地表关联；
+/// 2. `diaryId` 是业务层真正的唯一标识，跨设备同步也保持唯一；
+/// 3. `content` 存 Delta JSON（可扩展富文本）；
+/// 4. `contentText` 存纯文本镜像（用于关键词检索）；
+/// 5. `metadata` 存 JSON 对象字符串（用于扩展字段）；
+/// 6. 采用软删除字段，便于恢复与审计。
 class Diaries extends Table {
   IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get diaryId => text().named('diary_id').unique()();
 
   TextColumn get title =>
       text().withLength(min: 0, max: 200).withDefault(const Constant(''))();

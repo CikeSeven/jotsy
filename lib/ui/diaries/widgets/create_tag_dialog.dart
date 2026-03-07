@@ -13,67 +13,10 @@ class NewTagDraft {
 /// - 返回 `null` 表示取消
 /// - 返回 `NewTagDraft` 表示输入合法可提交
 Future<NewTagDraft?> showCreateTagDialog(BuildContext context) async {
-  final nameController = TextEditingController();
-  final colorController = TextEditingController(text: '#4CAF50');
-
-  final result = await showDialog<NewTagDraft>(
+  return showDialog<NewTagDraft>(
     context: context,
-    builder: (BuildContext dialogContext) {
-      return AlertDialog(
-        // 允许在软键盘弹出时内容滚动，避免溢出。
-        scrollable: true,
-        title: const Text('新建标签'),
-        content: SizedBox(
-          width: 360,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: '标签名'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: colorController,
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(
-                  labelText: '颜色(HEX，如 #4CAF50)',
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('取消'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = nameController.text.trim();
-              if (name.isEmpty) {
-                return;
-              }
-              final parsedColor = _parseHexColor(colorController.text);
-              if (parsedColor == null) {
-                return;
-              }
-              Navigator.of(
-                dialogContext,
-              ).pop(NewTagDraft(name: name, color: parsedColor));
-            },
-            child: const Text('创建'),
-          ),
-        ],
-      );
-    },
+    builder: (BuildContext _) => const _CreateTagDialog(),
   );
-
-  nameController.dispose();
-  colorController.dispose();
-  return result;
 }
 
 /// 将用户输入的 HEX 颜色字符串解析为 ARGB int。
@@ -89,4 +32,76 @@ int? _parseHexColor(String raw) {
 
   final withAlpha = normalized.length == 6 ? 'FF$normalized' : normalized;
   return int.tryParse(withAlpha, radix: 16);
+}
+
+class _CreateTagDialog extends StatefulWidget {
+  const _CreateTagDialog();
+
+  @override
+  State<_CreateTagDialog> createState() => _CreateTagDialogState();
+}
+
+class _CreateTagDialogState extends State<_CreateTagDialog> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _colorController = TextEditingController(
+    text: '#4CAF50',
+  );
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _colorController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      return;
+    }
+    final parsedColor = _parseHexColor(_colorController.text);
+    if (parsedColor == null) {
+      return;
+    }
+    Navigator.of(context).pop(NewTagDraft(name: name, color: parsedColor));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      // 允许在软键盘弹出时内容滚动，避免溢出。
+      scrollable: true,
+      title: const Text('新建标签'),
+      content: SizedBox(
+        width: 360,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              textInputAction: TextInputAction.next,
+              decoration: const InputDecoration(labelText: '标签名'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _colorController,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                labelText: '颜色(HEX，如 #4CAF50)',
+              ),
+              onSubmitted: (_) => _submit(),
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        FilledButton(onPressed: _submit, child: const Text('创建')),
+      ],
+    );
+  }
 }

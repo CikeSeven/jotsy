@@ -11,6 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -23,6 +25,7 @@ dependencies:
   path: ^1.9.1
   shared_preferences: ^2.5.4
   json_annotation: ^4.11.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -35,5 +38,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: HarmonyOSSansSC
+      fonts:
+        - asset: assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Regular.ttf
+          weight: 400
+        - asset: assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Medium.ttf
+          weight: 500
+        - asset: assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Bold.ttf
+          weight: 700
 
 

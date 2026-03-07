@@ -6,12 +6,12 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 
 /// 单条日记详情 provider（含标签聚合）。
-final diaryDetailProvider = FutureProvider.family<DiaryWithTags?, int>((
+final diaryDetailProvider = FutureProvider.family<DiaryWithTags?, String>((
   Ref ref,
-  int diaryId,
+  String diaryId,
 ) {
   final db = ref.watch(appDatabaseProvider);
-  return db.getDiaryWithTagsById(diaryId);
+  return db.getDiaryWithTagsByDiaryId(diaryId);
 });
 
 /// 日记编辑页。
@@ -21,7 +21,7 @@ final diaryDetailProvider = FutureProvider.family<DiaryWithTags?, int>((
 class EditDiaryPage extends ConsumerStatefulWidget {
   const EditDiaryPage({super.key, this.diaryId});
 
-  final int? diaryId;
+  final String? diaryId;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();

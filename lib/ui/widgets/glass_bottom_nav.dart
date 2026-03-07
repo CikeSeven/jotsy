@@ -35,6 +35,13 @@ class GlassBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const navHeight = 58.0;
+    const verticalPadding = 6.0;
+    const horizontalPadding = 6.0;
+    const sliderInset = 5.0;
+    const sliderRadius = 18.0;
+    const iconSize = 18.0;
+
     // 将外部传入进度限制在合法区间，避免动画越界。
     final clampedProgress = pageProgress.clamp(
       0.0,
@@ -44,7 +51,7 @@ class GlassBottomNav extends StatelessWidget {
 
     return SafeArea(
       // 悬浮底栏与屏幕边缘保留视觉呼吸感。
-      minimum: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+      minimum: const EdgeInsets.only(bottom: 20, left: 48, right: 48),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadii.nav),
@@ -54,23 +61,22 @@ class GlassBottomNav extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadii.nav),
           child: BackdropFilter(
             // 导航容器毛玻璃模糊层。
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            filter: ImageFilter.blur(
+              sigmaX: 15,
+              sigmaY: 15,
+              tileMode: TileMode.mirror
+            ),
             child: Container(
-              height: 76,
-              padding: const EdgeInsets.all(8),
-              // decoration: BoxDecoration(
-              //   gradient: visuals.bottomNavGradient,
-              //   border: Border.all(
-              //     color: visuals.bottomNavBorderColor.withValues(alpha: 0.5),
-              //   ),
-              // ),
+              height: navHeight,
+              color: colorScheme.primary.withAlpha(20),
+              padding: const EdgeInsets.symmetric(vertical: verticalPadding, horizontal: horizontalPadding),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   // 根据可用宽度实时计算每个 item 的占位宽度。
                   final itemWidth = constraints.maxWidth / items.length;
                   // 选中胶囊位置由 pageProgress 驱动，实现平滑滑动。
-                  final sliderLeft = clampedProgress * itemWidth + 4;
-                  final sliderWidth = itemWidth - 8;
+                  final sliderLeft = clampedProgress * itemWidth + sliderInset;
+                  final sliderWidth = itemWidth - (sliderInset * 2);
 
                   return Stack(
                     children: [
@@ -84,9 +90,9 @@ class GlassBottomNav extends StatelessWidget {
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: colorScheme.primaryContainer.withValues(
-                                alpha: 0.7,
+                                alpha: 0.58,
                               ),
-                              borderRadius: BorderRadius.circular(22),
+                              borderRadius: BorderRadius.circular(AppRadii.nav),
                             ),
                           ),
                         ),
@@ -101,19 +107,11 @@ class GlassBottomNav extends StatelessWidget {
                           final t = 1 - distance;
                           final iconColor =
                               Color.lerp(
-                                colorScheme.outlineVariant,
+                                colorScheme.onSurface,
                                 colorScheme.primary,
                                 t,
                               )!;
-                          final labelColor =
-                              Color.lerp(
-                                colorScheme.outlineVariant,
-                                colorScheme.onSurface,
-                                t,
-                              )!;
-                          final scale = 1 + (0.03 * t);
-                          final weight =
-                              t > 0.55 ? FontWeight.w700 : FontWeight.w600;
+                          final scale = 1 + (0.2 * t);
 
                           return Expanded(
                             child: GestureDetector(
@@ -121,7 +119,7 @@ class GlassBottomNav extends StatelessWidget {
                               onTap: () => onTap(index),
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 6,
+                                  vertical: 4,
                                 ),
                                 child: Center(
                                   child:
@@ -131,22 +129,9 @@ class GlassBottomNav extends StatelessWidget {
                                       child: Icon(
                                         item.icon,
                                         color: iconColor,
-                                        size: 22,
+                                        size: iconSize,
                                       ),
                                     ),
-                                    //const SizedBox(height: 2),
-                                    // 文本标签层。
-                                    // Text(
-                                    //   item.label,
-                                    //   style: TextStyle(
-                                    //     fontSize: 11.5,
-                                    //     height: 1,
-                                    //     letterSpacing: 0.2,
-                                    //     fontWeight: weight,
-                                    //     color: labelColor,
-                                    //   ),
-                                    // ),
-                                  
                                 ),
                               ),
                             ),

@@ -61,7 +61,7 @@ class DiariesListSection extends StatelessWidget {
         padding: EdgeInsets.only(bottom: listBottomOffset),
         itemCount: itemCount,
         separatorBuilder: (context, index) {
-          return const SizedBox(height: 8);
+          return const SizedBox(height: 2);
         },
         itemBuilder: (context, index) {
           // 区块一：搜索框（列表顶部，随列表滚动）。

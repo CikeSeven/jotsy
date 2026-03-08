@@ -12,10 +12,10 @@ import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 
 import '../../../app/theme/app_effects.dart';
-import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
 import '../sections/diaries_list_section.dart';
+import '../widgets/diary_tag_filter_bar.dart';
 
 /// 日记列表页。
 ///
@@ -29,7 +29,7 @@ class DiariesPage extends ConsumerStatefulWidget {
 }
 
 class _DiariesPage extends ConsumerState<DiariesPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
@@ -46,6 +46,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   OverlayEntry? _searchMorphOverlay;
   Rect? _cachedListSearchRect;
   late final AnimationController _searchMorphController;
+  late final AnimationController _listFadeController;
+  late final Animation<double> _listFadeAnimation;
+  List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
+  String _cachedVisibleItemsSignature = '';
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   bool _isSearchMode = false;
@@ -58,6 +62,34 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
   bool get _showTopSearchField => _isSearchMode && !_isSearchAnimating;
   bool get _showHeaderSection => !_isSearchMode && !_isSearchAnimating;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchMorphController = AnimationController(
+      vsync: this,
+      duration: _searchMorphDuration,
+    );
+    _listFadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+      value: 1,
+    );
+    _listFadeAnimation = CurvedAnimation(
+      parent: _listFadeController,
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  @override
+  void dispose() {
+    _searchDebounceTimer?.cancel();
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    _searchMorphController.dispose();
+    _listFadeController.dispose();
+    super.dispose();
+  }
 
   void _clearSelection() {
     if (_selectedDiaryIds.isEmpty) {
@@ -318,9 +350,30 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
   }
 
+  List<DiaryWithTags> _buildVisibleItems(List<DiaryWithTags> items) {
+    final visibleItems =
+        items.where((DiaryWithTags item) {
+          return !_optimisticHiddenDiaryIds.contains(item.diary.diaryId);
+        }).toList();
+    _sortDiaries(visibleItems);
+    return visibleItems;
+  }
+
+  String _visibleItemsSignature(List<DiaryWithTags> items) {
+    return items
+        .map(
+          (DiaryWithTags item) =>
+              '${item.diary.diaryId}:${item.diary.updatedAt.microsecondsSinceEpoch}',
+        )
+        .join('|');
+  }
+
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
+    final pageBackgroundColor =
+        brightness == Brightness.light ? Colors.white : colorScheme.surface;
     // 标签与日记列表分别独立监听，避免相互阻塞。
     final settingsAsync = ref.watch(settingsServiceProvider);
     final filterState = ref.watch(diaryFilterProvider);
@@ -340,7 +393,25 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         _loadViewPreferencesIfNeeded(settingsService);
         final topSafeInset = MediaQuery.paddingOf(context).top;
         final headerOverlayHeight = topSafeInset + 68;
+        final latestVisibleItems =
+            diariesAsync.asData != null
+                ? _buildVisibleItems(diariesAsync.asData!.value)
+                : null;
+
+        if (latestVisibleItems != null) {
+          final signature = _visibleItemsSignature(latestVisibleItems);
+          if (signature != _cachedVisibleItemsSignature) {
+            _cachedVisibleItems = latestVisibleItems;
+            _cachedVisibleItemsSignature = signature;
+            unawaited(_listFadeController.forward(from: 0));
+          }
+        }
+
+        final displayedItems =
+            latestVisibleItems ?? _cachedVisibleItems;
+
         return Scaffold(
+          backgroundColor: pageBackgroundColor,
           resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
@@ -366,56 +437,55 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     children: [
                       SafeArea(
                         top: false,
-                        child: tagsAsync.when(
-                          data: (tags) {
-                            return diariesAsync.when(
-                              data: (items) {
-                                final visibleItems =
-                                    items.where((DiaryWithTags item) {
-                                      return !_optimisticHiddenDiaryIds.contains(
-                                        item.diary.diaryId,
-                                      );
-                                    }).toList();
-                                _sortDiaries(visibleItems);
-
-                                return DiariesListSection(
-                                  key: ValueKey<String>(
-                                    'diaries_list_${brightness.name}',
-                                  ),
-                                  themeBrightness: brightness,
-                                  tags: tags,
-                                  diaries: visibleItems,
-                                  layoutMode: _layoutMode,
-                                  listTopInset: headerOverlayHeight,
-                                  selectedTagFilterIds: filterState.selectedTagIds,
-                                  isSelectionMode: _isSelectionMode,
-                                  selectedDiaryIds: _selectedDiaryIds,
-                                  listBottomOffset: listBottomOffset,
-                                  onToggleTagFilter: (tagId, selected) {
-                                    ref
-                                        .read(diaryFilterProvider.notifier)
-                                        .toggleTag(tagId, selected);
-                                  },
-                                  onClearTagFilters: () {
-                                    ref.read(diaryFilterProvider.notifier).clearTags();
-                                  },
-                                  onCreate: () => _openEditor(fromFab: true),
-                                  onOpenEditor: (diaryId, sourceGlobalRect) {
-                                    _openEditor(
-                                      diaryId: diaryId,
-                                      sourceGlobalRect: sourceGlobalRect,
-                                      fromFab: false,
-                                    );
-                                  },
-                                  onToggleSelection:
-                                      (noteId, forceSelect) => _toggleSelection(
-                                        noteId,
-                                        forceSelect: forceSelect,
-                                      ),
-                                );
-                              },
-                              loading:
-                                  () => const Center(
+                        child: ColoredBox(
+                          color: pageBackgroundColor,
+                          child: CustomScrollView(
+                            key: PageStorageKey<String>(
+                              'diaries_scroll_${brightness.name}_${_layoutMode.name}',
+                            ),
+                            slivers: <Widget>[
+                              SliverToBoxAdapter(
+                                child: SizedBox(height: headerOverlayHeight),
+                              ),
+                              tagsAsync.when(
+                                data: (tags) {
+                                  return SliverToBoxAdapter(
+                                    child: DiaryTagFilterBar(
+                                      tags: tags,
+                                      selectedTagFilterIds: filterState.selectedTagIds,
+                                      onToggleTagFilter: (tagId, selected) {
+                                        ref
+                                            .read(diaryFilterProvider.notifier)
+                                            .toggleTag(tagId, selected);
+                                      },
+                                      onClearTagFilters: () {
+                                        ref
+                                            .read(diaryFilterProvider.notifier)
+                                            .clearTags();
+                                      },
+                                    ),
+                                  );
+                                },
+                                loading:
+                                    () => const SliverToBoxAdapter(
+                                      child: SizedBox(height: 56),
+                                    ),
+                                error:
+                                    (Object error, StackTrace stackTrace) =>
+                                        SliverToBoxAdapter(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.m,
+                                              vertical: AppSpacing.s,
+                                            ),
+                                            child: Text('标签加载失败: $error'),
+                                          ),
+                                        ),
+                              ),
+                              if (diariesAsync.isLoading && displayedItems.isEmpty)
+                                const SliverFillRemaining(
+                                  hasScrollBody: false,
+                                  child: Center(
                                     child: SizedBox(
                                       height: 22,
                                       width: 22,
@@ -424,17 +494,48 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       ),
                                     ),
                                   ),
-                              error:
-                                  (Object error, StackTrace stackTrace) =>
-                                      Center(child: Text('标签加载失败: $error')),
-                            );
-                          },
-                          loading:
-                              () =>
-                                  const Center(child: CircularProgressIndicator()),
-                          error:
-                              (Object error, StackTrace stackTrace) =>
-                                  Center(child: Text('日记加载失败: $error')),
+                                )
+                              else if (diariesAsync.hasError && displayedItems.isEmpty)
+                                SliverFillRemaining(
+                                  hasScrollBody: false,
+                                  child: Center(
+                                    child: Text(
+                                      '日记加载失败: ${diariesAsync.asError?.error}',
+                                    ),
+                                  ),
+                                )
+                              else
+                                SliverFadeTransition(
+                                  opacity: _listFadeAnimation,
+                                  sliver: DiariesListSection(
+                                    key: ValueKey<String>(
+                                      'diaries_list_${brightness.name}_${_layoutMode.name}_${_cachedVisibleItemsSignature}',
+                                    ),
+                                    themeBrightness: brightness,
+                                    diaries: displayedItems,
+                                    layoutMode: _layoutMode,
+                                    isSelectionMode: _isSelectionMode,
+                                    selectedDiaryIds: _selectedDiaryIds,
+                                    onCreate: () => _openEditor(fromFab: true),
+                                    onOpenEditor: (diaryId, sourceGlobalRect) {
+                                      _openEditor(
+                                        diaryId: diaryId,
+                                        sourceGlobalRect: sourceGlobalRect,
+                                        fromFab: false,
+                                      );
+                                    },
+                                    onToggleSelection:
+                                        (noteId, forceSelect) => _toggleSelection(
+                                          noteId,
+                                          forceSelect: forceSelect,
+                                        ),
+                                  ),
+                                ),
+                              SliverToBoxAdapter(
+                                child: SizedBox(height: listBottomOffset),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       Positioned(
@@ -484,7 +585,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           height: 1,
                                           margin: const EdgeInsets.only(
                                             top: AppSpacing.xs,
-                                          )
+                                          ),
+                                          color: Theme.of(
+                                            context,
+                                          ).dividerColor.withAlpha(60),
                                         ),
                                       ],
                                     ),

@@ -6,41 +6,30 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
-import '../widgets/diary_tag_filter_bar.dart';
 import '../widgets/diaries_empty_state.dart';
 import 'diary_head_section.dart';
 
 /// 日记页主列表区块。
+///
+/// 仅负责输出“日记内容本身”的 sliver，不再承载顶部标签条或独立滚动容器。
 class DiariesListSection extends StatelessWidget {
   const DiariesListSection({
     super.key,
     required this.themeBrightness,
-    required this.tags,
     required this.diaries,
     required this.layoutMode,
-    required this.listTopInset,
-    required this.selectedTagFilterIds,
     required this.selectedDiaryIds,
     required this.isSelectionMode,
-    required this.listBottomOffset,
-    required this.onToggleTagFilter,
-    required this.onClearTagFilters,
     required this.onCreate,
     required this.onOpenEditor,
     required this.onToggleSelection,
   });
 
   final Brightness themeBrightness;
-  final List<Tag> tags;
   final List<DiaryWithTags> diaries;
   final DiaryLayoutMode layoutMode;
-  final double listTopInset;
-  final Set<int> selectedTagFilterIds;
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
-  final double listBottomOffset;
-  final void Function(int tagId, bool selected) onToggleTagFilter;
-  final VoidCallback onClearTagFilters;
   final VoidCallback onCreate;
   final void Function(String diaryId, Rect? sourceGlobalRect) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
@@ -51,119 +40,69 @@ class DiariesListSection extends StatelessWidget {
     final isLightMode = themeBrightness == Brightness.light;
     final backgroundColor = isLightMode ? Colors.white : colorScheme.surface;
 
-    if (layoutMode == DiaryLayoutMode.waterfall) {
-      return _buildWaterfallView(context, backgroundColor);
-    }
-    return _buildListView(context, backgroundColor);
-  }
-
-  Widget _buildListView(BuildContext context, Color backgroundColor) {
-    final itemCount = diaries.isEmpty ? 2 : diaries.length + 1;
-    return Container(
-      color: backgroundColor,
-      child: ListView.separated(
-        key: PageStorageKey<String>('notes_list_${themeBrightness.name}'),
-        padding: EdgeInsets.only(
-          bottom: listBottomOffset,
-        ),
-        itemCount: itemCount,
-        separatorBuilder: (BuildContext context, int index) {
-          if (diaries.isEmpty || index == 0) {
-            return const SizedBox.shrink();
-          }
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: Divider(
-              height: 1,
-              thickness: 1,
-              color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+    if (diaries.isEmpty) {
+      return SliverToBoxAdapter(
+        child: ColoredBox(
+          color: backgroundColor,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.m,
+              vertical: AppSpacing.m,
             ),
-          );
-        },
-        itemBuilder: (BuildContext context, int index) {
-          if (index == 0) {
-            return DiaryTagFilterBar(
-              tags: tags,
-              selectedTagFilterIds: selectedTagFilterIds,
-              topInset: listTopInset,
-              onToggleTagFilter: onToggleTagFilter,
-              onClearTagFilters: onClearTagFilters,
-            );
-          }
-          if (diaries.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.m,
-                vertical: AppSpacing.m,
-              ),
-              child: DiariesEmptyState(onCreate: onCreate),
-            );
-          }
-          return _buildDiaryItem(
-            context,
-            diary: diaries[index - 1],
-            compact: false,
-            backgroundColor: backgroundColor,
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildWaterfallView(BuildContext context, Color backgroundColor) {
-    return Container(
-      color: backgroundColor,
-      child: CustomScrollView(
-        key: PageStorageKey<String>('notes_waterfall_${themeBrightness.name}'),
-        slivers: <Widget>[
-          SliverToBoxAdapter(
-            child: DiaryTagFilterBar(
-              tags: tags,
-              selectedTagFilterIds: selectedTagFilterIds,
-              topInset: listTopInset,
-              onToggleTagFilter: onToggleTagFilter,
-              onClearTagFilters: onClearTagFilters,
-            ),
+            child: DiariesEmptyState(onCreate: onCreate),
           ),
-          if (diaries.isEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.m,
-                  vertical: AppSpacing.m,
-                ),
-                child: DiariesEmptyState(onCreate: onCreate),
+        ),
+      );
+    }
+
+    if (layoutMode == DiaryLayoutMode.waterfall) {
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+        sliver: SliverMasonryGrid.count(
+          crossAxisCount: 2,
+          mainAxisSpacing: AppSpacing.s,
+          crossAxisSpacing: AppSpacing.s,
+          childCount: diaries.length,
+          itemBuilder: (BuildContext context, int index) {
+            return _buildDiaryItem(
+              context,
+              diary: diaries[index],
+              compact: true,
+              backgroundColor: backgroundColor,
+            );
+          },
+        ),
+      );
+    }
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+        final diary = diaries[index];
+        final isLast = index == diaries.length - 1;
+        return ColoredBox(
+          color: backgroundColor,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildDiaryItem(
+                context,
+                diary: diary,
+                compact: false,
+                backgroundColor: backgroundColor,
               ),
-            )
-          else
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                  AppSpacing.m,
-                  AppSpacing.m,
-                  AppSpacing.m,
-                  listBottomOffset,
+              if (!isLast)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                  child: Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+                  ),
                 ),
-              sliver: SliverMasonryGrid.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppSpacing.s,
-                crossAxisSpacing: AppSpacing.s,
-                childCount: diaries.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return _buildDiaryItem(
-                    context,
-                    diary: diaries[index],
-                    compact: true,
-                    backgroundColor: backgroundColor,
-                  );
-                },
-              ),
-            ),
-          if (diaries.isEmpty)
-            SliverToBoxAdapter(
-              child: SizedBox(height: listBottomOffset),
-            ),
-        ],
-      ),
+            ],
+          ),
+        );
+      }, childCount: diaries.length),
     );
   }
 
@@ -175,12 +114,13 @@ class DiariesListSection extends StatelessWidget {
   }) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final itemBackgroundColor = compact ? colorScheme.surface : backgroundColor;
+    final itemBackgroundColor =
+        compact ? colorScheme.surface : backgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
     final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
 
-    Widget item = Builder(
+    return Builder(
       builder: (BuildContext itemContext) {
         Rect? sourceRect;
 
@@ -195,105 +135,110 @@ class DiariesListSection extends StatelessWidget {
           return topLeft & renderObject.size;
         }
 
-        final content = compact
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                      ),
-                      if (selected)
-                        Icon(
-                          CupertinoIcons.check_mark_circled_solid,
-                          size: 18,
-                          color: colorScheme.primary,
-                        ),
-                    ],
-                  ),
-                  if (preview.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      preview,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+        final content =
+            compact
+                ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
+                        ),
+                        if (selected)
+                          Icon(
+                            CupertinoIcons.check_mark_circled_solid,
+                            size: 18,
+                            color: colorScheme.primary,
+                          ),
+                      ],
                     ),
-                  ],
-                  const SizedBox(height: 6),
-                  Text(
-                    RelativeTimeFormatter.formatUpdatedAt(
-                      updatedAt: diary.diary.updatedAt,
-                      now: DateTime.now(),
-                      l10n: l10n,
-                    ),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    if (preview.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        preview,
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
-                  ),
-                ],
-              )
-            : Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        if (preview.isNotEmpty) ...[
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Text(
+                      RelativeTimeFormatter.formatUpdatedAt(
+                        updatedAt: diary.diary.updatedAt,
+                        now: DateTime.now(),
+                        l10n: l10n,
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                )
+                : Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          if (preview.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              preview,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
                           const SizedBox(height: 6),
                           Text(
-                            preview,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            RelativeTimeFormatter.formatUpdatedAt(
+                              updatedAt: diary.diary.updatedAt,
+                              now: DateTime.now(),
+                              l10n: l10n,
+                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                           ),
                         ],
-                        const SizedBox(height: 6),
-                        Text(
-                          RelativeTimeFormatter.formatUpdatedAt(
-                            updatedAt: diary.diary.updatedAt,
-                            now: DateTime.now(),
-                            l10n: l10n,
-                          ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                  if (selected) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      CupertinoIcons.check_mark_circled_solid,
-                      size: 18,
-                      color: colorScheme.primary,
-                    ),
+                    if (selected) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        CupertinoIcons.check_mark_circled_solid,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
+                    ],
                   ],
-                ],
-              );
+                );
 
         final itemRadius = compact ? 14.0 : 0.0;
 
@@ -302,9 +247,8 @@ class DiariesListSection extends StatelessWidget {
           child: Material(
             color: itemBackgroundColor,
             child: InkWell(
-              borderRadius: itemRadius > 0
-                  ? BorderRadius.circular(itemRadius)
-                  : null,
+              borderRadius:
+                  itemRadius > 0 ? BorderRadius.circular(itemRadius) : null,
               onTapDown: (_) => sourceRect = resolveRect(),
               onTap: () {
                 if (isSelectionMode) {
@@ -315,12 +259,13 @@ class DiariesListSection extends StatelessWidget {
               },
               onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
               child: Container(
-                decoration: compact
-                    ? BoxDecoration(
-                        color: itemBackgroundColor,
-                        borderRadius: BorderRadius.circular(itemRadius),
-                      )
-                    : BoxDecoration(color: itemBackgroundColor),
+                decoration:
+                    compact
+                        ? BoxDecoration(
+                          color: itemBackgroundColor,
+                          borderRadius: BorderRadius.circular(itemRadius),
+                        )
+                        : BoxDecoration(color: itemBackgroundColor),
                 padding: EdgeInsets.fromLTRB(
                   compact ? 12 : 16,
                   compact ? 10 : 12,
@@ -334,7 +279,5 @@ class DiariesListSection extends StatelessWidget {
         );
       },
     );
-
-    return item;
   }
 }

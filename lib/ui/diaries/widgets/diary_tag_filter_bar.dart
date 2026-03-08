@@ -10,14 +10,12 @@ class DiaryTagFilterBar extends StatelessWidget {
     super.key,
     required this.tags,
     required this.selectedTagFilterIds,
-    required this.topInset,
     required this.onToggleTagFilter,
     required this.onClearTagFilters,
   });
 
   final List<Tag> tags;
   final Set<int> selectedTagFilterIds;
-  final double topInset;
   final void Function(int tagId, bool selected) onToggleTagFilter;
   final VoidCallback onClearTagFilters;
 
@@ -27,9 +25,9 @@ class DiaryTagFilterBar extends StatelessWidget {
     final hasSelection = selectedTagFilterIds.isNotEmpty;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         AppSpacing.m,
-        topInset + AppSpacing.s,
+        AppSpacing.s,
         AppSpacing.m,
         AppSpacing.s,
       ),

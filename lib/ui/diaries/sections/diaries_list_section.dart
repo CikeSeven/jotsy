@@ -144,6 +144,7 @@ class DiariesListSection extends StatelessWidget {
   }) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
+    final itemBackgroundColor = compact ? colorScheme.surface : backgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
     final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
@@ -192,7 +193,7 @@ class DiariesListSection extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       preview,
-                      maxLines: 8,
+                      maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
@@ -263,37 +264,40 @@ class DiariesListSection extends StatelessWidget {
                 ],
               );
 
-        return Material(
-          color: backgroundColor,
-          child: InkWell(
-            borderRadius: compact ? BorderRadius.circular(14) : null,
-            onTapDown: (_) => sourceRect = resolveRect(),
-            onTap: () {
-              if (isSelectionMode) {
-                onToggleSelection(diary.diary.diaryId, false);
-                return;
-              }
-              onOpenEditor(diary.diary.diaryId, sourceRect ?? resolveRect());
-            },
-            onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
-            child: Container(
-              decoration: compact
-                  ? BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: selected
-                            ? colorScheme.primary.withValues(alpha: 0.55)
-                            : Theme.of(context).dividerColor.withValues(alpha: 0.22),
-                      ),
-                    )
+        final itemRadius = compact ? 14.0 : 0.0;
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(itemRadius),
+          child: Material(
+            color: itemBackgroundColor,
+            child: InkWell(
+              borderRadius: itemRadius > 0
+                  ? BorderRadius.circular(itemRadius)
                   : null,
-              padding: EdgeInsets.fromLTRB(
-                compact ? 12 : 16,
-                compact ? 10 : 12,
-                compact ? 12 : 16,
-                compact ? 10 : 12,
+              onTapDown: (_) => sourceRect = resolveRect(),
+              onTap: () {
+                if (isSelectionMode) {
+                  onToggleSelection(diary.diary.diaryId, false);
+                  return;
+                }
+                onOpenEditor(diary.diary.diaryId, sourceRect ?? resolveRect());
+              },
+              onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
+              child: Container(
+                decoration: compact
+                    ? BoxDecoration(
+                        color: itemBackgroundColor,
+                        borderRadius: BorderRadius.circular(itemRadius),
+                      )
+                    : BoxDecoration(color: itemBackgroundColor),
+                padding: EdgeInsets.fromLTRB(
+                  compact ? 12 : 16,
+                  compact ? 10 : 12,
+                  compact ? 12 : 16,
+                  compact ? 10 : 12,
+                ),
+                child: content,
               ),
-              child: content,
             ),
           ),
         );

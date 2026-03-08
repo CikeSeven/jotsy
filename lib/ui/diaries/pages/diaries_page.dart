@@ -323,11 +323,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       _viewPreferencesLoaded = true;
     });
 
-    final fabBottomOffset = 84 + MediaQuery.paddingOf(context).bottom;
+    final fabBottomOffset = 80 + MediaQuery.paddingOf(context).bottom;
     final listBottomOffset = 112 + MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      backgroundColor: isLightMode ? Colors.white : null,
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -463,7 +462,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           ),
           if (!_isSelectionMode)
             Positioned(
-              right: AppSpacing.l,
+              right: AppSpacing.xl,
               bottom: fabBottomOffset,
               child: FloatingActionButton(
                 key: _fabKey,
@@ -508,13 +507,3 @@ class _RectRevealClipper extends CustomClipper<Path> {
   }
 }
 
-/// 统一时间展示格式。
-String _formatDateTime(DateTime dateTime) {
-  final local = dateTime.toLocal();
-  final yyyy = local.year.toString().padLeft(4, '0');
-  final mm = local.month.toString().padLeft(2, '0');
-  final dd = local.day.toString().padLeft(2, '0');
-  final hh = local.hour.toString().padLeft(2, '0');
-  final min = local.minute.toString().padLeft(2, '0');
-  return '$yyyy-$mm-$dd $hh:$min';
-}

@@ -49,6 +49,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool _isSearchMorphEntering = false;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
+  bool _viewPreferencesLoaded = false;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
   bool get _showTopSearchField => _isSearchMode && !_isSearchAnimating;
@@ -252,6 +253,38 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           break;
       }
     });
+    _persistViewPreferences();
+  }
+
+  void _persistViewPreferences() {
+    final settingsService = ref.read(settingsServiceProvider).asData?.value;
+    if (settingsService == null) {
+      return;
+    }
+    unawaited(settingsService.setDiarySortModeRaw(_sortMode.name));
+    unawaited(settingsService.setDiaryLayoutModeRaw(_layoutMode.name));
+  }
+
+  DiarySortMode _sortModeFromRaw(String raw) {
+    switch (raw) {
+      case 'updatedAsc':
+        return DiarySortMode.updatedAsc;
+      case 'titleAsc':
+        return DiarySortMode.titleAsc;
+      case 'updatedDesc':
+      default:
+        return DiarySortMode.updatedDesc;
+    }
+  }
+
+  DiaryLayoutMode _layoutModeFromRaw(String raw) {
+    switch (raw) {
+      case 'waterfall':
+        return DiaryLayoutMode.waterfall;
+      case 'list':
+      default:
+        return DiaryLayoutMode.list;
+    }
   }
 
   void _sortDiaries(List<DiaryWithTags> items) {
@@ -276,9 +309,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     // 标签与日记列表分别独立监听，避免相互阻塞。
+    final settingsAsync = ref.watch(settingsServiceProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
     final isLightMode = brightness == Brightness.light;
+
+    settingsAsync.whenData((settingsService) {
+      if (_viewPreferencesLoaded) {
+        return;
+      }
+      _sortMode = _sortModeFromRaw(settingsService.diarySortModeRaw);
+      _layoutMode = _layoutModeFromRaw(settingsService.diaryLayoutModeRaw);
+      _viewPreferencesLoaded = true;
+    });
 
     final fabBottomOffset = 84 + MediaQuery.paddingOf(context).bottom;
     final listBottomOffset = 112 + MediaQuery.paddingOf(context).bottom;

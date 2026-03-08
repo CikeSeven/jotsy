@@ -10,6 +10,8 @@ class SettingsService {
   final ValueNotifier<ThemeMode> themeModeNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
+  static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
+  static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
 
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -21,6 +23,20 @@ class SettingsService {
   Future<void> setThemeMode(ThemeMode mode) async {
     themeModeNotifier.value = mode;
     await _prefs.setString(_keyThemeMode, mode.name);
+  }
+
+  String get diarySortModeRaw =>
+      _prefs.getString(_keyDiarySortMode) ?? 'updatedDesc';
+
+  String get diaryLayoutModeRaw =>
+      _prefs.getString(_keyDiaryLayoutMode) ?? 'list';
+
+  Future<void> setDiarySortModeRaw(String value) async {
+    await _prefs.setString(_keyDiarySortMode, value);
+  }
+
+  Future<void> setDiaryLayoutModeRaw(String value) async {
+    await _prefs.setString(_keyDiaryLayoutMode, value);
   }
 
   static ThemeMode _parseMode(String? modeRaw) {

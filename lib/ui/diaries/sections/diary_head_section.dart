@@ -32,6 +32,9 @@ class DiaryHeadSection extends StatelessWidget {
     required this.sortMode,
     required this.layoutMode,
     required this.onMenuSelected,
+    required this.searchFieldKey,
+    required this.searchPreviewText,
+    required this.searchEnabled,
   });
 
   final bool isSelectionMode;
@@ -43,6 +46,9 @@ class DiaryHeadSection extends StatelessWidget {
   final DiarySortMode sortMode;
   final DiaryLayoutMode layoutMode;
   final ValueChanged<DiaryMenuAction> onMenuSelected;
+  final GlobalKey searchFieldKey;
+  final String searchPreviewText;
+  final bool searchEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -55,13 +61,15 @@ class DiaryHeadSection extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              'Jotsy',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-          ),
           if (isSelectionMode) ...[
+            Expanded(
+              child: Text(
+                'Jotsy',
+                style: Theme.of(context).textTheme.titleLarge,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
             IconButton(
               tooltip: '取消',
               onPressed: onCancelSelection,
@@ -82,6 +90,21 @@ class DiaryHeadSection extends StatelessWidget {
               ),
             ),
           ] else ...[
+            Text(
+              'Jotsy',
+              style: Theme.of(context).textTheme.titleLarge,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: AppSpacing.xl),
+            Expanded(
+              child: _SearchPreview(
+                searchFieldKey: searchFieldKey,
+                searchPreviewText: searchPreviewText,
+                searchEnabled: searchEnabled,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.m),
             IconButton(
               tooltip: '已归档笔记',
               onPressed: onOpenArchived,
@@ -193,6 +216,64 @@ class DiaryHeadSection extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SearchPreview extends StatelessWidget {
+  const _SearchPreview({
+    required this.searchFieldKey,
+    required this.searchPreviewText,
+    required this.searchEnabled,
+  });
+
+  final GlobalKey searchFieldKey;
+  final String searchPreviewText;
+  final bool searchEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final hintStyle = Theme.of(context).textTheme.bodyMedium;
+    final textStyle = Theme.of(context).textTheme.bodyMedium;
+    final displayedText = searchPreviewText.trim();
+    final hasText = displayedText.isNotEmpty;
+
+    return Container(
+      key: searchFieldKey,
+      height: 36,
+      decoration: BoxDecoration(
+        color:
+            searchEnabled
+                ? colorScheme.surfaceContainerHighest
+                : colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          FaIcon(
+            FontAwesomeIcons.magnifyingGlass,
+            size: 14,
+            color:
+                searchEnabled
+                    ? colorScheme.onSurfaceVariant
+                    : colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              hasText ? displayedText : '搜索标题或内容',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  hasText
+                      ? textStyle?.copyWith(color: colorScheme.onSurface)
+                      : hintStyle?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

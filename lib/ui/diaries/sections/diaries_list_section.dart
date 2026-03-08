@@ -16,10 +16,6 @@ class DiariesListSection extends StatelessWidget {
     super.key,
     required this.themeBrightness,
     required this.tags,
-    required this.searchFieldKey,
-    required this.searchPreviewText,
-    required this.animateSearchRow,
-    required this.searchEnabled,
     required this.diaries,
     required this.layoutMode,
     required this.selectedDiaryIds,
@@ -33,10 +29,6 @@ class DiariesListSection extends StatelessWidget {
 
   final Brightness themeBrightness;
   final List<Tag> tags;
-  final GlobalKey searchFieldKey;
-  final String searchPreviewText;
-  final bool animateSearchRow;
-  final bool searchEnabled;
   final List<DiaryWithTags> diaries;
   final DiaryLayoutMode layoutMode;
   final Set<String> selectedDiaryIds;
@@ -60,7 +52,7 @@ class DiariesListSection extends StatelessWidget {
   }
 
   Widget _buildListView(BuildContext context, Color backgroundColor) {
-    final itemCount = diaries.isEmpty ? 2 : diaries.length + 1;
+    final itemCount = diaries.isEmpty ? 1 : diaries.length;
     return Expanded(
       child: Container(
         color: backgroundColor,
@@ -69,9 +61,6 @@ class DiariesListSection extends StatelessWidget {
           padding: EdgeInsets.only(bottom: listBottomOffset),
           itemCount: itemCount,
           separatorBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return const SizedBox.shrink();
-            }
             return Divider(
               height: 1,
               thickness: 1,
@@ -79,9 +68,6 @@ class DiariesListSection extends StatelessWidget {
             );
           },
           itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return _buildSearchRow(context);
-            }
             if (diaries.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.symmetric(
@@ -93,7 +79,7 @@ class DiariesListSection extends StatelessWidget {
             }
             return _buildDiaryItem(
               context,
-              diary: diaries[index - 1],
+              diary: diaries[index],
               compact: false,
               backgroundColor: backgroundColor,
             );
@@ -110,7 +96,6 @@ class DiariesListSection extends StatelessWidget {
         child: CustomScrollView(
           key: PageStorageKey<String>('notes_waterfall_${themeBrightness.name}'),
           slivers: <Widget>[
-            SliverToBoxAdapter(child: _buildSearchRow(context)),
             if (diaries.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
@@ -125,7 +110,7 @@ class DiariesListSection extends StatelessWidget {
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(
                   AppSpacing.m,
-                  AppSpacing.s,
+                  AppSpacing.m,
                   AppSpacing.m,
                   listBottomOffset,
                 ),
@@ -146,68 +131,6 @@ class DiariesListSection extends StatelessWidget {
               ),
             if (diaries.isEmpty) SliverToBoxAdapter(child: SizedBox(height: listBottomOffset)),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchRow(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final hintStyle = Theme.of(context).textTheme.bodyMedium;
-    final textStyle = Theme.of(context).textTheme.bodyLarge;
-    final displayedText = searchPreviewText.trim();
-    final hasText = displayedText.isNotEmpty;
-
-    return Padding(
-      key: searchFieldKey,
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.s,
-        AppSpacing.l,
-        AppSpacing.s,
-      ),
-      child: ClipRect(
-        child: AnimatedContainer(
-          duration: animateSearchRow
-              ? const Duration(milliseconds: 280)
-              : Duration.zero,
-          height: 48,
-          decoration: BoxDecoration(
-            color: searchEnabled
-                ? colorScheme.surfaceContainerHighest
-                : colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: searchEnabled
-                  ? Theme.of(context).dividerColor.withValues(alpha: 0.22)
-                  : Theme.of(context).dividerColor.withValues(alpha: 0.1),
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Row(
-            children: [
-              Icon(
-                CupertinoIcons.search,
-                size: 18,
-                color: searchEnabled
-                    ? colorScheme.onSurfaceVariant
-                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  hasText ? displayedText : '搜索标题或内容',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: hasText
-                      ? textStyle?.copyWith(color: colorScheme.onSurface)
-                      : hintStyle?.copyWith(
-                          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-                        ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 List<MobileToolbarItem> buildDiaryMobileToolbarItems() {
   return <MobileToolbarItem>[
     _deleteImageMobileToolbarItem,
+    _continueTypingBelowImageToolbarItem,
     _undoMobileToolbarItem,
     _redoMobileToolbarItem,
     blocksMobileToolbarItem,
@@ -41,6 +42,27 @@ final MobileToolbarItem _deleteImageMobileToolbarItem = MobileToolbarItem.action
     }
   },
 );
+
+final MobileToolbarItem _continueTypingBelowImageToolbarItem =
+    MobileToolbarItem.action(
+      itemIconBuilder: (context, editorState, __) {
+        final isImage = _isCurrentSelectionImage(editorState);
+        return Icon(
+          Icons.keyboard_rounded,
+          color:
+              isImage
+                  ? MobileToolbarTheme.of(context).iconColor
+                  : MobileToolbarTheme.of(context).iconColor.withValues(
+                    alpha: 0.35,
+                  ),
+        );
+      },
+      actionHandler: (_, editorState) {
+        if (_isCurrentSelectionImage(editorState)) {
+          moveCursorBelowImageAndOpenKeyboard(editorState);
+        }
+      },
+    );
 
 final MobileToolbarItem _undoMobileToolbarItem = MobileToolbarItem.action(
   itemIconBuilder: (context, editorState, __) {
@@ -269,6 +291,41 @@ void deleteSelectedImageNode(EditorState editorState) {
   }
 
   editorState.apply(transaction);
+}
+
+void moveCursorBelowImageAndOpenKeyboard(EditorState editorState) {
+  final selection = editorState.selection;
+  if (selection == null || !selection.isCollapsed) {
+    return;
+  }
+
+  final node = editorState.getNodeAtPath(selection.start.path);
+  if (node == null || node.type != 'image') {
+    return;
+  }
+
+  final targetPath = node.path.next;
+  final nextNode = editorState.getNodeAtPath(targetPath);
+
+  if (nextNode == null || nextNode.type != ParagraphBlockKeys.type) {
+    final transaction = editorState.transaction;
+    transaction.insertNode(targetPath, paragraphNode());
+    transaction.afterSelection = Selection.collapsed(
+      Position(path: targetPath, offset: 0),
+    );
+    editorState.apply(transaction);
+  } else {
+    editorState.selection = Selection.collapsed(
+      Position(path: targetPath, offset: 0),
+    );
+  }
+
+  final updatedSelection = editorState.selection;
+  if (updatedSelection != null) {
+    editorState.service.keyboardService?.enableKeyBoard(updatedSelection);
+  } else {
+    editorState.service.keyboardService?.enable();
+  }
 }
 
 extension DiaryInsertImage on EditorState {

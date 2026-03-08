@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/glass_page_header.dart';
 
-/// 日历页占位组件（后续可扩展为按日期浏览日记）。
-class CalendarPage extends StatelessWidget {
-  const CalendarPage({super.key});
+/// 探索页占位组件。
+class ExplorePage extends StatelessWidget {
+  const ExplorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +18,11 @@ class CalendarPage extends StatelessWidget {
           children: const [
             SizedBox(
               height: 240,
-              child: Center(child: Text('日历功能开发中')),
+              child: Center(child: Text('探索功能开发中')),
             ),
           ],
         ),
-        const GlassPageHeader(title: '日历'),
+        const GlassPageHeader(title: '探索'),
       ],
     );
   }

@@ -1,0 +1,72 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+
+import '../../app/theme/app_effects.dart';
+import '../../app/theme/app_spacing.dart';
+
+class GlassPageHeader extends StatelessWidget {
+  const GlassPageHeader({
+    super.key,
+    required this.title,
+  });
+
+  static const double contentHeight = 68;
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final topSafeInset = MediaQuery.paddingOf(context).top;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: AppEffects.softShadow,
+        ),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: 20,
+              sigmaY: 20,
+              tileMode: TileMode.mirror,
+            ),
+            child: Container(
+              width: double.infinity,
+              color: colorScheme.surface.withAlpha(10),
+              child: Column(
+                children: [
+                  SizedBox(height: topSafeInset),
+                  SizedBox(
+                    height: contentHeight,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.l,
+                        AppSpacing.m,
+                        AppSpacing.l,
+                        AppSpacing.s,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          title,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

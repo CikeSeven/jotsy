@@ -509,7 +509,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   opacity: _listFadeAnimation,
                                   sliver: DiariesListSection(
                                     key: ValueKey<String>(
-                                      'diaries_list_${brightness.name}_${_layoutMode.name}_${_cachedVisibleItemsSignature}',
+                                      'diaries_list_${brightness.name}_${_layoutMode.name}_$_cachedVisibleItemsSignature',
                                     ),
                                     themeBrightness: brightness,
                                     diaries: displayedItems,
@@ -586,9 +586,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           margin: const EdgeInsets.only(
                                             top: AppSpacing.xs,
                                           ),
-                                          color: Theme.of(
-                                            context,
-                                          ).dividerColor.withAlpha(60),
                                         ),
                                       ],
                                     ),

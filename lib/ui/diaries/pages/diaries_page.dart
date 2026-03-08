@@ -22,11 +22,10 @@ class DiariesPage extends ConsumerStatefulWidget {
 
   @override
   ConsumerState<DiariesPage> createState() => _DiariesPage();
-  
 }
+
 class _DiariesPage extends ConsumerState<DiariesPage>
     with SingleTickerProviderStateMixin {
-
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
@@ -48,11 +47,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool _isSearchMode = false;
   bool _isSearchAnimating = false;
   bool _isSearchMorphEntering = false;
+  DiarySortMode _sortMode = DiarySortMode.updatedDesc;
+  DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
   bool get _showTopSearchField => _isSearchMode && !_isSearchAnimating;
   bool get _showHeaderSection => !_isSearchMode && !_isSearchAnimating;
-
 
   void _clearSelection() {
     if (_selectedDiaryIds.isEmpty) {
@@ -60,7 +60,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
     setState(_selectedDiaryIds.clear);
   }
-
 
   // 打开编辑页，并根据来源位置执行展开动画。
   void _openEditor({
@@ -140,9 +139,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               builder: (BuildContext context, Widget? _) {
                 final currentRect = revealRectAnimation.value ?? endRect;
                 final currentRadius = radiusAnimation.value ?? 0;
-                final scrimAlpha = (0.05 * (scrimAnimation.value ?? 1))
-                    .clamp(0.0, 1.0)
-                    .toDouble();
+                final scrimAlpha =
+                    (0.05 * (scrimAnimation.value ?? 1))
+                        .clamp(0.0, 1.0)
+                        .toDouble();
 
                 return Stack(
                   fit: StackFit.expand,
@@ -175,7 +175,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return null;
     }
     final renderObject = context.findRenderObject();
-    if (renderObject is! RenderBox || !renderObject.hasSize || !renderObject.attached) {
+    if (renderObject is! RenderBox ||
+        !renderObject.hasSize ||
+        !renderObject.attached) {
       return null;
     }
     final topLeft = renderObject.localToGlobal(Offset.zero);
@@ -210,7 +212,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     return Rect.fromLTRB(left, top, right, bottom);
   }
 
-  
   void _toggleSelection(String noteId, {bool forceSelect = false}) {
     setState(() {
       if (forceSelect && _isSearchMode) {
@@ -231,6 +232,45 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     });
   }
 
+  void _onMenuSelected(DiaryMenuAction action) {
+    setState(() {
+      switch (action) {
+        case DiaryMenuAction.sortUpdatedDesc:
+          _sortMode = DiarySortMode.updatedDesc;
+          break;
+        case DiaryMenuAction.sortUpdatedAsc:
+          _sortMode = DiarySortMode.updatedAsc;
+          break;
+        case DiaryMenuAction.sortTitleAsc:
+          _sortMode = DiarySortMode.titleAsc;
+          break;
+        case DiaryMenuAction.layoutList:
+          _layoutMode = DiaryLayoutMode.list;
+          break;
+        case DiaryMenuAction.layoutWaterfall:
+          _layoutMode = DiaryLayoutMode.waterfall;
+          break;
+      }
+    });
+  }
+
+  void _sortDiaries(List<DiaryWithTags> items) {
+    switch (_sortMode) {
+      case DiarySortMode.updatedDesc:
+        items.sort((a, b) => b.diary.updatedAt.compareTo(a.diary.updatedAt));
+        break;
+      case DiarySortMode.updatedAsc:
+        items.sort((a, b) => a.diary.updatedAt.compareTo(b.diary.updatedAt));
+        break;
+      case DiarySortMode.titleAsc:
+        items.sort(
+          (a, b) => a.diary.title.toLowerCase().compareTo(
+            b.diary.title.toLowerCase(),
+          ),
+        );
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +278,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     // 标签与日记列表分别独立监听，避免相互阻塞。
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
-    final selectedTagIds = ref.watch(diaryFilterProvider).selectedTagIds;
     final isLightMode = brightness == Brightness.light;
 
     final fabBottomOffset = 84 + MediaQuery.paddingOf(context).bottom;
@@ -270,7 +309,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               child: SafeArea(
                 child: Column(
                   children: <Widget>[
-
                     // 顶部标题栏
                     AnimatedOpacity(
                       duration: _searchMorphDuration,
@@ -282,17 +320,22 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                           isSelectionMode: _isSelectionMode,
                           selectedCount: _selectedDiaryIds.length,
                           onCancelSelection: _clearSelection,
-                          onArchiveSelected: (){},
-                          onDeleteSelected: (){}, 
-                          onOpenArchived: (){}
-                        )
+                          onArchiveSelected: () {},
+                          onDeleteSelected: () {},
+                          onOpenArchived: () {},
+                          sortMode: _sortMode,
+                          layoutMode: _layoutMode,
+                          onMenuSelected: _onMenuSelected,
+                        ),
                       ),
                     ),
                     // 带阴影的细分割线
                     Container(
                       height: 1.0, // 分割线本身的高度
                       decoration: BoxDecoration(
-                        color: Theme.of(context).dividerColor.withAlpha(100), // 分割线的颜色
+                        color: Theme.of(
+                          context,
+                        ).dividerColor.withAlpha(100), // 分割线的颜色
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withAlpha(20), // 阴影颜色，保持低透明度
@@ -314,6 +357,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     item.diary.diaryId,
                                   );
                                 }).toList();
+                            _sortDiaries(visibleItems);
 
                             return DiariesListSection(
                               key: ValueKey<String>(
@@ -326,6 +370,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               animateSearchRow: true,
                               searchEnabled: true,
                               diaries: visibleItems,
+                              layoutMode: _layoutMode,
                               isSelectionMode: _isSelectionMode,
                               selectedDiaryIds: _selectedDiaryIds,
                               listBottomOffset: listBottomOffset,
@@ -338,8 +383,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 );
                               },
                               onToggleSelection:
-                                (noteId, forceSelect) =>
-                                  _toggleSelection(
+                                  (noteId, forceSelect) => _toggleSelection(
                                     noteId,
                                     forceSelect: forceSelect,
                                   ),
@@ -364,13 +408,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               },
                             );
                           },
-                             loading:
+                          loading:
                               () => const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 8),
                                 child: SizedBox(
                                   height: 22,
                                   width: 22,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                               ),
                           error:
@@ -380,11 +426,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               ),
                         );
                       },
-                      loading: () => const Center(child: CircularProgressIndicator()),
+                      loading:
+                          () =>
+                              const Center(child: CircularProgressIndicator()),
                       error:
                           (Object error, StackTrace stackTrace) =>
                               Center(child: Text('日记加载失败: $error')),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -400,7 +448,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 child: FaIcon(FontAwesomeIcons.plus),
               ),
             ),
-        ]
+        ],
       ),
     );
   }
@@ -423,13 +471,12 @@ class _RectRevealClipper extends CustomClipper<Path> {
     if (clippedRect.width <= 0 || clippedRect.height <= 0) {
       return Path();
     }
-    return Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(
-          clippedRect,
-          Radius.circular(radius.clamp(0.0, 32.0).toDouble()),
-        ),
-      );
+    return Path()..addRRect(
+      RRect.fromRectAndRadius(
+        clippedRect,
+        Radius.circular(radius.clamp(0.0, 32.0).toDouble()),
+      ),
+    );
   }
 
   @override

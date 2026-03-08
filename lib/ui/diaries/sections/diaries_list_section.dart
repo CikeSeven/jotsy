@@ -61,10 +61,13 @@ class DiariesListSection extends StatelessWidget {
           padding: EdgeInsets.only(bottom: listBottomOffset),
           itemCount: itemCount,
           separatorBuilder: (BuildContext context, int index) {
-            return Divider(
-              height: 1,
-              thickness: 1,
-              color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+              ),
             );
           },
           itemBuilder: (BuildContext context, int index) {

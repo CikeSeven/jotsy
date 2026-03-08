@@ -1,5 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 
@@ -15,7 +15,7 @@ enum DiaryMenuAction {
   layoutWaterfall,
 }
 
-/// 笔记页顶部头部区块。
+/// 日记页顶部头部区块。
 ///
 /// 布局职责：
 /// - 左侧展示页面标题或多选计数；
@@ -65,18 +65,19 @@ class DiaryHeadSection extends StatelessWidget {
             IconButton(
               tooltip: '取消',
               onPressed: onCancelSelection,
-              icon: const Icon(CupertinoIcons.xmark),
+              icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
             ),
             IconButton(
               tooltip: '归档',
               onPressed: onArchiveSelected,
-              icon: const Icon(CupertinoIcons.archivebox),
+              icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
             ),
             IconButton(
               tooltip: '删除',
               onPressed: onDeleteSelected,
-              icon: Icon(
-                CupertinoIcons.delete,
+              icon: FaIcon(
+                FontAwesomeIcons.trashCan,
+                size: 18,
                 color: Theme.of(context).colorScheme.error,
               ),
             ),
@@ -84,73 +85,137 @@ class DiaryHeadSection extends StatelessWidget {
             IconButton(
               tooltip: '已归档笔记',
               onPressed: onOpenArchived,
-              icon: const Icon(CupertinoIcons.archivebox),
+              icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
             ),
-            PopupMenuButton<DiaryMenuAction>(
+            IconButton(
               tooltip: '更多',
-              onSelected: onMenuSelected,
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (BuildContext context) {
-                return <PopupMenuEntry<DiaryMenuAction>>[
-                  PopupMenuItem<DiaryMenuAction>(
-                    value: DiaryMenuAction.sortUpdatedDesc,
-                    child: _MenuRow(
-                      label: '排序：最近更新',
-                      selected: sortMode == DiarySortMode.updatedDesc,
-                    ),
-                  ),
-                  PopupMenuItem<DiaryMenuAction>(
-                    value: DiaryMenuAction.sortUpdatedAsc,
-                    child: _MenuRow(
-                      label: '排序：最早更新',
-                      selected: sortMode == DiarySortMode.updatedAsc,
-                    ),
-                  ),
-                  PopupMenuItem<DiaryMenuAction>(
-                    value: DiaryMenuAction.sortTitleAsc,
-                    child: _MenuRow(
-                      label: '排序：标题 A-Z',
-                      selected: sortMode == DiarySortMode.titleAsc,
-                    ),
-                  ),
-                  const PopupMenuDivider(),
-                  PopupMenuItem<DiaryMenuAction>(
-                    value: DiaryMenuAction.layoutList,
-                    child: _MenuRow(
-                      label: '布局：列表',
-                      selected: layoutMode == DiaryLayoutMode.list,
-                    ),
-                  ),
-                  PopupMenuItem<DiaryMenuAction>(
-                    value: DiaryMenuAction.layoutWaterfall,
-                    child: _MenuRow(
-                      label: '布局：瀑布流',
-                      selected: layoutMode == DiaryLayoutMode.waterfall,
-                    ),
-                  ),
-                ];
-              },
+              onPressed: () => _showSettingsSheet(context),
+              icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
             ),
           ],
         ],
       ),
     );
   }
+
+  void _showSettingsSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.l,
+              AppSpacing.s,
+              AppSpacing.l,
+              AppSpacing.l,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    FaIcon(
+                      FontAwesomeIcons.arrowDownWideShort,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.s),
+                    Text(
+                      '排序方式',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                _ActionTile(
+                  label: '最近更新',
+                  selected: sortMode == DiarySortMode.updatedDesc,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    onMenuSelected(DiaryMenuAction.sortUpdatedDesc);
+                  },
+                ),
+                _ActionTile(
+                  label: '最早更新',
+                  selected: sortMode == DiarySortMode.updatedAsc,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    onMenuSelected(DiaryMenuAction.sortUpdatedAsc);
+                  },
+                ),
+                _ActionTile(
+                  label: '标题 A-Z',
+                  selected: sortMode == DiarySortMode.titleAsc,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    onMenuSelected(DiaryMenuAction.sortTitleAsc);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.s),
+                Row(
+                  children: [
+                    FaIcon(
+                      FontAwesomeIcons.tableCellsLarge,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.s),
+                    Text(
+                      '显示布局',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                _ActionTile(
+                  label: '列表',
+                  selected: layoutMode == DiaryLayoutMode.list,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    onMenuSelected(DiaryMenuAction.layoutList);
+                  },
+                ),
+                _ActionTile(
+                  label: '瀑布流',
+                  selected: layoutMode == DiaryLayoutMode.waterfall,
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    onMenuSelected(DiaryMenuAction.layoutWaterfall);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _MenuRow extends StatelessWidget {
-  const _MenuRow({required this.label, required this.selected});
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        Expanded(child: Text(label)),
-        if (selected) const Icon(Icons.check, size: 18),
-      ],
+    return ListTile(
+      dense: true,
+      contentPadding: const EdgeInsets.only(left: AppSpacing.l),
+      onTap: onTap,
+      title: Text(label),
+      trailing: selected ? const FaIcon(FontAwesomeIcons.check, size: 16) : null,
     );
   }
 }

@@ -31,6 +31,7 @@ dart run build_runner build --delete-conflicting-outputs
 - Lints come from `flutter_lints` (`analysis_options.yaml`).
 - Use `snake_case` for files, `UpperCamelCase` for classes/widgets, and `lowerCamelCase` for members.
 - Keep feature UI code in `lib/ui/<feature>/...`; cross-feature logic belongs in `lib/core/...`.
+- For newly added UI icons, use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`) by default; only mix other icon sets when there is a clear platform-specific reason.
 
 ## Testing Guidelines
 - Use `flutter_test` for widget and unit tests.

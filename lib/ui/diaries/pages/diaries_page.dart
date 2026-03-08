@@ -124,10 +124,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       body: Stack(
         children: [
           PopScope(
-            canPop: true,
+            canPop: !_isSelectionMode,
             onPopInvokedWithResult: (didPop, result) {
               if (didPop) {
                 return;
+              }
+              if (_isSelectionMode) {
+                _clearSelection();
               }
             },
             child: Focus(

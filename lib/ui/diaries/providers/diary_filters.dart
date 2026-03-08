@@ -42,6 +42,13 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     }
     state = state.copyWith(selectedTagIds: next);
   }
+
+  void clearTags() {
+    if (state.selectedTagIds.isEmpty) {
+      return;
+    }
+    state = state.copyWith(selectedTagIds: <int>{});
+  }
 }
 
 /// 筛选状态 provider。

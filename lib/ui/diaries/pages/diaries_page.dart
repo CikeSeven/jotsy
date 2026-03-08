@@ -323,6 +323,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final brightness = Theme.of(context).brightness;
     // 标签与日记列表分别独立监听，避免相互阻塞。
     final settingsAsync = ref.watch(settingsServiceProvider);
+    final filterState = ref.watch(diaryFilterProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
 
@@ -386,9 +387,18 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   diaries: visibleItems,
                                   layoutMode: _layoutMode,
                                   listTopInset: headerOverlayHeight,
+                                  selectedTagFilterIds: filterState.selectedTagIds,
                                   isSelectionMode: _isSelectionMode,
                                   selectedDiaryIds: _selectedDiaryIds,
                                   listBottomOffset: listBottomOffset,
+                                  onToggleTagFilter: (tagId, selected) {
+                                    ref
+                                        .read(diaryFilterProvider.notifier)
+                                        .toggleTag(tagId, selected);
+                                  },
+                                  onClearTagFilters: () {
+                                    ref.read(diaryFilterProvider.notifier).clearTags();
+                                  },
                                   onCreate: () => _openEditor(fromFab: true),
                                   onOpenEditor: (diaryId, sourceGlobalRect) {
                                     _openEditor(

@@ -1,6 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../app/theme/app_effects.dart';
+import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 
 enum DiarySortMode { updatedDesc, updatedAsc, titleAsc }
@@ -243,33 +247,76 @@ class _SearchPreview extends StatelessWidget {
       key: searchFieldKey,
       height: 36,
       decoration: BoxDecoration(
-        color:
-            searchEnabled
-                ? colorScheme.surfaceContainerHighest
-                : colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadii.nav),
+        boxShadow: AppEffects.softShadow,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Row(
+      child: Stack(
         children: [
-          FaIcon(
-            FontAwesomeIcons.magnifyingGlass,
-            size: 14,
-            color:
-                searchEnabled
-                    ? colorScheme.onSurfaceVariant
-                    : colorScheme.onSurfaceVariant,
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.s),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color:
+                      searchEnabled
+                          ? colorScheme.primaryContainer
+                          : colorScheme.surfaceContainer,
+                  borderRadius: BorderRadius.circular(AppRadii.nav),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              hasText ? displayedText : '搜索标题或内容',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style:
-                  hasText
-                      ? textStyle?.copyWith(color: colorScheme.onSurface)
-                      : hintStyle?.copyWith(color: colorScheme.onSurfaceVariant),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.nav),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 17,
+                  sigmaY: 17,
+                  tileMode: TileMode.mirror,
+                ),
+                child: Container(
+                  color:
+                      searchEnabled
+                          ? colorScheme.primary.withAlpha(20)
+                          : colorScheme.surfaceContainerHigh,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    children: [
+                      FaIcon(
+                        FontAwesomeIcons.magnifyingGlass,
+                        size: 14,
+                        color:
+                            searchEnabled
+                                ? colorScheme.onSurfaceVariant
+                                : colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          hasText ? displayedText : '搜索标题或内容',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              hasText
+                                  ? textStyle?.copyWith(color: colorScheme.onSurface)
+                                  : hintStyle?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],

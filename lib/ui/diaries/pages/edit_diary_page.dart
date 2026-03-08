@@ -223,13 +223,33 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     }
   }
 
+  Widget _buildTitleInput(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: TextField(
+        controller: _titleController,
+        focusNode: _titleFocusNode,
+        style: Theme.of(context).textTheme.headlineSmall,
+        maxLength: 200,
+        decoration: const InputDecoration(
+          hintText: '标题',
+          border: UnderlineInputBorder(),
+          enabledBorder: UnderlineInputBorder(),
+          focusedBorder: UnderlineInputBorder(),
+          counterText: '',
+        ),
+      ),
+    );
+  }
+
   Widget _buildEditor(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     Widget editor = AppFlowyEditor(
       editorState: _contentEditorState,
       autoFocus: widget.diaryId == null,
+      header: _buildTitleInput(context),
       editorStyle: EditorStyle.mobile(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
         cursorColor: colorScheme.primary,
         dragHandleColor: colorScheme.primary,
         selectionColor: colorScheme.primary.withValues(alpha: 0.24),
@@ -348,27 +368,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             ],
           ),
           body: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                TextField(
-                  controller: _titleController,
-                  focusNode: _titleFocusNode,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                  maxLength: 200,
-                  decoration: const InputDecoration(
-                    hintText: '标题',
-                    border: UnderlineInputBorder(),
-                    enabledBorder: UnderlineInputBorder(),
-                    focusedBorder: UnderlineInputBorder(),
-                    counterText: '',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(child: _buildEditor(context)),
-              ],
-            ),
+            padding: const EdgeInsets.only(top: 4),
+            child: _buildEditor(context),
           ),
         );
       },

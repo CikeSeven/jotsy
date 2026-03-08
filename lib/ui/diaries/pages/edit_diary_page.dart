@@ -261,13 +261,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    alignment: WrapAlignment.spaceBetween,
                     children: <Widget>[
                       Text(
                         '标签',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const Spacer(),
                       TextButton.icon(
                         onPressed: _createTagInline,
                         icon: const Icon(Icons.add),

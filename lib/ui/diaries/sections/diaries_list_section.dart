@@ -49,7 +49,8 @@ class DiariesListSection extends StatelessWidget {
   final bool isSelectionMode;
   final double listBottomOffset;
   final VoidCallback onCreate;
-  final ValueChanged<String?> onOpenEditor;
+  final void Function(String diaryId, Rect? sourceGlobalRect)
+  onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
   final Future<void> Function(DiaryWithTags note) onArchiveBySwipe;
 
@@ -171,75 +172,97 @@ class DiariesListSection extends StatelessWidget {
           final selected = selectedDiaryIds.contains(diary.diary.diaryId);
           final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
           final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
+          Widget tile = Builder(
+            builder: (BuildContext tileContext) {
+              Rect? sourceGlobalRect;
 
-          Widget tile = Material(
-            color: listBackgroundColor,
-            child: InkWell(
-              onTap: () {
-                if (isSelectionMode) {
-                  onToggleSelection(diary.diary.diaryId, false);
-                  return;
+              Rect? resolveTileRect() {
+                final renderObject = tileContext.findRenderObject();
+                if (renderObject is! RenderBox ||
+                    !renderObject.hasSize ||
+                    !renderObject.attached) {
+                  return null;
                 }
-                onOpenEditor(diary.diary.diaryId);
-              },
-              onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.w600,
+                final topLeft = renderObject.localToGlobal(Offset.zero);
+                return topLeft & renderObject.size;
+              }
+
+              return Material(
+                color: listBackgroundColor,
+                child: InkWell(
+                  onTapDown: (_) {
+                    sourceGlobalRect = resolveTileRect();
+                  },
+                  onTap: () {
+                    if (isSelectionMode) {
+                      onToggleSelection(diary.diary.diaryId, false);
+                      return;
+                    }
+                    onOpenEditor(
+                      diary.diary.diaryId,
+                      sourceGlobalRect ?? resolveTileRect(),
+                    );
+                  },
+                  onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: colorScheme.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              if (preview.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  preview,
+                                  maxLines: 3,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
                                 ),
+                              ],
+                              const SizedBox(height: 6),
+                              Text(
+                                RelativeTimeFormatter.formatUpdatedAt(
+                                  updatedAt: diary.diary.updatedAt,
+                                  now: DateTime.now(),
+                                  l10n: l10n,
+                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ],
                           ),
-                          if (preview.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              preview,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                          const SizedBox(height: 6),
-                          Text(
-                            RelativeTimeFormatter.formatUpdatedAt(
-                              updatedAt: diary.diary.updatedAt,
-                              now: DateTime.now(),
-                              l10n: l10n,
-                            ),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                        ),
+                        if (selected) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            CupertinoIcons.check_mark_circled_solid,
+                            size: 18,
+                            color: colorScheme.primary,
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                    if (selected) ...[
-                      const SizedBox(width: 8),
-                      Icon(
-                        CupertinoIcons.check_mark_circled_solid,
-                        size: 18,
-                        color: colorScheme.primary,
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
 
           // 多选模式下关闭滑动手势，避免与批量操作语义冲突。

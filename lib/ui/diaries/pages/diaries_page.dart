@@ -36,6 +36,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  final GlobalKey _fabKey = GlobalKey();
   final GlobalKey _listSearchFieldKey = GlobalKey();
   final GlobalKey _topSearchFieldKey = GlobalKey();
   Timer? _searchDebounceTimer;
@@ -61,17 +62,24 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   }
 
 
-  //打开一个新的日记
-  void _openEditor([String? diaryId]) {
+  // 打开编辑页，并根据来源位置执行展开动画。
+  void _openEditor({
+    String? diaryId,
+    Rect? sourceGlobalRect,
+    bool fromFab = false,
+  }) {
     _searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
+    final beginRect =
+        sourceGlobalRect ?? (fromFab ? _globalRectOf(_fabKey) : null);
+
     unawaited(
       Navigator.of(context)
           .push(
-            MaterialPageRoute<void>(
-              builder: (_) => EditDiaryPage(
-                diaryId: diaryId,
-              ),
+            _buildEditRoute(
+              diaryId: diaryId,
+              sourceGlobalRect: beginRect,
+              fromFab: fromFab,
             ),
           )
           .then((_) {
@@ -82,6 +90,124 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             FocusManager.instance.primaryFocus?.unfocus();
           }),
     );
+  }
+
+  Route<void> _buildEditRoute({
+    required String? diaryId,
+    required Rect? sourceGlobalRect,
+    required bool fromFab,
+  }) {
+    return PageRouteBuilder<void>(
+      transitionDuration: const Duration(milliseconds: 380),
+      reverseTransitionDuration: const Duration(milliseconds: 260),
+      pageBuilder:
+          (BuildContext context, Animation<double> animation, _) =>
+              EditDiaryPage(diaryId: diaryId),
+      transitionsBuilder: (
+        BuildContext context,
+        Animation<double> animation,
+        Animation<double> secondaryAnimation,
+        Widget child,
+      ) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: const Cubic(0.34, 1.56, 0.64, 1.0),
+          reverseCurve: Curves.easeInCubic,
+        );
+        return LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final endRect = Offset.zero & constraints.biggest;
+            final beginRect = _resolveBeginRect(
+              sourceGlobalRect,
+              endRect,
+              fromFab: fromFab,
+            );
+            final revealRectAnimation = RectTween(
+              begin: beginRect,
+              end: endRect,
+            ).animate(curved);
+            final radiusAnimation = Tween<double>(
+              begin: fromFab ? 24 : 12,
+              end: 0,
+            ).animate(curved);
+            final scrimAnimation = Tween<double>(
+              begin: 0,
+              end: 1,
+            ).animate(curved);
+
+            return AnimatedBuilder(
+              animation: curved,
+              builder: (BuildContext context, Widget? _) {
+                final currentRect = revealRectAnimation.value ?? endRect;
+                final currentRadius = radiusAnimation.value ?? 0;
+                final scrimAlpha = (0.05 * (scrimAnimation.value ?? 1))
+                    .clamp(0.0, 1.0)
+                    .toDouble();
+
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ColoredBox(
+                      color: Theme.of(
+                        context,
+                      ).scaffoldBackgroundColor.withValues(alpha: scrimAlpha),
+                    ),
+                    ClipPath(
+                      clipper: _RectRevealClipper(
+                        rect: currentRect,
+                        radius: currentRadius,
+                      ),
+                      child: child,
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Rect? _globalRectOf(GlobalKey key) {
+    final context = key.currentContext;
+    if (context == null) {
+      return null;
+    }
+    final renderObject = context.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.hasSize || !renderObject.attached) {
+      return null;
+    }
+    final topLeft = renderObject.localToGlobal(Offset.zero);
+    return topLeft & renderObject.size;
+  }
+
+  Rect _resolveBeginRect(Rect? rawRect, Rect endRect, {required bool fromFab}) {
+    if (rawRect == null || rawRect.width <= 1 || rawRect.height <= 1) {
+      final fallbackSize = fromFab ? const Size(56, 56) : const Size(220, 96);
+      final fallbackCenter =
+          fromFab
+              ? Offset(endRect.right - 36, endRect.bottom - 36)
+              : endRect.center;
+      return Rect.fromCenter(
+        center: fallbackCenter,
+        width: fallbackSize.width,
+        height: fallbackSize.height,
+      );
+    }
+
+    final left = rawRect.left.clamp(0.0, endRect.right).toDouble();
+    final top = rawRect.top.clamp(0.0, endRect.bottom).toDouble();
+    final right = rawRect.right.clamp(0.0, endRect.right).toDouble();
+    final bottom = rawRect.bottom.clamp(0.0, endRect.bottom).toDouble();
+    if (right - left <= 1 || bottom - top <= 1) {
+      return Rect.fromCenter(
+        center: rawRect.center,
+        width: fromFab ? 56 : 220,
+        height: fromFab ? 56 : 96,
+      );
+    }
+    return Rect.fromLTRB(left, top, right, bottom);
   }
 
   
@@ -203,8 +329,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               isSelectionMode: _isSelectionMode,
                               selectedDiaryIds: _selectedDiaryIds,
                               listBottomOffset: listBottomOffset,
-                              onCreate: _openEditor,
-                              onOpenEditor: _openEditor,
+                              onCreate: () => _openEditor(fromFab: true),
+                              onOpenEditor: (diaryId, sourceGlobalRect) {
+                                _openEditor(
+                                  diaryId: diaryId,
+                                  sourceGlobalRect: sourceGlobalRect,
+                                  fromFab: false,
+                                );
+                              },
                               onToggleSelection:
                                 (noteId, forceSelect) =>
                                   _toggleSelection(
@@ -263,13 +395,46 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               right: AppSpacing.l,
               bottom: fabBottomOffset,
               child: FloatingActionButton(
-                onPressed: _openEditor,
+                key: _fabKey,
+                onPressed: () => _openEditor(fromFab: true),
                 child: FaIcon(FontAwesomeIcons.plus),
               ),
             ),
         ]
       ),
     );
+  }
+}
+
+class _RectRevealClipper extends CustomClipper<Path> {
+  const _RectRevealClipper({required this.rect, required this.radius});
+
+  final Rect rect;
+  final double radius;
+
+  @override
+  Path getClip(Size size) {
+    final clippedRect = Rect.fromLTRB(
+      rect.left.clamp(0.0, size.width).toDouble(),
+      rect.top.clamp(0.0, size.height).toDouble(),
+      rect.right.clamp(0.0, size.width).toDouble(),
+      rect.bottom.clamp(0.0, size.height).toDouble(),
+    );
+    if (clippedRect.width <= 0 || clippedRect.height <= 0) {
+      return Path();
+    }
+    return Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          clippedRect,
+          Radius.circular(radius.clamp(0.0, 32.0).toDouble()),
+        ),
+      );
+  }
+
+  @override
+  bool shouldReclip(covariant _RectRevealClipper oldClipper) {
+    return rect != oldClipper.rect || radius != oldClipper.radius;
   }
 }
 

@@ -17,6 +17,7 @@ class DiariesListSection extends StatelessWidget {
     required this.tags,
     required this.diaries,
     required this.layoutMode,
+    required this.listTopInset,
     required this.selectedDiaryIds,
     required this.isSelectionMode,
     required this.listBottomOffset,
@@ -29,6 +30,7 @@ class DiariesListSection extends StatelessWidget {
   final List<Tag> tags;
   final List<DiaryWithTags> diaries;
   final DiaryLayoutMode layoutMode;
+  final double listTopInset;
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
   final double listBottomOffset;
@@ -50,88 +52,90 @@ class DiariesListSection extends StatelessWidget {
 
   Widget _buildListView(BuildContext context, Color backgroundColor) {
     final itemCount = diaries.isEmpty ? 1 : diaries.length;
-    return Expanded(
-      child: Container(
-        color: backgroundColor,
-        child: ListView.separated(
-          key: PageStorageKey<String>('notes_list_${themeBrightness.name}'),
-          padding: EdgeInsets.only(bottom: listBottomOffset),
-          itemCount: itemCount,
-          separatorBuilder: (BuildContext context, int index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
-              ),
-            );
-          },
-          itemBuilder: (BuildContext context, int index) {
-            if (diaries.isEmpty) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.m,
-                  vertical: AppSpacing.m,
-                ),
-                child: DiariesEmptyState(onCreate: onCreate),
-              );
-            }
-            return _buildDiaryItem(
-              context,
-              diary: diaries[index],
-              compact: false,
-              backgroundColor: backgroundColor,
-            );
-          },
+    return Container(
+      color: backgroundColor,
+      child: ListView.separated(
+        key: PageStorageKey<String>('notes_list_${themeBrightness.name}'),
+        padding: EdgeInsets.only(
+          top: listTopInset,
+          bottom: listBottomOffset,
         ),
+        itemCount: itemCount,
+        separatorBuilder: (BuildContext context, int index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+            child: Divider(
+              height: 1,
+              thickness: 1,
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+            ),
+          );
+        },
+        itemBuilder: (BuildContext context, int index) {
+          if (diaries.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m,
+                vertical: AppSpacing.m,
+              ),
+              child: DiariesEmptyState(onCreate: onCreate),
+            );
+          }
+          return _buildDiaryItem(
+            context,
+            diary: diaries[index],
+            compact: false,
+            backgroundColor: backgroundColor,
+          );
+        },
       ),
     );
   }
 
   Widget _buildWaterfallView(BuildContext context, Color backgroundColor) {
-    return Expanded(
-      child: Container(
-        color: backgroundColor,
-        child: CustomScrollView(
-          key: PageStorageKey<String>('notes_waterfall_${themeBrightness.name}'),
-          slivers: <Widget>[
-            if (diaries.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.m,
-                    vertical: AppSpacing.m,
-                  ),
-                  child: DiariesEmptyState(onCreate: onCreate),
+    return Container(
+      color: backgroundColor,
+      child: CustomScrollView(
+        key: PageStorageKey<String>('notes_waterfall_${themeBrightness.name}'),
+        slivers: <Widget>[
+          if (diaries.isEmpty)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.m,
+                  vertical: AppSpacing.m,
                 ),
-              )
-            else
-              SliverPadding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.m,
-                  AppSpacing.m,
-                  AppSpacing.m,
-                  listBottomOffset,
-                ),
-                sliver: SliverMasonryGrid.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: AppSpacing.s,
-                  crossAxisSpacing: AppSpacing.s,
-                  childCount: diaries.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return _buildDiaryItem(
-                      context,
-                      diary: diaries[index],
-                      compact: true,
-                      backgroundColor: backgroundColor,
-                    );
-                  },
-                ),
+                child: DiariesEmptyState(onCreate: onCreate),
               ),
-            if (diaries.isEmpty) SliverToBoxAdapter(child: SizedBox(height: listBottomOffset)),
-          ],
-        ),
+            )
+          else
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.m,
+                listTopInset + AppSpacing.m,
+                AppSpacing.m,
+                listBottomOffset,
+              ),
+              sliver: SliverMasonryGrid.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: AppSpacing.s,
+                crossAxisSpacing: AppSpacing.s,
+                childCount: diaries.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildDiaryItem(
+                    context,
+                    diary: diaries[index],
+                    compact: true,
+                    backgroundColor: backgroundColor,
+                  );
+                },
+              ),
+            ),
+          if (diaries.isEmpty)
+            SliverToBoxAdapter(
+              child: SizedBox(height: listTopInset + listBottomOffset),
+            ),
+        ],
       ),
     );
   }

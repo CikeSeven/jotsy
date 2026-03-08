@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +11,8 @@ import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 
+import '../../../app/theme/app_effects.dart';
+import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
 import '../sections/diaries_list_section.dart';
@@ -334,6 +337,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               Scaffold(body: Center(child: Text('设置加载失败: $error'))),
       data: (settingsService) {
         _loadViewPreferencesIfNeeded(settingsService);
+        final topSafeInset = MediaQuery.paddingOf(context).top;
+        final headerOverlayHeight = topSafeInset + 68;
         return Scaffold(
           resizeToAvoidBottomInset: false,
           body: Stack(
@@ -356,51 +361,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     }
                     return KeyEventResult.ignored;
                   },
-                  child: SafeArea(
-                    child: Column(
-                      children: <Widget>[
-                        // 顶部标题栏
-                        AnimatedOpacity(
-                          duration: _searchMorphDuration,
-                          curve: Curves.easeOutCubic,
-                          opacity: _showHeaderSection ? 1 : 0,
-                          child: IgnorePointer(
-                            ignoring: !_showHeaderSection,
-                            child: DiaryHeadSection(
-                              isSelectionMode: _isSelectionMode,
-                              selectedCount: _selectedDiaryIds.length,
-                              onCancelSelection: _clearSelection,
-                              onArchiveSelected: () {},
-                              onDeleteSelected: () {},
-                              onOpenArchived: () {},
-                              sortMode: _sortMode,
-                              layoutMode: _layoutMode,
-                              onMenuSelected: _onMenuSelected,
-                              searchFieldKey: _topSearchFieldKey,
-                              searchPreviewText: _searchInput,
-                              searchEnabled: true,
-                            ),
-                          ),
-                        ),
-                        // 带阴影的细分割线
-                        Container(
-                          height: 1.0, // 分割线本身的高度
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).dividerColor.withAlpha(100), // 分割线的颜色
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(20), // 阴影颜色，保持低透明度
-                                offset: const Offset(0, 4), // 阴影向下偏移 4px
-                                blurRadius: 8, // 模糊半径，让阴影更柔和扩散
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                        ),
-                        // 主列表区域
-                        tagsAsync.when(
+                  child: Stack(
+                    children: [
+                      SafeArea(
+                        top: false,
+                        child: tagsAsync.when(
                           data: (tags) {
                             return diariesAsync.when(
                               data: (items) {
@@ -420,6 +385,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   tags: tags,
                                   diaries: visibleItems,
                                   layoutMode: _layoutMode,
+                                  listTopInset: headerOverlayHeight,
                                   isSelectionMode: _isSelectionMode,
                                   selectedDiaryIds: _selectedDiaryIds,
                                   listBottomOffset: listBottomOffset,
@@ -439,8 +405,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 );
                               },
                               loading:
-                                  () => const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 8),
+                                  () => const Center(
                                     child: SizedBox(
                                       height: 22,
                                       width: 22,
@@ -450,10 +415,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     ),
                                   ),
                               error:
-                                  (Object error, StackTrace stackTrace) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Text('标签加载失败: $error'),
-                                  ),
+                                  (Object error, StackTrace stackTrace) =>
+                                      Center(child: Text('标签加载失败: $error')),
                             );
                           },
                           loading:
@@ -463,8 +426,66 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               (Object error, StackTrace stackTrace) =>
                                   Center(child: Text('日记加载失败: $error')),
                         ),
-                      ],
-                    ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: IgnorePointer(
+                          ignoring: !_showHeaderSection,
+                          child: AnimatedOpacity(
+                            duration: _searchMorphDuration,
+                            curve: Curves.easeOutCubic,
+                            opacity: _showHeaderSection ? 1 : 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                boxShadow: AppEffects.softShadow,
+                              ),
+                              child: ClipRect(
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 20,
+                                    sigmaY: 20,
+                                    tileMode: TileMode.mirror,
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withAlpha(20),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: topSafeInset),
+                                        DiaryHeadSection(
+                                          isSelectionMode: _isSelectionMode,
+                                          selectedCount: _selectedDiaryIds.length,
+                                          onCancelSelection: _clearSelection,
+                                          onArchiveSelected: () {},
+                                          onDeleteSelected: () {},
+                                          onOpenArchived: () {},
+                                          sortMode: _sortMode,
+                                          layoutMode: _layoutMode,
+                                          onMenuSelected: _onMenuSelected,
+                                          searchFieldKey: _topSearchFieldKey,
+                                          searchPreviewText: _searchInput,
+                                          searchEnabled: true,
+                                        ),
+                                        Container(
+                                          height: 1,
+                                          margin: const EdgeInsets.only(
+                                            top: AppSpacing.xs,
+                                          )
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

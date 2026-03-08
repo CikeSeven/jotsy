@@ -268,7 +268,7 @@ class _SearchPreview extends StatelessWidget {
                   color:
                       searchEnabled
                           ? colorScheme.primaryContainer
-                          : colorScheme.surfaceContainer,
+                          : colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(AppRadii.nav),
                 ),
               ),
@@ -298,10 +298,7 @@ class _SearchPreview extends StatelessWidget {
                       FaIcon(
                         FontAwesomeIcons.magnifyingGlass,
                         size: 14,
-                        color:
-                            searchEnabled
-                                ? colorScheme.onSurfaceVariant
-                                : colorScheme.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       const SizedBox(width: 8),
                       Expanded(

@@ -159,6 +159,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         )
                       ),
                     ),
+                    // 带阴影的细分割线
+                    Container(
+                      height: 1.0, // 分割线本身的高度
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).dividerColor.withAlpha(100), // 分割线的颜色
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(20), // 阴影颜色，保持低透明度
+                            offset: const Offset(0, 4), // 阴影向下偏移 4px
+                            blurRadius: 8, // 模糊半径，让阴影更柔和扩散
+                            spreadRadius: 0,
+                          ),
+                        ],
+                      ),
+                    ),
                     // 主列表区域
                     tagsAsync.when(
                       data: (tags) {

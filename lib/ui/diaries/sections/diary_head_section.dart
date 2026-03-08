@@ -69,7 +69,9 @@ class DiaryHeadSection extends StatelessWidget {
             Expanded(
               child: Text(
                 'Jotsy',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -96,7 +98,9 @@ class DiaryHeadSection extends StatelessWidget {
           ] else ...[
             Text(
               'Jotsy',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

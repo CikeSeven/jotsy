@@ -11,6 +11,7 @@ import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/settings_service.dart';
 import '../sections/diaries_list_section.dart';
 
 /// 日记列表页。
@@ -265,6 +266,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     unawaited(settingsService.setDiaryLayoutModeRaw(_layoutMode.name));
   }
 
+  void _loadViewPreferencesIfNeeded(SettingsService settingsService) {
+    if (_viewPreferencesLoaded) {
+      return;
+    }
+    _sortMode = _sortModeFromRaw(settingsService.diarySortModeRaw);
+    _layoutMode = _layoutModeFromRaw(settingsService.diaryLayoutModeRaw);
+    _viewPreferencesLoaded = true;
+  }
+
   DiarySortMode _sortModeFromRaw(String raw) {
     switch (raw) {
       case 'updatedAsc':
@@ -312,166 +322,166 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final settingsAsync = ref.watch(settingsServiceProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
-    final isLightMode = brightness == Brightness.light;
-
-    settingsAsync.whenData((settingsService) {
-      if (_viewPreferencesLoaded) {
-        return;
-      }
-      _sortMode = _sortModeFromRaw(settingsService.diarySortModeRaw);
-      _layoutMode = _layoutModeFromRaw(settingsService.diaryLayoutModeRaw);
-      _viewPreferencesLoaded = true;
-    });
 
     final fabBottomOffset = 80 + MediaQuery.paddingOf(context).bottom;
     final listBottomOffset = 112 + MediaQuery.paddingOf(context).bottom;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          PopScope(
-            canPop: !_isSelectionMode,
-            onPopInvokedWithResult: (didPop, result) {
-              if (didPop) {
-                return;
-              }
-              if (_isSelectionMode) {
-                _clearSelection();
-              }
-            },
-            child: Focus(
-              autofocus: true,
-              onKeyEvent: (node, event) {
-                if (event is! KeyDownEvent) {
-                  return KeyEventResult.ignored;
-                }
-                return KeyEventResult.ignored;
-              },
-              child: SafeArea(
-                child: Column(
-                  children: <Widget>[
-                    // 顶部标题栏
-                    AnimatedOpacity(
-                      duration: _searchMorphDuration,
-                      curve: Curves.easeOutCubic,
-                      opacity: _showHeaderSection ? 1 : 0,
-                      child: IgnorePointer(
-                        ignoring: !_showHeaderSection,
-                        child: DiaryHeadSection(
-                          isSelectionMode: _isSelectionMode,
-                          selectedCount: _selectedDiaryIds.length,
-                          onCancelSelection: _clearSelection,
-                          onArchiveSelected: () {},
-                          onDeleteSelected: () {},
-                          onOpenArchived: () {},
-                          sortMode: _sortMode,
-                          layoutMode: _layoutMode,
-                          onMenuSelected: _onMenuSelected,
-                          searchFieldKey: _topSearchFieldKey,
-                          searchPreviewText: _searchInput,
-                          searchEnabled: true,
-                        ),
-                      ),
-                    ),
-                    // 带阴影的细分割线
-                    Container(
-                      height: 1.0, // 分割线本身的高度
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).dividerColor.withAlpha(100), // 分割线的颜色
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(20), // 阴影颜色，保持低透明度
-                            offset: const Offset(0, 4), // 阴影向下偏移 4px
-                            blurRadius: 8, // 模糊半径，让阴影更柔和扩散
-                            spreadRadius: 0,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // 主列表区域
-                    tagsAsync.when(
-                      data: (tags) {
-                        return diariesAsync.when(
-                          data: (items) {
-                            final visibleItems =
-                                items.where((DiaryWithTags item) {
-                                  return !_optimisticHiddenDiaryIds.contains(
-                                    item.diary.diaryId,
-                                  );
-                                }).toList();
-                            _sortDiaries(visibleItems);
-
-                            return DiariesListSection(
-                              key: ValueKey<String>(
-                                'diaries_list_${brightness.name}',
-                              ),
-                              themeBrightness: brightness,
-                              tags: tags,
-                              diaries: visibleItems,
-                              layoutMode: _layoutMode,
+    return settingsAsync.when(
+      loading:
+          () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error:
+          (Object error, StackTrace stackTrace) =>
+              Scaffold(body: Center(child: Text('设置加载失败: $error'))),
+      data: (settingsService) {
+        _loadViewPreferencesIfNeeded(settingsService);
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Stack(
+            children: [
+              PopScope(
+                canPop: !_isSelectionMode,
+                onPopInvokedWithResult: (didPop, result) {
+                  if (didPop) {
+                    return;
+                  }
+                  if (_isSelectionMode) {
+                    _clearSelection();
+                  }
+                },
+                child: Focus(
+                  autofocus: true,
+                  onKeyEvent: (node, event) {
+                    if (event is! KeyDownEvent) {
+                      return KeyEventResult.ignored;
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: SafeArea(
+                    child: Column(
+                      children: <Widget>[
+                        // 顶部标题栏
+                        AnimatedOpacity(
+                          duration: _searchMorphDuration,
+                          curve: Curves.easeOutCubic,
+                          opacity: _showHeaderSection ? 1 : 0,
+                          child: IgnorePointer(
+                            ignoring: !_showHeaderSection,
+                            child: DiaryHeadSection(
                               isSelectionMode: _isSelectionMode,
-                              selectedDiaryIds: _selectedDiaryIds,
-                              listBottomOffset: listBottomOffset,
-                              onCreate: () => _openEditor(fromFab: true),
-                              onOpenEditor: (diaryId, sourceGlobalRect) {
-                                _openEditor(
-                                  diaryId: diaryId,
-                                  sourceGlobalRect: sourceGlobalRect,
-                                  fromFab: false,
+                              selectedCount: _selectedDiaryIds.length,
+                              onCancelSelection: _clearSelection,
+                              onArchiveSelected: () {},
+                              onDeleteSelected: () {},
+                              onOpenArchived: () {},
+                              sortMode: _sortMode,
+                              layoutMode: _layoutMode,
+                              onMenuSelected: _onMenuSelected,
+                              searchFieldKey: _topSearchFieldKey,
+                              searchPreviewText: _searchInput,
+                              searchEnabled: true,
+                            ),
+                          ),
+                        ),
+                        // 带阴影的细分割线
+                        Container(
+                          height: 1.0, // 分割线本身的高度
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).dividerColor.withAlpha(100), // 分割线的颜色
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(20), // 阴影颜色，保持低透明度
+                                offset: const Offset(0, 4), // 阴影向下偏移 4px
+                                blurRadius: 8, // 模糊半径，让阴影更柔和扩散
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                        ),
+                        // 主列表区域
+                        tagsAsync.when(
+                          data: (tags) {
+                            return diariesAsync.when(
+                              data: (items) {
+                                final visibleItems =
+                                    items.where((DiaryWithTags item) {
+                                      return !_optimisticHiddenDiaryIds.contains(
+                                        item.diary.diaryId,
+                                      );
+                                    }).toList();
+                                _sortDiaries(visibleItems);
+
+                                return DiariesListSection(
+                                  key: ValueKey<String>(
+                                    'diaries_list_${brightness.name}',
+                                  ),
+                                  themeBrightness: brightness,
+                                  tags: tags,
+                                  diaries: visibleItems,
+                                  layoutMode: _layoutMode,
+                                  isSelectionMode: _isSelectionMode,
+                                  selectedDiaryIds: _selectedDiaryIds,
+                                  listBottomOffset: listBottomOffset,
+                                  onCreate: () => _openEditor(fromFab: true),
+                                  onOpenEditor: (diaryId, sourceGlobalRect) {
+                                    _openEditor(
+                                      diaryId: diaryId,
+                                      sourceGlobalRect: sourceGlobalRect,
+                                      fromFab: false,
+                                    );
+                                  },
+                                  onToggleSelection:
+                                      (noteId, forceSelect) => _toggleSelection(
+                                        noteId,
+                                        forceSelect: forceSelect,
+                                      ),
                                 );
                               },
-                              onToggleSelection:
-                                  (noteId, forceSelect) => _toggleSelection(
-                                    noteId,
-                                    forceSelect: forceSelect,
+                              loading:
+                                  () => const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 8),
+                                    child: SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                  ),
+                              error:
+                                  (Object error, StackTrace stackTrace) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text('标签加载失败: $error'),
                                   ),
                             );
                           },
                           loading:
-                              () => const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              ),
+                              () =>
+                                  const Center(child: CircularProgressIndicator()),
                           error:
-                              (Object error, StackTrace stackTrace) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Text('标签加载失败: $error'),
-                              ),
-                        );
-                      },
-                      loading:
-                          () =>
-                              const Center(child: CircularProgressIndicator()),
-                      error:
-                          (Object error, StackTrace stackTrace) =>
-                              Center(child: Text('日记加载失败: $error')),
+                              (Object error, StackTrace stackTrace) =>
+                                  Center(child: Text('日记加载失败: $error')),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+              if (!_isSelectionMode)
+                Positioned(
+                  right: AppSpacing.xl,
+                  bottom: fabBottomOffset,
+                  child: FloatingActionButton(
+                    key: _fabKey,
+                    onPressed: () => _openEditor(fromFab: true),
+                    child: FaIcon(FontAwesomeIcons.plus),
+                  ),
+                ),
+            ],
           ),
-          if (!_isSelectionMode)
-            Positioned(
-              right: AppSpacing.xl,
-              bottom: fabBottomOffset,
-              child: FloatingActionButton(
-                key: _fabKey,
-                onPressed: () => _openEditor(fromFab: true),
-                child: FaIcon(FontAwesomeIcons.plus),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

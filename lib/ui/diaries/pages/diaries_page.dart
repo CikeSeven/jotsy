@@ -102,7 +102,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     required bool fromFab,
   }) {
     return PageRouteBuilder<void>(
-      transitionDuration: const Duration(milliseconds: 520),
+      transitionDuration: const Duration(milliseconds: 380),
       reverseTransitionDuration: const Duration(milliseconds: 320),
       pageBuilder:
           (BuildContext context, Animation<double> animation, _) =>
@@ -452,7 +452,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     width: double.infinity,
                                     color: Theme.of(
                                       context,
-                                    ).colorScheme.primary.withAlpha(20),
+                                    ).colorScheme.surface.withAlpha(10),
                                     child: Column(
                                       children: [
                                         SizedBox(height: topSafeInset),

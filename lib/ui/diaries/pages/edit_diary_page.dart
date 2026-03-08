@@ -236,8 +236,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   TextFormField(
                     controller: _titleController,
                     decoration: const InputDecoration(
-                      labelText: '标题',
-                      border: OutlineInputBorder(),
+                      hintText: '标题',
+                      border: UnderlineInputBorder(),
+                      enabledBorder: UnderlineInputBorder(),
+                      focusedBorder: UnderlineInputBorder(),
+                      counterText: '',
                     ),
                     maxLength: 200,
                   ),
@@ -245,9 +248,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   TextFormField(
                     controller: _contentController,
                     decoration: const InputDecoration(
-                      labelText: '正文 (纯文本编辑，保存为 Delta JSON)',
-                      border: OutlineInputBorder(),
-                      alignLabelWithHint: true,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
                     ),
                     minLines: 10,
                     maxLines: 20,
@@ -332,7 +336,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       TextFormField(
                         controller: _metadataController,
                         decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
                           hintText: '{}',
                         ),
                         minLines: 4,

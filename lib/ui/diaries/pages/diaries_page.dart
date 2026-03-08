@@ -138,7 +138,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       reverseTransitionDuration: const Duration(milliseconds: 320),
       pageBuilder:
           (BuildContext context, Animation<double> animation, _) =>
-              EditDiaryPage(diaryId: diaryId),
+              EditDiaryPage(
+                diaryId: diaryId,
+                entryMode:
+                    fromFab || diaryId == null
+                        ? EditDiaryEntryMode.create
+                        : EditDiaryEntryMode.edit,
+              ),
       transitionsBuilder: (
         BuildContext context,
         Animation<double> animation,

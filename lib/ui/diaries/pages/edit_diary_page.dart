@@ -1,9 +1,14 @@
+import 'package:appflowy_editor/appflowy_editor.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
+import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 /// 单条日记详情 provider（含标签聚合）。
 final diaryDetailProvider = FutureProvider.autoDispose.family<DiaryWithTags?, String>((
@@ -19,53 +24,78 @@ final diaryDetailProvider = FutureProvider.autoDispose.family<DiaryWithTags?, St
 /// - `diaryId == null`：新建模式
 /// - `diaryId != null`：编辑模式
 class EditDiaryPage extends ConsumerStatefulWidget {
-  const EditDiaryPage({super.key, this.diaryId});
+  const EditDiaryPage({
+    super.key,
+    this.diaryId,
+    this.entryMode = EditDiaryEntryMode.edit,
+  });
 
   final String? diaryId;
+  final EditDiaryEntryMode entryMode;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
 }
 
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
-  /// 表单控制器：标题 / 正文 / metadata。
   final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
-  final _metadataController = TextEditingController(text: '{}');
-  final _formKey = GlobalKey<FormState>();
+  final FocusNode _titleFocusNode = FocusNode();
 
-  /// 当前已选标签 id 集合。
   final Set<int> _selectedTagIds = <int>{};
-
-  /// 是否完成编辑态初始化（防止重复回填）。
+  late EditorState _contentEditorState;
+  String _metadataJson = '{}';
   bool _initialized = false;
-
-  /// 保存中的互斥标志，防止重复提交。
   bool _saving = false;
+
+  bool get _isMobileRuntime {
+    final platform = defaultTargetPlatform;
+    return !kIsWeb &&
+        (platform == TargetPlatform.android || platform == TargetPlatform.iOS);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _contentEditorState = EditorState(document: documentFromPlainText(''));
+    _initialized = widget.diaryId == null;
+  }
 
   @override
   void dispose() {
     _titleController.dispose();
-    _contentController.dispose();
-    _metadataController.dispose();
+    _titleFocusNode.dispose();
     super.dispose();
   }
 
-  /// 保存日记（新建或更新）。
-  ///
-  /// 流程：
-  /// 1. 表单校验；
-  /// 2. metadata JSON 校验；
-  /// 3. 调用数据库写入；
-  /// 4. 成功后返回上一页并触发列表刷新。
-  Future<void> _save() async {
-    if (_saving) return;
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+  String get _currentContentText =>
+      extractPlainTextFromDiaryDocument(_contentEditorState.document);
 
-    if (!isValidMetadataJsonObject(_metadataController.text)) {
+  String get _currentContentDocJson =>
+      encodeDiaryDocumentToJson(_contentEditorState.document);
+
+  bool _validateDraft() {
+    final title = _titleController.text.trim();
+    if (title.isEmpty &&
+        !diaryDocumentHasVisibleContent(_contentEditorState.document)) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('标题和正文不能同时为空')));
+      return false;
+    }
+    if (!isValidMetadataJsonObject(_metadataJson)) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('metadata 必须是合法 JSON 对象')));
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _save() async {
+    if (_saving) {
+      return;
+    }
+    if (!_validateDraft()) {
       return;
     }
 
@@ -73,31 +103,37 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
     final db = ref.read(appDatabaseProvider);
     final title = _titleController.text;
-    final content = _contentController.text;
-    final metadataJson = _metadataController.text;
+    final contentText = _currentContentText;
+    final contentDocJson = _currentContentDocJson;
 
     try {
       if (widget.diaryId == null) {
         await db.createDiary(
           title: title,
-          plainTextContent: content,
-          metadataJson: metadataJson,
+          contentDocJson: contentDocJson,
+          contentText: contentText,
+          metadataJson: _metadataJson,
           tagIds: _selectedTagIds.toList(),
         );
       } else {
         await db.updateDiary(
           diaryId: widget.diaryId!,
           title: title,
-          plainTextContent: content,
-          metadataJson: metadataJson,
+          contentDocJson: contentDocJson,
+          contentText: contentText,
+          metadataJson: _metadataJson,
           tagIds: _selectedTagIds.toList(),
         );
       }
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pop(true);
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('保存失败: $error')));
@@ -108,10 +144,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     }
   }
 
-  /// 执行软删除并返回上一页。
   Future<void> _softDelete() async {
     final diaryId = widget.diaryId;
-    if (diaryId == null || _saving) return;
+    if (diaryId == null || _saving) {
+      return;
+    }
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -133,42 +170,119 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       },
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true) {
+      return;
+    }
 
     final db = ref.read(appDatabaseProvider);
     await db.softDeleteDiary(diaryId);
 
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     Navigator.of(context).pop(true);
   }
 
-  /// 弹窗内联创建标签，并自动加入当前已选集合。
-  Future<void> _createTagInline() async {
-    final draft = await showCreateTagDialog(context);
-    if (draft == null) return;
-
-    try {
-      final db = ref.read(appDatabaseProvider);
-      final tagId = await db.createTag(name: draft.name, color: draft.color);
-      if (!mounted) return;
-      setState(() => _selectedTagIds.add(tagId));
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('标签创建失败: $error')));
+  Future<void> _openPublishPage() async {
+    if (!_validateDraft()) {
+      return;
     }
+
+    final result = await Navigator.of(context).push<Object>(
+      MaterialPageRoute<Object>(
+        builder: (BuildContext context) {
+          return PublishDiaryPage(
+            initialDraft: NewDiaryDraft(
+              title: _titleController.text,
+              contentDocJson: _currentContentDocJson,
+              contentText: _currentContentText,
+              metadataJson: _metadataJson,
+              selectedTagIds: <int>{..._selectedTagIds},
+            ),
+          );
+        },
+      ),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (result == true) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    if (result is NewDiaryDraft) {
+      setState(() {
+        _metadataJson = result.metadataJson;
+        _selectedTagIds
+          ..clear()
+          ..addAll(result.selectedTagIds);
+      });
+    }
+  }
+
+  Widget _buildEditor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    Widget editor = AppFlowyEditor(
+      editorState: _contentEditorState,
+      autoFocus: widget.diaryId == null,
+      editorStyle: EditorStyle.mobile(
+        padding: const EdgeInsets.symmetric(horizontal: 2),
+        cursorColor: colorScheme.primary,
+        dragHandleColor: colorScheme.primary,
+        selectionColor: colorScheme.primary.withValues(alpha: 0.24),
+        textStyleConfiguration: TextStyleConfiguration(
+          text: TextStyle(
+            fontSize: 16,
+            height: 1.58,
+            color: colorScheme.onSurface,
+          ),
+          href: TextStyle(
+            color: colorScheme.primary,
+            decoration: TextDecoration.underline,
+            decorationColor: colorScheme.primary.withValues(alpha: 0.8),
+          ),
+          code: TextStyle(
+            color: colorScheme.tertiary,
+            backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.86,
+            ),
+            fontFamily: 'monospace',
+          ),
+          autoComplete: TextStyle(color: colorScheme.onSurfaceVariant),
+        ),
+      ),
+      shrinkWrap: false,
+    );
+
+    if (_isMobileRuntime) {
+      editor = MobileToolbarV2(
+        editorState: _contentEditorState,
+        toolbarItems: buildDiaryMobileToolbarItems(),
+        backgroundColor: colorScheme.surface.withValues(alpha: 0.96),
+        foregroundColor: colorScheme.onSurfaceVariant,
+        iconColor: colorScheme.onSurface,
+        itemHighlightColor: colorScheme.primary,
+        itemOutlineColor: colorScheme.outlineVariant,
+        outlineColor: colorScheme.outlineVariant,
+        primaryColor: colorScheme.primary,
+        onPrimaryColor: colorScheme.onPrimary,
+        tabBarSelectedBackgroundColor: colorScheme.primaryContainer.withValues(
+          alpha: 0.55,
+        ),
+        tabBarSelectedForegroundColor: colorScheme.onPrimaryContainer,
+        toolbarHeight: 52,
+        child: editor,
+      );
+    }
+
+    return editor;
   }
 
   @override
   Widget build(BuildContext context) {
-    // 标签流用于渲染可选标签 Chip。
-    final tagsAsync = ref.watch(tagListProvider);
-
-    if (widget.diaryId == null) {
-      _initialized = true;
-    }
-
     final detailAsync =
         widget.diaryId == null
             ? const AsyncData<DiaryWithTags?>(null)
@@ -176,8 +290,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
     return detailAsync.when(
       loading:
-          () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
+          () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (Object error, StackTrace stackTrace) => Scaffold(
             appBar: AppBar(),
@@ -192,15 +305,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         }
 
         if (!_initialized && detail != null) {
-          // 仅首次进入编辑态时回填，避免每次 build 覆盖用户输入。
           _titleController.text = detail.diary.title;
-          _contentController.text = deltaJsonToPlainText(detail.diary.content);
+          _contentEditorState = EditorState(
+            document: decodeDiaryContentToDocument(detail.diary.content),
+          );
           try {
-            _metadataController.text = prettyMetadataJson(
-              detail.diary.metadata,
-            );
+            _metadataJson = prettyMetadataJson(detail.diary.metadata);
           } catch (_) {
-            _metadataController.text = detail.diary.metadata;
+            _metadataJson = detail.diary.metadata;
           }
           _selectedTagIds
             ..clear()
@@ -210,14 +322,24 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(widget.diaryId == null ? '新建日记' : '编辑日记'),
+            title: Text(
+              widget.entryMode == EditDiaryEntryMode.create ? '新建日记' : '编辑日记',
+            ),
             actions: <Widget>[
-              IconButton(
-                onPressed: _saving ? null : _save,
-                icon: const Icon(Icons.save_outlined),
-                tooltip: '保存',
-              ),
-              if (widget.diaryId != null)
+              if (widget.entryMode == EditDiaryEntryMode.create)
+                IconButton(
+                  onPressed: _saving ? null : _openPublishPage,
+                  icon: const FaIcon(FontAwesomeIcons.plus),
+                  tooltip: '发布',
+                )
+              else
+                IconButton(
+                  onPressed: _saving ? null : _save,
+                  icon: const Icon(Icons.save_outlined),
+                  tooltip: '保存',
+                ),
+              if (widget.diaryId != null &&
+                  widget.entryMode == EditDiaryEntryMode.edit)
                 IconButton(
                   onPressed: _saving ? null : _softDelete,
                   icon: const Icon(Icons.delete_outline),
@@ -225,136 +347,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 ),
             ],
           ),
-          body: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              // 使用滚动容器避免输入法抬起时页面挤压溢出。
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      hintText: '标题',
-                      border: UnderlineInputBorder(),
-                      enabledBorder: UnderlineInputBorder(),
-                      focusedBorder: UnderlineInputBorder(),
-                      counterText: '',
-                    ),
-                    maxLength: 200,
+          body: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextField(
+                  controller: _titleController,
+                  focusNode: _titleFocusNode,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  maxLength: 200,
+                  decoration: const InputDecoration(
+                    hintText: '标题',
+                    border: UnderlineInputBorder(),
+                    enabledBorder: UnderlineInputBorder(),
+                    focusedBorder: UnderlineInputBorder(),
+                    counterText: '',
                   ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _contentController,
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      disabledBorder: InputBorder.none,
-                    ),
-                    minLines: 10,
-                    maxLines: 20,
-                    validator: (String? value) {
-                      final title = _titleController.text.trim();
-                      final content = (value ?? '').trim();
-                      if (title.isEmpty && content.isEmpty) {
-                        return '标题和正文不能同时为空';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 6,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    alignment: WrapAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text(
-                        '标签',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      TextButton.icon(
-                        onPressed: _createTagInline,
-                        icon: const Icon(Icons.add),
-                        label: const Text('新建标签'),
-                      ),
-                    ],
-                  ),
-                  tagsAsync.when(
-                    data: (List<Tag> tags) {
-                      if (tags.isEmpty) {
-                        return const Text('暂无标签，可先新建');
-                      }
-                      return Wrap(
-                        spacing: 8,
-                        runSpacing: -8,
-                        children:
-                            tags.map((Tag tag) {
-                              return FilterChip(
-                                selected: _selectedTagIds.contains(tag.id),
-                                avatar: CircleAvatar(
-                                  radius: 8,
-                                  backgroundColor: Color(tag.color),
-                                ),
-                                label: Text(tag.name),
-                                onSelected: (bool selected) {
-                                  // 维护本地已选标签集合，保存时统一提交。
-                                  setState(() {
-                                    if (selected) {
-                                      _selectedTagIds.add(tag.id);
-                                    } else {
-                                      _selectedTagIds.remove(tag.id);
-                                    }
-                                  });
-                                },
-                              );
-                            }).toList(),
-                      );
-                    },
-                    loading:
-                        () => const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 6),
-                          child: SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                    error:
-                        (Object error, StackTrace stackTrace) =>
-                            Text('标签加载失败: $error'),
-                  ),
-                  const SizedBox(height: 12),
-                  ExpansionTile(
-                    // metadata 作为高级区，默认折叠避免干扰主编辑流程。
-                    tilePadding: EdgeInsets.zero,
-                    title: const Text('高级：Metadata JSON'),
-                    subtitle: const Text('例如 {"weather":"rainy","mood":4}'),
-                    children: <Widget>[
-                      TextFormField(
-                        controller: _metadataController,
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          hintText: '{}',
-                        ),
-                        minLines: 4,
-                        maxLines: 10,
-                        validator: (String? value) {
-                          if (!isValidMetadataJsonObject(value ?? '')) {
-                            return '必须是 JSON 对象';
-                          }
-                          return null;
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(child: _buildEditor(context)),
+              ],
             ),
           ),
         );
@@ -362,3 +375,5 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 }
+
+enum EditDiaryEntryMode { create, edit }

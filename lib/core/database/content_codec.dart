@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:appflowy_editor/appflowy_editor.dart';
+
 /// 将纯文本转换为最小可用的 Delta JSON 结构。
 ///
-/// 这里采用单条 `insert` 操作，便于后续无缝接入富文本编辑器。
+/// 这里保留旧方法，仅用于兼容历史数据读取路径。
 /// 为兼容常见 Delta 语义，末尾统一补一个换行符。
 String plainTextToDeltaJson(String plainText) {
   final normalized = plainText.endsWith('\n') ? plainText : '$plainText\n';
@@ -42,12 +44,121 @@ String deltaJsonToPlainText(String deltaJson) {
   }
 }
 
+/// 将日记正文存储内容解码为 AppFlowy 可编辑文档。
+Document decodeDiaryContentToDocument(String rawContent) {
+  final trimmed = rawContent.trim();
+  if (trimmed.isNotEmpty) {
+    try {
+      final decoded = jsonDecode(trimmed);
+      if (decoded is Map<String, dynamic>) {
+        final document = _ensureRenderableDocument(Document.fromJson(decoded));
+        if (_looksLikeRenderableBlockDocument(document)) {
+          return document;
+        }
+      }
+    } catch (_) {
+      // Fall through to legacy decode path.
+    }
+  }
+
+  final plainText = deltaJsonToPlainText(rawContent);
+  return documentFromPlainText(plainText);
+}
+
+/// 将富文本正文编码为持久化 JSON。
+String encodeDiaryDocumentToJson(Document document) {
+  final safeDocument = _ensureRenderableDocument(document);
+  return jsonEncode(safeDocument.toJson());
+}
+
+/// 从正文文档提取纯文本镜像，用于列表摘要和搜索。
+String extractPlainTextFromDiaryDocument(Document document) {
+  final blocks = document.root.children;
+  final parts = <String>[];
+
+  for (final node in blocks) {
+    final text = _nodePlainText(node);
+    if (text.isNotEmpty) {
+      parts.add(text);
+    }
+  }
+
+  return parts.join('\n').trim();
+}
+
+/// 判断正文文档是否包含可见内容。
+bool diaryDocumentHasVisibleContent(Document document) {
+  for (final node in document.root.children) {
+    if (node.type == 'image') {
+      return true;
+    }
+    if (_nodePlainText(node).isNotEmpty) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// 从纯文本构建一个最小可编辑文档。
+Document documentFromPlainText(String plainText) {
+  final normalized = plainText.replaceAll('\r\n', '\n');
+  final lines = normalized.split('\n');
+  final children =
+      lines.map((String line) => paragraphNode(text: line)).toList(growable: true);
+
+  if (children.isEmpty) {
+    children.add(paragraphNode());
+  }
+
+  return Document(root: Node(type: 'page', children: children));
+}
+
+Document _ensureRenderableDocument(Document document) {
+  if (document.root.children.isNotEmpty) {
+    return document;
+  }
+  return documentFromPlainText('');
+}
+
+bool _looksLikeRenderableBlockDocument(Document document) {
+  if (document.root.children.isEmpty) {
+    return false;
+  }
+  for (final node in document.root.children) {
+    if (node.type == 'text') {
+      return false;
+    }
+  }
+  return true;
+}
+
+String _nodePlainText(Node node) {
+  final parts = <String>[];
+
+  final delta = node.delta;
+  if (delta != null) {
+    final text =
+        delta
+            .toPlainText()
+            .replaceAll('\n', ' ')
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
+    if (text.isNotEmpty) {
+      parts.add(text);
+    }
+  }
+
+  for (final child in node.children) {
+    final text = _nodePlainText(child);
+    if (text.isNotEmpty) {
+      parts.add(text);
+    }
+  }
+
+  return parts.join(' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+}
+
 /// 规范化 metadata 字段，保证最终存储为 JSON 对象字符串。
-///
-/// 规则：
-/// 1. 空字符串按空对象 `{}` 处理；
-/// 2. 仅允许 JSON 对象，数组/标量直接判定为非法；
-/// 3. 返回 `jsonEncode` 后的标准字符串，便于存储与比较。
 String normalizeMetadataJson(String raw) {
   final text = raw.trim();
   if (text.isEmpty) {

@@ -73,7 +73,8 @@ class AppDatabase extends _$AppDatabase {
   /// 事务内完成“主表插入 + 关联表写入”，保证一致性。
   Future<String> createDiary({
     required String title,
-    required String plainTextContent,
+    required String contentDocJson,
+    required String contentText,
     required String metadataJson,
     List<int> tagIds = const <int>[],
   }) async {
@@ -87,8 +88,8 @@ class AppDatabase extends _$AppDatabase {
         DiariesCompanion.insert(
           diaryId: diaryId,
           title: Value<String>(title.trim()),
-          content: plainTextToDeltaJson(plainTextContent),
-          contentText: plainTextContent,
+          content: contentDocJson,
+          contentText: contentText,
           metadata: Value<String>(normalizedMetadata),
           createdAt: now,
           updatedAt: now,
@@ -106,7 +107,8 @@ class AppDatabase extends _$AppDatabase {
   Future<void> updateDiary({
     required String diaryId,
     required String title,
-    required String plainTextContent,
+    required String contentDocJson,
+    required String contentText,
     required String metadataJson,
     List<int> tagIds = const <int>[],
   }) async {
@@ -126,8 +128,8 @@ class AppDatabase extends _$AppDatabase {
           .write(
         DiariesCompanion(
           title: Value<String>(title.trim()),
-          content: Value<String>(plainTextToDeltaJson(plainTextContent)),
-          contentText: Value<String>(plainTextContent),
+          content: Value<String>(contentDocJson),
+          contentText: Value<String>(contentText),
           metadata: Value<String>(normalizedMetadata),
           updatedAt: Value<DateTime>(DateTime.now()),
           isArchived: const Value<bool>(false),

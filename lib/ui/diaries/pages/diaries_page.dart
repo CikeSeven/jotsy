@@ -113,11 +113,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
     final selectedTagIds = ref.watch(diaryFilterProvider).selectedTagIds;
+    final isLightMode = brightness == Brightness.light;
 
     final fabBottomOffset = 84 + MediaQuery.paddingOf(context).bottom;
     final listBottomOffset = 112 + MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
+      backgroundColor: isLightMode ? Colors.white : null,
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -157,7 +159,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         )
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.s),
                     // 主列表区域
                     tagsAsync.when(
                       data: (tags) {

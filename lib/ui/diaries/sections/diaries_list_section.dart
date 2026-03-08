@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_card.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../utils/relative_time_formatter.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/swipe_action_background.dart';
 
@@ -55,27 +55,44 @@ class DiariesListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseItemCount = diaries.isEmpty ? 2 : diaries.length + 1;
-    final itemCount = baseItemCount + 1;
+    final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLightMode = themeBrightness == Brightness.light;
+    final listBackgroundColor =
+        isLightMode ? Colors.white : colorScheme.surface;
+    final itemCount = diaries.isEmpty ? 2 : diaries.length + 1;
     return Expanded(
-      child: ListView.separated(
-        key: PageStorageKey<String>('notes_list_${themeBrightness.name}'),
-        padding: EdgeInsets.only(bottom: listBottomOffset),
-        itemCount: itemCount,
-        separatorBuilder: (context, index) {
-          return const SizedBox(height: AppSpacing.s);
-        },
-        itemBuilder: (context, index) {
-          // 区块一：搜索框（列表顶部，随列表滚动）。
+      child: Container(
+        color: listBackgroundColor,
+        child: ListView.separated(
+          key: PageStorageKey<String>('notes_list_${themeBrightness.name}'),
+          padding: EdgeInsets.only(bottom: listBottomOffset),
+          itemCount: itemCount,
+          separatorBuilder: (context, index) {
+            if (index == 0) {
+              return const SizedBox.shrink();
+            }
+            return Divider(
+              height: 1,
+              thickness: 1,
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+            );
+          },
+          itemBuilder: (context, index) {
+            // 区块一：搜索框（列表顶部，随列表滚动）。
           if (index == 0) {
             final hintStyle = Theme.of(context).textTheme.bodyMedium;
             final textStyle = Theme.of(context).textTheme.bodyLarge;
-            final colorScheme = Theme.of(context).colorScheme;
             final displayedText = searchPreviewText.trim();
             final hasText = displayedText.isNotEmpty;
 
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                AppSpacing.s,
+                AppSpacing.l,
+                AppSpacing.s,
+              ),
               child: ClipRect(
                 child: GestureDetector(
                   onTap: null,
@@ -124,10 +141,8 @@ class DiariesListSection extends StatelessWidget {
                                     )
                                     : hintStyle?.copyWith(
                                       color: colorScheme.onSurfaceVariant
-                                          .withValues(
-                                            alpha: 0.9,
-                                          ),
-                                      ),
+                                          .withValues(alpha: 0.9),
+                                    ),
                           ),
                         ),
                       ],
@@ -140,48 +155,26 @@ class DiariesListSection extends StatelessWidget {
 
           final effectiveIndex = index - 1;
 
-          // 区块二：列表标题行（位于搜索框下方，随列表滚动）。
-          if (effectiveIndex == 0) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '日记',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    DateFormat('MMM d').format(DateTime.now()),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          // 区块三：空状态。
+          // 区块二：空状态。
           if (diaries.isEmpty) {
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m,
+                vertical: AppSpacing.m,
+              ),
               child: DiariesEmptyState(onCreate: onCreate),
             );
           }
 
-          // 区块四：普通笔记卡片。
-          final diary = diaries[effectiveIndex - 1];
+          // 区块三：普通日记列表项（扁平列表 + 分割线）。
+          final diary = diaries[effectiveIndex];
           final selected = selectedDiaryIds.contains(diary.diary.diaryId);
+          final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
+          final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
 
-          Widget card = Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-            child: DiaryCard(
-              diary: diary,
-              selected: selected,
+          Widget tile = Material(
+            color: listBackgroundColor,
+            child: InkWell(
               onTap: () {
                 if (isSelectionMode) {
                   onToggleSelection(diary.diary.diaryId, false);
@@ -190,12 +183,68 @@ class DiariesListSection extends StatelessWidget {
                 onOpenEditor(diary.diary.diaryId);
               },
               onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: colorScheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                          if (preview.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              preview,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
+                          const SizedBox(height: 6),
+                          Text(
+                            RelativeTimeFormatter.formatUpdatedAt(
+                              updatedAt: diary.diary.updatedAt,
+                              now: DateTime.now(),
+                              l10n: l10n,
+                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (selected) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        CupertinoIcons.check_mark_circled_solid,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           );
 
           // 多选模式下关闭滑动手势，避免与批量操作语义冲突。
           if (isSelectionMode) {
-            return card;
+            return tile;
           }
 
           return Dismissible(
@@ -206,12 +255,14 @@ class DiariesListSection extends StatelessWidget {
               icon: CupertinoIcons.archivebox_fill,
               color: Theme.of(context).colorScheme.primary,
             ),
-            onDismissed: (_) async {
+            confirmDismiss: (_) async {
               await onArchiveBySwipe(diary);
+              return false;
             },
-            child: card,
+            child: tile,
           );
-        },
+          },
+        ),
       ),
     );
   }

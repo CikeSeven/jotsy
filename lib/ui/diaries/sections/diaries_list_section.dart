@@ -7,7 +7,6 @@ import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../widgets/diaries_empty_state.dart';
-import '../widgets/swipe_action_background.dart';
 import 'diary_head_section.dart';
 
 /// 日记页主列表区块。
@@ -24,7 +23,6 @@ class DiariesListSection extends StatelessWidget {
     required this.onCreate,
     required this.onOpenEditor,
     required this.onToggleSelection,
-    required this.onArchiveBySwipe,
   });
 
   final Brightness themeBrightness;
@@ -37,7 +35,6 @@ class DiariesListSection extends StatelessWidget {
   final VoidCallback onCreate;
   final void Function(String diaryId, Rect? sourceGlobalRect) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
-  final Future<void> Function(DiaryWithTags note) onArchiveBySwipe;
 
   @override
   Widget build(BuildContext context) {
@@ -303,25 +300,6 @@ class DiariesListSection extends StatelessWidget {
       },
     );
 
-    if (isSelectionMode) {
-      return item;
-    }
-
-    return Dismissible(
-      key: ValueKey<String>(
-        '${compact ? 'waterfall' : 'list'}-${diary.diary.diaryId}',
-      ),
-      direction: DismissDirection.endToStart,
-      background: SwipeActionBackground(
-        label: '归档',
-        icon: CupertinoIcons.archivebox_fill,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-      confirmDismiss: (_) async {
-        await onArchiveBySwipe(diary);
-        return false;
-      },
-      child: item,
-    );
+    return item;
   }
 }

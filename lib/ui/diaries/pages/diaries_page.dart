@@ -429,25 +429,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     noteId,
                                     forceSelect: forceSelect,
                                   ),
-                              onArchiveBySwipe: (note) async {
-                                final diaryId = note.diary.diaryId;
-                                setState(() {
-                                  _optimisticHiddenDiaryIds.add(diaryId);
-                                  _selectedDiaryIds.remove(diaryId);
-                                });
-                                try {
-                                  await ref
-                                      .read(appDatabaseProvider)
-                                      .archiveDiary(diaryId);
-                                } catch (_) {
-                                  if (!mounted) {
-                                    return;
-                                  }
-                                  setState(() {
-                                    _optimisticHiddenDiaryIds.remove(diaryId);
-                                  });
-                                }
-                              },
                             );
                           },
                           loading:

@@ -33,15 +33,16 @@ class NodeDiaryApp extends ConsumerWidget {
           ),
       data: (settingsService) {
         // 主题对象只构建一次，通过 ValueListenableBuilder 动态切换模式。
-        final materialTheme = MaterialTheme(Typography.material2021().black);
+        final lightMaterialTheme = MaterialTheme(Typography.material2021().black);
+        final darkMaterialTheme = MaterialTheme(Typography.material2021().white);
         return ValueListenableBuilder<ThemeMode>(
           valueListenable: settingsService.themeModeNotifier,
           builder: (BuildContext context, ThemeMode themeMode, Widget? child) {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Jotsy',
-              theme: materialTheme.light(),
-              darkTheme: materialTheme.dark(),
+              theme: lightMaterialTheme.light(),
+              darkTheme: darkMaterialTheme.dark(),
               themeMode: themeMode,
               supportedLocales: const [
                 Locale('en'),
@@ -62,4 +63,3 @@ class NodeDiaryApp extends ConsumerWidget {
     );
   }
 }
-

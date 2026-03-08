@@ -41,7 +41,7 @@ class DiaryCard extends StatelessWidget {
       ),
       child: Card(
         margin: EdgeInsets.zero,
-        color: const Color(0xFFFFFFFF),
+        color: colorScheme.surface,
         surfaceTintColor: Colors.transparent,
         child: InkWell(
           onTap: onTap,

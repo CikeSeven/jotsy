@@ -108,6 +108,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     // 标签与日记列表分别独立监听，避免相互阻塞。
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
@@ -170,6 +171,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 }).toList();
 
                             return DiariesListSection(
+                              key: ValueKey<String>(
+                                'diaries_list_${brightness.name}',
+                              ),
+                              themeBrightness: brightness,
                               tags: tags,
                               searchFieldKey: _listSearchFieldKey,
                               searchPreviewText: _searchInput,

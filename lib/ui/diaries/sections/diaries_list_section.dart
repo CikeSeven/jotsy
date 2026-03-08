@@ -23,6 +23,7 @@ class DiariesListSection extends StatelessWidget {
 
   const DiariesListSection({
     super.key,
+    required this.themeBrightness,
     required this.tags,
     required this.searchFieldKey,
     required this.searchPreviewText,
@@ -37,6 +38,7 @@ class DiariesListSection extends StatelessWidget {
     required this.onToggleSelection,
     required this.onArchiveBySwipe,
   });
+  final Brightness themeBrightness;
   final List<Tag> tags;
   final GlobalKey searchFieldKey;
   final String searchPreviewText;
@@ -57,7 +59,7 @@ class DiariesListSection extends StatelessWidget {
     final itemCount = baseItemCount + 1;
     return Expanded(
       child: ListView.separated(
-        key: const PageStorageKey<String>('notes_list'),
+        key: PageStorageKey<String>('notes_list_${themeBrightness.name}'),
         padding: EdgeInsets.only(bottom: listBottomOffset),
         itemCount: itemCount,
         separatorBuilder: (context, index) {
@@ -71,7 +73,6 @@ class DiariesListSection extends StatelessWidget {
             final colorScheme = Theme.of(context).colorScheme;
             final displayedText = searchPreviewText.trim();
             final hasText = displayedText.isNotEmpty;
-            final targetHeight = 48.0;
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
@@ -82,10 +83,9 @@ class DiariesListSection extends StatelessWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color:
-                          Theme.of(
-                            context,
-                          ).inputDecorationTheme.fillColor ??
-                          Theme.of(context).colorScheme.surface,
+                          searchEnabled
+                              ? colorScheme.surfaceContainerHighest
+                              : colorScheme.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color:
@@ -106,14 +106,10 @@ class DiariesListSection extends StatelessWidget {
                           size: 18,
                           color:
                               searchEnabled
-                                  ? Theme.of(
-                                    context,
-                                  ).textTheme.bodySmall?.color
-                                  : Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color
-                                      ?.withValues(alpha: 0.45),
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurfaceVariant.withValues(
+                                    alpha: 0.45,
+                                  ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -123,12 +119,15 @@ class DiariesListSection extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style:
                                 hasText
-                                    ? textStyle
+                                    ? textStyle?.copyWith(
+                                      color: colorScheme.onSurface,
+                                    )
                                     : hintStyle?.copyWith(
-                                      color: hintStyle.color?.withValues(
-                                        alpha: 0.8,
+                                      color: colorScheme.onSurfaceVariant
+                                          .withValues(
+                                            alpha: 0.9,
+                                          ),
                                       ),
-                                    ),
                           ),
                         ),
                       ],
@@ -150,12 +149,16 @@ class DiariesListSection extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '日记',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
                   Text(
                     DateFormat('MMM d').format(DateTime.now()),
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),

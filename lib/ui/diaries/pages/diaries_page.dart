@@ -102,8 +102,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     required bool fromFab,
   }) {
     return PageRouteBuilder<void>(
-      transitionDuration: const Duration(milliseconds: 380),
-      reverseTransitionDuration: const Duration(milliseconds: 260),
+      transitionDuration: const Duration(milliseconds: 520),
+      reverseTransitionDuration: const Duration(milliseconds: 320),
       pageBuilder:
           (BuildContext context, Animation<double> animation, _) =>
               EditDiaryPage(diaryId: diaryId),

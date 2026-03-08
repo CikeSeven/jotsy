@@ -6,7 +6,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 
 /// 单条日记详情 provider（含标签聚合）。
-final diaryDetailProvider = FutureProvider.family<DiaryWithTags?, String>((
+final diaryDetailProvider = FutureProvider.autoDispose.family<DiaryWithTags?, String>((
   Ref ref,
   String diaryId,
 ) {

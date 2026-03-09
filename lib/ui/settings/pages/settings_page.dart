@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 
 import '../../widgets/glass_page_header.dart';
 
@@ -61,6 +64,46 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ],
                         ),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading:
+                  () => const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+              error:
+                  (Object error, StackTrace stackTrace) =>
+                      ListTile(title: Text('设置加载失败: $error')),
+            ),
+            const Divider(),
+            const ListTile(
+              title: Text('编辑器设置'),
+              subtitle: Text('支持自定义富文本工具栏按钮顺序'),
+            ),
+            settingsAsync.when(
+              data: (settingsService) {
+                final order = decodeDiaryToolbarOrder(
+                  settingsService.diaryToolbarOrderRaw,
+                );
+                final preview = order
+                    .take(4)
+                    .map((DiaryToolbarItem item) => item.label)
+                    .join(' · ');
+                return ListTile(
+                  title: const Text('工具栏按钮排序'),
+                  subtitle: Text('当前前 4 项：$preview'),
+                  trailing: const FaIcon(FontAwesomeIcons.chevronRight, size: 14),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return DiaryToolbarOrderPage(
+                            settingsService: settingsService,
+                          );
+                        },
                       ),
                     );
                   },

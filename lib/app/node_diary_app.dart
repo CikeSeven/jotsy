@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,6 +28,7 @@ class NodeDiaryApp extends ConsumerWidget {
             debugShowCheckedModeBanner: false,
             home: Scaffold(body: Center(child: CircularProgressIndicator())),
           ),
+          
       error:
           (Object error, StackTrace stackTrace) => MaterialApp(
             home: Scaffold(body: Center(child: Text('初始化失败: $error'))),

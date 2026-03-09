@@ -286,6 +286,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final showFloatingToolbar = _isMobileRuntime && keyboardInset > 0;
+    final settingsAsync = ref.watch(settingsServiceProvider);
 
     final detailAsync =
         widget.diaryId == null
@@ -302,6 +303,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             body: Center(child: Text('加载失败: $error')),
           ),
       data: (DiaryWithTags? detail) {
+        final toolbarOrder = settingsAsync.maybeWhen(
+          data:
+              (settingsService) => decodeDiaryToolbarOrder(
+                settingsService.diaryToolbarOrderRaw,
+              ),
+          orElse: () => List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder),
+        );
+
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
             appBar: AppBar(),
@@ -380,7 +389,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       elevation: 8,
                       borderRadius: BorderRadius.circular(18),
                       clipBehavior: Clip.antiAlias,
-                      child: _buildFloatingToolbar(context),
+                      child: _buildFloatingToolbar(toolbarOrder),
                     ),
                   ),
                 ),
@@ -391,10 +400,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
-  Widget _buildFloatingToolbar(BuildContext context) {
-    return quill.QuillSimpleToolbar(
+  Widget _buildFloatingToolbar(List<DiaryToolbarItem> toolbarOrder) {
+    return buildDiaryFloatingToolbar(
       controller: _contentController,
-      config: buildDiaryQuillToolbarConfig(),
+      order: toolbarOrder,
     );
   }
 }

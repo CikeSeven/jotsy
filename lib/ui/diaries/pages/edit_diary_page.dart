@@ -52,6 +52,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   late quill.QuillController _contentController;
   String _metadataJson = '{}';
   String? _draftLocation;
+  Map<String, Object?>? _draftLocationAddressComponent;
   double? _draftLocationLatitude;
   double? _draftLocationLongitude;
   bool _draftLocationFromAuto = false;
@@ -116,6 +117,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       metadataJson: _metadataJson,
       selectedTagIds: <int>{..._selectedTagIds},
       location: _draftLocation,
+      locationAddressComponent: _draftLocationAddressComponent,
       locationLatitude: _draftLocationLatitude,
       locationLongitude: _draftLocationLongitude,
       locationFromAuto: _draftLocationFromAuto,
@@ -196,6 +198,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _draftCover = restoredDraft.cover;
         _metadataJson = restoredDraft.metadataJson;
         _draftLocation = restoredDraft.location;
+        _draftLocationAddressComponent = restoredDraft.locationAddressComponent;
         _draftLocationLatitude = restoredDraft.locationLatitude;
         _draftLocationLongitude = restoredDraft.locationLongitude;
         _draftLocationFromAuto = restoredDraft.locationFromAuto;
@@ -363,6 +366,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               metadataJson: _metadataJson,
               selectedTagIds: <int>{..._selectedTagIds},
               location: _draftLocation,
+              locationAddressComponent: _draftLocationAddressComponent,
               locationLatitude: _draftLocationLatitude,
               locationLongitude: _draftLocationLongitude,
               locationFromAuto: _draftLocationFromAuto,
@@ -390,6 +394,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _draftCover = result.cover;
         _metadataJson = result.metadataJson;
         _draftLocation = result.location;
+        _draftLocationAddressComponent = result.locationAddressComponent;
         _draftLocationLatitude = result.locationLatitude;
         _draftLocationLongitude = result.locationLongitude;
         _draftLocationFromAuto = result.locationFromAuto;

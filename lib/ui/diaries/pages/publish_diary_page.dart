@@ -31,7 +31,6 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
-  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _weatherController = TextEditingController();
   final PublishDiaryGlassPanelController _panelController =
       PublishDiaryGlassPanelController();
@@ -40,6 +39,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   String? _draftCover;
   String? _moodEmoji;
+  String? _locationTownship;
+  Map<String, Object?>? _locationAddressComponent;
   double? _locationLatitude;
   double? _locationLongitude;
   bool _locationFromAuto = false;
@@ -98,7 +99,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       hasCover: _normalizedCover != null,
       deviceInfo: _buildDeviceMetadata(),
       generatedAt: generatedAt ?? DateTime.now(),
-      location: _normalizeOptionalText(_locationController.text),
+      location: _locationLabel,
+      locationAddressComponent: _locationAddressComponent,
       locationLatitude: _locationLatitude,
       locationLongitude: _locationLongitude,
       locationFromAuto: _locationFromAuto,
@@ -113,7 +115,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     super.initState();
     _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
     _draftCover = _normalizeOptionalText(widget.initialDraft.cover);
-    _locationController.text = widget.initialDraft.location ?? '';
+    _locationTownship = widget.initialDraft.location;
+    _locationAddressComponent = widget.initialDraft.locationAddressComponent;
     _locationLatitude = widget.initialDraft.locationLatitude;
     _locationLongitude = widget.initialDraft.locationLongitude;
     _locationFromAuto = widget.initialDraft.locationFromAuto;
@@ -144,7 +147,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   void dispose() {
-    _locationController.dispose();
     _weatherController.dispose();
     _previewController.dispose();
     super.dispose();
@@ -193,6 +195,51 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     }
   }
 
+  String? get _locationLabel {
+    final township = _normalizeOptionalText(_locationTownship);
+    final city = _resolveLocationCity(_locationAddressComponent);
+    if (city != null && township != null) {
+      return '$city · $township';
+    }
+    if (city != null) {
+      return city;
+    }
+    if (township != null) {
+      return township;
+    }
+    if (_locationFromAuto) {
+      return '暂无街道信息';
+    }
+    return null;
+  }
+
+  String? _resolveLocationCity(Map<String, Object?>? addressComponent) {
+    if (addressComponent == null || addressComponent.isEmpty) {
+      return null;
+    }
+    // 高德在直辖市场景可能返回空 city，此时按规则回退 province。
+    final city = _normalizeAddressComponentText(addressComponent['city']);
+    if (city != null) {
+      return city;
+    }
+    return _normalizeAddressComponentText(addressComponent['province']);
+  }
+
+  String? _normalizeAddressComponentText(Object? raw) {
+    if (raw is String) {
+      return _normalizeOptionalText(raw);
+    }
+    if (raw is List) {
+      for (final item in raw) {
+        final normalized = _normalizeAddressComponentText(item);
+        if (normalized != null) {
+          return normalized;
+        }
+      }
+    }
+    return null;
+  }
+
   Future<LocationResolverService?> _ensureLocationResolverService() async {
     if (_locationResolverService != null) {
       return _locationResolverService;
@@ -227,7 +274,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       }
 
       setState(() {
-        _locationController.text = result.address;
+        _locationTownship = result.township;
+        _locationAddressComponent = result.addressComponent;
         _locationLatitude = result.latitude;
         _locationLongitude = result.longitude;
         _locationFromAuto = true;
@@ -294,7 +342,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         cover: _normalizedCover,
         metadataJson: _buildMetadataJson(),
         selectedTagIds: <int>{..._selectedTagIds},
-        location: _normalizeOptionalText(_locationController.text),
+        location: _locationTownship,
+        locationAddressComponent: _locationAddressComponent,
         locationLatitude: _locationLatitude,
         locationLongitude: _locationLongitude,
         locationFromAuto: _locationFromAuto,
@@ -398,7 +447,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 hasCover: _normalizedCover != null,
                 coverLabel: _coverLabel,
                 locating: _locating,
-                locationController: _locationController,
+                locationLabel: _locationLabel,
                 weatherController: _weatherController,
                 moodEmoji: _moodEmoji,
                 energyLevel: _energyLevel,
@@ -452,9 +501,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   setState(
                     () => _energyLevel = nextValue.round().clamp(1, 5).toInt(),
                   );
-                },
-                onLocationChanged: (_) {
-                  setState(() {});
                 },
                 onWeatherChanged: (_) {
                   setState(() {});

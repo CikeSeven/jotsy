@@ -24,7 +24,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.hasCover,
     required this.coverLabel,
     required this.locating,
-    required this.locationController,
+    required this.locationLabel,
     required this.weatherController,
     required this.moodEmoji,
     required this.energyLevel,
@@ -36,7 +36,6 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.onResolveLocation,
     required this.onCreateTag,
     required this.onToggleTag,
-    required this.onLocationChanged,
     required this.onWeatherChanged,
     required this.onMoodChanged,
     required this.onEnergyChanged,
@@ -62,7 +61,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final bool hasCover;
   final String? coverLabel;
   final bool locating;
-  final TextEditingController locationController;
+  final String? locationLabel;
   final TextEditingController weatherController;
   final String? moodEmoji;
   final int energyLevel;
@@ -74,7 +73,6 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final VoidCallback onResolveLocation;
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
-  final ValueChanged<String> onLocationChanged;
   final ValueChanged<String> onWeatherChanged;
   final ValueChanged<String?> onMoodChanged;
   final ValueChanged<double> onEnergyChanged;
@@ -697,6 +695,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
 
   Widget _buildContextFields(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final locationLabel = widget.locationLabel?.trim();
+    final hasLocation = locationLabel != null && locationLabel.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -722,19 +722,20 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               child: Row(
                 children: <Widget>[
                   const FaIcon(FontAwesomeIcons.locationDot, size: 14),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: TextField(
-                      controller: widget.locationController,
-                      onChanged: widget.onLocationChanged,
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        hintText: '地理位置（手动填写）',
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
-                      ),
+                    child: Text(
+                      hasLocation ? locationLabel : '点击右侧获取当前地址',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                hasLocation
+                                    ? null
+                                    : colorScheme.onSurfaceVariant.withValues(
+                                      alpha: 0.75,
+                                    ),
+                          ),
                     ),
                   ),
                   IconButton(

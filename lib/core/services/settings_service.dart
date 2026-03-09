@@ -13,6 +13,7 @@ class SettingsService {
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
+  static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
 
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -34,6 +35,8 @@ class SettingsService {
 
   String? get diaryToolbarOrderRaw => _prefs.getString(_keyDiaryToolbarOrder);
 
+  String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
+
   Future<void> setDiarySortModeRaw(String value) async {
     await _prefs.setString(_keyDiarySortMode, value);
   }
@@ -44,6 +47,14 @@ class SettingsService {
 
   Future<void> setDiaryToolbarOrderRaw(String value) async {
     await _prefs.setString(_keyDiaryToolbarOrder, value);
+  }
+
+  Future<void> setCreateDiaryDraftRaw(String value) async {
+    await _prefs.setString(_keyCreateDiaryDraft, value);
+  }
+
+  Future<void> clearCreateDiaryDraft() async {
+    await _prefs.remove(_keyCreateDiaryDraft);
   }
 
   static ThemeMode _parseMode(String? modeRaw) {

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -48,6 +51,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String _metadataJson = '{}';
   bool _initialized = false;
   bool _saving = false;
+  bool _allowPop = false;
 
   bool get _isMobileRuntime {
     final platform = defaultTargetPlatform;
@@ -63,6 +67,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       selection: const TextSelection.collapsed(offset: 0),
     );
     _initialized = widget.diaryId == null;
+    if (_isCreateEntry) {
+      unawaited(_restoreCreateDraftIfExists());
+    }
   }
 
   @override
@@ -81,6 +88,158 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
   String get _currentContentDocJson =>
       encodeDiaryDocumentToJson(_contentController.document);
+
+  bool get _isCreateEntry =>
+      widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
+
+  bool get _hasDraftableContent {
+    return _titleController.text.trim().isNotEmpty ||
+        diaryDocumentHasVisibleContent(_contentController.document);
+  }
+
+  NewDiaryDraft get _currentCreateDraft {
+    return NewDiaryDraft(
+      title: _titleController.text,
+      contentDocJson: _currentContentDocJson,
+      contentText: _currentContentText,
+      cover: _draftCover,
+      metadataJson: _metadataJson,
+      selectedTagIds: <int>{..._selectedTagIds},
+    );
+  }
+
+  void _popPage([Object? result]) {
+    if (!mounted) {
+      return;
+    }
+    if (!_allowPop) {
+      setState(() => _allowPop = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.of(context).pop(result);
+        }
+      });
+      return;
+    }
+    Navigator.of(context).pop(result);
+  }
+
+  Future<void> _restoreCreateDraftIfExists() async {
+    final settingsService = await ref.read(settingsServiceProvider.future);
+    final rawDraft = settingsService.createDiaryDraftRaw;
+    if (rawDraft == null || rawDraft.trim().isEmpty || !mounted) {
+      return;
+    }
+
+    try {
+      final decoded = jsonDecode(rawDraft);
+      if (decoded is! Map<String, dynamic>) {
+        return;
+      }
+      final restoredDraft = NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
+
+      quill.Document restoredDocument;
+      try {
+        restoredDocument = decodeDiaryContentToDocument(
+          restoredDraft.contentDocJson,
+        );
+      } catch (_) {
+        restoredDocument = documentFromPlainText(restoredDraft.contentText);
+      }
+
+      setState(() {
+        _titleController.text = restoredDraft.title;
+        _draftCover = restoredDraft.cover;
+        _metadataJson = restoredDraft.metadataJson;
+        _selectedTagIds
+          ..clear()
+          ..addAll(restoredDraft.selectedTagIds);
+        _contentController.dispose();
+        _contentController = quill.QuillController(
+          document: restoredDocument,
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      });
+    } catch (_) {
+      // 草稿反序列化失败时静默忽略，避免阻断新建流程。
+    }
+  }
+
+  Future<void> _persistCreateDraft() async {
+    final settingsService = await ref.read(settingsServiceProvider.future);
+    final rawDraft = jsonEncode(_currentCreateDraft.toJson());
+    await settingsService.setCreateDiaryDraftRaw(rawDraft);
+  }
+
+  Future<void> _clearCreateDraft() async {
+    final settingsService = await ref.read(settingsServiceProvider.future);
+    await settingsService.clearCreateDiaryDraft();
+  }
+
+  Future<void> _handleBackNavigation() async {
+    if (_saving) {
+      return;
+    }
+
+    if (!_isCreateEntry) {
+      _popPage();
+      return;
+    }
+
+    if (!_hasDraftableContent) {
+      await _clearCreateDraft();
+      _popPage();
+      return;
+    }
+
+    final action = await _showDraftSaveDialog();
+    if (!mounted || action == null) {
+      return;
+    }
+
+    if (action == _CreateDraftBackAction.save) {
+      await _persistCreateDraft();
+    } else if (action == _CreateDraftBackAction.discard) {
+      await _clearCreateDraft();
+    }
+
+    if (!mounted) {
+      return;
+    }
+    _popPage();
+  }
+
+  Future<_CreateDraftBackAction?> _showDraftSaveDialog() {
+    return showDialog<_CreateDraftBackAction>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('保存草稿'),
+          content: const Text('检测到你有未发布内容，是否保存到草稿？'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('继续编辑'),
+            ),
+            TextButton(
+              onPressed:
+                  () => Navigator.of(
+                    dialogContext,
+                  ).pop(_CreateDraftBackAction.discard),
+              child: const Text('不保存'),
+            ),
+            FilledButton(
+              onPressed:
+                  () => Navigator.of(
+                    dialogContext,
+                  ).pop(_CreateDraftBackAction.save),
+              child: const Text('保存草稿'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   bool _validateDraft() {
     final title = _titleController.text.trim();
@@ -141,7 +300,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       if (!mounted) {
         return;
       }
-      Navigator.of(context).pop(true);
+      if (_isCreateEntry) {
+        await _clearCreateDraft();
+      }
+      _popPage(true);
     } catch (error) {
       if (!mounted) {
         return;
@@ -192,7 +354,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     if (!mounted) {
       return;
     }
-    Navigator.of(context).pop(true);
+    _popPage(true);
   }
 
   Future<void> _openPublishPage() async {
@@ -222,7 +384,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     }
 
     if (result == true) {
-      Navigator.of(context).pop(true);
+      await _clearCreateDraft();
+      _popPage(true);
       return;
     }
 
@@ -366,8 +529,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           _initialized = true;
         }
 
-        return Scaffold(
-          appBar: AppBar(
+        return PopScope(
+          canPop: _allowPop || !_isCreateEntry,
+          onPopInvokedWithResult: (bool didPop, Object? result) {
+            if (didPop) {
+              return;
+            }
+            unawaited(_handleBackNavigation());
+          },
+          child: Scaffold(
+            appBar: AppBar(
             title: Text(
               widget.entryMode == EditDiaryEntryMode.create ? '新建日记' : '编辑日记',
             ),
@@ -393,37 +564,49 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 ),
             ],
           ),
-          body: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  0,
-                  0,
-                  0,
-                  showFloatingToolbar ? 68 : 0,
+            body: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    0,
+                    0,
+                    0,
+                    showFloatingToolbar ? 68 : 0,
+                  ),
+                  child: _buildEditor(context),
                 ),
-                child: _buildEditor(context),
-              ),
-              if (showFloatingToolbar)
-                Positioned(
-                  left: 12,
-                  right: 12,
-                  // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
-                  bottom: 0,
-                  child: SafeArea(
-                    top: false,
-                    minimum: const EdgeInsets.only(bottom: 8),
-                    child: Material(
-                      color: Theme.of(context).colorScheme.surface,
-                      elevation: 8,
-                      borderRadius: BorderRadius.circular(18),
-                      clipBehavior: Clip.antiAlias,
-                      child: _buildFloatingToolbar(toolbarOrder),
+                if (showFloatingToolbar)
+                  Positioned(
+                    left: 12,
+                    right: 12,
+                    // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
+                    bottom: 0,
+                    child: SafeArea(
+                      top: false,
+                      minimum: const EdgeInsets.only(bottom: 8),
+                      child: Material(
+                        color: Theme.of(context).colorScheme.surface,
+                        elevation: 8,
+                        borderRadius: BorderRadius.circular(18),
+                        clipBehavior: Clip.antiAlias,
+                        child: MediaQuery(
+                          data: MediaQuery.of(
+                            context,
+                          ).copyWith(textScaler: TextScaler.noScaling),
+                          child: IconTheme(
+                            data: const IconThemeData(size: 16),
+                            child: SizedBox(
+                              height: 44,
+                              child: _buildFloatingToolbar(toolbarOrder),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -439,3 +622,5 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 }
 
 enum EditDiaryEntryMode { create, edit }
+
+enum _CreateDraftBackAction { save, discard }

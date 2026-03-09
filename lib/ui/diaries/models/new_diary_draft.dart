@@ -17,6 +17,37 @@ class NewDiaryDraft {
   final String metadataJson;
   final Set<int> selectedTagIds;
 
+  factory NewDiaryDraft.fromJson(Map<String, Object?> json) {
+    final rawTagIds = json['selectedTagIds'];
+    final tagIds =
+        rawTagIds is List<Object?>
+            ? rawTagIds
+                .whereType<num>()
+                .map((num value) => value.toInt())
+                .toSet()
+            : const <int>{};
+
+    return NewDiaryDraft(
+      title: (json['title'] as String?) ?? '',
+      contentDocJson: (json['contentDocJson'] as String?) ?? '',
+      contentText: (json['contentText'] as String?) ?? '',
+      cover: json['cover'] as String?,
+      metadataJson: (json['metadataJson'] as String?) ?? '{}',
+      selectedTagIds: tagIds,
+    );
+  }
+
+  Map<String, Object?> toJson() {
+    return <String, Object?>{
+      'title': title,
+      'contentDocJson': contentDocJson,
+      'contentText': contentText,
+      'cover': cover,
+      'metadataJson': metadataJson,
+      'selectedTagIds': selectedTagIds.toList()..sort(),
+    };
+  }
+
   NewDiaryDraft copyWith({
     String? title,
     String? contentDocJson,

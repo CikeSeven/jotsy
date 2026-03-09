@@ -182,7 +182,7 @@ Widget buildDiaryFloatingToolbar({
   final normalizedOrder = _normalizeDiaryToolbarOrder(order);
   return SingleChildScrollView(
     scrollDirection: Axis.horizontal,
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     child: Row(
       children: <Widget>[
         for (var i = 0; i < normalizedOrder.length; i++) ...<Widget>[
@@ -225,6 +225,32 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   DiaryToolbarItem item,
   quill.QuillController controller,
 ) {
+  // 显式固定移动端悬浮工具栏图标尺寸，避免受主题密度或系统缩放影响出现“放大”。
+  const compactIconTheme = quill.QuillIconTheme(
+    iconButtonUnselectedData: quill.IconButtonData(
+      iconSize: 16,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.all(4),
+      constraints: BoxConstraints(
+        minWidth: 32,
+        minHeight: 32,
+        maxWidth: 32,
+        maxHeight: 32,
+      ),
+    ),
+    iconButtonSelectedData: quill.IconButtonData(
+      iconSize: 16,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.all(4),
+      constraints: BoxConstraints(
+        minWidth: 32,
+        minHeight: 32,
+        maxWidth: 32,
+        maxHeight: 32,
+      ),
+    ),
+  );
+
   final showUndo = item == DiaryToolbarItem.undo;
   final showRedo = item == DiaryToolbarItem.redo;
   final showBold = item == DiaryToolbarItem.bold;
@@ -259,6 +285,10 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
           : null;
 
   final buttonOptions = quill.QuillSimpleToolbarButtonOptions(
+    base: const quill.QuillToolbarBaseButtonOptions(
+      iconSize: 13,
+      iconButtonFactor: 1.2,
+    ),
     undoHistory: const quill.QuillToolbarHistoryButtonOptions(
       iconData: FontAwesomeIcons.rotateLeft,
     ),
@@ -331,6 +361,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
     multiRowsDisplay: true,
     showDividers: false,
     decoration: const BoxDecoration(color: Colors.transparent),
+    iconTheme: compactIconTheme,
     showFontFamily: false,
     showFontSize: false,
     showBoldButton: showBold,

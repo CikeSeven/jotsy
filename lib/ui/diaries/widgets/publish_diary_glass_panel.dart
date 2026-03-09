@@ -31,7 +31,6 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.tagsLoading,
     required this.tagsError,
     required this.selectedTagIds,
-    required this.metadataPreview,
     required this.onPickCover,
     required this.onCreateTag,
     required this.onToggleTag,
@@ -68,7 +67,6 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final bool tagsLoading;
   final String? tagsError;
   final Set<int> selectedTagIds;
-  final String metadataPreview;
   final VoidCallback onPickCover;
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
@@ -119,7 +117,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   static const double _mainExpandedHeight = 470;
   static const double _tagExpandedHeight = 540;
   static const double _collapsedHorizontalInset = 40;
-  static const double _expandedHorizontalInset = 16;
+  static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
 
   late final SheetController _sheetController;
@@ -382,8 +380,6 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           _buildMoodSection(context),
           const SizedBox(height: 14),
           _buildEnergySection(context),
-          const SizedBox(height: 14),
-          _buildMetadataPreview(context),
           const SizedBox(height: 14),
           _buildPublishAction(),
         ],
@@ -764,39 +760,6 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           divisions: 4,
           label: '${widget.energyLevel}',
           onChanged: widget.onEnergyChanged,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetadataPreview(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          'Metadata（自动生成）',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 96, maxHeight: 140),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.55),
-          ),
-          child: SingleChildScrollView(
-            child: SelectableText(
-              widget.metadataPreview,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                    height: 1.4,
-                  ),
-            ),
-          ),
         ),
       ],
     );

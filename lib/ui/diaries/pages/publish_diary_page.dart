@@ -98,14 +98,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     );
   }
 
-  String get _prettyMetadataPreview {
-    try {
-      return PublishMetadataComposer.pretty(_buildMetadataJson());
-    } catch (_) {
-      return '{}';
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -270,7 +262,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('发布日记'),
+          title: const Text('发表日记'),
           leading: IconButton(
             onPressed: _closeWithDraft,
             icon: const FaIcon(FontAwesomeIcons.arrowLeft, size: 16),
@@ -337,7 +329,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 tagsLoading: tagsLoading,
                 tagsError: tagsError,
                 selectedTagIds: _selectedTagIds,
-                metadataPreview: _prettyMetadataPreview,
                 onProgressChanged: (progress) {
                   void applyProgress() {
                     if (!mounted) {

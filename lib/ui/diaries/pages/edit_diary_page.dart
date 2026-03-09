@@ -241,14 +241,23 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     return TextField(
       controller: _titleController,
       focusNode: _titleFocusNode,
+      textAlignVertical: TextAlignVertical.top,
+      buildCounter:
+          (
+            BuildContext context, {
+            required int currentLength,
+            required bool isFocused,
+            int? maxLength,
+          }) => null,
       style: Theme.of(context).textTheme.headlineSmall,
       maxLength: 200,
       decoration: const InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.fromLTRB(0, 6, 0, 6),
         hintText: '标题',
         border: UnderlineInputBorder(),
         enabledBorder: UnderlineInputBorder(),
         focusedBorder: UnderlineInputBorder(),
-        counterText: '',
       ),
     );
   }
@@ -262,15 +271,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         return SingleChildScrollView(
           controller: _contentScrollController,
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              child: Column(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   _buildTitleInput(context),
@@ -390,7 +399,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   0,
-                  4,
+                  0,
                   0,
                   showFloatingToolbar ? 68 : 0,
                 ),

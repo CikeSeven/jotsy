@@ -306,10 +306,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           content: const Text('将执行软删除，后续可恢复。确定继续吗？'),
           actions: <Widget>[
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+              ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('取消'),
             ),
-            FilledButton(
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('删除'),
             ),

@@ -147,11 +147,21 @@ class SettingsPage extends ConsumerWidget {
                                     content: Text('确认删除标签 "${tag.name}" 吗？'),
                                     actions: <Widget>[
                                       TextButton(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor:
+                                              Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                        ),
                                         onPressed:
                                             () => Navigator.of(context).pop(false),
                                         child: const Text('取消'),
                                       ),
-                                      FilledButton(
+                                      TextButton(
+                                        style: TextButton.styleFrom(
+                                          foregroundColor:
+                                              Theme.of(context).colorScheme.error,
+                                        ),
                                         onPressed:
                                             () => Navigator.of(context).pop(true),
                                         child: const Text('删除'),

@@ -274,13 +274,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           content: const Text('检测到你上次有未保存的日记，是否继续编辑？'),
           actions: <Widget>[
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+              ),
               onPressed:
                   () => Navigator.of(
                     dialogContext,
                   ).pop(_CreateDraftDecision.newEmpty),
               child: const Text('新建空笔记'),
             ),
-            FilledButton(
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.primary,
+              ),
               onPressed:
                   () => Navigator.of(
                     dialogContext,

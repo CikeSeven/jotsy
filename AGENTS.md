@@ -34,6 +34,14 @@ dart run build_runner build --delete-conflicting-outputs
 - Keep feature UI code in `lib/ui/<feature>/...`; cross-feature logic belongs in `lib/core/...`.
 - For newly added UI icons, use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`) by default; only mix other icon sets when there is a clear platform-specific reason.
 - Rich text editor toolbar icons and their related settings-page icon previews must consistently use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`).
+- Dialog action buttons must use text-style actions consistently: left action uses a gray text button (typically cancel), right action uses a colored text button for the primary confirm action.
+- For dangerous dialog actions (delete/irreversible operations), the right primary action must use `colorScheme.error` instead of the default primary color.
+- Active interactive surfaces (for example: bottom bars, floating panels, and key action containers) should use a glassmorphism style consistent with the app's existing glass components.
+- Glass-style implementation notes:
+  - Reuse existing theme tokens/components first (for example `AppEffects`, `AppRadii`, and existing glass widgets) to keep style consistent.
+  - Keep blur and transparency moderate to preserve text contrast and avoid readability regressions.
+  - Avoid stacking multiple heavy blur layers in the same viewport region to reduce rendering cost on lower-end devices.
+  - Preserve clear interaction affordance (tap targets, boundaries, and state feedback) even when using translucent backgrounds.
 - Do not use any gradient colors in UI (including `LinearGradient`, `RadialGradient`, and `SweepGradient`).
 - Write more high-value comments for non-trivial logic, state transitions, and edge-case handling; avoid redundant comments that only restate the code.
 - Keep files focused and reasonably small; when a file grows beyond about 300 lines, evaluate splitting it into smaller widgets/classes/modules.

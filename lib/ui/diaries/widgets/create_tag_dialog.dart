@@ -97,10 +97,19 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
       ),
       actions: <Widget>[
         TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('取消'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('创建')),
+        TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: _submit,
+          child: const Text('创建'),
+        ),
       ],
     );
   }

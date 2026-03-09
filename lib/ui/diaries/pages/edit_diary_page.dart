@@ -11,13 +11,11 @@ import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 /// 单条日记详情 provider（含标签聚合）。
-final diaryDetailProvider = FutureProvider.autoDispose.family<DiaryWithTags?, String>((
-  Ref ref,
-  String diaryId,
-) {
-  final db = ref.watch(appDatabaseProvider);
-  return db.getDiaryWithTagsByDiaryId(diaryId);
-});
+final diaryDetailProvider = FutureProvider.autoDispose
+    .family<DiaryWithTags?, String>((Ref ref, String diaryId) {
+      final db = ref.watch(appDatabaseProvider);
+      return db.getDiaryWithTagsByDiaryId(diaryId);
+    });
 
 /// 日记编辑页。
 ///
@@ -276,20 +274,23 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: editor,
+            ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: editor,
-          ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final showFloatingToolbar = _isMobileRuntime && keyboardInset > 0;
+
     final detailAsync =
         widget.diaryId == null
             ? const AsyncData<DiaryWithTags?>(null)
@@ -297,7 +298,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
     return detailAsync.when(
       loading:
-          () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (Object error, StackTrace stackTrace) => Scaffold(
             appBar: AppBar(),
@@ -356,41 +358,36 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 ),
             ],
           ),
-          body: Builder(
-            builder: (BuildContext context) {
-              final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-              final showFloatingToolbar = _isMobileRuntime && keyboardInset > 0;
-
-              return Stack(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      0,
-                      4,
-                      0,
-                      showFloatingToolbar ? 68 : 0,
+          body: Stack(
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  0,
+                  4,
+                  0,
+                  showFloatingToolbar ? 68 : 0,
+                ),
+                child: _buildEditor(context),
+              ),
+              if (showFloatingToolbar)
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
+                  bottom: 0,
+                  child: SafeArea(
+                    top: false,
+                    minimum: const EdgeInsets.only(bottom: 8),
+                    child: Material(
+                      color: Theme.of(context).colorScheme.surface,
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(18),
+                      clipBehavior: Clip.antiAlias,
+                      child: _buildFloatingToolbar(context),
                     ),
-                    child: _buildEditor(context),
                   ),
-                  if (showFloatingToolbar)
-                    Positioned(
-                      left: 12,
-                      right: 12,
-                      bottom: keyboardInset,
-                      child: SafeArea(
-                        top: false,
-                        child: Material(
-                          color: Theme.of(context).colorScheme.surface,
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(18),
-                          clipBehavior: Clip.antiAlias,
-                          child: _buildFloatingToolbar(context),
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
+                ),
+            ],
           ),
         );
       },

@@ -18,6 +18,7 @@ flutter analyze
 flutter test
 dart run build_runner build --delete-conflicting-outputs
 ```
+- Agent execution note: do not run `dart format` or `flutter analyze` automatically (they may time out in this environment); leave both commands for the user to run manually when needed.
 - `flutter pub get`: install/update dependencies.
 - `flutter run -d windows`: run locally (replace device as needed, e.g. `chrome`).
 - `flutter analyze`: static checks using `analysis_options.yaml`.

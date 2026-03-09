@@ -27,7 +27,8 @@ dependencies:
   json_annotation: ^4.11.0
   intl: ^0.20.2
   flutter_staggered_grid_view: ^0.7.0
-  appflowy_editor: ^6.2.0
+  flutter_quill: ^11.5.0
+  flutter_quill_extensions: ^11.0.0
   file_picker: ^10.3.10
 
 dev_dependencies:

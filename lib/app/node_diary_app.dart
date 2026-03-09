@@ -1,6 +1,6 @@
-import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -55,7 +55,7 @@ class NodeDiaryApp extends ConsumerWidget {
                 GlobalMaterialLocalizations.delegate,
                 GlobalCupertinoLocalizations.delegate,
                 GlobalWidgetsLocalizations.delegate,
-                AppFlowyEditorLocalizations.delegate,
+                FlutterQuillLocalizations.delegate,
               ],
               home: const HomePage(),
             );

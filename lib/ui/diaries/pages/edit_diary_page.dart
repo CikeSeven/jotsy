@@ -1,6 +1,6 @@
-import 'package:appflowy_editor/appflowy_editor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -40,9 +40,11 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final _titleController = TextEditingController();
   final FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _contentFocusNode = FocusNode();
+  final ScrollController _contentScrollController = ScrollController();
 
   final Set<int> _selectedTagIds = <int>{};
-  late EditorState _contentEditorState;
+  late quill.QuillController _contentController;
   String _metadataJson = '{}';
   bool _initialized = false;
   bool _saving = false;
@@ -56,7 +58,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   void initState() {
     super.initState();
-    _contentEditorState = EditorState(document: documentFromPlainText(''));
+    _contentController = quill.QuillController(
+      document: documentFromPlainText(''),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
     _initialized = widget.diaryId == null;
   }
 
@@ -64,19 +69,22 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   void dispose() {
     _titleController.dispose();
     _titleFocusNode.dispose();
+    _contentFocusNode.dispose();
+    _contentScrollController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
   String get _currentContentText =>
-      extractPlainTextFromDiaryDocument(_contentEditorState.document);
+      extractPlainTextFromDiaryDocument(_contentController.document);
 
   String get _currentContentDocJson =>
-      encodeDiaryDocumentToJson(_contentEditorState.document);
+      encodeDiaryDocumentToJson(_contentController.document);
 
   bool _validateDraft() {
     final title = _titleController.text.trim();
     if (title.isEmpty &&
-        !diaryDocumentHasVisibleContent(_contentEditorState.document)) {
+        !diaryDocumentHasVisibleContent(_contentController.document)) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('标题和正文不能同时为空')));
@@ -244,61 +252,40 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
   Widget _buildEditor(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    Widget editor = AppFlowyEditor(
-      editorState: _contentEditorState,
-      autoFocus: widget.diaryId == null,
-      header: _buildTitleInput(context),
-      editorStyle: EditorStyle.mobile(
-        padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
-        cursorColor: colorScheme.primary,
-        dragHandleColor: colorScheme.primary,
-        selectionColor: colorScheme.primary.withValues(alpha: 0.24),
-        textStyleConfiguration: TextStyleConfiguration(
-          text: TextStyle(
-            fontSize: 16,
-            height: 1.58,
-            color: colorScheme.onSurface,
-          ),
-          href: TextStyle(
-            color: colorScheme.primary,
-            decoration: TextDecoration.underline,
-            decorationColor: colorScheme.primary.withValues(alpha: 0.8),
-          ),
-          code: TextStyle(
-            color: colorScheme.tertiary,
-            backgroundColor: colorScheme.surfaceContainerHighest.withValues(
-              alpha: 0.86,
-            ),
-            fontFamily: 'monospace',
-          ),
-          autoComplete: TextStyle(color: colorScheme.onSurfaceVariant),
-        ),
+    final editor = quill.QuillEditor.basic(
+      controller: _contentController,
+      focusNode: _contentFocusNode,
+      scrollController: _contentScrollController,
+      config: quill.QuillEditorConfig(
+        autoFocus: widget.diaryId == null,
+        placeholder: '开始记录...',
+        scrollable: false,
+        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+        embedBuilders: buildDiaryQuillEmbedBuilders(),
       ),
-      shrinkWrap: false,
     );
 
-    if (_isMobileRuntime) {
-      editor = MobileToolbarV2(
-        editorState: _contentEditorState,
-        toolbarItems: buildDiaryMobileToolbarItems(),
-        backgroundColor: colorScheme.surface.withValues(alpha: 0.96),
-        foregroundColor: colorScheme.onSurfaceVariant,
-        iconColor: colorScheme.onSurface,
-        itemHighlightColor: colorScheme.primary,
-        itemOutlineColor: colorScheme.outlineVariant,
-        outlineColor: colorScheme.outlineVariant,
-        primaryColor: colorScheme.primary,
-        onPrimaryColor: colorScheme.onPrimary,
-        tabBarSelectedBackgroundColor: colorScheme.primaryContainer.withValues(
-          alpha: 0.55,
+    return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildTitleInput(context),
+          const SizedBox(height: 8),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: editor,
+          ),
         ),
-        tabBarSelectedForegroundColor: colorScheme.onPrimaryContainer,
-        toolbarHeight: 52,
-        child: editor,
-      );
-    }
-
-    return editor;
+      ],
+    ),
+    );
   }
 
   @override
@@ -326,8 +313,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
-          _contentEditorState = EditorState(
+          _contentController.dispose();
+          _contentController = quill.QuillController(
             document: decodeDiaryContentToDocument(detail.diary.content),
+            selection: const TextSelection.collapsed(offset: 0),
           );
           try {
             _metadataJson = prettyMetadataJson(detail.diary.metadata);
@@ -367,12 +356,51 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: _buildEditor(context),
+          body: Builder(
+            builder: (BuildContext context) {
+              final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+              final showFloatingToolbar = _isMobileRuntime && keyboardInset > 0;
+
+              return Stack(
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      0,
+                      4,
+                      0,
+                      showFloatingToolbar ? 68 : 0,
+                    ),
+                    child: _buildEditor(context),
+                  ),
+                  if (showFloatingToolbar)
+                    Positioned(
+                      left: 12,
+                      right: 12,
+                      bottom: keyboardInset,
+                      child: SafeArea(
+                        top: false,
+                        child: Material(
+                          color: Theme.of(context).colorScheme.surface,
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(18),
+                          clipBehavior: Clip.antiAlias,
+                          child: _buildFloatingToolbar(context),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFloatingToolbar(BuildContext context) {
+    return quill.QuillSimpleToolbar(
+      controller: _contentController,
+      config: buildDiaryQuillToolbarConfig(),
     );
   }
 }

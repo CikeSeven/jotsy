@@ -1,23 +1,27 @@
 import 'dart:convert';
 
-import 'package:appflowy_editor/appflowy_editor.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 /// 将纯文本转换为最小可用的 Delta JSON 结构。
-///
-/// 这里保留旧方法，仅用于兼容历史数据读取路径。
-/// 为兼容常见 Delta 语义，末尾统一补一个换行符。
 String plainTextToDeltaJson(String plainText) {
   final normalized = plainText.endsWith('\n') ? plainText : '$plainText\n';
-  return jsonEncode(<Map<String, String>>[
-    <String, String>{'insert': normalized},
+  return jsonEncode(<Map<String, Object>>[
+    <String, Object>{'insert': normalized},
   ]);
 }
 
-/// 将 Delta JSON 还原为编辑器使用的纯文本。
-///
-/// 若格式异常（例如历史数据不是合法 Delta），直接回退原始字符串，
-/// 避免读取阶段抛错导致页面不可用。
+/// 将 Delta JSON 还原为纯文本。
 String deltaJsonToPlainText(String deltaJson) {
+  try {
+    final decoded = jsonDecode(deltaJson);
+    if (decoded is List) {
+      final document = quill.Document.fromJson(List<dynamic>.from(decoded));
+      return _normalizePlainText(document.toPlainText());
+    }
+  } catch (_) {
+    // Fall through to legacy decode path.
+  }
+
   try {
     final decoded = jsonDecode(deltaJson);
     if (decoded is! List) {
@@ -33,66 +37,56 @@ String deltaJsonToPlainText(String deltaJson) {
         }
       }
     }
-
-    final text = buffer.toString();
-    if (text.endsWith('\n')) {
-      return text.substring(0, text.length - 1);
-    }
-    return text;
+    return _normalizePlainText(buffer.toString());
   } catch (_) {
     return deltaJson;
   }
 }
 
-/// 将日记正文存储内容解码为 AppFlowy 可编辑文档。
-Document decodeDiaryContentToDocument(String rawContent) {
+/// 将正文存储内容解码为 Quill 文档。
+quill.Document decodeDiaryContentToDocument(String rawContent) {
   final trimmed = rawContent.trim();
-  if (trimmed.isNotEmpty) {
-    try {
-      final decoded = jsonDecode(trimmed);
-      if (decoded is Map<String, dynamic>) {
-        final document = _ensureRenderableDocument(Document.fromJson(decoded));
-        if (_looksLikeRenderableBlockDocument(document)) {
-          return document;
-        }
-      }
-    } catch (_) {
-      // Fall through to legacy decode path.
-    }
+  if (trimmed.isEmpty) {
+    return documentFromPlainText('');
   }
 
-  final plainText = deltaJsonToPlainText(rawContent);
-  return documentFromPlainText(plainText);
+  try {
+    final decoded = jsonDecode(trimmed);
+    if (decoded is List) {
+      return _ensureRenderableDocument(
+        quill.Document.fromJson(List<dynamic>.from(decoded)),
+      );
+    }
+    if (decoded is Map<String, dynamic>) {
+      return _ensureRenderableDocument(
+        quill.Document.fromJson(_appFlowyDocumentToQuillDelta(decoded)),
+      );
+    }
+  } catch (_) {
+    // Fall through to plain text fallback.
+  }
+
+  return documentFromPlainText(deltaJsonToPlainText(rawContent));
 }
 
 /// 将富文本正文编码为持久化 JSON。
-String encodeDiaryDocumentToJson(Document document) {
-  final safeDocument = _ensureRenderableDocument(document);
-  return jsonEncode(safeDocument.toJson());
+String encodeDiaryDocumentToJson(quill.Document document) {
+  return jsonEncode(document.toDelta().toJson());
 }
 
 /// 从正文文档提取纯文本镜像，用于列表摘要和搜索。
-String extractPlainTextFromDiaryDocument(Document document) {
-  final blocks = document.root.children;
-  final parts = <String>[];
-
-  for (final node in blocks) {
-    final text = _nodePlainText(node);
-    if (text.isNotEmpty) {
-      parts.add(text);
-    }
-  }
-
-  return parts.join('\n').trim();
+String extractPlainTextFromDiaryDocument(quill.Document document) {
+  return _normalizePlainText(document.toPlainText());
 }
 
 /// 判断正文文档是否包含可见内容。
-bool diaryDocumentHasVisibleContent(Document document) {
-  for (final node in document.root.children) {
-    if (node.type == 'image') {
+bool diaryDocumentHasVisibleContent(quill.Document document) {
+  for (final op in document.toDelta().toJson().cast<Map<String, dynamic>>()) {
+    final insert = op['insert'];
+    if (insert is String && insert.trim().isNotEmpty) {
       return true;
     }
-    if (_nodePlainText(node).isNotEmpty) {
+    if (insert is Map && insert.isNotEmpty) {
       return true;
     }
   }
@@ -100,62 +94,131 @@ bool diaryDocumentHasVisibleContent(Document document) {
 }
 
 /// 从纯文本构建一个最小可编辑文档。
-Document documentFromPlainText(String plainText) {
-  final normalized = plainText.replaceAll('\r\n', '\n');
-  final lines = normalized.split('\n');
-  final children =
-      lines.map((String line) => paragraphNode(text: line)).toList(growable: true);
-
-  if (children.isEmpty) {
-    children.add(paragraphNode());
-  }
-
-  return Document(root: Node(type: 'page', children: children));
+quill.Document documentFromPlainText(String plainText) {
+  return quill.Document.fromJson(
+    List<dynamic>.from(jsonDecode(plainTextToDeltaJson(plainText)) as List),
+  );
 }
 
-Document _ensureRenderableDocument(Document document) {
-  if (document.root.children.isNotEmpty) {
+quill.Document _ensureRenderableDocument(quill.Document document) {
+  final delta = document.toDelta().toJson();
+  if (delta.isNotEmpty) {
     return document;
   }
   return documentFromPlainText('');
 }
 
-bool _looksLikeRenderableBlockDocument(Document document) {
-  if (document.root.children.isEmpty) {
-    return false;
+List<Map<String, Object>> _appFlowyDocumentToQuillDelta(
+  Map<String, dynamic> rawDocument,
+) {
+  final ops = <Map<String, Object>>[];
+  for (final node in _extractChildren(rawDocument)) {
+    _appendAppFlowyNode(node, ops);
   }
-  for (final node in document.root.children) {
-    if (node.type == 'text') {
-      return false;
-    }
+
+  if (ops.isEmpty) {
+    return <Map<String, Object>>[
+      <String, Object>{'insert': '\n'},
+    ];
   }
-  return true;
+
+  final lastInsert = ops.last['insert'];
+  if (lastInsert is! String || !lastInsert.endsWith('\n')) {
+    ops.add(<String, Object>{'insert': '\n'});
+  }
+  return ops;
 }
 
-String _nodePlainText(Node node) {
-  final parts = <String>[];
+List<dynamic> _extractChildren(Map<String, dynamic> node) {
+  final directChildren = node['children'];
+  if (directChildren is List) {
+    return directChildren;
+  }
+  final root = node['root'];
+  if (root is Map<String, dynamic>) {
+    final rootChildren = root['children'];
+    if (rootChildren is List) {
+      return rootChildren;
+    }
+  }
+  return const <dynamic>[];
+}
 
-  final delta = node.delta;
-  if (delta != null) {
-    final text =
-        delta
-            .toPlainText()
-            .replaceAll('\n', ' ')
-            .replaceAll(RegExp(r'\s+'), ' ')
-            .trim();
-    if (text.isNotEmpty) {
-      parts.add(text);
+void _appendAppFlowyNode(dynamic rawNode, List<Map<String, Object>> ops) {
+  if (rawNode is! Map<String, dynamic>) {
+    return;
+  }
+
+  final type = rawNode['type'] as String?;
+  if (type == 'image') {
+    final attributes = rawNode['attributes'];
+    final url =
+        attributes is Map<String, dynamic> ? attributes['url'] as String? : null;
+    if (url != null && url.isNotEmpty) {
+      ops.add(<String, Object>{
+        'insert': <String, Object>{'image': url},
+      });
+      ops.add(<String, Object>{'insert': '\n'});
+    }
+    return;
+  }
+
+  final text = _extractAppFlowyNodeText(rawNode);
+  if (text.isNotEmpty) {
+    ops.add(<String, Object>{'insert': text});
+  }
+
+  if (_isBlockNode(type) && (text.isNotEmpty || type == 'paragraph')) {
+    ops.add(<String, Object>{'insert': '\n'});
+  }
+
+  for (final child in _extractChildren(rawNode)) {
+    _appendAppFlowyNode(child, ops);
+  }
+}
+
+String _extractAppFlowyNodeText(Map<String, dynamic> rawNode) {
+  final attributes = rawNode['attributes'];
+  if (attributes is! Map<String, dynamic>) {
+    return '';
+  }
+
+  final delta = attributes['delta'];
+  if (delta is! List) {
+    return '';
+  }
+
+  final buffer = StringBuffer();
+  for (final op in delta) {
+    if (op is Map<String, dynamic>) {
+      final insert = op['insert'];
+      if (insert is String) {
+        buffer.write(insert);
+      }
     }
   }
 
-  for (final child in node.children) {
-    final text = _nodePlainText(child);
-    if (text.isNotEmpty) {
-      parts.add(text);
-    }
-  }
+  return buffer.toString().replaceAll(RegExp(r'\n+$'), '');
+}
 
-  return parts.join(' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+bool _isBlockNode(String? type) {
+  return switch (type) {
+    'paragraph' => true,
+    'quote' => true,
+    'bulleted_list' => true,
+    'numbered_list' => true,
+    'todo_list' => true,
+    'heading' => true,
+    'code_block' => true,
+    _ => false,
+  };
+}
+
+String _normalizePlainText(String text) {
+  return text
+      .replaceAll('\uFFFC', '')
+      .replaceAll('\r\n', '\n')
+      .trimRight();
 }
 
 /// 规范化 metadata 字段，保证最终存储为 JSON 对象字符串。

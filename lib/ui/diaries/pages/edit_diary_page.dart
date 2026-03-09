@@ -29,10 +29,12 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     super.key,
     this.diaryId,
     this.entryMode = EditDiaryEntryMode.edit,
+    this.restoreCreateDraft = true,
   });
 
   final String? diaryId;
   final EditDiaryEntryMode entryMode;
+  final bool restoreCreateDraft;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
@@ -51,7 +53,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String _metadataJson = '{}';
   bool _initialized = false;
   bool _saving = false;
-  bool _allowPop = false;
+  Timer? _createDraftSaveDebounceTimer;
+  String? _lastPersistedCreateDraftRaw;
 
   bool get _isMobileRuntime {
     final platform = defaultTargetPlatform;
@@ -66,14 +69,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
     );
+    _titleController.addListener(_onCreateDraftInputChanged);
+    _contentController.addListener(_onCreateDraftInputChanged);
     _initialized = widget.diaryId == null;
-    if (_isCreateEntry) {
+    if (_isCreateEntry && widget.restoreCreateDraft) {
       unawaited(_restoreCreateDraftIfExists());
     }
   }
 
   @override
   void dispose() {
+    _createDraftSaveDebounceTimer?.cancel();
+    _titleController.removeListener(_onCreateDraftInputChanged);
+    _contentController.removeListener(_onCreateDraftInputChanged);
     _titleController.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
@@ -92,11 +100,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
 
-  bool get _hasDraftableContent {
-    return _titleController.text.trim().isNotEmpty ||
-        diaryDocumentHasVisibleContent(_contentController.document);
-  }
-
   NewDiaryDraft get _currentCreateDraft {
     return NewDiaryDraft(
       title: _titleController.text,
@@ -108,20 +111,46 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
-  void _popPage([Object? result]) {
-    if (!mounted) {
+  void _replaceContentController(quill.QuillController nextController) {
+    _contentController.removeListener(_onCreateDraftInputChanged);
+    _contentController.dispose();
+    _contentController = nextController;
+    _contentController.addListener(_onCreateDraftInputChanged);
+  }
+
+  void _onCreateDraftInputChanged() {
+    if (!_isCreateEntry) {
       return;
     }
-    if (!_allowPop) {
-      setState(() => _allowPop = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.of(context).pop(result);
-        }
-      });
+    _scheduleCreateDraftAutoSave();
+  }
+
+  void _scheduleCreateDraftAutoSave() {
+    _createDraftSaveDebounceTimer?.cancel();
+    _createDraftSaveDebounceTimer = Timer(const Duration(milliseconds: 1300), () {
+      unawaited(_persistOrClearCreateDraftDebounced());
+    });
+  }
+
+  Future<void> _persistOrClearCreateDraftDebounced() async {
+    if (!mounted || !_isCreateEntry || _saving) {
       return;
     }
-    Navigator.of(context).pop(result);
+
+    final draft = _currentCreateDraft;
+    if (!draft.hasContent) {
+      await _clearCreateDraft();
+      return;
+    }
+
+    final rawDraft = jsonEncode(draft.toJson());
+    if (rawDraft == _lastPersistedCreateDraftRaw) {
+      return;
+    }
+
+    final settingsService = await ref.read(settingsServiceProvider.future);
+    await settingsService.setCreateDiaryDraftRaw(rawDraft);
+    _lastPersistedCreateDraftRaw = rawDraft;
   }
 
   Future<void> _restoreCreateDraftIfExists() async {
@@ -147,6 +176,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         restoredDocument = documentFromPlainText(restoredDraft.contentText);
       }
 
+      _lastPersistedCreateDraftRaw = jsonEncode(restoredDraft.toJson());
       setState(() {
         _titleController.text = restoredDraft.title;
         _draftCover = restoredDraft.cover;
@@ -154,10 +184,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _selectedTagIds
           ..clear()
           ..addAll(restoredDraft.selectedTagIds);
-        _contentController.dispose();
-        _contentController = quill.QuillController(
+        _replaceContentController(
+          quill.QuillController(
           document: restoredDocument,
           selection: const TextSelection.collapsed(offset: 0),
+          ),
         );
       });
     } catch (_) {
@@ -165,80 +196,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     }
   }
 
-  Future<void> _persistCreateDraft() async {
-    final settingsService = await ref.read(settingsServiceProvider.future);
-    final rawDraft = jsonEncode(_currentCreateDraft.toJson());
-    await settingsService.setCreateDiaryDraftRaw(rawDraft);
-  }
-
   Future<void> _clearCreateDraft() async {
+    _createDraftSaveDebounceTimer?.cancel();
     final settingsService = await ref.read(settingsServiceProvider.future);
     await settingsService.clearCreateDiaryDraft();
-  }
-
-  Future<void> _handleBackNavigation() async {
-    if (_saving) {
-      return;
-    }
-
-    if (!_isCreateEntry) {
-      _popPage();
-      return;
-    }
-
-    if (!_hasDraftableContent) {
-      await _clearCreateDraft();
-      _popPage();
-      return;
-    }
-
-    final action = await _showDraftSaveDialog();
-    if (!mounted || action == null) {
-      return;
-    }
-
-    if (action == _CreateDraftBackAction.save) {
-      await _persistCreateDraft();
-    } else if (action == _CreateDraftBackAction.discard) {
-      await _clearCreateDraft();
-    }
-
-    if (!mounted) {
-      return;
-    }
-    _popPage();
-  }
-
-  Future<_CreateDraftBackAction?> _showDraftSaveDialog() {
-    return showDialog<_CreateDraftBackAction>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('保存草稿'),
-          content: const Text('检测到你有未发布内容，是否保存到草稿？'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('继续编辑'),
-            ),
-            TextButton(
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_CreateDraftBackAction.discard),
-              child: const Text('不保存'),
-            ),
-            FilledButton(
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_CreateDraftBackAction.save),
-              child: const Text('保存草稿'),
-            ),
-          ],
-        );
-      },
-    );
+    _lastPersistedCreateDraftRaw = null;
   }
 
   bool _validateDraft() {
@@ -303,7 +265,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       if (_isCreateEntry) {
         await _clearCreateDraft();
       }
-      _popPage(true);
+      Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) {
         return;
@@ -354,7 +316,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     if (!mounted) {
       return;
     }
-    _popPage(true);
+    Navigator.of(context).pop(true);
   }
 
   Future<void> _openPublishPage() async {
@@ -385,7 +347,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
     if (result == true) {
       await _clearCreateDraft();
-      _popPage(true);
+      Navigator.of(context).pop(true);
       return;
     }
 
@@ -397,6 +359,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           ..clear()
           ..addAll(result.selectedTagIds);
       });
+      _scheduleCreateDraftAutoSave();
     }
   }
 
@@ -513,10 +476,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
           _draftCover = detail.diary.cover;
-          _contentController.dispose();
-          _contentController = quill.QuillController(
-            document: decodeDiaryContentToDocument(detail.diary.content),
-            selection: const TextSelection.collapsed(offset: 0),
+          _replaceContentController(
+            quill.QuillController(
+              document: decodeDiaryContentToDocument(detail.diary.content),
+              selection: const TextSelection.collapsed(offset: 0),
+            ),
           );
           try {
             _metadataJson = prettyMetadataJson(detail.diary.metadata);
@@ -529,15 +493,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           _initialized = true;
         }
 
-        return PopScope(
-          canPop: _allowPop || !_isCreateEntry,
-          onPopInvokedWithResult: (bool didPop, Object? result) {
-            if (didPop) {
-              return;
-            }
-            unawaited(_handleBackNavigation());
-          },
-          child: Scaffold(
+        return Scaffold(
             appBar: AppBar(
             title: Text(
               widget.entryMode == EditDiaryEntryMode.create ? '新建日记' : '编辑日记',
@@ -607,7 +563,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   ),
               ],
             ),
-          ),
         );
       },
     );
@@ -622,5 +577,3 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 }
 
 enum EditDiaryEntryMode { create, edit }
-
-enum _CreateDraftBackAction { save, discard }

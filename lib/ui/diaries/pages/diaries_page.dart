@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
@@ -103,6 +105,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     String? diaryId,
     Rect? sourceGlobalRect,
     bool fromFab = false,
+    bool restoreCreateDraft = true,
   }) {
     _searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
@@ -116,6 +119,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               diaryId: diaryId,
               sourceGlobalRect: beginRect,
               fromFab: fromFab,
+              restoreCreateDraft: restoreCreateDraft,
             ),
           )
           .then((_) {
@@ -132,6 +136,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     required String? diaryId,
     required Rect? sourceGlobalRect,
     required bool fromFab,
+    required bool restoreCreateDraft,
   }) {
     return PageRouteBuilder<void>(
       transitionDuration: const Duration(milliseconds: 380),
@@ -144,6 +149,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     fromFab || diaryId == null
                         ? EditDiaryEntryMode.create
                         : EditDiaryEntryMode.edit,
+                restoreCreateDraft: restoreCreateDraft,
               ),
       transitionsBuilder: (
         BuildContext context,
@@ -207,6 +213,81 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               },
             );
           },
+        );
+      },
+    );
+  }
+
+  Future<void> _openCreateEditorWithDraftPrompt({
+    Rect? sourceGlobalRect,
+    bool fromFab = false,
+  }) async {
+    final settingsService = await ref.read(settingsServiceProvider.future);
+    final existingDraft = _tryDecodeCreateDraft(
+      settingsService.createDiaryDraftRaw,
+    );
+    if (!mounted) {
+      return;
+    }
+
+    var restoreCreateDraft = true;
+    if (existingDraft?.hasContent == true) {
+      final decision = await _showCreateDraftDecisionDialog();
+      if (!mounted || decision == null) {
+        return;
+      }
+      if (decision == _CreateDraftDecision.newEmpty) {
+        await settingsService.clearCreateDiaryDraft();
+        restoreCreateDraft = false;
+      }
+    }
+
+    _openEditor(
+      sourceGlobalRect: sourceGlobalRect,
+      fromFab: fromFab,
+      restoreCreateDraft: restoreCreateDraft,
+    );
+  }
+
+  NewDiaryDraft? _tryDecodeCreateDraft(String? rawDraft) {
+    if (rawDraft == null || rawDraft.trim().isEmpty) {
+      return null;
+    }
+    try {
+      final decoded = jsonDecode(rawDraft);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+      return NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<_CreateDraftDecision?> _showCreateDraftDecisionDialog() {
+    return showDialog<_CreateDraftDecision>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('发现未完成日记'),
+          content: const Text('检测到你上次有未保存的日记，是否继续编辑？'),
+          actions: <Widget>[
+            TextButton(
+              onPressed:
+                  () => Navigator.of(
+                    dialogContext,
+                  ).pop(_CreateDraftDecision.newEmpty),
+              child: const Text('新建空笔记'),
+            ),
+            FilledButton(
+              onPressed:
+                  () => Navigator.of(
+                    dialogContext,
+                  ).pop(_CreateDraftDecision.continueEditing),
+              child: const Text('继续编辑'),
+            ),
+          ],
         );
       },
     );
@@ -522,7 +603,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     layoutMode: _layoutMode,
                                     isSelectionMode: _isSelectionMode,
                                     selectedDiaryIds: _selectedDiaryIds,
-                                    onCreate: () => _openEditor(fromFab: true),
+                                    onCreate:
+                                        () => unawaited(
+                                          _openCreateEditorWithDraftPrompt(
+                                            fromFab: true,
+                                          ),
+                                        ),
                                     onOpenEditor: (diaryId, sourceGlobalRect) {
                                       _openEditor(
                                         diaryId: diaryId,
@@ -612,7 +698,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   bottom: fabBottomOffset,
                   child: FloatingActionButton(
                     key: _fabKey,
-                    onPressed: () => _openEditor(fromFab: true),
+                    onPressed:
+                        () => unawaited(
+                          _openCreateEditorWithDraftPrompt(fromFab: true),
+                        ),
                     child: FaIcon(FontAwesomeIcons.plus),
                   ),
                 ),
@@ -654,4 +743,6 @@ class _RectRevealClipper extends CustomClipper<Path> {
     return rect != oldClipper.rect || radius != oldClipper.radius;
   }
 }
+
+enum _CreateDraftDecision { newEmpty, continueEditing }
 

@@ -17,6 +17,10 @@ class NewDiaryDraft {
   final String metadataJson;
   final Set<int> selectedTagIds;
 
+  bool get hasContent {
+    return title.trim().isNotEmpty || contentText.trim().isNotEmpty;
+  }
+
   factory NewDiaryDraft.fromJson(Map<String, Object?> json) {
     final rawTagIds = json['selectedTagIds'];
     final tagIds =

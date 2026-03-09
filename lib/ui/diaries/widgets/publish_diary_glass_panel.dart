@@ -85,15 +85,13 @@ class PublishDiaryGlassPanel extends StatefulWidget {
 class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   static const double _collapsedHeight = 64;
   static const double _expandedHeight = 430;
-  static const double _collapsedHorizontalInset = 32;
+  static const double _collapsedHorizontalInset = 40;
   static const double _expandedHorizontalInset = 16;
   static const double _collapsedExtraLift = 18;
   static const double _collapsedFactor = _collapsedHeight / _expandedHeight;
 
   late final SheetController _sheetController;
   double _progress = 0;
-
-  bool get _showPublishButton => _progress >= 0.72;
 
   @override
   void initState() {
@@ -262,6 +260,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                     _buildEnergySection(context),
                     const SizedBox(height: 14),
                     _buildMetadataPreview(context),
+                    const SizedBox(height: 14),
+                    _buildPublishAction(),
                   ],
                 ),
               ),
@@ -273,32 +273,24 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final title = _progress < 0.56 ? '上划展开' : '点击发表日记';
-
+    final isCollapsedVisual = _progress < 0.56;
+    final icon =
+        isCollapsedVisual ? FontAwesomeIcons.anglesUp : FontAwesomeIcons.anglesDown;
+    final title = isCollapsedVisual ? '上划展开' : '下滑收起';
     return SizedBox(
       height: _collapsedHeight,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 8, 12, 8),
+      child: Center(
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const FaIcon(FontAwesomeIcons.anglesUp, size: 14),
+            FaIcon(icon, size: 14),
             const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
-            if (_showPublishButton)
-              FilledButton.icon(
-                onPressed: widget.saving ? null : widget.onPublish,
-                icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
-                label: Text(widget.saving ? '发布中...' : '发布'),
-              )
-            else
-              const FaIcon(FontAwesomeIcons.handPointUp, size: 14),
           ],
         ),
       ),
@@ -523,6 +515,17 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPublishAction() {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: widget.saving ? null : widget.onPublish,
+        icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
+        label: Text(widget.saving ? '发布中...' : '点击发表日记'),
+      ),
     );
   }
 }

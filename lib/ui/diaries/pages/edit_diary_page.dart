@@ -51,6 +51,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final Set<int> _selectedTagIds = <int>{};
   late quill.QuillController _contentController;
   String _metadataJson = '{}';
+  String? _draftLocation;
+  String? _draftWeather;
+  String? _draftMoodEmoji;
+  int? _draftEnergyLevel;
   bool _initialized = false;
   bool _saving = false;
   Timer? _createDraftSaveDebounceTimer;
@@ -108,6 +112,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       cover: _draftCover,
       metadataJson: _metadataJson,
       selectedTagIds: <int>{..._selectedTagIds},
+      location: _draftLocation,
+      weather: _draftWeather,
+      moodEmoji: _draftMoodEmoji,
+      energyLevel: _draftEnergyLevel,
     );
   }
 
@@ -181,6 +189,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _titleController.text = restoredDraft.title;
         _draftCover = restoredDraft.cover;
         _metadataJson = restoredDraft.metadataJson;
+        _draftLocation = restoredDraft.location;
+        _draftWeather = restoredDraft.weather;
+        _draftMoodEmoji = restoredDraft.moodEmoji;
+        _draftEnergyLevel = restoredDraft.energyLevel;
         _selectedTagIds
           ..clear()
           ..addAll(restoredDraft.selectedTagIds);
@@ -335,6 +347,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               cover: _draftCover,
               metadataJson: _metadataJson,
               selectedTagIds: <int>{..._selectedTagIds},
+              location: _draftLocation,
+              weather: _draftWeather,
+              moodEmoji: _draftMoodEmoji,
+              energyLevel: _draftEnergyLevel,
             ),
           );
         },
@@ -355,6 +371,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       setState(() {
         _draftCover = result.cover;
         _metadataJson = result.metadataJson;
+        _draftLocation = result.location;
+        _draftWeather = result.weather;
+        _draftMoodEmoji = result.moodEmoji;
+        _draftEnergyLevel = result.energyLevel;
         _selectedTagIds
           ..clear()
           ..addAll(result.selectedTagIds);

@@ -1,5 +1,5 @@
 class NewDiaryDraft {
-  static const Object _coverNotChanged = Object();
+  static const Object _fieldNotChanged = Object();
 
   const NewDiaryDraft({
     required this.title,
@@ -8,6 +8,10 @@ class NewDiaryDraft {
     this.cover,
     this.metadataJson = '{}',
     this.selectedTagIds = const <int>{},
+    this.location,
+    this.weather,
+    this.moodEmoji,
+    this.energyLevel,
   });
 
   final String title;
@@ -16,6 +20,10 @@ class NewDiaryDraft {
   final String? cover;
   final String metadataJson;
   final Set<int> selectedTagIds;
+  final String? location;
+  final String? weather;
+  final String? moodEmoji;
+  final int? energyLevel;
 
   bool get hasContent {
     return title.trim().isNotEmpty || contentText.trim().isNotEmpty;
@@ -38,6 +46,10 @@ class NewDiaryDraft {
       cover: json['cover'] as String?,
       metadataJson: (json['metadataJson'] as String?) ?? '{}',
       selectedTagIds: tagIds,
+      location: json['location'] as String?,
+      weather: json['weather'] as String?,
+      moodEmoji: json['moodEmoji'] as String?,
+      energyLevel: (json['energyLevel'] as num?)?.toInt(),
     );
   }
 
@@ -49,6 +61,10 @@ class NewDiaryDraft {
       'cover': cover,
       'metadataJson': metadataJson,
       'selectedTagIds': selectedTagIds.toList()..sort(),
+      'location': location,
+      'weather': weather,
+      'moodEmoji': moodEmoji,
+      'energyLevel': energyLevel,
     };
   }
 
@@ -56,18 +72,31 @@ class NewDiaryDraft {
     String? title,
     String? contentDocJson,
     String? contentText,
-    Object? cover = _coverNotChanged,
+    Object? cover = _fieldNotChanged,
     String? metadataJson,
     Set<int>? selectedTagIds,
+    Object? location = _fieldNotChanged,
+    Object? weather = _fieldNotChanged,
+    Object? moodEmoji = _fieldNotChanged,
+    Object? energyLevel = _fieldNotChanged,
   }) {
     return NewDiaryDraft(
       title: title ?? this.title,
       contentDocJson: contentDocJson ?? this.contentDocJson,
       contentText: contentText ?? this.contentText,
       // `cover` 需要支持“显式置空”，因此不能用 `??` 合并。
-      cover: identical(cover, _coverNotChanged) ? this.cover : cover as String?,
+      cover: identical(cover, _fieldNotChanged) ? this.cover : cover as String?,
       metadataJson: metadataJson ?? this.metadataJson,
       selectedTagIds: selectedTagIds ?? this.selectedTagIds,
+      location:
+          identical(location, _fieldNotChanged) ? this.location : location as String?,
+      weather: identical(weather, _fieldNotChanged) ? this.weather : weather as String?,
+      moodEmoji:
+          identical(moodEmoji, _fieldNotChanged) ? this.moodEmoji : moodEmoji as String?,
+      energyLevel:
+          identical(energyLevel, _fieldNotChanged)
+              ? this.energyLevel
+              : energyLevel as int?,
     );
   }
 }

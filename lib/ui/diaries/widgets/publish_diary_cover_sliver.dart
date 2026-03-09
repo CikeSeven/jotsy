@@ -1,0 +1,144 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+
+/// 发布页头图 Sliver。
+///
+/// 提供“上滑逐渐淡出 + 高度收起”的视觉效果。
+class PublishDiaryCoverSliver extends StatelessWidget {
+  const PublishDiaryCoverSliver({
+    super.key,
+    required this.cover,
+    this.maxExtentHeight = 220,
+  });
+
+  final String cover;
+  final double maxExtentHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverPersistentHeader(
+      pinned: false,
+      delegate: _PublishDiaryCoverHeaderDelegate(
+        cover: cover,
+        maxExtentHeight: maxExtentHeight,
+      ),
+    );
+  }
+}
+
+class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _PublishDiaryCoverHeaderDelegate({
+    required this.cover,
+    required this.maxExtentHeight,
+  });
+
+  final String cover;
+  final double maxExtentHeight;
+
+  @override
+  double get minExtent => 0;
+
+  @override
+  double get maxExtent => maxExtentHeight;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final extentDelta = (maxExtent - minExtent).abs();
+    final collapseProgress =
+        (extentDelta <= 0
+                ? 0.0
+                : (1 - (shrinkOffset / extentDelta)).clamp(0.0, 1.0))
+            .toDouble();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Opacity(
+        opacity: collapseProgress,
+        child: Transform.scale(
+          // 收起阶段同时轻微缩放，降低突兀感。
+          scale: 0.96 + (collapseProgress * 0.04),
+          alignment: Alignment.topCenter,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: DecoratedBox(
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
+              child: _CoverImage(cover: cover),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PublishDiaryCoverHeaderDelegate oldDelegate) {
+    return oldDelegate.cover != cover ||
+        oldDelegate.maxExtentHeight != maxExtentHeight;
+  }
+}
+
+class _CoverImage extends StatelessWidget {
+  const _CoverImage({required this.cover});
+
+  final String cover;
+
+  bool get _isNetworkImage {
+    final uri = Uri.tryParse(cover);
+    if (uri == null) {
+      return false;
+    }
+    return uri.scheme == 'http' || uri.scheme == 'https';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isNetworkImage) {
+      return Image.network(
+        cover,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, __, ___) => const _CoverFallback(),
+      );
+    }
+
+    return Image.file(
+      File(cover),
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, __, ___) => const _CoverFallback(),
+    );
+  }
+}
+
+class _CoverFallback extends StatelessWidget {
+  const _CoverFallback();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: <Color>[
+            colorScheme.primaryContainer.withValues(alpha: 0.35),
+            colorScheme.secondaryContainer.withValues(alpha: 0.25),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Text(
+        '封面加载失败',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+  }
+}

@@ -1,12 +1,22 @@
+import 'dart:ui';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:path/path.dart' as path;
 
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
 
 class PublishDiaryPage extends ConsumerStatefulWidget {
   const PublishDiaryPage({super.key, required this.initialDraft});
@@ -18,34 +28,138 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
-  late final TextEditingController _metadataController;
-  late final TextEditingController _coverController;
+  final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _weatherController = TextEditingController();
+  late final quill.QuillController _previewController;
   late final Set<int> _selectedTagIds;
+
+  String? _draftCover;
+  String? _moodEmoji;
+  int _energyLevel = 3;
+  bool _panelExpanded = false;
   bool _saving = false;
 
+  String get _title {
+    final normalized = widget.initialDraft.title.trim();
+    return normalized.isEmpty ? '未命名日记' : normalized;
+  }
+
   String? get _normalizedCover {
-    final normalized = _coverController.text.trim();
-    if (normalized.isEmpty) {
+    final normalized = _draftCover?.trim();
+    if (normalized == null || normalized.isEmpty) {
       return null;
     }
     return normalized;
   }
 
+  String? get _coverLabel {
+    final cover = _normalizedCover;
+    if (cover == null) {
+      return null;
+    }
+    final uri = Uri.tryParse(cover);
+    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
+      return cover;
+    }
+    return path.basename(cover);
+  }
+
+  String? _normalizeOptionalText(String? raw) {
+    final normalized = raw?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
+  }
+
+  Map<String, Object?> _buildDeviceMetadata() {
+    final dispatcher = PlatformDispatcher.instance;
+    return <String, Object?>{
+      'platform': defaultTargetPlatform.name,
+      'locale': dispatcher.locale.toLanguageTag(),
+      'brightness': dispatcher.platformBrightness.name,
+    };
+  }
+
+  String _buildMetadataJson({DateTime? generatedAt}) {
+    return PublishMetadataComposer.compose(
+      contentText: widget.initialDraft.contentText,
+      selectedTagIds: _selectedTagIds,
+      hasCover: _normalizedCover != null,
+      deviceInfo: _buildDeviceMetadata(),
+      generatedAt: generatedAt ?? DateTime.now(),
+      location: _normalizeOptionalText(_locationController.text),
+      weather: _normalizeOptionalText(_weatherController.text),
+      moodEmoji: _normalizeOptionalText(_moodEmoji),
+      energyLevel: _energyLevel,
+    );
+  }
+
+  String get _prettyMetadataPreview {
+    try {
+      return PublishMetadataComposer.pretty(_buildMetadataJson());
+    } catch (_) {
+      return '{}';
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    _coverController = TextEditingController(text: widget.initialDraft.cover ?? '');
-    _metadataController = TextEditingController(
-      text: widget.initialDraft.metadataJson,
-    );
     _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
+    _draftCover = _normalizeOptionalText(widget.initialDraft.cover);
+    _locationController.text = widget.initialDraft.location ?? '';
+    _weatherController.text = widget.initialDraft.weather ?? '';
+    _moodEmoji = widget.initialDraft.moodEmoji;
+
+    final initialEnergy = widget.initialDraft.energyLevel ?? 3;
+    if (initialEnergy < 1) {
+      _energyLevel = 1;
+    } else if (initialEnergy > 5) {
+      _energyLevel = 5;
+    } else {
+      _energyLevel = initialEnergy;
+    }
+
+    quill.Document previewDoc;
+    try {
+      previewDoc = decodeDiaryContentToDocument(widget.initialDraft.contentDocJson);
+    } catch (_) {
+      previewDoc = documentFromPlainText(widget.initialDraft.contentText);
+    }
+    _previewController = quill.QuillController(
+      document: previewDoc,
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
   }
 
   @override
   void dispose() {
-    _coverController.dispose();
-    _metadataController.dispose();
+    _locationController.dispose();
+    _weatherController.dispose();
+    _previewController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickCover() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+    if (result == null || !mounted) {
+      return;
+    }
+
+    final selectedPath = result.files.first.path?.trim();
+    if (selectedPath == null || selectedPath.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('未获取到可用的封面路径')));
+      return;
+    }
+
+    setState(() => _draftCover = selectedPath);
   }
 
   Future<void> _createTagInline() async {
@@ -75,12 +189,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     if (_saving) {
       return;
     }
-    if (!isValidMetadataJsonObject(_metadataController.text)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('metadata 必须是合法 JSON 对象')));
-      return;
-    }
 
     setState(() => _saving = true);
 
@@ -91,7 +199,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         contentDocJson: widget.initialDraft.contentDocJson,
         contentText: widget.initialDraft.contentText,
         cover: _normalizedCover,
-        metadataJson: _metadataController.text,
+        metadataJson: _buildMetadataJson(generatedAt: DateTime.now()),
         tagIds: _selectedTagIds.toList(),
       );
       if (!mounted) {
@@ -116,19 +224,35 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     Navigator.of(context).pop(
       widget.initialDraft.copyWith(
         cover: _normalizedCover,
-        metadataJson: _metadataController.text,
+        metadataJson: _buildMetadataJson(),
         selectedTagIds: <int>{..._selectedTagIds},
+        location: _normalizeOptionalText(_locationController.text),
+        weather: _normalizeOptionalText(_weatherController.text),
+        moodEmoji: _normalizeOptionalText(_moodEmoji),
+        energyLevel: _energyLevel,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final tagsAsync = ref.watch(tagListProvider);
+
+    var tags = const <Tag>[];
+    var tagsLoading = false;
+    String? tagsError;
+    tagsAsync.when(
+      data: (data) => tags = data,
+      loading: () => tagsLoading = true,
+      error: (error, stackTrace) => tagsError = '$error',
+    );
+
+    final panelSpacer = _panelExpanded ? 460.0 : 140.0;
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (bool didPop, Object? result) {
+      onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
           _closeWithDraft();
         }
@@ -138,119 +262,109 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
           title: const Text('发布日记'),
           leading: IconButton(
             onPressed: _closeWithDraft,
-            icon: const Icon(Icons.arrow_back),
+            icon: const FaIcon(FontAwesomeIcons.arrowLeft, size: 16),
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: _saving ? null : _publish,
-              child: const Text('发布'),
-            ),
-          ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                widget.initialDraft.title.trim().isEmpty
-                    ? '未命名日记'
-                    : widget.initialDraft.title,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                widget.initialDraft.contentText.trim().isEmpty
-                    ? '正文为空'
-                    : widget.initialDraft.contentText,
-                style: Theme.of(context).textTheme.bodyMedium,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '封面',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _coverController,
-                decoration: const InputDecoration(
-                  hintText: '封面地址（可选，本地路径或 URL）',
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: <Widget>[
-                  Text(
-                    '标签',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: _createTagInline,
-                    icon: const FaIcon(FontAwesomeIcons.plus, size: 14),
-                    label: const Text('新建标签'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              tagsAsync.when(
-                data: (List<Tag> tags) {
-                  if (tags.isEmpty) {
-                    return const Text('暂无标签，可先新建');
-                  }
-                  return Wrap(
-                    spacing: 8,
-                    runSpacing: -8,
-                    children: tags.map((Tag tag) {
-                      return FilterChip(
-                        selected: _selectedTagIds.contains(tag.id),
-                        avatar: CircleAvatar(
-                          radius: 8,
-                          backgroundColor: Color(tag.color),
+        body: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            CustomScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              slivers: <Widget>[
+                if (_normalizedCover != null)
+                  PublishDiaryCoverSliver(cover: _normalizedCover!),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          _title,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
                         ),
-                        label: Text(tag.name),
-                        onSelected: (bool selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedTagIds.add(tag.id);
-                            } else {
-                              _selectedTagIds.remove(tag.id);
-                            }
-                          });
+                        const SizedBox(height: 16),
+                        if (widget.initialDraft.contentText.trim().isEmpty)
+                          Text(
+                            '正文为空',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          )
+                        else
+                          quill.QuillEditor.basic(
+                            controller: _previewController,
+                            config: quill.QuillEditorConfig(
+                              autoFocus: false,
+                              scrollable: false,
+                              padding: EdgeInsets.zero,
+                              embedBuilders: buildDiaryQuillEmbedBuilders(),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(child: SizedBox(height: panelSpacer)),
+              ],
+            ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 0,
+              child: PublishDiaryGlassPanel(
+                expanded: _panelExpanded,
+                saving: _saving,
+                bottomInset: keyboardInset,
+                hasCover: _normalizedCover != null,
+                coverLabel: _coverLabel,
+                locationController: _locationController,
+                weatherController: _weatherController,
+                moodEmoji: _moodEmoji,
+                energyLevel: _energyLevel,
+                tags: tags,
+                tagsLoading: tagsLoading,
+                tagsError: tagsError,
+                selectedTagIds: _selectedTagIds,
+                metadataPreview: _prettyMetadataPreview,
+                onExpandedChanged: (expanded) {
+                  setState(() => _panelExpanded = expanded);
+                },
+                onPickCover: _pickCover,
+                onClearCover:
+                    _normalizedCover == null
+                        ? null
+                        : () {
+                          setState(() => _draftCover = null);
                         },
-                      );
-                    }).toList(),
+                onCreateTag: _createTagInline,
+                onToggleTag: (tagId, selected) {
+                  setState(() {
+                    if (selected) {
+                      _selectedTagIds.add(tagId);
+                    } else {
+                      _selectedTagIds.remove(tagId);
+                    }
+                  });
+                },
+                onMoodChanged: (nextMood) {
+                  setState(() => _moodEmoji = nextMood);
+                },
+                onEnergyChanged: (nextValue) {
+                  setState(
+                    () => _energyLevel = nextValue.round().clamp(1, 5).toInt(),
                   );
                 },
-                loading:
-                    () => const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6),
-                      child: SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                error:
-                    (Object error, StackTrace stackTrace) =>
-                        Text('标签加载失败: $error'),
+                onLocationChanged: (_) {
+                  setState(() {});
+                },
+                onWeatherChanged: (_) {
+                  setState(() {});
+                },
+                onPublish: _publish,
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Metadata',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _metadataController,
-                decoration: const InputDecoration(hintText: '{}'),
-                minLines: 4,
-                maxLines: 10,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

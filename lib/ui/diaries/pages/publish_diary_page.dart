@@ -31,6 +31,8 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _weatherController = TextEditingController();
+  final PublishDiaryGlassPanelController _panelController =
+      PublishDiaryGlassPanelController();
   late final quill.QuillController _previewController;
   late final Set<int> _selectedTagIds;
 
@@ -255,6 +257,14 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
+          if (_panelController.canPopInnerPage) {
+            _panelController.popInnerPage();
+            return;
+          }
+          if (_panelController.isExpanded) {
+            _panelController.collapse();
+            return;
+          }
           _closeWithDraft();
         }
       },
@@ -314,6 +324,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               right: 16,
               bottom: 0,
               child: PublishDiaryGlassPanel(
+                controller: _panelController,
                 saving: _saving,
                 bottomInset: keyboardInset,
                 hasCover: _normalizedCover != null,

@@ -18,6 +18,7 @@ import '../../../app/theme/app_radii.dart';
 class PublishDiaryGlassPanel extends StatefulWidget {
   const PublishDiaryGlassPanel({
     super.key,
+    this.controller,
     required this.saving,
     required this.bottomInset,
     required this.hasCover,
@@ -54,6 +55,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     '🤩',
   ];
 
+  final PublishDiaryGlassPanelController? controller;
   final bool saving;
   final double bottomInset;
   final bool hasCover;
@@ -82,29 +84,126 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   State<PublishDiaryGlassPanel> createState() => _PublishDiaryGlassPanelState();
 }
 
+/// 发布页悬浮面板控制器。
+///
+/// 提供给页面级返回逻辑使用：
+/// - 判断面板是否处于展开状态；
+/// - 主动触发面板收起动画。
+class PublishDiaryGlassPanelController {
+  _PublishDiaryGlassPanelState? _state;
+
+  bool get isExpanded => _state?._isExpandedForBackAction ?? false;
+  bool get canPopInnerPage => _state?._canPopInnerPage ?? false;
+
+  Future<void> collapse() {
+    return _state?._collapseToMin() ?? Future<void>.value();
+  }
+
+  Future<bool> popInnerPage() {
+    return _state?._popInnerPage() ?? Future<bool>.value(false);
+  }
+
+  void _attach(_PublishDiaryGlassPanelState state) {
+    _state = state;
+  }
+
+  void _detach(_PublishDiaryGlassPanelState state) {
+    if (_state == state) {
+      _state = null;
+    }
+  }
+}
+
 class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   static const double _collapsedHeight = 64;
-  static const double _expandedHeight = 430;
+  static const double _mainExpandedHeight = 470;
+  static const double _tagExpandedHeight = 540;
   static const double _collapsedHorizontalInset = 40;
   static const double _expandedHorizontalInset = 16;
   static const double _collapsedExtraLift = 18;
-  static const double _collapsedFactor = _collapsedHeight / _expandedHeight;
 
   late final SheetController _sheetController;
+  late final PageController _contentPageController;
   double _progress = 0;
+  int _contentPageIndex = 0;
+
+  double get _activeExpandedHeight =>
+      _contentPageIndex == 1 ? _tagExpandedHeight : _mainExpandedHeight;
+
+  double get _collapsedFactor => _collapsedHeight / _activeExpandedHeight;
+
+  bool get _isExpandedForBackAction => _progress > 0.06;
+  bool get _canPopInnerPage => _contentPageIndex > 0;
 
   @override
   void initState() {
     super.initState();
     _sheetController = SheetController();
+    _contentPageController = PageController();
     _sheetController.addListener(_handleSheetMetricsChanged);
+    widget.controller?._attach(this);
+  }
+
+  @override
+  void didUpdateWidget(covariant PublishDiaryGlassPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?._detach(this);
+      widget.controller?._attach(this);
+    }
   }
 
   @override
   void dispose() {
+    widget.controller?._detach(this);
     _sheetController.removeListener(_handleSheetMetricsChanged);
     _sheetController.dispose();
+    _contentPageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _collapseToMin() async {
+    if (_canPopInnerPage) {
+      await _popInnerPage(animated: false);
+    }
+    if (!_sheetController.hasClient) {
+      return;
+    }
+    await _sheetController.animateTo(
+      SheetOffset(_collapsedFactor),
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<void> _openTagPage() async {
+    if (_contentPageIndex == 1 || !_contentPageController.hasClients) {
+      return;
+    }
+    await _contentPageController.animateToPage(
+      1,
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  Future<bool> _popInnerPage({bool animated = true}) async {
+    if (!_canPopInnerPage || !_contentPageController.hasClients) {
+      return false;
+    }
+    if (animated) {
+      await _contentPageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+      return true;
+    }
+    _contentPageController.jumpToPage(0);
+    if (mounted) {
+      setState(() => _contentPageIndex = 0);
+    }
+    return true;
   }
 
   void _handleSheetMetricsChanged() {
@@ -163,11 +262,11 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       ),
       child: SizedBox(
         // SheetViewport 需要有限高度约束，否则会触发布局断言。
-        height: _expandedHeight,
+        height: _activeExpandedHeight,
         child: SheetViewport(
           child: Sheet(
             controller: _sheetController,
-            initialOffset: const SheetOffset(_collapsedFactor),
+            initialOffset: SheetOffset(_collapsedFactor),
             physics: const BouncingSheetPhysics(
               spring: SpringDescription(
                 mass: 0.62,
@@ -177,10 +276,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               bounceExtent: 92,
               resistance: 7.2,
             ),
-            snapGrid: const MultiSnapGrid(
+            snapGrid: MultiSnapGrid(
               snaps: <SheetOffset>[
                 SheetOffset(_collapsedFactor),
-                SheetOffset(1),
+                const SheetOffset(1),
               ],
               minFlingSpeed: 580,
             ),
@@ -219,7 +318,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             ),
             child: SizedBox(
               width: double.infinity,
-              height: _expandedHeight,
+              height: _activeExpandedHeight,
               child: _buildContent(context),
             ),
           ),
@@ -229,11 +328,27 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildContent(BuildContext context) {
-    final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
+    return PageView(
+      controller: _contentPageController,
+      physics: const NeverScrollableScrollPhysics(),
+      onPageChanged: (index) {
+        if (_contentPageIndex == index) {
+          return;
+        }
+        setState(() => _contentPageIndex = index);
+      },
+      children: <Widget>[
+        _buildMainPanelPage(context),
+        _buildTagPanelPage(context),
+      ],
+    );
+  }
 
+  Widget _buildMainPanelPage(BuildContext context) {
+    final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
     return Column(
       children: <Widget>[
-        _buildHeader(context),
+        _buildMainHeader(context),
         Divider(
           height: 1,
           color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
@@ -244,27 +359,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             ignoring: _progress < 0.58,
             child: Opacity(
               opacity: detailsOpacity,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _buildCoverSection(context),
-                    const SizedBox(height: 14),
-                    _buildTagSection(context),
-                    const SizedBox(height: 14),
-                    _buildContextFields(context),
-                    const SizedBox(height: 14),
-                    _buildMoodSection(context),
-                    const SizedBox(height: 14),
-                    _buildEnergySection(context),
-                    const SizedBox(height: 14),
-                    _buildMetadataPreview(context),
-                    const SizedBox(height: 14),
-                    _buildPublishAction(),
-                  ],
-                ),
-              ),
+              child: _buildMainContentPage(context),
             ),
           ),
         ),
@@ -272,7 +367,76 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildMainContentPage(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildCoverSection(context),
+          const SizedBox(height: 14),
+          _buildTagEntryTile(context),
+          const SizedBox(height: 14),
+          _buildContextFields(context),
+          const SizedBox(height: 14),
+          _buildMoodSection(context),
+          const SizedBox(height: 14),
+          _buildEnergySection(context),
+          const SizedBox(height: 14),
+          _buildMetadataPreview(context),
+          const SizedBox(height: 14),
+          _buildPublishAction(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTagPanelPage(BuildContext context) {
+    final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
+    return Column(
+      children: <Widget>[
+        _buildTagHeader(context),
+        Divider(
+          height: 1,
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+        Expanded(
+          child: IgnorePointer(
+            // 只在展开到一定程度后开放内部交互，避免半展开误触。
+            ignoring: _progress < 0.58,
+            child: Opacity(
+              opacity: detailsOpacity,
+              child: _buildTagManagePage(context),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTagManagePage(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              TextButton.icon(
+                onPressed: widget.onCreateTag,
+                icon: const FaIcon(FontAwesomeIcons.plus, size: 12),
+                label: const Text('新建'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildTagManageContent(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainHeader(BuildContext context) {
     final isCollapsedVisual = _progress < 0.56;
     final icon =
         isCollapsedVisual ? FontAwesomeIcons.anglesUp : FontAwesomeIcons.anglesDown;
@@ -293,6 +457,34 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTagHeader(BuildContext context) {
+    return SizedBox(
+      height: _collapsedHeight,
+      child: Row(
+        children: <Widget>[
+          IconButton(
+            onPressed: () {
+              _popInnerPage();
+            },
+            icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 14),
+            tooltip: '返回',
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                '选择标签',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 48),
+        ],
       ),
     );
   }
@@ -338,60 +530,140 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     );
   }
 
-  Widget _buildTagSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Text(
-              '标签',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const Spacer(),
-            TextButton.icon(
-              onPressed: widget.onCreateTag,
-              icon: const FaIcon(FontAwesomeIcons.plus, size: 12),
-              label: const Text('新建'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        if (widget.tagsLoading)
-          const SizedBox(
-            height: 20,
-            width: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          )
-        else if (widget.tagsError != null)
-          Text(
-            '标签加载失败: ${widget.tagsError}',
-            style: Theme.of(context).textTheme.bodySmall,
-          )
-        else if (widget.tags.isEmpty)
-          Text(
-            '暂无标签，可先创建',
-            style: Theme.of(context).textTheme.bodySmall,
-          )
-        else
-          Wrap(
-            spacing: 8,
-            runSpacing: -8,
-            children: widget.tags.map((tag) {
-              return FilterChip(
-                selected: widget.selectedTagIds.contains(tag.id),
-                avatar: CircleAvatar(
-                  radius: 8,
-                  backgroundColor: Color(tag.color),
-                ),
-                label: Text(tag.name),
-                onSelected: (selected) => widget.onToggleTag(tag.id, selected),
-              );
-            }).toList(),
+  Widget _buildTagEntryTile(BuildContext context) {
+    final selectedTags =
+        widget.tags.where((tag) => widget.selectedTagIds.contains(tag.id)).toList();
+
+    return InkWell(
+      onTap: _openTagPage,
+      borderRadius: BorderRadius.circular(14),
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.45),
           ),
-      ],
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 42),
+          child: Row(
+            children: <Widget>[
+              Text(
+                '标签',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: selectedTags.isEmpty
+                    ? Text(
+                        '未选择标签',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      )
+                    : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: selectedTags
+                              .map(
+                                (tag) => Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: Chip(
+                                    visualDensity: VisualDensity.compact,
+                                    label: Text(tag.name),
+                                    avatar: CircleAvatar(
+                                      radius: 7,
+                                      backgroundColor: Color(tag.color),
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 8),
+              const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTagManageContent(BuildContext context) {
+    if (widget.tagsLoading) {
+      return const SizedBox(
+        height: 20,
+        width: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+    if (widget.tagsError != null) {
+      return Text(
+        '标签加载失败: ${widget.tagsError}',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+    if (widget.tags.isEmpty) {
+      return Text(
+        '暂无标签，可先创建',
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+    return Column(
+      children: widget.tags
+          .map((tag) => _buildTagListRow(context, tag: tag))
+          .toList(growable: false),
+    );
+  }
+
+  Widget _buildTagListRow(BuildContext context, {required Tag tag}) {
+    final selected = widget.selectedTagIds.contains(tag.id);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.36),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => widget.onToggleTag(tag.id, !selected),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 40),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Row(
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 8,
+                    backgroundColor: Color(tag.color),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      tag.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  IgnorePointer(
+                    child: Checkbox(
+                      value: selected,
+                      shape: const CircleBorder(),
+                      onChanged: (_) {},
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 

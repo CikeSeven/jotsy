@@ -37,10 +37,11 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final _titleController = TextEditingController();
-  final _coverController = TextEditingController();
+  String? _draftCover;
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final ScrollController _contentScrollController = ScrollController();
+  final ScrollController _editorInnerScrollController = ScrollController();
 
   final Set<int> _selectedTagIds = <int>{};
   late quill.QuillController _contentController;
@@ -67,10 +68,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   void dispose() {
     _titleController.dispose();
-    _coverController.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
     _contentScrollController.dispose();
+    _editorInnerScrollController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -80,14 +81,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
   String get _currentContentDocJson =>
       encodeDiaryDocumentToJson(_contentController.document);
-
-  String? get _currentCover {
-    final normalized = _coverController.text.trim();
-    if (normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
 
   bool _validateDraft() {
     final title = _titleController.text.trim();
@@ -121,7 +114,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     final title = _titleController.text;
     final contentText = _currentContentText;
     final contentDocJson = _currentContentDocJson;
-    final cover = _currentCover;
+    final cover = _draftCover;
 
     try {
       if (widget.diaryId == null) {
@@ -215,7 +208,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               title: _titleController.text,
               contentDocJson: _currentContentDocJson,
               contentText: _currentContentText,
-              cover: _currentCover,
+              cover: _draftCover,
               metadataJson: _metadataJson,
               selectedTagIds: <int>{..._selectedTagIds},
             ),
@@ -235,7 +228,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
     if (result is NewDiaryDraft) {
       setState(() {
-        _coverController.text = result.cover ?? '';
+        _draftCover = result.cover;
         _metadataJson = result.metadataJson;
         _selectedTagIds
           ..clear()
@@ -245,71 +238,67 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   }
 
   Widget _buildTitleInput(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: TextField(
-        controller: _titleController,
-        focusNode: _titleFocusNode,
-        style: Theme.of(context).textTheme.headlineSmall,
-        maxLength: 200,
-        decoration: const InputDecoration(
-          hintText: '标题',
-          border: UnderlineInputBorder(),
-          enabledBorder: UnderlineInputBorder(),
-          focusedBorder: UnderlineInputBorder(),
-          counterText: '',
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCoverInput(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-      child: TextField(
-        controller: _coverController,
-        decoration: const InputDecoration(
-          hintText: '封面地址（可选，本地路径或 URL）',
-          border: UnderlineInputBorder(),
-          enabledBorder: UnderlineInputBorder(),
-          focusedBorder: UnderlineInputBorder(),
-        ),
+    return TextField(
+      controller: _titleController,
+      focusNode: _titleFocusNode,
+      style: Theme.of(context).textTheme.headlineSmall,
+      maxLength: 200,
+      decoration: const InputDecoration(
+        hintText: '标题',
+        border: UnderlineInputBorder(),
+        enabledBorder: UnderlineInputBorder(),
+        focusedBorder: UnderlineInputBorder(),
+        counterText: '',
       ),
     );
   }
 
   Widget _buildEditor(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        _buildTitleInput(context),
-        _buildCoverInput(context),
-        const SizedBox(height: 8),
-        Expanded(
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final minEditorHeight =
+            constraints.maxHeight > 420 ? constraints.maxHeight - 140 : 280.0;
+        return SingleChildScrollView(
+          controller: _contentScrollController,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: quill.QuillEditor.basic(
-                controller: _contentController,
-                focusNode: _contentFocusNode,
-                scrollController: _contentScrollController,
-                config: quill.QuillEditorConfig(
-                  autoFocus: widget.diaryId == null,
-                  placeholder: '开始记录...',
-                  scrollable: true,
-                  padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                  embedBuilders: buildDiaryQuillEmbedBuilders(),
-                ),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  _buildTitleInput(context),
+                  const SizedBox(height: 12),
+                  ConstrainedBox(
+                    // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
+                    constraints: BoxConstraints(
+                      minHeight: minEditorHeight,
+                    ),
+                    child: quill.QuillEditor.basic(
+                      controller: _contentController,
+                      focusNode: _contentFocusNode,
+                      scrollController: _editorInnerScrollController,
+                      config: quill.QuillEditorConfig(
+                        autoFocus: widget.diaryId == null,
+                        placeholder: '开始记录...',
+                        scrollable: false,
+                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+                        embedBuilders: buildDiaryQuillEmbedBuilders(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -351,7 +340,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
-          _coverController.text = detail.diary.cover ?? '';
+          _draftCover = detail.diary.cover;
           _contentController.dispose();
           _contentController = quill.QuillController(
             document: decodeDiaryContentToDocument(detail.diary.content),

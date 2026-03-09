@@ -1,20 +1,23 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 
-/// 发布页底部玻璃悬浮面板。
+/// 发布页底部玻璃悬浮面板（smooth_sheets 版）。
 ///
-/// - 收起态：提示“上划展开”；
-/// - 展开态：提供标签与上下文信息编辑，并触发发布动作。
-class PublishDiaryGlassPanel extends StatelessWidget {
+/// 交互目标：
+/// - 收起态更窄、位置更高；
+/// - 仅支持上划手势展开；
+/// - 上划过程中尺寸连续变化，松手后自然吸附到展开/收起状态。
+class PublishDiaryGlassPanel extends StatefulWidget {
   const PublishDiaryGlassPanel({
     super.key,
-    required this.expanded,
     required this.saving,
     required this.bottomInset,
     required this.hasCover,
@@ -28,7 +31,6 @@ class PublishDiaryGlassPanel extends StatelessWidget {
     required this.tagsError,
     required this.selectedTagIds,
     required this.metadataPreview,
-    required this.onExpandedChanged,
     required this.onPickCover,
     required this.onCreateTag,
     required this.onToggleTag,
@@ -37,6 +39,7 @@ class PublishDiaryGlassPanel extends StatelessWidget {
     required this.onMoodChanged,
     required this.onEnergyChanged,
     required this.onPublish,
+    this.onProgressChanged,
     this.onClearCover,
   });
 
@@ -51,7 +54,6 @@ class PublishDiaryGlassPanel extends StatelessWidget {
     '🤩',
   ];
 
-  final bool expanded;
   final bool saving;
   final double bottomInset;
   final bool hasCover;
@@ -65,7 +67,6 @@ class PublishDiaryGlassPanel extends StatelessWidget {
   final String? tagsError;
   final Set<int> selectedTagIds;
   final String metadataPreview;
-  final ValueChanged<bool> onExpandedChanged;
   final VoidCallback onPickCover;
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
@@ -74,59 +75,154 @@ class PublishDiaryGlassPanel extends StatelessWidget {
   final ValueChanged<String?> onMoodChanged;
   final ValueChanged<double> onEnergyChanged;
   final VoidCallback onPublish;
+  final ValueChanged<double>? onProgressChanged;
   final VoidCallback? onClearCover;
+
+  @override
+  State<PublishDiaryGlassPanel> createState() => _PublishDiaryGlassPanelState();
+}
+
+class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
+  static const double _collapsedHeight = 64;
+  static const double _expandedHeight = 430;
+  static const double _collapsedHorizontalInset = 32;
+  static const double _expandedHorizontalInset = 16;
+  static const double _collapsedExtraLift = 18;
+  static const double _collapsedFactor = _collapsedHeight / _expandedHeight;
+
+  late final SheetController _sheetController;
+  double _progress = 0;
+
+  bool get _showPublishButton => _progress >= 0.72;
+
+  @override
+  void initState() {
+    super.initState();
+    _sheetController = SheetController();
+    _sheetController.addListener(_handleSheetMetricsChanged);
+  }
+
+  @override
+  void dispose() {
+    _sheetController.removeListener(_handleSheetMetricsChanged);
+    _sheetController.dispose();
+    super.dispose();
+  }
+
+  void _handleSheetMetricsChanged() {
+    final nextProgress = _resolveProgress(_sheetController.metrics);
+    if ((nextProgress - _progress).abs() < 0.0001) {
+      return;
+    }
+
+    void apply() {
+      if (!mounted) {
+        return;
+      }
+      if ((nextProgress - _progress).abs() < 0.0001) {
+        return;
+      }
+      setState(() => _progress = nextProgress);
+      widget.onProgressChanged?.call(nextProgress);
+    }
+
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => apply());
+      return;
+    }
+    apply();
+  }
+
+  double _resolveProgress(SheetMetrics? metrics) {
+    if (metrics == null) {
+      return 0;
+    }
+    final range = (metrics.maxOffset - metrics.minOffset).abs();
+    if (range <= 0) {
+      return 0;
+    }
+    final raw = (metrics.offset - metrics.minOffset) / range;
+    return raw.clamp(0.0, 1.0).toDouble();
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final targetHeight = expanded ? 430.0 : 64.0;
+    final horizontalInset =
+        lerpDouble(_collapsedHorizontalInset, _expandedHorizontalInset, _progress)!;
+    final extraLift = lerpDouble(_collapsedExtraLift, 0, _progress)!;
+    final baseBottom = widget.bottomInset > 0 ? widget.bottomInset + 8 : 10.0;
 
     return AnimatedPadding(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      padding: EdgeInsets.only(bottom: bottomInset > 0 ? bottomInset + 8 : 10),
-      child: GestureDetector(
-        onVerticalDragEnd: (details) {
-          final velocity = details.primaryVelocity ?? 0;
-          if (!expanded && velocity < -220) {
-            onExpandedChanged(true);
-            return;
-          }
-          if (expanded && velocity > 220) {
-            onExpandedChanged(false);
-          }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOutCubic,
-          height: targetHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.nav),
-            boxShadow: AppEffects.softShadow,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadii.nav),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: 15,
-                sigmaY: 15,
-                tileMode: TileMode.mirror,
+      duration: const Duration(milliseconds: 90),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(
+        left: horizontalInset,
+        right: horizontalInset,
+        bottom: baseBottom + extraLift,
+      ),
+      child: SizedBox(
+        // SheetViewport 需要有限高度约束，否则会触发布局断言。
+        height: _expandedHeight,
+        child: SheetViewport(
+          child: Sheet(
+            controller: _sheetController,
+            initialOffset: const SheetOffset(_collapsedFactor),
+            physics: const BouncingSheetPhysics(
+              spring: SpringDescription(
+                mass: 0.62,
+                stiffness: 190,
+                damping: 19,
               ),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withAlpha(20),
-                  border: Border.all(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+              bounceExtent: 92,
+              resistance: 7.2,
+            ),
+            snapGrid: const MultiSnapGrid(
+              snaps: <SheetOffset>[
+                SheetOffset(_collapsedFactor),
+                SheetOffset(1),
+              ],
+              minFlingSpeed: 580,
+            ),
+            decoration: SheetDecorationBuilder(
+              size: SheetSize.fit,
+              builder: (context, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppRadii.nav),
+                    boxShadow: AppEffects.softShadow,
                   ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child:
-                      expanded
-                          ? _buildExpandedContent(context)
-                          : _buildCollapsedContent(),
-                ),
-              ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadii.nav),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 15,
+                        sigmaY: 15,
+                        tileMode: TileMode.mirror,
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withAlpha(20),
+                          border: Border.all(
+                            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: child,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: _expandedHeight,
+              child: _buildContent(context),
             ),
           ),
         ),
@@ -134,79 +230,78 @@ class PublishDiaryGlassPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildCollapsedContent() {
-    return InkWell(
-      onTap: () => onExpandedChanged(true),
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 18),
-        child: Row(
-          children: <Widget>[
-            FaIcon(FontAwesomeIcons.anglesUp, size: 15),
-            SizedBox(width: 10),
-            Text(
-              '上划展开',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            Spacer(),
-            FaIcon(FontAwesomeIcons.penToSquare, size: 14),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildContent(BuildContext context) {
+    final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
 
-  Widget _buildExpandedContent(BuildContext context) {
     return Column(
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 10, 6),
-          child: Row(
-            children: <Widget>[
-              IconButton(
-                icon: const FaIcon(FontAwesomeIcons.chevronDown, size: 14),
-                tooltip: '收起',
-                onPressed: () => onExpandedChanged(false),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  '点击发表日记',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+        _buildHeader(context),
+        Divider(
+          height: 1,
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+        Expanded(
+          child: IgnorePointer(
+            // 只在展开到一定程度后开放内部交互，避免半展开误触。
+            ignoring: _progress < 0.58,
+            child: Opacity(
+              opacity: detailsOpacity,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildCoverSection(context),
+                    const SizedBox(height: 14),
+                    _buildTagSection(context),
+                    const SizedBox(height: 14),
+                    _buildContextFields(context),
+                    const SizedBox(height: 14),
+                    _buildMoodSection(context),
+                    const SizedBox(height: 14),
+                    _buildEnergySection(context),
+                    const SizedBox(height: 14),
+                    _buildMetadataPreview(context),
+                  ],
                 ),
               ),
-              FilledButton.icon(
-                onPressed: saving ? null : onPublish,
-                icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 14),
-                label: Text(saving ? '发布中...' : '发布'),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                _buildCoverSection(context),
-                const SizedBox(height: 14),
-                _buildTagSection(context),
-                const SizedBox(height: 14),
-                _buildContextFields(context),
-                const SizedBox(height: 14),
-                _buildMoodSection(context),
-                const SizedBox(height: 14),
-                _buildEnergySection(context),
-                const SizedBox(height: 14),
-                _buildMetadataPreview(context),
-              ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final title = _progress < 0.56 ? '上划展开' : '点击发表日记';
+
+    return SizedBox(
+      height: _collapsedHeight,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 12, 8),
+        child: Row(
+          children: <Widget>[
+            const FaIcon(FontAwesomeIcons.anglesUp, size: 14),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+            if (_showPublishButton)
+              FilledButton.icon(
+                onPressed: widget.saving ? null : widget.onPublish,
+                icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
+                label: Text(widget.saving ? '发布中...' : '发布'),
+              )
+            else
+              const FaIcon(FontAwesomeIcons.handPointUp, size: 14),
+          ],
+        ),
+      ),
     );
   }
 
@@ -224,24 +319,24 @@ class PublishDiaryGlassPanel extends StatelessWidget {
         Row(
           children: <Widget>[
             OutlinedButton.icon(
-              onPressed: onPickCover,
+              onPressed: widget.onPickCover,
               icon: const FaIcon(FontAwesomeIcons.image, size: 14),
               label: const Text('选择封面'),
             ),
-            if (hasCover) ...<Widget>[
+            if (widget.hasCover) ...<Widget>[
               const SizedBox(width: 8),
               TextButton.icon(
-                onPressed: onClearCover,
+                onPressed: widget.onClearCover,
                 icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
                 label: const Text('清除'),
               ),
             ],
           ],
         ),
-        if (hasCover && coverLabel != null) ...<Widget>[
+        if (widget.hasCover && widget.coverLabel != null) ...<Widget>[
           const SizedBox(height: 6),
           Text(
-            coverLabel!,
+            widget.coverLabel!,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall,
@@ -265,25 +360,25 @@ class PublishDiaryGlassPanel extends StatelessWidget {
             ),
             const Spacer(),
             TextButton.icon(
-              onPressed: onCreateTag,
+              onPressed: widget.onCreateTag,
               icon: const FaIcon(FontAwesomeIcons.plus, size: 12),
               label: const Text('新建'),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        if (tagsLoading)
+        if (widget.tagsLoading)
           const SizedBox(
             height: 20,
             width: 20,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        else if (tagsError != null)
+        else if (widget.tagsError != null)
           Text(
-            '标签加载失败: $tagsError',
+            '标签加载失败: ${widget.tagsError}',
             style: Theme.of(context).textTheme.bodySmall,
           )
-        else if (tags.isEmpty)
+        else if (widget.tags.isEmpty)
           Text(
             '暂无标签，可先创建',
             style: Theme.of(context).textTheme.bodySmall,
@@ -292,15 +387,15 @@ class PublishDiaryGlassPanel extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: -8,
-            children: tags.map((tag) {
+            children: widget.tags.map((tag) {
               return FilterChip(
-                selected: selectedTagIds.contains(tag.id),
+                selected: widget.selectedTagIds.contains(tag.id),
                 avatar: CircleAvatar(
                   radius: 8,
                   backgroundColor: Color(tag.color),
                 ),
                 label: Text(tag.name),
-                onSelected: (selected) => onToggleTag(tag.id, selected),
+                onSelected: (selected) => widget.onToggleTag(tag.id, selected),
               );
             }).toList(),
           ),
@@ -320,8 +415,8 @@ class PublishDiaryGlassPanel extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
-          controller: locationController,
-          onChanged: onLocationChanged,
+          controller: widget.locationController,
+          onChanged: widget.onLocationChanged,
           decoration: const InputDecoration(
             isDense: true,
             hintText: '地理位置（手动填写）',
@@ -334,8 +429,8 @@ class PublishDiaryGlassPanel extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextField(
-          controller: weatherController,
-          onChanged: onWeatherChanged,
+          controller: widget.weatherController,
+          onChanged: widget.onWeatherChanged,
           decoration: const InputDecoration(
             isDense: true,
             hintText: '实时天气（手动填写）',
@@ -364,11 +459,11 @@ class PublishDiaryGlassPanel extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: -8,
-          children: moodOptions.map((emoji) {
+          children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
             return ChoiceChip(
               label: Text(emoji),
-              selected: moodEmoji == emoji,
-              onSelected: (selected) => onMoodChanged(selected ? emoji : null),
+              selected: widget.moodEmoji == emoji,
+              onSelected: (selected) => widget.onMoodChanged(selected ? emoji : null),
             );
           }).toList(),
         ),
@@ -387,12 +482,12 @@ class PublishDiaryGlassPanel extends StatelessWidget {
               ),
         ),
         Slider(
-          value: energyLevel.toDouble().clamp(1.0, 5.0).toDouble(),
+          value: widget.energyLevel.toDouble().clamp(1.0, 5.0).toDouble(),
           min: 1,
           max: 5,
           divisions: 4,
-          label: '$energyLevel',
-          onChanged: onEnergyChanged,
+          label: '${widget.energyLevel}',
+          onChanged: widget.onEnergyChanged,
         ),
       ],
     );
@@ -419,7 +514,7 @@ class PublishDiaryGlassPanel extends StatelessWidget {
           ),
           child: SingleChildScrollView(
             child: SelectableText(
-              metadataPreview,
+              widget.metadataPreview,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontFamily: 'monospace',
                     height: 1.4,

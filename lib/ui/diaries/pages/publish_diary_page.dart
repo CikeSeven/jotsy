@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -36,7 +37,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   String? _draftCover;
   String? _moodEmoji;
   int _energyLevel = 3;
-  bool _panelExpanded = false;
+  double _panelExpandProgress = 0;
   bool _saving = false;
 
   String get _title {
@@ -248,7 +249,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       error: (error, stackTrace) => tagsError = '$error',
     );
 
-    final panelSpacer = _panelExpanded ? 460.0 : 140.0;
+    final panelSpacer = lerpDouble(140, 460, _panelExpandProgress) ?? 140;
 
     return PopScope(
       canPop: false,
@@ -313,7 +314,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               right: 16,
               bottom: 0,
               child: PublishDiaryGlassPanel(
-                expanded: _panelExpanded,
                 saving: _saving,
                 bottomInset: keyboardInset,
                 hasCover: _normalizedCover != null,
@@ -327,8 +327,26 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 tagsError: tagsError,
                 selectedTagIds: _selectedTagIds,
                 metadataPreview: _prettyMetadataPreview,
-                onExpandedChanged: (expanded) {
-                  setState(() => _panelExpanded = expanded);
+                onProgressChanged: (progress) {
+                  void applyProgress() {
+                    if (!mounted) {
+                      return;
+                    }
+                    if ((progress - _panelExpandProgress).abs() < 0.0001) {
+                      return;
+                    }
+                    setState(() => _panelExpandProgress = progress);
+                  }
+
+                  final phase = SchedulerBinding.instance.schedulerPhase;
+                  if (phase == SchedulerPhase.persistentCallbacks ||
+                      phase == SchedulerPhase.midFrameMicrotasks) {
+                    WidgetsBinding.instance.addPostFrameCallback(
+                      (_) => applyProgress(),
+                    );
+                    return;
+                  }
+                  applyProgress();
                 },
                 onPickCover: _pickCover,
                 onClearCover:

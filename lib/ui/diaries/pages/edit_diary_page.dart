@@ -422,7 +422,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             constraints.maxHeight > 420 ? constraints.maxHeight - 140 : 280.0;
         return SingleChildScrollView(
           controller: _contentScrollController,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: DecoratedBox(
             decoration: BoxDecoration(

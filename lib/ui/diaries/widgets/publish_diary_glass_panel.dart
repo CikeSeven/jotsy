@@ -760,17 +760,48 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           ),
         ),
         const SizedBox(height: 8),
-        TextField(
-          controller: widget.weatherController,
-          onChanged: widget.onWeatherChanged,
-          decoration: const InputDecoration(
-            isDense: true,
-            hintText: '实时天气（手动填写）',
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 12, right: 8),
-              child: FaIcon(FontAwesomeIcons.cloudSun, size: 14),
+        Material(
+          color: colorScheme.surface.withValues(alpha: 0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.45),
             ),
-            prefixIconConstraints: BoxConstraints(minHeight: 30, minWidth: 34),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 42),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
+              child: Row(
+                children: <Widget>[
+                  const FaIcon(FontAwesomeIcons.cloudSun, size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.weatherController.text.trim().isEmpty
+                          ? '点击右侧获取当前天气'
+                          : widget.weatherController.text.trim(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color:
+                                widget.weatherController.text.trim().isEmpty
+                                    ? colorScheme.onSurfaceVariant.withValues(
+                                      alpha: 0.75,
+                                    )
+                                    : null,
+                          ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: null,
+                    tooltip: '天气功能开发中',
+                    visualDensity: VisualDensity.compact,
+                    icon: const FaIcon(FontAwesomeIcons.cloud, size: 14),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],

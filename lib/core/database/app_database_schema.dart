@@ -7,9 +7,10 @@ part of 'app_database.dart';
 /// 2. `diaryId` 是业务层真正的唯一标识，跨设备同步也保持唯一；
 /// 3. `content` 存 Delta JSON（可扩展富文本）；
 /// 4. `contentText` 存纯文本镜像（用于关键词检索）；
-/// 5. `metadata` 存 JSON 对象字符串（用于扩展字段）；
-/// 6. 归档与删除分离：归档用于隐藏到归档列表，删除用于回收站语义；
-/// 7. 采用软删除字段，便于恢复与审计。
+/// 5. `cover` 存封面地址（可空，支持本地路径或远程 URL）；
+/// 6. `metadata` 存 JSON 对象字符串（用于扩展字段）；
+/// 7. 归档与删除分离：归档用于隐藏到归档列表，删除用于回收站语义；
+/// 8. 采用软删除字段，便于恢复与审计。
 class Diaries extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -21,6 +22,8 @@ class Diaries extends Table {
   TextColumn get content => text()();
 
   TextColumn get contentText => text().named('content_text')();
+
+  TextColumn get cover => text().nullable()();
 
   TextColumn get metadata => text().withDefault(const Constant('{}'))();
 

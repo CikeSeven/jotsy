@@ -17,7 +17,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -31,6 +31,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await _migrateDiariesAddArchiveFields();
+      }
+      if (from < 4) {
+        await _migrateDiariesAddCoverField();
       }
     },
   );
@@ -76,11 +79,13 @@ class AppDatabase extends _$AppDatabase {
     required String contentDocJson,
     required String contentText,
     required String metadataJson,
+    String? cover,
     List<int> tagIds = const <int>[],
   }) async {
     final now = DateTime.now();
     final diaryId = _generateDiaryId();
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
+    final normalizedCover = _normalizeCover(cover);
     final normalizedTagIds = tagIds.toSet().toList();
 
     return transaction<String>(() async {
@@ -90,6 +95,7 @@ class AppDatabase extends _$AppDatabase {
           title: Value<String>(title.trim()),
           content: contentDocJson,
           contentText: contentText,
+          cover: Value<String?>(normalizedCover),
           metadata: Value<String>(normalizedMetadata),
           createdAt: now,
           updatedAt: now,
@@ -110,9 +116,11 @@ class AppDatabase extends _$AppDatabase {
     required String contentDocJson,
     required String contentText,
     required String metadataJson,
+    String? cover,
     List<int> tagIds = const <int>[],
   }) async {
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
+    final normalizedCover = _normalizeCover(cover);
     final normalizedTagIds = tagIds.toSet().toList();
 
     await transaction<void>(() async {
@@ -130,6 +138,7 @@ class AppDatabase extends _$AppDatabase {
           title: Value<String>(title.trim()),
           content: Value<String>(contentDocJson),
           contentText: Value<String>(contentText),
+          cover: Value<String?>(normalizedCover),
           metadata: Value<String>(normalizedMetadata),
           updatedAt: Value<DateTime>(DateTime.now()),
           isArchived: const Value<bool>(false),
@@ -236,6 +245,7 @@ SELECT
   d.title,
   d.content,
   d.content_text,
+  d.cover,
   d.metadata,
   d.created_at,
   d.updated_at,
@@ -392,6 +402,7 @@ ORDER BY updated_at DESC
       title: row.read<String>('title'),
       content: row.read<String>('content'),
       contentText: row.read<String>('content_text'),
+      cover: row.readNullable<String>('cover'),
       metadata: row.read<String>('metadata'),
       createdAt: _readDateTime(row, 'created_at'),
       updatedAt: _readDateTime(row, 'updated_at'),
@@ -451,6 +462,7 @@ CREATE TABLE diaries (
   title TEXT NOT NULL DEFAULT '',
   content TEXT NOT NULL,
   content_text TEXT NOT NULL,
+  cover TEXT NULL,
   metadata TEXT NOT NULL DEFAULT '{}',
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL,
@@ -467,6 +479,7 @@ SELECT
   title,
   content,
   content_text,
+  NULL AS cover,
   metadata,
   created_at,
   updated_at,
@@ -486,6 +499,7 @@ ORDER BY id
             title: Value<String>(row.read<String>('title')),
             content: Value<String>(row.read<String>('content')),
             contentText: Value<String>(row.read<String>('content_text')),
+            cover: Value<String?>(row.readNullable<String>('cover')),
             metadata: Value<String>(row.read<String>('metadata')),
             createdAt: Value<DateTime>(_readDateTime(row, 'created_at')),
             updatedAt: Value<DateTime>(_readDateTime(row, 'updated_at')),
@@ -515,6 +529,21 @@ ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0
 ALTER TABLE diaries
 ADD COLUMN archived_at INTEGER NULL
 ''');
+  }
+
+  Future<void> _migrateDiariesAddCoverField() async {
+    await customStatement('''
+ALTER TABLE diaries
+ADD COLUMN cover TEXT NULL
+''');
+  }
+
+  String? _normalizeCover(String? rawCover) {
+    final normalized = rawCover?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
   }
 
   String _generateDiaryId() {

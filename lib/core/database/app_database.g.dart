@@ -69,6 +69,15 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _coverMeta = const VerificationMeta('cover');
+  @override
+  late final GeneratedColumn<String> cover = GeneratedColumn<String>(
+    'cover',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _metadataMeta = const VerificationMeta(
     'metadata',
   );
@@ -162,6 +171,7 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     title,
     content,
     contentText,
+    cover,
     metadata,
     createdAt,
     updatedAt,
@@ -217,6 +227,12 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
       );
     } else if (isInserting) {
       context.missing(_contentTextMeta);
+    }
+    if (data.containsKey('cover')) {
+      context.handle(
+        _coverMeta,
+        cover.isAcceptableOrUnknown(data['cover']!, _coverMeta),
+      );
     }
     if (data.containsKey('metadata')) {
       context.handle(
@@ -298,6 +314,10 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
             DriftSqlType.string,
             data['${effectivePrefix}content_text'],
           )!,
+      cover: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cover'],
+      ),
       metadata:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -346,6 +366,7 @@ class Diary extends DataClass implements Insertable<Diary> {
   final String title;
   final String content;
   final String contentText;
+  final String? cover;
   final String metadata;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -359,6 +380,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     required this.title,
     required this.content,
     required this.contentText,
+    this.cover,
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
@@ -375,6 +397,9 @@ class Diary extends DataClass implements Insertable<Diary> {
     map['title'] = Variable<String>(title);
     map['content'] = Variable<String>(content);
     map['content_text'] = Variable<String>(contentText);
+    if (!nullToAbsent || cover != null) {
+      map['cover'] = Variable<String>(cover);
+    }
     map['metadata'] = Variable<String>(metadata);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -396,6 +421,8 @@ class Diary extends DataClass implements Insertable<Diary> {
       title: Value(title),
       content: Value(content),
       contentText: Value(contentText),
+      cover:
+          cover == null && nullToAbsent ? const Value.absent() : Value(cover),
       metadata: Value(metadata),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -423,6 +450,7 @@ class Diary extends DataClass implements Insertable<Diary> {
       title: serializer.fromJson<String>(json['title']),
       content: serializer.fromJson<String>(json['content']),
       contentText: serializer.fromJson<String>(json['contentText']),
+      cover: serializer.fromJson<String?>(json['cover']),
       metadata: serializer.fromJson<String>(json['metadata']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -441,6 +469,7 @@ class Diary extends DataClass implements Insertable<Diary> {
       'title': serializer.toJson<String>(title),
       'content': serializer.toJson<String>(content),
       'contentText': serializer.toJson<String>(contentText),
+      'cover': serializer.toJson<String?>(cover),
       'metadata': serializer.toJson<String>(metadata),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -457,6 +486,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     String? title,
     String? content,
     String? contentText,
+    Value<String?> cover = const Value.absent(),
     String? metadata,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -470,6 +500,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     title: title ?? this.title,
     content: content ?? this.content,
     contentText: contentText ?? this.contentText,
+    cover: cover.present ? cover.value : this.cover,
     metadata: metadata ?? this.metadata,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -486,6 +517,7 @@ class Diary extends DataClass implements Insertable<Diary> {
       content: data.content.present ? data.content.value : this.content,
       contentText:
           data.contentText.present ? data.contentText.value : this.contentText,
+      cover: data.cover.present ? data.cover.value : this.cover,
       metadata: data.metadata.present ? data.metadata.value : this.metadata,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -506,6 +538,7 @@ class Diary extends DataClass implements Insertable<Diary> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('contentText: $contentText, ')
+          ..write('cover: $cover, ')
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -524,6 +557,7 @@ class Diary extends DataClass implements Insertable<Diary> {
     title,
     content,
     contentText,
+    cover,
     metadata,
     createdAt,
     updatedAt,
@@ -541,6 +575,7 @@ class Diary extends DataClass implements Insertable<Diary> {
           other.title == this.title &&
           other.content == this.content &&
           other.contentText == this.contentText &&
+          other.cover == this.cover &&
           other.metadata == this.metadata &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -556,6 +591,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   final Value<String> title;
   final Value<String> content;
   final Value<String> contentText;
+  final Value<String?> cover;
   final Value<String> metadata;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -569,6 +605,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     this.title = const Value.absent(),
     this.content = const Value.absent(),
     this.contentText = const Value.absent(),
+    this.cover = const Value.absent(),
     this.metadata = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -583,6 +620,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     this.title = const Value.absent(),
     required String content,
     required String contentText,
+    this.cover = const Value.absent(),
     this.metadata = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -601,6 +639,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     Expression<String>? title,
     Expression<String>? content,
     Expression<String>? contentText,
+    Expression<String>? cover,
     Expression<String>? metadata,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -615,6 +654,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
       if (title != null) 'title': title,
       if (content != null) 'content': content,
       if (contentText != null) 'content_text': contentText,
+      if (cover != null) 'cover': cover,
       if (metadata != null) 'metadata': metadata,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -631,6 +671,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     Value<String>? title,
     Value<String>? content,
     Value<String>? contentText,
+    Value<String?>? cover,
     Value<String>? metadata,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -645,6 +686,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
       title: title ?? this.title,
       content: content ?? this.content,
       contentText: contentText ?? this.contentText,
+      cover: cover ?? this.cover,
       metadata: metadata ?? this.metadata,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -672,6 +714,9 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     }
     if (contentText.present) {
       map['content_text'] = Variable<String>(contentText.value);
+    }
+    if (cover.present) {
+      map['cover'] = Variable<String>(cover.value);
     }
     if (metadata.present) {
       map['metadata'] = Variable<String>(metadata.value);
@@ -705,6 +750,7 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
           ..write('title: $title, ')
           ..write('content: $content, ')
           ..write('contentText: $contentText, ')
+          ..write('cover: $cover, ')
           ..write('metadata: $metadata, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1221,6 +1267,7 @@ typedef $$DiariesTableCreateCompanionBuilder =
       Value<String> title,
       required String content,
       required String contentText,
+      Value<String?> cover,
       Value<String> metadata,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -1236,6 +1283,7 @@ typedef $$DiariesTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String> content,
       Value<String> contentText,
+      Value<String?> cover,
       Value<String> metadata,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -1299,6 +1347,11 @@ class $$DiariesTableFilterComposer
 
   ColumnFilters<String> get contentText => $composableBuilder(
     column: $table.contentText,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cover => $composableBuilder(
+    column: $table.cover,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1397,6 +1450,11 @@ class $$DiariesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get cover => $composableBuilder(
+    column: $table.cover,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get metadata => $composableBuilder(
     column: $table.metadata,
     builder: (column) => ColumnOrderings(column),
@@ -1458,6 +1516,9 @@ class $$DiariesTableAnnotationComposer
     column: $table.contentText,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get cover =>
+      $composableBuilder(column: $table.cover, builder: (column) => column);
 
   GeneratedColumn<String> get metadata =>
       $composableBuilder(column: $table.metadata, builder: (column) => column);
@@ -1543,6 +1604,7 @@ class $$DiariesTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<String> contentText = const Value.absent(),
+                Value<String?> cover = const Value.absent(),
                 Value<String> metadata = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -1556,6 +1618,7 @@ class $$DiariesTableTableManager
                 title: title,
                 content: content,
                 contentText: contentText,
+                cover: cover,
                 metadata: metadata,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -1571,6 +1634,7 @@ class $$DiariesTableTableManager
                 Value<String> title = const Value.absent(),
                 required String content,
                 required String contentText,
+                Value<String?> cover = const Value.absent(),
                 Value<String> metadata = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -1584,6 +1648,7 @@ class $$DiariesTableTableManager
                 title: title,
                 content: content,
                 contentText: contentText,
+                cover: cover,
                 metadata: metadata,
                 createdAt: createdAt,
                 updatedAt: updatedAt,

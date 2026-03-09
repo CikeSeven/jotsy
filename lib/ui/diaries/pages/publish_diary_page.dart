@@ -19,12 +19,22 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   late final TextEditingController _metadataController;
+  late final TextEditingController _coverController;
   late final Set<int> _selectedTagIds;
   bool _saving = false;
+
+  String? get _normalizedCover {
+    final normalized = _coverController.text.trim();
+    if (normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
+  }
 
   @override
   void initState() {
     super.initState();
+    _coverController = TextEditingController(text: widget.initialDraft.cover ?? '');
     _metadataController = TextEditingController(
       text: widget.initialDraft.metadataJson,
     );
@@ -33,6 +43,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   void dispose() {
+    _coverController.dispose();
     _metadataController.dispose();
     super.dispose();
   }
@@ -79,6 +90,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         title: widget.initialDraft.title,
         contentDocJson: widget.initialDraft.contentDocJson,
         contentText: widget.initialDraft.contentText,
+        cover: _normalizedCover,
         metadataJson: _metadataController.text,
         tagIds: _selectedTagIds.toList(),
       );
@@ -103,6 +115,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   void _closeWithDraft() {
     Navigator.of(context).pop(
       widget.initialDraft.copyWith(
+        cover: _normalizedCover,
         metadataJson: _metadataController.text,
         selectedTagIds: <int>{..._selectedTagIds},
       ),
@@ -153,6 +166,18 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 style: Theme.of(context).textTheme.bodyMedium,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '封面',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _coverController,
+                decoration: const InputDecoration(
+                  hintText: '封面地址（可选，本地路径或 URL）',
+                ),
               ),
               const SizedBox(height: 20),
               Row(

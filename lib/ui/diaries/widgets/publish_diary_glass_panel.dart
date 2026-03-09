@@ -23,6 +23,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.bottomInset,
     required this.hasCover,
     required this.coverLabel,
+    required this.locating,
     required this.locationController,
     required this.weatherController,
     required this.moodEmoji,
@@ -32,6 +33,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.tagsError,
     required this.selectedTagIds,
     required this.onPickCover,
+    required this.onResolveLocation,
     required this.onCreateTag,
     required this.onToggleTag,
     required this.onLocationChanged,
@@ -59,6 +61,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final double bottomInset;
   final bool hasCover;
   final String? coverLabel;
+  final bool locating;
   final TextEditingController locationController;
   final TextEditingController weatherController;
   final String? moodEmoji;
@@ -68,6 +71,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final String? tagsError;
   final Set<int> selectedTagIds;
   final VoidCallback onPickCover;
+  final VoidCallback onResolveLocation;
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
   final ValueChanged<String> onLocationChanged;
@@ -692,27 +696,66 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildContextFields(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
           '环境信息',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              fontWeight: FontWeight.w700,
+            ),
         ),
         const SizedBox(height: 8),
-        TextField(
-          controller: widget.locationController,
-          onChanged: widget.onLocationChanged,
-          decoration: const InputDecoration(
-            isDense: true,
-            hintText: '地理位置（手动填写）',
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 12, right: 8),
-              child: FaIcon(FontAwesomeIcons.locationDot, size: 14),
+        Material(
+          color: colorScheme.surface.withValues(alpha: 0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.45),
             ),
-            prefixIconConstraints: BoxConstraints(minHeight: 30, minWidth: 34),
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 42),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
+              child: Row(
+                children: <Widget>[
+                  const FaIcon(FontAwesomeIcons.locationDot, size: 14),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: widget.locationController,
+                      onChanged: widget.onLocationChanged,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        hintText: '地理位置（手动填写）',
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: widget.locating ? null : widget.onResolveLocation,
+                    tooltip: '获取位置',
+                    visualDensity: VisualDensity.compact,
+                    icon:
+                        widget.locating
+                            ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const FaIcon(
+                              FontAwesomeIcons.locationCrosshairs,
+                              size: 14,
+                            ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 8),

@@ -9,6 +9,9 @@ class NewDiaryDraft {
     this.metadataJson = '{}',
     this.selectedTagIds = const <int>{},
     this.location,
+    this.locationLatitude,
+    this.locationLongitude,
+    this.locationFromAuto = false,
     this.weather,
     this.moodEmoji,
     this.energyLevel,
@@ -21,6 +24,9 @@ class NewDiaryDraft {
   final String metadataJson;
   final Set<int> selectedTagIds;
   final String? location;
+  final double? locationLatitude;
+  final double? locationLongitude;
+  final bool locationFromAuto;
   final String? weather;
   final String? moodEmoji;
   final int? energyLevel;
@@ -47,6 +53,9 @@ class NewDiaryDraft {
       metadataJson: (json['metadataJson'] as String?) ?? '{}',
       selectedTagIds: tagIds,
       location: json['location'] as String?,
+      locationLatitude: (json['locationLatitude'] as num?)?.toDouble(),
+      locationLongitude: (json['locationLongitude'] as num?)?.toDouble(),
+      locationFromAuto: (json['locationFromAuto'] as bool?) ?? false,
       weather: json['weather'] as String?,
       moodEmoji: json['moodEmoji'] as String?,
       energyLevel: (json['energyLevel'] as num?)?.toInt(),
@@ -62,6 +71,9 @@ class NewDiaryDraft {
       'metadataJson': metadataJson,
       'selectedTagIds': selectedTagIds.toList()..sort(),
       'location': location,
+      'locationLatitude': locationLatitude,
+      'locationLongitude': locationLongitude,
+      'locationFromAuto': locationFromAuto,
       'weather': weather,
       'moodEmoji': moodEmoji,
       'energyLevel': energyLevel,
@@ -76,6 +88,9 @@ class NewDiaryDraft {
     String? metadataJson,
     Set<int>? selectedTagIds,
     Object? location = _fieldNotChanged,
+    Object? locationLatitude = _fieldNotChanged,
+    Object? locationLongitude = _fieldNotChanged,
+    bool? locationFromAuto,
     Object? weather = _fieldNotChanged,
     Object? moodEmoji = _fieldNotChanged,
     Object? energyLevel = _fieldNotChanged,
@@ -90,6 +105,15 @@ class NewDiaryDraft {
       selectedTagIds: selectedTagIds ?? this.selectedTagIds,
       location:
           identical(location, _fieldNotChanged) ? this.location : location as String?,
+      locationLatitude:
+          identical(locationLatitude, _fieldNotChanged)
+              ? this.locationLatitude
+              : locationLatitude as double?,
+      locationLongitude:
+          identical(locationLongitude, _fieldNotChanged)
+              ? this.locationLongitude
+              : locationLongitude as double?,
+      locationFromAuto: locationFromAuto ?? this.locationFromAuto,
       weather: identical(weather, _fieldNotChanged) ? this.weather : weather as String?,
       moodEmoji:
           identical(moodEmoji, _fieldNotChanged) ? this.moodEmoji : moodEmoji as String?,

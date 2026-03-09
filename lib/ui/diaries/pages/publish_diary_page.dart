@@ -11,7 +11,9 @@ import 'package:path/path.dart' as path;
 
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
+import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
@@ -38,9 +40,14 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   String? _draftCover;
   String? _moodEmoji;
+  double? _locationLatitude;
+  double? _locationLongitude;
+  bool _locationFromAuto = false;
   int _energyLevel = 3;
   double _panelExpandProgress = 0;
   bool _saving = false;
+  bool _locating = false;
+  LocationResolverService? _locationResolverService;
 
   String get _title {
     final normalized = widget.initialDraft.title.trim();
@@ -92,6 +99,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       deviceInfo: _buildDeviceMetadata(),
       generatedAt: generatedAt ?? DateTime.now(),
       location: _normalizeOptionalText(_locationController.text),
+      locationLatitude: _locationLatitude,
+      locationLongitude: _locationLongitude,
+      locationFromAuto: _locationFromAuto,
       weather: _normalizeOptionalText(_weatherController.text),
       moodEmoji: _normalizeOptionalText(_moodEmoji),
       energyLevel: _energyLevel,
@@ -104,6 +114,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
     _draftCover = _normalizeOptionalText(widget.initialDraft.cover);
     _locationController.text = widget.initialDraft.location ?? '';
+    _locationLatitude = widget.initialDraft.locationLatitude;
+    _locationLongitude = widget.initialDraft.locationLongitude;
+    _locationFromAuto = widget.initialDraft.locationFromAuto;
     _weatherController.text = widget.initialDraft.weather ?? '';
     _moodEmoji = widget.initialDraft.moodEmoji;
 
@@ -180,6 +193,66 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     }
   }
 
+  Future<LocationResolverService?> _ensureLocationResolverService() async {
+    if (_locationResolverService != null) {
+      return _locationResolverService;
+    }
+    final apiKey = await AMapConfigChannel.getAmapWebApiKey();
+    if (apiKey == null || apiKey.isEmpty) {
+      return null;
+    }
+    _locationResolverService = LocationResolverService(webApiKey: apiKey);
+    return _locationResolverService;
+  }
+
+  Future<void> _resolveLocation() async {
+    if (_locating) {
+      return;
+    }
+
+    setState(() => _locating = true);
+
+    try {
+      final service = await _ensureLocationResolverService();
+      if (service == null) {
+        throw const LocationResolveException(
+          type: LocationResolveErrorType.missingApiKey,
+          message: '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
+        );
+      }
+
+      final result = await service.resolveCurrentLocation();
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _locationController.text = result.address;
+        _locationLatitude = result.latitude;
+        _locationLongitude = result.longitude;
+        _locationFromAuto = true;
+      });
+    } on LocationResolveException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.userMessage)));
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('获取位置失败: $error')));
+    } finally {
+      if (mounted) {
+        setState(() => _locating = false);
+      }
+    }
+  }
+
   Future<void> _publish() async {
     if (_saving) {
       return;
@@ -222,6 +295,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         metadataJson: _buildMetadataJson(),
         selectedTagIds: <int>{..._selectedTagIds},
         location: _normalizeOptionalText(_locationController.text),
+        locationLatitude: _locationLatitude,
+        locationLongitude: _locationLongitude,
+        locationFromAuto: _locationFromAuto,
         weather: _normalizeOptionalText(_weatherController.text),
         moodEmoji: _normalizeOptionalText(_moodEmoji),
         energyLevel: _energyLevel,
@@ -321,6 +397,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 bottomInset: keyboardInset,
                 hasCover: _normalizedCover != null,
                 coverLabel: _coverLabel,
+                locating: _locating,
                 locationController: _locationController,
                 weatherController: _weatherController,
                 moodEmoji: _moodEmoji,
@@ -358,6 +435,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                           setState(() => _draftCover = null);
                         },
                 onCreateTag: _createTagInline,
+                onResolveLocation: _resolveLocation,
                 onToggleTag: (tagId, selected) {
                   setState(() {
                     if (selected) {

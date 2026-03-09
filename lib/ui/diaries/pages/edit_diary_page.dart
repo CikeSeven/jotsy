@@ -52,6 +52,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   late quill.QuillController _contentController;
   String _metadataJson = '{}';
   String? _draftLocation;
+  double? _draftLocationLatitude;
+  double? _draftLocationLongitude;
+  bool _draftLocationFromAuto = false;
   String? _draftWeather;
   String? _draftMoodEmoji;
   int? _draftEnergyLevel;
@@ -113,6 +116,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       metadataJson: _metadataJson,
       selectedTagIds: <int>{..._selectedTagIds},
       location: _draftLocation,
+      locationLatitude: _draftLocationLatitude,
+      locationLongitude: _draftLocationLongitude,
+      locationFromAuto: _draftLocationFromAuto,
       weather: _draftWeather,
       moodEmoji: _draftMoodEmoji,
       energyLevel: _draftEnergyLevel,
@@ -190,6 +196,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _draftCover = restoredDraft.cover;
         _metadataJson = restoredDraft.metadataJson;
         _draftLocation = restoredDraft.location;
+        _draftLocationLatitude = restoredDraft.locationLatitude;
+        _draftLocationLongitude = restoredDraft.locationLongitude;
+        _draftLocationFromAuto = restoredDraft.locationFromAuto;
         _draftWeather = restoredDraft.weather;
         _draftMoodEmoji = restoredDraft.moodEmoji;
         _draftEnergyLevel = restoredDraft.energyLevel;
@@ -354,6 +363,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               metadataJson: _metadataJson,
               selectedTagIds: <int>{..._selectedTagIds},
               location: _draftLocation,
+              locationLatitude: _draftLocationLatitude,
+              locationLongitude: _draftLocationLongitude,
+              locationFromAuto: _draftLocationFromAuto,
               weather: _draftWeather,
               moodEmoji: _draftMoodEmoji,
               energyLevel: _draftEnergyLevel,
@@ -378,6 +390,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _draftCover = result.cover;
         _metadataJson = result.metadataJson;
         _draftLocation = result.location;
+        _draftLocationLatitude = result.locationLatitude;
+        _draftLocationLongitude = result.locationLongitude;
+        _draftLocationFromAuto = result.locationFromAuto;
         _draftWeather = result.weather;
         _draftMoodEmoji = result.moodEmoji;
         _draftEnergyLevel = result.energyLevel;

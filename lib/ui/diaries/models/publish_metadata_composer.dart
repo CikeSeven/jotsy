@@ -15,6 +15,9 @@ class PublishMetadataComposer {
     required Map<String, Object?> deviceInfo,
     required DateTime generatedAt,
     String? location,
+    double? locationLatitude,
+    double? locationLongitude,
+    bool locationFromAuto = false,
     String? weather,
     String? moodEmoji,
     int? energyLevel,
@@ -37,6 +40,14 @@ class PublishMetadataComposer {
 
     final context = <String, Object?>{
       if (normalizedLocation != null) 'location': normalizedLocation,
+      if (locationFromAuto &&
+          locationLatitude != null &&
+          locationLongitude != null)
+        'geo': <String, Object?>{
+          'source': 'amap_auto',
+          'latitude': locationLatitude,
+          'longitude': locationLongitude,
+        },
       if (normalizedWeather != null) 'weather': normalizedWeather,
       if (normalizedMoodEmoji != null) 'moodEmoji': normalizedMoodEmoji,
       if (energyLevel != null) 'energyLevel': energyLevel.clamp(1, 5),

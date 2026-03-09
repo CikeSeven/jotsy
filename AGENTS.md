@@ -33,6 +33,7 @@ dart run build_runner build --delete-conflicting-outputs
 - Use `snake_case` for files, `UpperCamelCase` for classes/widgets, and `lowerCamelCase` for members.
 - Keep feature UI code in `lib/ui/<feature>/...`; cross-feature logic belongs in `lib/core/...`.
 - For newly added UI icons, use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`) by default; only mix other icon sets when there is a clear platform-specific reason.
+- Rich text editor toolbar icons and their related settings-page icon previews must consistently use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`).
 - Do not use any gradient colors in UI (including `LinearGradient`, `RadialGradient`, and `SweepGradient`).
 - Write more high-value comments for non-trivial logic, state transitions, and edge-case handling; avoid redundant comments that only restate the code.
 - Keep files focused and reasonably small; when a file grows beyond about 300 lines, evaluate splitting it into smaller widgets/classes/modules.

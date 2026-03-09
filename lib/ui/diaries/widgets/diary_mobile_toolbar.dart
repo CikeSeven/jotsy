@@ -92,7 +92,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.italic => '斜体',
       DiaryToolbarItem.underline => '下划线',
       DiaryToolbarItem.strikeThrough => '删除线',
-      DiaryToolbarItem.inlineCode => '行内代码',
+      DiaryToolbarItem.inlineCode => '行内代码（单行）',
       DiaryToolbarItem.textColor => '文字颜色',
       DiaryToolbarItem.backgroundColor => '背景颜色',
       DiaryToolbarItem.clearFormat => '清除格式',
@@ -100,10 +100,10 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.headerStyle => '标题样式',
       DiaryToolbarItem.orderedList => '有序列表',
       DiaryToolbarItem.bulletList => '无序列表',
-      DiaryToolbarItem.checkList => '任务列表',
-      DiaryToolbarItem.codeBlock => '代码块',
+      DiaryToolbarItem.checkList => '待办列表',
+      DiaryToolbarItem.codeBlock => '代码块（多行）',
       DiaryToolbarItem.quote => '引用',
-      DiaryToolbarItem.indent => '缩进',
+      DiaryToolbarItem.indent => '缩进（增/减）',
       DiaryToolbarItem.link => '链接',
     };
   }
@@ -124,7 +124,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.headerStyle => FontAwesomeIcons.heading,
       DiaryToolbarItem.orderedList => FontAwesomeIcons.listOl,
       DiaryToolbarItem.bulletList => FontAwesomeIcons.listUl,
-      DiaryToolbarItem.checkList => FontAwesomeIcons.listCheck,
+      DiaryToolbarItem.checkList => FontAwesomeIcons.squareCheck,
       DiaryToolbarItem.codeBlock => FontAwesomeIcons.fileCode,
       DiaryToolbarItem.quote => FontAwesomeIcons.quoteLeft,
       DiaryToolbarItem.indent => FontAwesomeIcons.indent,
@@ -188,7 +188,7 @@ Widget buildDiaryFloatingToolbar({
         for (var i = 0; i < normalizedOrder.length; i++) ...<Widget>[
           quill.QuillSimpleToolbar(
             controller: controller,
-            config: _buildSingleItemConfig(normalizedOrder[i]),
+            config: _buildSingleItemConfig(normalizedOrder[i], controller),
           ),
           if (i != normalizedOrder.length - 1) const SizedBox(width: 2),
         ],
@@ -221,7 +221,10 @@ List<DiaryToolbarItem> _normalizeDiaryToolbarOrder(List<DiaryToolbarItem> order)
   return normalized;
 }
 
-quill.QuillSimpleToolbarConfig _buildSingleItemConfig(DiaryToolbarItem item) {
+quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
+  DiaryToolbarItem item,
+  quill.QuillController controller,
+) {
   final showUndo = item == DiaryToolbarItem.undo;
   final showRedo = item == DiaryToolbarItem.redo;
   final showBold = item == DiaryToolbarItem.bold;
@@ -232,7 +235,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(DiaryToolbarItem item) {
   final showTextColor = item == DiaryToolbarItem.textColor;
   final showBackgroundColor = item == DiaryToolbarItem.backgroundColor;
   final showClearFormat = item == DiaryToolbarItem.clearFormat;
-  final showHeaderStyle = item == DiaryToolbarItem.headerStyle;
+  final showHeaderStyle = false;
   final showOrderedList = item == DiaryToolbarItem.orderedList;
   final showBulletList = item == DiaryToolbarItem.bulletList;
   final showCheckList = item == DiaryToolbarItem.checkList;
@@ -245,6 +248,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(DiaryToolbarItem item) {
       item == DiaryToolbarItem.image
           ? FlutterQuillEmbeds.toolbarButtons(
             imageButtonOptions: QuillToolbarImageButtonOptions(
+              iconData: FontAwesomeIcons.image,
               imageButtonConfig: QuillToolbarImageConfig(
                 onRequestPickImage: _pickAndPersistDiaryImage,
               ),
@@ -253,6 +257,74 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(DiaryToolbarItem item) {
             cameraButtonOptions: null,
           )
           : null;
+
+  final buttonOptions = quill.QuillSimpleToolbarButtonOptions(
+    undoHistory: const quill.QuillToolbarHistoryButtonOptions(
+      iconData: FontAwesomeIcons.rotateLeft,
+    ),
+    redoHistory: const quill.QuillToolbarHistoryButtonOptions(
+      iconData: FontAwesomeIcons.rotateRight,
+    ),
+    bold: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.bold,
+    ),
+    italic: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.italic,
+    ),
+    underLine: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.underline,
+    ),
+    strikeThrough: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.strikethrough,
+    ),
+    inlineCode: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.code,
+    ),
+    color: const quill.QuillToolbarColorButtonOptions(
+      iconData: FontAwesomeIcons.palette,
+    ),
+    backgroundColor: const quill.QuillToolbarColorButtonOptions(
+      iconData: FontAwesomeIcons.highlighter,
+    ),
+    clearFormat: const quill.QuillToolbarClearFormatButtonOptions(
+      iconData: FontAwesomeIcons.eraser,
+    ),
+    listNumbers: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.listOl,
+    ),
+    listBullets: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.listUl,
+    ),
+    toggleCheckList: const quill.QuillToolbarToggleCheckListButtonOptions(
+      iconData: FontAwesomeIcons.squareCheck,
+    ),
+    codeBlock: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.fileCode,
+    ),
+    quote: const quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.quoteLeft,
+    ),
+    indentIncrease: const quill.QuillToolbarIndentButtonOptions(
+      iconData: FontAwesomeIcons.indent,
+    ),
+    indentDecrease: const quill.QuillToolbarIndentButtonOptions(
+      iconData: FontAwesomeIcons.outdent,
+    ),
+    linkStyle: const quill.QuillToolbarLinkStyleButtonOptions(
+      iconData: FontAwesomeIcons.link,
+    ),
+  );
+
+  final customButtons =
+      item == DiaryToolbarItem.headerStyle
+          ? <quill.QuillToolbarCustomButtonOptions>[
+            quill.QuillToolbarCustomButtonOptions(
+              icon: const FaIcon(FontAwesomeIcons.heading, size: 14),
+              tooltip: '标题样式（点击切换）',
+              onPressed: () => _cycleHeaderStyle(controller),
+            ),
+          ]
+          : <quill.QuillToolbarCustomButtonOptions>[];
 
   return quill.QuillSimpleToolbarConfig(
     // 使用 Wrap 模式，避免每个工具项内部再生成可横向滚动容器。
@@ -293,8 +365,22 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(DiaryToolbarItem item) {
     showClipboardCut: false,
     showClipboardCopy: false,
     showClipboardPaste: false,
+    customButtons: customButtons,
     embedButtons: embedButtons,
+    buttonOptions: buttonOptions,
   );
+}
+
+void _cycleHeaderStyle(quill.QuillController controller) {
+  final currentHeader =
+      controller.getSelectionStyle().attributes[quill.Attribute.header.key];
+  final nextHeader = switch (currentHeader?.value) {
+    1 => quill.Attribute.h2,
+    2 => quill.Attribute.h3,
+    3 => quill.Attribute.header,
+    _ => quill.Attribute.h1,
+  };
+  controller.formatSelection(nextHeader);
 }
 
 Future<String?> _pickAndPersistDiaryImage(BuildContext context) async {

@@ -82,6 +82,14 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
             key: ValueKey<String>(item.storageKey),
             leading: FaIcon(item.iconData, size: 16),
             title: Text(item.label),
+            subtitle:
+                item == DiaryToolbarItem.inlineCode
+                    ? const Text('用于给选中文本添加行内代码样式')
+                    : item == DiaryToolbarItem.codeBlock
+                    ? const Text('用于插入或切换为代码块')
+                    : item == DiaryToolbarItem.indent
+                    ? const Text('该项会同时显示缩进增加/减少两个按钮')
+                    : null,
             trailing: ReorderableDragStartListener(
               index: index,
               child: const FaIcon(FontAwesomeIcons.gripLinesVertical, size: 16),

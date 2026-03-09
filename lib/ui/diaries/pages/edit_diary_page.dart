@@ -250,39 +250,35 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
   Widget _buildEditor(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final editor = quill.QuillEditor.basic(
-      controller: _contentController,
-      focusNode: _contentFocusNode,
-      scrollController: _contentScrollController,
-      config: quill.QuillEditorConfig(
-        autoFocus: widget.diaryId == null,
-        placeholder: '开始记录...',
-        scrollable: false,
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        embedBuilders: buildDiaryQuillEmbedBuilders(),
-      ),
-    );
-
-    return SingleChildScrollView(
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          _buildTitleInput(context),
-          const SizedBox(height: 8),
-          DecoratedBox(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _buildTitleInput(context),
+        const SizedBox(height: 8),
+        Expanded(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: editor,
+              child: quill.QuillEditor.basic(
+                controller: _contentController,
+                focusNode: _contentFocusNode,
+                scrollController: _contentScrollController,
+                config: quill.QuillEditorConfig(
+                  autoFocus: widget.diaryId == null,
+                  placeholder: '开始记录...',
+                  scrollable: true,
+                  padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+                  embedBuilders: buildDiaryQuillEmbedBuilders(),
+                ),
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -359,6 +355,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             ],
           ),
           body: Stack(
+            fit: StackFit.expand,
             children: <Widget>[
               Padding(
                 padding: EdgeInsets.fromLTRB(

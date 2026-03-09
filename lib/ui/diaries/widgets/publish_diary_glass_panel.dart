@@ -373,7 +373,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          _buildCoverSection(context),
+          _buildCoverEntryTile(context),
           const SizedBox(height: 14),
           _buildTagEntryTile(context),
           const SizedBox(height: 14),
@@ -489,44 +489,56 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     );
   }
 
-  Widget _buildCoverSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          '封面',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: <Widget>[
-            OutlinedButton.icon(
-              onPressed: widget.onPickCover,
-              icon: const FaIcon(FontAwesomeIcons.image, size: 14),
-              label: const Text('选择封面'),
-            ),
-            if (widget.hasCover) ...<Widget>[
-              const SizedBox(width: 8),
-              TextButton.icon(
-                onPressed: widget.onClearCover,
-                icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
-                label: const Text('清除'),
-              ),
-            ],
-          ],
-        ),
-        if (widget.hasCover && widget.coverLabel != null) ...<Widget>[
-          const SizedBox(height: 6),
-          Text(
-            widget.coverLabel!,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.bodySmall,
+  Widget _buildCoverEntryTile(BuildContext context) {
+    final coverText =
+        widget.hasCover && widget.coverLabel != null
+            ? widget.coverLabel!
+            : '点击选择封面（可选）';
+    return InkWell(
+      onTap: widget.onPickCover,
+      borderRadius: BorderRadius.circular(14),
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.45),
           ),
-        ],
-      ],
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 42),
+          child: Row(
+            children: <Widget>[
+              Text(
+                '封面',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  coverText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              if (widget.hasCover && widget.onClearCover != null) ...<Widget>[
+                IconButton(
+                  onPressed: widget.onClearCover,
+                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
+                  visualDensity: VisualDensity.compact,
+                  tooltip: '清除封面',
+                ),
+              ],
+              const SizedBox(width: 6),
+              const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

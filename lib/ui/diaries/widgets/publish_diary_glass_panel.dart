@@ -248,7 +248,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final horizontalInset =
         lerpDouble(_collapsedHorizontalInset, _expandedHorizontalInset, _progress)!;
     final extraLift = lerpDouble(_collapsedExtraLift, 0, _progress)!;
-    final baseBottom = widget.bottomInset > 0 ? widget.bottomInset + 8 : 10.0;
+    // 避免展开态输入时被键盘整体顶得过高：随展开进度逐步降低键盘抬升量。
+    final keyboardLiftFactor = (1 - _progress).clamp(0.0, 1.0).toDouble();
+    final keyboardLift = widget.bottomInset * keyboardLiftFactor;
+    final baseBottom = keyboardLift > 0 ? keyboardLift + 8 : 10.0;
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 90),

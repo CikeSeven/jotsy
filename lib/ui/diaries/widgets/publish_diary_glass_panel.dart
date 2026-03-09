@@ -346,25 +346,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildMainPanelPage(BuildContext context) {
-    final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
-    return Column(
-      children: <Widget>[
-        _buildMainHeader(context),
-        Divider(
-          height: 1,
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-        Expanded(
-          child: IgnorePointer(
-            // 只在展开到一定程度后开放内部交互，避免半展开误触。
-            ignoring: _progress < 0.58,
-            child: Opacity(
-              opacity: detailsOpacity,
-              child: _buildMainContentPage(context),
-            ),
-          ),
-        ),
-      ],
+    return _buildPanelPageScaffold(
+      context: context,
+      header: _buildMainHeader(context),
+      content: _buildMainContentPage(context),
     );
   }
 
@@ -391,22 +376,48 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildTagPanelPage(BuildContext context) {
+    return _buildPanelPageScaffold(
+      context: context,
+      header: _buildTagHeader(context),
+      content: _buildTagManagePage(context),
+    );
+  }
+
+  Widget _buildPanelPageScaffold({
+    required BuildContext context,
+    required Widget header,
+    required Widget content,
+  }) {
     final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
-    return Column(
+    final dividerColor = Theme.of(
+      context,
+    ).colorScheme.outlineVariant.withValues(alpha: 0.5);
+    return Stack(
+      fit: StackFit.expand,
       children: <Widget>[
-        _buildTagHeader(context),
-        Divider(
-          height: 1,
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-        Expanded(
-          child: IgnorePointer(
-            // 只在展开到一定程度后开放内部交互，避免半展开误触。
-            ignoring: _progress < 0.58,
-            child: Opacity(
-              opacity: detailsOpacity,
-              child: _buildTagManagePage(context),
+        Positioned.fill(
+          top: _collapsedHeight + 1,
+          child: ClipRect(
+            child: IgnorePointer(
+              // 只在展开到一定程度后开放内部交互，避免半展开误触。
+              ignoring: _progress < 0.58,
+              child: Opacity(
+                opacity: detailsOpacity,
+                child: content,
+              ),
             ),
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              header,
+              Divider(height: 1, color: dividerColor),
+            ],
           ),
         ),
       ],
@@ -493,48 +504,49 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         widget.hasCover && widget.coverLabel != null
             ? widget.coverLabel!
             : '点击选择封面（可选）';
-    return InkWell(
-      onTap: widget.onPickCover,
-      borderRadius: BorderRadius.circular(14),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.45),
-          ),
-        ),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: colorScheme.surface.withValues(alpha: 0.4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.45)),
+      ),
+      child: InkWell(
+        onTap: widget.onPickCover,
+        borderRadius: BorderRadius.circular(14),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 42),
-          child: Row(
-            children: <Widget>[
-              Text(
-                '封面',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  coverText,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Row(
+              children: <Widget>[
+                Text(
+                  '封面',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
-              ),
-              if (widget.hasCover && widget.onClearCover != null) ...<Widget>[
-                IconButton(
-                  onPressed: widget.onClearCover,
-                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: '清除封面',
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    coverText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
+                if (widget.hasCover && widget.onClearCover != null) ...<Widget>[
+                  IconButton(
+                    onPressed: widget.onClearCover,
+                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
+                    visualDensity: VisualDensity.compact,
+                    tooltip: '清除封面',
+                  ),
+                ],
+                const SizedBox(width: 6),
+                const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
               ],
-              const SizedBox(width: 6),
-              const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
-            ],
+            ),
           ),
         ),
       ),
@@ -545,61 +557,62 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final selectedTags =
         widget.tags.where((tag) => widget.selectedTagIds.contains(tag.id)).toList();
 
-    return InkWell(
-      onTap: _openTagPage,
-      borderRadius: BorderRadius.circular(14),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.45),
-          ),
-        ),
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: colorScheme.surface.withValues(alpha: 0.4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.45)),
+      ),
+      child: InkWell(
+        onTap: _openTagPage,
+        borderRadius: BorderRadius.circular(14),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 42),
-          child: Row(
-            children: <Widget>[
-              Text(
-                '标签',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: selectedTags.isEmpty
-                    ? Text(
-                        '未选择标签',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: selectedTags
-                              .map(
-                                (tag) => Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: Chip(
-                                    visualDensity: VisualDensity.compact,
-                                    label: Text(tag.name),
-                                    avatar: CircleAvatar(
-                                      radius: 7,
-                                      backgroundColor: Color(tag.color),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Row(
+              children: <Widget>[
+                Text(
+                  '标签',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: selectedTags.isEmpty
+                      ? Text(
+                          '未选择标签',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        )
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: selectedTags
+                                .map(
+                                  (tag) => Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Chip(
+                                      visualDensity: VisualDensity.compact,
+                                      label: Text(tag.name),
+                                      avatar: CircleAvatar(
+                                        radius: 7,
+                                        backgroundColor: Color(tag.color),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              )
-                              .toList(),
+                                )
+                                .toList(),
+                          ),
                         ),
-                      ),
-              ),
-              const SizedBox(width: 8),
-              const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
-            ],
+                ),
+                const SizedBox(width: 8),
+                const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
+              ],
+            ),
           ),
         ),
       ),

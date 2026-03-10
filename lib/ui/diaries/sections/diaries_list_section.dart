@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../widgets/diaries_empty_state.dart';
+import '../widgets/diary_item_tag_row.dart';
 import 'diary_head_section.dart';
 
 /// 日记页主列表区块。
@@ -150,6 +151,7 @@ class DiariesListSection extends StatelessWidget {
     final previewCover = _resolvePreviewCover(diary.diary);
     final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
+    final hasTags = diary.tags.isNotEmpty;
 
     return Builder(
       builder: (BuildContext _) {
@@ -165,6 +167,10 @@ class DiariesListSection extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
+            if (hasTags) ...[
+              const SizedBox(height: 6),
+              DiaryItemTagRow(tags: diary.tags),
+            ],
             if (preview.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
@@ -218,8 +224,11 @@ class DiariesListSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               compactHeader,
+              if (hasTags) ...[
+                DiaryItemTagRow(tags: diary.tags),
+              ],
               if (preview.isNotEmpty) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   preview,
                   maxLines: 4,

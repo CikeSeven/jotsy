@@ -70,11 +70,15 @@ class DiariesListSection extends StatelessWidget {
           crossAxisSpacing: AppSpacing.s,
           childCount: diaries.length,
           itemBuilder: (BuildContext context, int index) {
-            return _buildDiaryItem(
-              context,
-              diary: diaries[index],
-              compact: true,
-              backgroundColor: backgroundColor,
+            final diary = diaries[index];
+            return KeyedSubtree(
+              key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
+              child: _buildDiaryItem(
+                context,
+                diary: diary,
+                compact: true,
+                backgroundColor: backgroundColor,
+              ),
             );
           },
         ),
@@ -85,27 +89,30 @@ class DiariesListSection extends StatelessWidget {
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final diary = diaries[index];
         final isLast = index == diaries.length - 1;
-        return ColoredBox(
-          color: backgroundColor,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              _buildDiaryItem(
-                context,
-                diary: diary,
-                compact: false,
-                backgroundColor: backgroundColor,
-              ),
-              if (!isLast)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                  child: Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
-                  ),
+        return KeyedSubtree(
+          key: ValueKey<String>('list_${diary.diary.diaryId}'),
+          child: ColoredBox(
+            color: backgroundColor,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                _buildDiaryItem(
+                  context,
+                  diary: diary,
+                  compact: false,
+                  backgroundColor: backgroundColor,
                 ),
-            ],
+                if (!isLast)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
+                    ),
+                  ),
+              ],
+            ),
           ),
         );
       }, childCount: diaries.length),

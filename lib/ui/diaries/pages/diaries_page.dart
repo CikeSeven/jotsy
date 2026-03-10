@@ -50,10 +50,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   OverlayEntry? _searchMorphOverlay;
   Rect? _cachedListSearchRect;
   late final AnimationController _searchMorphController;
-  late final AnimationController _listFadeController;
-  late final Animation<double> _listFadeAnimation;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
-  String _cachedVisibleItemsSignature = '';
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   bool _isSearchMode = false;
@@ -74,15 +71,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       vsync: this,
       duration: _searchMorphDuration,
     );
-    _listFadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 220),
-      value: 1,
-    );
-    _listFadeAnimation = CurvedAnimation(
-      parent: _listFadeController,
-      curve: Curves.easeOutCubic,
-    );
   }
 
   @override
@@ -91,7 +79,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _searchController.dispose();
     _searchFocusNode.dispose();
     _searchMorphController.dispose();
-    _listFadeController.dispose();
     super.dispose();
   }
 
@@ -589,15 +576,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     return visibleItems;
   }
 
-  String _visibleItemsSignature(List<DiaryWithTags> items) {
-    return items
-        .map(
-          (DiaryWithTags item) =>
-              '${item.diary.diaryId}:${item.diary.updatedAt.microsecondsSinceEpoch}',
-        )
-        .join('|');
-  }
-
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
@@ -629,12 +607,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 : null;
 
         if (latestVisibleItems != null) {
-          final signature = _visibleItemsSignature(latestVisibleItems);
-          if (signature != _cachedVisibleItemsSignature) {
-            _cachedVisibleItems = latestVisibleItems;
-            _cachedVisibleItemsSignature = signature;
-            unawaited(_listFadeController.forward(from: 0));
-          }
+          _cachedVisibleItems = latestVisibleItems;
         }
 
         final displayedItems =
@@ -735,35 +708,29 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   ),
                                 )
                               else
-                                SliverFadeTransition(
-                                  opacity: _listFadeAnimation,
-                                  sliver: DiariesListSection(
-                                    key: ValueKey<String>(
-                                      'diaries_list_${brightness.name}_${_layoutMode.name}_$_cachedVisibleItemsSignature',
-                                    ),
-                                    themeBrightness: brightness,
-                                    diaries: displayedItems,
-                                    layoutMode: _layoutMode,
-                                    isSelectionMode: _isSelectionMode,
-                                    selectedDiaryIds: _selectedDiaryIds,
-                                    onCreate:
-                                        () => unawaited(
-                                          _openCreateEditorWithDraftPrompt(),
-                                        ),
-                                    onOpenEditor: (diaryId) {
-                                      _openEditor(
-                                        diaryId: diaryId,
-                                      );
-                                    },
-                                    onToggleSelection:
-                                        (noteId, forceSelect) => _toggleSelection(
-                                          noteId,
-                                          forceSelect: forceSelect,
-                                        ),
-                                    onArchiveDiary:
-                                        (diaryId) =>
-                                            unawaited(_archiveDiaryBySwipe(diaryId)),
-                                  ),
+                                DiariesListSection(
+                                  themeBrightness: brightness,
+                                  diaries: displayedItems,
+                                  layoutMode: _layoutMode,
+                                  isSelectionMode: _isSelectionMode,
+                                  selectedDiaryIds: _selectedDiaryIds,
+                                  onCreate:
+                                      () => unawaited(
+                                        _openCreateEditorWithDraftPrompt(),
+                                      ),
+                                  onOpenEditor: (diaryId) {
+                                    _openEditor(
+                                      diaryId: diaryId,
+                                    );
+                                  },
+                                  onToggleSelection:
+                                      (noteId, forceSelect) => _toggleSelection(
+                                        noteId,
+                                        forceSelect: forceSelect,
+                                      ),
+                                  onArchiveDiary:
+                                      (diaryId) =>
+                                          unawaited(_archiveDiaryBySwipe(diaryId)),
                                 ),
                               SliverToBoxAdapter(
                                 child: SizedBox(height: listBottomOffset),

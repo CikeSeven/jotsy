@@ -29,6 +29,18 @@ val amapWebApiKey = localProperties.getProperty("amap.web.api.key", "")
 val escapedAmapWebApiKey = amapWebApiKey
     .replace("\\", "\\\\")
     .replace("\"", "\\\"")
+val qWeatherCredentialId = localProperties.getProperty("qweather.credential_id", "")
+val escapedQWeatherCredentialId = qWeatherCredentialId
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
+val qWeatherApiKey = localProperties.getProperty("qweather.api_key", "")
+val escapedQWeatherApiKey = qWeatherApiKey
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
+val qWeatherApiHost = localProperties.getProperty("qweather.api_host", "")
+val escapedQWeatherApiHost = qWeatherApiHost
+    .replace("\\", "\\\\")
+    .replace("\"", "\\\"")
 
 android {
     namespace = "com.jotsy.diary"
@@ -57,6 +69,9 @@ android {
         manifestPlaceholders["AMAP_API_KEY"] = amapApiKey
         buildConfigField("String", "AMAP_API_KEY", "\"$escapedAmapApiKey\"")
         buildConfigField("String", "AMAP_WEB_API_KEY", "\"$escapedAmapWebApiKey\"")
+        buildConfigField("String", "QWEATHER_CREDENTIAL_ID", "\"$escapedQWeatherCredentialId\"")
+        buildConfigField("String", "QWEATHER_API_KEY", "\"$escapedQWeatherApiKey\"")
+        buildConfigField("String", "QWEATHER_API_HOST", "\"$escapedQWeatherApiHost\"")
     }
 
     signingConfigs {

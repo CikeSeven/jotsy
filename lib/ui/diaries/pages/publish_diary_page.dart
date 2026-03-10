@@ -14,6 +14,7 @@ import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
+import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
@@ -48,7 +49,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   double _panelExpandProgress = 0;
   bool _saving = false;
   bool _locating = false;
+  bool _weatherLoading = false;
   LocationResolverService? _locationResolverService;
+  QWeatherWeatherService? _weatherService;
 
   String get _title {
     final normalized = widget.initialDraft.title.trim();
@@ -252,6 +255,27 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     return _locationResolverService;
   }
 
+  Future<QWeatherWeatherService?> _ensureWeatherService() async {
+    if (_weatherService != null) {
+      return _weatherService;
+    }
+
+    final apiKey = await AMapConfigChannel.getQWeatherApiKey();
+    final credentialId = await AMapConfigChannel.getQWeatherCredentialId();
+    final apiHost = await AMapConfigChannel.getQWeatherApiHost();
+    if (apiKey == null || apiKey.trim().isEmpty) {
+      return null;
+    }
+
+    final config = QWeatherConfig(
+      apiKey: apiKey,
+      credentialId: credentialId,
+      apiHost: apiHost,
+    );
+    _weatherService = QWeatherWeatherService(config: config);
+    return _weatherService;
+  }
+
   Future<void> _resolveLocation() async {
     if (_locating) {
       return;
@@ -297,6 +321,58 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     } finally {
       if (mounted) {
         setState(() => _locating = false);
+      }
+    }
+  }
+
+  Future<void> _resolveWeather() async {
+    if (_weatherLoading) {
+      return;
+    }
+    if (_locationLatitude == null || _locationLongitude == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请先获取当前位置')));
+      return;
+    }
+
+    setState(() => _weatherLoading = true);
+    try {
+      final service = await _ensureWeatherService();
+      if (service == null) {
+        throw const QWeatherException(
+          type: QWeatherErrorType.missingConfig,
+          message: '未检测到和风天气 key，请先配置 qweather.api_key',
+        );
+      }
+
+      final weatherNow = await service.fetchNow(
+        latitude: _locationLatitude!,
+        longitude: _locationLongitude!,
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _weatherController.text = weatherNow.displayText;
+      });
+    } on QWeatherException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.userMessage)));
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('获取天气失败: $error')));
+    } finally {
+      if (mounted) {
+        setState(() => _weatherLoading = false);
       }
     }
   }
@@ -447,6 +523,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 hasCover: _normalizedCover != null,
                 coverLabel: _coverLabel,
                 locating: _locating,
+                weatherLoading: _weatherLoading,
                 locationLabel: _locationLabel,
                 weatherController: _weatherController,
                 moodEmoji: _moodEmoji,
@@ -485,6 +562,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                         },
                 onCreateTag: _createTagInline,
                 onResolveLocation: _resolveLocation,
+                onResolveWeather: _resolveWeather,
                 onToggleTag: (tagId, selected) {
                   setState(() {
                     if (selected) {
@@ -501,9 +579,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   setState(
                     () => _energyLevel = nextValue.round().clamp(1, 5).toInt(),
                   );
-                },
-                onWeatherChanged: (_) {
-                  setState(() {});
                 },
                 onPublish: _publish,
               ),

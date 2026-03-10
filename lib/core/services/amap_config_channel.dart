@@ -19,6 +19,18 @@ class AMapConfigChannel {
     return _getChannelString('getAmapWebApiKey');
   }
 
+  static Future<String?> getQWeatherCredentialId() async {
+    return _getChannelString('getQWeatherCredentialId');
+  }
+
+  static Future<String?> getQWeatherApiKey() async {
+    return _getChannelString('getQWeatherApiKey');
+  }
+
+  static Future<String?> getQWeatherApiHost() async {
+    return _getChannelString('getQWeatherApiHost');
+  }
+
   static Future<String?> _getChannelString(String method) async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return null;

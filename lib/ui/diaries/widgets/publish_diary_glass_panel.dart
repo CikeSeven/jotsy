@@ -24,6 +24,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.hasCover,
     required this.coverLabel,
     required this.locating,
+    required this.weatherLoading,
     required this.locationLabel,
     required this.weatherController,
     required this.moodEmoji,
@@ -34,9 +35,9 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.selectedTagIds,
     required this.onPickCover,
     required this.onResolveLocation,
+    required this.onResolveWeather,
     required this.onCreateTag,
     required this.onToggleTag,
-    required this.onWeatherChanged,
     required this.onMoodChanged,
     required this.onEnergyChanged,
     required this.onPublish,
@@ -61,6 +62,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final bool hasCover;
   final String? coverLabel;
   final bool locating;
+  final bool weatherLoading;
   final String? locationLabel;
   final TextEditingController weatherController;
   final String? moodEmoji;
@@ -71,9 +73,9 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final Set<int> selectedTagIds;
   final VoidCallback onPickCover;
   final VoidCallback onResolveLocation;
+  final VoidCallback onResolveWeather;
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
-  final ValueChanged<String> onWeatherChanged;
   final ValueChanged<String?> onMoodChanged;
   final ValueChanged<double> onEnergyChanged;
   final VoidCallback onPublish;
@@ -775,7 +777,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               child: Row(
                 children: <Widget>[
                   const FaIcon(FontAwesomeIcons.cloudSun, size: 14),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       widget.weatherController.text.trim().isEmpty
@@ -794,10 +796,18 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                     ),
                   ),
                   IconButton(
-                    onPressed: null,
-                    tooltip: '天气功能开发中',
+                    onPressed:
+                        widget.weatherLoading ? null : widget.onResolveWeather,
+                    tooltip: '获取天气',
                     visualDensity: VisualDensity.compact,
-                    icon: const FaIcon(FontAwesomeIcons.cloud, size: 14),
+                    icon:
+                        widget.weatherLoading
+                            ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const FaIcon(FontAwesomeIcons.cloud, size: 14),
                   ),
                 ],
               ),

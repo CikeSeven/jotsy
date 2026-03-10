@@ -60,6 +60,7 @@ class DiariesListSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLightMode = themeBrightness == Brightness.light;
     final backgroundColor = isLightMode ? Colors.white : colorScheme.surface;
+    final waterfallLayoutSignature = _buildWaterfallLayoutSignature(diaries);
 
     if (diaries.isEmpty) {
       return SliverToBoxAdapter(
@@ -81,6 +82,7 @@ class DiariesListSection extends StatelessWidget {
 
     if (layoutMode == DiaryLayoutMode.waterfall) {
       return SliverPadding(
+        key: ValueKey<int>(waterfallLayoutSignature),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
         sliver: SliverMasonryGrid.count(
           crossAxisCount: 2,
@@ -135,6 +137,17 @@ class DiariesListSection extends StatelessWidget {
         );
       }, childCount: diaries.length),
     );
+  }
+
+  /// 根据当前瀑布流数据顺序生成稳定签名。
+  /// 当条目排序变化（如编辑后更新时间变化）时，触发瀑布流 sliver 重建，避免旧布局残留空位。
+  int _buildWaterfallLayoutSignature(List<DiaryWithTags> items) {
+    var hash = 17;
+    for (final item in items) {
+      hash = 37 * hash + item.diary.diaryId.hashCode;
+      hash = 37 * hash + item.diary.updatedAt.millisecondsSinceEpoch.hashCode;
+    }
+    return hash;
   }
 
   Widget _buildDiaryItem(

@@ -75,6 +75,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool _isSearchMode = false;
   bool _isSearchAnimating = false;
   bool _homeHintVisible = false;
+  int _listLayoutEpoch = 0;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
@@ -335,10 +336,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             if (!mounted) {
               return;
             }
+            _refreshAfterEditorReturn();
             _searchFocusNode.unfocus();
             FocusManager.instance.primaryFocus?.unfocus();
           }),
     );
+  }
+
+  /// 编辑页返回后触发一次安全刷新：
+  /// 1) 重新拉取列表流；
+  /// 2) 重建列表 sliver，清理可能残留的空位布局缓存。
+  void _refreshAfterEditorReturn() {
+    ref.invalidate(filteredDiariesProvider);
+    setState(() {
+      _listLayoutEpoch += 1;
+    });
   }
 
   Future<void> _openCreateEditorWithDraftPrompt() async {
@@ -1106,6 +1118,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           ),
                                         )
                                         : DiariesListSection(
+                                          key: ValueKey<String>(
+                                            'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
+                                          ),
                                           themeBrightness: brightness,
                                           diaries: displayedItems,
                                           layoutMode: _layoutMode,

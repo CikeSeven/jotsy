@@ -614,9 +614,20 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                                 .map(
                                   (tag) => Padding(
                                     padding: const EdgeInsets.only(right: 8),
-                                    child: Chip(
+                                    child: RawChip(
                                       visualDensity: VisualDensity.compact,
-                                      label: Text(tag.name),
+                                      side: BorderSide.none,
+                                      elevation: 0,
+                                      pressElevation: 0,
+                                      shadowColor: Colors.transparent,
+                                      shape: const StadiumBorder(),
+                                      backgroundColor: Colors.white.withValues(
+                                        alpha: 0.82,
+                                      ),
+                                      label: Text(
+                                        tag.name,
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
                                       avatar: CircleAvatar(
                                         radius: 7,
                                         backgroundColor: Color(tag.color),

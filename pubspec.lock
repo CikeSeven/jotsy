@@ -265,6 +265,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.32.0"
+  dynamic_color:
+    dependency: transitive
+    description:
+      name: dynamic_color
+      sha256: "43a5a6679649a7731ab860334a5812f2067c2d9ce6452cf069c5e0c25336c17c"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.8.1"
   fake_async:
     dependency: transitive
     description:
@@ -439,10 +447,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_riverpod
-      sha256: e2026c72738a925a60db30258ff1f29974e40716749f3c9850aabf34ffc1a14c
+      sha256: "4e166be88e1dbbaa34a280bdb744aeae73b7ef25fdf8db7a3bb776760a3648e2"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.2.1"
+    version: "3.3.1"
   flutter_staggered_grid_view:
     dependency: "direct main"
     description:
@@ -741,6 +749,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "5.1.1"
+  loading_indicator_m3e:
+    dependency: "direct main"
+    description:
+      name: loading_indicator_m3e
+      sha256: "3fe97385b4f84382c25b901abf88fcee4200e6e78fcd5ed7e037a34d7db53038"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.1.1"
   logging:
     dependency: transitive
     description:
@@ -749,6 +765,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.3.0"
+  m3e_design:
+    dependency: transitive
+    description:
+      name: m3e_design
+      sha256: "15ff0ef4c43553d855c5e866a9aee8231d44919fe2bb354b1259337bdfd659b4"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.2.1"
   markdown:
     dependency: transitive
     description:
@@ -773,6 +797,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.13.0"
+  material_new_shapes:
+    dependency: transitive
+    description:
+      name: material_new_shapes
+      sha256: e4bc375205e187e8fb232573387112dd8c0dd45b03af8aa2b3c79eb4b9e3e0dc
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.0"
   meta:
     dependency: transitive
     description:

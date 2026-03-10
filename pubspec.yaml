@@ -33,6 +33,7 @@ dependencies:
   smooth_sheets: ^0.17.0
   amap_flutter: ^0.7.0
   geolocator: ^14.0.2
+  loading_indicator_m3e: ^0.1.1
   
 dev_dependencies:
   flutter_test:

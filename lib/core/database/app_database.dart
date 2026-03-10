@@ -335,6 +335,51 @@ ORDER BY d.updated_at DESC
     });
   }
 
+  /// 监听已归档日记列表（仅归档且未删除）。
+  Stream<List<DiaryWithTags>> watchArchivedDiaries() {
+    return customSelect(
+      '''
+SELECT
+  d.id,
+  d.diary_id,
+  d.title,
+  d.content,
+  d.content_text,
+  d.cover,
+  d.metadata,
+  d.created_at,
+  d.updated_at,
+  d.is_archived,
+  d.archived_at,
+  d.is_deleted,
+  d.deleted_at,
+  COALESCE(
+    json_group_array(
+      CASE
+        WHEN t.id IS NOT NULL THEN json_object('id', t.id, 'name', t.name, 'color', t.color)
+      END
+    ),
+    '[]'
+  ) AS tags_json
+FROM diaries d
+LEFT JOIN diary_tags dt ON dt.diary_id = d.id
+LEFT JOIN tags t ON t.id = dt.tag_id
+WHERE d.is_deleted = 0
+  AND d.is_archived = 1
+GROUP BY d.id
+ORDER BY d.updated_at DESC
+''',
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map((List<QueryRow> rows) {
+      return rows.map((QueryRow row) {
+        return DiaryWithTags(
+          diary: _mapDiaryFromRow(row),
+          tags: _parseTagsJson(row.read<String>('tags_json')),
+        );
+      }).toList();
+    });
+  }
+
   /// 示例：按 metadata 指定路径和值检索日记。
   ///
   /// `jsonPath` 形如 `$.weather`，底层使用 SQLite JSON1 的 `json_extract`。

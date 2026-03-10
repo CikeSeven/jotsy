@@ -32,3 +32,9 @@ final tagListProvider = StreamProvider<List<Tag>>((Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return db.watchAllTags();
 });
+
+/// 归档日记流 provider。
+final archivedDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.watchArchivedDiaries();
+});

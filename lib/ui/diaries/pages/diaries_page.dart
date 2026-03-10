@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
@@ -356,6 +357,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     });
   }
 
+  void _openArchivedPage() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const ArchivedDiariesPage(),
+      ),
+    );
+  }
+
   void _onMenuSelected(DiaryMenuAction action) {
     setState(() {
       switch (action) {
@@ -662,7 +671,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           onArchiveSelected: () {},
                                           onDeleteSelected:
                                               () => unawaited(_deleteSelectedDiaries()),
-                                          onOpenArchived: () {},
+                                          onOpenArchived: _openArchivedPage,
                                           sortMode: _sortMode,
                                           layoutMode: _layoutMode,
                                           onMenuSelected: _onMenuSelected,

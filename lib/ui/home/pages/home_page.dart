@@ -129,8 +129,18 @@ class _HomePageState extends State<HomePage> {
         GlassBottomNav.navHeight;
 
     final baseTheme = Theme.of(context);
+    final colorScheme = baseTheme.colorScheme;
     final snackBarTheme = baseTheme.snackBarTheme.copyWith(
       behavior: SnackBarBehavior.floating,
+      backgroundColor: colorScheme.surfaceContainerHigh.withValues(alpha: 0.96),
+      contentTextStyle: baseTheme.textTheme.bodyMedium?.copyWith(
+        color: colorScheme.onSurface,
+      ),
+      actionTextColor: colorScheme.primary,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       insetPadding: EdgeInsets.fromLTRB(
         _snackBarSideInset,
         0,

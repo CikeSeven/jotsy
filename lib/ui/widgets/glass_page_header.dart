@@ -46,7 +46,7 @@ class GlassPageHeader extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.l,
-                        AppSpacing.m,
+                        AppSpacing.xs,
                         AppSpacing.l,
                         AppSpacing.s,
                       ),

@@ -76,7 +76,7 @@ class DiaryHeadSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
-        AppSpacing.m,
+        AppSpacing.xs,
         AppSpacing.l,
         0,
       ),

@@ -31,7 +31,7 @@ class DiariesListSection extends StatelessWidget {
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
   final VoidCallback onCreate;
-  final void Function(String diaryId, Rect? sourceGlobalRect) onOpenEditor;
+  final void Function(String diaryId) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
 
   @override
@@ -121,20 +121,7 @@ class DiariesListSection extends StatelessWidget {
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
 
     return Builder(
-      builder: (BuildContext itemContext) {
-        Rect? sourceRect;
-
-        Rect? resolveRect() {
-          final renderObject = itemContext.findRenderObject();
-          if (renderObject is! RenderBox ||
-              !renderObject.hasSize ||
-              !renderObject.attached) {
-            return null;
-          }
-          final topLeft = renderObject.localToGlobal(Offset.zero);
-          return topLeft & renderObject.size;
-        }
-
+      builder: (BuildContext _) {
         final content =
             compact
                 ? Column(
@@ -249,13 +236,12 @@ class DiariesListSection extends StatelessWidget {
             child: InkWell(
               borderRadius:
                   itemRadius > 0 ? BorderRadius.circular(itemRadius) : null,
-              onTapDown: (_) => sourceRect = resolveRect(),
               onTap: () {
                 if (isSelectionMode) {
                   onToggleSelection(diary.diary.diaryId, false);
                   return;
                 }
-                onOpenEditor(diary.diary.diaryId, sourceRect ?? resolveRect());
+                onOpenEditor(diary.diary.diaryId);
               },
               onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
               child: Container(

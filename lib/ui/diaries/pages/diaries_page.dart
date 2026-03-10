@@ -241,6 +241,38 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     return confirmed == true;
   }
 
+  /// 统一显示“可撤销”提示，并强制按设定时长自动关闭。
+  ///
+  /// 某些系统无障碍模式下，带 action 的 SnackBar 可能不会自动消失。
+  /// 这里通过 controller.close() 兜底，保证交互时长一致。
+  Future<bool> _showUndoSnackBar({
+    required String message,
+    required Duration duration,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+
+    var undoRequested = false;
+    final controller = messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: duration,
+        action: SnackBarAction(
+          label: '撤销',
+          onPressed: () {
+            undoRequested = true;
+          },
+        ),
+      ),
+    );
+
+    final forceCloseTimer = Timer(duration, controller.close);
+    final closedReason = await controller.closed;
+    forceCloseTimer.cancel();
+
+    return undoRequested || closedReason == SnackBarClosedReason.action;
+  }
+
   Future<void> _deleteSelectedDiaries() async {
     if (_selectedDiaryIds.isEmpty) {
       return;
@@ -292,29 +324,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
 
     final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    var undoRequested = false;
-    final closedReason =
-        await messenger
-            .showSnackBar(
-              SnackBar(
-                content: Text('已删除 ${targetIds.length} 条日记'),
-                duration: _deleteUndoSnackDuration,
-                action: SnackBarAction(
-                  label: '撤销',
-                  onPressed: () {
-                    undoRequested = true;
-                  },
-                ),
-              ),
-            )
-            .closed;
+    final undoRequested = await _showUndoSnackBar(
+      message: '已删除 ${targetIds.length} 条日记',
+      duration: _deleteUndoSnackDuration,
+    );
 
     if (!mounted) {
       return;
     }
 
-    if (undoRequested || closedReason == SnackBarClosedReason.action) {
+    if (undoRequested) {
       for (final diaryId in targetIds) {
         await db.restoreDiary(diaryId, touchUpdatedAt: false);
       }
@@ -409,29 +428,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
     if (showUndoSnack) {
       final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar();
-      var undoRequested = false;
-      final closedReason =
-          await messenger
-              .showSnackBar(
-                SnackBar(
-                  content: Text('已归档 ${targetIds.length} 条日记'),
-                  duration: _archiveUndoSnackDuration,
-                  action: SnackBarAction(
-                    label: '撤销',
-                    onPressed: () {
-                      undoRequested = true;
-                    },
-                  ),
-                ),
-              )
-              .closed;
+      final undoRequested = await _showUndoSnackBar(
+        message: '已归档 ${targetIds.length} 条日记',
+        duration: _archiveUndoSnackDuration,
+      );
 
       if (!mounted) {
         return;
       }
 
-      if (undoRequested || closedReason == SnackBarClosedReason.action) {
+      if (undoRequested) {
         for (final diaryId in targetIds) {
           await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
         }

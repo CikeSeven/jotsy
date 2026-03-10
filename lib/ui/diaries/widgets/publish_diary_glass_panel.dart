@@ -453,14 +453,54 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              TextButton.icon(
-                onPressed: widget.onCreateTag,
-                icon: const FaIcon(FontAwesomeIcons.plus, size: 12),
-                label: const Text('新建'),
+          SizedBox(
+            width: double.infinity,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 8,
+                  sigmaY: 8,
+                  tileMode: TileMode.mirror,
+                ),
+                child: Material(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surface.withValues(alpha: 0.46),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outlineVariant.withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: widget.onCreateTag,
+                    borderRadius: BorderRadius.circular(12),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: 40),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const FaIcon(FontAwesomeIcons.plus, size: 12),
+                            const SizedBox(width: 6),
+                            Text(
+                              '新建',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 8),
           _buildTagManageContent(context),

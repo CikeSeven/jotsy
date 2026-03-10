@@ -46,8 +46,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _fabShiftDuration = Duration(milliseconds: 260);
   static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
-  static const Duration _listRefreshFadeHalfDuration = Duration(milliseconds: 220);
-  static const Duration _listRefreshFadeGapDuration = Duration(milliseconds: 50);
+  static const Duration _listRefreshFadeOutDuration = Duration(milliseconds: 160);
+  static const Duration _listRefreshFadeInDuration = Duration(milliseconds: 260);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
   static const double _fabLiftOffsetWhenHintVisible = 60;
@@ -66,6 +66,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   Timer? _searchDebounceTimer;
   late final AnimationController _listRefreshPulseController;
   late final Animation<double> _listRefreshOpacity;
+  VoidCallback? _pendingFilterMutation;
+  Future<void>? _queuedFilterTransition;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   int _localHintVisibleCount = 0;
   String _searchInput = '';
@@ -88,13 +90,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _attachHomeHintVisibilityListener();
     _listRefreshPulseController = AnimationController(
       vsync: this,
-      duration: _listRefreshFadeHalfDuration,
+      duration: _listRefreshFadeInDuration,
       value: 1,
     );
     _listRefreshOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _listRefreshPulseController,
-        curve: Curves.easeInOutCubic,
+        curve: Curves.easeInOutSine,
       ),
     );
   }
@@ -203,8 +205,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return;
     }
     _effectiveSearchKeyword = normalized;
-    _playListRefreshPulse();
-    ref.read(diaryFilterProvider.notifier).setKeyword(normalized);
+    _queueFilterMutation(() {
+      ref.read(diaryFilterProvider.notifier).setKeyword(normalized);
+    });
   }
 
   void _clearSearch({required bool exitSearchMode}) {
@@ -234,55 +237,74 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
 
     if (shouldResetKeyword) {
-      _playListRefreshPulse();
-      ref.read(diaryFilterProvider.notifier).setKeyword('');
+      _queueFilterMutation(() {
+        ref.read(diaryFilterProvider.notifier).setKeyword('');
+      });
     }
   }
 
-  /// 在关键词/标签切换后给列表一个明显但短促的淡入淡出过渡。
-  ///
-  /// 仅用于“筛选导致的数据集变化”，避免和删除/恢复动效叠加造成噪声。
-  void _playListRefreshPulse() {
-    if (!mounted) {
-      return;
-    }
-    if (_listRefreshPulseController.isAnimating) {
-      return;
-    }
-    unawaited(_runListRefreshFadeTransition());
+  /// 为筛选切换排队：快速连续输入时仅保留最后一次操作，避免动画抖动。
+  void _queueFilterMutation(VoidCallback mutation) {
+    _pendingFilterMutation = mutation;
+    _queuedFilterTransition ??= _drainQueuedFilterMutations();
   }
 
-  Future<void> _runListRefreshFadeTransition() async {
+  Future<void> _drainQueuedFilterMutations() async {
+    while (mounted && _pendingFilterMutation != null) {
+      await _fadeOutListIfNeeded();
+      if (!mounted) {
+        break;
+      }
+
+      // 每轮只处理一次筛选变更，避免在完全隐藏状态下连续吞并多次更新导致长时间空白。
+      final mutation = _pendingFilterMutation!;
+      _pendingFilterMutation = null;
+      mutation();
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) {
+        break;
+      }
+
+      await _fadeInListIfNeeded();
+    }
+    _queuedFilterTransition = null;
+  }
+
+  Future<void> _fadeOutListIfNeeded() async {
+    if (!mounted || _listRefreshPulseController.value <= 0) {
+      return;
+    }
     await _listRefreshPulseController.animateTo(
       0,
-      duration: _listRefreshFadeHalfDuration,
-      curve: Curves.easeInOutCubic,
+      duration: _listRefreshFadeOutDuration,
+      curve: Curves.easeInOutSine,
     );
-    if (!mounted) {
-      return;
-    }
-    await Future<void>.delayed(_listRefreshFadeGapDuration);
-    if (!mounted) {
+  }
+
+  Future<void> _fadeInListIfNeeded() async {
+    if (!mounted || _listRefreshPulseController.value >= 1) {
       return;
     }
     await _listRefreshPulseController.animateTo(
       1,
-      duration: _listRefreshFadeHalfDuration,
-      curve: Curves.easeInOutCubic,
+      duration: _listRefreshFadeInDuration,
+      curve: Curves.easeInOutSine,
     );
   }
 
   void _toggleTagFilter(int tagId, bool selected) {
-    _playListRefreshPulse();
-    ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
+    _queueFilterMutation(() {
+      ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
+    });
   }
 
   void _clearTagFilters() {
     if (ref.read(diaryFilterProvider).selectedTagIds.isEmpty) {
       return;
     }
-    _playListRefreshPulse();
-    ref.read(diaryFilterProvider.notifier).clearTags();
+    _queueFilterMutation(() {
+      ref.read(diaryFilterProvider.notifier).clearTags();
+    });
   }
 
   // 打开编辑页，使用系统默认页面转场。

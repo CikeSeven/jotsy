@@ -53,6 +53,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const double _fabLiftOffsetWhenHintVisible = 60;
   static const double _fabExtraGapAboveNav = 2;
   static const double _listBottomExtraSpace = 34;
+  static const double _tagSectionTopGap = 2;
+  static const double _tagSectionBottomGap = 4;
 
   final Set<String> _selectedDiaryIds = <String>{};
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
@@ -1060,6 +1062,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               SliverToBoxAdapter(
                                 child: SizedBox(height: headerOverlayHeight),
                               ),
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: _tagSectionTopGap),
+                              ),
                               tagsAsync.when(
                                 data: (tags) {
                                   final tagsForDisplay = _buildTagFiltersForDisplay(
@@ -1091,6 +1096,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                             child: Text('标签加载失败: $error'),
                                           ),
                                         ),
+                              ),
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: _tagSectionBottomGap),
                               ),
                               SliverFadeTransition(
                                 opacity: _listRefreshOpacity,

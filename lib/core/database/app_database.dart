@@ -47,7 +47,7 @@ class AppDatabase extends _$AppDatabase {
 
   /// 创建标签。
   ///
-  /// 若同名标签已存在，则直接返回已有标签 id，避免重复记录。
+  /// 若同名标签已存在，则复用已有标签并同步更新颜色，避免重复记录。
   Future<int> createTag({required String name, required int color}) async {
     final normalizedName = name.trim();
     if (normalizedName.isEmpty) {
@@ -58,6 +58,11 @@ class AppDatabase extends _$AppDatabase {
         await (select(tags)
           ..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
     if (existing != null) {
+      if (existing.color != color) {
+        await (update(tags)..where((Tags t) => t.id.equals(existing.id))).write(
+          TagsCompanion(color: Value<int>(color)),
+        );
+      }
       return existing.id;
     }
 

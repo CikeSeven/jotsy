@@ -180,20 +180,35 @@ Widget buildDiaryFloatingToolbar({
   required List<DiaryToolbarItem> order,
 }) {
   final normalizedOrder = _normalizeDiaryToolbarOrder(order);
-  return SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-    child: Row(
-      children: <Widget>[
-        for (var i = 0; i < normalizedOrder.length; i++) ...<Widget>[
-          quill.QuillSimpleToolbar(
-            controller: controller,
-            config: _buildSingleItemConfig(normalizedOrder[i], controller),
+  return LayoutBuilder(
+    builder: (BuildContext context, BoxConstraints constraints) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                for (var i = 0; i < normalizedOrder.length; i++) ...<Widget>[
+                  quill.QuillSimpleToolbar(
+                    controller: controller,
+                    config: _buildSingleItemConfig(
+                      context,
+                      normalizedOrder[i],
+                      controller,
+                    ),
+                  ),
+                  if (i != normalizedOrder.length - 1) const SizedBox(width: 2),
+                ],
+              ],
+            ),
           ),
-          if (i != normalizedOrder.length - 1) const SizedBox(width: 2),
-        ],
-      ],
-    ),
+        ),
+      );
+    },
   );
 }
 
@@ -222,15 +237,23 @@ List<DiaryToolbarItem> _normalizeDiaryToolbarOrder(List<DiaryToolbarItem> order)
 }
 
 quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
+  BuildContext context,
   DiaryToolbarItem item,
   quill.QuillController controller,
 ) {
+  final colorScheme = Theme.of(context).colorScheme;
   // 显式固定移动端悬浮工具栏图标尺寸，避免受主题密度或系统缩放影响出现“放大”。
-  const compactIconTheme = quill.QuillIconTheme(
+  final compactIconTheme = quill.QuillIconTheme(
     iconButtonUnselectedData: quill.IconButtonData(
       iconSize: 16,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.all(4),
+      color: colorScheme.onSurface,
+      disabledColor: colorScheme.onSurfaceVariant,
+      style: ButtonStyle(
+        foregroundColor: WidgetStatePropertyAll<Color>(colorScheme.onSurface),
+        iconColor: WidgetStatePropertyAll<Color>(colorScheme.onSurface),
+      ),
       constraints: BoxConstraints(
         minWidth: 32,
         minHeight: 32,
@@ -242,6 +265,19 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
       iconSize: 16,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.all(4),
+      color: colorScheme.onPrimaryContainer,
+      disabledColor: colorScheme.onSurfaceVariant,
+      style: ButtonStyle(
+        foregroundColor: WidgetStatePropertyAll<Color>(
+          colorScheme.onPrimaryContainer,
+        ),
+        iconColor: WidgetStatePropertyAll<Color>(
+          colorScheme.onPrimaryContainer,
+        ),
+        backgroundColor: WidgetStatePropertyAll<Color>(
+          colorScheme.primaryContainer,
+        ),
+      ),
       constraints: BoxConstraints(
         minWidth: 32,
         minHeight: 32,
@@ -285,9 +321,10 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
           : null;
 
   final buttonOptions = quill.QuillSimpleToolbarButtonOptions(
-    base: const quill.QuillToolbarBaseButtonOptions(
+    base: quill.QuillToolbarBaseButtonOptions(
       iconSize: 13,
       iconButtonFactor: 1.2,
+      iconTheme: compactIconTheme,
     ),
     undoHistory: const quill.QuillToolbarHistoryButtonOptions(
       iconData: FontAwesomeIcons.rotateLeft,
@@ -361,7 +398,6 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
     multiRowsDisplay: true,
     showDividers: false,
     decoration: const BoxDecoration(color: Colors.transparent),
-    iconTheme: compactIconTheme,
     showFontFamily: false,
     showFontSize: false,
     showBoldButton: showBold,

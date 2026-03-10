@@ -1050,6 +1050,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   onArchiveDiary:
                                       (diaryId) =>
                                           unawaited(_archiveDiaryBySwipe(diaryId)),
+                                  isSearchResultEmpty:
+                                      filterState.keyword.trim().isNotEmpty,
                                 ),
                               SliverToBoxAdapter(
                                 child: SizedBox(height: listBottomOffset),

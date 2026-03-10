@@ -6,13 +6,48 @@ import 'package:flutter/material.dart';
 ///
 /// 当当前列表没有可显示笔记时，给出简洁空态和“创建笔记”入口。
 class DiariesEmptyState extends StatelessWidget {
-  const DiariesEmptyState({super.key, required this.onCreate});
+  const DiariesEmptyState({
+    super.key,
+    required this.onCreate,
+    this.isSearchResultEmpty = false,
+  });
 
   final VoidCallback onCreate;
+  final bool isSearchResultEmpty;
 
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
+    if (isSearchResultEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              CupertinoIcons.search,
+              size: 38,
+              color: color.secondary,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '没有搜索到日记',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: color.onSurface,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '换个关键词再试试吧～',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: color.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(

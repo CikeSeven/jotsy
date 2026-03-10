@@ -35,6 +35,7 @@ class DiariesListSection extends StatelessWidget {
     this.swipeActionIcon = FontAwesomeIcons.boxArchive,
     this.swipeActionBackgroundColor,
     this.swipeActionIconColor,
+    this.isSearchResultEmpty = false,
   });
 
   final Brightness themeBrightness;
@@ -51,6 +52,7 @@ class DiariesListSection extends StatelessWidget {
   final IconData swipeActionIcon;
   final Color? swipeActionBackgroundColor;
   final Color? swipeActionIconColor;
+  final bool isSearchResultEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +69,10 @@ class DiariesListSection extends StatelessWidget {
               horizontal: AppSpacing.m,
               vertical: AppSpacing.m,
             ),
-            child: DiariesEmptyState(onCreate: onCreate),
+            child: DiariesEmptyState(
+              onCreate: onCreate,
+              isSearchResultEmpty: isSearchResultEmpty,
+            ),
           ),
         ),
       );

@@ -15,6 +15,14 @@ class TagFilterChip extends StatelessWidget {
     required this.onTap,
     this.colorDot,
     this.leading,
+    this.radius = AppRadii.nav,
+    this.colorDotSize = 8,
+    this.padding = const EdgeInsets.symmetric(
+      horizontal: AppSpacing.m,
+      vertical: AppSpacing.s,
+    ),
+    this.animateBorder = false,
+    this.showSelectedShadow = true,
   });
 
   final String label;
@@ -26,6 +34,11 @@ class TagFilterChip extends StatelessWidget {
   final VoidCallback onTap;
   final Color? colorDot;
   final Widget? leading;
+  final double radius;
+  final double colorDotSize;
+  final EdgeInsetsGeometry padding;
+  final bool animateBorder;
+  final bool showSelectedShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +50,26 @@ class TagFilterChip extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadii.nav),
+        borderRadius: BorderRadius.circular(radius),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.m,
-            vertical: AppSpacing.s,
-          ),
+          curve: Curves.easeInOutCubic,
+          padding: padding,
           decoration: BoxDecoration(
             color: backgroundColor,
-            borderRadius: BorderRadius.circular(AppRadii.nav),
+            borderRadius: BorderRadius.circular(radius),
+            border:
+                animateBorder
+                    ? Border.all(
+                      color:
+                          selected
+                              ? selectedForegroundColor.withValues(alpha: 0.75)
+                              : unselectedForegroundColor.withValues(alpha: 0.28),
+                      width: selected ? 2.0 : 1.2,
+                    )
+                    : null,
             boxShadow:
-                selected
+                selected && showSelectedShadow
                     ? <BoxShadow>[
                       BoxShadow(
                         color: backgroundColor.withAlpha(140),
@@ -76,8 +96,8 @@ class TagFilterChip extends StatelessWidget {
                 ],
                 if (colorDot != null) ...[
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: colorDotSize,
+                    height: colorDotSize,
                     decoration: BoxDecoration(
                       color: colorDot,
                       shape: BoxShape.circle,

@@ -25,6 +25,12 @@ enum DiaryMenuAction {
 /// - 左侧展示页面标题或多选计数；
 /// - 右侧展示操作按钮（取消选择、归档、删除、归档列表入口）。
 class DiaryHeadSection extends StatelessWidget {
+  static const Duration _modeTransitionDuration = Duration(milliseconds: 260);
+  static const Duration _searchFieldSwitchDuration = Duration(milliseconds: 220);
+  static const double _headerContentHeight = 48;
+  static const double _searchPreviewHeight = 36;
+  static const double _searchInputHeight = 44;
+
   const DiaryHeadSection({
     super.key,
     required this.isSelectionMode,
@@ -37,7 +43,6 @@ class DiaryHeadSection extends StatelessWidget {
     required this.sortMode,
     required this.layoutMode,
     required this.onMenuSelected,
-    required this.searchFieldKey,
     required this.searchPreviewText,
     required this.searchController,
     required this.searchFocusNode,
@@ -57,7 +62,6 @@ class DiaryHeadSection extends StatelessWidget {
   final DiarySortMode sortMode;
   final DiaryLayoutMode layoutMode;
   final ValueChanged<DiaryMenuAction> onMenuSelected;
-  final GlobalKey searchFieldKey;
   final String searchPreviewText;
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
@@ -76,82 +80,117 @@ class DiaryHeadSection extends StatelessWidget {
         AppSpacing.l,
         0,
       ),
-      child: Row(
-        children: [
-          if (isSelectionMode) ...[
-            Expanded(
-              child: Text(
-                'Jotsy',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            IconButton(
-              tooltip: '取消',
-              onPressed: onCancelSelection,
-              icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-            ),
-            IconButton(
-              tooltip: '归档',
-              onPressed: onArchiveSelected,
-              icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
-            ),
-            IconButton(
-              tooltip: '删除',
-              onPressed: onDeleteSelected,
-              icon: FaIcon(
-                FontAwesomeIcons.trashCan,
-                size: 18,
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-          ] else ...[
-            if (isSearchMode)
+      child: SizedBox(
+        height: _headerContentHeight,
+        child: Row(
+          children: [
+            if (isSelectionMode) ...[
               Expanded(
-                child: _SearchInput(
-                  searchFieldKey: searchFieldKey,
-                  searchController: searchController,
-                  searchFocusNode: searchFocusNode,
-                  hasSearchText: hasSearchText,
-                  onExitSearch: onExitSearch,
-                  onClearSearch: onClearSearch,
-                  onSearchChanged: onSearchChanged,
-                ),
-              )
-            else ...[
-              Text(
-                'Jotsy',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(width: AppSpacing.xl),
-              Expanded(
-                child: _SearchPreview(
-                  searchFieldKey: searchFieldKey,
-                  searchPreviewText: searchPreviewText,
-                  onTap: onEnterSearch,
+                child: Text(
+                  'Jotsy',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: AppSpacing.m),
               IconButton(
-                tooltip: '已归档笔记',
-                onPressed: onOpenArchived,
+                tooltip: '取消',
+                onPressed: onCancelSelection,
+                icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+              ),
+              IconButton(
+                tooltip: '归档',
+                onPressed: onArchiveSelected,
                 icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
               ),
               IconButton(
-                tooltip: '更多',
-                onPressed: () => _showSettingsSheet(context),
-                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+                tooltip: '删除',
+                onPressed: onDeleteSelected,
+                icon: FaIcon(
+                  FontAwesomeIcons.trashCan,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ] else ...[
+              AnimatedSize(
+                duration: _modeTransitionDuration,
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.centerLeft,
+                child: AnimatedOpacity(
+                  duration: _modeTransitionDuration,
+                  curve: Curves.easeOutCubic,
+                  opacity: isSearchMode ? 0 : 1,
+                  child:
+                      isSearchMode
+                          ? const SizedBox.shrink()
+                          : Text(
+                            'Jotsy',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                ),
+              ),
+              AnimatedContainer(
+                duration: _modeTransitionDuration,
+                curve: Curves.easeOutCubic,
+                width: isSearchMode ? 0 : AppSpacing.xl,
+              ),
+              Expanded(
+                child: AnimatedSwitcher(
+                duration: _searchFieldSwitchDuration,
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  // 搜索态保持“向上进入”手感，同时避免整体头部被拉缩。
+                  final offsetAnimation = Tween<Offset>(
+                    begin: const Offset(0.03, 0.12),
+                    end: Offset.zero,
+                  ).animate(animation);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(position: offsetAnimation, child: child),
+                  );
+                },
+                child:
+                    isSearchMode
+                        ? _SearchInput(
+                          key: const ValueKey<String>('search_input'),
+                          searchController: searchController,
+                          searchFocusNode: searchFocusNode,
+                          height: _searchInputHeight,
+                          hasSearchText: hasSearchText,
+                          onExitSearch: onExitSearch,
+                          onClearSearch: onClearSearch,
+                          onSearchChanged: onSearchChanged,
+                        )
+                        : _SearchPreview(
+                          key: const ValueKey<String>('search_preview'),
+                          searchPreviewText: searchPreviewText,
+                          height: _searchPreviewHeight,
+                          onTap: onEnterSearch,
+                        ),
+                ),
+              ),
+              AnimatedContainer(
+                duration: _modeTransitionDuration,
+                curve: Curves.easeOutCubic,
+                width: isSearchMode ? 0 : AppSpacing.m,
+              ),
+              _AnimatedTrailingActions(
+                visible: !isSearchMode,
+                duration: _modeTransitionDuration,
+                onOpenArchived: onOpenArchived,
+                onOpenSettings: () => _showSettingsSheet(context),
               ),
             ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -257,13 +296,14 @@ class DiaryHeadSection extends StatelessWidget {
 
 class _SearchPreview extends StatelessWidget {
   const _SearchPreview({
-    required this.searchFieldKey,
+    super.key,
     required this.searchPreviewText,
+    required this.height,
     required this.onTap,
   });
 
-  final GlobalKey searchFieldKey;
   final String searchPreviewText;
+  final double height;
   final VoidCallback onTap;
 
   @override
@@ -275,8 +315,7 @@ class _SearchPreview extends StatelessWidget {
     final hasText = displayedText.isNotEmpty;
 
     return Container(
-      key: searchFieldKey,
-      height: 36,
+      height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
         boxShadow: AppEffects.softShadow,
@@ -356,18 +395,19 @@ class _SearchPreview extends StatelessWidget {
 
 class _SearchInput extends StatelessWidget {
   const _SearchInput({
-    required this.searchFieldKey,
+    super.key,
     required this.searchController,
     required this.searchFocusNode,
+    required this.height,
     required this.hasSearchText,
     required this.onExitSearch,
     required this.onClearSearch,
     required this.onSearchChanged,
   });
 
-  final GlobalKey searchFieldKey;
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
+  final double height;
   final bool hasSearchText;
   final VoidCallback onExitSearch;
   final VoidCallback onClearSearch;
@@ -377,8 +417,7 @@ class _SearchInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      key: searchFieldKey,
-      height: 36,
+      height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
         boxShadow: AppEffects.softShadow,
@@ -440,13 +479,27 @@ class _SearchInput extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (hasSearchText)
-                        IconButton(
-                          tooltip: '清空',
-                          splashRadius: 18,
-                          onPressed: onClearSearch,
-                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
-                        ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        child:
+                            hasSearchText
+                                ? IconButton(
+                                  key: const ValueKey<String>('clear_search_button'),
+                                  tooltip: '清空',
+                                  splashRadius: 18,
+                                  onPressed: onClearSearch,
+                                  icon: const FaIcon(
+                                    FontAwesomeIcons.xmark,
+                                    size: 14,
+                                  ),
+                                )
+                                : const SizedBox(
+                                  key: ValueKey<String>('clear_search_placeholder'),
+                                  width: 40,
+                                ),
+                      ),
                     ],
                   ),
                 ),
@@ -454,6 +507,53 @@ class _SearchInput extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedTrailingActions extends StatelessWidget {
+  const _AnimatedTrailingActions({
+    required this.visible,
+    required this.duration,
+    required this.onOpenArchived,
+    required this.onOpenSettings,
+  });
+
+  final bool visible;
+  final Duration duration;
+  final VoidCallback onOpenArchived;
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    // 通过 Size + Opacity 双通道动画，让右侧操作区在搜索态下平滑让位。
+    return AnimatedSize(
+      duration: duration,
+      curve: Curves.easeOutCubic,
+      alignment: Alignment.centerRight,
+      child: AnimatedOpacity(
+        duration: duration,
+        curve: Curves.easeOutCubic,
+        opacity: visible ? 1 : 0,
+        child:
+            visible
+                ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: '已归档笔记',
+                      onPressed: onOpenArchived,
+                      icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
+                    ),
+                    IconButton(
+                      tooltip: '更多',
+                      onPressed: onOpenSettings,
+                      icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+                    ),
+                  ],
+                )
+                : const SizedBox.shrink(),
       ),
     );
   }

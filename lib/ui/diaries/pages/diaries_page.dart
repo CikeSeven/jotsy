@@ -61,7 +61,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final Map<String, Timer> _appearingTimers = <String, Timer>{};
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  final GlobalKey _topSearchFieldKey = GlobalKey();
   Timer? _searchDebounceTimer;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   int _localHintVisibleCount = 0;
@@ -1071,7 +1070,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           sortMode: _sortMode,
                                           layoutMode: _layoutMode,
                                           onMenuSelected: _onMenuSelected,
-                                          searchFieldKey: _topSearchFieldKey,
                                           searchPreviewText: _searchInput,
                                           searchController: _searchController,
                                           searchFocusNode: _searchFocusNode,

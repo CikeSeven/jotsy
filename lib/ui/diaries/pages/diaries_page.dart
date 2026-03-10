@@ -36,12 +36,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
+  static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
 
   final Set<String> _selectedDiaryIds = <String>{};
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
+  final Set<String> _pendingHideDiaryIds = <String>{};
+  final Set<String> _appearingDiaryIds = <String>{};
   final Set<String> _archivingDiaryIds = <String>{};
+  final Map<String, Timer> _pendingHideTimers = <String, Timer>{};
+  final Map<String, Timer> _appearingTimers = <String, Timer>{};
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey _listSearchFieldKey = GlobalKey();
@@ -76,6 +81,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();
+    for (final timer in _pendingHideTimers.values) {
+      timer.cancel();
+    }
+    _pendingHideTimers.clear();
+    for (final timer in _appearingTimers.values) {
+      timer.cancel();
+    }
+    _appearingTimers.clear();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _searchMorphController.dispose();
@@ -241,8 +254,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
     setState(() {
       _selectedDiaryIds.clear();
-      _optimisticHiddenDiaryIds.addAll(targetIds);
     });
+    _startHideAnimations(targetIds);
 
     final db = ref.read(appDatabaseProvider);
     final failedIds = <String>[];
@@ -268,8 +281,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       if (!mounted) {
         return;
       }
+      _revealDiaries(targetIds, animate: true);
       setState(() {
-        _optimisticHiddenDiaryIds.removeAll(targetIds);
         _selectedDiaryIds.addAll(targetIds);
       });
       ScaffoldMessenger.of(
@@ -308,9 +321,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       if (!mounted) {
         return;
       }
-      setState(() {
-        _optimisticHiddenDiaryIds.removeAll(targetIds);
-      });
+      _revealDiaries(targetIds, animate: true);
       messenger.showSnackBar(
         const SnackBar(
           content: Text('已恢复删除的日记'),
@@ -323,13 +334,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     // 数据流刷新后会自然移除已删除项，这里清理临时隐藏集合避免长期残留。
     setState(() {
       _optimisticHiddenDiaryIds.removeAll(targetIds);
+      _pendingHideDiaryIds.removeAll(targetIds);
+      _appearingDiaryIds.removeAll(targetIds);
     });
+    _clearTransitionTimers(targetIds);
   }
 
   Future<void> _archiveDiaries(
     List<String> diaryIds, {
     required bool clearSelection,
     required bool showUndoSnack,
+    bool animateHide = true,
   }) async {
     final targetIds =
         diaryIds
@@ -348,9 +363,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       if (clearSelection) {
         _selectedDiaryIds.removeAll(targetIds);
       }
-      _optimisticHiddenDiaryIds.addAll(targetIds);
       _archivingDiaryIds.addAll(targetIds);
     });
+    if (animateHide) {
+      _startHideAnimations(targetIds);
+    } else {
+      _hideDiariesImmediately(targetIds);
+    }
 
     final db = ref.read(appDatabaseProvider);
     final failedIds = <String>[];
@@ -376,12 +395,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         return;
       }
       setState(() {
-        _optimisticHiddenDiaryIds.removeAll(targetIds);
         _archivingDiaryIds.removeAll(targetIds);
         if (clearSelection) {
           _selectedDiaryIds.addAll(targetIds);
         }
       });
+      _revealDiaries(targetIds, animate: true);
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('归档失败，请重试')));
@@ -420,9 +439,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           return;
         }
         setState(() {
-          _optimisticHiddenDiaryIds.removeAll(targetIds);
           _archivingDiaryIds.removeAll(targetIds);
         });
+        _revealDiaries(targetIds, animate: true);
         messenger.showSnackBar(
           const SnackBar(
             content: Text('已恢复归档的日记'),
@@ -435,8 +454,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
     setState(() {
       _optimisticHiddenDiaryIds.removeAll(targetIds);
+      _pendingHideDiaryIds.removeAll(targetIds);
+      _appearingDiaryIds.removeAll(targetIds);
       _archivingDiaryIds.removeAll(targetIds);
     });
+    _clearTransitionTimers(targetIds);
   }
 
   Future<void> _archiveSelectedDiaries() async {
@@ -455,7 +477,104 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       <String>[diaryId],
       clearSelection: false,
       showUndoSnack: true,
+      animateHide: false,
     );
+  }
+
+  void _startHideAnimations(Iterable<String> diaryIds) {
+    final targetIds = diaryIds.toSet();
+    if (targetIds.isEmpty) {
+      return;
+    }
+
+    for (final diaryId in targetIds) {
+      _appearingTimers.remove(diaryId)?.cancel();
+      _pendingHideTimers[diaryId]?.cancel();
+      _pendingHideTimers[diaryId] = Timer(_listItemTransitionDuration, () {
+        _pendingHideTimers.remove(diaryId);
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _pendingHideDiaryIds.remove(diaryId);
+          _optimisticHiddenDiaryIds.add(diaryId);
+        });
+      });
+    }
+
+    setState(() {
+      _appearingDiaryIds.removeAll(targetIds);
+      _pendingHideDiaryIds.addAll(targetIds);
+    });
+  }
+
+  void _hideDiariesImmediately(Iterable<String> diaryIds) {
+    final targetIds = diaryIds.toSet();
+    if (targetIds.isEmpty) {
+      return;
+    }
+    _clearTransitionTimers(targetIds);
+    setState(() {
+      _pendingHideDiaryIds.removeAll(targetIds);
+      _appearingDiaryIds.removeAll(targetIds);
+      _optimisticHiddenDiaryIds.addAll(targetIds);
+    });
+  }
+
+  void _revealDiaries(Iterable<String> diaryIds, {required bool animate}) {
+    final targetIds = diaryIds.toSet();
+    if (targetIds.isEmpty) {
+      return;
+    }
+
+    for (final diaryId in targetIds) {
+      _pendingHideTimers.remove(diaryId)?.cancel();
+      _appearingTimers.remove(diaryId)?.cancel();
+    }
+
+    setState(() {
+      _pendingHideDiaryIds.removeAll(targetIds);
+      _optimisticHiddenDiaryIds.removeAll(targetIds);
+      if (animate) {
+        _appearingDiaryIds.addAll(targetIds);
+      } else {
+        _appearingDiaryIds.removeAll(targetIds);
+      }
+    });
+  }
+
+  void _clearTransitionTimers(Iterable<String> diaryIds) {
+    for (final diaryId in diaryIds) {
+      _pendingHideTimers.remove(diaryId)?.cancel();
+      _appearingTimers.remove(diaryId)?.cancel();
+    }
+  }
+
+  void _syncAppearingTimers(List<DiaryWithTags> visibleItems) {
+    if (_appearingDiaryIds.isEmpty) {
+      return;
+    }
+    final visibleIds =
+        visibleItems.map((DiaryWithTags item) => item.diary.diaryId).toSet();
+    final targetIds = _appearingDiaryIds.intersection(visibleIds);
+    if (targetIds.isEmpty) {
+      return;
+    }
+
+    for (final diaryId in targetIds) {
+      if (_appearingTimers.containsKey(diaryId)) {
+        continue;
+      }
+      _appearingTimers[diaryId] = Timer(_listItemTransitionDuration, () {
+        _appearingTimers.remove(diaryId);
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _appearingDiaryIds.remove(diaryId);
+        });
+      });
+    }
   }
 
   void _toggleSelection(String noteId, {bool forceSelect = false}) {
@@ -608,6 +727,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
         if (latestVisibleItems != null) {
           _cachedVisibleItems = latestVisibleItems;
+          _syncAppearingTimers(latestVisibleItems);
         }
 
         final displayedItems =
@@ -714,6 +834,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   layoutMode: _layoutMode,
                                   isSelectionMode: _isSelectionMode,
                                   selectedDiaryIds: _selectedDiaryIds,
+                                  pendingHideDiaryIds: _pendingHideDiaryIds,
+                                  appearingDiaryIds: _appearingDiaryIds,
                                   onCreate:
                                       () => unawaited(
                                         _openCreateEditorWithDraftPrompt(),

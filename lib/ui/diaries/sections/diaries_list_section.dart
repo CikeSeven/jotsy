@@ -17,6 +17,8 @@ import 'diary_head_section.dart';
 ///
 /// 仅负责输出“日记内容本身”的 sliver，不再承载顶部标签条或独立滚动容器。
 class DiariesListSection extends StatelessWidget {
+  static const Duration _itemTransitionDuration = Duration(milliseconds: 220);
+
   const DiariesListSection({
     super.key,
     required this.themeBrightness,
@@ -24,6 +26,8 @@ class DiariesListSection extends StatelessWidget {
     required this.layoutMode,
     required this.selectedDiaryIds,
     required this.isSelectionMode,
+    this.pendingHideDiaryIds = const <String>{},
+    this.appearingDiaryIds = const <String>{},
     required this.onCreate,
     required this.onOpenEditor,
     required this.onToggleSelection,
@@ -35,6 +39,8 @@ class DiariesListSection extends StatelessWidget {
   final DiaryLayoutMode layoutMode;
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
+  final Set<String> pendingHideDiaryIds;
+  final Set<String> appearingDiaryIds;
   final VoidCallback onCreate;
   final void Function(String diaryId) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
@@ -303,6 +309,11 @@ class DiariesListSection extends StatelessWidget {
           ),
         );
 
+        final animatedBaseItem = _buildAnimatedDiaryItem(
+          diaryId: diary.diary.diaryId,
+          child: item,
+        );
+
         if (!compact && !isSelectionMode && onArchiveDiary != null) {
           return Dismissible(
             key: ValueKey<String>('archive_${diary.diary.diaryId}'),
@@ -318,11 +329,68 @@ class DiariesListSection extends StatelessWidget {
               ),
             ),
             onDismissed: (_) => onArchiveDiary!(diary.diary.diaryId),
-            child: item,
+            child: animatedBaseItem,
           );
         }
 
-        return item;
+        return animatedBaseItem;
+      },
+    );
+  }
+
+  Widget _buildAnimatedDiaryItem({
+    required String diaryId,
+    required Widget child,
+  }) {
+    final isExiting = pendingHideDiaryIds.contains(diaryId);
+    final isAppearing = appearingDiaryIds.contains(diaryId);
+
+    final switchedChild =
+        isExiting
+            ? SizedBox(key: ValueKey<String>('hidden_$diaryId'))
+            : KeyedSubtree(
+              key: ValueKey<String>('visible_$diaryId'),
+              child: child,
+            );
+
+    final switcher = AnimatedSwitcher(
+      duration: _itemTransitionDuration,
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (Widget transitionChild, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SizeTransition(
+            sizeFactor: animation,
+            axisAlignment: -1,
+            child: transitionChild,
+          ),
+        );
+      },
+      child: switchedChild,
+    );
+
+    if (!isAppearing || isExiting) {
+      return switcher;
+    }
+
+    return TweenAnimationBuilder<double>(
+      key: ValueKey<String>('appear_$diaryId'),
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: _itemTransitionDuration,
+      curve: Curves.easeOutCubic,
+      child: switcher,
+      builder: (BuildContext context, double value, Widget? animatedChild) {
+        return ClipRect(
+          child: Align(
+            alignment: Alignment.topCenter,
+            heightFactor: value.clamp(0, 1),
+            child: Opacity(
+              opacity: value.clamp(0, 1),
+              child: animatedChild,
+            ),
+          ),
+        );
       },
     );
   }

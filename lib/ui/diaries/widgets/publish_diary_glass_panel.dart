@@ -46,10 +46,14 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   });
 
   static const List<String> moodOptions = <String>[
+    '😭',
+    '😢',
+    '😞',
     '😕',
     '😐',
-    '😌',
     '🙂',
+    '😊',
+    '😄',
     '😀',
     '🤩',
   ];
@@ -845,6 +849,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildMoodSection(BuildContext context) {
+    const moodColumns = 5;
+    const horizontalSpacing = 8.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -855,21 +861,39 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               ),
         ),
         const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(emoji),
-                  selected: widget.moodEmoji == emoji,
-                  onSelected:
-                      (selected) => widget.onMoodChanged(selected ? emoji : null),
-                ),
-              );
-            }).toList(growable: false),
-          ),
+        LayoutBuilder(
+          builder: (BuildContext context, BoxConstraints constraints) {
+            final itemWidth =
+                (constraints.maxWidth - horizontalSpacing * (moodColumns - 1)) /
+                    moodColumns;
+            return Wrap(
+              spacing: horizontalSpacing,
+              children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
+                return SizedBox(
+                  width: itemWidth,
+                  child: ChoiceChip(
+                    showCheckmark: false,
+                    side: BorderSide.none,
+                    elevation: 0,
+                    pressElevation: 0,
+                    shadowColor: Colors.transparent,
+                    shape: const StadiumBorder(),
+                    label: SizedBox(
+                      width: double.infinity,
+                      child: Text(
+                        emoji,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    selected: widget.moodEmoji == emoji,
+                    onSelected:
+                        (selected) => widget.onMoodChanged(selected ? emoji : null),
+                  ),
+                );
+              }).toList(growable: false),
+            );
+          },
         ),
       ],
     );

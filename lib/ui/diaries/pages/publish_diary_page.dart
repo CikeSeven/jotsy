@@ -22,6 +22,7 @@ import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 class PublishDiaryPage extends ConsumerStatefulWidget {
   const PublishDiaryPage({super.key, required this.initialDraft});
@@ -85,6 +86,16 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       return null;
     }
     return normalized;
+  }
+
+  Future<void> _showHint(String message) async {
+    if (!mounted) {
+      return;
+    }
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(content: Text(message)),
+    );
   }
 
   Map<String, Object?> _buildDeviceMetadata() {
@@ -167,9 +178,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('未获取到可用的封面路径')));
+      await _showHint('未获取到可用的封面路径');
       return;
     }
 
@@ -189,9 +198,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('封面导入失败: $error')));
+      await _showHint('封面导入失败: $error');
     }
   }
 
@@ -218,9 +225,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('标签创建失败: $error')));
+      await _showHint('标签创建失败: $error');
     }
   }
 
@@ -334,16 +339,12 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.userMessage)));
+      await _showHint(error.userMessage);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('获取位置失败: $error')));
+      await _showHint('获取位置失败: $error');
     } finally {
       if (mounted) {
         setState(() => _locating = false);
@@ -356,9 +357,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       return;
     }
     if (_locationLatitude == null || _locationLongitude == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('请先获取当前位置')));
+      await _showHint('请先获取当前位置');
       return;
     }
 
@@ -386,16 +385,12 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.userMessage)));
+      await _showHint(error.userMessage);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('获取天气失败: $error')));
+      await _showHint('获取天气失败: $error');
     } finally {
       if (mounted) {
         setState(() => _weatherLoading = false);
@@ -428,9 +423,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('发布失败: $error')));
+      await _showHint('发布失败: $error');
     } finally {
       if (mounted) {
         setState(() => _saving = false);

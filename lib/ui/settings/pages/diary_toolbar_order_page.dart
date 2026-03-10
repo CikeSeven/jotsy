@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 class DiaryToolbarOrderPage extends StatefulWidget {
@@ -55,8 +56,9 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         return;
       }
       setState(() => _saving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('保存排序失败: $error')),
+      await HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(content: Text('保存排序失败: $error')),
       );
     }
   }

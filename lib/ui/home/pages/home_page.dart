@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 
@@ -12,9 +14,14 @@ import '../../widgets/glass_bottom_nav.dart';
 
 /// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, this.startupNotice});
+  const HomePage({
+    super.key,
+    this.startupNotice,
+    required this.homeHintVisibleListenable,
+  });
 
   final String? startupNotice;
+  final ValueListenable<bool> homeHintVisibleListenable;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -26,7 +33,6 @@ class _HomePageState extends State<HomePage> {
   static const double _snackBarSideInset = 16;
 
   late final PageController _pageController;
-  late final ValueNotifier<bool> _homeHintVisibleNotifier;
   String? _shownStartupNotice;
   int _currentIndex = 0;
   double _pageProgress = 0;
@@ -34,7 +40,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _homeHintVisibleNotifier = ValueNotifier<bool>(false);
     _pageController = PageController(initialPage: _currentIndex);
     _pageController.addListener(_onPageScroll);
     _showStartupNoticeIfNeeded();
@@ -52,7 +57,6 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
-    _homeHintVisibleNotifier.dispose();
     super.dispose();
   }
 
@@ -87,23 +91,14 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) {
         return;
       }
-      final messenger = ScaffoldMessenger.maybeOf(context);
-      if (messenger == null) {
-        return;
-      }
       unawaited(() async {
-        _homeHintVisibleNotifier.value = true;
-        final controller = messenger.showSnackBar(
-          SnackBar(
+        await HomeHintVisibilityScope.showTrackedSnackBar(
+          context: context,
+          snackBar: SnackBar(
             content: Text(notice),
             duration: const Duration(seconds: 2),
           ),
         );
-        await controller.closed;
-        if (!mounted) {
-          return;
-        }
-        _homeHintVisibleNotifier.value = false;
       }());
     });
   }
@@ -153,7 +148,7 @@ class _HomePageState extends State<HomePage> {
       KeepAlivePage(
         child: DiariesPage(
           key: const PageStorageKey('tab_diaries'),
-          homeHintVisibleListenable: _homeHintVisibleNotifier,
+          homeHintVisibleListenable: widget.homeHintVisibleListenable,
         ),
       ),
       const KeepAlivePage(

@@ -12,6 +12,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 /// 单条日记详情 provider（含标签聚合）。
 final diaryDetailProvider = FutureProvider.autoDispose
@@ -231,15 +232,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     final title = _titleController.text.trim();
     if (title.isEmpty &&
         !diaryDocumentHasVisibleContent(_contentController.document)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('标题和正文不能同时为空')));
+      unawaited(
+        HomeHintVisibilityScope.showTrackedSnackBar(
+          context: context,
+          snackBar: const SnackBar(content: Text('标题和正文不能同时为空')),
+        ),
+      );
       return false;
     }
     if (!isValidMetadataJsonObject(_metadataJson)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('metadata 必须是合法 JSON 对象')));
+      unawaited(
+        HomeHintVisibilityScope.showTrackedSnackBar(
+          context: context,
+          snackBar: const SnackBar(content: Text('metadata 必须是合法 JSON 对象')),
+        ),
+      );
       return false;
     }
     return true;
@@ -294,9 +301,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       if (!mounted) {
         return;
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('保存失败: $error')));
+      await HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(content: Text('保存失败: $error')),
+      );
     } finally {
       if (mounted) {
         setState(() => _saving = false);

@@ -1,5 +1,6 @@
 ﻿import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -8,6 +9,7 @@ import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_loading_page.dart' show AppLoadingContent;
 
 import '../l10n/app_localizations.dart';
@@ -32,6 +34,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
+  late final HomeHintVisibilityController _homeHintVisibilityController;
   Timer? _minimumLoadingTimer;
   bool _minimumLoadingElapsed = false;
 
@@ -40,6 +43,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     super.initState();
     _lightMaterialTheme = MaterialTheme(Typography.material2021().black);
     _darkMaterialTheme = MaterialTheme(Typography.material2021().white);
+    _homeHintVisibilityController = HomeHintVisibilityController();
     _minimumLoadingTimer = Timer(_minimumLoadingDuration, () {
       if (!mounted) {
         return;
@@ -53,6 +57,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   @override
   void dispose() {
     _minimumLoadingTimer?.cancel();
+    _homeHintVisibilityController.dispose();
     super.dispose();
   }
 
@@ -82,6 +87,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     final home = _BootstrapHome(
       showLoadingOverlay: !bootstrapReady,
       startupNotice: startupNotice,
+      homeHintVisibleListenable:
+          _homeHintVisibilityController.isHintVisibleNotifier,
     );
 
     if (settingsService != null) {
@@ -114,6 +121,15 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         GlobalWidgetsLocalizations.delegate,
         FlutterQuillLocalizations.delegate,
       ],
+      builder: (BuildContext context, Widget? child) {
+        if (child == null) {
+          return const SizedBox.shrink();
+        }
+        return HomeHintVisibilityScope(
+          controller: _homeHintVisibilityController,
+          child: child,
+        );
+      },
       home: home,
     );
   }
@@ -123,17 +139,22 @@ class _BootstrapHome extends StatelessWidget {
   const _BootstrapHome({
     required this.showLoadingOverlay,
     required this.startupNotice,
+    required this.homeHintVisibleListenable,
   });
 
   final bool showLoadingOverlay;
   final String? startupNotice;
+  final ValueListenable<bool> homeHintVisibleListenable;
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        HomePage(startupNotice: startupNotice),
+        HomePage(
+          startupNotice: startupNotice,
+          homeHintVisibleListenable: homeHintVisibleListenable,
+        ),
         IgnorePointer(
           ignoring: !showLoadingOverlay,
           child: AnimatedOpacity(

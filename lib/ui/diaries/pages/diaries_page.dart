@@ -14,6 +14,7 @@ import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -47,7 +48,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
-  static const double _fabLiftOffsetWhenHintVisible = 74;
+  static const double _fabLiftOffsetWhenHintVisible = 60;
   static const double _fabExtraGapAboveNav = 2;
   static const double _listBottomExtraSpace = 34;
 
@@ -306,19 +307,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     required SnackBar snackBar,
     Duration? forceCloseAfter,
   }) async {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
     if (mounted) {
       setState(() {
         _localHintVisibleCount += 1;
       });
     }
 
-    final controller = messenger.showSnackBar(snackBar);
-    final forceCloseTimer =
-        forceCloseAfter == null ? null : Timer(forceCloseAfter, controller.close);
-    final closedReason = await controller.closed;
-    forceCloseTimer?.cancel();
+    final closedReason = await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: snackBar,
+      forceCloseAfter: forceCloseAfter,
+    );
 
     if (mounted) {
       setState(() {
@@ -1031,4 +1030,3 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 }
 
 enum _CreateDraftDecision { newEmpty, continueEditing }
-

@@ -42,9 +42,14 @@ class TagFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final backgroundColor = selected ? selectedColor : unselectedColor;
     final foregroundColor =
         selected ? selectedForegroundColor : unselectedForegroundColor;
+    final borderColor =
+        selected
+            ? selectedForegroundColor.withValues(alpha: 0.45)
+            : colorScheme.outlineVariant.withValues(alpha: 0.55);
 
     return Material(
       color: Colors.transparent,
@@ -61,10 +66,7 @@ class TagFilterChip extends StatelessWidget {
             border:
                 animateBorder
                     ? Border.all(
-                      color:
-                          selected
-                              ? selectedForegroundColor.withValues(alpha: 0.75)
-                              : unselectedForegroundColor.withValues(alpha: 0.28),
+                      color: borderColor,
                       width: selected ? 2.0 : 1.2,
                     )
                     : null,

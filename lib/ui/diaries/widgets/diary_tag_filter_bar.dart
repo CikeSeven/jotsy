@@ -108,7 +108,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
         AppSpacing.s,
       ),
       child: SizedBox(
-        height: 40,
+        height: 36,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: widget.tags.length + 1,
@@ -130,12 +130,12 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
                   behavior: HitTestBehavior.opaque,
                   onTap: _handleClearTap,
                   child: SizedBox(
-                    width: 32,
-                    height: 40,
+                    width: 30,
+                    height: 36,
                     child: Center(
                       child: FaIcon(
                         FontAwesomeIcons.xmark,
-                        size: 16,
+                        size: 18,
                         color:
                             hasSelection
                                 ? colorScheme.primary
@@ -154,11 +154,12 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
               colorDot: Color(tag.color),
               colorDotSize: 12,
               selected: selected,
-              selectedColor: colorScheme.primaryContainer,
-              selectedForegroundColor: colorScheme.onPrimaryContainer,
-              unselectedColor: colorScheme.surfaceContainerHigh,
+              selectedColor: Colors.white,
+              selectedForegroundColor: colorScheme.primary,
+              unselectedColor: Colors.white,
               unselectedForegroundColor: colorScheme.onSurface,
-              radius: 11,
+              radius: 9,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               animateBorder: true,
               showSelectedShadow: false,
               onTap: () => widget.onToggleTagFilter(tag.id, !selected),

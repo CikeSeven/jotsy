@@ -8,10 +8,15 @@ import 'package:flutter/material.dart';
 class HomeHintVisibilityController {
   HomeHintVisibilityController();
 
+  static const Duration _hideDebounceDuration = Duration(milliseconds: 260);
+
   final ValueNotifier<bool> isHintVisibleNotifier = ValueNotifier<bool>(false);
+  Timer? _hideDebounceTimer;
   int _visibleCount = 0;
 
   void onHintShown() {
+    _hideDebounceTimer?.cancel();
+    _hideDebounceTimer = null;
     _visibleCount += 1;
     if (!isHintVisibleNotifier.value) {
       isHintVisibleNotifier.value = true;
@@ -23,11 +28,17 @@ class HomeHintVisibilityController {
       _visibleCount -= 1;
     }
     if (_visibleCount == 0 && isHintVisibleNotifier.value) {
-      isHintVisibleNotifier.value = false;
+      _hideDebounceTimer?.cancel();
+      _hideDebounceTimer = Timer(_hideDebounceDuration, () {
+        if (_visibleCount == 0 && isHintVisibleNotifier.value) {
+          isHintVisibleNotifier.value = false;
+        }
+      });
     }
   }
 
   void dispose() {
+    _hideDebounceTimer?.cancel();
     isHintVisibleNotifier.dispose();
   }
 }

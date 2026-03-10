@@ -410,6 +410,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   }
 
   Widget _buildTitleInput(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       controller: _titleController,
       focusNode: _titleFocusNode,
@@ -423,13 +424,23 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           }) => null,
       style: Theme.of(context).textTheme.headlineSmall,
       maxLength: 200,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         isDense: true,
-        contentPadding: EdgeInsets.fromLTRB(0, 6, 0, 6),
+        contentPadding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
         hintText: '标题',
-        border: UnderlineInputBorder(),
-        enabledBorder: UnderlineInputBorder(),
-        focusedBorder: UnderlineInputBorder(),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        border: UnderlineInputBorder(
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: 2,
+          ),
+        ),
       ),
     );
   }
@@ -444,14 +455,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           controller: _contentScrollController,
           // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[

@@ -158,7 +158,10 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// 归档日记（不删除，仅从主列表隐藏）。
-  Future<void> archiveDiary(String diaryId) async {
+  Future<void> archiveDiary(
+    String diaryId, {
+    bool touchUpdatedAt = true,
+  }) async {
     final now = DateTime.now();
     await (update(diaries)
           ..where((Diaries t) => t.diaryId.equals(diaryId)))
@@ -166,20 +169,29 @@ class AppDatabase extends _$AppDatabase {
       DiariesCompanion(
         isArchived: const Value<bool>(true),
         archivedAt: Value<DateTime?>(now),
-        updatedAt: Value<DateTime>(now),
+        updatedAt:
+            touchUpdatedAt
+                ? Value<DateTime>(now)
+                : const Value.absent(),
       ),
     );
   }
 
   /// 取消归档日记。
-  Future<void> unarchiveDiary(String diaryId) async {
+  Future<void> unarchiveDiary(
+    String diaryId, {
+    bool touchUpdatedAt = true,
+  }) async {
     await (update(diaries)
           ..where((Diaries t) => t.diaryId.equals(diaryId)))
         .write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
-        updatedAt: Value<DateTime>(DateTime.now()),
+        updatedAt:
+            touchUpdatedAt
+                ? Value<DateTime>(DateTime.now())
+                : const Value.absent(),
       ),
     );
   }

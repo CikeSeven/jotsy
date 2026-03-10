@@ -34,12 +34,14 @@ class DiariesPage extends ConsumerStatefulWidget {
 class _DiariesPage extends ConsumerState<DiariesPage>
     with TickerProviderStateMixin {
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
+  static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
 
   final Set<String> _selectedDiaryIds = <String>{};
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
+  final Set<String> _archivingDiaryIds = <String>{};
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final GlobalKey _listSearchFieldKey = GlobalKey();
@@ -337,6 +339,138 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     });
   }
 
+  Future<void> _archiveDiaries(
+    List<String> diaryIds, {
+    required bool clearSelection,
+    required bool showUndoSnack,
+  }) async {
+    final targetIds =
+        diaryIds
+            .map((id) => id.trim())
+            .where((id) => id.isNotEmpty)
+            .toSet()
+            .toList(growable: false);
+    if (targetIds.isEmpty) {
+      return;
+    }
+    if (targetIds.any(_archivingDiaryIds.contains)) {
+      return;
+    }
+
+    setState(() {
+      if (clearSelection) {
+        _selectedDiaryIds.removeAll(targetIds);
+      }
+      _optimisticHiddenDiaryIds.addAll(targetIds);
+      _archivingDiaryIds.addAll(targetIds);
+    });
+
+    final db = ref.read(appDatabaseProvider);
+    final failedIds = <String>[];
+    for (final diaryId in targetIds) {
+      try {
+        await db.archiveDiary(diaryId, touchUpdatedAt: false);
+      } catch (_) {
+        failedIds.add(diaryId);
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    if (failedIds.isNotEmpty) {
+      final succeededIds =
+          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      for (final diaryId in succeededIds) {
+        await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
+      }
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _optimisticHiddenDiaryIds.removeAll(targetIds);
+        _archivingDiaryIds.removeAll(targetIds);
+        if (clearSelection) {
+          _selectedDiaryIds.addAll(targetIds);
+        }
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('归档失败，请重试')));
+      return;
+    }
+
+    if (showUndoSnack) {
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.hideCurrentSnackBar();
+      var undoRequested = false;
+      final closedReason =
+          await messenger
+              .showSnackBar(
+                SnackBar(
+                  content: Text('已归档 ${targetIds.length} 条日记'),
+                  duration: _archiveUndoSnackDuration,
+                  action: SnackBarAction(
+                    label: '撤销',
+                    onPressed: () {
+                      undoRequested = true;
+                    },
+                  ),
+                ),
+              )
+              .closed;
+
+      if (!mounted) {
+        return;
+      }
+
+      if (undoRequested || closedReason == SnackBarClosedReason.action) {
+        for (final diaryId in targetIds) {
+          await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
+        }
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _optimisticHiddenDiaryIds.removeAll(targetIds);
+          _archivingDiaryIds.removeAll(targetIds);
+        });
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('已恢复归档的日记'),
+            duration: _restoreHintDuration,
+          ),
+        );
+        return;
+      }
+    }
+
+    setState(() {
+      _optimisticHiddenDiaryIds.removeAll(targetIds);
+      _archivingDiaryIds.removeAll(targetIds);
+    });
+  }
+
+  Future<void> _archiveSelectedDiaries() async {
+    if (_selectedDiaryIds.isEmpty) {
+      return;
+    }
+    await _archiveDiaries(
+      _selectedDiaryIds.toList(growable: false),
+      clearSelection: true,
+      showUndoSnack: true,
+    );
+  }
+
+  Future<void> _archiveDiaryBySwipe(String diaryId) async {
+    await _archiveDiaries(
+      <String>[diaryId],
+      clearSelection: false,
+      showUndoSnack: true,
+    );
+  }
+
   void _toggleSelection(String noteId, {bool forceSelect = false}) {
     setState(() {
       if (forceSelect && _isSearchMode) {
@@ -626,6 +760,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           noteId,
                                           forceSelect: forceSelect,
                                         ),
+                                    onArchiveDiary:
+                                        (diaryId) =>
+                                            unawaited(_archiveDiaryBySwipe(diaryId)),
                                   ),
                                 ),
                               SliverToBoxAdapter(
@@ -668,7 +805,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           isSelectionMode: _isSelectionMode,
                                           selectedCount: _selectedDiaryIds.length,
                                           onCancelSelection: _clearSelection,
-                                          onArchiveSelected: () {},
+                                          onArchiveSelected:
+                                              () => unawaited(_archiveSelectedDiaries()),
                                           onDeleteSelected:
                                               () => unawaited(_deleteSelectedDiaries()),
                                           onOpenArchived: _openArchivedPage,

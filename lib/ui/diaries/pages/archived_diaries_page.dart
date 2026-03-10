@@ -24,8 +24,12 @@ class ArchivedDiariesPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final archivedAsync = ref.watch(archivedDiariesProvider);
     final brightness = Theme.of(context).brightness;
+    final colorScheme = Theme.of(context).colorScheme;
+    final pageBackgroundColor =
+        brightness == Brightness.light ? Colors.white : colorScheme.surface;
 
     return Scaffold(
+      backgroundColor: pageBackgroundColor,
       appBar: AppBar(title: const Text('归档日记')),
       body: archivedAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -37,29 +41,33 @@ class ArchivedDiariesPage extends ConsumerWidget {
             return const Center(child: Text('暂无归档日记'));
           }
 
-          return CustomScrollView(
-            slivers: <Widget>[
-              DiariesListSection(
-                themeBrightness: brightness,
-                diaries: diaries,
-                layoutMode: DiaryLayoutMode.list,
-                selectedDiaryIds: const <String>{},
-                isSelectionMode: false,
-                onCreate: _noopCreate,
-                onOpenEditor: (diaryId) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder:
-                          (BuildContext context) => EditDiaryPage(
-                            diaryId: diaryId,
-                            entryMode: EditDiaryEntryMode.edit,
-                        ),
-                    ),
-                  );
-                },
-                onToggleSelection: _noopToggleSelection,
-              ),
-            ],
+          return ColoredBox(
+            color: pageBackgroundColor,
+            child: CustomScrollView(
+              slivers: <Widget>[
+                DiariesListSection(
+                  themeBrightness: brightness,
+                  diaries: diaries,
+                  // 归档页固定使用列表样式，不走瀑布流。
+                  layoutMode: DiaryLayoutMode.list,
+                  selectedDiaryIds: const <String>{},
+                  isSelectionMode: false,
+                  onCreate: _noopCreate,
+                  onOpenEditor: (diaryId) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder:
+                            (BuildContext context) => EditDiaryPage(
+                              diaryId: diaryId,
+                              entryMode: EditDiaryEntryMode.edit,
+                            ),
+                      ),
+                    );
+                  },
+                  onToggleSelection: _noopToggleSelection,
+                ),
+              ],
+            ),
           );
         },
       ),

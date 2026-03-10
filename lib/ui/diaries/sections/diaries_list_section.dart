@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
@@ -26,6 +27,7 @@ class DiariesListSection extends StatelessWidget {
     required this.onCreate,
     required this.onOpenEditor,
     required this.onToggleSelection,
+    this.onArchiveDiary,
   });
 
   final Brightness themeBrightness;
@@ -36,6 +38,7 @@ class DiariesListSection extends StatelessWidget {
   final VoidCallback onCreate;
   final void Function(String diaryId) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
+  final ValueChanged<String>? onArchiveDiary;
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +261,7 @@ class DiariesListSection extends StatelessWidget {
 
         final itemRadius = compact ? 14.0 : 0.0;
 
-        return ClipRRect(
+        final item = ClipRRect(
           borderRadius: BorderRadius.circular(itemRadius),
           child: Material(
             color: itemBackgroundColor,
@@ -292,6 +295,27 @@ class DiariesListSection extends StatelessWidget {
             ),
           ),
         );
+
+        if (!compact && !isSelectionMode && onArchiveDiary != null) {
+          return Dismissible(
+            key: ValueKey<String>('archive_${diary.diary.diaryId}'),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: AppSpacing.l),
+              child: FaIcon(
+                FontAwesomeIcons.boxArchive,
+                size: 16,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+            onDismissed: (_) => onArchiveDiary!(diary.diary.diaryId),
+            child: item,
+          );
+        }
+
+        return item;
       },
     );
   }

@@ -12,6 +12,7 @@ import 'package:path/path.dart' as path;
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/amap_config_channel.dart';
+import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
@@ -172,7 +173,32 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       return;
     }
 
-    setState(() => _draftCover = selectedPath);
+    final previousCover = _normalizedCover;
+    try {
+      final importedPath = await DiaryCoverStorageService.importCover(selectedPath);
+      if (!mounted) {
+        await DiaryCoverStorageService.deleteManagedCover(importedPath);
+        return;
+      }
+
+      setState(() => _draftCover = importedPath);
+      if (previousCover != null && previousCover != importedPath) {
+        await DiaryCoverStorageService.deleteManagedCover(previousCover);
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('封面导入失败: $error')));
+    }
+  }
+
+  Future<void> _clearCover() async {
+    final coverToDelete = _normalizedCover;
+    setState(() => _draftCover = null);
+    await DiaryCoverStorageService.deleteManagedCover(coverToDelete);
   }
 
   Future<void> _createTagInline() async {
@@ -557,9 +583,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 onClearCover:
                     _normalizedCover == null
                         ? null
-                        : () {
-                          setState(() => _draftCover = null);
-                        },
+                        : _clearCover,
                 onCreateTag: _createTagInline,
                 onResolveLocation: _resolveLocation,
                 onResolveWeather: _resolveWeather,

@@ -978,7 +978,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       child: FilledButton.icon(
         onPressed: widget.saving ? null : widget.onPublish,
         icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
-        label: Text(widget.saving ? '发布中...' : '点击发表日记'),
+        label: Text(widget.saving ? '发布中...' : '发表日记'),
       ),
     );
   }

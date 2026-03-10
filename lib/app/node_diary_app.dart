@@ -6,8 +6,9 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
-import 'package:node_diary/ui/widgets/app_loading_page.dart';
+import 'package:node_diary/ui/widgets/app_loading_page.dart' show AppLoadingContent;
 
 import '../l10n/app_localizations.dart';
 
@@ -27,7 +28,7 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
 
 class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
-  static const Duration _minimumLoadingDuration = Duration(milliseconds: 2000);
+  static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
@@ -57,29 +58,42 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
 
   @override
   Widget build(BuildContext context) {
-    // 设置服务是异步初始化的，这里统一处理加载态和错误态。
+    // 启动门控：设置服务 + 首帧日记列表 + 最短展示时长。
     final settingsAsync = ref.watch(settingsServiceProvider);
+    final diariesBootstrapAsync = ref.watch(filteredDiariesProvider);
+    final settingsReady = settingsAsync.hasValue;
+    final settingsError = settingsAsync.asError?.error;
+    final settingsService = settingsAsync.asData?.value;
+    final diariesSettled =
+        diariesBootstrapAsync.hasValue || diariesBootstrapAsync.hasError;
+    final bootstrapReady =
+        _minimumLoadingElapsed && settingsReady && diariesSettled;
+    final startupNotice =
+        bootstrapReady && diariesBootstrapAsync.hasError
+            ? '启动时预加载日记失败，已进入主页。'
+            : null;
 
-    // 最短加载时长和数据加载状态都满足后，才进入应用首页。
-    if (!_minimumLoadingElapsed || settingsAsync.isLoading) {
-      return _buildAppShell(home: const AppLoadingPage());
+    if (settingsError != null && _minimumLoadingElapsed) {
+      return _buildAppShell(
+        home: Scaffold(body: Center(child: Text('初始化失败: $settingsError'))),
+      );
     }
 
-    return settingsAsync.when(
-      loading: () => _buildAppShell(home: const AppLoadingPage()),
-      error:
-          (Object error, StackTrace stackTrace) => _buildAppShell(
-            home: Scaffold(body: Center(child: Text('初始化失败: $error'))),
-          ),
-      data: (settingsService) {
-        return ValueListenableBuilder<ThemeMode>(
-          valueListenable: settingsService.themeModeNotifier,
-          builder: (BuildContext context, ThemeMode themeMode, Widget? child) {
-            return _buildAppShell(home: const HomePage(), themeMode: themeMode);
-          },
-        );
-      },
+    final home = _BootstrapHome(
+      showLoadingOverlay: !bootstrapReady,
+      startupNotice: startupNotice,
     );
+
+    if (settingsService != null) {
+      return ValueListenableBuilder<ThemeMode>(
+        valueListenable: settingsService.themeModeNotifier,
+        builder: (BuildContext context, ThemeMode themeMode, Widget? child) {
+          return _buildAppShell(home: home, themeMode: themeMode);
+        },
+      );
+    }
+
+    return _buildAppShell(home: home);
   }
 
   MaterialApp _buildAppShell({
@@ -101,6 +115,38 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         FlutterQuillLocalizations.delegate,
       ],
       home: home,
+    );
+  }
+}
+
+class _BootstrapHome extends StatelessWidget {
+  const _BootstrapHome({
+    required this.showLoadingOverlay,
+    required this.startupNotice,
+  });
+
+  final bool showLoadingOverlay;
+  final String? startupNotice;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        HomePage(startupNotice: startupNotice),
+        IgnorePointer(
+          ignoring: !showLoadingOverlay,
+          child: AnimatedOpacity(
+            opacity: showLoadingOverlay ? 1 : 0,
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            child: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: const AppLoadingContent(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

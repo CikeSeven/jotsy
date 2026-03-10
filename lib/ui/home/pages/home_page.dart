@@ -10,7 +10,9 @@ import '../../widgets/glass_bottom_nav.dart';
 
 /// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.startupNotice});
+
+  final String? startupNotice;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -21,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   static const _animCurve = Curves.easeOutCirc;
 
   late final PageController _pageController;
+  String? _shownStartupNotice;
   int _currentIndex = 0;
   double _pageProgress = 0;
 
@@ -29,6 +32,15 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
     _pageController.addListener(_onPageScroll);
+    _showStartupNoticeIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startupNotice != widget.startupNotice) {
+      _showStartupNoticeIfNeeded();
+    }
   }
 
   @override
@@ -57,6 +69,29 @@ class _HomePageState extends State<HomePage> {
       duration: _animDuration,
       curve: _animCurve,
     );
+  }
+
+  void _showStartupNoticeIfNeeded() {
+    final notice = widget.startupNotice?.trim();
+    if (notice == null || notice.isEmpty || notice == _shownStartupNotice) {
+      return;
+    }
+    _shownStartupNotice = notice;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (messenger == null) {
+        return;
+      }
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(notice),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    });
   }
 
   Widget _buildPageView(List<Widget> pages) {

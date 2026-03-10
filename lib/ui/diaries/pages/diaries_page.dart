@@ -46,6 +46,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _restoreHintDuration = Duration(seconds: 2);
   static const Duration _fabShiftDuration = Duration(milliseconds: 260);
   static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
+  static const Duration _listRefreshFadeHalfDuration = Duration(milliseconds: 220);
+  static const Duration _listRefreshFadeGapDuration = Duration(milliseconds: 50);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
   static const double _fabLiftOffsetWhenHintVisible = 60;
@@ -62,6 +64,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _searchDebounceTimer;
+  late final AnimationController _listRefreshPulseController;
+  late final Animation<double> _listRefreshOpacity;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   int _localHintVisibleCount = 0;
   String _searchInput = '';
@@ -82,6 +86,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   void initState() {
     super.initState();
     _attachHomeHintVisibilityListener();
+    _listRefreshPulseController = AnimationController(
+      vsync: this,
+      duration: _listRefreshFadeHalfDuration,
+      value: 1,
+    );
+    _listRefreshOpacity = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _listRefreshPulseController,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
   }
 
   @override
@@ -106,6 +121,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _appearingTimers.clear();
     _searchController.dispose();
     _searchFocusNode.dispose();
+    _listRefreshPulseController.dispose();
     _detachHomeHintVisibilityListener(widget.homeHintVisibleListenable);
     super.dispose();
   }
@@ -187,6 +203,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return;
     }
     _effectiveSearchKeyword = normalized;
+    _playListRefreshPulse();
     ref.read(diaryFilterProvider.notifier).setKeyword(normalized);
   }
 
@@ -217,8 +234,55 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     }
 
     if (shouldResetKeyword) {
+      _playListRefreshPulse();
       ref.read(diaryFilterProvider.notifier).setKeyword('');
     }
+  }
+
+  /// 在关键词/标签切换后给列表一个明显但短促的淡入淡出过渡。
+  ///
+  /// 仅用于“筛选导致的数据集变化”，避免和删除/恢复动效叠加造成噪声。
+  void _playListRefreshPulse() {
+    if (!mounted) {
+      return;
+    }
+    if (_listRefreshPulseController.isAnimating) {
+      return;
+    }
+    unawaited(_runListRefreshFadeTransition());
+  }
+
+  Future<void> _runListRefreshFadeTransition() async {
+    await _listRefreshPulseController.animateTo(
+      0,
+      duration: _listRefreshFadeHalfDuration,
+      curve: Curves.easeInOutCubic,
+    );
+    if (!mounted) {
+      return;
+    }
+    await Future<void>.delayed(_listRefreshFadeGapDuration);
+    if (!mounted) {
+      return;
+    }
+    await _listRefreshPulseController.animateTo(
+      1,
+      duration: _listRefreshFadeHalfDuration,
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  void _toggleTagFilter(int tagId, bool selected) {
+    _playListRefreshPulse();
+    ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
+  }
+
+  void _clearTagFilters() {
+    if (ref.read(diaryFilterProvider).selectedTagIds.isEmpty) {
+      return;
+    }
+    _playListRefreshPulse();
+    ref.read(diaryFilterProvider.notifier).clearTags();
   }
 
   // 打开编辑页，使用系统默认页面转场。
@@ -973,16 +1037,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     child: DiaryTagFilterBar(
                                       tags: tagsForDisplay,
                                       selectedTagFilterIds: filterState.selectedTagIds,
-                                      onToggleTagFilter: (tagId, selected) {
-                                        ref
-                                            .read(diaryFilterProvider.notifier)
-                                            .toggleTag(tagId, selected);
-                                      },
-                                      onClearTagFilters: () {
-                                        ref
-                                            .read(diaryFilterProvider.notifier)
-                                            .clearTags();
-                                      },
+                                      onToggleTagFilter: _toggleTagFilter,
+                                      onClearTagFilters: _clearTagFilters,
                                     ),
                                   );
                                 },
@@ -1002,57 +1058,61 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           ),
                                         ),
                               ),
-                              if (diariesAsync.isLoading && displayedItems.isEmpty)
-                                const SliverFillRemaining(
-                                  hasScrollBody: false,
-                                  child: Center(
-                                    child: SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              else if (diariesAsync.hasError && displayedItems.isEmpty)
-                                SliverFillRemaining(
-                                  hasScrollBody: false,
-                                  child: Center(
-                                    child: Text(
-                                      '日记加载失败: ${diariesAsync.asError?.error}',
-                                    ),
-                                  ),
-                                )
-                              else
-                                DiariesListSection(
-                                  themeBrightness: brightness,
-                                  diaries: displayedItems,
-                                  layoutMode: _layoutMode,
-                                  isSelectionMode: _isSelectionMode,
-                                  selectedDiaryIds: _selectedDiaryIds,
-                                  pendingHideDiaryIds: _pendingHideDiaryIds,
-                                  appearingDiaryIds: _appearingDiaryIds,
-                                  onCreate:
-                                      () => unawaited(
-                                        _openCreateEditorWithDraftPrompt(),
-                                      ),
-                                  onOpenEditor: (diaryId) {
-                                    _openEditor(
-                                      diaryId: diaryId,
-                                    );
-                                  },
-                                  onToggleSelection:
-                                      (noteId, forceSelect) => _toggleSelection(
-                                        noteId,
-                                        forceSelect: forceSelect,
-                                      ),
-                                  onArchiveDiary:
-                                      (diaryId) =>
-                                          unawaited(_archiveDiaryBySwipe(diaryId)),
-                                  isSearchResultEmpty:
-                                      filterState.keyword.trim().isNotEmpty,
-                                ),
+                              SliverFadeTransition(
+                                opacity: _listRefreshOpacity,
+                                sliver:
+                                    diariesAsync.isLoading && displayedItems.isEmpty
+                                        ? const SliverFillRemaining(
+                                          hasScrollBody: false,
+                                          child: Center(
+                                            child: SizedBox(
+                                              height: 22,
+                                              width: 22,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        : diariesAsync.hasError && displayedItems.isEmpty
+                                        ? SliverFillRemaining(
+                                          hasScrollBody: false,
+                                          child: Center(
+                                            child: Text(
+                                              '日记加载失败: ${diariesAsync.asError?.error}',
+                                            ),
+                                          ),
+                                        )
+                                        : DiariesListSection(
+                                          themeBrightness: brightness,
+                                          diaries: displayedItems,
+                                          layoutMode: _layoutMode,
+                                          isSelectionMode: _isSelectionMode,
+                                          selectedDiaryIds: _selectedDiaryIds,
+                                          pendingHideDiaryIds: _pendingHideDiaryIds,
+                                          appearingDiaryIds: _appearingDiaryIds,
+                                          onCreate:
+                                              () => unawaited(
+                                                _openCreateEditorWithDraftPrompt(),
+                                              ),
+                                          onOpenEditor: (diaryId) {
+                                            _openEditor(
+                                              diaryId: diaryId,
+                                            );
+                                          },
+                                          onToggleSelection:
+                                              (noteId, forceSelect) => _toggleSelection(
+                                                noteId,
+                                                forceSelect: forceSelect,
+                                              ),
+                                          onArchiveDiary:
+                                              (diaryId) => unawaited(
+                                                _archiveDiaryBySwipe(diaryId),
+                                              ),
+                                          isSearchResultEmpty:
+                                              filterState.keyword.trim().isNotEmpty,
+                                        ),
+                              ),
                               SliverToBoxAdapter(
                                 child: SizedBox(height: listBottomOffset),
                               ),

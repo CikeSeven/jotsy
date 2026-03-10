@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -27,7 +27,7 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
 
 class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
-  static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
+  static const Duration _minimumLoadingDuration = Duration(milliseconds: 2000);
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
@@ -62,9 +62,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
 
     // 最短加载时长和数据加载状态都满足后，才进入应用首页。
     if (!_minimumLoadingElapsed || settingsAsync.isLoading) {
-      return _buildAppShell(
-        home: const AppLoadingPage(message: '正在载入日记数据...'),
-      );
+      return _buildAppShell(home: const AppLoadingPage());
     }
 
     return settingsAsync.when(

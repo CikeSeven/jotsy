@@ -32,6 +32,9 @@ class DiariesListSection extends StatelessWidget {
     required this.onOpenEditor,
     required this.onToggleSelection,
     this.onArchiveDiary,
+    this.swipeActionIcon = FontAwesomeIcons.boxArchive,
+    this.swipeActionBackgroundColor,
+    this.swipeActionIconColor,
   });
 
   final Brightness themeBrightness;
@@ -45,6 +48,9 @@ class DiariesListSection extends StatelessWidget {
   final void Function(String diaryId) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
   final ValueChanged<String>? onArchiveDiary;
+  final IconData swipeActionIcon;
+  final Color? swipeActionBackgroundColor;
+  final Color? swipeActionIconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -315,17 +321,24 @@ class DiariesListSection extends StatelessWidget {
         );
 
         if (!compact && !isSelectionMode && onArchiveDiary != null) {
+          final swipeBackgroundColor =
+              swipeActionBackgroundColor ??
+              Theme.of(context).colorScheme.primaryContainer;
+          final swipeIconColor =
+              swipeActionIconColor ??
+              Theme.of(context).colorScheme.onPrimaryContainer;
+
           return Dismissible(
             key: ValueKey<String>('archive_${diary.diary.diaryId}'),
             direction: DismissDirection.endToStart,
             background: Container(
-              color: Theme.of(context).colorScheme.primaryContainer,
+              color: swipeBackgroundColor,
               alignment: Alignment.centerRight,
               padding: const EdgeInsets.only(right: AppSpacing.l),
               child: FaIcon(
-                FontAwesomeIcons.boxArchive,
+                swipeActionIcon,
                 size: 16,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                color: swipeIconColor,
               ),
             ),
             onDismissed: (_) => onArchiveDiary!(diary.diary.diaryId),

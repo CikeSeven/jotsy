@@ -20,6 +20,10 @@ class GlassBottomNavItem {
 /// - 与 PageView 联动的平滑过渡动画；
 /// - 无波纹点击反馈（避免颜色叠加）。
 class GlassBottomNav extends StatelessWidget {
+  static const double navHeight = 58.0;
+  static const double navBottomInset = 20.0;
+  static const double navHorizontalInset = 48.0;
+
   const GlassBottomNav({
     super.key,
     required this.items,
@@ -35,7 +39,6 @@ class GlassBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const navHeight = 58.0;
     const verticalPadding = 6.0;
     const horizontalPadding = 6.0;
     const sliderInset = 5.0;
@@ -51,7 +54,11 @@ class GlassBottomNav extends StatelessWidget {
 
     return SafeArea(
       // 悬浮底栏与屏幕边缘保留视觉呼吸感。
-      minimum: const EdgeInsets.only(bottom: 20, left: 48, right: 48),
+      minimum: const EdgeInsets.only(
+        bottom: navBottomInset,
+        left: navHorizontalInset,
+        right: navHorizontalInset,
+      ),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadii.nav),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,6 +18,7 @@ import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
+import '../../widgets/glass_bottom_nav.dart';
 import '../sections/diaries_list_section.dart';
 import '../widgets/diary_tag_filter_bar.dart';
 
@@ -25,7 +27,12 @@ import '../widgets/diary_tag_filter_bar.dart';
 /// 提供关键词搜索、标签筛选、列表展示与进入编辑页能力。
 
 class DiariesPage extends ConsumerStatefulWidget {
-  const DiariesPage({super.key});
+  const DiariesPage({
+    super.key,
+    this.homeHintVisibleListenable,
+  });
+
+  final ValueListenable<bool>? homeHintVisibleListenable;
 
   @override
   ConsumerState<DiariesPage> createState() => _DiariesPage();
@@ -36,9 +43,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
+  static const Duration _fabShiftDuration = Duration(milliseconds: 260);
   static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
+  static const double _fabLiftOffsetWhenHintVisible = 74;
+  static const double _fabExtraGapAboveNav = 2;
+  static const double _listBottomExtraSpace = 34;
 
   final Set<String> _selectedDiaryIds = <String>{};
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
@@ -56,11 +67,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   Rect? _cachedListSearchRect;
   late final AnimationController _searchMorphController;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
+  int _localHintVisibleCount = 0;
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   bool _isSearchMode = false;
   bool _isSearchAnimating = false;
   bool _isSearchMorphEntering = false;
+  bool _homeHintVisible = false;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
@@ -68,14 +81,26 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
   bool get _showTopSearchField => _isSearchMode && !_isSearchAnimating;
   bool get _showHeaderSection => !_isSearchMode && !_isSearchAnimating;
+  bool get _isAnyHintVisible =>
+      _homeHintVisible || _localHintVisibleCount > 0;
 
   @override
   void initState() {
     super.initState();
+    _attachHomeHintVisibilityListener();
     _searchMorphController = AnimationController(
       vsync: this,
       duration: _searchMorphDuration,
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant DiariesPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.homeHintVisibleListenable != widget.homeHintVisibleListenable) {
+      _detachHomeHintVisibilityListener(oldWidget.homeHintVisibleListenable);
+      _attachHomeHintVisibilityListener();
+    }
   }
 
   @override
@@ -92,7 +117,31 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _searchController.dispose();
     _searchFocusNode.dispose();
     _searchMorphController.dispose();
+    _detachHomeHintVisibilityListener(widget.homeHintVisibleListenable);
     super.dispose();
+  }
+
+  void _attachHomeHintVisibilityListener() {
+    final listenable = widget.homeHintVisibleListenable;
+    if (listenable == null) {
+      return;
+    }
+    _homeHintVisible = listenable.value;
+    listenable.addListener(_onHomeHintVisibilityChanged);
+  }
+
+  void _detachHomeHintVisibilityListener(ValueListenable<bool>? listenable) {
+    listenable?.removeListener(_onHomeHintVisibilityChanged);
+  }
+
+  void _onHomeHintVisibilityChanged() {
+    final visible = widget.homeHintVisibleListenable?.value ?? false;
+    if (visible == _homeHintVisible || !mounted) {
+      return;
+    }
+    setState(() {
+      _homeHintVisible = visible;
+    });
   }
 
   void _clearSelection() {
@@ -241,6 +290,46 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     return confirmed == true;
   }
 
+  Future<void> _showInfoSnackBar(
+    String message, {
+    Duration duration = _restoreHintDuration,
+  }) async {
+    await _showTrackedSnackBar(
+      snackBar: SnackBar(
+        content: Text(message),
+        duration: duration,
+      ),
+    );
+  }
+
+  Future<SnackBarClosedReason> _showTrackedSnackBar({
+    required SnackBar snackBar,
+    Duration? forceCloseAfter,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    if (mounted) {
+      setState(() {
+        _localHintVisibleCount += 1;
+      });
+    }
+
+    final controller = messenger.showSnackBar(snackBar);
+    final forceCloseTimer =
+        forceCloseAfter == null ? null : Timer(forceCloseAfter, controller.close);
+    final closedReason = await controller.closed;
+    forceCloseTimer?.cancel();
+
+    if (mounted) {
+      setState(() {
+        if (_localHintVisibleCount > 0) {
+          _localHintVisibleCount -= 1;
+        }
+      });
+    }
+    return closedReason;
+  }
+
   /// 统一显示“可撤销”提示，并强制按设定时长自动关闭。
   ///
   /// 某些系统无障碍模式下，带 action 的 SnackBar 可能不会自动消失。
@@ -249,12 +338,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     required String message,
     required Duration duration,
   }) async {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-
     var undoRequested = false;
-    final controller = messenger.showSnackBar(
-      SnackBar(
+    final closedReason = await _showTrackedSnackBar(
+      snackBar: SnackBar(
         content: Text(message),
         duration: duration,
         action: SnackBarAction(
@@ -264,11 +350,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           },
         ),
       ),
+      forceCloseAfter: duration,
     );
-
-    final forceCloseTimer = Timer(duration, controller.close);
-    final closedReason = await controller.closed;
-    forceCloseTimer.cancel();
 
     return undoRequested || closedReason == SnackBarClosedReason.action;
   }
@@ -317,13 +400,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       setState(() {
         _selectedDiaryIds.addAll(targetIds);
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('删除失败，请重试')));
+      await _showInfoSnackBar('删除失败，请重试');
       return;
     }
 
-    final messenger = ScaffoldMessenger.of(context);
     final undoRequested = await _showUndoSnackBar(
       message: '已删除 ${targetIds.length} 条日记',
       duration: _deleteUndoSnackDuration,
@@ -341,12 +421,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         return;
       }
       _revealDiaries(targetIds, animate: true);
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('已恢复删除的日记'),
-          duration: _restoreHintDuration,
-        ),
-      );
+      await _showInfoSnackBar('已恢复删除的日记');
       return;
     }
 
@@ -420,14 +495,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         }
       });
       _revealDiaries(targetIds, animate: true);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('归档失败，请重试')));
+      await _showInfoSnackBar('归档失败，请重试');
       return;
     }
 
     if (showUndoSnack) {
-      final messenger = ScaffoldMessenger.of(context);
       final undoRequested = await _showUndoSnackBar(
         message: '已归档 ${targetIds.length} 条日记',
         duration: _archiveUndoSnackDuration,
@@ -448,12 +520,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           _archivingDiaryIds.removeAll(targetIds);
         });
         _revealDiaries(targetIds, animate: true);
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text('已恢复归档的日记'),
-            duration: _restoreHintDuration,
-          ),
-        );
+        await _showInfoSnackBar('已恢复归档的日记');
         return;
       }
     }
@@ -712,9 +779,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final filterState = ref.watch(diaryFilterProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
+    final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
+    final fabBaseBottomOffset =
+        bottomSafeInset +
+        GlassBottomNav.navBottomInset +
+        GlassBottomNav.navHeight +
+        _fabExtraGapAboveNav;
+    final fabBottomOffset =
+        fabBaseBottomOffset +
+        (_isAnyHintVisible ? _fabLiftOffsetWhenHintVisible : 0);
 
-    final fabBottomOffset = 80 + MediaQuery.paddingOf(context).bottom;
-    final listBottomOffset = 112 + MediaQuery.paddingOf(context).bottom;
+    final listBottomOffset =
+        bottomSafeInset +
+        GlassBottomNav.navBottomInset +
+        GlassBottomNav.navHeight +
+        _listBottomExtraSpace;
 
     return settingsAsync.when(
       loading:
@@ -932,7 +1011,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 ),
               ),
               if (!_isSelectionMode)
-                Positioned(
+                AnimatedPositioned(
+                  duration: _fabShiftDuration,
+                  curve: Curves.easeOutCubic,
                   right: AppSpacing.xl,
                   bottom: fabBottomOffset,
                   child: FloatingActionButton(

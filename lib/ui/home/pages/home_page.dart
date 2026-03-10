@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
@@ -21,8 +23,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static const _animDuration = Duration(milliseconds: 270);
   static const _animCurve = Curves.easeOutCirc;
+  static const double _snackBarSideInset = 16;
 
   late final PageController _pageController;
+  late final ValueNotifier<bool> _homeHintVisibleNotifier;
   String? _shownStartupNotice;
   int _currentIndex = 0;
   double _pageProgress = 0;
@@ -30,6 +34,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _homeHintVisibleNotifier = ValueNotifier<bool>(false);
     _pageController = PageController(initialPage: _currentIndex);
     _pageController.addListener(_onPageScroll);
     _showStartupNoticeIfNeeded();
@@ -47,6 +52,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _pageController.removeListener(_onPageScroll);
     _pageController.dispose();
+    _homeHintVisibleNotifier.dispose();
     super.dispose();
   }
 
@@ -85,12 +91,20 @@ class _HomePageState extends State<HomePage> {
       if (messenger == null) {
         return;
       }
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(notice),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      unawaited(() async {
+        _homeHintVisibleNotifier.value = true;
+        final controller = messenger.showSnackBar(
+          SnackBar(
+            content: Text(notice),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        await controller.closed;
+        if (!mounted) {
+          return;
+        }
+        _homeHintVisibleNotifier.value = false;
+      }());
     });
   }
 
@@ -109,9 +123,28 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
+    final snackBarBottomInset =
+        bottomSafeInset +
+        GlassBottomNav.navHeight;
+
+    final baseTheme = Theme.of(context);
+    final snackBarTheme = baseTheme.snackBarTheme.copyWith(
+      behavior: SnackBarBehavior.floating,
+      insetPadding: EdgeInsets.fromLTRB(
+        _snackBarSideInset,
+        0,
+        _snackBarSideInset,
+        snackBarBottomInset,
+      ),
+    );
+
     final pages = <Widget>[
-      const KeepAlivePage(
-        child: DiariesPage(key: PageStorageKey('tab_diaries')),
+      KeepAlivePage(
+        child: DiariesPage(
+          key: const PageStorageKey('tab_diaries'),
+          homeHintVisibleListenable: _homeHintVisibleNotifier,
+        ),
       ),
       const KeepAlivePage(
         child: CalendarPage(key: PageStorageKey<String>('tab_calendar')),
@@ -143,23 +176,26 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          _buildPageView(pages),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: GlassBottomNav(
-              items: navItems,
-              selectedIndex: _currentIndex,
-              pageProgress: _pageProgress,
-              onTap: _onTap,
+    return Theme(
+      data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            _buildPageView(pages),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: GlassBottomNav(
+                items: navItems,
+                selectedIndex: _currentIndex,
+                pageProgress: _pageProgress,
+                onTap: _onTap,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

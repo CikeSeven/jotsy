@@ -46,13 +46,11 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   });
 
   static const List<String> moodOptions = <String>[
-    '😀',
-    '🙂',
-    '😌',
-    '😐',
     '😕',
-    '😴',
-    '😤',
+    '😐',
+    '😌',
+    '🙂',
+    '😀',
     '🤩',
   ];
 
@@ -244,6 +242,23 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     }
     final raw = (metrics.offset - metrics.minOffset) / range;
     return raw.clamp(0.0, 1.0).toDouble();
+  }
+
+  String get _energyDescription {
+    final level = widget.energyLevel.clamp(1, 5).toInt();
+    switch (level) {
+      case 1:
+        return '很疲惫';
+      case 2:
+        return '有点累';
+      case 3:
+        return '状态一般';
+      case 4:
+        return '精力不错';
+      case 5:
+      default:
+        return '活力满满';
+    }
   }
 
   @override
@@ -703,7 +718,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          '环境信息',
+          '此时此地',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -777,7 +792,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               child: Row(
                 children: <Widget>[
                   const FaIcon(FontAwesomeIcons.cloudSun, size: 14),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       widget.weatherController.text.trim().isEmpty
@@ -823,22 +838,27 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          '情绪',
+          '心情',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: -8,
-          children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
-            return ChoiceChip(
-              label: Text(emoji),
-              selected: widget.moodEmoji == emoji,
-              onSelected: (selected) => widget.onMoodChanged(selected ? emoji : null),
-            );
-          }).toList(),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(emoji),
+                  selected: widget.moodEmoji == emoji,
+                  onSelected:
+                      (selected) => widget.onMoodChanged(selected ? emoji : null),
+                ),
+              );
+            }).toList(growable: false),
+          ),
         ),
       ],
     );
@@ -848,11 +868,22 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          '能量水平（1-5）',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+        Row(
+          children: <Widget>[
+            Text(
+              '精力',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _energyDescription,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ],
         ),
         Slider(
           value: widget.energyLevel.toDouble().clamp(1.0, 5.0).toDouble(),

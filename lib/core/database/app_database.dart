@@ -185,7 +185,12 @@ class AppDatabase extends _$AppDatabase {
   }
 
   /// 软删除日记（不物理删除）。
-  Future<void> softDeleteDiary(String diaryId) async {
+  ///
+  /// `touchUpdatedAt=false` 可用于“可撤销删除”场景，避免恢复后排序变化。
+  Future<void> softDeleteDiary(
+    String diaryId, {
+    bool touchUpdatedAt = true,
+  }) async {
     final now = DateTime.now();
     await (update(diaries)
           ..where((Diaries t) => t.diaryId.equals(diaryId)))
@@ -195,13 +200,21 @@ class AppDatabase extends _$AppDatabase {
         archivedAt: const Value<DateTime?>(null),
         isDeleted: const Value<bool>(true),
         deletedAt: Value<DateTime?>(now),
-        updatedAt: Value<DateTime>(now),
+        updatedAt:
+            touchUpdatedAt
+                ? Value<DateTime>(now)
+                : const Value.absent(),
       ),
     );
   }
 
   /// 恢复软删除日记。
-  Future<void> restoreDiary(String diaryId) async {
+  ///
+  /// `touchUpdatedAt=false` 可用于“撤销删除”场景，避免列表排序跳到最前。
+  Future<void> restoreDiary(
+    String diaryId, {
+    bool touchUpdatedAt = true,
+  }) async {
     await (update(diaries)
           ..where((Diaries t) => t.diaryId.equals(diaryId)))
         .write(
@@ -210,7 +223,10 @@ class AppDatabase extends _$AppDatabase {
         archivedAt: const Value<DateTime?>(null),
         isDeleted: const Value<bool>(false),
         deletedAt: const Value<DateTime?>(null),
-        updatedAt: Value<DateTime>(DateTime.now()),
+        updatedAt:
+            touchUpdatedAt
+                ? Value<DateTime>(DateTime.now())
+                : const Value.absent(),
       ),
     );
   }

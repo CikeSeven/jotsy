@@ -209,6 +209,133 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
   }
 
+  Future<bool> _showDeleteSelectedConfirmDialog(int count) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('删除日记'),
+          content: Text('确认删除已选择的 $count 条日记吗？'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('删除'),
+            ),
+          ],
+        );
+      },
+    );
+    return confirmed == true;
+  }
+
+  Future<void> _deleteSelectedDiaries() async {
+    if (_selectedDiaryIds.isEmpty) {
+      return;
+    }
+
+    final targetIds = _selectedDiaryIds.toList(growable: false);
+    final confirmed = await _showDeleteSelectedConfirmDialog(targetIds.length);
+    if (!mounted || !confirmed) {
+      return;
+    }
+
+    setState(() {
+      _selectedDiaryIds.clear();
+      _optimisticHiddenDiaryIds.addAll(targetIds);
+    });
+
+    final db = ref.read(appDatabaseProvider);
+    final failedIds = <String>[];
+    for (final diaryId in targetIds) {
+      try {
+        await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
+      } catch (_) {
+        failedIds.add(diaryId);
+      }
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    // 批量失败时回滚成功删除，避免出现部分成功导致状态不一致。
+    if (failedIds.isNotEmpty) {
+      final succeededIds =
+          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      for (final diaryId in succeededIds) {
+        await db.restoreDiary(diaryId, touchUpdatedAt: false);
+      }
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _optimisticHiddenDiaryIds.removeAll(targetIds);
+        _selectedDiaryIds.addAll(targetIds);
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('删除失败，请重试')));
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    var undoRequested = false;
+    final closedReason =
+        await messenger
+            .showSnackBar(
+              SnackBar(
+                content: Text('已删除 ${targetIds.length} 条日记'),
+                duration: _deleteUndoSnackDuration,
+                action: SnackBarAction(
+                  label: '撤销',
+                  onPressed: () {
+                    undoRequested = true;
+                  },
+                ),
+              ),
+            )
+            .closed;
+
+    if (!mounted) {
+      return;
+    }
+
+    if (undoRequested || closedReason == SnackBarClosedReason.action) {
+      for (final diaryId in targetIds) {
+        await db.restoreDiary(diaryId, touchUpdatedAt: false);
+      }
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _optimisticHiddenDiaryIds.removeAll(targetIds);
+      });
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('已恢复删除的日记'),
+          duration: _restoreHintDuration,
+        ),
+      );
+      return;
+    }
+
+    // 数据流刷新后会自然移除已删除项，这里清理临时隐藏集合避免长期残留。
+    setState(() {
+      _optimisticHiddenDiaryIds.removeAll(targetIds);
+    });
+  }
+
   void _toggleSelection(String noteId, {bool forceSelect = false}) {
     setState(() {
       if (forceSelect && _isSearchMode) {
@@ -533,7 +660,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           selectedCount: _selectedDiaryIds.length,
                                           onCancelSelection: _clearSelection,
                                           onArchiveSelected: () {},
-                                          onDeleteSelected: () {},
+                                          onDeleteSelected:
+                                              () => unawaited(_deleteSelectedDiaries()),
                                           onOpenArchived: () {},
                                           sortMode: _sortMode,
                                           layoutMode: _layoutMode,

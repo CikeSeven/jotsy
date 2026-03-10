@@ -850,6 +850,27 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     return visibleItems;
   }
 
+  List<Tag> _buildTagFiltersForDisplay({
+    required List<Tag> allTags,
+    required List<DiaryWithTags> visibleItems,
+    required String keyword,
+  }) {
+    final normalizedKeyword = keyword.trim();
+    if (normalizedKeyword.isEmpty) {
+      return allTags;
+    }
+
+    // 关键词筛选生效时，仅展示“当前结果列表里实际存在”的标签。
+    final visibleTagIds = <int>{};
+    for (final item in visibleItems) {
+      for (final tag in item.tags) {
+        visibleTagIds.add(tag.id);
+      }
+    }
+
+    return allTags.where((tag) => visibleTagIds.contains(tag.id)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
@@ -906,13 +927,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           body: Stack(
             children: [
               PopScope(
-                canPop: !_isSelectionMode,
+                canPop: !(_isSelectionMode || _isSearchMode),
                 onPopInvokedWithResult: (didPop, result) {
                   if (didPop) {
                     return;
                   }
                   if (_isSelectionMode) {
                     _clearSelection();
+                    return;
+                  }
+                  if (_isSearchMode) {
+                    _exitSearchModeAndClear();
                   }
                 },
                 child: Focus(
@@ -939,9 +964,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               ),
                               tagsAsync.when(
                                 data: (tags) {
+                                  final tagsForDisplay = _buildTagFiltersForDisplay(
+                                    allTags: tags,
+                                    visibleItems: displayedItems,
+                                    keyword: filterState.keyword,
+                                  );
                                   return SliverToBoxAdapter(
                                     child: DiaryTagFilterBar(
-                                      tags: tags,
+                                      tags: tagsForDisplay,
                                       selectedTagFilterIds: filterState.selectedTagIds,
                                       onToggleTagFilter: (tagId, selected) {
                                         ref

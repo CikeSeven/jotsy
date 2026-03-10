@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -117,105 +120,131 @@ class DiariesListSection extends StatelessWidget {
     final itemBackgroundColor =
         compact ? colorScheme.surface : backgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
+    final previewCover = _resolvePreviewCover(diary.diary);
     final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
 
     return Builder(
       builder: (BuildContext _) {
+        final detailContent = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (preview.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                preview,
+                maxLines: compact ? 4 : 3,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            const SizedBox(height: 6),
+            Text(
+              RelativeTimeFormatter.formatUpdatedAt(
+                updatedAt: diary.diary.updatedAt,
+                now: DateTime.now(),
+                l10n: l10n,
+              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        );
+
+        final compactHeader = Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (selected)
+              Icon(
+                CupertinoIcons.check_mark_circled_solid,
+                size: 18,
+                color: colorScheme.primary,
+              ),
+          ],
+        );
+
+        final compactTextContent = Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              compactHeader,
+              if (preview.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  preview,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 6),
+              Text(
+                RelativeTimeFormatter.formatUpdatedAt(
+                  updatedAt: diary.diary.updatedAt,
+                  now: DateTime.now(),
+                  l10n: l10n,
+                ),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        );
+
         final content =
             compact
                 ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ),
-                        if (selected)
-                          Icon(
-                            CupertinoIcons.check_mark_circled_solid,
-                            size: 18,
-                            color: colorScheme.primary,
-                          ),
-                      ],
-                    ),
-                    if (preview.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        preview,
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                    if (previewCover != null)
+                      _buildCoverPreview(
+                        previewCover,
+                        width: double.infinity,
+                        height: 132,
+                        radius: 0,
                       ),
-                    ],
-                    const SizedBox(height: 6),
-                    Text(
-                      RelativeTimeFormatter.formatUpdatedAt(
-                        updatedAt: diary.diary.updatedAt,
-                        now: DateTime.now(),
-                        l10n: l10n,
-                      ),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    compactTextContent,
                   ],
                 )
                 : Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                          if (preview.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              preview,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                            ),
-                          ],
-                          const SizedBox(height: 6),
-                          Text(
-                            RelativeTimeFormatter.formatUpdatedAt(
-                              updatedAt: diary.diary.updatedAt,
-                              now: DateTime.now(),
-                              l10n: l10n,
-                            ),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ],
+                    if (previewCover != null) ...[
+                      _buildCoverPreview(
+                        previewCover,
+                        width: 84,
+                        height: 84,
+                        radius: 10,
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(child: detailContent),
                     if (selected) ...[
                       const SizedBox(width: 8),
                       Icon(
@@ -253,10 +282,10 @@ class DiariesListSection extends StatelessWidget {
                         )
                         : BoxDecoration(color: itemBackgroundColor),
                 padding: EdgeInsets.fromLTRB(
-                  compact ? 12 : 16,
-                  compact ? 10 : 12,
-                  compact ? 12 : 16,
-                  compact ? 10 : 12,
+                  compact ? 0 : 16,
+                  compact ? 0 : 12,
+                  compact ? 0 : 16,
+                  compact ? 0 : 12,
                 ),
                 child: content,
               ),
@@ -264,6 +293,126 @@ class DiariesListSection extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  String? _resolvePreviewCover(Diary diary) {
+    final explicitCover = diary.cover?.trim();
+    if (explicitCover != null && explicitCover.isNotEmpty) {
+      return explicitCover;
+    }
+    return _extractFirstImageFromContent(diary.content);
+  }
+
+  String? _extractFirstImageFromContent(String contentJson) {
+    final normalized = contentJson.trim();
+    if (normalized.isEmpty) {
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(normalized);
+      return _extractImageFromNode(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _extractImageFromNode(Object? node) {
+    if (node is List) {
+      for (final item in node) {
+        final image = _extractImageFromNode(item);
+        if (image != null) {
+          return image;
+        }
+      }
+      return null;
+    }
+
+    if (node is! Map) {
+      return null;
+    }
+
+    final insert = node['insert'];
+    if (insert is Map) {
+      final image = insert['image'];
+      if (image is String && image.trim().isNotEmpty) {
+        return image.trim();
+      }
+    }
+
+    final type = node['type'];
+    if (type == 'image') {
+      final attributes = node['attributes'];
+      if (attributes is Map) {
+        final url = attributes['url'];
+        if (url is String && url.trim().isNotEmpty) {
+          return url.trim();
+        }
+      }
+    }
+
+    final root = node['root'];
+    if (root != null) {
+      final image = _extractImageFromNode(root);
+      if (image != null) {
+        return image;
+      }
+    }
+
+    final children = node['children'];
+    if (children != null) {
+      final image = _extractImageFromNode(children);
+      if (image != null) {
+        return image;
+      }
+    }
+
+    return null;
+  }
+
+  Widget _buildCoverPreview(
+    String imageSource, {
+    double? width,
+    required double height,
+    required double radius,
+  }) {
+    final trimmed = imageSource.trim();
+    final uri = Uri.tryParse(trimmed);
+    final isNetwork = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+
+    final imageWidget =
+        isNetwork
+            ? Image.network(
+              trimmed,
+              fit: BoxFit.cover,
+              errorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) =>
+                      _buildCoverFallback(),
+            )
+            : Image.file(
+              File(trimmed),
+              fit: BoxFit.cover,
+              errorBuilder:
+                  (BuildContext context, Object error, StackTrace? stackTrace) =>
+                      _buildCoverFallback(),
+            );
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: imageWidget,
+      ),
+    );
+  }
+
+  Widget _buildCoverFallback() {
+    return Container(
+      color: Colors.black12,
+      alignment: Alignment.center,
+      child: const Icon(CupertinoIcons.photo, size: 20),
     );
   }
 }

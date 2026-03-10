@@ -61,27 +61,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final Map<String, Timer> _appearingTimers = <String, Timer>{};
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  final GlobalKey _listSearchFieldKey = GlobalKey();
   final GlobalKey _topSearchFieldKey = GlobalKey();
   Timer? _searchDebounceTimer;
-  OverlayEntry? _searchMorphOverlay;
-  Rect? _cachedListSearchRect;
-  late final AnimationController _searchMorphController;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   int _localHintVisibleCount = 0;
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   bool _isSearchMode = false;
   bool _isSearchAnimating = false;
-  bool _isSearchMorphEntering = false;
   bool _homeHintVisible = false;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
-  bool get _showTopSearchField => _isSearchMode && !_isSearchAnimating;
-  bool get _showHeaderSection => !_isSearchMode && !_isSearchAnimating;
+  bool get _showHeaderSection => !_isSearchAnimating;
   bool get _isAnyHintVisible =>
       _homeHintVisible || _localHintVisibleCount > 0;
 
@@ -89,10 +83,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   void initState() {
     super.initState();
     _attachHomeHintVisibilityListener();
-    _searchMorphController = AnimationController(
-      vsync: this,
-      duration: _searchMorphDuration,
-    );
   }
 
   @override
@@ -117,7 +107,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _appearingTimers.clear();
     _searchController.dispose();
     _searchFocusNode.dispose();
-    _searchMorphController.dispose();
     _detachHomeHintVisibilityListener(widget.homeHintVisibleListenable);
     super.dispose();
   }
@@ -150,6 +139,87 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return;
     }
     setState(_selectedDiaryIds.clear);
+  }
+
+  /// 进入搜索态：显示输入框并聚焦。
+  void _enterSearchMode() {
+    if (_isSelectionMode || _isSearchMode) {
+      return;
+    }
+    setState(() {
+      _isSearchMode = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _searchFocusNode.requestFocus();
+    });
+  }
+
+  /// 退出搜索态并清空搜索条件。
+  void _exitSearchModeAndClear() {
+    _clearSearch(exitSearchMode: true);
+    _searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  /// 清空输入但保持搜索态，便于继续输入。
+  void _clearSearchInPlace() {
+    _clearSearch(exitSearchMode: false);
+    _searchFocusNode.requestFocus();
+  }
+
+  void _onSearchChanged(String value) {
+    if (_searchInput != value) {
+      setState(() {
+        _searchInput = value;
+      });
+    }
+    _searchDebounceTimer?.cancel();
+    _searchDebounceTimer = Timer(_searchDebounceDuration, () {
+      _applySearchKeyword(value);
+    });
+  }
+
+  void _applySearchKeyword(String rawValue) {
+    final normalized = rawValue.trim();
+    if (normalized == _effectiveSearchKeyword) {
+      return;
+    }
+    _effectiveSearchKeyword = normalized;
+    ref.read(diaryFilterProvider.notifier).setKeyword(normalized);
+  }
+
+  void _clearSearch({required bool exitSearchMode}) {
+    _searchDebounceTimer?.cancel();
+    final shouldResetKeyword =
+        _effectiveSearchKeyword.isNotEmpty ||
+        _searchInput.trim().isNotEmpty ||
+        _searchController.text.trim().isNotEmpty;
+    _searchController.clear();
+
+    if (mounted) {
+      setState(() {
+        _searchInput = '';
+        _effectiveSearchKeyword = '';
+        if (exitSearchMode) {
+          _isSearchMode = false;
+          _isSearchAnimating = false;
+        }
+      });
+    } else {
+      _searchInput = '';
+      _effectiveSearchKeyword = '';
+      if (exitSearchMode) {
+        _isSearchMode = false;
+        _isSearchAnimating = false;
+      }
+    }
+
+    if (shouldResetKeyword) {
+      ref.read(diaryFilterProvider.notifier).setKeyword('');
+    }
   }
 
   // 打开编辑页，使用系统默认页面转场。
@@ -650,12 +720,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   }
 
   void _toggleSelection(String noteId, {bool forceSelect = false}) {
+    var shouldClearSearchKeyword = false;
+    var shouldUnfocusSearch = false;
     setState(() {
       if (forceSelect && _isSearchMode) {
+        _searchDebounceTimer?.cancel();
+        shouldClearSearchKeyword =
+            _effectiveSearchKeyword.isNotEmpty || _searchInput.trim().isNotEmpty;
+        shouldUnfocusSearch = true;
+        _searchController.clear();
+        _searchInput = '';
+        _effectiveSearchKeyword = '';
         _isSearchMode = false;
         _isSearchAnimating = false;
-        _searchFocusNode.unfocus();
-        FocusManager.instance.primaryFocus?.unfocus();
       }
       if (forceSelect) {
         _selectedDiaryIds.add(noteId);
@@ -667,6 +744,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         _selectedDiaryIds.add(noteId);
       }
     });
+    if (shouldClearSearchKeyword) {
+      ref.read(diaryFilterProvider.notifier).setKeyword('');
+    }
+    if (shouldUnfocusSearch) {
+      _searchFocusNode.unfocus();
+      FocusManager.instance.primaryFocus?.unfocus();
+    }
   }
 
   void _openArchivedPage() {
@@ -976,6 +1060,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         SizedBox(height: topSafeInset),
                                         DiaryHeadSection(
                                           isSelectionMode: _isSelectionMode,
+                                          isSearchMode: _isSearchMode,
                                           selectedCount: _selectedDiaryIds.length,
                                           onCancelSelection: _clearSelection,
                                           onArchiveSelected:
@@ -988,7 +1073,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           onMenuSelected: _onMenuSelected,
                                           searchFieldKey: _topSearchFieldKey,
                                           searchPreviewText: _searchInput,
-                                          searchEnabled: true,
+                                          searchController: _searchController,
+                                          searchFocusNode: _searchFocusNode,
+                                          onEnterSearch: _enterSearchMode,
+                                          onExitSearch: _exitSearchModeAndClear,
+                                          onClearSearch: _clearSearchInPlace,
+                                          onSearchChanged: _onSearchChanged,
                                         ),
                                         Container(
                                           height: 1,

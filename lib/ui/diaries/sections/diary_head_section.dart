@@ -28,6 +28,7 @@ class DiaryHeadSection extends StatelessWidget {
   const DiaryHeadSection({
     super.key,
     required this.isSelectionMode,
+    required this.isSearchMode,
     required this.selectedCount,
     required this.onCancelSelection,
     required this.onArchiveSelected,
@@ -38,10 +39,16 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onMenuSelected,
     required this.searchFieldKey,
     required this.searchPreviewText,
-    required this.searchEnabled,
+    required this.searchController,
+    required this.searchFocusNode,
+    required this.onEnterSearch,
+    required this.onExitSearch,
+    required this.onClearSearch,
+    required this.onSearchChanged,
   });
 
   final bool isSelectionMode;
+  final bool isSearchMode;
   final int selectedCount;
   final VoidCallback onCancelSelection;
   final VoidCallback onArchiveSelected;
@@ -52,10 +59,16 @@ class DiaryHeadSection extends StatelessWidget {
   final ValueChanged<DiaryMenuAction> onMenuSelected;
   final GlobalKey searchFieldKey;
   final String searchPreviewText;
-  final bool searchEnabled;
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
+  final VoidCallback onEnterSearch;
+  final VoidCallback onExitSearch;
+  final VoidCallback onClearSearch;
+  final ValueChanged<String> onSearchChanged;
 
   @override
   Widget build(BuildContext context) {
+    final hasSearchText = searchPreviewText.trim().isNotEmpty;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -96,33 +109,47 @@ class DiaryHeadSection extends StatelessWidget {
               ),
             ),
           ] else ...[
-            Text(
-              'Jotsy',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(width: AppSpacing.xl),
-            Expanded(
-              child: _SearchPreview(
-                searchFieldKey: searchFieldKey,
-                searchPreviewText: searchPreviewText,
-                searchEnabled: searchEnabled,
+            if (isSearchMode)
+              Expanded(
+                child: _SearchInput(
+                  searchFieldKey: searchFieldKey,
+                  searchController: searchController,
+                  searchFocusNode: searchFocusNode,
+                  hasSearchText: hasSearchText,
+                  onExitSearch: onExitSearch,
+                  onClearSearch: onClearSearch,
+                  onSearchChanged: onSearchChanged,
+                ),
+              )
+            else ...[
+              Text(
+                'Jotsy',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(width: AppSpacing.m),
-            IconButton(
-              tooltip: '已归档笔记',
-              onPressed: onOpenArchived,
-              icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
-            ),
-            IconButton(
-              tooltip: '更多',
-              onPressed: () => _showSettingsSheet(context),
-              icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
-            ),
+              const SizedBox(width: AppSpacing.xl),
+              Expanded(
+                child: _SearchPreview(
+                  searchFieldKey: searchFieldKey,
+                  searchPreviewText: searchPreviewText,
+                  onTap: onEnterSearch,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.m),
+              IconButton(
+                tooltip: '已归档笔记',
+                onPressed: onOpenArchived,
+                icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
+              ),
+              IconButton(
+                tooltip: '更多',
+                onPressed: () => _showSettingsSheet(context),
+                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+              ),
+            ],
           ],
         ],
       ),
@@ -232,12 +259,12 @@ class _SearchPreview extends StatelessWidget {
   const _SearchPreview({
     required this.searchFieldKey,
     required this.searchPreviewText,
-    required this.searchEnabled,
+    required this.onTap,
   });
 
   final GlobalKey searchFieldKey;
   final String searchPreviewText;
-  final bool searchEnabled;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -247,6 +274,108 @@ class _SearchPreview extends StatelessWidget {
     final displayedText = searchPreviewText.trim();
     final hasText = displayedText.isNotEmpty;
 
+    return Container(
+      key: searchFieldKey,
+      height: 36,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadii.nav),
+        boxShadow: AppEffects.softShadow,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.nav),
+          onTap: onTap,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.s),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(AppRadii.nav),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadii.nav),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: 17,
+                      sigmaY: 17,
+                      tileMode: TileMode.mirror,
+                    ),
+                    child: Container(
+                      color: colorScheme.primary.withAlpha(20),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        children: [
+                          FaIcon(
+                            FontAwesomeIcons.magnifyingGlass,
+                            size: 14,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              hasText ? displayedText : '搜索标题或内容',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  hasText
+                                      ? textStyle?.copyWith(color: colorScheme.onSurface)
+                                      : hintStyle?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchInput extends StatelessWidget {
+  const _SearchInput({
+    required this.searchFieldKey,
+    required this.searchController,
+    required this.searchFocusNode,
+    required this.hasSearchText,
+    required this.onExitSearch,
+    required this.onClearSearch,
+    required this.onSearchChanged,
+  });
+
+  final GlobalKey searchFieldKey;
+  final TextEditingController searchController;
+  final FocusNode searchFocusNode;
+  final bool hasSearchText;
+  final VoidCallback onExitSearch;
+  final VoidCallback onClearSearch;
+  final ValueChanged<String> onSearchChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       key: searchFieldKey,
       height: 36,
@@ -265,10 +394,7 @@ class _SearchPreview extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.s),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color:
-                      searchEnabled
-                          ? colorScheme.primaryContainer
-                          : colorScheme.surfaceContainerHigh,
+                  color: colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadii.nav),
                 ),
               ),
@@ -288,32 +414,39 @@ class _SearchPreview extends StatelessWidget {
                   tileMode: TileMode.mirror,
                 ),
                 child: Container(
-                  color:
-                      searchEnabled
-                          ? colorScheme.primary.withAlpha(20)
-                          : colorScheme.surfaceContainerHigh,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  color: colorScheme.primary.withAlpha(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
                   child: Row(
                     children: [
-                      FaIcon(
-                        FontAwesomeIcons.magnifyingGlass,
-                        size: 14,
-                        color: colorScheme.onSurfaceVariant,
+                      IconButton(
+                        tooltip: '取消搜索',
+                        splashRadius: 18,
+                        onPressed: onExitSearch,
+                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 16),
                       ),
-                      const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          hasText ? displayedText : '搜索标题或内容',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              hasText
-                                  ? textStyle?.copyWith(color: colorScheme.onSurface)
-                                  : hintStyle?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
+                        child: TextField(
+                          controller: searchController,
+                          focusNode: searchFocusNode,
+                          autofocus: true,
+                          textInputAction: TextInputAction.search,
+                          onChanged: onSearchChanged,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            hintText: '搜索标题或内容',
+                            border: InputBorder.none,
+                            hintStyle: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
                         ),
                       ),
+                      if (hasSearchText)
+                        IconButton(
+                          tooltip: '清空',
+                          splashRadius: 18,
+                          onPressed: onClearSearch,
+                          icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
+                        ),
                     ],
                   ),
                 ),

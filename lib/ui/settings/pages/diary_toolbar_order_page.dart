@@ -38,6 +38,38 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     });
   }
 
+  Future<void> _confirmResetOrder() async {
+    final shouldReset = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final colorScheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('重置排序'),
+          content: const Text('确认将工具栏顺序恢复为默认排序吗？'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.primary,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('重置'),
+            ),
+          ],
+        );
+      },
+    );
+    if (shouldReset == true && mounted) {
+      _resetOrder();
+    }
+  }
+
   Future<void> _saveOrder() async {
     if (_saving) {
       return;
@@ -74,7 +106,10 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         ),
         title: const Text('工具栏顺序'),
         actions: <Widget>[
-          TextButton(onPressed: _saving ? null : _resetOrder, child: const Text('重置')),
+          TextButton(
+            onPressed: _saving ? null : _confirmResetOrder,
+            child: const Text('重置'),
+          ),
           TextButton(onPressed: _saving ? null : _saveOrder, child: const Text('保存')),
         ],
       ),
@@ -99,10 +134,43 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
                     : null,
             trailing: ReorderableDragStartListener(
               index: index,
-              child: const FaIcon(FontAwesomeIcons.gripLinesVertical, size: 16),
+              child: const _TripleBarDragHandle(),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// 三竖线拖拽手柄（替代默认双竖线图标）。
+class _TripleBarDragHandle extends StatelessWidget {
+  const _TripleBarDragHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    return SizedBox(
+      width: 16,
+      height: 18,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          _buildBar(color),
+          _buildBar(color),
+          _buildBar(color),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBar(Color color) {
+    return Container(
+      width: 2,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(1.2),
       ),
     );
   }

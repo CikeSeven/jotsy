@@ -38,25 +38,26 @@ enum DiaryToolbarItem {
 
 /// 默认工具栏顺序（当用户未配置或配置异常时兜底）。
 const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
+  // 轻度日记用户高频功能前置：基础编辑 + 列表/待办 + 图片。
   DiaryToolbarItem.undo,
   DiaryToolbarItem.redo,
   DiaryToolbarItem.bold,
   DiaryToolbarItem.italic,
   DiaryToolbarItem.underline,
-  DiaryToolbarItem.strikeThrough,
-  DiaryToolbarItem.inlineCode,
+  DiaryToolbarItem.bulletList,
+  DiaryToolbarItem.checkList,
+  DiaryToolbarItem.orderedList,
+  DiaryToolbarItem.image,
+  DiaryToolbarItem.quote,
+  DiaryToolbarItem.headerStyle,
+  DiaryToolbarItem.link,
   DiaryToolbarItem.textColor,
   DiaryToolbarItem.backgroundColor,
   DiaryToolbarItem.clearFormat,
-  DiaryToolbarItem.image,
-  DiaryToolbarItem.headerStyle,
-  DiaryToolbarItem.orderedList,
-  DiaryToolbarItem.bulletList,
-  DiaryToolbarItem.checkList,
-  DiaryToolbarItem.codeBlock,
-  DiaryToolbarItem.quote,
+  DiaryToolbarItem.strikeThrough,
   DiaryToolbarItem.indent,
-  DiaryToolbarItem.link,
+  DiaryToolbarItem.inlineCode,
+  DiaryToolbarItem.codeBlock,
 ];
 
 extension DiaryToolbarItemX on DiaryToolbarItem {

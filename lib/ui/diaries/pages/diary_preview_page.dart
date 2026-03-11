@@ -307,100 +307,169 @@ $content
     return null;
   }
 
-  List<_MetaItem> _buildMetaItems(DiaryWithTags detail) {
-    final items = <_MetaItem>[
-      _MetaItem(
-        icon: FontAwesomeIcons.clock,
-        label: '创建 ${_formatRelativeTime(detail.diary.createdAt)}',
-      ),
-      _MetaItem(
-        icon: FontAwesomeIcons.arrowsRotate,
-        label: '更新 ${_formatRelativeTime(detail.diary.updatedAt)}',
-      ),
-    ];
+  Map<String, dynamic>? _extractContextMetadata(DiaryWithTags detail) {
+    try {
+      final decoded = jsonDecode(detail.diary.metadata);
+      if (decoded is! Map<String, dynamic>) {
+        return null;
+      }
+      final context = decoded['context'];
+      if (context is! Map<String, dynamic>) {
+        return null;
+      }
+      return context;
+    } catch (_) {
+      return null;
+    }
+  }
 
+  String? _extractLocationLabel(DiaryWithTags detail) {
+    final context = _extractContextMetadata(detail);
+    final location = context?['location']?.toString().trim();
+    if (location == null || location.isEmpty) {
+      return null;
+    }
+    return location;
+  }
+
+  String? _extractWeatherLabel(DiaryWithTags detail) {
+    final context = _extractContextMetadata(detail);
+    final weather = context?['weather']?.toString().trim();
+    if (weather == null || weather.isEmpty) {
+      return null;
+    }
+    return weather;
+  }
+
+  List<_MetaChipItem> _buildMetaChipItems(DiaryWithTags detail) {
+    final items = <_MetaChipItem>[];
     if (detail.tags.isNotEmpty) {
       items.add(
-        _MetaItem(
+        _MetaChipItem(
           icon: FontAwesomeIcons.tags,
           label: detail.tags.map((tag) => '# ${tag.name}').join('  '),
         ),
       );
     }
 
-    try {
-      final decoded = jsonDecode(detail.diary.metadata);
-      if (decoded is Map<String, dynamic>) {
-        final context = decoded['context'];
-        if (context is Map<String, dynamic>) {
-          final location = context['location']?.toString().trim();
-          if (location != null && location.isNotEmpty) {
-            items.add(
-              _MetaItem(icon: FontAwesomeIcons.locationDot, label: location),
-            );
-          }
-          final weather = context['weather']?.toString().trim();
-          if (weather != null && weather.isNotEmpty) {
-            items.add(
-              _MetaItem(icon: FontAwesomeIcons.cloudSun, label: weather),
-            );
-          }
-          final mood = context['moodEmoji']?.toString().trim();
-          if (mood != null && mood.isNotEmpty) {
-            items.add(
-              _MetaItem(icon: FontAwesomeIcons.faceSmile, label: mood),
-            );
-          }
-          final energy = context['energyLevel'];
-          if (energy != null) {
-            items.add(
-              _MetaItem(
-                icon: FontAwesomeIcons.batteryHalf,
-                label: '精力 $energy',
-              ),
-            );
-          }
-        }
-      }
-    } catch (_) {}
+    final context = _extractContextMetadata(detail);
+    if (context == null) {
+      return items;
+    }
 
+    final mood = context['moodEmoji']?.toString().trim();
+    if (mood != null && mood.isNotEmpty) {
+      items.add(_MetaChipItem(icon: FontAwesomeIcons.faceSmile, label: mood));
+    }
+    final energy = context['energyLevel'];
+    if (energy != null) {
+      items.add(
+        _MetaChipItem(icon: FontAwesomeIcons.batteryHalf, label: '精力 $energy'),
+      );
+    }
     return items;
   }
 
   Widget _buildMetaSection(DiaryWithTags detail) {
     final colorScheme = Theme.of(context).colorScheme;
-    final items = _buildMetaItems(detail);
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: items.map((item) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(10),
-          ),
+    final chips = _buildMetaChipItems(detail);
+    final relativeCreated = _formatRelativeTime(detail.diary.createdAt);
+    final location = _extractLocationLabel(detail);
+    final weather = _extractWeatherLabel(detail);
+    final inlineItems = <Widget>[
+      _buildMetaInlineItem(
+        icon: FontAwesomeIcons.clock,
+        label: '发表于$relativeCreated',
+        color: colorScheme.onSurfaceVariant,
+      ),
+      if (location != null && location.isNotEmpty)
+        _buildMetaInlineItem(
+          icon: FontAwesomeIcons.locationDot,
+          label: location,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      if (weather != null && weather.isNotEmpty)
+        _buildMetaInlineItem(
+          icon: FontAwesomeIcons.cloudSun,
+          label: weather,
+          color: colorScheme.onSurfaceVariant,
+        ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              FaIcon(
-                item.icon,
-                size: 12,
-                color: colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 6),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 260),
-                child: Text(
-                  item.label,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
+              for (int index = 0; index < inlineItems.length; index++) ...<Widget>[
+                if (index > 0) const SizedBox(width: 12),
+                inlineItems[index],
+              ],
             ],
           ),
-        );
-      }).toList(growable: false),
+        ),
+        if (chips.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: chips.map((item) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FaIcon(
+                      item.icon,
+                      size: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 260),
+                      child: Text(
+                        item.label,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(growable: false),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildMetaInlineItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        FaIcon(
+          icon,
+          size: 12,
+          color: color,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: color,
+              ),
+        ),
+      ],
     );
   }
 
@@ -547,8 +616,8 @@ $content
   }
 }
 
-class _MetaItem {
-  const _MetaItem({
+class _MetaChipItem {
+  const _MetaChipItem({
     required this.icon,
     required this.label,
   });

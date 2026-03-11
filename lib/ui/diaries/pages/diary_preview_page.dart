@@ -40,6 +40,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   String? _boundContentRaw;
   bool _hadLoadedData = false;
 
+  Widget _buildBackLeading() {
+    return IconButton(
+      tooltip: '返回',
+      onPressed: () => Navigator.of(context).maybePop(),
+      icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+    );
+  }
+
   @override
   void dispose() {
     _previewController?.dispose();
@@ -418,6 +426,7 @@ $content
           appBar: AppBar(
             centerTitle: true,
             title: const Text('日记'),
+            leading: _buildBackLeading(),
           ),
           body: const Center(child: CircularProgressIndicator()),
         );
@@ -427,6 +436,7 @@ $content
           appBar: AppBar(
             centerTitle: true,
             title: const Text('日记'),
+            leading: _buildBackLeading(),
           ),
           body: Center(child: Text('加载失败: $error')),
         );
@@ -450,6 +460,7 @@ $content
               appBar: AppBar(
                 centerTitle: true,
                 title: const Text('日记'),
+                leading: _buildBackLeading(),
               ),
               body: const Center(child: Text('日记已不存在，正在返回...')),
             );
@@ -459,6 +470,7 @@ $content
             appBar: AppBar(
               centerTitle: true,
               title: const Text('日记'),
+              leading: _buildBackLeading(),
             ),
             body: const Center(child: Text('日记不存在')),
           );
@@ -473,6 +485,7 @@ $content
           appBar: AppBar(
             centerTitle: true,
             title: const Text('日记'),
+            leading: _buildBackLeading(),
             actions: <Widget>[
               IconButton(
                 tooltip: '更多',

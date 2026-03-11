@@ -69,6 +69,7 @@
 ## 6. UI/交互统一规范
 - 必须：新增图标默认使用 `font_awesome_flutter`（`FaIcon` + `FontAwesomeIcons`）。
 - 必须：富文本工具栏与设置页工具预览图标来源一致，避免混用。
+- 必须：标题栏返回按钮统一使用 `<` 风格图标，即 `FontAwesomeIcons.angleLeft`，默认尺寸使用 `18`，避免在不同页面混用 `arrowLeft/chevronLeft/系统返回箭头`。
 - 必须：Dialog 操作按钮统一为文本按钮：
   - 左侧按钮：灰色语义（取消/返回）
   - 右侧按钮：主色语义（确认）

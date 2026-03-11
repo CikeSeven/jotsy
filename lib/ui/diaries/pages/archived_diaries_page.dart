@@ -77,7 +77,11 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                     onPressed: _controller.clearSelection,
                     icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                   )
-                  : null,
+                  : IconButton(
+                    tooltip: '返回',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                  ),
           actions:
               _isSelectionMode
                   ? <Widget>[

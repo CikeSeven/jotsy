@@ -523,7 +523,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             onPressed: () {
               _popInnerPage();
             },
-            icon: const FaIcon(FontAwesomeIcons.chevronLeft, size: 14),
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             tooltip: '返回',
           ),
           Expanded(

@@ -246,7 +246,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (Object error, StackTrace stackTrace) => Scaffold(
-            appBar: AppBar(),
+            appBar: AppBar(
+              leading: IconButton(
+                tooltip: '返回',
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+              ),
+            ),
             body: Center(child: Text('加载失败: $error')),
           ),
       data: (DiaryWithTags? detail) {
@@ -260,7 +266,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
-            appBar: AppBar(),
+            appBar: AppBar(
+              leading: IconButton(
+                tooltip: '返回',
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+              ),
+            ),
             body: const Center(child: Text('日记不存在')),
           );
         }
@@ -288,6 +300,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         return Scaffold(
             appBar: AppBar(
+            leading: IconButton(
+              tooltip: '返回',
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            ),
             title: Text(
               widget.entryMode == EditDiaryEntryMode.create ? '新建日记' : '编辑日记',
             ),

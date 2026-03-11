@@ -157,7 +157,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
           title: const Text('发表日记'),
           leading: IconButton(
             onPressed: _controller.closeWithDraft,
-            icon: const FaIcon(FontAwesomeIcons.arrowLeft, size: 16),
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),
         ),
         body: Stack(

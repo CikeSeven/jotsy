@@ -67,6 +67,11 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          tooltip: '返回',
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+        ),
         title: const Text('工具栏顺序'),
         actions: <Widget>[
           TextButton(onPressed: _saving ? null : _resetOrder, child: const Text('重置')),

@@ -470,7 +470,7 @@ class _SearchInput extends StatelessWidget {
                         tooltip: '取消搜索',
                         splashRadius: 18,
                         onPressed: onExitSearch,
-                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 16),
+                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
                       ),
                       Expanded(
                         child: TextField(

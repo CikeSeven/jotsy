@@ -71,7 +71,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final String? locationLabel;
   final TextEditingController weatherController;
   final String? moodEmoji;
-  final int energyLevel;
+  final double energyLevel;
   final List<Tag> tags;
   final bool tagsLoading;
   final String? tagsError;
@@ -213,24 +213,6 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       return;
     }
     apply();
-  }
-
-  /// 根据精力值生成文案标签（用于滑块旁提示）。
-  String get _energyDescription {
-    final level = widget.energyLevel.clamp(1, 5).toInt();
-    switch (level) {
-      case 1:
-        return '很疲惫';
-      case 2:
-        return '有点累';
-      case 3:
-        return '状态一般';
-      case 4:
-        return '精力不错';
-      case 5:
-      default:
-        return '活力满满';
-    }
   }
 
   @override
@@ -926,7 +908,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildEnergySection(BuildContext context) {
-    final energyLevel = EnergyBatteryIndicator.normalizeLevel(widget.energyLevel);
+    final energyLevel = EnergyBatteryIndicator.normalizeValue(widget.energyLevel);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -939,29 +921,28 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   ),
             ),
             const SizedBox(width: 8),
-            Text(
-              _energyDescription,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            const Spacer(),
             EnergyBatteryIndicator(
-              level: energyLevel,
-              iconSize: 14,
-              showLabel: true,
-              labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+              value: energyLevel,
+              iconSize: 22,
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                EnergyBatteryIndicator.descriptionForValue(energyLevel),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+              ),
             ),
           ],
         ),
         Slider(
-          value: energyLevel.toDouble(),
+          value: energyLevel,
           min: 1,
           max: 5,
-          divisions: 4,
-          label: '$energyLevel',
+          label: EnergyBatteryIndicator.formatValue(energyLevel),
           onChanged: widget.onEnergyChanged,
         ),
       ],

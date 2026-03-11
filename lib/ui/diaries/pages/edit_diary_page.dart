@@ -57,7 +57,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _draftLocationFromAuto = false;
   String? _draftWeather;
   String? _draftMoodEmoji;
-  int? _draftEnergyLevel;
+  double? _draftEnergyLevel;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;

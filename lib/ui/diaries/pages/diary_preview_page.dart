@@ -364,16 +364,16 @@ $content
     }
     final energyRaw = context['energyLevel'];
     final parsedEnergy = switch (energyRaw) {
-      num value => value.toInt(),
-      String value => int.tryParse(value),
+      num value => value.toDouble(),
+      String value => double.tryParse(value),
       _ => null,
     };
     if (parsedEnergy != null) {
-      final normalizedEnergy = EnergyBatteryIndicator.normalizeLevel(parsedEnergy);
+      final normalizedEnergy = EnergyBatteryIndicator.normalizeValue(parsedEnergy);
       items.add(
         _MetaChipItem(
-          icon: EnergyBatteryIndicator.iconForLevel(normalizedEnergy),
-          label: '精力 $normalizedEnergy/5',
+          icon: EnergyBatteryIndicator.iconForValue(normalizedEnergy),
+          label: '精力 ${EnergyBatteryIndicator.formatValue(normalizedEnergy)}/5',
           energyLevel: normalizedEnergy,
         ),
       );
@@ -442,8 +442,7 @@ $content
                       color:
                           item.energyLevel == null
                               ? colorScheme.onSurfaceVariant
-                              : EnergyBatteryIndicator.colorForLevel(
-                                context,
+                              : EnergyBatteryIndicator.colorForValue(
                                 item.energyLevel!,
                               ),
                     ),
@@ -642,5 +641,5 @@ class _MetaChipItem {
 
   final IconData icon;
   final String label;
-  final int? energyLevel;
+  final double? energyLevel;
 }

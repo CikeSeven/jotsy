@@ -27,7 +27,7 @@ class PublishMetadataComposer {
     bool locationFromAuto = false,
     String? weather,
     String? moodEmoji,
-    int? energyLevel,
+    double? energyLevel,
   }) {
     final normalizedLocation = _normalizeOptionalText(location);
     final normalizedWeather = _normalizeOptionalText(weather);
@@ -60,7 +60,7 @@ class PublishMetadataComposer {
         },
       if (normalizedWeather != null) 'weather': normalizedWeather,
       if (normalizedMoodEmoji != null) 'moodEmoji': normalizedMoodEmoji,
-      if (energyLevel != null) 'energyLevel': energyLevel.clamp(1, 5),
+      if (energyLevel != null) 'energyLevel': _normalizeEnergyLevel(energyLevel),
     };
     if (context.isNotEmpty) {
       metadata['context'] = context;
@@ -101,5 +101,13 @@ class PublishMetadataComposer {
             (!(entry.value is String) || (entry.value as String).trim().isNotEmpty))
           entry.key: entry.value,
     };
+  }
+
+  /// 精力值标准化：
+  /// - 连续值限制在 1~5；
+  /// - 保留两位小数，避免 metadata 出现过长浮点噪音。
+  static double _normalizeEnergyLevel(double value) {
+    final clamped = value.clamp(1, 5).toDouble();
+    return double.parse(clamped.toStringAsFixed(2));
   }
 }

@@ -57,7 +57,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   double? _locationLatitude;
   double? _locationLongitude;
   bool _locationFromAuto = false;
-  int _energyLevel = 3;
+  double _energyLevel = 4;
   double _panelExpandProgress = 0;
 
   // ==================== 异步流程状态 ====================
@@ -85,7 +85,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _moodEmoji = widget.initialDraft.moodEmoji;
 
     // 精力值限制在 1~5，避免历史数据越界导致 UI 异常。
-    final initialEnergy = widget.initialDraft.energyLevel ?? 3;
+    final initialEnergy = (widget.initialDraft.energyLevel ?? 4).toDouble();
     if (initialEnergy < 1) {
       _energyLevel = 1;
     } else if (initialEnergy > 5) {
@@ -268,9 +268,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   setState(() => _moodEmoji = nextMood);
                 },
                 onEnergyChanged: (nextValue) {
-                  setState(
-                    () => _energyLevel = nextValue.round().clamp(1, 5).toInt(),
-                  );
+                  setState(() => _energyLevel = nextValue.clamp(1, 5).toDouble());
                 },
                 onPublish: _controller.publish,
               ),

@@ -37,7 +37,7 @@ class NewDiaryDraft {
   final bool locationFromAuto;
   final String? weather;
   final String? moodEmoji;
-  final int? energyLevel;
+  final double? energyLevel;
 
   /// 标题和正文是否存在可见内容。
   ///
@@ -73,7 +73,7 @@ class NewDiaryDraft {
       locationFromAuto: (json['locationFromAuto'] as bool?) ?? false,
       weather: json['weather'] as String?,
       moodEmoji: json['moodEmoji'] as String?,
-      energyLevel: (json['energyLevel'] as num?)?.toInt(),
+      energyLevel: (json['energyLevel'] as num?)?.toDouble(),
     );
   }
 
@@ -147,7 +147,7 @@ class NewDiaryDraft {
       energyLevel:
           identical(energyLevel, _fieldNotChanged)
               ? this.energyLevel
-              : energyLevel as int?,
+              : energyLevel as double?,
     );
   }
 

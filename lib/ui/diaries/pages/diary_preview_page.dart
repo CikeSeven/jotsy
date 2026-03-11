@@ -344,40 +344,47 @@ $content
 
   List<_MetaChipItem> _buildMetaChipItems(DiaryWithTags detail) {
     final items = <_MetaChipItem>[];
-    if (detail.tags.isNotEmpty) {
-      items.add(
-        _MetaChipItem(
-          icon: FontAwesomeIcons.tags,
-          label: detail.tags.map((tag) => '# ${tag.name}').join('  '),
-        ),
-      );
-    }
-
     final context = _extractContextMetadata(detail);
-    if (context == null) {
-      return items;
+    if (context != null) {
+      final mood = context['moodEmoji']?.toString().trim();
+      if (mood != null && mood.isNotEmpty) {
+        items.add(
+          _MetaChipItem(
+            kind: _MetaChipKind.mood,
+            label: '心情 $mood',
+          ),
+        );
+      }
+      final energyRaw = context['energyLevel'];
+      final parsedEnergy = switch (energyRaw) {
+        num value => value.toDouble(),
+        String value => double.tryParse(value),
+        _ => null,
+      };
+      if (parsedEnergy != null) {
+        final normalizedEnergy = EnergyBatteryIndicator.normalizeValue(parsedEnergy);
+        items.add(
+          _MetaChipItem(
+            kind: _MetaChipKind.energy,
+            label: EnergyBatteryIndicator.descriptionForValue(normalizedEnergy),
+            energyLevel: normalizedEnergy,
+          ),
+        );
+      }
     }
 
-    final mood = context['moodEmoji']?.toString().trim();
-    if (mood != null && mood.isNotEmpty) {
-      items.add(_MetaChipItem(icon: FontAwesomeIcons.faceSmile, label: mood));
+    if (detail.tags.isNotEmpty) {
+      for (final tag in detail.tags) {
+        items.add(
+          _MetaChipItem(
+            kind: _MetaChipKind.tag,
+            label: tag.name,
+            tagColor: tag.color,
+          ),
+        );
+      }
     }
-    final energyRaw = context['energyLevel'];
-    final parsedEnergy = switch (energyRaw) {
-      num value => value.toDouble(),
-      String value => double.tryParse(value),
-      _ => null,
-    };
-    if (parsedEnergy != null) {
-      final normalizedEnergy = EnergyBatteryIndicator.normalizeValue(parsedEnergy);
-      items.add(
-        _MetaChipItem(
-          icon: EnergyBatteryIndicator.iconForValue(normalizedEnergy),
-          label: '精力 ${EnergyBatteryIndicator.formatValue(normalizedEnergy)}/5',
-          energyLevel: normalizedEnergy,
-        ),
-      );
-    }
+
     return items;
   }
 
@@ -390,7 +397,7 @@ $content
     final inlineItems = <Widget>[
       _buildMetaInlineItem(
         icon: FontAwesomeIcons.clock,
-        label: '发表于：$relativeCreated',
+        label: '发表于$relativeCreated',
         color: colorScheme.onSurfaceVariant,
       ),
       if (location != null && location.isNotEmpty)
@@ -426,42 +433,51 @@ $content
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: chips.map((item) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    FaIcon(
-                      item.icon,
-                      size: 12,
-                      color:
-                          item.energyLevel == null
-                              ? colorScheme.onSurfaceVariant
-                              : EnergyBatteryIndicator.colorForValue(
-                                item.energyLevel!,
-                              ),
-                    ),
-                    const SizedBox(width: 6),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 260),
-                      child: Text(
-                        item.label,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(growable: false),
+            children: chips
+                .map((item) => _buildMetaChip(item, colorScheme))
+                .toList(growable: false),
           ),
         ],
       ],
+    );
+  }
+
+  Widget _buildMetaChip(_MetaChipItem item, ColorScheme colorScheme) {
+    final isEnergyItem = item.kind == _MetaChipKind.energy && item.energyLevel != null;
+    final isTagItem = item.kind == _MetaChipKind.tag && item.tagColor != null;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          if (isEnergyItem)
+            EnergyBatteryIndicator(
+              value: item.energyLevel!,
+              iconSize: 14,
+            )
+          else if (isTagItem)
+            Text(
+              '#',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Color(item.tagColor!),
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          if (isEnergyItem || isTagItem) const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 260),
+            child: Text(
+              item.label,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -632,14 +648,22 @@ $content
   }
 }
 
+enum _MetaChipKind {
+  tag,
+  mood,
+  energy,
+}
+
 class _MetaChipItem {
   const _MetaChipItem({
-    required this.icon,
+    required this.kind,
     required this.label,
     this.energyLevel,
+    this.tagColor,
   });
 
-  final IconData icon;
+  final _MetaChipKind kind;
   final String label;
   final double? energyLevel;
+  final int? tagColor;
 }

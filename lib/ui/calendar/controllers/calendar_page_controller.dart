@@ -122,9 +122,17 @@ class CalendarPageController {
 
   /// 显示“删除成功 + 撤销”提示，并等待用户动作结果。
   Future<bool> _showDeleteUndoSnackBar() async {
-    final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: _state.context,
-      snackBar: SnackBar(
+    final messenger = ScaffoldMessenger.maybeOf(_state.context);
+    if (messenger == null) {
+      return false;
+    }
+    messenger.hideCurrentSnackBar();
+
+    final tracker = _resolveHomeHintTracker();
+    tracker?.onHintShown();
+
+    final controller = messenger.showSnackBar(
+      SnackBar(
         content: const Text('已删除日记'),
         duration: const Duration(seconds: 4),
         action: SnackBarAction(
@@ -134,18 +142,42 @@ class CalendarPageController {
         ),
       ),
     );
+    final reason = await controller.closed;
+    tracker?.onHintClosed();
     return reason == SnackBarClosedReason.action;
   }
 
   /// 统一轻提示出口，避免控制器中散落重复 SnackBar 构造。
   Future<void> _showInfoSnackBar(String message) async {
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: _state.context,
-      snackBar: SnackBar(
+    final messenger = ScaffoldMessenger.maybeOf(_state.context);
+    if (messenger == null) {
+      return;
+    }
+    messenger.hideCurrentSnackBar();
+    final tracker = _resolveHomeHintTracker();
+    tracker?.onHintShown();
+
+    final controller = messenger.showSnackBar(
+      SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 2),
       ),
     );
+    await controller.closed;
+    tracker?.onHintClosed();
+  }
+
+  /// 解析 Home 提示可见性跟踪器：
+  /// - 优先使用当前页面上下文；
+  /// - 当前上下文取不到时回退到 rootNavigator 上下文。
+  HomeHintVisibilityController? _resolveHomeHintTracker() {
+    final fromPageContext = HomeHintVisibilityScope.maybeController(_state.context);
+    if (fromPageContext != null) {
+      return fromPageContext;
+    }
+    final rootNavigatorContext =
+        Navigator.of(_state.context, rootNavigator: true).context;
+    return HomeHintVisibilityScope.maybeController(rootNavigatorContext);
   }
 
   /// 从日历进入新建流程：

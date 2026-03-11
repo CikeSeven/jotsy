@@ -1,4 +1,4 @@
-﻿name: node_diary
+name: node_diary
 description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -31,7 +31,6 @@ dependencies:
   flutter_quill_extensions: ^11.0.0
   file_picker: ^10.3.10
   smooth_sheets: ^0.17.0
-  amap_flutter: ^0.7.0
   geolocator: ^14.0.2
   loading_indicator_m3e: ^0.1.1
   share_plus: ^10.1.4
@@ -59,5 +58,4 @@ flutter:
           weight: 500
         - asset: assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Bold.ttf
           weight: 700
-
 

@@ -9,14 +9,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "93.0.0"
-  amap_flutter:
-    dependency: "direct main"
-    description:
-      name: amap_flutter
-      sha256: "94c24edb2c4a46d5952a9419065505643437a37a99697012ff9868d044d3d4d3"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.7.0"
   analyzer:
     dependency: transitive
     description:
@@ -717,14 +709,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.13.0"
-  latlong2:
-    dependency: transitive
-    description:
-      name: latlong2
-      sha256: "98227922caf49e6056f91b6c56945ea1c7b166f28ffcd5fb8e72fc0b453cc8fe"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.9.1"
   leak_tracker:
     dependency: transitive
     description:

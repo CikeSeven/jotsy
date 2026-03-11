@@ -11,10 +11,6 @@ class AMapConfigChannel {
 
   static const MethodChannel _channel = MethodChannel('com.jotsy.diary/config');
 
-  static Future<String?> getAmapApiKey() async {
-    return _getChannelString('getAmapApiKey');
-  }
-
   static Future<String?> getAmapWebApiKey() async {
     return _getChannelString('getAmapWebApiKey');
   }

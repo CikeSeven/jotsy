@@ -12,10 +12,6 @@ class MainActivity : FlutterActivity() {
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, configChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
-          "getAmapApiKey" -> {
-            val key = BuildConfig.AMAP_API_KEY.trim()
-            result.success(if (key.isEmpty()) null else key)
-          }
           "getAmapWebApiKey" -> {
             val key = BuildConfig.AMAP_WEB_API_KEY.trim()
             result.success(if (key.isEmpty()) null else key)

@@ -21,10 +21,6 @@ if (keystorePropertiesFile.exists()) {
     keystorePropertiesFile.inputStream().use { keystoreProperties.load(it) }
 }
 
-val amapApiKey = localProperties.getProperty("amap.api.key", "")
-val escapedAmapApiKey = amapApiKey
-    .replace("\\", "\\\\")
-    .replace("\"", "\\\"")
 val amapWebApiKey = localProperties.getProperty("amap.web.api.key", "")
 val escapedAmapWebApiKey = amapWebApiKey
     .replace("\\", "\\\\")
@@ -66,8 +62,6 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        manifestPlaceholders["AMAP_API_KEY"] = amapApiKey
-        buildConfigField("String", "AMAP_API_KEY", "\"$escapedAmapApiKey\"")
         buildConfigField("String", "AMAP_WEB_API_KEY", "\"$escapedAmapWebApiKey\"")
         buildConfigField("String", "QWEATHER_CREDENTIAL_ID", "\"$escapedQWeatherCredentialId\"")
         buildConfigField("String", "QWEATHER_API_KEY", "\"$escapedQWeatherApiKey\"")

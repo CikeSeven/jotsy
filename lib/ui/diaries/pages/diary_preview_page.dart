@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/content_codec.dart';
 import '../../../core/services/app_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../utils/relative_time_formatter.dart';
 import '../providers/diary_detail_provider.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
@@ -72,6 +74,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
   String _formatDateTime(DateTime value) {
     return DateFormat('yyyy-MM-dd HH:mm').format(value.toLocal());
+  }
+
+  String _formatRelativeTime(DateTime value) {
+    return RelativeTimeFormatter.formatUpdatedAt(
+      updatedAt: value,
+      now: DateTime.now(),
+      l10n: context.l10n,
+    );
   }
 
   String _buildShareCopyText(DiaryWithTags detail) {
@@ -301,11 +311,11 @@ $content
     final items = <_MetaItem>[
       _MetaItem(
         icon: FontAwesomeIcons.clock,
-        label: '创建 ${_formatDateTime(detail.diary.createdAt)}',
+        label: '创建 ${_formatRelativeTime(detail.diary.createdAt)}',
       ),
       _MetaItem(
         icon: FontAwesomeIcons.arrowsRotate,
-        label: '更新 ${_formatDateTime(detail.diary.updatedAt)}',
+        label: '更新 ${_formatRelativeTime(detail.diary.updatedAt)}',
       ),
     ];
 

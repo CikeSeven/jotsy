@@ -174,6 +174,23 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     );
   }
 
+  /// 彻底删除日记（物理删除，不可恢复）。
+  ///
+  /// 依赖外键级联自动清理 diary_tags 关联关系。
+  Future<void> hardDeleteDiary(String diaryId) async {
+    final targetDiary =
+        await (select(diaries)..where((Diaries t) => t.diaryId.equals(diaryId)))
+            .getSingleOrNull();
+    if (targetDiary == null) {
+      return;
+    }
+
+    // 彻删前先清理托管资源文件，避免私有目录残留无主文件。
+    await _deleteDiaryManagedAssets(targetDiary);
+
+    await (delete(diaries)..where((Diaries t) => t.diaryId.equals(diaryId))).go();
+  }
+
   /// 按业务 diaryId 获取单条日记及其标签。
   Future<DiaryWithTags?> getDiaryWithTagsByDiaryId(String diaryId) async {
     final diary =
@@ -218,6 +235,80 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
             .get();
 
     return rows.map((TypedResult row) => row.readTable(tags)).toList();
+  }
+
+  /// 删除日记关联的托管资源文件（封面 + 正文图片）。
+  Future<void> _deleteDiaryManagedAssets(Diary diary) async {
+    await DiaryCoverStorageService.deleteManagedCover(_normalizeCover(diary.cover));
+
+    final imagePaths = _extractManagedImagePathsFromContent(diary.content);
+    for (final imagePath in imagePaths) {
+      await DiaryMediaStorageService.deleteManagedDiaryImage(imagePath);
+    }
+  }
+
+  /// 从正文 JSON 中提取所有图片路径（去重）。
+  Set<String> _extractManagedImagePathsFromContent(String rawContent) {
+    final normalizedContent = rawContent.trim();
+    if (normalizedContent.isEmpty) {
+      return <String>{};
+    }
+
+    try {
+      final decoded = jsonDecode(normalizedContent);
+      final paths = <String>{};
+      _collectImagePathsFromNode(decoded, paths);
+      return paths;
+    } catch (_) {
+      return <String>{};
+    }
+  }
+
+  /// 递归扫描 JSON 节点，提取图片 embed 路径。
+  void _collectImagePathsFromNode(Object? node, Set<String> output) {
+    if (node is List) {
+      for (final item in node) {
+        _collectImagePathsFromNode(item, output);
+      }
+      return;
+    }
+    if (node is! Map) {
+      return;
+    }
+
+    final insert = node['insert'];
+    if (insert is Map) {
+      final imagePath = _normalizeImagePath(insert['image']);
+      if (imagePath != null) {
+        output.add(imagePath);
+      }
+    }
+
+    final type = node['type'];
+    if (type == 'image') {
+      final attributes = node['attributes'];
+      if (attributes is Map) {
+        final attributePath = _normalizeImagePath(attributes['url']);
+        if (attributePath != null) {
+          output.add(attributePath);
+        }
+      }
+    }
+
+    for (final value in node.values) {
+      _collectImagePathsFromNode(value, output);
+    }
+  }
+
+  String? _normalizeImagePath(Object? rawPath) {
+    if (rawPath is! String) {
+      return null;
+    }
+    final normalized = rawPath.trim();
+    if (normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
   }
 
   String? _normalizeCover(String? rawCover) {

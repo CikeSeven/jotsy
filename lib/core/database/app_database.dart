@@ -6,6 +6,8 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:node_diary/core/services/diary_cover_storage_service.dart';
+import 'package:node_diary/core/services/diary_media_storage_service.dart';
 
 import 'content_codec.dart';
 

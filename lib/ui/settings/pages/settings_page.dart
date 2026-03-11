@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
@@ -61,6 +62,21 @@ class SettingsPage extends ConsumerWidget {
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) {
                       return const TagManagementPage();
+                    },
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              title: const Text('回收站'),
+              subtitle: const Text('管理已删除日记，可恢复或彻底删除'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return const RecycleBinPage();
                     },
                   ),
                 );

@@ -44,3 +44,9 @@ final archivedDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   return db.watchArchivedDiaries();
 });
+
+/// 回收站日记流 provider（仅软删除记录）。
+final deletedDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.watchDeletedDiaries();
+});

@@ -139,6 +139,50 @@ ORDER BY d.updated_at DESC
           diary: _mapDiaryFromRow(row),
           tags: _parseTagsJson(row.read<String>('tags_json')),
         );
+    }).toList();
+  });
+}
+
+  /// 监听回收站日记列表（仅软删除记录）。
+  Stream<List<DiaryWithTags>> watchDeletedDiaries() {
+    return customSelect(
+      '''
+SELECT
+  d.id,
+  d.diary_id,
+  d.title,
+  d.content,
+  d.content_text,
+  d.cover,
+  d.metadata,
+  d.created_at,
+  d.updated_at,
+  d.is_archived,
+  d.archived_at,
+  d.is_deleted,
+  d.deleted_at,
+  COALESCE(
+    json_group_array(
+      CASE
+        WHEN t.id IS NOT NULL THEN json_object('id', t.id, 'name', t.name, 'color', t.color)
+      END
+    ),
+    '[]'
+  ) AS tags_json
+FROM diaries d
+LEFT JOIN diary_tags dt ON dt.diary_id = d.id
+LEFT JOIN tags t ON t.id = dt.tag_id
+WHERE d.is_deleted = 1
+GROUP BY d.id
+ORDER BY d.deleted_at DESC, d.updated_at DESC
+''',
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map((List<QueryRow> rows) {
+      return rows.map((QueryRow row) {
+        return DiaryWithTags(
+          diary: _mapDiaryFromRow(row),
+          tags: _parseTagsJson(row.read<String>('tags_json')),
+        );
       }).toList();
     });
   }

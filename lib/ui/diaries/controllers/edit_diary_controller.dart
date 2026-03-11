@@ -12,6 +12,38 @@ class EditDiaryController {
   /// 页面状态引用，承载控制器需要读写的输入与临时状态。
   final _EditDiaryPageState _state;
 
+  /// 编辑态封面标签文案：网络图展示 URL，本地图展示文件名。
+  String? get coverLabelForEdit {
+    final cover = _normalizeOptionalText(_state._draftCover);
+    if (cover == null) {
+      return null;
+    }
+    final uri = Uri.tryParse(cover);
+    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
+      return cover;
+    }
+    return path.basename(cover);
+  }
+
+  /// 编辑页定位展示文案，与发布页保持一致（城市 · 街道）。
+  String? get locationLabelForEdit {
+    final township = _normalizeOptionalText(_state._draftLocation);
+    final city = _resolveLocationCity(_state._draftLocationAddressComponent);
+    if (city != null && township != null) {
+      return '$city · $township';
+    }
+    if (city != null) {
+      return city;
+    }
+    if (township != null) {
+      return township;
+    }
+    if (_state._draftLocationFromAuto) {
+      return '暂无街道信息';
+    }
+    return null;
+  }
+
   /// 替换正文控制器时同步管理监听，避免旧控制器泄漏。
   void replaceContentController(quill.QuillController nextController) {
     _state._contentController.removeListener(onCreateDraftInputChanged);
@@ -154,6 +186,11 @@ class EditDiaryController {
     if (_state._saving) {
       return;
     }
+    // 仅编辑模式存在底部面板，且仅在面板发生变更时重算 metadata。
+    if (_state._isEditEntry && _state._panelMetadataDirty) {
+      _state._metadataJson = _buildMetadataJsonForEdit();
+      _state._panelMetadataDirty = false;
+    }
     if (!validateDraft()) {
       return;
     }
@@ -207,6 +244,173 @@ class EditDiaryController {
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._saving = false);
+      }
+    }
+  }
+
+  /// 编辑态封面选择：导入到应用私有目录，替换时清理旧封面。
+  Future<void> pickCoverForEdit() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+    if (result == null || !_state.mounted) {
+      return;
+    }
+
+    final selectedPath = result.files.first.path?.trim();
+    if (selectedPath == null || selectedPath.isEmpty) {
+      await _showHint('未获取到可用的封面路径');
+      return;
+    }
+
+    final previousCover = _normalizeOptionalText(_state._draftCover);
+    try {
+      final importedPath = await DiaryCoverStorageService.importCover(selectedPath);
+      if (!_state.mounted) {
+        await DiaryCoverStorageService.deleteManagedCover(importedPath);
+        return;
+      }
+      _state.setState(() {
+        _state._draftCover = importedPath;
+        _state._panelMetadataDirty = true;
+      });
+      if (previousCover != null && previousCover != importedPath) {
+        await DiaryCoverStorageService.deleteManagedCover(previousCover);
+      }
+    } catch (error) {
+      if (!_state.mounted) {
+        return;
+      }
+      await _showHint('封面导入失败: $error');
+    }
+  }
+
+  /// 编辑态清除封面并删除托管文件（若存在）。
+  Future<void> clearCoverForEdit() async {
+    final coverToDelete = _normalizeOptionalText(_state._draftCover);
+    _state.setState(() {
+      _state._draftCover = null;
+      _state._panelMetadataDirty = true;
+    });
+    await DiaryCoverStorageService.deleteManagedCover(coverToDelete);
+  }
+
+  /// 编辑态内联创建标签，并自动选中新标签。
+  Future<void> createTagInlineForEdit() async {
+    final draft = await showCreateTagDialog(_state.context);
+    if (draft == null) {
+      return;
+    }
+
+    try {
+      final db = _state.ref.read(appDatabaseProvider);
+      final tagId = await db.createTag(name: draft.name, color: draft.color);
+      if (!_state.mounted) {
+        return;
+      }
+      _state.setState(() {
+        _state._selectedTagIds.add(tagId);
+        _state._panelMetadataDirty = true;
+      });
+    } catch (error) {
+      if (!_state.mounted) {
+        return;
+      }
+      await _showHint('标签创建失败: $error');
+    }
+  }
+
+  /// 编辑态定位：获取最新地址并写入面板字段。
+  Future<void> resolveLocationForEdit() async {
+    if (_state._locating) {
+      return;
+    }
+    _state.setState(() => _state._locating = true);
+    try {
+      final service = await _ensureLocationResolverService();
+      if (service == null) {
+        throw const LocationResolveException(
+          type: LocationResolveErrorType.missingApiKey,
+          message: '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
+        );
+      }
+
+      final result = await service.resolveCurrentLocation();
+      if (!_state.mounted) {
+        return;
+      }
+      _state.setState(() {
+        _state._draftLocation = result.township;
+        _state._draftLocationAddressComponent = result.addressComponent;
+        _state._draftLocationLatitude = result.latitude;
+        _state._draftLocationLongitude = result.longitude;
+        _state._draftLocationFromAuto = true;
+        _state._panelMetadataDirty = true;
+      });
+    } on LocationResolveException catch (error) {
+      if (!_state.mounted) {
+        return;
+      }
+      await _showHint(error.userMessage);
+    } catch (error) {
+      if (!_state.mounted) {
+        return;
+      }
+      await _showHint('获取位置失败: $error');
+    } finally {
+      if (_state.mounted) {
+        _state.setState(() => _state._locating = false);
+      }
+    }
+  }
+
+  /// 编辑态天气获取：依赖当前定位坐标。
+  Future<void> resolveWeatherForEdit() async {
+    if (_state._weatherLoading) {
+      return;
+    }
+    if (_state._draftLocationLatitude == null ||
+        _state._draftLocationLongitude == null) {
+      await _showHint('请先获取当前位置');
+      return;
+    }
+
+    _state.setState(() => _state._weatherLoading = true);
+    try {
+      final service = await _ensureWeatherService();
+      if (service == null) {
+        throw const QWeatherException(
+          type: QWeatherErrorType.missingConfig,
+          message: '未检测到和风天气 key，请先配置 qweather.api_key',
+        );
+      }
+
+      final weatherNow = await service.fetchNow(
+        latitude: _state._draftLocationLatitude!,
+        longitude: _state._draftLocationLongitude!,
+      );
+      if (!_state.mounted) {
+        return;
+      }
+      _state.setState(() {
+        _state._weatherController.text = weatherNow.displayText;
+        _state._draftWeather = weatherNow.displayText;
+        _state._panelMetadataDirty = true;
+      });
+    } on QWeatherException catch (error) {
+      if (!_state.mounted) {
+        return;
+      }
+      await _showHint(error.userMessage);
+    } catch (error) {
+      if (!_state.mounted) {
+        return;
+      }
+      await _showHint('获取天气失败: $error');
+    } finally {
+      if (_state.mounted) {
+        _state.setState(() => _state._weatherLoading = false);
       }
     }
   }
@@ -311,11 +515,190 @@ class EditDiaryController {
         _state._draftWeather = result.weather;
         _state._draftMoodEmoji = result.moodEmoji;
         _state._draftEnergyLevel = result.energyLevel;
+        _state._weatherController.text = result.weather ?? '';
+        _state._panelMetadataDirty = true;
         _state._selectedTagIds
           ..clear()
           ..addAll(result.selectedTagIds);
       });
       scheduleCreateDraftAutoSave();
     }
+  }
+
+  /// 从已存 metadata 中恢复发布上下文字段，供编辑页底部面板展示。
+  ///
+  /// 仅在进入编辑页首次加载详情时调用；不触发 setState，避免 build 期重入。
+  void restorePublishContextFromMetadata(String metadataRaw) {
+    try {
+      final decoded = jsonDecode(metadataRaw);
+      if (decoded is! Map<String, dynamic>) {
+        return;
+      }
+      final context = decoded['context'];
+      if (context is! Map<String, dynamic>) {
+        return;
+      }
+      _state._draftLocation = _normalizeOptionalText(context['location']?.toString());
+      _state._draftWeather = _normalizeOptionalText(context['weather']?.toString());
+      _state._draftMoodEmoji = _normalizeOptionalText(context['moodEmoji']?.toString());
+      _state._weatherController.text = _state._draftWeather ?? '';
+
+      final energyRaw = context['energyLevel'];
+      final parsedEnergy = switch (energyRaw) {
+        num value => value.toDouble(),
+        String value => double.tryParse(value),
+        _ => null,
+      };
+      if (parsedEnergy != null) {
+        _state._draftEnergyLevel = parsedEnergy.clamp(1, 5).toDouble();
+      }
+
+      final geo = context['geo'];
+      if (geo is Map<String, dynamic>) {
+        _state._draftLocationLatitude = (geo['latitude'] as num?)?.toDouble();
+        _state._draftLocationLongitude = (geo['longitude'] as num?)?.toDouble();
+        _state._draftLocationFromAuto = true;
+        _state._draftLocationAddressComponent = _parseObjectMap(
+          geo['addressComponent'],
+        );
+      }
+    } catch (_) {
+      // metadata 非标准结构时不阻断编辑流程，保持默认空态。
+    }
+  }
+
+  String _buildMetadataJsonForEdit({DateTime? generatedAt}) {
+    return PublishMetadataComposer.compose(
+      contentText: _state._currentContentText,
+      selectedTagIds: _state._selectedTagIds,
+      hasCover: _normalizeOptionalText(_state._draftCover) != null,
+      deviceInfo: _buildDeviceMetadata(),
+      generatedAt: generatedAt ?? DateTime.now(),
+      location: locationLabelForEdit,
+      locationAddressComponent: _state._draftLocationAddressComponent,
+      locationLatitude: _state._draftLocationLatitude,
+      locationLongitude: _state._draftLocationLongitude,
+      locationFromAuto: _state._draftLocationFromAuto,
+      weather: _normalizeOptionalText(_state._weatherController.text),
+      moodEmoji: _normalizeOptionalText(_state._draftMoodEmoji),
+      energyLevel: _state._draftEnergyLevel,
+    );
+  }
+
+  Map<String, Object?> _buildDeviceMetadata() {
+    final dispatcher = PlatformDispatcher.instance;
+    return <String, Object?>{
+      'platform': defaultTargetPlatform.name,
+      'locale': dispatcher.locale.toLanguageTag(),
+      'brightness': dispatcher.platformBrightness.name,
+    };
+  }
+
+  Future<LocationResolverService?> _ensureLocationResolverService() async {
+    if (_state._locationResolverService != null) {
+      return _state._locationResolverService;
+    }
+    final apiKey = await AMapConfigChannel.getAmapWebApiKey();
+    if (apiKey == null || apiKey.isEmpty) {
+      return null;
+    }
+    _state._locationResolverService = LocationResolverService(webApiKey: apiKey);
+    return _state._locationResolverService;
+  }
+
+  Future<QWeatherWeatherService?> _ensureWeatherService() async {
+    if (_state._weatherService != null) {
+      return _state._weatherService;
+    }
+    final apiKey = await AMapConfigChannel.getQWeatherApiKey();
+    final credentialId = await AMapConfigChannel.getQWeatherCredentialId();
+    final apiHost = await AMapConfigChannel.getQWeatherApiHost();
+    if (apiKey == null || apiKey.trim().isEmpty) {
+      return null;
+    }
+    final config = QWeatherConfig(
+      apiKey: apiKey,
+      credentialId: credentialId,
+      apiHost: apiHost,
+    );
+    _state._weatherService = QWeatherWeatherService(config: config);
+    return _state._weatherService;
+  }
+
+  Future<void> _showHint(String message) async {
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(content: Text(message)),
+    );
+  }
+
+  String? _normalizeOptionalText(String? raw) {
+    final normalized = raw?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
+  }
+
+  String? _resolveLocationCity(Map<String, Object?>? addressComponent) {
+    if (addressComponent == null || addressComponent.isEmpty) {
+      return null;
+    }
+    final city = _normalizeAddressComponentText(addressComponent['city']);
+    if (city != null) {
+      return city;
+    }
+    return _normalizeAddressComponentText(addressComponent['province']);
+  }
+
+  String? _normalizeAddressComponentText(Object? raw) {
+    if (raw is String) {
+      return _normalizeOptionalText(raw);
+    }
+    if (raw is List) {
+      for (final item in raw) {
+        final normalized = _normalizeAddressComponentText(item);
+        if (normalized != null) {
+          return normalized;
+        }
+      }
+    }
+    return null;
+  }
+
+  Map<String, Object?>? _parseObjectMap(Object? raw) {
+    if (raw is! Map) {
+      return null;
+    }
+    final normalized = <String, Object?>{};
+    for (final entry in raw.entries) {
+      final key = entry.key?.toString();
+      if (key == null || key.isEmpty) {
+        continue;
+      }
+      normalized[key] = _normalizeJsonValue(entry.value);
+    }
+    return normalized;
+  }
+
+  Object? _normalizeJsonValue(Object? value) {
+    if (value == null || value is num || value is bool || value is String) {
+      return value;
+    }
+    if (value is Map) {
+      final nested = <String, Object?>{};
+      for (final entry in value.entries) {
+        final key = entry.key?.toString();
+        if (key == null || key.isEmpty) {
+          continue;
+        }
+        nested[key] = _normalizeJsonValue(entry.value);
+      }
+      return nested;
+    }
+    if (value is List) {
+      return value.map(_normalizeJsonValue).toList(growable: false);
+    }
+    return value.toString();
   }
 }

@@ -59,6 +59,18 @@ class PublishPanelCoordinator {
     );
   }
 
+  /// 展开到当前页面的最大状态。
+  Future<void> expandToMax() async {
+    if (!sheetController.hasClient) {
+      return;
+    }
+    await sheetController.animateTo(
+      const SheetOffset(1),
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   /// 打开标签管理子页。
   Future<void> openTagPage() async {
     if (contentPageIndex == 1 || !contentPageController.hasClients) {

@@ -1,18 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:path/path.dart' as path;
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
+import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/diary_cover_storage_service.dart';
+import 'package:node_diary/core/services/location_resolver_service.dart';
+import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
+import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 part '../controllers/edit_diary_controller.dart';
@@ -40,11 +50,14 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
+  final _weatherController = TextEditingController();
   String? _draftCover;
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
+  final PublishDiaryGlassPanelController _editPanelController =
+      PublishDiaryGlassPanelController();
 
   // ==================== 发布上下文草稿字段 ====================
   final Set<int> _selectedTagIds = <int>{};
@@ -58,6 +71,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String? _draftWeather;
   String? _draftMoodEmoji;
   double? _draftEnergyLevel;
+  bool _panelMetadataDirty = false;
+  double _editPanelExpandProgress = 0;
+  bool _locating = false;
+  bool _weatherLoading = false;
+  LocationResolverService? _locationResolverService;
+  QWeatherWeatherService? _weatherService;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
@@ -97,6 +116,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _titleController.dispose();
+    _weatherController.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
     _contentScrollController.dispose();
@@ -115,6 +135,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
+  bool get _isEditEntry =>
+      widget.diaryId != null && widget.entryMode == EditDiaryEntryMode.edit;
 
   /// 汇总当前编辑态数据，形成可持久化的新建草稿对象。
   NewDiaryDraft get _currentCreateDraft {
@@ -178,7 +200,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   /// 主编辑区域：
   /// - 标题与正文放在同一个滚动容器内，保证滚动体验连续；
   /// - 键盘弹起时保持焦点，不因轻微滚动自动收起键盘。
-  Widget _buildEditor(BuildContext context) {
+  Widget _buildEditor(
+    BuildContext context, {
+    required double bottomSpacer,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -188,7 +213,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           controller: _contentScrollController,
           // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-          padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+          padding: EdgeInsets.fromLTRB(8, 0, 8, bottomSpacer),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: colorScheme.surface,
@@ -232,7 +257,22 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final showFloatingToolbar = _isMobileRuntime && keyboardInset > 0;
+    final showEditMetaPanel = _isEditEntry;
+    final editPanelSpacer =
+        (showEditMetaPanel && !showFloatingToolbar)
+            ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
+            : 16.0;
     final settingsAsync = ref.watch(settingsServiceProvider);
+    final tagsAsync = ref.watch(tagListProvider);
+
+    var tags = const <Tag>[];
+    var tagsLoading = false;
+    String? tagsError;
+    tagsAsync.when(
+      data: (data) => tags = data,
+      loading: () => tagsLoading = true,
+      error: (error, stackTrace) => tagsError = '$error',
+    );
 
     final detailAsync =
         widget.diaryId == null
@@ -292,6 +332,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           } catch (_) {
             _metadataJson = detail.diary.metadata;
           }
+          _controller.restorePublishContextFromMetadata(detail.diary.metadata);
           _selectedTagIds
             ..clear()
             ..addAll(detail.tags.map((Tag t) => t.id));
@@ -334,8 +375,75 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     0,
                     showFloatingToolbar ? 68 : 0,
                   ),
-                  child: _buildEditor(context),
+                  child: _buildEditor(
+                    context,
+                    bottomSpacer: editPanelSpacer,
+                  ),
                 ),
+                if (showEditMetaPanel && !showFloatingToolbar)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 0,
+                    child: PublishDiaryGlassPanel(
+                      controller: _editPanelController,
+                      saving: _saving,
+                      bottomInset: keyboardInset,
+                      hasCover: _draftCover?.trim().isNotEmpty == true,
+                      coverLabel: _controller.coverLabelForEdit,
+                      locating: _locating,
+                      weatherLoading: _weatherLoading,
+                      locationLabel: _controller.locationLabelForEdit,
+                      weatherController: _weatherController,
+                      moodEmoji: _draftMoodEmoji,
+                      energyLevel: _draftEnergyLevel ?? 4,
+                      tags: tags,
+                      tagsLoading: tagsLoading,
+                      tagsError: tagsError,
+                      selectedTagIds: _selectedTagIds,
+                      onProgressChanged: (progress) {
+                        if (!mounted) {
+                          return;
+                        }
+                        if ((progress - _editPanelExpandProgress).abs() < 0.0001) {
+                          return;
+                        }
+                        setState(() => _editPanelExpandProgress = progress);
+                      },
+                      onPickCover: _controller.pickCoverForEdit,
+                      onClearCover:
+                          _draftCover?.trim().isNotEmpty == true
+                              ? _controller.clearCoverForEdit
+                              : null,
+                      onCreateTag: _controller.createTagInlineForEdit,
+                      onResolveLocation: _controller.resolveLocationForEdit,
+                      onResolveWeather: _controller.resolveWeatherForEdit,
+                      onToggleTag: (tagId, selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedTagIds.add(tagId);
+                          } else {
+                            _selectedTagIds.remove(tagId);
+                          }
+                          _panelMetadataDirty = true;
+                        });
+                      },
+                      onMoodChanged: (nextMood) {
+                        setState(() {
+                          _draftMoodEmoji = nextMood;
+                          _panelMetadataDirty = true;
+                        });
+                      },
+                      onEnergyChanged: (nextValue) {
+                        setState(() {
+                          _draftEnergyLevel = nextValue.clamp(1, 5).toDouble();
+                          _panelMetadataDirty = true;
+                        });
+                      },
+                      onPublish: _controller.save,
+                      actionLabel: '保存日记',
+                    ),
+                  ),
                 if (showFloatingToolbar)
                   Positioned(
                     left: 12,

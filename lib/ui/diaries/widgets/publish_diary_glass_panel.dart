@@ -15,7 +15,7 @@ import 'energy_battery_indicator.dart';
 ///
 /// 交互目标：
 /// - 收起态更窄、位置更高；
-/// - 仅支持上划手势展开；
+/// - 支持上划与点击展开；
 /// - 上划过程中尺寸连续变化，松手后自然吸附到展开/收起状态。
 class PublishDiaryGlassPanel extends StatefulWidget {
   const PublishDiaryGlassPanel({
@@ -43,6 +43,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.onMoodChanged,
     required this.onEnergyChanged,
     required this.onPublish,
+    this.actionLabel = '发表日记',
     this.onProgressChanged,
     this.onClearCover,
   });
@@ -84,6 +85,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final ValueChanged<String?> onMoodChanged;
   final ValueChanged<double> onEnergyChanged;
   final VoidCallback onPublish;
+  final String actionLabel;
   final ValueChanged<double>? onProgressChanged;
   final VoidCallback? onClearCover;
 
@@ -125,7 +127,7 @@ class PublishDiaryGlassPanelController {
 
 class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   // ==================== 尺寸参数（收起/展开/布局） ====================
-  static const double _collapsedHeight = 64;
+  static const double _collapsedHeight = 56;
   static const double _mainExpandedHeight = 470;
   static const double _tagExpandedHeight = 540;
   static const double _collapsedHorizontalInset = 40;
@@ -175,6 +177,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
 
   Future<void> _collapseToMin() async {
     await _panelCoordinator.collapseToMin();
+  }
+
+  Future<void> _expandToMax() async {
+    await _panelCoordinator.expandToMax();
   }
 
   Future<void> _openTagPage() async {
@@ -478,19 +484,32 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final title = isCollapsedVisual ? '上划展开' : '下滑收起';
     return SizedBox(
       height: _collapsedHeight,
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            FaIcon(icon, size: 14),
-            const SizedBox(width: 10),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            if (isCollapsedVisual) {
+              _expandToMax();
+              return;
+            }
+            _collapseToMin();
+          },
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                FaIcon(icon, size: 14),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -956,7 +975,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       child: FilledButton.icon(
         onPressed: widget.saving ? null : widget.onPublish,
         icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
-        label: Text(widget.saving ? '发布中...' : '发表日记'),
+        label: Text(widget.saving ? '发布中...' : widget.actionLabel),
       ),
     );
   }

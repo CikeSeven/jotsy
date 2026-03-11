@@ -6,6 +6,7 @@ import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
 import 'package:node_diary/ui/settings/sections/settings_tag_management_section.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 
+import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 
 /// 设置页：
@@ -22,11 +23,19 @@ class SettingsPage extends ConsumerWidget {
     final db = ref.watch(appDatabaseProvider);
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
+    final listBottomPadding =
+        MediaQuery.paddingOf(context).bottom +
+        GlassBottomNav.navHeight +
+        GlassBottomNav.navBottomInset +
+        12;
 
     return Stack(
       children: [
         ListView(
-          padding: EdgeInsets.only(top: headerHeight),
+          padding: EdgeInsets.only(
+            top: headerHeight,
+            bottom: listBottomPadding,
+          ),
           children: <Widget>[
             const ListTile(title: Text('主题模式')),
             SettingsThemeSection(

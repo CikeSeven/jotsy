@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +12,7 @@ import '../../../core/database/content_codec.dart';
 import '../../../core/services/app_service.dart';
 import '../providers/diary_detail_provider.dart';
 import '../widgets/diary_mobile_toolbar.dart';
+import '../widgets/publish_diary_cover_sliver.dart';
 import 'edit_diary_page.dart';
 
 /// 预览页返回结果。
@@ -289,51 +289,6 @@ $content
     return null;
   }
 
-  Widget _buildCoverSection(String coverSource) {
-    final uri = Uri.tryParse(coverSource.trim());
-    final isNetwork = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-    final image = isNetwork
-        ? Image.network(
-            coverSource,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            errorBuilder: (_, __, ___) => _buildCoverFallback(),
-          )
-        : Image.file(
-            File(coverSource),
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-            errorBuilder: (_, __, ___) => _buildCoverFallback(),
-          );
-
-    return ClipRRect(
-      borderRadius: const BorderRadius.only(
-        bottomLeft: Radius.circular(20),
-        bottomRight: Radius.circular(20),
-      ),
-      child: SizedBox(
-        height: 230,
-        width: double.infinity,
-        child: image,
-      ),
-    );
-  }
-
-  Widget _buildCoverFallback() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return ColoredBox(
-      color: colorScheme.surfaceContainerHighest,
-      child: Center(
-        child: Text(
-          '封面加载失败',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-      ),
-    );
-  }
-
   List<_MetaItem> _buildMetaItems(DiaryWithTags detail) {
     final items = <_MetaItem>[
       _MetaItem(
@@ -462,7 +417,7 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text('笔记'),
+            title: const Text('日记'),
           ),
           body: const Center(child: CircularProgressIndicator()),
         );
@@ -471,7 +426,7 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text('笔记'),
+            title: const Text('日记'),
           ),
           body: Center(child: Text('加载失败: $error')),
         );
@@ -494,7 +449,7 @@ $content
             return Scaffold(
               appBar: AppBar(
                 centerTitle: true,
-                title: const Text('笔记'),
+                title: const Text('日记'),
               ),
               body: const Center(child: Text('日记已不存在，正在返回...')),
             );
@@ -503,7 +458,7 @@ $content
           return Scaffold(
             appBar: AppBar(
               centerTitle: true,
-              title: const Text('笔记'),
+              title: const Text('日记'),
             ),
             body: const Center(child: Text('日记不存在')),
           );
@@ -517,7 +472,7 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text('笔记'),
+            title: const Text('日记'),
             actions: <Widget>[
               IconButton(
                 tooltip: '更多',
@@ -531,8 +486,11 @@ $content
             child: CustomScrollView(
               slivers: <Widget>[
                 if (coverSource != null)
-                  SliverToBoxAdapter(
-                    child: _buildCoverSection(coverSource),
+                  PublishDiaryCoverSliver(
+                    cover: coverSource,
+                    maxExtentHeight: 300,
+                    padding: EdgeInsets.zero,
+                    borderRadius: BorderRadius.zero,
                   ),
                 SliverToBoxAdapter(
                   child: Padding(

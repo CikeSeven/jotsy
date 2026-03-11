@@ -10,10 +10,14 @@ class PublishDiaryCoverSliver extends StatelessWidget {
     super.key,
     required this.cover,
     this.maxExtentHeight = 220,
+    this.padding = const EdgeInsets.fromLTRB(16, 12, 16, 8),
+    this.borderRadius = const BorderRadius.all(Radius.circular(20)),
   });
 
   final String cover;
   final double maxExtentHeight;
+  final EdgeInsetsGeometry padding;
+  final BorderRadiusGeometry borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +26,8 @@ class PublishDiaryCoverSliver extends StatelessWidget {
       delegate: _PublishDiaryCoverHeaderDelegate(
         cover: cover,
         maxExtentHeight: maxExtentHeight,
+        padding: padding,
+        borderRadius: borderRadius,
       ),
     );
   }
@@ -31,10 +37,14 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
   const _PublishDiaryCoverHeaderDelegate({
     required this.cover,
     required this.maxExtentHeight,
+    required this.padding,
+    required this.borderRadius,
   });
 
   final String cover;
   final double maxExtentHeight;
+  final EdgeInsetsGeometry padding;
+  final BorderRadiusGeometry borderRadius;
 
   @override
   double get minExtent => 0;
@@ -57,7 +67,7 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
             .toDouble();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: padding,
       child: Opacity(
         opacity: collapseProgress,
         child: Transform.scale(
@@ -65,7 +75,7 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
           scale: 0.96 + (collapseProgress * 0.04),
           alignment: Alignment.topCenter,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: borderRadius,
             child: DecoratedBox(
               decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
               child: _CoverImage(cover: cover),
@@ -79,7 +89,9 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   bool shouldRebuild(covariant _PublishDiaryCoverHeaderDelegate oldDelegate) {
     return oldDelegate.cover != cover ||
-        oldDelegate.maxExtentHeight != maxExtentHeight;
+        oldDelegate.maxExtentHeight != maxExtentHeight ||
+        oldDelegate.padding != padding ||
+        oldDelegate.borderRadius != borderRadius;
   }
 }
 
@@ -125,21 +137,13 @@ class _CoverFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: <Color>[
-            colorScheme.primaryContainer.withValues(alpha: 0.35),
-            colorScheme.secondaryContainer.withValues(alpha: 0.25),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return ColoredBox(
+      color: colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Text(
+          '封面加载失败',
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
-      ),
-      child: Text(
-        '封面加载失败',
-        style: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }

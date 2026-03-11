@@ -524,13 +524,12 @@ $content
     final editedText =
         hasBeenEdited ? '最后编辑于 ${_formatPreciseTime(diary.updatedAt)}' : null;
 
+    // 这里不能只看 contentText（纯文本镜像），否则“仅图片正文”会被误判为空。
+    // 统一按 Quill 文档是否存在可见内容判断，图片/视频/嵌入都属于正文内容。
+    final hasVisibleContent = diaryDocumentHasVisibleContent(controller.document);
     final contentBody =
-        detail.diary.contentText.trim().isEmpty
-            ? Text(
-              '今天还没有写下正文',
-              style: Theme.of(context).textTheme.bodyLarge,
-            )
-            : quill.QuillEditor.basic(
+        hasVisibleContent
+            ? quill.QuillEditor.basic(
               controller: controller,
               config: quill.QuillEditorConfig(
                 autoFocus: false,
@@ -538,6 +537,10 @@ $content
                 padding: EdgeInsets.zero,
                 embedBuilders: buildDiaryQuillEmbedBuilders(),
               ),
+            )
+            : Text(
+              '今天还没有写下正文',
+              style: Theme.of(context).textTheme.bodyLarge,
             );
 
     if (editedText == null) {

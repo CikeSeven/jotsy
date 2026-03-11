@@ -11,6 +11,7 @@ import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 
 import '../../widgets/glass_bottom_nav.dart';
+part '../controllers/home_page_controller.dart';
 
 /// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
 class HomePage extends StatefulWidget {
@@ -28,92 +29,32 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const _animDuration = Duration(milliseconds: 270);
-  static const _animCurve = Curves.easeOutCirc;
+  // SnackBar 左右留白，统一 Home 内提示视觉。
   static const double _snackBarSideInset = 16;
 
-  late final PageController _pageController;
-  String? _shownStartupNotice;
+  // 页面切换状态。
   int _currentIndex = 0;
   double _pageProgress = 0;
+  String? _shownStartupNotice;
+  late final HomePageController _controller;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _currentIndex);
-    _pageController.addListener(_onPageScroll);
-    _showStartupNoticeIfNeeded();
+    _controller = HomePageController(this);
+    _controller.init();
   }
 
   @override
   void didUpdateWidget(covariant HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.startupNotice != widget.startupNotice) {
-      _showStartupNoticeIfNeeded();
-    }
+    _controller.handleWidgetUpdate(oldWidget);
   }
 
   @override
   void dispose() {
-    _pageController.removeListener(_onPageScroll);
-    _pageController.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _onPageScroll() {
-    final value = _pageController.page ?? _currentIndex.toDouble();
-    if ((value - _pageProgress).abs() < 0.0001) {
-      return;
-    }
-    setState(() {
-      _pageProgress = value;
-    });
-  }
-
-  void _onTap(int index) {
-    if (index == _currentIndex) {
-      return;
-    }
-    _pageController.animateToPage(
-      index,
-      duration: _animDuration,
-      curve: _animCurve,
-    );
-  }
-
-  void _showStartupNoticeIfNeeded() {
-    final notice = widget.startupNotice?.trim();
-    if (notice == null || notice.isEmpty || notice == _shownStartupNotice) {
-      return;
-    }
-    _shownStartupNotice = notice;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      unawaited(() async {
-        await HomeHintVisibilityScope.showTrackedSnackBar(
-          context: context,
-          snackBar: SnackBar(
-            content: Text(notice),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }());
-    });
-  }
-
-  Widget _buildPageView(List<Widget> pages) {
-    return PageView(
-      controller: _pageController,
-      physics: const NeverScrollableScrollPhysics(),
-      onPageChanged: (index) {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      children: pages,
-    );
   }
 
   @override
@@ -196,12 +137,25 @@ class _HomePageState extends State<HomePage> {
                 items: navItems,
                 selectedIndex: _currentIndex,
                 pageProgress: _pageProgress,
-                onTap: _onTap,
+                onTap: _controller.onTap,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPageView(List<Widget> pages) {
+    return PageView(
+      controller: _controller.pageController,
+      physics: const NeverScrollableScrollPhysics(),
+      onPageChanged: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      children: pages,
     );
   }
 }

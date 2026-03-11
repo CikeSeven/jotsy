@@ -21,6 +21,8 @@ class TagManagementPage extends ConsumerStatefulWidget {
 class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   bool _savingOrder = false;
   bool _operating = false;
+  List<Tag> _displayTags = <Tag>[];
+  bool _displayTagsInitialized = false;
 
   Future<void> _createTag() async {
     if (_operating) {
@@ -124,7 +126,11 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     final moved = reordered.removeAt(oldIndex);
     reordered.insert(adjustedNewIndex, moved);
 
-    setState(() => _savingOrder = true);
+    setState(() {
+      _displayTags = reordered;
+      _displayTagsInitialized = true;
+      _savingOrder = true;
+    });
     try {
       final settings = await ref.read(settingsServiceProvider.future);
       await settings.setTagOrderRaw(
@@ -176,6 +182,43 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     );
   }
 
+  /// 同步流式标签数据到页面可视列表。
+  ///
+  /// - 常规状态：跟随 provider 输出；
+  /// - 排序保存中：保留当前可视顺序，避免拖拽落地后瞬间回弹闪动。
+  void _syncDisplayTags(List<Tag> incomingTags) {
+    if (!_displayTagsInitialized) {
+      _displayTags = List<Tag>.from(incomingTags);
+      _displayTagsInitialized = true;
+      return;
+    }
+
+    if (!_savingOrder) {
+      _displayTags = List<Tag>.from(incomingTags);
+      return;
+    }
+
+    final incomingById = <int, Tag>{
+      for (final tag in incomingTags) tag.id: tag,
+    };
+    final merged = <Tag>[];
+    final seen = <int>{};
+
+    for (final old in _displayTags) {
+      final updated = incomingById[old.id];
+      if (updated == null || !seen.add(updated.id)) {
+        continue;
+      }
+      merged.add(updated);
+    }
+    for (final tag in incomingTags) {
+      if (seen.add(tag.id)) {
+        merged.add(tag);
+      }
+    }
+    _displayTags = merged;
+  }
+
   @override
   Widget build(BuildContext context) {
     final tagsAsync = ref.watch(tagListProvider);
@@ -198,7 +241,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ),
       body: tagsAsync.when(
         data: (tags) {
-          if (tags.isEmpty) {
+          _syncDisplayTags(tags);
+          final displayTags = _displayTags;
+          if (displayTags.isEmpty) {
             return Center(
               child: TextButton(
                 onPressed: _operating ? null : _createTag,
@@ -210,29 +255,26 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
           return ReorderableListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 12),
             buildDefaultDragHandles: false,
-            itemCount: tags.length,
+            itemCount: displayTags.length,
             onReorder: (oldIndex, newIndex) {
-              _reorderTags(tags, oldIndex, newIndex);
+              _reorderTags(displayTags, oldIndex, newIndex);
             },
             itemBuilder: (BuildContext context, int index) {
-              final tag = tags[index];
+              final tag = displayTags[index];
               return ListTile(
                 key: ValueKey<int>(tag.id),
+                onTap: _operating ? null : () => _editTag(tag),
                 leading: CircleAvatar(backgroundColor: Color(tag.color)),
                 title: Text(tag.name),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     IconButton(
-                      tooltip: '编辑标签',
-                      onPressed: _operating ? null : () => _editTag(tag),
-                      icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 14),
-                    ),
-                    IconButton(
                       tooltip: '删除标签',
                       onPressed: _operating ? null : () => _deleteTag(tag),
                       icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
                     ),
+                    const SizedBox(width: 12),
                     ReorderableDragStartListener(
                       index: index,
                       child: const _TagDragHandle(),

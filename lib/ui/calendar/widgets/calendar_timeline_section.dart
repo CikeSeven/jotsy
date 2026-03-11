@@ -219,14 +219,15 @@ class CalendarTimelineSection extends StatelessWidget {
   }
 
   /// 时间线右侧封面缩略图来源：
-  /// - 仅使用 diary.cover 字段；
-  /// - 未设置封面时不展示缩略图。
+  /// 1) diary.cover；
+  /// 2) 正文 Delta 中第一张图片；
+  /// 3) 都不存在时不展示缩略图。
   String? _resolveCover(Diary diary) {
     final normalizedCover = diary.cover?.trim();
-    if (normalizedCover == null || normalizedCover.isEmpty) {
-      return null;
+    if (normalizedCover != null && normalizedCover.isNotEmpty) {
+      return normalizedCover;
     }
-    return normalizedCover;
+    return _extractFirstImageFromContent(diary.content);
   }
 
   /// 构建时间线条目右侧的小封面缩略图（圆角）。
@@ -257,6 +258,75 @@ class CalendarTimelineSection extends StatelessWidget {
         child: image,
       ),
     );
+  }
+
+  /// 从 Quill Delta JSON 中提取第一张图片地址。
+  String? _extractFirstImageFromContent(String contentJson) {
+    final normalized = contentJson.trim();
+    if (normalized.isEmpty) {
+      return null;
+    }
+
+    try {
+      final decoded = jsonDecode(normalized);
+      return _extractImageFromNode(decoded);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// 递归扫描 Delta 节点，兼容 list/map 嵌套和 image embed 写法。
+  String? _extractImageFromNode(Object? node) {
+    if (node is List) {
+      for (final item in node) {
+        final image = _extractImageFromNode(item);
+        if (image != null) {
+          return image;
+        }
+      }
+      return null;
+    }
+
+    if (node is! Map) {
+      return null;
+    }
+
+    final insert = node['insert'];
+    if (insert is Map) {
+      final image = insert['image'];
+      if (image is String && image.trim().isNotEmpty) {
+        return image.trim();
+      }
+    }
+
+    final type = node['type'];
+    if (type == 'image') {
+      final attributes = node['attributes'];
+      if (attributes is Map) {
+        final url = attributes['url'];
+        if (url is String && url.trim().isNotEmpty) {
+          return url.trim();
+        }
+      }
+    }
+
+    final root = node['root'];
+    if (root != null) {
+      final image = _extractImageFromNode(root);
+      if (image != null) {
+        return image;
+      }
+    }
+
+    final children = node['children'];
+    if (children != null) {
+      final image = _extractImageFromNode(children);
+      if (image != null) {
+        return image;
+      }
+    }
+
+    return null;
   }
 
   /// 从 metadata.context 中提取 moodEmoji 作为时间线节点。

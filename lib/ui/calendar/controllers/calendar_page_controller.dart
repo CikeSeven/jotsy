@@ -88,9 +88,62 @@ class CalendarPageController {
 
   /// 打开日记预览页（与主页列表行为保持一致）。
   void openPreview(String diaryId) {
-    Navigator.of(_state.context).push(
-      MaterialPageRoute<void>(
+    Navigator.of(_state.context)
+        .push<DiaryPreviewResult?>(
+      MaterialPageRoute<DiaryPreviewResult?>(
         builder: (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+      ),
+    )
+        .then((DiaryPreviewResult? result) async {
+      if (!_state.mounted || result != DiaryPreviewResult.deleted) {
+        return;
+      }
+
+      final undoRequested = await _showDeleteUndoSnackBar();
+      if (!_state.mounted || !undoRequested) {
+        return;
+      }
+
+      try {
+        final db = _state.ref.read(appDatabaseProvider);
+        await db.restoreDiary(diaryId, touchUpdatedAt: false);
+        if (!_state.mounted) {
+          return;
+        }
+        await _showInfoSnackBar('已恢复删除的日记');
+      } catch (_) {
+        if (!_state.mounted) {
+          return;
+        }
+        await _showInfoSnackBar('恢复失败，请重试');
+      }
+    });
+  }
+
+  /// 显示“删除成功 + 撤销”提示，并等待用户动作结果。
+  Future<bool> _showDeleteUndoSnackBar() async {
+    final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(
+        content: const Text('已删除日记'),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: '撤销',
+          onPressed: () {},
+          textColor: Theme.of(_state.context).colorScheme.onPrimary,
+        ),
+      ),
+    );
+    return reason == SnackBarClosedReason.action;
+  }
+
+  /// 统一轻提示出口，避免控制器中散落重复 SnackBar 构造。
+  Future<void> _showInfoSnackBar(String message) async {
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../../../core/services/app_service.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
+import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/glass_bottom_nav.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../widgets/calendar_day_empty_state.dart';

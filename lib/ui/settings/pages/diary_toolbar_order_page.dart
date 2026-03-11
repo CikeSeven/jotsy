@@ -134,7 +134,14 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
                     : null,
             trailing: ReorderableDragStartListener(
               index: index,
-              child: const _TripleBarDragHandle(),
+              child: const SizedBox(
+                width: 44,
+                height: 40,
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: Center(child: _TripleBarDragHandle()),
+                ),
+              ),
             ),
           );
         },

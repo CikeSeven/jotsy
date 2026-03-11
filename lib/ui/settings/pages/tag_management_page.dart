@@ -139,7 +139,6 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint('保存标签顺序失败: $error');
-    } finally {
       if (mounted) {
         setState(() => _savingOrder = false);
       }
@@ -217,6 +216,24 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       }
     }
     _displayTags = merged;
+
+    // 仅当 provider 层顺序已经与当前可视顺序一致时，才结束“排序保存中”状态。
+    // 这样可以避免拖拽放下后出现“先回弹旧顺序，再跳回新顺序”的闪动。
+    if (_isSameTagOrder(incomingTags, _displayTags)) {
+      _savingOrder = false;
+    }
+  }
+
+  bool _isSameTagOrder(List<Tag> a, List<Tag> b) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].id != b[i].id) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @override
@@ -277,7 +294,14 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
                     const SizedBox(width: 12),
                     ReorderableDragStartListener(
                       index: index,
-                      child: const _TagDragHandle(),
+                      child: const SizedBox(
+                        width: 44,
+                        height: 40,
+                        child: ColoredBox(
+                          color: Colors.transparent,
+                          child: Center(child: _TagDragHandle()),
+                        ),
+                      ),
                     ),
                   ],
                 ),

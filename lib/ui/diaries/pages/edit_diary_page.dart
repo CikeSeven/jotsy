@@ -11,17 +11,11 @@ import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 part '../controllers/edit_diary_controller.dart';
-
-/// 单条日记详情 provider（含标签聚合）。
-final diaryDetailProvider = FutureProvider.autoDispose
-    .family<DiaryWithTags?, String>((Ref ref, String diaryId) {
-      final db = ref.watch(appDatabaseProvider);
-      return db.getDiaryWithTagsByDiaryId(diaryId);
-    });
 
 /// 日记编辑页。
 ///

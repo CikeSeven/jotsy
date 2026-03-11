@@ -324,7 +324,7 @@ class DiariesListSection extends StatelessWidget {
 
         // 统一点击交互：
         // - 选择模式下点击切换选中；
-        // - 普通模式下点击进入编辑；
+        // - 普通模式下点击进入详情（当前为预览页）；
         // - 长按强制选中。
         final item = ClipRRect(
           borderRadius: BorderRadius.circular(itemRadius),

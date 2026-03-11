@@ -11,6 +11,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
+import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
@@ -30,7 +31,7 @@ part '../controllers/diaries_page_controller.dart';
 
 /// 日记列表页。
 ///
-/// 提供关键词搜索、标签筛选、列表展示与进入编辑页能力。
+/// 提供关键词搜索、标签筛选、列表展示与进入预览页能力。
 
 class DiariesPage extends ConsumerStatefulWidget {
   const DiariesPage({
@@ -324,9 +325,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                                     .openCreateEditorWithDraftPrompt(),
                                               ),
                                           onOpenEditor: (diaryId) {
-                                            _controller.openEditor(
-                                              diaryId: diaryId,
-                                            );
+                                            _controller.openPreview(diaryId);
                                           },
                                           onToggleSelection:
                                               (noteId, forceSelect) =>

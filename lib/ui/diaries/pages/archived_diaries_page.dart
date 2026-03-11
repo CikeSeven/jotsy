@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
@@ -17,7 +17,7 @@ part '../controllers/archived_diaries_controller.dart';
 /// 归档日记页面。
 ///
 /// 支持：
-/// - 点击进入编辑页；
+/// - 点击进入预览页；
 /// - 长按进入选择模式；
 /// - 批量取消归档与删除；
 /// - 列表左滑单条取消归档。
@@ -122,7 +122,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                     selectedDiaryIds: _selectedDiaryIds,
                     isSelectionMode: _isSelectionMode,
                     onCreate: _controller.noopCreate,
-                    onOpenEditor: _controller.openEditor,
+                    onOpenEditor: _controller.openPreview,
                     onToggleSelection: _controller.toggleSelection,
                     onArchiveDiary:
                         (diaryId) =>

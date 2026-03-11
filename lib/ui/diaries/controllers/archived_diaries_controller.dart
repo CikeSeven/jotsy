@@ -253,13 +253,24 @@ class ArchivedDiariesController {
     await showInfoSnackBar('已删除 ${targetIds.length} 条日记');
   }
 
-  void openEditor(String diaryId) {
-    Navigator.of(_state.context).push(
-      MaterialPageRoute<void>(
-        builder:
-            (BuildContext context) =>
-                EditDiaryPage(diaryId: diaryId, entryMode: EditDiaryEntryMode.edit),
-      ),
-    );
+  /// 打开预览页（归档列表默认入口）。
+  ///
+  /// 若在预览页中删除，返回后补一条轻提示反馈。
+  void openPreview(String diaryId) {
+    Navigator.of(_state.context)
+        .push<DiaryPreviewResult?>(
+          MaterialPageRoute<DiaryPreviewResult?>(
+            builder:
+                (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+          ),
+        )
+        .then((DiaryPreviewResult? result) async {
+          if (!_state.mounted) {
+            return;
+          }
+          if (result == DiaryPreviewResult.deleted) {
+            await showInfoSnackBar('已删除日记');
+          }
+        });
   }
 }

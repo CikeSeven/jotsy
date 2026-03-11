@@ -227,6 +227,36 @@ class DiariesPageController {
     );
   }
 
+  /// 打开日记预览页（列表默认入口）。
+  ///
+  /// 预览页内可能触发删除或编辑，返回后统一做一次列表刷新与提示同步。
+  void openPreview(String diaryId) {
+    _state._searchFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    unawaited(
+      Navigator.of(_state.context)
+          .push<DiaryPreviewResult?>(
+            MaterialPageRoute<DiaryPreviewResult?>(
+              builder: (BuildContext context) {
+                return DiaryPreviewPage(diaryId: diaryId);
+              },
+            ),
+          )
+          .then((DiaryPreviewResult? result) async {
+            if (!_state.mounted) {
+              return;
+            }
+            refreshAfterEditorReturn();
+            if (result == DiaryPreviewResult.deleted) {
+              await feedback.showInfoSnackBar('已删除日记');
+            }
+            _state._searchFocusNode.unfocus();
+            FocusManager.instance.primaryFocus?.unfocus();
+          }),
+    );
+  }
+
   /// 从编辑页返回后主动触发刷新节拍。
   ///
   /// `invalidate` 让 Provider 重取数据，`_listLayoutEpoch` 用于刷新布局签名。

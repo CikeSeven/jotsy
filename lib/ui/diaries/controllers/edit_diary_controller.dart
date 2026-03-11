@@ -124,6 +124,8 @@ class EditDiaryController {
       _state._lastPersistedCreateDraftRaw = jsonEncode(restoredDraft.toJson());
       _state.setState(() {
         _state._titleController.text = restoredDraft.title;
+        _state._createDateOverride =
+            restoredDraft.createdAtOverride ?? _state._createDateOverride;
         _state._draftCover = restoredDraft.cover;
         _state._metadataJson = restoredDraft.metadataJson;
         _state._draftLocation = restoredDraft.location;
@@ -207,6 +209,9 @@ class EditDiaryController {
 
     try {
       if (_state.widget.diaryId == null) {
+        final createdAtForCreate = _resolveCreatedAtForCreate(
+          _state._createDateOverride,
+        );
         await db.createDiary(
           title: title,
           contentDocJson: contentDocJson,
@@ -214,6 +219,7 @@ class EditDiaryController {
           cover: cover,
           metadataJson: _state._metadataJson,
           tagIds: _state._selectedTagIds.toList(),
+          createdAtOverride: createdAtForCreate,
         );
       } else {
         await db.updateDiary(
@@ -482,6 +488,7 @@ class EditDiaryController {
               title: _state._titleController.text,
               contentDocJson: _state._currentContentDocJson,
               contentText: _state._currentContentText,
+              createdAtOverride: _state._createDateOverride,
               cover: _state._draftCover,
               metadataJson: _state._metadataJson,
               selectedTagIds: <int>{..._state._selectedTagIds},
@@ -511,6 +518,8 @@ class EditDiaryController {
 
     if (result is NewDiaryDraft) {
       _state.setState(() {
+        _state._createDateOverride =
+            result.createdAtOverride ?? _state._createDateOverride;
         _state._draftCover = result.cover;
         _state._metadataJson = result.metadataJson;
         _state._draftLocation = result.location;
@@ -644,6 +653,27 @@ class EditDiaryController {
       return null;
     }
     return normalized;
+  }
+
+  /// 将“只含日期”的补写需求转为真实创建时间。
+  ///
+  /// 规则：使用选中日期的年月日 + 当前时分秒，既保持“归属日正确”，
+  /// 又让同一天内的多条记录仍有自然时间顺序。
+  DateTime? _resolveCreatedAtForCreate(DateTime? dateOverride) {
+    if (dateOverride == null) {
+      return null;
+    }
+    final now = DateTime.now();
+    return DateTime(
+      dateOverride.year,
+      dateOverride.month,
+      dateOverride.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+      now.microsecond,
+    );
   }
 
   String? _resolveLocationCity(Map<String, Object?>? addressComponent) {

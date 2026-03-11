@@ -11,6 +11,7 @@ class NewDiaryDraft {
     required this.title,
     required this.contentDocJson,
     required this.contentText,
+    this.createdAtOverride,
     this.cover,
     this.metadataJson = '{}',
     this.selectedTagIds = const <int>{},
@@ -27,6 +28,7 @@ class NewDiaryDraft {
   final String title;
   final String contentDocJson;
   final String contentText;
+  final DateTime? createdAtOverride;
   final String? cover;
   final String metadataJson;
   final Set<int> selectedTagIds;
@@ -63,6 +65,7 @@ class NewDiaryDraft {
       title: (json['title'] as String?) ?? '',
       contentDocJson: (json['contentDocJson'] as String?) ?? '',
       contentText: (json['contentText'] as String?) ?? '',
+      createdAtOverride: _parseDateTime(json['createdAtOverride']),
       cover: json['cover'] as String?,
       metadataJson: (json['metadataJson'] as String?) ?? '{}',
       selectedTagIds: tagIds,
@@ -83,6 +86,7 @@ class NewDiaryDraft {
       'title': title,
       'contentDocJson': contentDocJson,
       'contentText': contentText,
+      'createdAtOverride': createdAtOverride?.toIso8601String(),
       'cover': cover,
       'metadataJson': metadataJson,
       'selectedTagIds': selectedTagIds.toList()..sort(),
@@ -106,6 +110,7 @@ class NewDiaryDraft {
     String? title,
     String? contentDocJson,
     String? contentText,
+    Object? createdAtOverride = _fieldNotChanged,
     Object? cover = _fieldNotChanged,
     String? metadataJson,
     Set<int>? selectedTagIds,
@@ -122,6 +127,10 @@ class NewDiaryDraft {
       title: title ?? this.title,
       contentDocJson: contentDocJson ?? this.contentDocJson,
       contentText: contentText ?? this.contentText,
+      createdAtOverride:
+          identical(createdAtOverride, _fieldNotChanged)
+              ? this.createdAtOverride
+              : createdAtOverride as DateTime?,
       // `cover` 需要支持“显式置空”，因此不能用 `??` 合并。
       cover: identical(cover, _fieldNotChanged) ? this.cover : cover as String?,
       metadataJson: metadataJson ?? this.metadataJson,
@@ -165,6 +174,19 @@ class NewDiaryDraft {
       normalized[key] = _normalizeJsonValue(entry.value);
     }
     return normalized;
+  }
+
+  static DateTime? _parseDateTime(Object? raw) {
+    if (raw is String && raw.trim().isNotEmpty) {
+      return DateTime.tryParse(raw.trim());
+    }
+    if (raw is int) {
+      if (raw > 1000000000000) {
+        return DateTime.fromMillisecondsSinceEpoch(raw);
+      }
+      return DateTime.fromMillisecondsSinceEpoch(raw * 1000);
+    }
+    return null;
   }
 
   /// 递归清洗动态值，防止运行时对象进入草稿 JSON 导致编码失败。

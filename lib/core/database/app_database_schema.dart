@@ -78,3 +78,19 @@ class DiaryWithTags {
   final Diary diary;
   final List<Tag> tags;
 }
+
+/// 日历月份打点聚合模型（轻量版）。
+///
+/// 用于日历网格渲染：仅保留“日期 + 心情”最小信息，
+/// 避免把完整日记内容加载到月视图造成额外开销。
+class DiaryCalendarMarker {
+  const DiaryCalendarMarker({
+    required this.diaryId,
+    required this.createdAt,
+    this.moodEmoji,
+  });
+
+  final String diaryId;
+  final DateTime createdAt;
+  final String? moodEmoji;
+}

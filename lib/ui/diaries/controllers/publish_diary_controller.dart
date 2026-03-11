@@ -353,6 +353,9 @@ class PublishDiaryController {
 
     try {
       final db = _state.ref.read(appDatabaseProvider);
+      final createdAtForCreate = _resolveCreatedAtForCreate(
+        _state.widget.initialDraft.createdAtOverride,
+      );
       await db.createDiary(
         title: _state.widget.initialDraft.title,
         contentDocJson: _state.widget.initialDraft.contentDocJson,
@@ -360,6 +363,7 @@ class PublishDiaryController {
         cover: normalizedCover,
         metadataJson: buildMetadataJson(generatedAt: DateTime.now()),
         tagIds: _state._selectedTagIds.toList(),
+        createdAtOverride: createdAtForCreate,
       );
       if (!_state.mounted) {
         return;
@@ -393,6 +397,24 @@ class PublishDiaryController {
         moodEmoji: normalizeOptionalText(_state._moodEmoji),
         energyLevel: _state._energyLevel,
       ),
+    );
+  }
+
+  /// 与编辑页保持一致：补写仅锁定“日期”，时分秒沿用当前时刻。
+  DateTime? _resolveCreatedAtForCreate(DateTime? dateOverride) {
+    if (dateOverride == null) {
+      return null;
+    }
+    final now = DateTime.now();
+    return DateTime(
+      dateOverride.year,
+      dateOverride.month,
+      dateOverride.day,
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+      now.microsecond,
     );
   }
 }

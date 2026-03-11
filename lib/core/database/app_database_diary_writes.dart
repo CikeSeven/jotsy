@@ -17,8 +17,9 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     required String metadataJson,
     String? cover,
     List<int> tagIds = const <int>[],
+    DateTime? createdAtOverride,
   }) async {
-    final now = DateTime.now();
+    final now = createdAtOverride ?? DateTime.now();
     final diaryId = _generateDiaryId();
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
     final normalizedCover = _normalizeCover(cover);

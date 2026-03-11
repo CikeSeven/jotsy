@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
@@ -37,9 +36,11 @@ class DiariesPage extends ConsumerStatefulWidget {
   const DiariesPage({
     super.key,
     this.homeHintVisibleListenable,
+    this.onCreateActionChanged,
   });
 
   final ValueListenable<bool>? homeHintVisibleListenable;
+  final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
 
   @override
   ConsumerState<DiariesPage> createState() => _DiariesPage();
@@ -51,14 +52,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
-  static const Duration _fabShiftDuration = Duration(milliseconds: 260);
   static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
   static const Duration _listRefreshFadeOutDuration = Duration(milliseconds: 160);
   static const Duration _listRefreshFadeInDuration = Duration(milliseconds: 260);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
-  static const double _fabLiftOffsetWhenHintVisible = 60;
-  static const double _fabExtraGapAboveNav = 2;
   static const double _listBottomExtraSpace = 34;
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
@@ -101,8 +99,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
   bool get _showHeaderSection => !_isSearchAnimating;
-  bool get _isAnyHintVisible =>
-      _homeHintVisible || _localHintVisibleCount > 0;
 
   @override
   void initState() {
@@ -114,6 +110,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       feedback: _feedback,
       transitionCoordinator: _transitionCoordinator,
     );
+    widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     _controller.attachHomeHintVisibilityListener();
     // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。
     _listRefreshPulseController = AnimationController(
@@ -132,6 +129,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   void didUpdateWidget(covariant DiariesPage oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.onCreateActionChanged != widget.onCreateActionChanged) {
+      oldWidget.onCreateActionChanged?.call(null);
+      widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
+    }
     _controller.handleHomeHintListenableUpdate(
       previous: oldWidget.homeHintVisibleListenable,
       next: widget.homeHintVisibleListenable,
@@ -140,6 +141,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   @override
   void dispose() {
+    widget.onCreateActionChanged?.call(null);
     _controller.dispose();
     _transitionCoordinator.dispose();
     _searchController.dispose();
@@ -160,14 +162,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
     final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
-    final fabBaseBottomOffset =
-        bottomSafeInset +
-        GlassBottomNav.navBottomInset +
-        GlassBottomNav.navHeight +
-        _fabExtraGapAboveNav;
-    final fabBottomOffset =
-        fabBaseBottomOffset +
-        (_isAnyHintVisible ? _fabLiftOffsetWhenHintVisible : 0);
 
     final listBottomOffset =
         bottomSafeInset +
@@ -428,25 +422,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   ),
                 ),
               ),
-              if (!_isSelectionMode)
-                // FAB 在提示可见时自动上移，避免和 SnackBar 发生遮挡。
-                AnimatedPositioned(
-                  duration: _fabShiftDuration,
-                  curve: Curves.easeOutCubic,
-                  right: AppSpacing.xl,
-                  bottom: fabBottomOffset,
-                  child: FloatingActionButton(
-                    onPressed: () => unawaited(
-                      _controller.openCreateEditorWithDraftPrompt(),
-                    ),
-                    child: FaIcon(FontAwesomeIcons.plus),
-                  ),
-                ),
             ],
           ),
         );
       },
     );
+  }
+
+  Future<void> _openCreateFromHomeFab() async {
+    await _controller.openCreateEditorWithDraftPrompt();
   }
 }
 

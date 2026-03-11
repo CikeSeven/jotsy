@@ -37,11 +37,13 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.diaryId,
     this.entryMode = EditDiaryEntryMode.edit,
     this.restoreCreateDraft = true,
+    this.createDateOverride,
   });
 
   final String? diaryId;
   final EditDiaryEntryMode entryMode;
   final bool restoreCreateDraft;
+  final DateTime? createDateOverride;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
@@ -58,6 +60,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final ScrollController _editorInnerScrollController = ScrollController();
   final PublishDiaryGlassPanelController _editPanelController =
       PublishDiaryGlassPanelController();
+  DateTime? _createDateOverride;
 
   // ==================== 发布上下文草稿字段 ====================
   final Set<int> _selectedTagIds = <int>{};
@@ -98,6 +101,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   void initState() {
     super.initState();
+    _createDateOverride = widget.createDateOverride;
     _contentController = quill.QuillController(
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
@@ -239,6 +243,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       title: _titleController.text,
       contentDocJson: _currentContentDocJson,
       contentText: _currentContentText,
+      createdAtOverride: _createDateOverride,
       cover: _draftCover,
       metadataJson: _metadataJson,
       selectedTagIds: <int>{..._selectedTagIds},

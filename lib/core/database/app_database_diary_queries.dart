@@ -3,7 +3,8 @@ part of 'app_database.dart';
 /// 日记查询与映射实现。
 ///
 /// 该分区负责：
-/// - 列表监听（普通/归档）；
+/// - 列表监听（普通/归档/回收站）；
+/// - 日历页月份打点与按日列表查询；
 /// - metadata 条件检索；
 /// - SQL 行记录映射为领域对象。
 mixin AppDatabaseDiaryQueries on _$AppDatabase {
@@ -88,14 +89,7 @@ ORDER BY d.updated_at DESC
       sql.toString(),
       variables: variables,
       readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
-    ).watch().map((List<QueryRow> rows) {
-      return rows.map((QueryRow row) {
-        return DiaryWithTags(
-          diary: _mapDiaryFromRow(row),
-          tags: _parseTagsJson(row.read<String>('tags_json')),
-        );
-      }).toList();
-    });
+    ).watch().map(_mapDiaryWithTagsRows);
   }
 
   /// 监听已归档日记列表（仅归档且未删除）。
@@ -133,15 +127,8 @@ GROUP BY d.id
 ORDER BY d.updated_at DESC
 ''',
       readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
-    ).watch().map((List<QueryRow> rows) {
-      return rows.map((QueryRow row) {
-        return DiaryWithTags(
-          diary: _mapDiaryFromRow(row),
-          tags: _parseTagsJson(row.read<String>('tags_json')),
-        );
-    }).toList();
-  });
-}
+    ).watch().map(_mapDiaryWithTagsRows);
+  }
 
   /// 监听回收站日记列表（仅软删除记录）。
   Stream<List<DiaryWithTags>> watchDeletedDiaries() {
@@ -177,13 +164,89 @@ GROUP BY d.id
 ORDER BY d.deleted_at DESC, d.updated_at DESC
 ''',
       readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
-    ).watch().map((List<QueryRow> rows) {
-      return rows.map((QueryRow row) {
-        return DiaryWithTags(
-          diary: _mapDiaryFromRow(row),
-          tags: _parseTagsJson(row.read<String>('tags_json')),
+    ).watch().map(_mapDiaryWithTagsRows);
+  }
+
+  /// 监听“某天创建的日记列表”（含归档，不含已删除）。
+  ///
+  /// 日期按本地时区边界切分，使用 `[dayStart, nextDayStart)` 范围查询。
+  Stream<List<DiaryWithTags>> watchDiariesCreatedOnDay(DateTime day) {
+    final dayStart = _dateOnly(day);
+    final nextDayStart = dayStart.add(const Duration(days: 1));
+    return customSelect(
+      '''
+SELECT
+  d.id,
+  d.diary_id,
+  d.title,
+  d.content,
+  d.content_text,
+  d.cover,
+  d.metadata,
+  d.created_at,
+  d.updated_at,
+  d.is_archived,
+  d.archived_at,
+  d.is_deleted,
+  d.deleted_at,
+  COALESCE(
+    json_group_array(
+      CASE
+        WHEN t.id IS NOT NULL THEN json_object('id', t.id, 'name', t.name, 'color', t.color)
+      END
+    ),
+    '[]'
+  ) AS tags_json
+FROM diaries d
+LEFT JOIN diary_tags dt ON dt.diary_id = d.id
+LEFT JOIN tags t ON t.id = dt.tag_id
+WHERE d.is_deleted = 0
+  AND d.created_at >= ?
+  AND d.created_at < ?
+GROUP BY d.id
+ORDER BY d.created_at DESC, d.updated_at DESC
+''',
+      variables: <Variable<Object>>[
+        Variable<DateTime>(dayStart),
+        Variable<DateTime>(nextDayStart),
+      ],
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map(_mapDiaryWithTagsRows);
+  }
+
+  /// 监听“某月的日历打点元数据”（含归档，不含已删除）。
+  ///
+  /// 返回轻量结构 `DiaryCalendarMarker`，只用于月历标记渲染。
+  Stream<List<DiaryCalendarMarker>> watchDiaryMarkersByMonth(DateTime month) {
+    final monthStart = DateTime(month.year, month.month);
+    final nextMonthStart = DateTime(month.year, month.month + 1);
+    return customSelect(
+      '''
+SELECT
+  diary_id,
+  created_at,
+  json_extract(metadata, '\$.context.moodEmoji') AS mood_emoji
+FROM diaries
+WHERE is_deleted = 0
+  AND created_at >= ?
+  AND created_at < ?
+ORDER BY created_at ASC
+''',
+      variables: <Variable<Object>>[
+        Variable<DateTime>(monthStart),
+        Variable<DateTime>(nextMonthStart),
+      ],
+      readsFrom: <TableInfo<Table, Object>>{diaries},
+    ).watch().map((rows) {
+      return rows.map((row) {
+        final rawMood = row.readNullable<String>('mood_emoji');
+        final mood = rawMood?.trim();
+        return DiaryCalendarMarker(
+          diaryId: row.read<String>('diary_id'),
+          createdAt: _readDateTime(row, 'created_at'),
+          moodEmoji: (mood == null || mood.isEmpty) ? null : mood,
         );
-      }).toList();
+      }).toList(growable: false);
     });
   }
 
@@ -214,6 +277,16 @@ ORDER BY updated_at DESC
     return rows.map(_mapDiaryFromRow).toList();
   }
 
+  /// 映射“日记 + 标签”聚合行。
+  List<DiaryWithTags> _mapDiaryWithTagsRows(List<QueryRow> rows) {
+    return rows.map((row) {
+      return DiaryWithTags(
+        diary: _mapDiaryFromRow(row),
+        tags: _parseTagsJson(row.read<String>('tags_json')),
+      );
+    }).toList(growable: false);
+  }
+
   /// 解析 SQL 聚合得到的标签 JSON 字符串。
   List<Tag> _parseTagsJson(String rawJson) {
     try {
@@ -228,7 +301,7 @@ ORDER BY updated_at DESC
           name: entry['name'] as String,
           color: (entry['color'] as num).toInt(),
         );
-      }).toList();
+      }).toList(growable: false);
     } catch (_) {
       return const <Tag>[];
     }
@@ -289,5 +362,9 @@ ORDER BY updated_at DESC
       return DateTime.fromMillisecondsSinceEpoch(intValue);
     }
     return DateTime.fromMillisecondsSinceEpoch(intValue * 1000);
+  }
+
+  DateTime _dateOnly(DateTime input) {
+    return DateTime(input.year, input.month, input.day);
   }
 }

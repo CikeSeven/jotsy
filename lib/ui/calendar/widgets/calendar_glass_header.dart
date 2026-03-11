@@ -9,6 +9,7 @@ import '../../../app/theme/app_spacing.dart';
 /// 日历页玻璃态头部。
 ///
 /// 结构：
+/// - 左侧主标题（日历）；
 /// - 中间标题（当前年月）；
 /// - 右侧“回到今天”动作；
 /// - 视觉上与 Home 其他页面保持同一玻璃风格。
@@ -62,6 +63,14 @@ class CalendarGlassHeader extends StatelessWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: <Widget>[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '日历',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
                           Center(
                             child: Text(
                               title,

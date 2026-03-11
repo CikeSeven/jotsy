@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/content_codec.dart';
@@ -43,6 +47,10 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   quill.QuillController? _previewController;
   String? _boundContentRaw;
   bool _hadLoadedData = false;
+  final GlobalKey _shareCaptureKey = GlobalKey();
+  final ScrollController _previewScrollController = ScrollController();
+  bool _isSharingImage = false;
+  bool _shareCaptureStaticCover = false;
 
   Widget _buildBackLeading() {
     return IconButton(
@@ -55,6 +63,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   @override
   void dispose() {
     _previewController?.dispose();
+    _previewScrollController.dispose();
     super.dispose();
   }
 
@@ -116,15 +125,151 @@ $content
 ''';
   }
 
-  Future<void> _copyShareText(DiaryWithTags detail) async {
-    await Clipboard.setData(ClipboardData(text: _buildShareCopyText(detail)));
+  Future<void> _shareTextDirectly(DiaryWithTags detail) async {
+    await Share.share(_buildShareCopyText(detail));
     if (!mounted) {
       return;
     }
+    _showHint('已拉起系统分享');
+  }
+
+  Future<void> _shareAsLongImage() async {
+    if (_isSharingImage) {
+      return;
+    }
+    setState(() {
+      _isSharingImage = true;
+      // 分享截图时禁用封面折叠动画，避免长图拼接出现拖影。
+      _shareCaptureStaticCover = true;
+    });
+    try {
+      // 等待 bottom sheet 完全关闭，避免截图带上遮罩层。
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      if (!mounted) {
+        return;
+      }
+      if (_previewScrollController.hasClients) {
+        // 强制回到顶部，保证封面按“完整展开”形态进入截图。
+        _previewScrollController.jumpTo(0);
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      final renderObject = _shareCaptureKey.currentContext?.findRenderObject();
+      if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
+        throw Exception('截图节点未就绪');
+      }
+      final mediaQuery = MediaQuery.of(context);
+      final imageBytes = await renderObject.screenshot(
+        scrollController:
+            _previewScrollController.hasClients ? _previewScrollController : null,
+        format: ShotFormat.png,
+        quality: 100,
+        maxHeight: 22000,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        pixelRatio: mediaQuery.devicePixelRatio.clamp(1.0, 2.2),
+      );
+      if (imageBytes == null || imageBytes.isEmpty) {
+        throw Exception('截图失败，请重试');
+      }
+      final tempDirectory = await getTemporaryDirectory();
+      final imagePath = p.join(
+        tempDirectory.path,
+        'diary_share_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+      final imageFile = File(imagePath);
+      await imageFile.writeAsBytes(imageBytes, flush: true);
+
+      await Share.shareXFiles(<XFile>[XFile(imageFile.path)]);
+      if (!mounted) {
+        return;
+      }
+      _showHint('已拉起系统分享');
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showHint('图片分享失败: $error');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSharingImage = false;
+          _shareCaptureStaticCover = false;
+        });
+      }
+    }
+  }
+
+  Widget _buildStaticShareCoverSliver(String source) {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        width: double.infinity,
+        height: 420,
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
+          child: _buildPreviewCoverImage(source),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPreviewCoverImage(String source) {
+    final uri = Uri.tryParse(source);
+    final isRemote = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    if (isRemote) {
+      return Image.network(
+        source,
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
+        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      );
+    }
+
+    return Image.file(
+      File(source),
+      fit: BoxFit.contain,
+      alignment: Alignment.center,
+      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+    );
+  }
+
+  Future<void> _showShareOptionsBottomSheet(DiaryWithTags detail) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.font, size: 16),
+                title: const Text('以文字形式分享'),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _shareTextDirectly(detail);
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.image, size: 16),
+                title: const Text('以图片形式分享'),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _shareAsLongImage();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showHint(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('已复制'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -206,7 +351,7 @@ $content
                 title: const Text('分享'),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
-                  await _copyShareText(detail);
+                  await _showShareOptionsBottomSheet(detail);
                 },
               ),
               ListTile(
@@ -642,39 +787,46 @@ $content
           ),
           body: SafeArea(
             top: false,
-            child: CustomScrollView(
-              slivers: <Widget>[
-                if (coverSource != null)
-                  PublishDiaryCoverSliver(
-                    cover: coverSource,
-                    maxExtentHeight: 420,
-                    padding: EdgeInsets.zero,
-                    borderRadius: BorderRadius.zero,
-                  ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+            child: WidgetShotPlus(
+              key: _shareCaptureKey,
+              child: CustomScrollView(
+                controller: _previewScrollController,
+                slivers: <Widget>[
+                  if (coverSource != null)
+                    _shareCaptureStaticCover
+                        ? _buildStaticShareCoverSliver(coverSource)
+                        : PublishDiaryCoverSliver(
+                          cover: coverSource,
+                          maxExtentHeight: 420,
+                          padding: EdgeInsets.zero,
+                          borderRadius: BorderRadius.zero,
+                        ),
+                  
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
                     ),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    child: _buildMetaSection(detail),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                      child: _buildMetaSection(detail),
+                    ),
                   ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
-                    child: _buildContentSection(detail),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
+                      child: _buildContentSection(detail),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

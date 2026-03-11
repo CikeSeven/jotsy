@@ -249,7 +249,26 @@ class DiariesPageController {
             }
             refreshAfterEditorReturn();
             if (result == DiaryPreviewResult.deleted) {
-              await feedback.showInfoSnackBar('已删除日记');
+              final undoRequested = await feedback.showUndoSnackBar(
+                message: '已删除日记',
+                duration: _DiariesPage._deleteUndoSnackDuration,
+              );
+              if (!_state.mounted || !undoRequested) {
+                return;
+              }
+              try {
+                final db = _state.ref.read(appDatabaseProvider);
+                await db.restoreDiary(diaryId, touchUpdatedAt: false);
+                if (!_state.mounted) {
+                  return;
+                }
+                await feedback.showInfoSnackBar('已恢复删除的日记');
+              } catch (_) {
+                if (!_state.mounted) {
+                  return;
+                }
+                await feedback.showInfoSnackBar('恢复失败，请重试');
+              }
             }
             _state._searchFocusNode.unfocus();
             FocusManager.instance.primaryFocus?.unfocus();

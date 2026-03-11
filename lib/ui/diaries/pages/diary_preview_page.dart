@@ -11,6 +11,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/content_codec.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../providers/diary_detail_provider.dart';
 import '../widgets/diary_mobile_toolbar.dart';
@@ -82,6 +83,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       updatedAt: value,
       now: DateTime.now(),
       l10n: context.l10n,
+    );
+  }
+
+  /// 用于“最后编辑于”文案的精确时间（分钟级）。
+  String _formatPreciseTime(DateTime value) {
+    return PreciseTimeFormatter.format(
+      target: value,
+      now: DateTime.now(),
     );
   }
 
@@ -510,20 +519,43 @@ $content
     if (controller == null) {
       return const SizedBox.shrink();
     }
-    if (detail.diary.contentText.trim().isEmpty) {
-      return Text(
-        '今天还没有写下正文',
-        style: Theme.of(context).textTheme.bodyLarge,
-      );
+    final diary = detail.diary;
+    final hasBeenEdited = !diary.updatedAt.isAtSameMomentAs(diary.createdAt);
+    final editedText =
+        hasBeenEdited ? '最后编辑于 ${_formatPreciseTime(diary.updatedAt)}' : null;
+
+    final contentBody =
+        detail.diary.contentText.trim().isEmpty
+            ? Text(
+              '今天还没有写下正文',
+              style: Theme.of(context).textTheme.bodyLarge,
+            )
+            : quill.QuillEditor.basic(
+              controller: controller,
+              config: quill.QuillEditorConfig(
+                autoFocus: false,
+                scrollable: false,
+                padding: EdgeInsets.zero,
+                embedBuilders: buildDiaryQuillEmbedBuilders(),
+              ),
+            );
+
+    if (editedText == null) {
+      return contentBody;
     }
-    return quill.QuillEditor.basic(
-      controller: controller,
-      config: quill.QuillEditorConfig(
-        autoFocus: false,
-        scrollable: false,
-        padding: EdgeInsets.zero,
-        embedBuilders: buildDiaryQuillEmbedBuilders(),
-      ),
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        contentBody,
+        const SizedBox(height: 16),
+        Text(
+          editedText,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+      ],
     );
   }
 

@@ -321,13 +321,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   icon: const Icon(Icons.save_outlined),
                   tooltip: '保存',
                 ),
-              if (widget.diaryId != null &&
-                  widget.entryMode == EditDiaryEntryMode.edit)
-                IconButton(
-                  onPressed: _saving ? null : _controller.softDelete,
-                  icon: const Icon(Icons.delete_outline),
-                  tooltip: '软删除',
-                ),
             ],
           ),
             // 底部键盘弹起时显示悬浮工具栏，并对正文底部做避让。

@@ -1,80 +1,123 @@
-﻿# Repository Guidelines
+# AGENTS 协作规范（node_note）
 
-## Project Structure & Module Organization
-This repository is a Flutter application. Main entry is `lib/main.dart`.
-- `lib/app/`: app shell and theme setup (`node_diary_app.dart`, theme files).
-- `lib/core/services/`: shared services and app-level logic.
-- `lib/ui/<feature>/pages/`: feature pages (home, notes, settings).
-- `test/`: automated tests (`widget_test.dart` currently).
-- `android/`, `ios/`, `macos/`, `linux/`, `windows/`, `web/`: platform runners and assets.
-- `pubspec.yaml`: dependencies, SDK constraints, and build metadata.
+## 1. 文档定位与适用范围
+- 必须：本文件是仓库协作规范主入口，适用于整个项目（代码、文档、提交流程、评审）。
+- 必须：项目内规则优先级为 `AGENTS.md > 口头约定 > 默认习惯`。
+- 必须：若与上层系统/平台硬性指令冲突，以上层指令为准，并在沟通中说明冲突点。
+- 禁止：按个人偏好绕开本文件已定义的硬性规则。
+- 例外：紧急修复可先提交止血补丁，但后续必须补齐规范项。
 
-## Build, Test, and Development Commands
-Use these commands from repository root:
-```bash
-flutter pub get
-flutter run -d windows
-flutter analyze
-flutter test
-dart run build_runner build --delete-conflicting-outputs
+## 2. 项目目录结构说明（树状 + 职责）
+```text
+.
+├─ lib/
+│  ├─ main.dart                      # 应用入口
+│  ├─ app/                           # App 装配与主题系统
+│  │  └─ theme/                      # 主题 token / 配色 / provider
+│  ├─ core/
+│  │  ├─ database/                   # Drift 数据库（schema / query / write / migration 拆分）
+│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储等）
+│  ├─ ui/
+│  │  ├─ diaries/                    # 日记主业务模块（已分层）
+│  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
+│  │  │  ├─ controllers/             # 业务编排（搜索/筛选/撤销/发布链路等）
+│  │  │  ├─ providers/               # 状态与筛选条件
+│  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态
+│  │  │  └─ sections|widgets/        # 可复用 UI 区块
+│  │  ├─ home|calendar|explore|settings/
+│  │  └─ widgets/                    # 跨 feature 公共 UI（玻璃底栏、加载页等）
+│  ├─ l10n/                          # 国际化封装
+│  └─ utils/                         # 工具函数
+├─ assets/                           # 静态资源
+├─ test/                             # 测试
+├─ android/ ios/ web/ windows/ ...  # 各平台工程
+└─ AGENTS.md                         # 协作规范
 ```
-- Agent execution note: do not run `dart format` or `flutter analyze` automatically (they may time out in this environment); leave both commands for the user to run manually when needed.
-- `flutter pub get`: install/update dependencies.
-- `flutter run -d windows`: run locally (replace device as needed, e.g. `chrome`).
-- `flutter analyze`: static checks using `analysis_options.yaml`.
-- `flutter test`: run unit/widget tests in `test/`.
-- `build_runner ...`: regenerate code for tools like `json_serializable` and Drift.
+- 必须：新增代码按职责放置，避免跨层污染。
+- 禁止：在页面层直接实现数据库细节与复杂业务编排。
+- 例外：短期 PoC 可临时放置，但合并前必须归位到对应层。
 
-## Coding Style & Naming Conventions
-- File encoding must be UTF-8.
-- Follow Dart style: 2-space indentation and formatted code.
-- Do not run `dart format` or `flutter analyze` as part of automated agent execution; the user runs them manually.
-- Lints come from `flutter_lints` (`analysis_options.yaml`).
-- Use `snake_case` for files, `UpperCamelCase` for classes/widgets, and `lowerCamelCase` for members.
-- Keep feature UI code in `lib/ui/<feature>/...`; cross-feature logic belongs in `lib/core/...`.
-- For newly added UI icons, use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`) by default; only mix other icon sets when there is a clear platform-specific reason.
-- Rich text editor toolbar icons and their related settings-page icon previews must consistently use `font_awesome_flutter` (`FaIcon` + `FontAwesomeIcons`).
-- Dialog action buttons must use text-style actions consistently: left action uses a gray text button (typically cancel), right action uses a colored text button for the primary confirm action.
-- For dangerous dialog actions (delete/irreversible operations), the right primary action must use `colorScheme.error` instead of the default primary color.
-- Active interactive surfaces (for example: bottom bars, floating panels, and key action containers) should use a glassmorphism style consistent with the app's existing glass components.
-- Glass-style implementation notes:
-  - Reuse existing theme tokens/components first (for example `AppEffects`, `AppRadii`, and existing glass widgets) to keep style consistent.
-  - Keep blur and transparency moderate to preserve text contrast and avoid readability regressions.
-  - Avoid stacking multiple heavy blur layers in the same viewport region to reduce rendering cost on lower-end devices.
-  - Preserve clear interaction affordance (tap targets, boundaries, and state feedback) even when using translucent backgrounds.
-- Do not use any gradient colors in UI (including `LinearGradient`, `RadialGradient`, and `SweepGradient`).
-- Write detailed high-value comments for non-trivial logic, state transitions, async chains, rollback behavior, and edge-case handling.
-- Avoid redundant comments that only restate obvious code; comments must explain intent, boundaries, and decision rationale.
-- Keep files focused and reasonably small; when a file grows beyond about 300 lines, proactively evaluate splitting it into smaller widgets/classes/modules.
-- Prefer timely decomposition over monolithic files: extract reusable UI sections, business orchestration, and data-mapping code into dedicated files.
+## 3. 模块分层规则
+- 必须：`pages/` 仅负责装配（路由参数、生命周期、provider watch、widget 组合）。
+- 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
+- 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。
+- 必须：可复用 UI 放 `sections/` 或 `widgets/`，避免页面文件膨胀。
+- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops）。
+- 禁止：单文件混杂“页面布局 + 业务编排 + 数据转换”。
+- 例外：极简静态页面可不强制拆 controller。
 
-## Diaries Module Layering & Comment Rules
-- Scope: all code under `lib/ui/diaries/`.
-- `pages/` should be shell-oriented: route wiring, lifecycle, provider watch, and widget composition only. Avoid embedding large business workflows directly in page `State`.
-- Business orchestration should be extracted to `controllers/` (search/filter flows, delete/archive/undo, publish chain, draft autosave/debounce, navigation handoff).
-- Local derived state and parsing/mapping utilities should live in `viewmodels/` or `models/`, not inline in pages.
-- Complex reusable UI blocks belong in `sections/` or `widgets/`; keep page files from becoming mixed UI+business monoliths.
-- Add file-level responsibility comments for controllers/pages/complex widgets, including clear boundary notes (inputs, outputs, side effects).
-- For methods involving async/timer/queue behavior, add explicit step comments (trigger condition, mutation order, rollback strategy, mounted checks).
-- For multi-state UI regions, add section comments to describe structure and intent (for example header/search/selection states, panel main page vs tag page, loading/error/empty/data branches).
-- Comment depth should be detailed and practical, but avoid noisy line-by-line narration.
+## 4. 编码与命名规范
+- 必须：所有源码、配置、文档均使用 UTF-8 编码（避免中文乱码）。
+- 必须：命名统一：文件 `snake_case`、类 `UpperCamelCase`、成员 `lowerCamelCase`。
+- 必须：遵循现有 Dart/Flutter 代码风格与 lint 约束。
+- 必须：单文件超过约 300 行时触发拆分评估；出现职责混杂时必须拆分。
+- 必须：优先复用已有组件与服务，避免重复造轮子。
+- 禁止：冗余实现、死代码、复制粘贴式重复逻辑。
+- 例外：生成文件（如 `*.g.dart`）不按手写文件拆分规则执行。
 
-## Testing Guidelines
-- Use `flutter_test` for widget and unit tests.
-- Name test files `*_test.dart`.
-- Prefer behavior-focused test names (for example, `shows_empty_state_when_no_notes`).
-- For every functional change, add or update relevant tests and run `flutter test`; `flutter analyze` is executed manually by the user when needed.
-- No enforced coverage threshold yet; avoid merging untested logic changes.
+## 5. 注释规范（详细版）
+- 必须：为复杂逻辑编写高价值详细注释，重点覆盖：
+  - 异步流程（触发条件、顺序、失败回滚）
+  - 状态机/多态 UI（状态边界与切换条件）
+  - 定时器/防抖/队列（生命周期、取消时机、mounted 保护）
+  - 边界条件与兼容策略（空值、异常、平台差异）
+- 必须：复杂文件顶部添加职责边界注释（输入、输出、副作用）。
+- 必须：注释解释“为什么这样做”，而不只描述“做了什么”。
+- 禁止：低价值复述注释（如“给变量赋值”）。
+- 例外：语义极直白的简单 getter / 纯样板代码可不写注释。
 
-## Commit & Pull Request Guidelines
-Local workspace does not include `.git` history, so follow this default convention:
-- Use Conventional Commit prefixes: `feat:`, `fix:`, `refactor:`, `test:`, `docs:`.
-- Keep commits small and single-purpose.
-- PRs should include: clear summary, affected modules, test evidence, and screenshots/GIFs for UI changes.
-- Link related issues/tasks and call out platform-specific impact if applicable.
+## 6. UI/交互统一规范
+- 必须：新增图标默认使用 `font_awesome_flutter`（`FaIcon` + `FontAwesomeIcons`）。
+- 必须：富文本工具栏与设置页工具预览图标来源一致，避免混用。
+- 必须：Dialog 操作按钮统一为文本按钮：
+  - 左侧按钮：灰色语义（取消/返回）
+  - 右侧按钮：主色语义（确认）
+  - 危险动作：右侧按钮使用 `colorScheme.error`
+- 必须：活动区域（底栏、悬浮面板、关键交互容器）遵循玻璃质感设计，优先复用 `AppEffects`、`AppRadii` 等现有 token。
+- 必须：亮色/暗色主题都保证文字和图标可读性，不允许出现暗色模式全黑图标等失配。
+- 禁止：使用任何渐变（`LinearGradient`、`RadialGradient`、`SweepGradient`）。
+- 禁止：同一区域叠加多层重模糊导致性能劣化。
+- 例外：可访问性修复或平台组件约束导致偏离时，需在代码注释说明原因。
 
-## Security & Configuration Tips
-- Do not commit secrets, tokens, or machine-local config values.
-- Treat files like `android/local.properties` as local-only.
-- Review dependency and lockfile changes in `pubspec.yaml` and `pubspec.lock` before merge.
- 
+## 7. 命令与执行约束
+- 必须：代理不自动执行 `dart format` 与 `flutter analyze`，由用户手动执行并回传结果。
+- 必须：高耗时构建/代码生成命令执行前说明目的与潜在耗时。
+- 必须：常用命令在仓库根目录运行：
+  - `flutter pub get`
+  - `flutter test`
+  - `dart run build_runner build --delete-conflicting-outputs`
+- 禁止：未经请求接管长生命周期运行任务并长时间阻塞终端。
+- 例外：用户明确要求接管运行/调试时可执行，并在过程里持续同步状态。
+
+## 8. 测试与验收规范
+- 必须：功能改动至少覆盖“主流程 + 一个异常/边界路径”验证。
+- 必须：UI 改动提供可复现检查清单（触发步骤 + 预期结果）。
+- 必须：测试命名采用行为描述，文件命名 `*_test.dart`。
+- 禁止：未验证核心路径就提交“看起来可用”的改动。
+- 例外：紧急热修可先发补丁，后续必须补充验证与回归记录。
+- 执行前检查项：
+  - 影响范围是否明确
+  - 是否存在状态同步/空值/异步取消风险
+- 完成后检查项：
+  - 关键交互在明暗主题下是否正常
+  - 列表、导航、弹窗等关键路径是否无回退
+
+## 9. 提交与变更管理
+- 必须：使用 Conventional Commit（如 `feat:`、`fix:`、`refactor:`、`docs:`、`test:`）。
+- 必须：保持提交单一目的，禁止夹带无关改动。
+- 必须：提交说明至少包含“改了什么 + 为什么 + 影响范围”。
+- 禁止：擅自回退用户已有改动或执行破坏性 git 操作（如 `git reset --hard`）。
+- 禁止：在未获明确要求时改写历史（如 `commit --amend`）。
+- 例外：用户明确授权回滚/改写时可执行，并先说明影响。
+- 提交前检查项：
+  - 本次变更是否仅覆盖目标文件
+  - 是否满足本规范中的编码、注释、分层、UI 规则
+  - 是否附带必要验证结论或待用户执行项
+
+## 10. 维护机制
+- 必须：新增团队规则时，同步更新 `AGENTS.md`，避免仅停留在对话记录。
+- 必须：目录结构变化时，同步更新“树状结构 + 职责”段落。
+- 必须：发现规则冲突时收敛为单一权威条目，删除重复或矛盾描述。
+- 必须：规则文本使用“必须/禁止/例外”表达，减少执行歧义。
+- 禁止：长期保留过期规则或互相矛盾条目。
+- 例外：过渡期允许短期并存规则，但必须标注清理条件与截止时点。

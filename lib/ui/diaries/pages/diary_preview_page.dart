@@ -612,7 +612,7 @@ $content
                 if (coverSource != null)
                   PublishDiaryCoverSliver(
                     cover: coverSource,
-                    maxExtentHeight: 300,
+                    maxExtentHeight: 420,
                     padding: EdgeInsets.zero,
                     borderRadius: BorderRadius.zero,
                   ),

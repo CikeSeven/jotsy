@@ -39,9 +39,14 @@ class SettingsPage extends ConsumerWidget {
               settingsAsync: settingsAsync,
             ),
             const Divider(),
-            const ListTile(
-              title: Text('编辑器设置'),
-              subtitle: Text('支持自定义富文本工具栏按钮顺序'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Text(
+                '编辑器设置',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
             SettingsEditorSection(
               settingsAsync: settingsAsync,

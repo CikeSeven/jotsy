@@ -204,7 +204,7 @@ WHERE d.is_deleted = 0
   AND d.created_at >= ?
   AND d.created_at < ?
 GROUP BY d.id
-ORDER BY d.created_at DESC, d.updated_at DESC
+ORDER BY d.created_at ASC, d.updated_at ASC, d.id ASC
 ''',
       variables: <Variable<Object>>[
         Variable<DateTime>(dayStart),

@@ -11,12 +11,11 @@ import '../../../core/services/app_service.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
-import '../../diaries/sections/diaries_list_section.dart';
-import '../../diaries/sections/diary_head_section.dart';
 import '../../widgets/glass_bottom_nav.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../widgets/calendar_day_empty_state.dart';
 import '../widgets/calendar_glass_header.dart';
+import '../widgets/calendar_timeline_section.dart';
 
 part '../controllers/calendar_page_controller.dart';
 
@@ -288,17 +287,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           ];
         }
         return <Widget>[
-          DiariesListSection(
-            themeBrightness: Theme.of(context).brightness,
-            diaries: dayDiaries,
-            layoutMode: DiaryLayoutMode.list,
-            selectedDiaryIds: const <String>{},
-            isSelectionMode: false,
-            onCreate: _openCreateFromHomeFab,
-            onOpenEditor: _controller.openPreview,
-            onToggleSelection: (_, __) {},
-            onArchiveDiary: null,
-            isSearchResultEmpty: false,
+          SliverToBoxAdapter(
+            child: CalendarTimelineSection(
+              selectedDay: _selectedDay,
+              diaries: dayDiaries,
+              onOpenDiary: _controller.openPreview,
+            ),
           ),
         ];
       },

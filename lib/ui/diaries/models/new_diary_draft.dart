@@ -1,3 +1,9 @@
+/// 新建日记草稿模型。
+///
+/// 作用：
+/// - 作为“编辑页 <-> 发布页”之间的状态载体；
+/// - 作为本地自动草稿持久化的数据结构；
+/// - 统一承载发布上下文（封面、标签、位置、天气、心情、精力等）。
 class NewDiaryDraft {
   static const Object _fieldNotChanged = Object();
 
@@ -33,10 +39,16 @@ class NewDiaryDraft {
   final String? moodEmoji;
   final int? energyLevel;
 
+  /// 标题和正文是否存在可见内容。
+  ///
+  /// 该判定用于：
+  /// - 决定是否写入自动草稿；
+  /// - 决定新建入口是否提示“继续编辑”。
   bool get hasContent {
     return title.trim().isNotEmpty || contentText.trim().isNotEmpty;
   }
 
+  /// 反序列化：从本地 JSON 恢复草稿对象。
   factory NewDiaryDraft.fromJson(Map<String, Object?> json) {
     final rawTagIds = json['selectedTagIds'];
     final tagIds =
@@ -65,6 +77,7 @@ class NewDiaryDraft {
     );
   }
 
+  /// 序列化：用于写入 SettingsService 的原始草稿字符串。
   Map<String, Object?> toJson() {
     return <String, Object?>{
       'title': title,
@@ -84,6 +97,11 @@ class NewDiaryDraft {
     };
   }
 
+  /// copyWith 支持“显式置空”字段。
+  ///
+  /// 某些可空字段需要区分：
+  /// - 未传入（保持旧值）；
+  /// - 显式传入 null（清空该值）。
   NewDiaryDraft copyWith({
     String? title,
     String? contentDocJson,
@@ -133,6 +151,7 @@ class NewDiaryDraft {
     );
   }
 
+  /// 归一化 Map 结构，确保只包含可 JSON 化的 value。
   static Map<String, Object?>? _parseObjectMap(Object? raw) {
     if (raw is! Map) {
       return null;
@@ -148,6 +167,7 @@ class NewDiaryDraft {
     return normalized;
   }
 
+  /// 递归清洗动态值，防止运行时对象进入草稿 JSON 导致编码失败。
   static Object? _normalizeJsonValue(Object? value) {
     if (value == null || value is num || value is bool || value is String) {
       return value;

@@ -52,6 +52,7 @@ class DiaryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 标题行（含选中态图标）。
                 Row(
                   children: [
                     Expanded(
@@ -72,6 +73,7 @@ class DiaryCard extends StatelessWidget {
                       ),
                   ],
                 ),
+                // 正文摘要（无正文则不占位）。
                 if (diary.diary.content.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
@@ -80,6 +82,7 @@ class DiaryCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
+                  // 更新时间行。
                   const SizedBox(height: 8),
                 ] else
                   const SizedBox(height: 4),

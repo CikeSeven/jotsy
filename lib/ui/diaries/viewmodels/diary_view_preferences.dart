@@ -13,6 +13,7 @@ class DiaryViewPreferences {
   final DiarySortMode sortMode;
   final DiaryLayoutMode layoutMode;
 
+  /// 从设置存储层原始值恢复页面可直接使用的枚举。
   factory DiaryViewPreferences.fromRaw({
     required String sortRaw,
     required String layoutRaw,
@@ -23,6 +24,7 @@ class DiaryViewPreferences {
     );
   }
 
+  /// 排序字符串解析。
   static DiarySortMode _parseSortMode(String raw) {
     switch (raw) {
       case 'updatedAsc':
@@ -35,6 +37,7 @@ class DiaryViewPreferences {
     }
   }
 
+  /// 布局字符串解析。
   static DiaryLayoutMode _parseLayoutMode(String raw) {
     switch (raw) {
       case 'waterfall':

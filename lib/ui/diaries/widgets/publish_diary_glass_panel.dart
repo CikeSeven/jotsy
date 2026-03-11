@@ -46,6 +46,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     this.onClearCover,
   });
 
+  /// 心情候选列表：从低落到高兴，固定两行展示。
   static const List<String> moodOptions = <String>[
     '😭',
     '😢',
@@ -97,7 +98,9 @@ class PublishDiaryGlassPanel extends StatefulWidget {
 class PublishDiaryGlassPanelController {
   _PublishDiaryGlassPanelState? _state;
 
+  /// 是否处于“返回键应优先收起面板”的展开状态。
   bool get isExpanded => _state?._isExpandedForBackAction ?? false;
+  /// 是否位于内部子页（标签页），返回键应先回主页。
   bool get canPopInnerPage => _state?._canPopInnerPage ?? false;
 
   Future<void> collapse() {
@@ -120,6 +123,7 @@ class PublishDiaryGlassPanelController {
 }
 
 class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
+  // ==================== 尺寸参数（收起/展开/布局） ====================
   static const double _collapsedHeight = 64;
   static const double _mainExpandedHeight = 470;
   static const double _tagExpandedHeight = 540;
@@ -127,6 +131,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
 
+  // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
 
   double get _activeExpandedHeight =>
@@ -146,6 +151,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       tagExpandedHeight: _tagExpandedHeight,
     );
     _panelCoordinator.sheetController.addListener(_handleSheetMetricsChanged);
+    // 将状态对象挂到外部 controller，供页面层返回键逻辑调用。
     widget.controller?._attach(this);
   }
 
@@ -182,6 +188,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     return popped;
   }
 
+  /// 监听 sheet 拖拽进度，回写本地状态并向外透传进度。
   void _handleSheetMetricsChanged() {
     final changed = _panelCoordinator.syncProgressFromMetrics(
       _panelCoordinator.sheetController.metrics,
@@ -207,6 +214,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     apply();
   }
 
+  /// 根据精力值生成文案标签（用于滑块旁提示）。
   String get _energyDescription {
     final level = widget.energyLevel.clamp(1, 5).toInt();
     switch (level) {
@@ -227,6 +235,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
     final horizontalInset =
         lerpDouble(
           _collapsedHorizontalInset,
@@ -272,6 +281,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               ],
               minFlingSpeed: 580,
             ),
+            // 玻璃质感：圆角 + 阴影 + BackdropFilter + 半透明描边。
             decoration: SheetDecorationBuilder(
               size: SheetSize.fit,
               builder: (context, child) {
@@ -317,6 +327,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildContent(BuildContext context) {
+    // 面板内部使用 PageView 管理“主页面/标签管理页”，只允许代码切页。
     return PageView(
       controller: _panelCoordinator.contentPageController,
       physics: const NeverScrollableScrollPhysics(),
@@ -342,6 +353,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildMainContentPage(BuildContext context) {
+    // 主页面内容顺序：封面 -> 标签 -> 环境信息 -> 心情 -> 精力 -> 发布按钮。
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
@@ -419,6 +431,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          // 标签页顶部“新建”入口，视觉与标签项保持同体系玻璃卡片。
           SizedBox(
             width: double.infinity,
             child: ClipRRect(
@@ -501,6 +514,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildTagHeader(BuildContext context) {
+    // 标签子页头部：左返回、中标题、右占位保持居中。
     return SizedBox(
       height: _collapsedHeight,
       child: Row(
@@ -534,6 +548,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             ? widget.coverLabel!
             : '点击选择封面（可选）';
     final colorScheme = Theme.of(context).colorScheme;
+    // 封面入口卡片（可选），支持清除封面。
     return Material(
       color: colorScheme.surface.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(
@@ -587,6 +602,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         widget.tags.where((tag) => widget.selectedTagIds.contains(tag.id)).toList();
 
     final colorScheme = Theme.of(context).colorScheme;
+    // 标签入口卡片：仅展示已选择标签摘要，点击进入标签页。
     return Material(
       color: colorScheme.surface.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(
@@ -660,6 +676,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildTagManageContent(BuildContext context) {
+    // 标签页内容三态：加载 / 错误 / 正常列表。
     if (widget.tagsLoading) {
       return const SizedBox(
         height: 20,
@@ -735,6 +752,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final colorScheme = Theme.of(context).colorScheme;
     final locationLabel = widget.locationLabel?.trim();
     final hasLocation = locationLabel != null && locationLabel.isNotEmpty;
+    // “此时此地”区域：地址 + 天气，两者都为只读展示 + 右侧触发按钮。
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -872,6 +890,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             final itemWidth =
                 (constraints.maxWidth - horizontalSpacing * (moodColumns - 1)) /
                     moodColumns;
+            // 固定 5 列，两行排布，不允许横向滚动。
             return Wrap(
               spacing: horizontalSpacing,
               children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
@@ -939,6 +958,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildPublishAction() {
+    // 主操作按钮始终位于内容底部，避免与顶部手势区域冲突。
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(

@@ -44,6 +44,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
+  // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
   String? _draftCover;
   final FocusNode _titleFocusNode = FocusNode();
@@ -51,6 +52,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
 
+  // ==================== 发布上下文草稿字段 ====================
   final Set<int> _selectedTagIds = <int>{};
   late quill.QuillController _contentController;
   String _metadataJson = '{}';
@@ -62,10 +64,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String? _draftWeather;
   String? _draftMoodEmoji;
   int? _draftEnergyLevel;
+
+  // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
   bool _saving = false;
   Timer? _createDraftSaveDebounceTimer;
   String? _lastPersistedCreateDraftRaw;
+
+  // ==================== 业务控制器 ====================
   late final EditDiaryController _controller;
 
   bool get _isMobileRuntime {
@@ -84,6 +90,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _controller = EditDiaryController(this);
     _titleController.addListener(_controller.onCreateDraftInputChanged);
     _contentController.addListener(_controller.onCreateDraftInputChanged);
+    // 新建模式无需等详情查询，直接允许渲染编辑区域。
     _initialized = widget.diaryId == null;
     if (_isCreateEntry && widget.restoreCreateDraft) {
       unawaited(_controller.restoreCreateDraftIfExists());
@@ -104,15 +111,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     super.dispose();
   }
 
+  /// 当前正文纯文本（用于搜索、字数统计和空内容判断）。
   String get _currentContentText =>
       extractPlainTextFromDiaryDocument(_contentController.document);
 
+  /// 当前正文 Delta JSON（用于富文本持久化）。
   String get _currentContentDocJson =>
       encodeDiaryDocumentToJson(_contentController.document);
 
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
 
+  /// 汇总当前编辑态数据，形成可持久化的新建草稿对象。
   NewDiaryDraft get _currentCreateDraft {
     return NewDiaryDraft(
       title: _titleController.text,
@@ -132,6 +142,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
+  /// 标题输入框。
+  ///
+  /// 使用下划线风格，焦点态颜色高亮以提供明确输入反馈。
   Widget _buildTitleInput(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return TextField(
@@ -168,6 +181,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
+  /// 主编辑区域：
+  /// - 标题与正文放在同一个滚动容器内，保证滚动体验连续；
+  /// - 键盘弹起时保持焦点，不因轻微滚动自动收起键盘。
   Widget _buildEditor(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
@@ -229,6 +245,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             ? const AsyncData<DiaryWithTags?>(null)
             : ref.watch(diaryDetailProvider(widget.diaryId!));
 
+    // 编辑页统一处理三态：加载中 / 加载失败 / 数据可用。
     return detailAsync.when(
       loading:
           () =>
@@ -254,6 +271,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           );
         }
 
+        // 首次拿到详情时回填编辑器与草稿上下文，后续重建不重复执行。
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
           _draftCover = detail.diary.cover;
@@ -301,6 +319,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 ),
             ],
           ),
+            // 底部键盘弹起时显示悬浮工具栏，并对正文底部做避让。
             body: Stack(
               fit: StackFit.expand,
               children: <Widget>[

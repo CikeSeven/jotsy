@@ -18,6 +18,7 @@ class DiariesEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
+    // 搜索结果为空时使用“搜索语义”空态文案，不显示新建按钮。
     if (isSearchResultEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -48,6 +49,7 @@ class DiariesEmptyState extends StatelessWidget {
       );
     }
 
+    // 普通空态：提供新建入口。
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(

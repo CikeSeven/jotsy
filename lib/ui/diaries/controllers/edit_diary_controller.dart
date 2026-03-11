@@ -9,8 +9,10 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 class EditDiaryController {
   const EditDiaryController(this._state);
 
+  /// 页面状态引用，承载控制器需要读写的输入与临时状态。
   final _EditDiaryPageState _state;
 
+  /// 替换正文控制器时同步管理监听，避免旧控制器泄漏。
   void replaceContentController(quill.QuillController nextController) {
     _state._contentController.removeListener(onCreateDraftInputChanged);
     _state._contentController.dispose();
@@ -18,6 +20,7 @@ class EditDiaryController {
     _state._contentController.addListener(onCreateDraftInputChanged);
   }
 
+  /// 新建模式下的标题/正文输入监听回调。
   void onCreateDraftInputChanged() {
     if (!_state._isCreateEntry) {
       return;
@@ -25,6 +28,7 @@ class EditDiaryController {
     scheduleCreateDraftAutoSave();
   }
 
+  /// 1.3 秒防抖自动保存草稿。
   void scheduleCreateDraftAutoSave() {
     _state._createDraftSaveDebounceTimer?.cancel();
     _state._createDraftSaveDebounceTimer = Timer(
@@ -35,12 +39,14 @@ class EditDiaryController {
     );
   }
 
+  /// 执行防抖后的草稿写入（或清空）。
   Future<void> persistOrClearCreateDraftDebounced() async {
     if (!_state.mounted || !_state._isCreateEntry || _state._saving) {
       return;
     }
 
     final draft = _state._currentCreateDraft;
+    // 标题和正文都为空时自动清草稿，避免下次新建反复弹“继续编辑”提示。
     if (!draft.hasContent) {
       await clearCreateDraft();
       return;
@@ -56,6 +62,7 @@ class EditDiaryController {
     _state._lastPersistedCreateDraftRaw = rawDraft;
   }
 
+  /// 进入新建页时尝试恢复历史草稿。
   Future<void> restoreCreateDraftIfExists() async {
     final settingsService = await _state.ref.read(settingsServiceProvider.future);
     final rawDraft = settingsService.createDiaryDraftRaw;
@@ -70,6 +77,7 @@ class EditDiaryController {
       }
       final restoredDraft = NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
 
+      // 优先恢复富文本文档；若 JSON 不可用则降级为纯文本，保证可读可编辑。
       quill.Document restoredDocument;
       try {
         restoredDocument = decodeDiaryContentToDocument(
@@ -108,6 +116,7 @@ class EditDiaryController {
     }
   }
 
+  /// 主动清除新建草稿（发布成功或用户显式清空场景）。
   Future<void> clearCreateDraft() async {
     _state._createDraftSaveDebounceTimer?.cancel();
     final settingsService = await _state.ref.read(settingsServiceProvider.future);
@@ -115,6 +124,7 @@ class EditDiaryController {
     _state._lastPersistedCreateDraftRaw = null;
   }
 
+  /// 保存前校验：至少需要标题或正文其一非空。
   bool validateDraft() {
     final title = _state._titleController.text.trim();
     if (title.isEmpty &&
@@ -139,6 +149,7 @@ class EditDiaryController {
     return true;
   }
 
+  /// 保存日记（创建或更新）。
   Future<void> save() async {
     if (_state._saving) {
       return;
@@ -180,6 +191,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
+      // 新建与编辑共用同一入口，但写库动作不同。
       if (_state._isCreateEntry) {
         await clearCreateDraft();
       }
@@ -199,6 +211,7 @@ class EditDiaryController {
     }
   }
 
+  /// 软删除当前日记（仅编辑模式可用）。
   Future<void> softDelete() async {
     final diaryId = _state.widget.diaryId;
     if (diaryId == null || _state._saving) {
@@ -245,6 +258,7 @@ class EditDiaryController {
     Navigator.of(_state.context).pop(true);
   }
 
+  /// 跳转到发布页，并在返回后回写发布页修改过的草稿上下文。
   Future<void> openPublishPage() async {
     if (!validateDraft()) {
       return;

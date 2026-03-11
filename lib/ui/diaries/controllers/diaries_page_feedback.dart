@@ -9,8 +9,10 @@ part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 class DiariesPageFeedback {
   const DiariesPageFeedback(this._state);
 
+  /// 页面状态引用，用于访问 `context` 以及提示计数状态。
   final _DiariesPage _state;
 
+  /// 新建时发现草稿后的分流弹窗。
   Future<_CreateDraftDecision?> showCreateDraftDecisionDialog() {
     return showDialog<_CreateDraftDecision>(
       context: _state.context,
@@ -47,6 +49,7 @@ class DiariesPageFeedback {
     );
   }
 
+  /// 多选删除确认弹窗。
   Future<bool> showDeleteSelectedConfirmDialog(int count) async {
     final confirmed = await showDialog<bool>(
       context: _state.context,
@@ -77,6 +80,7 @@ class DiariesPageFeedback {
     return confirmed == true;
   }
 
+  /// 普通提示条，不带动作按钮。
   Future<void> showInfoSnackBar(
     String message, {
     Duration duration = _DiariesPage._restoreHintDuration,
@@ -89,6 +93,9 @@ class DiariesPageFeedback {
     );
   }
 
+  /// 带可见计数追踪的 SnackBar。
+  ///
+  /// 该方法是页面内所有提示的统一入口，确保 FAB 避让状态与提示一致。
   Future<SnackBarClosedReason> showTrackedSnackBar({
     required SnackBar snackBar,
     Duration? forceCloseAfter,
@@ -116,6 +123,7 @@ class DiariesPageFeedback {
   }
 
   /// 统一展示“可撤销”提示，并在无障碍场景下强制到时关闭。
+  /// 撤销型提示条，返回值表示用户是否触发了撤销动作。
   Future<bool> showUndoSnackBar({
     required String message,
     required Duration duration,

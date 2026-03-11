@@ -25,6 +25,7 @@ class DiaryItemTagRow extends StatelessWidget {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    // 仅渲染前 N 个标签，剩余数量走 `+N` 汇总。
     final visibleTags = tags.take(_maxVisibleTags).toList(growable: false);
     final hiddenCount = tags.length - visibleTags.length;
     final children = <Widget>[
@@ -59,6 +60,7 @@ class DiaryItemTagRow extends StatelessWidget {
   }
 }
 
+/// 单个标签文案片段：彩色 `#` + 标签名。
 class _DiaryTagText extends StatelessWidget {
   const _DiaryTagText({
     required this.label,

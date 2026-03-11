@@ -48,6 +48,7 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
+    // 计算 0~1 收起进度，用于统一驱动透明度与缩放。
     final extentDelta = (maxExtent - minExtent).abs();
     final collapseProgress =
         (extentDelta <= 0
@@ -97,6 +98,7 @@ class _CoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 网络图与本地图分别处理，均带失败回退。
     if (_isNetworkImage) {
       return Image.network(
         cover,

@@ -46,6 +46,7 @@ class DiariesPage extends ConsumerStatefulWidget {
 
 class _DiariesPage extends ConsumerState<DiariesPage>
     with TickerProviderStateMixin {
+  // ==================== 动画与交互节奏常量 ====================
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
@@ -61,6 +62,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
 
+  // ==================== 列表选择与过渡状态 ====================
   final Set<String> _selectedDiaryIds = <String>{};
   final Set<String> _optimisticHiddenDiaryIds = <String>{};
   final Set<String> _pendingHideDiaryIds = <String>{};
@@ -68,9 +70,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final Set<String> _archivingDiaryIds = <String>{};
   final Map<String, Timer> _pendingHideTimers = <String, Timer>{};
   final Map<String, Timer> _appearingTimers = <String, Timer>{};
+
+  // ==================== 搜索输入与防抖状态 ====================
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _searchDebounceTimer;
+
+  // ==================== 列表整体过渡动画 ====================
   late final AnimationController _listRefreshPulseController;
   late final Animation<double> _listRefreshOpacity;
   VoidCallback? _pendingFilterMutation;
@@ -86,6 +92,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
+
+  // ==================== 页面职责拆分协作对象 ====================
   late final DiariesPageFeedback _feedback;
   late final DiaryListTransitionCoordinator _transitionCoordinator;
   late final DiariesPageController _controller;
@@ -106,6 +114,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       transitionCoordinator: _transitionCoordinator,
     );
     _controller.attachHomeHintVisibilityListener();
+    // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。
     _listRefreshPulseController = AnimationController(
       vsync: this,
       duration: _listRefreshFadeInDuration,
@@ -193,6 +202,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
+              // 返回键优先处理页面内部状态，再交给路由栈。
               PopScope(
                 canPop: !(_isSelectionMode || _isSearchMode),
                 onPopInvokedWithResult: (didPop, result) {
@@ -226,6 +236,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               'diaries_scroll_${brightness.name}_${_layoutMode.name}',
                             ),
                             slivers: <Widget>[
+                              // 预留头部叠层空间，让应用栏可以做玻璃悬浮效果。
                               SliverToBoxAdapter(
                                 child: SizedBox(height: headerOverlayHeight),
                               ),
@@ -235,6 +246,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               tagsAsync.when(
                                 data: (tags) {
                                   return SliverToBoxAdapter(
+                                    // 顶部标签筛选条（支持清空和多选筛选）。
                                     child: DiaryTagFilterBar(
                                       tags: _controller.buildTagFiltersForDisplay(
                                         allTags: tags,
@@ -269,6 +281,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               SliverFadeTransition(
                                 opacity: _listRefreshOpacity,
                                 sliver:
+                                    // 数据状态优先级：
+                                    // 1) 首屏加载且无缓存；
+                                    // 2) 首屏错误且无缓存；
+                                    // 3) 渲染列表/空态内容。
                                     diariesAsync.isLoading && displayedItems.isEmpty
                                         ? const SliverFillRemaining(
                                           hasScrollBody: false,
@@ -327,8 +343,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           isSearchResultEmpty:
                                               filterState.keyword.trim().isNotEmpty,
                                         ),
-                              ),
+                                      ),
                               SliverToBoxAdapter(
+                                // 底部留白用于避让 Home 底部导航和 FAB。
                                 child: SizedBox(height: listBottomOffset),
                               ),
                             ],
@@ -364,6 +381,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     child: Column(
                                       children: [
                                         SizedBox(height: topSafeInset),
+                                        // 头部组件负责：搜索态、多选态、归档入口、排序布局菜单。
                                         DiaryHeadSection(
                                           isSelectionMode: _isSelectionMode,
                                           isSearchMode: _isSearchMode,
@@ -412,6 +430,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 ),
               ),
               if (!_isSelectionMode)
+                // FAB 在提示可见时自动上移，避免和 SnackBar 发生遮挡。
                 AnimatedPositioned(
                   duration: _fabShiftDuration,
                   curve: Curves.easeOutCubic,

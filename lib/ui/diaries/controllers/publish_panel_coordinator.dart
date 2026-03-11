@@ -14,14 +14,25 @@ class PublishPanelCoordinator {
     required this.tagExpandedHeight,
   });
 
+  /// 收起态高度（面板最小可见高度）。
   final double collapsedHeight;
+
+  /// 主页面展开高度。
   final double mainExpandedHeight;
+
+  /// 标签子页展开高度（通常高于主页面）。
   final double tagExpandedHeight;
 
+  /// smooth_sheets 控制器：负责面板展开/收起吸附动画。
   final SheetController sheetController = SheetController();
+
+  /// 内部分页控制器：主页面 / 标签管理页左右切换。
   final PageController contentPageController = PageController();
 
+  /// 当前展开进度（0=收起，1=展开）。
   double progress = 0;
+
+  /// 当前内页索引（0=主页面，1=标签页）。
   int contentPageIndex = 0;
 
   double get activeExpandedHeight =>
@@ -31,6 +42,9 @@ class PublishPanelCoordinator {
   bool get isExpandedForBackAction => progress > 0.06;
   bool get canPopInnerPage => contentPageIndex > 0;
 
+  /// 收起到最小状态。
+  ///
+  /// 如果当前在标签子页，会先回到主页面再执行收起。
   Future<void> collapseToMin() async {
     if (canPopInnerPage) {
       await popInnerPage(animated: false);
@@ -45,6 +59,7 @@ class PublishPanelCoordinator {
     );
   }
 
+  /// 打开标签管理子页。
   Future<void> openTagPage() async {
     if (contentPageIndex == 1 || !contentPageController.hasClients) {
       return;
@@ -56,6 +71,9 @@ class PublishPanelCoordinator {
     );
   }
 
+  /// 处理内部“返回上一级页面”。
+  ///
+  /// 返回值为 true 表示已消费返回动作。
   Future<bool> popInnerPage({bool animated = true}) async {
     if (!canPopInnerPage || !contentPageController.hasClients) {
       return false;
@@ -73,6 +91,7 @@ class PublishPanelCoordinator {
     return true;
   }
 
+  /// 同步内页索引，返回值表示索引是否发生变化。
   bool setContentPageIndex(int index) {
     if (contentPageIndex == index) {
       return false;
@@ -81,6 +100,7 @@ class PublishPanelCoordinator {
     return true;
   }
 
+  /// 根据 sheet metrics 同步进度，返回值表示进度是否有变化。
   bool syncProgressFromMetrics(SheetMetrics? metrics) {
     final nextProgress = resolveProgress(metrics);
     if ((nextProgress - progress).abs() < 0.0001) {
@@ -90,6 +110,7 @@ class PublishPanelCoordinator {
     return true;
   }
 
+  /// 将 smooth_sheets 的因子转换为 0~1 的统一进度。
   double resolveProgress(SheetMetrics? metrics) {
     if (metrics == null) {
       return 0;
@@ -102,6 +123,7 @@ class PublishPanelCoordinator {
     return raw.clamp(0.0, 1.0).toDouble();
   }
 
+  /// 释放内部控制器资源。
   void dispose() {
     sheetController.dispose();
     contentPageController.dispose();

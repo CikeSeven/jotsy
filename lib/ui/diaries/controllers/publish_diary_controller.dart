@@ -9,13 +9,16 @@ part of 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 class PublishDiaryController {
   const PublishDiaryController(this._state);
 
+  /// 发布页状态引用，控制器通过它访问输入值、临时状态与路由上下文。
   final _PublishDiaryPageState _state;
 
+  /// 预览页展示标题：空标题回退为默认文案。
   String get title {
     final normalized = _state.widget.initialDraft.title.trim();
     return normalized.isEmpty ? '未命名日记' : normalized;
   }
 
+  /// 规范化封面路径，空字符串按“无封面”处理。
   String? get normalizedCover {
     final normalized = _state._draftCover?.trim();
     if (normalized == null || normalized.isEmpty) {
@@ -24,6 +27,9 @@ class PublishDiaryController {
     return normalized;
   }
 
+  /// 封面展示文案：
+  /// - 网络图显示完整 URL；
+  /// - 本地图显示文件名，避免路径过长污染 UI。
   String? get coverLabel {
     final cover = normalizedCover;
     if (cover == null) {
@@ -36,6 +42,7 @@ class PublishDiaryController {
     return path.basename(cover);
   }
 
+  /// 通用可选文本标准化，统一去掉空白输入。
   String? normalizeOptionalText(String? raw) {
     final normalized = raw?.trim();
     if (normalized == null || normalized.isEmpty) {
@@ -44,6 +51,7 @@ class PublishDiaryController {
     return normalized;
   }
 
+  /// 页面内轻提示封装。
   Future<void> showHint(String message) async {
     if (!_state.mounted) {
       return;
@@ -54,6 +62,7 @@ class PublishDiaryController {
     );
   }
 
+  /// 组装设备上下文信息，写入 metadata.device。
   Map<String, Object?> buildDeviceMetadata() {
     final dispatcher = PlatformDispatcher.instance;
     return <String, Object?>{
@@ -63,6 +72,9 @@ class PublishDiaryController {
     };
   }
 
+  /// 组装最终 metadata JSON。
+  ///
+  /// 合并当前页面可编辑字段与自动采集字段，输出结构化字符串。
   String buildMetadataJson({DateTime? generatedAt}) {
     return PublishMetadataComposer.compose(
       contentText: _state.widget.initialDraft.contentText,
@@ -81,6 +93,9 @@ class PublishDiaryController {
     );
   }
 
+  /// 发布页用于显示的地址文案。
+  ///
+  /// 优先展示“城市 · 街道”，仅有其一时降级显示单字段。
   String? get locationLabel {
     final township = normalizeOptionalText(_state._locationTownship);
     final city = _resolveLocationCity(_state._locationAddressComponent);
@@ -99,6 +114,9 @@ class PublishDiaryController {
     return null;
   }
 
+  /// 解析展示城市：
+  /// - 常规城市取 city；
+  /// - 直辖市 city 为空时回退 province。
   String? _resolveLocationCity(Map<String, Object?>? addressComponent) {
     if (addressComponent == null || addressComponent.isEmpty) {
       return null;
@@ -110,6 +128,7 @@ class PublishDiaryController {
     return _normalizeAddressComponentText(addressComponent['province']);
   }
 
+  /// 地址组件值标准化（兼容字符串/列表混合结构）。
   String? _normalizeAddressComponentText(Object? raw) {
     if (raw is String) {
       return normalizeOptionalText(raw);
@@ -125,6 +144,7 @@ class PublishDiaryController {
     return null;
   }
 
+  /// 获取定位服务实例（按需懒加载，避免页面初始化即做网络准备）。
   Future<LocationResolverService?> ensureLocationResolverService() async {
     if (_state._locationResolverService != null) {
       return _state._locationResolverService;
@@ -137,6 +157,7 @@ class PublishDiaryController {
     return _state._locationResolverService;
   }
 
+  /// 获取天气服务实例（按需懒加载）。
   Future<QWeatherWeatherService?> ensureWeatherService() async {
     if (_state._weatherService != null) {
       return _state._weatherService;
@@ -158,6 +179,9 @@ class PublishDiaryController {
     return _state._weatherService;
   }
 
+  /// 选择封面并拷贝到应用私有目录。
+  ///
+  /// 若之前已有私有封面文件，会在替换后尝试清理旧文件。
   Future<void> pickCover() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -193,12 +217,14 @@ class PublishDiaryController {
     }
   }
 
+  /// 清除封面并删除私有目录中的旧文件（若存在）。
   Future<void> clearCover() async {
     final coverToDelete = normalizedCover;
     _state.setState(() => _state._draftCover = null);
     await DiaryCoverStorageService.deleteManagedCover(coverToDelete);
   }
 
+  /// 发布页内联创建标签，成功后自动加入当前选中集合。
   Future<void> createTagInline() async {
     final draft = await showCreateTagDialog(_state.context);
     if (draft == null) {
@@ -220,6 +246,9 @@ class PublishDiaryController {
     }
   }
 
+  /// 自动定位并逆地理解析：
+  /// - 保存 township 作为展示文案来源；
+  /// - 保存 addressComponent + 经纬度用于 metadata 组装。
   Future<void> resolveLocation() async {
     if (_state._locating) {
       return;
@@ -265,6 +294,7 @@ class PublishDiaryController {
     }
   }
 
+  /// 依据当前位置坐标请求天气并回填环境信息字段。
   Future<void> resolveWeather() async {
     if (_state._weatherLoading) {
       return;
@@ -311,6 +341,9 @@ class PublishDiaryController {
     }
   }
 
+  /// 执行发布写库。
+  ///
+  /// 成功后返回上一级页面，失败时仅提示不退出。
   Future<void> publish() async {
     if (_state._saving) {
       return;
@@ -344,6 +377,7 @@ class PublishDiaryController {
     }
   }
 
+  /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
   void closeWithDraft() {
     Navigator.of(_state.context).pop(
       _state.widget.initialDraft.copyWith(

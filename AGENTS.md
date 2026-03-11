@@ -28,7 +28,7 @@ dart run build_runner build --delete-conflicting-outputs
 ## Coding Style & Naming Conventions
 - File encoding must be UTF-8.
 - Follow Dart style: 2-space indentation and formatted code.
-- Run `dart format .` before committing.
+- Do not run `dart format` or `flutter analyze` as part of automated agent execution; the user runs them manually.
 - Lints come from `flutter_lints` (`analysis_options.yaml`).
 - Use `snake_case` for files, `UpperCamelCase` for classes/widgets, and `lowerCamelCase` for members.
 - Keep feature UI code in `lib/ui/<feature>/...`; cross-feature logic belongs in `lib/core/...`.
@@ -43,15 +43,27 @@ dart run build_runner build --delete-conflicting-outputs
   - Avoid stacking multiple heavy blur layers in the same viewport region to reduce rendering cost on lower-end devices.
   - Preserve clear interaction affordance (tap targets, boundaries, and state feedback) even when using translucent backgrounds.
 - Do not use any gradient colors in UI (including `LinearGradient`, `RadialGradient`, and `SweepGradient`).
-- Write more high-value comments for non-trivial logic, state transitions, and edge-case handling; avoid redundant comments that only restate the code.
-- Keep files focused and reasonably small; when a file grows beyond about 300 lines, evaluate splitting it into smaller widgets/classes/modules.
-- Prefer timely decomposition over large monolithic files: extract reusable UI sections, business logic, and data-mapping code into dedicated files.
+- Write detailed high-value comments for non-trivial logic, state transitions, async chains, rollback behavior, and edge-case handling.
+- Avoid redundant comments that only restate obvious code; comments must explain intent, boundaries, and decision rationale.
+- Keep files focused and reasonably small; when a file grows beyond about 300 lines, proactively evaluate splitting it into smaller widgets/classes/modules.
+- Prefer timely decomposition over monolithic files: extract reusable UI sections, business orchestration, and data-mapping code into dedicated files.
+
+## Diaries Module Layering & Comment Rules
+- Scope: all code under `lib/ui/diaries/`.
+- `pages/` should be shell-oriented: route wiring, lifecycle, provider watch, and widget composition only. Avoid embedding large business workflows directly in page `State`.
+- Business orchestration should be extracted to `controllers/` (search/filter flows, delete/archive/undo, publish chain, draft autosave/debounce, navigation handoff).
+- Local derived state and parsing/mapping utilities should live in `viewmodels/` or `models/`, not inline in pages.
+- Complex reusable UI blocks belong in `sections/` or `widgets/`; keep page files from becoming mixed UI+business monoliths.
+- Add file-level responsibility comments for controllers/pages/complex widgets, including clear boundary notes (inputs, outputs, side effects).
+- For methods involving async/timer/queue behavior, add explicit step comments (trigger condition, mutation order, rollback strategy, mounted checks).
+- For multi-state UI regions, add section comments to describe structure and intent (for example header/search/selection states, panel main page vs tag page, loading/error/empty/data branches).
+- Comment depth should be detailed and practical, but avoid noisy line-by-line narration.
 
 ## Testing Guidelines
 - Use `flutter_test` for widget and unit tests.
 - Name test files `*_test.dart`.
 - Prefer behavior-focused test names (for example, `shows_empty_state_when_no_notes`).
-- For every functional change, add or update relevant tests and run `flutter test` + `flutter analyze`.
+- For every functional change, add or update relevant tests and run `flutter test`; `flutter analyze` is executed manually by the user when needed.
 - No enforced coverage threshold yet; avoid merging untested logic changes.
 
 ## Commit & Pull Request Guidelines

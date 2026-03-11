@@ -27,6 +27,9 @@ class _CreateTagDialog extends StatefulWidget {
 }
 
 class _CreateTagDialogState extends State<_CreateTagDialog> {
+  // 颜色体系：
+  // - 顶部主色族用于粗粒度选择；
+  // - 下方给出该色族下的多个可选色。
   static const List<_ColorPaletteFamily> _families = <_ColorPaletteFamily>[
     _ColorPaletteFamily(
       label: '红',
@@ -160,6 +163,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
     ),
   ];
 
+  // 输入与选择状态。
   final TextEditingController _nameController = TextEditingController();
   bool _colorPickerExpanded = false;
   int _selectedFamilyIndex = 3;
@@ -186,12 +190,14 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
     super.dispose();
   }
 
+  /// 标签名变化时刷新“创建按钮可用性”。
   void _handleNameChanged() {
     if (mounted) {
       setState(() {});
     }
   }
 
+  /// 切换主色族，并重置为该色族第一个颜色。
   void _selectFamily(int index) {
     setState(() {
       _selectedFamilyIndex = index;
@@ -200,6 +206,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
     });
   }
 
+  /// 选择当前主色族下的具体颜色。
   void _selectColor(int index) {
     setState(() {
       _selectedColorIndex = index;
@@ -209,6 +216,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
     });
   }
 
+  /// 提交创建结果。
   void _submit() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -240,6 +248,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 16),
+            // 颜色选择区域的展开/收起入口。
             InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
@@ -276,6 +285,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                 ),
               ),
             ),
+            // 展开后展示两层颜色选择：
+            // 1) 主色族横向卡片；
+            // 2) 具体颜色圆点网格。
             AnimatedCrossFade(
               firstChild: const SizedBox.shrink(),
               secondChild: Padding(

@@ -12,6 +12,7 @@ class DiaryFilterState {
   final String keyword;
   final Set<int> selectedTagIds;
 
+  /// 生成新的筛选状态副本，保持不可变数据流。
   DiaryFilterState copyWith({String? keyword, Set<int>? selectedTagIds}) {
     return DiaryFilterState(
       keyword: keyword ?? this.keyword,
@@ -29,10 +30,12 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     return const DiaryFilterState();
   }
 
+  /// 更新关键词筛选。
   void setKeyword(String value) {
     state = state.copyWith(keyword: value);
   }
 
+  /// 单个标签开关。
   void toggleTag(int tagId, bool selected) {
     final next = <int>{...state.selectedTagIds};
     if (selected) {
@@ -43,6 +46,7 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     state = state.copyWith(selectedTagIds: next);
   }
 
+  /// 清空标签筛选（保留关键词）。
   void clearTags() {
     if (state.selectedTagIds.isEmpty) {
       return;

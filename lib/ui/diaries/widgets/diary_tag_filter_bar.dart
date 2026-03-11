@@ -7,6 +7,11 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import 'tag_filter_chip.dart';
 
+/// 日记页顶部标签筛选栏。
+///
+/// 结构：
+/// - 左侧纯 `X` 清空筛选按钮（带缩放 + 旋转反馈）；
+/// - 右侧横向滚动的标签筛选 chip 列表。
 class DiaryTagFilterBar extends StatefulWidget {
   const DiaryTagFilterBar({
     super.key,
@@ -27,8 +32,10 @@ class DiaryTagFilterBar extends StatefulWidget {
 
 class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
     with SingleTickerProviderStateMixin {
+  /// 半圈角度（180°），用于清空按钮单向旋转动画。
   static const double _halfTurn = 3.1415926535897932;
 
+  // 清空按钮反馈动画：缩放 + 旋转。
   late final AnimationController _clearController;
   late final Animation<double> _clearScale;
   late final Animation<double> _clearRotation;
@@ -81,6 +88,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
     if (_clearController.isAnimating) {
       return;
     }
+    // 点击即刻清空，再异步播放动画，保证“响应优先”。
     widget.onClearTagFilters();
     unawaited(_playClearAnimation());
   }
@@ -115,6 +123,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
           separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
           itemBuilder: (BuildContext context, int index) {
             if (index == 0) {
+              // 左侧清空按钮：按需求保持纯图标，无额外背景包裹。
               return AnimatedBuilder(
                 animation: _clearController,
                 builder: (BuildContext context, Widget? child) {
@@ -149,6 +158,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
 
             final tag = widget.tags[index - 1];
             final selected = widget.selectedTagFilterIds.contains(tag.id);
+            // 普通标签筛选项：白底轻描边，选中态强化边框色。
             return TagFilterChip(
               label: tag.name,
               colorDot: Color(tag.color),

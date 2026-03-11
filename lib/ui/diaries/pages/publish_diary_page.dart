@@ -26,6 +26,12 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 part '../controllers/publish_diary_controller.dart';
 
+/// 日记发布页（预览优先）。
+///
+/// 页面职责：
+/// - 展示真实发布预览（封面 + 标题 + 富文本正文）；
+/// - 承载底部玻璃面板交互（封面/标签/位置/天气/心情/精力）；
+/// - 最终调用控制器执行发布写库。
 class PublishDiaryPage extends ConsumerStatefulWidget {
   const PublishDiaryPage({super.key, required this.initialDraft});
 
@@ -36,12 +42,14 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
+  // ==================== 输入控制器与面板控制器 ====================
   final TextEditingController _weatherController = TextEditingController();
   final PublishDiaryGlassPanelController _panelController =
       PublishDiaryGlassPanelController();
   late final quill.QuillController _previewController;
   late final Set<int> _selectedTagIds;
 
+  // ==================== 页面草稿态字段 ====================
   String? _draftCover;
   String? _moodEmoji;
   String? _locationTownship;
@@ -51,11 +59,15 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   bool _locationFromAuto = false;
   int _energyLevel = 3;
   double _panelExpandProgress = 0;
+
+  // ==================== 异步流程状态 ====================
   bool _saving = false;
   bool _locating = false;
   bool _weatherLoading = false;
   LocationResolverService? _locationResolverService;
   QWeatherWeatherService? _weatherService;
+
+  // ==================== 业务控制器 ====================
   late final PublishDiaryController _controller;
 
   @override
@@ -72,6 +84,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _weatherController.text = widget.initialDraft.weather ?? '';
     _moodEmoji = widget.initialDraft.moodEmoji;
 
+    // 精力值限制在 1~5，避免历史数据越界导致 UI 异常。
     final initialEnergy = widget.initialDraft.energyLevel ?? 3;
     if (initialEnergy < 1) {
       _energyLevel = 1;
@@ -81,6 +94,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       _energyLevel = initialEnergy;
     }
 
+    // 预览正文优先走 Delta JSON；失败时降级纯文本，确保页面总能打开。
     quill.Document previewDoc;
     try {
       previewDoc = decodeDiaryContentToDocument(widget.initialDraft.contentDocJson);
@@ -106,6 +120,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final tagsAsync = ref.watch(tagListProvider);
 
+    // 标签数据状态拆分为三元组，便于直接透传给悬浮面板组件。
     var tags = const <Tag>[];
     var tagsLoading = false;
     String? tagsError;
@@ -115,8 +130,13 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       error: (error, stackTrace) => tagsError = '$error',
     );
 
+    // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
     final panelSpacer = lerpDouble(140, 460, _panelExpandProgress) ?? 140;
 
+    // 返回键策略：
+    // 1) 优先返回面板子页；
+    // 2) 其次收起面板；
+    // 3) 最后带草稿返回编辑页。
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -149,6 +169,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 if (_controller.normalizedCover != null)
                   PublishDiaryCoverSliver(cover: _controller.normalizedCover!),
                 SliverToBoxAdapter(
+                  // 标题与正文预览区域。
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                     child: Column(
@@ -184,6 +205,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               ],
             ),
             Positioned(
+              // 底部玻璃悬浮交互面板。
               left: 16,
               right: 16,
               bottom: 0,
@@ -203,6 +225,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 tagsLoading: tagsLoading,
                 tagsError: tagsError,
                 selectedTagIds: _selectedTagIds,
+                // 通过进度回调驱动正文区底部占位，维持滚动可见性。
                 onProgressChanged: (progress) {
                   void applyProgress() {
                     if (!mounted) {

@@ -29,10 +29,16 @@ class ArchivedDiariesPage extends ConsumerStatefulWidget {
 }
 
 class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
+  /// 撤销提示展示时长。
   static const Duration _undoSnackDuration = Duration(seconds: 4);
+
+  /// 操作完成后的轻提示时长。
   static const Duration _restoreHintDuration = Duration(seconds: 2);
 
+  /// 当前多选集合（仅归档页内维护）。
   final Set<String> _selectedDiaryIds = <String>{};
+
+  /// 业务控制器：处理删除/取消归档/撤销等流程。
   late final ArchivedDiariesController _controller;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
@@ -51,6 +57,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
     final pageBackgroundColor =
         brightness == Brightness.light ? Colors.white : colorScheme.surface;
 
+    // 返回键优先退出选择模式，避免误退出页面。
     return PopScope(
       canPop: !_isSelectionMode,
       onPopInvokedWithResult: (didPop, result) {
@@ -92,6 +99,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                   ]
                   : null,
         ),
+        // 归档页使用独立 provider，不与主页筛选逻辑共享状态。
         body: archivedAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error:
@@ -106,6 +114,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               color: pageBackgroundColor,
               child: CustomScrollView(
                 slivers: <Widget>[
+                  // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
                   DiariesListSection(
                     themeBrightness: brightness,
                     diaries: diaries,

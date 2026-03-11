@@ -7,10 +7,13 @@ import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 
+/// 顶部排序模式。
 enum DiarySortMode { updatedDesc, updatedAsc, titleAsc }
 
+/// 日记列表布局模式。
 enum DiaryLayoutMode { list, waterfall }
 
+/// 顶部菜单动作枚举（排序 + 布局）。
 enum DiaryMenuAction {
   sortUpdatedDesc,
   sortUpdatedAsc,
@@ -25,6 +28,7 @@ enum DiaryMenuAction {
 /// - 左侧展示页面标题或多选计数；
 /// - 右侧展示操作按钮（取消选择、归档、删除、归档列表入口）。
 class DiaryHeadSection extends StatelessWidget {
+  // ==================== 头部过渡动画常量 ====================
   static const Duration _modeTransitionDuration = Duration(milliseconds: 260);
   static const Duration _searchFieldSwitchDuration = Duration(milliseconds: 220);
   static const double _headerContentHeight = 48;
@@ -84,6 +88,7 @@ class DiaryHeadSection extends StatelessWidget {
         height: _headerContentHeight,
         child: Row(
           children: [
+            // 多选模式：显示批量操作按钮组。
             if (isSelectionMode) ...[
               Expanded(
                 child: Text(
@@ -115,6 +120,7 @@ class DiaryHeadSection extends StatelessWidget {
                 ),
               ),
             ] else ...[
+              // 普通/搜索模式：标题、搜索区域、右侧操作区三段布局。
               AnimatedSize(
                 duration: _modeTransitionDuration,
                 curve: Curves.easeOutCubic,
@@ -195,6 +201,7 @@ class DiaryHeadSection extends StatelessWidget {
     );
   }
 
+  /// 打开排序与布局设置底部面板。
   void _showSettingsSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
@@ -314,6 +321,7 @@ class _SearchPreview extends StatelessWidget {
     final displayedText = searchPreviewText.trim();
     final hasText = displayedText.isNotEmpty;
 
+    // 未进入搜索态时展示的“可点击搜索预览条”。
     return Container(
       height: height,
       decoration: BoxDecoration(
@@ -416,6 +424,7 @@ class _SearchInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // 搜索态输入条：左侧返回、中央输入、右侧按需出现清空按钮。
     return Container(
       height: height,
       decoration: BoxDecoration(
@@ -572,6 +581,7 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 设置弹层中的单行动作项（支持选中状态勾选）。
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.only(left: AppSpacing.l),

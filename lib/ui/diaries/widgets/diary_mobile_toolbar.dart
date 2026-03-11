@@ -60,6 +60,7 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
 ];
 
 extension DiaryToolbarItemX on DiaryToolbarItem {
+  /// 本地持久化键名。
   String get storageKey {
     return switch (this) {
       DiaryToolbarItem.undo => 'undo',
@@ -84,6 +85,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
     };
   }
 
+  /// 设置页展示文案。
   String get label {
     return switch (this) {
       DiaryToolbarItem.undo => '撤销',
@@ -108,6 +110,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
     };
   }
 
+  /// 工具项默认图标（统一使用 FontAwesome）。
   IconData get iconData {
     return switch (this) {
       DiaryToolbarItem.undo => FontAwesomeIcons.rotateLeft,
@@ -169,6 +172,7 @@ List<DiaryToolbarItem> decodeDiaryToolbarOrder(String? raw) {
   return result;
 }
 
+/// 将工具栏顺序编码为可持久化字符串。
 String encodeDiaryToolbarOrder(List<DiaryToolbarItem> order) {
   final normalized = _normalizeDiaryToolbarOrder(order);
   return normalized.map((item) => item.storageKey).join(',');
@@ -182,6 +186,7 @@ Widget buildDiaryFloatingToolbar({
   final normalizedOrder = _normalizeDiaryToolbarOrder(order);
   return LayoutBuilder(
     builder: (BuildContext context, BoxConstraints constraints) {
+      // 外层统一负责横向滚动，避免每个单项工具自身再出现滚动行为。
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -212,10 +217,12 @@ Widget buildDiaryFloatingToolbar({
   );
 }
 
+/// 统一返回 Quill Embed 渲染器（发布预览与编辑器保持一致）。
 List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders() {
   return FlutterQuillEmbeds.defaultEditorBuilders();
 }
 
+/// 对外部传入顺序做去重 + 补全，防止配置异常导致工具项缺失。
 List<DiaryToolbarItem> _normalizeDiaryToolbarOrder(List<DiaryToolbarItem> order) {
   if (order.isEmpty) {
     return List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
@@ -287,6 +294,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
     ),
   );
 
+  // 按“单个工具项”生成开关矩阵，保证一个 QuillSimpleToolbar 只渲染一个按钮。
   final showUndo = item == DiaryToolbarItem.undo;
   final showRedo = item == DiaryToolbarItem.redo;
   final showBold = item == DiaryToolbarItem.bold;
@@ -306,6 +314,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   final showIndent = item == DiaryToolbarItem.indent;
   final showLink = item == DiaryToolbarItem.link;
 
+  // 图片按钮使用自定义拣选并复制到私有目录，避免外部路径失效。
   final embedButtons =
       item == DiaryToolbarItem.image
           ? FlutterQuillEmbeds.toolbarButtons(
@@ -320,6 +329,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
           )
           : null;
 
+  // 所有工具按钮图标统一映射为 FontAwesome，避免风格不一致。
   final buttonOptions = quill.QuillSimpleToolbarButtonOptions(
     base: quill.QuillToolbarBaseButtonOptions(
       iconSize: 13,
@@ -382,6 +392,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
     ),
   );
 
+  // 标题样式属于自定义循环按钮，不依赖 Quill 默认 header 组。
   final customButtons =
       item == DiaryToolbarItem.headerStyle
           ? <quill.QuillToolbarCustomButtonOptions>[
@@ -450,6 +461,7 @@ void _cycleHeaderStyle(quill.QuillController controller) {
   controller.formatSelection(nextHeader);
 }
 
+/// 拾取图片并返回可插入编辑器的最终路径。
 Future<String?> _pickAndPersistDiaryImage(BuildContext context) async {
   final result = await FilePicker.platform.pickFiles(
     allowMultiple: false,
@@ -467,6 +479,7 @@ Future<String?> _pickAndPersistDiaryImage(BuildContext context) async {
   return _persistDiaryImage(path);
 }
 
+/// 将外部图片复制到应用私有目录，确保日记长期可访问。
 Future<String> _persistDiaryImage(String sourcePath) async {
   final sourceFile = File(sourcePath);
   if (!await sourceFile.exists()) {

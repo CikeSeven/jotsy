@@ -18,6 +18,7 @@ import 'diary_head_section.dart';
 ///
 /// 仅负责输出“日记内容本身”的 sliver，不再承载顶部标签条或独立滚动容器。
 class DiariesListSection extends StatelessWidget {
+  /// 单条日记项进入/退出列表时的过渡时长。
   static const Duration _itemTransitionDuration = Duration(milliseconds: 220);
 
   const DiariesListSection({
@@ -39,12 +40,18 @@ class DiariesListSection extends StatelessWidget {
     this.isSearchResultEmpty = false,
   });
 
+  /// 当前主题亮暗，用于选择背景基色。
   final Brightness themeBrightness;
+  /// 视图层已过滤/排序后的日记数据。
   final List<DiaryWithTags> diaries;
+  /// 列表布局模式：列表 or 瀑布流。
   final DiaryLayoutMode layoutMode;
+  /// 当前被选中的日记 ID 集合。
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
+  /// 标记“正在收起隐藏”的日记项集合。
   final Set<String> pendingHideDiaryIds;
+  /// 标记“正在出现动画”的日记项集合。
   final Set<String> appearingDiaryIds;
   final VoidCallback onCreate;
   final void Function(String diaryId) onOpenEditor;
@@ -53,6 +60,7 @@ class DiariesListSection extends StatelessWidget {
   final IconData swipeActionIcon;
   final Color? swipeActionBackgroundColor;
   final Color? swipeActionIconColor;
+  /// 空列表时是否处于“搜索结果为空”语义。
   final bool isSearchResultEmpty;
 
   @override
@@ -62,6 +70,7 @@ class DiariesListSection extends StatelessWidget {
     final backgroundColor = isLightMode ? Colors.white : colorScheme.surface;
     final waterfallLayoutSignature = _buildWaterfallLayoutSignature(diaries);
 
+    // 空态：根据是否搜索场景展示不同文案。
     if (diaries.isEmpty) {
       return SliverToBoxAdapter(
         child: ColoredBox(
@@ -80,6 +89,7 @@ class DiariesListSection extends StatelessWidget {
       );
     }
 
+    // 瀑布流模式：双列卡片，卡片包含封面（如有）和摘要。
     if (layoutMode == DiaryLayoutMode.waterfall) {
       return SliverPadding(
         key: ValueKey<int>(waterfallLayoutSignature),
@@ -105,6 +115,7 @@ class DiariesListSection extends StatelessWidget {
       );
     }
 
+    // 普通列表模式：单列行列表，使用分割线分隔条目。
     return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final diary = diaries[index];
@@ -168,6 +179,7 @@ class DiariesListSection extends StatelessWidget {
 
     return Builder(
       builder: (BuildContext _) {
+        // 列表模式正文区域（标题/标签/摘要/时间）结构。
         final detailContent = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -209,6 +221,7 @@ class DiariesListSection extends StatelessWidget {
           ],
         );
 
+        // 瀑布流模式标题行，选中态在右侧显示勾选图标。
         final compactHeader = Row(
           children: [
             Expanded(
@@ -231,6 +244,7 @@ class DiariesListSection extends StatelessWidget {
           ],
         );
 
+        // 瀑布流文本区域（位于可选封面下方）。
         final compactTextContent = Padding(
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Column(
@@ -266,6 +280,7 @@ class DiariesListSection extends StatelessWidget {
           ),
         );
 
+        // 两种布局模式使用不同内容骨架，交互逻辑保持一致。
         final content =
             compact
                 ? Column(
@@ -307,6 +322,10 @@ class DiariesListSection extends StatelessWidget {
 
         final itemRadius = compact ? 14.0 : 0.0;
 
+        // 统一点击交互：
+        // - 选择模式下点击切换选中；
+        // - 普通模式下点击进入编辑；
+        // - 长按强制选中。
         final item = ClipRRect(
           borderRadius: BorderRadius.circular(itemRadius),
           child: Material(
@@ -347,6 +366,7 @@ class DiariesListSection extends StatelessWidget {
           child: item,
         );
 
+        // 仅普通列表启用左滑归档，瀑布流不启用侧滑动作。
         if (!compact && !isSelectionMode && onArchiveDiary != null) {
           final swipeBackgroundColor =
               swipeActionBackgroundColor ??
@@ -385,6 +405,7 @@ class DiariesListSection extends StatelessWidget {
     final isExiting = pendingHideDiaryIds.contains(diaryId);
     final isAppearing = appearingDiaryIds.contains(diaryId);
 
+    // 退出态切换为空组件，配合 AnimatedSwitcher 做“收起并淡出”。
     final switchedChild =
         isExiting
             ? SizedBox(key: ValueKey<String>('hidden_$diaryId'))
@@ -410,10 +431,12 @@ class DiariesListSection extends StatelessWidget {
       child: switchedChild,
     );
 
+    // 非“新增出现态”时直接返回基础切换器。
     if (!isAppearing || isExiting) {
       return switcher;
     }
 
+    // 出现态额外加一层高度与透明度补间，形成“从无到有”感。
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('appear_$diaryId'),
       tween: Tween<double>(begin: 0, end: 1),
@@ -435,6 +458,9 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
+  /// 封面解析优先级：
+  /// 1) 日记显式封面字段；
+  /// 2) 正文内容中第一张图片。
   String? _resolvePreviewCover(Diary diary) {
     final explicitCover = diary.cover?.trim();
     if (explicitCover != null && explicitCover.isNotEmpty) {
@@ -443,6 +469,7 @@ class DiariesListSection extends StatelessWidget {
     return _extractFirstImageFromContent(diary.content);
   }
 
+  /// 从 Quill Delta JSON 中提取第一张图片地址。
   String? _extractFirstImageFromContent(String contentJson) {
     final normalized = contentJson.trim();
     if (normalized.isEmpty) {
@@ -457,6 +484,7 @@ class DiariesListSection extends StatelessWidget {
     }
   }
 
+  /// 递归解析图片节点，兼容不同嵌套结构。
   String? _extractImageFromNode(Object? node) {
     if (node is List) {
       for (final item in node) {
@@ -510,6 +538,7 @@ class DiariesListSection extends StatelessWidget {
     return null;
   }
 
+  /// 构建封面预览图（自动区分网络图与本地图）。
   Widget _buildCoverPreview(
     String imageSource, {
     double? width,
@@ -547,6 +576,7 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
+  /// 封面加载失败占位图。
   Widget _buildCoverFallback() {
     return Container(
       color: Colors.black12,

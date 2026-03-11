@@ -8,6 +8,12 @@ import 'dart:convert';
 class PublishMetadataComposer {
   const PublishMetadataComposer._();
 
+  /// 组装发布时的 metadata。
+  ///
+  /// 约定输出结构：
+  /// - 顶层基础信息：schemaVersion/generatedAt/stats/tagIds/hasCover/device；
+  /// - context：位置、天气、情绪、精力等可选上下文；
+  /// - geo：仅在自动定位成功且有经纬度时写入。
   static String compose({
     required String contentText,
     required Set<int> selectedTagIds,
@@ -63,11 +69,13 @@ class PublishMetadataComposer {
     return jsonEncode(metadata);
   }
 
+  /// 以缩进格式输出 JSON，便于调试查看。
   static String pretty(String jsonRaw) {
     final decoded = jsonDecode(jsonRaw);
     return const JsonEncoder.withIndent('  ').convert(decoded);
   }
 
+  /// 基于空白分词估算词数，作为发布统计字段。
   static int _wordCount(String text) {
     final normalized = text.trim();
     if (normalized.isEmpty) {
@@ -76,6 +84,7 @@ class PublishMetadataComposer {
     return normalized.split(RegExp(r'\s+')).length;
   }
 
+  /// 可选文本字段标准化：空字符串转 null。
   static String? _normalizeOptionalText(String? value) {
     final normalized = value?.trim();
     if (normalized == null || normalized.isEmpty) {
@@ -84,6 +93,7 @@ class PublishMetadataComposer {
     return normalized;
   }
 
+  /// 过滤掉 map 中无意义的空值键，减少 metadata 噪音。
   static Map<String, Object?> _filterEmptyMap(Map<String, Object?> raw) {
     return <String, Object?>{
       for (final entry in raw.entries)

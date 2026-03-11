@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 
+/// 顶部标签筛选项通用组件。
+///
+/// 支持两类视觉形态：
+/// - 普通标签（可选颜色点）；
+/// - 特殊入口（通过 `leading` 自定义左侧图标）。
 class TagFilterChip extends StatelessWidget {
   const TagFilterChip({
     super.key,
@@ -25,19 +30,24 @@ class TagFilterChip extends StatelessWidget {
     this.showSelectedShadow = true,
   });
 
+  /// 文案标签。
   final String label;
+  /// 当前是否选中。
   final bool selected;
   final Color selectedColor;
   final Color selectedForegroundColor;
   final Color unselectedColor;
   final Color unselectedForegroundColor;
+  /// 点击回调。
   final VoidCallback onTap;
   final Color? colorDot;
   final Widget? leading;
   final double radius;
   final double colorDotSize;
   final EdgeInsetsGeometry padding;
+  /// 动态边框过渡（用于和主色卡片一致的“选中态切换感”）。
   final bool animateBorder;
+  /// 选中态阴影开关。
   final bool showSelectedShadow;
 
   @override

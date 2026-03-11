@@ -34,6 +34,8 @@ dependencies:
   amap_flutter: ^0.7.0
   geolocator: ^14.0.2
   loading_indicator_m3e: ^0.1.1
+  share_plus: ^10.1.4
+  widget_screenshot_plus: ^0.0.7
   
 dev_dependencies:
   flutter_test:

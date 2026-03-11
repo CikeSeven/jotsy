@@ -1069,6 +1069,22 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.2.1"
+  share_plus:
+    dependency: "direct main"
+    description:
+      name: share_plus
+      sha256: fce43200aa03ea87b91ce4c3ac79f0cecd52e2a7a56c7a4185023c271fbfa6da
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "10.1.4"
+  share_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: share_plus_platform_interface
+      sha256: cc012a23fc2d479854e6c80150696c4a5f5bb62cb89af4de1c505cf78d0a5d0b
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "5.0.2"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1214,10 +1230,10 @@ packages:
     dependency: transitive
     description:
       name: sqlite3
-      sha256: f8f8ba7f9454f2761d4b416e030c4528ebc45e9290798d848f4dc08890c42a7c
+      sha256: caa693ad15a587a2b4fde093b728131a1827903872171089dedb16f7665d3a91
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "3.1.7"
+    version: "3.2.0"
   sqlite3_flutter_libs:
     dependency: "direct main"
     description:
@@ -1398,10 +1414,10 @@ packages:
     dependency: transitive
     description:
       name: video_player
-      sha256: "08bfba72e311d48219acad4e191b1f9c27ff8cf928f2c7234874592d9c9d7341"
+      sha256: "48a7bdaa38a3d50ec10c78627abdbfad863fdf6f0d6e08c7c3c040cfd80ae36f"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.11.0"
+    version: "2.11.1"
   video_player_android:
     dependency: transitive
     description:
@@ -1482,6 +1498,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "1.2.1"
+  widget_screenshot_plus:
+    dependency: "direct main"
+    description:
+      name: widget_screenshot_plus
+      sha256: b56fc7d8fbbdfceeb338be6ced955329ecff83251f2f92f4718dbd2856ad610d
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.0.7"
   win32:
     dependency: transitive
     description:

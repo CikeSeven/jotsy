@@ -83,6 +83,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _saving = false;
   Timer? _createDraftSaveDebounceTimer;
   String? _lastPersistedCreateDraftRaw;
+  _EditPersistedSnapshot? _savedEditSnapshot;
+  bool _hasPendingEditChanges = false;
 
   // ==================== 业务控制器 ====================
   late final EditDiaryController _controller;
@@ -137,6 +139,99 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
   bool get _isEditEntry =>
       widget.diaryId != null && widget.entryMode == EditDiaryEntryMode.edit;
+  bool get _canSaveEdit => _isEditEntry && !_saving && _hasPendingEditChanges;
+
+  String? _normalizeOptionalText(String? raw) {
+    final normalized = raw?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
+  }
+
+  _EditPersistedSnapshot _buildCurrentEditSnapshot() {
+    return _EditPersistedSnapshot(
+      title: _titleController.text,
+      contentDocJson: _currentContentDocJson,
+      cover: _normalizeOptionalText(_draftCover),
+      metadataJson: _metadataJson.trim(),
+      selectedTagIds: <int>{..._selectedTagIds},
+    );
+  }
+
+  void _refreshPendingEditChanges() {
+    if (!_isEditEntry || !_initialized || _saving) {
+      return;
+    }
+    final nextPending =
+        _panelMetadataDirty ||
+        (_savedEditSnapshot != null &&
+            _buildCurrentEditSnapshot() != _savedEditSnapshot);
+    if (nextPending == _hasPendingEditChanges) {
+      return;
+    }
+    if (!mounted) {
+      _hasPendingEditChanges = nextPending;
+      return;
+    }
+    setState(() => _hasPendingEditChanges = nextPending);
+  }
+
+  void _markEditSaved() {
+    _savedEditSnapshot = _buildCurrentEditSnapshot();
+    _panelMetadataDirty = false;
+    _hasPendingEditChanges = false;
+  }
+
+  /// 标记编辑态 metadata 相关字段已变更，并立即让保存按钮可用。
+  ///
+  /// 该方法只在编辑模式生效；新建模式仍走草稿自动保存链路。
+  void _markEditPanelDirty() {
+    _panelMetadataDirty = true;
+    if (_isEditEntry) {
+      _hasPendingEditChanges = true;
+    }
+  }
+
+  Future<void> _attemptExitEditPage() async {
+    if (!_isEditEntry || !_hasPendingEditChanges) {
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+      return;
+    }
+
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final colorScheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('未保存内容'),
+          content: const Text('当前有未保存的内容，确定退出吗？'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.error,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('退出'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldExit == true && mounted) {
+      Navigator.of(context).pop();
+    }
+  }
 
   /// 汇总当前编辑态数据，形成可持久化的新建草稿对象。
   NewDiaryDraft get _currentCreateDraft {
@@ -336,14 +431,17 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           _selectedTagIds
             ..clear()
             ..addAll(detail.tags.map((Tag t) => t.id));
+          _savedEditSnapshot = _buildCurrentEditSnapshot();
+          _hasPendingEditChanges = false;
+          _panelMetadataDirty = false;
           _initialized = true;
         }
 
-        return Scaffold(
+        final scaffold = Scaffold(
             appBar: AppBar(
             leading: IconButton(
               tooltip: '返回',
-              onPressed: () => Navigator.of(context).maybePop(),
+              onPressed: _attemptExitEditPage,
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
             title: Text(
@@ -358,7 +456,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 )
               else
                 IconButton(
-                  onPressed: _saving ? null : _controller.save,
+                  onPressed: _canSaveEdit ? _controller.save : null,
                   icon: const Icon(Icons.save_outlined),
                   tooltip: '保存',
                 ),
@@ -425,19 +523,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                           } else {
                             _selectedTagIds.remove(tagId);
                           }
-                          _panelMetadataDirty = true;
+                          _markEditPanelDirty();
                         });
                       },
                       onMoodChanged: (nextMood) {
                         setState(() {
                           _draftMoodEmoji = nextMood;
-                          _panelMetadataDirty = true;
+                          _markEditPanelDirty();
                         });
                       },
                       onEnergyChanged: (nextValue) {
                         setState(() {
                           _draftEnergyLevel = nextValue.clamp(1, 5).toDouble();
-                          _panelMetadataDirty = true;
+                          _markEditPanelDirty();
                         });
                       },
                       onPublish: _controller.save,
@@ -476,6 +574,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               ],
             ),
         );
+        if (!_isEditEntry) {
+          return scaffold;
+        }
+        return PopScope(
+          canPop: !_hasPendingEditChanges,
+          onPopInvokedWithResult: (didPop, result) {
+            if (!didPop) {
+              _attemptExitEditPage();
+            }
+          },
+          child: scaffold,
+        );
       },
     );
   }
@@ -489,3 +599,45 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 }
 
 enum EditDiaryEntryMode { create, edit }
+
+class _EditPersistedSnapshot {
+  const _EditPersistedSnapshot({
+    required this.title,
+    required this.contentDocJson,
+    required this.cover,
+    required this.metadataJson,
+    required this.selectedTagIds,
+  });
+
+  final String title;
+  final String contentDocJson;
+  final String? cover;
+  final String metadataJson;
+  final Set<int> selectedTagIds;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is _EditPersistedSnapshot &&
+        other.title == title &&
+        other.contentDocJson == contentDocJson &&
+        other.cover == cover &&
+        other.metadataJson == metadataJson &&
+        other.selectedTagIds.length == selectedTagIds.length &&
+        other.selectedTagIds.containsAll(selectedTagIds);
+  }
+
+  @override
+  int get hashCode {
+    final sortedTagIds = selectedTagIds.toList()..sort();
+    return Object.hash(
+      title,
+      contentDocJson,
+      cover,
+      metadataJson,
+      Object.hashAll(sortedTagIds),
+    );
+  }
+}

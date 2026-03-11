@@ -54,10 +54,12 @@ class EditDiaryController {
 
   /// 新建模式下的标题/正文输入监听回调。
   void onCreateDraftInputChanged() {
-    if (!_state._isCreateEntry) {
+    if (_state._isCreateEntry) {
+      scheduleCreateDraftAutoSave();
       return;
     }
-    scheduleCreateDraftAutoSave();
+    // 编辑模式下的输入变更仅更新“未保存状态”，不触发自动草稿写入。
+    _state._refreshPendingEditChanges();
   }
 
   /// 1.3 秒防抖自动保存草稿。
@@ -228,11 +230,14 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      // 新建与编辑共用同一入口，但写库动作不同。
       if (_state._isCreateEntry) {
         await clearCreateDraft();
+        Navigator.of(_state.context).pop(true);
+        return;
       }
-      Navigator.of(_state.context).pop(true);
+
+      // 编辑模式保存成功后留在当前页：不弹提示、不自动返回。
+      _state._markEditSaved();
     } catch (error) {
       if (!_state.mounted) {
         return;
@@ -244,6 +249,7 @@ class EditDiaryController {
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._saving = false);
+        _state._refreshPendingEditChanges();
       }
     }
   }
@@ -273,7 +279,7 @@ class EditDiaryController {
       }
       _state.setState(() {
         _state._draftCover = importedPath;
-        _state._panelMetadataDirty = true;
+        _state._markEditPanelDirty();
       });
       if (previousCover != null && previousCover != importedPath) {
         await DiaryCoverStorageService.deleteManagedCover(previousCover);
@@ -291,7 +297,7 @@ class EditDiaryController {
     final coverToDelete = _normalizeOptionalText(_state._draftCover);
     _state.setState(() {
       _state._draftCover = null;
-      _state._panelMetadataDirty = true;
+      _state._markEditPanelDirty();
     });
     await DiaryCoverStorageService.deleteManagedCover(coverToDelete);
   }
@@ -311,7 +317,7 @@ class EditDiaryController {
       }
       _state.setState(() {
         _state._selectedTagIds.add(tagId);
-        _state._panelMetadataDirty = true;
+        _state._markEditPanelDirty();
       });
     } catch (error) {
       if (!_state.mounted) {
@@ -346,7 +352,7 @@ class EditDiaryController {
         _state._draftLocationLatitude = result.latitude;
         _state._draftLocationLongitude = result.longitude;
         _state._draftLocationFromAuto = true;
-        _state._panelMetadataDirty = true;
+        _state._markEditPanelDirty();
       });
     } on LocationResolveException catch (error) {
       if (!_state.mounted) {
@@ -396,7 +402,7 @@ class EditDiaryController {
       _state.setState(() {
         _state._weatherController.text = weatherNow.displayText;
         _state._draftWeather = weatherNow.displayText;
-        _state._panelMetadataDirty = true;
+        _state._markEditPanelDirty();
       });
     } on QWeatherException catch (error) {
       if (!_state.mounted) {
@@ -516,7 +522,7 @@ class EditDiaryController {
         _state._draftMoodEmoji = result.moodEmoji;
         _state._draftEnergyLevel = result.energyLevel;
         _state._weatherController.text = result.weather ?? '';
-        _state._panelMetadataDirty = true;
+        _state._markEditPanelDirty();
         _state._selectedTagIds
           ..clear()
           ..addAll(result.selectedTagIds);

@@ -9,6 +9,7 @@ import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
+import 'energy_battery_indicator.dart';
 
 /// 发布页底部玻璃悬浮面板（smooth_sheets 版）。
 ///
@@ -925,6 +926,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildEnergySection(BuildContext context) {
+    final energyLevel = EnergyBatteryIndicator.normalizeLevel(widget.energyLevel);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -943,14 +945,23 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
+            const Spacer(),
+            EnergyBatteryIndicator(
+              level: energyLevel,
+              iconSize: 14,
+              showLabel: true,
+              labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
           ],
         ),
         Slider(
-          value: widget.energyLevel.toDouble().clamp(1.0, 5.0).toDouble(),
+          value: energyLevel.toDouble(),
           min: 1,
           max: 5,
           divisions: 4,
-          label: '${widget.energyLevel}',
+          label: '$energyLevel',
           onChanged: widget.onEnergyChanged,
         ),
       ],

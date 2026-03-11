@@ -14,6 +14,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../providers/diary_detail_provider.dart';
 import '../widgets/diary_mobile_toolbar.dart';
+import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
 import 'edit_diary_page.dart';
 
@@ -361,10 +362,20 @@ $content
     if (mood != null && mood.isNotEmpty) {
       items.add(_MetaChipItem(icon: FontAwesomeIcons.faceSmile, label: mood));
     }
-    final energy = context['energyLevel'];
-    if (energy != null) {
+    final energyRaw = context['energyLevel'];
+    final parsedEnergy = switch (energyRaw) {
+      num value => value.toInt(),
+      String value => int.tryParse(value),
+      _ => null,
+    };
+    if (parsedEnergy != null) {
+      final normalizedEnergy = EnergyBatteryIndicator.normalizeLevel(parsedEnergy);
       items.add(
-        _MetaChipItem(icon: FontAwesomeIcons.batteryHalf, label: '精力 $energy'),
+        _MetaChipItem(
+          icon: EnergyBatteryIndicator.iconForLevel(normalizedEnergy),
+          label: '精力 $normalizedEnergy/5',
+          energyLevel: normalizedEnergy,
+        ),
       );
     }
     return items;
@@ -379,7 +390,7 @@ $content
     final inlineItems = <Widget>[
       _buildMetaInlineItem(
         icon: FontAwesomeIcons.clock,
-        label: '发表于$relativeCreated',
+        label: '发表于：$relativeCreated',
         color: colorScheme.onSurfaceVariant,
       ),
       if (location != null && location.isNotEmpty)
@@ -428,7 +439,13 @@ $content
                     FaIcon(
                       item.icon,
                       size: 12,
-                      color: colorScheme.onSurfaceVariant,
+                      color:
+                          item.energyLevel == null
+                              ? colorScheme.onSurfaceVariant
+                              : EnergyBatteryIndicator.colorForLevel(
+                                context,
+                                item.energyLevel!,
+                              ),
                     ),
                     const SizedBox(width: 6),
                     ConstrainedBox(
@@ -620,8 +637,10 @@ class _MetaChipItem {
   const _MetaChipItem({
     required this.icon,
     required this.label,
+    this.energyLevel,
   });
 
   final IconData icon;
   final String label;
+  final int? energyLevel;
 }

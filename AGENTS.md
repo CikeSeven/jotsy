@@ -76,6 +76,7 @@
   - 危险动作：右侧按钮使用 `colorScheme.error`
 - 必须：活动区域（底栏、悬浮面板、关键交互容器）遵循玻璃质感设计，优先复用 `AppEffects`、`AppRadii` 等现有 token。
 - 必须：亮色/暗色主题都保证文字和图标可读性，不允许出现暗色模式全黑图标等失配。
+- 必须：涉及颜色的 UI 改动必须同步适配暗色主题，禁止硬编码 `Colors.white/Colors.black` 作为固定背景或前景色；优先使用 `colorScheme` 语义色并在明暗主题分别验证。
 - 禁止：使用任何渐变（`LinearGradient`、`RadialGradient`、`SweepGradient`）。
 - 禁止：同一区域叠加多层重模糊导致性能劣化。
 - 例外：可访问性修复或平台组件约束导致偏离时，需在代码注释说明原因。

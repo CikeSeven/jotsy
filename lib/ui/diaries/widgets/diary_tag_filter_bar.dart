@@ -105,8 +105,19 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = widget.selectedTagFilterIds.isNotEmpty;
+    final isDark = brightness == Brightness.dark;
+    // 暗色主题避免白底 chip，改用表面色阶保持一致视觉层次。
+    final unselectedChipColor =
+        isDark
+            ? colorScheme.surfaceContainerHigh.withValues(alpha: 0.86)
+            : Colors.white;
+    final selectedChipColor =
+        isDark
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.96)
+            : Colors.white;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -164,9 +175,9 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
               colorDot: Color(tag.color),
               colorDotSize: 12,
               selected: selected,
-              selectedColor: Colors.white,
+              selectedColor: selectedChipColor,
               selectedForegroundColor: colorScheme.primary,
-              unselectedColor: Colors.white,
+              unselectedColor: unselectedChipColor,
               unselectedForegroundColor: colorScheme.onSurface,
               radius: 9,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

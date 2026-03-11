@@ -199,6 +199,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   }
 
   Future<void> _attemptExitEditPage() async {
+    // 返回键优先级：
+    // 1) 标签子页 -> 回到主面板；
+    // 2) 主面板展开 -> 收起面板；
+    // 3) 再进入页面退出判定（未保存提示或直接退出）。
+    if (_editPanelController.canPopInnerPage) {
+      await _editPanelController.popInnerPage();
+      return;
+    }
+    if (_editPanelController.isExpanded) {
+      await _editPanelController.collapse();
+      return;
+    }
+
     if (!_isEditEntry || !_hasPendingEditChanges) {
       if (mounted) {
         Navigator.of(context).pop();
@@ -586,7 +599,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           return scaffold;
         }
         return PopScope(
-          canPop: !_hasPendingEditChanges,
+          // 编辑页返回统一交给 `_attemptExitEditPage`，
+          // 避免面板展开态下系统直接 pop 路由。
+          canPop: false,
           onPopInvokedWithResult: (didPop, result) {
             if (!didPop) {
               _attemptExitEditPage();

@@ -110,11 +110,13 @@ class _CoverImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 网络图与本地图分别处理，均带失败回退。
+    // 封面规则：完整展示原图，不做裁切。
+    // 使用 BoxFit.contain 保留图片全部尺寸比例。
     if (_isNetworkImage) {
       return Image.network(
         cover,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
+        alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (_, __, ___) => const _CoverFallback(),
@@ -123,7 +125,8 @@ class _CoverImage extends StatelessWidget {
 
     return Image.file(
       File(cover),
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
+      alignment: Alignment.center,
       width: double.infinity,
       height: double.infinity,
       errorBuilder: (_, __, ___) => const _CoverFallback(),

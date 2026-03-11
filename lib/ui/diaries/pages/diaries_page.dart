@@ -20,8 +20,13 @@ import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
 import '../../widgets/glass_bottom_nav.dart';
+import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../widgets/diary_tag_filter_bar.dart';
+
+part '../controllers/diaries_page_feedback.dart';
+part '../controllers/diary_list_transition_coordinator.dart';
+part '../controllers/diaries_page_controller.dart';
 
 /// 日记列表页。
 ///
@@ -81,6 +86,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
+  late final DiariesPageFeedback _feedback;
+  late final DiaryListTransitionCoordinator _transitionCoordinator;
+  late final DiariesPageController _controller;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
   bool get _showHeaderSection => !_isSearchAnimating;
@@ -90,7 +98,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   void initState() {
     super.initState();
-    _attachHomeHintVisibilityListener();
+    _feedback = DiariesPageFeedback(this);
+    _transitionCoordinator = DiaryListTransitionCoordinator(this);
+    _controller = DiariesPageController(
+      this,
+      feedback: _feedback,
+      transitionCoordinator: _transitionCoordinator,
+    );
+    _controller.attachHomeHintVisibilityListener();
     _listRefreshPulseController = AnimationController(
       vsync: this,
       duration: _listRefreshFadeInDuration,
@@ -107,868 +122,20 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   void didUpdateWidget(covariant DiariesPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.homeHintVisibleListenable != widget.homeHintVisibleListenable) {
-      _detachHomeHintVisibilityListener(oldWidget.homeHintVisibleListenable);
-      _attachHomeHintVisibilityListener();
-    }
+    _controller.handleHomeHintListenableUpdate(
+      previous: oldWidget.homeHintVisibleListenable,
+      next: widget.homeHintVisibleListenable,
+    );
   }
 
   @override
   void dispose() {
-    _searchDebounceTimer?.cancel();
-    for (final timer in _pendingHideTimers.values) {
-      timer.cancel();
-    }
-    _pendingHideTimers.clear();
-    for (final timer in _appearingTimers.values) {
-      timer.cancel();
-    }
-    _appearingTimers.clear();
+    _controller.dispose();
+    _transitionCoordinator.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
     _listRefreshPulseController.dispose();
-    _detachHomeHintVisibilityListener(widget.homeHintVisibleListenable);
     super.dispose();
-  }
-
-  void _attachHomeHintVisibilityListener() {
-    final listenable = widget.homeHintVisibleListenable;
-    if (listenable == null) {
-      return;
-    }
-    _homeHintVisible = listenable.value;
-    listenable.addListener(_onHomeHintVisibilityChanged);
-  }
-
-  void _detachHomeHintVisibilityListener(ValueListenable<bool>? listenable) {
-    listenable?.removeListener(_onHomeHintVisibilityChanged);
-  }
-
-  void _onHomeHintVisibilityChanged() {
-    final visible = widget.homeHintVisibleListenable?.value ?? false;
-    if (visible == _homeHintVisible || !mounted) {
-      return;
-    }
-    setState(() {
-      _homeHintVisible = visible;
-    });
-  }
-
-  void _clearSelection() {
-    if (_selectedDiaryIds.isEmpty) {
-      return;
-    }
-    setState(_selectedDiaryIds.clear);
-  }
-
-  /// 进入搜索态：显示输入框并聚焦。
-  void _enterSearchMode() {
-    if (_isSelectionMode || _isSearchMode) {
-      return;
-    }
-    setState(() {
-      _isSearchMode = true;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      _searchFocusNode.requestFocus();
-    });
-  }
-
-  /// 退出搜索态并清空搜索条件。
-  void _exitSearchModeAndClear() {
-    _clearSearch(exitSearchMode: true);
-    _searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-  }
-
-  /// 清空输入但保持搜索态，便于继续输入。
-  void _clearSearchInPlace() {
-    _clearSearch(exitSearchMode: false);
-    _searchFocusNode.requestFocus();
-  }
-
-  void _onSearchChanged(String value) {
-    if (_searchInput != value) {
-      setState(() {
-        _searchInput = value;
-      });
-    }
-    _searchDebounceTimer?.cancel();
-    _searchDebounceTimer = Timer(_searchDebounceDuration, () {
-      _applySearchKeyword(value);
-    });
-  }
-
-  void _applySearchKeyword(String rawValue) {
-    final normalized = rawValue.trim();
-    if (normalized == _effectiveSearchKeyword) {
-      return;
-    }
-    _effectiveSearchKeyword = normalized;
-    _queueFilterMutation(() {
-      ref.read(diaryFilterProvider.notifier).setKeyword(normalized);
-    });
-  }
-
-  void _clearSearch({required bool exitSearchMode}) {
-    _searchDebounceTimer?.cancel();
-    final shouldResetKeyword =
-        _effectiveSearchKeyword.isNotEmpty ||
-        _searchInput.trim().isNotEmpty ||
-        _searchController.text.trim().isNotEmpty;
-    _searchController.clear();
-
-    if (mounted) {
-      setState(() {
-        _searchInput = '';
-        _effectiveSearchKeyword = '';
-        if (exitSearchMode) {
-          _isSearchMode = false;
-          _isSearchAnimating = false;
-        }
-      });
-    } else {
-      _searchInput = '';
-      _effectiveSearchKeyword = '';
-      if (exitSearchMode) {
-        _isSearchMode = false;
-        _isSearchAnimating = false;
-      }
-    }
-
-    if (shouldResetKeyword) {
-      _queueFilterMutation(() {
-        ref.read(diaryFilterProvider.notifier).setKeyword('');
-      });
-    }
-  }
-
-  /// 为筛选切换排队：快速连续输入时仅保留最后一次操作，避免动画抖动。
-  void _queueFilterMutation(VoidCallback mutation) {
-    _pendingFilterMutation = mutation;
-    _queuedFilterTransition ??= _drainQueuedFilterMutations();
-  }
-
-  Future<void> _drainQueuedFilterMutations() async {
-    while (mounted && _pendingFilterMutation != null) {
-      await _fadeOutListIfNeeded();
-      if (!mounted) {
-        break;
-      }
-
-      // 每轮只处理一次筛选变更，避免在完全隐藏状态下连续吞并多次更新导致长时间空白。
-      final mutation = _pendingFilterMutation!;
-      _pendingFilterMutation = null;
-      mutation();
-      await WidgetsBinding.instance.endOfFrame;
-      if (!mounted) {
-        break;
-      }
-
-      await _fadeInListIfNeeded();
-    }
-    _queuedFilterTransition = null;
-  }
-
-  Future<void> _fadeOutListIfNeeded() async {
-    if (!mounted || _listRefreshPulseController.value <= 0) {
-      return;
-    }
-    await _listRefreshPulseController.animateTo(
-      0,
-      duration: _listRefreshFadeOutDuration,
-      curve: Curves.easeInOutSine,
-    );
-  }
-
-  Future<void> _fadeInListIfNeeded() async {
-    if (!mounted || _listRefreshPulseController.value >= 1) {
-      return;
-    }
-    await _listRefreshPulseController.animateTo(
-      1,
-      duration: _listRefreshFadeInDuration,
-      curve: Curves.easeInOutSine,
-    );
-  }
-
-  void _toggleTagFilter(int tagId, bool selected) {
-    _queueFilterMutation(() {
-      ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
-    });
-  }
-
-  void _clearTagFilters() {
-    if (ref.read(diaryFilterProvider).selectedTagIds.isEmpty) {
-      return;
-    }
-    _queueFilterMutation(() {
-      ref.read(diaryFilterProvider.notifier).clearTags();
-    });
-  }
-
-  // 打开编辑页，使用系统默认页面转场。
-  void _openEditor({
-    String? diaryId,
-    bool restoreCreateDraft = true,
-  }) {
-    _searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-
-    unawaited(
-      Navigator.of(context)
-          .push(
-            MaterialPageRoute<void>(
-              builder: (BuildContext context) {
-                return EditDiaryPage(
-                  diaryId: diaryId,
-                  entryMode:
-                      diaryId == null
-                          ? EditDiaryEntryMode.create
-                          : EditDiaryEntryMode.edit,
-                  restoreCreateDraft: restoreCreateDraft,
-                );
-              },
-            ),
-          )
-          .then((_) {
-            if (!mounted) {
-              return;
-            }
-            _refreshAfterEditorReturn();
-            _searchFocusNode.unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
-          }),
-    );
-  }
-
-  /// 编辑页返回后触发一次安全刷新：
-  /// 1) 重新拉取列表流；
-  /// 2) 重建列表 sliver，清理可能残留的空位布局缓存。
-  void _refreshAfterEditorReturn() {
-    ref.invalidate(filteredDiariesProvider);
-    setState(() {
-      _listLayoutEpoch += 1;
-    });
-  }
-
-  Future<void> _openCreateEditorWithDraftPrompt() async {
-    final settingsService = await ref.read(settingsServiceProvider.future);
-    final existingDraft = _tryDecodeCreateDraft(
-      settingsService.createDiaryDraftRaw,
-    );
-    if (!mounted) {
-      return;
-    }
-
-    var restoreCreateDraft = true;
-    if (existingDraft?.hasContent == true) {
-      final decision = await _showCreateDraftDecisionDialog();
-      if (!mounted || decision == null) {
-        return;
-      }
-      if (decision == _CreateDraftDecision.newEmpty) {
-        await settingsService.clearCreateDiaryDraft();
-        restoreCreateDraft = false;
-      }
-    }
-
-    _openEditor(
-      restoreCreateDraft: restoreCreateDraft,
-    );
-  }
-
-  NewDiaryDraft? _tryDecodeCreateDraft(String? rawDraft) {
-    if (rawDraft == null || rawDraft.trim().isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(rawDraft);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-      return NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<_CreateDraftDecision?> _showCreateDraftDecisionDialog() {
-    return showDialog<_CreateDraftDecision>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('发现未完成日记'),
-          content: const Text('检测到你上次有未保存的日记，是否继续编辑？'),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
-              ),
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_CreateDraftDecision.newEmpty),
-              child: const Text('新建空笔记'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.primary,
-              ),
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_CreateDraftDecision.continueEditing),
-              child: const Text('继续编辑'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<bool> _showDeleteSelectedConfirmDialog(int count) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('删除日记'),
-          content: Text('确认删除已选择的 $count 条日记吗？'),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
-            ),
-          ],
-        );
-      },
-    );
-    return confirmed == true;
-  }
-
-  Future<void> _showInfoSnackBar(
-    String message, {
-    Duration duration = _restoreHintDuration,
-  }) async {
-    await _showTrackedSnackBar(
-      snackBar: SnackBar(
-        content: Text(message),
-        duration: duration,
-      ),
-    );
-  }
-
-  Future<SnackBarClosedReason> _showTrackedSnackBar({
-    required SnackBar snackBar,
-    Duration? forceCloseAfter,
-  }) async {
-    if (mounted) {
-      setState(() {
-        _localHintVisibleCount += 1;
-      });
-    }
-
-    final closedReason = await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: context,
-      snackBar: snackBar,
-      forceCloseAfter: forceCloseAfter,
-    );
-
-    if (mounted) {
-      setState(() {
-        if (_localHintVisibleCount > 0) {
-          _localHintVisibleCount -= 1;
-        }
-      });
-    }
-    return closedReason;
-  }
-
-  /// 统一显示“可撤销”提示，并强制按设定时长自动关闭。
-  ///
-  /// 某些系统无障碍模式下，带 action 的 SnackBar 可能不会自动消失。
-  /// 这里通过 controller.close() 兜底，保证交互时长一致。
-  Future<bool> _showUndoSnackBar({
-    required String message,
-    required Duration duration,
-  }) async {
-    var undoRequested = false;
-    final closedReason = await _showTrackedSnackBar(
-      snackBar: SnackBar(
-        content: Text(message),
-        duration: duration,
-        action: SnackBarAction(
-          label: '撤销',
-          onPressed: () {
-            undoRequested = true;
-          },
-        ),
-      ),
-      forceCloseAfter: duration,
-    );
-
-    return undoRequested || closedReason == SnackBarClosedReason.action;
-  }
-
-  Future<void> _deleteSelectedDiaries() async {
-    if (_selectedDiaryIds.isEmpty) {
-      return;
-    }
-
-    final targetIds = _selectedDiaryIds.toList(growable: false);
-    final confirmed = await _showDeleteSelectedConfirmDialog(targetIds.length);
-    if (!mounted || !confirmed) {
-      return;
-    }
-
-    setState(() {
-      _selectedDiaryIds.clear();
-    });
-    _startHideAnimations(targetIds);
-
-    final db = ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-    for (final diaryId in targetIds) {
-      try {
-        await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
-      } catch (_) {
-        failedIds.add(diaryId);
-      }
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    // 批量失败时回滚成功删除，避免出现部分成功导致状态不一致。
-    if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
-      for (final diaryId in succeededIds) {
-        await db.restoreDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!mounted) {
-        return;
-      }
-      _revealDiaries(targetIds, animate: true);
-      setState(() {
-        _selectedDiaryIds.addAll(targetIds);
-      });
-      await _showInfoSnackBar('删除失败，请重试');
-      return;
-    }
-
-    final undoRequested = await _showUndoSnackBar(
-      message: '已删除 ${targetIds.length} 条日记',
-      duration: _deleteUndoSnackDuration,
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    if (undoRequested) {
-      for (final diaryId in targetIds) {
-        await db.restoreDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!mounted) {
-        return;
-      }
-      _revealDiaries(targetIds, animate: true);
-      await _showInfoSnackBar('已恢复删除的日记');
-      return;
-    }
-
-    // 数据流刷新后会自然移除已删除项，这里清理临时隐藏集合避免长期残留。
-    setState(() {
-      _optimisticHiddenDiaryIds.removeAll(targetIds);
-      _pendingHideDiaryIds.removeAll(targetIds);
-      _appearingDiaryIds.removeAll(targetIds);
-    });
-    _clearTransitionTimers(targetIds);
-  }
-
-  Future<void> _archiveDiaries(
-    List<String> diaryIds, {
-    required bool clearSelection,
-    required bool showUndoSnack,
-    bool animateHide = true,
-  }) async {
-    final targetIds =
-        diaryIds
-            .map((id) => id.trim())
-            .where((id) => id.isNotEmpty)
-            .toSet()
-            .toList(growable: false);
-    if (targetIds.isEmpty) {
-      return;
-    }
-    if (targetIds.any(_archivingDiaryIds.contains)) {
-      return;
-    }
-
-    setState(() {
-      if (clearSelection) {
-        _selectedDiaryIds.removeAll(targetIds);
-      }
-      _archivingDiaryIds.addAll(targetIds);
-    });
-    if (animateHide) {
-      _startHideAnimations(targetIds);
-    } else {
-      _hideDiariesImmediately(targetIds);
-    }
-
-    final db = ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-    for (final diaryId in targetIds) {
-      try {
-        await db.archiveDiary(diaryId, touchUpdatedAt: false);
-      } catch (_) {
-        failedIds.add(diaryId);
-      }
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
-      for (final diaryId in succeededIds) {
-        await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _archivingDiaryIds.removeAll(targetIds);
-        if (clearSelection) {
-          _selectedDiaryIds.addAll(targetIds);
-        }
-      });
-      _revealDiaries(targetIds, animate: true);
-      await _showInfoSnackBar('归档失败，请重试');
-      return;
-    }
-
-    if (showUndoSnack) {
-      final undoRequested = await _showUndoSnackBar(
-        message: '已归档 ${targetIds.length} 条日记',
-        duration: _archiveUndoSnackDuration,
-      );
-
-      if (!mounted) {
-        return;
-      }
-
-      if (undoRequested) {
-        for (final diaryId in targetIds) {
-          await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
-        }
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _archivingDiaryIds.removeAll(targetIds);
-        });
-        _revealDiaries(targetIds, animate: true);
-        await _showInfoSnackBar('已恢复归档的日记');
-        return;
-      }
-    }
-
-    setState(() {
-      _optimisticHiddenDiaryIds.removeAll(targetIds);
-      _pendingHideDiaryIds.removeAll(targetIds);
-      _appearingDiaryIds.removeAll(targetIds);
-      _archivingDiaryIds.removeAll(targetIds);
-    });
-    _clearTransitionTimers(targetIds);
-  }
-
-  Future<void> _archiveSelectedDiaries() async {
-    if (_selectedDiaryIds.isEmpty) {
-      return;
-    }
-    await _archiveDiaries(
-      _selectedDiaryIds.toList(growable: false),
-      clearSelection: true,
-      showUndoSnack: true,
-    );
-  }
-
-  Future<void> _archiveDiaryBySwipe(String diaryId) async {
-    await _archiveDiaries(
-      <String>[diaryId],
-      clearSelection: false,
-      showUndoSnack: true,
-      animateHide: false,
-    );
-  }
-
-  void _startHideAnimations(Iterable<String> diaryIds) {
-    final targetIds = diaryIds.toSet();
-    if (targetIds.isEmpty) {
-      return;
-    }
-
-    for (final diaryId in targetIds) {
-      _appearingTimers.remove(diaryId)?.cancel();
-      _pendingHideTimers[diaryId]?.cancel();
-      _pendingHideTimers[diaryId] = Timer(_listItemTransitionDuration, () {
-        _pendingHideTimers.remove(diaryId);
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _pendingHideDiaryIds.remove(diaryId);
-          _optimisticHiddenDiaryIds.add(diaryId);
-        });
-      });
-    }
-
-    setState(() {
-      _appearingDiaryIds.removeAll(targetIds);
-      _pendingHideDiaryIds.addAll(targetIds);
-    });
-  }
-
-  void _hideDiariesImmediately(Iterable<String> diaryIds) {
-    final targetIds = diaryIds.toSet();
-    if (targetIds.isEmpty) {
-      return;
-    }
-    _clearTransitionTimers(targetIds);
-    setState(() {
-      _pendingHideDiaryIds.removeAll(targetIds);
-      _appearingDiaryIds.removeAll(targetIds);
-      _optimisticHiddenDiaryIds.addAll(targetIds);
-    });
-  }
-
-  void _revealDiaries(Iterable<String> diaryIds, {required bool animate}) {
-    final targetIds = diaryIds.toSet();
-    if (targetIds.isEmpty) {
-      return;
-    }
-
-    for (final diaryId in targetIds) {
-      _pendingHideTimers.remove(diaryId)?.cancel();
-      _appearingTimers.remove(diaryId)?.cancel();
-    }
-
-    setState(() {
-      _pendingHideDiaryIds.removeAll(targetIds);
-      _optimisticHiddenDiaryIds.removeAll(targetIds);
-      if (animate) {
-        _appearingDiaryIds.addAll(targetIds);
-      } else {
-        _appearingDiaryIds.removeAll(targetIds);
-      }
-    });
-  }
-
-  void _clearTransitionTimers(Iterable<String> diaryIds) {
-    for (final diaryId in diaryIds) {
-      _pendingHideTimers.remove(diaryId)?.cancel();
-      _appearingTimers.remove(diaryId)?.cancel();
-    }
-  }
-
-  void _syncAppearingTimers(List<DiaryWithTags> visibleItems) {
-    if (_appearingDiaryIds.isEmpty) {
-      return;
-    }
-    final visibleIds =
-        visibleItems.map((DiaryWithTags item) => item.diary.diaryId).toSet();
-    final targetIds = _appearingDiaryIds.intersection(visibleIds);
-    if (targetIds.isEmpty) {
-      return;
-    }
-
-    for (final diaryId in targetIds) {
-      if (_appearingTimers.containsKey(diaryId)) {
-        continue;
-      }
-      _appearingTimers[diaryId] = Timer(_listItemTransitionDuration, () {
-        _appearingTimers.remove(diaryId);
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _appearingDiaryIds.remove(diaryId);
-        });
-      });
-    }
-  }
-
-  void _toggleSelection(String noteId, {bool forceSelect = false}) {
-    var shouldClearSearchKeyword = false;
-    var shouldUnfocusSearch = false;
-    setState(() {
-      if (forceSelect && _isSearchMode) {
-        _searchDebounceTimer?.cancel();
-        shouldClearSearchKeyword =
-            _effectiveSearchKeyword.isNotEmpty || _searchInput.trim().isNotEmpty;
-        shouldUnfocusSearch = true;
-        _searchController.clear();
-        _searchInput = '';
-        _effectiveSearchKeyword = '';
-        _isSearchMode = false;
-        _isSearchAnimating = false;
-      }
-      if (forceSelect) {
-        _selectedDiaryIds.add(noteId);
-        return;
-      }
-      if (_selectedDiaryIds.contains(noteId)) {
-        _selectedDiaryIds.remove(noteId);
-      } else {
-        _selectedDiaryIds.add(noteId);
-      }
-    });
-    if (shouldClearSearchKeyword) {
-      ref.read(diaryFilterProvider.notifier).setKeyword('');
-    }
-    if (shouldUnfocusSearch) {
-      _searchFocusNode.unfocus();
-      FocusManager.instance.primaryFocus?.unfocus();
-    }
-  }
-
-  void _openArchivedPage() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => const ArchivedDiariesPage(),
-      ),
-    );
-  }
-
-  void _onMenuSelected(DiaryMenuAction action) {
-    setState(() {
-      switch (action) {
-        case DiaryMenuAction.sortUpdatedDesc:
-          _sortMode = DiarySortMode.updatedDesc;
-          break;
-        case DiaryMenuAction.sortUpdatedAsc:
-          _sortMode = DiarySortMode.updatedAsc;
-          break;
-        case DiaryMenuAction.sortTitleAsc:
-          _sortMode = DiarySortMode.titleAsc;
-          break;
-        case DiaryMenuAction.layoutList:
-          _layoutMode = DiaryLayoutMode.list;
-          break;
-        case DiaryMenuAction.layoutWaterfall:
-          _layoutMode = DiaryLayoutMode.waterfall;
-          break;
-      }
-    });
-    _persistViewPreferences();
-  }
-
-  void _persistViewPreferences() {
-    final settingsService = ref.read(settingsServiceProvider).asData?.value;
-    if (settingsService == null) {
-      return;
-    }
-    unawaited(settingsService.setDiarySortModeRaw(_sortMode.name));
-    unawaited(settingsService.setDiaryLayoutModeRaw(_layoutMode.name));
-  }
-
-  void _loadViewPreferencesIfNeeded(SettingsService settingsService) {
-    if (_viewPreferencesLoaded) {
-      return;
-    }
-    _sortMode = _sortModeFromRaw(settingsService.diarySortModeRaw);
-    _layoutMode = _layoutModeFromRaw(settingsService.diaryLayoutModeRaw);
-    _viewPreferencesLoaded = true;
-  }
-
-  DiarySortMode _sortModeFromRaw(String raw) {
-    switch (raw) {
-      case 'updatedAsc':
-        return DiarySortMode.updatedAsc;
-      case 'titleAsc':
-        return DiarySortMode.titleAsc;
-      case 'updatedDesc':
-      default:
-        return DiarySortMode.updatedDesc;
-    }
-  }
-
-  DiaryLayoutMode _layoutModeFromRaw(String raw) {
-    switch (raw) {
-      case 'waterfall':
-        return DiaryLayoutMode.waterfall;
-      case 'list':
-      default:
-        return DiaryLayoutMode.list;
-    }
-  }
-
-  void _sortDiaries(List<DiaryWithTags> items) {
-    switch (_sortMode) {
-      case DiarySortMode.updatedDesc:
-        items.sort((a, b) => b.diary.updatedAt.compareTo(a.diary.updatedAt));
-        break;
-      case DiarySortMode.updatedAsc:
-        items.sort((a, b) => a.diary.updatedAt.compareTo(b.diary.updatedAt));
-        break;
-      case DiarySortMode.titleAsc:
-        items.sort(
-          (a, b) => a.diary.title.toLowerCase().compareTo(
-            b.diary.title.toLowerCase(),
-          ),
-        );
-        break;
-    }
-  }
-
-  List<DiaryWithTags> _buildVisibleItems(List<DiaryWithTags> items) {
-    final visibleItems =
-        items.where((DiaryWithTags item) {
-          return !_optimisticHiddenDiaryIds.contains(item.diary.diaryId);
-        }).toList();
-    _sortDiaries(visibleItems);
-    return visibleItems;
-  }
-
-  List<Tag> _buildTagFiltersForDisplay({
-    required List<Tag> allTags,
-    required List<DiaryWithTags> visibleItems,
-    required String keyword,
-  }) {
-    final normalizedKeyword = keyword.trim();
-    if (normalizedKeyword.isEmpty) {
-      return allTags;
-    }
-
-    // 关键词筛选生效时，仅展示“当前结果列表里实际存在”的标签。
-    final visibleTagIds = <int>{};
-    for (final item in visibleItems) {
-      for (final tag in item.tags) {
-        visibleTagIds.add(tag.id);
-      }
-    }
-
-    return allTags.where((tag) => visibleTagIds.contains(tag.id)).toList();
   }
 
   @override
@@ -1005,17 +172,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           (Object error, StackTrace stackTrace) =>
               Scaffold(body: Center(child: Text('设置加载失败: $error'))),
       data: (settingsService) {
-        _loadViewPreferencesIfNeeded(settingsService);
+        _controller.loadViewPreferencesIfNeeded(settingsService);
         final topSafeInset = MediaQuery.paddingOf(context).top;
         final headerOverlayHeight = topSafeInset + 68;
         final latestVisibleItems =
             diariesAsync.asData != null
-                ? _buildVisibleItems(diariesAsync.asData!.value)
+                ? _controller.buildVisibleItems(diariesAsync.asData!.value)
                 : null;
 
         if (latestVisibleItems != null) {
           _cachedVisibleItems = latestVisibleItems;
-          _syncAppearingTimers(latestVisibleItems);
+          _transitionCoordinator.syncAppearingTimers(latestVisibleItems);
         }
 
         final displayedItems =
@@ -1033,11 +200,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                     return;
                   }
                   if (_isSelectionMode) {
-                    _clearSelection();
+                    _controller.clearSelection();
                     return;
                   }
                   if (_isSearchMode) {
-                    _exitSearchModeAndClear();
+                    _controller.exitSearchModeAndClear();
                   }
                 },
                 child: Focus(
@@ -1067,17 +234,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               ),
                               tagsAsync.when(
                                 data: (tags) {
-                                  final tagsForDisplay = _buildTagFiltersForDisplay(
-                                    allTags: tags,
-                                    visibleItems: displayedItems,
-                                    keyword: filterState.keyword,
-                                  );
                                   return SliverToBoxAdapter(
                                     child: DiaryTagFilterBar(
-                                      tags: tagsForDisplay,
+                                      tags: _controller.buildTagFiltersForDisplay(
+                                        allTags: tags,
+                                        visibleItems: displayedItems,
+                                        keyword: filterState.keyword,
+                                      ),
                                       selectedTagFilterIds: filterState.selectedTagIds,
-                                      onToggleTagFilter: _toggleTagFilter,
-                                      onClearTagFilters: _clearTagFilters,
+                                      onToggleTagFilter: _controller.toggleTagFilter,
+                                      onClearTagFilters: _controller.clearTagFilters,
                                     ),
                                   );
                                 },
@@ -1138,21 +304,25 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           appearingDiaryIds: _appearingDiaryIds,
                                           onCreate:
                                               () => unawaited(
-                                                _openCreateEditorWithDraftPrompt(),
+                                                _controller
+                                                    .openCreateEditorWithDraftPrompt(),
                                               ),
                                           onOpenEditor: (diaryId) {
-                                            _openEditor(
+                                            _controller.openEditor(
                                               diaryId: diaryId,
                                             );
                                           },
                                           onToggleSelection:
-                                              (noteId, forceSelect) => _toggleSelection(
-                                                noteId,
-                                                forceSelect: forceSelect,
-                                              ),
+                                              (noteId, forceSelect) =>
+                                                  _controller.toggleSelection(
+                                                    noteId,
+                                                    forceSelect: forceSelect,
+                                                  ),
                                           onArchiveDiary:
                                               (diaryId) => unawaited(
-                                                _archiveDiaryBySwipe(diaryId),
+                                                _controller.archiveDiaryBySwipe(
+                                                  diaryId,
+                                                ),
                                               ),
                                           isSearchResultEmpty:
                                               filterState.keyword.trim().isNotEmpty,
@@ -1198,22 +368,29 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           isSelectionMode: _isSelectionMode,
                                           isSearchMode: _isSearchMode,
                                           selectedCount: _selectedDiaryIds.length,
-                                          onCancelSelection: _clearSelection,
+                                          onCancelSelection: _controller.clearSelection,
                                           onArchiveSelected:
-                                              () => unawaited(_archiveSelectedDiaries()),
+                                              () => unawaited(
+                                                _controller.archiveSelectedDiaries(),
+                                              ),
                                           onDeleteSelected:
-                                              () => unawaited(_deleteSelectedDiaries()),
-                                          onOpenArchived: _openArchivedPage,
+                                              () => unawaited(
+                                                _controller.deleteSelectedDiaries(),
+                                              ),
+                                          onOpenArchived: _controller.openArchivedPage,
                                           sortMode: _sortMode,
                                           layoutMode: _layoutMode,
-                                          onMenuSelected: _onMenuSelected,
+                                          onMenuSelected: _controller.onMenuSelected,
                                           searchPreviewText: _searchInput,
                                           searchController: _searchController,
                                           searchFocusNode: _searchFocusNode,
-                                          onEnterSearch: _enterSearchMode,
-                                          onExitSearch: _exitSearchModeAndClear,
-                                          onClearSearch: _clearSearchInPlace,
-                                          onSearchChanged: _onSearchChanged,
+                                          onEnterSearch: _controller.enterSearchMode,
+                                          onExitSearch:
+                                              _controller.exitSearchModeAndClear,
+                                          onClearSearch:
+                                              _controller.clearSearchInPlace,
+                                          onSearchChanged:
+                                              _controller.onSearchChanged,
                                         ),
                                         Container(
                                           height: 1,
@@ -1241,8 +418,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   right: AppSpacing.xl,
                   bottom: fabBottomOffset,
                   child: FloatingActionButton(
-                    onPressed:
-                        () => unawaited(_openCreateEditorWithDraftPrompt()),
+                    onPressed: () => unawaited(
+                      _controller.openCreateEditorWithDraftPrompt(),
+                    ),
                     child: FaIcon(FontAwesomeIcons.plus),
                   ),
                 ),

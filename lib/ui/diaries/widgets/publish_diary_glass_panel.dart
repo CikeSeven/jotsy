@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
@@ -126,25 +127,25 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
 
-  late final SheetController _sheetController;
-  late final PageController _contentPageController;
-  double _progress = 0;
-  int _contentPageIndex = 0;
+  late final PublishPanelCoordinator _panelCoordinator;
 
   double get _activeExpandedHeight =>
-      _contentPageIndex == 1 ? _tagExpandedHeight : _mainExpandedHeight;
+      _panelCoordinator.activeExpandedHeight;
 
   double get _collapsedFactor => _collapsedHeight / _activeExpandedHeight;
 
-  bool get _isExpandedForBackAction => _progress > 0.06;
-  bool get _canPopInnerPage => _contentPageIndex > 0;
+  bool get _isExpandedForBackAction => _panelCoordinator.isExpandedForBackAction;
+  bool get _canPopInnerPage => _panelCoordinator.canPopInnerPage;
 
   @override
   void initState() {
     super.initState();
-    _sheetController = SheetController();
-    _contentPageController = PageController();
-    _sheetController.addListener(_handleSheetMetricsChanged);
+    _panelCoordinator = PublishPanelCoordinator(
+      collapsedHeight: _collapsedHeight,
+      mainExpandedHeight: _mainExpandedHeight,
+      tagExpandedHeight: _tagExpandedHeight,
+    );
+    _panelCoordinator.sheetController.addListener(_handleSheetMetricsChanged);
     widget.controller?._attach(this);
   }
 
@@ -160,59 +161,32 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   @override
   void dispose() {
     widget.controller?._detach(this);
-    _sheetController.removeListener(_handleSheetMetricsChanged);
-    _sheetController.dispose();
-    _contentPageController.dispose();
+    _panelCoordinator.sheetController.removeListener(_handleSheetMetricsChanged);
+    _panelCoordinator.dispose();
     super.dispose();
   }
 
   Future<void> _collapseToMin() async {
-    if (_canPopInnerPage) {
-      await _popInnerPage(animated: false);
-    }
-    if (!_sheetController.hasClient) {
-      return;
-    }
-    await _sheetController.animateTo(
-      SheetOffset(_collapsedFactor),
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
-    );
+    await _panelCoordinator.collapseToMin();
   }
 
   Future<void> _openTagPage() async {
-    if (_contentPageIndex == 1 || !_contentPageController.hasClients) {
-      return;
-    }
-    await _contentPageController.animateToPage(
-      1,
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
-    );
+    await _panelCoordinator.openTagPage();
   }
 
   Future<bool> _popInnerPage({bool animated = true}) async {
-    if (!_canPopInnerPage || !_contentPageController.hasClients) {
-      return false;
+    final popped = await _panelCoordinator.popInnerPage(animated: animated);
+    if (popped && mounted) {
+      setState(() {});
     }
-    if (animated) {
-      await _contentPageController.animateToPage(
-        0,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-      );
-      return true;
-    }
-    _contentPageController.jumpToPage(0);
-    if (mounted) {
-      setState(() => _contentPageIndex = 0);
-    }
-    return true;
+    return popped;
   }
 
   void _handleSheetMetricsChanged() {
-    final nextProgress = _resolveProgress(_sheetController.metrics);
-    if ((nextProgress - _progress).abs() < 0.0001) {
+    final changed = _panelCoordinator.syncProgressFromMetrics(
+      _panelCoordinator.sheetController.metrics,
+    );
+    if (!changed) {
       return;
     }
 
@@ -220,11 +194,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       if (!mounted) {
         return;
       }
-      if ((nextProgress - _progress).abs() < 0.0001) {
-        return;
-      }
-      setState(() => _progress = nextProgress);
-      widget.onProgressChanged?.call(nextProgress);
+      setState(() {});
+      widget.onProgressChanged?.call(_panelCoordinator.progress);
     }
 
     final phase = SchedulerBinding.instance.schedulerPhase;
@@ -234,18 +205,6 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       return;
     }
     apply();
-  }
-
-  double _resolveProgress(SheetMetrics? metrics) {
-    if (metrics == null) {
-      return 0;
-    }
-    final range = (metrics.maxOffset - metrics.minOffset).abs();
-    if (range <= 0) {
-      return 0;
-    }
-    final raw = (metrics.offset - metrics.minOffset) / range;
-    return raw.clamp(0.0, 1.0).toDouble();
   }
 
   String get _energyDescription {
@@ -269,10 +228,16 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final horizontalInset =
-        lerpDouble(_collapsedHorizontalInset, _expandedHorizontalInset, _progress)!;
-    final extraLift = lerpDouble(_collapsedExtraLift, 0, _progress)!;
+        lerpDouble(
+          _collapsedHorizontalInset,
+          _expandedHorizontalInset,
+          _panelCoordinator.progress,
+        )!;
+    final extraLift =
+        lerpDouble(_collapsedExtraLift, 0, _panelCoordinator.progress)!;
     // 避免展开态输入时被键盘整体顶得过高：随展开进度逐步降低键盘抬升量。
-    final keyboardLiftFactor = (1 - _progress).clamp(0.0, 1.0).toDouble();
+    final keyboardLiftFactor =
+        (1 - _panelCoordinator.progress).clamp(0.0, 1.0).toDouble();
     final keyboardLift = widget.bottomInset * keyboardLiftFactor;
     final baseBottom = keyboardLift > 0 ? keyboardLift + 8 : 10.0;
 
@@ -289,7 +254,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         height: _activeExpandedHeight,
         child: SheetViewport(
           child: Sheet(
-            controller: _sheetController,
+            controller: _panelCoordinator.sheetController,
             initialOffset: SheetOffset(_collapsedFactor),
             physics: const BouncingSheetPhysics(
               spring: SpringDescription(
@@ -353,13 +318,13 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
 
   Widget _buildContent(BuildContext context) {
     return PageView(
-      controller: _contentPageController,
+      controller: _panelCoordinator.contentPageController,
       physics: const NeverScrollableScrollPhysics(),
       onPageChanged: (index) {
-        if (_contentPageIndex == index) {
+        if (!_panelCoordinator.setContentPageIndex(index)) {
           return;
         }
-        setState(() => _contentPageIndex = index);
+        setState(() {});
       },
       children: <Widget>[
         _buildMainPanelPage(context),
@@ -411,7 +376,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     required Widget header,
     required Widget content,
   }) {
-    final detailsOpacity = ((_progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
+    final detailsOpacity =
+        ((_panelCoordinator.progress - 0.15) / 0.85).clamp(0.0, 1.0).toDouble();
     final dividerColor = Theme.of(
       context,
     ).colorScheme.outlineVariant.withValues(alpha: 0.5);
@@ -423,7 +389,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           child: ClipRect(
             child: IgnorePointer(
               // 只在展开到一定程度后开放内部交互，避免半展开误触。
-              ignoring: _progress < 0.58,
+              ignoring: _panelCoordinator.progress < 0.58,
               child: Opacity(
                 opacity: detailsOpacity,
                 child: content,
@@ -510,7 +476,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   Widget _buildMainHeader(BuildContext context) {
-    final isCollapsedVisual = _progress < 0.56;
+    final isCollapsedVisual = _panelCoordinator.progress < 0.56;
     final icon =
         isCollapsedVisual ? FontAwesomeIcons.anglesUp : FontAwesomeIcons.anglesDown;
     final title = isCollapsedVisual ? '上划展开' : '下滑收起';

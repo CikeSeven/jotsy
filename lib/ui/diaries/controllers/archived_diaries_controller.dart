@@ -1,0 +1,254 @@
+part of 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
+
+/// 归档页业务控制器。
+///
+/// 职责边界：
+/// - 处理多选、删除、取消归档与撤销提示流程；
+/// - 与数据库与提示层交互；
+/// - 不包含任何 UI 组件构建代码。
+class ArchivedDiariesController {
+  const ArchivedDiariesController(this._state);
+
+  final _ArchivedDiariesPageState _state;
+
+  void noopCreate() {}
+
+  void clearSelection() {
+    if (_state._selectedDiaryIds.isEmpty) {
+      return;
+    }
+    _state.setState(_state._selectedDiaryIds.clear);
+  }
+
+  void toggleSelection(String diaryId, bool forceSelect) {
+    _state.setState(() {
+      if (forceSelect) {
+        _state._selectedDiaryIds.add(diaryId);
+        return;
+      }
+      if (_state._selectedDiaryIds.contains(diaryId)) {
+        _state._selectedDiaryIds.remove(diaryId);
+      } else {
+        _state._selectedDiaryIds.add(diaryId);
+      }
+    });
+  }
+
+  Future<void> showInfoSnackBar(
+    String message, {
+    Duration duration = _ArchivedDiariesPageState._restoreHintDuration,
+  }) async {
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(
+        content: Text(message),
+        duration: duration,
+      ),
+    );
+  }
+
+  Future<bool> showUndoSnackBar({
+    required String message,
+    required Duration duration,
+  }) async {
+    var undoRequested = false;
+    final closedReason = await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(
+        content: Text(message),
+        duration: duration,
+        action: SnackBarAction(
+          label: '撤销',
+          onPressed: () {
+            undoRequested = true;
+          },
+        ),
+      ),
+      forceCloseAfter: duration,
+    );
+
+    return undoRequested || closedReason == SnackBarClosedReason.action;
+  }
+
+  Future<bool> showDeleteSelectedConfirmDialog(int count) async {
+    final confirmed = await showDialog<bool>(
+      context: _state.context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('删除日记'),
+          content: Text('确认删除已选择的 $count 条归档日记吗？'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('删除'),
+            ),
+          ],
+        );
+      },
+    );
+    return confirmed == true;
+  }
+
+  Future<void> unarchiveSelectedDiaries() async {
+    if (_state._selectedDiaryIds.isEmpty) {
+      return;
+    }
+    await _unarchiveDiaries(
+      _state._selectedDiaryIds.toList(growable: false),
+      clearSelection: true,
+      showUndoSnack: true,
+    );
+  }
+
+  Future<void> unarchiveDiaryBySwipe(String diaryId) async {
+    await _unarchiveDiaries(
+      <String>[diaryId],
+      clearSelection: false,
+      showUndoSnack: true,
+    );
+  }
+
+  Future<void> _unarchiveDiaries(
+    List<String> diaryIds, {
+    required bool clearSelection,
+    required bool showUndoSnack,
+  }) async {
+    final targetIds =
+        diaryIds
+            .map((id) => id.trim())
+            .where((id) => id.isNotEmpty)
+            .toSet()
+            .toList(growable: false);
+    if (targetIds.isEmpty) {
+      return;
+    }
+
+    if (clearSelection) {
+      _state.setState(() {
+        _state._selectedDiaryIds.removeAll(targetIds);
+      });
+    }
+
+    final db = _state.ref.read(appDatabaseProvider);
+    final failedIds = <String>[];
+    for (final diaryId in targetIds) {
+      try {
+        await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
+      } catch (_) {
+        failedIds.add(diaryId);
+      }
+    }
+
+    if (!_state.mounted) {
+      return;
+    }
+
+    if (failedIds.isNotEmpty) {
+      final succeededIds =
+          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      for (final diaryId in succeededIds) {
+        await db.archiveDiary(diaryId, touchUpdatedAt: false);
+      }
+      if (!_state.mounted) {
+        return;
+      }
+      if (clearSelection) {
+        _state.setState(() {
+          _state._selectedDiaryIds.addAll(targetIds);
+        });
+      }
+      await showInfoSnackBar('取消归档失败，请重试');
+      return;
+    }
+
+    if (!showUndoSnack) {
+      return;
+    }
+
+    final undoRequested = await showUndoSnackBar(
+      message: '已取消归档 ${targetIds.length} 条日记',
+      duration: _ArchivedDiariesPageState._undoSnackDuration,
+    );
+    if (!_state.mounted || !undoRequested) {
+      return;
+    }
+
+    for (final diaryId in targetIds) {
+      await db.archiveDiary(diaryId, touchUpdatedAt: false);
+    }
+    if (!_state.mounted) {
+      return;
+    }
+    await showInfoSnackBar('已恢复归档状态');
+  }
+
+  Future<void> deleteSelectedDiaries() async {
+    if (_state._selectedDiaryIds.isEmpty) {
+      return;
+    }
+
+    final targetIds = _state._selectedDiaryIds.toList(growable: false);
+    final confirmed = await showDeleteSelectedConfirmDialog(targetIds.length);
+    if (!_state.mounted || !confirmed) {
+      return;
+    }
+
+    _state.setState(() {
+      _state._selectedDiaryIds.clear();
+    });
+
+    final db = _state.ref.read(appDatabaseProvider);
+    final failedIds = <String>[];
+    for (final diaryId in targetIds) {
+      try {
+        await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
+      } catch (_) {
+        failedIds.add(diaryId);
+      }
+    }
+
+    if (!_state.mounted) {
+      return;
+    }
+
+    if (failedIds.isNotEmpty) {
+      final succeededIds =
+          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      for (final diaryId in succeededIds) {
+        await db.restoreDiary(diaryId, touchUpdatedAt: false);
+        await db.archiveDiary(diaryId, touchUpdatedAt: false);
+      }
+      if (!_state.mounted) {
+        return;
+      }
+      _state.setState(() {
+        _state._selectedDiaryIds.addAll(targetIds);
+      });
+      await showInfoSnackBar('删除失败，请重试');
+      return;
+    }
+
+    await showInfoSnackBar('已删除 ${targetIds.length} 条日记');
+  }
+
+  void openEditor(String diaryId) {
+    Navigator.of(_state.context).push(
+      MaterialPageRoute<void>(
+        builder:
+            (BuildContext context) =>
+                EditDiaryPage(diaryId: diaryId, entryMode: EditDiaryEntryMode.edit),
+      ),
+    );
+  }
+}

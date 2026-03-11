@@ -12,6 +12,8 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import '../../../core/database/app_database.dart';
 import '../sections/diary_head_section.dart';
 
+part '../controllers/archived_diaries_controller.dart';
+
 /// 归档日记页面。
 ///
 /// 支持：
@@ -31,239 +33,14 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   static const Duration _restoreHintDuration = Duration(seconds: 2);
 
   final Set<String> _selectedDiaryIds = <String>{};
+  late final ArchivedDiariesController _controller;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
 
-  // 归档页不提供新建入口，传空实现用于复用列表组件。
-  void _noopCreate() {}
-
-  Future<void> _showInfoSnackBar(
-    String message, {
-    Duration duration = _restoreHintDuration,
-  }) async {
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: context,
-      snackBar: SnackBar(
-        content: Text(message),
-        duration: duration,
-      ),
-    );
-  }
-
-  Future<bool> _showUndoSnackBar({
-    required String message,
-    required Duration duration,
-  }) async {
-    var undoRequested = false;
-    final closedReason = await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: context,
-      snackBar: SnackBar(
-        content: Text(message),
-        duration: duration,
-        action: SnackBarAction(
-          label: '撤销',
-          onPressed: () {
-            undoRequested = true;
-          },
-        ),
-      ),
-      forceCloseAfter: duration,
-    );
-
-    return undoRequested || closedReason == SnackBarClosedReason.action;
-  }
-
-  void _clearSelection() {
-    if (_selectedDiaryIds.isEmpty) {
-      return;
-    }
-    setState(_selectedDiaryIds.clear);
-  }
-
-  void _toggleSelection(String diaryId, bool forceSelect) {
-    setState(() {
-      if (forceSelect) {
-        _selectedDiaryIds.add(diaryId);
-        return;
-      }
-      if (_selectedDiaryIds.contains(diaryId)) {
-        _selectedDiaryIds.remove(diaryId);
-      } else {
-        _selectedDiaryIds.add(diaryId);
-      }
-    });
-  }
-
-  Future<bool> _showDeleteSelectedConfirmDialog(int count) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('删除日记'),
-          content: Text('确认删除已选择的 $count 条归档日记吗？'),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor:
-                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
-            ),
-          ],
-        );
-      },
-    );
-    return confirmed == true;
-  }
-
-  Future<void> _unarchiveDiaries(
-    List<String> diaryIds, {
-    required bool clearSelection,
-    required bool showUndoSnack,
-  }) async {
-    final targetIds =
-        diaryIds
-            .map((id) => id.trim())
-            .where((id) => id.isNotEmpty)
-            .toSet()
-            .toList(growable: false);
-    if (targetIds.isEmpty) {
-      return;
-    }
-
-    if (clearSelection) {
-      setState(() {
-        _selectedDiaryIds.removeAll(targetIds);
-      });
-    }
-
-    final db = ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-    for (final diaryId in targetIds) {
-      try {
-        await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
-      } catch (_) {
-        failedIds.add(diaryId);
-      }
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
-      for (final diaryId in succeededIds) {
-        await db.archiveDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!mounted) {
-        return;
-      }
-      if (clearSelection) {
-        setState(() {
-          _selectedDiaryIds.addAll(targetIds);
-        });
-      }
-      await _showInfoSnackBar('取消归档失败，请重试');
-      return;
-    }
-
-    if (!showUndoSnack) {
-      return;
-    }
-
-    final undoRequested = await _showUndoSnackBar(
-      message: '已取消归档 ${targetIds.length} 条日记',
-      duration: _undoSnackDuration,
-    );
-    if (!mounted || !undoRequested) {
-      return;
-    }
-
-    for (final diaryId in targetIds) {
-      await db.archiveDiary(diaryId, touchUpdatedAt: false);
-    }
-    if (!mounted) {
-      return;
-    }
-    await _showInfoSnackBar('已恢复归档状态');
-  }
-
-  Future<void> _unarchiveSelectedDiaries() async {
-    if (_selectedDiaryIds.isEmpty) {
-      return;
-    }
-    await _unarchiveDiaries(
-      _selectedDiaryIds.toList(growable: false),
-      clearSelection: true,
-      showUndoSnack: true,
-    );
-  }
-
-  Future<void> _unarchiveDiaryBySwipe(String diaryId) async {
-    await _unarchiveDiaries(
-      <String>[diaryId],
-      clearSelection: false,
-      showUndoSnack: true,
-    );
-  }
-
-  Future<void> _deleteSelectedDiaries() async {
-    if (_selectedDiaryIds.isEmpty) {
-      return;
-    }
-
-    final targetIds = _selectedDiaryIds.toList(growable: false);
-    final confirmed = await _showDeleteSelectedConfirmDialog(targetIds.length);
-    if (!mounted || !confirmed) {
-      return;
-    }
-
-    setState(() {
-      _selectedDiaryIds.clear();
-    });
-
-    final db = ref.read(appDatabaseProvider);
-    final failedIds = <String>[];
-    for (final diaryId in targetIds) {
-      try {
-        await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
-      } catch (_) {
-        failedIds.add(diaryId);
-      }
-    }
-
-    if (!mounted) {
-      return;
-    }
-
-    if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
-      for (final diaryId in succeededIds) {
-        await db.restoreDiary(diaryId, touchUpdatedAt: false);
-        await db.archiveDiary(diaryId, touchUpdatedAt: false);
-      }
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _selectedDiaryIds.addAll(targetIds);
-      });
-      await _showInfoSnackBar('删除失败，请重试');
-      return;
-    }
-
-    await _showInfoSnackBar('已删除 ${targetIds.length} 条日记');
+  @override
+  void initState() {
+    super.initState();
+    _controller = ArchivedDiariesController(this);
   }
 
   @override
@@ -280,7 +57,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
         if (didPop) {
           return;
         }
-        _clearSelection();
+        _controller.clearSelection();
       },
       child: Scaffold(
         backgroundColor: pageBackgroundColor,
@@ -290,7 +67,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               _isSelectionMode
                   ? IconButton(
                     tooltip: '取消',
-                    onPressed: _clearSelection,
+                    onPressed: _controller.clearSelection,
                     icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                   )
                   : null,
@@ -299,12 +76,13 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                   ? <Widget>[
                     IconButton(
                       tooltip: '取消归档',
-                      onPressed: () => unawaited(_unarchiveSelectedDiaries()),
+                      onPressed:
+                          () => unawaited(_controller.unarchiveSelectedDiaries()),
                       icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
                     ),
                     IconButton(
                       tooltip: '删除',
-                      onPressed: () => unawaited(_deleteSelectedDiaries()),
+                      onPressed: () => unawaited(_controller.deleteSelectedDiaries()),
                       icon: FaIcon(
                         FontAwesomeIcons.trashCan,
                         size: 18,
@@ -334,21 +112,12 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                     layoutMode: DiaryLayoutMode.list,
                     selectedDiaryIds: _selectedDiaryIds,
                     isSelectionMode: _isSelectionMode,
-                    onCreate: _noopCreate,
-                    onOpenEditor: (diaryId) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder:
-                              (BuildContext context) => EditDiaryPage(
-                                diaryId: diaryId,
-                                entryMode: EditDiaryEntryMode.edit,
-                              ),
-                        ),
-                      );
-                    },
-                    onToggleSelection: _toggleSelection,
+                    onCreate: _controller.noopCreate,
+                    onOpenEditor: _controller.openEditor,
+                    onToggleSelection: _controller.toggleSelection,
                     onArchiveDiary:
-                        (diaryId) => unawaited(_unarchiveDiaryBySwipe(diaryId)),
+                        (diaryId) =>
+                            unawaited(_controller.unarchiveDiaryBySwipe(diaryId)),
                     swipeActionIcon: FontAwesomeIcons.boxOpen,
                   ),
                 ],

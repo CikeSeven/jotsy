@@ -14,6 +14,8 @@ import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
+part '../controllers/edit_diary_controller.dart';
+
 /// 单条日记详情 provider（含标签聚合）。
 final diaryDetailProvider = FutureProvider.autoDispose
     .family<DiaryWithTags?, String>((Ref ref, String diaryId) {
@@ -64,6 +66,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _saving = false;
   Timer? _createDraftSaveDebounceTimer;
   String? _lastPersistedCreateDraftRaw;
+  late final EditDiaryController _controller;
 
   bool get _isMobileRuntime {
     final platform = defaultTargetPlatform;
@@ -78,19 +81,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
     );
-    _titleController.addListener(_onCreateDraftInputChanged);
-    _contentController.addListener(_onCreateDraftInputChanged);
+    _controller = EditDiaryController(this);
+    _titleController.addListener(_controller.onCreateDraftInputChanged);
+    _contentController.addListener(_controller.onCreateDraftInputChanged);
     _initialized = widget.diaryId == null;
     if (_isCreateEntry && widget.restoreCreateDraft) {
-      unawaited(_restoreCreateDraftIfExists());
+      unawaited(_controller.restoreCreateDraftIfExists());
     }
   }
 
   @override
   void dispose() {
     _createDraftSaveDebounceTimer?.cancel();
-    _titleController.removeListener(_onCreateDraftInputChanged);
-    _contentController.removeListener(_onCreateDraftInputChanged);
+    _titleController.removeListener(_controller.onCreateDraftInputChanged);
+    _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _titleController.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
@@ -126,295 +130,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       moodEmoji: _draftMoodEmoji,
       energyLevel: _draftEnergyLevel,
     );
-  }
-
-  void _replaceContentController(quill.QuillController nextController) {
-    _contentController.removeListener(_onCreateDraftInputChanged);
-    _contentController.dispose();
-    _contentController = nextController;
-    _contentController.addListener(_onCreateDraftInputChanged);
-  }
-
-  void _onCreateDraftInputChanged() {
-    if (!_isCreateEntry) {
-      return;
-    }
-    _scheduleCreateDraftAutoSave();
-  }
-
-  void _scheduleCreateDraftAutoSave() {
-    _createDraftSaveDebounceTimer?.cancel();
-    _createDraftSaveDebounceTimer = Timer(const Duration(milliseconds: 1300), () {
-      unawaited(_persistOrClearCreateDraftDebounced());
-    });
-  }
-
-  Future<void> _persistOrClearCreateDraftDebounced() async {
-    if (!mounted || !_isCreateEntry || _saving) {
-      return;
-    }
-
-    final draft = _currentCreateDraft;
-    if (!draft.hasContent) {
-      await _clearCreateDraft();
-      return;
-    }
-
-    final rawDraft = jsonEncode(draft.toJson());
-    if (rawDraft == _lastPersistedCreateDraftRaw) {
-      return;
-    }
-
-    final settingsService = await ref.read(settingsServiceProvider.future);
-    await settingsService.setCreateDiaryDraftRaw(rawDraft);
-    _lastPersistedCreateDraftRaw = rawDraft;
-  }
-
-  Future<void> _restoreCreateDraftIfExists() async {
-    final settingsService = await ref.read(settingsServiceProvider.future);
-    final rawDraft = settingsService.createDiaryDraftRaw;
-    if (rawDraft == null || rawDraft.trim().isEmpty || !mounted) {
-      return;
-    }
-
-    try {
-      final decoded = jsonDecode(rawDraft);
-      if (decoded is! Map<String, dynamic>) {
-        return;
-      }
-      final restoredDraft = NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
-
-      quill.Document restoredDocument;
-      try {
-        restoredDocument = decodeDiaryContentToDocument(
-          restoredDraft.contentDocJson,
-        );
-      } catch (_) {
-        restoredDocument = documentFromPlainText(restoredDraft.contentText);
-      }
-
-      _lastPersistedCreateDraftRaw = jsonEncode(restoredDraft.toJson());
-      setState(() {
-        _titleController.text = restoredDraft.title;
-        _draftCover = restoredDraft.cover;
-        _metadataJson = restoredDraft.metadataJson;
-        _draftLocation = restoredDraft.location;
-        _draftLocationAddressComponent = restoredDraft.locationAddressComponent;
-        _draftLocationLatitude = restoredDraft.locationLatitude;
-        _draftLocationLongitude = restoredDraft.locationLongitude;
-        _draftLocationFromAuto = restoredDraft.locationFromAuto;
-        _draftWeather = restoredDraft.weather;
-        _draftMoodEmoji = restoredDraft.moodEmoji;
-        _draftEnergyLevel = restoredDraft.energyLevel;
-        _selectedTagIds
-          ..clear()
-          ..addAll(restoredDraft.selectedTagIds);
-        _replaceContentController(
-          quill.QuillController(
-          document: restoredDocument,
-          selection: const TextSelection.collapsed(offset: 0),
-          ),
-        );
-      });
-    } catch (_) {
-      // 草稿反序列化失败时静默忽略，避免阻断新建流程。
-    }
-  }
-
-  Future<void> _clearCreateDraft() async {
-    _createDraftSaveDebounceTimer?.cancel();
-    final settingsService = await ref.read(settingsServiceProvider.future);
-    await settingsService.clearCreateDiaryDraft();
-    _lastPersistedCreateDraftRaw = null;
-  }
-
-  bool _validateDraft() {
-    final title = _titleController.text.trim();
-    if (title.isEmpty &&
-        !diaryDocumentHasVisibleContent(_contentController.document)) {
-      unawaited(
-        HomeHintVisibilityScope.showTrackedSnackBar(
-          context: context,
-          snackBar: const SnackBar(content: Text('标题和正文不能同时为空')),
-        ),
-      );
-      return false;
-    }
-    if (!isValidMetadataJsonObject(_metadataJson)) {
-      unawaited(
-        HomeHintVisibilityScope.showTrackedSnackBar(
-          context: context,
-          snackBar: const SnackBar(content: Text('metadata 必须是合法 JSON 对象')),
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  Future<void> _save() async {
-    if (_saving) {
-      return;
-    }
-    if (!_validateDraft()) {
-      return;
-    }
-
-    setState(() => _saving = true);
-
-    final db = ref.read(appDatabaseProvider);
-    final title = _titleController.text;
-    final contentText = _currentContentText;
-    final contentDocJson = _currentContentDocJson;
-    final cover = _draftCover;
-
-    try {
-      if (widget.diaryId == null) {
-        await db.createDiary(
-          title: title,
-          contentDocJson: contentDocJson,
-          contentText: contentText,
-          cover: cover,
-          metadataJson: _metadataJson,
-          tagIds: _selectedTagIds.toList(),
-        );
-      } else {
-        await db.updateDiary(
-          diaryId: widget.diaryId!,
-          title: title,
-          contentDocJson: contentDocJson,
-          contentText: contentText,
-          cover: cover,
-          metadataJson: _metadataJson,
-          tagIds: _selectedTagIds.toList(),
-        );
-      }
-
-      if (!mounted) {
-        return;
-      }
-      if (_isCreateEntry) {
-        await _clearCreateDraft();
-      }
-      Navigator.of(context).pop(true);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      await HomeHintVisibilityScope.showTrackedSnackBar(
-        context: context,
-        snackBar: SnackBar(content: Text('保存失败: $error')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _saving = false);
-      }
-    }
-  }
-
-  Future<void> _softDelete() async {
-    final diaryId = widget.diaryId;
-    if (diaryId == null || _saving) {
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('删除日记'),
-          content: const Text('将执行软删除，后续可恢复。确定继续吗？'),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) {
-      return;
-    }
-
-    final db = ref.read(appDatabaseProvider);
-    await db.softDeleteDiary(diaryId);
-
-    if (!mounted) {
-      return;
-    }
-    Navigator.of(context).pop(true);
-  }
-
-  Future<void> _openPublishPage() async {
-    if (!_validateDraft()) {
-      return;
-    }
-
-    final result = await Navigator.of(context).push<Object>(
-      MaterialPageRoute<Object>(
-        builder: (BuildContext context) {
-          return PublishDiaryPage(
-            initialDraft: NewDiaryDraft(
-              title: _titleController.text,
-              contentDocJson: _currentContentDocJson,
-              contentText: _currentContentText,
-              cover: _draftCover,
-              metadataJson: _metadataJson,
-              selectedTagIds: <int>{..._selectedTagIds},
-              location: _draftLocation,
-              locationAddressComponent: _draftLocationAddressComponent,
-              locationLatitude: _draftLocationLatitude,
-              locationLongitude: _draftLocationLongitude,
-              locationFromAuto: _draftLocationFromAuto,
-              weather: _draftWeather,
-              moodEmoji: _draftMoodEmoji,
-              energyLevel: _draftEnergyLevel,
-            ),
-          );
-        },
-      ),
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    if (result == true) {
-      await _clearCreateDraft();
-      Navigator.of(context).pop(true);
-      return;
-    }
-
-    if (result is NewDiaryDraft) {
-      setState(() {
-        _draftCover = result.cover;
-        _metadataJson = result.metadataJson;
-        _draftLocation = result.location;
-        _draftLocationAddressComponent = result.locationAddressComponent;
-        _draftLocationLatitude = result.locationLatitude;
-        _draftLocationLongitude = result.locationLongitude;
-        _draftLocationFromAuto = result.locationFromAuto;
-        _draftWeather = result.weather;
-        _draftMoodEmoji = result.moodEmoji;
-        _draftEnergyLevel = result.energyLevel;
-        _selectedTagIds
-          ..clear()
-          ..addAll(result.selectedTagIds);
-      });
-      _scheduleCreateDraftAutoSave();
-    }
   }
 
   Widget _buildTitleInput(BuildContext context) {
@@ -542,7 +257,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
           _draftCover = detail.diary.cover;
-          _replaceContentController(
+          _controller.replaceContentController(
             quill.QuillController(
               document: decodeDiaryContentToDocument(detail.diary.content),
               selection: const TextSelection.collapsed(offset: 0),
@@ -567,20 +282,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             actions: <Widget>[
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
-                  onPressed: _saving ? null : _openPublishPage,
+                  onPressed: _saving ? null : _controller.openPublishPage,
                   icon: const FaIcon(FontAwesomeIcons.plus),
                   tooltip: '发布',
                 )
               else
                 IconButton(
-                  onPressed: _saving ? null : _save,
+                  onPressed: _saving ? null : _controller.save,
                   icon: const Icon(Icons.save_outlined),
                   tooltip: '保存',
                 ),
               if (widget.diaryId != null &&
                   widget.entryMode == EditDiaryEntryMode.edit)
                 IconButton(
-                  onPressed: _saving ? null : _softDelete,
+                  onPressed: _saving ? null : _controller.softDelete,
                   icon: const Icon(Icons.delete_outline),
                   tooltip: '软删除',
                 ),

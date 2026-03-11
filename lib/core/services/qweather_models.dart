@@ -41,10 +41,12 @@ class QWeatherNow {
   const QWeatherNow({
     required this.weatherText,
     required this.temperatureCelsius,
+    this.iconCode,
   });
 
   final String weatherText;
   final String temperatureCelsius;
+  final String? iconCode;
 
   String get displayText => '$weatherText $temperatureCelsius℃';
 }

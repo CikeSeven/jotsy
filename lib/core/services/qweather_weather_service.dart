@@ -59,6 +59,7 @@ class QWeatherWeatherService {
 
       final weatherText = now['text']?.toString().trim();
       final temp = now['temp']?.toString().trim();
+      final weatherIconCode = now['icon']?.toString().trim();
       if (weatherText == null ||
           weatherText.isEmpty ||
           temp == null ||
@@ -69,7 +70,14 @@ class QWeatherWeatherService {
         );
       }
 
-      return QWeatherNow(weatherText: weatherText, temperatureCelsius: temp);
+      return QWeatherNow(
+        weatherText: weatherText,
+        temperatureCelsius: temp,
+        iconCode:
+            (weatherIconCode == null || weatherIconCode.isEmpty)
+                ? null
+                : weatherIconCode,
+      );
     } on TimeoutException catch (error) {
       throw QWeatherException(
         type: QWeatherErrorType.network,

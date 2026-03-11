@@ -88,6 +88,7 @@ class PublishDiaryController {
       locationLongitude: _state._locationLongitude,
       locationFromAuto: _state._locationFromAuto,
       weather: normalizeOptionalText(_state._weatherController.text),
+      weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
       moodEmoji: normalizeOptionalText(_state._moodEmoji),
       energyLevel: _state._energyLevel,
     );
@@ -323,6 +324,7 @@ class PublishDiaryController {
       }
       _state.setState(() {
         _state._weatherController.text = weatherNow.displayText;
+        _state._weatherIconCode = weatherNow.iconCode;
       });
     } on QWeatherException catch (error) {
       if (!_state.mounted) {
@@ -394,6 +396,7 @@ class PublishDiaryController {
         locationLongitude: _state._locationLongitude,
         locationFromAuto: _state._locationFromAuto,
         weather: normalizeOptionalText(_state._weatherController.text),
+        weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
         moodEmoji: normalizeOptionalText(_state._moodEmoji),
         energyLevel: _state._energyLevel,
       ),

@@ -26,11 +26,13 @@ class PublishMetadataComposer {
     double? locationLongitude,
     bool locationFromAuto = false,
     String? weather,
+    String? weatherIconCode,
     String? moodEmoji,
     double? energyLevel,
   }) {
     final normalizedLocation = _normalizeOptionalText(location);
     final normalizedWeather = _normalizeOptionalText(weather);
+    final normalizedWeatherIconCode = _normalizeOptionalText(weatherIconCode);
     final normalizedMoodEmoji = _normalizeOptionalText(moodEmoji);
 
     final metadata = <String, Object?>{
@@ -59,6 +61,8 @@ class PublishMetadataComposer {
             'addressComponent': locationAddressComponent,
         },
       if (normalizedWeather != null) 'weather': normalizedWeather,
+      if (normalizedWeatherIconCode != null)
+        'weatherIconCode': normalizedWeatherIconCode,
       if (normalizedMoodEmoji != null) 'moodEmoji': normalizedMoodEmoji,
       if (energyLevel != null) 'energyLevel': _normalizeEnergyLevel(energyLevel),
     };

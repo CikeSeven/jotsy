@@ -135,6 +135,7 @@ class EditDiaryController {
         _state._draftLocationLongitude = restoredDraft.locationLongitude;
         _state._draftLocationFromAuto = restoredDraft.locationFromAuto;
         _state._draftWeather = restoredDraft.weather;
+        _state._draftWeatherIconCode = restoredDraft.weatherIconCode;
         _state._draftMoodEmoji = restoredDraft.moodEmoji;
         _state._draftEnergyLevel = restoredDraft.energyLevel;
         _state._selectedTagIds
@@ -408,6 +409,7 @@ class EditDiaryController {
       _state.setState(() {
         _state._weatherController.text = weatherNow.displayText;
         _state._draftWeather = weatherNow.displayText;
+        _state._draftWeatherIconCode = weatherNow.iconCode;
         _state._markEditPanelDirty();
       });
     } on QWeatherException catch (error) {
@@ -498,6 +500,7 @@ class EditDiaryController {
               locationLongitude: _state._draftLocationLongitude,
               locationFromAuto: _state._draftLocationFromAuto,
               weather: _state._draftWeather,
+              weatherIconCode: _state._draftWeatherIconCode,
               moodEmoji: _state._draftMoodEmoji,
               energyLevel: _state._draftEnergyLevel,
             ),
@@ -528,6 +531,7 @@ class EditDiaryController {
         _state._draftLocationLongitude = result.locationLongitude;
         _state._draftLocationFromAuto = result.locationFromAuto;
         _state._draftWeather = result.weather;
+        _state._draftWeatherIconCode = result.weatherIconCode;
         _state._draftMoodEmoji = result.moodEmoji;
         _state._draftEnergyLevel = result.energyLevel;
         _state._weatherController.text = result.weather ?? '';
@@ -555,6 +559,9 @@ class EditDiaryController {
       }
       _state._draftLocation = _normalizeOptionalText(context['location']?.toString());
       _state._draftWeather = _normalizeOptionalText(context['weather']?.toString());
+      _state._draftWeatherIconCode = _normalizeOptionalText(
+        context['weatherIconCode']?.toString(),
+      );
       _state._draftMoodEmoji = _normalizeOptionalText(context['moodEmoji']?.toString());
       _state._weatherController.text = _state._draftWeather ?? '';
 
@@ -595,6 +602,7 @@ class EditDiaryController {
       locationLongitude: _state._draftLocationLongitude,
       locationFromAuto: _state._draftLocationFromAuto,
       weather: _normalizeOptionalText(_state._weatherController.text),
+      weatherIconCode: _normalizeOptionalText(_state._draftWeatherIconCode),
       moodEmoji: _normalizeOptionalText(_state._draftMoodEmoji),
       energyLevel: _state._draftEnergyLevel,
     );

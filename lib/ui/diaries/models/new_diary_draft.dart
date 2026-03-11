@@ -21,6 +21,7 @@ class NewDiaryDraft {
     this.locationLongitude,
     this.locationFromAuto = false,
     this.weather,
+    this.weatherIconCode,
     this.moodEmoji,
     this.energyLevel,
   });
@@ -38,6 +39,7 @@ class NewDiaryDraft {
   final double? locationLongitude;
   final bool locationFromAuto;
   final String? weather;
+  final String? weatherIconCode;
   final String? moodEmoji;
   final double? energyLevel;
 
@@ -75,6 +77,7 @@ class NewDiaryDraft {
       locationLongitude: (json['locationLongitude'] as num?)?.toDouble(),
       locationFromAuto: (json['locationFromAuto'] as bool?) ?? false,
       weather: json['weather'] as String?,
+      weatherIconCode: json['weatherIconCode'] as String?,
       moodEmoji: json['moodEmoji'] as String?,
       energyLevel: (json['energyLevel'] as num?)?.toDouble(),
     );
@@ -96,6 +99,7 @@ class NewDiaryDraft {
       'locationLongitude': locationLongitude,
       'locationFromAuto': locationFromAuto,
       'weather': weather,
+      'weatherIconCode': weatherIconCode,
       'moodEmoji': moodEmoji,
       'energyLevel': energyLevel,
     };
@@ -120,6 +124,7 @@ class NewDiaryDraft {
     Object? locationLongitude = _fieldNotChanged,
     bool? locationFromAuto,
     Object? weather = _fieldNotChanged,
+    Object? weatherIconCode = _fieldNotChanged,
     Object? moodEmoji = _fieldNotChanged,
     Object? energyLevel = _fieldNotChanged,
   }) {
@@ -151,6 +156,10 @@ class NewDiaryDraft {
               : locationLongitude as double?,
       locationFromAuto: locationFromAuto ?? this.locationFromAuto,
       weather: identical(weather, _fieldNotChanged) ? this.weather : weather as String?,
+      weatherIconCode:
+          identical(weatherIconCode, _fieldNotChanged)
+              ? this.weatherIconCode
+              : weatherIconCode as String?,
       moodEmoji:
           identical(moodEmoji, _fieldNotChanged) ? this.moodEmoji : moodEmoji as String?,
       energyLevel:

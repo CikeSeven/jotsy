@@ -72,6 +72,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   double? _draftLocationLongitude;
   bool _draftLocationFromAuto = false;
   String? _draftWeather;
+  String? _draftWeatherIconCode;
   String? _draftMoodEmoji;
   double? _draftEnergyLevel;
   bool _panelMetadataDirty = false;
@@ -253,6 +254,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       locationLongitude: _draftLocationLongitude,
       locationFromAuto: _draftLocationFromAuto,
       weather: _draftWeather,
+      weatherIconCode: _draftWeatherIconCode,
       moodEmoji: _draftMoodEmoji,
       energyLevel: _draftEnergyLevel,
     );
@@ -498,6 +500,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       weatherLoading: _weatherLoading,
                       locationLabel: _controller.locationLabelForEdit,
                       weatherController: _weatherController,
+                      weatherIconCode: _draftWeatherIconCode,
                       moodEmoji: _draftMoodEmoji,
                       energyLevel: _draftEnergyLevel ?? 4,
                       tags: tags,

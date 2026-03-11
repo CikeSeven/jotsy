@@ -17,6 +17,7 @@ import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
+import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
@@ -462,6 +463,15 @@ $content
     return weather;
   }
 
+  String? _extractWeatherIconCode(DiaryWithTags detail) {
+    final context = _extractContextMetadata(detail);
+    final iconCode = context?['weatherIconCode']?.toString().trim();
+    if (iconCode == null || iconCode.isEmpty) {
+      return null;
+    }
+    return iconCode;
+  }
+
   List<_MetaChipItem> _buildMetaChipItems(DiaryWithTags detail) {
     final items = <_MetaChipItem>[];
     final context = _extractContextMetadata(detail);
@@ -514,6 +524,7 @@ $content
     final relativeCreated = _formatRelativeTime(detail.diary.createdAt);
     final location = _extractLocationLabel(detail);
     final weather = _extractWeatherLabel(detail);
+    final weatherIconCode = _extractWeatherIconCode(detail);
     final inlineItems = <Widget>[
       _buildMetaInlineItem(
         icon: FontAwesomeIcons.clock,
@@ -528,7 +539,10 @@ $content
         ),
       if (weather != null && weather.isNotEmpty)
         _buildMetaInlineItem(
-          icon: FontAwesomeIcons.cloudSun,
+          leading: QWeatherIcon(
+            iconCode: weatherIconCode,
+            size: 12,
+          ),
           label: weather,
           color: colorScheme.onSurfaceVariant,
         ),
@@ -602,18 +616,23 @@ $content
   }
 
   Widget _buildMetaInlineItem({
-    required IconData icon,
+    IconData? icon,
+    Widget? leading,
     required String label,
     required Color color,
   }) {
+    assert(icon != null || leading != null);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        FaIcon(
-          icon,
-          size: 12,
-          color: color,
-        ),
+        if (leading != null)
+          leading
+        else
+          FaIcon(
+            icon!,
+            size: 12,
+            color: color,
+          ),
         const SizedBox(width: 4),
         Text(
           label,

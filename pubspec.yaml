@@ -37,6 +37,7 @@ dependencies:
   share_plus: ^10.1.4
   widget_screenshot_plus: ^0.0.7
   table_calendar: ^3.2.0
+  flutter_svg: ^2.2.4
   
 dev_dependencies:
   flutter_test:

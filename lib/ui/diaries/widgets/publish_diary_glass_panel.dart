@@ -9,6 +9,7 @@ import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
+import '../../widgets/qweather_icon.dart';
 import 'energy_battery_indicator.dart';
 
 /// 发布页底部玻璃悬浮面板（smooth_sheets 版）。
@@ -29,6 +30,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.weatherLoading,
     required this.locationLabel,
     required this.weatherController,
+    required this.weatherIconCode,
     required this.moodEmoji,
     required this.energyLevel,
     required this.tags,
@@ -71,6 +73,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final bool weatherLoading;
   final String? locationLabel;
   final TextEditingController weatherController;
+  final String? weatherIconCode;
   final String? moodEmoji;
   final double energyLevel;
   final List<Tag> tags;
@@ -830,9 +833,12 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             constraints: const BoxConstraints(minHeight: 42),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
-              child: Row(
-                children: <Widget>[
-                  const FaIcon(FontAwesomeIcons.cloudSun, size: 14),
+                child: Row(
+                  children: <Widget>[
+                  QWeatherIcon(
+                    iconCode: widget.weatherIconCode,
+                    size: 14,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -863,7 +869,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                               height: 14,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                            : const FaIcon(FontAwesomeIcons.cloud, size: 14),
+                            : QWeatherIcon(
+                              iconCode: widget.weatherIconCode,
+                              size: 14,
+                            ),
                   ),
                 ],
               ),

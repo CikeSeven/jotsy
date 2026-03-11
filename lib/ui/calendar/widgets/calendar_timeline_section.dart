@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/widgets/energy_battery_indicator.dart';
+import '../../widgets/qweather_icon.dart';
 
 /// 日历页“选中日期列表”的时间线区块。
 ///
@@ -101,6 +102,7 @@ class CalendarTimelineSection extends StatelessWidget {
     final contextMeta = _extractContextMetadata(diary.diary);
     final location = _extractLocation(contextMeta);
     final weather = _extractWeather(contextMeta);
+    final weatherIconCode = _extractWeatherIconCode(contextMeta);
     final energyLevel = _extractEnergyLevel(contextMeta);
     final hasMetaRow =
         (location != null && location.isNotEmpty) ||
@@ -187,6 +189,7 @@ class CalendarTimelineSection extends StatelessWidget {
                                 context,
                                 location: location,
                                 weather: weather,
+                                weatherIconCode: weatherIconCode,
                                 energyLevel: energyLevel,
                               ),
                             ],
@@ -372,6 +375,14 @@ class CalendarTimelineSection extends StatelessWidget {
     return weather;
   }
 
+  String? _extractWeatherIconCode(Map<String, dynamic>? context) {
+    final iconCode = context?['weatherIconCode']?.toString().trim();
+    if (iconCode == null || iconCode.isEmpty) {
+      return null;
+    }
+    return iconCode;
+  }
+
   double? _extractEnergyLevel(Map<String, dynamic>? context) {
     final raw = context?['energyLevel'];
     final parsed = switch (raw) {
@@ -389,6 +400,7 @@ class CalendarTimelineSection extends StatelessWidget {
     BuildContext context, {
     required String? location,
     required String? weather,
+    required String? weatherIconCode,
     required double? energyLevel,
   }) {
     final color = Theme.of(context).colorScheme.onSurfaceVariant;
@@ -420,7 +432,11 @@ class CalendarTimelineSection extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            FaIcon(FontAwesomeIcons.cloudSun, size: 11, color: color),
+            QWeatherIcon(
+              iconCode: weatherIconCode,
+              size: 11,
+              fallbackColor: color,
+            ),
             const SizedBox(width: 4),
             Text(weather, style: textStyle),
           ],

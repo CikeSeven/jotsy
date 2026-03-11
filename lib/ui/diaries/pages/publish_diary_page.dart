@@ -57,6 +57,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   double? _locationLatitude;
   double? _locationLongitude;
   bool _locationFromAuto = false;
+  String? _weatherIconCode;
   double _energyLevel = 4;
   double _panelExpandProgress = 0;
 
@@ -82,6 +83,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _locationLongitude = widget.initialDraft.locationLongitude;
     _locationFromAuto = widget.initialDraft.locationFromAuto;
     _weatherController.text = widget.initialDraft.weather ?? '';
+    _weatherIconCode = widget.initialDraft.weatherIconCode;
     _moodEmoji = widget.initialDraft.moodEmoji;
 
     // 精力值限制在 1~5，避免历史数据越界导致 UI 异常。
@@ -219,6 +221,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 weatherLoading: _weatherLoading,
                 locationLabel: _controller.locationLabel,
                 weatherController: _weatherController,
+                weatherIconCode: _weatherIconCode,
                 moodEmoji: _moodEmoji,
                 energyLevel: _energyLevel,
                 tags: tags,

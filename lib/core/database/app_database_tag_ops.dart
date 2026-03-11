@@ -37,6 +37,36 @@ mixin AppDatabaseTagOps on _$AppDatabase {
     ).insert(TagsCompanion.insert(name: normalizedName, color: color));
   }
 
+  /// 更新标签信息。
+  ///
+  /// 约束：
+  /// - 标签名不能为空；
+  /// - 不允许与其他标签重名。
+  Future<void> updateTag({
+    required int tagId,
+    required String name,
+    required int color,
+  }) async {
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) {
+      throw const FormatException('标签名不能为空');
+    }
+
+    final duplicate =
+        await (select(tags)..where((Tags t) => t.name.equals(normalizedName)))
+            .getSingleOrNull();
+    if (duplicate != null && duplicate.id != tagId) {
+      throw const FormatException('已存在同名标签');
+    }
+
+    await (update(tags)..where((Tags t) => t.id.equals(tagId))).write(
+      TagsCompanion(
+        name: Value<String>(normalizedName),
+        color: Value<int>(color),
+      ),
+    );
+  }
+
   /// 删除标签（关联关系由外键级联删除）。
   Future<void> deleteTag(int tagId) async {
     await (delete(tags)..where((Tags t) => t.id.equals(tagId))).go();

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
 import 'settings_service.dart';
+import 'tag_order_codec.dart';
 
 /// 全局数据库 provider。
 ///
@@ -30,7 +31,12 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
 /// 保持单一数据源，避免多页面分别拉取导致状态不一致。
 final tagListProvider = StreamProvider<List<Tag>>((Ref ref) {
   final db = ref.watch(appDatabaseProvider);
-  return db.watchAllTags();
+  return ref.watch(settingsServiceProvider.future).asStream().asyncExpand((settings) {
+    return db.watchAllTags().map((tags) {
+      final order = decodeTagOrder(settings.tagOrderRaw);
+      return sortTagsByCustomOrder(tags, order);
+    });
+  });
 });
 
 /// 归档日记流 provider。

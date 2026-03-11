@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
-import 'package:node_diary/ui/settings/sections/settings_tag_management_section.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 
 import '../../widgets/glass_bottom_nav.dart';
@@ -17,10 +16,8 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 设置与标签分开监听，确保局部更新。
+    // 设置项分开监听，确保局部更新。
     final settingsAsync = ref.watch(settingsServiceProvider);
-    final tagsAsync = ref.watch(tagListProvider);
-    final db = ref.watch(appDatabaseProvider);
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
     final listBottomPadding =
@@ -50,13 +47,19 @@ class SettingsPage extends ConsumerWidget {
               settingsAsync: settingsAsync,
             ),
             const Divider(),
-            const ListTile(
+            ListTile(
               title: Text('标签管理'),
               subtitle: Text('删除标签会自动解除与日记的关联关系'),
-            ),
-            SettingsTagManagementSection(
-              tagsAsync: tagsAsync,
-              db: db,
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return const TagManagementPage();
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ),

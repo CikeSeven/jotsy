@@ -1,0 +1,290 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/tag_order_codec.dart';
+import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+
+/// 标签管理页：
+/// 1. 标签排序（拖拽）；
+/// 2. 标签编辑（复用新建标签弹窗样式）；
+/// 3. 标签删除。
+class TagManagementPage extends ConsumerStatefulWidget {
+  const TagManagementPage({super.key});
+
+  @override
+  ConsumerState<TagManagementPage> createState() => _TagManagementPageState();
+}
+
+class _TagManagementPageState extends ConsumerState<TagManagementPage> {
+  bool _savingOrder = false;
+  bool _operating = false;
+
+  Future<void> _createTag() async {
+    if (_operating) {
+      return;
+    }
+
+    final draft = await showCreateTagDialog(context);
+    if (draft == null || !mounted) {
+      return;
+    }
+
+    setState(() => _operating = true);
+    try {
+      final db = ref.read(appDatabaseProvider);
+      final createdId = await db.createTag(name: draft.name, color: draft.color);
+      final settings = await ref.read(settingsServiceProvider.future);
+      final order = decodeTagOrder(settings.tagOrderRaw);
+      if (!order.contains(createdId)) {
+        order.add(createdId);
+        await settings.setTagOrderRaw(encodeTagOrder(order));
+      }
+      ref.invalidate(tagListProvider);
+    } catch (error) {
+      await _showHint('创建标签失败: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _operating = false);
+      }
+    }
+  }
+
+  Future<void> _editTag(Tag tag) async {
+    if (_operating) {
+      return;
+    }
+
+    final draft = await showEditTagDialog(
+      context,
+      initialName: tag.name,
+      initialColor: tag.color,
+    );
+    if (draft == null || !mounted) {
+      return;
+    }
+
+    setState(() => _operating = true);
+    try {
+      final db = ref.read(appDatabaseProvider);
+      await db.updateTag(
+        tagId: tag.id,
+        name: draft.name,
+        color: draft.color,
+      );
+    } catch (error) {
+      await _showHint('修改标签失败: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _operating = false);
+      }
+    }
+  }
+
+  Future<void> _deleteTag(Tag tag) async {
+    if (_operating) {
+      return;
+    }
+
+    final confirmed = await _confirmDeleteTag(tag);
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    setState(() => _operating = true);
+    try {
+      final db = ref.read(appDatabaseProvider);
+      final settings = await ref.read(settingsServiceProvider.future);
+      final order = decodeTagOrder(settings.tagOrderRaw)
+        ..removeWhere((id) => id == tag.id);
+      await settings.setTagOrderRaw(encodeTagOrder(order));
+      await db.deleteTag(tag.id);
+      ref.invalidate(tagListProvider);
+    } catch (error) {
+      await _showHint('删除标签失败: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _operating = false);
+      }
+    }
+  }
+
+  Future<void> _reorderTags(List<Tag> tags, int oldIndex, int newIndex) async {
+    if (_savingOrder || _operating) {
+      return;
+    }
+    if (oldIndex == newIndex) {
+      return;
+    }
+
+    final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
+    final reordered = List<Tag>.from(tags);
+    final moved = reordered.removeAt(oldIndex);
+    reordered.insert(adjustedNewIndex, moved);
+
+    setState(() => _savingOrder = true);
+    try {
+      final settings = await ref.read(settingsServiceProvider.future);
+      await settings.setTagOrderRaw(
+        encodeTagOrder(reordered.map((tag) => tag.id).toList(growable: false)),
+      );
+      ref.invalidate(tagListProvider);
+    } catch (error) {
+      await _showHint('保存标签顺序失败: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _savingOrder = false);
+      }
+    }
+  }
+
+  Future<bool?> _confirmDeleteTag(Tag tag) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final colorScheme = Theme.of(dialogContext).colorScheme;
+        return AlertDialog(
+          title: const Text('删除标签'),
+          content: Text('确认删除标签 "${tag.name}" 吗？'),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.error,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('删除'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showHint(String message) async {
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(content: Text(message)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tagsAsync = ref.watch(tagListProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          tooltip: '返回',
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+        ),
+        title: const Text('标签管理'),
+        actions: <Widget>[
+          IconButton(
+            tooltip: '新建标签',
+            onPressed: _operating ? null : _createTag,
+            icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
+          ),
+        ],
+      ),
+      body: tagsAsync.when(
+        data: (tags) {
+          if (tags.isEmpty) {
+            return Center(
+              child: TextButton(
+                onPressed: _operating ? null : _createTag,
+                child: const Text('新建第一个标签'),
+              ),
+            );
+          }
+
+          return ReorderableListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            buildDefaultDragHandles: false,
+            itemCount: tags.length,
+            onReorder: (oldIndex, newIndex) {
+              _reorderTags(tags, oldIndex, newIndex);
+            },
+            itemBuilder: (BuildContext context, int index) {
+              final tag = tags[index];
+              return ListTile(
+                key: ValueKey<int>(tag.id),
+                leading: CircleAvatar(backgroundColor: Color(tag.color)),
+                title: Text(tag.name),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    IconButton(
+                      tooltip: '编辑标签',
+                      onPressed: _operating ? null : () => _editTag(tag),
+                      icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 14),
+                    ),
+                    IconButton(
+                      tooltip: '删除标签',
+                      onPressed: _operating ? null : () => _deleteTag(tag),
+                      icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
+                    ),
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: const _TagDragHandle(),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(),
+            ),
+        error: (error, stackTrace) {
+          return Center(
+            child: Text('标签加载失败: $error'),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TagDragHandle extends StatelessWidget {
+  const _TagDragHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurfaceVariant;
+    return SizedBox(
+      width: 16,
+      height: 18,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          _buildBar(color),
+          _buildBar(color),
+          _buildBar(color),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBar(Color color) {
+    return Container(
+      width: 2,
+      height: 16,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(1.2),
+      ),
+    );
+  }
+}

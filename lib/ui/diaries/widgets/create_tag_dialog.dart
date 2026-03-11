@@ -13,14 +13,60 @@ class NewTagDraft {
 /// - 返回 `null` 表示取消
 /// - 返回 `NewTagDraft` 表示输入合法可提交
 Future<NewTagDraft?> showCreateTagDialog(BuildContext context) async {
+  return showTagDraftDialog(
+    context,
+    title: '新建标签',
+    actionLabel: '创建',
+  );
+}
+
+/// 展示“编辑标签”弹窗并返回输入结果。
+Future<NewTagDraft?> showEditTagDialog(
+  BuildContext context, {
+  required String initialName,
+  required int initialColor,
+}) async {
+  return showTagDraftDialog(
+    context,
+    title: '编辑标签',
+    actionLabel: '保存',
+    initialName: initialName,
+    initialColor: initialColor,
+  );
+}
+
+/// 统一标签草稿弹窗（新建/编辑共用同一套视觉与交互）。
+Future<NewTagDraft?> showTagDraftDialog(
+  BuildContext context, {
+  required String title,
+  required String actionLabel,
+  String? initialName,
+  int? initialColor,
+}) async {
   return showDialog<NewTagDraft>(
     context: context,
-    builder: (BuildContext _) => const _CreateTagDialog(),
+    builder:
+        (BuildContext _) => _CreateTagDialog(
+          title: title,
+          actionLabel: actionLabel,
+          initialName: initialName,
+          initialColor: initialColor,
+        ),
   );
 }
 
 class _CreateTagDialog extends StatefulWidget {
-  const _CreateTagDialog();
+  const _CreateTagDialog({
+    required this.title,
+    required this.actionLabel,
+    this.initialName,
+    this.initialColor,
+  });
+
+  final String title;
+  final String actionLabel;
+  final String? initialName;
+  final int? initialColor;
 
   @override
   State<_CreateTagDialog> createState() => _CreateTagDialogState();
@@ -164,10 +210,10 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
   ];
 
   // 输入与选择状态。
-  final TextEditingController _nameController = TextEditingController();
+  late final TextEditingController _nameController;
   bool _colorPickerExpanded = false;
-  int _selectedFamilyIndex = 3;
-  int _selectedColorIndex = 2;
+  int _selectedFamilyIndex = 0;
+  int _selectedColorIndex = 0;
   late int _selectedColorValue;
 
   bool get _canSubmit => _nameController.text.trim().isNotEmpty;
@@ -177,9 +223,11 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
   @override
   void initState() {
     super.initState();
-    _selectedColorValue = _families[_selectedFamilyIndex]
-        .colors[_selectedColorIndex]
-        .toARGB32();
+    final initialSelection = _resolveInitialColorSelection();
+    _selectedFamilyIndex = initialSelection.familyIndex;
+    _selectedColorIndex = initialSelection.colorIndex;
+    _selectedColorValue = initialSelection.colorValue;
+    _nameController = TextEditingController(text: widget.initialName ?? '');
     _nameController.addListener(_handleNameChanged);
   }
 
@@ -227,13 +275,40 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
     ).pop(NewTagDraft(name: name, color: _selectedColorValue));
   }
 
+  _ColorSelection _resolveInitialColorSelection() {
+    final rawInitialColor = widget.initialColor;
+    if (rawInitialColor != null) {
+      for (var familyIndex = 0; familyIndex < _families.length; familyIndex++) {
+        final family = _families[familyIndex];
+        for (var colorIndex = 0; colorIndex < family.colors.length; colorIndex++) {
+          if (family.colors[colorIndex].toARGB32() == rawInitialColor) {
+            return _ColorSelection(
+              familyIndex: familyIndex,
+              colorIndex: colorIndex,
+              colorValue: rawInitialColor,
+            );
+          }
+        }
+      }
+    }
+    const fallbackFamilyIndex = 3;
+    const fallbackColorIndex = 2;
+    final fallbackColor =
+        _families[fallbackFamilyIndex].colors[fallbackColorIndex].toARGB32();
+    return _ColorSelection(
+      familyIndex: fallbackFamilyIndex,
+      colorIndex: fallbackColorIndex,
+      colorValue: rawInitialColor ?? fallbackColor,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
       scrollable: true,
-      title: const Text('新建标签'),
+      title: Text(widget.title),
       content: SizedBox(
         width: 360,
         child: Column(
@@ -393,7 +468,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                 : colorScheme.onSurfaceVariant,
           ),
           onPressed: _canSubmit ? _submit : null,
-          child: const Text('创建'),
+          child: Text(widget.actionLabel),
         ),
       ],
     );
@@ -405,4 +480,16 @@ class _ColorPaletteFamily {
 
   final String label;
   final List<Color> colors;
+}
+
+class _ColorSelection {
+  const _ColorSelection({
+    required this.familyIndex,
+    required this.colorIndex,
+    required this.colorValue,
+  });
+
+  final int familyIndex;
+  final int colorIndex;
+  final int colorValue;
 }

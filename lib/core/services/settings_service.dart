@@ -13,6 +13,7 @@ class SettingsService {
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
+  static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
 
   static Future<SettingsService> create() async {
@@ -34,6 +35,7 @@ class SettingsService {
       _prefs.getString(_keyDiaryLayoutMode) ?? 'list';
 
   String? get diaryToolbarOrderRaw => _prefs.getString(_keyDiaryToolbarOrder);
+  String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
 
@@ -47,6 +49,10 @@ class SettingsService {
 
   Future<void> setDiaryToolbarOrderRaw(String value) async {
     await _prefs.setString(_keyDiaryToolbarOrder, value);
+  }
+
+  Future<void> setTagOrderRaw(String value) async {
+    await _prefs.setString(_keyTagOrder, value);
   }
 
   Future<void> setCreateDiaryDraftRaw(String value) async {

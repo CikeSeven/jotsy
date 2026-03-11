@@ -581,13 +581,22 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 设置弹层中的单行动作项（支持选中状态勾选）。
+    // 设置弹层中的单行动作项：左侧使用系统默认 Radio 选中样式。
     return ListTile(
       dense: true,
-      contentPadding: const EdgeInsets.only(left: AppSpacing.l),
+      minLeadingWidth: 28,
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       onTap: onTap,
+      leading: IgnorePointer(
+        child: Radio<bool>(
+          value: true,
+          groupValue: selected,
+          onChanged: (_) {},
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
       title: Text(label),
-      trailing: selected ? const FaIcon(FontAwesomeIcons.check, size: 16) : null,
     );
   }
 }

@@ -127,10 +127,6 @@ $content
 
   Future<void> _shareTextDirectly(DiaryWithTags detail) async {
     await Share.share(_buildShareCopyText(detail));
-    if (!mounted) {
-      return;
-    }
-    _showHint('已拉起系统分享');
   }
 
   Future<void> _shareAsLongImage() async {
@@ -179,10 +175,6 @@ $content
       await imageFile.writeAsBytes(imageBytes, flush: true);
 
       await Share.shareXFiles(<XFile>[XFile(imageFile.path)]);
-      if (!mounted) {
-        return;
-      }
-      _showHint('已拉起系统分享');
     } catch (error) {
       if (!mounted) {
         return;
@@ -228,40 +220,6 @@ $content
       fit: BoxFit.contain,
       alignment: Alignment.center,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-    );
-  }
-
-  Future<void> _showShareOptionsBottomSheet(DiaryWithTags detail) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (BuildContext sheetContext) {
-        return SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: const FaIcon(FontAwesomeIcons.font, size: 16),
-                title: const Text('以文字形式分享'),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _shareTextDirectly(detail);
-                },
-              ),
-              ListTile(
-                leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-                title: const Text('以图片形式分享'),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _shareAsLongImage();
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -347,19 +305,27 @@ $content
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                leading: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
-                title: const Text('分享'),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _showShareOptionsBottomSheet(detail);
-                },
-              ),
-              ListTile(
                 leading: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
                 title: const Text('编辑'),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _openEditor();
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.image, size: 16),
+                title: const Text('以图片形式分享'),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _shareAsLongImage();
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.font, size: 16),
+                title: const Text('以文字形式分享'),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _shareTextDirectly(detail);
                 },
               ),
               ListTile(

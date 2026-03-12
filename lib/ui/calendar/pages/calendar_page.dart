@@ -281,9 +281,17 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       },
       data: (dayDiaries) {
         if (dayDiaries.isEmpty) {
+          final today = DateUtils.dateOnly(DateTime.now());
+          final isFutureDay = _selectedDay.isAfter(today);
           return <Widget>[
             SliverToBoxAdapter(
-              child: CalendarDayEmptyState(onCreate: _openCreateFromHomeFab),
+              child: CalendarDayEmptyState(
+                onAction: isFutureDay ? _controller.jumpToToday : _openCreateFromHomeFab,
+                message: isFutureDay
+                    ? '别着急，属于这一天的精彩还没发生。'
+                    : '这一天很安静，没有任何记录。',
+                actionLabel: isFutureDay ? '回到今天' : '补写日记',
+              ),
             ),
           ];
         }

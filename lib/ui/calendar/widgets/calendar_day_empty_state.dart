@@ -6,10 +6,14 @@ import '../../../app/theme/app_spacing.dart';
 class CalendarDayEmptyState extends StatelessWidget {
   const CalendarDayEmptyState({
     super.key,
-    required this.onCreate,
+    required this.onAction,
+    this.message = '这一天很安静，没有任何记录。',
+    this.actionLabel = '补写日记',
   });
 
-  final VoidCallback onCreate;
+  final VoidCallback onAction;
+  final String message;
+  final String actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +41,14 @@ class CalendarDayEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(
-              '这一天很安静，没有任何记录。',
+              message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: AppSpacing.l),
             FilledButton.tonal(
-              onPressed: onCreate,
-              child: const Text('补写日记'),
+              onPressed: onAction,
+              child: Text(actionLabel),
             ),
           ],
         ),

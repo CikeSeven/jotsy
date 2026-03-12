@@ -170,7 +170,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       curve: Curves.easeOutCubic,
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s,
-        AppSpacing.s,
+        AppSpacing.l,
         AppSpacing.s,
         AppSpacing.s,
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../widgets/explore_shared_widgets.dart';
 
@@ -16,14 +17,15 @@ class ExploreInsightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     return ExploreCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const ExploreSectionTitle(
+          ExploreSectionTitle(
             icon: FontAwesomeIcons.chartSimple,
-            title: '情绪与精力趋势',
+            title: l10n.tr('情绪与精力趋势', en: 'Mood & energy trends'),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -71,7 +73,10 @@ class ExploreInsightCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '继续记录天气、标签和心情后，这里会出现更具体的关联洞察。',
+            l10n.tr(
+              '继续记录天气、标签和心情后，这里会出现更具体的关联洞察。',
+              en: 'Keep recording weather, tags, and mood to unlock deeper insights here.',
+            ),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

@@ -161,8 +161,9 @@ class DiariesPageController {
             // - 列表本身由数据库流驱动，数据变更会自动刷新；
             // - 强制刷新会导致滚动位置回跳，影响“返回后继续浏览”体验。
             if (result == DiaryPreviewResult.deleted) {
+              final l10n = _state.context.l10n;
               final undoRequested = await feedback.showUndoSnackBar(
-                message: '已删除日记',
+                message: l10n.tr('已删除日记', en: 'Diary deleted'),
                 duration: _DiariesPage._deleteUndoSnackDuration,
               );
               if (!_state.mounted || !undoRequested) {
@@ -174,12 +175,16 @@ class DiariesPageController {
                 if (!_state.mounted) {
                   return;
                 }
-                await feedback.showInfoSnackBar('已恢复删除的日记');
+                await feedback.showInfoSnackBar(
+                  l10n.tr('已恢复删除的日记', en: 'Deleted diary restored'),
+                );
               } catch (_) {
                 if (!_state.mounted) {
                   return;
                 }
-                await feedback.showInfoSnackBar('恢复失败，请重试');
+                await feedback.showInfoSnackBar(
+                  l10n.tr('恢复失败，请重试', en: 'Restore failed. Please try again.'),
+                );
               }
             }
           }),
@@ -290,12 +295,15 @@ class DiariesPageController {
       _state.setState(() {
         _state._selectedDiaryIds.addAll(targetIds);
       });
-      await feedback.showInfoSnackBar('删除失败，请重试');
+      await feedback.showInfoSnackBar(
+        _state.context.l10n.tr('删除失败，请重试', en: 'Delete failed. Please try again.'),
+      );
       return;
     }
 
+    final l10n = _state.context.l10n;
     final undoRequested = await feedback.showUndoSnackBar(
-      message: '已删除 ${targetIds.length} 条日记',
+      message: l10n.tr('已删除 ${targetIds.length} 条日记', en: 'Deleted ${targetIds.length} diaries'),
       duration: _DiariesPage._deleteUndoSnackDuration,
     );
 
@@ -311,7 +319,9 @@ class DiariesPageController {
         return;
       }
       transitionCoordinator.revealDiaries(targetIds, animate: true);
-      await feedback.showInfoSnackBar('已恢复删除的日记');
+      await feedback.showInfoSnackBar(
+        l10n.tr('已恢复删除的日记', en: 'Deleted diary restored'),
+      );
       return;
     }
 
@@ -410,13 +420,16 @@ class DiariesPageController {
         }
       });
       transitionCoordinator.revealDiaries(targetIds, animate: true);
-      await feedback.showInfoSnackBar('归档失败，请重试');
+      await feedback.showInfoSnackBar(
+        _state.context.l10n.tr('归档失败，请重试', en: 'Archive failed. Please try again.'),
+      );
       return;
     }
 
     if (showUndoSnack) {
+      final l10n = _state.context.l10n;
       final undoRequested = await feedback.showUndoSnackBar(
-        message: '已归档 ${targetIds.length} 条日记',
+        message: l10n.tr('已归档 ${targetIds.length} 条日记', en: 'Archived ${targetIds.length} diaries'),
         duration: _DiariesPage._archiveUndoSnackDuration,
       );
 
@@ -435,7 +448,9 @@ class DiariesPageController {
           _state._archivingDiaryIds.removeAll(targetIds);
         });
         transitionCoordinator.revealDiaries(targetIds, animate: true);
-        await feedback.showInfoSnackBar('已恢复归档的日记');
+        await feedback.showInfoSnackBar(
+          l10n.tr('已恢复归档的日记', en: 'Archived diary restored'),
+        );
         return;
       }
     }

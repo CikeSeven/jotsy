@@ -27,12 +27,12 @@ class ExploreContentExtractor {
     }
   }
 
-  String summaryText(Diary diary) {
+  String summaryText(Diary diary, {String emptyFallback = 'Recorded an entry'}) {
     final text = diary.contentText.replaceAll('\n', ' ').trim();
     if (text.isNotEmpty) {
       return text;
     }
-    return '记录了一则内容';
+    return emptyFallback;
   }
 
   /// 媒体来源优先级：

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
@@ -35,6 +36,7 @@ class CalendarGlassHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final topSafeInset = MediaQuery.paddingOf(context).top;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -74,7 +76,7 @@ class CalendarGlassHeader extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              '日历',
+                              l10n.tr('日历', en: 'Calendar'),
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
@@ -84,7 +86,7 @@ class CalendarGlassHeader extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 IconButton(
-                                  tooltip: '上个月',
+                                  tooltip: l10n.tr('上个月', en: 'Previous month'),
                                   visualDensity: VisualDensity.compact,
                                   onPressed: onPreviousMonth,
                                   icon: const FaIcon(
@@ -112,7 +114,7 @@ class CalendarGlassHeader extends StatelessWidget {
                                   ),
                                 ),
                                 IconButton(
-                                  tooltip: '下个月',
+                                  tooltip: l10n.tr('下个月', en: 'Next month'),
                                   visualDensity: VisualDensity.compact,
                                   onPressed: onNextMonth,
                                   icon: const FaIcon(
@@ -126,7 +128,7 @@ class CalendarGlassHeader extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerRight,
                             child: IconButton(
-                              tooltip: '回到今天',
+                              tooltip: l10n.tr('回到今天', en: 'Back to today'),
                               onPressed: onJumpToToday,
                               icon: FaIcon(
                                 FontAwesomeIcons.calendarDay,

@@ -63,7 +63,7 @@ class ArchivedDiariesController {
         content: Text(message),
         duration: duration,
         action: SnackBarAction(
-          label: '撤销',
+          label: _state.context.l10n.commonUndo,
           onPressed: () {
             undoRequested = true;
           },
@@ -79,9 +79,15 @@ class ArchivedDiariesController {
     final confirmed = await showDialog<bool>(
       context: _state.context,
       builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: const Text('删除日记'),
-          content: Text('确认删除已选择的 $count 条归档日记吗？'),
+          title: Text(l10n.tr('删除日记', en: 'Delete diaries')),
+          content: Text(
+            l10n.tr(
+              '确认删除已选择的 $count 条归档日记吗？',
+              en: 'Delete $count selected archived diaries?',
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -89,14 +95,14 @@ class ArchivedDiariesController {
                     Theme.of(dialogContext).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(dialogContext).colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(l10n.commonDelete),
             ),
           ],
         );
@@ -176,7 +182,9 @@ class ArchivedDiariesController {
           _state._selectedDiaryIds.addAll(targetIds);
         });
       }
-      await showInfoSnackBar('取消归档失败，请重试');
+      await showInfoSnackBar(
+        _state.context.l10n.tr('取消归档失败，请重试', en: 'Unarchive failed. Please try again.'),
+      );
       return;
     }
 
@@ -186,7 +194,10 @@ class ArchivedDiariesController {
     }
 
     final undoRequested = await showUndoSnackBar(
-      message: '已取消归档 ${targetIds.length} 条日记',
+      message: _state.context.l10n.tr(
+        '已取消归档 ${targetIds.length} 条日记',
+        en: 'Unarchived ${targetIds.length} diaries',
+      ),
       duration: _ArchivedDiariesPageState._undoSnackDuration,
     );
     if (!_state.mounted || !undoRequested) {
@@ -199,7 +210,9 @@ class ArchivedDiariesController {
     if (!_state.mounted) {
       return;
     }
-    await showInfoSnackBar('已恢复归档状态');
+    await showInfoSnackBar(
+      _state.context.l10n.tr('已恢复归档状态', en: 'Archive status restored'),
+    );
   }
 
   Future<void> deleteSelectedDiaries() async {
@@ -246,11 +259,15 @@ class ArchivedDiariesController {
       _state.setState(() {
         _state._selectedDiaryIds.addAll(targetIds);
       });
-      await showInfoSnackBar('删除失败，请重试');
+      await showInfoSnackBar(
+        _state.context.l10n.tr('删除失败，请重试', en: 'Delete failed. Please try again.'),
+      );
       return;
     }
 
-    await showInfoSnackBar('已删除 ${targetIds.length} 条日记');
+    await showInfoSnackBar(
+      _state.context.l10n.tr('已删除 ${targetIds.length} 条日记', en: 'Deleted ${targetIds.length} diaries'),
+    );
   }
 
   /// 打开预览页（归档列表默认入口）。
@@ -270,7 +287,7 @@ class ArchivedDiariesController {
           }
           if (result == DiaryPreviewResult.deleted) {
             final undoRequested = await showUndoSnackBar(
-              message: '已删除日记',
+              message: _state.context.l10n.tr('已删除日记', en: 'Diary deleted'),
               duration: _ArchivedDiariesPageState._undoSnackDuration,
             );
             if (!_state.mounted || !undoRequested) {
@@ -282,12 +299,16 @@ class ArchivedDiariesController {
               if (!_state.mounted) {
                 return;
               }
-              await showInfoSnackBar('已恢复删除的日记');
+              await showInfoSnackBar(
+                _state.context.l10n.tr('已恢复删除的日记', en: 'Deleted diary restored'),
+              );
             } catch (_) {
               if (!_state.mounted) {
                 return;
               }
-              await showInfoSnackBar('恢复失败，请重试');
+              await showInfoSnackBar(
+                _state.context.l10n.tr('恢复失败，请重试', en: 'Restore failed. Please try again.'),
+              );
             }
           }
         });

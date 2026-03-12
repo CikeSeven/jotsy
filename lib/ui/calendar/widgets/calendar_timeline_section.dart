@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
@@ -96,7 +97,7 @@ class CalendarTimelineSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final lineColor = colorScheme.outlineVariant.withValues(alpha: 0.6);
     final moodEmoji = _extractMoodEmoji(diary.diary);
-    final summary = _buildSummaryText(diary.diary);
+    final summary = _buildSummaryText(context, diary.diary);
     final createdAtLabel = _formatHourMinute(diary.diary.createdAt);
     final cover = _resolveCover(diary.diary);
     final contextMeta = _extractContextMetadata(diary.diary);
@@ -213,12 +214,12 @@ class CalendarTimelineSection extends StatelessWidget {
 
   /// 条目摘要优先使用正文纯文本镜像。
   /// 若正文文本为空（例如仅图片日记），返回统一占位文案，避免视觉空行。
-  String _buildSummaryText(Diary diary) {
+  String _buildSummaryText(BuildContext context, Diary diary) {
     final normalized = diary.contentText.replaceAll('\n', ' ').trim();
     if (normalized.isNotEmpty) {
       return normalized;
     }
-    return '记录了一则内容';
+    return context.l10n.tr('记录了一则内容', en: 'Recorded an entry');
   }
 
   /// 时间线右侧封面缩略图来源：

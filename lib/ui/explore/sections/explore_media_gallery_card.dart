@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
@@ -17,6 +18,7 @@ class ExploreMediaGalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final previewItems = items.take(5).toList(growable: false);
     return Material(
@@ -30,14 +32,14 @@ class ExploreMediaGalleryCard extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const ExploreSectionTitle(
+                  ExploreSectionTitle(
                     icon: FontAwesomeIcons.images,
-                    title: '媒体画廊',
+                    title: l10n.tr('媒体画廊', en: 'Media gallery'),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: onOpenMediaGallery,
-                    tooltip: '查看全部图片',
+                    tooltip: l10n.tr('查看全部图片', en: 'View all images'),
                     style: IconButton.styleFrom(
                       minimumSize: const Size(28, 28),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -49,7 +51,7 @@ class ExploreMediaGalleryCard extends StatelessWidget {
               const SizedBox(height: 10),
               if (previewItems.isEmpty)
                 Text(
-                  '还没有可展示的图片。',
+                  l10n.tr('还没有可展示的图片。', en: 'No images to show yet.'),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

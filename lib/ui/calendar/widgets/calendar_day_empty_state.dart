@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 
@@ -7,17 +8,22 @@ class CalendarDayEmptyState extends StatelessWidget {
   const CalendarDayEmptyState({
     super.key,
     required this.onAction,
-    this.message = '这一天很安静，没有任何记录。',
-    this.actionLabel = '补写日记',
+    this.message,
+    this.actionLabel,
   });
 
   final VoidCallback onAction;
-  final String message;
-  final String actionLabel;
+  final String? message;
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
+    final displayMessage =
+        message ?? l10n.tr('这一天很安静，没有任何记录。', en: 'This day is quiet, no records yet.');
+    final displayActionLabel =
+        actionLabel ?? l10n.tr('补写日记', en: 'Write for this day');
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,
@@ -41,14 +47,14 @@ class CalendarDayEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(
-              message,
+              displayMessage,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: AppSpacing.l),
             FilledButton.tonal(
               onPressed: onAction,
-              child: Text(actionLabel),
+              child: Text(displayActionLabel),
             ),
           ],
         ),

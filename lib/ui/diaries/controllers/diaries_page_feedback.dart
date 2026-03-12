@@ -18,9 +18,15 @@ class DiariesPageFeedback {
       context: _state.context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: const Text('发现未完成日记'),
-          content: const Text('检测到你上次有未保存的日记，是否继续编辑？'),
+          title: Text(l10n.tr('发现未完成日记', en: 'Unsaved draft found')),
+          content: Text(
+            l10n.tr(
+              '检测到你上次有未保存的日记，是否继续编辑？',
+              en: 'An unfinished diary was found. Continue editing?',
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -31,7 +37,7 @@ class DiariesPageFeedback {
                   () => Navigator.of(
                     dialogContext,
                   ).pop(_CreateDraftDecision.newEmpty),
-              child: const Text('新建空笔记'),
+              child: Text(l10n.tr('新建空笔记', en: 'New empty note')),
             ),
             TextButton(
               style: TextButton.styleFrom(
@@ -41,7 +47,7 @@ class DiariesPageFeedback {
                   () => Navigator.of(
                     dialogContext,
                   ).pop(_CreateDraftDecision.continueEditing),
-              child: const Text('继续编辑'),
+              child: Text(l10n.tr('继续编辑', en: 'Continue editing')),
             ),
           ],
         );
@@ -54,9 +60,12 @@ class DiariesPageFeedback {
     final confirmed = await showDialog<bool>(
       context: _state.context,
       builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: const Text('删除日记'),
-          content: Text('确认删除已选择的 $count 条日记吗？'),
+          title: Text(l10n.tr('删除日记', en: 'Delete diaries')),
+          content: Text(
+            l10n.tr('确认删除已选择的 $count 条日记吗？', en: 'Delete $count selected diaries?'),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -64,14 +73,14 @@ class DiariesPageFeedback {
                     Theme.of(dialogContext).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(dialogContext).colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(l10n.commonDelete),
             ),
           ],
         );
@@ -134,7 +143,7 @@ class DiariesPageFeedback {
         content: Text(message),
         duration: duration,
         action: SnackBarAction(
-          label: '撤销',
+          label: _state.context.l10n.commonUndo,
           onPressed: () {
             undoRequested = true;
           },

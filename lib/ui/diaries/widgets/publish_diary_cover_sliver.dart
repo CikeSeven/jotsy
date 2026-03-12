@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 发布页头图 Sliver。
 ///
@@ -144,7 +145,7 @@ class _CoverFallback extends StatelessWidget {
       color: colorScheme.surfaceContainerHighest,
       child: Center(
         child: Text(
-          '封面加载失败',
+          context.l10n.tr('封面加载失败', en: 'Cover load failed'),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ),

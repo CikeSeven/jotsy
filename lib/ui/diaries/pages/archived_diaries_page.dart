@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
@@ -69,16 +70,20 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
       child: Scaffold(
         backgroundColor: pageBackgroundColor,
         appBar: AppBar(
-          title: Text(_isSelectionMode ? '已选择 ${_selectedDiaryIds.length} 项' : '归档日记'),
+          title: Text(
+            _isSelectionMode
+                ? context.l10n.tr('已选择 ${_selectedDiaryIds.length} 项', en: '${_selectedDiaryIds.length} selected')
+                : context.l10n.tr('归档日记', en: 'Archived diaries'),
+          ),
           leading:
               _isSelectionMode
                   ? IconButton(
-                    tooltip: '取消',
+                    tooltip: context.l10n.commonCancel,
                     onPressed: _controller.clearSelection,
                     icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
                   )
                   : IconButton(
-                    tooltip: '返回',
+                    tooltip: context.l10n.commonBack,
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
                   ),
@@ -86,13 +91,13 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               _isSelectionMode
                   ? <Widget>[
                     IconButton(
-                      tooltip: '取消归档',
+                      tooltip: context.l10n.tr('取消归档', en: 'Unarchive'),
                       onPressed:
                           () => unawaited(_controller.unarchiveSelectedDiaries()),
                       icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
                     ),
                     IconButton(
-                      tooltip: '删除',
+                      tooltip: context.l10n.commonDelete,
                       onPressed: () => unawaited(_controller.deleteSelectedDiaries()),
                       icon: FaIcon(
                         FontAwesomeIcons.trashCan,
@@ -108,10 +113,16 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error:
               (Object error, StackTrace stackTrace) =>
-                  Center(child: Text('归档加载失败: $error')),
+                  Center(
+                    child: Text(
+                      context.l10n.tr('归档加载失败: $error', en: 'Archived list load failed: $error'),
+                    ),
+                  ),
           data: (List<DiaryWithTags> diaries) {
             if (diaries.isEmpty) {
-              return const Center(child: Text('暂无归档日记'));
+              return Center(
+                child: Text(context.l10n.tr('暂无归档日记', en: 'No archived diaries')),
+              );
             }
 
             return ColoredBox(

@@ -12,6 +12,7 @@ import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_loading_page.dart' show AppLoadingContent;
 
+import '../core/services/settings_service.dart';
 import '../l10n/app_localizations.dart';
 
 /// 应用根组件。
@@ -75,12 +76,26 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         _minimumLoadingElapsed && settingsReady && diariesSettled;
     final startupNotice =
         bootstrapReady && diariesBootstrapAsync.hasError
-            ? '启动时预加载日记失败，已进入主页。'
+            ? _pickBootstrapText(
+              settingsService: settingsService,
+              zh: '启动时预加载日记失败，已进入主页。',
+              en: 'Startup preload failed. Entered home anyway.',
+            )
             : null;
 
     if (settingsError != null && _minimumLoadingElapsed) {
       return _buildAppShell(
-        home: Scaffold(body: Center(child: Text('初始化失败: $settingsError'))),
+        home: Scaffold(
+          body: Center(
+            child: Text(
+              _pickBootstrapText(
+                settingsService: settingsService,
+                zh: '初始化失败: $settingsError',
+                en: 'Initialization failed: $settingsError',
+              ),
+            ),
+          ),
+        ),
       );
     }
 
@@ -95,7 +110,16 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       return ValueListenableBuilder<ThemeMode>(
         valueListenable: settingsService.themeModeNotifier,
         builder: (BuildContext context, ThemeMode themeMode, Widget? child) {
-          return _buildAppShell(home: home, themeMode: themeMode);
+          return ValueListenableBuilder<Locale>(
+            valueListenable: settingsService.localeNotifier,
+            builder: (BuildContext context, Locale locale, Widget? child) {
+              return _buildAppShell(
+                home: home,
+                themeMode: themeMode,
+                locale: locale,
+              );
+            },
+          );
         },
       );
     }
@@ -106,6 +130,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   MaterialApp _buildAppShell({
     required Widget home,
     ThemeMode themeMode = ThemeMode.system,
+    Locale locale = const Locale('en'),
   }) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -113,7 +138,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       theme: _lightMaterialTheme.light(),
       darkTheme: _darkMaterialTheme.dark(),
       themeMode: themeMode,
-      supportedLocales: const [Locale('en'), Locale('zh'), Locale('zh', 'CN')],
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -132,6 +158,14 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       },
       home: home,
     );
+  }
+
+  String _pickBootstrapText({
+    required SettingsService? settingsService,
+    required String zh,
+    required String en,
+  }) {
+    return settingsService?.appLocaleCode == 'zh' ? zh : en;
   }
 }
 

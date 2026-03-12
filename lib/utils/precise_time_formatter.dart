@@ -1,3 +1,5 @@
+import 'package:node_diary/l10n/app_localizations.dart';
+
 /// 精确到分钟的时间格式化工具（用于更新时间展示）。
 ///
 /// 规则：
@@ -10,27 +12,8 @@ class PreciseTimeFormatter {
   static String format({
     required DateTime target,
     required DateTime now,
+    required AppLocalizations l10n,
   }) {
-    final localTarget = target.toLocal();
-    final localNow = now.toLocal();
-    final hm = _formatHourMinute(localTarget);
-
-    if (_isSameDay(localTarget, localNow)) {
-      return hm;
-    }
-    if (localTarget.year == localNow.year) {
-      return '${localTarget.month}月${localTarget.day}日 $hm';
-    }
-    return '${localTarget.year}年 ${localTarget.month}月${localTarget.day}日 $hm';
-  }
-
-  static bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  static String _formatHourMinute(DateTime value) {
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+    return l10n.formatPreciseDateTime(target, now);
   }
 }

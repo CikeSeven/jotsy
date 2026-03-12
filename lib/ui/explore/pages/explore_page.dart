@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
@@ -25,6 +26,7 @@ class ExplorePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final diariesAsync = ref.watch(exploreDiariesProvider);
     final orderedTagsAsync = ref.watch(tagListProvider);
     final controller = const ExplorePageController();
@@ -59,6 +61,7 @@ class ExplorePage extends ConsumerWidget {
                     final viewData = controller.buildViewData(
                       diaries,
                       now: DateTime.now(),
+                      l10n: l10n,
                       orderedTagIds: orderedTagIds,
                     );
                     return SliverToBoxAdapter(
@@ -94,7 +97,7 @@ class ExplorePage extends ConsumerWidget {
             ],
           ),
         ),
-        const GlassPageHeader(title: '探索'),
+        GlassPageHeader(title: l10n.tr('探索', en: 'Explore')),
       ],
     );
   }
@@ -192,7 +195,7 @@ class _ExploreErrorCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            '探索数据暂不可用',
+            context.l10n.tr('探索数据暂不可用', en: 'Explore data is unavailable'),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),

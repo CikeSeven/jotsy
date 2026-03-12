@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 关于页面：展示应用基础信息与项目地址。
 class AboutPage extends StatelessWidget {
@@ -17,7 +18,7 @@ class AboutPage extends StatelessWidget {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已复制到剪贴板')),
+      SnackBar(content: Text(context.l10n.aboutCopied)),
     );
   }
 
@@ -28,9 +29,9 @@ class AboutPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('关于'),
+        title: Text(context.l10n.aboutTitle),
         leading: IconButton(
-          tooltip: '返回',
+          tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
@@ -76,7 +77,7 @@ class AboutPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '记录每一天的小事与心情',
+                        context.l10n.aboutTagline,
                         style: textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -89,19 +90,19 @@ class AboutPage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _AboutInfoTile(
-            label: '应用版本',
+            label: context.l10n.aboutVersion,
             value: _appVersion,
             onCopy: () => _copyText(context, _appVersion),
           ),
           const Divider(height: 1),
           _AboutInfoTile(
-            label: '应用包名',
+            label: context.l10n.aboutPackageName,
             value: _packageName,
             onCopy: () => _copyText(context, _packageName),
           ),
           const Divider(height: 1),
           _AboutInfoTile(
-            label: '项目地址',
+            label: context.l10n.aboutRepository,
             value: _repoUrl,
             onCopy: () => _copyText(context, _repoUrl),
           ),
@@ -145,7 +146,7 @@ class _AboutInfoTile extends StatelessWidget {
         ),
       ),
       trailing: IconButton(
-        tooltip: '复制',
+        tooltip: context.l10n.tr('复制', en: 'Copy'),
         onPressed: onCopy,
         icon: const FaIcon(FontAwesomeIcons.copy, size: 15),
       ),

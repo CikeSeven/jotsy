@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
@@ -17,19 +18,23 @@ class ExploreTagCloudCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     return ExploreCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const ExploreSectionTitle(
+          ExploreSectionTitle(
             icon: FontAwesomeIcons.tags,
-            title: '标签云',
+            title: l10n.tr('标签云', en: 'Tag cloud'),
           ),
           const SizedBox(height: 10),
           if (tags.isEmpty)
             Text(
-              '还没有标签数据，写几篇带标签的日记试试。',
+              l10n.tr(
+                '还没有标签数据，写几篇带标签的日记试试。',
+                en: 'No tag data yet. Try writing diaries with tags.',
+              ),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
@@ -83,17 +84,17 @@ class DiaryHeadSection extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: '取消',
+                tooltip: context.l10n.commonCancel,
                 onPressed: onCancelSelection,
                 icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
               ),
               IconButton(
-                tooltip: '归档',
+                tooltip: context.l10n.tr('归档', en: 'Archive'),
                 onPressed: onArchiveSelected,
                 icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
               ),
               IconButton(
-                tooltip: '删除',
+                tooltip: context.l10n.commonDelete,
                 onPressed: onDeleteSelected,
                 icon: FaIcon(
                   FontAwesomeIcons.trashCan,
@@ -160,14 +161,14 @@ class DiaryHeadSection extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s),
                     Text(
-                      '排序方式',
+                      context.l10n.tr('排序方式', en: 'Sort'),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 _ActionTile(
-                  label: '最近更新',
+                  label: context.l10n.tr('最近更新', en: 'Recently updated'),
                   selected: sortMode == DiarySortMode.updatedDesc,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -175,7 +176,7 @@ class DiaryHeadSection extends StatelessWidget {
                   },
                 ),
                 _ActionTile(
-                  label: '最早更新',
+                  label: context.l10n.tr('最早更新', en: 'Oldest updated'),
                   selected: sortMode == DiarySortMode.updatedAsc,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -183,7 +184,7 @@ class DiaryHeadSection extends StatelessWidget {
                   },
                 ),
                 _ActionTile(
-                  label: '标题 A-Z',
+                  label: context.l10n.tr('标题 A-Z', en: 'Title A-Z'),
                   selected: sortMode == DiarySortMode.titleAsc,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -200,14 +201,14 @@ class DiaryHeadSection extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s),
                     Text(
-                      '显示布局',
+                      context.l10n.tr('显示布局', en: 'Layout'),
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 _ActionTile(
-                  label: '列表',
+                  label: context.l10n.tr('列表', en: 'List'),
                   selected: layoutMode == DiaryLayoutMode.list,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -215,7 +216,7 @@ class DiaryHeadSection extends StatelessWidget {
                   },
                 ),
                 _ActionTile(
-                  label: '瀑布流',
+                  label: context.l10n.tr('瀑布流', en: 'Waterfall'),
                   selected: layoutMode == DiaryLayoutMode.waterfall,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -300,7 +301,7 @@ class _SearchPreview extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              '搜索标题或内容',
+                              context.l10n.tr('搜索标题或内容', en: 'Search title or content'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -337,12 +338,12 @@ class _AnimatedTrailingActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          tooltip: '已归档笔记',
+          tooltip: context.l10n.tr('已归档笔记', en: 'Archived diaries'),
           onPressed: onOpenArchived,
           icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
         ),
         IconButton(
-          tooltip: '更多',
+          tooltip: context.l10n.tr('更多', en: 'More'),
           onPressed: onOpenSettings,
           icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
         ),

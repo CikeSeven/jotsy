@@ -15,7 +15,9 @@ class PublishDiaryController {
   /// 预览页展示标题：空标题回退为默认文案。
   String get title {
     final normalized = _state.widget.initialDraft.title.trim();
-    return normalized.isEmpty ? '未命名日记' : normalized;
+    return normalized.isEmpty
+        ? _state.context.l10n.tr('未命名日记', en: 'Untitled diary')
+        : normalized;
   }
 
   /// 规范化封面路径，空字符串按“无封面”处理。
@@ -135,12 +137,20 @@ class PublishDiaryController {
   /// 发表时间展示文案（固定到分钟）。
   String formatPublishTimeLabel(DateTime value) {
     final local = value.toLocal();
+    if (_state.context.l10n.isZh) {
+      final year = local.year.toString().padLeft(4, '0');
+      final month = local.month.toString().padLeft(2, '0');
+      final day = local.day.toString().padLeft(2, '0');
+      final hour = local.hour.toString().padLeft(2, '0');
+      final minute = local.minute.toString().padLeft(2, '0');
+      return '$year年$month月$day日 $hour:$minute';
+    }
     final year = local.year.toString().padLeft(4, '0');
     final month = local.month.toString().padLeft(2, '0');
     final day = local.day.toString().padLeft(2, '0');
     final hour = local.hour.toString().padLeft(2, '0');
     final minute = local.minute.toString().padLeft(2, '0');
-    return '$year年$month月$day日 $hour:$minute';
+    return '$year-$month-$day $hour:$minute';
   }
 
   /// 选择发表时间。
@@ -163,7 +173,7 @@ class PublishDiaryController {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: '选择发表日期',
+      helpText: _state.context.l10n.tr('选择发表日期', en: 'Select publish date'),
     );
     if (pickedDate == null || !_state.mounted) {
       return;
@@ -172,7 +182,7 @@ class PublishDiaryController {
     final pickedTime = await showTimePicker(
       context: _state.context,
       initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
-      helpText: '选择发表时间',
+      helpText: _state.context.l10n.tr('选择发表时间', en: 'Select publish time'),
       builder: (BuildContext context, Widget? child) {
         return MediaQuery(
           data: MediaQuery.of(
@@ -213,7 +223,7 @@ class PublishDiaryController {
       return township;
     }
     if (_state._locationFromAuto) {
-      return '暂无街道信息';
+      return _state.context.l10n.tr('暂无街道信息', en: 'No street info');
     }
     return null;
   }
@@ -297,7 +307,9 @@ class PublishDiaryController {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      await showHint('未获取到可用的封面路径');
+      await showHint(
+        _state.context.l10n.tr('未获取到可用的封面路径', en: 'No valid cover path found'),
+      );
       return;
     }
 
@@ -317,7 +329,9 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint('封面导入失败: $error');
+      await showHint(
+        _state.context.l10n.tr('封面导入失败: $error', en: 'Cover import failed: $error'),
+      );
     }
   }
 
@@ -346,7 +360,9 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint('标签创建失败: $error');
+      await showHint(
+        _state.context.l10n.tr('标签创建失败: $error', en: 'Tag creation failed: $error'),
+      );
     }
   }
 
@@ -363,9 +379,12 @@ class PublishDiaryController {
     try {
       final service = await ensureLocationResolverService();
       if (service == null) {
-        throw const LocationResolveException(
+        throw LocationResolveException(
           type: LocationResolveErrorType.missingApiKey,
-          message: '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
+          message: _state.context.l10n.tr(
+            '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
+            en: 'AMap Web API key missing, please configure amap.web.api.key',
+          ),
         );
       }
 
@@ -390,7 +409,9 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint('获取位置失败: $error');
+      await showHint(
+        _state.context.l10n.tr('获取位置失败: $error', en: 'Location failed: $error'),
+      );
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -404,7 +425,9 @@ class PublishDiaryController {
       return;
     }
     if (_state._locationLatitude == null || _state._locationLongitude == null) {
-      await showHint('请先获取当前位置');
+      await showHint(
+        _state.context.l10n.tr('请先获取当前位置', en: 'Please get current location first'),
+      );
       return;
     }
 
@@ -412,15 +435,19 @@ class PublishDiaryController {
     try {
       final service = await ensureWeatherService();
       if (service == null) {
-        throw const QWeatherException(
+        throw QWeatherException(
           type: QWeatherErrorType.missingConfig,
-          message: '未检测到和风天气 key，请先配置 qweather.api_key',
+          message: _state.context.l10n.tr(
+            '未检测到和风天气 key，请先配置 qweather.api_key',
+            en: 'QWeather key missing, please configure qweather.api_key',
+          ),
         );
       }
 
       final weatherNow = await service.fetchNow(
         latitude: _state._locationLatitude!,
         longitude: _state._locationLongitude!,
+        languageCode: (await _state.ref.read(settingsServiceProvider.future)).appLocaleCode,
       );
       if (!_state.mounted) {
         return;
@@ -438,7 +465,9 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint('获取天气失败: $error');
+      await showHint(
+        _state.context.l10n.tr('获取天气失败: $error', en: 'Weather fetch failed: $error'),
+      );
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -475,7 +504,9 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint('发布失败: $error');
+      await showHint(
+        _state.context.l10n.tr('发布失败: $error', en: 'Publish failed: $error'),
+      );
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._saving = false);

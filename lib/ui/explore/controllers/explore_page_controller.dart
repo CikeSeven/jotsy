@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import 'explore_content_extractor.dart';
@@ -29,22 +31,25 @@ class ExplorePageController {
     '🤩': 5,
   };
 
-  static const List<String> _fallbackPrompts = <String>[
-    '今天发生了什么意料之外的好事？',
-    '如果给今天取个标题，你会写什么？',
-    '今天最值得记住的一瞬间是什么？',
-    '今天你最想感谢的人或事是什么？',
-  ];
-
   /// 构建探索页整页所需数据。
   ExploreViewData buildViewData(
     List<DiaryWithTags> diaries, {
     required DateTime now,
+    required AppLocalizations l10n,
     List<int> orderedTagIds = const <int>[],
   }) {
+    final fallbackPrompts = <String>[
+      l10n.tr('今天发生了什么意料之外的好事？', en: 'What unexpected good thing happened today?'),
+      l10n.tr('如果给今天取个标题，你会写什么？', en: 'If today had a title, what would it be?'),
+      l10n.tr('今天最值得记住的一瞬间是什么？', en: 'What moment today is most worth remembering?'),
+      l10n.tr(
+        '今天你最想感谢的人或事是什么？',
+        en: 'What person or thing are you most grateful for today?',
+      ),
+    ];
     final stats = _buildStats(diaries, now: now);
-    final onThisDayDiaries = _pickOnThisDayList(diaries, now: now);
-    final fallbackPrompt = _fallbackPrompts[now.day % _fallbackPrompts.length];
+    final onThisDayDiaries = _pickOnThisDayList(diaries, now: now, l10n: l10n);
+    final fallbackPrompt = fallbackPrompts[now.day % fallbackPrompts.length];
 
     final moodWeights30 = _buildMoodSeries(diaries, days: 30, now: now);
     final energyValues7 = _buildEnergySeries(diaries, days: 7, now: now);
@@ -104,6 +109,7 @@ class ExplorePageController {
   List<ExploreOnThisDayItem> _pickOnThisDayList(
     List<DiaryWithTags> diaries, {
     required DateTime now,
+    required AppLocalizations l10n,
   }) {
     final candidates =
         diaries.where((item) {
@@ -119,7 +125,11 @@ class ExplorePageController {
         .map(
           (item) => ExploreOnThisDayItem(
             diary: item,
-            timeLabel: _buildOnThisDayLabel(item.diary.createdAt, now: now),
+            timeLabel: _buildOnThisDayLabel(
+              item.diary.createdAt,
+              now: now,
+              l10n: l10n,
+            ),
           ),
         )
         .toList(growable: false);
@@ -128,13 +138,23 @@ class ExplorePageController {
   /// 生成“那年今日”卡片时间标签。
   ///
   /// 优先使用“X年前的今天”；在无法形成有效年差时，回退到具体日期字符串。
-  String _buildOnThisDayLabel(DateTime createdAt, {required DateTime now}) {
+  String _buildOnThisDayLabel(
+    DateTime createdAt, {
+    required DateTime now,
+    required AppLocalizations l10n,
+  }) {
     final localCreated = createdAt.toLocal();
     final yearDiff = now.year - localCreated.year;
     if (yearDiff > 0) {
-      return '$yearDiff年前的今天';
+      if (l10n.isZh) {
+        return '$yearDiff年前的今天';
+      }
+      return yearDiff == 1 ? '1 year ago today' : '$yearDiff years ago today';
     }
-    return '${localCreated.year}年${localCreated.month}月${localCreated.day}日';
+    if (l10n.isZh) {
+      return '${localCreated.year}年${localCreated.month}月${localCreated.day}日';
+    }
+    return DateFormat('MMM d, y', 'en').format(localCreated);
   }
 
   List<double?> _buildMoodSeries(

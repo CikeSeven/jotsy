@@ -39,7 +39,7 @@ class EditDiaryController {
       return township;
     }
     if (_state._draftLocationFromAuto) {
-      return '暂无街道信息';
+      return _state.context.l10n.tr('暂无街道信息', en: 'No street info');
     }
     return null;
   }
@@ -169,7 +169,11 @@ class EditDiaryController {
       unawaited(
         HomeHintVisibilityScope.showTrackedSnackBar(
           context: _state.context,
-          snackBar: const SnackBar(content: Text('标题和正文不能同时为空')),
+          snackBar: SnackBar(
+            content: Text(
+              _state.context.l10n.tr('标题和正文不能同时为空', en: 'Title and content cannot both be empty'),
+            ),
+          ),
         ),
       );
       return false;
@@ -178,7 +182,14 @@ class EditDiaryController {
       unawaited(
         HomeHintVisibilityScope.showTrackedSnackBar(
           context: _state.context,
-          snackBar: const SnackBar(content: Text('metadata 必须是合法 JSON 对象')),
+          snackBar: SnackBar(
+            content: Text(
+              _state.context.l10n.tr(
+                'metadata 必须是合法 JSON 对象',
+                en: 'metadata must be a valid JSON object',
+              ),
+            ),
+          ),
         ),
       );
       return false;
@@ -251,7 +262,9 @@ class EditDiaryController {
       }
       await HomeHintVisibilityScope.showTrackedSnackBar(
         context: _state.context,
-        snackBar: SnackBar(content: Text('保存失败: $error')),
+        snackBar: SnackBar(
+          content: Text(_state.context.l10n.tr('保存失败: $error', en: 'Save failed: $error')),
+        ),
       );
     } finally {
       if (_state.mounted) {
@@ -273,7 +286,9 @@ class EditDiaryController {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      await _showHint('未获取到可用的封面路径');
+      await _showHint(
+        _state.context.l10n.tr('未获取到可用的封面路径', en: 'No valid cover path found'),
+      );
       return;
     }
 
@@ -295,7 +310,9 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint('封面导入失败: $error');
+      await _showHint(
+        _state.context.l10n.tr('封面导入失败: $error', en: 'Cover import failed: $error'),
+      );
     }
   }
 
@@ -330,7 +347,9 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint('标签创建失败: $error');
+      await _showHint(
+        _state.context.l10n.tr('标签创建失败: $error', en: 'Tag creation failed: $error'),
+      );
     }
   }
 
@@ -343,9 +362,12 @@ class EditDiaryController {
     try {
       final service = await _ensureLocationResolverService();
       if (service == null) {
-        throw const LocationResolveException(
+        throw LocationResolveException(
           type: LocationResolveErrorType.missingApiKey,
-          message: '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
+          message: _state.context.l10n.tr(
+            '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
+            en: 'AMap Web API key missing, please configure amap.web.api.key',
+          ),
         );
       }
 
@@ -370,7 +392,9 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint('获取位置失败: $error');
+      await _showHint(
+        _state.context.l10n.tr('获取位置失败: $error', en: 'Location failed: $error'),
+      );
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -385,7 +409,9 @@ class EditDiaryController {
     }
     if (_state._draftLocationLatitude == null ||
         _state._draftLocationLongitude == null) {
-      await _showHint('请先获取当前位置');
+      await _showHint(
+        _state.context.l10n.tr('请先获取当前位置', en: 'Please get current location first'),
+      );
       return;
     }
 
@@ -393,15 +419,19 @@ class EditDiaryController {
     try {
       final service = await _ensureWeatherService();
       if (service == null) {
-        throw const QWeatherException(
+        throw QWeatherException(
           type: QWeatherErrorType.missingConfig,
-          message: '未检测到和风天气 key，请先配置 qweather.api_key',
+          message: _state.context.l10n.tr(
+            '未检测到和风天气 key，请先配置 qweather.api_key',
+            en: 'QWeather key missing, please configure qweather.api_key',
+          ),
         );
       }
 
       final weatherNow = await service.fetchNow(
         latitude: _state._draftLocationLatitude!,
         longitude: _state._draftLocationLongitude!,
+        languageCode: (await _state.ref.read(settingsServiceProvider.future)).appLocaleCode,
       );
       if (!_state.mounted) {
         return;
@@ -421,7 +451,9 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint('获取天气失败: $error');
+      await _showHint(
+        _state.context.l10n.tr('获取天气失败: $error', en: 'Weather fetch failed: $error'),
+      );
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -439,9 +471,15 @@ class EditDiaryController {
     final confirmed = await showDialog<bool>(
       context: _state.context,
       builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: const Text('删除日记'),
-          content: const Text('将执行软删除，后续可恢复。确定继续吗？'),
+          title: Text(l10n.tr('删除日记', en: 'Delete diary')),
+          content: Text(
+            l10n.tr(
+              '将执行软删除，后续可恢复。确定继续吗？',
+              en: 'This will soft-delete the diary and it can be restored later. Continue?',
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -449,14 +487,14 @@ class EditDiaryController {
                     Theme.of(dialogContext).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(dialogContext).colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(l10n.commonDelete),
             ),
           ],
         );

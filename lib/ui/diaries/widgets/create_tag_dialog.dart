@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 弹窗创建标签时的临时数据对象。
 class NewTagDraft {
@@ -15,8 +16,8 @@ class NewTagDraft {
 Future<NewTagDraft?> showCreateTagDialog(BuildContext context) async {
   return showTagDraftDialog(
     context,
-    title: '新建标签',
-    actionLabel: '创建',
+    title: context.l10n.tr('新建标签', en: 'Create tag'),
+    actionLabel: context.l10n.commonCreate,
   );
 }
 
@@ -28,8 +29,8 @@ Future<NewTagDraft?> showEditTagDialog(
 }) async {
   return showTagDraftDialog(
     context,
-    title: '编辑标签',
-    actionLabel: '保存',
+    title: context.l10n.tr('编辑标签', en: 'Edit tag'),
+    actionLabel: context.l10n.commonSave,
     initialName: initialName,
     initialColor: initialColor,
   );
@@ -304,6 +305,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
@@ -319,7 +321,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               controller: _nameController,
               autofocus: true,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(labelText: '标签名'),
+              decoration: InputDecoration(
+                labelText: l10n.tr('标签名', en: 'Tag name'),
+              ),
               onSubmitted: (_) => _submit(),
             ),
             const SizedBox(height: 16),
@@ -344,7 +348,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        '选择颜色',
+                        l10n.tr('选择颜色', en: 'Choose color'),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -459,7 +463,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
             foregroundColor: colorScheme.onSurfaceVariant,
           ),
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(l10n.commonCancel),
         ),
         TextButton(
           style: TextButton.styleFrom(

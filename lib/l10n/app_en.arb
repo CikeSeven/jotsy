@@ -1,0 +1,120 @@
+{
+  "@@locale": "en",
+  "appTitle": "Jotsy",
+  "navDiaries": "Diaries",
+  "navCalendar": "Calendar",
+  "navExplore": "Explore",
+  "navSettings": "Settings",
+  "commonCancel": "Cancel",
+  "commonConfirm": "Confirm",
+  "commonDelete": "Delete",
+  "commonUndo": "Undo",
+  "commonBack": "Back",
+  "commonSave": "Save",
+  "commonEdit": "Edit",
+  "commonShare": "Share",
+  "commonContinue": "Continue",
+  "commonCreate": "Create",
+  "commonClose": "Close",
+  "commonNew": "New",
+  "commonReset": "Reset",
+  "commonRetry": "Retry",
+  "timeJustNow": "Just now",
+  "timeMinutesAgo": "{minutes} min ago",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{hours} hr ago",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{days} days ago",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "updatedAtLabel": "Updated {value}",
+  "@updatedAtLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "startupPreloadFailed": "Startup preload failed. Entered home anyway.",
+  "homeInitFailed": "Initialization failed: {error}",
+  "@homeInitFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTitle": "Settings",
+  "settingsThemeMode": "Theme",
+  "settingsLanguage": "Language",
+  "settingsLanguageSubtitle": "Switch app language",
+  "settingsEditorTitle": "Editor",
+  "settingsDataManagement": "Data Management",
+  "settingsDataManagementSubtitle": "Import/export ZIP backups",
+  "settingsTagManagement": "Tag Management",
+  "settingsTagManagementSubtitle": "Deleting a tag only unlinks it from diaries",
+  "settingsRecycleBin": "Recycle Bin",
+  "settingsRecycleBinSubtitle": "Restore or permanently remove deleted diaries",
+  "settingsAbout": "About",
+  "settingsAboutSubtitle": "App info, repo, and version",
+  "languageDialogTitle": "Select language",
+  "languageOptionChinese": "中文",
+  "languageOptionEnglish": "English",
+  "aboutTitle": "About",
+  "aboutTagline": "Capture daily moments and feelings",
+  "aboutVersion": "Version",
+  "aboutPackageName": "Package",
+  "aboutRepository": "Repository",
+  "aboutCopied": "Copied to clipboard",
+  "dataMgmtTitle": "Data Management",
+  "dataMgmtExport": "Export Data",
+  "dataMgmtExportSubtitle": "Export ZIP with diaries, tags, settings, and local media",
+  "dataMgmtImport": "Import Data",
+  "dataMgmtImportSubtitle": "Restore from ZIP and overwrite current data",
+  "dataMgmtHint": "It is recommended to export a backup before importing.",
+  "dataMgmtBusyExport": "Exporting data...",
+  "dataMgmtBusyImport": "Importing data...",
+  "dataMgmtSaveDialogTitle": "Save backup",
+  "dataMgmtPickDialogTitle": "Choose backup file",
+  "dataMgmtExportSuccess": "Data export completed",
+  "dataMgmtExportCanceled": "Export canceled",
+  "dataMgmtExportFailed": "Export failed: {error}",
+  "@dataMgmtExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dataMgmtImportSuccess": "Data import completed",
+  "dataMgmtImportCanceled": "Import canceled",
+  "dataMgmtImportFailed": "Import failed: {error}",
+  "@dataMgmtImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dataMgmtImportConfirmTitle": "Import Data",
+  "dataMgmtImportConfirmContent": "Import will overwrite current data. Continue?",
+  "dataMgmtImportAction": "Import",
+  "dataMgmtBusyLabel": "Processing data"
+}

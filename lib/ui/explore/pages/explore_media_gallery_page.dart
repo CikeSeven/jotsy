@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
@@ -58,10 +59,11 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('媒体画廊'),
+        title: Text(l10n.tr('媒体画廊', en: 'Media gallery')),
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
@@ -72,6 +74,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
   }
 
   Widget _buildBody(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     if (_mediaItems.isEmpty && _isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -93,7 +96,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
               const SizedBox(height: 12),
               FilledButton.tonal(
                 onPressed: _loadMore,
-                child: const Text('重试'),
+                child: Text(l10n.commonRetry),
               ),
             ],
           ),
@@ -103,7 +106,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
     if (_mediaItems.isEmpty) {
       return Center(
         child: Text(
-          '还没有可展示的图片',
+          l10n.tr('还没有可展示的图片', en: 'No images to show yet'),
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -243,7 +246,10 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
       }
       setState(() {
         _isLoading = false;
-        _errorMessage = '加载图片失败，请稍后重试';
+        _errorMessage = context.l10n.tr(
+          '加载图片失败，请稍后重试',
+          en: 'Failed to load images. Please try again later.',
+        );
       });
     }
   }
@@ -275,6 +281,7 @@ class _GalleryFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     if (isLoading) {
       return const Center(child: CircularProgressIndicator(strokeWidth: 2));
@@ -283,14 +290,16 @@ class _GalleryFooter extends StatelessWidget {
       return Center(
         child: TextButton(
           onPressed: onRetry,
-          child: const Text('加载失败，点击重试'),
+          child: Text(
+            l10n.tr('加载失败，点击重试', en: 'Load failed, tap to retry'),
+          ),
         ),
       );
     }
     if (!hasMore) {
       return Center(
         child: Text(
-          '没有更多图片了',
+          l10n.tr('没有更多图片了', en: 'No more images'),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

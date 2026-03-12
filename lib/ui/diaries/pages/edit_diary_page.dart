@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
@@ -224,22 +225,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: const Text('未保存内容'),
-          content: const Text('当前有未保存的内容，确定退出吗？'),
+          title: Text(context.l10n.tr('未保存内容', en: 'Unsaved changes')),
+          content: Text(
+            context.l10n.tr(
+              '当前有未保存的内容，确定退出吗？',
+              en: 'You have unsaved changes. Exit anyway?',
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('退出'),
+              child: Text(context.l10n.tr('退出', en: 'Exit')),
             ),
           ],
         );
@@ -294,7 +300,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       decoration: InputDecoration(
         isDense: true,
         contentPadding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
-        hintText: '标题',
+        hintText: context.l10n.tr('标题', en: 'Title'),
         hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         border: UnderlineInputBorder(
           borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -352,7 +358,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       scrollController: _editorInnerScrollController,
                       config: quill.QuillEditorConfig(
                         autoFocus: widget.diaryId == null,
-                        placeholder: '开始记录...',
+                        placeholder: context.l10n.tr('开始记录...', en: 'Start writing...'),
                         scrollable: false,
                         padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
                         embedBuilders: buildDiaryQuillEmbedBuilders(),
@@ -403,12 +409,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           (Object error, StackTrace stackTrace) => Scaffold(
             appBar: AppBar(
               leading: IconButton(
-                tooltip: '返回',
+                tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
               ),
             ),
-            body: Center(child: Text('加载失败: $error')),
+            body: Center(
+              child: Text(context.l10n.tr('加载失败: $error', en: 'Load failed: $error')),
+            ),
           ),
       data: (DiaryWithTags? detail) {
         final toolbarOrder = settingsAsync.maybeWhen(
@@ -423,12 +431,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           return Scaffold(
             appBar: AppBar(
               leading: IconButton(
-                tooltip: '返回',
+                tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
               ),
             ),
-            body: const Center(child: Text('日记不存在')),
+            body: Center(child: Text(context.l10n.tr('日记不存在', en: 'Diary not found'))),
           );
         }
 
@@ -460,25 +468,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         final scaffold = Scaffold(
             appBar: AppBar(
             leading: IconButton(
-              tooltip: '返回',
+              tooltip: context.l10n.commonBack,
               onPressed: _attemptExitEditPage,
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
             title: Text(
-              widget.entryMode == EditDiaryEntryMode.create ? '新建日记' : '编辑日记',
+              widget.entryMode == EditDiaryEntryMode.create
+                  ? context.l10n.tr('新建日记', en: 'New diary')
+                  : context.l10n.tr('编辑日记', en: 'Edit diary'),
             ),
             actions: <Widget>[
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
                   onPressed: _saving ? null : _controller.openPublishPage,
                   icon: const FaIcon(FontAwesomeIcons.plus),
-                  tooltip: '发布',
+                  tooltip: context.l10n.tr('发布', en: 'Publish'),
                 )
               else
                 IconButton(
                   onPressed: _canSaveEdit ? _controller.save : null,
                   icon: const Icon(Icons.save_outlined),
-                  tooltip: '保存',
+                  tooltip: context.l10n.commonSave,
                 ),
             ],
           ),
@@ -560,7 +570,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                         });
                       },
                       onPublish: _controller.save,
-                      actionLabel: '保存日记',
+                      actionLabel: context.l10n.tr('保存日记', en: 'Save diary'),
                     ),
                   ),
                 if (showFloatingToolbar)

@@ -1,4 +1,6 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/utils/precise_time_formatter.dart';
 
 void main() {
@@ -7,7 +9,11 @@ void main() {
       final now = DateTime(2026, 3, 11, 21, 30, 59);
       final target = DateTime(2026, 3, 11, 12, 22, 10);
 
-      final result = PreciseTimeFormatter.format(target: target, now: now);
+      final result = PreciseTimeFormatter.format(
+        target: target,
+        now: now,
+        l10n: lookupAppLocalizations(const Locale('zh')),
+      );
 
       expect(result, '12:22');
     });
@@ -16,7 +22,11 @@ void main() {
       final now = DateTime(2026, 3, 11, 21, 30);
       final target = DateTime(2026, 2, 9, 7, 5);
 
-      final result = PreciseTimeFormatter.format(target: target, now: now);
+      final result = PreciseTimeFormatter.format(
+        target: target,
+        now: now,
+        l10n: lookupAppLocalizations(const Locale('zh')),
+      );
 
       expect(result, '2月9日 07:05');
     });
@@ -25,9 +35,26 @@ void main() {
       final now = DateTime(2026, 3, 11, 21, 30);
       final target = DateTime(2013, 3, 23, 12, 13);
 
-      final result = PreciseTimeFormatter.format(target: target, now: now);
+      final result = PreciseTimeFormatter.format(
+        target: target,
+        now: now,
+        l10n: lookupAppLocalizations(const Locale('zh')),
+      );
 
-      expect(result, '2013年 3月23日 12:13');
+      expect(result, '2013年3月23日 12:13');
+    });
+
+    test('英文环境显示英文日期格式', () {
+      final now = DateTime(2026, 3, 11, 21, 30);
+      final target = DateTime(2026, 2, 9, 7, 5);
+
+      final result = PreciseTimeFormatter.format(
+        target: target,
+        now: now,
+        l10n: lookupAppLocalizations(const Locale('en')),
+      );
+
+      expect(result, 'Feb 9 07:05');
     });
   });
 }

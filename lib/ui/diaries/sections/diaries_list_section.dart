@@ -170,7 +170,9 @@ class DiariesListSection extends StatelessWidget {
         compact ? colorScheme.surface : backgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
     final previewCover = _resolvePreviewCover(diary.diary);
-    final title = diary.diary.title.trim().isEmpty ? '无标题' : diary.diary.title;
+    final title = diary.diary.title.trim().isEmpty
+        ? l10n.tr('无标题', en: 'Untitled')
+        : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
     final hasTags = diary.tags.isNotEmpty;
 

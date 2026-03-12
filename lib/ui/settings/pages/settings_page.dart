@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/settings/pages/about_page.dart';
 import 'package:node_diary/ui/settings/pages/data_management_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
@@ -18,8 +20,47 @@ import '../../widgets/glass_page_header.dart';
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
+  Future<void> _showLanguagePickerDialog(
+    BuildContext context,
+    SettingsService settingsService,
+  ) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(l10n.languageDialogTitle),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              RadioListTile<String>(
+                value: 'zh',
+                groupValue: settingsService.appLocaleCode,
+                title: const Text('中文'),
+                controlAffinity: ListTileControlAffinity.leading,
+                onChanged: (value) => Navigator.of(dialogContext).pop(value),
+              ),
+              RadioListTile<String>(
+                value: 'en',
+                groupValue: settingsService.appLocaleCode,
+                title: const Text('English'),
+                controlAffinity: ListTileControlAffinity.leading,
+                onChanged: (value) => Navigator.of(dialogContext).pop(value),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (result == null || result == settingsService.appLocaleCode) {
+      return;
+    }
+    await settingsService.setAppLocaleCode(result);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     // 设置项分开监听，确保局部更新。
     final settingsAsync = ref.watch(settingsServiceProvider);
     final headerHeight =
@@ -38,15 +79,35 @@ class SettingsPage extends ConsumerWidget {
             bottom: listBottomPadding,
           ),
           children: <Widget>[
-            const ListTile(title: Text('主题模式')),
+            ListTile(title: Text(l10n.settingsThemeMode)),
             SettingsThemeSection(
               settingsAsync: settingsAsync,
+            ),
+            const Divider(),
+            settingsAsync.when(
+              data: (settingsService) {
+                return ListTile(
+                  title: Text(l10n.settingsLanguage),
+                  subtitle: Text(l10n.settingsLanguageSubtitle),
+                  trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                  onTap: () => _showLanguagePickerDialog(context, settingsService),
+                );
+              },
+              loading:
+                  () => ListTile(
+                    title: Text(l10n.settingsLanguage),
+                    subtitle: Text(l10n.settingsLanguageSubtitle),
+                  ),
+              error: (_, __) => ListTile(
+                title: Text(l10n.settingsLanguage),
+                subtitle: Text(l10n.settingsLanguageSubtitle),
+              ),
             ),
             const Divider(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
               child: Text(
-                '编辑器设置',
+                l10n.settingsEditorTitle,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -57,8 +118,8 @@ class SettingsPage extends ConsumerWidget {
             ),
             const Divider(),
             ListTile(
-              title: const Text('数据管理'),
-              subtitle: const Text('导入/导出 zip 备份文件'),
+              title: Text(l10n.settingsDataManagement),
+              subtitle: Text(l10n.settingsDataManagementSubtitle),
               trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () {
                 Navigator.of(context).push(
@@ -72,8 +133,8 @@ class SettingsPage extends ConsumerWidget {
             ),
             const Divider(),
             ListTile(
-              title: const Text('关于'),
-              subtitle: const Text('应用信息、项目地址与版本信息'),
+              title: Text(l10n.settingsAbout),
+              subtitle: Text(l10n.settingsAboutSubtitle),
               trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () {
                 Navigator.of(context).push(
@@ -87,9 +148,9 @@ class SettingsPage extends ConsumerWidget {
             ),
             const Divider(),
             ListTile(
-              title: Text('标签管理'),
-              subtitle: Text('删除标签会自动解除与日记的关联关系'),
-              trailing: const Icon(Icons.chevron_right_rounded),
+              title: Text(l10n.settingsTagManagement),
+              subtitle: Text(l10n.settingsTagManagementSubtitle),
+              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -102,9 +163,9 @@ class SettingsPage extends ConsumerWidget {
             ),
             const Divider(),
             ListTile(
-              title: const Text('回收站'),
-              subtitle: const Text('管理已删除日记，可恢复或彻底删除'),
-              trailing: const Icon(Icons.chevron_right_rounded),
+              title: Text(l10n.settingsRecycleBin),
+              subtitle: Text(l10n.settingsRecycleBinSubtitle),
+              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -117,7 +178,7 @@ class SettingsPage extends ConsumerWidget {
             ),
           ],
         ),
-        const GlassPageHeader(title: '设置'),
+        GlassPageHeader(title: l10n.settingsTitle),
       ],
     );
   }

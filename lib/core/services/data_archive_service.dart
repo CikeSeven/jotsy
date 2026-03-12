@@ -132,6 +132,7 @@ class DataArchiveService {
       },
       'settings': <String, Object?>{
         'themeMode': settingsService.themeModeNotifier.value.name,
+        'appLocaleCode': settingsService.appLocaleCode,
         'diarySortModeRaw': settingsService.diarySortModeRaw,
         'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
         'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
@@ -238,6 +239,11 @@ class DataArchiveService {
     final themeRaw = settingsNode['themeMode']?.toString();
     if (themeRaw != null) {
       await settingsService.setThemeMode(_parseThemeMode(themeRaw));
+    }
+
+    final localeRaw = settingsNode['appLocaleCode']?.toString();
+    if (localeRaw != null && localeRaw.trim().isNotEmpty) {
+      await settingsService.setAppLocaleCode(localeRaw);
     }
 
     final sortRaw = settingsNode['diarySortModeRaw']?.toString();

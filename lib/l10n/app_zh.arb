@@ -1,0 +1,120 @@
+{
+  "@@locale": "zh",
+  "appTitle": "Jotsy",
+  "navDiaries": "日记",
+  "navCalendar": "日历",
+  "navExplore": "探索",
+  "navSettings": "设置",
+  "commonCancel": "取消",
+  "commonConfirm": "确认",
+  "commonDelete": "删除",
+  "commonUndo": "撤销",
+  "commonBack": "返回",
+  "commonSave": "保存",
+  "commonEdit": "编辑",
+  "commonShare": "分享",
+  "commonContinue": "继续",
+  "commonCreate": "创建",
+  "commonClose": "关闭",
+  "commonNew": "新建",
+  "commonReset": "重置",
+  "commonRetry": "重试",
+  "timeJustNow": "刚刚",
+  "timeMinutesAgo": "{minutes}分钟前",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{hours}小时前",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{days}天前",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "updatedAtLabel": "更新于 {value}",
+  "@updatedAtLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "startupPreloadFailed": "启动时预加载日记失败，已进入主页。",
+  "homeInitFailed": "初始化失败: {error}",
+  "@homeInitFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsTitle": "设置",
+  "settingsThemeMode": "主题模式",
+  "settingsLanguage": "语言",
+  "settingsLanguageSubtitle": "切换应用语言",
+  "settingsEditorTitle": "编辑器设置",
+  "settingsDataManagement": "数据管理",
+  "settingsDataManagementSubtitle": "导入/导出 zip 备份文件",
+  "settingsTagManagement": "标签管理",
+  "settingsTagManagementSubtitle": "删除标签会自动解除与日记的关联关系",
+  "settingsRecycleBin": "回收站",
+  "settingsRecycleBinSubtitle": "管理已删除日记，可恢复或彻底删除",
+  "settingsAbout": "关于",
+  "settingsAboutSubtitle": "应用信息、项目地址与版本信息",
+  "languageDialogTitle": "选择语言",
+  "languageOptionChinese": "中文",
+  "languageOptionEnglish": "English",
+  "aboutTitle": "关于",
+  "aboutTagline": "记录每一天的小事与心情",
+  "aboutVersion": "应用版本",
+  "aboutPackageName": "应用包名",
+  "aboutRepository": "项目地址",
+  "aboutCopied": "已复制到剪贴板",
+  "dataMgmtTitle": "数据管理",
+  "dataMgmtExport": "导出数据",
+  "dataMgmtExportSubtitle": "导出为 zip，包含日记、标签、设置与本地图片资源",
+  "dataMgmtImport": "导入数据",
+  "dataMgmtImportSubtitle": "从 zip 恢复数据，会覆盖当前内容",
+  "dataMgmtHint": "建议先执行一次导出备份，再进行导入操作。",
+  "dataMgmtBusyExport": "正在导出数据...",
+  "dataMgmtBusyImport": "正在导入数据...",
+  "dataMgmtSaveDialogTitle": "保存数据备份",
+  "dataMgmtPickDialogTitle": "选择备份文件",
+  "dataMgmtExportSuccess": "数据导出成功",
+  "dataMgmtExportCanceled": "已取消导出",
+  "dataMgmtExportFailed": "导出失败: {error}",
+  "@dataMgmtExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dataMgmtImportSuccess": "数据导入完成",
+  "dataMgmtImportCanceled": "已取消导入",
+  "dataMgmtImportFailed": "导入失败: {error}",
+  "@dataMgmtImportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dataMgmtImportConfirmTitle": "导入数据",
+  "dataMgmtImportConfirmContent": "导入会覆盖当前数据，确认继续吗？",
+  "dataMgmtImportAction": "导入",
+  "dataMgmtBusyLabel": "数据处理中"
+}

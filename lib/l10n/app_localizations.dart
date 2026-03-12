@@ -1,70 +1,84 @@
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
-/// 轻量本地化实现（中英文）。
+import 'app_localizations_gen.dart';
+
+export 'app_localizations_gen.dart';
+
+/// BuildContext 到本地化实例的快捷扩展。
 ///
-/// 当前项目未使用 ARB 代码生成，改为手写映射以减少首版复杂度。
-class AppLocalizations {
-  AppLocalizations(this.locale);
-
-  final Locale locale;
-
-  static const supportedLocales = <Locale>[Locale('en'), Locale('zh')];
-
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
-
-  static AppLocalizations of(BuildContext context) {
-    final localizations = Localizations.of<AppLocalizations>(
-      context,
-      AppLocalizations,
-    );
-    return localizations!;
-  }
-
-  /// 当前是否为中文环境。
-  bool get _isZh => locale.languageCode == 'zh';
-
-  String get appTitle => 'Jotsy';
-
-  String updatedAtLabel(String value) =>
-      _isZh ? '更新于 $value' : 'Updated $value';
-  String get timeJustNow => _isZh ? '刚刚' : 'Just now';
-  String timeMinutesAgo(int minutes) =>
-      _isZh ? '$minutes分钟前' : '$minutes min ago';
-  String timeHoursAgo(int hours) => _isZh ? '$hours小时前' : '$hours hr ago';
-  String timeDaysAgo(int days) => _isZh ? '$days天前' : '$days days ago';
-  String formatMonthDay(DateTime dateTime) {
-    final local = dateTime.toLocal();
-    return _isZh
-        ? DateFormat('M月d日', 'zh').format(local)
-        : DateFormat('MMM d', 'en').format(local);
-  }
-  String formatFullDate(DateTime dateTime) {
-    return DateFormat('yyyy-MM-dd').format(dateTime.toLocal());
-  }
-  
-}
-/// 本地化委托。
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
-  const _AppLocalizationsDelegate();
-
-  @override
-  bool isSupported(Locale locale) {
-    return locale.languageCode == 'en' || locale.languageCode == 'zh';
-  }
-
-  @override
-  Future<AppLocalizations> load(Locale locale) async {
-    return AppLocalizations(locale);
-  }
-
-  @override
-  bool shouldReload(_AppLocalizationsDelegate old) => false;
-}
-
-/// BuildContext 快捷扩展。
-extension AppLocalizationsBuildContext on BuildContext {
+/// 统一在 UI 层使用 `context.l10n` 读取文案，避免各处重复调用
+/// `AppLocalizations.of(context)` 并减少空值判断样板代码。
+extension BuildContextL10nX on BuildContext {
   AppLocalizations get l10n => AppLocalizations.of(this);
+}
+
+/// 项目级本地化工具扩展。
+///
+/// 这些方法属于“视图层格式化能力”，用于保持各页面时间与文案回退策略一致。
+extension AppLocalizationsProjectX on AppLocalizations {
+  /// 是否当前为中文语言环境。
+  bool get isZh => localeName.toLowerCase().startsWith('zh');
+
+  /// 轻量中英双文案选择器。
+  ///
+  /// 在 ARB 尚未完全覆盖时，用于逐步迁移中的兜底文案输出。
+  String tr(String zh, {required String en}) => isZh ? zh : en;
+
+  /// 同年日期显示（用于相对时间回退）。
+  ///
+  /// 中文示例：`3月12日`
+  /// 英文示例：`Mar 12`
+  String formatMonthDay(DateTime value) {
+    final local = value.toLocal();
+    if (isZh) {
+      return '${local.month}月${local.day}日';
+    }
+    return DateFormat('MMM d', localeName).format(local);
+  }
+
+  /// 跨年日期显示（用于相对时间回退）。
+  ///
+  /// 中文示例：`2026年3月12日`
+  /// 英文示例：`Mar 12, 2026`
+  String formatFullDate(DateTime value) {
+    final local = value.toLocal();
+    if (isZh) {
+      return '${local.year}年${local.month}月${local.day}日';
+    }
+    return DateFormat.yMMMd(localeName).format(local);
+  }
+
+  /// 精确到分钟的时间格式（用于“最后编辑于”）。
+  ///
+  /// 规则：
+  /// - 同一天：`HH:mm`
+  /// - 同年不同天：中文 `M月d日 HH:mm`，英文 `MMM d HH:mm`
+  /// - 跨年：中文 `yyyy年M月d日 HH:mm`，英文 `yMMMd HH:mm`
+  String formatPreciseDateTime(DateTime target, DateTime now) {
+    final localTarget = target.toLocal();
+    final localNow = now.toLocal();
+    final timePart = DateFormat('HH:mm', localeName).format(localTarget);
+
+    final isSameDay =
+        localTarget.year == localNow.year &&
+        localTarget.month == localNow.month &&
+        localTarget.day == localNow.day;
+    if (isSameDay) {
+      return timePart;
+    }
+
+    final isSameYear = localTarget.year == localNow.year;
+    if (isSameYear) {
+      if (isZh) {
+        return '${localTarget.month}月${localTarget.day}日 $timePart';
+      }
+      return '${DateFormat('MMM d', localeName).format(localTarget)} $timePart';
+    }
+
+    if (isZh) {
+      return '${localTarget.year}年${localTarget.month}月${localTarget.day}日 $timePart';
+    }
+    return '${DateFormat.yMMMd(localeName).format(localTarget)} $timePart';
+  }
 }

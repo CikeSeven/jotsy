@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../app/theme/app_spacing.dart';
@@ -89,6 +90,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
     final headerHeight =
         MediaQuery.paddingOf(context).top + CalendarGlassHeader.contentHeight;
@@ -136,7 +138,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         AppSpacing.s,
                       ),
                       child: Text(
-                        DateFormat('M月d日').format(_selectedDay),
+                        l10n.isZh
+                            ? DateFormat('M月d日', 'zh').format(_selectedDay)
+                            : DateFormat('MMM d', 'en').format(_selectedDay),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -164,6 +168,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget _buildCalendarPanel(
     Map<DateTime, List<DiaryCalendarMarker>> markerBuckets,
   ) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     return AnimatedContainer(
       duration: _calendarMorphDuration,
@@ -179,7 +184,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: TableCalendar<DiaryCalendarMarker>(
-        locale: 'zh_CN',
+        locale: l10n.isZh ? 'zh_CN' : 'en_US',
         firstDay: DateTime(2010, 1, 1),
         lastDay: DateTime(2100, 12, 31),
         focusedDay: _focusedMonth,
@@ -187,9 +192,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         selectedDayPredicate: (day) => isSameDay(day, _selectedDay),
         headerVisible: false,
         availableGestures: AvailableGestures.all,
-        availableCalendarFormats: const <CalendarFormat, String>{
-          CalendarFormat.month: '月视图',
-          CalendarFormat.week: '周视图',
+        availableCalendarFormats: <CalendarFormat, String>{
+          CalendarFormat.month: l10n.tr('月视图', en: 'Month'),
+          CalendarFormat.week: l10n.tr('周视图', en: 'Week'),
         },
         eventLoader: (day) {
           final bucketDay = DateUtils.dateOnly(day);
@@ -258,6 +263,39 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               ),
             );
           },
+          dowBuilder: (context, day) {
+            final weekday = day.weekday;
+            final labelsZh = <int, String>{
+              DateTime.monday: '一',
+              DateTime.tuesday: '二',
+              DateTime.wednesday: '三',
+              DateTime.thursday: '四',
+              DateTime.friday: '五',
+              DateTime.saturday: '六',
+              DateTime.sunday: '日',
+            };
+            final labelsEn = <int, String>{
+              DateTime.monday: 'M',
+              DateTime.tuesday: 'T',
+              DateTime.wednesday: 'W',
+              DateTime.thursday: 'T',
+              DateTime.friday: 'F',
+              DateTime.saturday: 'S',
+              DateTime.sunday: 'S',
+            };
+            final label = l10n.isZh
+                ? (labelsZh[weekday] ?? '')
+                : (labelsEn[weekday] ?? '');
+            return Center(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -293,7 +331,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 AppSpacing.m,
                 AppSpacing.m,
               ),
-              child: Text('日历日记加载失败: $error'),
+              child: Text(
+                context.l10n.tr(
+                  '日历日记加载失败: $error',
+                  en: 'Calendar diaries load failed: $error',
+                ),
+              ),
             ),
           ),
         ];
@@ -307,9 +350,17 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               child: CalendarDayEmptyState(
                 onAction: isFutureDay ? _controller.jumpToToday : _openCreateFromHomeFab,
                 message: isFutureDay
-                    ? '别着急，属于这一天的精彩还没发生。'
-                    : '这一天很安静，没有任何记录。',
-                actionLabel: isFutureDay ? '回到今天' : '补写日记',
+                    ? context.l10n.tr(
+                        '别着急，属于这一天的精彩还没发生。',
+                        en: "Take it easy, this day's highlights haven't happened yet.",
+                      )
+                    : context.l10n.tr(
+                        '这一天很安静，没有任何记录。',
+                        en: 'This day is quiet, no records yet.',
+                      ),
+                actionLabel: isFutureDay
+                    ? context.l10n.tr('回到今天', en: 'Back to today')
+                    : context.l10n.tr('补写日记', en: 'Write for this day'),
               ),
             ),
           ];

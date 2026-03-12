@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
 /// 设置页主题模式区块。
@@ -15,6 +17,7 @@ class SettingsThemeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return settingsAsync.when(
       data: (settingsService) {
         return ValueListenableBuilder<ThemeMode>(
@@ -32,20 +35,20 @@ class SettingsThemeSection extends StatelessWidget {
                       settingsService.setThemeMode(next);
                     }
                   },
-                  segments: const <ButtonSegment<ThemeMode>>[
+                  segments: <ButtonSegment<ThemeMode>>[
                     ButtonSegment<ThemeMode>(
                       value: ThemeMode.system,
-                      label: Text('系统'),
+                      label: Text(l10n.tr('系统', en: 'System')),
                       icon: Icon(Icons.settings_suggest_outlined),
                     ),
                     ButtonSegment<ThemeMode>(
                       value: ThemeMode.light,
-                      label: Text('浅色'),
+                      label: Text(l10n.tr('浅色', en: 'Light')),
                       icon: Icon(Icons.light_mode_outlined),
                     ),
                     ButtonSegment<ThemeMode>(
                       value: ThemeMode.dark,
-                      label: Text('深色'),
+                      label: Text(l10n.tr('深色', en: 'Dark')),
                       icon: Icon(Icons.dark_mode_outlined),
                     ),
                   ],
@@ -56,13 +59,19 @@ class SettingsThemeSection extends StatelessWidget {
         );
       },
       loading:
-          () => const Padding(
+          () => Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: LoadingIndicatorM3E(
+                variant: LoadingIndicatorM3EVariant.contained,
+                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                semanticLabel: l10n.dataMgmtBusyLabel,
+              ),
+            ),
           ),
       error:
-          (Object error, StackTrace stackTrace) =>
-              ListTile(title: Text('设置加载失败: $error')),
+           (Object error, StackTrace stackTrace) =>
+              ListTile(title: Text(l10n.tr('设置加载失败: $error', en: 'Settings load failed: $error'))),
     );
   }
 }

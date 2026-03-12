@@ -55,7 +55,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
   Widget _buildBackLeading() {
     return IconButton(
-      tooltip: '返回',
+      tooltip: context.l10n.commonBack,
       onPressed: () => Navigator.of(context).maybePop(),
       icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
     );
@@ -101,27 +101,31 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     return PreciseTimeFormatter.format(
       target: value,
       now: DateTime.now(),
+      l10n: context.l10n,
     );
   }
 
   String _buildShareCopyText(DiaryWithTags detail) {
-    final title = detail.diary.title.trim().isEmpty ? '无标题' : detail.diary.title.trim();
+    final l10n = context.l10n;
+    final title = detail.diary.title.trim().isEmpty
+        ? l10n.tr('无标题', en: 'Untitled')
+        : detail.diary.title.trim();
     final content = detail.diary.contentText.trim().isEmpty
-        ? '（无正文）'
+        ? l10n.tr('（无正文）', en: '(No content)')
         : detail.diary.contentText.trim();
     final tags = detail.tags.isEmpty
-        ? '无'
+        ? l10n.tr('无', en: 'None')
         : detail.tags.map((tag) => tag.name).join('、');
     final createdAt = _formatDateTime(detail.diary.createdAt);
     final updatedAt = _formatDateTime(detail.diary.updatedAt);
 
     return '''
-标题：$title
-创建时间：$createdAt
-更新时间：$updatedAt
-标签：$tags
+${l10n.tr('标题', en: 'Title')}: $title
+${l10n.tr('创建时间', en: 'Created')}: $createdAt
+${l10n.tr('更新时间', en: 'Updated')}: $updatedAt
+${l10n.tr('标签', en: 'Tags')}: $tags
 
-正文：
+${l10n.tr('正文', en: 'Content')}:
 $content
 ''';
   }
@@ -134,6 +138,9 @@ $content
     if (_isSharingImage) {
       return;
     }
+    final l10n = context.l10n;
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+    final pixelRatio = MediaQuery.of(context).devicePixelRatio.clamp(1.0, 2.2);
     setState(() {
       _isSharingImage = true;
       // 分享截图时禁用封面折叠动画，避免长图拼接出现拖影。
@@ -154,18 +161,17 @@ $content
       if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
         throw Exception('截图节点未就绪');
       }
-      final mediaQuery = MediaQuery.of(context);
       final imageBytes = await renderObject.screenshot(
         scrollController:
             _previewScrollController.hasClients ? _previewScrollController : null,
         format: ShotFormat.png,
         quality: 100,
         maxHeight: 22000,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        pixelRatio: mediaQuery.devicePixelRatio.clamp(1.0, 2.2),
+        backgroundColor: surfaceColor,
+        pixelRatio: pixelRatio,
       );
       if (imageBytes == null || imageBytes.isEmpty) {
-        throw Exception('截图失败，请重试');
+        throw Exception(l10n.tr('截图失败，请重试', en: 'Screenshot failed. Please try again.'));
       }
       final tempDirectory = await getTemporaryDirectory();
       final imagePath = p.join(
@@ -180,7 +186,7 @@ $content
       if (!mounted) {
         return;
       }
-      _showHint('图片分享失败: $error');
+      _showHint(context.l10n.tr('图片分享失败: $error', en: 'Image share failed: $error'));
     } finally {
       if (mounted) {
         setState(() {
@@ -256,22 +262,22 @@ $content
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: const Text('删除日记'),
-          content: const Text('确认删除这条日记吗？'),
+          title: Text(context.l10n.tr('删除日记', en: 'Delete diary')),
+          content: Text(context.l10n.tr('确认删除这条日记吗？', en: 'Delete this diary?')),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('删除'),
+              child: Text(context.l10n.commonDelete),
             ),
           ],
         );
@@ -307,7 +313,7 @@ $content
             children: <Widget>[
               ListTile(
                 leading: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
-                title: const Text('编辑'),
+                title: Text(context.l10n.commonEdit),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _openEditor();
@@ -315,7 +321,7 @@ $content
               ),
               ListTile(
                 leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-                title: const Text('以图片形式分享'),
+                title: Text(context.l10n.tr('以图片形式分享', en: 'Share as image')),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _shareAsLongImage();
@@ -323,7 +329,7 @@ $content
               ),
               ListTile(
                 leading: const FaIcon(FontAwesomeIcons.font, size: 16),
-                title: const Text('以文字形式分享'),
+                title: Text(context.l10n.tr('以文字形式分享', en: 'Share as text')),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _shareTextDirectly(detail);
@@ -336,7 +342,7 @@ $content
                   color: colorScheme.error,
                 ),
                 title: Text(
-                  '删除',
+                  context.l10n.commonDelete,
                   style: TextStyle(color: colorScheme.error),
                 ),
                 onTap: () async {
@@ -474,18 +480,18 @@ $content
 
   List<_MetaChipItem> _buildMetaChipItems(DiaryWithTags detail) {
     final items = <_MetaChipItem>[];
-    final context = _extractContextMetadata(detail);
-    if (context != null) {
-      final mood = context['moodEmoji']?.toString().trim();
+    final metadataContext = _extractContextMetadata(detail);
+    if (metadataContext != null) {
+      final mood = metadataContext['moodEmoji']?.toString().trim();
       if (mood != null && mood.isNotEmpty) {
         items.add(
-          _MetaChipItem(
-            kind: _MetaChipKind.mood,
-            label: '心情 $mood',
-          ),
+            _MetaChipItem(
+              kind: _MetaChipKind.mood,
+              label: context.l10n.tr('心情', en: 'Mood') + ' $mood',
+            ),
         );
       }
-      final energyRaw = context['energyLevel'];
+      final energyRaw = metadataContext['energyLevel'];
       final parsedEnergy = switch (energyRaw) {
         num value => value.toDouble(),
         String value => double.tryParse(value),
@@ -496,7 +502,10 @@ $content
         items.add(
           _MetaChipItem(
             kind: _MetaChipKind.energy,
-            label: EnergyBatteryIndicator.descriptionForValue(normalizedEnergy),
+            label: EnergyBatteryIndicator.descriptionForValue(
+              normalizedEnergy,
+              isZh: context.l10n.isZh,
+            ),
             energyLevel: normalizedEnergy,
           ),
         );
@@ -548,7 +557,7 @@ $content
       children: <Widget>[
         _buildMetaInlineItem(
           icon: FontAwesomeIcons.clock,
-          label: '发表于$relativeCreated',
+          label: '${context.l10n.tr('发表于', en: 'Published')} $relativeCreated',
           color: colorScheme.onSurfaceVariant,
         ),
         if (locationWeatherItems.isNotEmpty) ...<Widget>[
@@ -657,7 +666,9 @@ $content
     final diary = detail.diary;
     final hasBeenEdited = !diary.updatedAt.isAtSameMomentAs(diary.createdAt);
     final editedText =
-        hasBeenEdited ? '最后编辑于 ${_formatPreciseTime(diary.updatedAt)}' : null;
+        hasBeenEdited
+            ? '${context.l10n.tr('最后编辑于', en: 'Last edited')} ${_formatPreciseTime(diary.updatedAt)}'
+            : null;
 
     // 这里不能只看 contentText（纯文本镜像），否则“仅图片正文”会被误判为空。
     // 统一按 Quill 文档是否存在可见内容判断，图片/视频/嵌入都属于正文内容。
@@ -674,7 +685,7 @@ $content
               ),
             )
             : Text(
-              '今天还没有写下正文',
+              context.l10n.tr('今天还没有写下正文', en: 'No content yet'),
               style: Theme.of(context).textTheme.bodyLarge,
             );
 
@@ -706,7 +717,7 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text('日记'),
+            title: Text(context.l10n.tr('日记', en: 'Diary')),
             leading: _buildBackLeading(),
           ),
           body: const Center(child: CircularProgressIndicator()),
@@ -716,10 +727,10 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text('日记'),
+            title: Text(context.l10n.tr('日记', en: 'Diary')),
             leading: _buildBackLeading(),
           ),
-          body: Center(child: Text('加载失败: $error')),
+          body: Center(child: Text(context.l10n.tr('加载失败: $error', en: 'Load failed: $error'))),
         );
       },
       data: (DiaryWithTags? detail) {
@@ -730,9 +741,9 @@ $content
                 return;
               }
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('日记已不存在'),
-                  duration: Duration(seconds: 2),
+                SnackBar(
+                  content: Text(context.l10n.tr('日记已不存在', en: 'Diary no longer exists')),
+                  duration: const Duration(seconds: 2),
                 ),
               );
               Navigator.of(context).pop();
@@ -740,36 +751,38 @@ $content
             return Scaffold(
               appBar: AppBar(
                 centerTitle: true,
-                title: const Text('日记'),
+                title: Text(context.l10n.tr('日记', en: 'Diary')),
                 leading: _buildBackLeading(),
               ),
-              body: const Center(child: Text('日记已不存在，正在返回...')),
+              body: Center(child: Text(context.l10n.tr('日记已不存在，正在返回...', en: 'Diary no longer exists, returning...'))),
             );
           }
 
           return Scaffold(
             appBar: AppBar(
               centerTitle: true,
-              title: const Text('日记'),
+              title: Text(context.l10n.tr('日记', en: 'Diary')),
               leading: _buildBackLeading(),
             ),
-            body: const Center(child: Text('日记不存在')),
+            body: Center(child: Text(context.l10n.tr('日记不存在', en: 'Diary not found'))),
           );
         }
 
         _hadLoadedData = true;
         _bindPreviewController(detail.diary.content);
-        final title = detail.diary.title.trim().isEmpty ? '无标题' : detail.diary.title.trim();
+        final title = detail.diary.title.trim().isEmpty
+            ? context.l10n.tr('无标题', en: 'Untitled')
+            : detail.diary.title.trim();
         final coverSource = _resolvePreviewCover(detail.diary);
 
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: const Text('日记'),
+            title: Text(context.l10n.tr('日记', en: 'Diary')),
             leading: _buildBackLeading(),
             actions: <Widget>[
               IconButton(
-                tooltip: '更多',
+                tooltip: context.l10n.tr('更多', en: 'More'),
                 onPressed: () => _showActionBottomSheet(detail),
                 icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
               ),

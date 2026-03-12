@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/data_archive_service.dart';
@@ -22,7 +23,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   String _busyText = '';
 
   Future<void> _exportData() async {
-    _setBusy(true, '正在导出数据...');
+    _setBusy(true, context.l10n.dataMgmtBusyExport);
     try {
       final database = ref.read(appDatabaseProvider);
       final settings = await ref.read(settingsServiceProvider.future);
@@ -37,7 +38,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       if (Platform.isAndroid || Platform.isIOS) {
         // 移动端必须传 bytes，且系统会处理写入，不再执行二次写盘。
         savePath = await FilePicker.platform.saveFile(
-          dialogTitle: '保存数据备份',
+          dialogTitle: context.l10n.dataMgmtSaveDialogTitle,
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: const <String>['zip'],
@@ -46,7 +47,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       } else {
         // 桌面端返回目标路径后由应用写入文件。
         savePath = await FilePicker.platform.saveFile(
-          dialogTitle: '保存数据备份',
+          dialogTitle: context.l10n.dataMgmtSaveDialogTitle,
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: const <String>['zip'],
@@ -62,15 +63,15 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         return;
       }
       if (savePath == null || savePath.trim().isEmpty) {
-        _showSnack('已取消导出');
+        _showSnack(context.l10n.dataMgmtExportCanceled);
         return;
       }
-      _showSnack('数据导出成功');
+      _showSnack(context.l10n.dataMgmtExportSuccess);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      _showSnack('导出失败: $error');
+      _showSnack(context.l10n.dataMgmtExportFailed('$error'));
     } finally {
       _setBusy(false, '');
     }
@@ -83,7 +84,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
     }
 
     final picked = await FilePicker.platform.pickFiles(
-      dialogTitle: '选择备份文件',
+      dialogTitle: context.l10n.dataMgmtPickDialogTitle,
       type: FileType.custom,
       allowedExtensions: const <String>['zip'],
     );
@@ -91,11 +92,11 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       return;
     }
     if (picked == null || picked.files.isEmpty || picked.files.first.path == null) {
-      _showSnack('已取消导入');
+      _showSnack(context.l10n.dataMgmtImportCanceled);
       return;
     }
 
-    _setBusy(true, '正在导入数据...');
+    _setBusy(true, context.l10n.dataMgmtBusyImport);
     try {
       final zipPath = picked.files.first.path!;
       final database = ref.read(appDatabaseProvider);
@@ -109,12 +110,12 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       if (!mounted) {
         return;
       }
-      _showSnack('数据导入完成');
+      _showSnack(context.l10n.dataMgmtImportSuccess);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      _showSnack('导入失败: $error');
+      _showSnack(context.l10n.dataMgmtImportFailed('$error'));
     } finally {
       _setBusy(false, '');
     }
@@ -126,22 +127,22 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: const Text('导入数据'),
-          content: const Text('导入会覆盖当前数据，确认继续吗？'),
+          title: Text(context.l10n.dataMgmtImportConfirmTitle),
+          content: Text(context.l10n.dataMgmtImportConfirmContent),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('导入'),
+              child: Text(context.l10n.dataMgmtImportAction),
             ),
           ],
         );
@@ -174,9 +175,9 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('数据管理'),
+        title: Text(context.l10n.dataMgmtTitle),
         leading: IconButton(
-          tooltip: '返回',
+          tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
@@ -189,8 +190,8 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const FaIcon(FontAwesomeIcons.fileExport, size: 16),
-                title: const Text('导出数据'),
-                subtitle: const Text('导出为 zip，包含日记、标签、设置与本地图片资源'),
+                title: Text(context.l10n.dataMgmtExport),
+                subtitle: Text(context.l10n.dataMgmtExportSubtitle),
                 trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
                 onTap: _busy ? null : _exportData,
               ),
@@ -198,15 +199,15 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const FaIcon(FontAwesomeIcons.fileImport, size: 16),
-                title: const Text('导入数据'),
-                subtitle: const Text('从 zip 恢复数据，会覆盖当前内容'),
+                title: Text(context.l10n.dataMgmtImport),
+                subtitle: Text(context.l10n.dataMgmtImportSubtitle),
                 trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
                 onTap: _busy ? null : _importData,
               ),
               const Divider(),
               const SizedBox(height: 8),
               Text(
-                '建议先执行一次导出备份，再进行导入操作。',
+                context.l10n.dataMgmtHint,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -224,13 +225,13 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        const LoadingIndicatorM3E(
+                        LoadingIndicatorM3E(
                           variant: LoadingIndicatorM3EVariant.contained,
-                          constraints: BoxConstraints.tightFor(
+                          constraints: const BoxConstraints.tightFor(
                             width: 72,
                             height: 72,
                           ),
-                          semanticLabel: '数据处理中',
+                          semanticLabel: context.l10n.dataMgmtBusyLabel,
                         ),
                         const SizedBox(height: 10),
                         Text(

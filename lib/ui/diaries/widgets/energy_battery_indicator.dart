@@ -73,8 +73,23 @@ class EnergyBatteryIndicator extends StatelessWidget {
   }
 
   /// 将连续值映射为用户可读的精力文案（从低到高）。
-  static String descriptionForValue(num rawValue) {
+  static String descriptionForValue(num rawValue, {bool isZh = true}) {
     final value = normalizeValue(rawValue);
+    if (!isZh) {
+      if (value < 1.8) {
+        return 'Exhausted';
+      }
+      if (value < 2.6) {
+        return 'A bit tired';
+      }
+      if (value < 3.4) {
+        return 'So-so';
+      }
+      if (value < 4.2) {
+        return 'Pretty good';
+      }
+      return 'Fully charged';
+    }
     if (value < 1.8) {
       return '疲惫不堪';
     }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
@@ -130,19 +131,19 @@ class _HomePageState extends State<HomePage> {
 
     final navItems = [
       GlassBottomNavItem(
-        label: '日记',
+        label: context.l10n.navDiaries,
         icon: FontAwesomeIcons.bars,
       ),
       GlassBottomNavItem(
-        label: '日历',
+        label: context.l10n.navCalendar,
         icon: FontAwesomeIcons.calendar,
       ),
       GlassBottomNavItem(
-        label: '探索',
+        label: context.l10n.navExplore,
         icon: FontAwesomeIcons.compass,
       ),
       GlassBottomNavItem(
-        label: '设置',
+        label: context.l10n.navSettings,
         icon: FontAwesomeIcons.gear,
       ),
     ];

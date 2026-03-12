@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
@@ -39,27 +40,33 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   }
 
   Future<void> _confirmResetOrder() async {
+    final l10n = context.l10n;
     final shouldReset = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: const Text('重置排序'),
-          content: const Text('确认将工具栏顺序恢复为默认排序吗？'),
+          title: Text(l10n.tr('重置排序', en: 'Reset order')),
+          content: Text(
+            l10n.tr(
+              '确认将工具栏顺序恢复为默认排序吗？',
+              en: 'Reset toolbar order to defaults?',
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
+              child: Text(l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.primary,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('重置'),
+              child: Text(l10n.commonReset),
             ),
           ],
         );
@@ -90,27 +97,35 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
       setState(() => _saving = false);
       await HomeHintVisibilityScope.showTrackedSnackBar(
         context: context,
-        snackBar: SnackBar(content: Text('保存排序失败: $error')),
+        snackBar: SnackBar(
+          content: Text(
+            context.l10n.tr('保存排序失败: $error', en: 'Save order failed: $error'),
+          ),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          tooltip: '返回',
+          tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
-        title: const Text('工具栏顺序'),
+        title: Text(l10n.tr('工具栏顺序', en: 'Toolbar order')),
         actions: <Widget>[
           TextButton(
             onPressed: _saving ? null : _confirmResetOrder,
-            child: const Text('重置'),
+            child: Text(l10n.commonReset),
           ),
-          TextButton(onPressed: _saving ? null : _saveOrder, child: const Text('保存')),
+          TextButton(
+            onPressed: _saving ? null : _saveOrder,
+            child: Text(l10n.commonSave),
+          ),
         ],
       ),
       body: ReorderableListView.builder(
@@ -123,14 +138,29 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
           return ListTile(
             key: ValueKey<String>(item.storageKey),
             leading: FaIcon(item.iconData, size: 16),
-            title: Text(item.label),
+            title: Text(_labelForItem(context, item)),
             subtitle:
                 item == DiaryToolbarItem.inlineCode
-                    ? const Text('用于给选中文本添加行内代码样式')
+                    ? Text(
+                        l10n.tr(
+                          '用于给选中文本添加行内代码样式',
+                          en: 'Apply inline code style to selected text',
+                        ),
+                      )
                     : item == DiaryToolbarItem.codeBlock
-                    ? const Text('用于插入或切换为代码块')
+                    ? Text(
+                        l10n.tr(
+                          '用于插入或切换为代码块',
+                          en: 'Insert or switch to code block',
+                        ),
+                      )
                     : item == DiaryToolbarItem.indent
-                    ? const Text('该项会同时显示缩进增加/减少两个按钮')
+                    ? Text(
+                        l10n.tr(
+                          '该项会同时显示缩进增加/减少两个按钮',
+                          en: 'Shows both indent increase/decrease buttons',
+                        ),
+                      )
                     : null,
             trailing: ReorderableDragStartListener(
               index: index,
@@ -147,6 +177,31 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         },
       ),
     );
+  }
+
+  String _labelForItem(BuildContext context, DiaryToolbarItem item) {
+    final l10n = context.l10n;
+    return switch (item) {
+      DiaryToolbarItem.undo => l10n.tr('撤销', en: 'Undo'),
+      DiaryToolbarItem.redo => l10n.tr('重做', en: 'Redo'),
+      DiaryToolbarItem.bold => l10n.tr('加粗', en: 'Bold'),
+      DiaryToolbarItem.italic => l10n.tr('斜体', en: 'Italic'),
+      DiaryToolbarItem.underline => l10n.tr('下划线', en: 'Underline'),
+      DiaryToolbarItem.strikeThrough => l10n.tr('删除线', en: 'Strikethrough'),
+      DiaryToolbarItem.inlineCode => l10n.tr('行内代码（单行）', en: 'Inline code'),
+      DiaryToolbarItem.textColor => l10n.tr('文字颜色', en: 'Text color'),
+      DiaryToolbarItem.backgroundColor => l10n.tr('背景颜色', en: 'Background color'),
+      DiaryToolbarItem.clearFormat => l10n.tr('清除格式', en: 'Clear formatting'),
+      DiaryToolbarItem.image => l10n.tr('插入图片', en: 'Insert image'),
+      DiaryToolbarItem.headerStyle => l10n.tr('标题样式', en: 'Header style'),
+      DiaryToolbarItem.orderedList => l10n.tr('有序列表', en: 'Ordered list'),
+      DiaryToolbarItem.bulletList => l10n.tr('无序列表', en: 'Bullet list'),
+      DiaryToolbarItem.checkList => l10n.tr('待办列表', en: 'Checklist'),
+      DiaryToolbarItem.codeBlock => l10n.tr('代码块（多行）', en: 'Code block'),
+      DiaryToolbarItem.quote => l10n.tr('引用', en: 'Quote'),
+      DiaryToolbarItem.indent => l10n.tr('缩进（增/减）', en: 'Indent'),
+      DiaryToolbarItem.link => l10n.tr('链接', en: 'Link'),
+    };
   }
 }
 

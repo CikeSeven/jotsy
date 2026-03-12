@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
@@ -12,6 +13,7 @@ class ExploreStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     return ExploreCard(
       child: Row(
@@ -19,7 +21,7 @@ class ExploreStatsCard extends StatelessWidget {
           Expanded(
             child: ExploreStatTile(
               icon: FontAwesomeIcons.bookOpen,
-              label: '总计记录',
+              label: l10n.tr('总计记录', en: 'Total records'),
               value: '${stats.totalRecords}',
             ),
           ),
@@ -27,7 +29,7 @@ class ExploreStatsCard extends StatelessWidget {
           Expanded(
             child: ExploreStatTile(
               icon: FontAwesomeIcons.fire,
-              label: '连续打卡',
+              label: l10n.tr('连续打卡', en: 'Streak'),
               value: '${stats.streakDays}',
             ),
           ),
@@ -35,7 +37,7 @@ class ExploreStatsCard extends StatelessWidget {
           Expanded(
             child: ExploreStatTile(
               icon: FontAwesomeIcons.penNib,
-              label: '本月字数',
+              label: l10n.tr('本月字数', en: 'This month chars'),
               value: '${stats.currentMonthChars}',
             ),
           ),

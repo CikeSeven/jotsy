@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:node_diary/core/database/app_database.dart';
@@ -160,7 +161,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('发表日记'),
+          title: Text(context.l10n.tr('发表日记', en: 'Publish diary')),
           leading: IconButton(
             onPressed: _controller.closeWithDraft,
             icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
@@ -190,7 +191,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                         const SizedBox(height: 16),
                         if (widget.initialDraft.contentText.trim().isEmpty)
                           Text(
-                            '正文为空',
+                            context.l10n.tr('正文为空', en: 'No content'),
                             style: Theme.of(context).textTheme.bodyMedium,
                           )
                         else

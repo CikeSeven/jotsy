@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../models/explore_view_data.dart';
 
@@ -44,6 +45,7 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final total = widget.mediaItems.length;
     return Scaffold(
@@ -56,7 +58,9 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
         title: Text(
-          total == 0 ? '媒体预览' : '${_activeIndex + 1} / $total',
+          total == 0
+              ? l10n.tr('媒体预览', en: 'Media preview')
+              : '${_activeIndex + 1} / $total',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -67,7 +71,7 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
       body: total == 0
           ? Center(
               child: Text(
-                '没有可浏览的图片',
+                l10n.tr('没有可浏览的图片', en: 'No images to browse'),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

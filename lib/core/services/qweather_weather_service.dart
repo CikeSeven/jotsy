@@ -14,6 +14,7 @@ class QWeatherWeatherService {
   Future<QWeatherNow> fetchNow({
     required double latitude,
     required double longitude,
+    String languageCode = 'zh',
   }) async {
     final host = config.resolvedHost;
     final key = config.apiKey.trim();
@@ -24,9 +25,11 @@ class QWeatherWeatherService {
       );
     }
 
+    final normalizedLanguage =
+        languageCode.toLowerCase().startsWith('zh') ? 'zh' : 'en';
     final uri = Uri.https(host, '/v7/weather/now', <String, String>{
       'location': '$longitude,$latitude',
-      'lang': 'zh',
+      'lang': normalizedLanguage,
       'key': key,
     });
 

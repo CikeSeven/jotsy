@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 应用启动加载页。
 ///
@@ -9,7 +10,7 @@ class AppLoadingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: AppLoadingContent());
+    return Scaffold(body: const AppLoadingContent());
   }
 }
 
@@ -23,7 +24,7 @@ class AppLoadingContent extends StatelessWidget {
       child: LoadingIndicatorM3E(
         variant: LoadingIndicatorM3EVariant.contained,
         constraints: const BoxConstraints.tightFor(width: 72, height: 72),
-        semanticLabel: '应用加载中',
+        semanticLabel: context.l10n.tr('应用加载中', en: 'Loading app'),
       ),
     );
   }

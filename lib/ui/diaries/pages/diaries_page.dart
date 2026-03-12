@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
@@ -180,7 +181,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           () => const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (Object error, StackTrace stackTrace) =>
-              Scaffold(body: Center(child: Text('设置加载失败: $error'))),
+              Scaffold(
+                body: Center(
+                  child: Text(
+                    context.l10n.tr('设置加载失败: $error', en: 'Settings load failed: $error'),
+                  ),
+                ),
+              ),
       data: (settingsService) {
         _controller.loadViewPreferencesIfNeeded(settingsService);
         final topSafeInset = MediaQuery.paddingOf(context).top;
@@ -275,7 +282,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                                 horizontal: AppSpacing.m,
                                                 vertical: AppSpacing.s,
                                               ),
-                                              child: Text('标签加载失败: $error'),
+                                              child: Text(
+                                                context.l10n.tr('标签加载失败: $error', en: 'Tag load failed: $error'),
+                                              ),
                                             ),
                                           ),
                                 ),
@@ -307,7 +316,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                             hasScrollBody: false,
                                             child: Center(
                                               child: Text(
-                                                '日记加载失败: ${diariesAsync.asError?.error}',
+                                                context.l10n.tr(
+                                                  '日记加载失败: ${diariesAsync.asError?.error}',
+                                                  en:
+                                                      'Diary load failed: ${diariesAsync.asError?.error}',
+                                                ),
                                               ),
                                             ),
                                           )

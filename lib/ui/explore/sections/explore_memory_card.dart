@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
@@ -69,6 +70,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final memories = widget.viewData.onThisDayDiaries;
 
@@ -76,9 +78,9 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const ExploreSectionTitle(
+          ExploreSectionTitle(
             icon: FontAwesomeIcons.clockRotateLeft,
-            title: '那年今日',
+            title: l10n.tr('那年今日', en: 'On this day'),
           ),
           const SizedBox(height: 10),
           if (memories.isEmpty)
@@ -99,7 +101,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   const SizedBox(height: 10),
                   FilledButton.tonal(
                     onPressed: widget.onCreateToday,
-                    child: const Text('补写今天'),
+                    child: Text(l10n.tr('补写今天', en: 'Write for today')),
                   ),
                 ],
               ),
@@ -179,7 +181,9 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    diary.title.trim().isEmpty ? '无标题日记' : diary.title.trim(),
+                    diary.title.trim().isEmpty
+                        ? context.l10n.tr('无标题日记', en: 'Untitled diary')
+                        : diary.title.trim(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -188,7 +192,13 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    widget.controller.contentExtractor.summaryText(diary),
+                    widget.controller.contentExtractor.summaryText(
+                      diary,
+                      emptyFallback: context.l10n.tr(
+                        '记录了一则内容',
+                        en: 'Recorded an entry',
+                      ),
+                    ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(

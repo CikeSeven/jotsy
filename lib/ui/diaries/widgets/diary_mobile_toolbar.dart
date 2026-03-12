@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -399,7 +400,10 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
           ? <quill.QuillToolbarCustomButtonOptions>[
             quill.QuillToolbarCustomButtonOptions(
               icon: const FaIcon(FontAwesomeIcons.heading, size: 14),
-              tooltip: '标题样式（点击切换）',
+              tooltip: context.l10n.tr(
+                '标题样式（点击切换）',
+                en: 'Header style (tap to cycle)',
+              ),
               onPressed: () => _cycleHeaderStyle(controller),
             ),
           ]

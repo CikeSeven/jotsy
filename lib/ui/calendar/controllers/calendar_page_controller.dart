@@ -38,7 +38,11 @@ class CalendarPageController {
 
   /// 当前焦点月份标题（用于头部显示）。
   String get focusedMonthTitle {
-    return DateFormat('yyyy年MM月').format(_state._focusedMonth);
+    final locale = Localizations.localeOf(_state.context);
+    if (locale.languageCode == 'zh') {
+      return DateFormat('yyyy年MM月', 'zh').format(_state._focusedMonth);
+    }
+    return DateFormat('MMM yyyy', 'en').format(_state._focusedMonth);
   }
 
   /// 保存 TableCalendar 内部页面控制器，供头部「上月/下月」按钮直接驱动翻页。
@@ -112,10 +116,10 @@ class CalendarPageController {
       initialDate: _state._selectedDay,
       firstDate: firstDate,
       lastDate: lastDate,
-      locale: const Locale('zh', 'CN'),
-      helpText: '选择日期',
-      cancelText: '取消',
-      confirmText: '确定',
+      locale: Localizations.localeOf(_state.context),
+      helpText: _state.context.l10n.tr('选择日期', en: 'Select date'),
+      cancelText: _state.context.l10n.commonCancel,
+      confirmText: _state.context.l10n.commonConfirm,
     );
     if (pickedDate == null || !_state.mounted) {
       return;
@@ -230,12 +234,16 @@ class CalendarPageController {
         if (!_state.mounted) {
           return;
         }
-        await _showInfoSnackBar('已恢复删除的日记');
+        await _showInfoSnackBar(
+          _state.context.l10n.tr('已恢复删除的日记', en: 'Deleted diary restored'),
+        );
       } catch (_) {
         if (!_state.mounted) {
           return;
         }
-        await _showInfoSnackBar('恢复失败，请重试');
+        await _showInfoSnackBar(
+          _state.context.l10n.tr('恢复失败，请重试', en: 'Restore failed. Please try again.'),
+        );
       }
     });
   }
@@ -253,10 +261,10 @@ class CalendarPageController {
 
     final controller = messenger.showSnackBar(
       SnackBar(
-        content: const Text('已删除日记'),
+        content: Text(_state.context.l10n.tr('已删除日记', en: 'Diary deleted')),
         duration: const Duration(seconds: 4),
         action: SnackBarAction(
-          label: '撤销',
+          label: _state.context.l10n.commonUndo,
           onPressed: () {},
           textColor: Theme.of(_state.context).colorScheme.onPrimary,
         ),
@@ -349,8 +357,15 @@ class CalendarPageController {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: const Text('发现未完成日记'),
-          content: const Text('检测到你上次有未保存的日记，是否继续编辑？'),
+          title: Text(
+            _state.context.l10n.tr('发现未完成日记', en: 'Unsaved draft found'),
+          ),
+          content: Text(
+            _state.context.l10n.tr(
+              '检测到你上次有未保存的日记，是否继续编辑？',
+              en: 'An unfinished diary draft was found. Continue editing?',
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -361,7 +376,9 @@ class CalendarPageController {
                   dialogContext,
                 ).pop(_CalendarCreateDraftDecision.newEmpty);
               },
-              child: const Text('新建空笔记'),
+              child: Text(
+                _state.context.l10n.tr('新建空笔记', en: 'New empty note'),
+              ),
             ),
             TextButton(
               style: TextButton.styleFrom(
@@ -372,7 +389,9 @@ class CalendarPageController {
                   dialogContext,
                 ).pop(_CalendarCreateDraftDecision.continueEditing);
               },
-              child: const Text('继续编辑'),
+              child: Text(
+                _state.context.l10n.tr('继续编辑', en: 'Continue editing'),
+              ),
             ),
           ],
         );

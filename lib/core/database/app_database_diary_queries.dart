@@ -8,6 +8,45 @@ part of 'app_database.dart';
 /// - metadata 条件检索；
 /// - SQL 行记录映射为领域对象。
 mixin AppDatabaseDiaryQueries on _$AppDatabase {
+  /// 监听全部未删除日记（包含归档与未归档）。
+  ///
+  /// 用于探索页这类“全量回顾/统计”场景，避免被列表筛选条件影响。
+  Stream<List<DiaryWithTags>> watchAllActiveDiaries() {
+    return customSelect(
+      '''
+SELECT
+  d.id,
+  d.diary_id,
+  d.title,
+  d.content,
+  d.content_text,
+  d.cover,
+  d.metadata,
+  d.created_at,
+  d.updated_at,
+  d.is_archived,
+  d.archived_at,
+  d.is_deleted,
+  d.deleted_at,
+  COALESCE(
+    json_group_array(
+      CASE
+        WHEN t.id IS NOT NULL THEN json_object('id', t.id, 'name', t.name, 'color', t.color)
+      END
+    ),
+    '[]'
+  ) AS tags_json
+FROM diaries d
+LEFT JOIN diary_tags dt ON dt.diary_id = d.id
+LEFT JOIN tags t ON t.id = dt.tag_id
+WHERE d.is_deleted = 0
+GROUP BY d.id
+ORDER BY d.updated_at DESC
+''',
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map(_mapDiaryWithTagsRows);
+  }
+
   /// 监听日记列表（支持关键词 + 标签 AND 过滤）。
   ///
   /// 查询说明：

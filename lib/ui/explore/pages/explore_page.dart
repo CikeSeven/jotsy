@@ -1,29 +1,175 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme/app_spacing.dart';
+import '../../diaries/pages/diary_preview_page.dart';
+import '../../diaries/pages/edit_diary_page.dart';
+import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
+import '../controllers/explore_page_controller.dart';
+import '../providers/explore_providers.dart';
+import '../sections/explore_content_section.dart';
 
-/// 探索页占位组件。
-class ExplorePage extends StatelessWidget {
+/// 探索页壳层。
+///
+/// 页面职责：
+/// - 监听数据 provider；
+/// - 处理导航回调；
+/// - 将聚合数据交给 sections 渲染。
+class ExplorePage extends ConsumerWidget {
   const ExplorePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final diariesAsync = ref.watch(exploreDiariesProvider);
+    final controller = const ExplorePageController();
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
 
     return Stack(
-      children: [
-        ListView(
-          padding: EdgeInsets.only(top: headerHeight),
-          children: const [
-            SizedBox(
-              height: 240,
-              child: Center(child: Text('探索功能开发中')),
-            ),
-          ],
+      children: <Widget>[
+        SafeArea(
+          top: false,
+          child: CustomScrollView(
+            slivers: <Widget>[
+              SliverToBoxAdapter(child: SizedBox(height: headerHeight + 4)),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+                sliver: diariesAsync.when(
+                  loading:
+                      () => const SliverToBoxAdapter(
+                        child: _ExplorePageSkeleton(),
+                      ),
+                  error:
+                      (error, stackTrace) => SliverToBoxAdapter(
+                        child: _ExploreErrorCard(message: '$error'),
+                      ),
+                  data: (diaries) {
+                    final viewData = controller.buildViewData(
+                      diaries,
+                      now: DateTime.now(),
+                    );
+                    return SliverToBoxAdapter(
+                      child: ExploreContentSection(
+                        viewData: viewData,
+                        controller: controller,
+                        onOpenDiary: (diaryId) {
+                          _openPreview(context, diaryId);
+                        },
+                        onCreateToday: () {
+                          _openCreateToday(context);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height:
+                      MediaQuery.paddingOf(context).bottom +
+                      GlassBottomNav.navBottomInset +
+                      GlassBottomNav.navHeight +
+                      24,
+                ),
+              ),
+            ],
+          ),
         ),
         const GlassPageHeader(title: '探索'),
       ],
+    );
+  }
+
+  void _openPreview(BuildContext context, String diaryId) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DiaryPreviewPage(diaryId: diaryId),
+      ),
+    );
+  }
+
+  void _openCreateToday(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+      ),
+    );
+  }
+}
+
+class _ExplorePageSkeleton extends StatelessWidget {
+  const _ExplorePageSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = colorScheme.surfaceContainerHighest.withValues(alpha: 0.55);
+    return Column(
+      children: <Widget>[
+        Container(
+          height: 66,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          height: 168,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          height: 132,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ExploreErrorCard extends StatelessWidget {
+  const _ExploreErrorCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.72),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '探索数据暂不可用',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

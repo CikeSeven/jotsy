@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -83,13 +84,20 @@ class DiarySearchPage extends ConsumerStatefulWidget {
 class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const double _headerContentHeight = 48;
+  static const int _diaryPageSize = 20;
+  static const double _loadMoreTriggerExtent = 420;
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _searchDebounceTimer;
+  Timer? _pagingCooldownTimer;
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   late final Set<int> _selectedTagIds;
+  int _visibleDiaryLimit = _diaryPageSize;
+  int _lastPageableCount = 0;
+  bool _isPagingCooldown = false;
+  String _pagingSignature = '';
 
   @override
   void initState() {
@@ -110,6 +118,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   @override
   void dispose() {
     _searchDebounceTimer?.cancel();
+    _pagingCooldownTimer?.cancel();
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -127,6 +136,10 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       keyword: _effectiveSearchKeyword,
       requiredTagIds: _selectedTagIds,
     );
+    _syncPagingStateWithQuery(query);
+    if (!query.hasAnyCondition) {
+      _lastPageableCount = 0;
+    }
     final diariesAsync =
         query.hasAnyCondition ? ref.watch(searchDiariesProvider(query)) : null;
     final tagListAsync = ref.watch(tagListProvider);
@@ -156,44 +169,71 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
             top: false,
             child: ColoredBox(
               color: pageBackgroundColor,
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverToBoxAdapter(child: SizedBox(height: headerOverlayHeight + 6)),
-                  if (!query.hasAnyCondition)
-                    const SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: SizedBox.shrink(),
-                    )
-                  else
-                    diariesAsync!.when(
-                      loading: () => const SliverFillRemaining(
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _handleScrollNotification,
+                child: CustomScrollView(
+                  slivers: <Widget>[
+                    SliverToBoxAdapter(child: SizedBox(height: headerOverlayHeight + 6)),
+                    if (!query.hasAnyCondition)
+                      const SliverFillRemaining(
                         hasScrollBody: false,
-                        child: Center(
-                          child: SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        child: SizedBox.shrink(),
+                      )
+                    else
+                      diariesAsync!.when(
+                        loading: () => const SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: SizedBox(
+                              height: 22,
+                              width: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                           ),
                         ),
+                        error: (error, stackTrace) => SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(child: Text('日记加载失败: $error')),
+                        ),
+                        data: (diaries) {
+                          final pagedDiaries = diaries.take(_visibleDiaryLimit).toList();
+                          _lastPageableCount = diaries.length;
+                          final hasMoreDiaries = pagedDiaries.length < diaries.length;
+                          return SliverMainAxisGroup(
+                            slivers: <Widget>[
+                              DiariesListSection(
+                                themeBrightness: brightness,
+                                diaries: pagedDiaries,
+                                layoutMode: DiaryLayoutMode.list,
+                                selectedDiaryIds: const <String>{},
+                                isSelectionMode: false,
+                                onCreate: () {},
+                                onOpenEditor: _openPreview,
+                                onToggleSelection: (_, __) {},
+                                isSearchResultEmpty: true,
+                              ),
+                              if (hasMoreDiaries || _isPagingCooldown)
+                                const SliverToBoxAdapter(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: 6),
+                                    child: Center(
+                                      child: SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                       ),
-                      error: (error, stackTrace) => SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(child: Text('日记加载失败: $error')),
-                      ),
-                      data: (diaries) => DiariesListSection(
-                        themeBrightness: brightness,
-                        diaries: diaries,
-                        layoutMode: DiaryLayoutMode.list,
-                        selectedDiaryIds: const <String>{},
-                        isSelectionMode: false,
-                        onCreate: () {},
-                        onOpenEditor: _openPreview,
-                        onToggleSelection: (_, __) {},
-                        isSearchResultEmpty: true,
-                      ),
-                    ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                ],
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -285,6 +325,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     }
     setState(() {
       _selectedTagIds.remove(tagId);
+      _visibleDiaryLimit = _diaryPageSize;
+      _isPagingCooldown = false;
     });
   }
 
@@ -299,6 +341,53 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
         builder: (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
       ),
     );
+  }
+
+  /// 滚动接近底部时追加下一批结果（+20）。
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0 || notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    if (notification.metrics.extentAfter < _loadMoreTriggerExtent) {
+      _requestLoadMoreDiaries();
+    }
+    return false;
+  }
+
+  /// 条件变更时重置分页窗口，避免沿用旧查询的加载进度。
+  void _syncPagingStateWithQuery(SearchDiaryQuery query) {
+    final signature = '${query.keyword}|${query.requiredTagIds.join(",")}';
+    if (_pagingSignature == signature) {
+      return;
+    }
+    _pagingSignature = signature;
+    _visibleDiaryLimit = _diaryPageSize;
+    _isPagingCooldown = false;
+    _pagingCooldownTimer?.cancel();
+    _pagingCooldownTimer = null;
+  }
+
+  /// 追加一页搜索结果，使用短冷却避免高频滚动瞬间连跳多页。
+  void _requestLoadMoreDiaries() {
+    if (_isPagingCooldown || _visibleDiaryLimit >= _lastPageableCount) {
+      return;
+    }
+    setState(() {
+      _visibleDiaryLimit = math.min(
+        _visibleDiaryLimit + _diaryPageSize,
+        _lastPageableCount,
+      );
+      _isPagingCooldown = true;
+    });
+    _pagingCooldownTimer?.cancel();
+    _pagingCooldownTimer = Timer(const Duration(milliseconds: 140), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isPagingCooldown = false;
+      });
+    });
   }
 }
 

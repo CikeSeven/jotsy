@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -60,6 +61,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _listRefreshFadeOutDuration = Duration(milliseconds: 160);
   static const Duration _listRefreshFadeInDuration = Duration(milliseconds: 260);
   static const double _fabToggleScrollThreshold = 26;
+  static const int _diaryPageSize = 20;
+  static const double _loadMoreTriggerExtent = 420;
   static const double _listBottomExtraSpace = 34;
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
@@ -84,6 +87,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool _fabVisibleByScroll = true;
   double _fabScrollDeltaAccumulator = 0;
   int _listLayoutEpoch = 0;
+  int _visibleDiaryLimit = _diaryPageSize;
+  int _lastPageableCount = 0;
+  String _pagingSignature = '';
+  bool _isPagingCooldown = false;
+  Timer? _pagingCooldownTimer;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
@@ -143,6 +151,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onCreateActionChanged?.call(null);
     _controller.dispose();
     _transitionCoordinator.dispose();
+    _pagingCooldownTimer?.cancel();
     _listRefreshPulseController.dispose();
     super.dispose();
   }
@@ -188,6 +197,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
         final displayedItems =
             latestVisibleItems ?? _cachedVisibleItems;
+        final currentPagingSignature = _buildPagingSignature(filterState);
+        _syncPagingStateWithFilterSignature(currentPagingSignature);
+        final pagedDisplayedItems = displayedItems.take(_visibleDiaryLimit).toList();
+        _lastPageableCount = displayedItems.length;
+        final hasMoreDiaries = pagedDisplayedItems.length < displayedItems.length;
 
         return Scaffold(
           backgroundColor: pageBackgroundColor,
@@ -275,7 +289,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       // 1) 首屏加载且无缓存；
                                       // 2) 首屏错误且无缓存；
                                       // 3) 渲染列表/空态内容。
-                                      diariesAsync.isLoading && displayedItems.isEmpty
+                                        diariesAsync.isLoading && displayedItems.isEmpty
                                           ? const SliverFillRemaining(
                                             hasScrollBody: false,
                                             child: Center(
@@ -302,7 +316,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                               'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
                                             ),
                                             themeBrightness: brightness,
-                                            diaries: displayedItems,
+                                            diaries: pagedDisplayedItems,
                                             layoutMode: _layoutMode,
                                             isSelectionMode: _isSelectionMode,
                                             selectedDiaryIds: _selectedDiaryIds,
@@ -331,6 +345,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                             isSearchResultEmpty: false,
                                           ),
                                         ),
+                                if (hasMoreDiaries || _isPagingCooldown)
+                                  const SliverToBoxAdapter(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(top: 6),
+                                      child: Center(
+                                        child: SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 SliverToBoxAdapter(
                                   // 底部留白用于避让 Home 底部导航和 FAB。
                                   child: SizedBox(height: listBottomOffset),
@@ -415,6 +444,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return false;
     }
 
+    if (notification.metrics.extentAfter < _loadMoreTriggerExtent) {
+      _requestLoadMoreDiaries();
+    }
+
     if (notification is ScrollEndNotification) {
       _fabScrollDeltaAccumulator = 0;
       return false;
@@ -446,6 +479,54 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return false;
     }
     return false;
+  }
+
+  /// 构建当前分页上下文签名。
+  ///
+  /// 当关键词或标签筛选发生变化时，签名会变化，分页会自动回到首屏 20 条。
+  String _buildPagingSignature(DiaryFilterState filterState) {
+    final normalizedKeyword = filterState.keyword.trim();
+    final sortedTagIds = filterState.selectedTagIds.toList()..sort();
+    return '$normalizedKeyword|${sortedTagIds.join(",")}';
+  }
+
+  /// 同步分页状态与筛选条件。
+  ///
+  /// 只要筛选条件变化，就重置分页窗口，避免旧分页状态污染新结果集。
+  void _syncPagingStateWithFilterSignature(String signature) {
+    if (_pagingSignature == signature) {
+      return;
+    }
+    _pagingSignature = signature;
+    _visibleDiaryLimit = _diaryPageSize;
+    _isPagingCooldown = false;
+    _pagingCooldownTimer?.cancel();
+    _pagingCooldownTimer = null;
+  }
+
+  /// 请求加载下一批日记（每次 +20）。
+  ///
+  /// 这里使用一个短冷却窗口，避免滚动通知高频触发导致瞬间连续追加多页。
+  void _requestLoadMoreDiaries() {
+    if (_isPagingCooldown || _visibleDiaryLimit >= _lastPageableCount) {
+      return;
+    }
+    setState(() {
+      _visibleDiaryLimit = math.min(
+        _visibleDiaryLimit + _diaryPageSize,
+        _lastPageableCount,
+      );
+      _isPagingCooldown = true;
+    });
+    _pagingCooldownTimer?.cancel();
+    _pagingCooldownTimer = Timer(const Duration(milliseconds: 140), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _isPagingCooldown = false;
+      });
+    });
   }
 
   void _updateFabVisibilityByScroll(bool visible) {

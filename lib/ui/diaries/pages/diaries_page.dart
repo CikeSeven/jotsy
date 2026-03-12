@@ -12,6 +12,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
@@ -58,8 +59,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
   static const Duration _listRefreshFadeOutDuration = Duration(milliseconds: 160);
   static const Duration _listRefreshFadeInDuration = Duration(milliseconds: 260);
-  static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
-  static const Duration _searchMorphDuration = Duration(milliseconds: 280);
   static const double _fabToggleScrollThreshold = 26;
   static const double _listBottomExtraSpace = 34;
   static const double _tagSectionTopGap = 2;
@@ -74,11 +73,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   final Map<String, Timer> _pendingHideTimers = <String, Timer>{};
   final Map<String, Timer> _appearingTimers = <String, Timer>{};
 
-  // ==================== 搜索输入与防抖状态 ====================
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
-  Timer? _searchDebounceTimer;
-
   // ==================== 列表整体过渡动画 ====================
   late final AnimationController _listRefreshPulseController;
   late final Animation<double> _listRefreshOpacity;
@@ -86,10 +80,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   Future<void>? _queuedFilterTransition;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   int _localHintVisibleCount = 0;
-  String _searchInput = '';
-  String _effectiveSearchKeyword = '';
-  bool _isSearchMode = false;
-  bool _isSearchAnimating = false;
   bool _homeHintVisible = false;
   bool _fabVisibleByScroll = true;
   double _fabScrollDeltaAccumulator = 0;
@@ -104,7 +94,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   late final DiariesPageController _controller;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
-  bool get _showHeaderSection => !_isSearchAnimating;
 
   @override
   void initState() {
@@ -154,8 +143,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onCreateActionChanged?.call(null);
     _controller.dispose();
     _transitionCoordinator.dispose();
-    _searchController.dispose();
-    _searchFocusNode.dispose();
     _listRefreshPulseController.dispose();
     super.dispose();
   }
@@ -209,17 +196,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             children: [
               // 返回键优先处理页面内部状态，再交给路由栈。
               PopScope(
-                canPop: !(_isSelectionMode || _isSearchMode),
+                canPop: !_isSelectionMode,
                 onPopInvokedWithResult: (didPop, result) {
                   if (didPop) {
                     return;
                   }
                   if (_isSelectionMode) {
                     _controller.clearSelection();
-                    return;
-                  }
-                  if (_isSearchMode) {
-                    _controller.exitSearchModeAndClear();
                   }
                 },
                 child: Focus(
@@ -345,8 +328,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                                     diaryId,
                                                   ),
                                                 ),
-                                            isSearchResultEmpty:
-                                                filterState.keyword.trim().isNotEmpty,
+                                            isSearchResultEmpty: false,
                                           ),
                                         ),
                                 SliverToBoxAdapter(
@@ -362,69 +344,51 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         top: 0,
                         left: 0,
                         right: 0,
-                        child: IgnorePointer(
-                          ignoring: !_showHeaderSection,
-                          child: AnimatedOpacity(
-                            duration: _searchMorphDuration,
-                            curve: Curves.easeOutCubic,
-                            opacity: _showHeaderSection ? 1 : 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                boxShadow: AppEffects.softShadow,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            boxShadow: AppEffects.softShadow,
+                          ),
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: 20,
+                                sigmaY: 20,
+                                tileMode: TileMode.mirror,
                               ),
-                              child: ClipRect(
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 20,
-                                    sigmaY: 20,
-                                    tileMode: TileMode.mirror,
-                                  ),
-                                  child: Container(
-                                    width: double.infinity,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.surface.withAlpha(10),
-                                    child: Column(
-                                      children: [
-                                        SizedBox(height: topSafeInset),
-                                        // 头部组件负责：搜索态、多选态、归档入口、排序布局菜单。
-                                        DiaryHeadSection(
-                                          isSelectionMode: _isSelectionMode,
-                                          isSearchMode: _isSearchMode,
-                                          selectedCount: _selectedDiaryIds.length,
-                                          onCancelSelection: _controller.clearSelection,
-                                          onArchiveSelected:
-                                              () => unawaited(
-                                                _controller.archiveSelectedDiaries(),
-                                              ),
-                                          onDeleteSelected:
-                                              () => unawaited(
-                                                _controller.deleteSelectedDiaries(),
-                                              ),
-                                          onOpenArchived: _controller.openArchivedPage,
-                                          sortMode: _sortMode,
-                                          layoutMode: _layoutMode,
-                                          onMenuSelected: _controller.onMenuSelected,
-                                          searchPreviewText: _searchInput,
-                                          searchController: _searchController,
-                                          searchFocusNode: _searchFocusNode,
-                                          onEnterSearch: _controller.enterSearchMode,
-                                          onExitSearch:
-                                              _controller.exitSearchModeAndClear,
-                                          onClearSearch:
-                                              _controller.clearSearchInPlace,
-                                          onSearchChanged:
-                                              _controller.onSearchChanged,
-                                        ),
-                                        Container(
-                                          height: 1,
-                                          margin: const EdgeInsets.only(
-                                            top: AppSpacing.xs,
+                              child: Container(
+                                width: double.infinity,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surface.withAlpha(10),
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: topSafeInset),
+                                    // 头部组件负责：多选态、搜索入口、归档入口、排序布局菜单。
+                                    DiaryHeadSection(
+                                      isSelectionMode: _isSelectionMode,
+                                      selectedCount: _selectedDiaryIds.length,
+                                      onCancelSelection: _controller.clearSelection,
+                                      onArchiveSelected:
+                                          () => unawaited(
+                                            _controller.archiveSelectedDiaries(),
                                           ),
-                                        ),
-                                      ],
+                                      onDeleteSelected:
+                                          () => unawaited(
+                                            _controller.deleteSelectedDiaries(),
+                                          ),
+                                      onOpenArchived: _controller.openArchivedPage,
+                                      sortMode: _sortMode,
+                                      layoutMode: _layoutMode,
+                                      onMenuSelected: _controller.onMenuSelected,
+                                      onOpenSearchPage: _controller.openSearchPage,
                                     ),
-                                  ),
+                                    Container(
+                                      height: 1,
+                                      margin: const EdgeInsets.only(
+                                        top: AppSpacing.xs,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),

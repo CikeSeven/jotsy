@@ -70,107 +70,36 @@ class DiariesPageController {
 
   /// 处理系统返回键：
   /// 1. 选择模式优先退出选择；
-  /// 2. 搜索模式次优先退出搜索；
-  /// 3. 其余场景交还系统路由栈。
+  /// 2. 其余场景交还系统路由栈。
   void handleBackPressed() {
     if (_state._isSelectionMode) {
       clearSelection();
-      return;
-    }
-    if (_state._isSearchMode) {
-      exitSearchModeAndClear();
     }
   }
 
-  /// 进入搜索态并在下一帧请求输入焦点，避免与头部过渡动画冲突。
-  void enterSearchMode() {
-    if (_state._isSelectionMode || _state._isSearchMode) {
-      return;
-    }
-    _state.setState(() {
-      _state._isSearchMode = true;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_state.mounted) {
-        return;
-      }
-      _state._searchFocusNode.requestFocus();
-    });
-  }
-
-  /// 退出搜索态并清空关键词，同时释放焦点收起键盘。
-  void exitSearchModeAndClear() {
-    clearSearch(exitSearchMode: true);
-    _state._searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-  }
-
-  /// 在搜索态中仅清空文本，不退出搜索框。
-  void clearSearchInPlace() {
-    clearSearch(exitSearchMode: false);
-    _state._searchFocusNode.requestFocus();
-  }
-
-  /// 搜索输入变更时本地即时更新 UI，再以 200ms 防抖回写筛选 provider。
-  void onSearchChanged(String value) {
-    if (_state._searchInput != value) {
-      _state.setState(() {
-        _state._searchInput = value;
-      });
-    }
-    _state._searchDebounceTimer?.cancel();
-    _state._searchDebounceTimer = Timer(_DiariesPage._searchDebounceDuration, () {
-      _applySearchKeyword(value);
-    });
-  }
-
-  /// 将原始输入标准化后写入筛选条件，避免空白字符导致无效查询。
-  void _applySearchKeyword(String rawValue) {
-    final normalized = rawValue.trim();
-    if (normalized == _state._effectiveSearchKeyword) {
-      return;
-    }
-    _state._effectiveSearchKeyword = normalized;
-    transitionCoordinator.queueFilterMutation(() {
-      _state.ref.read(diaryFilterProvider.notifier).setKeyword(normalized);
-    });
-  }
-
-  /// 统一清理搜索状态。
+  /// 打开独立搜索页。
   ///
-  /// 当 `exitSearchMode=true` 时会把头部恢复为普通模式；
-  /// 否则只清空输入内容，保持搜索态不变。
-  void clearSearch({required bool exitSearchMode}) {
-    _state._searchDebounceTimer?.cancel();
-    final shouldResetKeyword =
-        _state._effectiveSearchKeyword.isNotEmpty ||
-        _state._searchInput.trim().isNotEmpty ||
-        _state._searchController.text.trim().isNotEmpty;
-    _state._searchController.clear();
-
-    if (_state.mounted) {
-      _state.setState(() {
-        _state._searchInput = '';
-        _state._effectiveSearchKeyword = '';
-        if (exitSearchMode) {
-          _state._isSearchMode = false;
-          _state._isSearchAnimating = false;
-        }
-      });
-    } else {
-      _state._searchInput = '';
-      _state._effectiveSearchKeyword = '';
-      if (exitSearchMode) {
-        _state._isSearchMode = false;
-        _state._isSearchAnimating = false;
-      }
-    }
-
-    if (shouldResetKeyword) {
-      transitionCoordinator.queueFilterMutation(() {
-        _state.ref.read(diaryFilterProvider.notifier).setKeyword('');
-      });
-    }
+  /// 使用淡入覆盖式路由，弱化“页面跳转”感，保持同场景搜索体验。
+  void openSearchPage() {
+    Navigator.of(_state.context).push(
+      PageRouteBuilder<void>(
+        transitionDuration: const Duration(milliseconds: 220),
+        reverseTransitionDuration: const Duration(milliseconds: 180),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return const DiarySearchPage();
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            ),
+            child: child,
+          );
+        },
+      ),
+    );
   }
 
   /// 切换标签筛选。实际写入动作会通过过渡协调器排队，确保列表过渡连续。
@@ -197,9 +126,6 @@ class DiariesPageController {
     String? diaryId,
     bool restoreCreateDraft = true,
   }) {
-    _state._searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-
     unawaited(
       Navigator.of(_state.context)
           .push(
@@ -221,8 +147,6 @@ class DiariesPageController {
               return;
             }
             refreshAfterEditorReturn();
-            _state._searchFocusNode.unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
           }),
     );
   }
@@ -233,9 +157,6 @@ class DiariesPageController {
   /// - 删除通过返回值触发撤销提示；
   /// - 其余数据变更依赖数据库流自动回推，避免强制刷新导致滚动回跳。
   void openPreview(String diaryId) {
-    _state._searchFocusNode.unfocus();
-    FocusManager.instance.primaryFocus?.unfocus();
-
     unawaited(
       Navigator.of(_state.context)
           .push<DiaryPreviewResult?>(
@@ -274,8 +195,6 @@ class DiariesPageController {
                 await feedback.showInfoSnackBar('恢复失败，请重试');
               }
             }
-            _state._searchFocusNode.unfocus();
-            FocusManager.instance.primaryFocus?.unfocus();
           }),
     );
   }
@@ -545,20 +464,7 @@ class DiariesPageController {
 
   /// 切换单条选中状态，支持强制选中（长按进入选择模式时使用）。
   void toggleSelection(String noteId, {bool forceSelect = false}) {
-    var shouldClearSearchKeyword = false;
-    var shouldUnfocusSearch = false;
     _state.setState(() {
-      if (forceSelect && _state._isSearchMode) {
-        _state._searchDebounceTimer?.cancel();
-        shouldClearSearchKeyword = _state._effectiveSearchKeyword.isNotEmpty ||
-            _state._searchInput.trim().isNotEmpty;
-        shouldUnfocusSearch = true;
-        _state._searchController.clear();
-        _state._searchInput = '';
-        _state._effectiveSearchKeyword = '';
-        _state._isSearchMode = false;
-        _state._isSearchAnimating = false;
-      }
       if (forceSelect) {
         _state._selectedDiaryIds.add(noteId);
         return;
@@ -569,13 +475,6 @@ class DiariesPageController {
         _state._selectedDiaryIds.add(noteId);
       }
     });
-    if (shouldClearSearchKeyword) {
-      _state.ref.read(diaryFilterProvider.notifier).setKeyword('');
-    }
-    if (shouldUnfocusSearch) {
-      _state._searchFocusNode.unfocus();
-      FocusManager.instance.primaryFocus?.unfocus();
-    }
   }
 
   /// 打开归档页。
@@ -691,7 +590,6 @@ class DiariesPageController {
 
   /// 释放控制器内部资源，重点是计时器和外部监听。
   void dispose() {
-    _state._searchDebounceTimer?.cancel();
     detachHomeHintVisibilityListener(_state.widget.homeHintVisibleListenable);
   }
 }

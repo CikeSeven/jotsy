@@ -70,3 +70,16 @@ final filteredDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
   final tagIds = filter.selectedTagIds.toList()..sort();
   return db.watchDiaries(keyword: filter.keyword, requiredTagIds: tagIds);
 });
+
+/// 搜索页独立数据源（仅关键词，不叠加标签筛选）。
+///
+/// 设计目的：
+/// - 与主页 `diaryFilterProvider` 解耦，避免搜索页对主页筛选状态产生副作用；
+/// - 支持搜索页内部以局部状态驱动实时查询。
+final searchDiariesProvider = StreamProvider.family<List<DiaryWithTags>, String>((
+  Ref ref,
+  String keyword,
+) {
+  final db = ref.watch(appDatabaseProvider);
+  return db.watchDiaries(keyword: keyword.trim());
+});

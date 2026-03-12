@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../widgets/glass_page_header.dart';
 
 /// 日历页玻璃态头部。
 ///
@@ -20,7 +21,8 @@ class CalendarGlassHeader extends StatelessWidget {
     required this.onJumpToToday,
   });
 
-  static const double contentHeight = 68;
+  // 与日记列表页 / 通用玻璃头部统一高度。
+  static const double contentHeight = GlassPageHeader.contentHeight;
 
   final String title;
   final VoidCallback onJumpToToday;

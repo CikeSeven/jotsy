@@ -11,7 +11,8 @@ class GlassPageHeader extends StatelessWidget {
     required this.title,
   });
 
-  static const double contentHeight = 68;
+  // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
+  static const double contentHeight = 56;
 
   final String title;
 

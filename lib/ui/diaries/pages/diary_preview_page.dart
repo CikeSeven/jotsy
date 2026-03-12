@@ -487,7 +487,7 @@ $content
         items.add(
             _MetaChipItem(
               kind: _MetaChipKind.mood,
-              label: context.l10n.tr('心情', en: 'Mood') + ' $mood',
+              label: '${context.l10n.tr('心情', en: 'Mood')} $mood',
             ),
         );
       }

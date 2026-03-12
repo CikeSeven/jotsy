@@ -9,8 +9,7 @@ import '../../../core/database/app_database.dart';
 class ExploreViewData {
   const ExploreViewData({
     required this.stats,
-    required this.onThisDayDiary,
-    required this.onThisDayLabel,
+    required this.onThisDayDiaries,
     required this.fallbackPrompt,
     required this.moodWeights30,
     required this.energyValues7,
@@ -19,13 +18,26 @@ class ExploreViewData {
   });
 
   final ExploreStats stats;
-  final DiaryWithTags? onThisDayDiary;
-  final String onThisDayLabel;
+  final List<ExploreOnThisDayItem> onThisDayDiaries;
   final String fallbackPrompt;
   final List<double?> moodWeights30;
   final List<double?> energyValues7;
   final List<ExploreTagUsage> tagUsages;
   final List<ExploreMediaItem> mediaItems;
+}
+
+/// “那年今日”轮播项。
+///
+/// - `diary`：当前需要展示的历史日记；
+/// - `timeLabel`：统一在控制器侧计算好的时间标签，避免 UI 重复拼接。
+class ExploreOnThisDayItem {
+  const ExploreOnThisDayItem({
+    required this.diary,
+    required this.timeLabel,
+  });
+
+  final DiaryWithTags diary;
+  final String timeLabel;
 }
 
 /// 顶部轻量看板数据。

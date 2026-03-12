@@ -14,6 +14,7 @@ class ExplorePageController {
   const ExplorePageController();
 
   final ExploreContentExtractor contentExtractor = const ExploreContentExtractor();
+  static const int _onThisDayMaxEntries = 12;
 
   static const Map<String, double> _moodWeight = <String, double>{
     '😭': 1,
@@ -41,11 +42,7 @@ class ExplorePageController {
     required DateTime now,
   }) {
     final stats = _buildStats(diaries, now: now);
-    final onThisDayDiary = _pickOnThisDay(diaries, now: now);
-    final onThisDayLabel =
-        onThisDayDiary == null
-            ? ''
-            : '${now.year - onThisDayDiary.diary.createdAt.toLocal().year}年前的今天';
+    final onThisDayDiaries = _pickOnThisDayList(diaries, now: now);
     final fallbackPrompt = _fallbackPrompts[now.day % _fallbackPrompts.length];
 
     final moodWeights30 = _buildMoodSeries(diaries, days: 30, now: now);
@@ -55,8 +52,7 @@ class ExplorePageController {
 
     return ExploreViewData(
       stats: stats,
-      onThisDayDiary: onThisDayDiary,
-      onThisDayLabel: onThisDayLabel,
+      onThisDayDiaries: onThisDayDiaries,
       fallbackPrompt: fallbackPrompt,
       moodWeights30: moodWeights30,
       energyValues7: energyValues7,
@@ -96,8 +92,15 @@ class ExplorePageController {
     );
   }
 
-  /// 选择“那年今日”候选：取同月同日且年份最接近当前的一条。
-  DiaryWithTags? _pickOnThisDay(List<DiaryWithTags> diaries, {required DateTime now}) {
+  /// 选择“那年今日”候选列表：
+  /// - 同月同日；
+  /// - 年份早于当前年；
+  /// - 按创建时间倒序，最近年份优先；
+  /// - 默认最多展示 12 条，避免轮播过长影响浏览体验。
+  List<ExploreOnThisDayItem> _pickOnThisDayList(
+    List<DiaryWithTags> diaries, {
+    required DateTime now,
+  }) {
     final candidates =
         diaries.where((item) {
           final created = item.diary.createdAt.toLocal();
@@ -106,10 +109,28 @@ class ExplorePageController {
               created.year < now.year;
         }).toList()
           ..sort((a, b) => b.diary.createdAt.compareTo(a.diary.createdAt));
-    if (candidates.isEmpty) {
-      return null;
+
+    return candidates
+        .take(_onThisDayMaxEntries)
+        .map(
+          (item) => ExploreOnThisDayItem(
+            diary: item,
+            timeLabel: _buildOnThisDayLabel(item.diary.createdAt, now: now),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  /// 生成“那年今日”卡片时间标签。
+  ///
+  /// 优先使用“X年前的今天”；在无法形成有效年差时，回退到具体日期字符串。
+  String _buildOnThisDayLabel(DateTime createdAt, {required DateTime now}) {
+    final localCreated = createdAt.toLocal();
+    final yearDiff = now.year - localCreated.year;
+    if (yearDiff > 0) {
+      return '$yearDiff年前的今天';
     }
-    return candidates.first;
+    return '${localCreated.year}年${localCreated.month}月${localCreated.day}日';
   }
 
   List<double?> _buildMoodSeries(

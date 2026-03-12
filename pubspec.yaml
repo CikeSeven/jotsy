@@ -37,6 +37,7 @@ dependencies:
   widget_screenshot_plus: ^0.0.7
   table_calendar: ^3.2.0
   flutter_svg: ^2.2.4
+  archive: ^3.6.1
   
 dev_dependencies:
   flutter_test:
@@ -58,4 +59,3 @@ flutter:
           weight: 500
         - asset: assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Bold.ttf
           weight: 700
-

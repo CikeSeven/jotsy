@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> {
   String? _shownStartupNotice;
   final Map<int, Future<void> Function()> _createActionByTab =
       <int, Future<void> Function()>{};
+  final Map<int, bool> _fabVisibleByTab = <int, bool>{0: true, 1: true};
   late final HomePageController _controller;
 
   @override
@@ -103,6 +104,9 @@ class _HomePageState extends State<HomePage> {
           onCreateActionChanged: (action) {
             _handleCreateActionChanged(tabIndex: 0, action: action);
           },
+          onFabVisibilityChanged: (visible) {
+            _handleFabVisibilityChanged(tabIndex: 0, visible: visible);
+          },
         ),
       ),
       KeepAlivePage(
@@ -110,6 +114,9 @@ class _HomePageState extends State<HomePage> {
           key: const PageStorageKey<String>('tab_calendar'),
           onCreateActionChanged: (action) {
             _handleCreateActionChanged(tabIndex: 1, action: action);
+          },
+          onFabVisibilityChanged: (visible) {
+            _handleFabVisibilityChanged(tabIndex: 1, visible: visible);
           },
         ),
       ),
@@ -189,6 +196,19 @@ class _HomePageState extends State<HomePage> {
     _createActionByTab[tabIndex] = action;
   }
 
+  void _handleFabVisibilityChanged({
+    required int tabIndex,
+    required bool visible,
+  }) {
+    final previous = _fabVisibleByTab[tabIndex];
+    if (previous == visible) {
+      return;
+    }
+    setState(() {
+      _fabVisibleByTab[tabIndex] = visible;
+    });
+  }
+
   Future<void> _openCreateFromGlobalFab() async {
     final action = _createActionByTab[_currentIndex];
     if (action != null) {
@@ -208,7 +228,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildGlobalCreateFab(double bottomSafeInset) {
-    final shouldShow = _currentIndex == 0 || _currentIndex == 1;
+    final isCreateTab = _currentIndex == 0 || _currentIndex == 1;
+    final followScrollVisibility = _fabVisibleByTab[_currentIndex] ?? true;
+    final shouldShow = isCreateTab && followScrollVisibility;
     final fabBaseBottomOffset =
         bottomSafeInset +
         GlassBottomNav.navBottomInset +

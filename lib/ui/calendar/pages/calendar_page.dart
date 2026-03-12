@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -31,15 +32,18 @@ class CalendarPage extends ConsumerStatefulWidget {
   const CalendarPage({
     super.key,
     this.onCreateActionChanged,
+    this.onFabVisibilityChanged,
   });
 
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
+  final ValueChanged<bool>? onFabVisibilityChanged;
 
   @override
   ConsumerState<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
+  static const double _fabToggleScrollThreshold = 26;
   static const double _calendarCardHorizontalPadding = AppSpacing.m;
   static const double _calendarCardTopPadding = AppSpacing.m;
   static const double _calendarBottomGap = AppSpacing.m;
@@ -51,6 +55,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   late DateTime _selectedDay;
   CalendarFormat _calendarFormat = CalendarFormat.month;
   PageController? _calendarPageController;
+  bool _fabVisibleByScroll = true;
+  double _fabScrollDeltaAccumulator = 0;
 
   @override
   void initState() {
@@ -60,6 +66,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     _selectedDay = DateUtils.dateOnly(now);
     _focusedMonth = _selectedDay;
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
+    widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
   }
 
   @override
@@ -68,6 +75,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     if (oldWidget.onCreateActionChanged != widget.onCreateActionChanged) {
       oldWidget.onCreateActionChanged?.call(null);
       widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
+    }
+    if (oldWidget.onFabVisibilityChanged != widget.onFabVisibilityChanged) {
+      widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     }
   }
 
@@ -101,39 +111,42 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         children: <Widget>[
           SafeArea(
             top: false,
-            child: CustomScrollView(
-              slivers: <Widget>[
-                SliverToBoxAdapter(child: SizedBox(height: headerHeight)),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      _calendarCardHorizontalPadding,
-                      _calendarCardTopPadding,
-                      _calendarCardHorizontalPadding,
-                      _calendarBottomGap,
-                    ),
-                    child: _buildCalendarPanel(markerBuckets),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.m,
-                      0,
-                      AppSpacing.m,
-                      AppSpacing.s,
-                    ),
-                    child: Text(
-                      DateFormat('M月d日').format(_selectedDay),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _handlePrimaryScrollNotification,
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverToBoxAdapter(child: SizedBox(height: headerHeight)),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        _calendarCardHorizontalPadding,
+                        _calendarCardTopPadding,
+                        _calendarCardHorizontalPadding,
+                        _calendarBottomGap,
+                      ),
+                      child: _buildCalendarPanel(markerBuckets),
                     ),
                   ),
-                ),
-                ..._buildDayDiaryContentSlivers(dayDiariesAsync),
-                SliverToBoxAdapter(child: SizedBox(height: listBottomOffset)),
-              ],
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.m,
+                        0,
+                        AppSpacing.m,
+                        AppSpacing.s,
+                      ),
+                      child: Text(
+                        DateFormat('M月d日').format(_selectedDay),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ),
+                  ),
+                  ..._buildDayDiaryContentSlivers(dayDiariesAsync),
+                  SliverToBoxAdapter(child: SizedBox(height: listBottomOffset)),
+                ],
+              ),
             ),
           ),
           CalendarGlassHeader(
@@ -316,6 +329,52 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
 
   Future<void> _openCreateFromHomeFab() async {
     await _controller.openCreateEditorWithDraftPrompt();
+  }
+
+  bool _handlePrimaryScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0 || notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+
+    if (notification is ScrollEndNotification) {
+      _fabScrollDeltaAccumulator = 0;
+      return false;
+    }
+
+    if (notification is! ScrollUpdateNotification) {
+      return false;
+    }
+    final delta = notification.scrollDelta;
+    if (delta == null || delta.abs() < 0.5) {
+      return false;
+    }
+
+    if (notification.metrics.pixels <= 0) {
+      _fabScrollDeltaAccumulator = 0;
+      _updateFabVisibilityByScroll(true);
+      return false;
+    }
+
+    _fabScrollDeltaAccumulator += delta;
+    if (_fabScrollDeltaAccumulator >= _fabToggleScrollThreshold) {
+      _fabScrollDeltaAccumulator = 0;
+      _updateFabVisibilityByScroll(false);
+      return false;
+    }
+    if (_fabScrollDeltaAccumulator <= -_fabToggleScrollThreshold) {
+      _fabScrollDeltaAccumulator = 0;
+      _updateFabVisibilityByScroll(true);
+      return false;
+    }
+    return false;
+  }
+
+  void _updateFabVisibilityByScroll(bool visible) {
+    if (_fabVisibleByScroll == visible) {
+      return;
+    }
+    _fabVisibleByScroll = visible;
+    widget.onFabVisibilityChanged?.call(visible);
   }
 }
 

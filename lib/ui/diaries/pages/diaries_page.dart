@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -37,10 +38,12 @@ class DiariesPage extends ConsumerStatefulWidget {
     super.key,
     this.homeHintVisibleListenable,
     this.onCreateActionChanged,
+    this.onFabVisibilityChanged,
   });
 
   final ValueListenable<bool>? homeHintVisibleListenable;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
+  final ValueChanged<bool>? onFabVisibilityChanged;
 
   @override
   ConsumerState<DiariesPage> createState() => _DiariesPage();
@@ -57,6 +60,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _listRefreshFadeInDuration = Duration(milliseconds: 260);
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
   static const Duration _searchMorphDuration = Duration(milliseconds: 280);
+  static const double _fabToggleScrollThreshold = 26;
   static const double _listBottomExtraSpace = 34;
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
@@ -87,6 +91,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   bool _isSearchMode = false;
   bool _isSearchAnimating = false;
   bool _homeHintVisible = false;
+  bool _fabVisibleByScroll = true;
+  double _fabScrollDeltaAccumulator = 0;
   int _listLayoutEpoch = 0;
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
@@ -111,6 +117,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       transitionCoordinator: _transitionCoordinator,
     );
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
+    widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     _controller.attachHomeHintVisibilityListener();
     // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。
     _listRefreshPulseController = AnimationController(
@@ -132,6 +139,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     if (oldWidget.onCreateActionChanged != widget.onCreateActionChanged) {
       oldWidget.onCreateActionChanged?.call(null);
       widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
+    }
+    if (oldWidget.onFabVisibilityChanged != widget.onFabVisibilityChanged) {
+      widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     }
     _controller.handleHomeHintListenableUpdate(
       previous: oldWidget.homeHintVisibleListenable,
@@ -226,122 +236,125 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         top: false,
                         child: ColoredBox(
                           color: pageBackgroundColor,
-                          child: CustomScrollView(
-                            key: PageStorageKey<String>(
-                              'diaries_scroll_${brightness.name}_${_layoutMode.name}',
-                            ),
-                            slivers: <Widget>[
-                              // 预留头部叠层空间，让应用栏可以做玻璃悬浮效果。
-                              SliverToBoxAdapter(
-                                child: SizedBox(height: headerOverlayHeight),
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: _handlePrimaryScrollNotification,
+                            child: CustomScrollView(
+                              key: PageStorageKey<String>(
+                                'diaries_scroll_${brightness.name}_${_layoutMode.name}',
                               ),
-                              const SliverToBoxAdapter(
-                                child: SizedBox(height: _tagSectionTopGap),
-                              ),
-                              tagsAsync.when(
-                                data: (tags) {
-                                  return SliverToBoxAdapter(
-                                    // 顶部标签筛选条（支持清空和多选筛选）。
-                                    child: DiaryTagFilterBar(
-                                      tags: _controller.buildTagFiltersForDisplay(
-                                        allTags: tags,
-                                        visibleItems: displayedItems,
-                                        keyword: filterState.keyword,
-                                      ),
-                                      selectedTagFilterIds: filterState.selectedTagIds,
-                                      onToggleTagFilter: _controller.toggleTagFilter,
-                                      onClearTagFilters: _controller.clearTagFilters,
-                                    ),
-                                  );
-                                },
-                                loading:
-                                    () => const SliverToBoxAdapter(
-                                      child: SizedBox(height: 56),
-                                    ),
-                                error:
-                                    (Object error, StackTrace stackTrace) =>
-                                        SliverToBoxAdapter(
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: AppSpacing.m,
-                                              vertical: AppSpacing.s,
-                                            ),
-                                            child: Text('标签加载失败: $error'),
-                                          ),
+                              slivers: <Widget>[
+                                // 预留头部叠层空间，让应用栏可以做玻璃悬浮效果。
+                                SliverToBoxAdapter(
+                                  child: SizedBox(height: headerOverlayHeight),
+                                ),
+                                const SliverToBoxAdapter(
+                                  child: SizedBox(height: _tagSectionTopGap),
+                                ),
+                                tagsAsync.when(
+                                  data: (tags) {
+                                    return SliverToBoxAdapter(
+                                      // 顶部标签筛选条（支持清空和多选筛选）。
+                                      child: DiaryTagFilterBar(
+                                        tags: _controller.buildTagFiltersForDisplay(
+                                          allTags: tags,
+                                          visibleItems: displayedItems,
+                                          keyword: filterState.keyword,
                                         ),
-                              ),
-                              const SliverToBoxAdapter(
-                                child: SizedBox(height: _tagSectionBottomGap),
-                              ),
-                              SliverFadeTransition(
-                                opacity: _listRefreshOpacity,
-                                sliver:
-                                    // 数据状态优先级：
-                                    // 1) 首屏加载且无缓存；
-                                    // 2) 首屏错误且无缓存；
-                                    // 3) 渲染列表/空态内容。
-                                    diariesAsync.isLoading && displayedItems.isEmpty
-                                        ? const SliverFillRemaining(
-                                          hasScrollBody: false,
-                                          child: Center(
-                                            child: SizedBox(
-                                              height: 22,
-                                              width: 22,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
+                                        selectedTagFilterIds: filterState.selectedTagIds,
+                                        onToggleTagFilter: _controller.toggleTagFilter,
+                                        onClearTagFilters: _controller.clearTagFilters,
+                                      ),
+                                    );
+                                  },
+                                  loading:
+                                      () => const SliverToBoxAdapter(
+                                        child: SizedBox(height: 56),
+                                      ),
+                                  error:
+                                      (Object error, StackTrace stackTrace) =>
+                                          SliverToBoxAdapter(
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: AppSpacing.m,
+                                                vertical: AppSpacing.s,
                                               ),
+                                              child: Text('标签加载失败: $error'),
                                             ),
                                           ),
-                                        )
-                                        : diariesAsync.hasError && displayedItems.isEmpty
-                                        ? SliverFillRemaining(
-                                          hasScrollBody: false,
-                                          child: Center(
-                                            child: Text(
-                                              '日记加载失败: ${diariesAsync.asError?.error}',
-                                            ),
-                                          ),
-                                        )
-                                        : DiariesListSection(
-                                          key: ValueKey<String>(
-                                            'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
-                                          ),
-                                          themeBrightness: brightness,
-                                          diaries: displayedItems,
-                                          layoutMode: _layoutMode,
-                                          isSelectionMode: _isSelectionMode,
-                                          selectedDiaryIds: _selectedDiaryIds,
-                                          pendingHideDiaryIds: _pendingHideDiaryIds,
-                                          appearingDiaryIds: _appearingDiaryIds,
-                                          onCreate:
-                                              () => unawaited(
-                                                _controller
-                                                    .openCreateEditorWithDraftPrompt(),
-                                              ),
-                                          onOpenEditor: (diaryId) {
-                                            _controller.openPreview(diaryId);
-                                          },
-                                          onToggleSelection:
-                                              (noteId, forceSelect) =>
-                                                  _controller.toggleSelection(
-                                                    noteId,
-                                                    forceSelect: forceSelect,
-                                                  ),
-                                          onArchiveDiary:
-                                              (diaryId) => unawaited(
-                                                _controller.archiveDiaryBySwipe(
-                                                  diaryId,
+                                ),
+                                const SliverToBoxAdapter(
+                                  child: SizedBox(height: _tagSectionBottomGap),
+                                ),
+                                SliverFadeTransition(
+                                  opacity: _listRefreshOpacity,
+                                  sliver:
+                                      // 数据状态优先级：
+                                      // 1) 首屏加载且无缓存；
+                                      // 2) 首屏错误且无缓存；
+                                      // 3) 渲染列表/空态内容。
+                                      diariesAsync.isLoading && displayedItems.isEmpty
+                                          ? const SliverFillRemaining(
+                                            hasScrollBody: false,
+                                            child: Center(
+                                              child: SizedBox(
+                                                height: 22,
+                                                width: 22,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
                                                 ),
                                               ),
-                                          isSearchResultEmpty:
-                                              filterState.keyword.trim().isNotEmpty,
+                                            ),
+                                          )
+                                          : diariesAsync.hasError && displayedItems.isEmpty
+                                          ? SliverFillRemaining(
+                                            hasScrollBody: false,
+                                            child: Center(
+                                              child: Text(
+                                                '日记加载失败: ${diariesAsync.asError?.error}',
+                                              ),
+                                            ),
+                                          )
+                                          : DiariesListSection(
+                                            key: ValueKey<String>(
+                                              'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
+                                            ),
+                                            themeBrightness: brightness,
+                                            diaries: displayedItems,
+                                            layoutMode: _layoutMode,
+                                            isSelectionMode: _isSelectionMode,
+                                            selectedDiaryIds: _selectedDiaryIds,
+                                            pendingHideDiaryIds: _pendingHideDiaryIds,
+                                            appearingDiaryIds: _appearingDiaryIds,
+                                            onCreate:
+                                                () => unawaited(
+                                                  _controller
+                                                      .openCreateEditorWithDraftPrompt(),
+                                                ),
+                                            onOpenEditor: (diaryId) {
+                                              _controller.openPreview(diaryId);
+                                            },
+                                            onToggleSelection:
+                                                (noteId, forceSelect) =>
+                                                    _controller.toggleSelection(
+                                                      noteId,
+                                                      forceSelect: forceSelect,
+                                                    ),
+                                            onArchiveDiary:
+                                                (diaryId) => unawaited(
+                                                  _controller.archiveDiaryBySwipe(
+                                                    diaryId,
+                                                  ),
+                                                ),
+                                            isSearchResultEmpty:
+                                                filterState.keyword.trim().isNotEmpty,
+                                          ),
                                         ),
-                                      ),
-                              SliverToBoxAdapter(
-                                // 底部留白用于避让 Home 底部导航和 FAB。
-                                child: SizedBox(height: listBottomOffset),
-                              ),
-                            ],
+                                SliverToBoxAdapter(
+                                  // 底部留白用于避让 Home 底部导航和 FAB。
+                                  child: SizedBox(height: listBottomOffset),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -431,6 +444,52 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   Future<void> _openCreateFromHomeFab() async {
     await _controller.openCreateEditorWithDraftPrompt();
+  }
+
+  bool _handlePrimaryScrollNotification(ScrollNotification notification) {
+    if (notification.depth != 0 || notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+
+    if (notification is ScrollEndNotification) {
+      _fabScrollDeltaAccumulator = 0;
+      return false;
+    }
+
+    if (notification is! ScrollUpdateNotification) {
+      return false;
+    }
+    final delta = notification.scrollDelta;
+    if (delta == null || delta.abs() < 0.5) {
+      return false;
+    }
+
+    if (notification.metrics.pixels <= 0) {
+      _fabScrollDeltaAccumulator = 0;
+      _updateFabVisibilityByScroll(true);
+      return false;
+    }
+
+    _fabScrollDeltaAccumulator += delta;
+    if (_fabScrollDeltaAccumulator >= _fabToggleScrollThreshold) {
+      _fabScrollDeltaAccumulator = 0;
+      _updateFabVisibilityByScroll(false);
+      return false;
+    }
+    if (_fabScrollDeltaAccumulator <= -_fabToggleScrollThreshold) {
+      _fabScrollDeltaAccumulator = 0;
+      _updateFabVisibilityByScroll(true);
+      return false;
+    }
+    return false;
+  }
+
+  void _updateFabVisibilityByScroll(bool visible) {
+    if (_fabVisibleByScroll == visible) {
+      return;
+    }
+    _fabVisibleByScroll = visible;
+    widget.onFabVisibilityChanged?.call(visible);
   }
 }
 

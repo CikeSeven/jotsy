@@ -16,6 +16,7 @@ class AboutPage extends StatelessWidget {
 
   static const String _appName = 'Jotsy';
   static const String _appVersion = '0.1.0+1';
+  static const String _appIconAssetPath = 'assets/app_icon/mingcute_icon.png';
   static const String _repoUrl = 'https://github.com/CikeSeven/jotsy';
   static const String _issueUrl = 'https://github.com/CikeSeven/jotsy/issues';
 
@@ -111,10 +112,14 @@ class AboutPage extends StatelessWidget {
                                   ),
                                 ),
                                 alignment: Alignment.center,
-                                child: FaIcon(
-                                  FontAwesomeIcons.bookOpen,
-                                  size: 40,
-                                  color: colorScheme.onPrimaryContainer,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    _appIconAssetPath,
+                                    width: 72,
+                                    height: 72,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),

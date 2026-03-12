@@ -48,10 +48,13 @@ dev_dependencies:
   build_runner: ^2.12.2
   json_serializable: ^6.13.0
   drift_dev: ^2.32.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - assets/app_icon/mingcute_icon.png
   fonts:
     - family: HarmonyOSSansSC
       fonts:
@@ -61,3 +64,8 @@ flutter:
           weight: 500
         - asset: assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Bold.ttf
           weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/app_icon/mingcute_icon.png

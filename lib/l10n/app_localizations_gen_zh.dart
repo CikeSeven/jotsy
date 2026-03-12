@@ -236,7 +236,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0003 => '重置排序';
 
   @override
-  String autoT0004(Object p0) {
+  String autoT0004(String p0) {
     return '保存排序失败: $p0';
   }
 
@@ -319,7 +319,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0030 => '恢复';
 
   @override
-  String autoT0031(Object p0) {
+  String autoT0031(String p0) {
     return '回收站加载失败: $p0';
   }
 
@@ -330,22 +330,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0033 => '无标题';
 
   @override
-  String autoT0034(Object p0) {
+  String autoT0034(String p0) {
     return '创建标签失败: $p0';
   }
 
   @override
-  String autoT0035(Object p0) {
+  String autoT0035(String p0) {
     return '修改标签失败: $p0';
   }
 
   @override
-  String autoT0036(Object p0) {
+  String autoT0036(String p0) {
     return '删除标签失败: $p0';
   }
 
   @override
-  String autoT0037(Object p0) {
+  String autoT0037(String p0) {
     return '保存标签顺序失败: $p0';
   }
 
@@ -362,7 +362,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0041 => '新建第一个标签';
 
   @override
-  String autoT0042(Object p0) {
+  String autoT0042(String p0) {
     return '标签加载失败: $p0';
   }
 
@@ -370,12 +370,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0043 => '工具栏按钮排序';
 
   @override
-  String autoT0044(Object p0) {
+  String autoT0044(String p0) {
     return '当前前 4 项：$p0';
   }
 
   @override
-  String autoT0045(Object p0) {
+  String autoT0045(String p0) {
     return '设置加载失败: $p0';
   }
 
@@ -464,7 +464,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0073 => '删除失败，请重试';
 
   @override
-  String autoT0074(Object p0) {
+  String autoT0074(String p0) {
     return '已删除 $p0 条日记';
   }
 
@@ -481,7 +481,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0078 => '归档失败，请重试';
 
   @override
-  String autoT0079(Object p0) {
+  String autoT0079(String p0) {
     return '已归档 $p0 条日记';
   }
 
@@ -498,7 +498,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0083 => '继续编辑';
 
   @override
-  String autoT0084(Object p0) {
+  String autoT0084(String p0) {
     return '确认删除已选择的 $p0 条日记吗？';
   }
 
@@ -509,7 +509,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0086 => '标题和正文不能同时为空';
 
   @override
-  String autoT0087(Object p0) {
+  String autoT0087(String p0) {
     return '保存失败: $p0';
   }
 
@@ -517,17 +517,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0088 => '未获取到可用的封面路径';
 
   @override
-  String autoT0089(Object p0) {
+  String autoT0089(String p0) {
     return '封面导入失败: $p0';
   }
 
   @override
-  String autoT0090(Object p0) {
+  String autoT0090(String p0) {
     return '标签创建失败: $p0';
   }
 
   @override
-  String autoT0091(Object p0) {
+  String autoT0091(String p0) {
     return '获取位置失败: $p0';
   }
 
@@ -535,7 +535,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0092 => '请先获取当前位置';
 
   @override
-  String autoT0093(Object p0) {
+  String autoT0093(String p0) {
     return '获取天气失败: $p0';
   }
 
@@ -552,12 +552,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0097 => '选择发表时间';
 
   @override
-  String autoT0098(Object p0) {
+  String autoT0098(String p0) {
     return '发布失败: $p0';
   }
 
   @override
-  String autoT0099(Object p0) {
+  String autoT0099(String p0) {
     return '已选择 $p0 项';
   }
 
@@ -568,7 +568,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0101 => '取消归档';
 
   @override
-  String autoT0102(Object p0) {
+  String autoT0102(String p0) {
     return '归档加载失败: $p0';
   }
 
@@ -600,7 +600,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0111 => '截图失败，请重试';
 
   @override
-  String autoT0112(Object p0) {
+  String autoT0112(String p0) {
     return '图片分享失败: $p0';
   }
 
@@ -629,7 +629,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0120 => '日记';
 
   @override
-  String autoT0121(Object p0) {
+  String autoT0121(String p0) {
     return '加载失败: $p0';
   }
 
@@ -646,12 +646,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0125 => '更多';
 
   @override
-  String autoT0126(Object p0) {
+  String autoT0126(String p0) {
     return '标签$p0';
   }
 
   @override
-  String autoT0127(Object p0) {
+  String autoT0127(String p0) {
     return '日记加载失败: $p0';
   }
 
@@ -767,7 +767,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0164 => '未选择标签';
 
   @override
-  String autoT0165(Object p0) {
+  String autoT0165(String p0) {
     return '标签加载失败: $p0';
   }
 
@@ -847,27 +847,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0190 => '该项会同时显示缩进增加/减少两个按钮';
 
   @override
-  String autoT0191(Object p0) {
+  String autoT0191(String p0) {
     return '已恢复 $p0 条日记';
   }
 
   @override
-  String autoT0192(Object p0) {
+  String autoT0192(String p0) {
     return '已彻底删除 $p0 条日记';
   }
 
   @override
-  String autoT0193(Object p0) {
+  String autoT0193(String p0) {
     return '确认彻底删除已选择的 $p0 条日记吗？删除后不可恢复。';
   }
 
   @override
-  String autoT0194(Object p0) {
+  String autoT0194(String p0) {
     return '删除于 $p0';
   }
 
   @override
-  String autoT0195(Object p0) {
+  String autoT0195(String p0) {
     return '确认删除标签 \"$p0\" 吗？';
   }
 
@@ -884,12 +884,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0199 => '还没有标签数据，写几篇带标签的日记试试。';
 
   @override
-  String autoT0200(Object p0) {
+  String autoT0200(String p0) {
     return '确认删除已选择的 $p0 条归档日记吗？';
   }
 
   @override
-  String autoT0201(Object p0) {
+  String autoT0201(String p0) {
     return '已取消归档 $p0 条日记';
   }
 
@@ -918,7 +918,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0209 => '检测到你上次有未保存的日记，是否继续编辑？';
 
   @override
-  String autoT0210(Object p0) {
+  String autoT0210(String p0) {
     return '日历日记加载失败: $p0';
   }
 

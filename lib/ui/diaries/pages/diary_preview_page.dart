@@ -186,7 +186,7 @@ $content
       if (!mounted) {
         return;
       }
-      _showHint(context.l10n.autoT0112(error));
+      _showHint(context.l10n.autoT0112(error.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -730,7 +730,7 @@ $content
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
           ),
-          body: Center(child: Text(context.l10n.autoT0121(error))),
+          body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
         );
       },
       data: (DiaryWithTags? detail) {

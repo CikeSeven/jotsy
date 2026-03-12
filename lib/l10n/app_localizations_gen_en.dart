@@ -243,7 +243,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0003 => 'Reset order';
 
   @override
-  String autoT0004(Object p0) {
+  String autoT0004(String p0) {
     return 'Save order failed: $p0';
   }
 
@@ -326,7 +326,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0030 => 'Restore';
 
   @override
-  String autoT0031(Object p0) {
+  String autoT0031(String p0) {
     return 'Recycle bin load failed: $p0';
   }
 
@@ -337,22 +337,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0033 => 'Untitled';
 
   @override
-  String autoT0034(Object p0) {
+  String autoT0034(String p0) {
     return 'Create tag failed: $p0';
   }
 
   @override
-  String autoT0035(Object p0) {
+  String autoT0035(String p0) {
     return 'Edit tag failed: $p0';
   }
 
   @override
-  String autoT0036(Object p0) {
+  String autoT0036(String p0) {
     return 'Delete tag failed: $p0';
   }
 
   @override
-  String autoT0037(Object p0) {
+  String autoT0037(String p0) {
     return 'Save tag order failed: $p0';
   }
 
@@ -369,7 +369,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0041 => 'Create your first tag';
 
   @override
-  String autoT0042(Object p0) {
+  String autoT0042(String p0) {
     return 'Tag load failed: $p0';
   }
 
@@ -377,12 +377,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0043 => 'Toolbar order';
 
   @override
-  String autoT0044(Object p0) {
+  String autoT0044(String p0) {
     return 'Current top 4: $p0';
   }
 
   @override
-  String autoT0045(Object p0) {
+  String autoT0045(String p0) {
     return 'Settings load failed: $p0';
   }
 
@@ -471,7 +471,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0073 => 'Delete failed. Please try again.';
 
   @override
-  String autoT0074(Object p0) {
+  String autoT0074(String p0) {
     return 'Deleted $p0 diaries';
   }
 
@@ -488,7 +488,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0078 => 'Archive failed. Please try again.';
 
   @override
-  String autoT0079(Object p0) {
+  String autoT0079(String p0) {
     return 'Archived $p0 diaries';
   }
 
@@ -505,7 +505,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0083 => 'Continue editing';
 
   @override
-  String autoT0084(Object p0) {
+  String autoT0084(String p0) {
     return 'Delete $p0 selected diaries?';
   }
 
@@ -516,7 +516,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0086 => 'Title and content cannot both be empty';
 
   @override
-  String autoT0087(Object p0) {
+  String autoT0087(String p0) {
     return 'Save failed: $p0';
   }
 
@@ -524,17 +524,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0088 => 'No valid cover path found';
 
   @override
-  String autoT0089(Object p0) {
+  String autoT0089(String p0) {
     return 'Cover import failed: $p0';
   }
 
   @override
-  String autoT0090(Object p0) {
+  String autoT0090(String p0) {
     return 'Tag creation failed: $p0';
   }
 
   @override
-  String autoT0091(Object p0) {
+  String autoT0091(String p0) {
     return 'Location failed: $p0';
   }
 
@@ -542,7 +542,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0092 => 'Please get current location first';
 
   @override
-  String autoT0093(Object p0) {
+  String autoT0093(String p0) {
     return 'Weather fetch failed: $p0';
   }
 
@@ -559,12 +559,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0097 => 'Select publish time';
 
   @override
-  String autoT0098(Object p0) {
+  String autoT0098(String p0) {
     return 'Publish failed: $p0';
   }
 
   @override
-  String autoT0099(Object p0) {
+  String autoT0099(String p0) {
     return '$p0 selected';
   }
 
@@ -575,7 +575,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0101 => 'Unarchive';
 
   @override
-  String autoT0102(Object p0) {
+  String autoT0102(String p0) {
     return 'Archived list load failed: $p0';
   }
 
@@ -607,7 +607,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0111 => 'Screenshot failed. Please try again.';
 
   @override
-  String autoT0112(Object p0) {
+  String autoT0112(String p0) {
     return 'Image share failed: $p0';
   }
 
@@ -636,7 +636,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0120 => 'Diary';
 
   @override
-  String autoT0121(Object p0) {
+  String autoT0121(String p0) {
     return 'Load failed: $p0';
   }
 
@@ -653,12 +653,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0125 => 'More';
 
   @override
-  String autoT0126(Object p0) {
+  String autoT0126(String p0) {
     return 'Tag $p0';
   }
 
   @override
-  String autoT0127(Object p0) {
+  String autoT0127(String p0) {
     return 'Diary load failed: $p0';
   }
 
@@ -774,7 +774,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0164 => 'No tag selected';
 
   @override
-  String autoT0165(Object p0) {
+  String autoT0165(String p0) {
     return 'Failed to load tags: $p0';
   }
 
@@ -854,27 +854,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0190 => 'Shows both indent increase/decrease buttons';
 
   @override
-  String autoT0191(Object p0) {
+  String autoT0191(String p0) {
     return 'Restored $p0 diaries';
   }
 
   @override
-  String autoT0192(Object p0) {
+  String autoT0192(String p0) {
     return 'Permanently deleted $p0 diaries';
   }
 
   @override
-  String autoT0193(Object p0) {
+  String autoT0193(String p0) {
     return 'Permanently delete $p0 selected diaries? This cannot be undone.';
   }
 
   @override
-  String autoT0194(Object p0) {
+  String autoT0194(String p0) {
     return 'Deleted at $p0';
   }
 
   @override
-  String autoT0195(Object p0) {
+  String autoT0195(String p0) {
     return 'Delete tag \"$p0\"?';
   }
 
@@ -893,12 +893,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0199 => 'No tag data yet. Try writing diaries with tags.';
 
   @override
-  String autoT0200(Object p0) {
+  String autoT0200(String p0) {
     return 'Delete $p0 selected archived diaries?';
   }
 
   @override
-  String autoT0201(Object p0) {
+  String autoT0201(String p0) {
     return 'Unarchived $p0 diaries';
   }
 
@@ -931,7 +931,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'An unfinished diary draft was found. Continue editing?';
 
   @override
-  String autoT0210(Object p0) {
+  String autoT0210(String p0) {
     return 'Calendar diaries load failed: $p0';
   }
 

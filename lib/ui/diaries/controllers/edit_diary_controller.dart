@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+
 part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 
 /// 编辑页业务控制器。
@@ -247,6 +249,9 @@ class EditDiaryController {
       }
       if (_state._isCreateEntry) {
         await clearCreateDraft();
+        if (!_state.mounted) {
+          return;
+        }
         Navigator.of(_state.context).pop(true);
         return;
       }
@@ -259,8 +264,8 @@ class EditDiaryController {
       }
       await HomeHintVisibilityScope.showTrackedSnackBar(
         context: _state.context,
-        snackBar: SnackBar(
-          content: Text(_state.context.l10n.autoT0087(error)),
+          snackBar: SnackBar(
+          content: Text(_state.context.l10n.autoT0087(error.toString())),
         ),
       );
     } finally {
@@ -308,7 +313,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.autoT0089(error),
+        _state.context.l10n.autoT0089(error.toString()),
       );
     }
   }
@@ -345,7 +350,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.autoT0090(error),
+        _state.context.l10n.autoT0090(error.toString()),
       );
     }
   }
@@ -387,7 +392,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.autoT0091(error),
+        _state.context.l10n.autoT0091(error.toString()),
       );
     } finally {
       if (_state.mounted) {
@@ -443,7 +448,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.autoT0093(error),
+        _state.context.l10n.autoT0093(error.toString()),
       );
     } finally {
       if (_state.mounted) {
@@ -541,6 +546,9 @@ class EditDiaryController {
 
     if (result == true) {
       await clearCreateDraft();
+      if (!_state.mounted) {
+        return;
+      }
       Navigator.of(_state.context).pop(true);
       return;
     }

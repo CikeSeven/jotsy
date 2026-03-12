@@ -96,7 +96,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         context: context,
         snackBar: SnackBar(
           content: Text(
-            context.l10n.autoT0004(error),
+            context.l10n.autoT0004(error.toString()),
           ),
         ),
       );

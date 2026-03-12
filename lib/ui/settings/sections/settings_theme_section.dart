@@ -71,7 +71,7 @@ class SettingsThemeSection extends StatelessWidget {
           ),
       error:
            (Object error, StackTrace stackTrace) =>
-              ListTile(title: Text(l10n.autoT0045(error))),
+              ListTile(title: Text(l10n.autoT0045(error.toString()))),
     );
   }
 }

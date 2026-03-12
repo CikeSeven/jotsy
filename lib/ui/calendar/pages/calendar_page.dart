@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -332,7 +331,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 AppSpacing.m,
               ),
               child: Text(
-                context.l10n.autoT0210(error),
+                context.l10n.autoT0210(error.toString()),
               ),
             ),
           ),

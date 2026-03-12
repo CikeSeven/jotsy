@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+
 part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 
 /// 列表页反馈协调器。
@@ -61,7 +63,7 @@ class DiariesPageFeedback {
         return AlertDialog(
           title: Text(l10n.autoT0070),
           content: Text(
-            l10n.autoT0084(count),
+            l10n.autoT0084(count.toString()),
           ),
           actions: <Widget>[
             TextButton(

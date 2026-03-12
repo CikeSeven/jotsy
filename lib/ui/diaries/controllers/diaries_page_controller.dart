@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+
 part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 
 /// 日记列表页业务控制器。
@@ -303,7 +305,7 @@ class DiariesPageController {
 
     final l10n = _state.context.l10n;
     final undoRequested = await feedback.showUndoSnackBar(
-      message: l10n.autoT0074(targetIds.length),
+      message: l10n.autoT0074(targetIds.length.toString()),
       duration: _DiariesPage._deleteUndoSnackDuration,
     );
 
@@ -429,7 +431,7 @@ class DiariesPageController {
     if (showUndoSnack) {
       final l10n = _state.context.l10n;
       final undoRequested = await feedback.showUndoSnackBar(
-        message: l10n.autoT0079(targetIds.length),
+        message: l10n.autoT0079(targetIds.length.toString()),
         duration: _DiariesPage._archiveUndoSnackDuration,
       );
 

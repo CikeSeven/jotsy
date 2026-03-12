@@ -48,7 +48,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(
-        context.l10n.autoT0034(error),
+        context.l10n.autoT0034(error.toString()),
       );
     } finally {
       if (mounted) {
@@ -81,7 +81,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       );
     } catch (error) {
       await _showHint(
-        context.l10n.autoT0035(error),
+        context.l10n.autoT0035(error.toString()),
       );
     } finally {
       if (mounted) {
@@ -111,7 +111,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(
-        context.l10n.autoT0036(error),
+        context.l10n.autoT0036(error.toString()),
       );
     } finally {
       if (mounted) {
@@ -146,7 +146,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(
-        context.l10n.autoT0037(error),
+        context.l10n.autoT0037(error.toString()),
       );
       if (mounted) {
         setState(() => _savingOrder = false);
@@ -328,7 +328,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         error: (error, stackTrace) {
           return Center(
             child: Text(
-              l10n.autoT0042(error),
+              l10n.autoT0042(error.toString()),
             ),
           );
         },

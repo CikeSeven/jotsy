@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
@@ -72,7 +71,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
 
       if (failedIds.isEmpty) {
         await _showHint(
-          context.l10n.autoT0191(targetIds.length),
+          context.l10n.autoT0191(targetIds.length.toString()),
         );
         return;
       }
@@ -117,7 +116,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
 
       if (failedIds.isEmpty) {
         await _showHint(
-          context.l10n.autoT0192(targetIds.length),
+          context.l10n.autoT0192(targetIds.length.toString()),
         );
         return;
       }
@@ -139,7 +138,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         return AlertDialog(
           title: Text(context.l10n.autoT0028),
           content: Text(
-            context.l10n.autoT0193(count),
+            context.l10n.autoT0193(count.toString()),
           ),
           actions: <Widget>[
             TextButton(
@@ -184,7 +183,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         ),
         title: Text(
           _hasSelection
-              ? l10n.autoT0099(_selectedDiaryIds.length)
+              ? l10n.autoT0099(_selectedDiaryIds.length.toString())
               : l10n.autoT0029,
         ),
         actions: <Widget>[
@@ -208,7 +207,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Text(
-            l10n.autoT0031(error),
+            l10n.autoT0031(error.toString()),
           ),
         ),
         data: (diaries) {

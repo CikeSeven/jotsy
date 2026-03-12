@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+
 part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 
 /// 日记列表过渡协调器。

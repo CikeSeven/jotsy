@@ -154,8 +154,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
             .map(
               (id) => Tag(
                 id: id,
-                name: context.l10n.autoT0126(id),
-                color: colorScheme.primary.value,
+                name: context.l10n.autoT0126(id.toString()),
+                color: colorScheme.primary.toARGB32(),
               ),
             )
             .toList(growable: false);
@@ -196,7 +196,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                           hasScrollBody: false,
                           child: Center(
                             child: Text(
-                              context.l10n.autoT0127(error),
+                              context.l10n.autoT0127(error.toString()),
                             ),
                           ),
                         ),

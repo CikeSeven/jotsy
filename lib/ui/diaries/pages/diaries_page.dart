@@ -183,7 +183,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
               Scaffold(
                 body: Center(
                   child: Text(
-                    context.l10n.autoT0045(error),
+                    context.l10n.autoT0045(error.toString()),
                   ),
                 ),
               ),
@@ -282,7 +282,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                                 vertical: AppSpacing.s,
                                               ),
                                               child: Text(
-                                                context.l10n.autoT0042(error),
+                                                context.l10n.autoT0042(error.toString()),
                                               ),
                                             ),
                                           ),
@@ -316,7 +316,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                             child: Center(
                                               child: Text(
                                                 context.l10n.autoT0127(
-                                                  diariesAsync.asError?.error ?? '',
+                                                  diariesAsync.asError?.error.toString() ?? '',
                                                 ),
                                               ),
                                             ),

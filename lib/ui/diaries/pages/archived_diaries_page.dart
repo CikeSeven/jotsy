@@ -72,7 +72,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
         appBar: AppBar(
           title: Text(
             _isSelectionMode
-                ? context.l10n.autoT0099(_selectedDiaryIds.length)
+                ? context.l10n.autoT0099(_selectedDiaryIds.length.toString())
                 : context.l10n.autoT0100,
           ),
           leading:
@@ -115,7 +115,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               (Object error, StackTrace stackTrace) =>
                   Center(
                     child: Text(
-                      context.l10n.autoT0102(error),
+                      context.l10n.autoT0102(error.toString()),
                     ),
                   ),
           data: (List<DiaryWithTags> diaries) {
@@ -124,28 +124,24 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                 child: Text(context.l10n.autoT0103),
               );
             }
-
-            return ColoredBox(
-              color: pageBackgroundColor,
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
-                  DiariesListSection(
-                    themeBrightness: brightness,
-                    diaries: diaries,
-                    layoutMode: DiaryLayoutMode.list,
-                    selectedDiaryIds: _selectedDiaryIds,
-                    isSelectionMode: _isSelectionMode,
-                    onCreate: _controller.noopCreate,
-                    onOpenEditor: _controller.openPreview,
-                    onToggleSelection: _controller.toggleSelection,
-                    onArchiveDiary:
-                        (diaryId) =>
-                            unawaited(_controller.unarchiveDiaryBySwipe(diaryId)),
-                    swipeActionIcon: FontAwesomeIcons.boxOpen,
-                  ),
-                ],
-              ),
+            return CustomScrollView(
+              slivers: <Widget>[
+                // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
+                DiariesListSection(
+                  themeBrightness: brightness,
+                  diaries: diaries,
+                  layoutMode: DiaryLayoutMode.list,
+                  selectedDiaryIds: _selectedDiaryIds,
+                  isSelectionMode: _isSelectionMode,
+                  onCreate: _controller.noopCreate,
+                  onOpenEditor: _controller.openPreview,
+                  onToggleSelection: _controller.toggleSelection,
+                  onArchiveDiary:
+                      (diaryId) =>
+                          unawaited(_controller.unarchiveDiaryBySwipe(diaryId)),
+                  swipeActionIcon: FontAwesomeIcons.boxOpen,
+                ),
+              ],
             );
           },
         ),

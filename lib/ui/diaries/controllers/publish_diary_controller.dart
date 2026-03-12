@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+
 part of 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 
 /// 发布页业务控制器。
@@ -330,7 +332,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.autoT0089(error),
+        _state.context.l10n.autoT0089(error.toString()),
       );
     }
   }
@@ -361,7 +363,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.autoT0090(error),
+        _state.context.l10n.autoT0090(error.toString()),
       );
     }
   }
@@ -407,7 +409,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.autoT0091(error),
+        _state.context.l10n.autoT0091(error.toString()),
       );
     } finally {
       if (_state.mounted) {
@@ -460,7 +462,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.autoT0093(error),
+        _state.context.l10n.autoT0093(error.toString()),
       );
     } finally {
       if (_state.mounted) {
@@ -499,7 +501,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.autoT0098(error),
+        _state.context.l10n.autoT0098(error.toString()),
       );
     } finally {
       if (_state.mounted) {

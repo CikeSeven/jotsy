@@ -1,32 +1,93 @@
 {
   "@@locale": "en",
   "appTitle": "Jotsy",
+  "@appTitle": {
+    "description": "Auto-generated metadata for appTitle."
+  },
   "navDiaries": "Diaries",
+  "@navDiaries": {
+    "description": "Auto-generated metadata for navDiaries."
+  },
   "navCalendar": "Calendar",
+  "@navCalendar": {
+    "description": "Auto-generated metadata for navCalendar."
+  },
   "navExplore": "Explore",
+  "@navExplore": {
+    "description": "Auto-generated metadata for navExplore."
+  },
   "navSettings": "Settings",
+  "@navSettings": {
+    "description": "Auto-generated metadata for navSettings."
+  },
   "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Auto-generated metadata for commonCancel."
+  },
   "commonConfirm": "Confirm",
+  "@commonConfirm": {
+    "description": "Auto-generated metadata for commonConfirm."
+  },
   "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Auto-generated metadata for commonDelete."
+  },
   "commonUndo": "Undo",
+  "@commonUndo": {
+    "description": "Auto-generated metadata for commonUndo."
+  },
   "commonBack": "Back",
+  "@commonBack": {
+    "description": "Auto-generated metadata for commonBack."
+  },
   "commonSave": "Save",
+  "@commonSave": {
+    "description": "Auto-generated metadata for commonSave."
+  },
   "commonEdit": "Edit",
+  "@commonEdit": {
+    "description": "Auto-generated metadata for commonEdit."
+  },
   "commonShare": "Share",
+  "@commonShare": {
+    "description": "Auto-generated metadata for commonShare."
+  },
   "commonContinue": "Continue",
+  "@commonContinue": {
+    "description": "Auto-generated metadata for commonContinue."
+  },
   "commonCreate": "Create",
+  "@commonCreate": {
+    "description": "Auto-generated metadata for commonCreate."
+  },
   "commonClose": "Close",
+  "@commonClose": {
+    "description": "Auto-generated metadata for commonClose."
+  },
   "commonNew": "New",
+  "@commonNew": {
+    "description": "Auto-generated metadata for commonNew."
+  },
   "commonReset": "Reset",
+  "@commonReset": {
+    "description": "Auto-generated metadata for commonReset."
+  },
   "commonRetry": "Retry",
+  "@commonRetry": {
+    "description": "Auto-generated metadata for commonRetry."
+  },
   "timeJustNow": "Just now",
+  "@timeJustNow": {
+    "description": "Auto-generated metadata for timeJustNow."
+  },
   "timeMinutesAgo": "{minutes} min ago",
   "@timeMinutesAgo": {
     "placeholders": {
       "minutes": {
         "type": "int"
       }
-    }
+    },
+    "description": "Auto-generated metadata for timeMinutesAgo."
   },
   "timeHoursAgo": "{hours} hr ago",
   "@timeHoursAgo": {
@@ -34,7 +95,8 @@
       "hours": {
         "type": "int"
       }
-    }
+    },
+    "description": "Auto-generated metadata for timeHoursAgo."
   },
   "timeDaysAgo": "{days} days ago",
   "@timeDaysAgo": {
@@ -42,7 +104,8 @@
       "days": {
         "type": "int"
       }
-    }
+    },
+    "description": "Auto-generated metadata for timeDaysAgo."
   },
   "updatedAtLabel": "Updated {value}",
   "@updatedAtLabel": {
@@ -50,513 +113,1207 @@
       "value": {
         "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for updatedAtLabel."
   },
   "startupPreloadFailed": "Startup preload failed. Entered home anyway.",
+  "@startupPreloadFailed": {
+    "description": "Auto-generated metadata for startupPreloadFailed."
+  },
   "homeInitFailed": "Initialization failed: {error}",
   "@homeInitFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for homeInitFailed."
   },
   "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Auto-generated metadata for settingsTitle."
+  },
   "settingsThemeMode": "Theme",
+  "@settingsThemeMode": {
+    "description": "Auto-generated metadata for settingsThemeMode."
+  },
   "settingsLanguage": "Language",
+  "@settingsLanguage": {
+    "description": "Auto-generated metadata for settingsLanguage."
+  },
   "settingsLanguageSubtitle": "Switch app language",
+  "@settingsLanguageSubtitle": {
+    "description": "Auto-generated metadata for settingsLanguageSubtitle."
+  },
   "settingsEditorTitle": "Editor",
+  "@settingsEditorTitle": {
+    "description": "Auto-generated metadata for settingsEditorTitle."
+  },
   "settingsDataManagement": "Data Management",
+  "@settingsDataManagement": {
+    "description": "Auto-generated metadata for settingsDataManagement."
+  },
   "settingsDataManagementSubtitle": "Import/export ZIP backups",
+  "@settingsDataManagementSubtitle": {
+    "description": "Auto-generated metadata for settingsDataManagementSubtitle."
+  },
   "settingsTagManagement": "Tag Management",
+  "@settingsTagManagement": {
+    "description": "Auto-generated metadata for settingsTagManagement."
+  },
   "settingsTagManagementSubtitle": "Deleting a tag only unlinks it from diaries",
+  "@settingsTagManagementSubtitle": {
+    "description": "Auto-generated metadata for settingsTagManagementSubtitle."
+  },
   "settingsRecycleBin": "Recycle Bin",
+  "@settingsRecycleBin": {
+    "description": "Auto-generated metadata for settingsRecycleBin."
+  },
   "settingsRecycleBinSubtitle": "Restore or permanently remove deleted diaries",
+  "@settingsRecycleBinSubtitle": {
+    "description": "Auto-generated metadata for settingsRecycleBinSubtitle."
+  },
   "settingsAbout": "About",
+  "@settingsAbout": {
+    "description": "Auto-generated metadata for settingsAbout."
+  },
   "settingsAboutSubtitle": "App info, repo, and version",
+  "@settingsAboutSubtitle": {
+    "description": "Auto-generated metadata for settingsAboutSubtitle."
+  },
   "languageDialogTitle": "Select language",
+  "@languageDialogTitle": {
+    "description": "Auto-generated metadata for languageDialogTitle."
+  },
   "languageOptionChinese": "中文",
+  "@languageOptionChinese": {
+    "description": "Auto-generated metadata for languageOptionChinese."
+  },
   "languageOptionEnglish": "English",
+  "@languageOptionEnglish": {
+    "description": "Auto-generated metadata for languageOptionEnglish."
+  },
   "aboutTitle": "About",
+  "@aboutTitle": {
+    "description": "Auto-generated metadata for aboutTitle."
+  },
   "aboutTagline": "Capture daily moments and feelings",
+  "@aboutTagline": {
+    "description": "Auto-generated metadata for aboutTagline."
+  },
   "aboutVersion": "Version",
+  "@aboutVersion": {
+    "description": "Auto-generated metadata for aboutVersion."
+  },
   "aboutPackageName": "Package",
+  "@aboutPackageName": {
+    "description": "Auto-generated metadata for aboutPackageName."
+  },
   "aboutRepository": "Repository",
+  "@aboutRepository": {
+    "description": "Auto-generated metadata for aboutRepository."
+  },
   "aboutCopied": "Copied to clipboard",
+  "@aboutCopied": {
+    "description": "Auto-generated metadata for aboutCopied."
+  },
   "dataMgmtTitle": "Data Management",
+  "@dataMgmtTitle": {
+    "description": "Auto-generated metadata for dataMgmtTitle."
+  },
   "dataMgmtExport": "Export Data",
+  "@dataMgmtExport": {
+    "description": "Auto-generated metadata for dataMgmtExport."
+  },
   "dataMgmtExportSubtitle": "Export ZIP with diaries, tags, settings, and local media",
+  "@dataMgmtExportSubtitle": {
+    "description": "Auto-generated metadata for dataMgmtExportSubtitle."
+  },
   "dataMgmtImport": "Import Data",
+  "@dataMgmtImport": {
+    "description": "Auto-generated metadata for dataMgmtImport."
+  },
   "dataMgmtImportSubtitle": "Restore from ZIP and overwrite current data",
+  "@dataMgmtImportSubtitle": {
+    "description": "Auto-generated metadata for dataMgmtImportSubtitle."
+  },
   "dataMgmtHint": "It is recommended to export a backup before importing.",
+  "@dataMgmtHint": {
+    "description": "Auto-generated metadata for dataMgmtHint."
+  },
   "dataMgmtBusyExport": "Exporting data...",
+  "@dataMgmtBusyExport": {
+    "description": "Auto-generated metadata for dataMgmtBusyExport."
+  },
   "dataMgmtBusyImport": "Importing data...",
+  "@dataMgmtBusyImport": {
+    "description": "Auto-generated metadata for dataMgmtBusyImport."
+  },
   "dataMgmtSaveDialogTitle": "Save backup",
+  "@dataMgmtSaveDialogTitle": {
+    "description": "Auto-generated metadata for dataMgmtSaveDialogTitle."
+  },
   "dataMgmtPickDialogTitle": "Choose backup file",
+  "@dataMgmtPickDialogTitle": {
+    "description": "Auto-generated metadata for dataMgmtPickDialogTitle."
+  },
   "dataMgmtExportSuccess": "Data export completed",
+  "@dataMgmtExportSuccess": {
+    "description": "Auto-generated metadata for dataMgmtExportSuccess."
+  },
   "dataMgmtExportCanceled": "Export canceled",
+  "@dataMgmtExportCanceled": {
+    "description": "Auto-generated metadata for dataMgmtExportCanceled."
+  },
   "dataMgmtExportFailed": "Export failed: {error}",
   "@dataMgmtExportFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for dataMgmtExportFailed."
   },
   "dataMgmtImportSuccess": "Data import completed",
+  "@dataMgmtImportSuccess": {
+    "description": "Auto-generated metadata for dataMgmtImportSuccess."
+  },
   "dataMgmtImportCanceled": "Import canceled",
+  "@dataMgmtImportCanceled": {
+    "description": "Auto-generated metadata for dataMgmtImportCanceled."
+  },
   "dataMgmtImportFailed": "Import failed: {error}",
   "@dataMgmtImportFailed": {
     "placeholders": {
       "error": {
         "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for dataMgmtImportFailed."
   },
   "dataMgmtImportConfirmTitle": "Import Data",
+  "@dataMgmtImportConfirmTitle": {
+    "description": "Auto-generated metadata for dataMgmtImportConfirmTitle."
+  },
   "dataMgmtImportConfirmContent": "Import will overwrite current data. Continue?",
+  "@dataMgmtImportConfirmContent": {
+    "description": "Auto-generated metadata for dataMgmtImportConfirmContent."
+  },
   "dataMgmtImportAction": "Import",
+  "@dataMgmtImportAction": {
+    "description": "Auto-generated metadata for dataMgmtImportAction."
+  },
   "dataMgmtBusyLabel": "Processing data",
+  "@dataMgmtBusyLabel": {
+    "description": "Auto-generated metadata for dataMgmtBusyLabel."
+  },
   "autoT0001": "Loading app",
+  "@autoT0001": {
+    "description": "Auto-generated metadata for autoT0001."
+  },
   "autoT0002": "Copy",
+  "@autoT0002": {
+    "description": "Auto-generated metadata for autoT0002."
+  },
   "autoT0003": "Reset order",
+  "@autoT0003": {
+    "description": "Auto-generated metadata for autoT0003."
+  },
   "autoT0004": "Save order failed: {p0}",
   "@autoT0004": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0004."
   },
   "autoT0005": "Toolbar order",
+  "@autoT0005": {
+    "description": "Auto-generated metadata for autoT0005."
+  },
   "autoT0006": "Undo",
+  "@autoT0006": {
+    "description": "Auto-generated metadata for autoT0006."
+  },
   "autoT0007": "Redo",
+  "@autoT0007": {
+    "description": "Auto-generated metadata for autoT0007."
+  },
   "autoT0008": "Bold",
+  "@autoT0008": {
+    "description": "Auto-generated metadata for autoT0008."
+  },
   "autoT0009": "Italic",
+  "@autoT0009": {
+    "description": "Auto-generated metadata for autoT0009."
+  },
   "autoT0010": "Underline",
+  "@autoT0010": {
+    "description": "Auto-generated metadata for autoT0010."
+  },
   "autoT0011": "Strikethrough",
+  "@autoT0011": {
+    "description": "Auto-generated metadata for autoT0011."
+  },
   "autoT0012": "Inline code",
+  "@autoT0012": {
+    "description": "Auto-generated metadata for autoT0012."
+  },
   "autoT0013": "Text color",
+  "@autoT0013": {
+    "description": "Auto-generated metadata for autoT0013."
+  },
   "autoT0014": "Background color",
+  "@autoT0014": {
+    "description": "Auto-generated metadata for autoT0014."
+  },
   "autoT0015": "Clear formatting",
+  "@autoT0015": {
+    "description": "Auto-generated metadata for autoT0015."
+  },
   "autoT0016": "Insert image",
+  "@autoT0016": {
+    "description": "Auto-generated metadata for autoT0016."
+  },
   "autoT0017": "Header style",
+  "@autoT0017": {
+    "description": "Auto-generated metadata for autoT0017."
+  },
   "autoT0018": "Ordered list",
+  "@autoT0018": {
+    "description": "Auto-generated metadata for autoT0018."
+  },
   "autoT0019": "Bullet list",
+  "@autoT0019": {
+    "description": "Auto-generated metadata for autoT0019."
+  },
   "autoT0020": "Checklist",
+  "@autoT0020": {
+    "description": "Auto-generated metadata for autoT0020."
+  },
   "autoT0021": "Code block",
+  "@autoT0021": {
+    "description": "Auto-generated metadata for autoT0021."
+  },
   "autoT0022": "Quote",
+  "@autoT0022": {
+    "description": "Auto-generated metadata for autoT0022."
+  },
   "autoT0023": "Indent",
+  "@autoT0023": {
+    "description": "Auto-generated metadata for autoT0023."
+  },
   "autoT0024": "Link",
+  "@autoT0024": {
+    "description": "Auto-generated metadata for autoT0024."
+  },
   "autoT0025": "Unknown deleted time",
+  "@autoT0025": {
+    "description": "Auto-generated metadata for autoT0025."
+  },
   "autoT0026": "Some restores failed. Please retry.",
+  "@autoT0026": {
+    "description": "Auto-generated metadata for autoT0026."
+  },
   "autoT0027": "Some deletions failed. Please retry.",
+  "@autoT0027": {
+    "description": "Auto-generated metadata for autoT0027."
+  },
   "autoT0028": "Permanent delete",
+  "@autoT0028": {
+    "description": "Auto-generated metadata for autoT0028."
+  },
   "autoT0029": "Recycle bin",
+  "@autoT0029": {
+    "description": "Auto-generated metadata for autoT0029."
+  },
   "autoT0030": "Restore",
+  "@autoT0030": {
+    "description": "Auto-generated metadata for autoT0030."
+  },
   "autoT0031": "Recycle bin load failed: {p0}",
   "@autoT0031": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0031."
   },
   "autoT0032": "Recycle bin is empty",
+  "@autoT0032": {
+    "description": "Auto-generated metadata for autoT0032."
+  },
   "autoT0033": "Untitled",
+  "@autoT0033": {
+    "description": "Auto-generated metadata for autoT0033."
+  },
   "autoT0034": "Create tag failed: {p0}",
   "@autoT0034": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0034."
   },
   "autoT0035": "Edit tag failed: {p0}",
   "@autoT0035": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0035."
   },
   "autoT0036": "Delete tag failed: {p0}",
   "@autoT0036": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0036."
   },
   "autoT0037": "Save tag order failed: {p0}",
   "@autoT0037": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0037."
   },
   "autoT0038": "Delete tag",
+  "@autoT0038": {
+    "description": "Auto-generated metadata for autoT0038."
+  },
   "autoT0039": "Tag management",
+  "@autoT0039": {
+    "description": "Auto-generated metadata for autoT0039."
+  },
   "autoT0040": "Create tag",
+  "@autoT0040": {
+    "description": "Auto-generated metadata for autoT0040."
+  },
   "autoT0041": "Create your first tag",
+  "@autoT0041": {
+    "description": "Auto-generated metadata for autoT0041."
+  },
   "autoT0042": "Tag load failed: {p0}",
   "@autoT0042": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0042."
   },
   "autoT0043": "Toolbar order",
+  "@autoT0043": {
+    "description": "Auto-generated metadata for autoT0043."
+  },
   "autoT0044": "Current top 4: {p0}",
   "@autoT0044": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0044."
   },
   "autoT0045": "Settings load failed: {p0}",
   "@autoT0045": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0045."
   },
   "autoT0046": "System",
+  "@autoT0046": {
+    "description": "Auto-generated metadata for autoT0046."
+  },
   "autoT0047": "Light",
+  "@autoT0047": {
+    "description": "Auto-generated metadata for autoT0047."
+  },
   "autoT0048": "Dark",
+  "@autoT0048": {
+    "description": "Auto-generated metadata for autoT0048."
+  },
   "autoT0049": "What unexpected good thing happened today?",
+  "@autoT0049": {
+    "description": "Auto-generated metadata for autoT0049."
+  },
   "autoT0050": "If today had a title, what would it be?",
+  "@autoT0050": {
+    "description": "Auto-generated metadata for autoT0050."
+  },
   "autoT0051": "What moment today is most worth remembering?",
+  "@autoT0051": {
+    "description": "Auto-generated metadata for autoT0051."
+  },
   "autoT0052": "Media preview",
+  "@autoT0052": {
+    "description": "Auto-generated metadata for autoT0052."
+  },
   "autoT0053": "No images to browse",
+  "@autoT0053": {
+    "description": "Auto-generated metadata for autoT0053."
+  },
   "autoT0054": "Media gallery",
+  "@autoT0054": {
+    "description": "Auto-generated metadata for autoT0054."
+  },
   "autoT0055": "No images to show yet",
+  "@autoT0055": {
+    "description": "Auto-generated metadata for autoT0055."
+  },
   "autoT0056": "Load failed, tap to retry",
+  "@autoT0056": {
+    "description": "Auto-generated metadata for autoT0056."
+  },
   "autoT0057": "No more images",
+  "@autoT0057": {
+    "description": "Auto-generated metadata for autoT0057."
+  },
   "autoT0058": "Explore",
+  "@autoT0058": {
+    "description": "Auto-generated metadata for autoT0058."
+  },
   "autoT0059": "Explore data is unavailable",
+  "@autoT0059": {
+    "description": "Auto-generated metadata for autoT0059."
+  },
   "autoT0060": "Mood & energy trends",
+  "@autoT0060": {
+    "description": "Auto-generated metadata for autoT0060."
+  },
   "autoT0061": "View all images",
+  "@autoT0061": {
+    "description": "Auto-generated metadata for autoT0061."
+  },
   "autoT0062": "No images to show yet.",
+  "@autoT0062": {
+    "description": "Auto-generated metadata for autoT0062."
+  },
   "autoT0063": "On this day",
+  "@autoT0063": {
+    "description": "Auto-generated metadata for autoT0063."
+  },
   "autoT0064": "Write for today",
+  "@autoT0064": {
+    "description": "Auto-generated metadata for autoT0064."
+  },
   "autoT0065": "Untitled diary",
+  "@autoT0065": {
+    "description": "Auto-generated metadata for autoT0065."
+  },
   "autoT0066": "Total records",
+  "@autoT0066": {
+    "description": "Auto-generated metadata for autoT0066."
+  },
   "autoT0067": "Streak",
+  "@autoT0067": {
+    "description": "Auto-generated metadata for autoT0067."
+  },
   "autoT0068": "This month chars",
+  "@autoT0068": {
+    "description": "Auto-generated metadata for autoT0068."
+  },
   "autoT0069": "Tag cloud",
+  "@autoT0069": {
+    "description": "Auto-generated metadata for autoT0069."
+  },
   "autoT0070": "Delete diaries",
+  "@autoT0070": {
+    "description": "Auto-generated metadata for autoT0070."
+  },
   "autoT0071": "Unarchive failed. Please try again.",
+  "@autoT0071": {
+    "description": "Auto-generated metadata for autoT0071."
+  },
   "autoT0072": "Archive status restored",
+  "@autoT0072": {
+    "description": "Auto-generated metadata for autoT0072."
+  },
   "autoT0073": "Delete failed. Please try again.",
+  "@autoT0073": {
+    "description": "Auto-generated metadata for autoT0073."
+  },
   "autoT0074": "Deleted {p0} diaries",
   "@autoT0074": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0074."
   },
   "autoT0075": "Diary deleted",
+  "@autoT0075": {
+    "description": "Auto-generated metadata for autoT0075."
+  },
   "autoT0076": "Deleted diary restored",
+  "@autoT0076": {
+    "description": "Auto-generated metadata for autoT0076."
+  },
   "autoT0077": "Restore failed. Please try again.",
+  "@autoT0077": {
+    "description": "Auto-generated metadata for autoT0077."
+  },
   "autoT0078": "Archive failed. Please try again.",
+  "@autoT0078": {
+    "description": "Auto-generated metadata for autoT0078."
+  },
   "autoT0079": "Archived {p0} diaries",
   "@autoT0079": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0079."
   },
   "autoT0080": "Archived diary restored",
+  "@autoT0080": {
+    "description": "Auto-generated metadata for autoT0080."
+  },
   "autoT0081": "Unsaved draft found",
+  "@autoT0081": {
+    "description": "Auto-generated metadata for autoT0081."
+  },
   "autoT0082": "New empty note",
+  "@autoT0082": {
+    "description": "Auto-generated metadata for autoT0082."
+  },
   "autoT0083": "Continue editing",
+  "@autoT0083": {
+    "description": "Auto-generated metadata for autoT0083."
+  },
   "autoT0084": "Delete {p0} selected diaries?",
   "@autoT0084": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0084."
   },
   "autoT0085": "No street info",
+  "@autoT0085": {
+    "description": "Auto-generated metadata for autoT0085."
+  },
   "autoT0086": "Title and content cannot both be empty",
+  "@autoT0086": {
+    "description": "Auto-generated metadata for autoT0086."
+  },
   "autoT0087": "Save failed: {p0}",
   "@autoT0087": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0087."
   },
   "autoT0088": "No valid cover path found",
+  "@autoT0088": {
+    "description": "Auto-generated metadata for autoT0088."
+  },
   "autoT0089": "Cover import failed: {p0}",
   "@autoT0089": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0089."
   },
   "autoT0090": "Tag creation failed: {p0}",
   "@autoT0090": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0090."
   },
   "autoT0091": "Location failed: {p0}",
   "@autoT0091": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0091."
   },
   "autoT0092": "Please get current location first",
+  "@autoT0092": {
+    "description": "Auto-generated metadata for autoT0092."
+  },
   "autoT0093": "Weather fetch failed: {p0}",
   "@autoT0093": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0093."
   },
   "autoT0094": "Delete diary",
+  "@autoT0094": {
+    "description": "Auto-generated metadata for autoT0094."
+  },
   "autoT0095": "Untitled diary",
+  "@autoT0095": {
+    "description": "Auto-generated metadata for autoT0095."
+  },
   "autoT0096": "Select publish date",
+  "@autoT0096": {
+    "description": "Auto-generated metadata for autoT0096."
+  },
   "autoT0097": "Select publish time",
+  "@autoT0097": {
+    "description": "Auto-generated metadata for autoT0097."
+  },
   "autoT0098": "Publish failed: {p0}",
   "@autoT0098": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0098."
   },
   "autoT0099": "{p0} selected",
   "@autoT0099": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0099."
   },
   "autoT0100": "Archived diaries",
+  "@autoT0100": {
+    "description": "Auto-generated metadata for autoT0100."
+  },
   "autoT0101": "Unarchive",
+  "@autoT0101": {
+    "description": "Auto-generated metadata for autoT0101."
+  },
   "autoT0102": "Archived list load failed: {p0}",
   "@autoT0102": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0102."
   },
   "autoT0103": "No archived diaries",
+  "@autoT0103": {
+    "description": "Auto-generated metadata for autoT0103."
+  },
   "autoT0104": "(No content)",
+  "@autoT0104": {
+    "description": "Auto-generated metadata for autoT0104."
+  },
   "autoT0105": "None",
+  "@autoT0105": {
+    "description": "Auto-generated metadata for autoT0105."
+  },
   "autoT0106": "Title",
+  "@autoT0106": {
+    "description": "Auto-generated metadata for autoT0106."
+  },
   "autoT0107": "Created",
+  "@autoT0107": {
+    "description": "Auto-generated metadata for autoT0107."
+  },
   "autoT0108": "Updated",
+  "@autoT0108": {
+    "description": "Auto-generated metadata for autoT0108."
+  },
   "autoT0109": "Tags",
+  "@autoT0109": {
+    "description": "Auto-generated metadata for autoT0109."
+  },
   "autoT0110": "Content",
+  "@autoT0110": {
+    "description": "Auto-generated metadata for autoT0110."
+  },
   "autoT0111": "Screenshot failed. Please try again.",
+  "@autoT0111": {
+    "description": "Auto-generated metadata for autoT0111."
+  },
   "autoT0112": "Image share failed: {p0}",
   "@autoT0112": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0112."
   },
   "autoT0113": "Delete this diary?",
+  "@autoT0113": {
+    "description": "Auto-generated metadata for autoT0113."
+  },
   "autoT0114": "Share as image",
+  "@autoT0114": {
+    "description": "Auto-generated metadata for autoT0114."
+  },
   "autoT0115": "Share as text",
+  "@autoT0115": {
+    "description": "Auto-generated metadata for autoT0115."
+  },
   "autoT0116": "Mood",
+  "@autoT0116": {
+    "description": "Auto-generated metadata for autoT0116."
+  },
   "autoT0117": "Published",
+  "@autoT0117": {
+    "description": "Auto-generated metadata for autoT0117."
+  },
   "autoT0118": "Last edited",
+  "@autoT0118": {
+    "description": "Auto-generated metadata for autoT0118."
+  },
   "autoT0119": "No content yet",
+  "@autoT0119": {
+    "description": "Auto-generated metadata for autoT0119."
+  },
   "autoT0120": "Diary",
+  "@autoT0120": {
+    "description": "Auto-generated metadata for autoT0120."
+  },
   "autoT0121": "Load failed: {p0}",
   "@autoT0121": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0121."
   },
   "autoT0122": "Diary no longer exists",
+  "@autoT0122": {
+    "description": "Auto-generated metadata for autoT0122."
+  },
   "autoT0123": "Diary no longer exists, returning...",
+  "@autoT0123": {
+    "description": "Auto-generated metadata for autoT0123."
+  },
   "autoT0124": "Diary not found",
+  "@autoT0124": {
+    "description": "Auto-generated metadata for autoT0124."
+  },
   "autoT0125": "More",
+  "@autoT0125": {
+    "description": "Auto-generated metadata for autoT0125."
+  },
   "autoT0126": "Tag {p0}",
   "@autoT0126": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0126."
   },
   "autoT0127": "Diary load failed: {p0}",
   "@autoT0127": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0127."
   },
   "autoT0128": "Close search",
+  "@autoT0128": {
+    "description": "Auto-generated metadata for autoT0128."
+  },
   "autoT0129": "Search title or content",
+  "@autoT0129": {
+    "description": "Auto-generated metadata for autoT0129."
+  },
   "autoT0130": "Clear",
+  "@autoT0130": {
+    "description": "Auto-generated metadata for autoT0130."
+  },
   "autoT0131": "Unsaved changes",
+  "@autoT0131": {
+    "description": "Auto-generated metadata for autoT0131."
+  },
   "autoT0132": "Exit",
+  "@autoT0132": {
+    "description": "Auto-generated metadata for autoT0132."
+  },
   "autoT0133": "Start writing...",
+  "@autoT0133": {
+    "description": "Auto-generated metadata for autoT0133."
+  },
   "autoT0134": "New diary",
+  "@autoT0134": {
+    "description": "Auto-generated metadata for autoT0134."
+  },
   "autoT0135": "Edit diary",
+  "@autoT0135": {
+    "description": "Auto-generated metadata for autoT0135."
+  },
   "autoT0136": "Publish",
+  "@autoT0136": {
+    "description": "Auto-generated metadata for autoT0136."
+  },
   "autoT0137": "Save diary",
+  "@autoT0137": {
+    "description": "Auto-generated metadata for autoT0137."
+  },
   "autoT0138": "Publish diary",
+  "@autoT0138": {
+    "description": "Auto-generated metadata for autoT0138."
+  },
   "autoT0139": "No content",
+  "@autoT0139": {
+    "description": "Auto-generated metadata for autoT0139."
+  },
   "autoT0140": "Archive",
+  "@autoT0140": {
+    "description": "Auto-generated metadata for autoT0140."
+  },
   "autoT0141": "Sort",
+  "@autoT0141": {
+    "description": "Auto-generated metadata for autoT0141."
+  },
   "autoT0142": "Recently updated",
+  "@autoT0142": {
+    "description": "Auto-generated metadata for autoT0142."
+  },
   "autoT0143": "Oldest updated",
+  "@autoT0143": {
+    "description": "Auto-generated metadata for autoT0143."
+  },
   "autoT0144": "Title A-Z",
+  "@autoT0144": {
+    "description": "Auto-generated metadata for autoT0144."
+  },
   "autoT0145": "Layout",
+  "@autoT0145": {
+    "description": "Auto-generated metadata for autoT0145."
+  },
   "autoT0146": "List",
+  "@autoT0146": {
+    "description": "Auto-generated metadata for autoT0146."
+  },
   "autoT0147": "Waterfall",
+  "@autoT0147": {
+    "description": "Auto-generated metadata for autoT0147."
+  },
   "autoT0148": "Archived diaries",
+  "@autoT0148": {
+    "description": "Auto-generated metadata for autoT0148."
+  },
   "autoT0149": "Edit tag",
+  "@autoT0149": {
+    "description": "Auto-generated metadata for autoT0149."
+  },
   "autoT0150": "Tag name",
+  "@autoT0150": {
+    "description": "Auto-generated metadata for autoT0150."
+  },
   "autoT0151": "Choose color",
+  "@autoT0151": {
+    "description": "Auto-generated metadata for autoT0151."
+  },
   "autoT0152": "No diaries found",
+  "@autoT0152": {
+    "description": "Auto-generated metadata for autoT0152."
+  },
   "autoT0153": "Try another keyword.",
+  "@autoT0153": {
+    "description": "Auto-generated metadata for autoT0153."
+  },
   "autoT0154": "No diaries yet",
+  "@autoT0154": {
+    "description": "Auto-generated metadata for autoT0154."
+  },
   "autoT0155": "Create diary",
+  "@autoT0155": {
+    "description": "Auto-generated metadata for autoT0155."
+  },
   "autoT0156": "Cover load failed",
+  "@autoT0156": {
+    "description": "Auto-generated metadata for autoT0156."
+  },
   "autoT0157": "Create",
+  "@autoT0157": {
+    "description": "Auto-generated metadata for autoT0157."
+  },
   "autoT0158": "Swipe up to expand",
+  "@autoT0158": {
+    "description": "Auto-generated metadata for autoT0158."
+  },
   "autoT0159": "Swipe down to collapse",
+  "@autoT0159": {
+    "description": "Auto-generated metadata for autoT0159."
+  },
   "autoT0160": "Choose tags",
+  "@autoT0160": {
+    "description": "Auto-generated metadata for autoT0160."
+  },
   "autoT0161": "Tap to choose a cover (optional)",
+  "@autoT0161": {
+    "description": "Auto-generated metadata for autoT0161."
+  },
   "autoT0162": "Cover",
+  "@autoT0162": {
+    "description": "Auto-generated metadata for autoT0162."
+  },
   "autoT0163": "Clear cover",
+  "@autoT0163": {
+    "description": "Auto-generated metadata for autoT0163."
+  },
   "autoT0164": "No tag selected",
+  "@autoT0164": {
+    "description": "Auto-generated metadata for autoT0164."
+  },
   "autoT0165": "Failed to load tags: {p0}",
   "@autoT0165": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0165."
   },
   "autoT0166": "No tags yet, create one first",
+  "@autoT0166": {
+    "description": "Auto-generated metadata for autoT0166."
+  },
   "autoT0167": "Here and now",
+  "@autoT0167": {
+    "description": "Auto-generated metadata for autoT0167."
+  },
   "autoT0168": "Tap right button to fetch address",
+  "@autoT0168": {
+    "description": "Auto-generated metadata for autoT0168."
+  },
   "autoT0169": "Get location",
+  "@autoT0169": {
+    "description": "Auto-generated metadata for autoT0169."
+  },
   "autoT0170": "Tap right button to fetch weather",
+  "@autoT0170": {
+    "description": "Auto-generated metadata for autoT0170."
+  },
   "autoT0171": "Get weather",
+  "@autoT0171": {
+    "description": "Auto-generated metadata for autoT0171."
+  },
   "autoT0172": "Publish time",
+  "@autoT0172": {
+    "description": "Auto-generated metadata for autoT0172."
+  },
   "autoT0173": "Auto use current time",
+  "@autoT0173": {
+    "description": "Auto-generated metadata for autoT0173."
+  },
   "autoT0174": "Choose publish time",
+  "@autoT0174": {
+    "description": "Auto-generated metadata for autoT0174."
+  },
   "autoT0175": "Energy",
+  "@autoT0175": {
+    "description": "Auto-generated metadata for autoT0175."
+  },
   "autoT0176": "Publishing...",
+  "@autoT0176": {
+    "description": "Auto-generated metadata for autoT0176."
+  },
   "autoT0177": "Select date",
+  "@autoT0177": {
+    "description": "Auto-generated metadata for autoT0177."
+  },
   "autoT0178": "Month",
+  "@autoT0178": {
+    "description": "Auto-generated metadata for autoT0178."
+  },
   "autoT0179": "Week",
+  "@autoT0179": {
+    "description": "Auto-generated metadata for autoT0179."
+  },
   "autoT0180": "Back to today",
+  "@autoT0180": {
+    "description": "Auto-generated metadata for autoT0180."
+  },
   "autoT0181": "Write for this day",
+  "@autoT0181": {
+    "description": "Auto-generated metadata for autoT0181."
+  },
   "autoT0182": "This day is quiet, no records yet.",
+  "@autoT0182": {
+    "description": "Auto-generated metadata for autoT0182."
+  },
   "autoT0183": "Calendar",
+  "@autoT0183": {
+    "description": "Auto-generated metadata for autoT0183."
+  },
   "autoT0184": "Previous month",
+  "@autoT0184": {
+    "description": "Auto-generated metadata for autoT0184."
+  },
   "autoT0185": "Next month",
+  "@autoT0185": {
+    "description": "Auto-generated metadata for autoT0185."
+  },
   "autoT0186": "Recorded an entry",
+  "@autoT0186": {
+    "description": "Auto-generated metadata for autoT0186."
+  },
   "autoT0187": "Reset toolbar order to defaults?",
+  "@autoT0187": {
+    "description": "Auto-generated metadata for autoT0187."
+  },
   "autoT0188": "Apply inline code style to selected text",
+  "@autoT0188": {
+    "description": "Auto-generated metadata for autoT0188."
+  },
   "autoT0189": "Insert or switch to code block",
+  "@autoT0189": {
+    "description": "Auto-generated metadata for autoT0189."
+  },
   "autoT0190": "Shows both indent increase/decrease buttons",
+  "@autoT0190": {
+    "description": "Auto-generated metadata for autoT0190."
+  },
   "autoT0191": "Restored {p0} diaries",
   "@autoT0191": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0191."
   },
   "autoT0192": "Permanently deleted {p0} diaries",
   "@autoT0192": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0192."
   },
   "autoT0193": "Permanently delete {p0} selected diaries? This cannot be undone.",
   "@autoT0193": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0193."
   },
   "autoT0194": "Deleted at {p0}",
   "@autoT0194": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0194."
   },
   "autoT0195": "Delete tag \"{p0}\"?",
   "@autoT0195": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0195."
   },
   "autoT0196": "What person or thing are you most grateful for today?",
+  "@autoT0196": {
+    "description": "Auto-generated metadata for autoT0196."
+  },
   "autoT0197": "Failed to load images. Please try again later.",
+  "@autoT0197": {
+    "description": "Auto-generated metadata for autoT0197."
+  },
   "autoT0198": "Keep recording weather, tags, and mood to unlock deeper insights here.",
+  "@autoT0198": {
+    "description": "Auto-generated metadata for autoT0198."
+  },
   "autoT0199": "No tag data yet. Try writing diaries with tags.",
+  "@autoT0199": {
+    "description": "Auto-generated metadata for autoT0199."
+  },
   "autoT0200": "Delete {p0} selected archived diaries?",
   "@autoT0200": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0200."
   },
   "autoT0201": "Unarchived {p0} diaries",
   "@autoT0201": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0201."
   },
   "autoT0202": "An unfinished diary was found. Continue editing?",
+  "@autoT0202": {
+    "description": "Auto-generated metadata for autoT0202."
+  },
   "autoT0203": "metadata must be a valid JSON object",
+  "@autoT0203": {
+    "description": "Auto-generated metadata for autoT0203."
+  },
   "autoT0204": "AMap Web API key missing, please configure amap.web.api.key",
+  "@autoT0204": {
+    "description": "Auto-generated metadata for autoT0204."
+  },
   "autoT0205": "QWeather key missing, please configure qweather.api_key",
+  "@autoT0205": {
+    "description": "Auto-generated metadata for autoT0205."
+  },
   "autoT0206": "This will soft-delete the diary and it can be restored later. Continue?",
+  "@autoT0206": {
+    "description": "Auto-generated metadata for autoT0206."
+  },
   "autoT0207": "You have unsaved changes. Exit anyway?",
+  "@autoT0207": {
+    "description": "Auto-generated metadata for autoT0207."
+  },
   "autoT0208": "Header style (tap to cycle)",
+  "@autoT0208": {
+    "description": "Auto-generated metadata for autoT0208."
+  },
   "autoT0209": "An unfinished diary draft was found. Continue editing?",
+  "@autoT0209": {
+    "description": "Auto-generated metadata for autoT0209."
+  },
   "autoT0210": "Calendar diaries load failed: {p0}",
   "@autoT0210": {
     "placeholders": {
       "p0": {
-        "type": "Object"
+        "type": "String"
       }
-    }
+    },
+    "description": "Auto-generated metadata for autoT0210."
   },
-  "autoT0211": "Take it easy, this day's highlights haven't happened yet."
+  "autoT0211": "Take it easy, this day's highlights haven't happened yet.",
+  "@autoT0211": {
+    "description": "Auto-generated metadata for autoT0211."
+  }
 }

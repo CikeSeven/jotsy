@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+
 part of 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 
 /// 归档页业务控制器。
@@ -83,7 +85,7 @@ class ArchivedDiariesController {
         return AlertDialog(
           title: Text(l10n.autoT0070),
           content: Text(
-            l10n.autoT0200(count),
+            l10n.autoT0200(count.toString()),
           ),
           actions: <Widget>[
             TextButton(
@@ -191,7 +193,7 @@ class ArchivedDiariesController {
     }
 
     final undoRequested = await showUndoSnackBar(
-      message: _state.context.l10n.autoT0201(targetIds.length),
+      message: _state.context.l10n.autoT0201(targetIds.length.toString()),
       duration: _ArchivedDiariesPageState._undoSnackDuration,
     );
     if (!_state.mounted || !undoRequested) {
@@ -260,7 +262,7 @@ class ArchivedDiariesController {
     }
 
     await showInfoSnackBar(
-      _state.context.l10n.autoT0074(targetIds.length),
+      _state.context.l10n.autoT0074(targetIds.length.toString()),
     );
   }
 

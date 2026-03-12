@@ -412,7 +412,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               ),
             ),
             body: Center(
-              child: Text(context.l10n.autoT0121(error)),
+              child: Text(context.l10n.autoT0121(error.toString())),
             ),
           ),
       data: (DiaryWithTags? detail) {

@@ -44,6 +44,13 @@ class HomePageController {
     );
   }
 
+  /// 系统返回键回退到日记首页 tab。
+  ///
+  /// 只在当前不处于日记页时调用，动画与底部导航点击保持一致。
+  void switchToDiariesTab() {
+    onTap(0);
+  }
+
   void _onPageScroll() {
     final value = pageController.page ?? _state._currentIndex.toDouble();
     if ((value - _state._pageProgress).abs() < 0.0001) {

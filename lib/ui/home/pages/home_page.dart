@@ -149,24 +149,35 @@ class _HomePageState extends State<HomePage> {
 
     return Theme(
       data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Stack(
-          children: [
-            _buildPageView(pages),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: GlassBottomNav(
-                items: navItems,
-                selectedIndex: _currentIndex,
-                pageProgress: _pageProgress,
-                onTap: _controller.onTap,
+      child: PopScope(
+        // 仅在日记 tab 允许系统继续 pop（退出应用）。
+        canPop: _currentIndex == 0,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) {
+            return;
+          }
+          // 其他 tab 按返回时先切回日记页，避免直接退出应用。
+          _controller.switchToDiariesTab();
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Stack(
+            children: [
+              _buildPageView(pages),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: GlassBottomNav(
+                  items: navItems,
+                  selectedIndex: _currentIndex,
+                  pageProgress: _pageProgress,
+                  onTap: _controller.onTap,
+                ),
               ),
-            ),
-            _buildGlobalCreateFab(bottomSafeInset),
-          ],
+              _buildGlobalCreateFab(bottomSafeInset),
+            ],
+          ),
         ),
       ),
     );

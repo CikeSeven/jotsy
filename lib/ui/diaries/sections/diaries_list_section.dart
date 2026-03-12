@@ -134,13 +134,10 @@ class DiariesListSection extends StatelessWidget {
                   backgroundColor: backgroundColor,
                 ),
                 if (!isLast)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-                    child: Divider(
-                      height: 1,
-                      thickness: 1,
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.22),
-                    ),
+                  Container(
+                    height: 3,
+                    width: double.infinity,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
               ],
             ),

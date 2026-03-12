@@ -525,12 +525,7 @@ $content
     final location = _extractLocationLabel(detail);
     final weather = _extractWeatherLabel(detail);
     final weatherIconCode = _extractWeatherIconCode(detail);
-    final inlineItems = <Widget>[
-      _buildMetaInlineItem(
-        icon: FontAwesomeIcons.clock,
-        label: '发表于$relativeCreated',
-        color: colorScheme.onSurfaceVariant,
-      ),
+    final locationWeatherItems = <Widget>[
       if (location != null && location.isNotEmpty)
         _buildMetaInlineItem(
           icon: FontAwesomeIcons.locationDot,
@@ -551,17 +546,27 @@ $content
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: <Widget>[
-              for (int index = 0; index < inlineItems.length; index++) ...<Widget>[
-                if (index > 0) const SizedBox(width: 12),
-                inlineItems[index],
-              ],
-            ],
-          ),
+        _buildMetaInlineItem(
+          icon: FontAwesomeIcons.clock,
+          label: '发表于$relativeCreated',
+          color: colorScheme.onSurfaceVariant,
         ),
+        if (locationWeatherItems.isNotEmpty) ...<Widget>[
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: <Widget>[
+                for (int index = 0;
+                    index < locationWeatherItems.length;
+                    index++) ...<Widget>[
+                  if (index > 0) const SizedBox(width: 12),
+                  locationWeatherItems[index],
+                ],
+              ],
+            ),
+          ),
+        ],
         if (chips.isNotEmpty) ...[
           const SizedBox(height: 8),
           Wrap(

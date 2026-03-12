@@ -75,6 +75,39 @@ class CalendarPageController {
     _switchMonth(1);
   }
 
+  /// 打开日期选择弹窗并跳转到指定日期。
+  ///
+  /// 交互约束：
+  /// - 日期范围与日历组件保持一致（2010-01-01 ~ 2100-12-31）；
+  /// - 选择完成后同步更新选中日和焦点月份；
+  /// - 跳转时统一切到月视图，便于用户定位月份上下文。
+  Future<void> pickDateAndJump() async {
+    final firstDate = DateTime(2010, 1, 1);
+    final lastDate = DateTime(2100, 12, 31);
+
+    final pickedDate = await showDatePicker(
+      context: _state.context,
+      initialDate: _state._selectedDay,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      locale: const Locale('zh', 'CN'),
+      helpText: '选择日期',
+      cancelText: '取消',
+      confirmText: '确定',
+    );
+    if (pickedDate == null || !_state.mounted) {
+      return;
+    }
+
+    final normalizedDay = DateUtils.dateOnly(pickedDate);
+    final normalizedMonth = DateTime(normalizedDay.year, normalizedDay.month);
+    _state.setState(() {
+      _state._selectedDay = normalizedDay;
+      _state._focusedMonth = normalizedMonth;
+      _state._calendarFormat = CalendarFormat.month;
+    });
+  }
+
   /// 统一处理头部快捷翻月：
   /// 1) 先确保处于月视图；
   /// 2) 优先使用 TableCalendar 的 PageController 做原生翻页动画；

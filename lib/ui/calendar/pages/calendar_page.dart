@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -140,6 +141,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             onJumpToToday: _controller.jumpToToday,
             onPreviousMonth: _controller.goToPreviousMonth,
             onNextMonth: _controller.goToNextMonth,
+            onPickDate: () => unawaited(_controller.pickDateAndJump()),
           ),
         ],
       ),

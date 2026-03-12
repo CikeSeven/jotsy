@@ -21,6 +21,7 @@ class CalendarGlassHeader extends StatelessWidget {
     required this.onJumpToToday,
     required this.onPreviousMonth,
     required this.onNextMonth,
+    required this.onPickDate,
   });
 
   // 与日记列表页 / 通用玻璃头部统一高度。
@@ -30,6 +31,7 @@ class CalendarGlassHeader extends StatelessWidget {
   final VoidCallback onJumpToToday;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
+  final VoidCallback onPickDate;
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +92,24 @@ class CalendarGlassHeader extends StatelessWidget {
                                     size: 16,
                                   ),
                                 ),
-                                Text(
-                                  title,
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: onPickDate,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 4,
+                                    ),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Text(
+                                          title,
+                                          style: Theme.of(context).textTheme.titleLarge
+                                              ?.copyWith(fontWeight: FontWeight.w700),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                                 IconButton(
                                   tooltip: '下个月',

@@ -9,11 +9,11 @@ class ExploreTagCloudCard extends StatelessWidget {
   const ExploreTagCloudCard({
     super.key,
     required this.tags,
-    required this.onOpenDiary,
+    required this.onOpenTagSearch,
   });
 
   final List<ExploreTagUsage> tags;
-  final ValueChanged<String> onOpenDiary;
+  final ValueChanged<ExploreTagUsage> onOpenTagSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class ExploreTagCloudCard extends StatelessWidget {
                             ? 0.2
                             : (tag.count / tag.maxCount).clamp(0.2, 1.0);
                     return ActionChip(
-                      onPressed: () => onOpenDiary(tag.latestDiaryId),
+                      onPressed: () => onOpenTagSearch(tag),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0),

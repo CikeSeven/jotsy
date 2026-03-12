@@ -81,23 +81,10 @@ class DiariesPageController {
   ///
   /// 使用淡入覆盖式路由，弱化“页面跳转”感，保持同场景搜索体验。
   void openSearchPage() {
+    final selectedTagIds = <int>{..._state.ref.read(diaryFilterProvider).selectedTagIds};
     Navigator.of(_state.context).push(
-      PageRouteBuilder<void>(
-        transitionDuration: const Duration(milliseconds: 220),
-        reverseTransitionDuration: const Duration(milliseconds: 180),
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return const DiarySearchPage();
-        },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-              reverseCurve: Curves.easeInCubic,
-            ),
-            child: child,
-          );
-        },
+      DiarySearchPage.buildRoute(
+        initialTagIds: selectedTagIds,
       ),
     );
   }

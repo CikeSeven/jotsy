@@ -17,12 +17,14 @@ class ExploreContentSection extends StatelessWidget {
     required this.viewData,
     required this.controller,
     required this.onOpenDiary,
+    required this.onOpenTagSearch,
     required this.onCreateToday,
   });
 
   final ExploreViewData viewData;
   final ExplorePageController controller;
   final ValueChanged<String> onOpenDiary;
+  final ValueChanged<ExploreTagUsage> onOpenTagSearch;
   final VoidCallback onCreateToday;
 
   @override
@@ -45,7 +47,7 @@ class ExploreContentSection extends StatelessWidget {
         const SizedBox(height: 12),
         ExploreTagCloudCard(
           tags: viewData.tagUsages,
-          onOpenDiary: onOpenDiary,
+          onOpenTagSearch: onOpenTagSearch,
         ),
         const SizedBox(height: 12),
         ExploreMediaGalleryCard(

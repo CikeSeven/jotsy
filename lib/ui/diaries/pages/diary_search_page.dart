@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -9,6 +10,7 @@ import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/services/app_service.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
@@ -21,7 +23,58 @@ import 'diary_preview_page.dart';
 /// - 页面内部自行维护搜索关键词，不污染主页筛选状态；
 /// - 结构固定为“顶部搜索框 + 下方日记列表”。
 class DiarySearchPage extends ConsumerStatefulWidget {
-  const DiarySearchPage({super.key});
+  const DiarySearchPage({
+    super.key,
+    this.initialKeyword = '',
+    this.initialTagIds = const <int>{},
+  });
+
+  final String initialKeyword;
+  final Set<int> initialTagIds;
+
+  /// 构建覆盖式搜索页路由，保持与日记列表入口一致的体感。
+  static Route<void> buildRoute({
+    String initialKeyword = '',
+    Set<int> initialTagIds = const <int>{},
+  }) {
+    return PageRouteBuilder<void>(
+      opaque: false,
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 320),
+      reverseTransitionDuration: const Duration(milliseconds: 240),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return DiarySearchPage(
+          initialKeyword: initialKeyword,
+          initialTagIds: initialTagIds,
+        );
+      },
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final easedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeInOutCubicEmphasized,
+          reverseCurve: Curves.easeInOutCubic,
+        );
+        final offsetAnimation = Tween<Offset>(
+          begin: const Offset(0, 0.02),
+          end: Offset.zero,
+        ).animate(easedAnimation);
+        final scaleAnimation = Tween<double>(
+          begin: 0.992,
+          end: 1,
+        ).animate(easedAnimation);
+        return FadeTransition(
+          opacity: easedAnimation,
+          child: SlideTransition(
+            position: offsetAnimation,
+            child: ScaleTransition(
+              scale: scaleAnimation,
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   ConsumerState<DiarySearchPage> createState() => _DiarySearchPageState();
@@ -36,10 +89,16 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   Timer? _searchDebounceTimer;
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
+  late final Set<int> _selectedTagIds;
 
   @override
   void initState() {
     super.initState();
+    final normalizedInitialKeyword = widget.initialKeyword.trim();
+    _selectedTagIds = <int>{...widget.initialTagIds};
+    _searchInput = normalizedInitialKeyword;
+    _effectiveSearchKeyword = normalizedInitialKeyword;
+    _searchController.text = normalizedInitialKeyword;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -64,8 +123,30 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
         brightness == Brightness.light ? Colors.white : colorScheme.surface;
     final topSafeInset = MediaQuery.paddingOf(context).top;
     final headerOverlayHeight = topSafeInset + _headerContentHeight;
-    final diariesAsync = ref.watch(searchDiariesProvider(_effectiveSearchKeyword));
-    final hasKeyword = _effectiveSearchKeyword.trim().isNotEmpty;
+    final query = SearchDiaryQuery(
+      keyword: _effectiveSearchKeyword,
+      requiredTagIds: _selectedTagIds,
+    );
+    final diariesAsync =
+        query.hasAnyCondition ? ref.watch(searchDiariesProvider(query)) : null;
+    final tagListAsync = ref.watch(tagListProvider);
+    final selectedTags = tagListAsync.maybeWhen(
+      data:
+          (tags) =>
+              tags.where((tag) => _selectedTagIds.contains(tag.id)).toList(growable: false),
+      orElse: () {
+        final fallbackTagIds = _selectedTagIds.toList(growable: false)..sort();
+        return fallbackTagIds
+            .map(
+              (id) => Tag(
+                id: id,
+                name: '标签$id',
+                color: colorScheme.primary.value,
+              ),
+            )
+            .toList(growable: false);
+      },
+    );
 
     return Scaffold(
       backgroundColor: pageBackgroundColor,
@@ -78,33 +159,39 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
               child: CustomScrollView(
                 slivers: <Widget>[
                   SliverToBoxAdapter(child: SizedBox(height: headerOverlayHeight + 6)),
-                  diariesAsync.when(
-                    loading: () => const SliverFillRemaining(
+                  if (!query.hasAnyCondition)
+                    const SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(
-                        child: SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      child: SizedBox.shrink(),
+                    )
+                  else
+                    diariesAsync!.when(
+                      loading: () => const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                         ),
                       ),
+                      error: (error, stackTrace) => SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: Text('日记加载失败: $error')),
+                      ),
+                      data: (diaries) => DiariesListSection(
+                        themeBrightness: brightness,
+                        diaries: diaries,
+                        layoutMode: DiaryLayoutMode.list,
+                        selectedDiaryIds: const <String>{},
+                        isSelectionMode: false,
+                        onCreate: () {},
+                        onOpenEditor: _openPreview,
+                        onToggleSelection: (_, __) {},
+                        isSearchResultEmpty: true,
+                      ),
                     ),
-                    error: (error, stackTrace) => SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(child: Text('日记加载失败: $error')),
-                    ),
-                    data: (diaries) => DiariesListSection(
-                      themeBrightness: brightness,
-                      diaries: diaries,
-                      layoutMode: DiaryLayoutMode.list,
-                      selectedDiaryIds: const <String>{},
-                      isSelectionMode: false,
-                      onCreate: () {},
-                      onOpenEditor: _openPreview,
-                      onToggleSelection: (_, __) {},
-                      isSearchResultEmpty: hasKeyword,
-                    ),
-                  ),
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),
                 ],
               ),
@@ -140,9 +227,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                             searchController: _searchController,
                             searchFocusNode: _searchFocusNode,
                             hasSearchText: _searchInput.trim().isNotEmpty,
+                            selectedTags: selectedTags,
                             onExitSearch: _closePage,
                             onClearSearch: _clearSearchInPlace,
                             onSearchChanged: _onSearchChanged,
+                            onRemoveTagCondition: _removeTagCondition,
                           ),
                         ),
                         Container(height: 1, margin: const EdgeInsets.only(top: AppSpacing.xs)),
@@ -189,6 +278,16 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     _searchFocusNode.requestFocus();
   }
 
+  /// 移除单个标签搜索条件（仅影响搜索页本地状态，不回写主页筛选）。
+  void _removeTagCondition(int tagId) {
+    if (!_selectedTagIds.contains(tagId)) {
+      return;
+    }
+    setState(() {
+      _selectedTagIds.remove(tagId);
+    });
+  }
+
   void _closePage() {
     _searchDebounceTimer?.cancel();
     Navigator.of(context).maybePop();
@@ -211,17 +310,21 @@ class _SearchInputBar extends StatelessWidget {
     required this.searchController,
     required this.searchFocusNode,
     required this.hasSearchText,
+    required this.selectedTags,
     required this.onExitSearch,
     required this.onClearSearch,
     required this.onSearchChanged,
+    required this.onRemoveTagCondition,
   });
 
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
   final bool hasSearchText;
+  final List<Tag> selectedTags;
   final VoidCallback onExitSearch;
   final VoidCallback onClearSearch;
   final ValueChanged<String> onSearchChanged;
+  final ValueChanged<int> onRemoveTagCondition;
 
   @override
   Widget build(BuildContext context) {
@@ -232,84 +335,170 @@ class _SearchInputBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.nav),
         boxShadow: AppEffects.softShadow,
       ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.s),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppRadii.nav),
-                ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.nav),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: 17,
+            sigmaY: 17,
+            tileMode: TileMode.mirror,
+          ),
+          child: Container(
+            color: colorScheme.primary.withAlpha(20),
+            padding: const EdgeInsets.all(AppSpacing.s),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(AppRadii.nav),
+              ),
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                    tooltip: '取消搜索',
+                    splashRadius: 18,
+                    onPressed: onExitSearch,
+                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                  ),
+                  Expanded(
+                    child:
+                        selectedTags.isEmpty
+                            ? TextField(
+                              controller: searchController,
+                              focusNode: searchFocusNode,
+                              autofocus: true,
+                              textInputAction: TextInputAction.search,
+                              onChanged: onSearchChanged,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                hintText: '搜索标题或内容',
+                                border: InputBorder.none,
+                                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            )
+                            : SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: <Widget>[
+                                  for (final tag in selectedTags) ...[
+                                    _TagConditionChip(
+                                      tag: tag,
+                                      onRemove: () => onRemoveTagCondition(tag.id),
+                                    ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  SizedBox(
+                                    width: 220,
+                                    child: Focus(
+                                      onKeyEvent: (node, event) {
+                                        final isBackspace =
+                                            event is KeyDownEvent &&
+                                            event.logicalKey == LogicalKeyboardKey.backspace;
+                                        final isInputEmpty = searchController.text.trim().isEmpty;
+                                        if (isBackspace && isInputEmpty && selectedTags.isNotEmpty) {
+                                          onRemoveTagCondition(selectedTags.last.id);
+                                          return KeyEventResult.handled;
+                                        }
+                                        return KeyEventResult.ignored;
+                                      },
+                                      child: TextField(
+                                        controller: searchController,
+                                        focusNode: searchFocusNode,
+                                        autofocus: true,
+                                        textInputAction: TextInputAction.search,
+                                        onChanged: onSearchChanged,
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          hintText: '搜索标题或内容',
+                                          border: InputBorder.none,
+                                          hintStyle: Theme.of(context).textTheme.bodyMedium
+                                              ?.copyWith(
+                                                color: colorScheme.onSurfaceVariant,
+                                              ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    child:
+                        hasSearchText
+                            ? IconButton(
+                              key: const ValueKey<String>('search_clear_button'),
+                              tooltip: '清空',
+                              splashRadius: 18,
+                              onPressed: onClearSearch,
+                              icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
+                            )
+                            : const SizedBox(
+                              key: ValueKey<String>('search_clear_placeholder'),
+                              width: 40,
+                            ),
+                  ),
+                ],
               ),
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.nav),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 17,
-                  sigmaY: 17,
-                  tileMode: TileMode.mirror,
-                ),
-                child: Container(
-                  color: colorScheme.primary.withAlpha(20),
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Row(
-                    children: <Widget>[
-                      IconButton(
-                        tooltip: '取消搜索',
-                        splashRadius: 18,
-                        onPressed: onExitSearch,
-                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: searchController,
-                          focusNode: searchFocusNode,
-                          autofocus: true,
-                          textInputAction: TextInputAction.search,
-                          onChanged: onSearchChanged,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            hintText: '搜索标题或内容',
-                            border: InputBorder.none,
-                            hintStyle: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: colorScheme.onSurfaceVariant),
-                          ),
-                        ),
-                      ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        child: hasSearchText
-                            ? IconButton(
-                                key: const ValueKey<String>('search_clear_button'),
-                                tooltip: '清空',
-                                splashRadius: 18,
-                                onPressed: onClearSearch,
-                                icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
-                              )
-                            : const SizedBox(
-                                key: ValueKey<String>('search_clear_placeholder'),
-                                width: 40,
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 搜索页标签条件 chip：彩色 `#` + 标签名 + 移除按钮。
+class _TagConditionChip extends StatelessWidget {
+  const _TagConditionChip({
+    required this.tag,
+    required this.onRemove,
+  });
+
+  final Tag tag;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final tagColor = Color(tag.color);
+    return Container(
+      constraints: const BoxConstraints(minHeight: 24),
+      padding: const EdgeInsets.fromLTRB(8, 2, 4, 2),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            '#',
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: tagColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            tag.name,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 2),
+          InkResponse(
+            onTap: onRemove,
+            radius: 12,
+            child: FaIcon(
+              FontAwesomeIcons.xmark,
+              size: 10,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -317,4 +506,3 @@ class _SearchInputBar extends StatelessWidget {
     );
   }
 }
-

@@ -71,15 +71,63 @@ final filteredDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
   return db.watchDiaries(keyword: filter.keyword, requiredTagIds: tagIds);
 });
 
-/// 搜索页独立数据源（仅关键词，不叠加标签筛选）。
+/// 搜索页查询参数。
+///
+/// 约束：
+/// - `keyword` 会在构造时自动 trim；
+/// - `requiredTagIds` 会去重并排序，保证 provider family key 稳定。
+class SearchDiaryQuery {
+  SearchDiaryQuery({
+    String keyword = '',
+    Iterable<int> requiredTagIds = const <int>[],
+  }) : keyword = keyword.trim(),
+       requiredTagIds = _normalizeTagIds(requiredTagIds);
+
+  final String keyword;
+  final List<int> requiredTagIds;
+
+  bool get hasAnyCondition => keyword.isNotEmpty || requiredTagIds.isNotEmpty;
+
+  static List<int> _normalizeTagIds(Iterable<int> source) {
+    final normalized = source.toSet().toList(growable: false)..sort();
+    return normalized;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! SearchDiaryQuery) {
+      return false;
+    }
+    if (keyword != other.keyword || requiredTagIds.length != other.requiredTagIds.length) {
+      return false;
+    }
+    for (var index = 0; index < requiredTagIds.length; index += 1) {
+      if (requiredTagIds[index] != other.requiredTagIds[index]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode => Object.hash(keyword, Object.hashAll(requiredTagIds));
+}
+
+/// 搜索页独立数据源（关键词 + 标签条件）。
 ///
 /// 设计目的：
 /// - 与主页 `diaryFilterProvider` 解耦，避免搜索页对主页筛选状态产生副作用；
-/// - 支持搜索页内部以局部状态驱动实时查询。
-final searchDiariesProvider = StreamProvider.family<List<DiaryWithTags>, String>((
+/// - 支持搜索页内部以局部状态驱动联合查询。
+final searchDiariesProvider = StreamProvider.family<List<DiaryWithTags>, SearchDiaryQuery>((
   Ref ref,
-  String keyword,
+  SearchDiaryQuery query,
 ) {
   final db = ref.watch(appDatabaseProvider);
-  return db.watchDiaries(keyword: keyword.trim());
+  return db.watchDiaries(
+    keyword: query.keyword,
+    requiredTagIds: query.requiredTagIds,
+  );
 });

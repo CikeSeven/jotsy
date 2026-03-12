@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
+import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
 import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 import '../controllers/explore_page_controller.dart';
+import '../models/explore_view_data.dart';
 import '../providers/explore_providers.dart';
 import '../sections/explore_content_section.dart';
 
@@ -63,6 +65,9 @@ class ExplorePage extends ConsumerWidget {
                         onOpenDiary: (diaryId) {
                           _openPreview(context, diaryId);
                         },
+                        onOpenTagSearch: (tagUsage) {
+                          _openTagSearch(context, tagUsage);
+                        },
                         onCreateToday: () {
                           _openCreateToday(context);
                         },
@@ -100,6 +105,15 @@ class ExplorePage extends ConsumerWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+      ),
+    );
+  }
+
+  /// 从探索页标签云进入搜索页，并自动注入标签条件。
+  void _openTagSearch(BuildContext context, ExploreTagUsage tagUsage) {
+    Navigator.of(context).push(
+      DiarySearchPage.buildRoute(
+        initialTagIds: <int>{tagUsage.id},
       ),
     );
   }

@@ -11,6 +11,30 @@ class CalendarPageController {
   const CalendarPageController(this._state);
 
   final _CalendarPageState _state;
+  static const List<String> _moodScale = <String>[
+    '😭',
+    '😢',
+    '😞',
+    '😕',
+    '😐',
+    '🙂',
+    '😊',
+    '😄',
+    '😀',
+    '🤩',
+  ];
+  static const Map<String, int> _moodWeights = <String, int>{
+    '😭': 1,
+    '😢': 2,
+    '😞': 3,
+    '😕': 4,
+    '😐': 5,
+    '🙂': 6,
+    '😊': 7,
+    '😄': 8,
+    '😀': 9,
+    '🤩': 10,
+  };
 
   /// 当前焦点月份标题（用于头部显示）。
   String get focusedMonthTitle {
@@ -153,17 +177,36 @@ class CalendarPageController {
     return buckets;
   }
 
-  /// 当天 marker 里的心情 emoji 提取优先级：
-  /// 1) 先返回第一个非空 mood；
-  /// 2) 若都为空，返回 null（由 UI 退化为普通 dot）。
+  /// 基于当天所有非空心情计算“平均权重”，并映射到最近的 emoji。
+  ///
+  /// 规则：
+  /// 1) 仅统计在权重表中的 emoji；
+  /// 2) 计算平均值后四舍五入；
+  /// 3) 按 1~10 映射回固定心情梯度。
   String? resolveMoodEmoji(List<DiaryCalendarMarker> markers) {
+    var totalWeight = 0;
+    var validCount = 0;
+
     for (final marker in markers) {
       final mood = marker.moodEmoji?.trim();
-      if (mood != null && mood.isNotEmpty) {
-        return mood;
+      if (mood == null || mood.isEmpty) {
+        continue;
       }
+      final weight = _moodWeights[mood];
+      if (weight == null) {
+        continue;
+      }
+      totalWeight += weight;
+      validCount += 1;
     }
-    return null;
+
+    if (validCount == 0) {
+      return null;
+    }
+
+    final averageWeight = totalWeight / validCount;
+    final roundedWeight = averageWeight.round().clamp(1, _moodScale.length) as int;
+    return _moodScale[roundedWeight - 1];
   }
 
   /// 打开日记预览页（与主页列表行为保持一致）。

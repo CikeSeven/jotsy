@@ -59,6 +59,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   bool _locationFromAuto = false;
   String? _weatherIconCode;
   double _energyLevel = 4;
+  late DateTime _publishAt;
   double _panelExpandProgress = 0;
 
   // ==================== 异步流程状态 ====================
@@ -85,6 +86,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _weatherController.text = widget.initialDraft.weather ?? '';
     _weatherIconCode = widget.initialDraft.weatherIconCode;
     _moodEmoji = widget.initialDraft.moodEmoji;
+    _publishAt = _controller.resolveInitialPublishAt(
+      widget.initialDraft.createdAtOverride,
+    );
 
     // 精力值限制在 1~5，避免历史数据越界导致 UI 异常。
     final initialEnergy = (widget.initialDraft.energyLevel ?? 4).toDouble();
@@ -258,6 +262,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 onCreateTag: _controller.createTagInline,
                 onResolveLocation: _controller.resolveLocation,
                 onResolveWeather: _controller.resolveWeather,
+                showPublishTimeOption: true,
+                publishTimeLabel: _controller.formatPublishTimeLabel(_publishAt),
+                onPickPublishTime: _controller.pickPublishAt,
                 onToggleTag: (tagId, selected) {
                   setState(() {
                     if (selected) {

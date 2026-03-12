@@ -667,9 +667,19 @@ class EditDiaryController {
   ///
   /// 规则：使用选中日期的年月日 + 当前时分秒，既保持“归属日正确”，
   /// 又让同一天内的多条记录仍有自然时间顺序。
+  ///
+  /// 若上游已经给出了明确的时分秒（例如发布页手动选择发表时间），
+  /// 则直接保留该时间，不再覆盖。
   DateTime? _resolveCreatedAtForCreate(DateTime? dateOverride) {
     if (dateOverride == null) {
       return null;
+    }
+    if (dateOverride.hour != 0 ||
+        dateOverride.minute != 0 ||
+        dateOverride.second != 0 ||
+        dateOverride.millisecond != 0 ||
+        dateOverride.microsecond != 0) {
+      return dateOverride;
     }
     final now = DateTime.now();
     return DateTime(

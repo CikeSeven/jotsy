@@ -28,6 +28,9 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.coverLabel,
     required this.locating,
     required this.weatherLoading,
+    this.showPublishTimeOption = false,
+    this.publishTimeLabel,
+    this.onPickPublishTime,
     required this.locationLabel,
     required this.weatherController,
     required this.weatherIconCode,
@@ -71,6 +74,9 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final String? coverLabel;
   final bool locating;
   final bool weatherLoading;
+  final bool showPublishTimeOption;
+  final String? publishTimeLabel;
+  final VoidCallback? onPickPublishTime;
   final String? locationLabel;
   final TextEditingController weatherController;
   final String? weatherIconCode;
@@ -356,6 +362,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           _buildTagEntryTile(context),
           const SizedBox(height: 14),
           _buildContextFields(context),
+          if (widget.showPublishTimeOption) ...<Widget>[
+            const SizedBox(height: 14),
+            _buildPublishTimeEntryTile(context),
+          ],
           const SizedBox(height: 14),
           _buildMoodSection(context),
           const SizedBox(height: 14),
@@ -932,6 +942,61 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildPublishTimeEntryTile(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final publishTimeLabel = widget.publishTimeLabel?.trim();
+    final hasPublishTime =
+        publishTimeLabel != null && publishTimeLabel.isNotEmpty;
+
+    return Material(
+      color: colorScheme.surface.withValues(alpha: 0.4),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 42),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
+          child: Row(
+            children: <Widget>[
+              Text(
+                '发表时间',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  hasPublishTime ? publishTimeLabel : '自动获取当前时间',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color:
+                            hasPublishTime
+                                ? null
+                                : colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.75,
+                                ),
+                      ),
+                ),
+              ),
+              IconButton(
+                onPressed: widget.onPickPublishTime,
+                tooltip: '选择发表时间',
+                visualDensity: VisualDensity.compact,
+                icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 14),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

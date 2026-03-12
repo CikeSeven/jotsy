@@ -94,6 +94,109 @@ class PublishDiaryController {
     );
   }
 
+  /// 解析发布页初始发表时间。
+  ///
+  /// 规则：
+  /// - 无历史值时取当前时间；
+  /// - 仅包含“日期”的历史值（00:00:00）补齐当前时分秒；
+  /// - 超出当前时间的值回退到当前时间，防止产生未来发表时间。
+  DateTime resolveInitialPublishAt(DateTime? raw) {
+    final now = DateTime.now();
+    if (raw == null) {
+      return now;
+    }
+
+    final local = raw.toLocal();
+    final isDateOnly =
+        local.hour == 0 &&
+        local.minute == 0 &&
+        local.second == 0 &&
+        local.millisecond == 0 &&
+        local.microsecond == 0;
+    final normalized =
+        isDateOnly
+            ? DateTime(
+              local.year,
+              local.month,
+              local.day,
+              now.hour,
+              now.minute,
+              now.second,
+              now.millisecond,
+              now.microsecond,
+            )
+            : local;
+    if (normalized.isAfter(now)) {
+      return now;
+    }
+    return normalized;
+  }
+
+  /// 发表时间展示文案（固定到分钟）。
+  String formatPublishTimeLabel(DateTime value) {
+    final local = value.toLocal();
+    final year = local.year.toString().padLeft(4, '0');
+    final month = local.month.toString().padLeft(2, '0');
+    final day = local.day.toString().padLeft(2, '0');
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$year年$month月$day日 $hour:$minute';
+  }
+
+  /// 选择发表时间。
+  ///
+  /// 约束：
+  /// - 日期不能超过今天；
+  /// - 时间使用 24 小时制，精确到分钟。
+  Future<void> pickPublishAt() async {
+    final now = DateTime.now();
+    final current = _state._publishAt.toLocal();
+    final firstDate = DateTime(2010, 1, 1);
+    final lastDate = DateUtils.dateOnly(now);
+    final initialDate =
+        DateUtils.dateOnly(current).isAfter(lastDate)
+            ? lastDate
+            : DateUtils.dateOnly(current);
+
+    final pickedDate = await showDatePicker(
+      context: _state.context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      helpText: '选择发表日期',
+    );
+    if (pickedDate == null || !_state.mounted) {
+      return;
+    }
+
+    final pickedTime = await showTimePicker(
+      context: _state.context,
+      initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
+      helpText: '选择发表时间',
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(alwaysUse24HourFormat: true),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+    );
+    if (pickedTime == null || !_state.mounted) {
+      return;
+    }
+
+    _state.setState(() {
+      _state._publishAt = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+    });
+  }
+
   /// 发布页用于显示的地址文案。
   ///
   /// 优先展示“城市 · 街道”，仅有其一时降级显示单字段。
@@ -355,9 +458,6 @@ class PublishDiaryController {
 
     try {
       final db = _state.ref.read(appDatabaseProvider);
-      final createdAtForCreate = _resolveCreatedAtForCreate(
-        _state.widget.initialDraft.createdAtOverride,
-      );
       await db.createDiary(
         title: _state.widget.initialDraft.title,
         contentDocJson: _state.widget.initialDraft.contentDocJson,
@@ -365,7 +465,7 @@ class PublishDiaryController {
         cover: normalizedCover,
         metadataJson: buildMetadataJson(generatedAt: DateTime.now()),
         tagIds: _state._selectedTagIds.toList(),
-        createdAtOverride: createdAtForCreate,
+        createdAtOverride: _state._publishAt,
       );
       if (!_state.mounted) {
         return;
@@ -388,6 +488,7 @@ class PublishDiaryController {
     Navigator.of(_state.context).pop(
       _state.widget.initialDraft.copyWith(
         cover: normalizedCover,
+        createdAtOverride: _state._publishAt,
         metadataJson: buildMetadataJson(),
         selectedTagIds: <int>{..._state._selectedTagIds},
         location: _state._locationTownship,
@@ -400,24 +501,6 @@ class PublishDiaryController {
         moodEmoji: normalizeOptionalText(_state._moodEmoji),
         energyLevel: _state._energyLevel,
       ),
-    );
-  }
-
-  /// 与编辑页保持一致：补写仅锁定“日期”，时分秒沿用当前时刻。
-  DateTime? _resolveCreatedAtForCreate(DateTime? dateOverride) {
-    if (dateOverride == null) {
-      return null;
-    }
-    final now = DateTime.now();
-    return DateTime(
-      dateOverride.year,
-      dateOverride.month,
-      dateOverride.day,
-      now.hour,
-      now.minute,
-      now.second,
-      now.millisecond,
-      now.microsecond,
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/settings/pages/about_page.dart';
 import 'package:node_diary/ui/settings/pages/data_management_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
@@ -64,6 +65,21 @@ class SettingsPage extends ConsumerWidget {
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) {
                       return const DataManagementPage();
+                    },
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              title: const Text('关于'),
+              subtitle: const Text('应用信息、项目地址与版本信息'),
+              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return const AboutPage();
                     },
                   ),
                 );

@@ -37,7 +37,9 @@ class ExplorePage extends ConsumerWidget {
           top: false,
           child: CustomScrollView(
             slivers: <Widget>[
-              SliverToBoxAdapter(child: SizedBox(height: headerHeight + 4)),
+              SliverToBoxAdapter(
+                child: SizedBox(height: headerHeight + AppSpacing.m),
+              ),
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
                 sliver: diariesAsync.when(

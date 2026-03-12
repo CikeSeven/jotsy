@@ -217,6 +217,46 @@
   "@aboutCopied": {
     "description": "Auto-generated metadata for aboutCopied."
   },
+  "aboutPageSlogan": "喧嚣世界里，只属于你的安静角落。",
+  "@aboutPageSlogan": {
+    "description": "About 页面头部 Slogan。"
+  },
+  "aboutOpenSourceRepo": "开源仓库",
+  "@aboutOpenSourceRepo": {
+    "description": "About 页面开源仓库入口文案。"
+  },
+  "aboutSubmitIssue": "提交 Issue",
+  "@aboutSubmitIssue": {
+    "description": "About 页面 Issue 反馈入口文案。"
+  },
+  "aboutPrivacyAndData": "隐私与数据安全",
+  "@aboutPrivacyAndData": {
+    "description": "About 页面隐私说明入口文案。"
+  },
+  "aboutPrivacyDialogTitle": "隐私与数据安全",
+  "@aboutPrivacyDialogTitle": {
+    "description": "About 页面隐私弹窗标题。"
+  },
+  "aboutPrivacyDialogMessage": "你的日记、标签与媒体文件仅保存在本地设备，不会默认上传到云端。",
+  "@aboutPrivacyDialogMessage": {
+    "description": "About 页面隐私弹窗内容。"
+  },
+  "aboutOpenSourceLicenses": "第三方开源组件与协议",
+  "@aboutOpenSourceLicenses": {
+    "description": "About 页面协议列表入口文案。"
+  },
+  "aboutOpenLinkFallbackCopied": "无法直接打开链接，已复制到剪贴板。",
+  "@aboutOpenLinkFallbackCopied": {
+    "description": "About 页面外链打开失败后的兜底提示。"
+  },
+  "aboutFooterMadeWith": "Made with ❤️ by 柒月",
+  "@aboutFooterMadeWith": {
+    "description": "About 页面底部作者文案。"
+  },
+  "aboutFooterCopyright": "© 2026 Jot Project",
+  "@aboutFooterCopyright": {
+    "description": "About 页面底部版权文案。"
+  },
   "dataMgmtTitle": "数据管理",
   "@dataMgmtTitle": {
     "description": "Auto-generated metadata for dataMgmtTitle."

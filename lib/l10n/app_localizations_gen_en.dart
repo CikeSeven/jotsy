@@ -166,6 +166,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutCopied => 'Copied to clipboard';
 
   @override
+  String get aboutPageSlogan =>
+      'A quiet corner that belongs only to you in a noisy world.';
+
+  @override
+  String get aboutOpenSourceRepo => 'Open-source repository';
+
+  @override
+  String get aboutSubmitIssue => 'Submit issue';
+
+  @override
+  String get aboutPrivacyAndData => 'Privacy & data security';
+
+  @override
+  String get aboutPrivacyDialogTitle => 'Privacy & data security';
+
+  @override
+  String get aboutPrivacyDialogMessage =>
+      'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.';
+
+  @override
+  String get aboutOpenSourceLicenses => 'Third-party open-source licenses';
+
+  @override
+  String get aboutOpenLinkFallbackCopied =>
+      'Unable to open link directly. The link has been copied.';
+
+  @override
+  String get aboutFooterMadeWith => 'Made with ❤️ by 柒月';
+
+  @override
+  String get aboutFooterCopyright => '© 2026 Jot Project';
+
+  @override
   String get dataMgmtTitle => 'Data Management';
 
   @override

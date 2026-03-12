@@ -163,6 +163,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutCopied => '已复制到剪贴板';
 
   @override
+  String get aboutPageSlogan => '喧嚣世界里，只属于你的安静角落。';
+
+  @override
+  String get aboutOpenSourceRepo => '开源仓库';
+
+  @override
+  String get aboutSubmitIssue => '提交 Issue';
+
+  @override
+  String get aboutPrivacyAndData => '隐私与数据安全';
+
+  @override
+  String get aboutPrivacyDialogTitle => '隐私与数据安全';
+
+  @override
+  String get aboutPrivacyDialogMessage => '你的日记、标签与媒体文件仅保存在本地设备，不会默认上传到云端。';
+
+  @override
+  String get aboutOpenSourceLicenses => '第三方开源组件与协议';
+
+  @override
+  String get aboutOpenLinkFallbackCopied => '无法直接打开链接，已复制到剪贴板。';
+
+  @override
+  String get aboutFooterMadeWith => 'Made with ❤️ by 柒月';
+
+  @override
+  String get aboutFooterCopyright => '© 2026 Jot Project';
+
+  @override
   String get dataMgmtTitle => '数据管理';
 
   @override

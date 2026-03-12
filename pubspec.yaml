@@ -37,6 +37,7 @@ dependencies:
   widget_screenshot_plus: ^0.0.7
   table_calendar: ^3.2.0
   flutter_svg: ^2.2.4
+  url_launcher: ^6.3.2
   archive: ^3.6.1
   
 dev_dependencies:

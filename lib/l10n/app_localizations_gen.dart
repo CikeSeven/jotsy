@@ -386,6 +386,66 @@ abstract class AppLocalizations {
   /// **'Copied to clipboard'**
   String get aboutCopied;
 
+  /// Slogan shown in About page header.
+  ///
+  /// In en, this message translates to:
+  /// **'A quiet corner that belongs only to you in a noisy world.'**
+  String get aboutPageSlogan;
+
+  /// Action title to open project repository.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source repository'**
+  String get aboutOpenSourceRepo;
+
+  /// Action title to open issue feedback page.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit issue'**
+  String get aboutSubmitIssue;
+
+  /// Action title for privacy description dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & data security'**
+  String get aboutPrivacyAndData;
+
+  /// Title for privacy description dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & data security'**
+  String get aboutPrivacyDialogTitle;
+
+  /// Body message for privacy description dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.'**
+  String get aboutPrivacyDialogMessage;
+
+  /// Action title to open Flutter license page.
+  ///
+  /// In en, this message translates to:
+  /// **'Third-party open-source licenses'**
+  String get aboutOpenSourceLicenses;
+
+  /// Fallback snackbar when external link cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open link directly. The link has been copied.'**
+  String get aboutOpenLinkFallbackCopied;
+
+  /// Footer author line for About page.
+  ///
+  /// In en, this message translates to:
+  /// **'Made with ❤️ by 柒月'**
+  String get aboutFooterMadeWith;
+
+  /// Footer copyright line for About page.
+  ///
+  /// In en, this message translates to:
+  /// **'© 2026 Jot Project'**
+  String get aboutFooterCopyright;
+
   /// Auto-generated metadata for dataMgmtTitle.
   ///
   /// In en, this message translates to:

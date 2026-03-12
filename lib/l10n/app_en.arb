@@ -217,6 +217,46 @@
   "@aboutCopied": {
     "description": "Auto-generated metadata for aboutCopied."
   },
+  "aboutPageSlogan": "A quiet corner that belongs only to you in a noisy world.",
+  "@aboutPageSlogan": {
+    "description": "Slogan shown in About page header."
+  },
+  "aboutOpenSourceRepo": "Open-source repository",
+  "@aboutOpenSourceRepo": {
+    "description": "Action title to open project repository."
+  },
+  "aboutSubmitIssue": "Submit issue",
+  "@aboutSubmitIssue": {
+    "description": "Action title to open issue feedback page."
+  },
+  "aboutPrivacyAndData": "Privacy & data security",
+  "@aboutPrivacyAndData": {
+    "description": "Action title for privacy description dialog."
+  },
+  "aboutPrivacyDialogTitle": "Privacy & data security",
+  "@aboutPrivacyDialogTitle": {
+    "description": "Title for privacy description dialog."
+  },
+  "aboutPrivacyDialogMessage": "Your diaries, tags, and media files are stored locally on this device and are not uploaded to cloud services by default.",
+  "@aboutPrivacyDialogMessage": {
+    "description": "Body message for privacy description dialog."
+  },
+  "aboutOpenSourceLicenses": "Third-party open-source licenses",
+  "@aboutOpenSourceLicenses": {
+    "description": "Action title to open Flutter license page."
+  },
+  "aboutOpenLinkFallbackCopied": "Unable to open link directly. The link has been copied.",
+  "@aboutOpenLinkFallbackCopied": {
+    "description": "Fallback snackbar when external link cannot be opened."
+  },
+  "aboutFooterMadeWith": "Made with ❤️ by 柒月",
+  "@aboutFooterMadeWith": {
+    "description": "Footer author line for About page."
+  },
+  "aboutFooterCopyright": "© 2026 Jot Project",
+  "@aboutFooterCopyright": {
+    "description": "Footer copyright line for About page."
+  },
   "dataMgmtTitle": "Data Management",
   "@dataMgmtTitle": {
     "description": "Auto-generated metadata for dataMgmtTitle."

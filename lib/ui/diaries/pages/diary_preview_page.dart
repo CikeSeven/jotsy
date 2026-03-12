@@ -108,24 +108,24 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   String _buildShareCopyText(DiaryWithTags detail) {
     final l10n = context.l10n;
     final title = detail.diary.title.trim().isEmpty
-        ? l10n.tr('无标题', en: 'Untitled')
+        ? l10n.autoT0033
         : detail.diary.title.trim();
     final content = detail.diary.contentText.trim().isEmpty
-        ? l10n.tr('（无正文）', en: '(No content)')
+        ? l10n.autoT0104
         : detail.diary.contentText.trim();
     final tags = detail.tags.isEmpty
-        ? l10n.tr('无', en: 'None')
+        ? l10n.autoT0105
         : detail.tags.map((tag) => tag.name).join('、');
     final createdAt = _formatDateTime(detail.diary.createdAt);
     final updatedAt = _formatDateTime(detail.diary.updatedAt);
 
     return '''
-${l10n.tr('标题', en: 'Title')}: $title
-${l10n.tr('创建时间', en: 'Created')}: $createdAt
-${l10n.tr('更新时间', en: 'Updated')}: $updatedAt
-${l10n.tr('标签', en: 'Tags')}: $tags
+${l10n.autoT0106}: $title
+${l10n.autoT0107}: $createdAt
+${l10n.autoT0108}: $updatedAt
+${l10n.autoT0109}: $tags
 
-${l10n.tr('正文', en: 'Content')}:
+${l10n.autoT0110}:
 $content
 ''';
   }
@@ -171,7 +171,7 @@ $content
         pixelRatio: pixelRatio,
       );
       if (imageBytes == null || imageBytes.isEmpty) {
-        throw Exception(l10n.tr('截图失败，请重试', en: 'Screenshot failed. Please try again.'));
+        throw Exception(l10n.autoT0111);
       }
       final tempDirectory = await getTemporaryDirectory();
       final imagePath = p.join(
@@ -186,7 +186,7 @@ $content
       if (!mounted) {
         return;
       }
-      _showHint(context.l10n.tr('图片分享失败: $error', en: 'Image share failed: $error'));
+      _showHint(context.l10n.autoT0112(error));
     } finally {
       if (mounted) {
         setState(() {
@@ -262,8 +262,8 @@ $content
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: Text(context.l10n.tr('删除日记', en: 'Delete diary')),
-          content: Text(context.l10n.tr('确认删除这条日记吗？', en: 'Delete this diary?')),
+          title: Text(context.l10n.autoT0094),
+          content: Text(context.l10n.autoT0113),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -321,7 +321,7 @@ $content
               ),
               ListTile(
                 leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-                title: Text(context.l10n.tr('以图片形式分享', en: 'Share as image')),
+                title: Text(context.l10n.autoT0114),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _shareAsLongImage();
@@ -329,7 +329,7 @@ $content
               ),
               ListTile(
                 leading: const FaIcon(FontAwesomeIcons.font, size: 16),
-                title: Text(context.l10n.tr('以文字形式分享', en: 'Share as text')),
+                title: Text(context.l10n.autoT0115),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _shareTextDirectly(detail);
@@ -487,7 +487,7 @@ $content
         items.add(
             _MetaChipItem(
               kind: _MetaChipKind.mood,
-              label: '${context.l10n.tr('心情', en: 'Mood')} $mood',
+              label: '${context.l10n.autoT0116} $mood',
             ),
         );
       }
@@ -557,7 +557,7 @@ $content
       children: <Widget>[
         _buildMetaInlineItem(
           icon: FontAwesomeIcons.clock,
-          label: '${context.l10n.tr('发表于', en: 'Published')} $relativeCreated',
+          label: '${context.l10n.autoT0117} $relativeCreated',
           color: colorScheme.onSurfaceVariant,
         ),
         if (locationWeatherItems.isNotEmpty) ...<Widget>[
@@ -667,7 +667,7 @@ $content
     final hasBeenEdited = !diary.updatedAt.isAtSameMomentAs(diary.createdAt);
     final editedText =
         hasBeenEdited
-            ? '${context.l10n.tr('最后编辑于', en: 'Last edited')} ${_formatPreciseTime(diary.updatedAt)}'
+            ? '${context.l10n.autoT0118} ${_formatPreciseTime(diary.updatedAt)}'
             : null;
 
     // 这里不能只看 contentText（纯文本镜像），否则“仅图片正文”会被误判为空。
@@ -685,7 +685,7 @@ $content
               ),
             )
             : Text(
-              context.l10n.tr('今天还没有写下正文', en: 'No content yet'),
+              context.l10n.autoT0119,
               style: Theme.of(context).textTheme.bodyLarge,
             );
 
@@ -717,7 +717,7 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: Text(context.l10n.tr('日记', en: 'Diary')),
+            title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
           ),
           body: const Center(child: CircularProgressIndicator()),
@@ -727,10 +727,10 @@ $content
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: Text(context.l10n.tr('日记', en: 'Diary')),
+            title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
           ),
-          body: Center(child: Text(context.l10n.tr('加载失败: $error', en: 'Load failed: $error'))),
+          body: Center(child: Text(context.l10n.autoT0121(error))),
         );
       },
       data: (DiaryWithTags? detail) {
@@ -742,7 +742,7 @@ $content
               }
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(context.l10n.tr('日记已不存在', en: 'Diary no longer exists')),
+                  content: Text(context.l10n.autoT0122),
                   duration: const Duration(seconds: 2),
                 ),
               );
@@ -751,38 +751,38 @@ $content
             return Scaffold(
               appBar: AppBar(
                 centerTitle: true,
-                title: Text(context.l10n.tr('日记', en: 'Diary')),
+                title: Text(context.l10n.autoT0120),
                 leading: _buildBackLeading(),
               ),
-              body: Center(child: Text(context.l10n.tr('日记已不存在，正在返回...', en: 'Diary no longer exists, returning...'))),
+              body: Center(child: Text(context.l10n.autoT0123)),
             );
           }
 
           return Scaffold(
             appBar: AppBar(
               centerTitle: true,
-              title: Text(context.l10n.tr('日记', en: 'Diary')),
+              title: Text(context.l10n.autoT0120),
               leading: _buildBackLeading(),
             ),
-            body: Center(child: Text(context.l10n.tr('日记不存在', en: 'Diary not found'))),
+            body: Center(child: Text(context.l10n.autoT0124)),
           );
         }
 
         _hadLoadedData = true;
         _bindPreviewController(detail.diary.content);
         final title = detail.diary.title.trim().isEmpty
-            ? context.l10n.tr('无标题', en: 'Untitled')
+            ? context.l10n.autoT0033
             : detail.diary.title.trim();
         final coverSource = _resolvePreviewCover(detail.diary);
 
         return Scaffold(
           appBar: AppBar(
             centerTitle: true,
-            title: Text(context.l10n.tr('日记', en: 'Diary')),
+            title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
             actions: <Widget>[
               IconButton(
-                tooltip: context.l10n.tr('更多', en: 'More'),
+                tooltip: context.l10n.autoT0125,
                 onPressed: () => _showActionBottomSheet(detail),
                 icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
               ),

@@ -48,7 +48,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(
-        context.l10n.tr('创建标签失败: $error', en: 'Create tag failed: $error'),
+        context.l10n.autoT0034(error),
       );
     } finally {
       if (mounted) {
@@ -81,7 +81,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       );
     } catch (error) {
       await _showHint(
-        context.l10n.tr('修改标签失败: $error', en: 'Edit tag failed: $error'),
+        context.l10n.autoT0035(error),
       );
     } finally {
       if (mounted) {
@@ -111,7 +111,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(
-        context.l10n.tr('删除标签失败: $error', en: 'Delete tag failed: $error'),
+        context.l10n.autoT0036(error),
       );
     } finally {
       if (mounted) {
@@ -146,7 +146,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(
-        context.l10n.tr('保存标签顺序失败: $error', en: 'Save tag order failed: $error'),
+        context.l10n.autoT0037(error),
       );
       if (mounted) {
         setState(() => _savingOrder = false);
@@ -160,12 +160,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: Text(context.l10n.tr('删除标签', en: 'Delete tag')),
+          title: Text(context.l10n.autoT0038),
           content: Text(
-            context.l10n.tr(
-              '确认删除标签 "${tag.name}" 吗？',
-              en: 'Delete tag "${tag.name}"?',
-            ),
+            context.l10n.autoT0195(tag.name),
           ),
           actions: <Widget>[
             TextButton(
@@ -262,10 +259,10 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
-        title: Text(l10n.tr('标签管理', en: 'Tag management')),
+        title: Text(l10n.autoT0039),
         actions: <Widget>[
           IconButton(
-            tooltip: l10n.tr('新建标签', en: 'Create tag'),
+            tooltip: l10n.autoT0040,
             onPressed: _operating ? null : _createTag,
             icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
           ),
@@ -279,7 +276,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
             return Center(
               child: TextButton(
                 onPressed: _operating ? null : _createTag,
-                child: Text(l10n.tr('新建第一个标签', en: 'Create your first tag')),
+                child: Text(l10n.autoT0041),
               ),
             );
           }
@@ -302,7 +299,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     IconButton(
-                      tooltip: l10n.tr('删除标签', en: 'Delete tag'),
+                      tooltip: l10n.autoT0038,
                       onPressed: _operating ? null : () => _deleteTag(tag),
                       icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
                     ),
@@ -331,7 +328,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         error: (error, stackTrace) {
           return Center(
             child: Text(
-              l10n.tr('标签加载失败: $error', en: 'Tag load failed: $error'),
+              l10n.autoT0042(error),
             ),
           );
         },

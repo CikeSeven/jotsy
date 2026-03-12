@@ -97,7 +97,7 @@ class ExplorePage extends ConsumerWidget {
             ],
           ),
         ),
-        GlassPageHeader(title: l10n.tr('探索', en: 'Explore')),
+        GlassPageHeader(title: l10n.autoT0058),
       ],
     );
   }
@@ -195,7 +195,7 @@ class _ExploreErrorCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            context.l10n.tr('探索数据暂不可用', en: 'Explore data is unavailable'),
+            context.l10n.autoT0059,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),

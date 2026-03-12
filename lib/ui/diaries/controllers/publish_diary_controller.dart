@@ -16,7 +16,7 @@ class PublishDiaryController {
   String get title {
     final normalized = _state.widget.initialDraft.title.trim();
     return normalized.isEmpty
-        ? _state.context.l10n.tr('未命名日记', en: 'Untitled diary')
+        ? _state.context.l10n.autoT0095
         : normalized;
   }
 
@@ -173,7 +173,7 @@ class PublishDiaryController {
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: _state.context.l10n.tr('选择发表日期', en: 'Select publish date'),
+      helpText: _state.context.l10n.autoT0096,
     );
     if (pickedDate == null || !_state.mounted) {
       return;
@@ -182,7 +182,7 @@ class PublishDiaryController {
     final pickedTime = await showTimePicker(
       context: _state.context,
       initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
-      helpText: _state.context.l10n.tr('选择发表时间', en: 'Select publish time'),
+      helpText: _state.context.l10n.autoT0097,
       builder: (BuildContext context, Widget? child) {
         return MediaQuery(
           data: MediaQuery.of(
@@ -223,7 +223,7 @@ class PublishDiaryController {
       return township;
     }
     if (_state._locationFromAuto) {
-      return _state.context.l10n.tr('暂无街道信息', en: 'No street info');
+      return _state.context.l10n.autoT0085;
     }
     return null;
   }
@@ -308,7 +308,7 @@ class PublishDiaryController {
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
       await showHint(
-        _state.context.l10n.tr('未获取到可用的封面路径', en: 'No valid cover path found'),
+        _state.context.l10n.autoT0088,
       );
       return;
     }
@@ -330,7 +330,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.tr('封面导入失败: $error', en: 'Cover import failed: $error'),
+        _state.context.l10n.autoT0089(error),
       );
     }
   }
@@ -361,7 +361,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.tr('标签创建失败: $error', en: 'Tag creation failed: $error'),
+        _state.context.l10n.autoT0090(error),
       );
     }
   }
@@ -381,10 +381,7 @@ class PublishDiaryController {
       if (service == null) {
         throw LocationResolveException(
           type: LocationResolveErrorType.missingApiKey,
-          message: _state.context.l10n.tr(
-            '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
-            en: 'AMap Web API key missing, please configure amap.web.api.key',
-          ),
+          message: _state.context.l10n.autoT0204,
         );
       }
 
@@ -410,7 +407,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.tr('获取位置失败: $error', en: 'Location failed: $error'),
+        _state.context.l10n.autoT0091(error),
       );
     } finally {
       if (_state.mounted) {
@@ -426,7 +423,7 @@ class PublishDiaryController {
     }
     if (_state._locationLatitude == null || _state._locationLongitude == null) {
       await showHint(
-        _state.context.l10n.tr('请先获取当前位置', en: 'Please get current location first'),
+        _state.context.l10n.autoT0092,
       );
       return;
     }
@@ -437,10 +434,7 @@ class PublishDiaryController {
       if (service == null) {
         throw QWeatherException(
           type: QWeatherErrorType.missingConfig,
-          message: _state.context.l10n.tr(
-            '未检测到和风天气 key，请先配置 qweather.api_key',
-            en: 'QWeather key missing, please configure qweather.api_key',
-          ),
+          message: _state.context.l10n.autoT0205,
         );
       }
 
@@ -466,7 +460,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.tr('获取天气失败: $error', en: 'Weather fetch failed: $error'),
+        _state.context.l10n.autoT0093(error),
       );
     } finally {
       if (_state.mounted) {
@@ -505,7 +499,7 @@ class PublishDiaryController {
         return;
       }
       await showHint(
-        _state.context.l10n.tr('发布失败: $error', en: 'Publish failed: $error'),
+        _state.context.l10n.autoT0098(error),
       );
     } finally {
       if (_state.mounted) {

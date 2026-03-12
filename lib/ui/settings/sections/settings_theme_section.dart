@@ -38,17 +38,17 @@ class SettingsThemeSection extends StatelessWidget {
                   segments: <ButtonSegment<ThemeMode>>[
                     ButtonSegment<ThemeMode>(
                       value: ThemeMode.system,
-                      label: Text(l10n.tr('系统', en: 'System')),
+                      label: Text(l10n.autoT0046),
                       icon: Icon(Icons.settings_suggest_outlined),
                     ),
                     ButtonSegment<ThemeMode>(
                       value: ThemeMode.light,
-                      label: Text(l10n.tr('浅色', en: 'Light')),
+                      label: Text(l10n.autoT0047),
                       icon: Icon(Icons.light_mode_outlined),
                     ),
                     ButtonSegment<ThemeMode>(
                       value: ThemeMode.dark,
-                      label: Text(l10n.tr('深色', en: 'Dark')),
+                      label: Text(l10n.autoT0048),
                       icon: Icon(Icons.dark_mode_outlined),
                     ),
                   ],
@@ -71,7 +71,7 @@ class SettingsThemeSection extends StatelessWidget {
           ),
       error:
            (Object error, StackTrace stackTrace) =>
-              ListTile(title: Text(l10n.tr('设置加载失败: $error', en: 'Settings load failed: $error'))),
+              ListTile(title: Text(l10n.autoT0045(error))),
     );
   }
 }

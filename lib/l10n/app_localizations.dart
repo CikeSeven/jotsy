@@ -20,11 +20,6 @@ extension AppLocalizationsProjectX on AppLocalizations {
   /// 是否当前为中文语言环境。
   bool get isZh => localeName.toLowerCase().startsWith('zh');
 
-  /// 轻量中英双文案选择器。
-  ///
-  /// 在 ARB 尚未完全覆盖时，用于逐步迁移中的兜底文案输出。
-  String tr(String zh, {required String en}) => isZh ? zh : en;
-
   /// 同年日期显示（用于相对时间回退）。
   ///
   /// 中文示例：`3月12日`

@@ -89,7 +89,7 @@ class DiaryHeadSection extends StatelessWidget {
                 icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
               ),
               IconButton(
-                tooltip: context.l10n.tr('归档', en: 'Archive'),
+                tooltip: context.l10n.autoT0140,
                 onPressed: onArchiveSelected,
                 icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
               ),
@@ -161,14 +161,14 @@ class DiaryHeadSection extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s),
                     Text(
-                      context.l10n.tr('排序方式', en: 'Sort'),
+                      context.l10n.autoT0141,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 _ActionTile(
-                  label: context.l10n.tr('最近更新', en: 'Recently updated'),
+                  label: context.l10n.autoT0142,
                   selected: sortMode == DiarySortMode.updatedDesc,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -176,7 +176,7 @@ class DiaryHeadSection extends StatelessWidget {
                   },
                 ),
                 _ActionTile(
-                  label: context.l10n.tr('最早更新', en: 'Oldest updated'),
+                  label: context.l10n.autoT0143,
                   selected: sortMode == DiarySortMode.updatedAsc,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -184,7 +184,7 @@ class DiaryHeadSection extends StatelessWidget {
                   },
                 ),
                 _ActionTile(
-                  label: context.l10n.tr('标题 A-Z', en: 'Title A-Z'),
+                  label: context.l10n.autoT0144,
                   selected: sortMode == DiarySortMode.titleAsc,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -201,14 +201,14 @@ class DiaryHeadSection extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s),
                     Text(
-                      context.l10n.tr('显示布局', en: 'Layout'),
+                      context.l10n.autoT0145,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 _ActionTile(
-                  label: context.l10n.tr('列表', en: 'List'),
+                  label: context.l10n.autoT0146,
                   selected: layoutMode == DiaryLayoutMode.list,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -216,7 +216,7 @@ class DiaryHeadSection extends StatelessWidget {
                   },
                 ),
                 _ActionTile(
-                  label: context.l10n.tr('瀑布流', en: 'Waterfall'),
+                  label: context.l10n.autoT0147,
                   selected: layoutMode == DiaryLayoutMode.waterfall,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -301,7 +301,7 @@ class _SearchPreview extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              context.l10n.tr('搜索标题或内容', en: 'Search title or content'),
+                              context.l10n.autoT0129,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -338,12 +338,12 @@ class _AnimatedTrailingActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          tooltip: context.l10n.tr('已归档笔记', en: 'Archived diaries'),
+          tooltip: context.l10n.autoT0148,
           onPressed: onOpenArchived,
           icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
         ),
         IconButton(
-          tooltip: context.l10n.tr('更多', en: 'More'),
+          tooltip: context.l10n.autoT0125,
           onPressed: onOpenSettings,
           icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
         ),

@@ -46,12 +46,9 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: Text(l10n.tr('重置排序', en: 'Reset order')),
+          title: Text(l10n.autoT0003),
           content: Text(
-            l10n.tr(
-              '确认将工具栏顺序恢复为默认排序吗？',
-              en: 'Reset toolbar order to defaults?',
-            ),
+            l10n.autoT0187,
           ),
           actions: <Widget>[
             TextButton(
@@ -99,7 +96,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         context: context,
         snackBar: SnackBar(
           content: Text(
-            context.l10n.tr('保存排序失败: $error', en: 'Save order failed: $error'),
+            context.l10n.autoT0004(error),
           ),
         ),
       );
@@ -116,7 +113,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
-        title: Text(l10n.tr('工具栏顺序', en: 'Toolbar order')),
+        title: Text(l10n.autoT0005),
         actions: <Widget>[
           TextButton(
             onPressed: _saving ? null : _confirmResetOrder,
@@ -142,24 +139,15 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
             subtitle:
                 item == DiaryToolbarItem.inlineCode
                     ? Text(
-                        l10n.tr(
-                          '用于给选中文本添加行内代码样式',
-                          en: 'Apply inline code style to selected text',
-                        ),
+                        l10n.autoT0188,
                       )
                     : item == DiaryToolbarItem.codeBlock
                     ? Text(
-                        l10n.tr(
-                          '用于插入或切换为代码块',
-                          en: 'Insert or switch to code block',
-                        ),
+                        l10n.autoT0189,
                       )
                     : item == DiaryToolbarItem.indent
                     ? Text(
-                        l10n.tr(
-                          '该项会同时显示缩进增加/减少两个按钮',
-                          en: 'Shows both indent increase/decrease buttons',
-                        ),
+                        l10n.autoT0190,
                       )
                     : null,
             trailing: ReorderableDragStartListener(
@@ -182,25 +170,25 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   String _labelForItem(BuildContext context, DiaryToolbarItem item) {
     final l10n = context.l10n;
     return switch (item) {
-      DiaryToolbarItem.undo => l10n.tr('撤销', en: 'Undo'),
-      DiaryToolbarItem.redo => l10n.tr('重做', en: 'Redo'),
-      DiaryToolbarItem.bold => l10n.tr('加粗', en: 'Bold'),
-      DiaryToolbarItem.italic => l10n.tr('斜体', en: 'Italic'),
-      DiaryToolbarItem.underline => l10n.tr('下划线', en: 'Underline'),
-      DiaryToolbarItem.strikeThrough => l10n.tr('删除线', en: 'Strikethrough'),
-      DiaryToolbarItem.inlineCode => l10n.tr('行内代码（单行）', en: 'Inline code'),
-      DiaryToolbarItem.textColor => l10n.tr('文字颜色', en: 'Text color'),
-      DiaryToolbarItem.backgroundColor => l10n.tr('背景颜色', en: 'Background color'),
-      DiaryToolbarItem.clearFormat => l10n.tr('清除格式', en: 'Clear formatting'),
-      DiaryToolbarItem.image => l10n.tr('插入图片', en: 'Insert image'),
-      DiaryToolbarItem.headerStyle => l10n.tr('标题样式', en: 'Header style'),
-      DiaryToolbarItem.orderedList => l10n.tr('有序列表', en: 'Ordered list'),
-      DiaryToolbarItem.bulletList => l10n.tr('无序列表', en: 'Bullet list'),
-      DiaryToolbarItem.checkList => l10n.tr('待办列表', en: 'Checklist'),
-      DiaryToolbarItem.codeBlock => l10n.tr('代码块（多行）', en: 'Code block'),
-      DiaryToolbarItem.quote => l10n.tr('引用', en: 'Quote'),
-      DiaryToolbarItem.indent => l10n.tr('缩进（增/减）', en: 'Indent'),
-      DiaryToolbarItem.link => l10n.tr('链接', en: 'Link'),
+      DiaryToolbarItem.undo => l10n.autoT0006,
+      DiaryToolbarItem.redo => l10n.autoT0007,
+      DiaryToolbarItem.bold => l10n.autoT0008,
+      DiaryToolbarItem.italic => l10n.autoT0009,
+      DiaryToolbarItem.underline => l10n.autoT0010,
+      DiaryToolbarItem.strikeThrough => l10n.autoT0011,
+      DiaryToolbarItem.inlineCode => l10n.autoT0012,
+      DiaryToolbarItem.textColor => l10n.autoT0013,
+      DiaryToolbarItem.backgroundColor => l10n.autoT0014,
+      DiaryToolbarItem.clearFormat => l10n.autoT0015,
+      DiaryToolbarItem.image => l10n.autoT0016,
+      DiaryToolbarItem.headerStyle => l10n.autoT0017,
+      DiaryToolbarItem.orderedList => l10n.autoT0018,
+      DiaryToolbarItem.bulletList => l10n.autoT0019,
+      DiaryToolbarItem.checkList => l10n.autoT0020,
+      DiaryToolbarItem.codeBlock => l10n.autoT0021,
+      DiaryToolbarItem.quote => l10n.autoT0022,
+      DiaryToolbarItem.indent => l10n.autoT0023,
+      DiaryToolbarItem.link => l10n.autoT0024,
     };
   }
 }

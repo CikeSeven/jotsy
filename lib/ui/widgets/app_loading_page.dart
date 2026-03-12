@@ -24,7 +24,7 @@ class AppLoadingContent extends StatelessWidget {
       child: LoadingIndicatorM3E(
         variant: LoadingIndicatorM3EVariant.contained,
         constraints: const BoxConstraints.tightFor(width: 72, height: 72),
-        semanticLabel: context.l10n.tr('应用加载中', en: 'Loading app'),
+        semanticLabel: context.l10n.autoT0001,
       ),
     );
   }

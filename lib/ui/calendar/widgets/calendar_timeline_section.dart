@@ -219,7 +219,7 @@ class CalendarTimelineSection extends StatelessWidget {
     if (normalized.isNotEmpty) {
       return normalized;
     }
-    return context.l10n.tr('记录了一则内容', en: 'Recorded an entry');
+    return context.l10n.autoT0186;
   }
 
   /// 时间线右侧封面缩略图来源：

@@ -225,12 +225,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: Text(context.l10n.tr('未保存内容', en: 'Unsaved changes')),
+          title: Text(context.l10n.autoT0131),
           content: Text(
-            context.l10n.tr(
-              '当前有未保存的内容，确定退出吗？',
-              en: 'You have unsaved changes. Exit anyway?',
-            ),
+            context.l10n.autoT0207,
           ),
           actions: <Widget>[
             TextButton(
@@ -245,7 +242,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 foregroundColor: colorScheme.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(context.l10n.tr('退出', en: 'Exit')),
+              child: Text(context.l10n.autoT0132),
             ),
           ],
         );
@@ -300,7 +297,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       decoration: InputDecoration(
         isDense: true,
         contentPadding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
-        hintText: context.l10n.tr('标题', en: 'Title'),
+        hintText: context.l10n.autoT0106,
         hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         border: UnderlineInputBorder(
           borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -358,7 +355,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       scrollController: _editorInnerScrollController,
                       config: quill.QuillEditorConfig(
                         autoFocus: widget.diaryId == null,
-                        placeholder: context.l10n.tr('开始记录...', en: 'Start writing...'),
+                        placeholder: context.l10n.autoT0133,
                         scrollable: false,
                         padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
                         embedBuilders: buildDiaryQuillEmbedBuilders(),
@@ -415,7 +412,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               ),
             ),
             body: Center(
-              child: Text(context.l10n.tr('加载失败: $error', en: 'Load failed: $error')),
+              child: Text(context.l10n.autoT0121(error)),
             ),
           ),
       data: (DiaryWithTags? detail) {
@@ -436,7 +433,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
               ),
             ),
-            body: Center(child: Text(context.l10n.tr('日记不存在', en: 'Diary not found'))),
+            body: Center(child: Text(context.l10n.autoT0124)),
           );
         }
 
@@ -474,15 +471,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             ),
             title: Text(
               widget.entryMode == EditDiaryEntryMode.create
-                  ? context.l10n.tr('新建日记', en: 'New diary')
-                  : context.l10n.tr('编辑日记', en: 'Edit diary'),
+                  ? context.l10n.autoT0134
+                  : context.l10n.autoT0135,
             ),
             actions: <Widget>[
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
                   onPressed: _saving ? null : _controller.openPublishPage,
                   icon: const FaIcon(FontAwesomeIcons.plus),
-                  tooltip: context.l10n.tr('发布', en: 'Publish'),
+                  tooltip: context.l10n.autoT0136,
                 )
               else
                 IconButton(
@@ -570,7 +567,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                         });
                       },
                       onPublish: _controller.save,
-                      actionLabel: context.l10n.tr('保存日记', en: 'Save diary'),
+                      actionLabel: context.l10n.autoT0137,
                     ),
                   ),
                 if (showFloatingToolbar)

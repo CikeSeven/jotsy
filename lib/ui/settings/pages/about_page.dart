@@ -146,7 +146,7 @@ class _AboutInfoTile extends StatelessWidget {
         ),
       ),
       trailing: IconButton(
-        tooltip: context.l10n.tr('复制', en: 'Copy'),
+        tooltip: context.l10n.autoT0002,
         onPressed: onCopy,
         icon: const FaIcon(FontAwesomeIcons.copy, size: 15),
       ),

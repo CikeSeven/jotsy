@@ -116,5 +116,447 @@
   "dataMgmtImportConfirmTitle": "导入数据",
   "dataMgmtImportConfirmContent": "导入会覆盖当前数据，确认继续吗？",
   "dataMgmtImportAction": "导入",
-  "dataMgmtBusyLabel": "数据处理中"
+  "dataMgmtBusyLabel": "数据处理中",
+  "autoT0001": "应用加载中",
+  "autoT0002": "复制",
+  "autoT0003": "重置排序",
+  "autoT0004": "保存排序失败: {p0}",
+  "@autoT0004": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0005": "工具栏顺序",
+  "autoT0006": "撤销",
+  "autoT0007": "重做",
+  "autoT0008": "加粗",
+  "autoT0009": "斜体",
+  "autoT0010": "下划线",
+  "autoT0011": "删除线",
+  "autoT0012": "行内代码（单行）",
+  "autoT0013": "文字颜色",
+  "autoT0014": "背景颜色",
+  "autoT0015": "清除格式",
+  "autoT0016": "插入图片",
+  "autoT0017": "标题样式",
+  "autoT0018": "有序列表",
+  "autoT0019": "无序列表",
+  "autoT0020": "待办列表",
+  "autoT0021": "代码块（多行）",
+  "autoT0022": "引用",
+  "autoT0023": "缩进（增/减）",
+  "autoT0024": "链接",
+  "autoT0025": "删除时间未知",
+  "autoT0026": "部分恢复失败，请重试",
+  "autoT0027": "部分删除失败，请重试",
+  "autoT0028": "彻底删除",
+  "autoT0029": "回收站",
+  "autoT0030": "恢复",
+  "autoT0031": "回收站加载失败: {p0}",
+  "@autoT0031": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0032": "回收站为空",
+  "autoT0033": "无标题",
+  "autoT0034": "创建标签失败: {p0}",
+  "@autoT0034": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0035": "修改标签失败: {p0}",
+  "@autoT0035": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0036": "删除标签失败: {p0}",
+  "@autoT0036": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0037": "保存标签顺序失败: {p0}",
+  "@autoT0037": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0038": "删除标签",
+  "autoT0039": "标签管理",
+  "autoT0040": "新建标签",
+  "autoT0041": "新建第一个标签",
+  "autoT0042": "标签加载失败: {p0}",
+  "@autoT0042": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0043": "工具栏按钮排序",
+  "autoT0044": "当前前 4 项：{p0}",
+  "@autoT0044": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0045": "设置加载失败: {p0}",
+  "@autoT0045": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0046": "系统",
+  "autoT0047": "浅色",
+  "autoT0048": "深色",
+  "autoT0049": "今天发生了什么意料之外的好事？",
+  "autoT0050": "如果给今天取个标题，你会写什么？",
+  "autoT0051": "今天最值得记住的一瞬间是什么？",
+  "autoT0052": "媒体预览",
+  "autoT0053": "没有可浏览的图片",
+  "autoT0054": "媒体画廊",
+  "autoT0055": "还没有可展示的图片",
+  "autoT0056": "加载失败，点击重试",
+  "autoT0057": "没有更多图片了",
+  "autoT0058": "探索",
+  "autoT0059": "探索数据暂不可用",
+  "autoT0060": "情绪与精力趋势",
+  "autoT0061": "查看全部图片",
+  "autoT0062": "还没有可展示的图片。",
+  "autoT0063": "那年今日",
+  "autoT0064": "补写今天",
+  "autoT0065": "无标题日记",
+  "autoT0066": "总计记录",
+  "autoT0067": "连续打卡",
+  "autoT0068": "本月字数",
+  "autoT0069": "标签云",
+  "autoT0070": "删除日记",
+  "autoT0071": "取消归档失败，请重试",
+  "autoT0072": "已恢复归档状态",
+  "autoT0073": "删除失败，请重试",
+  "autoT0074": "已删除 {p0} 条日记",
+  "@autoT0074": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0075": "已删除日记",
+  "autoT0076": "已恢复删除的日记",
+  "autoT0077": "恢复失败，请重试",
+  "autoT0078": "归档失败，请重试",
+  "autoT0079": "已归档 {p0} 条日记",
+  "@autoT0079": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0080": "已恢复归档的日记",
+  "autoT0081": "发现未完成日记",
+  "autoT0082": "新建空笔记",
+  "autoT0083": "继续编辑",
+  "autoT0084": "确认删除已选择的 {p0} 条日记吗？",
+  "@autoT0084": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0085": "暂无街道信息",
+  "autoT0086": "标题和正文不能同时为空",
+  "autoT0087": "保存失败: {p0}",
+  "@autoT0087": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0088": "未获取到可用的封面路径",
+  "autoT0089": "封面导入失败: {p0}",
+  "@autoT0089": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0090": "标签创建失败: {p0}",
+  "@autoT0090": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0091": "获取位置失败: {p0}",
+  "@autoT0091": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0092": "请先获取当前位置",
+  "autoT0093": "获取天气失败: {p0}",
+  "@autoT0093": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0094": "删除日记",
+  "autoT0095": "未命名日记",
+  "autoT0096": "选择发表日期",
+  "autoT0097": "选择发表时间",
+  "autoT0098": "发布失败: {p0}",
+  "@autoT0098": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0099": "已选择 {p0} 项",
+  "@autoT0099": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0100": "归档日记",
+  "autoT0101": "取消归档",
+  "autoT0102": "归档加载失败: {p0}",
+  "@autoT0102": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0103": "暂无归档日记",
+  "autoT0104": "（无正文）",
+  "autoT0105": "无",
+  "autoT0106": "标题",
+  "autoT0107": "创建时间",
+  "autoT0108": "更新时间",
+  "autoT0109": "标签",
+  "autoT0110": "正文",
+  "autoT0111": "截图失败，请重试",
+  "autoT0112": "图片分享失败: {p0}",
+  "@autoT0112": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0113": "确认删除这条日记吗？",
+  "autoT0114": "以图片形式分享",
+  "autoT0115": "以文字形式分享",
+  "autoT0116": "心情",
+  "autoT0117": "发表于",
+  "autoT0118": "最后编辑于",
+  "autoT0119": "今天还没有写下正文",
+  "autoT0120": "日记",
+  "autoT0121": "加载失败: {p0}",
+  "@autoT0121": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0122": "日记已不存在",
+  "autoT0123": "日记已不存在，正在返回...",
+  "autoT0124": "日记不存在",
+  "autoT0125": "更多",
+  "autoT0126": "标签{p0}",
+  "@autoT0126": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0127": "日记加载失败: {p0}",
+  "@autoT0127": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0128": "取消搜索",
+  "autoT0129": "搜索标题或内容",
+  "autoT0130": "清空",
+  "autoT0131": "未保存内容",
+  "autoT0132": "退出",
+  "autoT0133": "开始记录...",
+  "autoT0134": "新建日记",
+  "autoT0135": "编辑日记",
+  "autoT0136": "发布",
+  "autoT0137": "保存日记",
+  "autoT0138": "发表日记",
+  "autoT0139": "正文为空",
+  "autoT0140": "归档",
+  "autoT0141": "排序方式",
+  "autoT0142": "最近更新",
+  "autoT0143": "最早更新",
+  "autoT0144": "标题 A-Z",
+  "autoT0145": "显示布局",
+  "autoT0146": "列表",
+  "autoT0147": "瀑布流",
+  "autoT0148": "已归档笔记",
+  "autoT0149": "编辑标签",
+  "autoT0150": "标签名",
+  "autoT0151": "选择颜色",
+  "autoT0152": "没有搜索到日记",
+  "autoT0153": "换个关键词再试试吧～",
+  "autoT0154": "还没有日记",
+  "autoT0155": "新建日记",
+  "autoT0156": "封面加载失败",
+  "autoT0157": "新建",
+  "autoT0158": "上划展开",
+  "autoT0159": "下滑收起",
+  "autoT0160": "选择标签",
+  "autoT0161": "点击选择封面（可选）",
+  "autoT0162": "封面",
+  "autoT0163": "清除封面",
+  "autoT0164": "未选择标签",
+  "autoT0165": "标签加载失败: {p0}",
+  "@autoT0165": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0166": "暂无标签，可先创建",
+  "autoT0167": "此时此地",
+  "autoT0168": "点击右侧获取当前地址",
+  "autoT0169": "获取位置",
+  "autoT0170": "点击右侧获取当前天气",
+  "autoT0171": "获取天气",
+  "autoT0172": "发表时间",
+  "autoT0173": "自动获取当前时间",
+  "autoT0174": "选择发表时间",
+  "autoT0175": "精力",
+  "autoT0176": "发布中...",
+  "autoT0177": "选择日期",
+  "autoT0178": "月视图",
+  "autoT0179": "周视图",
+  "autoT0180": "回到今天",
+  "autoT0181": "补写日记",
+  "autoT0182": "这一天很安静，没有任何记录。",
+  "autoT0183": "日历",
+  "autoT0184": "上个月",
+  "autoT0185": "下个月",
+  "autoT0186": "记录了一则内容",
+  "autoT0187": "确认将工具栏顺序恢复为默认排序吗？",
+  "autoT0188": "用于给选中文本添加行内代码样式",
+  "autoT0189": "用于插入或切换为代码块",
+  "autoT0190": "该项会同时显示缩进增加/减少两个按钮",
+  "autoT0191": "已恢复 {p0} 条日记",
+  "@autoT0191": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0192": "已彻底删除 {p0} 条日记",
+  "@autoT0192": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0193": "确认彻底删除已选择的 {p0} 条日记吗？删除后不可恢复。",
+  "@autoT0193": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0194": "删除于 {p0}",
+  "@autoT0194": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0195": "确认删除标签 \"{p0}\" 吗？",
+  "@autoT0195": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0196": "今天你最想感谢的人或事是什么？",
+  "autoT0197": "加载图片失败，请稍后重试",
+  "autoT0198": "继续记录天气、标签和心情后，这里会出现更具体的关联洞察。",
+  "autoT0199": "还没有标签数据，写几篇带标签的日记试试。",
+  "autoT0200": "确认删除已选择的 {p0} 条归档日记吗？",
+  "@autoT0200": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0201": "已取消归档 {p0} 条日记",
+  "@autoT0201": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0202": "检测到你上次有未保存的日记，是否继续编辑？",
+  "autoT0203": "metadata 必须是合法 JSON 对象",
+  "autoT0204": "未检测到高德 Web 服务 key，请先配置 amap.web.api.key",
+  "autoT0205": "未检测到和风天气 key，请先配置 qweather.api_key",
+  "autoT0206": "将执行软删除，后续可恢复。确定继续吗？",
+  "autoT0207": "当前有未保存的内容，确定退出吗？",
+  "autoT0208": "标题样式（点击切换）",
+  "autoT0209": "检测到你上次有未保存的日记，是否继续编辑？",
+  "autoT0210": "日历日记加载失败: {p0}",
+  "@autoT0210": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0211": "别着急，属于这一天的精彩还没发生。"
 }

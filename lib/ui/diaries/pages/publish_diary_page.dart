@@ -161,7 +161,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(context.l10n.tr('发表日记', en: 'Publish diary')),
+          title: Text(context.l10n.autoT0138),
           leading: IconButton(
             onPressed: _controller.closeWithDraft,
             icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
@@ -191,7 +191,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                         const SizedBox(height: 16),
                         if (widget.initialDraft.contentText.trim().isEmpty)
                           Text(
-                            context.l10n.tr('正文为空', en: 'No content'),
+                            context.l10n.autoT0139,
                             style: Theme.of(context).textTheme.bodyMedium,
                           )
                         else

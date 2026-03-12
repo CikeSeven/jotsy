@@ -26,7 +26,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
 
   String _formatDeletedAt(DateTime? deletedAt) {
     if (deletedAt == null) {
-      return context.l10n.tr('删除时间未知', en: 'Unknown deleted time');
+      return context.l10n.autoT0025;
     }
     final locale = Localizations.localeOf(context);
     final pattern = locale.languageCode == 'zh' ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd HH:mm';
@@ -72,15 +72,12 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
 
       if (failedIds.isEmpty) {
         await _showHint(
-          context.l10n.tr(
-            '已恢复 ${targetIds.length} 条日记',
-            en: 'Restored ${targetIds.length} diaries',
-          ),
+          context.l10n.autoT0191(targetIds.length),
         );
         return;
       }
       await _showHint(
-        context.l10n.tr('部分恢复失败，请重试', en: 'Some restores failed. Please retry.'),
+        context.l10n.autoT0026,
       );
     } finally {
       if (mounted) {
@@ -120,15 +117,12 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
 
       if (failedIds.isEmpty) {
         await _showHint(
-          context.l10n.tr(
-            '已彻底删除 ${targetIds.length} 条日记',
-            en: 'Permanently deleted ${targetIds.length} diaries',
-          ),
+          context.l10n.autoT0192(targetIds.length),
         );
         return;
       }
       await _showHint(
-        context.l10n.tr('部分删除失败，请重试', en: 'Some deletions failed. Please retry.'),
+        context.l10n.autoT0027,
       );
     } finally {
       if (mounted) {
@@ -143,12 +137,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: Text(context.l10n.tr('彻底删除', en: 'Permanent delete')),
+          title: Text(context.l10n.autoT0028),
           content: Text(
-            context.l10n.tr(
-              '确认彻底删除已选择的 $count 条日记吗？删除后不可恢复。',
-              en: 'Permanently delete $count selected diaries? This cannot be undone.',
-            ),
+            context.l10n.autoT0193(count),
           ),
           actions: <Widget>[
             TextButton(
@@ -193,20 +184,17 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         ),
         title: Text(
           _hasSelection
-              ? l10n.tr(
-                  '已选择 ${_selectedDiaryIds.length} 项',
-                  en: '${_selectedDiaryIds.length} selected',
-                )
-              : l10n.tr('回收站', en: 'Recycle bin'),
+              ? l10n.autoT0099(_selectedDiaryIds.length)
+              : l10n.autoT0029,
         ),
         actions: <Widget>[
           IconButton(
-            tooltip: l10n.tr('恢复', en: 'Restore'),
+            tooltip: l10n.autoT0030,
             onPressed: _hasSelection && !_operating ? _restoreSelected : null,
             icon: const FaIcon(FontAwesomeIcons.arrowRotateLeft, size: 16),
           ),
           IconButton(
-            tooltip: l10n.tr('彻底删除', en: 'Permanent delete'),
+            tooltip: l10n.autoT0028,
             onPressed: _hasSelection && !_operating ? _purgeSelected : null,
             icon: FaIcon(
               FontAwesomeIcons.trashCan,
@@ -220,12 +208,12 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
           child: Text(
-            l10n.tr('回收站加载失败: $error', en: 'Recycle bin load failed: $error'),
+            l10n.autoT0031(error),
           ),
         ),
         data: (diaries) {
           if (diaries.isEmpty) {
-            return Center(child: Text(l10n.tr('回收站为空', en: 'Recycle bin is empty')));
+            return Center(child: Text(l10n.autoT0032));
           }
 
           return ListView.separated(
@@ -236,7 +224,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
               final diary = diaries[index].diary;
               final selected = _selectedDiaryIds.contains(diary.diaryId);
               final title = diary.title.trim().isEmpty
-                  ? l10n.tr('无标题', en: 'Untitled')
+                  ? l10n.autoT0033
                   : diary.title.trim();
               return ListTile(
                 onTap: () => _toggleSelection(diary.diaryId),
@@ -247,10 +235,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
                 ),
                 title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
                 subtitle: Text(
-                  l10n.tr(
-                    '删除于 ${_formatDeletedAt(diary.deletedAt)}',
-                    en: 'Deleted at ${_formatDeletedAt(diary.deletedAt)}',
-                  ),
+                  l10n.autoT0194(_formatDeletedAt(diary.deletedAt)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

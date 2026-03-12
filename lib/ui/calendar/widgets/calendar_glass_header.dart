@@ -76,7 +76,7 @@ class CalendarGlassHeader extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
-                              l10n.tr('日历', en: 'Calendar'),
+                              l10n.autoT0183,
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
@@ -86,7 +86,7 @@ class CalendarGlassHeader extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 IconButton(
-                                  tooltip: l10n.tr('上个月', en: 'Previous month'),
+                                  tooltip: l10n.autoT0184,
                                   visualDensity: VisualDensity.compact,
                                   onPressed: onPreviousMonth,
                                   icon: const FaIcon(
@@ -114,7 +114,7 @@ class CalendarGlassHeader extends StatelessWidget {
                                   ),
                                 ),
                                 IconButton(
-                                  tooltip: l10n.tr('下个月', en: 'Next month'),
+                                  tooltip: l10n.autoT0185,
                                   visualDensity: VisualDensity.compact,
                                   onPressed: onNextMonth,
                                   icon: const FaIcon(
@@ -128,7 +128,7 @@ class CalendarGlassHeader extends StatelessWidget {
                           Align(
                             alignment: Alignment.centerRight,
                             child: IconButton(
-                              tooltip: l10n.tr('回到今天', en: 'Back to today'),
+                              tooltip: l10n.autoT0180,
                               onPressed: onJumpToToday,
                               icon: FaIcon(
                                 FontAwesomeIcons.calendarDay,

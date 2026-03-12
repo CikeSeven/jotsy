@@ -63,7 +63,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(l10n.tr('媒体画廊', en: 'Media gallery')),
+        title: Text(l10n.autoT0054),
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
@@ -106,7 +106,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
     if (_mediaItems.isEmpty) {
       return Center(
         child: Text(
-          l10n.tr('还没有可展示的图片', en: 'No images to show yet'),
+          l10n.autoT0055,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -246,10 +246,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
       }
       setState(() {
         _isLoading = false;
-        _errorMessage = context.l10n.tr(
-          '加载图片失败，请稍后重试',
-          en: 'Failed to load images. Please try again later.',
-        );
+        _errorMessage = context.l10n.autoT0197;
       });
     }
   }
@@ -291,7 +288,7 @@ class _GalleryFooter extends StatelessWidget {
         child: TextButton(
           onPressed: onRetry,
           child: Text(
-            l10n.tr('加载失败，点击重试', en: 'Load failed, tap to retry'),
+            l10n.autoT0056,
           ),
         ),
       );
@@ -299,7 +296,7 @@ class _GalleryFooter extends StatelessWidget {
     if (!hasMore) {
       return Center(
         child: Text(
-          l10n.tr('没有更多图片了', en: 'No more images'),
+          l10n.autoT0057,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

@@ -26,15 +26,12 @@ class ExploreTagCloudCard extends StatelessWidget {
         children: <Widget>[
           ExploreSectionTitle(
             icon: FontAwesomeIcons.tags,
-            title: l10n.tr('标签云', en: 'Tag cloud'),
+            title: l10n.autoT0069,
           ),
           const SizedBox(height: 10),
           if (tags.isEmpty)
             Text(
-              l10n.tr(
-                '还没有标签数据，写几篇带标签的日记试试。',
-                en: 'No tag data yet. Try writing diaries with tags.',
-              ),
+              l10n.autoT0199,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

@@ -117,7 +117,7 @@ class CalendarPageController {
       firstDate: firstDate,
       lastDate: lastDate,
       locale: Localizations.localeOf(_state.context),
-      helpText: _state.context.l10n.tr('选择日期', en: 'Select date'),
+      helpText: _state.context.l10n.autoT0177,
       cancelText: _state.context.l10n.commonCancel,
       confirmText: _state.context.l10n.commonConfirm,
     );
@@ -235,14 +235,14 @@ class CalendarPageController {
           return;
         }
         await _showInfoSnackBar(
-          _state.context.l10n.tr('已恢复删除的日记', en: 'Deleted diary restored'),
+          _state.context.l10n.autoT0076,
         );
       } catch (_) {
         if (!_state.mounted) {
           return;
         }
         await _showInfoSnackBar(
-          _state.context.l10n.tr('恢复失败，请重试', en: 'Restore failed. Please try again.'),
+          _state.context.l10n.autoT0077,
         );
       }
     });
@@ -261,7 +261,7 @@ class CalendarPageController {
 
     final controller = messenger.showSnackBar(
       SnackBar(
-        content: Text(_state.context.l10n.tr('已删除日记', en: 'Diary deleted')),
+        content: Text(_state.context.l10n.autoT0075),
         duration: const Duration(seconds: 4),
         action: SnackBarAction(
           label: _state.context.l10n.commonUndo,
@@ -358,13 +358,10 @@ class CalendarPageController {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
           title: Text(
-            _state.context.l10n.tr('发现未完成日记', en: 'Unsaved draft found'),
+            _state.context.l10n.autoT0081,
           ),
           content: Text(
-            _state.context.l10n.tr(
-              '检测到你上次有未保存的日记，是否继续编辑？',
-              en: 'An unfinished diary draft was found. Continue editing?',
-            ),
+            _state.context.l10n.autoT0209,
           ),
           actions: <Widget>[
             TextButton(
@@ -377,7 +374,7 @@ class CalendarPageController {
                 ).pop(_CalendarCreateDraftDecision.newEmpty);
               },
               child: Text(
-                _state.context.l10n.tr('新建空笔记', en: 'New empty note'),
+                _state.context.l10n.autoT0082,
               ),
             ),
             TextButton(
@@ -390,7 +387,7 @@ class CalendarPageController {
                 ).pop(_CalendarCreateDraftDecision.continueEditing);
               },
               child: Text(
-                _state.context.l10n.tr('继续编辑', en: 'Continue editing'),
+                _state.context.l10n.autoT0083,
               ),
             ),
           ],

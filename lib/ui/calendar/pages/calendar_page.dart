@@ -193,8 +193,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         headerVisible: false,
         availableGestures: AvailableGestures.all,
         availableCalendarFormats: <CalendarFormat, String>{
-          CalendarFormat.month: l10n.tr('月视图', en: 'Month'),
-          CalendarFormat.week: l10n.tr('周视图', en: 'Week'),
+          CalendarFormat.month: l10n.autoT0178,
+          CalendarFormat.week: l10n.autoT0179,
         },
         eventLoader: (day) {
           final bucketDay = DateUtils.dateOnly(day);
@@ -332,10 +332,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 AppSpacing.m,
               ),
               child: Text(
-                context.l10n.tr(
-                  '日历日记加载失败: $error',
-                  en: 'Calendar diaries load failed: $error',
-                ),
+                context.l10n.autoT0210(error),
               ),
             ),
           ),
@@ -350,17 +347,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               child: CalendarDayEmptyState(
                 onAction: isFutureDay ? _controller.jumpToToday : _openCreateFromHomeFab,
                 message: isFutureDay
-                    ? context.l10n.tr(
-                        '别着急，属于这一天的精彩还没发生。',
-                        en: "Take it easy, this day's highlights haven't happened yet.",
-                      )
-                    : context.l10n.tr(
-                        '这一天很安静，没有任何记录。',
-                        en: 'This day is quiet, no records yet.',
-                      ),
+                    ? context.l10n.autoT0211
+                    : context.l10n.autoT0182,
                 actionLabel: isFutureDay
-                    ? context.l10n.tr('回到今天', en: 'Back to today')
-                    : context.l10n.tr('补写日记', en: 'Write for this day'),
+                    ? context.l10n.autoT0180
+                    : context.l10n.autoT0181,
               ),
             ),
           ];

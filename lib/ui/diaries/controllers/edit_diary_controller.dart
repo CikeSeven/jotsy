@@ -39,7 +39,7 @@ class EditDiaryController {
       return township;
     }
     if (_state._draftLocationFromAuto) {
-      return _state.context.l10n.tr('暂无街道信息', en: 'No street info');
+      return _state.context.l10n.autoT0085;
     }
     return null;
   }
@@ -171,7 +171,7 @@ class EditDiaryController {
           context: _state.context,
           snackBar: SnackBar(
             content: Text(
-              _state.context.l10n.tr('标题和正文不能同时为空', en: 'Title and content cannot both be empty'),
+              _state.context.l10n.autoT0086,
             ),
           ),
         ),
@@ -184,10 +184,7 @@ class EditDiaryController {
           context: _state.context,
           snackBar: SnackBar(
             content: Text(
-              _state.context.l10n.tr(
-                'metadata 必须是合法 JSON 对象',
-                en: 'metadata must be a valid JSON object',
-              ),
+              _state.context.l10n.autoT0203,
             ),
           ),
         ),
@@ -263,7 +260,7 @@ class EditDiaryController {
       await HomeHintVisibilityScope.showTrackedSnackBar(
         context: _state.context,
         snackBar: SnackBar(
-          content: Text(_state.context.l10n.tr('保存失败: $error', en: 'Save failed: $error')),
+          content: Text(_state.context.l10n.autoT0087(error)),
         ),
       );
     } finally {
@@ -287,7 +284,7 @@ class EditDiaryController {
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
       await _showHint(
-        _state.context.l10n.tr('未获取到可用的封面路径', en: 'No valid cover path found'),
+        _state.context.l10n.autoT0088,
       );
       return;
     }
@@ -311,7 +308,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.tr('封面导入失败: $error', en: 'Cover import failed: $error'),
+        _state.context.l10n.autoT0089(error),
       );
     }
   }
@@ -348,7 +345,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.tr('标签创建失败: $error', en: 'Tag creation failed: $error'),
+        _state.context.l10n.autoT0090(error),
       );
     }
   }
@@ -364,10 +361,7 @@ class EditDiaryController {
       if (service == null) {
         throw LocationResolveException(
           type: LocationResolveErrorType.missingApiKey,
-          message: _state.context.l10n.tr(
-            '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
-            en: 'AMap Web API key missing, please configure amap.web.api.key',
-          ),
+          message: _state.context.l10n.autoT0204,
         );
       }
 
@@ -393,7 +387,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.tr('获取位置失败: $error', en: 'Location failed: $error'),
+        _state.context.l10n.autoT0091(error),
       );
     } finally {
       if (_state.mounted) {
@@ -410,7 +404,7 @@ class EditDiaryController {
     if (_state._draftLocationLatitude == null ||
         _state._draftLocationLongitude == null) {
       await _showHint(
-        _state.context.l10n.tr('请先获取当前位置', en: 'Please get current location first'),
+        _state.context.l10n.autoT0092,
       );
       return;
     }
@@ -421,10 +415,7 @@ class EditDiaryController {
       if (service == null) {
         throw QWeatherException(
           type: QWeatherErrorType.missingConfig,
-          message: _state.context.l10n.tr(
-            '未检测到和风天气 key，请先配置 qweather.api_key',
-            en: 'QWeather key missing, please configure qweather.api_key',
-          ),
+          message: _state.context.l10n.autoT0205,
         );
       }
 
@@ -452,7 +443,7 @@ class EditDiaryController {
         return;
       }
       await _showHint(
-        _state.context.l10n.tr('获取天气失败: $error', en: 'Weather fetch failed: $error'),
+        _state.context.l10n.autoT0093(error),
       );
     } finally {
       if (_state.mounted) {
@@ -473,12 +464,9 @@ class EditDiaryController {
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: Text(l10n.tr('删除日记', en: 'Delete diary')),
+          title: Text(l10n.autoT0094),
           content: Text(
-            l10n.tr(
-              '将执行软删除，后续可恢复。确定继续吗？',
-              en: 'This will soft-delete the diary and it can be restored later. Continue?',
-            ),
+            l10n.autoT0206,
           ),
           actions: <Widget>[
             TextButton(

@@ -20,12 +20,9 @@ class DiariesPageFeedback {
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: Text(l10n.tr('发现未完成日记', en: 'Unsaved draft found')),
+          title: Text(l10n.autoT0081),
           content: Text(
-            l10n.tr(
-              '检测到你上次有未保存的日记，是否继续编辑？',
-              en: 'An unfinished diary was found. Continue editing?',
-            ),
+            l10n.autoT0202,
           ),
           actions: <Widget>[
             TextButton(
@@ -37,7 +34,7 @@ class DiariesPageFeedback {
                   () => Navigator.of(
                     dialogContext,
                   ).pop(_CreateDraftDecision.newEmpty),
-              child: Text(l10n.tr('新建空笔记', en: 'New empty note')),
+              child: Text(l10n.autoT0082),
             ),
             TextButton(
               style: TextButton.styleFrom(
@@ -47,7 +44,7 @@ class DiariesPageFeedback {
                   () => Navigator.of(
                     dialogContext,
                   ).pop(_CreateDraftDecision.continueEditing),
-              child: Text(l10n.tr('继续编辑', en: 'Continue editing')),
+              child: Text(l10n.autoT0083),
             ),
           ],
         );
@@ -62,9 +59,9 @@ class DiariesPageFeedback {
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: Text(l10n.tr('删除日记', en: 'Delete diaries')),
+          title: Text(l10n.autoT0070),
           content: Text(
-            l10n.tr('确认删除已选择的 $count 条日记吗？', en: 'Delete $count selected diaries?'),
+            l10n.autoT0084(count),
           ),
           actions: <Widget>[
             TextButton(

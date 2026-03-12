@@ -39,13 +39,10 @@ class ExplorePageController {
     List<int> orderedTagIds = const <int>[],
   }) {
     final fallbackPrompts = <String>[
-      l10n.tr('今天发生了什么意料之外的好事？', en: 'What unexpected good thing happened today?'),
-      l10n.tr('如果给今天取个标题，你会写什么？', en: 'If today had a title, what would it be?'),
-      l10n.tr('今天最值得记住的一瞬间是什么？', en: 'What moment today is most worth remembering?'),
-      l10n.tr(
-        '今天你最想感谢的人或事是什么？',
-        en: 'What person or thing are you most grateful for today?',
-      ),
+      l10n.autoT0049,
+      l10n.autoT0050,
+      l10n.autoT0051,
+      l10n.autoT0196,
     ];
     final stats = _buildStats(diaries, now: now);
     final onThisDayDiaries = _pickOnThisDayList(diaries, now: now, l10n: l10n);

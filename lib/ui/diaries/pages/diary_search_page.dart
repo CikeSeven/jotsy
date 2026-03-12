@@ -154,7 +154,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
             .map(
               (id) => Tag(
                 id: id,
-                name: context.l10n.tr('标签$id', en: 'Tag $id'),
+                name: context.l10n.autoT0126(id),
                 color: colorScheme.primary.value,
               ),
             )
@@ -196,7 +196,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                           hasScrollBody: false,
                           child: Center(
                             child: Text(
-                              context.l10n.tr('日记加载失败: $error', en: 'Diary load failed: $error'),
+                              context.l10n.autoT0127(error),
                             ),
                           ),
                         ),
@@ -465,7 +465,7 @@ class _SearchInputBar extends StatelessWidget {
                   child: Row(
                     children: <Widget>[
                       IconButton(
-                        tooltip: context.l10n.tr('取消搜索', en: 'Close search'),
+                        tooltip: context.l10n.autoT0128,
                         splashRadius: 18,
                         onPressed: onExitSearch,
                         icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
@@ -481,7 +481,7 @@ class _SearchInputBar extends StatelessWidget {
                                   onChanged: onSearchChanged,
                                   decoration: InputDecoration(
                                     isDense: true,
-                                    hintText: context.l10n.tr('搜索标题或内容', en: 'Search title or content'),
+                                    hintText: context.l10n.autoT0129,
                                     border: InputBorder.none,
                                     hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
@@ -521,7 +521,7 @@ class _SearchInputBar extends StatelessWidget {
                                             onChanged: onSearchChanged,
                                             decoration: InputDecoration(
                                               isDense: true,
-                                              hintText: context.l10n.tr('搜索标题或内容', en: 'Search title or content'),
+                                              hintText: context.l10n.autoT0129,
                                               border: InputBorder.none,
                                               hintStyle: Theme.of(context).textTheme.bodyMedium
                                                   ?.copyWith(
@@ -543,7 +543,7 @@ class _SearchInputBar extends StatelessWidget {
                             hasSearchText
                                 ? IconButton(
                                   key: const ValueKey<String>('search_clear_button'),
-                                  tooltip: context.l10n.tr('清空', en: 'Clear'),
+                                  tooltip: context.l10n.autoT0130,
                                   splashRadius: 18,
                                   onPressed: onClearSearch,
                                   icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),

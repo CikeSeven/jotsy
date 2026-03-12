@@ -80,7 +80,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
         children: <Widget>[
           ExploreSectionTitle(
             icon: FontAwesomeIcons.clockRotateLeft,
-            title: l10n.tr('那年今日', en: 'On this day'),
+            title: l10n.autoT0063,
           ),
           const SizedBox(height: 10),
           if (memories.isEmpty)
@@ -101,7 +101,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   const SizedBox(height: 10),
                   FilledButton.tonal(
                     onPressed: widget.onCreateToday,
-                    child: Text(l10n.tr('补写今天', en: 'Write for today')),
+                    child: Text(l10n.autoT0064),
                   ),
                 ],
               ),
@@ -182,7 +182,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   const SizedBox(height: 6),
                   Text(
                     diary.title.trim().isEmpty
-                        ? context.l10n.tr('无标题日记', en: 'Untitled diary')
+                        ? context.l10n.autoT0065
                         : diary.title.trim(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -194,10 +194,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   Text(
                     widget.controller.contentExtractor.summaryText(
                       diary,
-                      emptyFallback: context.l10n.tr(
-                        '记录了一则内容',
-                        en: 'Recorded an entry',
-                      ),
+                      emptyFallback: context.l10n.autoT0186,
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,

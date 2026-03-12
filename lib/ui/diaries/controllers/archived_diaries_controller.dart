@@ -81,12 +81,9 @@ class ArchivedDiariesController {
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
         return AlertDialog(
-          title: Text(l10n.tr('删除日记', en: 'Delete diaries')),
+          title: Text(l10n.autoT0070),
           content: Text(
-            l10n.tr(
-              '确认删除已选择的 $count 条归档日记吗？',
-              en: 'Delete $count selected archived diaries?',
-            ),
+            l10n.autoT0200(count),
           ),
           actions: <Widget>[
             TextButton(
@@ -183,7 +180,7 @@ class ArchivedDiariesController {
         });
       }
       await showInfoSnackBar(
-        _state.context.l10n.tr('取消归档失败，请重试', en: 'Unarchive failed. Please try again.'),
+        _state.context.l10n.autoT0071,
       );
       return;
     }
@@ -194,10 +191,7 @@ class ArchivedDiariesController {
     }
 
     final undoRequested = await showUndoSnackBar(
-      message: _state.context.l10n.tr(
-        '已取消归档 ${targetIds.length} 条日记',
-        en: 'Unarchived ${targetIds.length} diaries',
-      ),
+      message: _state.context.l10n.autoT0201(targetIds.length),
       duration: _ArchivedDiariesPageState._undoSnackDuration,
     );
     if (!_state.mounted || !undoRequested) {
@@ -211,7 +205,7 @@ class ArchivedDiariesController {
       return;
     }
     await showInfoSnackBar(
-      _state.context.l10n.tr('已恢复归档状态', en: 'Archive status restored'),
+      _state.context.l10n.autoT0072,
     );
   }
 
@@ -260,13 +254,13 @@ class ArchivedDiariesController {
         _state._selectedDiaryIds.addAll(targetIds);
       });
       await showInfoSnackBar(
-        _state.context.l10n.tr('删除失败，请重试', en: 'Delete failed. Please try again.'),
+        _state.context.l10n.autoT0073,
       );
       return;
     }
 
     await showInfoSnackBar(
-      _state.context.l10n.tr('已删除 ${targetIds.length} 条日记', en: 'Deleted ${targetIds.length} diaries'),
+      _state.context.l10n.autoT0074(targetIds.length),
     );
   }
 
@@ -287,7 +281,7 @@ class ArchivedDiariesController {
           }
           if (result == DiaryPreviewResult.deleted) {
             final undoRequested = await showUndoSnackBar(
-              message: _state.context.l10n.tr('已删除日记', en: 'Diary deleted'),
+              message: _state.context.l10n.autoT0075,
               duration: _ArchivedDiariesPageState._undoSnackDuration,
             );
             if (!_state.mounted || !undoRequested) {
@@ -300,14 +294,14 @@ class ArchivedDiariesController {
                 return;
               }
               await showInfoSnackBar(
-                _state.context.l10n.tr('已恢复删除的日记', en: 'Deleted diary restored'),
+                _state.context.l10n.autoT0076,
               );
             } catch (_) {
               if (!_state.mounted) {
                 return;
               }
               await showInfoSnackBar(
-                _state.context.l10n.tr('恢复失败，请重试', en: 'Restore failed. Please try again.'),
+                _state.context.l10n.autoT0077,
               );
             }
           }

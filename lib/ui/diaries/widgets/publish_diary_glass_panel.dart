@@ -471,7 +471,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                             const FaIcon(FontAwesomeIcons.plus, size: 12),
                             const SizedBox(width: 6),
                             Text(
-                              l10n.tr('新建', en: 'Create'),
+                              l10n.autoT0157,
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -498,8 +498,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final icon =
         isCollapsedVisual ? FontAwesomeIcons.anglesUp : FontAwesomeIcons.anglesDown;
     final title = isCollapsedVisual
-        ? l10n.tr('上划展开', en: 'Swipe up to expand')
-        : l10n.tr('下滑收起', en: 'Swipe down to collapse');
+        ? l10n.autoT0158
+        : l10n.autoT0159;
     return SizedBox(
       height: _collapsedHeight,
       child: Material(
@@ -550,7 +550,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           Expanded(
             child: Center(
               child: Text(
-                l10n.tr('选择标签', en: 'Choose tags'),
+                l10n.autoT0160,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -568,7 +568,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final coverText =
         widget.hasCover && widget.coverLabel != null
             ? widget.coverLabel!
-            : l10n.tr('点击选择封面（可选）', en: 'Tap to choose a cover (optional)');
+            : l10n.autoT0161;
     final colorScheme = Theme.of(context).colorScheme;
     // 封面入口卡片（可选），支持清除封面。
     return Material(
@@ -587,7 +587,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             child: Row(
               children: <Widget>[
                 Text(
-                  l10n.tr('封面', en: 'Cover'),
+                  l10n.autoT0162,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -606,7 +606,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                     onPressed: widget.onClearCover,
                     icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
                     visualDensity: VisualDensity.compact,
-                    tooltip: l10n.tr('清除封面', en: 'Clear cover'),
+                    tooltip: l10n.autoT0163,
                   ),
                 ],
                 const SizedBox(width: 6),
@@ -642,7 +642,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             child: Row(
               children: <Widget>[
                 Text(
-                  l10n.tr('标签', en: 'Tags'),
+                  l10n.autoT0109,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -651,7 +651,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                 Expanded(
                   child: selectedTags.isEmpty
                       ? Text(
-                          l10n.tr('未选择标签', en: 'No tag selected'),
+                          l10n.autoT0164,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.bodySmall,
@@ -709,14 +709,15 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       );
     }
     if (widget.tagsError != null) {
+      final tagsError = widget.tagsError!;
       return Text(
-        l10n.tr('标签加载失败: ${widget.tagsError}', en: 'Failed to load tags: ${widget.tagsError}'),
+        l10n.autoT0165(tagsError),
         style: Theme.of(context).textTheme.bodySmall,
       );
     }
     if (widget.tags.isEmpty) {
       return Text(
-        l10n.tr('暂无标签，可先创建', en: 'No tags yet, create one first'),
+        l10n.autoT0166,
         style: Theme.of(context).textTheme.bodySmall,
       );
     }
@@ -782,7 +783,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          l10n.tr('此时此地', en: 'Here and now'),
+          l10n.autoT0167,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
             ),
@@ -808,7 +809,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                     child: Text(
                       hasLocation
                           ? locationLabel
-                          : l10n.tr('点击右侧获取当前地址', en: 'Tap right button to fetch address'),
+                          : l10n.autoT0168,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -823,7 +824,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   ),
                   IconButton(
                     onPressed: widget.locating ? null : widget.onResolveLocation,
-                    tooltip: l10n.tr('获取位置', en: 'Get location'),
+                    tooltip: l10n.autoT0169,
                     visualDensity: VisualDensity.compact,
                     icon:
                         widget.locating
@@ -865,7 +866,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   Expanded(
                     child: Text(
                       widget.weatherController.text.trim().isEmpty
-                          ? l10n.tr('点击右侧获取当前天气', en: 'Tap right button to fetch weather')
+                          ? l10n.autoT0170
                           : widget.weatherController.text.trim(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -882,7 +883,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   IconButton(
                     onPressed:
                         widget.weatherLoading ? null : widget.onResolveWeather,
-                    tooltip: l10n.tr('获取天气', en: 'Get weather'),
+                    tooltip: l10n.autoT0171,
                     visualDensity: VisualDensity.compact,
                     icon:
                         widget.weatherLoading
@@ -913,7 +914,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
-          l10n.tr('心情', en: 'Mood'),
+          l10n.autoT0116,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -980,7 +981,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           child: Row(
             children: <Widget>[
               Text(
-                l10n.tr('发表时间', en: 'Publish time'),
+                l10n.autoT0172,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -990,7 +991,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                 child: Text(
                   hasPublishTime
                       ? publishTimeLabel
-                      : l10n.tr('自动获取当前时间', en: 'Auto use current time'),
+                      : l10n.autoT0173,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -1005,7 +1006,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               ),
               IconButton(
                 onPressed: widget.onPickPublishTime,
-                tooltip: l10n.tr('选择发表时间', en: 'Choose publish time'),
+                tooltip: l10n.autoT0174,
                 visualDensity: VisualDensity.compact,
                 icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 14),
               ),
@@ -1025,7 +1026,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         Row(
           children: <Widget>[
             Text(
-              l10n.tr('精力', en: 'Energy'),
+              l10n.autoT0175,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
@@ -1065,7 +1066,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   Widget _buildPublishAction(BuildContext context) {
     final l10n = context.l10n;
     final actionLabel = widget.actionLabel.trim().isEmpty
-        ? l10n.tr('发表日记', en: 'Publish diary')
+        ? l10n.autoT0138
         : widget.actionLabel;
     // 主操作按钮始终位于内容底部，避免与顶部手势区域冲突。
     return SizedBox(
@@ -1074,7 +1075,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         onPressed: widget.saving ? null : widget.onPublish,
         icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
         label: Text(
-          widget.saving ? l10n.tr('发布中...', en: 'Publishing...') : actionLabel,
+          widget.saving ? l10n.autoT0176 : actionLabel,
         ),
       ),
     );

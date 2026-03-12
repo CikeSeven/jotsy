@@ -72,8 +72,8 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
         appBar: AppBar(
           title: Text(
             _isSelectionMode
-                ? context.l10n.tr('已选择 ${_selectedDiaryIds.length} 项', en: '${_selectedDiaryIds.length} selected')
-                : context.l10n.tr('归档日记', en: 'Archived diaries'),
+                ? context.l10n.autoT0099(_selectedDiaryIds.length)
+                : context.l10n.autoT0100,
           ),
           leading:
               _isSelectionMode
@@ -91,7 +91,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               _isSelectionMode
                   ? <Widget>[
                     IconButton(
-                      tooltip: context.l10n.tr('取消归档', en: 'Unarchive'),
+                      tooltip: context.l10n.autoT0101,
                       onPressed:
                           () => unawaited(_controller.unarchiveSelectedDiaries()),
                       icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
@@ -115,13 +115,13 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               (Object error, StackTrace stackTrace) =>
                   Center(
                     child: Text(
-                      context.l10n.tr('归档加载失败: $error', en: 'Archived list load failed: $error'),
+                      context.l10n.autoT0102(error),
                     ),
                   ),
           data: (List<DiaryWithTags> diaries) {
             if (diaries.isEmpty) {
               return Center(
-                child: Text(context.l10n.tr('暂无归档日记', en: 'No archived diaries')),
+                child: Text(context.l10n.autoT0103),
               );
             }
 

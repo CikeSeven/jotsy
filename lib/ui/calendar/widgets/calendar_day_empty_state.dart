@@ -21,9 +21,9 @@ class CalendarDayEmptyState extends StatelessWidget {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final displayMessage =
-        message ?? l10n.tr('这一天很安静，没有任何记录。', en: 'This day is quiet, no records yet.');
+        message ?? l10n.autoT0182;
     final displayActionLabel =
-        actionLabel ?? l10n.tr('补写日记', en: 'Write for this day');
+        actionLabel ?? l10n.autoT0181;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,

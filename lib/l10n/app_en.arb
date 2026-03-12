@@ -116,5 +116,447 @@
   "dataMgmtImportConfirmTitle": "Import Data",
   "dataMgmtImportConfirmContent": "Import will overwrite current data. Continue?",
   "dataMgmtImportAction": "Import",
-  "dataMgmtBusyLabel": "Processing data"
+  "dataMgmtBusyLabel": "Processing data",
+  "autoT0001": "Loading app",
+  "autoT0002": "Copy",
+  "autoT0003": "Reset order",
+  "autoT0004": "Save order failed: {p0}",
+  "@autoT0004": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0005": "Toolbar order",
+  "autoT0006": "Undo",
+  "autoT0007": "Redo",
+  "autoT0008": "Bold",
+  "autoT0009": "Italic",
+  "autoT0010": "Underline",
+  "autoT0011": "Strikethrough",
+  "autoT0012": "Inline code",
+  "autoT0013": "Text color",
+  "autoT0014": "Background color",
+  "autoT0015": "Clear formatting",
+  "autoT0016": "Insert image",
+  "autoT0017": "Header style",
+  "autoT0018": "Ordered list",
+  "autoT0019": "Bullet list",
+  "autoT0020": "Checklist",
+  "autoT0021": "Code block",
+  "autoT0022": "Quote",
+  "autoT0023": "Indent",
+  "autoT0024": "Link",
+  "autoT0025": "Unknown deleted time",
+  "autoT0026": "Some restores failed. Please retry.",
+  "autoT0027": "Some deletions failed. Please retry.",
+  "autoT0028": "Permanent delete",
+  "autoT0029": "Recycle bin",
+  "autoT0030": "Restore",
+  "autoT0031": "Recycle bin load failed: {p0}",
+  "@autoT0031": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0032": "Recycle bin is empty",
+  "autoT0033": "Untitled",
+  "autoT0034": "Create tag failed: {p0}",
+  "@autoT0034": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0035": "Edit tag failed: {p0}",
+  "@autoT0035": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0036": "Delete tag failed: {p0}",
+  "@autoT0036": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0037": "Save tag order failed: {p0}",
+  "@autoT0037": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0038": "Delete tag",
+  "autoT0039": "Tag management",
+  "autoT0040": "Create tag",
+  "autoT0041": "Create your first tag",
+  "autoT0042": "Tag load failed: {p0}",
+  "@autoT0042": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0043": "Toolbar order",
+  "autoT0044": "Current top 4: {p0}",
+  "@autoT0044": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0045": "Settings load failed: {p0}",
+  "@autoT0045": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0046": "System",
+  "autoT0047": "Light",
+  "autoT0048": "Dark",
+  "autoT0049": "What unexpected good thing happened today?",
+  "autoT0050": "If today had a title, what would it be?",
+  "autoT0051": "What moment today is most worth remembering?",
+  "autoT0052": "Media preview",
+  "autoT0053": "No images to browse",
+  "autoT0054": "Media gallery",
+  "autoT0055": "No images to show yet",
+  "autoT0056": "Load failed, tap to retry",
+  "autoT0057": "No more images",
+  "autoT0058": "Explore",
+  "autoT0059": "Explore data is unavailable",
+  "autoT0060": "Mood & energy trends",
+  "autoT0061": "View all images",
+  "autoT0062": "No images to show yet.",
+  "autoT0063": "On this day",
+  "autoT0064": "Write for today",
+  "autoT0065": "Untitled diary",
+  "autoT0066": "Total records",
+  "autoT0067": "Streak",
+  "autoT0068": "This month chars",
+  "autoT0069": "Tag cloud",
+  "autoT0070": "Delete diaries",
+  "autoT0071": "Unarchive failed. Please try again.",
+  "autoT0072": "Archive status restored",
+  "autoT0073": "Delete failed. Please try again.",
+  "autoT0074": "Deleted {p0} diaries",
+  "@autoT0074": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0075": "Diary deleted",
+  "autoT0076": "Deleted diary restored",
+  "autoT0077": "Restore failed. Please try again.",
+  "autoT0078": "Archive failed. Please try again.",
+  "autoT0079": "Archived {p0} diaries",
+  "@autoT0079": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0080": "Archived diary restored",
+  "autoT0081": "Unsaved draft found",
+  "autoT0082": "New empty note",
+  "autoT0083": "Continue editing",
+  "autoT0084": "Delete {p0} selected diaries?",
+  "@autoT0084": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0085": "No street info",
+  "autoT0086": "Title and content cannot both be empty",
+  "autoT0087": "Save failed: {p0}",
+  "@autoT0087": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0088": "No valid cover path found",
+  "autoT0089": "Cover import failed: {p0}",
+  "@autoT0089": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0090": "Tag creation failed: {p0}",
+  "@autoT0090": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0091": "Location failed: {p0}",
+  "@autoT0091": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0092": "Please get current location first",
+  "autoT0093": "Weather fetch failed: {p0}",
+  "@autoT0093": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0094": "Delete diary",
+  "autoT0095": "Untitled diary",
+  "autoT0096": "Select publish date",
+  "autoT0097": "Select publish time",
+  "autoT0098": "Publish failed: {p0}",
+  "@autoT0098": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0099": "{p0} selected",
+  "@autoT0099": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0100": "Archived diaries",
+  "autoT0101": "Unarchive",
+  "autoT0102": "Archived list load failed: {p0}",
+  "@autoT0102": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0103": "No archived diaries",
+  "autoT0104": "(No content)",
+  "autoT0105": "None",
+  "autoT0106": "Title",
+  "autoT0107": "Created",
+  "autoT0108": "Updated",
+  "autoT0109": "Tags",
+  "autoT0110": "Content",
+  "autoT0111": "Screenshot failed. Please try again.",
+  "autoT0112": "Image share failed: {p0}",
+  "@autoT0112": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0113": "Delete this diary?",
+  "autoT0114": "Share as image",
+  "autoT0115": "Share as text",
+  "autoT0116": "Mood",
+  "autoT0117": "Published",
+  "autoT0118": "Last edited",
+  "autoT0119": "No content yet",
+  "autoT0120": "Diary",
+  "autoT0121": "Load failed: {p0}",
+  "@autoT0121": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0122": "Diary no longer exists",
+  "autoT0123": "Diary no longer exists, returning...",
+  "autoT0124": "Diary not found",
+  "autoT0125": "More",
+  "autoT0126": "Tag {p0}",
+  "@autoT0126": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0127": "Diary load failed: {p0}",
+  "@autoT0127": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0128": "Close search",
+  "autoT0129": "Search title or content",
+  "autoT0130": "Clear",
+  "autoT0131": "Unsaved changes",
+  "autoT0132": "Exit",
+  "autoT0133": "Start writing...",
+  "autoT0134": "New diary",
+  "autoT0135": "Edit diary",
+  "autoT0136": "Publish",
+  "autoT0137": "Save diary",
+  "autoT0138": "Publish diary",
+  "autoT0139": "No content",
+  "autoT0140": "Archive",
+  "autoT0141": "Sort",
+  "autoT0142": "Recently updated",
+  "autoT0143": "Oldest updated",
+  "autoT0144": "Title A-Z",
+  "autoT0145": "Layout",
+  "autoT0146": "List",
+  "autoT0147": "Waterfall",
+  "autoT0148": "Archived diaries",
+  "autoT0149": "Edit tag",
+  "autoT0150": "Tag name",
+  "autoT0151": "Choose color",
+  "autoT0152": "No diaries found",
+  "autoT0153": "Try another keyword.",
+  "autoT0154": "No diaries yet",
+  "autoT0155": "Create diary",
+  "autoT0156": "Cover load failed",
+  "autoT0157": "Create",
+  "autoT0158": "Swipe up to expand",
+  "autoT0159": "Swipe down to collapse",
+  "autoT0160": "Choose tags",
+  "autoT0161": "Tap to choose a cover (optional)",
+  "autoT0162": "Cover",
+  "autoT0163": "Clear cover",
+  "autoT0164": "No tag selected",
+  "autoT0165": "Failed to load tags: {p0}",
+  "@autoT0165": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0166": "No tags yet, create one first",
+  "autoT0167": "Here and now",
+  "autoT0168": "Tap right button to fetch address",
+  "autoT0169": "Get location",
+  "autoT0170": "Tap right button to fetch weather",
+  "autoT0171": "Get weather",
+  "autoT0172": "Publish time",
+  "autoT0173": "Auto use current time",
+  "autoT0174": "Choose publish time",
+  "autoT0175": "Energy",
+  "autoT0176": "Publishing...",
+  "autoT0177": "Select date",
+  "autoT0178": "Month",
+  "autoT0179": "Week",
+  "autoT0180": "Back to today",
+  "autoT0181": "Write for this day",
+  "autoT0182": "This day is quiet, no records yet.",
+  "autoT0183": "Calendar",
+  "autoT0184": "Previous month",
+  "autoT0185": "Next month",
+  "autoT0186": "Recorded an entry",
+  "autoT0187": "Reset toolbar order to defaults?",
+  "autoT0188": "Apply inline code style to selected text",
+  "autoT0189": "Insert or switch to code block",
+  "autoT0190": "Shows both indent increase/decrease buttons",
+  "autoT0191": "Restored {p0} diaries",
+  "@autoT0191": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0192": "Permanently deleted {p0} diaries",
+  "@autoT0192": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0193": "Permanently delete {p0} selected diaries? This cannot be undone.",
+  "@autoT0193": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0194": "Deleted at {p0}",
+  "@autoT0194": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0195": "Delete tag \"{p0}\"?",
+  "@autoT0195": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0196": "What person or thing are you most grateful for today?",
+  "autoT0197": "Failed to load images. Please try again later.",
+  "autoT0198": "Keep recording weather, tags, and mood to unlock deeper insights here.",
+  "autoT0199": "No tag data yet. Try writing diaries with tags.",
+  "autoT0200": "Delete {p0} selected archived diaries?",
+  "@autoT0200": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0201": "Unarchived {p0} diaries",
+  "@autoT0201": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0202": "An unfinished diary was found. Continue editing?",
+  "autoT0203": "metadata must be a valid JSON object",
+  "autoT0204": "AMap Web API key missing, please configure amap.web.api.key",
+  "autoT0205": "QWeather key missing, please configure qweather.api_key",
+  "autoT0206": "This will soft-delete the diary and it can be restored later. Continue?",
+  "autoT0207": "You have unsaved changes. Exit anyway?",
+  "autoT0208": "Header style (tap to cycle)",
+  "autoT0209": "An unfinished diary draft was found. Continue editing?",
+  "autoT0210": "Calendar diaries load failed: {p0}",
+  "@autoT0210": {
+    "placeholders": {
+      "p0": {
+        "type": "Object"
+      }
+    }
+  },
+  "autoT0211": "Take it easy, this day's highlights haven't happened yet."
 }

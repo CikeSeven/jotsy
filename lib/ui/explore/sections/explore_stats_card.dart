@@ -21,7 +21,7 @@ class ExploreStatsCard extends StatelessWidget {
           Expanded(
             child: ExploreStatTile(
               icon: FontAwesomeIcons.bookOpen,
-              label: l10n.tr('总计记录', en: 'Total records'),
+              label: l10n.autoT0066,
               value: '${stats.totalRecords}',
             ),
           ),
@@ -29,7 +29,7 @@ class ExploreStatsCard extends StatelessWidget {
           Expanded(
             child: ExploreStatTile(
               icon: FontAwesomeIcons.fire,
-              label: l10n.tr('连续打卡', en: 'Streak'),
+              label: l10n.autoT0067,
               value: '${stats.streakDays}',
             ),
           ),
@@ -37,7 +37,7 @@ class ExploreStatsCard extends StatelessWidget {
           Expanded(
             child: ExploreStatTile(
               icon: FontAwesomeIcons.penNib,
-              label: l10n.tr('本月字数', en: 'This month chars'),
+              label: l10n.autoT0068,
               value: '${stats.currentMonthChars}',
             ),
           ),

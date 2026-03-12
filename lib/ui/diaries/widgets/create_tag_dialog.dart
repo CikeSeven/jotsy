@@ -16,7 +16,7 @@ class NewTagDraft {
 Future<NewTagDraft?> showCreateTagDialog(BuildContext context) async {
   return showTagDraftDialog(
     context,
-    title: context.l10n.tr('新建标签', en: 'Create tag'),
+    title: context.l10n.autoT0040,
     actionLabel: context.l10n.commonCreate,
   );
 }
@@ -29,7 +29,7 @@ Future<NewTagDraft?> showEditTagDialog(
 }) async {
   return showTagDraftDialog(
     context,
-    title: context.l10n.tr('编辑标签', en: 'Edit tag'),
+    title: context.l10n.autoT0149,
     actionLabel: context.l10n.commonSave,
     initialName: initialName,
     initialColor: initialColor,
@@ -322,7 +322,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               autofocus: true,
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
-                labelText: l10n.tr('标签名', en: 'Tag name'),
+                labelText: l10n.autoT0150,
               ),
               onSubmitted: (_) => _submit(),
             ),
@@ -348,7 +348,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        l10n.tr('选择颜色', en: 'Choose color'),
+                        l10n.autoT0151,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),

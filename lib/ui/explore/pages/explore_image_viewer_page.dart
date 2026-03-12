@@ -59,7 +59,7 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
         ),
         title: Text(
           total == 0
-              ? l10n.tr('媒体预览', en: 'Media preview')
+              ? l10n.autoT0052
               : '${_activeIndex + 1} / $total',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white,
@@ -71,7 +71,7 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
       body: total == 0
           ? Center(
               child: Text(
-                l10n.tr('没有可浏览的图片', en: 'No images to browse'),
+                l10n.autoT0053,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

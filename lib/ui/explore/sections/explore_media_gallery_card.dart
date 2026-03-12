@@ -34,12 +34,12 @@ class ExploreMediaGalleryCard extends StatelessWidget {
                 children: <Widget>[
                   ExploreSectionTitle(
                     icon: FontAwesomeIcons.images,
-                    title: l10n.tr('媒体画廊', en: 'Media gallery'),
+                    title: l10n.autoT0054,
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: onOpenMediaGallery,
-                    tooltip: l10n.tr('查看全部图片', en: 'View all images'),
+                    tooltip: l10n.autoT0061,
                     style: IconButton.styleFrom(
                       minimumSize: const Size(28, 28),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -51,7 +51,7 @@ class ExploreMediaGalleryCard extends StatelessWidget {
               const SizedBox(height: 10),
               if (previewItems.isEmpty)
                 Text(
-                  l10n.tr('还没有可展示的图片。', en: 'No images to show yet.'),
+                  l10n.autoT0062,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

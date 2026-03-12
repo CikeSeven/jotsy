@@ -400,10 +400,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
           ? <quill.QuillToolbarCustomButtonOptions>[
             quill.QuillToolbarCustomButtonOptions(
               icon: const FaIcon(FontAwesomeIcons.heading, size: 14),
-              tooltip: context.l10n.tr(
-                '标题样式（点击切换）',
-                en: 'Header style (tap to cycle)',
-              ),
+              tooltip: context.l10n.autoT0208,
               onPressed: () => _cycleHeaderStyle(controller),
             ),
           ]

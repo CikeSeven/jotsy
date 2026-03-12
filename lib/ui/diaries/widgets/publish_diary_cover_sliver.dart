@@ -145,7 +145,7 @@ class _CoverFallback extends StatelessWidget {
       color: colorScheme.surfaceContainerHighest,
       child: Center(
         child: Text(
-          context.l10n.tr('封面加载失败', en: 'Cover load failed'),
+          context.l10n.autoT0156,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
       ),

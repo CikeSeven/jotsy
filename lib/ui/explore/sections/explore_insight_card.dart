@@ -25,7 +25,7 @@ class ExploreInsightCard extends StatelessWidget {
         children: <Widget>[
           ExploreSectionTitle(
             icon: FontAwesomeIcons.chartSimple,
-            title: l10n.tr('情绪与精力趋势', en: 'Mood & energy trends'),
+            title: l10n.autoT0060,
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -73,10 +73,7 @@ class ExploreInsightCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            l10n.tr(
-              '继续记录天气、标签和心情后，这里会出现更具体的关联洞察。',
-              en: 'Keep recording weather, tags, and mood to unlock deeper insights here.',
-            ),
+            l10n.autoT0198,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

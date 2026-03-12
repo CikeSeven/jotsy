@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/app_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
 import '../../widgets/glass_bottom_nav.dart';
@@ -22,6 +23,7 @@ class ExplorePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final diariesAsync = ref.watch(exploreDiariesProvider);
+    final orderedTagsAsync = ref.watch(tagListProvider);
     final controller = const ExplorePageController();
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
@@ -45,9 +47,14 @@ class ExplorePage extends ConsumerWidget {
                         child: _ExploreErrorCard(message: '$error'),
                       ),
                   data: (diaries) {
+                    final orderedTagIds = orderedTagsAsync.maybeWhen(
+                      data: (tags) => tags.map((tag) => tag.id).toList(growable: false),
+                      orElse: () => const <int>[],
+                    );
                     final viewData = controller.buildViewData(
                       diaries,
                       now: DateTime.now(),
+                      orderedTagIds: orderedTagIds,
                     );
                     return SliverToBoxAdapter(
                       child: ExploreContentSection(

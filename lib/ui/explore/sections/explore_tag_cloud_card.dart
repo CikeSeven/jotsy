@@ -36,8 +36,8 @@ class ExploreTagCloudCard extends StatelessWidget {
             )
           else
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 5,
+              runSpacing: 5,
               children:
                   tags.map((tag) {
                     final ratio =
@@ -46,9 +46,16 @@ class ExploreTagCloudCard extends StatelessWidget {
                             : (tag.count / tag.maxCount).clamp(0.2, 1.0);
                     return ActionChip(
                       onPressed: () => onOpenDiary(tag.latestDiaryId),
+                      visualDensity: VisualDensity.compact,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0),
+                      labelPadding: const EdgeInsets.symmetric(
+                        horizontal: 3,
+                        vertical: 0,
+                      ),
                       label: Text(
                         '# ${tag.name}',
-                        style: TextStyle(fontSize: 12 + 4 * ratio),
+                        style: TextStyle(fontSize: 9.8 + 1.8 * ratio),
                       ),
                       backgroundColor: Color(tag.color).withValues(
                         alpha: 0.08 + ratio * 0.25,

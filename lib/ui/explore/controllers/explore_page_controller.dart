@@ -40,6 +40,7 @@ class ExplorePageController {
   ExploreViewData buildViewData(
     List<DiaryWithTags> diaries, {
     required DateTime now,
+    List<int> orderedTagIds = const <int>[],
   }) {
     final stats = _buildStats(diaries, now: now);
     final onThisDayDiaries = _pickOnThisDayList(diaries, now: now);
@@ -47,7 +48,10 @@ class ExplorePageController {
 
     final moodWeights30 = _buildMoodSeries(diaries, days: 30, now: now);
     final energyValues7 = _buildEnergySeries(diaries, days: 7, now: now);
-    final tagUsages = _buildTagCloud(diaries);
+    final tagUsages = _buildTagCloud(
+      diaries,
+      orderedTagIds: orderedTagIds,
+    );
     final mediaItems = _buildMediaGallery(diaries);
 
     return ExploreViewData(
@@ -207,7 +211,14 @@ class ExplorePageController {
   }
 
   /// 标签频次统计 + 最近关联日记定位。
-  List<ExploreTagUsage> _buildTagCloud(List<DiaryWithTags> diaries) {
+  ///
+  /// 排序策略：
+  /// - 优先遵循用户在“标签管理”中配置的顺序；
+  /// - 若存在未命中顺序表的标签，则放在后面并按名称升序兜底。
+  List<ExploreTagUsage> _buildTagCloud(
+    List<DiaryWithTags> diaries, {
+    required List<int> orderedTagIds,
+  }) {
     final tagMap = <int, ExploreTagUsage>{};
     for (final item in diaries) {
       for (final tag in item.tags) {
@@ -235,9 +246,25 @@ class ExplorePageController {
       }
     }
 
+    final orderRank = <int, int>{
+      for (int i = 0; i < orderedTagIds.length; i++) orderedTagIds[i]: i,
+    };
     final usages = tagMap.values.toList(growable: false)
-      ..sort((a, b) => b.count.compareTo(a.count));
-    final maxCount = usages.isEmpty ? 1 : usages.first.count;
+      ..sort((a, b) {
+        final rankA = orderRank[a.id] ?? 1 << 20;
+        final rankB = orderRank[b.id] ?? 1 << 20;
+        if (rankA != rankB) {
+          return rankA.compareTo(rankB);
+        }
+        return a.name.compareTo(b.name);
+      });
+    final maxCount = usages.isEmpty
+        ? 1
+        : usages.fold<int>(
+            1,
+            (currentMax, item) =>
+                item.count > currentMax ? item.count : currentMax,
+          );
     return usages
         .map((item) => item.copyWith(maxCount: maxCount))
         .toList(growable: false);

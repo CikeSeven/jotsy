@@ -52,6 +52,11 @@
 - 必须：遵循现有 Dart/Flutter 代码风格与 lint 约束。
 - 必须：单文件超过约 300 行时触发拆分评估；出现职责混杂时必须拆分。
 - 必须：优先复用已有组件与服务，避免重复造轮子。
+- 必须：本地化文案统一走 `gen-l10n + ARB`，代码中使用 `context.l10n.xxxKey`（或参数化 `xxxKey(arg)`），禁止新增硬编码中英分支。
+- 必须：ARB 中每个文案 key 都要有对应 metadata（`@key`），至少包含 `description`；含占位符时必须补 `placeholders`。
+- 必须：ARB placeholder 的 `type` 只能使用 Flutter `gen-l10n` 可接受类型（如 `String/int/double/num/DateTime`），禁止使用 `Object`。
+- 必须：新增或修改 ARB 后同步执行 `flutter gen-l10n` 并提交生成文件，保持源码与生成代码一致。
+- 禁止：继续使用 `context.l10n.tr(...)` 作为常规本地化方案（仅允许临时迁移阶段短期存在，且需在同任务内清理）。
 - 禁止：冗余实现、死代码、复制粘贴式重复逻辑。
 - 例外：生成文件（如 `*.g.dart`）不按手写文件拆分规则执行。
 

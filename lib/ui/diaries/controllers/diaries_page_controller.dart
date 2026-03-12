@@ -229,7 +229,9 @@ class DiariesPageController {
 
   /// 打开日记预览页（列表默认入口）。
   ///
-  /// 预览页内可能触发删除或编辑，返回后统一做一次列表刷新与提示同步。
+  /// 预览页内可能触发删除或编辑：
+  /// - 删除通过返回值触发撤销提示；
+  /// - 其余数据变更依赖数据库流自动回推，避免强制刷新导致滚动回跳。
   void openPreview(String diaryId) {
     _state._searchFocusNode.unfocus();
     FocusManager.instance.primaryFocus?.unfocus();
@@ -247,7 +249,9 @@ class DiariesPageController {
             if (!_state.mounted) {
               return;
             }
-            refreshAfterEditorReturn();
+            // 预览页返回不再强制触发列表重建：
+            // - 列表本身由数据库流驱动，数据变更会自动刷新；
+            // - 强制刷新会导致滚动位置回跳，影响“返回后继续浏览”体验。
             if (result == DiaryPreviewResult.deleted) {
               final undoRequested = await feedback.showUndoSnackBar(
                 message: '已删除日记',

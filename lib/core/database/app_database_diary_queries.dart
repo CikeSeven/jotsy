@@ -47,6 +47,25 @@ ORDER BY d.updated_at DESC
     ).watch().map(_mapDiaryWithTagsRows);
   }
 
+  /// 分页读取“未删除日记”候选集（含归档）。
+  ///
+  /// 用于探索页媒体画廊按批提取图片来源，避免一次性加载全量日记导致
+  /// 首屏等待时间过长或内存抖动。
+  Future<List<Diary>> getActiveDiariesPage({
+    required int limit,
+    required int offset,
+  }) {
+    final query =
+        select(diaries)
+          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..orderBy(<OrderingTerm Function(Diaries)>[
+            (tbl) => OrderingTerm.desc(tbl.updatedAt),
+            (tbl) => OrderingTerm.desc(tbl.id),
+          ])
+          ..limit(limit, offset: offset);
+    return query.get();
+  }
+
   /// 监听日记列表（支持关键词 + 标签 AND 过滤）。
   ///
   /// 查询说明：

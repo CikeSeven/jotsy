@@ -17,6 +17,7 @@ class ExploreContentSection extends StatelessWidget {
     required this.viewData,
     required this.controller,
     required this.onOpenDiary,
+    required this.onOpenMediaGallery,
     required this.onOpenTagSearch,
     required this.onCreateToday,
   });
@@ -24,6 +25,7 @@ class ExploreContentSection extends StatelessWidget {
   final ExploreViewData viewData;
   final ExplorePageController controller;
   final ValueChanged<String> onOpenDiary;
+  final VoidCallback onOpenMediaGallery;
   final ValueChanged<ExploreTagUsage> onOpenTagSearch;
   final VoidCallback onCreateToday;
 
@@ -52,7 +54,7 @@ class ExploreContentSection extends StatelessWidget {
         const SizedBox(height: 12),
         ExploreMediaGalleryCard(
           items: viewData.mediaItems,
-          onOpenDiary: onOpenDiary,
+          onOpenMediaGallery: onOpenMediaGallery,
         ),
         const SizedBox(height: 12),
       ],

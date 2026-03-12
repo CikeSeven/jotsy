@@ -10,6 +10,7 @@ import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
+import 'explore_media_gallery_page.dart';
 import '../providers/explore_providers.dart';
 import '../sections/explore_content_section.dart';
 
@@ -65,6 +66,9 @@ class ExplorePage extends ConsumerWidget {
                         onOpenDiary: (diaryId) {
                           _openPreview(context, diaryId);
                         },
+                        onOpenMediaGallery: () {
+                          _openMediaGallery(context);
+                        },
                         onOpenTagSearch: (tagUsage) {
                           _openTagSearch(context, tagUsage);
                         },
@@ -114,6 +118,15 @@ class ExplorePage extends ConsumerWidget {
     Navigator.of(context).push(
       DiarySearchPage.buildRoute(
         initialTagIds: <int>{tagUsage.id},
+      ),
+    );
+  }
+
+  /// 打开全量媒体画廊页（分页加载）。
+  void _openMediaGallery(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const ExploreMediaGalleryPage(),
       ),
     );
   }

@@ -9,54 +9,74 @@ class ExploreMediaGalleryCard extends StatelessWidget {
   const ExploreMediaGalleryCard({
     super.key,
     required this.items,
-    required this.onOpenDiary,
+    required this.onOpenMediaGallery,
   });
 
   final List<ExploreMediaItem> items;
-  final ValueChanged<String> onOpenDiary;
+  final VoidCallback onOpenMediaGallery;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return ExploreCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          const ExploreSectionTitle(
-            icon: FontAwesomeIcons.images,
-            title: '媒体画廊',
-          ),
-          const SizedBox(height: 10),
-          if (items.isEmpty)
-            Text(
-              '还没有可展示的图片。',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+    final previewItems = items.take(5).toList(growable: false);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onOpenMediaGallery,
+        child: ExploreCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  const ExploreSectionTitle(
+                    icon: FontAwesomeIcons.images,
+                    title: '媒体画廊',
                   ),
-            )
-          else
-            SizedBox(
-              height: 108,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: items.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => onOpenDiary(item.diaryId),
-                    child: ExploreMediaThumb(
-                      source: item.source,
-                      width: 140,
-                      height: 108,
-                      radius: 12,
+                  const Spacer(),
+                  IconButton(
+                    onPressed: onOpenMediaGallery,
+                    tooltip: '查看全部图片',
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(28, 28),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                  );
-                },
+                    icon: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                  ),
+                ],
               ),
-            ),
-        ],
+              const SizedBox(height: 10),
+              if (previewItems.isEmpty)
+                Text(
+                  '还没有可展示的图片。',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                )
+              else
+                IgnorePointer(
+                  child: SizedBox(
+                    height: 108,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: previewItems.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final item = previewItems[index];
+                        return ExploreMediaThumb(
+                          source: item.source,
+                          width: 140,
+                          height: 108,
+                          radius: 12,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

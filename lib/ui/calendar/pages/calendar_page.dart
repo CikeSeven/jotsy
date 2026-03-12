@@ -49,6 +49,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   late DateTime _focusedMonth;
   late DateTime _selectedDay;
   CalendarFormat _calendarFormat = CalendarFormat.month;
+  PageController? _calendarPageController;
 
   @override
   void initState() {
@@ -137,6 +138,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           CalendarGlassHeader(
             title: _controller.focusedMonthTitle,
             onJumpToToday: _controller.jumpToToday,
+            onPreviousMonth: _controller.goToPreviousMonth,
+            onNextMonth: _controller.goToNextMonth,
           ),
         ],
       ),
@@ -180,6 +183,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         onFormatChanged: _controller.onCalendarFormatChanged,
         onDaySelected: _controller.onDaySelected,
         onPageChanged: _controller.onPageChanged,
+        onCalendarCreated: _controller.onCalendarCreated,
         calendarStyle: CalendarStyle(
           isTodayHighlighted: true,
           todayDecoration: BoxDecoration(

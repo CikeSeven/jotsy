@@ -14,7 +14,12 @@ class CalendarPageController {
 
   /// 当前焦点月份标题（用于头部显示）。
   String get focusedMonthTitle {
-    return DateFormat('yyyy年M月').format(_state._focusedMonth);
+    return DateFormat('yyyy年MM月').format(_state._focusedMonth);
+  }
+
+  /// 保存 TableCalendar 内部页面控制器，供头部「上月/下月」按钮直接驱动翻页。
+  void onCalendarCreated(PageController pageController) {
+    _state._calendarPageController = pageController;
   }
 
   /// 日历月/周格式切换回调（支持上下滑手势触发）。
@@ -58,6 +63,48 @@ class CalendarPageController {
       _state._focusedMonth = DateTime(now.year, now.month);
       _state._calendarFormat = CalendarFormat.month;
     });
+  }
+
+  /// 头部「上个月」快捷动作。
+  void goToPreviousMonth() {
+    _switchMonth(-1);
+  }
+
+  /// 头部「下个月」快捷动作。
+  void goToNextMonth() {
+    _switchMonth(1);
+  }
+
+  /// 统一处理头部快捷翻月：
+  /// 1) 先确保处于月视图；
+  /// 2) 优先使用 TableCalendar 的 PageController 做原生翻页动画；
+  /// 3) 若控制器暂不可用，回退为直接更新焦点月份。
+  void _switchMonth(int offset) {
+    if (_state._calendarFormat != CalendarFormat.month) {
+      _state.setState(() => _state._calendarFormat = CalendarFormat.month);
+    }
+
+    final pageController = _state._calendarPageController;
+    if (pageController != null && pageController.hasClients) {
+      if (offset < 0) {
+        pageController.previousPage(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        );
+      } else {
+        pageController.nextPage(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+        );
+      }
+      return;
+    }
+
+    final fallbackFocusedMonth = DateTime(
+      _state._focusedMonth.year,
+      _state._focusedMonth.month + offset,
+    );
+    _state.setState(() => _state._focusedMonth = fallbackFocusedMonth);
   }
 
   /// 月份打点按“本地日期”聚合，供 TableCalendar 的 eventLoader 使用。

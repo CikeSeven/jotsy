@@ -19,6 +19,8 @@ class CalendarGlassHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.onJumpToToday,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
   });
 
   // 与日记列表页 / 通用玻璃头部统一高度。
@@ -26,6 +28,8 @@ class CalendarGlassHeader extends StatelessWidget {
 
   final String title;
   final VoidCallback onJumpToToday;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
 
   @override
   Widget build(BuildContext context) {
@@ -74,10 +78,33 @@ class CalendarGlassHeader extends StatelessWidget {
                             ),
                           ),
                           Center(
-                            child: Text(
-                              title,
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                IconButton(
+                                  tooltip: '上个月',
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: onPreviousMonth,
+                                  icon: const FaIcon(
+                                    FontAwesomeIcons.angleLeft,
+                                    size: 16,
+                                  ),
+                                ),
+                                Text(
+                                  title,
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                                IconButton(
+                                  tooltip: '下个月',
+                                  visualDensity: VisualDensity.compact,
+                                  onPressed: onNextMonth,
+                                  icon: const FaIcon(
+                                    FontAwesomeIcons.angleRight,
+                                    size: 16,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           Align(

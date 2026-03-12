@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -355,18 +356,24 @@ class DataArchiveService {
   }
 
   static Future<Uint8List> _encodeDirectoryToZipBytes(Directory root) async {
+    // ZIP 编码是纯 CPU + 大量字节处理，放到后台 isolate 避免阻塞主线程动画。
+    return Isolate.run<Uint8List>(() => _encodeDirectoryToZipBytesSync(root.path));
+  }
+
+  static Uint8List _encodeDirectoryToZipBytesSync(String rootPath) {
     final archive = Archive();
-    final rootPath = p.normalize(root.path);
-    await for (final entity
-        in root.list(recursive: true, followLinks: false)) {
+    final normalizedRootPath = p.normalize(rootPath);
+    final rootDirectory = Directory(rootPath);
+    final entities = rootDirectory.listSync(recursive: true, followLinks: false);
+    for (final entity in entities) {
       if (entity is! File) {
         continue;
       }
       final normalizedEntityPath = p.normalize(entity.path);
       final relativePath = p
-          .relative(normalizedEntityPath, from: rootPath)
+          .relative(normalizedEntityPath, from: normalizedRootPath)
           .replaceAll('\\', '/');
-      final bytes = await entity.readAsBytes();
+      final bytes = entity.readAsBytesSync();
       final entry = ArchiveFile(relativePath, bytes.length, bytes);
       archive.addFile(entry);
     }
@@ -383,9 +390,18 @@ class DataArchiveService {
     Directory targetDirectory,
   ) async {
     final rawBytes = await zipFile.readAsBytes();
-    final archive = ZipDecoder().decodeBytes(rawBytes, verify: true);
-    final targetRoot = p.normalize(targetDirectory.path);
+    // 解压与写盘也属于重操作，迁移到后台 isolate 保持 UI 可交互。
+    await Isolate.run<void>(
+      () => _extractZipToDirectorySync(rawBytes, targetDirectory.path),
+    );
+  }
 
+  static void _extractZipToDirectorySync(
+    List<int> rawBytes,
+    String targetDirectoryPath,
+  ) {
+    final archive = ZipDecoder().decodeBytes(rawBytes, verify: true);
+    final targetRoot = p.normalize(targetDirectoryPath);
     for (final entry in archive.files) {
       if (!entry.isFile) {
         continue;
@@ -406,10 +422,10 @@ class DataArchiveService {
       }
 
       final outputFile = File(normalizedOutputPath);
-      await outputFile.parent.create(recursive: true);
+      outputFile.parent.createSync(recursive: true);
       final data = entry.content;
       if (data is List<int>) {
-        await outputFile.writeAsBytes(data, flush: true);
+        outputFile.writeAsBytesSync(data, flush: true);
       }
     }
   }

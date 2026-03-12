@@ -335,118 +335,137 @@ class _SearchInputBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.nav),
         boxShadow: AppEffects.softShadow,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.nav),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 17,
-            sigmaY: 17,
-            tileMode: TileMode.mirror,
-          ),
-          child: Container(
-            color: colorScheme.primary.withAlpha(20),
-            padding: const EdgeInsets.all(AppSpacing.s),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(AppRadii.nav),
-              ),
-              child: Row(
-                children: <Widget>[
-                  IconButton(
-                    tooltip: '取消搜索',
-                    splashRadius: 18,
-                    onPressed: onExitSearch,
-                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                  ),
-                  Expanded(
-                    child:
-                        selectedTags.isEmpty
-                            ? TextField(
-                              controller: searchController,
-                              focusNode: searchFocusNode,
-                              autofocus: true,
-                              textInputAction: TextInputAction.search,
-                              onChanged: onSearchChanged,
-                              decoration: InputDecoration(
-                                isDense: true,
-                                hintText: '搜索标题或内容',
-                                border: InputBorder.none,
-                                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            )
-                            : SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: <Widget>[
-                                  for (final tag in selectedTags) ...[
-                                    _TagConditionChip(
-                                      tag: tag,
-                                      onRemove: () => onRemoveTagCondition(tag.id),
-                                    ),
-                                    const SizedBox(width: 6),
-                                  ],
-                                  SizedBox(
-                                    width: 220,
-                                    child: Focus(
-                                      onKeyEvent: (node, event) {
-                                        final isBackspace =
-                                            event is KeyDownEvent &&
-                                            event.logicalKey == LogicalKeyboardKey.backspace;
-                                        final isInputEmpty = searchController.text.trim().isEmpty;
-                                        if (isBackspace && isInputEmpty && selectedTags.isNotEmpty) {
-                                          onRemoveTagCondition(selectedTags.last.id);
-                                          return KeyEventResult.handled;
-                                        }
-                                        return KeyEventResult.ignored;
-                                      },
-                                      child: TextField(
-                                        controller: searchController,
-                                        focusNode: searchFocusNode,
-                                        autofocus: true,
-                                        textInputAction: TextInputAction.search,
-                                        onChanged: onSearchChanged,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          hintText: '搜索标题或内容',
-                                          border: InputBorder.none,
-                                          hintStyle: Theme.of(context).textTheme.bodyMedium
-                                              ?.copyWith(
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                  ),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    child:
-                        hasSearchText
-                            ? IconButton(
-                              key: const ValueKey<String>('search_clear_button'),
-                              tooltip: '清空',
-                              splashRadius: 18,
-                              onPressed: onClearSearch,
-                              icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
-                            )
-                            : const SizedBox(
-                              key: ValueKey<String>('search_clear_placeholder'),
-                              width: 40,
-                            ),
-                  ),
-                ],
+      child: Stack(
+        children: <Widget>[
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.s),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadii.nav),
+                ),
               ),
             ),
           ),
-        ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadii.nav),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 17,
+                  sigmaY: 17,
+                  tileMode: TileMode.mirror,
+                ),
+                child: Container(
+                  color: colorScheme.primary.withAlpha(20),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Row(
+                    children: <Widget>[
+                      IconButton(
+                        tooltip: '取消搜索',
+                        splashRadius: 18,
+                        onPressed: onExitSearch,
+                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                      ),
+                      Expanded(
+                        child:
+                            selectedTags.isEmpty
+                                ? TextField(
+                                  controller: searchController,
+                                  focusNode: searchFocusNode,
+                                  autofocus: true,
+                                  textInputAction: TextInputAction.search,
+                                  onChanged: onSearchChanged,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    hintText: '搜索标题或内容',
+                                    border: InputBorder.none,
+                                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                )
+                                : SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: <Widget>[
+                                      for (final tag in selectedTags) ...[
+                                        _TagConditionChip(
+                                          tag: tag,
+                                          onRemove: () => onRemoveTagCondition(tag.id),
+                                        ),
+                                        const SizedBox(width: 6),
+                                      ],
+                                      SizedBox(
+                                        width: 220,
+                                        child: Focus(
+                                          onKeyEvent: (node, event) {
+                                            final isBackspace =
+                                                event is KeyDownEvent &&
+                                                event.logicalKey == LogicalKeyboardKey.backspace;
+                                            final isInputEmpty = searchController.text.trim().isEmpty;
+                                            if (isBackspace && isInputEmpty && selectedTags.isNotEmpty) {
+                                              onRemoveTagCondition(selectedTags.last.id);
+                                              return KeyEventResult.handled;
+                                            }
+                                            return KeyEventResult.ignored;
+                                          },
+                                          child: TextField(
+                                            controller: searchController,
+                                            focusNode: searchFocusNode,
+                                            autofocus: true,
+                                            textInputAction: TextInputAction.search,
+                                            onChanged: onSearchChanged,
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              hintText: '搜索标题或内容',
+                                              border: InputBorder.none,
+                                              hintStyle: Theme.of(context).textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                    color: colorScheme.onSurfaceVariant,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                      ),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        child:
+                            hasSearchText
+                                ? IconButton(
+                                  key: const ValueKey<String>('search_clear_button'),
+                                  tooltip: '清空',
+                                  splashRadius: 18,
+                                  onPressed: onClearSearch,
+                                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
+                                )
+                                : const SizedBox(
+                                  key: ValueKey<String>('search_clear_placeholder'),
+                                  width: 40,
+                                ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -57,26 +57,24 @@ class CalendarPageController {
   /// 日期选中回调：联动“选中日列表”和“焦点月份”。
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
     final normalizedSelectedDay = DateUtils.dateOnly(selectedDay);
-    final normalizedFocusedMonth = DateTime(focusedDay.year, focusedDay.month);
+    final normalizedFocusedDay = DateUtils.dateOnly(focusedDay);
     if (isSameDay(_state._selectedDay, normalizedSelectedDay) &&
-        _state._focusedMonth.year == normalizedFocusedMonth.year &&
-        _state._focusedMonth.month == normalizedFocusedMonth.month) {
+        isSameDay(_state._focusedMonth, normalizedFocusedDay)) {
       return;
     }
     _state.setState(() {
       _state._selectedDay = normalizedSelectedDay;
-      _state._focusedMonth = normalizedFocusedMonth;
+      _state._focusedMonth = normalizedFocusedDay;
     });
   }
 
-  /// 左右翻月后更新焦点月份，并触发该月份懒加载。
+  /// 翻页后更新焦点日期，并触发对应月份打点懒加载。
   void onPageChanged(DateTime focusedDay) {
-    final normalizedFocusedMonth = DateTime(focusedDay.year, focusedDay.month);
-    if (_state._focusedMonth.year == normalizedFocusedMonth.year &&
-        _state._focusedMonth.month == normalizedFocusedMonth.month) {
+    final normalizedFocusedDay = DateUtils.dateOnly(focusedDay);
+    if (isSameDay(_state._focusedMonth, normalizedFocusedDay)) {
       return;
     }
-    _state.setState(() => _state._focusedMonth = normalizedFocusedMonth);
+    _state.setState(() => _state._focusedMonth = normalizedFocusedDay);
   }
 
   /// 一键回到今天：重置选中日、焦点月份和格式状态。
@@ -84,7 +82,7 @@ class CalendarPageController {
     final now = DateTime.now();
     _state.setState(() {
       _state._selectedDay = DateUtils.dateOnly(now);
-      _state._focusedMonth = DateTime(now.year, now.month);
+      _state._focusedMonth = DateUtils.dateOnly(now);
       _state._calendarFormat = CalendarFormat.month;
     });
   }
@@ -124,10 +122,9 @@ class CalendarPageController {
     }
 
     final normalizedDay = DateUtils.dateOnly(pickedDate);
-    final normalizedMonth = DateTime(normalizedDay.year, normalizedDay.month);
     _state.setState(() {
       _state._selectedDay = normalizedDay;
-      _state._focusedMonth = normalizedMonth;
+      _state._focusedMonth = normalizedDay;
       _state._calendarFormat = CalendarFormat.month;
     });
   }

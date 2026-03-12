@@ -57,8 +57,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     super.initState();
     _controller = CalendarPageController(this);
     final now = DateTime.now();
-    _focusedMonth = DateTime(now.year, now.month);
     _selectedDay = DateUtils.dateOnly(now);
+    _focusedMonth = _selectedDay;
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
   }
 

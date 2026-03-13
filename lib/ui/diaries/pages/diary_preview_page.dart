@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -47,6 +48,11 @@ class DiaryPreviewPage extends ConsumerStatefulWidget {
 class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   quill.QuillController? _previewController;
   String? _boundContentRaw;
+  DiaryWithTags? _currentDetailForTodoSave;
+  StreamSubscription<quill.DocChange>? _previewDocChangesSubscription;
+  Timer? _todoAutoSaveDebounceTimer;
+  bool _savingTodoState = false;
+  bool _todoSaveQueued = false;
   bool _hadLoadedData = false;
   final GlobalKey _shareCaptureKey = GlobalKey();
   final ScrollController _previewScrollController = ScrollController();
@@ -63,6 +69,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
   @override
   void dispose() {
+    _todoAutoSaveDebounceTimer?.cancel();
+    _previewDocChangesSubscription?.cancel();
     _previewController?.dispose();
     _previewScrollController.dispose();
     super.dispose();
@@ -75,6 +83,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     if (_boundContentRaw == contentRaw && _previewController != null) {
       return;
     }
+    _previewDocChangesSubscription?.cancel();
     _previewController?.dispose();
     _boundContentRaw = contentRaw;
     _previewController = quill.QuillController(
@@ -82,6 +91,70 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       selection: const TextSelection.collapsed(offset: 0),
       readOnly: true,
     );
+    _previewDocChangesSubscription = _previewController!.changes.listen((
+      quill.DocChange change,
+    ) {
+      // 预览页是只读模式，唯一允许的本地变更是待办勾选状态。
+      if (change.source != quill.ChangeSource.local) {
+        return;
+      }
+      _scheduleTodoStateAutoSave();
+    });
+  }
+
+  /// 待办状态自动保存（防抖）。
+  ///
+  /// 浏览页连续勾选多个待办时，不需要每次都立即写库，统一在短防抖窗口后提交。
+  void _scheduleTodoStateAutoSave() {
+    _todoAutoSaveDebounceTimer?.cancel();
+    _todoAutoSaveDebounceTimer = Timer(
+      const Duration(milliseconds: 260),
+      _saveTodoStateIfNeeded,
+    );
+  }
+
+  Future<void> _saveTodoStateIfNeeded() async {
+    final detail = _currentDetailForTodoSave;
+    final controller = _previewController;
+    if (detail == null || controller == null) {
+      return;
+    }
+
+    final contentDocJson = encodeDiaryDocumentToJson(controller.document);
+    // 内容未变化直接跳过，减少无效写库。
+    if (contentDocJson == detail.diary.content) {
+      return;
+    }
+
+    if (_savingTodoState) {
+      _todoSaveQueued = true;
+      return;
+    }
+
+    _savingTodoState = true;
+    try {
+      final db = ref.read(appDatabaseProvider);
+      await db.updateDiary(
+        diaryId: detail.diary.diaryId,
+        title: detail.diary.title,
+        contentDocJson: contentDocJson,
+        contentText: extractPlainTextFromDiaryDocument(controller.document),
+        metadataJson: detail.diary.metadata,
+        cover: detail.diary.cover,
+        tagIds: detail.tags.map((tag) => tag.id).toList(growable: false),
+      );
+      if (mounted) {
+        ref.invalidate(diaryDetailProvider(widget.diaryId));
+      }
+    } catch (_) {
+      // 待办自动保存失败不打断阅读流程，仅静默跳过本次。
+    } finally {
+      _savingTodoState = false;
+      if (_todoSaveQueued) {
+        _todoSaveQueued = false;
+        _scheduleTodoStateAutoSave();
+      }
+    }
   }
 
   String _formatDateTime(DateTime value) {
@@ -764,6 +837,7 @@ $content
         }
 
         _hadLoadedData = true;
+        _currentDetailForTodoSave = detail;
         _bindPreviewController(detail.diary.content);
         final title = detail.diary.title.trim().isEmpty
             ? context.l10n.autoT0033

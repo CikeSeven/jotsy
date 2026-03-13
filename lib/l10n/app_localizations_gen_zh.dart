@@ -139,6 +139,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appLockUnlocking => '正在解锁';
 
   @override
+  String get appLockDisableAuthReason => '请验证身份后关闭应用锁';
+
+  @override
+  String get appLockDisableVerifyFailed => '身份验证未通过，应用锁未关闭。';
+
+  @override
   String get settingsEditorTitle => '编辑器设置';
 
   @override

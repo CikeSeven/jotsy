@@ -185,6 +185,14 @@
   "@appLockUnlocking": {
     "description": "Semantic label while app lock authentication is in progress."
   },
+  "appLockDisableAuthReason": "Authenticate to disable app lock",
+  "@appLockDisableAuthReason": {
+    "description": "System auth prompt reason before disabling app lock."
+  },
+  "appLockDisableVerifyFailed": "Authentication failed. App lock remains enabled.",
+  "@appLockDisableVerifyFailed": {
+    "description": "Message shown when disabling app lock fails verification."
+  },
   "settingsEditorTitle": "Editor",
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."

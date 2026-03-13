@@ -338,6 +338,18 @@ abstract class AppLocalizations {
   /// **'Unlocking'**
   String get appLockUnlocking;
 
+  /// System auth prompt reason before disabling app lock.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to disable app lock'**
+  String get appLockDisableAuthReason;
+
+  /// Message shown when disabling app lock fails verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. App lock remains enabled.'**
+  String get appLockDisableVerifyFailed;
+
   /// Auto-generated metadata for settingsEditorTitle.
   ///
   /// In en, this message translates to:

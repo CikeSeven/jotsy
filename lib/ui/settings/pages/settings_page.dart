@@ -64,8 +64,8 @@ class SettingsPage extends ConsumerWidget {
     SettingsService settingsService,
     bool enabled,
   ) async {
+    final localAuth = LocalAuthentication();
     if (enabled) {
-      final localAuth = LocalAuthentication();
       final supported =
           await localAuth.isDeviceSupported() ||
           await localAuth.canCheckBiometrics;
@@ -75,6 +75,28 @@ class SettingsPage extends ConsumerWidget {
       if (!supported) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.l10n.appLockNotSupported)),
+        );
+        return;
+      }
+    }
+    if (!enabled) {
+      bool verified = false;
+      try {
+        verified = await localAuth.authenticate(
+          localizedReason: context.l10n.appLockDisableAuthReason,
+          biometricOnly: false,
+          sensitiveTransaction: true,
+          persistAcrossBackgrounding: false,
+        );
+      } catch (_) {
+        verified = false;
+      }
+      if (!context.mounted) {
+        return;
+      }
+      if (!verified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.appLockDisableVerifyFailed)),
         );
         return;
       }
@@ -130,12 +152,18 @@ class SettingsPage extends ConsumerWidget {
             const Divider(),
             settingsAsync.when(
               data: (settingsService) {
-                return SwitchListTile.adaptive(
-                  value: settingsService.isAppLockEnabled,
-                  title: Text(l10n.settingsAppLock),
-                  subtitle: Text(l10n.settingsAppLockSubtitle),
-                  onChanged:
-                      (value) => _toggleAppLock(context, settingsService, value),
+                return ValueListenableBuilder<bool>(
+                  valueListenable: settingsService.appLockEnabledNotifier,
+                  builder: (context, enabled, child) {
+                    return SwitchListTile.adaptive(
+                      value: enabled,
+                      title: Text(l10n.settingsAppLock),
+                      subtitle: Text(l10n.settingsAppLockSubtitle),
+                      onChanged:
+                          (value) =>
+                              _toggleAppLock(context, settingsService, value),
+                    );
+                  },
                 );
               },
               loading:

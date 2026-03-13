@@ -145,6 +145,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appLockUnlocking => 'Unlocking';
 
   @override
+  String get appLockDisableAuthReason => 'Authenticate to disable app lock';
+
+  @override
+  String get appLockDisableVerifyFailed =>
+      'Authentication failed. App lock remains enabled.';
+
+  @override
   String get settingsEditorTitle => 'Editor';
 
   @override

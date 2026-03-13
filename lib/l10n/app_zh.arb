@@ -185,6 +185,14 @@
   "@appLockUnlocking": {
     "description": "应用锁解锁中的无障碍文案。"
   },
+  "appLockDisableAuthReason": "请验证身份后关闭应用锁",
+  "@appLockDisableAuthReason": {
+    "description": "关闭应用锁前弹出的系统认证原因文案。"
+  },
+  "appLockDisableVerifyFailed": "身份验证未通过，应用锁未关闭。",
+  "@appLockDisableVerifyFailed": {
+    "description": "关闭应用锁时验证失败提示。"
+  },
   "settingsEditorTitle": "编辑器设置",
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."

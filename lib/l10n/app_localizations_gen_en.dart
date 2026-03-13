@@ -690,10 +690,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0113 => 'Delete this diary?';
 
   @override
-  String get autoT0114 => 'Share as image';
+  String get autoT0114 => 'Share image';
 
   @override
   String get autoT0115 => 'Share as text';
+
+  @override
+  String get previewExportMarkdown => 'Export as Markdown';
+
+  @override
+  String get previewExportPdf => 'Export as PDF';
+
+  @override
+  String get previewExportSaveDialogTitle => 'Save export file';
+
+  @override
+  String get previewExportSuccess => 'Export succeeded';
+
+  @override
+  String get previewExportCanceled => 'Export canceled';
+
+  @override
+  String previewExportFailed(String error) {
+    return 'Export failed: $error';
+  }
 
   @override
   String get autoT0116 => 'Mood';

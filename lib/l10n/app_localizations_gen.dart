@@ -1319,7 +1319,7 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for autoT0114.
   ///
   /// In en, this message translates to:
-  /// **'Share as image'**
+  /// **'Share image'**
   String get autoT0114;
 
   /// Auto-generated metadata for autoT0115.
@@ -1327,6 +1327,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share as text'**
   String get autoT0115;
+
+  /// Menu label for exporting diary as Markdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as Markdown'**
+  String get previewExportMarkdown;
+
+  /// Menu label for exporting diary as PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as PDF'**
+  String get previewExportPdf;
+
+  /// Dialog title when saving an exported diary file.
+  ///
+  /// In en, this message translates to:
+  /// **'Save export file'**
+  String get previewExportSaveDialogTitle;
+
+  /// SnackBar text when export completes.
+  ///
+  /// In en, this message translates to:
+  /// **'Export succeeded'**
+  String get previewExportSuccess;
+
+  /// SnackBar text when export is canceled.
+  ///
+  /// In en, this message translates to:
+  /// **'Export canceled'**
+  String get previewExportCanceled;
+
+  /// SnackBar text when export fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Export failed: {error}'**
+  String previewExportFailed(String error);
 
   /// Auto-generated metadata for autoT0116.
   ///

@@ -952,13 +952,42 @@
   "@autoT0113": {
     "description": "Auto-generated metadata for autoT0113."
   },
-  "autoT0114": "Share as image",
+  "autoT0114": "Share image",
   "@autoT0114": {
     "description": "Auto-generated metadata for autoT0114."
   },
   "autoT0115": "Share as text",
   "@autoT0115": {
     "description": "Auto-generated metadata for autoT0115."
+  },
+  "previewExportMarkdown": "Export as Markdown",
+  "@previewExportMarkdown": {
+    "description": "Menu label for exporting diary as Markdown."
+  },
+  "previewExportPdf": "Export as PDF",
+  "@previewExportPdf": {
+    "description": "Menu label for exporting diary as PDF."
+  },
+  "previewExportSaveDialogTitle": "Save export file",
+  "@previewExportSaveDialogTitle": {
+    "description": "Dialog title when saving an exported diary file."
+  },
+  "previewExportSuccess": "Export succeeded",
+  "@previewExportSuccess": {
+    "description": "SnackBar text when export completes."
+  },
+  "previewExportCanceled": "Export canceled",
+  "@previewExportCanceled": {
+    "description": "SnackBar text when export is canceled."
+  },
+  "previewExportFailed": "Export failed: {error}",
+  "@previewExportFailed": {
+    "description": "SnackBar text when export fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   },
   "autoT0116": "Mood",
   "@autoT0116": {

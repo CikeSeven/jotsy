@@ -674,10 +674,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0113 => '确认删除这条日记吗？';
 
   @override
-  String get autoT0114 => '以图片形式分享';
+  String get autoT0114 => '分享图片';
 
   @override
   String get autoT0115 => '以文字形式分享';
+
+  @override
+  String get previewExportMarkdown => '导出为 Markdown';
+
+  @override
+  String get previewExportPdf => '导出为 PDF';
+
+  @override
+  String get previewExportSaveDialogTitle => '保存导出文件';
+
+  @override
+  String get previewExportSuccess => '导出成功';
+
+  @override
+  String get previewExportCanceled => '已取消导出';
+
+  @override
+  String previewExportFailed(String error) {
+    return '导出失败: $error';
+  }
 
   @override
   String get autoT0116 => '心情';

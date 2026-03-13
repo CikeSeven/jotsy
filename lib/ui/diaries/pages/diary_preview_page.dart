@@ -1,14 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
@@ -20,6 +25,7 @@ import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
+import '../utils/diary_markdown_exporter.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
@@ -58,6 +64,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   final ScrollController _previewScrollController = ScrollController();
   bool _isSharingImage = false;
   bool _shareCaptureStaticCover = false;
+  bool _isExportingFile = false;
+  pw.Font? _cachedPdfUnifiedFont;
+  Future<pw.Font>? _pdfUnifiedFontLoading;
 
   Widget _buildBackLeading() {
     return IconButton(
@@ -157,10 +166,6 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     }
   }
 
-  String _formatDateTime(DateTime value) {
-    return DateFormat('yyyy-MM-dd HH:mm').format(value.toLocal());
-  }
-
   String _formatRelativeTime(DateTime value) {
     return RelativeTimeFormatter.formatUpdatedAt(
       updatedAt: value,
@@ -176,35 +181,6 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       now: DateTime.now(),
       l10n: context.l10n,
     );
-  }
-
-  String _buildShareCopyText(DiaryWithTags detail) {
-    final l10n = context.l10n;
-    final title = detail.diary.title.trim().isEmpty
-        ? l10n.autoT0033
-        : detail.diary.title.trim();
-    final content = detail.diary.contentText.trim().isEmpty
-        ? l10n.autoT0104
-        : detail.diary.contentText.trim();
-    final tags = detail.tags.isEmpty
-        ? l10n.autoT0105
-        : detail.tags.map((tag) => tag.name).join('、');
-    final createdAt = _formatDateTime(detail.diary.createdAt);
-    final updatedAt = _formatDateTime(detail.diary.updatedAt);
-
-    return '''
-${l10n.autoT0106}: $title
-${l10n.autoT0107}: $createdAt
-${l10n.autoT0108}: $updatedAt
-${l10n.autoT0109}: $tags
-
-${l10n.autoT0110}:
-$content
-''';
-  }
-
-  Future<void> _shareTextDirectly(DiaryWithTags detail) async {
-    await Share.share(_buildShareCopyText(detail));
   }
 
   Future<void> _shareAsLongImage() async {
@@ -266,6 +242,189 @@ $content
           _isSharingImage = false;
           _shareCaptureStaticCover = false;
         });
+      }
+    }
+  }
+
+  String _buildExportFileBaseName(DiaryWithTags detail) {
+    final rawTitle = detail.diary.title.trim().isEmpty
+        ? 'diary'
+        : detail.diary.title.trim();
+    final normalized = rawTitle
+        .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
+        .replaceAll(RegExp(r'\s+'), '_');
+    final short = normalized.length > 24 ? normalized.substring(0, 24) : normalized;
+    return short.isEmpty ? 'diary' : short;
+  }
+
+  /// 加载并缓存 PDF 统一字体。
+  ///
+  /// 说明：
+  /// - 统一使用一套中文字体，避免中英混排时字体风格跳变；
+  /// - `pw.Font.ttf` 会在生成时按实际字符做子集嵌入，减少体积；
+  /// - 这里只保留一套 Regular 字体，避免多字重导致导出包体膨胀。
+  Future<pw.Font> _loadPdfUnifiedFont() async {
+    final cached = _cachedPdfUnifiedFont;
+    if (cached != null) {
+      return cached;
+    }
+    final loading = _pdfUnifiedFontLoading;
+    if (loading != null) {
+      return loading;
+    }
+    final task = () async {
+      try {
+        final data = await rootBundle.load(
+          'assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Regular.ttf',
+        );
+        final font = pw.Font.ttf(data);
+        _cachedPdfUnifiedFont = font;
+        return font;
+      } finally {
+        _pdfUnifiedFontLoading = null;
+      }
+    }();
+    _pdfUnifiedFontLoading = task;
+    return task;
+  }
+
+  Future<bool> _saveExportBytes({
+    required Uint8List bytes,
+    required String fileName,
+    required List<String> allowedExtensions,
+  }) async {
+    String? savePath;
+    if (Platform.isAndroid || Platform.isIOS) {
+      savePath = await FilePicker.platform.saveFile(
+        dialogTitle: context.l10n.previewExportSaveDialogTitle,
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions,
+        bytes: bytes,
+      );
+    } else {
+      savePath = await FilePicker.platform.saveFile(
+        dialogTitle: context.l10n.previewExportSaveDialogTitle,
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions,
+      );
+      if (savePath != null && savePath.trim().isNotEmpty) {
+        final outputFile = File(savePath);
+        await outputFile.parent.create(recursive: true);
+        await outputFile.writeAsBytes(bytes, flush: true);
+      }
+    }
+    return savePath != null && savePath.trim().isNotEmpty;
+  }
+
+  Future<void> _exportMarkdown(DiaryWithTags detail) async {
+    final controller = _previewController;
+    if (controller == null || _isExportingFile) {
+      return;
+    }
+    setState(() => _isExportingFile = true);
+    try {
+      final markdown = DiaryMarkdownExporter.build(
+        title: detail.diary.title,
+        createdAt: detail.diary.createdAt,
+        updatedAt: detail.diary.updatedAt,
+        tagNames: detail.tags.map((tag) => tag.name).toList(growable: false),
+        document: controller.document,
+      );
+      final bytes = Uint8List.fromList(utf8.encode(markdown));
+      final fileName =
+          '${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.md';
+      final saved = await _saveExportBytes(
+        bytes: bytes,
+        fileName: fileName,
+        allowedExtensions: const <String>['md'],
+      );
+      if (!mounted) {
+        return;
+      }
+      if (!saved) {
+        _showHint(context.l10n.previewExportCanceled);
+        return;
+      }
+      _showHint(context.l10n.previewExportSuccess);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showHint(context.l10n.previewExportFailed(error.toString()));
+    } finally {
+      if (mounted) {
+        setState(() => _isExportingFile = false);
+      }
+    }
+  }
+
+  Future<void> _exportPdf(DiaryWithTags detail) async {
+    final controller = _previewController;
+    if (controller == null || _isExportingFile) {
+      return;
+    }
+    setState(() => _isExportingFile = true);
+    try {
+      final title = detail.diary.title.trim().isEmpty
+          ? context.l10n.autoT0033
+          : detail.diary.title.trim();
+      final unifiedFont = await _loadPdfUnifiedFont();
+      final unifiedTheme = pw.ThemeData.withFont(
+        base: unifiedFont,
+        bold: unifiedFont,
+        italic: unifiedFont,
+        boldItalic: unifiedFont,
+        fontFallback: <pw.Font>[unifiedFont],
+      );
+      final converter = PDFConverter(
+        pageFormat: PDFPageFormat.a4,
+        document: controller.document.toDelta(),
+        textDirection: Directionality.of(context),
+        isWeb: kIsWeb,
+        documentOptions: DocumentOptions(title: title, author: 'Jotsy'),
+        themeData: unifiedTheme,
+        codeBlockFont: unifiedFont,
+        fallbacks: <pw.Font>[unifiedFont],
+        onRequestFontFamily: (FontFamilyRequest _) {
+          return FontFamilyResponse(
+            fontNormalV: unifiedFont,
+            boldFontV: unifiedFont,
+            italicFontV: unifiedFont,
+            boldItalicFontV: unifiedFont,
+            fallbacks: <pw.Font>[unifiedFont],
+          );
+        },
+      );
+      final doc = await converter.createDocument();
+      if (doc == null) {
+        throw Exception('PDF build failed');
+      }
+      final bytes = Uint8List.fromList(await doc.save());
+      final fileName =
+          '${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final saved = await _saveExportBytes(
+        bytes: bytes,
+        fileName: fileName,
+        allowedExtensions: const <String>['pdf'],
+      );
+      if (!mounted) {
+        return;
+      }
+      if (!saved) {
+        _showHint(context.l10n.previewExportCanceled);
+        return;
+      }
+      _showHint(context.l10n.previewExportSuccess);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _showHint(context.l10n.previewExportFailed(error.toString()));
+    } finally {
+      if (mounted) {
+        setState(() => _isExportingFile = false);
       }
     }
   }
@@ -393,11 +552,19 @@ $content
                 },
               ),
               ListTile(
-                leading: const FaIcon(FontAwesomeIcons.font, size: 16),
-                title: Text(context.l10n.autoT0115),
+                leading: const FaIcon(FontAwesomeIcons.fileLines, size: 16),
+                title: Text(context.l10n.previewExportMarkdown),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
-                  await _shareTextDirectly(detail);
+                  await _exportMarkdown(detail);
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.filePdf, size: 16),
+                title: Text(context.l10n.previewExportPdf),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _exportPdf(detail);
                 },
               ),
               ListTile(

@@ -40,6 +40,7 @@ dependencies:
   url_launcher: ^6.3.2
   archive: ^3.6.1
   local_auth: ^3.0.1
+  flutter_quill_to_pdf: ^2.3.9
   
 dev_dependencies:
   flutter_test:

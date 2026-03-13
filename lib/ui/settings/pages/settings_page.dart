@@ -12,6 +12,7 @@ import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 
+import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 
@@ -73,8 +74,9 @@ class SettingsPage extends ConsumerWidget {
         return;
       }
       if (!supported) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.appLockNotSupported)),
+        await HomeHintVisibilityScope.showTrackedSnackBar(
+          context: context,
+          snackBar: SnackBar(content: Text(context.l10n.appLockNotSupported)),
         );
         return;
       }
@@ -95,8 +97,9 @@ class SettingsPage extends ConsumerWidget {
         return;
       }
       if (!verified) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.appLockDisableVerifyFailed)),
+        await HomeHintVisibilityScope.showTrackedSnackBar(
+          context: context,
+          snackBar: SnackBar(content: Text(context.l10n.appLockDisableVerifyFailed)),
         );
         return;
       }

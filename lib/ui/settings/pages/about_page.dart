@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../home/widgets/home_hint_visibility_scope.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
 class AboutPage extends StatelessWidget {
@@ -35,8 +36,9 @@ class AboutPage extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.aboutOpenLinkFallbackCopied)),
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(content: Text(context.l10n.aboutOpenLinkFallbackCopied)),
     );
   }
 

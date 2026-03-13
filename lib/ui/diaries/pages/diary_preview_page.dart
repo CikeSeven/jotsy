@@ -23,6 +23,7 @@ import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
+import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
@@ -463,10 +464,13 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   void _showHint(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+        ),
       ),
     );
   }
@@ -975,12 +979,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               if (!mounted) {
                 return;
               }
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(context.l10n.autoT0122),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              _showHint(context.l10n.autoT0122);
               Navigator.of(context).pop();
             });
             return Scaffold(

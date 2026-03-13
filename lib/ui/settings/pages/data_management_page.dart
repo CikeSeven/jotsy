@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -9,6 +10,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/data_archive_service.dart';
+import '../../home/widgets/home_hint_visibility_scope.dart';
 
 /// 数据管理页面：提供 zip 导出与导入入口。
 class DataManagementPage extends ConsumerStatefulWidget {
@@ -341,10 +343,13 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+        ),
       ),
     );
   }

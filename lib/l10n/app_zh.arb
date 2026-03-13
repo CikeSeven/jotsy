@@ -157,6 +157,10 @@
   "@settingsLanguageSubtitle": {
     "description": "Auto-generated metadata for settingsLanguageSubtitle."
   },
+  "settingsAppearanceLanguage": "外观与语言",
+  "@settingsAppearanceLanguage": {
+    "description": "Settings group title for appearance and language section."
+  },
   "settingsAppLock": "应用锁",
   "@settingsAppLock": {
     "description": "设置页应用锁开关标题。"
@@ -196,6 +200,22 @@
   "settingsEditorTitle": "编辑器设置",
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
+  },
+  "settingsEditorGroup": "编辑器",
+  "@settingsEditorGroup": {
+    "description": "Settings group title for editor-related options."
+  },
+  "settingsDataPrivacy": "数据与隐私",
+  "@settingsDataPrivacy": {
+    "description": "Settings entry label for data and privacy section."
+  },
+  "settingsDataPrivacySubtitle": "管理备份、应用锁与回收站",
+  "@settingsDataPrivacySubtitle": {
+    "description": "Settings entry subtitle for data and privacy section."
+  },
+  "settingsDataPrivacyTitle": "数据与隐私",
+  "@settingsDataPrivacyTitle": {
+    "description": "Secondary page title for data and privacy."
   },
   "settingsDataManagement": "数据管理",
   "@settingsDataManagement": {

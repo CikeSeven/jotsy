@@ -296,6 +296,12 @@ abstract class AppLocalizations {
   /// **'Switch app language'**
   String get settingsLanguageSubtitle;
 
+  /// Settings group title for appearance and language section.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance & Language'**
+  String get settingsAppearanceLanguage;
+
   /// Title for app lock switch in settings.
   ///
   /// In en, this message translates to:
@@ -355,6 +361,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Editor'**
   String get settingsEditorTitle;
+
+  /// Settings group title for editor-related options.
+  ///
+  /// In en, this message translates to:
+  /// **'Editor'**
+  String get settingsEditorGroup;
+
+  /// Settings entry label for data and privacy section.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Privacy'**
+  String get settingsDataPrivacy;
+
+  /// Settings entry subtitle for data and privacy section.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage backups, app lock, and recycle bin'**
+  String get settingsDataPrivacySubtitle;
+
+  /// Secondary page title for data and privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Data & Privacy'**
+  String get settingsDataPrivacyTitle;
 
   /// Auto-generated metadata for settingsDataManagement.
   ///

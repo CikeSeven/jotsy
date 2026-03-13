@@ -118,6 +118,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsLanguageSubtitle => '切换应用语言';
 
   @override
+  String get settingsAppearanceLanguage => '外观与语言';
+
+  @override
   String get settingsAppLock => '应用锁';
 
   @override
@@ -146,6 +149,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsEditorTitle => '编辑器设置';
+
+  @override
+  String get settingsEditorGroup => '编辑器';
+
+  @override
+  String get settingsDataPrivacy => '数据与隐私';
+
+  @override
+  String get settingsDataPrivacySubtitle => '管理备份、应用锁与回收站';
+
+  @override
+  String get settingsDataPrivacyTitle => '数据与隐私';
 
   @override
   String get settingsDataManagement => '数据管理';

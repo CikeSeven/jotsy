@@ -157,6 +157,10 @@
   "@settingsLanguageSubtitle": {
     "description": "Auto-generated metadata for settingsLanguageSubtitle."
   },
+  "settingsAppearanceLanguage": "Appearance & Language",
+  "@settingsAppearanceLanguage": {
+    "description": "Settings group title for appearance and language section."
+  },
   "settingsAppLock": "App Lock",
   "@settingsAppLock": {
     "description": "Title for app lock switch in settings."
@@ -196,6 +200,22 @@
   "settingsEditorTitle": "Editor",
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
+  },
+  "settingsEditorGroup": "Editor",
+  "@settingsEditorGroup": {
+    "description": "Settings group title for editor-related options."
+  },
+  "settingsDataPrivacy": "Data & Privacy",
+  "@settingsDataPrivacy": {
+    "description": "Settings entry label for data and privacy section."
+  },
+  "settingsDataPrivacySubtitle": "Manage backups, app lock, and recycle bin",
+  "@settingsDataPrivacySubtitle": {
+    "description": "Settings entry subtitle for data and privacy section."
+  },
+  "settingsDataPrivacyTitle": "Data & Privacy",
+  "@settingsDataPrivacyTitle": {
+    "description": "Secondary page title for data and privacy."
   },
   "settingsDataManagement": "Data Management",
   "@settingsDataManagement": {

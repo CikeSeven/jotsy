@@ -122,6 +122,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguageSubtitle => 'Switch app language';
 
   @override
+  String get settingsAppearanceLanguage => 'Appearance & Language';
+
+  @override
   String get settingsAppLock => 'App Lock';
 
   @override
@@ -153,6 +156,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsEditorTitle => 'Editor';
+
+  @override
+  String get settingsEditorGroup => 'Editor';
+
+  @override
+  String get settingsDataPrivacy => 'Data & Privacy';
+
+  @override
+  String get settingsDataPrivacySubtitle =>
+      'Manage backups, app lock, and recycle bin';
+
+  @override
+  String get settingsDataPrivacyTitle => 'Data & Privacy';
 
   @override
   String get settingsDataManagement => 'Data Management';

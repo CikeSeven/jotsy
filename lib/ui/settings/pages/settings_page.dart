@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
-import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/settings/pages/about_page.dart';
-import 'package:node_diary/ui/settings/pages/data_management_page.dart';
+import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 
-import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../../core/services/app_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 
-/// 设置页：
-/// 1. 主题模式切换；
-/// 2. 标签删除管理。
+/// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
@@ -60,57 +55,9 @@ class SettingsPage extends ConsumerWidget {
     await settingsService.setAppLocaleCode(result);
   }
 
-  Future<void> _toggleAppLock(
-    BuildContext context,
-    SettingsService settingsService,
-    bool enabled,
-  ) async {
-    final localAuth = LocalAuthentication();
-    if (enabled) {
-      final supported =
-          await localAuth.isDeviceSupported() ||
-          await localAuth.canCheckBiometrics;
-      if (!context.mounted) {
-        return;
-      }
-      if (!supported) {
-        await HomeHintVisibilityScope.showTrackedSnackBar(
-          context: context,
-          snackBar: SnackBar(content: Text(context.l10n.appLockNotSupported)),
-        );
-        return;
-      }
-    }
-    if (!enabled) {
-      bool verified = false;
-      try {
-        verified = await localAuth.authenticate(
-          localizedReason: context.l10n.appLockDisableAuthReason,
-          biometricOnly: false,
-          sensitiveTransaction: true,
-          persistAcrossBackgrounding: false,
-        );
-      } catch (_) {
-        verified = false;
-      }
-      if (!context.mounted) {
-        return;
-      }
-      if (!verified) {
-        await HomeHintVisibilityScope.showTrackedSnackBar(
-          context: context,
-          snackBar: SnackBar(content: Text(context.l10n.appLockDisableVerifyFailed)),
-        );
-        return;
-      }
-    }
-    await settingsService.setAppLockEnabled(enabled);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    // 设置项分开监听，确保局部更新。
     final settingsAsync = ref.watch(settingsServiceProvider);
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
@@ -121,17 +68,12 @@ class SettingsPage extends ConsumerWidget {
         12;
 
     return Stack(
-      children: [
+      children: <Widget>[
         ListView(
-          padding: EdgeInsets.only(
-            top: headerHeight,
-            bottom: listBottomPadding,
-          ),
+          padding: EdgeInsets.only(top: headerHeight, bottom: listBottomPadding),
           children: <Widget>[
-            ListTile(title: Text(l10n.settingsThemeMode)),
-            SettingsThemeSection(
-              settingsAsync: settingsAsync,
-            ),
+            _SettingsGroupTitle(title: l10n.settingsAppearanceLanguage),
+            SettingsThemeSection(settingsAsync: settingsAsync),
             const Divider(),
             settingsAsync.when(
               data: (settingsService) {
@@ -147,81 +89,15 @@ class SettingsPage extends ConsumerWidget {
                     title: Text(l10n.settingsLanguage),
                     subtitle: Text(l10n.settingsLanguageSubtitle),
                   ),
-              error: (_, __) => ListTile(
-                title: Text(l10n.settingsLanguage),
-                subtitle: Text(l10n.settingsLanguageSubtitle),
-              ),
-            ),
-            const Divider(),
-            settingsAsync.when(
-              data: (settingsService) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: settingsService.appLockEnabledNotifier,
-                  builder: (context, enabled, child) {
-                    return SwitchListTile.adaptive(
-                      value: enabled,
-                      title: Text(l10n.settingsAppLock),
-                      subtitle: Text(l10n.settingsAppLockSubtitle),
-                      onChanged:
-                          (value) =>
-                              _toggleAppLock(context, settingsService, value),
-                    );
-                  },
-                );
-              },
-              loading:
-                  () => ListTile(
-                    title: Text(l10n.settingsAppLock),
-                    subtitle: Text(l10n.settingsAppLockSubtitle),
+              error:
+                  (_, __) => ListTile(
+                    title: Text(l10n.settingsLanguage),
+                    subtitle: Text(l10n.settingsLanguageSubtitle),
                   ),
-              error: (_, __) => ListTile(
-                title: Text(l10n.settingsAppLock),
-                subtitle: Text(l10n.settingsAppLockSubtitle),
-              ),
             ),
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(
-                l10n.settingsEditorTitle,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            SettingsEditorSection(
-              settingsAsync: settingsAsync,
-            ),
-            const Divider(),
-            ListTile(
-              title: Text(l10n.settingsDataManagement),
-              subtitle: Text(l10n.settingsDataManagementSubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const DataManagementPage();
-                    },
-                  ),
-                );
-              },
-            ),
-            const Divider(),
-            ListTile(
-              title: Text(l10n.settingsAbout),
-              subtitle: Text(l10n.settingsAboutSubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const AboutPage();
-                    },
-                  ),
-                );
-              },
-            ),
+            const SizedBox(height: 12),
+            _SettingsGroupTitle(title: l10n.settingsEditorGroup),
+            SettingsEditorSection(settingsAsync: settingsAsync),
             const Divider(),
             ListTile(
               title: Text(l10n.settingsTagManagement),
@@ -237,16 +113,33 @@ class SettingsPage extends ConsumerWidget {
                 );
               },
             ),
-            const Divider(),
+            const SizedBox(height: 12),
+            _SettingsGroupTitle(title: l10n.settingsDataPrivacy),
             ListTile(
-              title: Text(l10n.settingsRecycleBin),
-              subtitle: Text(l10n.settingsRecycleBinSubtitle),
+              title: Text(l10n.settingsDataPrivacy),
+              subtitle: Text(l10n.settingsDataPrivacySubtitle),
               trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) {
-                      return const RecycleBinPage();
+                      return const DataPrivacyPage();
+                    },
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            _SettingsGroupTitle(title: l10n.settingsAbout),
+            ListTile(
+              title: Text(l10n.settingsAbout),
+              subtitle: Text(l10n.settingsAboutSubtitle),
+              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return const AboutPage();
                     },
                   ),
                 );
@@ -256,6 +149,25 @@ class SettingsPage extends ConsumerWidget {
         ),
         GlassPageHeader(title: l10n.settingsTitle),
       ],
+    );
+  }
+}
+
+class _SettingsGroupTitle extends StatelessWidget {
+  const _SettingsGroupTitle({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

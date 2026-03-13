@@ -29,16 +29,9 @@ class EditDiaryController {
 
   /// 编辑页定位展示文案，与发布页保持一致（城市 · 街道）。
   String? get locationLabelForEdit {
-    final township = _normalizeOptionalText(_state._draftLocation);
-    final city = _resolveLocationCity(_state._draftLocationAddressComponent);
-    if (city != null && township != null) {
-      return '$city · $township';
-    }
-    if (city != null) {
-      return city;
-    }
-    if (township != null) {
-      return township;
+    final location = _normalizeOptionalText(_state._draftLocation);
+    if (location != null) {
+      return location;
     }
     if (_state._draftLocationFromAuto) {
       return _state.context.l10n.autoT0085;
@@ -627,14 +620,6 @@ class EditDiaryController {
         _state._draftLocationAddressComponent = _parseObjectMap(
           geo['addressComponent'],
         );
-        final normalizedLocation = _buildAutoLocationLabel(
-          addressComponent: _state._draftLocationAddressComponent,
-          township: _state._draftLocation,
-        );
-        if (normalizedLocation != null) {
-          _state._draftLocation = normalizedLocation;
-          _state._locationController.text = normalizedLocation;
-        }
       }
     } catch (_) {
       // metadata 非标准结构时不阻断编辑流程，保持默认空态。

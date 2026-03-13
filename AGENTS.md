@@ -81,6 +81,7 @@
   - 危险动作：右侧按钮使用 `colorScheme.error`
 - 必须：活动区域（底栏、悬浮面板、关键交互容器）遵循玻璃质感设计，优先复用 `AppEffects`、`AppRadii` 等现有 token。
 - 必须：用户可感知的耗时等待操作（如启动预热、分页首屏加载、远程请求等待）统一使用 `loading_indicator_m3e` 的加载效果，不再新增 `CircularProgressIndicator` 作为主加载表现。
+- 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：亮色/暗色主题都保证文字和图标可读性，不允许出现暗色模式全黑图标等失配。
 - 必须：涉及颜色的 UI 改动必须同步适配暗色主题，禁止硬编码 `Colors.white/Colors.black` 作为固定背景或前景色；优先使用 `colorScheme` 语义色并在明暗主题分别验证。
 - 禁止：使用任何渐变（`LinearGradient`、`RadialGradient`、`SweepGradient`）。

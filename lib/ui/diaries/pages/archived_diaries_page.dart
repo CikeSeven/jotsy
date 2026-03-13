@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 import '../../../core/database/app_database.dart';
 import '../sections/diary_head_section.dart';
@@ -69,7 +70,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
       },
       child: Scaffold(
         backgroundColor: pageBackgroundColor,
-        appBar: AppBar(
+        appBar: GlassAppBar(
           title: Text(
             _isSelectionMode
                 ? context.l10n.autoT0099(_selectedDiaryIds.length.toString())

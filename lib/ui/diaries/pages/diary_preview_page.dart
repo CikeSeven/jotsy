@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -24,6 +23,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../widgets/glass_app_bar.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
@@ -1047,7 +1047,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     return detailAsync.when(
       loading: () {
         return Scaffold(
-          appBar: AppBar(
+          appBar: GlassAppBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
@@ -1057,7 +1057,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       },
       error: (Object error, StackTrace stackTrace) {
         return Scaffold(
-          appBar: AppBar(
+          appBar: GlassAppBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
@@ -1076,7 +1076,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               Navigator.of(context).pop();
             });
             return Scaffold(
-              appBar: AppBar(
+              appBar: GlassAppBar(
                 centerTitle: true,
                 title: Text(context.l10n.autoT0120),
                 leading: _buildBackLeading(),
@@ -1086,7 +1086,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
           }
 
           return Scaffold(
-            appBar: AppBar(
+            appBar: GlassAppBar(
               centerTitle: true,
               title: Text(context.l10n.autoT0120),
               leading: _buildBackLeading(),
@@ -1104,7 +1104,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         final coverSource = _resolvePreviewCover(detail.diary);
 
         return Scaffold(
-          appBar: AppBar(
+          appBar: GlassAppBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),

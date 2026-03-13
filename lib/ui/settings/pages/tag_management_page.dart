@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/tag_order_codec.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 /// 标签管理页：
 /// 1. 标签排序（拖拽）；
@@ -253,7 +254,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     final tagsAsync = ref.watch(tagListProvider);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),

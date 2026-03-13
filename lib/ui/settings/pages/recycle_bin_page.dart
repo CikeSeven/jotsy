@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 /// 回收站页面：
 /// - 展示已软删除日记；
@@ -175,7 +176,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
     final deletedAsync = ref.watch(deletedDiariesProvider);
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),

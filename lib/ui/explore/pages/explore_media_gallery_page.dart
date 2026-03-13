@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
@@ -61,7 +62,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(
+      appBar: GlassAppBar(
         centerTitle: true,
         title: Text(l10n.autoT0054),
         leading: IconButton(

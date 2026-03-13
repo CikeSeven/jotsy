@@ -25,6 +25,7 @@ import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 part '../controllers/edit_diary_controller.dart';
 
@@ -450,7 +451,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (Object error, StackTrace stackTrace) => Scaffold(
-            appBar: AppBar(
+            appBar: GlassAppBar(
               leading: IconButton(
                 tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
@@ -472,7 +473,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
-            appBar: AppBar(
+            appBar: GlassAppBar(
               leading: IconButton(
                 tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
@@ -509,7 +510,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         }
 
         final scaffold = Scaffold(
-            appBar: AppBar(
+            appBar: GlassAppBar(
             leading: IconButton(
               tooltip: context.l10n.commonBack,
               onPressed: _attemptExitEditPage,

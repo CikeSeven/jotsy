@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 import '../models/explore_view_data.dart';
 
@@ -50,7 +51,7 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
     final total = widget.mediaItems.length;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
+      appBar: GlassAppBar(
         backgroundColor: Colors.black.withValues(alpha: 0.88),
         foregroundColor: Colors.white,
         leading: IconButton(

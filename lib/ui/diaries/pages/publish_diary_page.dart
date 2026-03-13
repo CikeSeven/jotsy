@@ -24,6 +24,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/glass_app_bar.dart';
 
 part '../controllers/publish_diary_controller.dart';
 
@@ -163,7 +164,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
           }
         },
       child: Scaffold(
-        appBar: AppBar(
+        appBar: GlassAppBar(
           title: Text(context.l10n.autoT0138),
           leading: IconButton(
             onPressed: _controller.closeWithDraft,

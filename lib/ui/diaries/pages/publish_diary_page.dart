@@ -206,6 +206,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                               autoFocus: false,
                               scrollable: false,
                               padding: EdgeInsets.zero,
+                              showCursor: false,
+                              checkBoxReadOnly: false,
                               embedBuilders: buildDiaryQuillEmbedBuilders(),
                             ),
                           ),

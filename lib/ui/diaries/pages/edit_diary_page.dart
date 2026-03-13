@@ -151,6 +151,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool get _isEditEntry =>
       widget.diaryId != null && widget.entryMode == EditDiaryEntryMode.edit;
   bool get _canSaveEdit => _isEditEntry && !_saving && _hasPendingEditChanges;
+  bool get _isEditPanelExpanded => _isEditEntry && _editPanelExpandProgress >= 0.56;
+  bool get _isEditingNoteText => _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
 
   String? _normalizeOptionalText(String? raw) {
     final normalized = raw?.trim();
@@ -313,11 +315,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   /// 标题输入框。
   ///
   /// 使用下划线风格，焦点态颜色高亮以提供明确输入反馈。
-  Widget _buildTitleInput(BuildContext context) {
+  Widget _buildTitleInput(BuildContext context, {required bool contentLocked}) {
     final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       controller: _titleController,
       focusNode: _titleFocusNode,
+      enabled: !contentLocked,
+      readOnly: contentLocked,
       textAlignVertical: TextAlignVertical.top,
       buildCounter:
           (
@@ -355,6 +359,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   Widget _buildEditor(
     BuildContext context, {
     required double bottomSpacer,
+    required bool contentLocked,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
@@ -376,23 +381,26 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  _buildTitleInput(context),
+                  _buildTitleInput(context, contentLocked: contentLocked),
                   const SizedBox(height: 12),
                   ConstrainedBox(
                     // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
                     constraints: BoxConstraints(
                       minHeight: minEditorHeight,
                     ),
-                    child: quill.QuillEditor.basic(
-                      controller: _contentController,
-                      focusNode: _contentFocusNode,
-                      scrollController: _editorInnerScrollController,
-                      config: quill.QuillEditorConfig(
-                        autoFocus: widget.diaryId == null,
-                        placeholder: context.l10n.autoT0133,
-                        scrollable: false,
-                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                        embedBuilders: buildDiaryQuillEmbedBuilders(),
+                    child: IgnorePointer(
+                      ignoring: contentLocked,
+                      child: quill.QuillEditor.basic(
+                        controller: _contentController,
+                        focusNode: _contentFocusNode,
+                        scrollController: _editorInnerScrollController,
+                        config: quill.QuillEditorConfig(
+                          autoFocus: widget.diaryId == null,
+                          placeholder: context.l10n.autoT0133,
+                          scrollable: false,
+                          padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+                          embedBuilders: buildDiaryQuillEmbedBuilders(),
+                        ),
                       ),
                     ),
                   ),
@@ -408,10 +416,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-    final showFloatingToolbar = _isMobileRuntime && keyboardInset > 0;
+    final showFloatingToolbar =
+        _isMobileRuntime &&
+        keyboardInset > 0 &&
+        _isEditingNoteText &&
+        !_isEditPanelExpanded;
     final showEditMetaPanel = _isEditEntry;
     final editPanelSpacer =
-        (showEditMetaPanel && !showFloatingToolbar)
+        showEditMetaPanel
             ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
             : 16.0;
     final settingsAsync = ref.watch(settingsServiceProvider);
@@ -555,9 +567,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   child: _buildEditor(
                     context,
                     bottomSpacer: editPanelSpacer,
+                    contentLocked: _isEditPanelExpanded,
                   ),
                 ),
-                if (showEditMetaPanel && !showFloatingToolbar)
+                if (showEditMetaPanel && (!showFloatingToolbar || _isEditPanelExpanded))
                   Positioned(
                     left: 16,
                     right: 16,
@@ -585,6 +598,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                         }
                         if ((progress - _editPanelExpandProgress).abs() < 0.0001) {
                           return;
+                        }
+                        final wasExpanded = _isEditPanelExpanded;
+                        final nextExpanded = progress >= 0.56;
+                        if (!wasExpanded && nextExpanded) {
+                          FocusManager.instance.primaryFocus?.unfocus();
                         }
                         setState(() => _editPanelExpandProgress = progress);
                       },

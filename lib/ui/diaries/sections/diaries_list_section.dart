@@ -166,8 +166,15 @@ class DiariesListSection extends StatelessWidget {
   }) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final itemBackgroundColor =
+    final baseItemBackgroundColor =
         compact ? colorScheme.surface : backgroundColor;
+    final itemBackgroundColor =
+        diary.diary.isPinned
+            ? Color.alphaBlend(
+              colorScheme.primary.withAlpha(14),
+              baseItemBackgroundColor,
+            )
+            : baseItemBackgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
     final previewCover = _resolvePreviewCover(diary.diary);
     final title = diary.diary.title.trim().isEmpty

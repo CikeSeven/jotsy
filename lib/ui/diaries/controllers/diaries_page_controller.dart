@@ -248,6 +248,65 @@ class DiariesPageController {
     }
   }
 
+  /// 批量置顶所选日记。
+  ///
+  /// 设计为“仅置顶不改更新时间”，避免只做排序管理时污染“最近编辑”语义。
+  Future<void> pinSelectedDiaries({bool unpin = false}) async {
+    if (_state._selectedDiaryIds.isEmpty) {
+      return;
+    }
+
+    final targetIds = _state._selectedDiaryIds.toList(growable: false);
+    final db = _state.ref.read(appDatabaseProvider);
+    final failedIds = <String>[];
+
+    for (final diaryId in targetIds) {
+      try {
+        if (unpin) {
+          await db.unpinDiary(diaryId, touchUpdatedAt: false);
+        } else {
+          await db.pinDiary(diaryId, touchUpdatedAt: false);
+        }
+      } catch (_) {
+        failedIds.add(diaryId);
+      }
+    }
+
+    if (!_state.mounted) {
+      return;
+    }
+
+    if (failedIds.isNotEmpty) {
+      await feedback.showInfoSnackBar(_state.context.l10n.commonRetry);
+      return;
+    }
+
+    clearSelection();
+  }
+
+  /// 判断当前所选日记是否“全部已置顶”。
+  ///
+  /// 用于控制选择态 AppBar 的置顶按钮图标：
+  /// - 全部已置顶 -> 显示“取消置顶”；
+  /// - 只要有一条未置顶 -> 显示“置顶”。
+  bool areAllSelectedPinned(Iterable<DiaryWithTags> currentItems) {
+    if (_state._selectedDiaryIds.isEmpty) {
+      return false;
+    }
+
+    var selectedCount = 0;
+    for (final item in currentItems) {
+      if (!_state._selectedDiaryIds.contains(item.diary.diaryId)) {
+        continue;
+      }
+      selectedCount += 1;
+      if (!item.diary.isPinned) {
+        return false;
+      }
+    }
+    return selectedCount == _state._selectedDiaryIds.length && selectedCount > 0;
+  }
+
   /// 批量删除所选日记，并提供撤销入口。
   Future<void> deleteSelectedDiaries() async {
     if (_state._selectedDiaryIds.isEmpty) {
@@ -575,19 +634,44 @@ class DiariesPageController {
 
   /// 统一排序逻辑，避免页面层关心具体排序细节。
   void _sortDiaries(List<DiaryWithTags> items) {
+    int comparePinnedFirst(DiaryWithTags a, DiaryWithTags b) {
+      final aPinned = a.diary.isPinned;
+      final bPinned = b.diary.isPinned;
+      if (aPinned == bPinned) {
+        return 0;
+      }
+      return aPinned ? -1 : 1;
+    }
+
     switch (_state._sortMode) {
       case DiarySortMode.updatedDesc:
-        items.sort((a, b) => b.diary.updatedAt.compareTo(a.diary.updatedAt));
+        items.sort((a, b) {
+          final pinnedCompare = comparePinnedFirst(a, b);
+          if (pinnedCompare != 0) {
+            return pinnedCompare;
+          }
+          return b.diary.updatedAt.compareTo(a.diary.updatedAt);
+        });
         break;
       case DiarySortMode.updatedAsc:
-        items.sort((a, b) => a.diary.updatedAt.compareTo(b.diary.updatedAt));
+        items.sort((a, b) {
+          final pinnedCompare = comparePinnedFirst(a, b);
+          if (pinnedCompare != 0) {
+            return pinnedCompare;
+          }
+          return a.diary.updatedAt.compareTo(b.diary.updatedAt);
+        });
         break;
       case DiarySortMode.titleAsc:
-        items.sort(
-          (a, b) => a.diary.title.toLowerCase().compareTo(
+        items.sort((a, b) {
+          final pinnedCompare = comparePinnedFirst(a, b);
+          if (pinnedCompare != 0) {
+            return pinnedCompare;
+          }
+          return a.diary.title.toLowerCase().compareTo(
             b.diary.title.toLowerCase(),
-          ),
-        );
+          );
+        });
         break;
     }
   }

@@ -37,6 +37,10 @@ class Diaries extends Table {
   DateTimeColumn get archivedAt =>
       dateTime().named('archived_at').nullable()();
 
+  /// 置顶标记：用于让重要日记固定出现在列表前部。
+  BoolColumn get isPinned =>
+      boolean().named('is_pinned').withDefault(const Constant(false))();
+
   BoolColumn get isDeleted =>
       boolean().named('is_deleted').withDefault(const Constant(false))();
 

@@ -22,6 +22,7 @@ CREATE TABLE diaries (
   updated_at INTEGER NOT NULL,
   is_archived INTEGER NOT NULL DEFAULT 0,
   archived_at INTEGER NULL,
+  is_pinned INTEGER NOT NULL DEFAULT 0,
   is_deleted INTEGER NOT NULL DEFAULT 0,
   deleted_at INTEGER NULL
 )
@@ -39,6 +40,7 @@ SELECT
   updated_at,
   0 AS is_archived,
   NULL AS archived_at,
+  0 AS is_pinned,
   is_deleted,
   deleted_at
 FROM diaries_old
@@ -61,6 +63,7 @@ ORDER BY id
             archivedAt: Value<DateTime?>(
               _readNullableDateTime(row, 'archived_at'),
             ),
+            isPinned: Value<bool>(_readBool(row, 'is_pinned')),
             isDeleted: Value<bool>(_readBool(row, 'is_deleted')),
             deletedAt: Value<DateTime?>(
               _readNullableDateTime(row, 'deleted_at'),
@@ -89,6 +92,13 @@ ADD COLUMN archived_at INTEGER NULL
     await customStatement('''
 ALTER TABLE diaries
 ADD COLUMN cover TEXT NULL
+''');
+  }
+
+  Future<void> _migrateDiariesAddPinnedField() async {
+    await customStatement('''
+ALTER TABLE diaries
+ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0
 ''');
   }
 }

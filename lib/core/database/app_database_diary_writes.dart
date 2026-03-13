@@ -89,6 +89,44 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     });
   }
 
+  /// 置顶日记（固定显示在列表前部）。
+  ///
+  /// 默认不修改 `updatedAt`，避免仅置顶操作打乱“最近编辑时间”语义。
+  Future<void> pinDiary(
+    String diaryId, {
+    bool touchUpdatedAt = false,
+  }) async {
+    await (update(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId)))
+        .write(
+      DiariesCompanion(
+        isPinned: const Value<bool>(true),
+        updatedAt:
+            touchUpdatedAt
+                ? Value<DateTime>(DateTime.now())
+                : const Value.absent(),
+      ),
+    );
+  }
+
+  /// 取消置顶日记。
+  Future<void> unpinDiary(
+    String diaryId, {
+    bool touchUpdatedAt = false,
+  }) async {
+    await (update(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId)))
+        .write(
+      DiariesCompanion(
+        isPinned: const Value<bool>(false),
+        updatedAt:
+            touchUpdatedAt
+                ? Value<DateTime>(DateTime.now())
+                : const Value.absent(),
+      ),
+    );
+  }
+
   /// 归档日记（不删除，仅从主列表隐藏）。
   Future<void> archiveDiary(
     String diaryId, {

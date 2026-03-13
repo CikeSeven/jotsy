@@ -203,6 +203,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
         final displayedItems =
             latestVisibleItems ?? _cachedVisibleItems;
+        final shouldUnpinSelected = _controller.areAllSelectedPinned(
+          displayedItems,
+        );
         final currentPagingSignature = _buildPagingSignature(filterState);
         _syncPagingStateWithFilterSignature(currentPagingSignature);
         final pagedDisplayedItems = displayedItems.take(_visibleDiaryLimit).toList();
@@ -407,6 +410,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       isSelectionMode: _isSelectionMode,
                                       selectedCount: _selectedDiaryIds.length,
                                       onCancelSelection: _controller.clearSelection,
+                                      isPinActionUnpin: shouldUnpinSelected,
+                                      onPinSelected:
+                                          () => unawaited(
+                                            _controller.pinSelectedDiaries(
+                                              unpin: shouldUnpinSelected,
+                                            ),
+                                          ),
                                       onArchiveSelected:
                                           () => unawaited(
                                             _controller.archiveSelectedDiaries(),

@@ -26,6 +26,7 @@ SELECT
   d.updated_at,
   d.is_archived,
   d.archived_at,
+  d.is_pinned,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -41,7 +42,7 @@ LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
 GROUP BY d.id
-ORDER BY d.updated_at DESC
+ORDER BY d.is_pinned DESC, d.updated_at DESC
 ''',
       readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
     ).watch().map(_mapDiaryWithTagsRows);
@@ -94,6 +95,7 @@ SELECT
   d.updated_at,
   d.is_archived,
   d.archived_at,
+  d.is_pinned,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -140,7 +142,7 @@ WHERE d.is_deleted = 0
 
     sql.write('''
 GROUP BY d.id
-ORDER BY d.updated_at DESC
+ORDER BY d.is_pinned DESC, d.updated_at DESC
 ''');
 
     return customSelect(
@@ -166,6 +168,7 @@ SELECT
   d.updated_at,
   d.is_archived,
   d.archived_at,
+  d.is_pinned,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -182,7 +185,7 @@ LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
   AND d.is_archived = 1
 GROUP BY d.id
-ORDER BY d.updated_at DESC
+ORDER BY d.is_pinned DESC, d.updated_at DESC
 ''',
       readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
     ).watch().map(_mapDiaryWithTagsRows);
@@ -204,6 +207,7 @@ SELECT
   d.updated_at,
   d.is_archived,
   d.archived_at,
+  d.is_pinned,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -245,6 +249,7 @@ SELECT
   d.updated_at,
   d.is_archived,
   d.archived_at,
+  d.is_pinned,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -379,6 +384,7 @@ ORDER BY updated_at DESC
       updatedAt: _readDateTime(row, 'updated_at'),
       isArchived: _readBool(row, 'is_archived'),
       archivedAt: _readNullableDateTime(row, 'archived_at'),
+      isPinned: _readBool(row, 'is_pinned'),
       isDeleted: _readBool(row, 'is_deleted'),
       deletedAt: _readNullableDateTime(row, 'deleted_at'),
     );

@@ -1,64 +1,70 @@
-# Jot - 简单私密的本地日记本
+# Jot - A Simple & Private Local Diary
+
+English | [简体中文](./docs/README.zh.md)
 
 ![Release](https://img.shields.io/badge/Release-v0.1.0-orange?style=flat-square)
 
-Jot 是一款完全免费、开源的本地日记应用。开发这款应用的初衷很简单：希望能有一个没有任何广告打扰、不用强制注册账号、不需要连网就能使用的纯粹记录工具。
+Jot is a fully free and open-source local diary app.  
+The goal is simple: provide a clean writing tool with no ads, no forced account signup, and no network dependency.
 
-在这里，你可以安心地记录每天的心情、随手的灵感或是生活流水账。你的所有日记和照片都只存放在你自己的手机里，完全由你自己掌控。
+Here, you can safely write down your mood, quick thoughts, or daily notes.  
+All your diary entries and photos stay on your own phone and are fully under your control.
 
-## 📱 界面预览
+## 📱 Screenshots
 
 <div align="center">
-  <img src="assets/img/screenshots/home_list.jpg" width="30%" alt="时间线视图"/>
+  <img src="assets/img/screenshots/home_list.jpg" width="30%" alt="Timeline View"/>
   &nbsp;&nbsp;
-  <img src="assets/img/screenshots/diary_editor.jpg" width="30%" alt="日记编辑页"/>
+  <img src="assets/img/screenshots/diary_editor.jpg" width="30%" alt="Diary Editor"/>
   &nbsp;&nbsp;
-  <img src="assets/img/screenshots/calendar_overview.jpg" width="30%" alt="时光日历与统计"/>
+  <img src="assets/img/screenshots/calendar_overview.jpg" width="30%" alt="Calendar & Insights"/>
 </div>
 
-## 🌟 核心功能
+## 🌟 Core Features
 
-### ✍️ 纯粹的写作体验
+### ✍️ Focused Writing Experience
 
-极简的界面设计，支持图文混排，让你专注于写字本身。
+A minimal interface with rich text and image support, designed to keep you focused on writing.
 
-### 🏷️ 自动记录环境信息
+### 🏷️ Environment Context Capture
 
-不只是一段文字。在你写日记时，应用可以获取当前天气和位置信息（需授权），你也可以手动调整。  
-同时支持记录心情 Emoji 与精力状态，方便后续回顾。
+Jot can fetch weather and location while you write (with permission), and you can also edit them manually.  
+You can additionally record mood emoji and energy status for better reflection later.
 
-### 📅 日历与回忆
+### 📅 Calendar & Memories
 
-日历视图会根据你每天的记录展示状态。通过“那年今日”能力，你可以轻松翻看历史同期记忆。
+Calendar view helps you revisit entries by date, and "On This Day" brings back memories from previous years.
 
-### 🔒 绝对的隐私安全
+### 🔒 Strong Privacy by Default
 
-- 完全本地化：没有云端服务器，日记数据默认不上传。
-- 应用锁：支持系统生物认证/设备认证解锁，保护隐私。
-- 数据导出：支持加密打包导出，方便你自行备份到电脑或网盘。
+- Local-first: no cloud server is required by default.
+- App lock: supports system biometric/device authentication.
+- Data export: supports encrypted backup export for your own storage.
 
-## 📥 下载与安装
+## 📥 Download & Install
 
-> ⚠️ 注：Jot 当前处于早期版本，暂时仅支持 Android，后续支持更多设备。
+> ⚠️ Note: Jot is currently in an early stage and only supports Android for now. More platforms may be supported later.
 
-安装方式：
+Install steps:
 
-1. 进入项目 Releases 页面：  
+1. Open the Releases page:  
    [https://github.com/CikeSeven/jotsy/releases](https://github.com/CikeSeven/jotsy/releases)
-2. 下载最新的 安装包。
-3. 如果你不知道下载哪一个，就下载arm64-v8a版本吧。
+2. Download the latest APK package.
+3. If you're not sure which one to choose, download the `arm64-v8a` build.
 
-## 💬 常见问题
+## 💬 FAQ
 
-### Q: 换新手机了，日记怎么迁移？
+### Q: How do I migrate my diary data to a new phone?
 
-A: 由于应用是纯本地存储，不会自动云同步。请在旧手机“设置”中使用“导出备份”生成备份文件，传到新手机后再通过“导入备份”恢复数据。
+A: Since Jot is local-first, there is no automatic cloud sync.  
+Use "Export Backup" in Settings on your old phone, transfer the backup file, then import it on the new phone.
 
-### Q: 为什么获取不到天气和定位？
+### Q: Why can't weather/location be fetched?
 
-A: 请检查是否授予了位置信息权限，以及网络是否正常。位置信息仅用于当前日记展示，不会用于上传轨迹。
+A: Please check location permission and network status.  
+Location is only used for display in your diary entry and is not uploaded as tracking data.
 
-## 🐛 反馈与建议
+## 🐛 Feedback & Suggestions
 
-如果你遇到 Bug，或有新功能建议，欢迎到 GitHub Issues 反馈：  
+Found a bug or have an idea? Please open an issue:  
 [https://github.com/CikeSeven/jotsy/issues](https://github.com/CikeSeven/jotsy/issues)

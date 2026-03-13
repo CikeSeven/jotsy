@@ -34,11 +34,9 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
 }
 
 class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
-    with WidgetsBindingObserver {
+{
   // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
   static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
-  // 防抖窗口：解锁刚结束时可能伴随 lifecycle 抖动，避免重复触发认证。
-  static const Duration _unlockResumeDebounce = Duration(milliseconds: 800);
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
@@ -51,14 +49,11 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
   VoidCallback? _appLockToggleListener;
   bool _appLocked = false;
   bool _unlockingApp = false;
-  bool _appWasBackgrounded = false;
   bool _initialAppLockChecked = false;
-  DateTime? _lastUnlockCompletedAt;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     _lightMaterialTheme = MaterialTheme(Typography.material2021().black);
     _darkMaterialTheme = MaterialTheme(Typography.material2021().white);
     _homeHintVisibilityController = HomeHintVisibilityController();
@@ -75,25 +70,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
   @override
   void dispose() {
     _minimumLoadingTimer?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
     _unbindAppLockListener();
     _homeHintVisibilityController.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _handleAppResumed();
-      return;
-    }
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.hidden) {
-      if (!_unlockingApp) {
-        _appWasBackgrounded = true;
-      }
-    }
   }
 
   @override
@@ -259,27 +238,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
     });
   }
 
-  void _handleAppResumed() {
-    final settingsService = _boundSettingsService;
-    if (settingsService == null || !settingsService.isAppLockEnabled) {
-      _appWasBackgrounded = false;
-      return;
-    }
-    if (_unlockingApp) {
-      return;
-    }
-    final lastSuccess = _lastUnlockCompletedAt;
-    if (lastSuccess != null &&
-        DateTime.now().difference(lastSuccess) < _unlockResumeDebounce) {
-      _appWasBackgrounded = false;
-      return;
-    }
-    if (_appWasBackgrounded || !_initialAppLockChecked) {
-      _appWasBackgrounded = false;
-      _lockAndAuthenticate(settingsService: settingsService);
-    }
-  }
-
   void _handleAppLockSettingChanged({
     required bool enabled,
     required SettingsService settingsService,
@@ -351,9 +309,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
     setState(() {
       _unlockingApp = false;
       _appLocked = !authenticated;
-      if (authenticated) {
-        _lastUnlockCompletedAt = DateTime.now();
-      }
     });
   }
 

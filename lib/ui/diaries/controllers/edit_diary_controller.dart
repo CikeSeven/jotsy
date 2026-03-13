@@ -377,9 +377,13 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
+      final autoLocationLabel = _buildAutoLocationLabel(
+        addressComponent: result.addressComponent,
+        township: result.township,
+      );
       _state.setState(() {
-        _state._draftLocation = result.township;
-        _state._locationController.text = result.township ?? '';
+        _state._draftLocation = autoLocationLabel;
+        _state._locationController.text = autoLocationLabel ?? '';
         _state._draftLocationAddressComponent = result.addressComponent;
         _state._draftLocationLatitude = result.latitude;
         _state._draftLocationLongitude = result.longitude;
@@ -623,6 +627,14 @@ class EditDiaryController {
         _state._draftLocationAddressComponent = _parseObjectMap(
           geo['addressComponent'],
         );
+        final normalizedLocation = _buildAutoLocationLabel(
+          addressComponent: _state._draftLocationAddressComponent,
+          township: _state._draftLocation,
+        );
+        if (normalizedLocation != null) {
+          _state._draftLocation = normalizedLocation;
+          _state._locationController.text = normalizedLocation;
+        }
       }
     } catch (_) {
       // metadata 非标准结构时不阻断编辑流程，保持默认空态。
@@ -758,6 +770,23 @@ class EditDiaryController {
       }
     }
     return null;
+  }
+
+  /// 自动定位成功后的地址文案：
+  /// 优先展示“城市 · 街道”；仅命中其一时降级为单字段。
+  String? _buildAutoLocationLabel({
+    required Map<String, Object?>? addressComponent,
+    required String? township,
+  }) {
+    final normalizedTownship = _normalizeOptionalText(township);
+    final city = _resolveLocationCity(addressComponent);
+    if (city != null && normalizedTownship != null) {
+      return '$city · $normalizedTownship';
+    }
+    if (city != null) {
+      return city;
+    }
+    return normalizedTownship;
   }
 
   Map<String, Object?>? _parseObjectMap(Object? raw) {

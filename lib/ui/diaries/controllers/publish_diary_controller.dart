@@ -260,6 +260,23 @@ class PublishDiaryController {
     return null;
   }
 
+  /// 自动定位成功后的地址文案：
+  /// 优先展示“城市 · 街道”；仅命中其一时降级为单字段。
+  String? _buildAutoLocationLabel({
+    required Map<String, Object?>? addressComponent,
+    required String? township,
+  }) {
+    final normalizedTownship = normalizeOptionalText(township);
+    final city = _resolveLocationCity(addressComponent);
+    if (city != null && normalizedTownship != null) {
+      return '$city · $normalizedTownship';
+    }
+    if (city != null) {
+      return city;
+    }
+    return normalizedTownship;
+  }
+
   /// 获取定位服务实例（按需懒加载，避免页面初始化即做网络准备）。
   Future<LocationResolverService?> ensureLocationResolverService() async {
     if (_state._locationResolverService != null) {
@@ -392,9 +409,13 @@ class PublishDiaryController {
         return;
       }
 
+      final autoLocationLabel = _buildAutoLocationLabel(
+        addressComponent: result.addressComponent,
+        township: result.township,
+      );
       _state.setState(() {
         _state._locationTownship = result.township;
-        _state._locationController.text = result.township ?? '';
+        _state._locationController.text = autoLocationLabel ?? '';
         _state._locationAddressComponent = result.addressComponent;
         _state._locationLatitude = result.latitude;
         _state._locationLongitude = result.longitude;

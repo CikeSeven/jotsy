@@ -88,9 +88,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _initialized = false;
   bool _saving = false;
   Timer? _createDraftSaveDebounceTimer;
+  Timer? _editSaveSuccessIconTimer;
   String? _lastPersistedCreateDraftRaw;
   _EditPersistedSnapshot? _savedEditSnapshot;
   bool _hasPendingEditChanges = false;
+  bool _showEditSaveSuccessIcon = false;
 
   // ==================== 业务控制器 ====================
   late final EditDiaryController _controller;
@@ -122,6 +124,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   void dispose() {
     _createDraftSaveDebounceTimer?.cancel();
+    _editSaveSuccessIconTimer?.cancel();
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _titleController.dispose();
@@ -175,20 +178,49 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         _panelMetadataDirty ||
         (_savedEditSnapshot != null &&
             _buildCurrentEditSnapshot() != _savedEditSnapshot);
-    if (nextPending == _hasPendingEditChanges) {
+    final shouldClearSuccessIcon = nextPending && _showEditSaveSuccessIcon;
+    if (nextPending == _hasPendingEditChanges && !shouldClearSuccessIcon) {
       return;
     }
     if (!mounted) {
       _hasPendingEditChanges = nextPending;
+      if (shouldClearSuccessIcon) {
+        _editSaveSuccessIconTimer?.cancel();
+        _showEditSaveSuccessIcon = false;
+      }
       return;
     }
-    setState(() => _hasPendingEditChanges = nextPending);
+    setState(() {
+      _hasPendingEditChanges = nextPending;
+      if (shouldClearSuccessIcon) {
+        _editSaveSuccessIconTimer?.cancel();
+        _showEditSaveSuccessIcon = false;
+      }
+    });
   }
 
   void _markEditSaved() {
     _savedEditSnapshot = _buildCurrentEditSnapshot();
     _panelMetadataDirty = false;
     _hasPendingEditChanges = false;
+  }
+
+  /// 编辑模式保存成功后临时展示成功图标。
+  ///
+  /// 交互规则：展示 `check` 1 秒，然后自动恢复为保存图标。
+  void _showEditSavedSuccessIcon() {
+    _editSaveSuccessIconTimer?.cancel();
+    if (!mounted) {
+      _showEditSaveSuccessIcon = true;
+      return;
+    }
+    setState(() => _showEditSaveSuccessIcon = true);
+    _editSaveSuccessIconTimer = Timer(const Duration(milliseconds: 1000), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _showEditSaveSuccessIcon = false);
+    });
   }
 
   /// 标记编辑态 metadata 相关字段已变更，并立即让保存按钮可用。
@@ -486,7 +518,25 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               else
                 IconButton(
                   onPressed: _canSaveEdit ? _controller.save : null,
-                  icon: const Icon(Icons.save_outlined),
+                  icon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                    child:
+                        _showEditSaveSuccessIcon
+                            ? Icon(
+                              Icons.check_rounded,
+                              key: const ValueKey<String>('edit_save_success'),
+                              color: Theme.of(context).colorScheme.primary,
+                            )
+                            : const Icon(
+                              Icons.save_outlined,
+                              key: ValueKey<String>('edit_save_default'),
+                            ),
+                  ),
                   tooltip: context.l10n.commonSave,
                 ),
             ],

@@ -260,6 +260,7 @@ class EditDiaryController {
 
       // 编辑模式保存成功后留在当前页：不弹提示、不自动返回。
       _state._markEditSaved();
+      _state._showEditSavedSuccessIcon();
     } catch (error) {
       if (!_state.mounted) {
         return;

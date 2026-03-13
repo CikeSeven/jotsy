@@ -123,6 +123,22 @@ class DataArchiveService {
     }
   }
 
+  /// 判断 zip 是否为加密包。
+  ///
+  /// 规则：
+  /// - 任意文件头存在加密位（generalPurposeBitFlag bit0）则认为需要密码；
+  /// - 或压缩方法标记为 AES 加密（99）也视为加密包。
+  static Future<bool> isZipPasswordProtected({
+    required String zipPath,
+  }) async {
+    final sourceZip = File(zipPath);
+    if (!await sourceZip.exists()) {
+      throw const FileSystemException('备份文件不存在');
+    }
+    final rawBytes = await sourceZip.readAsBytes();
+    return Isolate.run<bool>(() => _isZipPasswordProtectedSync(rawBytes));
+  }
+
   static Future<Map<String, Object?>> _buildBackupPayload({
     required AppDatabase database,
     required SettingsService settingsService,
@@ -462,6 +478,20 @@ class DataArchiveService {
         outputFile.writeAsBytesSync(data, flush: true);
       }
     }
+  }
+
+  static bool _isZipPasswordProtectedSync(List<int> rawBytes) {
+    final decoder = ZipDecoder();
+    decoder.decodeBytes(rawBytes, verify: false);
+    for (final header in decoder.directory.fileHeaders) {
+      final encryptedByFlag = (header.generalPurposeBitFlag & 0x1) != 0;
+      final encryptedByMethod =
+          header.compressionMethod == ZipFile.zipCompressionAexEncryption;
+      if (encryptedByFlag || encryptedByMethod) {
+        return true;
+      }
+    }
+    return false;
   }
 
   static String? _normalizeOptionalPassword(String? rawPassword) {

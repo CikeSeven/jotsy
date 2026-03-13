@@ -180,15 +180,37 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       return;
     }
 
-    final importPassword = await _showImportPasswordDialog();
-    if (!mounted || importPassword == null) {
-      _showSnack(context.l10n.dataMgmtImportCanceled);
+    final zipPath = picked.files.first.path!;
+    String? importPassword;
+
+    _setBusy(true, context.l10n.dataMgmtBusyImport);
+    try {
+      final passwordProtected = await DataArchiveService.isZipPasswordProtected(
+        zipPath: zipPath,
+      );
+      if (!mounted) {
+        return;
+      }
+      _setBusy(false, '');
+
+      if (passwordProtected) {
+        importPassword = await _showImportPasswordDialog();
+        if (!mounted || importPassword == null) {
+          _showSnack(context.l10n.dataMgmtImportCanceled);
+          return;
+        }
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      _setBusy(false, '');
+      _showSnack(context.l10n.dataMgmtImportFailed('$error'));
       return;
     }
 
     _setBusy(true, context.l10n.dataMgmtBusyImport);
     try {
-      final zipPath = picked.files.first.path!;
       final database = ref.read(appDatabaseProvider);
       final settings = await ref.read(settingsServiceProvider.future);
       await DataArchiveService.importFromZip(
@@ -224,7 +246,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setDialogState) {
             return AlertDialog(
-              title: const Text('输入导入密码（可选）'),
+              title: const Text('导入密码'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -235,7 +257,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                       obscureText: obscureText,
                       onChanged: (value) => passwordValue = value,
                       decoration: InputDecoration(
-                        hintText: '压缩包无密码可留空',
+                        hintText: '请输入导入密码',
                         suffixIcon: IconButton(
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);

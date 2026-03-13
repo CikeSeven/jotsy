@@ -435,6 +435,7 @@ class CalendarTimelineSection extends StatelessWidget {
           children: <Widget>[
             QWeatherIcon(
               iconCode: weatherIconCode,
+              weatherText: weather,
               size: 11,
               fallbackColor: color,
             ),

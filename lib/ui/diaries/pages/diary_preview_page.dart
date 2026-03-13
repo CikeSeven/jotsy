@@ -545,6 +545,7 @@ $content
         _buildMetaInlineItem(
           leading: QWeatherIcon(
             iconCode: weatherIconCode,
+            weatherText: weather,
             size: 12,
           ),
           label: weather,

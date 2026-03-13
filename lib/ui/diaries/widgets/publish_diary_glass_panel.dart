@@ -860,6 +860,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   children: <Widget>[
                   QWeatherIcon(
                     iconCode: widget.weatherIconCode,
+                    weatherText: widget.weatherController.text,
                     size: 14,
                   ),
                   const SizedBox(width: 8),
@@ -894,6 +895,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                             )
                             : QWeatherIcon(
                               iconCode: widget.weatherIconCode,
+                              weatherText: widget.weatherController.text,
                               size: 14,
                             ),
                   ),

@@ -189,7 +189,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                               ),
                         ),
                         const SizedBox(height: 16),
-                        if (widget.initialDraft.contentText.trim().isEmpty)
+                        // 不能只看纯文本镜像（contentText），纯图片正文在镜像里会为空。
+                        // 统一按 Quill 文档可见内容判断，图片/嵌入也算正文内容。
+                        if (!diaryDocumentHasVisibleContent(_previewController.document))
                           Text(
                             context.l10n.autoT0139,
                             style: Theme.of(context).textTheme.bodyMedium,

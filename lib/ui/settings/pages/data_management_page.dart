@@ -23,6 +23,11 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   String _busyText = '';
 
   Future<void> _exportData() async {
+    final exportPassword = await _showExportPasswordDialog();
+    if (!mounted || exportPassword == null) {
+      return;
+    }
+
     _setBusy(true, context.l10n.dataMgmtBusyExport);
     try {
       final database = ref.read(appDatabaseProvider);
@@ -30,6 +35,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       final zipFile = await DataArchiveService.exportToZip(
         database: database,
         settingsService: settings,
+        zipPassword: exportPassword,
       );
       final fileName =
           'node_note_backup_${DateTime.now().millisecondsSinceEpoch}.zip';
@@ -77,6 +83,84 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
     }
   }
 
+  /// 导出密码设置弹窗（可选）。
+  ///
+  /// 返回值：
+  /// - `null`：用户取消导出；
+  /// - `''` 或具体密码：继续导出（空串表示不加密）。
+  Future<String?> _showExportPasswordDialog() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    var passwordValue = '';
+    var obscureText = true;
+
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              title: const Text('设置导出密码（可选）'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    TextFormField(
+                      initialValue: passwordValue,
+                      obscureText: obscureText,
+                      onChanged: (value) => passwordValue = value,
+                      decoration: InputDecoration(
+                        hintText: '不填写则不加密',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setDialogState(() => obscureText = !obscureText);
+                          },
+                          icon: FaIcon(
+                            obscureText
+                                ? FontAwesomeIcons.eyeSlash
+                                : FontAwesomeIcons.eye,
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '请妥善保管此密码。本应用采用本地端到端加密，我们无法为您找回密码。一旦遗忘，导出的数据将永久无法恢复。',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.error,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop(null),
+                  child: Text(context.l10n.commonCancel),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                  ),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(passwordValue);
+                  },
+                  child: Text(context.l10n.dataMgmtExport),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    return result;
+  }
+
   Future<void> _importData() async {
     final shouldImport = await _confirmImport();
     if (!mounted || !shouldImport) {
@@ -96,6 +180,12 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       return;
     }
 
+    final importPassword = await _showImportPasswordDialog();
+    if (!mounted || importPassword == null) {
+      _showSnack(context.l10n.dataMgmtImportCanceled);
+      return;
+    }
+
     _setBusy(true, context.l10n.dataMgmtBusyImport);
     try {
       final zipPath = picked.files.first.path!;
@@ -105,6 +195,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         database: database,
         settingsService: settings,
         zipPath: zipPath,
+        zipPassword: importPassword,
       );
 
       if (!mounted) {
@@ -119,6 +210,72 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
     } finally {
       _setBusy(false, '');
     }
+  }
+
+  /// 导入密码输入弹窗（可选）。
+  Future<String?> _showImportPasswordDialog() async {
+    final colorScheme = Theme.of(context).colorScheme;
+    var passwordValue = '';
+    var obscureText = true;
+
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setDialogState) {
+            return AlertDialog(
+              title: const Text('输入导入密码（可选）'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    TextFormField(
+                      initialValue: passwordValue,
+                      obscureText: obscureText,
+                      onChanged: (value) => passwordValue = value,
+                      decoration: InputDecoration(
+                        hintText: '压缩包无密码可留空',
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setDialogState(() => obscureText = !obscureText);
+                          },
+                          icon: FaIcon(
+                            obscureText
+                                ? FontAwesomeIcons.eyeSlash
+                                : FontAwesomeIcons.eye,
+                            size: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop(null),
+                  child: Text(context.l10n.commonCancel),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                  ),
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(passwordValue);
+                  },
+                  child: Text(context.l10n.dataMgmtImportAction),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    return result;
   }
 
   Future<bool> _confirmImport() async {

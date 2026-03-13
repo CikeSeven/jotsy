@@ -30,6 +30,7 @@ class DataArchiveService {
   static Future<File> exportToZip({
     required AppDatabase database,
     required SettingsService settingsService,
+    String? zipPassword,
   }) async {
     final tempRoot = await _prepareWorkingDirectory(prefix: 'backup_export');
     try {
@@ -56,7 +57,10 @@ class DataArchiveService {
         (await getTemporaryDirectory()).path,
         'node_note_backup_${DateTime.now().millisecondsSinceEpoch}.zip',
       );
-      final bytes = await _encodeDirectoryToZipBytes(tempRoot);
+      final bytes = await _encodeDirectoryToZipBytes(
+        tempRoot,
+        password: _normalizeOptionalPassword(zipPassword),
+      );
       final zipFile = File(outputZipPath);
       await zipFile.writeAsBytes(bytes, flush: true);
       return zipFile;
@@ -77,6 +81,7 @@ class DataArchiveService {
     required AppDatabase database,
     required SettingsService settingsService,
     required String zipPath,
+    String? zipPassword,
   }) async {
     final sourceZip = File(zipPath);
     if (!await sourceZip.exists()) {
@@ -85,7 +90,11 @@ class DataArchiveService {
 
     final extractRoot = await _prepareWorkingDirectory(prefix: 'backup_import');
     try {
-      await _extractZipToDirectory(sourceZip, extractRoot);
+      await _extractZipToDirectory(
+        sourceZip,
+        extractRoot,
+        password: _normalizeOptionalPassword(zipPassword),
+      );
       final payloadFile = File(p.join(extractRoot.path, _backupPayloadFileName));
       if (!await payloadFile.exists()) {
         throw const FormatException('备份文件缺少 backup_data.json');
@@ -203,6 +212,7 @@ class DataArchiveService {
                 updatedAt: Value<DateTime>(row.updatedAt),
                 isArchived: Value<bool>(row.isArchived),
                 archivedAt: Value<DateTime?>(row.archivedAt),
+                isPinned: Value<bool>(row.isPinned),
                 isDeleted: Value<bool>(row.isDeleted),
                 deletedAt: Value<DateTime?>(row.deletedAt),
               );
@@ -361,12 +371,20 @@ class DataArchiveService {
     }
   }
 
-  static Future<Uint8List> _encodeDirectoryToZipBytes(Directory root) async {
+  static Future<Uint8List> _encodeDirectoryToZipBytes(
+    Directory root, {
+    String? password,
+  }) async {
     // ZIP 编码是纯 CPU + 大量字节处理，放到后台 isolate 避免阻塞主线程动画。
-    return Isolate.run<Uint8List>(() => _encodeDirectoryToZipBytesSync(root.path));
+    return Isolate.run<Uint8List>(
+      () => _encodeDirectoryToZipBytesSync(root.path, password: password),
+    );
   }
 
-  static Uint8List _encodeDirectoryToZipBytesSync(String rootPath) {
+  static Uint8List _encodeDirectoryToZipBytesSync(
+    String rootPath, {
+    String? password,
+  }) {
     final archive = Archive();
     final normalizedRootPath = p.normalize(rootPath);
     final rootDirectory = Directory(rootPath);
@@ -384,7 +402,7 @@ class DataArchiveService {
       archive.addFile(entry);
     }
 
-    final encoded = ZipEncoder().encode(archive);
+    final encoded = ZipEncoder(password: password).encode(archive);
     if (encoded == null) {
       throw const FileSystemException('创建 zip 失败');
     }
@@ -394,19 +412,29 @@ class DataArchiveService {
   static Future<void> _extractZipToDirectory(
     File zipFile,
     Directory targetDirectory,
+    {String? password}
   ) async {
     final rawBytes = await zipFile.readAsBytes();
     // 解压与写盘也属于重操作，迁移到后台 isolate 保持 UI 可交互。
     await Isolate.run<void>(
-      () => _extractZipToDirectorySync(rawBytes, targetDirectory.path),
+      () => _extractZipToDirectorySync(
+        rawBytes,
+        targetDirectory.path,
+        password: password,
+      ),
     );
   }
 
   static void _extractZipToDirectorySync(
     List<int> rawBytes,
     String targetDirectoryPath,
+    {String? password}
   ) {
-    final archive = ZipDecoder().decodeBytes(rawBytes, verify: true);
+    final archive = ZipDecoder().decodeBytes(
+      rawBytes,
+      verify: true,
+      password: password,
+    );
     final targetRoot = p.normalize(targetDirectoryPath);
     for (final entry in archive.files) {
       if (!entry.isFile) {
@@ -434,5 +462,13 @@ class DataArchiveService {
         outputFile.writeAsBytesSync(data, flush: true);
       }
     }
+  }
+
+  static String? _normalizeOptionalPassword(String? rawPassword) {
+    final normalized = rawPassword?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      return null;
+    }
+    return normalized;
   }
 }

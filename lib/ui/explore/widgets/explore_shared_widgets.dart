@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/app/theme/app_effects.dart';
 
 /// 探索页通用卡片容器。
 class ExploreCard extends StatelessWidget {
@@ -11,17 +13,64 @@ class ExploreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.72),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final cardBackground =
+        isDark
+            ? colorScheme.surface.withValues(alpha: 0.34)
+            : colorScheme.surface.withValues(alpha: 0.46);
+    final cardBorderColor =
+        isDark
+            ? colorScheme.outline.withValues(alpha: 0.30)
+            : Colors.white.withValues(alpha: 0.62);
+    final topHighlightColor =
+        isDark
+            ? Colors.white.withValues(alpha: 0.12)
+            : Colors.white.withValues(alpha: 0.78);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26, tileMode: TileMode.mirror),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: cardBorderColor, width: 0.9),
+            boxShadow: <BoxShadow>[
+              ...AppEffects.softShadow,
+              BoxShadow(
+                color: colorScheme.shadow.withValues(alpha: isDark ? 0.32 : 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: <Widget>[
+              Positioned(
+                left: 1,
+                right: 1,
+                top: 1,
+                child: IgnorePointer(
+                  child: Container(
+                    height: 1.1,
+                    decoration: BoxDecoration(
+                      color: topHighlightColor,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: child,
+              ),
+            ],
+          ),
         ),
       ),
-      child: child,
     );
   }
 }

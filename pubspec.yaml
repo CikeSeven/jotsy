@@ -55,6 +55,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/app_icon/mingcute_icon.png
+    - assets/weather_icons/qweather/
   fonts:
     - family: HarmonyOSSansSC
       fonts:

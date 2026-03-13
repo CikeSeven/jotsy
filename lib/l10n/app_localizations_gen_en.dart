@@ -66,6 +66,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonRetry => 'Retry';
 
   @override
+  String get contextFieldInputHint =>
+      'Enter weather/address, or tap the right button to auto-fetch';
+
+  @override
+  String get contextLocationInputHint =>
+      'Enter address, or tap the right button to auto-fetch';
+
+  @override
+  String get contextWeatherInputHint =>
+      'Enter weather, or tap the right button to auto-fetch';
+
+  @override
   String get timeJustNow => 'Just now';
 
   @override

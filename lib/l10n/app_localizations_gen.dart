@@ -212,6 +212,24 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get commonRetry;
 
+  /// Hint text for editable location/weather fields in diary edit panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter weather/address, or tap the right button to auto-fetch'**
+  String get contextFieldInputHint;
+
+  /// Hint text for editable location field in diary panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter address, or tap the right button to auto-fetch'**
+  String get contextLocationInputHint;
+
+  /// Hint text for editable weather field in diary panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter weather, or tap the right button to auto-fetch'**
+  String get contextWeatherInputHint;
+
   /// Auto-generated metadata for timeJustNow.
   ///
   /// In en, this message translates to:

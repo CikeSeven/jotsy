@@ -53,6 +53,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
+  final _locationController = TextEditingController();
   final _weatherController = TextEditingController();
   String? _draftCover;
   final FocusNode _titleFocusNode = FocusNode();
@@ -124,6 +125,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _titleController.dispose();
+    _locationController.dispose();
     _weatherController.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
@@ -518,7 +520,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       coverLabel: _controller.coverLabelForEdit,
                       locating: _locating,
                       weatherLoading: _weatherLoading,
-                      locationLabel: _controller.locationLabelForEdit,
+                      locationController: _locationController,
                       weatherController: _weatherController,
                       weatherIconCode: _draftWeatherIconCode,
                       moodEmoji: _draftMoodEmoji,
@@ -544,6 +546,30 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       onCreateTag: _controller.createTagInlineForEdit,
                       onResolveLocation: _controller.resolveLocationForEdit,
                       onResolveWeather: _controller.resolveWeatherForEdit,
+                      onLocationChanged: (nextLocation) {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _draftLocation = nextLocation.trim().isEmpty
+                              ? null
+                              : nextLocation.trim();
+                          _markEditPanelDirty();
+                        });
+                      },
+                      onWeatherChanged: (nextWeather) {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _draftWeather = nextWeather.trim().isEmpty
+                              ? null
+                              : nextWeather.trim();
+                          // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
+                          _draftWeatherIconCode = null;
+                          _markEditPanelDirty();
+                        });
+                      },
                       onToggleTag: (tagId, selected) {
                         setState(() {
                           if (selected) {

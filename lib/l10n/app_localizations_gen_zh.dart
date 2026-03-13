@@ -66,6 +66,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonRetry => '重试';
 
   @override
+  String get contextFieldInputHint => '输入天气/地址，也可以点击右侧按钮自动获取';
+
+  @override
+  String get contextLocationInputHint => '输入地址，也可以点击右侧按钮自动获取';
+
+  @override
+  String get contextWeatherInputHint => '输入天气，也可以点击右侧按钮自动获取';
+
+  @override
   String get timeJustNow => '刚刚';
 
   @override

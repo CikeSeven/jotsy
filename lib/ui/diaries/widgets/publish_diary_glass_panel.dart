@@ -29,10 +29,10 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.coverLabel,
     required this.locating,
     required this.weatherLoading,
+    required this.locationController,
     this.showPublishTimeOption = false,
     this.publishTimeLabel,
     this.onPickPublishTime,
-    required this.locationLabel,
     required this.weatherController,
     required this.weatherIconCode,
     required this.moodEmoji,
@@ -44,6 +44,8 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     required this.onPickCover,
     required this.onResolveLocation,
     required this.onResolveWeather,
+    required this.onLocationChanged,
+    required this.onWeatherChanged,
     required this.onCreateTag,
     required this.onToggleTag,
     required this.onMoodChanged,
@@ -75,10 +77,10 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final String? coverLabel;
   final bool locating;
   final bool weatherLoading;
+  final TextEditingController locationController;
   final bool showPublishTimeOption;
   final String? publishTimeLabel;
   final VoidCallback? onPickPublishTime;
-  final String? locationLabel;
   final TextEditingController weatherController;
   final String? weatherIconCode;
   final String? moodEmoji;
@@ -90,6 +92,8 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final VoidCallback onPickCover;
   final VoidCallback onResolveLocation;
   final VoidCallback onResolveWeather;
+  final ValueChanged<String> onLocationChanged;
+  final ValueChanged<String> onWeatherChanged;
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
   final ValueChanged<String?> onMoodChanged;
@@ -776,9 +780,6 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   Widget _buildContextFields(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final locationLabel = widget.locationLabel?.trim();
-    final hasLocation = locationLabel != null && locationLabel.isNotEmpty;
-    // “此时此地”区域：地址 + 天气，两者都为只读展示 + 右侧触发按钮。
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -806,20 +807,21 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   const FaIcon(FontAwesomeIcons.locationDot, size: 14),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      hasLocation
-                          ? locationLabel
-                          : l10n.autoT0168,
+                    child: TextField(
+                      controller: widget.locationController,
+                      onChanged: widget.onLocationChanged,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                hasLocation
-                                    ? null
-                                    : colorScheme.onSurfaceVariant.withValues(
-                                      alpha: 0.75,
-                                    ),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: l10n.contextLocationInputHint,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.75,
                           ),
+                        ),
+                      ),
                     ),
                   ),
                   IconButton(
@@ -865,20 +867,21 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      widget.weatherController.text.trim().isEmpty
-                          ? l10n.autoT0170
-                          : widget.weatherController.text.trim(),
+                    child: TextField(
+                      controller: widget.weatherController,
+                      onChanged: widget.onWeatherChanged,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                widget.weatherController.text.trim().isEmpty
-                                    ? colorScheme.onSurfaceVariant.withValues(
-                                      alpha: 0.75,
-                                    )
-                                    : null,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        border: InputBorder.none,
+                        hintText: l10n.contextWeatherInputHint,
+                        hintStyle: TextStyle(
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.75,
                           ),
+                        ),
+                      ),
                     ),
                   ),
                   IconButton(

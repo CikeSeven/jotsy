@@ -86,7 +86,7 @@ class PublishDiaryController {
       hasCover: normalizedCover != null,
       deviceInfo: buildDeviceMetadata(),
       generatedAt: generatedAt ?? DateTime.now(),
-      location: locationLabel,
+      location: normalizeOptionalText(_state._locationController.text),
       locationAddressComponent: _state._locationAddressComponent,
       locationLatitude: _state._locationLatitude,
       locationLongitude: _state._locationLongitude,
@@ -394,6 +394,7 @@ class PublishDiaryController {
 
       _state.setState(() {
         _state._locationTownship = result.township;
+        _state._locationController.text = result.township ?? '';
         _state._locationAddressComponent = result.addressComponent;
         _state._locationLatitude = result.latitude;
         _state._locationLongitude = result.longitude;
@@ -518,7 +519,7 @@ class PublishDiaryController {
         createdAtOverride: _state._publishAt,
         metadataJson: buildMetadataJson(),
         selectedTagIds: <int>{..._state._selectedTagIds},
-        location: _state._locationTownship,
+        location: normalizeOptionalText(_state._locationController.text),
         locationAddressComponent: _state._locationAddressComponent,
         locationLatitude: _state._locationLatitude,
         locationLongitude: _state._locationLongitude,

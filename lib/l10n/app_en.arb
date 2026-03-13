@@ -76,6 +76,18 @@
   "@commonRetry": {
     "description": "Auto-generated metadata for commonRetry."
   },
+  "contextFieldInputHint": "Enter weather/address, or tap the right button to auto-fetch",
+  "@contextFieldInputHint": {
+    "description": "Hint text for editable location/weather fields in diary edit panel."
+  },
+  "contextLocationInputHint": "Enter address, or tap the right button to auto-fetch",
+  "@contextLocationInputHint": {
+    "description": "Hint text for editable location field in diary panel."
+  },
+  "contextWeatherInputHint": "Enter weather, or tap the right button to auto-fetch",
+  "@contextWeatherInputHint": {
+    "description": "Hint text for editable weather field in diary panel."
+  },
   "timeJustNow": "Just now",
   "@timeJustNow": {
     "description": "Auto-generated metadata for timeJustNow."

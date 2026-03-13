@@ -76,6 +76,18 @@
   "@commonRetry": {
     "description": "Auto-generated metadata for commonRetry."
   },
+  "contextFieldInputHint": "输入天气/地址，也可以点击右侧按钮自动获取",
+  "@contextFieldInputHint": {
+    "description": "Hint text for editable location/weather fields in diary edit panel."
+  },
+  "contextLocationInputHint": "输入地址，也可以点击右侧按钮自动获取",
+  "@contextLocationInputHint": {
+    "description": "Hint text for editable location field in diary panel."
+  },
+  "contextWeatherInputHint": "输入天气，也可以点击右侧按钮自动获取",
+  "@contextWeatherInputHint": {
+    "description": "Hint text for editable weather field in diary panel."
+  },
   "timeJustNow": "刚刚",
   "@timeJustNow": {
     "description": "Auto-generated metadata for timeJustNow."

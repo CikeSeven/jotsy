@@ -131,6 +131,7 @@ class EditDiaryController {
         _state._draftCover = restoredDraft.cover;
         _state._metadataJson = restoredDraft.metadataJson;
         _state._draftLocation = restoredDraft.location;
+        _state._locationController.text = restoredDraft.location ?? '';
         _state._draftLocationAddressComponent =
             restoredDraft.locationAddressComponent;
         _state._draftLocationLatitude = restoredDraft.locationLatitude;
@@ -138,6 +139,7 @@ class EditDiaryController {
         _state._draftLocationFromAuto = restoredDraft.locationFromAuto;
         _state._draftWeather = restoredDraft.weather;
         _state._draftWeatherIconCode = restoredDraft.weatherIconCode;
+        _state._weatherController.text = restoredDraft.weather ?? '';
         _state._draftMoodEmoji = restoredDraft.moodEmoji;
         _state._draftEnergyLevel = restoredDraft.energyLevel;
         _state._selectedTagIds
@@ -376,6 +378,7 @@ class EditDiaryController {
       }
       _state.setState(() {
         _state._draftLocation = result.township;
+        _state._locationController.text = result.township ?? '';
         _state._draftLocationAddressComponent = result.addressComponent;
         _state._draftLocationLatitude = result.latitude;
         _state._draftLocationLongitude = result.longitude;
@@ -560,6 +563,7 @@ class EditDiaryController {
         _state._draftCover = result.cover;
         _state._metadataJson = result.metadataJson;
         _state._draftLocation = result.location;
+        _state._locationController.text = result.location ?? '';
         _state._draftLocationAddressComponent = result.locationAddressComponent;
         _state._draftLocationLatitude = result.locationLatitude;
         _state._draftLocationLongitude = result.locationLongitude;
@@ -597,6 +601,7 @@ class EditDiaryController {
         context['weatherIconCode']?.toString(),
       );
       _state._draftMoodEmoji = _normalizeOptionalText(context['moodEmoji']?.toString());
+      _state._locationController.text = _state._draftLocation ?? '';
       _state._weatherController.text = _state._draftWeather ?? '';
 
       final energyRaw = context['energyLevel'];
@@ -630,7 +635,7 @@ class EditDiaryController {
       hasCover: _normalizeOptionalText(_state._draftCover) != null,
       deviceInfo: _buildDeviceMetadata(),
       generatedAt: generatedAt ?? DateTime.now(),
-      location: locationLabelForEdit,
+      location: _normalizeOptionalText(_state._locationController.text),
       locationAddressComponent: _state._draftLocationAddressComponent,
       locationLatitude: _state._draftLocationLatitude,
       locationLongitude: _state._draftLocationLongitude,

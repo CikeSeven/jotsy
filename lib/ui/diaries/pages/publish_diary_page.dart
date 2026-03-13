@@ -44,6 +44,7 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   // ==================== 输入控制器与面板控制器 ====================
+  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _weatherController = TextEditingController();
   final PublishDiaryGlassPanelController _panelController =
       PublishDiaryGlassPanelController();
@@ -84,6 +85,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _locationLatitude = widget.initialDraft.locationLatitude;
     _locationLongitude = widget.initialDraft.locationLongitude;
     _locationFromAuto = widget.initialDraft.locationFromAuto;
+    _locationController.text = widget.initialDraft.location ?? '';
     _weatherController.text = widget.initialDraft.weather ?? '';
     _weatherIconCode = widget.initialDraft.weatherIconCode;
     _moodEmoji = widget.initialDraft.moodEmoji;
@@ -117,6 +119,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   void dispose() {
+    _locationController.dispose();
     _weatherController.dispose();
     _previewController.dispose();
     super.dispose();
@@ -226,7 +229,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 coverLabel: _controller.coverLabel,
                 locating: _locating,
                 weatherLoading: _weatherLoading,
-                locationLabel: _controller.locationLabel,
+                locationController: _locationController,
                 weatherController: _weatherController,
                 weatherIconCode: _weatherIconCode,
                 moodEmoji: _moodEmoji,
@@ -265,6 +268,17 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 onCreateTag: _controller.createTagInline,
                 onResolveLocation: _controller.resolveLocation,
                 onResolveWeather: _controller.resolveWeather,
+                onLocationChanged: (nextLocation) {
+                  setState(() {
+                    _locationTownship = _controller.normalizeOptionalText(nextLocation);
+                  });
+                },
+                onWeatherChanged: (nextWeather) {
+                  setState(() {
+                    // 手动修改天气文本后，旧天气 code 可能与文案不一致，清空后走文案兜底图标。
+                    _weatherIconCode = null;
+                  });
+                },
                 showPublishTimeOption: true,
                 publishTimeLabel: _controller.formatPublishTimeLabel(_publishAt),
                 onPickPublishTime: _controller.pickPublishAt,

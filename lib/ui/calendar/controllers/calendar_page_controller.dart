@@ -266,7 +266,6 @@ class CalendarPageController {
         action: SnackBarAction(
           label: _state.context.l10n.commonUndo,
           onPressed: () {},
-          textColor: Theme.of(_state.context).colorScheme.onPrimary,
         ),
       ),
     );

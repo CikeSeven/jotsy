@@ -37,6 +37,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
 {
   // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
   static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
+  static const double _globalSnackBarSideInset = 16;
+  static const double _globalSnackBarBottomInset = 16;
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
@@ -148,11 +150,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
     ThemeMode themeMode = ThemeMode.system,
     Locale locale = const Locale('en'),
   }) {
+    final lightTheme = _withGlobalSnackBarTheme(_lightMaterialTheme.light());
+    final darkTheme = _withGlobalSnackBarTheme(_darkMaterialTheme.dark());
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Jotsy',
-      theme: _lightMaterialTheme.light(),
-      darkTheme: _darkMaterialTheme.dark(),
+      theme: lightTheme,
+      darkTheme: darkTheme,
       themeMode: themeMode,
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -183,6 +187,33 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
         );
       },
       home: home,
+    );
+  }
+
+  /// 为整个应用提供统一的提示样式（与 Home 视觉一致）。
+  ///
+  /// Home 页仍会在此基础上覆盖底部 inset，以避让玻璃底部导航栏。
+  ThemeData _withGlobalSnackBarTheme(ThemeData baseTheme) {
+    final colorScheme = baseTheme.colorScheme;
+    return baseTheme.copyWith(
+      snackBarTheme: baseTheme.snackBarTheme.copyWith(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: colorScheme.surfaceContainerHigh.withValues(alpha: 0.96),
+        contentTextStyle: baseTheme.textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onSurface,
+        ),
+        actionTextColor: colorScheme.primary,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.fromLTRB(
+          _globalSnackBarSideInset,
+          0,
+          _globalSnackBarSideInset,
+          _globalSnackBarBottomInset,
+        ),
+      ),
     );
   }
 

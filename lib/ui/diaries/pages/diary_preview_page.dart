@@ -312,14 +312,6 @@ $content
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                leading: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
-                title: Text(context.l10n.commonEdit),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _openEditor();
-                },
-              ),
-              ListTile(
                 leading: const FaIcon(FontAwesomeIcons.image, size: 16),
                 title: Text(context.l10n.autoT0114),
                 onTap: () async {
@@ -782,6 +774,11 @@ $content
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
             actions: <Widget>[
+              IconButton(
+                tooltip: context.l10n.commonEdit,
+                onPressed: _openEditor,
+                icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
+              ),
               IconButton(
                 tooltip: context.l10n.autoT0125,
                 onPressed: () => _showActionBottomSheet(detail),

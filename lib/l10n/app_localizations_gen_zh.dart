@@ -118,6 +118,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsLanguageSubtitle => '切换应用语言';
 
   @override
+  String get settingsAppLock => '应用锁';
+
+  @override
+  String get settingsAppLockSubtitle => '开启后每次进入应用都需要身份验证';
+
+  @override
+  String get appLockNotSupported => '当前设备不支持本地身份验证，无法启用应用锁。';
+
+  @override
+  String get appLockTitle => '应用已锁定';
+
+  @override
+  String get appLockSubtitle => '请验证身份后继续使用';
+
+  @override
+  String get appLockUnlockNow => '立即解锁';
+
+  @override
+  String get appLockUnlocking => '正在解锁';
+
+  @override
   String get settingsEditorTitle => '编辑器设置';
 
   @override

@@ -39,6 +39,7 @@ dependencies:
   flutter_svg: ^2.2.4
   url_launcher: ^6.3.2
   archive: ^3.6.1
+  local_auth: ^3.0.1
   
 dev_dependencies:
   flutter_test:

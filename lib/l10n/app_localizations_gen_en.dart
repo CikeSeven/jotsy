@@ -122,6 +122,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguageSubtitle => 'Switch app language';
 
   @override
+  String get settingsAppLock => 'App Lock';
+
+  @override
+  String get settingsAppLockSubtitle =>
+      'Require authentication every time the app enters foreground';
+
+  @override
+  String get appLockNotSupported =>
+      'This device does not support local authentication, so app lock cannot be enabled.';
+
+  @override
+  String get appLockTitle => 'App Locked';
+
+  @override
+  String get appLockSubtitle => 'Authenticate to continue';
+
+  @override
+  String get appLockUnlockNow => 'Unlock Now';
+
+  @override
+  String get appLockUnlocking => 'Unlocking';
+
+  @override
   String get settingsEditorTitle => 'Editor';
 
   @override

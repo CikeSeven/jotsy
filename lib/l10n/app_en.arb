@@ -157,6 +157,34 @@
   "@settingsLanguageSubtitle": {
     "description": "Auto-generated metadata for settingsLanguageSubtitle."
   },
+  "settingsAppLock": "App Lock",
+  "@settingsAppLock": {
+    "description": "Title for app lock switch in settings."
+  },
+  "settingsAppLockSubtitle": "Require authentication every time the app enters foreground",
+  "@settingsAppLockSubtitle": {
+    "description": "Subtitle for app lock switch in settings."
+  },
+  "appLockNotSupported": "This device does not support local authentication, so app lock cannot be enabled.",
+  "@appLockNotSupported": {
+    "description": "Prompt shown when local authentication is unsupported."
+  },
+  "appLockTitle": "App Locked",
+  "@appLockTitle": {
+    "description": "Title in app lock overlay."
+  },
+  "appLockSubtitle": "Authenticate to continue",
+  "@appLockSubtitle": {
+    "description": "Subtitle in app lock overlay."
+  },
+  "appLockUnlockNow": "Unlock Now",
+  "@appLockUnlockNow": {
+    "description": "Manual unlock button label in app lock overlay."
+  },
+  "appLockUnlocking": "Unlocking",
+  "@appLockUnlocking": {
+    "description": "Semantic label while app lock authentication is in progress."
+  },
   "settingsEditorTitle": "Editor",
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."

@@ -296,6 +296,48 @@ abstract class AppLocalizations {
   /// **'Switch app language'**
   String get settingsLanguageSubtitle;
 
+  /// Title for app lock switch in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Lock'**
+  String get settingsAppLock;
+
+  /// Subtitle for app lock switch in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Require authentication every time the app enters foreground'**
+  String get settingsAppLockSubtitle;
+
+  /// Prompt shown when local authentication is unsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This device does not support local authentication, so app lock cannot be enabled.'**
+  String get appLockNotSupported;
+
+  /// Title in app lock overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'App Locked'**
+  String get appLockTitle;
+
+  /// Subtitle in app lock overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to continue'**
+  String get appLockSubtitle;
+
+  /// Manual unlock button label in app lock overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Now'**
+  String get appLockUnlockNow;
+
+  /// Semantic label while app lock authentication is in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocking'**
+  String get appLockUnlocking;
+
   /// Auto-generated metadata for settingsEditorTitle.
   ///
   /// In en, this message translates to:

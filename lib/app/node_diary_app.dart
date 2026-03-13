@@ -1,10 +1,13 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
@@ -21,7 +24,8 @@ import '../l10n/app_localizations.dart';
 /// 1. 等待设置服务初始化；
 /// 2. 监听主题模式变化；
 /// 3. 处理启动加载页和最短展示时长；
-/// 4. 提供 MaterialApp 壳与首页入口。
+/// 4. 提供 MaterialApp 壳与首页入口；
+/// 5. 在启用应用锁时，统一处理前台解锁门禁。
 class NodeDiaryApp extends ConsumerStatefulWidget {
   const NodeDiaryApp({super.key});
 
@@ -29,19 +33,32 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
   ConsumerState<NodeDiaryApp> createState() => _NodeDiaryAppState();
 }
 
-class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
+class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
+    with WidgetsBindingObserver {
   // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
   static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
+  // 防抖窗口：解锁刚结束时可能伴随 lifecycle 抖动，避免重复触发认证。
+  static const Duration _unlockResumeDebounce = Duration(milliseconds: 800);
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
   late final HomeHintVisibilityController _homeHintVisibilityController;
+  final LocalAuthentication _localAuthentication = LocalAuthentication();
   Timer? _minimumLoadingTimer;
   bool _minimumLoadingElapsed = false;
+
+  SettingsService? _boundSettingsService;
+  VoidCallback? _appLockToggleListener;
+  bool _appLocked = false;
+  bool _unlockingApp = false;
+  bool _appWasBackgrounded = false;
+  bool _initialAppLockChecked = false;
+  DateTime? _lastUnlockCompletedAt;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _lightMaterialTheme = MaterialTheme(Typography.material2021().black);
     _darkMaterialTheme = MaterialTheme(Typography.material2021().white);
     _homeHintVisibilityController = HomeHintVisibilityController();
@@ -58,8 +75,25 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   @override
   void dispose() {
     _minimumLoadingTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _unbindAppLockListener();
     _homeHintVisibilityController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _handleAppResumed();
+      return;
+    }
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      if (!_unlockingApp) {
+        _appWasBackgrounded = true;
+      }
+    }
   }
 
   @override
@@ -70,6 +104,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     final settingsReady = settingsAsync.hasValue;
     final settingsError = settingsAsync.asError?.error;
     final settingsService = settingsAsync.asData?.value;
+    if (settingsService != null) {
+      _bindSettingsForAppLock(settingsService);
+    }
     final diariesSettled =
         diariesBootstrapAsync.hasValue || diariesBootstrapAsync.hasError;
     final bootstrapReady =
@@ -153,7 +190,17 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         }
         return HomeHintVisibilityScope(
           controller: _homeHintVisibilityController,
-          child: child,
+          child: Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              child,
+              if (_appLocked || _unlockingApp)
+                _AppLockOverlay(
+                  unlocking: _unlockingApp,
+                  onTapUnlock: _handleManualUnlockTap,
+                ),
+            ],
+          ),
         );
       },
       home: home,
@@ -166,6 +213,167 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     required String en,
   }) {
     return settingsService?.appLocaleCode == 'zh' ? zh : en;
+  }
+
+  void _bindSettingsForAppLock(SettingsService settingsService) {
+    if (identical(_boundSettingsService, settingsService)) {
+      _ensureInitialAppLockCheck(settingsService);
+      return;
+    }
+
+    _unbindAppLockListener();
+    _boundSettingsService = settingsService;
+    _appLockToggleListener = () {
+      _handleAppLockSettingChanged(
+        enabled: settingsService.isAppLockEnabled,
+        settingsService: settingsService,
+      );
+    };
+    settingsService.appLockEnabledNotifier.addListener(_appLockToggleListener!);
+    _ensureInitialAppLockCheck(settingsService);
+  }
+
+  void _unbindAppLockListener() {
+    final settingsService = _boundSettingsService;
+    final listener = _appLockToggleListener;
+    if (settingsService != null && listener != null) {
+      settingsService.appLockEnabledNotifier.removeListener(listener);
+    }
+    _boundSettingsService = null;
+    _appLockToggleListener = null;
+  }
+
+  void _ensureInitialAppLockCheck(SettingsService settingsService) {
+    if (_initialAppLockChecked) {
+      return;
+    }
+    _initialAppLockChecked = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _handleAppLockSettingChanged(
+        enabled: settingsService.isAppLockEnabled,
+        settingsService: settingsService,
+      );
+    });
+  }
+
+  void _handleAppResumed() {
+    final settingsService = _boundSettingsService;
+    if (settingsService == null || !settingsService.isAppLockEnabled) {
+      _appWasBackgrounded = false;
+      return;
+    }
+    if (_unlockingApp) {
+      return;
+    }
+    final lastSuccess = _lastUnlockCompletedAt;
+    if (lastSuccess != null &&
+        DateTime.now().difference(lastSuccess) < _unlockResumeDebounce) {
+      _appWasBackgrounded = false;
+      return;
+    }
+    if (_appWasBackgrounded || !_initialAppLockChecked) {
+      _appWasBackgrounded = false;
+      _lockAndAuthenticate(settingsService: settingsService);
+    }
+  }
+
+  void _handleAppLockSettingChanged({
+    required bool enabled,
+    required SettingsService settingsService,
+  }) {
+    if (!enabled) {
+      if (_appLocked || _unlockingApp) {
+        setState(() {
+          _appLocked = false;
+          _unlockingApp = false;
+        });
+      }
+      return;
+    }
+    _lockAndAuthenticate(settingsService: settingsService);
+  }
+
+  Future<void> _handleManualUnlockTap() async {
+    final settingsService = _boundSettingsService;
+    if (settingsService == null) {
+      return;
+    }
+    await _lockAndAuthenticate(settingsService: settingsService);
+  }
+
+  Future<void> _lockAndAuthenticate({
+    required SettingsService settingsService,
+  }) async {
+    if (_unlockingApp || !settingsService.isAppLockEnabled) {
+      return;
+    }
+    if (mounted) {
+      setState(() {
+        _appLocked = true;
+        _unlockingApp = true;
+      });
+    }
+
+    final supportsAuth = await _supportsLocalAuth();
+    if (!mounted) {
+      return;
+    }
+    if (!supportsAuth) {
+      await settingsService.setAppLockEnabled(false);
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _appLocked = false;
+        _unlockingApp = false;
+      });
+      return;
+    }
+
+    bool authenticated = false;
+    try {
+      authenticated = await _localAuthentication.authenticate(
+        localizedReason: _localizedAuthReason(settingsService),
+        biometricOnly: false,
+        sensitiveTransaction: true,
+        persistAcrossBackgrounding: true,
+      );
+    } catch (_) {
+      authenticated = false;
+    }
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _unlockingApp = false;
+      _appLocked = !authenticated;
+      if (authenticated) {
+        _lastUnlockCompletedAt = DateTime.now();
+      }
+    });
+  }
+
+  Future<bool> _supportsLocalAuth() async {
+    try {
+      final deviceSupported = await _localAuthentication.isDeviceSupported();
+      if (deviceSupported) {
+        return true;
+      }
+      return await _localAuthentication.canCheckBiometrics;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  String _localizedAuthReason(SettingsService settingsService) {
+    if (settingsService.appLocaleCode == 'zh') {
+      return '请验证身份以解锁应用';
+    }
+    return 'Please authenticate to unlock the app';
   }
 }
 
@@ -202,6 +410,79 @@ class _BootstrapHome extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 应用锁遮罩层。
+///
+/// 设计目标：
+/// - 在应用锁开启时阻断所有交互；
+/// - 自动解锁中给出统一 loading 反馈；
+/// - 解锁失败后提供明确的手动重试入口。
+class _AppLockOverlay extends StatelessWidget {
+  const _AppLockOverlay({
+    required this.unlocking,
+    required this.onTapUnlock,
+  });
+
+  final bool unlocking;
+  final VoidCallback onTapUnlock;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    return ColoredBox(
+      color: colorScheme.surface.withValues(alpha: 0.98),
+      child: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                FaIcon(
+                  FontAwesomeIcons.lock,
+                  size: 28,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  l10n.appLockTitle,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.appLockSubtitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                if (unlocking)
+                  LoadingIndicatorM3E(
+                    variant: LoadingIndicatorM3EVariant.contained,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 64,
+                      height: 64,
+                    ),
+                    semanticLabel: l10n.appLockUnlocking,
+                  )
+                else
+                  FilledButton.icon(
+                    onPressed: onTapUnlock,
+                    icon: const FaIcon(FontAwesomeIcons.key, size: 14),
+                    label: Text(l10n.appLockUnlockNow),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

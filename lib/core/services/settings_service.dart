@@ -6,14 +6,17 @@ class SettingsService {
     required SharedPreferences prefs,
     required ThemeMode mode,
     required Locale locale,
+    required bool appLockEnabled,
   })
     : _prefs = prefs,
       themeModeNotifier = ValueNotifier<ThemeMode>(mode),
-      localeNotifier = ValueNotifier<Locale>(locale);
+      localeNotifier = ValueNotifier<Locale>(locale),
+      appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<Locale> localeNotifier;
+  final ValueNotifier<bool> appLockEnabledNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
@@ -22,6 +25,7 @@ class SettingsService {
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
   static const _keyAppLocaleCode = 'app.settings.locale_code';
+  static const _keyAppLockEnabled = 'app.settings.app_lock_enabled';
 
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -34,10 +38,12 @@ class SettingsService {
     if (storedLocaleCode == null) {
       await prefs.setString(_keyAppLocaleCode, localeCode);
     }
+    final appLockEnabled = prefs.getBool(_keyAppLockEnabled) ?? false;
     return SettingsService._(
       prefs: prefs,
       mode: mode,
       locale: _localeFromCode(localeCode),
+      appLockEnabled: appLockEnabled,
     );
   }
 
@@ -83,6 +89,7 @@ class SettingsService {
   }
 
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);
+  bool get isAppLockEnabled => appLockEnabledNotifier.value;
 
   Future<void> setAppLocale(Locale locale) async {
     await setAppLocaleCode(_codeFromLocale(locale));
@@ -93,6 +100,11 @@ class SettingsService {
     final nextLocale = _localeFromCode(normalized);
     localeNotifier.value = nextLocale;
     await _prefs.setString(_keyAppLocaleCode, normalized);
+  }
+
+  Future<void> setAppLockEnabled(bool enabled) async {
+    appLockEnabledNotifier.value = enabled;
+    await _prefs.setBool(_keyAppLockEnabled, enabled);
   }
 
   static String _resolveInitialLocaleCodeFromSystem() {

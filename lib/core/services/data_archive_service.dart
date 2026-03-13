@@ -158,6 +158,7 @@ class DataArchiveService {
       'settings': <String, Object?>{
         'themeMode': settingsService.themeModeNotifier.value.name,
         'appLocaleCode': settingsService.appLocaleCode,
+        'appLockEnabled': settingsService.isAppLockEnabled,
         'diarySortModeRaw': settingsService.diarySortModeRaw,
         'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
         'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
@@ -270,6 +271,11 @@ class DataArchiveService {
     final localeRaw = settingsNode['appLocaleCode']?.toString();
     if (localeRaw != null && localeRaw.trim().isNotEmpty) {
       await settingsService.setAppLocaleCode(localeRaw);
+    }
+
+    final appLockRaw = settingsNode['appLockEnabled'];
+    if (appLockRaw is bool) {
+      await settingsService.setAppLockEnabled(appLockRaw);
     }
 
     final sortRaw = settingsNode['diarySortModeRaw']?.toString();

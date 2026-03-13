@@ -157,6 +157,34 @@
   "@settingsLanguageSubtitle": {
     "description": "Auto-generated metadata for settingsLanguageSubtitle."
   },
+  "settingsAppLock": "应用锁",
+  "@settingsAppLock": {
+    "description": "设置页应用锁开关标题。"
+  },
+  "settingsAppLockSubtitle": "开启后每次进入应用都需要身份验证",
+  "@settingsAppLockSubtitle": {
+    "description": "设置页应用锁开关副标题。"
+  },
+  "appLockNotSupported": "当前设备不支持本地身份验证，无法启用应用锁。",
+  "@appLockNotSupported": {
+    "description": "设备不支持应用锁时的提示文案。"
+  },
+  "appLockTitle": "应用已锁定",
+  "@appLockTitle": {
+    "description": "应用锁遮罩标题。"
+  },
+  "appLockSubtitle": "请验证身份后继续使用",
+  "@appLockSubtitle": {
+    "description": "应用锁遮罩副标题。"
+  },
+  "appLockUnlockNow": "立即解锁",
+  "@appLockUnlockNow": {
+    "description": "应用锁遮罩手动解锁按钮文案。"
+  },
+  "appLockUnlocking": "正在解锁",
+  "@appLockUnlocking": {
+    "description": "应用锁解锁中的无障碍文案。"
+  },
   "settingsEditorTitle": "编辑器设置",
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."

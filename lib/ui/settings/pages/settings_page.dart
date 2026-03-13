@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -58,6 +59,29 @@ class SettingsPage extends ConsumerWidget {
     await settingsService.setAppLocaleCode(result);
   }
 
+  Future<void> _toggleAppLock(
+    BuildContext context,
+    SettingsService settingsService,
+    bool enabled,
+  ) async {
+    if (enabled) {
+      final localAuth = LocalAuthentication();
+      final supported =
+          await localAuth.isDeviceSupported() ||
+          await localAuth.canCheckBiometrics;
+      if (!context.mounted) {
+        return;
+      }
+      if (!supported) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.appLockNotSupported)),
+        );
+        return;
+      }
+    }
+    await settingsService.setAppLockEnabled(enabled);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -101,6 +125,27 @@ class SettingsPage extends ConsumerWidget {
               error: (_, __) => ListTile(
                 title: Text(l10n.settingsLanguage),
                 subtitle: Text(l10n.settingsLanguageSubtitle),
+              ),
+            ),
+            const Divider(),
+            settingsAsync.when(
+              data: (settingsService) {
+                return SwitchListTile.adaptive(
+                  value: settingsService.isAppLockEnabled,
+                  title: Text(l10n.settingsAppLock),
+                  subtitle: Text(l10n.settingsAppLockSubtitle),
+                  onChanged:
+                      (value) => _toggleAppLock(context, settingsService, value),
+                );
+              },
+              loading:
+                  () => ListTile(
+                    title: Text(l10n.settingsAppLock),
+                    subtitle: Text(l10n.settingsAppLockSubtitle),
+                  ),
+              error: (_, __) => ListTile(
+                title: Text(l10n.settingsAppLock),
+                subtitle: Text(l10n.settingsAppLockSubtitle),
               ),
             ),
             const Divider(),

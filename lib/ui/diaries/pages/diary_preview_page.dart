@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +10,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -68,6 +68,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   bool _isExportingFile = false;
   pw.Font? _cachedPdfUnifiedFont;
   Future<pw.Font>? _pdfUnifiedFontLoading;
+  bool _showActionLoading = false;
+  String _actionLoadingLabel = '';
 
   Widget _buildBackLeading() {
     return IconButton(
@@ -185,63 +187,107 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   Future<void> _shareAsLongImage() async {
-    if (_isSharingImage) {
+    if (_isSharingImage || _showActionLoading) {
       return;
     }
-    final l10n = context.l10n;
-    final surfaceColor = Theme.of(context).colorScheme.surface;
-    final pixelRatio = MediaQuery.of(context).devicePixelRatio.clamp(1.0, 2.2);
-    setState(() {
-      _isSharingImage = true;
-      // 分享截图时禁用封面折叠动画，避免长图拼接出现拖影。
-      _shareCaptureStaticCover = true;
-    });
-    try {
-      // 等待 bottom sheet 完全关闭，避免截图带上遮罩层。
-      await Future<void>.delayed(const Duration(milliseconds: 80));
-      if (!mounted) {
-        return;
-      }
-      if (_previewScrollController.hasClients) {
-        // 强制回到顶部，保证封面按“完整展开”形态进入截图。
-        _previewScrollController.jumpTo(0);
-      }
-      await Future<void>.delayed(const Duration(milliseconds: 60));
-      final renderObject = _shareCaptureKey.currentContext?.findRenderObject();
-      if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
-        throw Exception('截图节点未就绪');
-      }
-      final imageBytes = await renderObject.screenshot(
-        scrollController:
-            _previewScrollController.hasClients ? _previewScrollController : null,
-        format: ShotFormat.png,
-        quality: 100,
-        maxHeight: 22000,
-        backgroundColor: surfaceColor,
-        pixelRatio: pixelRatio,
-      );
-      if (imageBytes == null || imageBytes.isEmpty) {
-        throw Exception(l10n.autoT0111);
-      }
-      final tempDirectory = await getTemporaryDirectory();
-      final imagePath = p.join(
-        tempDirectory.path,
-        'diary_share_${DateTime.now().millisecondsSinceEpoch}.png',
-      );
-      final imageFile = File(imagePath);
-      await imageFile.writeAsBytes(imageBytes, flush: true);
+    await _runPreviewActionWithLoading(
+      label: context.l10n.autoT0114,
+      action: () async {
+        final l10n = context.l10n;
+        final surfaceColor = Theme.of(context).colorScheme.surface;
+        final pixelRatio = MediaQuery.of(context).devicePixelRatio.clamp(1.0, 2.2);
+        setState(() {
+          _isSharingImage = true;
+          // 分享截图时禁用封面折叠动画，避免长图拼接出现拖影。
+          _shareCaptureStaticCover = true;
+        });
+        try {
+          // 等待 bottom sheet 完全关闭，避免截图带上遮罩层。
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+          if (!mounted) {
+            return;
+          }
+          if (_previewScrollController.hasClients) {
+            // 强制回到顶部，保证封面按“完整展开”形态进入截图。
+            _previewScrollController.jumpTo(0);
+          }
+          await Future<void>.delayed(const Duration(milliseconds: 60));
+          final renderObject = _shareCaptureKey.currentContext?.findRenderObject();
+          if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
+            throw Exception('截图节点未就绪');
+          }
+          final imageBytes = await renderObject.screenshot(
+            scrollController:
+                _previewScrollController.hasClients ? _previewScrollController : null,
+            format: ShotFormat.png,
+            quality: 100,
+            maxHeight: 22000,
+            backgroundColor: surfaceColor,
+            pixelRatio: pixelRatio,
+          );
+          if (imageBytes == null || imageBytes.isEmpty) {
+            throw Exception(l10n.autoT0111);
+          }
+          final tempDirectory = await getTemporaryDirectory();
+          final imagePath = p.join(
+            tempDirectory.path,
+            'diary_share_${DateTime.now().millisecondsSinceEpoch}.png',
+          );
+          final imageFile = File(imagePath);
+          await imageFile.writeAsBytes(imageBytes, flush: true);
 
-      await Share.shareXFiles(<XFile>[XFile(imageFile.path)]);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      _showHint(context.l10n.autoT0112(error.toString()));
+          await Share.shareXFiles(<XFile>[XFile(imageFile.path)]);
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+          _showHint(context.l10n.autoT0112(error.toString()));
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isSharingImage = false;
+              _shareCaptureStaticCover = false;
+            });
+          }
+        }
+      },
+    );
+  }
+
+  /// 统一动作加载态：
+  /// - 提供共享的玻璃遮罩 loading；
+  /// - 限制最短可见时长，避免“闪现式”动画；
+  /// - 在真正重任务前预留一帧，让动画先渲染出来。
+  Future<void> _runPreviewActionWithLoading({
+    required String label,
+    required Future<void> Function() action,
+  }) async {
+    if (_showActionLoading) {
+      return;
+    }
+    const minVisibleDuration = Duration(milliseconds: 320);
+    final startedAt = DateTime.now();
+    if (mounted) {
+      setState(() {
+        _showActionLoading = true;
+        _actionLoadingLabel = label;
+      });
+    }
+
+    // 先渲染 loading，再执行 IO/截图等重任务，避免动画“卡住不动”。
+    await Future<void>.delayed(const Duration(milliseconds: 24));
+
+    try {
+      await action();
     } finally {
+      final elapsed = DateTime.now().difference(startedAt);
+      if (elapsed < minVisibleDuration) {
+        await Future<void>.delayed(minVisibleDuration - elapsed);
+      }
       if (mounted) {
         setState(() {
-          _isSharingImage = false;
-          _shareCaptureStaticCover = false;
+          _showActionLoading = false;
+          _actionLoadingLabel = '';
         });
       }
     }
@@ -321,113 +367,122 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
   Future<void> _exportMarkdown(DiaryWithTags detail) async {
     final controller = _previewController;
-    if (controller == null || _isExportingFile) {
+    if (controller == null || _isExportingFile || _showActionLoading) {
       return;
     }
-    setState(() => _isExportingFile = true);
-    try {
-      final markdown = DiaryMarkdownExporter.build(
-        title: detail.diary.title,
-        createdAt: detail.diary.createdAt,
-        updatedAt: detail.diary.updatedAt,
-        tagNames: detail.tags.map((tag) => tag.name).toList(growable: false),
-        document: controller.document,
-      );
-      final bytes = Uint8List.fromList(utf8.encode(markdown));
-      final fileName =
-          '${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.md';
-      final saved = await _saveExportBytes(
-        bytes: bytes,
-        fileName: fileName,
-        allowedExtensions: const <String>['md'],
-      );
-      if (!mounted) {
-        return;
-      }
-      if (!saved) {
-        _showHint(context.l10n.previewExportCanceled);
-        return;
-      }
-      _showHint(context.l10n.previewExportSuccess);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      _showHint(context.l10n.previewExportFailed(error.toString()));
-    } finally {
-      if (mounted) {
-        setState(() => _isExportingFile = false);
-      }
-    }
+    await _runPreviewActionWithLoading(
+      label: context.l10n.previewExportMarkdown,
+      action: () async {
+        setState(() => _isExportingFile = true);
+        try {
+          final markdown = DiaryMarkdownExporter.build(
+            title: detail.diary.title,
+            createdAt: detail.diary.createdAt,
+            updatedAt: detail.diary.updatedAt,
+            tagNames: detail.tags.map((tag) => tag.name).toList(growable: false),
+            document: controller.document,
+          );
+          final bytes = Uint8List.fromList(utf8.encode(markdown));
+          final fileName =
+              '${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.md';
+          final saved = await _saveExportBytes(
+            bytes: bytes,
+            fileName: fileName,
+            allowedExtensions: const <String>['md'],
+          );
+          if (!mounted) {
+            return;
+          }
+          if (!saved) {
+            _showHint(context.l10n.previewExportCanceled);
+            return;
+          }
+          _showHint(context.l10n.previewExportSuccess);
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+          _showHint(context.l10n.previewExportFailed(error.toString()));
+        } finally {
+          if (mounted) {
+            setState(() => _isExportingFile = false);
+          }
+        }
+      },
+    );
   }
 
   Future<void> _exportPdf(DiaryWithTags detail) async {
     final controller = _previewController;
-    if (controller == null || _isExportingFile) {
+    if (controller == null || _isExportingFile || _showActionLoading) {
       return;
     }
-    setState(() => _isExportingFile = true);
-    try {
-      final title = detail.diary.title.trim().isEmpty
-          ? context.l10n.autoT0033
-          : detail.diary.title.trim();
-      final unifiedFont = await _loadPdfUnifiedFont();
-      final unifiedTheme = pw.ThemeData.withFont(
-        base: unifiedFont,
-        bold: unifiedFont,
-        italic: unifiedFont,
-        boldItalic: unifiedFont,
-        fontFallback: <pw.Font>[unifiedFont],
-      );
-      final converter = PDFConverter(
-        pageFormat: PDFPageFormat.a4,
-        document: controller.document.toDelta(),
-        textDirection: Directionality.of(context),
-        isWeb: kIsWeb,
-        documentOptions: DocumentOptions(title: title, author: 'Jotsy'),
-        themeData: unifiedTheme,
-        codeBlockFont: unifiedFont,
-        fallbacks: <pw.Font>[unifiedFont],
-        onRequestFontFamily: (FontFamilyRequest _) {
-          return FontFamilyResponse(
-            fontNormalV: unifiedFont,
-            boldFontV: unifiedFont,
-            italicFontV: unifiedFont,
-            boldItalicFontV: unifiedFont,
-            fallbacks: <pw.Font>[unifiedFont],
+    final textDirection = Directionality.of(context);
+    await _runPreviewActionWithLoading(
+      label: context.l10n.previewExportPdf,
+      action: () async {
+        setState(() => _isExportingFile = true);
+        try {
+          final title = detail.diary.title.trim().isEmpty
+              ? context.l10n.autoT0033
+              : detail.diary.title.trim();
+          final unifiedFont = await _loadPdfUnifiedFont();
+          final unifiedTheme = pw.ThemeData.withFont(
+            base: unifiedFont,
+            bold: unifiedFont,
+            italic: unifiedFont,
+            boldItalic: unifiedFont,
+            fontFallback: <pw.Font>[unifiedFont],
           );
-        },
-      );
-      final doc = await converter.createDocument();
-      if (doc == null) {
-        throw Exception('PDF build failed');
-      }
-      final bytes = Uint8List.fromList(await doc.save());
-      final fileName =
-          '${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      final saved = await _saveExportBytes(
-        bytes: bytes,
-        fileName: fileName,
-        allowedExtensions: const <String>['pdf'],
-      );
-      if (!mounted) {
-        return;
-      }
-      if (!saved) {
-        _showHint(context.l10n.previewExportCanceled);
-        return;
-      }
-      _showHint(context.l10n.previewExportSuccess);
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      _showHint(context.l10n.previewExportFailed(error.toString()));
-    } finally {
-      if (mounted) {
-        setState(() => _isExportingFile = false);
-      }
-    }
+          final converter = PDFConverter(
+            pageFormat: PDFPageFormat.a4,
+            document: controller.document.toDelta(),
+            textDirection: textDirection,
+            themeData: unifiedTheme,
+            codeBlockFont: unifiedFont,
+            fallbacks: <pw.Font>[unifiedFont],
+            onRequestFontFamily: (FontFamilyRequest _) {
+              return FontFamilyResponse(
+                fontNormalV: unifiedFont,
+                boldFontV: unifiedFont,
+                italicFontV: unifiedFont,
+                boldItalicFontV: unifiedFont,
+                fallbacks: <pw.Font>[unifiedFont],
+              );
+            },
+          );
+          final doc = await converter.createDocument();
+          if (doc == null) {
+            throw Exception('PDF build failed');
+          }
+          final bytes = Uint8List.fromList(await doc.save());
+          final fileName =
+              '${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+          final saved = await _saveExportBytes(
+            bytes: bytes,
+            fileName: fileName,
+            allowedExtensions: const <String>['pdf'],
+          );
+          if (!mounted) {
+            return;
+          }
+          if (!saved) {
+            _showHint(context.l10n.previewExportCanceled);
+            return;
+          }
+          _showHint(context.l10n.previewExportSuccess);
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+          _showHint(context.l10n.previewExportFailed(error.toString()));
+        } finally {
+          if (mounted) {
+            setState(() => _isExportingFile = false);
+          }
+        }
+      },
+    );
   }
 
   Widget _buildStaticShareCoverSliver(String source) {
@@ -460,6 +515,44 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       fit: BoxFit.contain,
       alignment: Alignment.center,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildActionLoadingOverlay() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return IgnorePointer(
+      ignoring: !_showActionLoading,
+      child: AnimatedOpacity(
+        opacity: _showActionLoading ? 1 : 0,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        child: ColoredBox(
+          color: colorScheme.surface.withValues(alpha: 0.72),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                LoadingIndicatorM3E(
+                  variant: LoadingIndicatorM3EVariant.contained,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 72,
+                    height: 72,
+                  ),
+                  semanticLabel: _actionLoadingLabel,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  _actionLoadingLabel,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -1030,46 +1123,53 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
           ),
           body: SafeArea(
             top: false,
-            child: WidgetShotPlus(
-              key: _shareCaptureKey,
-              child: CustomScrollView(
-                controller: _previewScrollController,
-                slivers: <Widget>[
-                  if (coverSource != null)
-                    _shareCaptureStaticCover
-                        ? _buildStaticShareCoverSliver(coverSource)
-                        : PublishDiaryCoverSliver(
-                          cover: coverSource,
-                          maxExtentHeight: 420,
-                          padding: EdgeInsets.zero,
-                          borderRadius: BorderRadius.zero,
-                        ),
-                  
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                      child: Text(
-                        title,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
+            child: Stack(
+              children: <Widget>[
+                WidgetShotPlus(
+                  key: _shareCaptureKey,
+                  child: CustomScrollView(
+                    controller: _previewScrollController,
+                    slivers: <Widget>[
+                      if (coverSource != null)
+                        _shareCaptureStaticCover
+                            ? _buildStaticShareCoverSliver(coverSource)
+                            : PublishDiaryCoverSliver(
+                              cover: coverSource,
+                              maxExtentHeight: 420,
+                              padding: EdgeInsets.zero,
+                              borderRadius: BorderRadius.zero,
                             ),
+
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                          child: Text(
+                            title,
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
                       ),
-                    ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                          child: _buildMetaSection(detail),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
+                          child: _buildContentSection(detail),
+                        ),
+                      ),
+                    ],
                   ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      child: _buildMetaSection(detail),
-                    ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
-                      child: _buildContentSection(detail),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                Positioned.fill(
+                  child: _buildActionLoadingOverlay(),
+                ),
+              ],
             ),
           ),
         );

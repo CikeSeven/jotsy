@@ -22,7 +22,12 @@ import '../sections/explore_content_section.dart';
 /// - 处理导航回调；
 /// - 将聚合数据交给 sections 渲染。
 class ExplorePage extends ConsumerWidget {
-  const ExplorePage({super.key});
+  const ExplorePage({
+    super.key,
+    required this.pageBackgroundColor,
+  });
+
+  final Color pageBackgroundColor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,6 +40,9 @@ class ExplorePage extends ConsumerWidget {
 
     return Stack(
       children: <Widget>[
+        Positioned.fill(
+          child: ColoredBox(color: pageBackgroundColor),
+        ),
         SafeArea(
           top: false,
           child: CustomScrollView(

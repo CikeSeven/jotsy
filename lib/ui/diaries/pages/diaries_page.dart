@@ -38,11 +38,13 @@ part '../controllers/diaries_page_controller.dart';
 class DiariesPage extends ConsumerStatefulWidget {
   const DiariesPage({
     super.key,
+    required this.pageBackgroundColor,
     this.homeHintVisibleListenable,
     this.onCreateActionChanged,
     this.onFabVisibilityChanged,
   });
 
+  final Color pageBackgroundColor;
   final ValueListenable<bool>? homeHintVisibleListenable;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
@@ -159,9 +161,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final colorScheme = Theme.of(context).colorScheme;
-    final pageBackgroundColor =
-        brightness == Brightness.light ? Colors.white : colorScheme.surface;
     // 标签与日记列表分别独立监听，避免相互阻塞。
     final settingsAsync = ref.watch(settingsServiceProvider);
     final filterState = ref.watch(diaryFilterProvider);
@@ -213,7 +212,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         final hasMoreDiaries = pagedDisplayedItems.length < displayedItems.length;
 
         return Scaffold(
-          backgroundColor: pageBackgroundColor,
+          backgroundColor: widget.pageBackgroundColor,
           resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
@@ -241,7 +240,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                       SafeArea(
                         top: false,
                         child: ColoredBox(
-                          color: pageBackgroundColor,
+                          color: widget.pageBackgroundColor,
                           child: NotificationListener<ScrollNotification>(
                             onNotification: _handlePrimaryScrollNotification,
                             child: CustomScrollView(

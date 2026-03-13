@@ -31,10 +31,12 @@ part '../controllers/calendar_page_controller.dart';
 class CalendarPage extends ConsumerStatefulWidget {
   const CalendarPage({
     super.key,
+    required this.pageBackgroundColor,
     this.onCreateActionChanged,
     this.onFabVisibilityChanged,
   });
 
+  final Color pageBackgroundColor;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
 
@@ -107,7 +109,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     );
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: widget.pageBackgroundColor,
       body: Stack(
         children: <Widget>[
           SafeArea(

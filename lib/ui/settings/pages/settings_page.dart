@@ -15,7 +15,12 @@ import '../../widgets/glass_page_header.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends ConsumerWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({
+    super.key,
+    required this.pageBackgroundColor,
+  });
+
+  final Color pageBackgroundColor;
 
   Future<void> _showLanguagePickerDialog(
     BuildContext context,
@@ -69,6 +74,9 @@ class SettingsPage extends ConsumerWidget {
 
     return Stack(
       children: <Widget>[
+        Positioned.fill(
+          child: ColoredBox(color: pageBackgroundColor),
+        ),
         ListView(
           padding: EdgeInsets.only(top: headerHeight, bottom: listBottomPadding),
           children: <Widget>[

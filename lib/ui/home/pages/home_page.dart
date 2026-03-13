@@ -77,6 +77,10 @@ class _HomePageState extends State<HomePage> {
         GlassBottomNav.navHeight;
 
     final baseTheme = Theme.of(context);
+    final homeTabBackgroundColor =
+        baseTheme.brightness == Brightness.light
+            ? Colors.white
+            : Colors.black;
     final colorScheme = baseTheme.colorScheme;
     final snackBarTheme = baseTheme.snackBarTheme.copyWith(
       behavior: SnackBarBehavior.floating,
@@ -101,6 +105,7 @@ class _HomePageState extends State<HomePage> {
       KeepAlivePage(
         child: DiariesPage(
           key: const PageStorageKey('tab_diaries'),
+          pageBackgroundColor: homeTabBackgroundColor,
           homeHintVisibleListenable: widget.homeHintVisibleListenable,
           onCreateActionChanged: (action) {
             _handleCreateActionChanged(tabIndex: 0, action: action);
@@ -113,6 +118,7 @@ class _HomePageState extends State<HomePage> {
       KeepAlivePage(
         child: CalendarPage(
           key: const PageStorageKey<String>('tab_calendar'),
+          pageBackgroundColor: homeTabBackgroundColor,
           onCreateActionChanged: (action) {
             _handleCreateActionChanged(tabIndex: 1, action: action);
           },
@@ -121,11 +127,17 @@ class _HomePageState extends State<HomePage> {
           },
         ),
       ),
-      const KeepAlivePage(
-        child: ExplorePage(key: PageStorageKey<String>('tab_explore')),
+      KeepAlivePage(
+        child: ExplorePage(
+          key: const PageStorageKey<String>('tab_explore'),
+          pageBackgroundColor: homeTabBackgroundColor,
+        ),
       ),
-      const KeepAlivePage(
-        child: SettingsPage(key: PageStorageKey<String>('tab_settings')),
+      KeepAlivePage(
+        child: SettingsPage(
+          key: const PageStorageKey<String>('tab_settings'),
+          pageBackgroundColor: homeTabBackgroundColor,
+        ),
       ),
     ];
 

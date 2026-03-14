@@ -18,56 +18,34 @@ class ExploreCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final cardBackground =
         isDark
-            ? colorScheme.surface.withValues(alpha: 0.34)
-            : colorScheme.surface.withValues(alpha: 0.46);
+            ? colorScheme.surface.withValues(alpha: 0.22)
+            : colorScheme.surface.withValues(alpha: 0.18);
     final cardBorderColor =
         isDark
-            ? colorScheme.outline.withValues(alpha: 0.30)
-            : Colors.white.withValues(alpha: 0.62);
-    final topHighlightColor =
-        isDark
-            ? Colors.white.withValues(alpha: 0.12)
-            : Colors.white.withValues(alpha: 0.78);
+            ? colorScheme.outline.withValues(alpha: 0.32)
+            : colorScheme.outlineVariant.withValues(alpha: 0.36);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26, tileMode: TileMode.mirror),
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30, tileMode: TileMode.mirror),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: cardBackground,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: cardBorderColor, width: 0.9),
             boxShadow: <BoxShadow>[
-              ...AppEffects.softShadow,
+              ...AppEffects.softShadow.take(1),
               BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: isDark ? 0.32 : 0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
+                color: colorScheme.shadow.withValues(alpha: isDark ? 0.14 : 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: Stack(
-            children: <Widget>[
-              Positioned(
-                left: 1,
-                right: 1,
-                top: 1,
-                child: IgnorePointer(
-                  child: Container(
-                    height: 1.1,
-                    decoration: BoxDecoration(
-                      color: topHighlightColor,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: child,
-              ),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: child,
           ),
         ),
       ),

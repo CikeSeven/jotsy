@@ -15,6 +15,7 @@ class ExploreViewData {
     required this.energyValues7,
     required this.tagUsages,
     required this.mediaItems,
+    required this.backdropTone,
   });
 
   final ExploreStats stats;
@@ -24,7 +25,11 @@ class ExploreViewData {
   final List<double?> energyValues7;
   final List<ExploreTagUsage> tagUsages;
   final List<ExploreMediaItem> mediaItems;
+  final ExploreBackdropTone backdropTone;
 }
+
+/// 探索页背景光斑的冷暖色调。
+enum ExploreBackdropTone { warm, cool }
 
 /// “那年今日”轮播项。
 ///

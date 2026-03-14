@@ -30,6 +30,18 @@ class ExplorePageController {
     '😀': 4.8,
     '🤩': 5,
   };
+  static const Map<String, int> _calendarMoodWeights = <String, int>{
+    '😭': 1,
+    '😢': 2,
+    '😞': 3,
+    '😕': 4,
+    '😐': 5,
+    '🙂': 6,
+    '😊': 7,
+    '😄': 8,
+    '😀': 9,
+    '🤩': 10,
+  };
 
   /// 构建探索页整页所需数据。
   ExploreViewData buildViewData(
@@ -55,6 +67,7 @@ class ExplorePageController {
       orderedTagIds: orderedTagIds,
     );
     final mediaItems = _buildMediaGallery(diaries);
+    final backdropTone = resolveBackdropTone(diaries, now: now);
 
     return ExploreViewData(
       stats: stats,
@@ -64,7 +77,48 @@ class ExplorePageController {
       energyValues7: energyValues7,
       tagUsages: tagUsages.take(18).toList(growable: false),
       mediaItems: mediaItems.take(12).toList(growable: false),
+      backdropTone: backdropTone,
     );
+  }
+
+  /// 复用“日历按天心情均值”的口径生成探索页背景色调：
+  /// - 均值 >= 6 视为偏暖；
+  /// - 均值 < 6 视为偏冷；
+  /// - 今日无有效心情时默认暖色。
+  ExploreBackdropTone resolveBackdropTone(
+    List<DiaryWithTags> diaries, {
+    required DateTime now,
+  }) {
+    final today = DateUtils.dateOnly(now.toLocal());
+    var totalWeight = 0;
+    var validCount = 0;
+
+    for (final item in diaries) {
+      final createdDay = DateUtils.dateOnly(item.diary.createdAt.toLocal());
+      if (createdDay != today) {
+        continue;
+      }
+      final context = contentExtractor.parseContext(item.diary.metadata);
+      final mood = context?['moodEmoji']?.toString().trim();
+      if (mood == null || mood.isEmpty) {
+        continue;
+      }
+      final weight = _calendarMoodWeights[mood];
+      if (weight == null) {
+        continue;
+      }
+      totalWeight += weight;
+      validCount += 1;
+    }
+
+    if (validCount == 0) {
+      return ExploreBackdropTone.warm;
+    }
+
+    final averageWeight = totalWeight / validCount;
+    return averageWeight >= 6
+        ? ExploreBackdropTone.warm
+        : ExploreBackdropTone.cool;
   }
 
   /// 生成顶部看板统计。

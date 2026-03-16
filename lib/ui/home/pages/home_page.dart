@@ -43,7 +43,6 @@ class _HomePageState extends State<HomePage> {
 
   // 页面切换状态。
   int _currentIndex = 0;
-  double _pageProgress = 0;
   String? _shownStartupNotice;
   final Map<int, Future<void> Function()> _createActionByTab =
       <int, Future<void> Function()>{};
@@ -72,15 +71,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
-    final snackBarBottomInset =
-        bottomSafeInset +
-        GlassBottomNav.navHeight;
+    final snackBarBottomInset = bottomSafeInset + GlassBottomNav.navHeight;
 
     final baseTheme = Theme.of(context);
     final homeTabBackgroundColor =
-        baseTheme.brightness == Brightness.light
-            ? Colors.white
-            : Colors.black;
+        baseTheme.brightness == Brightness.light ? Colors.white : Colors.black;
     final colorScheme = baseTheme.colorScheme;
     final snackBarTheme = baseTheme.snackBarTheme.copyWith(
       behavior: SnackBarBehavior.floating,
@@ -90,9 +85,7 @@ class _HomePageState extends State<HomePage> {
       ),
       actionTextColor: colorScheme.primary,
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: EdgeInsets.fromLTRB(
         _snackBarSideInset,
         0,
@@ -144,15 +137,15 @@ class _HomePageState extends State<HomePage> {
     final navItems = [
       GlassBottomNavItem(
         label: context.l10n.navDiaries,
-        icon: FontAwesomeIcons.bars,
+        icon: FontAwesomeIcons.solidRectangleList,
       ),
       GlassBottomNavItem(
         label: context.l10n.navCalendar,
-        icon: FontAwesomeIcons.calendar,
+        icon: FontAwesomeIcons.solidCalendar,
       ),
       GlassBottomNavItem(
         label: context.l10n.navExplore,
-        icon: FontAwesomeIcons.compass,
+        icon: FontAwesomeIcons.solidCompass,
       ),
       GlassBottomNavItem(
         label: context.l10n.navSettings,
@@ -175,21 +168,12 @@ class _HomePageState extends State<HomePage> {
         child: Scaffold(
           resizeToAvoidBottomInset: false,
           body: Stack(
-            children: [
-              _buildPageView(pages),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: GlassBottomNav(
-                  items: navItems,
-                  selectedIndex: _currentIndex,
-                  pageProgress: _pageProgress,
-                  onTap: _controller.onTap,
-                ),
-              ),
-              _buildGlobalCreateFab(bottomSafeInset),
-            ],
+            children: [_buildPageView(pages), _buildGlobalCreateFab()],
+          ),
+          bottomNavigationBar: GlassBottomNav(
+            items: navItems,
+            selectedIndex: _currentIndex,
+            onTap: _controller.onTap,
           ),
         ),
       ),
@@ -243,23 +227,17 @@ class _HomePageState extends State<HomePage> {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return const EditDiaryPage(
-            entryMode: EditDiaryEntryMode.create,
-          );
+          return const EditDiaryPage(entryMode: EditDiaryEntryMode.create);
         },
       ),
     );
   }
 
-  Widget _buildGlobalCreateFab(double bottomSafeInset) {
+  Widget _buildGlobalCreateFab() {
     final isCreateTab = _currentIndex == 0 || _currentIndex == 1;
     final followScrollVisibility = _fabVisibleByTab[_currentIndex] ?? true;
     final shouldShow = isCreateTab && followScrollVisibility;
-    final fabBaseBottomOffset =
-        bottomSafeInset +
-        GlassBottomNav.navBottomInset +
-        GlassBottomNav.navHeight +
-        _fabBottomGapAboveNav;
+    final fabBaseBottomOffset = _fabBottomGapAboveNav;
 
     return ValueListenableBuilder<bool>(
       valueListenable: widget.homeHintVisibleListenable,

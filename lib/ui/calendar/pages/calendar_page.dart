@@ -14,7 +14,6 @@ import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
-import '../../widgets/glass_bottom_nav.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../widgets/calendar_day_empty_state.dart';
 import '../widgets/calendar_glass_header.dart';
@@ -49,7 +48,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _calendarCardHorizontalPadding = AppSpacing.m;
   static const double _calendarCardTopPadding = AppSpacing.m;
   static const double _calendarBottomGap = AppSpacing.m;
-  static const double _listBottomExtraSpace = 34;
+  static const double _listBottomExtraSpace = 12;
   static const Duration _calendarMorphDuration = Duration(milliseconds: 260);
 
   late final CalendarPageController _controller;
@@ -92,14 +91,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
     final headerHeight =
         MediaQuery.paddingOf(context).top + CalendarGlassHeader.contentHeight;
-    final listBottomOffset =
-        bottomSafeInset +
-        GlassBottomNav.navBottomInset +
-        GlassBottomNav.navHeight +
-        _listBottomExtraSpace;
+    final listBottomOffset = _listBottomExtraSpace;
     final focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month);
     final markersAsync = ref.watch(calendarMonthMarkersProvider(focusedMonth));
     final dayDiariesAsync = ref.watch(calendarDayDiariesProvider(_selectedDay));
@@ -142,9 +136,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         l10n.isZh
                             ? DateFormat('M月d日', 'zh').format(_selectedDay)
                             : DateFormat('MMM d', 'en').format(_selectedDay),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -244,10 +237,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    mood,
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                  child: Text(mood, style: const TextStyle(fontSize: 10)),
                 ),
               );
             }
@@ -284,16 +274,17 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               DateTime.saturday: 'S',
               DateTime.sunday: 'S',
             };
-            final label = l10n.isZh
-                ? (labelsZh[weekday] ?? '')
-                : (labelsEn[weekday] ?? '');
+            final label =
+                l10n.isZh
+                    ? (labelsZh[weekday] ?? '')
+                    : (labelsEn[weekday] ?? '');
             return Center(
               child: Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             );
           },
@@ -332,9 +323,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 AppSpacing.m,
                 AppSpacing.m,
               ),
-              child: Text(
-                context.l10n.autoT0210(error.toString()),
-              ),
+              child: Text(context.l10n.autoT0210(error.toString())),
             ),
           ),
         ];
@@ -346,13 +335,18 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           return <Widget>[
             SliverToBoxAdapter(
               child: CalendarDayEmptyState(
-                onAction: isFutureDay ? _controller.jumpToToday : _openCreateFromHomeFab,
-                message: isFutureDay
-                    ? context.l10n.autoT0211
-                    : context.l10n.autoT0182,
-                actionLabel: isFutureDay
-                    ? context.l10n.autoT0180
-                    : context.l10n.autoT0181,
+                onAction:
+                    isFutureDay
+                        ? _controller.jumpToToday
+                        : _openCreateFromHomeFab,
+                message:
+                    isFutureDay
+                        ? context.l10n.autoT0211
+                        : context.l10n.autoT0182,
+                actionLabel:
+                    isFutureDay
+                        ? context.l10n.autoT0180
+                        : context.l10n.autoT0181,
               ),
             ),
           ];

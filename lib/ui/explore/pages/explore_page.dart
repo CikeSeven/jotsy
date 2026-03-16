@@ -9,7 +9,6 @@ import '../../../core/services/app_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
-import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
@@ -24,10 +23,7 @@ import '../sections/explore_content_section.dart';
 /// - 处理导航回调；
 /// - 将聚合数据交给 sections 渲染。
 class ExplorePage extends ConsumerWidget {
-  const ExplorePage({
-    super.key,
-    required this.pageBackgroundColor,
-  });
+  const ExplorePage({super.key, required this.pageBackgroundColor});
 
   final Color pageBackgroundColor;
 
@@ -38,7 +34,9 @@ class ExplorePage extends ConsumerWidget {
     final orderedTagsAsync = ref.watch(tagListProvider);
     final controller = const ExplorePageController();
     final backdropTone = diariesAsync.maybeWhen(
-      data: (diaries) => controller.resolveBackdropTone(diaries, now: DateTime.now()),
+      data:
+          (diaries) =>
+              controller.resolveBackdropTone(diaries, now: DateTime.now()),
       orElse: () => ExploreBackdropTone.warm,
     );
     final headerHeight =
@@ -46,12 +44,8 @@ class ExplorePage extends ConsumerWidget {
 
     return Stack(
       children: <Widget>[
-        Positioned.fill(
-          child: ColoredBox(color: pageBackgroundColor),
-        ),
-        Positioned.fill(
-          child: _ExploreAmbientBackdrop(tone: backdropTone),
-        ),
+        Positioned.fill(child: ColoredBox(color: pageBackgroundColor)),
+        Positioned.fill(child: _ExploreAmbientBackdrop(tone: backdropTone)),
         SafeArea(
           top: false,
           child: CustomScrollView(
@@ -72,7 +66,9 @@ class ExplorePage extends ConsumerWidget {
                       ),
                   data: (diaries) {
                     final orderedTagIds = orderedTagsAsync.maybeWhen(
-                      data: (tags) => tags.map((tag) => tag.id).toList(growable: false),
+                      data:
+                          (tags) =>
+                              tags.map((tag) => tag.id).toList(growable: false),
                       orElse: () => const <int>[],
                     );
                     final viewData = controller.buildViewData(
@@ -102,15 +98,7 @@ class ExplorePage extends ConsumerWidget {
                   },
                 ),
               ),
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height:
-                      MediaQuery.paddingOf(context).bottom +
-                      GlassBottomNav.navBottomInset +
-                      GlassBottomNav.navHeight +
-                      24,
-                ),
-              ),
+              SliverToBoxAdapter(child: SizedBox(height: 12)),
             ],
           ),
         ),
@@ -130,26 +118,23 @@ class ExplorePage extends ConsumerWidget {
   void _openCreateToday(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+        builder:
+            (_) => const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
       ),
     );
   }
 
   /// 从探索页标签云进入搜索页，并自动注入标签条件。
   void _openTagSearch(BuildContext context, ExploreTagUsage tagUsage) {
-    Navigator.of(context).push(
-      DiarySearchPage.buildRoute(
-        initialTagIds: <int>{tagUsage.id},
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(DiarySearchPage.buildRoute(initialTagIds: <int>{tagUsage.id}));
   }
 
   /// 打开全量媒体画廊页（分页加载）。
   void _openMediaGallery(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const ExploreMediaGalleryPage(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const ExploreMediaGalleryPage()),
     );
   }
 }
@@ -190,7 +175,6 @@ class _ExplorePageSkeleton extends StatelessWidget {
     );
   }
 }
-
 
 /// 探索页背景氛围层：
 /// 在纯色底上增加柔和光斑，让毛玻璃卡片的“透感”更明显。
@@ -249,15 +233,13 @@ class _ExploreAmbientBackdrop extends StatelessWidget {
         child: Container(
           width: diameter,
           height: diameter,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       ),
     );
   }
 }
+
 class _ExploreErrorCard extends StatelessWidget {
   const _ExploreErrorCard({required this.message});
 
@@ -280,20 +262,19 @@ class _ExploreErrorCard extends StatelessWidget {
         children: <Widget>[
           Text(
             context.l10n.autoT0059,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
           Text(
             message,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
     );
   }
 }
-

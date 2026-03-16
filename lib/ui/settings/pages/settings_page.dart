@@ -10,15 +10,11 @@ import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
-import '../../widgets/glass_bottom_nav.dart';
 import '../../widgets/glass_page_header.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends ConsumerWidget {
-  const SettingsPage({
-    super.key,
-    required this.pageBackgroundColor,
-  });
+  const SettingsPage({super.key, required this.pageBackgroundColor});
 
   final Color pageBackgroundColor;
 
@@ -66,19 +62,16 @@ class SettingsPage extends ConsumerWidget {
     final settingsAsync = ref.watch(settingsServiceProvider);
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
-    final listBottomPadding =
-        MediaQuery.paddingOf(context).bottom +
-        GlassBottomNav.navHeight +
-        GlassBottomNav.navBottomInset +
-        12;
+    const listBottomPadding = 8.0;
 
     return Stack(
       children: <Widget>[
-        Positioned.fill(
-          child: ColoredBox(color: pageBackgroundColor),
-        ),
+        Positioned.fill(child: ColoredBox(color: pageBackgroundColor)),
         ListView(
-          padding: EdgeInsets.only(top: headerHeight, bottom: listBottomPadding),
+          padding: EdgeInsets.only(
+            top: headerHeight,
+            bottom: listBottomPadding,
+          ),
           children: <Widget>[
             _SettingsGroupTitle(title: l10n.settingsAppearanceLanguage),
             SettingsThemeSection(settingsAsync: settingsAsync),
@@ -89,7 +82,8 @@ class SettingsPage extends ConsumerWidget {
                   title: Text(l10n.settingsLanguage),
                   subtitle: Text(l10n.settingsLanguageSubtitle),
                   trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                  onTap: () => _showLanguagePickerDialog(context, settingsService),
+                  onTap:
+                      () => _showLanguagePickerDialog(context, settingsService),
                 );
               },
               loading:
@@ -172,9 +166,9 @@ class _SettingsGroupTitle extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }

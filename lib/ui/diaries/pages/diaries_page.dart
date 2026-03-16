@@ -22,7 +22,6 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
-import '../../widgets/glass_bottom_nav.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../widgets/diary_tag_filter_bar.dart';
@@ -59,13 +58,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
-  static const Duration _listItemTransitionDuration = Duration(milliseconds: 220);
-  static const Duration _listRefreshFadeOutDuration = Duration(milliseconds: 160);
-  static const Duration _listRefreshFadeInDuration = Duration(milliseconds: 260);
+  static const Duration _listItemTransitionDuration = Duration(
+    milliseconds: 220,
+  );
+  static const Duration _listRefreshFadeOutDuration = Duration(
+    milliseconds: 160,
+  );
+  static const Duration _listRefreshFadeInDuration = Duration(
+    milliseconds: 260,
+  );
   static const double _fabToggleScrollThreshold = 26;
   static const int _diaryPageSize = 20;
   static const double _loadMoreTriggerExtent = 420;
-  static const double _listBottomExtraSpace = 34;
+  static const double _listBottomExtraSpace = 12;
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
 
@@ -166,26 +171,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final filterState = ref.watch(diaryFilterProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final diariesAsync = ref.watch(filteredDiariesProvider);
-    final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
-
-    final listBottomOffset =
-        bottomSafeInset +
-        GlassBottomNav.navBottomInset +
-        GlassBottomNav.navHeight +
-        _listBottomExtraSpace;
+    final listBottomOffset = _listBottomExtraSpace;
 
     return settingsAsync.when(
       loading:
-          () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+          () =>
+              const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
-          (Object error, StackTrace stackTrace) =>
-              Scaffold(
-                body: Center(
-                  child: Text(
-                    context.l10n.autoT0045(error.toString()),
-                  ),
-                ),
-              ),
+          (Object error, StackTrace stackTrace) => Scaffold(
+            body: Center(child: Text(context.l10n.autoT0045(error.toString()))),
+          ),
       data: (settingsService) {
         _controller.loadViewPreferencesIfNeeded(settingsService);
         final topSafeInset = MediaQuery.paddingOf(context).top;
@@ -200,16 +195,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           _transitionCoordinator.syncAppearingTimers(latestVisibleItems);
         }
 
-        final displayedItems =
-            latestVisibleItems ?? _cachedVisibleItems;
+        final displayedItems = latestVisibleItems ?? _cachedVisibleItems;
         final shouldUnpinSelected = _controller.areAllSelectedPinned(
           displayedItems,
         );
         final currentPagingSignature = _buildPagingSignature(filterState);
         _syncPagingStateWithFilterSignature(currentPagingSignature);
-        final pagedDisplayedItems = displayedItems.take(_visibleDiaryLimit).toList();
+        final pagedDisplayedItems =
+            displayedItems.take(_visibleDiaryLimit).toList();
         _lastPageableCount = displayedItems.length;
-        final hasMoreDiaries = pagedDisplayedItems.length < displayedItems.length;
+        final hasMoreDiaries =
+            pagedDisplayedItems.length < displayedItems.length;
 
         return Scaffold(
           backgroundColor: widget.pageBackgroundColor,
@@ -260,14 +256,18 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     return SliverToBoxAdapter(
                                       // 顶部标签筛选条（支持清空和多选筛选）。
                                       child: DiaryTagFilterBar(
-                                        tags: _controller.buildTagFiltersForDisplay(
-                                          allTags: tags,
-                                          visibleItems: displayedItems,
-                                          keyword: filterState.keyword,
-                                        ),
-                                        selectedTagFilterIds: filterState.selectedTagIds,
-                                        onToggleTagFilter: _controller.toggleTagFilter,
-                                        onClearTagFilters: _controller.clearTagFilters,
+                                        tags: _controller
+                                            .buildTagFiltersForDisplay(
+                                              allTags: tags,
+                                              visibleItems: displayedItems,
+                                              keyword: filterState.keyword,
+                                            ),
+                                        selectedTagFilterIds:
+                                            filterState.selectedTagIds,
+                                        onToggleTagFilter:
+                                            _controller.toggleTagFilter,
+                                        onClearTagFilters:
+                                            _controller.clearTagFilters,
                                       ),
                                     );
                                   },
@@ -279,12 +279,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       (Object error, StackTrace stackTrace) =>
                                           SliverToBoxAdapter(
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: AppSpacing.m,
-                                                vertical: AppSpacing.s,
-                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: AppSpacing.m,
+                                                    vertical: AppSpacing.s,
+                                                  ),
                                               child: Text(
-                                                context.l10n.autoT0042(error.toString()),
+                                                context.l10n.autoT0042(
+                                                  error.toString(),
+                                                ),
                                               ),
                                             ),
                                           ),
@@ -299,26 +302,31 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       // 1) 首屏加载且无缓存；
                                       // 2) 首屏错误且无缓存；
                                       // 3) 渲染列表/空态内容。
-                                        diariesAsync.isLoading && displayedItems.isEmpty
+                                      diariesAsync.isLoading &&
+                                              displayedItems.isEmpty
                                           ? const SliverFillRemaining(
                                             hasScrollBody: false,
                                             child: Center(
                                               child: SizedBox(
                                                 height: 22,
                                                 width: 22,
-                                                child: CircularProgressIndicator(
-                                                  strokeWidth: 2,
-                                                ),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
                                               ),
                                             ),
                                           )
-                                          : diariesAsync.hasError && displayedItems.isEmpty
+                                          : diariesAsync.hasError &&
+                                              displayedItems.isEmpty
                                           ? SliverFillRemaining(
                                             hasScrollBody: false,
                                             child: Center(
                                               child: Text(
                                                 context.l10n.autoT0127(
-                                                  diariesAsync.asError?.error.toString() ?? '',
+                                                  diariesAsync.asError?.error
+                                                          .toString() ??
+                                                      '',
                                                 ),
                                               ),
                                             ),
@@ -332,8 +340,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                             layoutMode: _layoutMode,
                                             isSelectionMode: _isSelectionMode,
                                             selectedDiaryIds: _selectedDiaryIds,
-                                            pendingHideDiaryIds: _pendingHideDiaryIds,
-                                            appearingDiaryIds: _appearingDiaryIds,
+                                            pendingHideDiaryIds:
+                                                _pendingHideDiaryIds,
+                                            appearingDiaryIds:
+                                                _appearingDiaryIds,
                                             onCreate:
                                                 () => unawaited(
                                                   _controller
@@ -350,13 +360,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                                     ),
                                             onArchiveDiary:
                                                 (diaryId) => unawaited(
-                                                  _controller.archiveDiaryBySwipe(
-                                                    diaryId,
-                                                  ),
+                                                  _controller
+                                                      .archiveDiaryBySwipe(
+                                                        diaryId,
+                                                      ),
                                                 ),
                                             isSearchResultEmpty: false,
                                           ),
-                                        ),
+                                ),
                                 if (hasMoreDiaries || _isPagingCooldown)
                                   const SliverToBoxAdapter(
                                     child: Padding(
@@ -408,7 +419,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     DiaryHeadSection(
                                       isSelectionMode: _isSelectionMode,
                                       selectedCount: _selectedDiaryIds.length,
-                                      onCancelSelection: _controller.clearSelection,
+                                      onCancelSelection:
+                                          _controller.clearSelection,
                                       isPinActionUnpin: shouldUnpinSelected,
                                       onPinSelected:
                                           () => unawaited(
@@ -418,17 +430,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                           ),
                                       onArchiveSelected:
                                           () => unawaited(
-                                            _controller.archiveSelectedDiaries(),
+                                            _controller
+                                                .archiveSelectedDiaries(),
                                           ),
                                       onDeleteSelected:
                                           () => unawaited(
                                             _controller.deleteSelectedDiaries(),
                                           ),
-                                      onOpenArchived: _controller.openArchivedPage,
+                                      onOpenArchived:
+                                          _controller.openArchivedPage,
                                       sortMode: _sortMode,
                                       layoutMode: _layoutMode,
-                                      onMenuSelected: _controller.onMenuSelected,
-                                      onOpenSearchPage: _controller.openSearchPage,
+                                      onMenuSelected:
+                                          _controller.onMenuSelected,
+                                      onOpenSearchPage:
+                                          _controller.openSearchPage,
                                     ),
                                     Container(
                                       height: 1,

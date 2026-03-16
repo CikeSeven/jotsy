@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   static const Duration _fabLiftDuration = Duration(milliseconds: 260);
   static const Curve _fabVisibilityCurve = Curves.easeOutCubic;
   static const Curve _fabLiftCurve = Curves.easeOutCubic;
-  static const double _fabBottomGapAboveNav = 2;
+  static const double _fabBottomGapAboveNav = 10;
   static const double _fabLiftOffsetWhenHintVisible = 60;
 
   // 页面切换状态。

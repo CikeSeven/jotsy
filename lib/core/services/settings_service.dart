@@ -2,23 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService {
+  static const int defaultThemeSeedColorValue = 0xFF1E6586;
+
   SettingsService._({
     required SharedPreferences prefs,
     required ThemeMode mode,
+    required Color themeSeedColor,
     required Locale locale,
     required bool appLockEnabled,
-  })
-    : _prefs = prefs,
-      themeModeNotifier = ValueNotifier<ThemeMode>(mode),
-      localeNotifier = ValueNotifier<Locale>(locale),
-      appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
+  }) : _prefs = prefs,
+       themeModeNotifier = ValueNotifier<ThemeMode>(mode),
+       themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
+       localeNotifier = ValueNotifier<Locale>(locale),
+       appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
+  final ValueNotifier<Color> themeSeedColorNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
+  static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
@@ -30,6 +35,8 @@ class SettingsService {
   static Future<SettingsService> create() async {
     final prefs = await SharedPreferences.getInstance();
     final mode = _parseMode(prefs.getString(_keyThemeMode));
+    final themeSeedColorValue =
+        prefs.getInt(_keyThemeSeedColorValue) ?? defaultThemeSeedColorValue;
     final storedLocaleCode = _normalizeLocaleCode(
       prefs.getString(_keyAppLocaleCode),
     );
@@ -42,6 +49,7 @@ class SettingsService {
     return SettingsService._(
       prefs: prefs,
       mode: mode,
+      themeSeedColor: Color(themeSeedColorValue),
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
     );
@@ -51,6 +59,12 @@ class SettingsService {
   Future<void> setThemeMode(ThemeMode mode) async {
     themeModeNotifier.value = mode;
     await _prefs.setString(_keyThemeMode, mode.name);
+  }
+
+  Future<void> setThemeSeedColor(Color color) async {
+    final value = color.toARGB32();
+    themeSeedColorNotifier.value = Color(value);
+    await _prefs.setInt(_keyThemeSeedColorValue, value);
   }
 
   String get diarySortModeRaw =>
@@ -90,6 +104,7 @@ class SettingsService {
 
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);
   bool get isAppLockEnabled => appLockEnabledNotifier.value;
+  int get themeSeedColorValue => themeSeedColorNotifier.value.toARGB32();
 
   Future<void> setAppLocale(Locale locale) async {
     await setAppLocaleCode(_codeFromLocale(locale));

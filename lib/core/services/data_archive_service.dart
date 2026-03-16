@@ -95,7 +95,9 @@ class DataArchiveService {
         extractRoot,
         password: _normalizeOptionalPassword(zipPassword),
       );
-      final payloadFile = File(p.join(extractRoot.path, _backupPayloadFileName));
+      final payloadFile = File(
+        p.join(extractRoot.path, _backupPayloadFileName),
+      );
       if (!await payloadFile.exists()) {
         throw const FormatException('备份文件缺少 backup_data.json');
       }
@@ -128,9 +130,7 @@ class DataArchiveService {
   /// 规则：
   /// - 任意文件头存在加密位（generalPurposeBitFlag bit0）则认为需要密码；
   /// - 或压缩方法标记为 AES 加密（99）也视为加密包。
-  static Future<bool> isZipPasswordProtected({
-    required String zipPath,
-  }) async {
+  static Future<bool> isZipPasswordProtected({required String zipPath}) async {
     final sourceZip = File(zipPath);
     if (!await sourceZip.exists()) {
       throw const FileSystemException('备份文件不存在');
@@ -153,10 +153,13 @@ class DataArchiveService {
       'database': <String, Object?>{
         'diaries': diaries.map((row) => row.toJson()).toList(growable: false),
         'tags': tags.map((row) => row.toJson()).toList(growable: false),
-        'diaryTags': diaryTags.map((row) => row.toJson()).toList(growable: false),
+        'diaryTags': diaryTags
+            .map((row) => row.toJson())
+            .toList(growable: false),
       },
       'settings': <String, Object?>{
         'themeMode': settingsService.themeModeNotifier.value.name,
+        'themeSeedColorValue': settingsService.themeSeedColorValue,
         'appLocaleCode': settingsService.appLocaleCode,
         'appLockEnabled': settingsService.isAppLockEnabled,
         'diarySortModeRaw': settingsService.diarySortModeRaw,
@@ -181,16 +184,15 @@ class DataArchiveService {
     final tagsJson = _asMapList(databaseNode['tags']);
     final diaryTagsJson = _asMapList(databaseNode['diaryTags']);
 
-    final diaries =
-        diariesJson
-            .map((row) => Diary.fromJson(row))
-            .toList(growable: false);
-    final tags =
-        tagsJson.map((row) => Tag.fromJson(row)).toList(growable: false);
-    final diaryTags =
-        diaryTagsJson
-            .map((row) => DiaryTag.fromJson(row))
-            .toList(growable: false);
+    final diaries = diariesJson
+        .map((row) => Diary.fromJson(row))
+        .toList(growable: false);
+    final tags = tagsJson
+        .map((row) => Tag.fromJson(row))
+        .toList(growable: false);
+    final diaryTags = diaryTagsJson
+        .map((row) => DiaryTag.fromJson(row))
+        .toList(growable: false);
 
     await database.transaction(() async {
       await database.delete(database.diaryTags).go();
@@ -201,13 +203,15 @@ class DataArchiveService {
         await database.batch((batch) {
           batch.insertAll(
             database.tags,
-            tags.map((row) {
-              return TagsCompanion(
-                id: Value<int>(row.id),
-                name: Value<String>(row.name),
-                color: Value<int>(row.color),
-              );
-            }).toList(growable: false),
+            tags
+                .map((row) {
+                  return TagsCompanion(
+                    id: Value<int>(row.id),
+                    name: Value<String>(row.name),
+                    color: Value<int>(row.color),
+                  );
+                })
+                .toList(growable: false),
           );
         });
       }
@@ -216,24 +220,26 @@ class DataArchiveService {
         await database.batch((batch) {
           batch.insertAll(
             database.diaries,
-            diaries.map((row) {
-              return DiariesCompanion(
-                id: Value<int>(row.id),
-                diaryId: Value<String>(row.diaryId),
-                title: Value<String>(row.title),
-                content: Value<String>(row.content),
-                contentText: Value<String>(row.contentText),
-                cover: Value<String?>(row.cover),
-                metadata: Value<String>(row.metadata),
-                createdAt: Value<DateTime>(row.createdAt),
-                updatedAt: Value<DateTime>(row.updatedAt),
-                isArchived: Value<bool>(row.isArchived),
-                archivedAt: Value<DateTime?>(row.archivedAt),
-                isPinned: Value<bool>(row.isPinned),
-                isDeleted: Value<bool>(row.isDeleted),
-                deletedAt: Value<DateTime?>(row.deletedAt),
-              );
-            }).toList(growable: false),
+            diaries
+                .map((row) {
+                  return DiariesCompanion(
+                    id: Value<int>(row.id),
+                    diaryId: Value<String>(row.diaryId),
+                    title: Value<String>(row.title),
+                    content: Value<String>(row.content),
+                    contentText: Value<String>(row.contentText),
+                    cover: Value<String?>(row.cover),
+                    metadata: Value<String>(row.metadata),
+                    createdAt: Value<DateTime>(row.createdAt),
+                    updatedAt: Value<DateTime>(row.updatedAt),
+                    isArchived: Value<bool>(row.isArchived),
+                    archivedAt: Value<DateTime?>(row.archivedAt),
+                    isPinned: Value<bool>(row.isPinned),
+                    isDeleted: Value<bool>(row.isDeleted),
+                    deletedAt: Value<DateTime?>(row.deletedAt),
+                  );
+                })
+                .toList(growable: false),
           );
         });
       }
@@ -242,12 +248,14 @@ class DataArchiveService {
         await database.batch((batch) {
           batch.insertAll(
             database.diaryTags,
-            diaryTags.map((row) {
-              return DiaryTagsCompanion(
-                diaryId: Value<int>(row.diaryId),
-                tagId: Value<int>(row.tagId),
-              );
-            }).toList(growable: false),
+            diaryTags
+                .map((row) {
+                  return DiaryTagsCompanion(
+                    diaryId: Value<int>(row.diaryId),
+                    tagId: Value<int>(row.tagId),
+                  );
+                })
+                .toList(growable: false),
           );
         });
       }
@@ -266,6 +274,17 @@ class DataArchiveService {
     final themeRaw = settingsNode['themeMode']?.toString();
     if (themeRaw != null) {
       await settingsService.setThemeMode(_parseThemeMode(themeRaw));
+    }
+
+    final themeSeedColorRaw = settingsNode['themeSeedColorValue'];
+    final themeSeedColorValue = switch (themeSeedColorRaw) {
+      int value => value,
+      num value => value.toInt(),
+      String value => int.tryParse(value),
+      _ => null,
+    };
+    if (themeSeedColorValue != null) {
+      await settingsService.setThemeSeedColor(Color(themeSeedColorValue));
     }
 
     final localeRaw = settingsNode['appLocaleCode']?.toString();
@@ -381,7 +400,10 @@ class DataArchiveService {
       await target.create(recursive: true);
     }
 
-    await for (final entity in source.list(recursive: false, followLinks: false)) {
+    await for (final entity in source.list(
+      recursive: false,
+      followLinks: false,
+    )) {
       final targetPath = p.join(target.path, p.basename(entity.path));
       if (entity is Directory) {
         await _copyDirectoryRecursively(entity, Directory(targetPath));
@@ -410,7 +432,10 @@ class DataArchiveService {
     final archive = Archive();
     final normalizedRootPath = p.normalize(rootPath);
     final rootDirectory = Directory(rootPath);
-    final entities = rootDirectory.listSync(recursive: true, followLinks: false);
+    final entities = rootDirectory.listSync(
+      recursive: true,
+      followLinks: false,
+    );
     for (final entity in entities) {
       if (entity is! File) {
         continue;
@@ -433,9 +458,9 @@ class DataArchiveService {
 
   static Future<void> _extractZipToDirectory(
     File zipFile,
-    Directory targetDirectory,
-    {String? password}
-  ) async {
+    Directory targetDirectory, {
+    String? password,
+  }) async {
     final rawBytes = await zipFile.readAsBytes();
     // 解压与写盘也属于重操作，迁移到后台 isolate 保持 UI 可交互。
     await Isolate.run<void>(
@@ -449,9 +474,9 @@ class DataArchiveService {
 
   static void _extractZipToDirectorySync(
     List<int> rawBytes,
-    String targetDirectoryPath,
-    {String? password}
-  ) {
+    String targetDirectoryPath, {
+    String? password,
+  }) {
     final archive = ZipDecoder().decodeBytes(
       rawBytes,
       verify: true,
@@ -463,9 +488,7 @@ class DataArchiveService {
         continue;
       }
 
-      final normalizedEntryName = p
-          .normalize(entry.name)
-          .replaceAll('\\', '/');
+      final normalizedEntryName = p.normalize(entry.name).replaceAll('\\', '/');
       if (normalizedEntryName.isEmpty || normalizedEntryName.contains('..')) {
         continue;
       }

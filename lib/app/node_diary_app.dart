@@ -131,10 +131,20 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
           return ValueListenableBuilder<Locale>(
             valueListenable: settingsService.localeNotifier,
             builder: (BuildContext context, Locale locale, Widget? child) {
-              return _buildAppShell(
-                home: home,
-                themeMode: themeMode,
-                locale: locale,
+              return ValueListenableBuilder<Color>(
+                valueListenable: settingsService.themeSeedColorNotifier,
+                builder: (
+                  BuildContext context,
+                  Color themeSeedColor,
+                  Widget? child,
+                ) {
+                  return _buildAppShell(
+                    home: home,
+                    themeMode: themeMode,
+                    locale: locale,
+                    themeSeedColor: themeSeedColor,
+                  );
+                },
               );
             },
           );
@@ -149,9 +159,26 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     required Widget home,
     ThemeMode themeMode = ThemeMode.system,
     Locale locale = const Locale('en'),
+    Color themeSeedColor = const Color(
+      SettingsService.defaultThemeSeedColorValue,
+    ),
   }) {
-    final lightTheme = _withGlobalSnackBarTheme(_lightMaterialTheme.light());
-    final darkTheme = _withGlobalSnackBarTheme(_darkMaterialTheme.dark());
+    final lightTheme = _withGlobalSnackBarTheme(
+      _lightMaterialTheme.theme(
+        ColorScheme.fromSeed(
+          seedColor: themeSeedColor,
+          brightness: Brightness.light,
+        ),
+      ),
+    );
+    final darkTheme = _withGlobalSnackBarTheme(
+      _darkMaterialTheme.theme(
+        ColorScheme.fromSeed(
+          seedColor: themeSeedColor,
+          brightness: Brightness.dark,
+        ),
+      ),
+    );
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Jotsy',

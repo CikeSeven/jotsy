@@ -136,7 +136,7 @@ class _ExplorePageSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final color = colorScheme.surfaceContainerHighest.withValues(alpha: 0.55);
+    final color = colorScheme.surfaceContainerHigh;
     return Column(
       children: <Widget>[
         Container(
@@ -178,10 +178,10 @@ class _ExploreErrorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.72),
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          color: colorScheme.outlineVariant.withValues(alpha: 0.42),
         ),
       ),
       child: Column(

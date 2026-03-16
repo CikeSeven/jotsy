@@ -88,7 +88,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: colorScheme.surface.withValues(alpha: 0.55),
+                color: colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -109,20 +109,21 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
           else ...<Widget>[
             SizedBox(
               height: 132,
-              child: memories.length == 1
-                  ? _buildMemoryItemCard(context, memories.first)
-                  : PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (index) {
-                        setState(() {
-                          _activeIndex = index;
-                        });
-                      },
-                      itemCount: memories.length,
-                      itemBuilder: (context, index) {
-                        return _buildMemoryItemCard(context, memories[index]);
-                      },
-                    ),
+              child:
+                  memories.length == 1
+                      ? _buildMemoryItemCard(context, memories.first)
+                      : PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _activeIndex = index;
+                          });
+                        },
+                        itemCount: memories.length,
+                        itemBuilder: (context, index) {
+                          return _buildMemoryItemCard(context, memories[index]);
+                        },
+                      ),
             ),
             if (memories.length > 1) ...<Widget>[
               const SizedBox(height: 10),
@@ -136,9 +137,12 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                     width: selected ? 14 : 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: selected
-                          ? colorScheme.primary
-                          : colorScheme.outlineVariant.withValues(alpha: 0.6),
+                      color:
+                          selected
+                              ? colorScheme.primary
+                              : colorScheme.outlineVariant.withValues(
+                                alpha: 0.6,
+                              ),
                       borderRadius: BorderRadius.circular(999),
                     ),
                   );
@@ -154,7 +158,9 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
   Widget _buildMemoryItemCard(BuildContext context, ExploreOnThisDayItem item) {
     final colorScheme = Theme.of(context).colorScheme;
     final diary = item.diary.diary;
-    final mediaSource = widget.controller.contentExtractor.resolveMediaSource(diary);
+    final mediaSource = widget.controller.contentExtractor.resolveMediaSource(
+      diary,
+    );
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () => widget.onOpenDiary(diary.diaryId),
@@ -162,7 +168,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.55),
+          color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -175,9 +181,9 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   Text(
                     item.timeLabel,
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -187,8 +193,8 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -199,9 +205,9 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          height: 1.35,
-                        ),
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.35,
+                    ),
                   ),
                 ],
               ),

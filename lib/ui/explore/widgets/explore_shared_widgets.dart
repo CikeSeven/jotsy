@@ -17,12 +17,12 @@ class ExploreCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final cardBackground =
         isDark
-            ? colorScheme.surface.withValues(alpha: 0.22)
-            : colorScheme.surface.withValues(alpha: 0.18);
+            ? colorScheme.surfaceContainerHigh
+            : colorScheme.surfaceContainerLow;
     final cardBorderColor =
         isDark
-            ? colorScheme.outline.withValues(alpha: 0.32)
-            : colorScheme.outlineVariant.withValues(alpha: 0.36);
+            ? colorScheme.outlineVariant.withValues(alpha: 0.5)
+            : colorScheme.outlineVariant.withValues(alpha: 0.42);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
@@ -34,7 +34,7 @@ class ExploreCard extends StatelessWidget {
           boxShadow: <BoxShadow>[
             ...AppEffects.softShadow.take(1),
             BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: isDark ? 0.14 : 0.04),
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.12 : 0.05),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
@@ -164,7 +164,7 @@ class ExploreMediaThumb extends StatelessWidget {
       child: Container(
         width: width,
         height: height,
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        color: colorScheme.surfaceContainer,
         child: image,
       ),
     );

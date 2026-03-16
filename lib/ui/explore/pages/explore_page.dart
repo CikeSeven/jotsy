@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -33,19 +31,12 @@ class ExplorePage extends ConsumerWidget {
     final diariesAsync = ref.watch(exploreDiariesProvider);
     final orderedTagsAsync = ref.watch(tagListProvider);
     final controller = const ExplorePageController();
-    final backdropTone = diariesAsync.maybeWhen(
-      data:
-          (diaries) =>
-              controller.resolveBackdropTone(diaries, now: DateTime.now()),
-      orElse: () => ExploreBackdropTone.warm,
-    );
     final headerHeight =
         MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
 
     return Stack(
       children: <Widget>[
         Positioned.fill(child: ColoredBox(color: pageBackgroundColor)),
-        Positioned.fill(child: _ExploreAmbientBackdrop(tone: backdropTone)),
         SafeArea(
           top: false,
           child: CustomScrollView(
@@ -172,70 +163,6 @@ class _ExplorePageSkeleton extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// 探索页背景氛围层：
-/// 在纯色底上增加柔和光斑，让毛玻璃卡片的“透感”更明显。
-class _ExploreAmbientBackdrop extends StatelessWidget {
-  const _ExploreAmbientBackdrop({required this.tone});
-
-  final ExploreBackdropTone tone;
-
-  @override
-  Widget build(BuildContext context) {
-    final isWarm = tone == ExploreBackdropTone.warm;
-    final colors =
-        isWarm
-            ? const <Color>[
-              Color(0xFFFFC48D),
-              Color(0xFFFFA9B8),
-              Color(0xFFFFDDA3),
-            ]
-            : const <Color>[
-              Color(0xFF8DB7FF),
-              Color(0xFF96D0FF),
-              Color(0xFFAAB8FF),
-            ];
-    return IgnorePointer(
-      child: Stack(
-        children: <Widget>[
-          _buildBlurBlob(
-            alignment: const Alignment(-1.25, -0.68),
-            diameter: 260,
-            color: colors[0].withValues(alpha: 0.24),
-          ),
-          _buildBlurBlob(
-            alignment: const Alignment(1.20, -0.10),
-            diameter: 230,
-            color: colors[1].withValues(alpha: 0.20),
-          ),
-          _buildBlurBlob(
-            alignment: const Alignment(-0.86, 0.92),
-            diameter: 220,
-            color: colors[2].withValues(alpha: 0.20),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBlurBlob({
-    required Alignment alignment,
-    required double diameter,
-    required Color color,
-  }) {
-    return Align(
-      alignment: alignment,
-      child: ImageFiltered(
-        imageFilter: ImageFilter.blur(sigmaX: 34, sigmaY: 34),
-        child: Container(
-          width: diameter,
-          height: diameter,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-      ),
     );
   }
 }

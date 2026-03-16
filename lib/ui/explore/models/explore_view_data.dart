@@ -15,7 +15,6 @@ class ExploreViewData {
     required this.energyValues7,
     required this.tagUsages,
     required this.mediaItems,
-    required this.backdropTone,
   });
 
   final ExploreStats stats;
@@ -25,21 +24,14 @@ class ExploreViewData {
   final List<double?> energyValues7;
   final List<ExploreTagUsage> tagUsages;
   final List<ExploreMediaItem> mediaItems;
-  final ExploreBackdropTone backdropTone;
 }
-
-/// 探索页背景光斑的冷暖色调。
-enum ExploreBackdropTone { warm, cool }
 
 /// “那年今日”轮播项。
 ///
 /// - `diary`：当前需要展示的历史日记；
 /// - `timeLabel`：统一在控制器侧计算好的时间标签，避免 UI 重复拼接。
 class ExploreOnThisDayItem {
-  const ExploreOnThisDayItem({
-    required this.diary,
-    required this.timeLabel,
-  });
+  const ExploreOnThisDayItem({required this.diary, required this.timeLabel});
 
   final DiaryWithTags diary;
   final String timeLabel;

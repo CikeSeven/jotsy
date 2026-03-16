@@ -15,7 +15,8 @@ import '../models/explore_view_data.dart';
 class ExplorePageController {
   const ExplorePageController();
 
-  final ExploreContentExtractor contentExtractor = const ExploreContentExtractor();
+  final ExploreContentExtractor contentExtractor =
+      const ExploreContentExtractor();
   static const int _onThisDayMaxEntries = 12;
 
   static const Map<String, double> _moodWeight = <String, double>{
@@ -29,18 +30,6 @@ class ExplorePageController {
     '😄': 4.5,
     '😀': 4.8,
     '🤩': 5,
-  };
-  static const Map<String, int> _calendarMoodWeights = <String, int>{
-    '😭': 1,
-    '😢': 2,
-    '😞': 3,
-    '😕': 4,
-    '😐': 5,
-    '🙂': 6,
-    '😊': 7,
-    '😄': 8,
-    '😀': 9,
-    '🤩': 10,
   };
 
   /// 构建探索页整页所需数据。
@@ -62,12 +51,8 @@ class ExplorePageController {
 
     final moodWeights30 = _buildMoodSeries(diaries, days: 30, now: now);
     final energyValues7 = _buildEnergySeries(diaries, days: 7, now: now);
-    final tagUsages = _buildTagCloud(
-      diaries,
-      orderedTagIds: orderedTagIds,
-    );
+    final tagUsages = _buildTagCloud(diaries, orderedTagIds: orderedTagIds);
     final mediaItems = _buildMediaGallery(diaries);
-    final backdropTone = resolveBackdropTone(diaries, now: now);
 
     return ExploreViewData(
       stats: stats,
@@ -77,57 +62,20 @@ class ExplorePageController {
       energyValues7: energyValues7,
       tagUsages: tagUsages.take(18).toList(growable: false),
       mediaItems: mediaItems.take(12).toList(growable: false),
-      backdropTone: backdropTone,
     );
   }
 
-  /// 复用“日历按天心情均值”的口径生成探索页背景色调：
-  /// - 均值 >= 6 视为偏暖；
-  /// - 均值 < 6 视为偏冷；
-  /// - 今日无有效心情时默认暖色。
-  ExploreBackdropTone resolveBackdropTone(
+  /// 生成顶部看板统计。
+  ExploreStats _buildStats(
     List<DiaryWithTags> diaries, {
     required DateTime now,
   }) {
-    final today = DateUtils.dateOnly(now.toLocal());
-    var totalWeight = 0;
-    var validCount = 0;
-
-    for (final item in diaries) {
-      final createdDay = DateUtils.dateOnly(item.diary.createdAt.toLocal());
-      if (createdDay != today) {
-        continue;
-      }
-      final context = contentExtractor.parseContext(item.diary.metadata);
-      final mood = context?['moodEmoji']?.toString().trim();
-      if (mood == null || mood.isEmpty) {
-        continue;
-      }
-      final weight = _calendarMoodWeights[mood];
-      if (weight == null) {
-        continue;
-      }
-      totalWeight += weight;
-      validCount += 1;
-    }
-
-    if (validCount == 0) {
-      return ExploreBackdropTone.warm;
-    }
-
-    final averageWeight = totalWeight / validCount;
-    return averageWeight >= 6
-        ? ExploreBackdropTone.warm
-        : ExploreBackdropTone.cool;
-  }
-
-  /// 生成顶部看板统计。
-  ExploreStats _buildStats(List<DiaryWithTags> diaries, {required DateTime now}) {
     final monthStart = DateTime(now.year, now.month);
     final monthChars = diaries
         .where(
-          (item) =>
-              item.diary.createdAt.isAfter(monthStart.subtract(const Duration(seconds: 1))),
+          (item) => item.diary.createdAt.isAfter(
+            monthStart.subtract(const Duration(seconds: 1)),
+          ),
         )
         .fold<int>(
           0,
@@ -164,11 +112,11 @@ class ExplorePageController {
   }) {
     final candidates =
         diaries.where((item) {
-          final created = item.diary.createdAt.toLocal();
-          return created.month == now.month &&
-              created.day == now.day &&
-              created.year < now.year;
-        }).toList()
+            final created = item.diary.createdAt.toLocal();
+            return created.month == now.month &&
+                created.day == now.day &&
+                created.year < now.year;
+          }).toList()
           ..sort((a, b) => b.diary.createdAt.compareTo(a.diary.createdAt));
 
     return candidates
@@ -307,12 +255,15 @@ class ExplorePageController {
           continue;
         }
 
-        final shouldReplaceLatest = item.diary.updatedAt.isAfter(previous.latestAt);
+        final shouldReplaceLatest = item.diary.updatedAt.isAfter(
+          previous.latestAt,
+        );
         tagMap[tag.id] = previous.copyWith(
           count: previous.count + 1,
           latestDiaryId:
               shouldReplaceLatest ? item.diary.diaryId : previous.latestDiaryId,
-          latestAt: shouldReplaceLatest ? item.diary.updatedAt : previous.latestAt,
+          latestAt:
+              shouldReplaceLatest ? item.diary.updatedAt : previous.latestAt,
         );
       }
     }
@@ -320,22 +271,22 @@ class ExplorePageController {
     final orderRank = <int, int>{
       for (int i = 0; i < orderedTagIds.length; i++) orderedTagIds[i]: i,
     };
-    final usages = tagMap.values.toList(growable: false)
-      ..sort((a, b) {
-        final rankA = orderRank[a.id] ?? 1 << 20;
-        final rankB = orderRank[b.id] ?? 1 << 20;
-        if (rankA != rankB) {
-          return rankA.compareTo(rankB);
-        }
-        return a.name.compareTo(b.name);
-      });
-    final maxCount = usages.isEmpty
-        ? 1
-        : usages.fold<int>(
-            1,
-            (currentMax, item) =>
-                item.count > currentMax ? item.count : currentMax,
-          );
+    final usages = tagMap.values.toList(growable: false)..sort((a, b) {
+      final rankA = orderRank[a.id] ?? 1 << 20;
+      final rankB = orderRank[b.id] ?? 1 << 20;
+      if (rankA != rankB) {
+        return rankA.compareTo(rankB);
+      }
+      return a.name.compareTo(b.name);
+    });
+    final maxCount =
+        usages.isEmpty
+            ? 1
+            : usages.fold<int>(
+              1,
+              (currentMax, item) =>
+                  item.count > currentMax ? item.count : currentMax,
+            );
     return usages
         .map((item) => item.copyWith(maxCount: maxCount))
         .toList(growable: false);
@@ -361,5 +312,4 @@ class ExplorePageController {
     items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return items;
   }
-
 }

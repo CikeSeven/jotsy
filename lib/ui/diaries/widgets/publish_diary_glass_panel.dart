@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -117,6 +117,7 @@ class PublishDiaryGlassPanelController {
 
   /// 是否处于“返回键应优先收起面板”的展开状态。
   bool get isExpanded => _state?._isExpandedForBackAction ?? false;
+
   /// 是否位于内部子页（标签页），返回键应先回主页。
   bool get canPopInnerPage => _state?._canPopInnerPage ?? false;
 
@@ -151,12 +152,12 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
 
-  double get _activeExpandedHeight =>
-      _panelCoordinator.activeExpandedHeight;
+  double get _activeExpandedHeight => _panelCoordinator.activeExpandedHeight;
 
   double get _collapsedFactor => _collapsedHeight / _activeExpandedHeight;
 
-  bool get _isExpandedForBackAction => _panelCoordinator.isExpandedForBackAction;
+  bool get _isExpandedForBackAction =>
+      _panelCoordinator.isExpandedForBackAction;
   bool get _canPopInnerPage => _panelCoordinator.canPopInnerPage;
 
   @override
@@ -184,7 +185,9 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   @override
   void dispose() {
     widget.controller?._detach(this);
-    _panelCoordinator.sheetController.removeListener(_handleSheetMetricsChanged);
+    _panelCoordinator.sheetController.removeListener(
+      _handleSheetMetricsChanged,
+    );
     _panelCoordinator.dispose();
     super.dispose();
   }
@@ -237,7 +240,14 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final panelBackgroundColor = Color.alphaBlend(
+      colorScheme.primary.withValues(
+        alpha: theme.brightness == Brightness.light ? 0.04 : 0.10,
+      ),
+      colorScheme.surfaceContainerHighest,
+    );
     // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
     final horizontalInset =
         lerpDouble(
@@ -284,7 +294,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               ],
               minFlingSpeed: 580,
             ),
-            // 玻璃质感：圆角 + 阴影 + BackdropFilter + 半透明描边。
+            // 面板容器：圆角 + 阴影 + 半透明描边。
             decoration: SheetDecorationBuilder(
               size: SheetSize.fit,
               builder: (context, child) {
@@ -295,24 +305,16 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadii.nav),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 15,
-                        sigmaY: 15,
-                        tileMode: TileMode.mirror,
-                      ),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withAlpha(20),
-                          border: Border.all(
-                            color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: panelBackgroundColor,
+                        border: Border.all(
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.45,
                           ),
                         ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: child,
-                        ),
                       ),
+                      child: Material(color: Colors.transparent, child: child),
                     ),
                   ),
                 );
@@ -409,10 +411,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             child: IgnorePointer(
               // 只在展开到一定程度后开放内部交互，避免半展开误触。
               ignoring: _panelCoordinator.progress < 0.58,
-              child: Opacity(
-                opacity: detailsOpacity,
-                child: content,
-              ),
+              child: Opacity(opacity: detailsOpacity, child: content),
             ),
           ),
         ),
@@ -422,10 +421,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           right: 0,
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              header,
-              Divider(height: 1, color: dividerColor),
-            ],
+            children: <Widget>[header, Divider(height: 1, color: dividerColor)],
           ),
         ),
       ],
@@ -442,47 +438,34 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           // 标签页顶部“新建”入口，视觉与标签项保持同体系玻璃卡片。
           SizedBox(
             width: double.infinity,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 8,
-                  sigmaY: 8,
-                  tileMode: TileMode.mirror,
-                ),
-                child: Material(
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
                   color: Theme.of(
                     context,
-                  ).colorScheme.surface.withValues(alpha: 0.46),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outlineVariant.withValues(alpha: 0.45),
-                    ),
-                  ),
-                  child: InkWell(
-                    onTap: widget.onCreateTag,
-                    borderRadius: BorderRadius.circular(12),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 40),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            const FaIcon(FontAwesomeIcons.plus, size: 12),
-                            const SizedBox(width: 6),
-                            Text(
-                              l10n.autoT0157,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ],
+                  ).colorScheme.outlineVariant.withValues(alpha: 0.45),
+                ),
+              ),
+              child: InkWell(
+                onTap: widget.onCreateTag,
+                borderRadius: BorderRadius.circular(12),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 40),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const FaIcon(FontAwesomeIcons.plus, size: 12),
+                        const SizedBox(width: 6),
+                        Text(
+                          l10n.autoT0157,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -500,10 +483,10 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final l10n = context.l10n;
     final isCollapsedVisual = _panelCoordinator.progress < 0.56;
     final icon =
-        isCollapsedVisual ? FontAwesomeIcons.anglesUp : FontAwesomeIcons.anglesDown;
-    final title = isCollapsedVisual
-        ? l10n.autoT0158
-        : l10n.autoT0159;
+        isCollapsedVisual
+            ? FontAwesomeIcons.anglesUp
+            : FontAwesomeIcons.anglesDown;
+    final title = isCollapsedVisual ? l10n.autoT0158 : l10n.autoT0159;
     return SizedBox(
       height: _collapsedHeight,
       child: Material(
@@ -525,9 +508,9 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                 const SizedBox(width: 10),
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
@@ -555,9 +538,9 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             child: Center(
               child: Text(
                 l10n.autoT0160,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -576,10 +559,12 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     final colorScheme = Theme.of(context).colorScheme;
     // 封面入口卡片（可选），支持清除封面。
     return Material(
-      color: colorScheme.surface.withValues(alpha: 0.4),
+      color: colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.45)),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
       ),
       child: InkWell(
         onTap: widget.onPickCover,
@@ -592,9 +577,9 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               children: <Widget>[
                 Text(
                   l10n.autoT0162,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -626,15 +611,19 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   Widget _buildTagEntryTile(BuildContext context) {
     final l10n = context.l10n;
     final selectedTags =
-        widget.tags.where((tag) => widget.selectedTagIds.contains(tag.id)).toList();
+        widget.tags
+            .where((tag) => widget.selectedTagIds.contains(tag.id))
+            .toList();
 
     final colorScheme = Theme.of(context).colorScheme;
     // 标签入口卡片：仅展示已选择标签摘要，点击进入标签页。
     return Material(
-      color: colorScheme.surface.withValues(alpha: 0.4),
+      color: colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.45)),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
       ),
       child: InkWell(
         onTap: _openTagPage,
@@ -647,50 +636,57 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               children: <Widget>[
                 Text(
                   l10n.autoT0109,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: selectedTags.isEmpty
-                      ? Text(
-                          l10n.autoT0164,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        )
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: selectedTags
-                                .map(
-                                  (tag) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: RawChip(
-                                      visualDensity: VisualDensity.compact,
-                                      side: BorderSide.none,
-                                      elevation: 0,
-                                      pressElevation: 0,
-                                      shadowColor: Colors.transparent,
-                                      shape: const StadiumBorder(),
-                                      backgroundColor: Colors.white.withValues(
-                                        alpha: 0.82,
-                                      ),
-                                      label: Text(
-                                        tag.name,
-                                        style: Theme.of(context).textTheme.bodySmall,
-                                      ),
-                                      avatar: CircleAvatar(
-                                        radius: 7,
-                                        backgroundColor: Color(tag.color),
-                                      ),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                  child:
+                      selectedTags.isEmpty
+                          ? Text(
+                            l10n.autoT0164,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          )
+                          : SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children:
+                                  selectedTags
+                                      .map(
+                                        (tag) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 8,
+                                          ),
+                                          child: RawChip(
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            side: BorderSide.none,
+                                            elevation: 0,
+                                            pressElevation: 0,
+                                            shadowColor: Colors.transparent,
+                                            shape: const StadiumBorder(),
+                                            backgroundColor: Colors.white
+                                                .withValues(alpha: 0.82),
+                                            label: Text(
+                                              tag.name,
+                                              style:
+                                                  Theme.of(
+                                                    context,
+                                                  ).textTheme.bodySmall,
+                                            ),
+                                            avatar: CircleAvatar(
+                                              radius: 7,
+                                              backgroundColor: Color(tag.color),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                            ),
                           ),
-                        ),
                 ),
                 const SizedBox(width: 8),
                 const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
@@ -720,10 +716,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       );
     }
     if (widget.tags.isEmpty) {
-      return Text(
-        l10n.autoT0166,
-        style: Theme.of(context).textTheme.bodySmall,
-      );
+      return Text(l10n.autoT0166, style: Theme.of(context).textTheme.bodySmall);
     }
     return Column(
       children: widget.tags
@@ -737,7 +730,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Material(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.36),
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
@@ -748,10 +741,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Row(
                 children: <Widget>[
-                  CircleAvatar(
-                    radius: 8,
-                    backgroundColor: Color(tag.color),
-                  ),
+                  CircleAvatar(radius: 8, backgroundColor: Color(tag.color)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -785,13 +775,13 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       children: <Widget>[
         Text(
           l10n.autoT0167,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Material(
-          color: colorScheme.surface.withValues(alpha: 0.4),
+          color: colorScheme.surfaceContainerHighest,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
@@ -825,7 +815,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                     ),
                   ),
                   IconButton(
-                    onPressed: widget.locating ? null : widget.onResolveLocation,
+                    onPressed:
+                        widget.locating ? null : widget.onResolveLocation,
                     tooltip: l10n.autoT0169,
                     visualDensity: VisualDensity.compact,
                     icon:
@@ -847,7 +838,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         ),
         const SizedBox(height: 8),
         Material(
-          color: colorScheme.surface.withValues(alpha: 0.4),
+          color: colorScheme.surfaceContainerHighest,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: BorderSide(
@@ -858,8 +849,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             constraints: const BoxConstraints(minHeight: 42),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
-                child: Row(
-                  children: <Widget>[
+              child: Row(
+                children: <Widget>[
                   QWeatherIcon(
                     iconCode: widget.weatherIconCode,
                     weatherText: widget.weatherController.text,
@@ -920,43 +911,46 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       children: <Widget>[
         Text(
           l10n.autoT0116,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
             final itemWidth =
                 (constraints.maxWidth - horizontalSpacing * (moodColumns - 1)) /
-                    moodColumns;
+                moodColumns;
             // 固定 5 列，两行排布，不允许横向滚动。
             return Wrap(
               spacing: horizontalSpacing,
-              children: PublishDiaryGlassPanel.moodOptions.map((emoji) {
-                return SizedBox(
-                  width: itemWidth,
-                  child: ChoiceChip(
-                    showCheckmark: false,
-                    side: BorderSide.none,
-                    elevation: 0,
-                    pressElevation: 0,
-                    shadowColor: Colors.transparent,
-                    shape: const StadiumBorder(),
-                    label: SizedBox(
-                      width: double.infinity,
-                      child: Text(
-                        emoji,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16),
+              children: PublishDiaryGlassPanel.moodOptions
+                  .map((emoji) {
+                    return SizedBox(
+                      width: itemWidth,
+                      child: ChoiceChip(
+                        showCheckmark: false,
+                        side: BorderSide.none,
+                        elevation: 0,
+                        pressElevation: 0,
+                        shadowColor: Colors.transparent,
+                        shape: const StadiumBorder(),
+                        label: SizedBox(
+                          width: double.infinity,
+                          child: Text(
+                            emoji,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                        selected: widget.moodEmoji == emoji,
+                        onSelected:
+                            (selected) =>
+                                widget.onMoodChanged(selected ? emoji : null),
                       ),
-                    ),
-                    selected: widget.moodEmoji == emoji,
-                    onSelected:
-                        (selected) => widget.onMoodChanged(selected ? emoji : null),
-                  ),
-                );
-              }).toList(growable: false),
+                    );
+                  })
+                  .toList(growable: false),
             );
           },
         ),
@@ -972,7 +966,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
         publishTimeLabel != null && publishTimeLabel.isNotEmpty;
 
     return Material(
-      color: colorScheme.surface.withValues(alpha: 0.4),
+      color: colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
@@ -987,26 +981,24 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             children: <Widget>[
               Text(
                 l10n.autoT0172,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  hasPublishTime
-                      ? publishTimeLabel
-                      : l10n.autoT0173,
+                  hasPublishTime ? publishTimeLabel : l10n.autoT0173,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color:
-                            hasPublishTime
-                                ? null
-                                : colorScheme.onSurfaceVariant.withValues(
-                                  alpha: 0.75,
-                                ),
-                      ),
+                    color:
+                        hasPublishTime
+                            ? null
+                            : colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.75,
+                            ),
+                  ),
                 ),
               ),
               IconButton(
@@ -1024,7 +1016,9 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
 
   Widget _buildEnergySection(BuildContext context) {
     final l10n = context.l10n;
-    final energyLevel = EnergyBatteryIndicator.normalizeValue(widget.energyLevel);
+    final energyLevel = EnergyBatteryIndicator.normalizeValue(
+      widget.energyLevel,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -1032,15 +1026,12 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
           children: <Widget>[
             Text(
               l10n.autoT0175,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(width: 8),
-            EnergyBatteryIndicator(
-              value: energyLevel,
-              iconSize: 22,
-            ),
+            EnergyBatteryIndicator(value: energyLevel, iconSize: 22),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -1051,8 +1042,8 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -1070,18 +1061,15 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
 
   Widget _buildPublishAction(BuildContext context) {
     final l10n = context.l10n;
-    final actionLabel = widget.actionLabel.trim().isEmpty
-        ? l10n.autoT0138
-        : widget.actionLabel;
+    final actionLabel =
+        widget.actionLabel.trim().isEmpty ? l10n.autoT0138 : widget.actionLabel;
     // 主操作按钮始终位于内容底部，避免与顶部手势区域冲突。
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
         onPressed: widget.saving ? null : widget.onPublish,
         icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
-        label: Text(
-          widget.saving ? l10n.autoT0176 : actionLabel,
-        ),
+        label: Text(widget.saving ? l10n.autoT0176 : actionLabel),
       ),
     );
   }

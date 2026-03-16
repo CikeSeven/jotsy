@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +18,6 @@ import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
-import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
 import '../viewmodels/diary_view_preferences.dart';
@@ -396,66 +394,44 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                         top: 0,
                         left: 0,
                         right: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            boxShadow: AppEffects.softShadow,
-                          ),
-                          child: ClipRect(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: 20,
-                                sigmaY: 20,
-                                tileMode: TileMode.mirror,
-                              ),
-                              child: Container(
-                                width: double.infinity,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.surface.withAlpha(10),
-                                child: Column(
-                                  children: [
-                                    SizedBox(height: topSafeInset),
-                                    // 头部组件负责：多选态、搜索入口、归档入口、排序布局菜单。
-                                    DiaryHeadSection(
-                                      isSelectionMode: _isSelectionMode,
-                                      selectedCount: _selectedDiaryIds.length,
-                                      onCancelSelection:
-                                          _controller.clearSelection,
-                                      isPinActionUnpin: shouldUnpinSelected,
-                                      onPinSelected:
-                                          () => unawaited(
-                                            _controller.pinSelectedDiaries(
-                                              unpin: shouldUnpinSelected,
-                                            ),
-                                          ),
-                                      onArchiveSelected:
-                                          () => unawaited(
-                                            _controller
-                                                .archiveSelectedDiaries(),
-                                          ),
-                                      onDeleteSelected:
-                                          () => unawaited(
-                                            _controller.deleteSelectedDiaries(),
-                                          ),
-                                      onOpenArchived:
-                                          _controller.openArchivedPage,
-                                      sortMode: _sortMode,
-                                      layoutMode: _layoutMode,
-                                      onMenuSelected:
-                                          _controller.onMenuSelected,
-                                      onOpenSearchPage:
-                                          _controller.openSearchPage,
-                                    ),
-                                    Container(
-                                      height: 1,
-                                      margin: const EdgeInsets.only(
-                                        top: AppSpacing.xs,
+                        child: ColoredBox(
+                          color: Theme.of(context).colorScheme.surface,
+                          child: Column(
+                            children: [
+                              SizedBox(height: topSafeInset),
+                              // 头部组件负责：多选态、搜索入口、归档入口、排序布局菜单。
+                              DiaryHeadSection(
+                                isSelectionMode: _isSelectionMode,
+                                selectedCount: _selectedDiaryIds.length,
+                                onCancelSelection: _controller.clearSelection,
+                                isPinActionUnpin: shouldUnpinSelected,
+                                onPinSelected:
+                                    () => unawaited(
+                                      _controller.pinSelectedDiaries(
+                                        unpin: shouldUnpinSelected,
                                       ),
                                     ),
-                                  ],
+                                onArchiveSelected:
+                                    () => unawaited(
+                                      _controller.archiveSelectedDiaries(),
+                                    ),
+                                onDeleteSelected:
+                                    () => unawaited(
+                                      _controller.deleteSelectedDiaries(),
+                                    ),
+                                onOpenArchived: _controller.openArchivedPage,
+                                sortMode: _sortMode,
+                                layoutMode: _layoutMode,
+                                onMenuSelected: _controller.onMenuSelected,
+                                onOpenSearchPage: _controller.openSearchPage,
+                              ),
+                              Container(
+                                height: 1,
+                                margin: const EdgeInsets.only(
+                                  top: AppSpacing.xs,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),

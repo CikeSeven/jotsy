@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -27,27 +26,21 @@ class ExploreCard extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30, tileMode: TileMode.mirror),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: cardBackground,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: cardBorderColor, width: 0.9),
-            boxShadow: <BoxShadow>[
-              ...AppEffects.softShadow.take(1),
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: isDark ? 0.14 : 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: child,
-          ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: cardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: cardBorderColor, width: 0.9),
+          boxShadow: <BoxShadow>[
+            ...AppEffects.softShadow.take(1),
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: isDark ? 0.14 : 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
+        child: Padding(padding: const EdgeInsets.all(12), child: child),
       ),
     );
   }
@@ -72,9 +65,9 @@ class ExploreSectionTitle extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           title,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
       ],
     );
@@ -110,8 +103,8 @@ class ExploreStatTile extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -147,7 +140,8 @@ class ExploreMediaThumb extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final uri = Uri.tryParse(source);
-    final isRemote = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    final isRemote =
+        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
     final image =
         isRemote
             ? Image.network(

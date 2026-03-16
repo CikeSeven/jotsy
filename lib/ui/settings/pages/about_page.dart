@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -38,7 +36,9 @@ class AboutPage extends StatelessWidget {
     }
     await HomeHintVisibilityScope.showTrackedSnackBar(
       context: context,
-      snackBar: SnackBar(content: Text(context.l10n.aboutOpenLinkFallbackCopied)),
+      snackBar: SnackBar(
+        content: Text(context.l10n.aboutOpenLinkFallbackCopied),
+      ),
     );
   }
 
@@ -103,9 +103,8 @@ class AboutPage extends StatelessWidget {
                                 width: 92,
                                 height: 92,
                                 decoration: BoxDecoration(
-                                  color: colorScheme.primaryContainer.withValues(
-                                    alpha: 0.62,
-                                  ),
+                                  color: colorScheme.primaryContainer
+                                      .withValues(alpha: 0.62),
                                   borderRadius: BorderRadius.circular(28),
                                   border: Border.all(
                                     color: colorScheme.primary.withValues(
@@ -265,39 +264,33 @@ class _AboutGlassHeader extends StatelessWidget {
       top: 0,
       left: 0,
       right: 0,
-      child: Container(
-        decoration: const BoxDecoration(boxShadow: AppEffects.softShadow),
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20, tileMode: TileMode.mirror),
-            child: Container(
-              color: colorScheme.surface.withValues(alpha: 0.24),
-              padding: EdgeInsets.only(top: topSafeInset),
-              child: SizedBox(
-                height: contentHeight,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-                  child: Row(
-                    children: <Widget>[
-                      IconButton(
-                        tooltip: backTooltip,
-                        onPressed: onBack,
-                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            title,
-                            style: textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+      child: ColoredBox(
+        color: colorScheme.surface,
+        child: Padding(
+          padding: EdgeInsets.only(top: topSafeInset),
+          child: SizedBox(
+            height: contentHeight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+              child: Row(
+                children: <Widget>[
+                  IconButton(
+                    tooltip: backTooltip,
+                    onPressed: onBack,
+                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        title,
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 48),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 48),
+                ],
               ),
             ),
           ),
@@ -317,23 +310,17 @@ class _SectionCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: const BoxDecoration(boxShadow: AppEffects.softShadow),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.card),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16, tileMode: TileMode.mirror),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.46),
-              borderRadius: BorderRadius.circular(AppRadii.card),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.34),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-              child: child,
-            ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.34),
           ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: child,
         ),
       ),
     );
@@ -379,11 +366,7 @@ class _AboutActionTile extends StatelessWidget {
                 ),
               ),
             ),
-            FaIcon(
-              FontAwesomeIcons.angleRight,
-              size: 15,
-              color: iconColor,
-            ),
+            FaIcon(FontAwesomeIcons.angleRight, size: 15, color: iconColor),
           ],
         ),
       ),

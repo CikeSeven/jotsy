@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
@@ -68,10 +66,7 @@ class DiarySearchPage extends ConsumerStatefulWidget {
           opacity: easedAnimation,
           child: SlideTransition(
             position: offsetAnimation,
-            child: ScaleTransition(
-              scale: scaleAnimation,
-              child: child,
-            ),
+            child: ScaleTransition(scale: scaleAnimation, child: child),
           ),
         );
       },
@@ -146,8 +141,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final tagListAsync = ref.watch(tagListProvider);
     final selectedTags = tagListAsync.maybeWhen(
       data:
-          (tags) =>
-              tags.where((tag) => _selectedTagIds.contains(tag.id)).toList(growable: false),
+          (tags) => tags
+              .where((tag) => _selectedTagIds.contains(tag.id))
+              .toList(growable: false),
       orElse: () {
         final fallbackTagIds = _selectedTagIds.toList(growable: false)..sort();
         return fallbackTagIds
@@ -174,7 +170,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                 onNotification: _handleScrollNotification,
                 child: CustomScrollView(
                   slivers: <Widget>[
-                    SliverToBoxAdapter(child: SizedBox(height: headerOverlayHeight + 6)),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: headerOverlayHeight + 6),
+                    ),
                     if (!query.hasAnyCondition)
                       const SliverFillRemaining(
                         hasScrollBody: false,
@@ -182,28 +180,34 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                       )
                     else
                       diariesAsync!.when(
-                        loading: () => const SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                        loading:
+                            () => const SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        error: (error, stackTrace) => SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Text(
-                              context.l10n.autoT0127(error.toString()),
+                        error:
+                            (error, stackTrace) => SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Center(
+                                child: Text(
+                                  context.l10n.autoT0127(error.toString()),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
                         data: (diaries) {
-                          final pagedDiaries = diaries.take(_visibleDiaryLimit).toList();
+                          final pagedDiaries =
+                              diaries.take(_visibleDiaryLimit).toList();
                           _lastPageableCount = diaries.length;
-                          final hasMoreDiaries = pagedDiaries.length < diaries.length;
+                          final hasMoreDiaries =
+                              pagedDiaries.length < diaries.length;
                           return SliverMainAxisGroup(
                             slivers: <Widget>[
                               DiariesListSection(
@@ -246,44 +250,34 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              decoration: BoxDecoration(boxShadow: AppEffects.softShadow),
-              child: ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: 20,
-                    sigmaY: 20,
-                    tileMode: TileMode.mirror,
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    color: colorScheme.surface.withAlpha(10),
-                    child: Column(
-                      children: <Widget>[
-                        SizedBox(height: topSafeInset),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.l,
-                            AppSpacing.xs,
-                            AppSpacing.l,
-                            0,
-                          ),
-                          child: _SearchInputBar(
-                            searchController: _searchController,
-                            searchFocusNode: _searchFocusNode,
-                            hasSearchText: _searchInput.trim().isNotEmpty,
-                            selectedTags: selectedTags,
-                            onExitSearch: _closePage,
-                            onClearSearch: _clearSearchInPlace,
-                            onSearchChanged: _onSearchChanged,
-                            onRemoveTagCondition: _removeTagCondition,
-                          ),
-                        ),
-                        Container(height: 1, margin: const EdgeInsets.only(top: AppSpacing.xs)),
-                      ],
+            child: ColoredBox(
+              color: colorScheme.surface,
+              child: Column(
+                children: <Widget>[
+                  SizedBox(height: topSafeInset),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.l,
+                      AppSpacing.xs,
+                      AppSpacing.l,
+                      0,
+                    ),
+                    child: _SearchInputBar(
+                      searchController: _searchController,
+                      searchFocusNode: _searchFocusNode,
+                      hasSearchText: _searchInput.trim().isNotEmpty,
+                      selectedTags: selectedTags,
+                      onExitSearch: _closePage,
+                      onClearSearch: _clearSearchInPlace,
+                      onSearchChanged: _onSearchChanged,
+                      onRemoveTagCondition: _removeTagCondition,
                     ),
                   ),
-                ),
+                  Container(
+                    height: 1,
+                    margin: const EdgeInsets.only(top: AppSpacing.xs),
+                  ),
+                ],
               ),
             ),
           ),
@@ -427,53 +421,65 @@ class _SearchInputBar extends StatelessWidget {
       height: 44,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        boxShadow: AppEffects.softShadow,
+        color: colorScheme.primaryContainer.withValues(alpha: 0.9),
       ),
-      child: Stack(
-        children: <Widget>[
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.s),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppRadii.nav),
-                ),
-              ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Row(
+          children: <Widget>[
+            IconButton(
+              tooltip: context.l10n.autoT0128,
+              splashRadius: 18,
+              onPressed: onExitSearch,
+              icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadii.nav),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: 17,
-                  sigmaY: 17,
-                  tileMode: TileMode.mirror,
-                ),
-                child: Container(
-                  color: colorScheme.primary.withAlpha(20),
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Row(
-                    children: <Widget>[
-                      IconButton(
-                        tooltip: context.l10n.autoT0128,
-                        splashRadius: 18,
-                        onPressed: onExitSearch,
-                        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                      ),
-                      Expanded(
-                        child:
-                            selectedTags.isEmpty
-                                ? TextField(
+            Expanded(
+              child:
+                  selectedTags.isEmpty
+                      ? TextField(
+                        controller: searchController,
+                        focusNode: searchFocusNode,
+                        autofocus: true,
+                        textInputAction: TextInputAction.search,
+                        onChanged: onSearchChanged,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: context.l10n.autoT0129,
+                          border: InputBorder.none,
+                          hintStyle: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        ),
+                      )
+                      : SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: <Widget>[
+                            for (final tag in selectedTags) ...[
+                              _TagConditionChip(
+                                tag: tag,
+                                onRemove: () => onRemoveTagCondition(tag.id),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            SizedBox(
+                              width: 220,
+                              child: Focus(
+                                onKeyEvent: (node, event) {
+                                  final isBackspace =
+                                      event is KeyDownEvent &&
+                                      event.logicalKey ==
+                                          LogicalKeyboardKey.backspace;
+                                  final isInputEmpty =
+                                      searchController.text.trim().isEmpty;
+                                  if (isBackspace &&
+                                      isInputEmpty &&
+                                      selectedTags.isNotEmpty) {
+                                    onRemoveTagCondition(selectedTags.last.id);
+                                    return KeyEventResult.handled;
+                                  }
+                                  return KeyEventResult.ignored;
+                                },
+                                child: TextField(
                                   controller: searchController,
                                   focusNode: searchFocusNode,
                                   autofocus: true,
@@ -483,83 +489,39 @@ class _SearchInputBar extends StatelessWidget {
                                     isDense: true,
                                     hintText: context.l10n.autoT0129,
                                     border: InputBorder.none,
-                                    hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    hintStyle: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
-                                )
-                                : SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: <Widget>[
-                                      for (final tag in selectedTags) ...[
-                                        _TagConditionChip(
-                                          tag: tag,
-                                          onRemove: () => onRemoveTagCondition(tag.id),
-                                        ),
-                                        const SizedBox(width: 6),
-                                      ],
-                                      SizedBox(
-                                        width: 220,
-                                        child: Focus(
-                                          onKeyEvent: (node, event) {
-                                            final isBackspace =
-                                                event is KeyDownEvent &&
-                                                event.logicalKey == LogicalKeyboardKey.backspace;
-                                            final isInputEmpty = searchController.text.trim().isEmpty;
-                                            if (isBackspace && isInputEmpty && selectedTags.isNotEmpty) {
-                                              onRemoveTagCondition(selectedTags.last.id);
-                                              return KeyEventResult.handled;
-                                            }
-                                            return KeyEventResult.ignored;
-                                          },
-                                          child: TextField(
-                                            controller: searchController,
-                                            focusNode: searchFocusNode,
-                                            autofocus: true,
-                                            textInputAction: TextInputAction.search,
-                                            onChanged: onSearchChanged,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              hintText: context.l10n.autoT0129,
-                                              border: InputBorder.none,
-                                              hintStyle: Theme.of(context).textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                    color: colorScheme.onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                 ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        switchInCurve: Curves.easeOutCubic,
-                        switchOutCurve: Curves.easeInCubic,
-                        child:
-                            hasSearchText
-                                ? IconButton(
-                                  key: const ValueKey<String>('search_clear_button'),
-                                  tooltip: context.l10n.autoT0130,
-                                  splashRadius: 18,
-                                  onPressed: onClearSearch,
-                                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
-                                )
-                                : const SizedBox(
-                                  key: ValueKey<String>('search_clear_placeholder'),
-                                  width: 40,
-                                ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ),
-          ),
-        ],
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              child:
+                  hasSearchText
+                      ? IconButton(
+                        key: const ValueKey<String>('search_clear_button'),
+                        tooltip: context.l10n.autoT0130,
+                        splashRadius: 18,
+                        onPressed: onClearSearch,
+                        icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
+                      )
+                      : const SizedBox(
+                        key: ValueKey<String>('search_clear_placeholder'),
+                        width: 40,
+                      ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -567,10 +529,7 @@ class _SearchInputBar extends StatelessWidget {
 
 /// 搜索页标签条件 chip：彩色 `#` + 标签名 + 移除按钮。
 class _TagConditionChip extends StatelessWidget {
-  const _TagConditionChip({
-    required this.tag,
-    required this.onRemove,
-  });
+  const _TagConditionChip({required this.tag, required this.onRemove});
 
   final Tag tag;
   final VoidCallback onRemove;

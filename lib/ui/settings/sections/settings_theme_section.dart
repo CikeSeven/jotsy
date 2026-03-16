@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -139,38 +140,107 @@ class _TabSwitchCurveSelector extends StatelessWidget {
   final HomeTabSwitchCurveType selectedCurveType;
   final ValueChanged<HomeTabSwitchCurveType> onChanged;
 
+  String _labelForCurve(
+    AppLocalizations l10n,
+    HomeTabSwitchCurveType curveType,
+  ) {
+    return switch (curveType) {
+      HomeTabSwitchCurveType.easeOutCirc =>
+        l10n.settingsTabSwitchCurveEaseOutCirc,
+      HomeTabSwitchCurveType.easeOutCubic =>
+        l10n.settingsTabSwitchCurveEaseOutCubic,
+      HomeTabSwitchCurveType.linear => l10n.settingsTabSwitchCurveLinear,
+    };
+  }
+
+  Future<void> _showCurvePickerDialog(BuildContext context) async {
+    final result = await showDialog<HomeTabSwitchCurveType>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(l10n.settingsTabSwitchCurve),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap:
+                    () => Navigator.of(
+                      dialogContext,
+                    ).pop(HomeTabSwitchCurveType.easeOutCirc),
+                leading: FaIcon(
+                  selectedCurveType == HomeTabSwitchCurveType.easeOutCirc
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsTabSwitchCurveEaseOutCirc),
+              ),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap:
+                    () => Navigator.of(
+                      dialogContext,
+                    ).pop(HomeTabSwitchCurveType.easeOutCubic),
+                leading: FaIcon(
+                  selectedCurveType == HomeTabSwitchCurveType.easeOutCubic
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsTabSwitchCurveEaseOutCubic),
+              ),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap:
+                    () => Navigator.of(
+                      dialogContext,
+                    ).pop(HomeTabSwitchCurveType.linear),
+                leading: FaIcon(
+                  selectedCurveType == HomeTabSwitchCurveType.linear
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsTabSwitchCurveLinear),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (result == null || result == selectedCurveType) {
+      return;
+    }
+    onChanged(result);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return DropdownButtonFormField<HomeTabSwitchCurveType>(
-      key: ValueKey<HomeTabSwitchCurveType>(selectedCurveType),
-      initialValue: selectedCurveType,
-      decoration: InputDecoration(
-        isDense: true,
-        labelText: l10n.settingsTabSwitchCurve,
-        helperText: l10n.settingsTabSwitchCurveSubtitle,
-        border: const OutlineInputBorder(),
+    final currentLabel = _labelForCurve(l10n, selectedCurveType);
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(l10n.settingsTabSwitchCurve),
+      subtitle: Text(l10n.settingsTabSwitchCurveSubtitle),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            currentLabel,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+        ],
       ),
-      items: <DropdownMenuItem<HomeTabSwitchCurveType>>[
-        DropdownMenuItem<HomeTabSwitchCurveType>(
-          value: HomeTabSwitchCurveType.easeOutCirc,
-          child: Text(l10n.settingsTabSwitchCurveEaseOutCirc),
-        ),
-        DropdownMenuItem<HomeTabSwitchCurveType>(
-          value: HomeTabSwitchCurveType.easeOutCubic,
-          child: Text(l10n.settingsTabSwitchCurveEaseOutCubic),
-        ),
-        DropdownMenuItem<HomeTabSwitchCurveType>(
-          value: HomeTabSwitchCurveType.linear,
-          child: Text(l10n.settingsTabSwitchCurveLinear),
-        ),
-      ],
-      onChanged: (HomeTabSwitchCurveType? next) {
-        if (next == null) {
-          return;
-        }
-        onChanged(next);
-      },
+      onTap: () => _showCurvePickerDialog(context),
     );
   }
 }

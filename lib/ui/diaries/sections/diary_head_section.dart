@@ -257,7 +257,10 @@ class _SearchPreview extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        color: colorScheme.primaryContainer.withValues(alpha: 0.9),
+        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
       ),
       child: Material(
         color: Colors.transparent,

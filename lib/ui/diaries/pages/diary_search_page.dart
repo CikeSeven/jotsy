@@ -420,7 +420,10 @@ class _SearchInputBar extends StatelessWidget {
       height: 44,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        color: colorScheme.primaryContainer.withValues(alpha: 0.9),
+        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),

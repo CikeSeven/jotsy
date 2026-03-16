@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 
 /// 底部导航栏单项配置。
-class GlassBottomNavItem {
-  const GlassBottomNavItem({required this.label, required this.icon});
+class BottomNavItem {
+  const BottomNavItem({required this.label, required this.icon});
 
   final String label;
   final IconData icon;
 }
 
 /// Material 原生底部导航栏。
-class GlassBottomNav extends StatelessWidget {
+class BottomNav extends StatelessWidget {
   static const double navHeight = 72.0;
   static const double navBottomInset = 0.0;
   static const double navHorizontalInset = 24.0;
   static const double navIconSize = 18.0;
 
-  const GlassBottomNav({
+  const BottomNav({
     super.key,
     required this.items,
     required this.selectedIndex,
     required this.onTap,
   });
 
-  final List<GlassBottomNavItem> items;
+  final List<BottomNavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
 

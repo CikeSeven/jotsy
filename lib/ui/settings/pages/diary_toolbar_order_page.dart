@@ -4,7 +4,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 class DiaryToolbarOrderPage extends StatefulWidget {
@@ -23,7 +23,9 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   @override
   void initState() {
     super.initState();
-    _order = decodeDiaryToolbarOrder(widget.settingsService.diaryToolbarOrderRaw);
+    _order = decodeDiaryToolbarOrder(
+      widget.settingsService.diaryToolbarOrderRaw,
+    );
   }
 
   void _handleReorder(int oldIndex, int newIndex) {
@@ -48,9 +50,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
           title: Text(l10n.autoT0003),
-          content: Text(
-            l10n.autoT0187,
-          ),
+          content: Text(l10n.autoT0187),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -60,9 +60,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
               child: Text(l10n.commonCancel),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(l10n.commonReset),
             ),
@@ -96,9 +94,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
       await HomeHintVisibilityScope.showTrackedSnackBar(
         context: context,
         snackBar: SnackBar(
-          content: Text(
-            context.l10n.autoT0004(error.toString()),
-          ),
+          content: Text(context.l10n.autoT0004(error.toString())),
         ),
       );
     }
@@ -108,7 +104,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      appBar: GlassAppBar(
+      appBar: AppTopBar(
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -139,17 +135,11 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
             title: Text(_labelForItem(context, item)),
             subtitle:
                 item == DiaryToolbarItem.inlineCode
-                    ? Text(
-                        l10n.autoT0188,
-                      )
+                    ? Text(l10n.autoT0188)
                     : item == DiaryToolbarItem.codeBlock
-                    ? Text(
-                        l10n.autoT0189,
-                      )
+                    ? Text(l10n.autoT0189)
                     : item == DiaryToolbarItem.indent
-                    ? Text(
-                        l10n.autoT0190,
-                      )
+                    ? Text(l10n.autoT0190)
                     : null,
             trailing: ReorderableDragStartListener(
               index: index,

@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
-import '../../widgets/glass_page_header.dart';
+import '../../widgets/page_header.dart';
 
 /// 日历页顶部头部。
 ///
@@ -12,8 +12,8 @@ import '../../widgets/glass_page_header.dart';
 /// - 中间标题（当前年月）；
 /// - 右侧“回到今天”动作；
 /// - 视觉上与 Home 其他页面保持同一风格。
-class CalendarGlassHeader extends StatelessWidget {
-  const CalendarGlassHeader({
+class CalendarHeader extends StatelessWidget {
+  const CalendarHeader({
     super.key,
     required this.title,
     required this.onJumpToToday,
@@ -23,7 +23,7 @@ class CalendarGlassHeader extends StatelessWidget {
   });
 
   // 与日记列表页 / 通用头部统一高度。
-  static const double contentHeight = GlassPageHeader.contentHeight;
+  static const double contentHeight = PageHeader.contentHeight;
 
   final String title;
   final VoidCallback onJumpToToday;

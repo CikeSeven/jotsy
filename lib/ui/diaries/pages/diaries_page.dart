@@ -242,7 +242,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 'diaries_scroll_${brightness.name}_${_layoutMode.name}',
                               ),
                               slivers: <Widget>[
-                                // 预留头部叠层空间，让应用栏可以做玻璃悬浮效果。
+                                // 预留头部叠层空间，确保顶部栏覆盖样式稳定。
                                 SliverToBoxAdapter(
                                   child: SizedBox(height: headerOverlayHeight),
                                 ),

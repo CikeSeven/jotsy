@@ -23,9 +23,9 @@ import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 part '../controllers/edit_diary_controller.dart';
 
@@ -61,8 +61,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final FocusNode _contentFocusNode = FocusNode();
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
-  final PublishDiaryGlassPanelController _editPanelController =
-      PublishDiaryGlassPanelController();
+  final PublishDiaryPanelController _editPanelController =
+      PublishDiaryPanelController();
   DateTime? _createDateOverride;
 
   // ==================== 发布上下文草稿字段 ====================
@@ -152,8 +152,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool get _isEditEntry =>
       widget.diaryId != null && widget.entryMode == EditDiaryEntryMode.edit;
   bool get _canSaveEdit => _isEditEntry && !_saving && _hasPendingEditChanges;
-  bool get _isEditPanelExpanded => _isEditEntry && _editPanelExpandProgress >= 0.56;
-  bool get _isEditingNoteText => _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
+  bool get _isEditPanelExpanded =>
+      _isEditEntry && _editPanelExpandProgress >= 0.56;
+  bool get _isEditingNoteText =>
+      _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
 
   String? _normalizeOptionalText(String? raw) {
     final normalized = raw?.trim();
@@ -263,9 +265,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
           title: Text(context.l10n.autoT0131),
-          content: Text(
-            context.l10n.autoT0207,
-          ),
+          content: Text(context.l10n.autoT0207),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -275,9 +275,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(context.l10n.autoT0132),
             ),
@@ -345,10 +343,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
       ),
     );
@@ -377,18 +372,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
             ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-                child: Column(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   _buildTitleInput(context, contentLocked: contentLocked),
                   const SizedBox(height: 12),
                   ConstrainedBox(
                     // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
-                    constraints: BoxConstraints(
-                      minHeight: minEditorHeight,
-                    ),
+                    constraints: BoxConstraints(minHeight: minEditorHeight),
                     child: IgnorePointer(
                       ignoring: contentLocked,
                       child: quill.QuillEditor.basic(
@@ -451,29 +444,26 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               const Scaffold(body: Center(child: CircularProgressIndicator())),
       error:
           (Object error, StackTrace stackTrace) => Scaffold(
-            appBar: GlassAppBar(
+            appBar: AppTopBar(
               leading: IconButton(
                 tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
                 icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
               ),
             ),
-            body: Center(
-              child: Text(context.l10n.autoT0121(error.toString())),
-            ),
+            body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
           ),
       data: (DiaryWithTags? detail) {
         final toolbarOrder = settingsAsync.maybeWhen(
           data:
-              (settingsService) => decodeDiaryToolbarOrder(
-                settingsService.diaryToolbarOrderRaw,
-              ),
+              (settingsService) =>
+                  decodeDiaryToolbarOrder(settingsService.diaryToolbarOrderRaw),
           orElse: () => List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder),
         );
 
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
-            appBar: GlassAppBar(
+            appBar: AppTopBar(
               leading: IconButton(
                 tooltip: context.l10n.commonBack,
                 onPressed: () => Navigator.of(context).maybePop(),
@@ -510,7 +500,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         }
 
         final scaffold = Scaffold(
-            appBar: GlassAppBar(
+          appBar: AppTopBar(
             leading: IconButton(
               tooltip: context.l10n.commonBack,
               onPressed: _attemptExitEditPage,
@@ -554,148 +544,152 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 ),
             ],
           ),
-            // 底部键盘弹起时显示悬浮工具栏，并对正文底部做避让。
-            body: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    0,
-                    0,
-                    0,
-                    showFloatingToolbar ? 68 : 0,
-                  ),
-                  child: _buildEditor(
-                    context,
-                    bottomSpacer: editPanelSpacer,
-                    contentLocked: _isEditPanelExpanded,
+          // 底部键盘弹起时显示悬浮工具栏，并对正文底部做避让。
+          body: Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  0,
+                  0,
+                  0,
+                  showFloatingToolbar ? 68 : 0,
+                ),
+                child: _buildEditor(
+                  context,
+                  bottomSpacer: editPanelSpacer,
+                  contentLocked: _isEditPanelExpanded,
+                ),
+              ),
+              if (showEditMetaPanel &&
+                  (!showFloatingToolbar || _isEditPanelExpanded))
+                Positioned(
+                  left: 16,
+                  right: 16,
+                  bottom: 0,
+                  child: PublishDiaryPanel(
+                    controller: _editPanelController,
+                    saving: _saving,
+                    bottomInset: keyboardInset,
+                    hasCover: _draftCover?.trim().isNotEmpty == true,
+                    coverLabel: _controller.coverLabelForEdit,
+                    locating: _locating,
+                    weatherLoading: _weatherLoading,
+                    locationController: _locationController,
+                    weatherController: _weatherController,
+                    weatherIconCode: _draftWeatherIconCode,
+                    moodEmoji: _draftMoodEmoji,
+                    energyLevel: _draftEnergyLevel ?? 4,
+                    tags: tags,
+                    tagsLoading: tagsLoading,
+                    tagsError: tagsError,
+                    selectedTagIds: _selectedTagIds,
+                    onProgressChanged: (progress) {
+                      if (!mounted) {
+                        return;
+                      }
+                      if ((progress - _editPanelExpandProgress).abs() <
+                          0.0001) {
+                        return;
+                      }
+                      final wasExpanded = _isEditPanelExpanded;
+                      final nextExpanded = progress >= 0.56;
+                      if (!wasExpanded && nextExpanded) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      }
+                      setState(() => _editPanelExpandProgress = progress);
+                    },
+                    onPickCover: _controller.pickCoverForEdit,
+                    onClearCover:
+                        _draftCover?.trim().isNotEmpty == true
+                            ? _controller.clearCoverForEdit
+                            : null,
+                    onCreateTag: _controller.createTagInlineForEdit,
+                    onResolveLocation: _controller.resolveLocationForEdit,
+                    onResolveWeather: _controller.resolveWeatherForEdit,
+                    onLocationChanged: (nextLocation) {
+                      if (!mounted) {
+                        return;
+                      }
+                      setState(() {
+                        _draftLocation =
+                            nextLocation.trim().isEmpty
+                                ? null
+                                : nextLocation.trim();
+                        _markEditPanelDirty();
+                      });
+                    },
+                    onWeatherChanged: (nextWeather) {
+                      if (!mounted) {
+                        return;
+                      }
+                      setState(() {
+                        _draftWeather =
+                            nextWeather.trim().isEmpty
+                                ? null
+                                : nextWeather.trim();
+                        // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
+                        _draftWeatherIconCode = null;
+                        _markEditPanelDirty();
+                      });
+                    },
+                    onToggleTag: (tagId, selected) {
+                      setState(() {
+                        if (selected) {
+                          _selectedTagIds.add(tagId);
+                        } else {
+                          _selectedTagIds.remove(tagId);
+                        }
+                        _markEditPanelDirty();
+                      });
+                    },
+                    onMoodChanged: (nextMood) {
+                      setState(() {
+                        _draftMoodEmoji = nextMood;
+                        _markEditPanelDirty();
+                      });
+                    },
+                    onEnergyChanged: (nextValue) {
+                      setState(() {
+                        _draftEnergyLevel = nextValue.clamp(1, 5).toDouble();
+                        _markEditPanelDirty();
+                      });
+                    },
+                    onPublish: _controller.save,
+                    actionLabel: context.l10n.autoT0137,
                   ),
                 ),
-                if (showEditMetaPanel && (!showFloatingToolbar || _isEditPanelExpanded))
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 0,
-                    child: PublishDiaryGlassPanel(
-                      controller: _editPanelController,
-                      saving: _saving,
-                      bottomInset: keyboardInset,
-                      hasCover: _draftCover?.trim().isNotEmpty == true,
-                      coverLabel: _controller.coverLabelForEdit,
-                      locating: _locating,
-                      weatherLoading: _weatherLoading,
-                      locationController: _locationController,
-                      weatherController: _weatherController,
-                      weatherIconCode: _draftWeatherIconCode,
-                      moodEmoji: _draftMoodEmoji,
-                      energyLevel: _draftEnergyLevel ?? 4,
-                      tags: tags,
-                      tagsLoading: tagsLoading,
-                      tagsError: tagsError,
-                      selectedTagIds: _selectedTagIds,
-                      onProgressChanged: (progress) {
-                        if (!mounted) {
-                          return;
-                        }
-                        if ((progress - _editPanelExpandProgress).abs() < 0.0001) {
-                          return;
-                        }
-                        final wasExpanded = _isEditPanelExpanded;
-                        final nextExpanded = progress >= 0.56;
-                        if (!wasExpanded && nextExpanded) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        }
-                        setState(() => _editPanelExpandProgress = progress);
-                      },
-                      onPickCover: _controller.pickCoverForEdit,
-                      onClearCover:
-                          _draftCover?.trim().isNotEmpty == true
-                              ? _controller.clearCoverForEdit
-                              : null,
-                      onCreateTag: _controller.createTagInlineForEdit,
-                      onResolveLocation: _controller.resolveLocationForEdit,
-                      onResolveWeather: _controller.resolveWeatherForEdit,
-                      onLocationChanged: (nextLocation) {
-                        if (!mounted) {
-                          return;
-                        }
-                        setState(() {
-                          _draftLocation = nextLocation.trim().isEmpty
-                              ? null
-                              : nextLocation.trim();
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onWeatherChanged: (nextWeather) {
-                        if (!mounted) {
-                          return;
-                        }
-                        setState(() {
-                          _draftWeather = nextWeather.trim().isEmpty
-                              ? null
-                              : nextWeather.trim();
-                          // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
-                          _draftWeatherIconCode = null;
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onToggleTag: (tagId, selected) {
-                        setState(() {
-                          if (selected) {
-                            _selectedTagIds.add(tagId);
-                          } else {
-                            _selectedTagIds.remove(tagId);
-                          }
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onMoodChanged: (nextMood) {
-                        setState(() {
-                          _draftMoodEmoji = nextMood;
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onEnergyChanged: (nextValue) {
-                        setState(() {
-                          _draftEnergyLevel = nextValue.clamp(1, 5).toDouble();
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onPublish: _controller.save,
-                      actionLabel: context.l10n.autoT0137,
-                    ),
-                  ),
-                if (showFloatingToolbar)
-                  Positioned(
-                    left: 12,
-                    right: 12,
-                    // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
-                    bottom: 0,
-                    child: SafeArea(
-                      top: false,
-                      minimum: const EdgeInsets.only(bottom: 8),
-                      child: Material(
-                        color: Theme.of(context).colorScheme.surface,
-                        elevation: 8,
-                        borderRadius: BorderRadius.circular(18),
-                        clipBehavior: Clip.antiAlias,
-                        child: MediaQuery(
-                          data: MediaQuery.of(
-                            context,
-                          ).copyWith(textScaler: TextScaler.noScaling),
-                          child: IconTheme(
-                            data: const IconThemeData(size: 16),
-                            child: SizedBox(
-                              height: 44,
-                              child: _buildFloatingToolbar(toolbarOrder),
-                            ),
+              if (showFloatingToolbar)
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
+                  bottom: 0,
+                  child: SafeArea(
+                    top: false,
+                    minimum: const EdgeInsets.only(bottom: 8),
+                    child: Material(
+                      color: Theme.of(context).colorScheme.surface,
+                      elevation: 8,
+                      borderRadius: BorderRadius.circular(18),
+                      clipBehavior: Clip.antiAlias,
+                      child: MediaQuery(
+                        data: MediaQuery.of(
+                          context,
+                        ).copyWith(textScaler: TextScaler.noScaling),
+                        child: IconTheme(
+                          data: const IconThemeData(size: 16),
+                          child: SizedBox(
+                            height: 44,
+                            child: _buildFloatingToolbar(toolbarOrder),
                           ),
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
+          ),
         );
         if (!_isEditEntry) {
           return scaffold;

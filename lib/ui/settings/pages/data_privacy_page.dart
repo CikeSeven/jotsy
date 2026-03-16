@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
@@ -58,7 +58,9 @@ class DataPrivacyPage extends ConsumerWidget {
       if (!verified) {
         await HomeHintVisibilityScope.showTrackedSnackBar(
           context: context,
-          snackBar: SnackBar(content: Text(context.l10n.appLockDisableVerifyFailed)),
+          snackBar: SnackBar(
+            content: Text(context.l10n.appLockDisableVerifyFailed),
+          ),
         );
         return;
       }
@@ -71,7 +73,7 @@ class DataPrivacyPage extends ConsumerWidget {
     final l10n = context.l10n;
     final settingsAsync = ref.watch(settingsServiceProvider);
     return Scaffold(
-      appBar: GlassAppBar(
+      appBar: AppTopBar(
         title: Text(l10n.settingsDataPrivacyTitle),
         leading: IconButton(
           tooltip: l10n.commonBack,

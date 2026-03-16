@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/data_archive_service.dart';
@@ -361,7 +361,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: GlassAppBar(
+      appBar: AppTopBar(
         title: Text(context.l10n.dataMgmtTitle),
         leading: IconButton(
           tooltip: context.l10n.commonBack,

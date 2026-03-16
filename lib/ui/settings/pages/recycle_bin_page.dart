@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 /// 回收站页面：
 /// - 展示已软删除日记；
@@ -29,8 +29,12 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
       return context.l10n.autoT0025;
     }
     final locale = Localizations.localeOf(context);
-    final pattern = locale.languageCode == 'zh' ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd HH:mm';
-    return DateFormat(pattern, locale.toLanguageTag()).format(deletedAt.toLocal());
+    final pattern =
+        locale.languageCode == 'zh' ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd HH:mm';
+    return DateFormat(
+      pattern,
+      locale.toLanguageTag(),
+    ).format(deletedAt.toLocal());
   }
 
   void _toggleSelection(String diaryId) {
@@ -67,18 +71,16 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         return;
       }
       setState(() {
-        _selectedDiaryIds.removeAll(targetIds.where((id) => !failedIds.contains(id)));
+        _selectedDiaryIds.removeAll(
+          targetIds.where((id) => !failedIds.contains(id)),
+        );
       });
 
       if (failedIds.isEmpty) {
-        await _showHint(
-          context.l10n.autoT0191(targetIds.length.toString()),
-        );
+        await _showHint(context.l10n.autoT0191(targetIds.length.toString()));
         return;
       }
-      await _showHint(
-        context.l10n.autoT0026,
-      );
+      await _showHint(context.l10n.autoT0026);
     } finally {
       if (mounted) {
         setState(() => _operating = false);
@@ -112,18 +114,16 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         return;
       }
       setState(() {
-        _selectedDiaryIds.removeAll(targetIds.where((id) => !failedIds.contains(id)));
+        _selectedDiaryIds.removeAll(
+          targetIds.where((id) => !failedIds.contains(id)),
+        );
       });
 
       if (failedIds.isEmpty) {
-        await _showHint(
-          context.l10n.autoT0192(targetIds.length.toString()),
-        );
+        await _showHint(context.l10n.autoT0192(targetIds.length.toString()));
         return;
       }
-      await _showHint(
-        context.l10n.autoT0027,
-      );
+      await _showHint(context.l10n.autoT0027);
     } finally {
       if (mounted) {
         setState(() => _operating = false);
@@ -138,9 +138,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
           title: Text(context.l10n.autoT0028),
-          content: Text(
-            context.l10n.autoT0193(count.toString()),
-          ),
+          content: Text(context.l10n.autoT0193(count.toString())),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -150,9 +148,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(context.l10n.commonDelete),
             ),
@@ -176,7 +172,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
     final deletedAsync = ref.watch(deletedDiariesProvider);
 
     return Scaffold(
-      appBar: GlassAppBar(
+      appBar: AppTopBar(
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -206,11 +202,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
       ),
       body: deletedAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Text(
-            l10n.autoT0031(error.toString()),
-          ),
-        ),
+        error:
+            (error, stackTrace) =>
+                Center(child: Text(l10n.autoT0031(error.toString()))),
         data: (diaries) {
           if (diaries.isEmpty) {
             return Center(child: Text(l10n.autoT0032));
@@ -223,9 +217,10 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
             itemBuilder: (BuildContext context, int index) {
               final diary = diaries[index].diary;
               final selected = _selectedDiaryIds.contains(diary.diaryId);
-              final title = diary.title.trim().isEmpty
-                  ? l10n.autoT0033
-                  : diary.title.trim();
+              final title =
+                  diary.title.trim().isEmpty
+                      ? l10n.autoT0033
+                      : diary.title.trim();
               return ListTile(
                 onTap: () => _toggleSelection(diary.diaryId),
                 onLongPress: () => _toggleSelection(diary.diaryId),
@@ -233,7 +228,11 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
                   value: selected,
                   onChanged: (_) => _toggleSelection(diary.diaryId),
                 ),
-                title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                title: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 subtitle: Text(
                   l10n.autoT0194(_formatDeletedAt(diary.deletedAt)),
                   maxLines: 1,

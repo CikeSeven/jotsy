@@ -13,7 +13,7 @@ import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 
 import '../../../app/theme/app_spacing.dart';
-import '../../widgets/glass_bottom_nav.dart';
+import '../../widgets/bottom_nav.dart';
 part '../controllers/home_page_controller.dart';
 
 /// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
@@ -71,7 +71,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
-    final snackBarBottomInset = bottomSafeInset + GlassBottomNav.navHeight;
+    final snackBarBottomInset = bottomSafeInset + BottomNav.navHeight;
 
     final baseTheme = Theme.of(context);
     final homeTabBackgroundColor =
@@ -135,19 +135,19 @@ class _HomePageState extends State<HomePage> {
     ];
 
     final navItems = [
-      GlassBottomNavItem(
+      BottomNavItem(
         label: context.l10n.navDiaries,
         icon: FontAwesomeIcons.solidRectangleList,
       ),
-      GlassBottomNavItem(
+      BottomNavItem(
         label: context.l10n.navCalendar,
         icon: FontAwesomeIcons.solidCalendar,
       ),
-      GlassBottomNavItem(
+      BottomNavItem(
         label: context.l10n.navExplore,
         icon: FontAwesomeIcons.solidCompass,
       ),
-      GlassBottomNavItem(
+      BottomNavItem(
         label: context.l10n.navSettings,
         icon: FontAwesomeIcons.gear,
       ),
@@ -170,7 +170,7 @@ class _HomePageState extends State<HomePage> {
           body: Stack(
             children: [_buildPageView(pages), _buildGlobalCreateFab()],
           ),
-          bottomNavigationBar: GlassBottomNav(
+          bottomNavigationBar: BottomNav(
             items: navItems,
             selectedIndex: _currentIndex,
             onTap: _controller.onTap,

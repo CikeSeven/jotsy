@@ -10,7 +10,7 @@ import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
-import '../../widgets/glass_page_header.dart';
+import '../../widgets/page_header.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends ConsumerWidget {
@@ -71,7 +71,7 @@ class SettingsPage extends ConsumerWidget {
     final l10n = context.l10n;
     final settingsAsync = ref.watch(settingsServiceProvider);
     final headerHeight =
-        MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
+        MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
     const listBottomPadding = 8.0;
 
     return Stack(
@@ -159,7 +159,7 @@ class SettingsPage extends ConsumerWidget {
             ),
           ],
         ),
-        GlassPageHeader(title: l10n.settingsTitle),
+        PageHeader(title: l10n.settingsTitle),
       ],
     );
   }

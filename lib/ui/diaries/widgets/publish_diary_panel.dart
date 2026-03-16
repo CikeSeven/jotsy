@@ -13,14 +13,14 @@ import '../../../app/theme/app_radii.dart';
 import '../../widgets/qweather_icon.dart';
 import 'energy_battery_indicator.dart';
 
-/// 发布页底部玻璃悬浮面板（smooth_sheets 版）。
+/// 发布页底部悬浮面板（smooth_sheets 版）。
 ///
 /// 交互目标：
 /// - 收起态更窄、位置更高；
 /// - 支持上划与点击展开；
 /// - 上划过程中尺寸连续变化，松手后自然吸附到展开/收起状态。
-class PublishDiaryGlassPanel extends StatefulWidget {
-  const PublishDiaryGlassPanel({
+class PublishDiaryPanel extends StatefulWidget {
+  const PublishDiaryPanel({
     super.key,
     this.controller,
     required this.saving,
@@ -70,7 +70,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
     '🤩',
   ];
 
-  final PublishDiaryGlassPanelController? controller;
+  final PublishDiaryPanelController? controller;
   final bool saving;
   final double bottomInset;
   final bool hasCover;
@@ -104,7 +104,7 @@ class PublishDiaryGlassPanel extends StatefulWidget {
   final VoidCallback? onClearCover;
 
   @override
-  State<PublishDiaryGlassPanel> createState() => _PublishDiaryGlassPanelState();
+  State<PublishDiaryPanel> createState() => _PublishDiaryPanelState();
 }
 
 /// 发布页悬浮面板控制器。
@@ -112,8 +112,8 @@ class PublishDiaryGlassPanel extends StatefulWidget {
 /// 提供给页面级返回逻辑使用：
 /// - 判断面板是否处于展开状态；
 /// - 主动触发面板收起动画。
-class PublishDiaryGlassPanelController {
-  _PublishDiaryGlassPanelState? _state;
+class PublishDiaryPanelController {
+  _PublishDiaryPanelState? _state;
 
   /// 是否处于“返回键应优先收起面板”的展开状态。
   bool get isExpanded => _state?._isExpandedForBackAction ?? false;
@@ -129,18 +129,18 @@ class PublishDiaryGlassPanelController {
     return _state?._popInnerPage() ?? Future<bool>.value(false);
   }
 
-  void _attach(_PublishDiaryGlassPanelState state) {
+  void _attach(_PublishDiaryPanelState state) {
     _state = state;
   }
 
-  void _detach(_PublishDiaryGlassPanelState state) {
+  void _detach(_PublishDiaryPanelState state) {
     if (_state == state) {
       _state = null;
     }
   }
 }
 
-class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
+class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   // ==================== 尺寸参数（收起/展开/布局） ====================
   static const double _collapsedHeight = 56;
   static const double _mainExpandedHeight = 470;
@@ -174,7 +174,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
   }
 
   @override
-  void didUpdateWidget(covariant PublishDiaryGlassPanel oldWidget) {
+  void didUpdateWidget(covariant PublishDiaryPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?._detach(this);
@@ -435,7 +435,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // 标签页顶部“新建”入口，视觉与标签项保持同体系玻璃卡片。
+          // 标签页顶部“新建”入口，视觉与标签项保持同体系卡片。
           SizedBox(
             width: double.infinity,
             child: Material(
@@ -924,7 +924,7 @@ class _PublishDiaryGlassPanelState extends State<PublishDiaryGlassPanel> {
             // 固定 5 列，两行排布，不允许横向滚动。
             return Wrap(
               spacing: horizontalSpacing,
-              children: PublishDiaryGlassPanel.moodOptions
+              children: PublishDiaryPanel.moodOptions
                   .map((emoji) {
                     return SizedBox(
                       width: itemWidth,

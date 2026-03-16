@@ -77,7 +77,7 @@ class AboutPage extends StatelessWidget {
     final topSafeInset = MediaQuery.paddingOf(context).top;
     final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
     final contentTopPadding =
-        topSafeInset + _AboutGlassHeader.contentHeight + AppSpacing.m;
+        topSafeInset + _AboutHeader.contentHeight + AppSpacing.m;
 
     return Scaffold(
       body: Stack(
@@ -230,7 +230,7 @@ class AboutPage extends StatelessWidget {
               ),
             ],
           ),
-          _AboutGlassHeader(
+          _AboutHeader(
             title: l10n.aboutTitle,
             onBack: () => Navigator.of(context).maybePop(),
             backTooltip: l10n.commonBack,
@@ -241,8 +241,8 @@ class AboutPage extends StatelessWidget {
   }
 }
 
-class _AboutGlassHeader extends StatelessWidget {
-  const _AboutGlassHeader({
+class _AboutHeader extends StatelessWidget {
+  const _AboutHeader({
     required this.title,
     required this.onBack,
     required this.backTooltip,

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_spacing.dart';
 
-class GlassPageHeader extends StatelessWidget {
-  const GlassPageHeader({super.key, required this.title});
+class PageHeader extends StatelessWidget {
+  const PageHeader({super.key, required this.title});
 
   // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
   static const double contentHeight = 56;

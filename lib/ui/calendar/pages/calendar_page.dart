@@ -16,7 +16,7 @@ import '../../diaries/pages/edit_diary_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../widgets/calendar_day_empty_state.dart';
-import '../widgets/calendar_glass_header.dart';
+import '../widgets/calendar_header.dart';
 import '../widgets/calendar_timeline_section.dart';
 
 part '../controllers/calendar_page_controller.dart';
@@ -92,7 +92,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final headerHeight =
-        MediaQuery.paddingOf(context).top + CalendarGlassHeader.contentHeight;
+        MediaQuery.paddingOf(context).top + CalendarHeader.contentHeight;
     final listBottomOffset = _listBottomExtraSpace;
     final focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month);
     final markersAsync = ref.watch(calendarMonthMarkersProvider(focusedMonth));
@@ -147,7 +147,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               ),
             ),
           ),
-          CalendarGlassHeader(
+          CalendarHeader(
             title: _controller.focusedMonthTitle,
             onJumpToToday: _controller.jumpToToday,
             onPreviousMonth: _controller.goToPreviousMonth,

@@ -9,7 +9,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/database/app_database.dart';
 import '../sections/diary_head_section.dart';
@@ -27,7 +27,8 @@ class ArchivedDiariesPage extends ConsumerStatefulWidget {
   const ArchivedDiariesPage({super.key});
 
   @override
-  ConsumerState<ArchivedDiariesPage> createState() => _ArchivedDiariesPageState();
+  ConsumerState<ArchivedDiariesPage> createState() =>
+      _ArchivedDiariesPageState();
 }
 
 class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
@@ -70,7 +71,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
       },
       child: Scaffold(
         backgroundColor: pageBackgroundColor,
-        appBar: GlassAppBar(
+        appBar: AppTopBar(
           title: Text(
             _isSelectionMode
                 ? context.l10n.autoT0099(_selectedDiaryIds.length.toString())
@@ -94,12 +95,14 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                     IconButton(
                       tooltip: context.l10n.autoT0101,
                       onPressed:
-                          () => unawaited(_controller.unarchiveSelectedDiaries()),
+                          () =>
+                              unawaited(_controller.unarchiveSelectedDiaries()),
                       icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
                     ),
                     IconButton(
                       tooltip: context.l10n.commonDelete,
-                      onPressed: () => unawaited(_controller.deleteSelectedDiaries()),
+                      onPressed:
+                          () => unawaited(_controller.deleteSelectedDiaries()),
                       icon: FaIcon(
                         FontAwesomeIcons.trashCan,
                         size: 18,
@@ -114,16 +117,10 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
           loading: () => const Center(child: CircularProgressIndicator()),
           error:
               (Object error, StackTrace stackTrace) =>
-                  Center(
-                    child: Text(
-                      context.l10n.autoT0102(error.toString()),
-                    ),
-                  ),
+                  Center(child: Text(context.l10n.autoT0102(error.toString()))),
           data: (List<DiaryWithTags> diaries) {
             if (diaries.isEmpty) {
-              return Center(
-                child: Text(context.l10n.autoT0103),
-              );
+              return Center(child: Text(context.l10n.autoT0103));
             }
             return CustomScrollView(
               slivers: <Widget>[

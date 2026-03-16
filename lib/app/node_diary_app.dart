@@ -13,7 +13,8 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/app_loading_page.dart' show AppLoadingContent;
+import 'package:node_diary/ui/widgets/app_loading_page.dart'
+    show AppLoadingContent;
 
 import '../core/services/settings_service.dart';
 import '../l10n/app_localizations.dart';
@@ -33,8 +34,7 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
   ConsumerState<NodeDiaryApp> createState() => _NodeDiaryAppState();
 }
 
-class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
-{
+class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
   static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
   static const double _globalSnackBarSideInset = 16;
@@ -192,21 +192,21 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp>
 
   /// 为整个应用提供统一的提示样式（与 Home 视觉一致）。
   ///
-  /// Home 页仍会在此基础上覆盖底部 inset，以避让玻璃底部导航栏。
+  /// Home 页仍会在此基础上覆盖底部 inset，以避让底部导航栏。
   ThemeData _withGlobalSnackBarTheme(ThemeData baseTheme) {
     final colorScheme = baseTheme.colorScheme;
     return baseTheme.copyWith(
       snackBarTheme: baseTheme.snackBarTheme.copyWith(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: colorScheme.surfaceContainerHigh.withValues(alpha: 0.96),
+        backgroundColor: colorScheme.surfaceContainerHigh.withValues(
+          alpha: 0.96,
+        ),
         contentTextStyle: baseTheme.textTheme.bodyMedium?.copyWith(
           color: colorScheme.onSurface,
         ),
         actionTextColor: colorScheme.primary,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         insetPadding: const EdgeInsets.fromLTRB(
           _globalSnackBarSideInset,
           0,
@@ -407,10 +407,7 @@ class _BootstrapHome extends StatelessWidget {
 /// - 自动解锁中给出统一 loading 反馈；
 /// - 解锁失败后提供明确的手动重试入口。
 class _AppLockOverlay extends StatelessWidget {
-  const _AppLockOverlay({
-    required this.unlocking,
-    required this.onTapUnlock,
-  });
+  const _AppLockOverlay({required this.unlocking, required this.onTapUnlock});
 
   final bool unlocking;
   final VoidCallback onTapUnlock;
@@ -436,9 +433,9 @@ class _AppLockOverlay extends StatelessWidget {
                 const SizedBox(height: 14),
                 Text(
                   l10n.appLockTitle,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
                 Text(

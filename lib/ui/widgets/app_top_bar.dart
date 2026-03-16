@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// 全局统一 AppBar（Material 原生风格）。
-class GlassAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const GlassAppBar({
+class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
+  const AppTopBar({
     super.key,
     this.title,
     this.leading,

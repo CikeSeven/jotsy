@@ -22,9 +22,9 @@ import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_glass_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 part '../controllers/publish_diary_controller.dart';
 
@@ -32,7 +32,7 @@ part '../controllers/publish_diary_controller.dart';
 ///
 /// 页面职责：
 /// - 展示真实发布预览（封面 + 标题 + 富文本正文）；
-/// - 承载底部玻璃面板交互（封面/标签/位置/天气/心情/精力）；
+/// - 承载底部面板交互（封面/标签/位置/天气/心情/精力）；
 /// - 最终调用控制器执行发布写库。
 class PublishDiaryPage extends ConsumerStatefulWidget {
   const PublishDiaryPage({super.key, required this.initialDraft});
@@ -47,8 +47,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   // ==================== 输入控制器与面板控制器 ====================
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _weatherController = TextEditingController();
-  final PublishDiaryGlassPanelController _panelController =
-      PublishDiaryGlassPanelController();
+  final PublishDiaryPanelController _panelController =
+      PublishDiaryPanelController();
   late final quill.QuillController _previewController;
   late final Set<int> _selectedTagIds;
 
@@ -107,7 +107,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     // 预览正文优先走 Delta JSON；失败时降级纯文本，确保页面总能打开。
     quill.Document previewDoc;
     try {
-      previewDoc = decodeDiaryContentToDocument(widget.initialDraft.contentDocJson);
+      previewDoc = decodeDiaryContentToDocument(
+        widget.initialDraft.contentDocJson,
+      );
     } catch (_) {
       previewDoc = documentFromPlainText(widget.initialDraft.contentText);
     }
@@ -151,20 +153,20 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-          if (!didPop) {
-            if (_panelController.canPopInnerPage) {
-              _panelController.popInnerPage();
-              return;
-            }
-            if (_panelController.isExpanded) {
-              _panelController.collapse();
-              return;
-            }
-            _controller.closeWithDraft();
+        if (!didPop) {
+          if (_panelController.canPopInnerPage) {
+            _panelController.popInnerPage();
+            return;
           }
-        },
+          if (_panelController.isExpanded) {
+            _panelController.collapse();
+            return;
+          }
+          _controller.closeWithDraft();
+        }
+      },
       child: Scaffold(
-        appBar: GlassAppBar(
+        appBar: AppTopBar(
           title: Text(context.l10n.autoT0138),
           leading: IconButton(
             onPressed: _controller.closeWithDraft,
@@ -188,14 +190,15 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                       children: <Widget>[
                         Text(
                           _controller.title,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 16),
                         // 不能只看纯文本镜像（contentText），纯图片正文在镜像里会为空。
                         // 统一按 Quill 文档可见内容判断，图片/嵌入也算正文内容。
-                        if (!diaryDocumentHasVisibleContent(_previewController.document))
+                        if (!diaryDocumentHasVisibleContent(
+                          _previewController.document,
+                        ))
                           Text(
                             context.l10n.autoT0139,
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -219,11 +222,11 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               ],
             ),
             Positioned(
-              // 底部玻璃悬浮交互面板。
+              // 底部悬浮交互面板。
               left: 16,
               right: 16,
               bottom: 0,
-              child: PublishDiaryGlassPanel(
+              child: PublishDiaryPanel(
                 controller: _panelController,
                 saving: _saving,
                 bottomInset: keyboardInset,
@@ -272,7 +275,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 onResolveWeather: _controller.resolveWeather,
                 onLocationChanged: (nextLocation) {
                   setState(() {
-                    _locationTownship = _controller.normalizeOptionalText(nextLocation);
+                    _locationTownship = _controller.normalizeOptionalText(
+                      nextLocation,
+                    );
                   });
                 },
                 onWeatherChanged: (nextWeather) {
@@ -282,7 +287,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   });
                 },
                 showPublishTimeOption: true,
-                publishTimeLabel: _controller.formatPublishTimeLabel(_publishAt),
+                publishTimeLabel: _controller.formatPublishTimeLabel(
+                  _publishAt,
+                ),
                 onPickPublishTime: _controller.pickPublishAt,
                 onToggleTag: (tagId, selected) {
                   setState(() {
@@ -297,7 +304,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   setState(() => _moodEmoji = nextMood);
                 },
                 onEnergyChanged: (nextValue) {
-                  setState(() => _energyLevel = nextValue.clamp(1, 5).toDouble());
+                  setState(
+                    () => _energyLevel = nextValue.clamp(1, 5).toDouble(),
+                  );
                 },
                 onPublish: _controller.publish,
               ),

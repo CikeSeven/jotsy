@@ -25,7 +25,7 @@
 │  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块
 │  │  ├─ home|calendar|explore|settings/
-│  │  └─ widgets/                    # 跨 feature 公共 UI（玻璃底栏、加载页等）
+│  │  └─ widgets/                    # 跨 feature 公共 UI（底部导航、加载页等）
 │  ├─ l10n/                          # 国际化封装
 │  └─ utils/                         # 工具函数
 ├─ assets/                           # 静态资源

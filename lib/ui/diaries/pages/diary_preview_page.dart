@@ -23,7 +23,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
-import '../../widgets/glass_app_bar.dart';
+import '../../widgets/app_top_bar.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
@@ -258,7 +258,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   /// 统一动作加载态：
-  /// - 提供共享的玻璃遮罩 loading；
+  /// - 提供共享的遮罩 loading；
   /// - 限制最短可见时长，避免“闪现式”动画；
   /// - 在真正重任务前预留一帧，让动画先渲染出来。
   Future<void> _runPreviewActionWithLoading({
@@ -1045,7 +1045,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     return detailAsync.when(
       loading: () {
         return Scaffold(
-          appBar: GlassAppBar(
+          appBar: AppTopBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
@@ -1055,7 +1055,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       },
       error: (Object error, StackTrace stackTrace) {
         return Scaffold(
-          appBar: GlassAppBar(
+          appBar: AppTopBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
@@ -1074,7 +1074,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               Navigator.of(context).pop();
             });
             return Scaffold(
-              appBar: GlassAppBar(
+              appBar: AppTopBar(
                 centerTitle: true,
                 title: Text(context.l10n.autoT0120),
                 leading: _buildBackLeading(),
@@ -1084,7 +1084,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
           }
 
           return Scaffold(
-            appBar: GlassAppBar(
+            appBar: AppTopBar(
               centerTitle: true,
               title: Text(context.l10n.autoT0120),
               leading: _buildBackLeading(),
@@ -1103,7 +1103,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         final coverSource = _resolvePreviewCover(detail.diary);
 
         return Scaffold(
-          appBar: GlassAppBar(
+          appBar: AppTopBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),

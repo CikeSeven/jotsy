@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
@@ -25,7 +25,8 @@ class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
       _ExploreMediaGalleryPageState();
 }
 
-class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPage> {
+class _ExploreMediaGalleryPageState
+    extends ConsumerState<ExploreMediaGalleryPage> {
   static const int _candidateBatchSize = 40;
   static const int _targetMediaAppendCount = 30;
   static const int _maxBatchRoundsPerLoad = 8;
@@ -62,7 +63,7 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      appBar: GlassAppBar(
+      appBar: AppTopBar(
         centerTitle: true,
         title: Text(l10n.autoT0054),
         leading: IconButton(
@@ -91,8 +92,8 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
                 _errorMessage!,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 12),
               FilledButton.tonal(
@@ -108,9 +109,9 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
       return Center(
         child: Text(
           l10n.autoT0055,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -255,10 +256,11 @@ class _ExploreMediaGalleryPageState extends ConsumerState<ExploreMediaGalleryPag
   void _openViewer(int initialIndex) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ExploreImageViewerPage(
-          mediaItems: List<ExploreMediaItem>.from(_mediaItems),
-          initialIndex: initialIndex,
-        ),
+        builder:
+            (_) => ExploreImageViewerPage(
+              mediaItems: List<ExploreMediaItem>.from(_mediaItems),
+              initialIndex: initialIndex,
+            ),
       ),
     );
   }
@@ -286,21 +288,16 @@ class _GalleryFooter extends StatelessWidget {
     }
     if (errorMessage != null) {
       return Center(
-        child: TextButton(
-          onPressed: onRetry,
-          child: Text(
-            l10n.autoT0056,
-          ),
-        ),
+        child: TextButton(onPressed: onRetry, child: Text(l10n.autoT0056)),
       );
     }
     if (!hasMore) {
       return Center(
         child: Text(
           l10n.autoT0057,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       );
     }

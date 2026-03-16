@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/widgets/glass_app_bar.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../models/explore_view_data.dart';
 
@@ -51,7 +51,7 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
     final total = widget.mediaItems.length;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: GlassAppBar(
+      appBar: AppTopBar(
         backgroundColor: Colors.black.withValues(alpha: 0.88),
         foregroundColor: Colors.white,
         leading: IconButton(
@@ -59,38 +59,37 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
         title: Text(
-          total == 0
-              ? l10n.autoT0052
-              : '${_activeIndex + 1} / $total',
+          total == 0 ? l10n.autoT0052 : '${_activeIndex + 1} / $total',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         centerTitle: true,
       ),
-      body: total == 0
-          ? Center(
-              child: Text(
-                l10n.autoT0053,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+      body:
+          total == 0
+              ? Center(
+                child: Text(
+                  l10n.autoT0053,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              )
+              : PageView.builder(
+                controller: _pageController,
+                itemCount: total,
+                onPageChanged: (index) {
+                  setState(() {
+                    _activeIndex = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  final source = widget.mediaItems[index].source;
+                  return _buildImagePage(source);
+                },
               ),
-            )
-          : PageView.builder(
-              controller: _pageController,
-              itemCount: total,
-              onPageChanged: (index) {
-                setState(() {
-                  _activeIndex = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                final source = widget.mediaItems[index].source;
-                return _buildImagePage(source);
-              },
-            ),
     );
   }
 
@@ -113,29 +112,29 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
-    final imageWidget = isRemote
-        ? Image.network(
-            source,
-            fit: BoxFit.contain,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) {
-                return child;
-              }
-              final totalBytes = loadingProgress.expectedTotalBytes;
-              final value = totalBytes == null
-                  ? null
-                  : loadingProgress.cumulativeBytesLoaded / totalBytes;
-              return Center(
-                child: CircularProgressIndicator(value: value),
-              );
-            },
-            errorBuilder: (_, __, ___) => const _ImageFallback(),
-          )
-        : Image.file(
-            File(source),
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const _ImageFallback(),
-          );
+    final imageWidget =
+        isRemote
+            ? Image.network(
+              source,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                }
+                final totalBytes = loadingProgress.expectedTotalBytes;
+                final value =
+                    totalBytes == null
+                        ? null
+                        : loadingProgress.cumulativeBytesLoaded / totalBytes;
+                return Center(child: CircularProgressIndicator(value: value));
+              },
+              errorBuilder: (_, __, ___) => const _ImageFallback(),
+            )
+            : Image.file(
+              File(source),
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const _ImageFallback(),
+            );
 
     return Container(
       color: Colors.black,
@@ -155,11 +154,7 @@ class _ImageFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: FaIcon(
-        FontAwesomeIcons.image,
-        size: 28,
-        color: Colors.white54,
-      ),
+      child: FaIcon(FontAwesomeIcons.image, size: 28, color: Colors.white54),
     );
   }
 }

@@ -7,7 +7,7 @@ import '../../../core/services/app_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
-import '../../widgets/glass_page_header.dart';
+import '../../widgets/page_header.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
 import 'explore_media_gallery_page.dart';
@@ -32,7 +32,7 @@ class ExplorePage extends ConsumerWidget {
     final orderedTagsAsync = ref.watch(tagListProvider);
     final controller = const ExplorePageController();
     final headerHeight =
-        MediaQuery.paddingOf(context).top + GlassPageHeader.contentHeight;
+        MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
 
     return Stack(
       children: <Widget>[
@@ -93,7 +93,7 @@ class ExplorePage extends ConsumerWidget {
             ],
           ),
         ),
-        GlassPageHeader(title: l10n.autoT0058),
+        PageHeader(title: l10n.autoT0058),
       ],
     );
   }

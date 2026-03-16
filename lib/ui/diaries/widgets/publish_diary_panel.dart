@@ -1066,12 +1066,24 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
 
   Widget _buildPublishAction(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
     final actionLabel =
         widget.actionLabel.trim().isEmpty ? l10n.autoT0138 : widget.actionLabel;
+
     // 主操作按钮始终位于内容底部，避免与顶部手势区域冲突。
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         onPressed: widget.saving ? null : widget.onPublish,
         icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
         label: Text(widget.saving ? l10n.autoT0176 : actionLabel),

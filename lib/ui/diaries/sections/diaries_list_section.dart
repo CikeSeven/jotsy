@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -20,6 +21,9 @@ import 'diary_head_section.dart';
 class DiariesListSection extends StatelessWidget {
   /// 单条日记项进入/退出列表时的过渡时长。
   static const Duration _itemTransitionDuration = Duration(milliseconds: 220);
+  static const int _maxPreviewCoverCacheEntries = 600;
+  static final Map<String, String?> _previewCoverCache = <String, String?>{};
+  static final ListQueue<String> _previewCoverCacheOrder = ListQueue<String>();
 
   const DiariesListSection({
     super.key,
@@ -464,11 +468,35 @@ class DiariesListSection extends StatelessWidget {
   /// 1) 日记显式封面字段；
   /// 2) 正文内容中第一张图片。
   String? _resolvePreviewCover(Diary diary) {
-    final explicitCover = diary.cover?.trim();
-    if (explicitCover != null && explicitCover.isNotEmpty) {
-      return explicitCover;
+    final cacheKey =
+        '${diary.diaryId}_${diary.updatedAt.microsecondsSinceEpoch}';
+    if (_previewCoverCache.containsKey(cacheKey)) {
+      return _previewCoverCache[cacheKey];
     }
-    return _extractFirstImageFromContent(diary.content);
+
+    final explicitCover = diary.cover?.trim();
+    final resolvedCover =
+        (explicitCover != null && explicitCover.isNotEmpty)
+            ? explicitCover
+            : _extractFirstImageFromContent(diary.content);
+
+    _cacheResolvedPreviewCover(cacheKey, resolvedCover);
+    return resolvedCover;
+  }
+
+  /// 维护固定容量缓存，避免滚动期间重复解析正文 JSON。
+  void _cacheResolvedPreviewCover(String key, String? cover) {
+    if (_previewCoverCache.containsKey(key)) {
+      return;
+    }
+
+    _previewCoverCache[key] = cover;
+    _previewCoverCacheOrder.addLast(key);
+
+    while (_previewCoverCacheOrder.length > _maxPreviewCoverCacheEntries) {
+      final oldestKey = _previewCoverCacheOrder.removeFirst();
+      _previewCoverCache.remove(oldestKey);
+    }
   }
 
   /// 从 Quill Delta JSON 中提取第一张图片地址。

@@ -64,7 +64,8 @@ class PublishMetadataComposer {
       if (normalizedWeatherIconCode != null)
         'weatherIconCode': normalizedWeatherIconCode,
       if (normalizedMoodEmoji != null) 'moodEmoji': normalizedMoodEmoji,
-      if (energyLevel != null) 'energyLevel': _normalizeEnergyLevel(energyLevel),
+      if (energyLevel != null)
+        'energyLevel': _normalizeEnergyLevel(energyLevel),
     };
     if (context.isNotEmpty) {
       metadata['context'] = context;
@@ -102,7 +103,8 @@ class PublishMetadataComposer {
     return <String, Object?>{
       for (final entry in raw.entries)
         if (entry.value != null &&
-            (!(entry.value is String) || (entry.value as String).trim().isNotEmpty))
+            (entry.value is! String ||
+                (entry.value as String).trim().isNotEmpty))
           entry.key: entry.value,
     };
   }

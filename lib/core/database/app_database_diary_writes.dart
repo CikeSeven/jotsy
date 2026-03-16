@@ -6,7 +6,7 @@ part of 'app_database.dart';
 /// - 创建/更新日记；
 /// - 归档、软删除、恢复；
 /// - 日记与标签关联关系维护。
-mixin AppDatabaseDiaryWrites on _$AppDatabase {
+mixin _AppDatabaseDiaryWrites on _$AppDatabase {
   /// 创建日记并写入关联标签。
   ///
   /// 事务内完成“主表插入 + 关联表写入”，保证一致性。
@@ -61,16 +61,16 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     final normalizedTagIds = tagIds.toSet().toList();
 
     await transaction<void>(() async {
-      final diary = await (select(diaries)
-            ..where((Diaries t) => t.diaryId.equals(diaryId)))
-          .getSingleOrNull();
+      final diary =
+          await (select(
+            diaries,
+          )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
       if (diary == null) {
         throw StateError('未找到 diaryId=$diaryId 对应的日记');
       }
 
       await (update(diaries)
-            ..where((Diaries t) => t.diaryId.equals(diaryId)))
-          .write(
+        ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
         DiariesCompanion(
           title: Value<String>(title.trim()),
           content: Value<String>(contentDocJson),
@@ -92,13 +92,9 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
   /// 置顶日记（固定显示在列表前部）。
   ///
   /// 默认不修改 `updatedAt`，避免仅置顶操作打乱“最近编辑时间”语义。
-  Future<void> pinDiary(
-    String diaryId, {
-    bool touchUpdatedAt = false,
-  }) async {
+  Future<void> pinDiary(String diaryId, {bool touchUpdatedAt = false}) async {
     await (update(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId)))
-        .write(
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isPinned: const Value<bool>(true),
         updatedAt:
@@ -110,13 +106,9 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
   }
 
   /// 取消置顶日记。
-  Future<void> unpinDiary(
-    String diaryId, {
-    bool touchUpdatedAt = false,
-  }) async {
+  Future<void> unpinDiary(String diaryId, {bool touchUpdatedAt = false}) async {
     await (update(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId)))
-        .write(
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isPinned: const Value<bool>(false),
         updatedAt:
@@ -134,15 +126,11 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
   }) async {
     final now = DateTime.now();
     await (update(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId)))
-        .write(
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(true),
         archivedAt: Value<DateTime?>(now),
-        updatedAt:
-            touchUpdatedAt
-                ? Value<DateTime>(now)
-                : const Value.absent(),
+        updatedAt: touchUpdatedAt ? Value<DateTime>(now) : const Value.absent(),
       ),
     );
   }
@@ -153,8 +141,7 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     bool touchUpdatedAt = true,
   }) async {
     await (update(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId)))
-        .write(
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
@@ -175,17 +162,13 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
   }) async {
     final now = DateTime.now();
     await (update(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId)))
-        .write(
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
         isDeleted: const Value<bool>(true),
         deletedAt: Value<DateTime?>(now),
-        updatedAt:
-            touchUpdatedAt
-                ? Value<DateTime>(now)
-                : const Value.absent(),
+        updatedAt: touchUpdatedAt ? Value<DateTime>(now) : const Value.absent(),
       ),
     );
   }
@@ -198,8 +181,7 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     bool touchUpdatedAt = true,
   }) async {
     await (update(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId)))
-        .write(
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
@@ -218,8 +200,8 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
   /// 依赖外键级联自动清理 diary_tags 关联关系。
   Future<void> hardDeleteDiary(String diaryId) async {
     final targetDiary =
-        await (select(diaries)..where((Diaries t) => t.diaryId.equals(diaryId)))
-            .getSingleOrNull();
+        await (select(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
     if (targetDiary == null) {
       return;
     }
@@ -227,7 +209,8 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     // 彻删前先清理托管资源文件，避免私有目录残留无主文件。
     await _deleteDiaryManagedAssets(targetDiary);
 
-    await (delete(diaries)..where((Diaries t) => t.diaryId.equals(diaryId))).go();
+    await (delete(diaries)
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).go();
   }
 
   /// 按业务 diaryId 获取单条日记及其标签。
@@ -278,7 +261,9 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 删除日记关联的托管资源文件（封面 + 正文图片）。
   Future<void> _deleteDiaryManagedAssets(Diary diary) async {
-    await DiaryCoverStorageService.deleteManagedCover(_normalizeCover(diary.cover));
+    await DiaryCoverStorageService.deleteManagedCover(
+      _normalizeCover(diary.cover),
+    );
 
     final imagePaths = _extractManagedImagePathsFromContent(diary.content);
     for (final imagePath in imagePaths) {
@@ -363,9 +348,8 @@ mixin AppDatabaseDiaryWrites on _$AppDatabase {
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    final hex = bytes
-        .map((int byte) => byte.toRadixString(16).padLeft(2, '0'))
-        .join();
+    final hex =
+        bytes.map((int byte) => byte.toRadixString(16).padLeft(2, '0')).join();
     return '${hex.substring(0, 8)}-'
         '${hex.substring(8, 12)}-'
         '${hex.substring(12, 16)}-'

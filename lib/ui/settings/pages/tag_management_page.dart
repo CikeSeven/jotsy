@@ -27,6 +27,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   bool _displayTagsInitialized = false;
 
   Future<void> _createTag() async {
+    final l10n = context.l10n;
     if (_operating) {
       return;
     }
@@ -39,7 +40,10 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     setState(() => _operating = true);
     try {
       final db = ref.read(appDatabaseProvider);
-      final createdId = await db.createTag(name: draft.name, color: draft.color);
+      final createdId = await db.createTag(
+        name: draft.name,
+        color: draft.color,
+      );
       final settings = await ref.read(settingsServiceProvider.future);
       final order = decodeTagOrder(settings.tagOrderRaw);
       if (!order.contains(createdId)) {
@@ -48,9 +52,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       }
       ref.invalidate(tagListProvider);
     } catch (error) {
-      await _showHint(
-        context.l10n.autoT0034(error.toString()),
-      );
+      await _showHint(l10n.autoT0034(error.toString()));
     } finally {
       if (mounted) {
         setState(() => _operating = false);
@@ -59,6 +61,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   }
 
   Future<void> _editTag(Tag tag) async {
+    final l10n = context.l10n;
     if (_operating) {
       return;
     }
@@ -75,15 +78,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     setState(() => _operating = true);
     try {
       final db = ref.read(appDatabaseProvider);
-      await db.updateTag(
-        tagId: tag.id,
-        name: draft.name,
-        color: draft.color,
-      );
+      await db.updateTag(tagId: tag.id, name: draft.name, color: draft.color);
     } catch (error) {
-      await _showHint(
-        context.l10n.autoT0035(error.toString()),
-      );
+      await _showHint(l10n.autoT0035(error.toString()));
     } finally {
       if (mounted) {
         setState(() => _operating = false);
@@ -92,6 +89,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   }
 
   Future<void> _deleteTag(Tag tag) async {
+    final l10n = context.l10n;
     if (_operating) {
       return;
     }
@@ -111,9 +109,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       await db.deleteTag(tag.id);
       ref.invalidate(tagListProvider);
     } catch (error) {
-      await _showHint(
-        context.l10n.autoT0036(error.toString()),
-      );
+      await _showHint(l10n.autoT0036(error.toString()));
     } finally {
       if (mounted) {
         setState(() => _operating = false);
@@ -122,6 +118,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   }
 
   Future<void> _reorderTags(List<Tag> tags, int oldIndex, int newIndex) async {
+    final l10n = context.l10n;
     if (_savingOrder || _operating) {
       return;
     }
@@ -146,9 +143,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       );
       ref.invalidate(tagListProvider);
     } catch (error) {
-      await _showHint(
-        context.l10n.autoT0037(error.toString()),
-      );
+      await _showHint(l10n.autoT0037(error.toString()));
       if (mounted) {
         setState(() => _savingOrder = false);
       }
@@ -162,9 +157,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
           title: Text(context.l10n.autoT0038),
-          content: Text(
-            context.l10n.autoT0195(tag.name),
-          ),
+          content: Text(context.l10n.autoT0195(tag.name)),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -174,9 +167,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(context.l10n.commonDelete),
             ),
@@ -322,16 +313,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
             },
           );
         },
-        loading:
-            () => const Center(
-              child: CircularProgressIndicator(),
-            ),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) {
-          return Center(
-            child: Text(
-              l10n.autoT0042(error.toString()),
-            ),
-          );
+          return Center(child: Text(l10n.autoT0042(error.toString())));
         },
       ),
     );

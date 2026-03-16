@@ -6,8 +6,8 @@ part of 'package:node_diary/ui/home/pages/home_page.dart';
 /// - 处理底部导航页切换；
 /// - 处理启动提示仅展示一次逻辑；
 /// - 不直接构建 UI。
-class HomePageController {
-  HomePageController(this._state);
+class _HomePageController {
+  _HomePageController(this._state);
 
   static const Duration _pageSwitchDuration = Duration(milliseconds: 270);
   static const Curve _pageSwitchCurve = Curves.easeOutCirc;

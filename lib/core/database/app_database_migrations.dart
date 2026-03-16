@@ -3,8 +3,8 @@ part of 'app_database.dart';
 /// 历史版本迁移实现。
 ///
 /// 单独拆分迁移逻辑，避免主数据库文件被一次性历史 SQL 细节淹没。
-mixin AppDatabaseMigrations
-    on _$AppDatabase, AppDatabaseDiaryQueries, AppDatabaseDiaryWrites {
+mixin _AppDatabaseMigrations
+    on _$AppDatabase, _AppDatabaseDiaryQueries, _AppDatabaseDiaryWrites {
   Future<void> _migrateDiariesAddBusinessId() async {
     await customStatement('PRAGMA foreign_keys = OFF');
     await transaction(() async {
@@ -28,7 +28,8 @@ CREATE TABLE diaries (
 )
 ''');
 
-      final rows = await customSelect('''
+      final rows =
+          await customSelect('''
 SELECT
   id,
   title,

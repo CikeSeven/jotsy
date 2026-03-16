@@ -7,8 +7,8 @@ part of 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 /// - 处理从日历创建新日记（含草稿分流）；
 /// - 处理预览页导航；
 /// - 不负责具体 UI 组件构建。
-class CalendarPageController {
-  const CalendarPageController(this._state);
+class _CalendarPageController {
+  const _CalendarPageController(this._state);
 
   final _CalendarPageState _state;
   static const List<String> _moodScale = <String>[
@@ -55,7 +55,7 @@ class CalendarPageController {
     if (_state._calendarFormat == format) {
       return;
     }
-    _state.setState(() => _state._calendarFormat = format);
+    _state.applyState(() => _state._calendarFormat = format);
   }
 
   /// 日期选中回调：联动“选中日列表”和“焦点月份”。
@@ -66,7 +66,7 @@ class CalendarPageController {
         isSameDay(_state._focusedMonth, normalizedFocusedDay)) {
       return;
     }
-    _state.setState(() {
+    _state.applyState(() {
       _state._selectedDay = normalizedSelectedDay;
       _state._focusedMonth = normalizedFocusedDay;
     });
@@ -78,13 +78,13 @@ class CalendarPageController {
     if (isSameDay(_state._focusedMonth, normalizedFocusedDay)) {
       return;
     }
-    _state.setState(() => _state._focusedMonth = normalizedFocusedDay);
+    _state.applyState(() => _state._focusedMonth = normalizedFocusedDay);
   }
 
   /// 一键回到今天：重置选中日、焦点月份和格式状态。
   void jumpToToday() {
     final now = DateTime.now();
-    _state.setState(() {
+    _state.applyState(() {
       _state._selectedDay = DateUtils.dateOnly(now);
       _state._focusedMonth = DateUtils.dateOnly(now);
       _state._calendarFormat = CalendarFormat.month;
@@ -126,7 +126,7 @@ class CalendarPageController {
     }
 
     final normalizedDay = DateUtils.dateOnly(pickedDate);
-    _state.setState(() {
+    _state.applyState(() {
       _state._selectedDay = normalizedDay;
       _state._focusedMonth = normalizedDay;
       _state._calendarFormat = CalendarFormat.month;
@@ -139,7 +139,7 @@ class CalendarPageController {
   /// 3) 若控制器暂不可用，回退为直接更新焦点月份。
   void _switchMonth(int offset) {
     if (_state._calendarFormat != CalendarFormat.month) {
-      _state.setState(() => _state._calendarFormat = CalendarFormat.month);
+      _state.applyState(() => _state._calendarFormat = CalendarFormat.month);
     }
 
     final pageController = _state._calendarPageController;
@@ -162,7 +162,7 @@ class CalendarPageController {
       _state._focusedMonth.year,
       _state._focusedMonth.month + offset,
     );
-    _state.setState(() => _state._focusedMonth = fallbackFocusedMonth);
+    _state.applyState(() => _state._focusedMonth = fallbackFocusedMonth);
   }
 
   /// 月份打点按“本地日期”聚合，供 TableCalendar 的 eventLoader 使用。
@@ -206,7 +206,7 @@ class CalendarPageController {
     }
 
     final averageWeight = totalWeight / validCount;
-    final roundedWeight = averageWeight.round().clamp(1, _moodScale.length) as int;
+    final roundedWeight = averageWeight.round().clamp(1, _moodScale.length);
     return _moodScale[roundedWeight - 1];
   }
 
@@ -214,38 +214,35 @@ class CalendarPageController {
   void openPreview(String diaryId) {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
-      MaterialPageRoute<DiaryPreviewResult?>(
-        builder: (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
-      ),
-    )
+          MaterialPageRoute<DiaryPreviewResult?>(
+            builder:
+                (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+          ),
+        )
         .then((DiaryPreviewResult? result) async {
-      if (!_state.mounted || result != DiaryPreviewResult.deleted) {
-        return;
-      }
+          if (!_state.mounted || result != DiaryPreviewResult.deleted) {
+            return;
+          }
 
-      final undoRequested = await _showDeleteUndoSnackBar();
-      if (!_state.mounted || !undoRequested) {
-        return;
-      }
+          final undoRequested = await _showDeleteUndoSnackBar();
+          if (!_state.mounted || !undoRequested) {
+            return;
+          }
 
-      try {
-        final db = _state.ref.read(appDatabaseProvider);
-        await db.restoreDiary(diaryId, touchUpdatedAt: false);
-        if (!_state.mounted) {
-          return;
-        }
-        await _showInfoSnackBar(
-          _state.context.l10n.autoT0076,
-        );
-      } catch (_) {
-        if (!_state.mounted) {
-          return;
-        }
-        await _showInfoSnackBar(
-          _state.context.l10n.autoT0077,
-        );
-      }
-    });
+          try {
+            final db = _state.ref.read(appDatabaseProvider);
+            await db.restoreDiary(diaryId, touchUpdatedAt: false);
+            if (!_state.mounted) {
+              return;
+            }
+            await _showInfoSnackBar(_state.context.l10n.autoT0076);
+          } catch (_) {
+            if (!_state.mounted) {
+              return;
+            }
+            await _showInfoSnackBar(_state.context.l10n.autoT0077);
+          }
+        });
   }
 
   /// 显示“删除成功 + 撤销”提示，并等待用户动作结果。
@@ -285,10 +282,7 @@ class CalendarPageController {
     tracker?.onHintShown();
 
     final controller = messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
     );
     await controller.closed;
     tracker?.onHintClosed();
@@ -298,7 +292,9 @@ class CalendarPageController {
   /// - 优先使用当前页面上下文；
   /// - 当前上下文取不到时回退到 rootNavigator 上下文。
   HomeHintVisibilityController? _resolveHomeHintTracker() {
-    final fromPageContext = HomeHintVisibilityScope.maybeController(_state.context);
+    final fromPageContext = HomeHintVisibilityScope.maybeController(
+      _state.context,
+    );
     if (fromPageContext != null) {
       return fromPageContext;
     }
@@ -311,8 +307,9 @@ class CalendarPageController {
   /// - 先处理草稿分流；
   /// - 最终进入创建页并附带“选中日期”作为创建日期覆盖值。
   Future<void> openCreateEditorWithDraftPrompt() async {
-    final settingsService =
-        await _state.ref.read(settingsServiceProvider.future);
+    final settingsService = await _state.ref.read(
+      settingsServiceProvider.future,
+    );
     final existingDraft = _tryDecodeCreateDraft(
       settingsService.createDiaryDraftRaw,
     );
@@ -356,12 +353,8 @@ class CalendarPageController {
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
         return AlertDialog(
-          title: Text(
-            _state.context.l10n.autoT0081,
-          ),
-          content: Text(
-            _state.context.l10n.autoT0209,
-          ),
+          title: Text(_state.context.l10n.autoT0081),
+          content: Text(_state.context.l10n.autoT0209),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -372,22 +365,16 @@ class CalendarPageController {
                   dialogContext,
                 ).pop(_CalendarCreateDraftDecision.newEmpty);
               },
-              child: Text(
-                _state.context.l10n.autoT0082,
-              ),
+              child: Text(_state.context.l10n.autoT0082),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
               onPressed: () {
                 Navigator.of(
                   dialogContext,
                 ).pop(_CalendarCreateDraftDecision.continueEditing);
               },
-              child: Text(
-                _state.context.l10n.autoT0083,
-              ),
+              child: Text(_state.context.l10n.autoT0083),
             ),
           ],
         );

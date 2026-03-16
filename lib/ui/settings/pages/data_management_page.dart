@@ -26,12 +26,13 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   String _busyText = '';
 
   Future<void> _exportData() async {
+    final l10n = context.l10n;
     final exportPassword = await _showExportPasswordDialog();
     if (!mounted || exportPassword == null) {
       return;
     }
 
-    _setBusy(true, context.l10n.dataMgmtBusyExport);
+    _setBusy(true, l10n.dataMgmtBusyExport);
     try {
       final database = ref.read(appDatabaseProvider);
       final settings = await ref.read(settingsServiceProvider.future);
@@ -47,7 +48,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       if (Platform.isAndroid || Platform.isIOS) {
         // 移动端必须传 bytes，且系统会处理写入，不再执行二次写盘。
         savePath = await FilePicker.platform.saveFile(
-          dialogTitle: context.l10n.dataMgmtSaveDialogTitle,
+          dialogTitle: l10n.dataMgmtSaveDialogTitle,
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: const <String>['zip'],
@@ -56,7 +57,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       } else {
         // 桌面端返回目标路径后由应用写入文件。
         savePath = await FilePicker.platform.saveFile(
-          dialogTitle: context.l10n.dataMgmtSaveDialogTitle,
+          dialogTitle: l10n.dataMgmtSaveDialogTitle,
           fileName: fileName,
           type: FileType.custom,
           allowedExtensions: const <String>['zip'],
@@ -72,15 +73,15 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         return;
       }
       if (savePath == null || savePath.trim().isEmpty) {
-        _showSnack(context.l10n.dataMgmtExportCanceled);
+        _showSnack(l10n.dataMgmtExportCanceled);
         return;
       }
-      _showSnack(context.l10n.dataMgmtExportSuccess);
+      _showSnack(l10n.dataMgmtExportSuccess);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      _showSnack(context.l10n.dataMgmtExportFailed('$error'));
+      _showSnack(l10n.dataMgmtExportFailed('$error'));
     } finally {
       _setBusy(false, '');
     }
@@ -131,9 +132,9 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                     Text(
                       '请妥善保管此密码。本应用采用本地端到端加密，我们无法为您找回密码。一旦遗忘，导出的数据将永久无法恢复。',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.error,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        color: colorScheme.error,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -165,28 +166,31 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   }
 
   Future<void> _importData() async {
+    final l10n = context.l10n;
     final shouldImport = await _confirmImport();
     if (!mounted || !shouldImport) {
       return;
     }
 
     final picked = await FilePicker.platform.pickFiles(
-      dialogTitle: context.l10n.dataMgmtPickDialogTitle,
+      dialogTitle: l10n.dataMgmtPickDialogTitle,
       type: FileType.custom,
       allowedExtensions: const <String>['zip'],
     );
     if (!mounted) {
       return;
     }
-    if (picked == null || picked.files.isEmpty || picked.files.first.path == null) {
-      _showSnack(context.l10n.dataMgmtImportCanceled);
+    if (picked == null ||
+        picked.files.isEmpty ||
+        picked.files.first.path == null) {
+      _showSnack(l10n.dataMgmtImportCanceled);
       return;
     }
 
     final zipPath = picked.files.first.path!;
     String? importPassword;
 
-    _setBusy(true, context.l10n.dataMgmtBusyImport);
+    _setBusy(true, l10n.dataMgmtBusyImport);
     try {
       final passwordProtected = await DataArchiveService.isZipPasswordProtected(
         zipPath: zipPath,
@@ -199,7 +203,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       if (passwordProtected) {
         importPassword = await _showImportPasswordDialog();
         if (!mounted || importPassword == null) {
-          _showSnack(context.l10n.dataMgmtImportCanceled);
+          _showSnack(l10n.dataMgmtImportCanceled);
           return;
         }
       }
@@ -208,11 +212,11 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         return;
       }
       _setBusy(false, '');
-      _showSnack(context.l10n.dataMgmtImportFailed('$error'));
+      _showSnack(l10n.dataMgmtImportFailed('$error'));
       return;
     }
 
-    _setBusy(true, context.l10n.dataMgmtBusyImport);
+    _setBusy(true, l10n.dataMgmtBusyImport);
     try {
       final database = ref.read(appDatabaseProvider);
       final settings = await ref.read(settingsServiceProvider.future);
@@ -226,12 +230,12 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       if (!mounted) {
         return;
       }
-      _showSnack(context.l10n.dataMgmtImportSuccess);
+      _showSnack(l10n.dataMgmtImportSuccess);
     } catch (error) {
       if (!mounted) {
         return;
       }
-      _showSnack(context.l10n.dataMgmtImportFailed('$error'));
+      _showSnack(l10n.dataMgmtImportFailed('$error'));
     } finally {
       _setBusy(false, '');
     }
@@ -320,9 +324,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(context.l10n.dataMgmtImportAction),
             ),
@@ -394,8 +396,8 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
               Text(
                 context.l10n.dataMgmtHint,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -421,9 +423,8 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                         const SizedBox(height: 10),
                         Text(
                           _busyText,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),

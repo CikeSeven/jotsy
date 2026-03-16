@@ -31,19 +31,29 @@ class SettingsPage extends ConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              RadioListTile<String>(
-                value: 'zh',
-                groupValue: settingsService.appLocaleCode,
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () => Navigator.of(dialogContext).pop('zh'),
+                leading: FaIcon(
+                  settingsService.appLocaleCode == 'zh'
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
                 title: const Text('中文'),
-                controlAffinity: ListTileControlAffinity.leading,
-                onChanged: (value) => Navigator.of(dialogContext).pop(value),
               ),
-              RadioListTile<String>(
-                value: 'en',
-                groupValue: settingsService.appLocaleCode,
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () => Navigator.of(dialogContext).pop('en'),
+                leading: FaIcon(
+                  settingsService.appLocaleCode == 'en'
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
                 title: const Text('English'),
-                controlAffinity: ListTileControlAffinity.leading,
-                onChanged: (value) => Navigator.of(dialogContext).pop(value),
               ),
             ],
           ),

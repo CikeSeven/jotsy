@@ -7,7 +7,7 @@ part of 'app_database.dart';
 /// - 日历页月份打点与按日列表查询；
 /// - metadata 条件检索；
 /// - SQL 行记录映射为领域对象。
-mixin AppDatabaseDiaryQueries on _$AppDatabase {
+mixin _AppDatabaseDiaryQueries on _$AppDatabase {
   /// 监听全部未删除日记（包含归档与未归档）。
   ///
   /// 用于探索页这类“全量回顾/统计”场景，避免被列表筛选条件影响。
@@ -301,15 +301,17 @@ ORDER BY created_at ASC
       ],
       readsFrom: <TableInfo<Table, Object>>{diaries},
     ).watch().map((rows) {
-      return rows.map((row) {
-        final rawMood = row.readNullable<String>('mood_emoji');
-        final mood = rawMood?.trim();
-        return DiaryCalendarMarker(
-          diaryId: row.read<String>('diary_id'),
-          createdAt: _readDateTime(row, 'created_at'),
-          moodEmoji: (mood == null || mood.isEmpty) ? null : mood,
-        );
-      }).toList(growable: false);
+      return rows
+          .map((row) {
+            final rawMood = row.readNullable<String>('mood_emoji');
+            final mood = rawMood?.trim();
+            return DiaryCalendarMarker(
+              diaryId: row.read<String>('diary_id'),
+              createdAt: _readDateTime(row, 'created_at'),
+              moodEmoji: (mood == null || mood.isEmpty) ? null : mood,
+            );
+          })
+          .toList(growable: false);
     });
   }
 
@@ -342,12 +344,14 @@ ORDER BY updated_at DESC
 
   /// 映射“日记 + 标签”聚合行。
   List<DiaryWithTags> _mapDiaryWithTagsRows(List<QueryRow> rows) {
-    return rows.map((row) {
-      return DiaryWithTags(
-        diary: _mapDiaryFromRow(row),
-        tags: _parseTagsJson(row.read<String>('tags_json')),
-      );
-    }).toList(growable: false);
+    return rows
+        .map((row) {
+          return DiaryWithTags(
+            diary: _mapDiaryFromRow(row),
+            tags: _parseTagsJson(row.read<String>('tags_json')),
+          );
+        })
+        .toList(growable: false);
   }
 
   /// 解析 SQL 聚合得到的标签 JSON 字符串。
@@ -358,13 +362,16 @@ ORDER BY updated_at DESC
         return const <Tag>[];
       }
 
-      return decoded.whereType<Map<String, dynamic>>().map((entry) {
-        return Tag(
-          id: (entry['id'] as num).toInt(),
-          name: entry['name'] as String,
-          color: (entry['color'] as num).toInt(),
-        );
-      }).toList(growable: false);
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map((entry) {
+            return Tag(
+              id: (entry['id'] as num).toInt(),
+              name: entry['name'] as String,
+              color: (entry['color'] as num).toInt(),
+            );
+          })
+          .toList(growable: false);
     } catch (_) {
       return const <Tag>[];
     }

@@ -51,7 +51,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _listBottomExtraSpace = 12;
   static const Duration _calendarMorphDuration = Duration(milliseconds: 260);
 
-  late final CalendarPageController _controller;
+  late final _CalendarPageController _controller;
   late DateTime _focusedMonth;
   late DateTime _selectedDay;
   CalendarFormat _calendarFormat = CalendarFormat.month;
@@ -62,7 +62,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   @override
   void initState() {
     super.initState();
-    _controller = CalendarPageController(this);
+    _controller = _CalendarPageController(this);
     final now = DateTime.now();
     _selectedDay = DateUtils.dateOnly(now);
     _focusedMonth = _selectedDay;
@@ -412,6 +412,13 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     }
     _fabVisibleByScroll = visible;
     widget.onFabVisibilityChanged?.call(visible);
+  }
+
+  void applyState(VoidCallback mutate) {
+    if (!mounted) {
+      return;
+    }
+    setState(mutate);
   }
 }
 

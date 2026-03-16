@@ -47,12 +47,12 @@ class _HomePageState extends State<HomePage> {
   final Map<int, Future<void> Function()> _createActionByTab =
       <int, Future<void> Function()>{};
   final Map<int, bool> _fabVisibleByTab = <int, bool>{0: true, 1: true};
-  late final HomePageController _controller;
+  late final _HomePageController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = HomePageController(this);
+    _controller = _HomePageController(this);
     _controller.init();
   }
 

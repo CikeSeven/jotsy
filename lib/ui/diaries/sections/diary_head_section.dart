@@ -246,11 +246,7 @@ class DiaryHeadSection extends StatelessWidget {
 }
 
 class _SearchPreview extends StatelessWidget {
-  const _SearchPreview({
-    super.key,
-    required this.height,
-    required this.onTap,
-  });
+  const _SearchPreview({super.key, required this.height, required this.onTap});
 
   final double height;
   final VoidCallback onTap;
@@ -317,9 +313,11 @@ class _SearchPreview extends StatelessWidget {
                               context.l10n.autoT0129,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ],
@@ -378,20 +376,16 @@ class _ActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 设置弹层中的单行动作项：左侧使用系统默认 Radio 选中样式。
+    final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       dense: true,
       minLeadingWidth: 28,
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
       onTap: onTap,
-      leading: IgnorePointer(
-        child: Radio<bool>(
-          value: true,
-          groupValue: selected,
-          onChanged: (_) {},
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: VisualDensity.compact,
-        ),
+      leading: FaIcon(
+        selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
+        size: 16,
+        color: selected ? colorScheme.primary : colorScheme.onSurfaceVariant,
       ),
       title: Text(label),
     );

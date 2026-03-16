@@ -136,7 +136,6 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.link => FontAwesomeIcons.link,
     };
   }
-
 }
 
 DiaryToolbarItem? _diaryToolbarItemFromStorageKey(String value) {
@@ -225,7 +224,9 @@ List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders() {
 }
 
 /// 对外部传入顺序做去重 + 补全，防止配置异常导致工具项缺失。
-List<DiaryToolbarItem> _normalizeDiaryToolbarOrder(List<DiaryToolbarItem> order) {
+List<DiaryToolbarItem> _normalizeDiaryToolbarOrder(
+  List<DiaryToolbarItem> order,
+) {
   if (order.isEmpty) {
     return List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
   }
@@ -442,9 +443,6 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
     showSearchButton: false,
     showSubscript: false,
     showSuperscript: false,
-    showClipboardCut: false,
-    showClipboardCopy: false,
-    showClipboardPaste: false,
     customButtons: customButtons,
     embedButtons: embedButtons,
     buttonOptions: buttonOptions,

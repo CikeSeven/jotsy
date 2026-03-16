@@ -3,7 +3,7 @@ part of 'app_database.dart';
 /// 标签相关数据访问实现。
 ///
 /// 这部分只负责标签本身的增删查，不处理日记正文与归档语义。
-mixin AppDatabaseTagOps on _$AppDatabase {
+mixin _AppDatabaseTagOps on _$AppDatabase {
   /// 按名称升序实时监听全部标签。
   Stream<List<Tag>> watchAllTags() {
     return (select(tags)..orderBy(<OrderingTerm Function(Tags)>[
@@ -25,9 +25,9 @@ mixin AppDatabaseTagOps on _$AppDatabase {
           ..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
     if (existing != null) {
       if (existing.color != color) {
-        await (update(tags)..where((Tags t) => t.id.equals(existing.id))).write(
-          TagsCompanion(color: Value<int>(color)),
-        );
+        await (update(tags)..where(
+          (Tags t) => t.id.equals(existing.id),
+        )).write(TagsCompanion(color: Value<int>(color)));
       }
       return existing.id;
     }
@@ -53,8 +53,8 @@ mixin AppDatabaseTagOps on _$AppDatabase {
     }
 
     final duplicate =
-        await (select(tags)..where((Tags t) => t.name.equals(normalizedName)))
-            .getSingleOrNull();
+        await (select(tags)
+          ..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
     if (duplicate != null && duplicate.id != tagId) {
       throw const FormatException('已存在同名标签');
     }

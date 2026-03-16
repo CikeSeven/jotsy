@@ -21,10 +21,10 @@ part 'app_database_migrations.dart';
 @DriftDatabase(tables: <Type>[Diaries, Tags, DiaryTags])
 class AppDatabase extends _$AppDatabase
     with
-        AppDatabaseTagOps,
-        AppDatabaseDiaryQueries,
-        AppDatabaseDiaryWrites,
-        AppDatabaseMigrations {
+        _AppDatabaseTagOps,
+        _AppDatabaseDiaryQueries,
+        _AppDatabaseDiaryWrites,
+        _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
   @override

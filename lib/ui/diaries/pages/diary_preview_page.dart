@@ -33,9 +33,7 @@ import '../widgets/publish_diary_cover_sliver.dart';
 import 'edit_diary_page.dart';
 
 /// 预览页返回结果。
-enum DiaryPreviewResult {
-  deleted,
-}
+enum DiaryPreviewResult { deleted }
 
 /// 日记预览页（阅读优先）。
 ///
@@ -195,7 +193,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       action: () async {
         final l10n = context.l10n;
         final surfaceColor = Theme.of(context).colorScheme.surface;
-        final pixelRatio = MediaQuery.of(context).devicePixelRatio.clamp(1.0, 2.2);
+        final pixelRatio = MediaQuery.of(
+          context,
+        ).devicePixelRatio.clamp(1.0, 2.2);
         setState(() {
           _isSharingImage = true;
           // 分享截图时禁用封面折叠动画，避免长图拼接出现拖影。
@@ -212,13 +212,16 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             _previewScrollController.jumpTo(0);
           }
           await Future<void>.delayed(const Duration(milliseconds: 60));
-          final renderObject = _shareCaptureKey.currentContext?.findRenderObject();
+          final renderObject =
+              _shareCaptureKey.currentContext?.findRenderObject();
           if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
             throw Exception('截图节点未就绪');
           }
           final imageBytes = await renderObject.screenshot(
             scrollController:
-                _previewScrollController.hasClients ? _previewScrollController : null,
+                _previewScrollController.hasClients
+                    ? _previewScrollController
+                    : null,
             format: ShotFormat.png,
             quality: 100,
             maxHeight: 22000,
@@ -294,13 +297,13 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   String _buildExportFileBaseName(DiaryWithTags detail) {
-    final rawTitle = detail.diary.title.trim().isEmpty
-        ? 'diary'
-        : detail.diary.title.trim();
+    final rawTitle =
+        detail.diary.title.trim().isEmpty ? 'diary' : detail.diary.title.trim();
     final normalized = rawTitle
         .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
         .replaceAll(RegExp(r'\s+'), '_');
-    final short = normalized.length > 24 ? normalized.substring(0, 24) : normalized;
+    final short =
+        normalized.length > 24 ? normalized.substring(0, 24) : normalized;
     return short.isEmpty ? 'diary' : short;
   }
 
@@ -379,7 +382,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             title: detail.diary.title,
             createdAt: detail.diary.createdAt,
             updatedAt: detail.diary.updatedAt,
-            tagNames: detail.tags.map((tag) => tag.name).toList(growable: false),
+            tagNames: detail.tags
+                .map((tag) => tag.name)
+                .toList(growable: false),
             document: controller.document,
           );
           final bytes = Uint8List.fromList(utf8.encode(markdown));
@@ -423,9 +428,6 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       action: () async {
         setState(() => _isExportingFile = true);
         try {
-          final title = detail.diary.title.trim().isEmpty
-              ? context.l10n.autoT0033
-              : detail.diary.title.trim();
           final unifiedFont = await _loadPdfUnifiedFont();
           final unifiedTheme = pw.ThemeData.withFont(
             base: unifiedFont,
@@ -491,7 +493,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         width: double.infinity,
         height: 420,
         child: DecoratedBox(
-          decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+          ),
           child: _buildPreviewCoverImage(source),
         ),
       ),
@@ -500,7 +504,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
   Widget _buildPreviewCoverImage(String source) {
     final uri = Uri.tryParse(source);
-    final isRemote = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    final isRemote =
+        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
     if (isRemote) {
       return Image.network(
         source,
@@ -602,9 +607,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(context.l10n.commonDelete),
             ),
@@ -814,10 +817,10 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       final mood = metadataContext['moodEmoji']?.toString().trim();
       if (mood != null && mood.isNotEmpty) {
         items.add(
-            _MetaChipItem(
-              kind: _MetaChipKind.mood,
-              label: '${context.l10n.autoT0116} $mood',
-            ),
+          _MetaChipItem(
+            kind: _MetaChipKind.mood,
+            label: '${context.l10n.autoT0116} $mood',
+          ),
         );
       }
       final energyRaw = metadataContext['energyLevel'];
@@ -827,7 +830,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         _ => null,
       };
       if (parsedEnergy != null) {
-        final normalizedEnergy = EnergyBatteryIndicator.normalizeValue(parsedEnergy);
+        final normalizedEnergy = EnergyBatteryIndicator.normalizeValue(
+          parsedEnergy,
+        );
         items.add(
           _MetaChipItem(
             kind: _MetaChipKind.energy,
@@ -896,9 +901,11 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: <Widget>[
-                for (int index = 0;
-                    index < locationWeatherItems.length;
-                    index++) ...<Widget>[
+                for (
+                  int index = 0;
+                  index < locationWeatherItems.length;
+                  index++
+                ) ...<Widget>[
                   if (index > 0) const SizedBox(width: 12),
                   locationWeatherItems[index],
                 ],
@@ -921,7 +928,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   Widget _buildMetaChip(_MetaChipItem item, ColorScheme colorScheme) {
-    final isEnergyItem = item.kind == _MetaChipKind.energy && item.energyLevel != null;
+    final isEnergyItem =
+        item.kind == _MetaChipKind.energy && item.energyLevel != null;
     final isTagItem = item.kind == _MetaChipKind.tag && item.tagColor != null;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -933,17 +941,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           if (isEnergyItem)
-            EnergyBatteryIndicator(
-              value: item.energyLevel!,
-              iconSize: 14,
-            )
+            EnergyBatteryIndicator(value: item.energyLevel!, iconSize: 14)
           else if (isTagItem)
             Text(
               '#',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Color(item.tagColor!),
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: Color(item.tagColor!),
+                fontWeight: FontWeight.w700,
+              ),
             ),
           if (isEnergyItem || isTagItem) const SizedBox(width: 6),
           ConstrainedBox(
@@ -969,20 +974,11 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        if (leading != null)
-          leading
-        else
-          FaIcon(
-            icon!,
-            size: 12,
-            color: color,
-          ),
+        if (leading != null) leading else FaIcon(icon!, size: 12, color: color),
         const SizedBox(width: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: color,
-              ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color),
         ),
       ],
     );
@@ -1002,7 +998,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
     // 这里不能只看 contentText（纯文本镜像），否则“仅图片正文”会被误判为空。
     // 统一按 Quill 文档是否存在可见内容判断，图片/视频/嵌入都属于正文内容。
-    final hasVisibleContent = diaryDocumentHasVisibleContent(controller.document);
+    final hasVisibleContent = diaryDocumentHasVisibleContent(
+      controller.document,
+    );
     final contentBody =
         hasVisibleContent
             ? quill.QuillEditor.basic(
@@ -1033,8 +1031,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         Text(
           editedText,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -1098,9 +1096,10 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         _hadLoadedData = true;
         _currentDetailForTodoSave = detail;
         _bindPreviewController(detail.diary.content);
-        final title = detail.diary.title.trim().isEmpty
-            ? context.l10n.autoT0033
-            : detail.diary.title.trim();
+        final title =
+            detail.diary.title.trim().isEmpty
+                ? context.l10n.autoT0033
+                : detail.diary.title.trim();
         final coverSource = _resolvePreviewCover(detail.diary);
 
         return Scaffold(
@@ -1145,9 +1144,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                           padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                           child: Text(
                             title,
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                         ),
                       ),
@@ -1166,9 +1164,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                     ],
                   ),
                 ),
-                Positioned.fill(
-                  child: _buildActionLoadingOverlay(),
-                ),
+                Positioned.fill(child: _buildActionLoadingOverlay()),
               ],
             ),
           ),
@@ -1178,11 +1174,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 }
 
-enum _MetaChipKind {
-  tag,
-  mood,
-  energy,
-}
+enum _MetaChipKind { tag, mood, energy }
 
 class _MetaChipItem {
   const _MetaChipItem({

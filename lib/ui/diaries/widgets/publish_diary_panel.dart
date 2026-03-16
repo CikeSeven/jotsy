@@ -610,12 +610,17 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
 
   Widget _buildTagEntryTile(BuildContext context) {
     final l10n = context.l10n;
+    final theme = Theme.of(context);
     final selectedTags =
         widget.tags
             .where((tag) => widget.selectedTagIds.contains(tag.id))
             .toList();
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = theme.colorScheme;
+    final tagChipBackgroundColor =
+        theme.brightness == Brightness.light
+            ? colorScheme.surface
+            : colorScheme.surfaceContainerHigh;
     // 标签入口卡片：仅展示已选择标签摘要，点击进入标签页。
     return Material(
       color: colorScheme.surfaceContainerHighest,
@@ -668,8 +673,8 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                                             pressElevation: 0,
                                             shadowColor: Colors.transparent,
                                             shape: const StadiumBorder(),
-                                            backgroundColor: Colors.white
-                                                .withValues(alpha: 0.82),
+                                            backgroundColor:
+                                                tagChipBackgroundColor,
                                             label: Text(
                                               tag.name,
                                               style:

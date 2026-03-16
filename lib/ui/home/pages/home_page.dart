@@ -74,9 +74,8 @@ class _HomePageState extends State<HomePage> {
     final snackBarBottomInset = bottomSafeInset + BottomNav.navHeight;
 
     final baseTheme = Theme.of(context);
-    final homeTabBackgroundColor =
-        baseTheme.brightness == Brightness.light ? Colors.white : Colors.black;
     final colorScheme = baseTheme.colorScheme;
+    final homeTabBackgroundColor = colorScheme.surface;
     final snackBarTheme = baseTheme.snackBarTheme.copyWith(
       behavior: SnackBarBehavior.floating,
       backgroundColor: colorScheme.surfaceContainerHigh.withValues(alpha: 0.96),

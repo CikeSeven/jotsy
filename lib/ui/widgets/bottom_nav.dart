@@ -30,12 +30,10 @@ class BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final navBackgroundColor = Color.alphaBlend(
-      colorScheme.onSurface.withValues(
-        alpha: theme.brightness == Brightness.light ? 0.03 : 0.08,
-      ),
-      colorScheme.surface,
-    );
+    final navBackgroundColor =
+        theme.brightness == Brightness.light
+            ? colorScheme.surfaceContainer
+            : colorScheme.surfaceContainerHigh;
     final maxIndex = items.length - 1;
     final clampedIndex =
         selectedIndex < 0

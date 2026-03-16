@@ -211,7 +211,6 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                           return SliverMainAxisGroup(
                             slivers: <Widget>[
                               DiariesListSection(
-                                themeBrightness: brightness,
                                 diaries: pagedDiaries,
                                 layoutMode: DiaryLayoutMode.list,
                                 selectedDiaryIds: const <String>{},

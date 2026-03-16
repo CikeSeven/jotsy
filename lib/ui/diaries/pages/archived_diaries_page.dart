@@ -126,7 +126,6 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
               slivers: <Widget>[
                 // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
                 DiariesListSection(
-                  themeBrightness: brightness,
                   diaries: diaries,
                   layoutMode: DiaryLayoutMode.list,
                   selectedDiaryIds: _selectedDiaryIds,

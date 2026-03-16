@@ -27,7 +27,6 @@ class DiariesListSection extends StatelessWidget {
 
   const DiariesListSection({
     super.key,
-    required this.themeBrightness,
     required this.diaries,
     required this.layoutMode,
     required this.selectedDiaryIds,
@@ -43,9 +42,6 @@ class DiariesListSection extends StatelessWidget {
     this.swipeActionIconColor,
     this.isSearchResultEmpty = false,
   });
-
-  /// 当前主题亮暗，用于选择背景基色。
-  final Brightness themeBrightness;
 
   /// 视图层已过滤/排序后的日记数据。
   final List<DiaryWithTags> diaries;
@@ -76,8 +72,7 @@ class DiariesListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLightMode = themeBrightness == Brightness.light;
-    final backgroundColor = isLightMode ? Colors.white : colorScheme.surface;
+    final backgroundColor = colorScheme.surface;
     final waterfallLayoutSignature = _buildWaterfallLayoutSignature(diaries);
 
     // 空态：根据是否搜索场景展示不同文案。
@@ -147,7 +142,9 @@ class DiariesListSection extends StatelessWidget {
                   Container(
                     height: 3,
                     width: double.infinity,
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant.withValues(alpha: 0.22),
                   ),
               ],
             ),
@@ -177,7 +174,7 @@ class DiariesListSection extends StatelessWidget {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final baseItemBackgroundColor =
-        compact ? colorScheme.surface : backgroundColor;
+        compact ? colorScheme.surfaceContainerLow : backgroundColor;
     final itemBackgroundColor =
         diary.diary.isPinned
             ? Color.alphaBlend(

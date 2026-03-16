@@ -333,7 +333,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                             key: ValueKey<String>(
                                               'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
                                             ),
-                                            themeBrightness: brightness,
                                             diaries: pagedDisplayedItems,
                                             layoutMode: _layoutMode,
                                             isSelectionMode: _isSelectionMode,

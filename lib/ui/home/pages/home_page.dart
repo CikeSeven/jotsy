@@ -221,7 +221,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _buildPageView(List<Widget> pages) {
     return PageView(
       controller: _controller.pageController,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const PageScrollPhysics(),
       onPageChanged: (index) {
         setState(() {
           _currentIndex = index;

@@ -42,15 +42,20 @@ class DiariesListSection extends StatelessWidget {
 
   /// 当前主题亮暗，用于选择背景基色。
   final Brightness themeBrightness;
+
   /// 视图层已过滤/排序后的日记数据。
   final List<DiaryWithTags> diaries;
+
   /// 列表布局模式：列表 or 瀑布流。
   final DiaryLayoutMode layoutMode;
+
   /// 当前被选中的日记 ID 集合。
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
+
   /// 标记“正在收起隐藏”的日记项集合。
   final Set<String> pendingHideDiaryIds;
+
   /// 标记“正在出现动画”的日记项集合。
   final Set<String> appearingDiaryIds;
   final VoidCallback onCreate;
@@ -60,6 +65,7 @@ class DiariesListSection extends StatelessWidget {
   final IconData swipeActionIcon;
   final Color? swipeActionBackgroundColor;
   final Color? swipeActionIconColor;
+
   /// 空列表时是否处于“搜索结果为空”语义。
   final bool isSearchResultEmpty;
 
@@ -177,9 +183,8 @@ class DiariesListSection extends StatelessWidget {
             : baseItemBackgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
     final previewCover = _resolvePreviewCover(diary.diary);
-    final title = diary.diary.title.trim().isEmpty
-        ? l10n.autoT0033
-        : diary.diary.title;
+    final title =
+        diary.diary.title.trim().isEmpty ? l10n.autoT0033 : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
     final hasTags = diary.tags.isNotEmpty;
 
@@ -206,7 +211,7 @@ class DiariesListSection extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 preview,
-                maxLines: compact ? 4 : 3,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
@@ -257,14 +262,12 @@ class DiariesListSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               compactHeader,
-              if (hasTags) ...[
-                DiaryItemTagRow(tags: diary.tags),
-              ],
+              if (hasTags) ...[DiaryItemTagRow(tags: diary.tags)],
               if (preview.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(
                   preview,
-                  maxLines: 4,
+                  maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
@@ -388,11 +391,7 @@ class DiariesListSection extends StatelessWidget {
               color: swipeBackgroundColor,
               alignment: Alignment.centerRight,
               padding: const EdgeInsets.only(right: AppSpacing.l),
-              child: FaIcon(
-                swipeActionIcon,
-                size: 16,
-                color: swipeIconColor,
-              ),
+              child: FaIcon(swipeActionIcon, size: 16, color: swipeIconColor),
             ),
             onDismissed: (_) => onArchiveDiary!(diary.diary.diaryId),
             child: animatedBaseItem,
@@ -454,10 +453,7 @@ class DiariesListSection extends StatelessWidget {
           child: Align(
             alignment: Alignment.topCenter,
             heightFactor: value.clamp(0, 1),
-            child: Opacity(
-              opacity: value.clamp(0, 1),
-              child: animatedChild,
-            ),
+            child: Opacity(opacity: value.clamp(0, 1), child: animatedChild),
           ),
         );
       },
@@ -553,7 +549,8 @@ class DiariesListSection extends StatelessWidget {
   }) {
     final trimmed = imageSource.trim();
     final uri = Uri.tryParse(trimmed);
-    final isNetwork = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    final isNetwork =
+        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
     final imageWidget =
         isNetwork
@@ -561,24 +558,26 @@ class DiariesListSection extends StatelessWidget {
               trimmed,
               fit: BoxFit.cover,
               errorBuilder:
-                  (BuildContext context, Object error, StackTrace? stackTrace) =>
-                      _buildCoverFallback(),
+                  (
+                    BuildContext context,
+                    Object error,
+                    StackTrace? stackTrace,
+                  ) => _buildCoverFallback(),
             )
             : Image.file(
               File(trimmed),
               fit: BoxFit.cover,
               errorBuilder:
-                  (BuildContext context, Object error, StackTrace? stackTrace) =>
-                      _buildCoverFallback(),
+                  (
+                    BuildContext context,
+                    Object error,
+                    StackTrace? stackTrace,
+                  ) => _buildCoverFallback(),
             );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: imageWidget,
-      ),
+      child: SizedBox(width: width, height: height, child: imageWidget),
     );
   }
 

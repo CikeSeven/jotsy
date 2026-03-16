@@ -50,29 +50,33 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
     );
     _clearScale = TweenSequence<double>(<TweenSequenceItem<double>>[
       TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 1, end: 0.78).chain(
-          CurveTween(curve: const Cubic(0.2, 0.0, 0.0, 1.0)),
-        ),
+        tween: Tween<double>(
+          begin: 1,
+          end: 0.78,
+        ).chain(CurveTween(curve: const Cubic(0.2, 0.0, 0.0, 1.0))),
         weight: 32,
       ),
       TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 0.78, end: 1.06).chain(
-          CurveTween(curve: const Cubic(0.16, 1, 0.3, 1)),
-        ),
+        tween: Tween<double>(
+          begin: 0.78,
+          end: 1.06,
+        ).chain(CurveTween(curve: const Cubic(0.16, 1, 0.3, 1))),
         weight: 44,
       ),
       TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 1.06, end: 1).chain(
-          CurveTween(curve: Curves.easeOutCubic),
-        ),
+        tween: Tween<double>(
+          begin: 1.06,
+          end: 1,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
         weight: 24,
       ),
     ]).animate(_clearController);
     _clearRotation = TweenSequence<double>(<TweenSequenceItem<double>>[
       TweenSequenceItem<double>(
-        tween: Tween<double>(begin: 0, end: _halfTurn).chain(
-          CurveTween(curve: const Cubic(0.2, 0.0, 0.0, 1.0)),
-        ),
+        tween: Tween<double>(
+          begin: 0,
+          end: _halfTurn,
+        ).chain(CurveTween(curve: const Cubic(0.2, 0.0, 0.0, 1.0))),
         weight: 100,
       ),
     ]).animate(_clearController);
@@ -105,19 +109,18 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = widget.selectedTagFilterIds.isNotEmpty;
-    final isDark = brightness == Brightness.dark;
-    // 暗色主题避免白底 chip，改用表面色阶保持一致视觉层次。
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // 统一走语义表面色，避免亮色主题出现“纯白突兀”的标签底色。
     final unselectedChipColor =
         isDark
             ? colorScheme.surfaceContainerHigh.withValues(alpha: 0.86)
-            : Colors.white;
+            : colorScheme.surfaceContainerLow.withValues(alpha: 0.98);
     final selectedChipColor =
         isDark
             ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.96)
-            : Colors.white;
+            : colorScheme.surfaceContainerLowest.withValues(alpha: 0.99);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

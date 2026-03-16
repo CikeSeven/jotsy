@@ -77,6 +77,36 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
   }
 
+  SliverAppBar _buildPreviewSliverAppBar({required DiaryWithTags detail}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SliverAppBar(
+      floating: true,
+      pinned: false,
+      centerTitle: true,
+      automaticallyImplyLeading: false,
+      leading: _buildBackLeading(),
+      title: Text(context.l10n.autoT0120),
+      actions: <Widget>[
+        IconButton(
+          tooltip: context.l10n.commonEdit,
+          onPressed: _openEditor,
+          icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
+        ),
+        IconButton(
+          tooltip: context.l10n.autoT0125,
+          onPressed: () => _showActionBottomSheet(detail),
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
+        ),
+      ],
+      foregroundColor: colorScheme.onSurface,
+      backgroundColor: colorScheme.surface,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+    );
+  }
+
   @override
   void dispose() {
     _todoAutoSaveDebounceTimer?.cancel();
@@ -1103,25 +1133,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         final coverSource = _resolvePreviewCover(detail.diary);
 
         return Scaffold(
-          appBar: AppTopBar(
-            centerTitle: true,
-            title: Text(context.l10n.autoT0120),
-            leading: _buildBackLeading(),
-            actions: <Widget>[
-              IconButton(
-                tooltip: context.l10n.commonEdit,
-                onPressed: _openEditor,
-                icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
-              ),
-              IconButton(
-                tooltip: context.l10n.autoT0125,
-                onPressed: () => _showActionBottomSheet(detail),
-                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
-              ),
-            ],
-          ),
           body: SafeArea(
-            top: false,
+            top: true,
             child: Stack(
               children: <Widget>[
                 WidgetShotPlus(
@@ -1129,6 +1142,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                   child: CustomScrollView(
                     controller: _previewScrollController,
                     slivers: <Widget>[
+                      _buildPreviewSliverAppBar(detail: detail),
                       if (coverSource != null)
                         _shareCaptureStaticCover
                             ? _buildStaticShareCoverSliver(coverSource)

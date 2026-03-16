@@ -149,6 +149,26 @@
   "@settingsThemeMode": {
     "description": "Auto-generated metadata for settingsThemeMode."
   },
+  "settingsTabSwitchCurve": "Tab switch curve",
+  "@settingsTabSwitchCurve": {
+    "description": "Title for selecting bottom tab switch animation curve."
+  },
+  "settingsTabSwitchCurveSubtitle": "Choose the animation feel when switching tabs",
+  "@settingsTabSwitchCurveSubtitle": {
+    "description": "Subtitle for tab switch curve selection setting."
+  },
+  "settingsTabSwitchCurveEaseOutCirc": "Smooth (Circ)",
+  "@settingsTabSwitchCurveEaseOutCirc": {
+    "description": "Option label for easeOutCirc tab switch animation curve."
+  },
+  "settingsTabSwitchCurveEaseOutCubic": "Balanced (Cubic)",
+  "@settingsTabSwitchCurveEaseOutCubic": {
+    "description": "Option label for easeOutCubic tab switch animation curve."
+  },
+  "settingsTabSwitchCurveLinear": "Linear",
+  "@settingsTabSwitchCurveLinear": {
+    "description": "Option label for linear tab switch animation curve."
+  },
   "settingsLanguage": "Language",
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."

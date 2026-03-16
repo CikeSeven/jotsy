@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
@@ -11,13 +13,14 @@ import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../widgets/bottom_nav.dart';
 part '../controllers/home_page_controller.dart';
 
 /// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({
     super.key,
     this.startupNotice,
@@ -28,10 +31,10 @@ class HomePage extends StatefulWidget {
   final ValueListenable<bool> homeHintVisibleListenable;
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   // SnackBar 左右留白，统一 Home 内提示视觉。
   static const double _snackBarSideInset = 16;
   static const Duration _fabVisibilityDuration = Duration(milliseconds: 320);
@@ -152,6 +155,42 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
+    final settingsService = ref.watch(settingsServiceProvider).asData?.value;
+    if (settingsService == null) {
+      _controller.pageSwitchCurve =
+          SettingsService.defaultHomeTabSwitchCurveType.curve;
+      return _buildHomeShell(
+        baseTheme: baseTheme,
+        snackBarTheme: snackBarTheme,
+        pages: pages,
+        navItems: navItems,
+      );
+    }
+
+    return ValueListenableBuilder<HomeTabSwitchCurveType>(
+      valueListenable: settingsService.homeTabSwitchCurveNotifier,
+      builder: (
+        BuildContext context,
+        HomeTabSwitchCurveType curveType,
+        Widget? child,
+      ) {
+        _controller.pageSwitchCurve = curveType.curve;
+        return _buildHomeShell(
+          baseTheme: baseTheme,
+          snackBarTheme: snackBarTheme,
+          pages: pages,
+          navItems: navItems,
+        );
+      },
+    );
+  }
+
+  Widget _buildHomeShell({
+    required ThemeData baseTheme,
+    required SnackBarThemeData snackBarTheme,
+    required List<Widget> pages,
+    required List<BottomNavItem> navItems,
+  }) {
     return Theme(
       data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
       child: PopScope(

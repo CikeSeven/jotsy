@@ -10,10 +10,10 @@ class _HomePageController {
   _HomePageController(this._state);
 
   static const Duration _pageSwitchDuration = Duration(milliseconds: 270);
-  static const Curve _pageSwitchCurve = Curves.easeOutCirc;
 
   final _HomePageState _state;
   late final PageController pageController;
+  Curve pageSwitchCurve = SettingsService.defaultHomeTabSwitchCurveType.curve;
 
   void init() {
     pageController = PageController(initialPage: _state._currentIndex);
@@ -38,7 +38,7 @@ class _HomePageController {
     pageController.animateToPage(
       index,
       duration: _pageSwitchDuration,
-      curve: _pageSwitchCurve,
+      curve: pageSwitchCurve,
     );
   }
 

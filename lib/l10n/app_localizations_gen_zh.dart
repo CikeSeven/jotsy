@@ -112,6 +112,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeMode => '主题模式';
 
   @override
+  String get settingsTabSwitchCurve => '标签页切换曲线';
+
+  @override
+  String get settingsTabSwitchCurveSubtitle => '选择底部标签页切换时的动画手感';
+
+  @override
+  String get settingsTabSwitchCurveEaseOutCirc => '顺滑（Circ）';
+
+  @override
+  String get settingsTabSwitchCurveEaseOutCubic => '均衡（Cubic）';
+
+  @override
+  String get settingsTabSwitchCurveLinear => '线性';
+
+  @override
   String get settingsLanguage => '语言';
 
   @override

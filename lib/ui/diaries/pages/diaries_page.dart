@@ -241,7 +241,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                           ),
                           slivers: <Widget>[
                             SliverPersistentHeader(
-                              floating: true,
+                              pinned: _isSelectionMode,
+                              floating: !_isSelectionMode,
                               delegate: _FixedSliverHeaderDelegate(
                                 height: _headerCollapsibleHeight,
                                 backgroundColor:

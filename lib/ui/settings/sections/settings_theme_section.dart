@@ -31,63 +31,78 @@ class SettingsThemeSection extends StatelessWidget {
                 Color themeSeedColor,
                 Widget? child,
               ) {
-                final selection = resolveColorPaletteSelection(
-                  initialColor: themeSeedColor.toARGB32(),
-                  fallbackFamilyIndex: _fallbackFamilyIndex,
-                  fallbackColorIndex: _fallbackColorIndex,
-                  preserveUnknownColor: false,
-                );
-                final selectedFamily =
-                    kColorPaletteFamilies[selection.familyIndex];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: SegmentedButton<ThemeMode>(
-                          selected: <ThemeMode>{mode},
-                          onSelectionChanged: (Set<ThemeMode> selection) {
-                            final next = selection.firstOrNull;
-                            if (next != null) {
-                              settingsService.setThemeMode(next);
-                            }
-                          },
-                          segments: <ButtonSegment<ThemeMode>>[
-                            ButtonSegment<ThemeMode>(
-                              value: ThemeMode.system,
-                              label: Text(l10n.autoT0046),
-                              icon: Icon(Icons.settings_suggest_outlined),
+                return ValueListenableBuilder<HomeTabSwitchCurveType>(
+                  valueListenable: settingsService.homeTabSwitchCurveNotifier,
+                  builder: (
+                    BuildContext context,
+                    HomeTabSwitchCurveType curveType,
+                    Widget? child,
+                  ) {
+                    final selection = resolveColorPaletteSelection(
+                      initialColor: themeSeedColor.toARGB32(),
+                      fallbackFamilyIndex: _fallbackFamilyIndex,
+                      fallbackColorIndex: _fallbackColorIndex,
+                      preserveUnknownColor: false,
+                    );
+                    final selectedFamily =
+                        kColorPaletteFamilies[selection.familyIndex];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: SegmentedButton<ThemeMode>(
+                              selected: <ThemeMode>{mode},
+                              onSelectionChanged: (Set<ThemeMode> selection) {
+                                final next = selection.firstOrNull;
+                                if (next != null) {
+                                  settingsService.setThemeMode(next);
+                                }
+                              },
+                              segments: <ButtonSegment<ThemeMode>>[
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.system,
+                                  label: Text(l10n.autoT0046),
+                                  icon: Icon(Icons.settings_suggest_outlined),
+                                ),
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.light,
+                                  label: Text(l10n.autoT0047),
+                                  icon: Icon(Icons.light_mode_outlined),
+                                ),
+                                ButtonSegment<ThemeMode>(
+                                  value: ThemeMode.dark,
+                                  label: Text(l10n.autoT0048),
+                                  icon: Icon(Icons.dark_mode_outlined),
+                                ),
+                              ],
                             ),
-                            ButtonSegment<ThemeMode>(
-                              value: ThemeMode.light,
-                              label: Text(l10n.autoT0047),
-                              icon: Icon(Icons.light_mode_outlined),
-                            ),
-                            ButtonSegment<ThemeMode>(
-                              value: ThemeMode.dark,
-                              label: Text(l10n.autoT0048),
-                              icon: Icon(Icons.dark_mode_outlined),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 16),
+                          _TabSwitchCurveSelector(
+                            selectedCurveType: curveType,
+                            onChanged:
+                                settingsService.setHomeTabSwitchCurveType,
+                          ),
+                          const SizedBox(height: 16),
+                          _ThemeSeedColorPicker(
+                            selectedColor: themeSeedColor,
+                            selectedFamilyIndex: selection.familyIndex,
+                            selectedColorIndex: selection.colorIndex,
+                            selectedFamily: selectedFamily,
+                            onSelectFamily: (int familyIndex) {
+                              settingsService.setThemeSeedColor(
+                                kColorPaletteFamilies[familyIndex].colors[0],
+                              );
+                            },
+                            onSelectColor: settingsService.setThemeSeedColor,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      _ThemeSeedColorPicker(
-                        selectedColor: themeSeedColor,
-                        selectedFamilyIndex: selection.familyIndex,
-                        selectedColorIndex: selection.colorIndex,
-                        selectedFamily: selectedFamily,
-                        onSelectFamily: (int familyIndex) {
-                          settingsService.setThemeSeedColor(
-                            kColorPaletteFamilies[familyIndex].colors[0],
-                          );
-                        },
-                        onSelectColor: settingsService.setThemeSeedColor,
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             );
@@ -111,6 +126,51 @@ class SettingsThemeSection extends StatelessWidget {
       error:
           (Object error, StackTrace stackTrace) =>
               ListTile(title: Text(l10n.autoT0045(error.toString()))),
+    );
+  }
+}
+
+class _TabSwitchCurveSelector extends StatelessWidget {
+  const _TabSwitchCurveSelector({
+    required this.selectedCurveType,
+    required this.onChanged,
+  });
+
+  final HomeTabSwitchCurveType selectedCurveType;
+  final ValueChanged<HomeTabSwitchCurveType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return DropdownButtonFormField<HomeTabSwitchCurveType>(
+      key: ValueKey<HomeTabSwitchCurveType>(selectedCurveType),
+      initialValue: selectedCurveType,
+      decoration: InputDecoration(
+        isDense: true,
+        labelText: l10n.settingsTabSwitchCurve,
+        helperText: l10n.settingsTabSwitchCurveSubtitle,
+        border: const OutlineInputBorder(),
+      ),
+      items: <DropdownMenuItem<HomeTabSwitchCurveType>>[
+        DropdownMenuItem<HomeTabSwitchCurveType>(
+          value: HomeTabSwitchCurveType.easeOutCirc,
+          child: Text(l10n.settingsTabSwitchCurveEaseOutCirc),
+        ),
+        DropdownMenuItem<HomeTabSwitchCurveType>(
+          value: HomeTabSwitchCurveType.easeOutCubic,
+          child: Text(l10n.settingsTabSwitchCurveEaseOutCubic),
+        ),
+        DropdownMenuItem<HomeTabSwitchCurveType>(
+          value: HomeTabSwitchCurveType.linear,
+          child: Text(l10n.settingsTabSwitchCurveLinear),
+        ),
+      ],
+      onChanged: (HomeTabSwitchCurveType? next) {
+        if (next == null) {
+          return;
+        }
+        onChanged(next);
+      },
     );
   }
 }

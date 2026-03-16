@@ -149,6 +149,26 @@
   "@settingsThemeMode": {
     "description": "Auto-generated metadata for settingsThemeMode."
   },
+  "settingsTabSwitchCurve": "标签页切换曲线",
+  "@settingsTabSwitchCurve": {
+    "description": "Title for selecting bottom tab switch animation curve."
+  },
+  "settingsTabSwitchCurveSubtitle": "选择底部标签页切换时的动画手感",
+  "@settingsTabSwitchCurveSubtitle": {
+    "description": "Subtitle for tab switch curve selection setting."
+  },
+  "settingsTabSwitchCurveEaseOutCirc": "顺滑（Circ）",
+  "@settingsTabSwitchCurveEaseOutCirc": {
+    "description": "Option label for easeOutCirc tab switch animation curve."
+  },
+  "settingsTabSwitchCurveEaseOutCubic": "均衡（Cubic）",
+  "@settingsTabSwitchCurveEaseOutCubic": {
+    "description": "Option label for easeOutCubic tab switch animation curve."
+  },
+  "settingsTabSwitchCurveLinear": "线性",
+  "@settingsTabSwitchCurveLinear": {
+    "description": "Option label for linear tab switch animation curve."
+  },
   "settingsLanguage": "语言",
   "@settingsLanguage": {
     "description": "Auto-generated metadata for settingsLanguage."

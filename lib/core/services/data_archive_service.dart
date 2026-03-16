@@ -160,6 +160,7 @@ class DataArchiveService {
       'settings': <String, Object?>{
         'themeMode': settingsService.themeModeNotifier.value.name,
         'themeSeedColorValue': settingsService.themeSeedColorValue,
+        'homeTabSwitchCurveType': settingsService.homeTabSwitchCurveTypeValue,
         'appLocaleCode': settingsService.appLocaleCode,
         'appLockEnabled': settingsService.isAppLockEnabled,
         'diarySortModeRaw': settingsService.diarySortModeRaw,
@@ -285,6 +286,18 @@ class DataArchiveService {
     };
     if (themeSeedColorValue != null) {
       await settingsService.setThemeSeedColor(Color(themeSeedColorValue));
+    }
+
+    final tabSwitchCurveTypeRaw = settingsNode['homeTabSwitchCurveType'];
+    if (tabSwitchCurveTypeRaw is String && tabSwitchCurveTypeRaw.isNotEmpty) {
+      await settingsService.setHomeTabSwitchCurveType(
+        switch (tabSwitchCurveTypeRaw) {
+          'easeOutCubic' => HomeTabSwitchCurveType.easeOutCubic,
+          'linear' => HomeTabSwitchCurveType.linear,
+          'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
+          _ => SettingsService.defaultHomeTabSwitchCurveType,
+        },
+      );
     }
 
     final localeRaw = settingsNode['appLocaleCode']?.toString();

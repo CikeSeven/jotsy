@@ -1,29 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum HomeTabSwitchCurveType { easeOutCirc, easeOutCubic, linear }
+
+extension HomeTabSwitchCurveTypeX on HomeTabSwitchCurveType {
+  String get storageValue => switch (this) {
+    HomeTabSwitchCurveType.easeOutCirc => 'easeOutCirc',
+    HomeTabSwitchCurveType.easeOutCubic => 'easeOutCubic',
+    HomeTabSwitchCurveType.linear => 'linear',
+  };
+
+  Curve get curve => switch (this) {
+    HomeTabSwitchCurveType.easeOutCirc => Curves.easeOutCirc,
+    HomeTabSwitchCurveType.easeOutCubic => Curves.easeOutCubic,
+    HomeTabSwitchCurveType.linear => Curves.linear,
+  };
+}
+
 class SettingsService {
   static const int defaultThemeSeedColorValue = 0xFF1E6586;
+  static const HomeTabSwitchCurveType defaultHomeTabSwitchCurveType =
+      HomeTabSwitchCurveType.easeOutCirc;
 
   SettingsService._({
     required SharedPreferences prefs,
     required ThemeMode mode,
     required Color themeSeedColor,
+    required HomeTabSwitchCurveType homeTabSwitchCurveType,
     required Locale locale,
     required bool appLockEnabled,
   }) : _prefs = prefs,
        themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
+       homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
+         homeTabSwitchCurveType,
+       ),
        localeNotifier = ValueNotifier<Locale>(locale),
        appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<Color> themeSeedColorNotifier;
+  final ValueNotifier<HomeTabSwitchCurveType> homeTabSwitchCurveNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
+  static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
@@ -37,6 +61,9 @@ class SettingsService {
     final mode = _parseMode(prefs.getString(_keyThemeMode));
     final themeSeedColorValue =
         prefs.getInt(_keyThemeSeedColorValue) ?? defaultThemeSeedColorValue;
+    final homeTabSwitchCurveType = _parseHomeTabSwitchCurveType(
+      prefs.getString(_keyHomeTabSwitchCurve),
+    );
     final storedLocaleCode = _normalizeLocaleCode(
       prefs.getString(_keyAppLocaleCode),
     );
@@ -50,6 +77,7 @@ class SettingsService {
       prefs: prefs,
       mode: mode,
       themeSeedColor: Color(themeSeedColorValue),
+      homeTabSwitchCurveType: homeTabSwitchCurveType,
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
     );
@@ -65,6 +93,13 @@ class SettingsService {
     final value = color.toARGB32();
     themeSeedColorNotifier.value = Color(value);
     await _prefs.setInt(_keyThemeSeedColorValue, value);
+  }
+
+  Future<void> setHomeTabSwitchCurveType(
+    HomeTabSwitchCurveType curveType,
+  ) async {
+    homeTabSwitchCurveNotifier.value = curveType;
+    await _prefs.setString(_keyHomeTabSwitchCurve, curveType.storageValue);
   }
 
   String get diarySortModeRaw =>
@@ -105,6 +140,8 @@ class SettingsService {
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);
   bool get isAppLockEnabled => appLockEnabledNotifier.value;
   int get themeSeedColorValue => themeSeedColorNotifier.value.toARGB32();
+  String get homeTabSwitchCurveTypeValue =>
+      homeTabSwitchCurveNotifier.value.storageValue;
 
   Future<void> setAppLocale(Locale locale) async {
     await setAppLocaleCode(_codeFromLocale(locale));
@@ -171,5 +208,14 @@ class SettingsService {
       default:
         return ThemeMode.system;
     }
+  }
+
+  static HomeTabSwitchCurveType _parseHomeTabSwitchCurveType(String? raw) {
+    return switch (raw) {
+      'easeOutCubic' => HomeTabSwitchCurveType.easeOutCubic,
+      'linear' => HomeTabSwitchCurveType.linear,
+      'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
+      _ => defaultHomeTabSwitchCurveType,
+    };
   }
 }

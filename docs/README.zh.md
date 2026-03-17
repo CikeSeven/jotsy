@@ -1,6 +1,6 @@
 # Jot - 简单私密的本地日记本
 
-[English](../README.md) | 简体中文
+[English](./README.en.md) | 简体中文
 
 ![Release](https://img.shields.io/badge/Release-v0.1.0-orange?style=flat-square)
 

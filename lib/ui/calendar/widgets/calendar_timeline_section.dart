@@ -40,7 +40,12 @@ class CalendarTimelineSection extends StatelessWidget {
     final switchKey = ValueKey<String>(_buildSwitchSignature());
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.m, 0, AppSpacing.m, AppSpacing.s),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.m,
+        0,
+        AppSpacing.m,
+        AppSpacing.s,
+      ),
       child: AnimatedSwitcher(
         duration: _switchDuration,
         reverseDuration: _switchDuration,
@@ -50,7 +55,9 @@ class CalendarTimelineSection extends StatelessWidget {
           final slideAnimation = Tween<Offset>(
             begin: const Offset(0, 0.025),
             end: Offset.zero,
-          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+          ).animate(
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+          );
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(position: slideAnimation, child: child),
@@ -78,7 +85,8 @@ class CalendarTimelineSection extends StatelessWidget {
   /// - 包含选中日期，确保“切换到另一日”一定触发过渡；
   /// - 包含条目 id 与更新时间，确保同一天内容更新时动画也一致刷新。
   String _buildSwitchSignature() {
-    final dayKey = '${selectedDay.year}-${selectedDay.month}-${selectedDay.day}';
+    final dayKey =
+        '${selectedDay.year}-${selectedDay.month}-${selectedDay.day}';
     final itemKey = diaries
         .map(
           (item) =>
@@ -128,19 +136,22 @@ class CalendarTimelineSection extends StatelessWidget {
                   width: 24,
                   height: 24,
                   child: Center(
-                    child: moodEmoji == null
-                        ? Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: colorScheme.tertiary.withValues(alpha: 0.92),
-                              shape: BoxShape.circle,
+                    child:
+                        moodEmoji == null
+                            ? Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: colorScheme.tertiary.withValues(
+                                  alpha: 0.92,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                            )
+                            : Text(
+                              moodEmoji,
+                              style: const TextStyle(fontSize: 16, height: 1),
                             ),
-                          )
-                        : Text(
-                            moodEmoji,
-                            style: const TextStyle(fontSize: 16, height: 1),
-                          ),
                   ),
                 ),
                 Container(
@@ -169,19 +180,23 @@ class CalendarTimelineSection extends StatelessWidget {
                           children: <Widget>[
                             Text(
                               createdAtLabel,
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.labelLarge?.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               summary,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    height: 1.35,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                                height: 1.35,
                               ),
                             ),
                             if (hasMetaRow) ...<Widget>[
@@ -237,21 +252,31 @@ class CalendarTimelineSection extends StatelessWidget {
   /// 构建时间线条目右侧的小封面缩略图（圆角）。
   Widget _buildCoverThumbnail(BuildContext context, String source) {
     final colorScheme = Theme.of(context).colorScheme;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (52 * dpr).round();
+    final cacheHeight = (52 * dpr).round();
     final uri = Uri.tryParse(source);
-    final isRemote = uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    final isRemote =
+        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
     final image =
         isRemote
             ? Image.network(
-                source,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              )
+              source,
+              fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.low,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            )
             : Image.file(
-                File(source),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              );
+              File(source),
+              fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.low,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -405,7 +430,9 @@ class CalendarTimelineSection extends StatelessWidget {
     required double? energyLevel,
   }) {
     final color = Theme.of(context).colorScheme.onSurfaceVariant;
-    final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(color: color);
+    final textStyle = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: color);
 
     final segments = <Widget>[];
     void appendSegment(Widget child) {
@@ -458,10 +485,7 @@ class CalendarTimelineSection extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: segments,
-      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: segments),
     );
   }
 

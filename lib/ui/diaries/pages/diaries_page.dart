@@ -89,6 +89,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   VoidCallback? _pendingFilterMutation;
   Future<void>? _queuedFilterTransition;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
+  List<DiaryWithTags>? _cachedVisibleSourceItemsRef;
+  DiarySortMode? _cachedVisibleSortMode;
+  String _cachedHiddenDiaryIdsSignature = '';
+  List<DiaryWithTags>? _lastSyncedVisibleItemsRef;
+  List<Tag>? _cachedTagFilterSourceTagsRef;
+  List<DiaryWithTags>? _cachedTagFilterVisibleItemsRef;
+  String _cachedTagFilterKeyword = '';
+  List<Tag> _cachedTagFilters = const <Tag>[];
   int _localHintVisibleCount = 0;
   bool _homeHintVisible = false;
   bool _fabVisibleByScroll = true;
@@ -185,12 +193,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         _controller.loadViewPreferencesIfNeeded(settingsService);
         final latestVisibleItems =
             diariesAsync.asData != null
-                ? _controller.buildVisibleItems(diariesAsync.asData!.value)
+                ? _resolveVisibleItems(diariesAsync.asData!.value)
                 : null;
 
-        if (latestVisibleItems != null) {
-          _cachedVisibleItems = latestVisibleItems;
+        if (latestVisibleItems != null &&
+            !identical(latestVisibleItems, _lastSyncedVisibleItemsRef)) {
           _transitionCoordinator.syncAppearingTimers(latestVisibleItems);
+          _lastSyncedVisibleItemsRef = latestVisibleItems;
         }
 
         final displayedItems = latestVisibleItems ?? _cachedVisibleItems;
@@ -301,18 +310,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 backgroundColor: widget.pageBackgroundColor,
                                 child: tagsAsync.when(
                                   data: (tags) {
+                                    final visibleTagFilters =
+                                        _resolveTagFiltersForDisplay(
+                                          allTags: tags,
+                                          visibleItems: displayedItems,
+                                          keyword: filterState.keyword,
+                                        );
                                     return Padding(
                                       padding: const EdgeInsets.only(
                                         top: _tagSectionTopGap,
                                         bottom: _tagSectionBottomGap,
                                       ),
                                       child: DiaryTagFilterBar(
-                                        tags: _controller
-                                            .buildTagFiltersForDisplay(
-                                              allTags: tags,
-                                              visibleItems: displayedItems,
-                                              keyword: filterState.keyword,
-                                            ),
+                                        tags: visibleTagFilters,
                                         selectedTagFilterIds:
                                             filterState.selectedTagIds,
                                         onToggleTagFilter:
@@ -502,6 +512,65 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return false;
     }
     return false;
+  }
+
+  /// 解析当前可见日记列表，并在输入不变时复用上次结果。
+  ///
+  /// 缓存失效条件：
+  /// 1) provider 返回的日记源引用发生变化；
+  /// 2) 排序模式变化；
+  /// 3) 乐观隐藏集合变化（归档/删除过渡）。
+  List<DiaryWithTags> _resolveVisibleItems(List<DiaryWithTags> sourceItems) {
+    final hiddenSignature = _buildDiaryIdSignature(_optimisticHiddenDiaryIds);
+    final canReuseCache =
+        identical(sourceItems, _cachedVisibleSourceItemsRef) &&
+        _cachedVisibleSortMode == _sortMode &&
+        _cachedHiddenDiaryIdsSignature == hiddenSignature;
+    if (canReuseCache) {
+      return _cachedVisibleItems;
+    }
+
+    final resolved = _controller.buildVisibleItems(sourceItems);
+    _cachedVisibleSourceItemsRef = sourceItems;
+    _cachedVisibleSortMode = _sortMode;
+    _cachedHiddenDiaryIdsSignature = hiddenSignature;
+    _cachedVisibleItems = resolved;
+    return resolved;
+  }
+
+  /// 解析顶部标签筛选列表，并在可复用时直接返回缓存。
+  List<Tag> _resolveTagFiltersForDisplay({
+    required List<Tag> allTags,
+    required List<DiaryWithTags> visibleItems,
+    required String keyword,
+  }) {
+    final normalizedKeyword = keyword.trim();
+    final canReuseCache =
+        identical(allTags, _cachedTagFilterSourceTagsRef) &&
+        identical(visibleItems, _cachedTagFilterVisibleItemsRef) &&
+        _cachedTagFilterKeyword == normalizedKeyword;
+    if (canReuseCache) {
+      return _cachedTagFilters;
+    }
+
+    final resolved = _controller.buildTagFiltersForDisplay(
+      allTags: allTags,
+      visibleItems: visibleItems,
+      keyword: normalizedKeyword,
+    );
+    _cachedTagFilterSourceTagsRef = allTags;
+    _cachedTagFilterVisibleItemsRef = visibleItems;
+    _cachedTagFilterKeyword = normalizedKeyword;
+    _cachedTagFilters = resolved;
+    return resolved;
+  }
+
+  String _buildDiaryIdSignature(Set<String> ids) {
+    if (ids.isEmpty) {
+      return '';
+    }
+    final sorted = ids.toList()..sort();
+    return sorted.join(',');
   }
 
   /// 构建当前分页上下文签名。

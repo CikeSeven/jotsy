@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
@@ -20,23 +21,68 @@ import '../sections/explore_content_section.dart';
 /// - 监听数据 provider；
 /// - 处理导航回调；
 /// - 将聚合数据交给 sections 渲染。
-class ExplorePage extends ConsumerWidget {
+class ExplorePage extends ConsumerStatefulWidget {
   const ExplorePage({super.key, required this.pageBackgroundColor});
 
   final Color pageBackgroundColor;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ExplorePage> createState() => _ExplorePageState();
+}
+
+class _ExplorePageState extends ConsumerState<ExplorePage> {
+  final ExplorePageController _controller = const ExplorePageController();
+  List<DiaryWithTags>? _cachedDiariesRef;
+  List<Tag>? _cachedTagsRef;
+  String? _cachedLocaleName;
+  String? _cachedDayKey;
+  ExploreViewData? _cachedViewData;
+
+  ExploreViewData _resolveViewData({
+    required List<DiaryWithTags> diaries,
+    required List<Tag> orderedTags,
+    required AppLocalizations l10n,
+  }) {
+    final day = DateUtils.dateOnly(DateTime.now());
+    final dayKey = '${day.year}-${day.month}-${day.day}';
+    final shouldRebuild =
+        _cachedViewData == null ||
+        !identical(diaries, _cachedDiariesRef) ||
+        !identical(orderedTags, _cachedTagsRef) ||
+        _cachedLocaleName != l10n.localeName ||
+        _cachedDayKey != dayKey;
+
+    if (!shouldRebuild) {
+      return _cachedViewData!;
+    }
+
+    final orderedTagIds = orderedTags
+        .map((tag) => tag.id)
+        .toList(growable: false);
+    _cachedViewData = _controller.buildViewData(
+      diaries,
+      now: DateTime.now(),
+      l10n: l10n,
+      orderedTagIds: orderedTagIds,
+    );
+    _cachedDiariesRef = diaries;
+    _cachedTagsRef = orderedTags;
+    _cachedLocaleName = l10n.localeName;
+    _cachedDayKey = dayKey;
+    return _cachedViewData!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final diariesAsync = ref.watch(exploreDiariesProvider);
     final orderedTagsAsync = ref.watch(tagListProvider);
-    final controller = const ExplorePageController();
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
 
     return Stack(
       children: <Widget>[
-        Positioned.fill(child: ColoredBox(color: pageBackgroundColor)),
+        Positioned.fill(child: ColoredBox(color: widget.pageBackgroundColor)),
         SafeArea(
           top: false,
           child: CustomScrollView(
@@ -56,22 +102,19 @@ class ExplorePage extends ConsumerWidget {
                         child: _ExploreErrorCard(message: '$error'),
                       ),
                   data: (diaries) {
-                    final orderedTagIds = orderedTagsAsync.maybeWhen(
-                      data:
-                          (tags) =>
-                              tags.map((tag) => tag.id).toList(growable: false),
-                      orElse: () => const <int>[],
+                    final orderedTags = orderedTagsAsync.maybeWhen(
+                      data: (tags) => tags,
+                      orElse: () => const <Tag>[],
                     );
-                    final viewData = controller.buildViewData(
-                      diaries,
-                      now: DateTime.now(),
+                    final viewData = _resolveViewData(
+                      diaries: diaries,
+                      orderedTags: orderedTags,
                       l10n: l10n,
-                      orderedTagIds: orderedTagIds,
                     );
                     return SliverToBoxAdapter(
                       child: ExploreContentSection(
                         viewData: viewData,
-                        controller: controller,
+                        controller: _controller,
                         onOpenDiary: (diaryId) {
                           _openPreview(context, diaryId);
                         },

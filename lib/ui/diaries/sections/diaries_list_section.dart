@@ -298,6 +298,7 @@ class DiariesListSection extends StatelessWidget {
                   children: [
                     if (previewCover != null)
                       _buildCoverPreview(
+                        context,
                         previewCover,
                         width: double.infinity,
                         height: 132,
@@ -311,6 +312,7 @@ class DiariesListSection extends StatelessWidget {
                   children: [
                     if (previewCover != null) ...[
                       _buildCoverPreview(
+                        context,
                         previewCover,
                         width: 84,
                         height: 84,
@@ -567,11 +569,19 @@ class DiariesListSection extends StatelessWidget {
 
   /// 构建封面预览图（自动区分网络图与本地图）。
   Widget _buildCoverPreview(
+    BuildContext context,
     String imageSource, {
     double? width,
     required double height,
     required double radius,
   }) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth =
+        width != null && width.isFinite && width > 0
+            ? (width * dpr).round()
+            : null;
+    final cacheHeight =
+        height.isFinite && height > 0 ? (height * dpr).round() : null;
     final trimmed = imageSource.trim();
     final uri = Uri.tryParse(trimmed);
     final isNetwork =
@@ -582,6 +592,9 @@ class DiariesListSection extends StatelessWidget {
             ? Image.network(
               trimmed,
               fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.low,
               errorBuilder:
                   (
                     BuildContext context,
@@ -592,6 +605,9 @@ class DiariesListSection extends StatelessWidget {
             : Image.file(
               File(trimmed),
               fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.low,
               errorBuilder:
                   (
                     BuildContext context,

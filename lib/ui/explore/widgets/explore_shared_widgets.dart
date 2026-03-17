@@ -139,6 +139,9 @@ class ExploreMediaThumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (width * dpr).round();
+    final cacheHeight = (height * dpr).round();
     final uri = Uri.tryParse(source);
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
@@ -149,6 +152,9 @@ class ExploreMediaThumb extends StatelessWidget {
               width: width,
               height: height,
               fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.low,
               errorBuilder: (_, __, ___) => const SizedBox.shrink(),
             )
             : Image.file(
@@ -156,6 +162,9 @@ class ExploreMediaThumb extends StatelessWidget {
               width: width,
               height: height,
               fit: BoxFit.cover,
+              cacheWidth: cacheWidth,
+              cacheHeight: cacheHeight,
+              filterQuality: FilterQuality.low,
               errorBuilder: (_, __, ___) => const SizedBox.shrink(),
             );
 

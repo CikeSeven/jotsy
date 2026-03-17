@@ -117,10 +117,15 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
         isDark
             ? colorScheme.surfaceContainerHigh.withValues(alpha: 0.86)
             : colorScheme.surfaceContainerLow.withValues(alpha: 0.98);
-    final selectedChipColor =
+    // 选中态混入少量主色，避免亮色主题接近纯白导致“未选中感”。
+    final selectedChipBaseColor =
         isDark
-            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.96)
-            : colorScheme.surfaceContainerLowest.withValues(alpha: 0.99);
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.94)
+            : colorScheme.surfaceContainerLow.withValues(alpha: 0.98);
+    final selectedChipColor = Color.alphaBlend(
+      colorScheme.primary.withValues(alpha: isDark ? 0.18 : 0.10),
+      selectedChipBaseColor,
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

@@ -116,6 +116,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeMode => 'Theme';
 
   @override
+  String get settingsThemeColor => 'Theme';
+
+  @override
   String get settingsTabSwitchCurve => 'Tab switch curve';
 
   @override

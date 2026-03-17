@@ -149,6 +149,10 @@
   "@settingsThemeMode": {
     "description": "Auto-generated metadata for settingsThemeMode."
   },
+  "settingsThemeColor": "主题",
+  "@settingsThemeColor": {
+    "description": "设置页主题色选择模块标题。"
+  },
   "settingsTabSwitchCurve": "标签页切换曲线",
   "@settingsTabSwitchCurve": {
     "description": "Title for selecting bottom tab switch animation curve."

@@ -87,7 +87,13 @@ class SettingsThemeSection extends StatelessWidget {
                             onChanged:
                                 settingsService.setHomeTabSwitchCurveType,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 8),
+                          Divider(
+                            height: 1,
+                            color: Theme.of(context).colorScheme.outlineVariant
+                                .withValues(alpha: 0.45),
+                          ),
+                          const SizedBox(height: 12),
                           _ThemeSeedColorPicker(
                             selectedColor: themeSeedColor,
                             selectedFamilyIndex: selection.familyIndex,
@@ -282,7 +288,7 @@ class _ThemeSeedColorPicker extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              l10n.autoT0151,
+              l10n.settingsThemeColor,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),

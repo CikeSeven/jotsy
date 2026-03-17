@@ -112,6 +112,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeMode => '主题模式';
 
   @override
+  String get settingsThemeColor => '主题';
+
+  @override
   String get settingsTabSwitchCurve => '标签页切换曲线';
 
   @override

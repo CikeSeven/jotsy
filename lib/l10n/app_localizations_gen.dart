@@ -284,6 +284,12 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get settingsThemeMode;
 
+  /// Title for theme color picker in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeColor;
+
   /// Title for selecting bottom tab switch animation curve.
   ///
   /// In en, this message translates to:

@@ -149,6 +149,10 @@
   "@settingsThemeMode": {
     "description": "Auto-generated metadata for settingsThemeMode."
   },
+  "settingsThemeColor": "Theme",
+  "@settingsThemeColor": {
+    "description": "Title for theme color picker in settings."
+  },
   "settingsTabSwitchCurve": "Tab switch curve",
   "@settingsTabSwitchCurve": {
     "description": "Title for selecting bottom tab switch animation curve."

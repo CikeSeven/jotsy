@@ -54,6 +54,8 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
+  static const double _floatingToolbarReservedSpace = 56.0;
+
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
   final _locationController = TextEditingController();
@@ -526,6 +528,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         showEditMetaPanel
             ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
             : 16.0;
+    final editorBottomSpacer =
+        showEditMetaPanel && (!showFloatingToolbar || _isEditPanelExpanded)
+            ? editPanelSpacer
+            : 16.0;
+    final effectiveEditorBottomSpacer =
+        showFloatingToolbar
+            ? _floatingToolbarReservedSpace
+            : editorBottomSpacer;
     final settingsAsync = ref.watch(settingsServiceProvider);
     final tagsAsync = ref.watch(tagListProvider);
 
@@ -667,19 +677,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           body: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  0,
-                  0,
-                  0,
-                  showFloatingToolbar ? 68 : 0,
-                ),
-                child: _buildEditorWithLiveTextSettings(
-                  context,
-                  settingsAsync: settingsAsync,
-                  bottomSpacer: editPanelSpacer,
-                  contentLocked: _isEditPanelExpanded,
-                ),
+              _buildEditorWithLiveTextSettings(
+                context,
+                settingsAsync: settingsAsync,
+                bottomSpacer: effectiveEditorBottomSpacer,
+                contentLocked: _isEditPanelExpanded,
               ),
               if (showEditMetaPanel &&
                   (!showFloatingToolbar || _isEditPanelExpanded))

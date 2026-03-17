@@ -316,6 +316,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                     ),
                     const SizedBox(height: 14),
                     _SectionCard(
+                      padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
                       child: Column(
                         children: <Widget>[
                           _AboutActionTile(
@@ -492,9 +493,13 @@ class _AboutHeader extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child});
+  const _SectionCard({
+    required this.child,
+    this.padding = const EdgeInsets.fromLTRB(12, 12, 12, 12),
+  });
 
   final Widget child;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
@@ -510,10 +515,7 @@ class _SectionCard extends StatelessWidget {
           width: 0.8,
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-        child: child,
-      ),
+      child: Padding(padding: padding, child: child),
     );
   }
 }
@@ -540,7 +542,7 @@ class _AboutActionTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 14, 6, 14),
+        padding: const EdgeInsets.fromLTRB(8, 18, 6, 18),
         child: Row(
           children: <Widget>[
             SizedBox(

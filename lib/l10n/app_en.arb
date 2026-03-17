@@ -337,7 +337,7 @@
   "@aboutOpenLinkFallbackCopied": {
     "description": "Fallback snackbar when external link cannot be opened."
   },
-  "aboutFooterMadeWith": "Made with ❤️ by 柒月",
+  "aboutFooterMadeWith": "Made by 柒月",
   "@aboutFooterMadeWith": {
     "description": "Footer author line for About page."
   },

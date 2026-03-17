@@ -267,7 +267,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unable to open link directly. The link has been copied.';
 
   @override
-  String get aboutFooterMadeWith => 'Made with ❤️ by 柒月';
+  String get aboutFooterMadeWith => 'Made by 柒月';
 
   @override
   String get aboutFooterCopyright => '© 2026 Jot Project';

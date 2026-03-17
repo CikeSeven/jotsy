@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// Footer author line for About page.
   ///
   /// In en, this message translates to:
-  /// **'Made with ❤️ by 柒月'**
+  /// **'Made by 柒月'**
   String get aboutFooterMadeWith;
 
   /// Footer copyright line for About page.

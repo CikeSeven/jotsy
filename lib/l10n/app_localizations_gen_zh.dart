@@ -253,7 +253,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutOpenLinkFallbackCopied => '无法直接打开链接，已复制到剪贴板。';
 
   @override
-  String get aboutFooterMadeWith => 'Made with ❤️ by 柒月';
+  String get aboutFooterMadeWith => 'Made by 柒月';
 
   @override
   String get aboutFooterCopyright => '© 2026 Jot Project';

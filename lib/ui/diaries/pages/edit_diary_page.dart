@@ -26,6 +26,7 @@ import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 part '../controllers/edit_diary_controller.dart';
@@ -454,6 +455,64 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
+  Widget _buildEditorWithLiveTextSettings(
+    BuildContext context, {
+    required AsyncValue<SettingsService> settingsAsync,
+    required double bottomSpacer,
+    required bool contentLocked,
+  }) {
+    return settingsAsync.when(
+      data: (settingsService) {
+        return ValueListenableBuilder<EditorBodyFontSizePreset>(
+          valueListenable: settingsService.editorBodyFontSizePresetNotifier,
+          builder: (
+            BuildContext context,
+            EditorBodyFontSizePreset fontSizePreset,
+            Widget? child,
+          ) {
+            return ValueListenableBuilder<EditorBodyLineHeightPreset>(
+              valueListenable:
+                  settingsService.editorBodyLineHeightPresetNotifier,
+              builder: (
+                BuildContext context,
+                EditorBodyLineHeightPreset lineHeightPreset,
+                Widget? child,
+              ) {
+                return _buildEditor(
+                  context,
+                  bottomSpacer: bottomSpacer,
+                  contentLocked: contentLocked,
+                  bodyFontSize: fontSizePreset.fontSize,
+                  bodyLineHeight: lineHeightPreset.lineHeight,
+                );
+              },
+            );
+          },
+        );
+      },
+      loading:
+          () => _buildEditor(
+            context,
+            bottomSpacer: bottomSpacer,
+            contentLocked: contentLocked,
+            bodyFontSize:
+                SettingsService.defaultEditorBodyFontSizePreset.fontSize,
+            bodyLineHeight:
+                SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
+          ),
+      error:
+          (_, __) => _buildEditor(
+            context,
+            bottomSpacer: bottomSpacer,
+            contentLocked: contentLocked,
+            bodyFontSize:
+                SettingsService.defaultEditorBodyFontSizePreset.fontSize,
+            bodyLineHeight:
+                SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -507,18 +566,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   decodeDiaryToolbarOrder(settingsService.diaryToolbarOrderRaw),
           orElse: () => List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder),
         );
-        final editorFontSizePreset = settingsAsync.maybeWhen(
-          data:
-              (settingsService) =>
-                  settingsService.editorBodyFontSizePresetValue,
-          orElse: () => SettingsService.defaultEditorBodyFontSizePreset,
-        );
-        final editorLineHeightPreset = settingsAsync.maybeWhen(
-          data:
-              (settingsService) =>
-                  settingsService.editorBodyLineHeightPresetValue,
-          orElse: () => SettingsService.defaultEditorBodyLineHeightPreset,
-        );
 
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
@@ -571,6 +618,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   : context.l10n.autoT0135,
             ),
             actions: <Widget>[
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) {
+                        return const EditorSettingsPage();
+                      },
+                    ),
+                  );
+                },
+                icon: const FaIcon(FontAwesomeIcons.gear, size: 16),
+                tooltip: context.l10n.settingsEditorTitle,
+              ),
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
                   onPressed: _saving ? null : _controller.openPublishPage,
@@ -614,12 +674,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   0,
                   showFloatingToolbar ? 68 : 0,
                 ),
-                child: _buildEditor(
+                child: _buildEditorWithLiveTextSettings(
                   context,
+                  settingsAsync: settingsAsync,
                   bottomSpacer: editPanelSpacer,
                   contentLocked: _isEditPanelExpanded,
-                  bodyFontSize: editorFontSizePreset.fontSize,
-                  bodyLineHeight: editorLineHeightPreset.lineHeight,
                 ),
               ),
               if (showEditMetaPanel &&

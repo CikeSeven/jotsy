@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
@@ -14,10 +14,18 @@ class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
   static const String _appName = 'Jotsy';
-  static const String _appVersion = '0.1.0+1';
   static const String _appIconAssetPath = 'assets/app_icon/mingcute_icon.png';
   static const String _repoUrl = 'https://github.com/CikeSeven/jotsy';
   static const String _issueUrl = 'https://github.com/CikeSeven/jotsy/issues';
+  static final Future<String> _appVersionFuture = _loadAppVersion();
+
+  static Future<String> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (info.buildNumber.trim().isEmpty) {
+      return info.version;
+    }
+    return '${info.version}+${info.buildNumber}';
+  }
 
   /// 外链统一走这个入口：
   /// 1) 优先拉起系统浏览器；
@@ -72,6 +80,16 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _appVersionFuture,
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        final appVersion = snapshot.data ?? '--';
+        return _buildContent(context, appVersion: appVersion);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context, {required String appVersion}) {
     final l10n = context.l10n;
     final textTheme = Theme.of(context).textTheme;
     final topSafeInset = MediaQuery.paddingOf(context).top;
@@ -103,14 +121,8 @@ class AboutPage extends StatelessWidget {
                                 width: 92,
                                 height: 92,
                                 decoration: BoxDecoration(
-                                  color: colorScheme.primaryContainer
-                                      .withValues(alpha: 0.62),
+                                  color: colorScheme.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(28),
-                                  border: Border.all(
-                                    color: colorScheme.primary.withValues(
-                                      alpha: 0.28,
-                                    ),
-                                  ),
                                 ),
                                 alignment: Alignment.center,
                                 child: ClipRRect(
@@ -132,7 +144,7 @@ class AboutPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                '${l10n.aboutVersion} $_appVersion',
+                                '${l10n.aboutVersion} $appVersion',
                                 style: textTheme.bodySmall?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                 ),
@@ -184,7 +196,7 @@ class AboutPage extends StatelessWidget {
                           showLicensePage(
                             context: context,
                             applicationName: _appName,
-                            applicationVersion: _appVersion,
+                            applicationVersion: appVersion,
                           );
                         },
                       ),
@@ -308,20 +320,20 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      decoration: const BoxDecoration(boxShadow: AppEffects.softShadow),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(AppRadii.card),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.34),
-          ),
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: colorScheme.surfaceContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          width: 0.8,
         ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-          child: child,
-        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: child,
       ),
     );
   }
@@ -342,10 +354,7 @@ class _AboutActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final iconColor =
-        Theme.of(context).brightness == Brightness.dark
-            ? colorScheme.onSurface
-            : Colors.black;
+    final iconColor = colorScheme.onSurfaceVariant;
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,

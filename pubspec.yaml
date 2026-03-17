@@ -38,6 +38,7 @@ dependencies:
   table_calendar: ^3.2.0
   flutter_svg: ^2.2.4
   url_launcher: ^6.3.2
+  package_info_plus: ^9.0.0
   archive: ^3.6.1
   local_auth: ^3.0.1
   flutter_quill_to_pdf: ^2.3.9

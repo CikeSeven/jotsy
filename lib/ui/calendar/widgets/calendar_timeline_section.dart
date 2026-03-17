@@ -150,7 +150,9 @@ class CalendarTimelineSection extends StatelessWidget {
                             )
                             : Text(
                               moodEmoji,
-                              style: const TextStyle(fontSize: 16, height: 1),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleMedium?.copyWith(height: 1),
                             ),
                   ),
                 ),

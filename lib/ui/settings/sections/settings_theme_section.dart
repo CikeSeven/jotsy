@@ -39,75 +39,96 @@ class SettingsThemeSection extends StatelessWidget {
                     HomeTabSwitchCurveType curveType,
                     Widget? child,
                   ) {
-                    final selection = resolveColorPaletteSelection(
-                      initialColor: themeSeedColor.toARGB32(),
-                      fallbackFamilyIndex: _fallbackFamilyIndex,
-                      fallbackColorIndex: _fallbackColorIndex,
-                      preserveUnknownColor: false,
-                    );
-                    final selectedFamily =
-                        kColorPaletteFamilies[selection.familyIndex];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: SegmentedButton<ThemeMode>(
-                              selected: <ThemeMode>{mode},
-                              onSelectionChanged: (Set<ThemeMode> selection) {
-                                final next = selection.firstOrNull;
-                                if (next != null) {
-                                  settingsService.setThemeMode(next);
-                                }
-                              },
-                              segments: <ButtonSegment<ThemeMode>>[
-                                ButtonSegment<ThemeMode>(
-                                  value: ThemeMode.system,
-                                  label: Text(l10n.autoT0046),
-                                  icon: Icon(Icons.settings_suggest_outlined),
+                    return ValueListenableBuilder<double>(
+                      valueListenable: settingsService.fontScaleNotifier,
+                      builder: (
+                        BuildContext context,
+                        double fontScale,
+                        Widget? child,
+                      ) {
+                        final selection = resolveColorPaletteSelection(
+                          initialColor: themeSeedColor.toARGB32(),
+                          fallbackFamilyIndex: _fallbackFamilyIndex,
+                          fallbackColorIndex: _fallbackColorIndex,
+                          preserveUnknownColor: false,
+                        );
+                        final selectedFamily =
+                            kColorPaletteFamilies[selection.familyIndex];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: SegmentedButton<ThemeMode>(
+                                  selected: <ThemeMode>{mode},
+                                  onSelectionChanged: (
+                                    Set<ThemeMode> selection,
+                                  ) {
+                                    final next = selection.firstOrNull;
+                                    if (next != null) {
+                                      settingsService.setThemeMode(next);
+                                    }
+                                  },
+                                  segments: <ButtonSegment<ThemeMode>>[
+                                    ButtonSegment<ThemeMode>(
+                                      value: ThemeMode.system,
+                                      label: Text(l10n.autoT0046),
+                                      icon: Icon(
+                                        Icons.settings_suggest_outlined,
+                                      ),
+                                    ),
+                                    ButtonSegment<ThemeMode>(
+                                      value: ThemeMode.light,
+                                      label: Text(l10n.autoT0047),
+                                      icon: Icon(Icons.light_mode_outlined),
+                                    ),
+                                    ButtonSegment<ThemeMode>(
+                                      value: ThemeMode.dark,
+                                      label: Text(l10n.autoT0048),
+                                      icon: Icon(Icons.dark_mode_outlined),
+                                    ),
+                                  ],
                                 ),
-                                ButtonSegment<ThemeMode>(
-                                  value: ThemeMode.light,
-                                  label: Text(l10n.autoT0047),
-                                  icon: Icon(Icons.light_mode_outlined),
-                                ),
-                                ButtonSegment<ThemeMode>(
-                                  value: ThemeMode.dark,
-                                  label: Text(l10n.autoT0048),
-                                  icon: Icon(Icons.dark_mode_outlined),
-                                ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(height: 16),
+                              _TabSwitchCurveSelector(
+                                selectedCurveType: curveType,
+                                onChanged:
+                                    settingsService.setHomeTabSwitchCurveType,
+                              ),
+                              _FontScaleSelector(
+                                selectedScale: fontScale,
+                                onChanged: settingsService.setFontScale,
+                              ),
+                              const SizedBox(height: 8),
+                              Divider(
+                                height: 1,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .outlineVariant
+                                    .withValues(alpha: 0.45),
+                              ),
+                              const SizedBox(height: 12),
+                              _ThemeSeedColorPicker(
+                                selectedColor: themeSeedColor,
+                                selectedFamilyIndex: selection.familyIndex,
+                                selectedColorIndex: selection.colorIndex,
+                                selectedFamily: selectedFamily,
+                                onSelectFamily: (int familyIndex) {
+                                  settingsService.setThemeSeedColor(
+                                    kColorPaletteFamilies[familyIndex]
+                                        .colors[0],
+                                  );
+                                },
+                                onSelectColor:
+                                    settingsService.setThemeSeedColor,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          _TabSwitchCurveSelector(
-                            selectedCurveType: curveType,
-                            onChanged:
-                                settingsService.setHomeTabSwitchCurveType,
-                          ),
-                          const SizedBox(height: 8),
-                          Divider(
-                            height: 1,
-                            color: Theme.of(context).colorScheme.outlineVariant
-                                .withValues(alpha: 0.45),
-                          ),
-                          const SizedBox(height: 12),
-                          _ThemeSeedColorPicker(
-                            selectedColor: themeSeedColor,
-                            selectedFamilyIndex: selection.familyIndex,
-                            selectedColorIndex: selection.colorIndex,
-                            selectedFamily: selectedFamily,
-                            onSelectFamily: (int familyIndex) {
-                              settingsService.setThemeSeedColor(
-                                kColorPaletteFamilies[familyIndex].colors[0],
-                              );
-                            },
-                            onSelectColor: settingsService.setThemeSeedColor,
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     );
                   },
                 );
@@ -133,6 +154,134 @@ class SettingsThemeSection extends StatelessWidget {
       error:
           (Object error, StackTrace stackTrace) =>
               ListTile(title: Text(l10n.autoT0045(error.toString()))),
+    );
+  }
+}
+
+class _FontScaleSelector extends StatelessWidget {
+  const _FontScaleSelector({
+    required this.selectedScale,
+    required this.onChanged,
+  });
+
+  final double selectedScale;
+  final ValueChanged<double> onChanged;
+
+  String _formatScaleLabel(double scale) {
+    return '${(scale * 100).round()}%';
+  }
+
+  Future<void> _showFontScaleDialog(BuildContext context) async {
+    final originalScale = selectedScale;
+    var currentScale = selectedScale;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return StatefulBuilder(
+          builder: (BuildContext dialogContext, StateSetter setDialogState) {
+            final previewBaseStyle =
+                Theme.of(dialogContext).textTheme.bodyMedium ??
+                const TextStyle(fontSize: 14);
+            final previewScaleFactor =
+                selectedScale == 0 ? 1.0 : currentScale / selectedScale;
+            final previewFontSize =
+                (previewBaseStyle.fontSize ?? 14) * previewScaleFactor;
+            return AlertDialog(
+              title: Text(l10n.settingsFontScale),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text(
+                    _formatScaleLabel(currentScale),
+                    style: Theme.of(dialogContext).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 10),
+                  Slider(
+                    value: currentScale,
+                    min: SettingsService.minFontScale,
+                    max: SettingsService.maxFontScale,
+                    divisions:
+                        ((SettingsService.maxFontScale -
+                                    SettingsService.minFontScale) /
+                                SettingsService.fontScaleStep)
+                            .round(),
+                    label: _formatScaleLabel(currentScale),
+                    onChanged: (double value) {
+                      setDialogState(() {
+                        currentScale = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          Theme.of(dialogContext).colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Theme.of(
+                          dialogContext,
+                        ).colorScheme.outlineVariant.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    child: Text(
+                      l10n.settingsFontScalePreview,
+                      style: previewBaseStyle.copyWith(
+                        fontSize: previewFontSize,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: Text(l10n.commonCancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: Text(l10n.commonConfirm),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed == true && currentScale != originalScale) {
+      onChanged(currentScale);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(l10n.settingsFontScale),
+      subtitle: Text(l10n.settingsFontScaleSubtitle),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            _formatScaleLabel(selectedScale),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+        ],
+      ),
+      onTap: () => _showFontScaleDialog(context),
     );
   }
 }

@@ -335,7 +335,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         isDense: true,
         contentPadding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
         hintText: context.l10n.autoT0106,
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        hintStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
         border: UnderlineInputBorder(
           borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),

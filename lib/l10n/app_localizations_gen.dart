@@ -290,6 +290,24 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get settingsThemeColor;
 
+  /// Title for font size setting in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get settingsFontScale;
+
+  /// Subtitle for font size setting in settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust app UI font size'**
+  String get settingsFontScaleSubtitle;
+
+  /// Preview text shown in font scale dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: A short diary line for sizing.'**
+  String get settingsFontScalePreview;
+
   /// Title for selecting bottom tab switch animation curve.
   ///
   /// In en, this message translates to:

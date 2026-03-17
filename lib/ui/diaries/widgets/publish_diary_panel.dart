@@ -811,7 +811,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                         isDense: true,
                         border: InputBorder.none,
                         hintText: l10n.contextLocationInputHint,
-                        hintStyle: TextStyle(
+                        hintStyle: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant.withValues(
                             alpha: 0.75,
                           ),
@@ -872,7 +874,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                         isDense: true,
                         border: InputBorder.none,
                         hintText: l10n.contextWeatherInputHint,
-                        hintStyle: TextStyle(
+                        hintStyle: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant.withValues(
                             alpha: 0.75,
                           ),
@@ -945,7 +949,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                           child: Text(
                             emoji,
                             textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 16),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(height: 1),
                           ),
                         ),
                         selected: widget.moodEmoji == emoji,

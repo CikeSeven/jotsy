@@ -161,6 +161,7 @@ class DataArchiveService {
         'themeMode': settingsService.themeModeNotifier.value.name,
         'themeSeedColorValue': settingsService.themeSeedColorValue,
         'homeTabSwitchCurveType': settingsService.homeTabSwitchCurveTypeValue,
+        'fontScale': settingsService.fontScaleValue,
         'appLocaleCode': settingsService.appLocaleCode,
         'appLockEnabled': settingsService.isAppLockEnabled,
         'diarySortModeRaw': settingsService.diarySortModeRaw,
@@ -298,6 +299,17 @@ class DataArchiveService {
           _ => SettingsService.defaultHomeTabSwitchCurveType,
         },
       );
+    }
+
+    final fontScaleRaw = settingsNode['fontScale'];
+    final fontScale = switch (fontScaleRaw) {
+      double value => value,
+      int value => value.toDouble(),
+      String value => double.tryParse(value),
+      _ => null,
+    };
+    if (fontScale != null) {
+      await settingsService.setFontScale(fontScale);
     }
 
     final localeRaw = settingsNode['appLocaleCode']?.toString();

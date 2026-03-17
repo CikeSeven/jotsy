@@ -164,6 +164,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   ) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return AnimatedContainer(
       duration: _calendarMorphDuration,
       curve: Curves.easeOutCubic,
@@ -212,16 +213,16 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             color: colorScheme.primary,
             shape: BoxShape.circle,
           ),
-          outsideTextStyle: TextStyle(
+          outsideTextStyle: textTheme.bodyMedium!.copyWith(
             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.45),
           ),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: TextStyle(
+          weekdayStyle: textTheme.labelMedium!.copyWith(
             color: colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w600,
           ),
-          weekendStyle: TextStyle(
+          weekendStyle: textTheme.labelMedium!.copyWith(
             color: colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w600,
           ),
@@ -237,7 +238,13 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 alignment: Alignment.bottomCenter,
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(mood, style: const TextStyle(fontSize: 10)),
+                  child: Text(
+                    mood,
+                    style: textTheme.labelSmall?.copyWith(
+                      fontSize: (textTheme.labelSmall?.fontSize ?? 11) * 0.9,
+                      height: 1,
+                    ),
+                  ),
                 ),
               );
             }

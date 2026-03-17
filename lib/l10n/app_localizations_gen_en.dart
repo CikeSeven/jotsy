@@ -119,6 +119,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsThemeColor => 'Theme';
 
   @override
+  String get settingsFontScale => 'Font size';
+
+  @override
+  String get settingsFontScaleSubtitle => 'Adjust app UI font size';
+
+  @override
+  String get settingsFontScalePreview =>
+      'Preview: A short diary line for sizing.';
+
+  @override
   String get settingsTabSwitchCurve => 'Tab switch curve';
 
   @override

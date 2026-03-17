@@ -138,11 +138,21 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                   Color themeSeedColor,
                   Widget? child,
                 ) {
-                  return _buildAppShell(
-                    home: home,
-                    themeMode: themeMode,
-                    locale: locale,
-                    themeSeedColor: themeSeedColor,
+                  return ValueListenableBuilder<double>(
+                    valueListenable: settingsService.fontScaleNotifier,
+                    builder: (
+                      BuildContext context,
+                      double fontScale,
+                      Widget? child,
+                    ) {
+                      return _buildAppShell(
+                        home: home,
+                        themeMode: themeMode,
+                        locale: locale,
+                        themeSeedColor: themeSeedColor,
+                        fontScale: fontScale,
+                      );
+                    },
                   );
                 },
               );
@@ -162,6 +172,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     Color themeSeedColor = const Color(
       SettingsService.defaultThemeSeedColorValue,
     ),
+    double fontScale = SettingsService.defaultFontScale,
   }) {
     final lightTheme = _withGlobalSnackBarTheme(
       _lightMaterialTheme.theme(
@@ -198,12 +209,21 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         if (child == null) {
           return const SizedBox.shrink();
         }
+        final mediaQuery = MediaQuery.of(context);
+        final effectiveTextScaler = _AppMultiplierTextScaler(
+          baseScaler: mediaQuery.textScaler,
+          factor: fontScale,
+        );
+        final scaledChild = MediaQuery(
+          data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
+          child: child,
+        );
         return HomeHintVisibilityScope(
           controller: _homeHintVisibilityController,
           child: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              child,
+              scaledChild,
               if (_appLocked || _unlockingApp)
                 _AppLockOverlay(
                   unlocking: _unlockingApp,
@@ -388,6 +408,47 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     }
     return 'Please authenticate to unlock the app';
   }
+}
+
+class _AppMultiplierTextScaler implements TextScaler {
+  const _AppMultiplierTextScaler({
+    required this.baseScaler,
+    required this.factor,
+  });
+
+  final TextScaler baseScaler;
+  final double factor;
+
+  @override
+  double scale(double fontSize) {
+    return baseScaler.scale(fontSize) * factor;
+  }
+
+  @override
+  double get textScaleFactor => scale(1.0);
+
+  @override
+  TextScaler clamp({
+    double minScaleFactor = 0,
+    double maxScaleFactor = double.infinity,
+  }) {
+    return TextScaler.linear(
+      scale(1.0),
+    ).clamp(minScaleFactor: minScaleFactor, maxScaleFactor: maxScaleFactor);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    return other is _AppMultiplierTextScaler &&
+        other.baseScaler == baseScaler &&
+        other.factor == factor;
+  }
+
+  @override
+  int get hashCode => Object.hash(baseScaler, factor);
 }
 
 class _BootstrapHome extends StatelessWidget {

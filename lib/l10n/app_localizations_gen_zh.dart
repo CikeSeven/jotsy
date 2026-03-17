@@ -115,6 +115,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsThemeColor => '主题';
 
   @override
+  String get settingsFontScale => '字体大小';
+
+  @override
+  String get settingsFontScaleSubtitle => '调整应用界面字体大小';
+
+  @override
+  String get settingsFontScalePreview => '预览文字：今天也记下了一点生活。';
+
+  @override
   String get settingsTabSwitchCurve => '标签页切换曲线';
 
   @override

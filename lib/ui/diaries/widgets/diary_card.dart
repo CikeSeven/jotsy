@@ -5,7 +5,6 @@ import 'package:node_diary/core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 
-
 /// 笔记列表卡片组件。
 ///
 /// 布局结构：
@@ -58,9 +57,7 @@ class DiaryCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         diary.diary.title,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(fontSize: 16),
+                        style: Theme.of(context).textTheme.titleMedium,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

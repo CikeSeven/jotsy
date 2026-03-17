@@ -21,12 +21,17 @@ class SettingsService {
   static const int defaultThemeSeedColorValue = 0xFF1E6586;
   static const HomeTabSwitchCurveType defaultHomeTabSwitchCurveType =
       HomeTabSwitchCurveType.easeOutCirc;
+  static const double defaultFontScale = 1.0;
+  static const double minFontScale = 0.85;
+  static const double maxFontScale = 1.25;
+  static const double fontScaleStep = 0.05;
 
   SettingsService._({
     required SharedPreferences prefs,
     required ThemeMode mode,
     required Color themeSeedColor,
     required HomeTabSwitchCurveType homeTabSwitchCurveType,
+    required double fontScale,
     required Locale locale,
     required bool appLockEnabled,
   }) : _prefs = prefs,
@@ -35,6 +40,7 @@ class SettingsService {
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
          homeTabSwitchCurveType,
        ),
+       fontScaleNotifier = ValueNotifier<double>(fontScale),
        localeNotifier = ValueNotifier<Locale>(locale),
        appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
 
@@ -42,12 +48,14 @@ class SettingsService {
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<Color> themeSeedColorNotifier;
   final ValueNotifier<HomeTabSwitchCurveType> homeTabSwitchCurveNotifier;
+  final ValueNotifier<double> fontScaleNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
+  static const _keyFontScale = 'app.settings.font_scale';
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
@@ -64,6 +72,12 @@ class SettingsService {
     final homeTabSwitchCurveType = _parseHomeTabSwitchCurveType(
       prefs.getString(_keyHomeTabSwitchCurve),
     );
+    final fontScale = _normalizeFontScale(
+      prefs.getDouble(_keyFontScale) ?? defaultFontScale,
+    );
+    if (!prefs.containsKey(_keyFontScale)) {
+      await prefs.setDouble(_keyFontScale, fontScale);
+    }
     final storedLocaleCode = _normalizeLocaleCode(
       prefs.getString(_keyAppLocaleCode),
     );
@@ -78,6 +92,7 @@ class SettingsService {
       mode: mode,
       themeSeedColor: Color(themeSeedColorValue),
       homeTabSwitchCurveType: homeTabSwitchCurveType,
+      fontScale: fontScale,
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
     );
@@ -100,6 +115,12 @@ class SettingsService {
   ) async {
     homeTabSwitchCurveNotifier.value = curveType;
     await _prefs.setString(_keyHomeTabSwitchCurve, curveType.storageValue);
+  }
+
+  Future<void> setFontScale(double scale) async {
+    final normalized = _normalizeFontScale(scale);
+    fontScaleNotifier.value = normalized;
+    await _prefs.setDouble(_keyFontScale, normalized);
   }
 
   String get diarySortModeRaw =>
@@ -142,6 +163,7 @@ class SettingsService {
   int get themeSeedColorValue => themeSeedColorNotifier.value.toARGB32();
   String get homeTabSwitchCurveTypeValue =>
       homeTabSwitchCurveNotifier.value.storageValue;
+  double get fontScaleValue => fontScaleNotifier.value;
 
   Future<void> setAppLocale(Locale locale) async {
     await setAppLocaleCode(_codeFromLocale(locale));
@@ -217,5 +239,9 @@ class SettingsService {
       'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
       _ => defaultHomeTabSwitchCurveType,
     };
+  }
+
+  static double _normalizeFontScale(double raw) {
+    return raw.clamp(minFontScale, maxFontScale).toDouble();
   }
 }

@@ -705,7 +705,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                 ),
                 title: Text(
                   context.l10n.commonDelete,
-                  style: TextStyle(color: colorScheme.error),
+                  style: Theme.of(
+                    sheetContext,
+                  ).textTheme.bodyLarge?.copyWith(color: colorScheme.error),
                 ),
                 onTap: () async {
                   Navigator.of(sheetContext).pop();

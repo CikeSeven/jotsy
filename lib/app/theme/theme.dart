@@ -35,19 +35,24 @@ class MaterialTheme {
       MaterialThemeSchemes.darkHighContrastScheme;
   ThemeData darkHighContrast() => theme(darkHighContrastScheme());
 
-  ThemeData theme(ColorScheme colorScheme) => ThemeData(
-    useMaterial3: true,
-    fontFamily: 'HarmonyOSSansSC',
-    brightness: colorScheme.brightness,
-    colorScheme: colorScheme,
-    textTheme: textTheme.apply(
+  ThemeData theme(ColorScheme colorScheme) {
+    final baseTheme = ThemeData(
+      useMaterial3: true,
       fontFamily: 'HarmonyOSSansSC',
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ),
-    scaffoldBackgroundColor: colorScheme.surface,
-    canvasColor: colorScheme.surface,
-  );
+      brightness: colorScheme.brightness,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorScheme.surface,
+      canvasColor: colorScheme.surface,
+    );
+    final resolvedTextTheme = baseTheme.textTheme
+        .merge(textTheme)
+        .apply(
+          fontFamily: 'HarmonyOSSansSC',
+          bodyColor: colorScheme.onSurface,
+          displayColor: colorScheme.onSurface,
+        );
+    return baseTheme.copyWith(textTheme: resolvedTextTheme);
+  }
 
   List<ExtendedColor> get extendedColors => [];
 }

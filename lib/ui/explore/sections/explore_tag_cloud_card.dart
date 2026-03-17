@@ -19,7 +19,10 @@ class ExploreTagCloudCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final baseTagStyle = textTheme.labelSmall;
+    final baseTagFontSize = baseTagStyle?.fontSize ?? 11;
     return ExploreCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,15 +36,15 @@ class ExploreTagCloudCard extends StatelessWidget {
             Text(
               l10n.autoT0199,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             )
           else
             Wrap(
               spacing: 5,
               runSpacing: 5,
-              children:
-                  tags.map((tag) {
+              children: tags
+                  .map((tag) {
                     final ratio =
                         tag.maxCount <= 0
                             ? 0.2
@@ -50,20 +53,26 @@ class ExploreTagCloudCard extends StatelessWidget {
                       onPressed: () => onOpenTagSearch(tag),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 3,
+                        vertical: 0,
+                      ),
                       labelPadding: const EdgeInsets.symmetric(
                         horizontal: 3,
                         vertical: 0,
                       ),
                       label: Text(
                         '# ${tag.name}',
-                        style: TextStyle(fontSize: 9.8 + 1.8 * ratio),
+                        style: baseTagStyle?.copyWith(
+                          fontSize: baseTagFontSize * (0.92 + 0.16 * ratio),
+                        ),
                       ),
-                      backgroundColor: Color(tag.color).withValues(
-                        alpha: 0.08 + ratio * 0.25,
-                      ),
+                      backgroundColor: Color(
+                        tag.color,
+                      ).withValues(alpha: 0.08 + ratio * 0.25),
                     );
-                  }).toList(growable: false),
+                  })
+                  .toList(growable: false),
             ),
         ],
       ),

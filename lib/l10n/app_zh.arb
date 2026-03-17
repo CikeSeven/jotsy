@@ -153,6 +153,18 @@
   "@settingsThemeColor": {
     "description": "设置页主题色选择模块标题。"
   },
+  "settingsFontScale": "字体大小",
+  "@settingsFontScale": {
+    "description": "设置页字体大小设置项标题。"
+  },
+  "settingsFontScaleSubtitle": "调整应用界面字体大小",
+  "@settingsFontScaleSubtitle": {
+    "description": "设置页字体大小设置项副标题。"
+  },
+  "settingsFontScalePreview": "预览文字：今天也记下了一点生活。",
+  "@settingsFontScalePreview": {
+    "description": "字体大小弹窗中的预览文案。"
+  },
   "settingsTabSwitchCurve": "标签页切换曲线",
   "@settingsTabSwitchCurve": {
     "description": "Title for selecting bottom tab switch animation curve."

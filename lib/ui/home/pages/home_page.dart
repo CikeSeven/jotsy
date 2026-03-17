@@ -73,8 +73,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomSafeInset = MediaQuery.paddingOf(context).bottom;
-    final snackBarBottomInset = bottomSafeInset + BottomNav.navHeight;
+    final snackBarBottomInset = AppSpacing.l;
 
     final baseTheme = Theme.of(context);
     final colorScheme = baseTheme.colorScheme;

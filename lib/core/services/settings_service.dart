@@ -113,6 +113,8 @@ class SettingsService {
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
+  static const _keyReleaseMirrorStartIndex =
+      'app.settings.release_mirror_start_index';
   static const _keyAppLocaleCode = 'app.settings.locale_code';
   static const _keyAppLockEnabled = 'app.settings.app_lock_enabled';
 
@@ -147,6 +149,9 @@ class SettingsService {
     );
     if (!prefs.containsKey(_keyFontScale)) {
       await prefs.setDouble(_keyFontScale, fontScale);
+    }
+    if (!prefs.containsKey(_keyReleaseMirrorStartIndex)) {
+      await prefs.setInt(_keyReleaseMirrorStartIndex, 0);
     }
     final storedLocaleCode = _normalizeLocaleCode(
       prefs.getString(_keyAppLocaleCode),
@@ -219,6 +224,8 @@ class SettingsService {
   String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
+  int get releaseMirrorStartIndexRaw =>
+      _prefs.getInt(_keyReleaseMirrorStartIndex) ?? 0;
 
   Future<void> setDiarySortModeRaw(String value) async {
     await _prefs.setString(_keyDiarySortMode, value);
@@ -242,6 +249,11 @@ class SettingsService {
 
   Future<void> clearCreateDiaryDraft() async {
     await _prefs.remove(_keyCreateDiaryDraft);
+  }
+
+  Future<void> setReleaseMirrorStartIndex(int index) async {
+    final normalized = index < 0 ? 0 : index;
+    await _prefs.setInt(_keyReleaseMirrorStartIndex, normalized);
   }
 
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);

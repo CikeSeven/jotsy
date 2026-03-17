@@ -295,6 +295,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutOpenSourceRepo => 'Open-source repository';
 
   @override
+  String get aboutCheckUpdate => 'Check for updates';
+
+  @override
+  String get aboutCheckUpdateSubtitle =>
+      'Detect release and open APK download automatically';
+
+  @override
+  String aboutUpdateAlreadyLatest(String version) {
+    return 'You are already on the latest version ($version)';
+  }
+
+  @override
+  String aboutUpdateOpeningDownload(String version) {
+    return 'New version found ($version), opening download link';
+  }
+
+  @override
+  String get aboutUpdateOpenBrowserFailed =>
+      'Unable to open browser automatically, please try again later';
+
+  @override
+  String get aboutUpdateCheckFailed =>
+      'Failed to check updates, please verify network and retry';
+
+  @override
+  String get aboutUpdateNoApkFound =>
+      'New version found, but no downloadable APK was resolved';
+
+  @override
+  String aboutUpdateDialogTitle(String version) {
+    return 'New version found: $version';
+  }
+
+  @override
+  String get aboutUpdateDialogNoNotes =>
+      'No release notes were provided for this version.';
+
+  @override
+  String get aboutUpdateDialogConfirmDownload => 'Download update';
+
+  @override
   String get aboutSubmitIssue => 'Submit issue';
 
   @override

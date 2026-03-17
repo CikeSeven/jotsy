@@ -620,6 +620,66 @@ abstract class AppLocalizations {
   /// **'Open-source repository'**
   String get aboutOpenSourceRepo;
 
+  /// Action title to check latest release in About page.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get aboutCheckUpdate;
+
+  /// Subtitle for update check action in About page.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect release and open APK download automatically'**
+  String get aboutCheckUpdateSubtitle;
+
+  /// Message shown when current version is already latest.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already on the latest version ({version})'**
+  String aboutUpdateAlreadyLatest(String version);
+
+  /// Message shown when new version is found and download link is opening.
+  ///
+  /// In en, this message translates to:
+  /// **'New version found ({version}), opening download link'**
+  String aboutUpdateOpeningDownload(String version);
+
+  /// Message shown when browser launch fails after checking update.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to open browser automatically, please try again later'**
+  String get aboutUpdateOpenBrowserFailed;
+
+  /// Message shown when update checking fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to check updates, please verify network and retry'**
+  String get aboutUpdateCheckFailed;
+
+  /// Message shown when release exists but APK assets are not found.
+  ///
+  /// In en, this message translates to:
+  /// **'New version found, but no downloadable APK was resolved'**
+  String get aboutUpdateNoApkFound;
+
+  /// Title for update confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'New version found: {version}'**
+  String aboutUpdateDialogTitle(String version);
+
+  /// Fallback text when release notes are unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes were provided for this version.'**
+  String get aboutUpdateDialogNoNotes;
+
+  /// Primary action label in update confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Download update'**
+  String get aboutUpdateDialogConfirmDownload;
+
   /// Action title to open issue feedback page.
   ///
   /// In en, this message translates to:

@@ -373,6 +373,61 @@
   "@aboutOpenSourceRepo": {
     "description": "Action title to open project repository."
   },
+  "aboutCheckUpdate": "Check for updates",
+  "@aboutCheckUpdate": {
+    "description": "Action title to check latest release in About page."
+  },
+  "aboutCheckUpdateSubtitle": "Detect release and open APK download automatically",
+  "@aboutCheckUpdateSubtitle": {
+    "description": "Subtitle for update check action in About page."
+  },
+  "aboutUpdateAlreadyLatest": "You are already on the latest version ({version})",
+  "@aboutUpdateAlreadyLatest": {
+    "description": "Message shown when current version is already latest.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutUpdateOpeningDownload": "New version found ({version}), opening download link",
+  "@aboutUpdateOpeningDownload": {
+    "description": "Message shown when new version is found and download link is opening.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutUpdateOpenBrowserFailed": "Unable to open browser automatically, please try again later",
+  "@aboutUpdateOpenBrowserFailed": {
+    "description": "Message shown when browser launch fails after checking update."
+  },
+  "aboutUpdateCheckFailed": "Failed to check updates, please verify network and retry",
+  "@aboutUpdateCheckFailed": {
+    "description": "Message shown when update checking fails."
+  },
+  "aboutUpdateNoApkFound": "New version found, but no downloadable APK was resolved",
+  "@aboutUpdateNoApkFound": {
+    "description": "Message shown when release exists but APK assets are not found."
+  },
+  "aboutUpdateDialogTitle": "New version found: {version}",
+  "@aboutUpdateDialogTitle": {
+    "description": "Title for update confirmation dialog.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutUpdateDialogNoNotes": "No release notes were provided for this version.",
+  "@aboutUpdateDialogNoNotes": {
+    "description": "Fallback text when release notes are unavailable."
+  },
+  "aboutUpdateDialogConfirmDownload": "Download update",
+  "@aboutUpdateDialogConfirmDownload": {
+    "description": "Primary action label in update confirmation dialog."
+  },
   "aboutSubmitIssue": "Submit issue",
   "@aboutSubmitIssue": {
     "description": "Action title to open issue feedback page."

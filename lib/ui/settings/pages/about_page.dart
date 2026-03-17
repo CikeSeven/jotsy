@@ -1,23 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/services/app_service.dart';
+import '../../../core/services/app_update_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
-class AboutPage extends StatelessWidget {
+class AboutPage extends ConsumerStatefulWidget {
   const AboutPage({super.key});
 
   static const String _appName = 'Jotsy';
   static const String _appIconAssetPath = 'assets/app_icon/mingcute_icon.png';
   static const String _repoUrl = 'https://github.com/CikeSeven/jotsy';
   static const String _issueUrl = 'https://github.com/CikeSeven/jotsy/issues';
-  static final Future<String> _appVersionFuture = _loadAppVersion();
 
   static Future<String> _loadAppVersion() async {
     final info = await PackageInfo.fromPlatform();
@@ -25,6 +30,20 @@ class AboutPage extends StatelessWidget {
       return info.version;
     }
     return '${info.version}+${info.buildNumber}';
+  }
+
+  @override
+  ConsumerState<AboutPage> createState() => _AboutPageState();
+}
+
+class _AboutPageState extends ConsumerState<AboutPage> {
+  late final Future<String> _appVersionFuture;
+  bool _checkingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _appVersionFuture = AboutPage._loadAppVersion();
   }
 
   /// 外链统一走这个入口：
@@ -78,6 +97,138 @@ class AboutPage extends StatelessWidget {
     );
   }
 
+  Future<void> _checkLatestRelease(BuildContext context) async {
+    if (_checkingUpdate) {
+      return;
+    }
+    setState(() => _checkingUpdate = true);
+    try {
+      final settingsService = await ref.read(settingsServiceProvider.future);
+      final updateService = ref.read(appUpdateServiceProvider);
+      final result = await updateService.checkLatestRelease(
+        settingsService: settingsService,
+      );
+      if (!context.mounted) {
+        return;
+      }
+
+      switch (result.status) {
+        case AppUpdateCheckStatus.upToDate:
+          unawaited(
+            HomeHintVisibilityScope.showTrackedSnackBar(
+              context: context,
+              snackBar: SnackBar(
+                content: Text(
+                  context.l10n.aboutUpdateAlreadyLatest(
+                    result.latestVersion ?? '--',
+                  ),
+                ),
+              ),
+            ),
+          );
+          return;
+        case AppUpdateCheckStatus.updateAvailable:
+          final url = result.downloadUrl;
+          final version = result.latestVersion ?? '--';
+          if (url == null || url.isEmpty) {
+            unawaited(
+              HomeHintVisibilityScope.showTrackedSnackBar(
+                context: context,
+                snackBar: SnackBar(
+                  content: Text(context.l10n.aboutUpdateNoApkFound),
+                ),
+              ),
+            );
+            return;
+          }
+          final confirmed = await _showUpdateConfirmDialog(
+            context,
+            version: version,
+            releaseNotes: result.releaseNotes,
+          );
+          if (!confirmed || !context.mounted) {
+            return;
+          }
+          final opened = await launchUrl(
+            Uri.parse(url),
+            mode: LaunchMode.externalApplication,
+          );
+          if (!context.mounted) {
+            return;
+          }
+          unawaited(
+            HomeHintVisibilityScope.showTrackedSnackBar(
+              context: context,
+              snackBar: SnackBar(
+                content: Text(
+                  opened
+                      ? context.l10n.aboutUpdateOpeningDownload(version)
+                      : context.l10n.aboutUpdateOpenBrowserFailed,
+                ),
+              ),
+            ),
+          );
+          return;
+        case AppUpdateCheckStatus.failed:
+          unawaited(
+            HomeHintVisibilityScope.showTrackedSnackBar(
+              context: context,
+              snackBar: SnackBar(
+                content: Text(context.l10n.aboutUpdateCheckFailed),
+              ),
+            ),
+          );
+          return;
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _checkingUpdate = false);
+      }
+    }
+  }
+
+  Future<bool> _showUpdateConfirmDialog(
+    BuildContext context, {
+    required String version,
+    String? releaseNotes,
+  }) async {
+    final colorScheme = Theme.of(context).colorScheme;
+    final notes = (releaseNotes ?? '').trim();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(l10n.aboutUpdateDialogTitle(version)),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Text(
+                notes.isEmpty ? l10n.aboutUpdateDialogNoNotes : notes,
+                style: Theme.of(dialogContext).textTheme.bodyMedium,
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.aboutUpdateDialogConfirmDownload),
+            ),
+          ],
+        );
+      },
+    );
+    return result == true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<String>(
@@ -128,7 +279,7 @@ class AboutPage extends StatelessWidget {
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
                                   child: Image.asset(
-                                    _appIconAssetPath,
+                                    AboutPage._appIconAssetPath,
                                     width: 72,
                                     height: 72,
                                     fit: BoxFit.cover,
@@ -137,7 +288,7 @@ class AboutPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                _appName,
+                                AboutPage._appName,
                                 style: textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -170,13 +321,41 @@ class AboutPage extends StatelessWidget {
                           _AboutActionTile(
                             icon: FontAwesomeIcons.github,
                             title: l10n.aboutOpenSourceRepo,
-                            onTap: () => _openExternalUrl(context, _repoUrl),
+                            onTap:
+                                () => _openExternalUrl(
+                                  context,
+                                  AboutPage._repoUrl,
+                                ),
+                          ),
+                          const Divider(height: 1),
+                          _AboutActionTile(
+                            icon: FontAwesomeIcons.arrowsRotate,
+                            title: l10n.aboutCheckUpdate,
+                            onTap:
+                                _checkingUpdate
+                                    ? null
+                                    : () => _checkLatestRelease(context),
+                            trailing:
+                                _checkingUpdate
+                                    ? const LoadingIndicatorM3E(
+                                      variant:
+                                          LoadingIndicatorM3EVariant.contained,
+                                      constraints: BoxConstraints.tightFor(
+                                        width: 18,
+                                        height: 18,
+                                      ),
+                                    )
+                                    : null,
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
                             icon: FontAwesomeIcons.bug,
                             title: l10n.aboutSubmitIssue,
-                            onTap: () => _openExternalUrl(context, _issueUrl),
+                            onTap:
+                                () => _openExternalUrl(
+                                  context,
+                                  AboutPage._issueUrl,
+                                ),
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
@@ -195,7 +374,7 @@ class AboutPage extends StatelessWidget {
                         onTap: () {
                           showLicensePage(
                             context: context,
-                            applicationName: _appName,
+                            applicationName: AboutPage._appName,
                             applicationVersion: appVersion,
                           );
                         },
@@ -343,12 +522,14 @@ class _AboutActionTile extends StatelessWidget {
   const _AboutActionTile({
     required this.icon,
     required this.title,
+    this.trailing,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
-  final VoidCallback onTap;
+  final Widget? trailing;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -375,7 +556,8 @@ class _AboutActionTile extends StatelessWidget {
                 ),
               ),
             ),
-            FaIcon(FontAwesomeIcons.angleRight, size: 15, color: iconColor),
+            trailing ??
+                FaIcon(FontAwesomeIcons.angleRight, size: 15, color: iconColor),
           ],
         ),
       ),

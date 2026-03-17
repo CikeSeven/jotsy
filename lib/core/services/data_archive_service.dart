@@ -173,6 +173,7 @@ class DataArchiveService {
         'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
         'tagOrderRaw': settingsService.tagOrderRaw,
         'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
+        'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
       },
     };
   }
@@ -377,6 +378,17 @@ class DataArchiveService {
       await settingsService.setCreateDiaryDraftRaw(draftRaw);
     } else {
       await settingsService.clearCreateDiaryDraft();
+    }
+
+    final releaseMirrorStartIndexRaw = settingsNode['releaseMirrorStartIndex'];
+    final releaseMirrorStartIndex = switch (releaseMirrorStartIndexRaw) {
+      int value => value,
+      num value => value.toInt(),
+      String value => int.tryParse(value),
+      _ => null,
+    };
+    if (releaseMirrorStartIndex != null) {
+      await settingsService.setReleaseMirrorStartIndex(releaseMirrorStartIndex);
     }
   }
 

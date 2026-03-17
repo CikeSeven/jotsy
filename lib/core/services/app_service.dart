@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import 'app_update_service.dart';
 import 'settings_service.dart';
 import 'tag_order_codec.dart';
 
@@ -26,12 +27,19 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
   return SettingsService.create();
 });
 
+/// 应用更新检查服务 provider。
+final appUpdateServiceProvider = Provider<AppUpdateService>((Ref ref) {
+  return AppUpdateService();
+});
+
 /// 标签流 provider，供列表页/编辑页/设置页复用。
 ///
 /// 保持单一数据源，避免多页面分别拉取导致状态不一致。
 final tagListProvider = StreamProvider<List<Tag>>((Ref ref) {
   final db = ref.watch(appDatabaseProvider);
-  return ref.watch(settingsServiceProvider.future).asStream().asyncExpand((settings) {
+  return ref.watch(settingsServiceProvider.future).asStream().asyncExpand((
+    settings,
+  ) {
     return db.watchAllTags().map((tags) {
       final order = decodeTagOrder(settings.tagOrderRaw);
       return sortTagsByCustomOrder(tags, order);

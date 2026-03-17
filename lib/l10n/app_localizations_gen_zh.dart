@@ -280,6 +280,42 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutOpenSourceRepo => '开源仓库';
 
   @override
+  String get aboutCheckUpdate => '检查最新版本';
+
+  @override
+  String get aboutCheckUpdateSubtitle => '自动检测 Release 并跳转下载 APK';
+
+  @override
+  String aboutUpdateAlreadyLatest(String version) {
+    return '当前已是最新版本（$version）';
+  }
+
+  @override
+  String aboutUpdateOpeningDownload(String version) {
+    return '发现新版本（$version），正在打开下载链接';
+  }
+
+  @override
+  String get aboutUpdateOpenBrowserFailed => '无法自动打开浏览器，请稍后重试';
+
+  @override
+  String get aboutUpdateCheckFailed => '检查更新失败，请检查网络后重试';
+
+  @override
+  String get aboutUpdateNoApkFound => '已发现新版本，但未解析到可下载 APK';
+
+  @override
+  String aboutUpdateDialogTitle(String version) {
+    return '发现新版本 $version';
+  }
+
+  @override
+  String get aboutUpdateDialogNoNotes => '该版本暂无更新说明。';
+
+  @override
+  String get aboutUpdateDialogConfirmDownload => '下载更新';
+
+  @override
   String get aboutSubmitIssue => '提交 Issue';
 
   @override

@@ -373,6 +373,61 @@
   "@aboutOpenSourceRepo": {
     "description": "About 页面开源仓库入口文案。"
   },
+  "aboutCheckUpdate": "检查最新版本",
+  "@aboutCheckUpdate": {
+    "description": "About 页面检查更新入口文案。"
+  },
+  "aboutCheckUpdateSubtitle": "自动检测 Release 并跳转下载 APK",
+  "@aboutCheckUpdateSubtitle": {
+    "description": "About 页面检查更新入口副标题。"
+  },
+  "aboutUpdateAlreadyLatest": "当前已是最新版本（{version}）",
+  "@aboutUpdateAlreadyLatest": {
+    "description": "检查更新后确认已是最新版本的提示文案。",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutUpdateOpeningDownload": "发现新版本（{version}），正在打开下载链接",
+  "@aboutUpdateOpeningDownload": {
+    "description": "检查更新后发现新版本并打开下载链接时的提示文案。",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutUpdateOpenBrowserFailed": "无法自动打开浏览器，请稍后重试",
+  "@aboutUpdateOpenBrowserFailed": {
+    "description": "检查更新后打开浏览器失败提示。"
+  },
+  "aboutUpdateCheckFailed": "检查更新失败，请检查网络后重试",
+  "@aboutUpdateCheckFailed": {
+    "description": "检查更新失败提示。"
+  },
+  "aboutUpdateNoApkFound": "已发现新版本，但未解析到可下载 APK",
+  "@aboutUpdateNoApkFound": {
+    "description": "检查更新时未找到 APK 资源提示。"
+  },
+  "aboutUpdateDialogTitle": "发现新版本 {version}",
+  "@aboutUpdateDialogTitle": {
+    "description": "更新确认弹窗标题。",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutUpdateDialogNoNotes": "该版本暂无更新说明。",
+  "@aboutUpdateDialogNoNotes": {
+    "description": "更新确认弹窗中无 release notes 时的兜底文案。"
+  },
+  "aboutUpdateDialogConfirmDownload": "下载更新",
+  "@aboutUpdateDialogConfirmDownload": {
+    "description": "更新确认弹窗确认下载按钮文案。"
+  },
   "aboutSubmitIssue": "提交 Issue",
   "@aboutSubmitIssue": {
     "description": "About 页面 Issue 反馈入口文案。"

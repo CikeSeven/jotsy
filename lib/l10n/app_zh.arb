@@ -237,9 +237,53 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
+  "settingsEditorSubtitle": "字体、行距与工具栏",
+  "@settingsEditorSubtitle": {
+    "description": "设置首页“编辑器”入口的副标题。"
+  },
   "settingsEditorGroup": "编辑器",
   "@settingsEditorGroup": {
     "description": "Settings group title for editor-related options."
+  },
+  "settingsEditorBodyFontSize": "编辑字体大小",
+  "@settingsEditorBodyFontSize": {
+    "description": "设置项：编辑页正文的字体大小。"
+  },
+  "settingsEditorBodyFontSizeSubtitle": "仅影响编辑页正文显示",
+  "@settingsEditorBodyFontSizeSubtitle": {
+    "description": "设置项副标题：编辑页字体大小仅影响正文。"
+  },
+  "settingsEditorBodyFontSizeSmall": "小",
+  "@settingsEditorBodyFontSizeSmall": {
+    "description": "编辑器正文小字号选项。"
+  },
+  "settingsEditorBodyFontSizeMedium": "中",
+  "@settingsEditorBodyFontSizeMedium": {
+    "description": "编辑器正文中字号选项。"
+  },
+  "settingsEditorBodyFontSizeLarge": "大",
+  "@settingsEditorBodyFontSizeLarge": {
+    "description": "编辑器正文大字号选项。"
+  },
+  "settingsEditorLineHeight": "正文行距",
+  "@settingsEditorLineHeight": {
+    "description": "设置项：编辑页正文的行距。"
+  },
+  "settingsEditorLineHeightSubtitle": "仅影响编辑页正文排版",
+  "@settingsEditorLineHeightSubtitle": {
+    "description": "设置项副标题：编辑页行距仅影响正文。"
+  },
+  "settingsEditorLineHeightCompact": "紧凑",
+  "@settingsEditorLineHeightCompact": {
+    "description": "编辑器正文紧凑行距选项。"
+  },
+  "settingsEditorLineHeightNormal": "标准",
+  "@settingsEditorLineHeightNormal": {
+    "description": "编辑器正文标准行距选项。"
+  },
+  "settingsEditorLineHeightRelaxed": "宽松",
+  "@settingsEditorLineHeightRelaxed": {
+    "description": "编辑器正文宽松行距选项。"
   },
   "settingsDataPrivacy": "数据与隐私",
   "@settingsDataPrivacy": {

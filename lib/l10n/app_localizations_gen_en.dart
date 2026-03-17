@@ -187,7 +187,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEditorTitle => 'Editor';
 
   @override
+  String get settingsEditorSubtitle => 'Fonts, spacing, and toolbar';
+
+  @override
   String get settingsEditorGroup => 'Editor';
+
+  @override
+  String get settingsEditorBodyFontSize => 'Editor font size';
+
+  @override
+  String get settingsEditorBodyFontSizeSubtitle =>
+      'Only affects editor body text';
+
+  @override
+  String get settingsEditorBodyFontSizeSmall => 'Small';
+
+  @override
+  String get settingsEditorBodyFontSizeMedium => 'Medium';
+
+  @override
+  String get settingsEditorBodyFontSizeLarge => 'Large';
+
+  @override
+  String get settingsEditorLineHeight => 'Body line height';
+
+  @override
+  String get settingsEditorLineHeightSubtitle =>
+      'Only affects editor body layout';
+
+  @override
+  String get settingsEditorLineHeightCompact => 'Compact';
+
+  @override
+  String get settingsEditorLineHeightNormal => 'Normal';
+
+  @override
+  String get settingsEditorLineHeightRelaxed => 'Relaxed';
 
   @override
   String get settingsDataPrivacy => 'Data & Privacy';

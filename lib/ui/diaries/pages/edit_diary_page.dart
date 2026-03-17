@@ -17,6 +17,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
@@ -354,10 +355,49 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   /// 主编辑区域：
   /// - 标题与正文放在同一个滚动容器内，保证滚动体验连续；
   /// - 键盘弹起时保持焦点，不因轻微滚动自动收起键盘。
+  quill.DefaultStyles _buildEditorCustomStyles({
+    required BuildContext context,
+    required double bodyFontSize,
+    required double bodyLineHeight,
+  }) {
+    final defaults = quill.DefaultStyles.getInstance(context);
+    quill.DefaultTextBlockStyle? applyTextBlock(
+      quill.DefaultTextBlockStyle? style,
+    ) {
+      return style?.copyWith(
+        style: style.style.copyWith(
+          fontSize: bodyFontSize,
+          height: bodyLineHeight,
+        ),
+      );
+    }
+
+    quill.DefaultListBlockStyle? applyListBlock(
+      quill.DefaultListBlockStyle? style,
+    ) {
+      return style?.copyWith(
+        style: style.style.copyWith(
+          fontSize: bodyFontSize,
+          height: bodyLineHeight,
+        ),
+      );
+    }
+
+    return quill.DefaultStyles(
+      paragraph: applyTextBlock(defaults.paragraph),
+      placeHolder: applyTextBlock(defaults.placeHolder),
+      lists: applyListBlock(defaults.lists),
+      quote: applyTextBlock(defaults.quote),
+      code: applyTextBlock(defaults.code),
+    );
+  }
+
   Widget _buildEditor(
     BuildContext context, {
     required double bottomSpacer,
     required bool contentLocked,
+    required double bodyFontSize,
+    required double bodyLineHeight,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
@@ -395,6 +435,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                           placeholder: context.l10n.autoT0133,
                           scrollable: false,
                           padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+                          customStyles: _buildEditorCustomStyles(
+                            context: context,
+                            bodyFontSize: bodyFontSize,
+                            bodyLineHeight: bodyLineHeight,
+                          ),
                           embedBuilders: buildDiaryQuillEmbedBuilders(),
                         ),
                       ),
@@ -461,6 +506,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               (settingsService) =>
                   decodeDiaryToolbarOrder(settingsService.diaryToolbarOrderRaw),
           orElse: () => List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder),
+        );
+        final editorFontSizePreset = settingsAsync.maybeWhen(
+          data:
+              (settingsService) =>
+                  settingsService.editorBodyFontSizePresetValue,
+          orElse: () => SettingsService.defaultEditorBodyFontSizePreset,
+        );
+        final editorLineHeightPreset = settingsAsync.maybeWhen(
+          data:
+              (settingsService) =>
+                  settingsService.editorBodyLineHeightPresetValue,
+          orElse: () => SettingsService.defaultEditorBodyLineHeightPreset,
         );
 
         if (widget.diaryId != null && detail == null) {
@@ -561,6 +618,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   context,
                   bottomSpacer: editPanelSpacer,
                   contentLocked: _isEditPanelExpanded,
+                  bodyFontSize: editorFontSizePreset.fontSize,
+                  bodyLineHeight: editorLineHeightPreset.lineHeight,
                 ),
               ),
               if (showEditMetaPanel &&

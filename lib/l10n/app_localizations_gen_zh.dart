@@ -178,7 +178,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsEditorTitle => '编辑器设置';
 
   @override
+  String get settingsEditorSubtitle => '字体、行距与工具栏';
+
+  @override
   String get settingsEditorGroup => '编辑器';
+
+  @override
+  String get settingsEditorBodyFontSize => '编辑字体大小';
+
+  @override
+  String get settingsEditorBodyFontSizeSubtitle => '仅影响编辑页正文显示';
+
+  @override
+  String get settingsEditorBodyFontSizeSmall => '小';
+
+  @override
+  String get settingsEditorBodyFontSizeMedium => '中';
+
+  @override
+  String get settingsEditorBodyFontSizeLarge => '大';
+
+  @override
+  String get settingsEditorLineHeight => '正文行距';
+
+  @override
+  String get settingsEditorLineHeightSubtitle => '仅影响编辑页正文排版';
+
+  @override
+  String get settingsEditorLineHeightCompact => '紧凑';
+
+  @override
+  String get settingsEditorLineHeightNormal => '标准';
+
+  @override
+  String get settingsEditorLineHeightRelaxed => '宽松';
 
   @override
   String get settingsDataPrivacy => '数据与隐私';

@@ -416,11 +416,77 @@ abstract class AppLocalizations {
   /// **'Editor'**
   String get settingsEditorTitle;
 
+  /// Subtitle for editor settings entry on root settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'Fonts, spacing, and toolbar'**
+  String get settingsEditorSubtitle;
+
   /// Settings group title for editor-related options.
   ///
   /// In en, this message translates to:
   /// **'Editor'**
   String get settingsEditorGroup;
+
+  /// Setting title for editor body font size.
+  ///
+  /// In en, this message translates to:
+  /// **'Editor font size'**
+  String get settingsEditorBodyFontSize;
+
+  /// Subtitle for editor body font size setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Only affects editor body text'**
+  String get settingsEditorBodyFontSizeSubtitle;
+
+  /// Small option for editor body font size.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get settingsEditorBodyFontSizeSmall;
+
+  /// Medium option for editor body font size.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get settingsEditorBodyFontSizeMedium;
+
+  /// Large option for editor body font size.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get settingsEditorBodyFontSizeLarge;
+
+  /// Setting title for editor body line height.
+  ///
+  /// In en, this message translates to:
+  /// **'Body line height'**
+  String get settingsEditorLineHeight;
+
+  /// Subtitle for editor body line height setting.
+  ///
+  /// In en, this message translates to:
+  /// **'Only affects editor body layout'**
+  String get settingsEditorLineHeightSubtitle;
+
+  /// Compact option for editor body line height.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get settingsEditorLineHeightCompact;
+
+  /// Normal option for editor body line height.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get settingsEditorLineHeightNormal;
+
+  /// Relaxed option for editor body line height.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get settingsEditorLineHeightRelaxed;
 
   /// Settings entry label for data and privacy section.
   ///

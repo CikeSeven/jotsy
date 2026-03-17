@@ -17,10 +17,46 @@ extension HomeTabSwitchCurveTypeX on HomeTabSwitchCurveType {
   };
 }
 
+enum EditorBodyFontSizePreset { small, medium, large }
+
+extension EditorBodyFontSizePresetX on EditorBodyFontSizePreset {
+  String get storageValue => switch (this) {
+    EditorBodyFontSizePreset.small => 'small',
+    EditorBodyFontSizePreset.medium => 'medium',
+    EditorBodyFontSizePreset.large => 'large',
+  };
+
+  double get fontSize => switch (this) {
+    EditorBodyFontSizePreset.small => 14,
+    EditorBodyFontSizePreset.medium => 16,
+    EditorBodyFontSizePreset.large => 18,
+  };
+}
+
+enum EditorBodyLineHeightPreset { compact, normal, relaxed }
+
+extension EditorBodyLineHeightPresetX on EditorBodyLineHeightPreset {
+  String get storageValue => switch (this) {
+    EditorBodyLineHeightPreset.compact => 'compact',
+    EditorBodyLineHeightPreset.normal => 'normal',
+    EditorBodyLineHeightPreset.relaxed => 'relaxed',
+  };
+
+  double get lineHeight => switch (this) {
+    EditorBodyLineHeightPreset.compact => 1.35,
+    EditorBodyLineHeightPreset.normal => 1.55,
+    EditorBodyLineHeightPreset.relaxed => 1.75,
+  };
+}
+
 class SettingsService {
   static const int defaultThemeSeedColorValue = 0xFF1E6586;
   static const HomeTabSwitchCurveType defaultHomeTabSwitchCurveType =
       HomeTabSwitchCurveType.easeOutCirc;
+  static const EditorBodyFontSizePreset defaultEditorBodyFontSizePreset =
+      EditorBodyFontSizePreset.medium;
+  static const EditorBodyLineHeightPreset defaultEditorBodyLineHeightPreset =
+      EditorBodyLineHeightPreset.normal;
   static const double defaultFontScale = 1.0;
   static const double minFontScale = 0.85;
   static const double maxFontScale = 1.25;
@@ -31,6 +67,8 @@ class SettingsService {
     required ThemeMode mode,
     required Color themeSeedColor,
     required HomeTabSwitchCurveType homeTabSwitchCurveType,
+    required EditorBodyFontSizePreset editorBodyFontSizePreset,
+    required EditorBodyLineHeightPreset editorBodyLineHeightPreset,
     required double fontScale,
     required Locale locale,
     required bool appLockEnabled,
@@ -40,6 +78,12 @@ class SettingsService {
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
          homeTabSwitchCurveType,
        ),
+       editorBodyFontSizePresetNotifier =
+           ValueNotifier<EditorBodyFontSizePreset>(editorBodyFontSizePreset),
+       editorBodyLineHeightPresetNotifier =
+           ValueNotifier<EditorBodyLineHeightPreset>(
+             editorBodyLineHeightPreset,
+           ),
        fontScaleNotifier = ValueNotifier<double>(fontScale),
        localeNotifier = ValueNotifier<Locale>(locale),
        appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
@@ -48,6 +92,10 @@ class SettingsService {
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<Color> themeSeedColorNotifier;
   final ValueNotifier<HomeTabSwitchCurveType> homeTabSwitchCurveNotifier;
+  final ValueNotifier<EditorBodyFontSizePreset>
+  editorBodyFontSizePresetNotifier;
+  final ValueNotifier<EditorBodyLineHeightPreset>
+  editorBodyLineHeightPresetNotifier;
   final ValueNotifier<double> fontScaleNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
@@ -55,6 +103,10 @@ class SettingsService {
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
+  static const _keyEditorBodyFontSizePreset =
+      'app.settings.editor_body_font_size_preset';
+  static const _keyEditorBodyLineHeightPreset =
+      'app.settings.editor_body_line_height_preset';
   static const _keyFontScale = 'app.settings.font_scale';
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
@@ -72,6 +124,24 @@ class SettingsService {
     final homeTabSwitchCurveType = _parseHomeTabSwitchCurveType(
       prefs.getString(_keyHomeTabSwitchCurve),
     );
+    final editorBodyFontSizePreset = _parseEditorBodyFontSizePreset(
+      prefs.getString(_keyEditorBodyFontSizePreset),
+    );
+    if (!prefs.containsKey(_keyEditorBodyFontSizePreset)) {
+      await prefs.setString(
+        _keyEditorBodyFontSizePreset,
+        editorBodyFontSizePreset.storageValue,
+      );
+    }
+    final editorBodyLineHeightPreset = _parseEditorBodyLineHeightPreset(
+      prefs.getString(_keyEditorBodyLineHeightPreset),
+    );
+    if (!prefs.containsKey(_keyEditorBodyLineHeightPreset)) {
+      await prefs.setString(
+        _keyEditorBodyLineHeightPreset,
+        editorBodyLineHeightPreset.storageValue,
+      );
+    }
     final fontScale = _normalizeFontScale(
       prefs.getDouble(_keyFontScale) ?? defaultFontScale,
     );
@@ -92,6 +162,8 @@ class SettingsService {
       mode: mode,
       themeSeedColor: Color(themeSeedColorValue),
       homeTabSwitchCurveType: homeTabSwitchCurveType,
+      editorBodyFontSizePreset: editorBodyFontSizePreset,
+      editorBodyLineHeightPreset: editorBodyLineHeightPreset,
       fontScale: fontScale,
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
@@ -115,6 +187,20 @@ class SettingsService {
   ) async {
     homeTabSwitchCurveNotifier.value = curveType;
     await _prefs.setString(_keyHomeTabSwitchCurve, curveType.storageValue);
+  }
+
+  Future<void> setEditorBodyFontSizePreset(
+    EditorBodyFontSizePreset preset,
+  ) async {
+    editorBodyFontSizePresetNotifier.value = preset;
+    await _prefs.setString(_keyEditorBodyFontSizePreset, preset.storageValue);
+  }
+
+  Future<void> setEditorBodyLineHeightPreset(
+    EditorBodyLineHeightPreset preset,
+  ) async {
+    editorBodyLineHeightPresetNotifier.value = preset;
+    await _prefs.setString(_keyEditorBodyLineHeightPreset, preset.storageValue);
   }
 
   Future<void> setFontScale(double scale) async {
@@ -163,6 +249,14 @@ class SettingsService {
   int get themeSeedColorValue => themeSeedColorNotifier.value.toARGB32();
   String get homeTabSwitchCurveTypeValue =>
       homeTabSwitchCurveNotifier.value.storageValue;
+  EditorBodyFontSizePreset get editorBodyFontSizePresetValue =>
+      editorBodyFontSizePresetNotifier.value;
+  String get editorBodyFontSizePresetStorageValue =>
+      editorBodyFontSizePresetNotifier.value.storageValue;
+  EditorBodyLineHeightPreset get editorBodyLineHeightPresetValue =>
+      editorBodyLineHeightPresetNotifier.value;
+  String get editorBodyLineHeightPresetStorageValue =>
+      editorBodyLineHeightPresetNotifier.value.storageValue;
   double get fontScaleValue => fontScaleNotifier.value;
 
   Future<void> setAppLocale(Locale locale) async {
@@ -238,6 +332,26 @@ class SettingsService {
       'linear' => HomeTabSwitchCurveType.linear,
       'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
       _ => defaultHomeTabSwitchCurveType,
+    };
+  }
+
+  static EditorBodyFontSizePreset _parseEditorBodyFontSizePreset(String? raw) {
+    return switch (raw) {
+      'small' => EditorBodyFontSizePreset.small,
+      'large' => EditorBodyFontSizePreset.large,
+      'medium' => EditorBodyFontSizePreset.medium,
+      _ => defaultEditorBodyFontSizePreset,
+    };
+  }
+
+  static EditorBodyLineHeightPreset _parseEditorBodyLineHeightPreset(
+    String? raw,
+  ) {
+    return switch (raw) {
+      'compact' => EditorBodyLineHeightPreset.compact,
+      'relaxed' => EditorBodyLineHeightPreset.relaxed,
+      'normal' => EditorBodyLineHeightPreset.normal,
+      _ => defaultEditorBodyLineHeightPreset,
     };
   }
 

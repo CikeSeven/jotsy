@@ -9,10 +9,7 @@ import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 
 /// 设置页编辑器配置区块。
 class SettingsEditorSection extends StatelessWidget {
-  const SettingsEditorSection({
-    super.key,
-    required this.settingsAsync,
-  });
+  const SettingsEditorSection({super.key, required this.settingsAsync});
 
   final AsyncValue<SettingsService> settingsAsync;
 
@@ -28,19 +25,55 @@ class SettingsEditorSection extends StatelessWidget {
             .take(4)
             .map((DiaryToolbarItem item) => _labelForItem(context, item))
             .join(' · ');
-        return ListTile(
-          title: Text(l10n.autoT0043),
-          subtitle: Text(l10n.autoT0044(preview)),
-          trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (BuildContext context) {
-                  return DiaryToolbarOrderPage(
-                    settingsService: settingsService,
-                  );
-                },
-              ),
+        return ValueListenableBuilder<EditorBodyFontSizePreset>(
+          valueListenable: settingsService.editorBodyFontSizePresetNotifier,
+          builder: (
+            BuildContext context,
+            EditorBodyFontSizePreset fontSizePreset,
+            Widget? child,
+          ) {
+            return ValueListenableBuilder<EditorBodyLineHeightPreset>(
+              valueListenable:
+                  settingsService.editorBodyLineHeightPresetNotifier,
+              builder: (
+                BuildContext context,
+                EditorBodyLineHeightPreset lineHeightPreset,
+                Widget? child,
+              ) {
+                return Column(
+                  children: <Widget>[
+                    _EditorBodyFontSizeTile(
+                      settingsService: settingsService,
+                      selectedPreset: fontSizePreset,
+                    ),
+                    const Divider(height: 1),
+                    _EditorBodyLineHeightTile(
+                      settingsService: settingsService,
+                      selectedPreset: lineHeightPreset,
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      title: Text(l10n.autoT0043),
+                      subtitle: Text(l10n.autoT0044(preview)),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return DiaryToolbarOrderPage(
+                                settingsService: settingsService,
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
             );
           },
         );
@@ -51,13 +84,16 @@ class SettingsEditorSection extends StatelessWidget {
             child: Center(
               child: LoadingIndicatorM3E(
                 variant: LoadingIndicatorM3EVariant.contained,
-                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                constraints: const BoxConstraints.tightFor(
+                  width: 32,
+                  height: 32,
+                ),
                 semanticLabel: l10n.dataMgmtBusyLabel,
               ),
             ),
           ),
       error:
-           (Object error, StackTrace stackTrace) =>
+          (Object error, StackTrace stackTrace) =>
               ListTile(title: Text(l10n.autoT0045(error.toString()))),
     );
   }
@@ -85,5 +121,230 @@ class SettingsEditorSection extends StatelessWidget {
       DiaryToolbarItem.indent => l10n.autoT0023,
       DiaryToolbarItem.link => l10n.autoT0024,
     };
+  }
+}
+
+class _EditorBodyFontSizeTile extends StatelessWidget {
+  const _EditorBodyFontSizeTile({
+    required this.settingsService,
+    required this.selectedPreset,
+  });
+
+  final SettingsService settingsService;
+  final EditorBodyFontSizePreset selectedPreset;
+
+  String _presetLabel(AppLocalizations l10n, EditorBodyFontSizePreset preset) {
+    return switch (preset) {
+      EditorBodyFontSizePreset.small => l10n.settingsEditorBodyFontSizeSmall,
+      EditorBodyFontSizePreset.medium => l10n.settingsEditorBodyFontSizeMedium,
+      EditorBodyFontSizePreset.large => l10n.settingsEditorBodyFontSizeLarge,
+    };
+  }
+
+  Future<void> _showPresetDialog(BuildContext context) async {
+    final result = await showDialog<EditorBodyFontSizePreset>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(l10n.settingsEditorBodyFontSize),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(EditorBodyFontSizePreset.small);
+                },
+                leading: FaIcon(
+                  selectedPreset == EditorBodyFontSizePreset.small
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsEditorBodyFontSizeSmall),
+              ),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(EditorBodyFontSizePreset.medium);
+                },
+                leading: FaIcon(
+                  selectedPreset == EditorBodyFontSizePreset.medium
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsEditorBodyFontSizeMedium),
+              ),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(EditorBodyFontSizePreset.large);
+                },
+                leading: FaIcon(
+                  selectedPreset == EditorBodyFontSizePreset.large
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsEditorBodyFontSizeLarge),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (result == null || result == selectedPreset) {
+      return;
+    }
+    await settingsService.setEditorBodyFontSizePreset(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ListTile(
+      title: Text(l10n.settingsEditorBodyFontSize),
+      subtitle: Text(l10n.settingsEditorBodyFontSizeSubtitle),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            _presetLabel(l10n, selectedPreset),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+        ],
+      ),
+      onTap: () => _showPresetDialog(context),
+    );
+  }
+}
+
+class _EditorBodyLineHeightTile extends StatelessWidget {
+  const _EditorBodyLineHeightTile({
+    required this.settingsService,
+    required this.selectedPreset,
+  });
+
+  final SettingsService settingsService;
+  final EditorBodyLineHeightPreset selectedPreset;
+
+  String _presetLabel(
+    AppLocalizations l10n,
+    EditorBodyLineHeightPreset preset,
+  ) {
+    return switch (preset) {
+      EditorBodyLineHeightPreset.compact =>
+        l10n.settingsEditorLineHeightCompact,
+      EditorBodyLineHeightPreset.normal => l10n.settingsEditorLineHeightNormal,
+      EditorBodyLineHeightPreset.relaxed =>
+        l10n.settingsEditorLineHeightRelaxed,
+    };
+  }
+
+  Future<void> _showPresetDialog(BuildContext context) async {
+    final result = await showDialog<EditorBodyLineHeightPreset>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(l10n.settingsEditorLineHeight),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(EditorBodyLineHeightPreset.compact);
+                },
+                leading: FaIcon(
+                  selectedPreset == EditorBodyLineHeightPreset.compact
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsEditorLineHeightCompact),
+              ),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(EditorBodyLineHeightPreset.normal);
+                },
+                leading: FaIcon(
+                  selectedPreset == EditorBodyLineHeightPreset.normal
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsEditorLineHeightNormal),
+              ),
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: () {
+                  Navigator.of(
+                    dialogContext,
+                  ).pop(EditorBodyLineHeightPreset.relaxed);
+                },
+                leading: FaIcon(
+                  selectedPreset == EditorBodyLineHeightPreset.relaxed
+                      ? FontAwesomeIcons.circleDot
+                      : FontAwesomeIcons.circle,
+                  size: 16,
+                ),
+                title: Text(l10n.settingsEditorLineHeightRelaxed),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (result == null || result == selectedPreset) {
+      return;
+    }
+    await settingsService.setEditorBodyLineHeightPreset(result);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ListTile(
+      title: Text(l10n.settingsEditorLineHeight),
+      subtitle: Text(l10n.settingsEditorLineHeightSubtitle),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Text(
+            _presetLabel(l10n, selectedPreset),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+        ],
+      ),
+      onTap: () => _showPresetDialog(context),
+    );
   }
 }

@@ -237,9 +237,53 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
+  "settingsEditorSubtitle": "Fonts, spacing, and toolbar",
+  "@settingsEditorSubtitle": {
+    "description": "Subtitle for editor settings entry on root settings page."
+  },
   "settingsEditorGroup": "Editor",
   "@settingsEditorGroup": {
     "description": "Settings group title for editor-related options."
+  },
+  "settingsEditorBodyFontSize": "Editor font size",
+  "@settingsEditorBodyFontSize": {
+    "description": "Setting title for editor body font size."
+  },
+  "settingsEditorBodyFontSizeSubtitle": "Only affects editor body text",
+  "@settingsEditorBodyFontSizeSubtitle": {
+    "description": "Subtitle for editor body font size setting."
+  },
+  "settingsEditorBodyFontSizeSmall": "Small",
+  "@settingsEditorBodyFontSizeSmall": {
+    "description": "Small option for editor body font size."
+  },
+  "settingsEditorBodyFontSizeMedium": "Medium",
+  "@settingsEditorBodyFontSizeMedium": {
+    "description": "Medium option for editor body font size."
+  },
+  "settingsEditorBodyFontSizeLarge": "Large",
+  "@settingsEditorBodyFontSizeLarge": {
+    "description": "Large option for editor body font size."
+  },
+  "settingsEditorLineHeight": "Body line height",
+  "@settingsEditorLineHeight": {
+    "description": "Setting title for editor body line height."
+  },
+  "settingsEditorLineHeightSubtitle": "Only affects editor body layout",
+  "@settingsEditorLineHeightSubtitle": {
+    "description": "Subtitle for editor body line height setting."
+  },
+  "settingsEditorLineHeightCompact": "Compact",
+  "@settingsEditorLineHeightCompact": {
+    "description": "Compact option for editor body line height."
+  },
+  "settingsEditorLineHeightNormal": "Normal",
+  "@settingsEditorLineHeightNormal": {
+    "description": "Normal option for editor body line height."
+  },
+  "settingsEditorLineHeightRelaxed": "Relaxed",
+  "@settingsEditorLineHeightRelaxed": {
+    "description": "Relaxed option for editor body line height."
   },
   "settingsDataPrivacy": "Data & Privacy",
   "@settingsDataPrivacy": {

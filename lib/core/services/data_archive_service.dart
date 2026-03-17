@@ -161,6 +161,10 @@ class DataArchiveService {
         'themeMode': settingsService.themeModeNotifier.value.name,
         'themeSeedColorValue': settingsService.themeSeedColorValue,
         'homeTabSwitchCurveType': settingsService.homeTabSwitchCurveTypeValue,
+        'editorBodyFontSizePreset':
+            settingsService.editorBodyFontSizePresetStorageValue,
+        'editorBodyLineHeightPreset':
+            settingsService.editorBodyLineHeightPresetStorageValue,
         'fontScale': settingsService.fontScaleValue,
         'appLocaleCode': settingsService.appLocaleCode,
         'appLockEnabled': settingsService.isAppLockEnabled,
@@ -297,6 +301,32 @@ class DataArchiveService {
           'linear' => HomeTabSwitchCurveType.linear,
           'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
           _ => SettingsService.defaultHomeTabSwitchCurveType,
+        },
+      );
+    }
+
+    final editorBodyFontSizeRaw =
+        settingsNode['editorBodyFontSizePreset']?.toString();
+    if (editorBodyFontSizeRaw != null && editorBodyFontSizeRaw.isNotEmpty) {
+      await settingsService.setEditorBodyFontSizePreset(
+        switch (editorBodyFontSizeRaw) {
+          'small' => EditorBodyFontSizePreset.small,
+          'large' => EditorBodyFontSizePreset.large,
+          'medium' => EditorBodyFontSizePreset.medium,
+          _ => SettingsService.defaultEditorBodyFontSizePreset,
+        },
+      );
+    }
+
+    final editorBodyLineHeightRaw =
+        settingsNode['editorBodyLineHeightPreset']?.toString();
+    if (editorBodyLineHeightRaw != null && editorBodyLineHeightRaw.isNotEmpty) {
+      await settingsService.setEditorBodyLineHeightPreset(
+        switch (editorBodyLineHeightRaw) {
+          'compact' => EditorBodyLineHeightPreset.compact,
+          'relaxed' => EditorBodyLineHeightPreset.relaxed,
+          'normal' => EditorBodyLineHeightPreset.normal,
+          _ => SettingsService.defaultEditorBodyLineHeightPreset,
         },
       );
     }

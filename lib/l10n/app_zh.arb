@@ -1227,6 +1227,10 @@
   "@autoT0132": {
     "description": "Auto-generated metadata for autoT0132."
   },
+  "editSaveAndExit": "保存并退出",
+  "@editSaveAndExit": {
+    "description": "Exit confirmation action that saves current diary changes and then exits the editor."
+  },
   "autoT0133": "开始记录...",
   "@autoT0133": {
     "description": "Auto-generated metadata for autoT0133."

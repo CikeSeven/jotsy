@@ -894,6 +894,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0132 => 'Exit';
 
   @override
+  String get editSaveAndExit => 'Save and exit';
+
+  @override
   String get autoT0133 => 'Start writing...';
 
   @override

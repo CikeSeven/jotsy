@@ -263,7 +263,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       return;
     }
 
-    final shouldExit = await showDialog<bool>(
+    final exitDecision = await showDialog<_EditExitDecision>(
       context: context,
       builder: (BuildContext dialogContext) {
         final colorScheme = Theme.of(dialogContext).colorScheme;
@@ -275,21 +275,48 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed:
+                  () =>
+                      Navigator.of(dialogContext).pop(_EditExitDecision.cancel),
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed:
+                  () => Navigator.of(
+                    dialogContext,
+                  ).pop(_EditExitDecision.exitWithoutSaving),
               child: Text(context.l10n.autoT0132),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
+              onPressed:
+                  () => Navigator.of(
+                    dialogContext,
+                  ).pop(_EditExitDecision.saveAndExit),
+              child: Text(context.l10n.editSaveAndExit),
             ),
           ],
         );
       },
     );
 
-    if (shouldExit == true && mounted) {
+    if (!mounted) {
+      return;
+    }
+
+    if (exitDecision == _EditExitDecision.exitWithoutSaving) {
       Navigator.of(context).pop();
+      return;
+    }
+    if (exitDecision == _EditExitDecision.saveAndExit) {
+      await _controller.save();
+      if (!mounted) {
+        return;
+      }
+      if (!_hasPendingEditChanges && !_saving) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -840,6 +867,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 }
 
 enum EditDiaryEntryMode { create, edit }
+
+enum _EditExitDecision { cancel, exitWithoutSaving, saveAndExit }
 
 class _EditPersistedSnapshot {
   const _EditPersistedSnapshot({

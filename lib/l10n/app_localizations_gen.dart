@@ -1676,6 +1676,12 @@ abstract class AppLocalizations {
   /// **'Exit'**
   String get autoT0132;
 
+  /// Exit confirmation action that saves current diary changes and then exits the editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Save and exit'**
+  String get editSaveAndExit;
+
   /// Auto-generated metadata for autoT0133.
   ///
   /// In en, this message translates to:

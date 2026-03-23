@@ -868,6 +868,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0132 => '退出';
 
   @override
+  String get editSaveAndExit => '保存并退出';
+
+  @override
   String get autoT0133 => '开始记录...';
 
   @override

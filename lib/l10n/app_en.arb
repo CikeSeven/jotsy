@@ -1227,6 +1227,10 @@
   "@autoT0132": {
     "description": "Auto-generated metadata for autoT0132."
   },
+  "editSaveAndExit": "Save and exit",
+  "@editSaveAndExit": {
+    "description": "Exit confirmation action that saves current diary changes and then exits the editor."
+  },
   "autoT0133": "Start writing...",
   "@autoT0133": {
     "description": "Auto-generated metadata for autoT0133."

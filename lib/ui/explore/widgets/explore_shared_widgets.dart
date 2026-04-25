@@ -139,43 +139,80 @@ class ExploreMediaThumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth = (width * dpr).round();
-    final cacheHeight = (height * dpr).round();
-    final uri = Uri.tryParse(source);
-    final isRemote =
-        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-    final image =
-        isRemote
-            ? Image.network(
-              source,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            )
-            : Image.file(
-              File(source),
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final resolvedWidth = _resolveFiniteDimension(
+          explicit: width,
+          constrained: constraints.maxWidth,
+        );
+        final resolvedHeight = _resolveFiniteDimension(
+          explicit: height,
+          constrained: constraints.maxHeight,
+        );
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        final cacheWidth = _cacheExtent(resolvedWidth, dpr);
+        final cacheHeight = _cacheExtent(resolvedHeight, dpr);
+        final uri = Uri.tryParse(source);
+        final isRemote =
+            uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+        final image =
+            isRemote
+                ? Image.network(
+                  source,
+                  width: width,
+                  height: height,
+                  fit: BoxFit.cover,
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  filterQuality: FilterQuality.low,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                )
+                : Image.file(
+                  File(source),
+                  width: width,
+                  height: height,
+                  fit: BoxFit.cover,
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  filterQuality: FilterQuality.low,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                );
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: Container(
-        width: width,
-        height: height,
-        color: colorScheme.surfaceContainer,
-        child: image,
-      ),
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            width: width,
+            height: height,
+            color: colorScheme.surfaceContainer,
+            child: image,
+          ),
+        );
+      },
     );
+  }
+
+  double _resolveFiniteDimension({
+    required double explicit,
+    required double constrained,
+  }) {
+    if (explicit.isFinite && explicit > 0) {
+      return explicit;
+    }
+    if (constrained.isFinite && constrained > 0) {
+      return constrained;
+    }
+    return 0;
+  }
+
+  int? _cacheExtent(double displayExtent, double devicePixelRatio) {
+    if (!displayExtent.isFinite || displayExtent <= 0) {
+      return null;
+    }
+    final effectiveRatio =
+        devicePixelRatio.isFinite && devicePixelRatio > 0
+            ? devicePixelRatio
+            : 1.0;
+    final extent = (displayExtent * effectiveRatio).round();
+    return extent > 0 ? extent : null;
   }
 }

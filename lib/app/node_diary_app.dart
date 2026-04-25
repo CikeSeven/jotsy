@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/app/theme/theme.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
@@ -44,8 +45,12 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   late final MaterialTheme _darkMaterialTheme;
   late final HomeHintVisibilityController _homeHintVisibilityController;
   final LocalAuthentication _localAuthentication = LocalAuthentication();
+  ProviderSubscription<AsyncValue<List<DiaryWithTags>>>?
+  _diariesBootstrapSubscription;
   Timer? _minimumLoadingTimer;
   bool _minimumLoadingElapsed = false;
+  bool _diariesBootstrapSettled = false;
+  Object? _diariesBootstrapError;
 
   SettingsService? _boundSettingsService;
   VoidCallback? _appLockToggleListener;
@@ -67,11 +72,36 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         _minimumLoadingElapsed = true;
       });
     });
+    late final ProviderSubscription<AsyncValue<List<DiaryWithTags>>>
+    subscription;
+    subscription = ref.listenManual(filteredDiariesProvider, (
+      _,
+      AsyncValue<List<DiaryWithTags>> next,
+    ) {
+      if (_diariesBootstrapSettled || (!next.hasValue && !next.hasError)) {
+        return;
+      }
+      Future<void>.microtask(() {
+        subscription.close();
+        if (identical(_diariesBootstrapSubscription, subscription)) {
+          _diariesBootstrapSubscription = null;
+        }
+      });
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _diariesBootstrapSettled = true;
+        _diariesBootstrapError = next.asError?.error;
+      });
+    }, fireImmediately: true);
+    _diariesBootstrapSubscription = subscription;
   }
 
   @override
   void dispose() {
     _minimumLoadingTimer?.cancel();
+    _diariesBootstrapSubscription?.close();
     _unbindAppLockListener();
     _homeHintVisibilityController.dispose();
     super.dispose();
@@ -81,19 +111,17 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   Widget build(BuildContext context) {
     // 启动门控：设置服务 + 首帧日记列表 + 最短展示时长。
     final settingsAsync = ref.watch(settingsServiceProvider);
-    final diariesBootstrapAsync = ref.watch(filteredDiariesProvider);
     final settingsReady = settingsAsync.hasValue;
     final settingsError = settingsAsync.asError?.error;
     final settingsService = settingsAsync.asData?.value;
     if (settingsService != null) {
       _bindSettingsForAppLock(settingsService);
     }
-    final diariesSettled =
-        diariesBootstrapAsync.hasValue || diariesBootstrapAsync.hasError;
+    final diariesSettled = _diariesBootstrapSettled;
     final bootstrapReady =
         _minimumLoadingElapsed && settingsReady && diariesSettled;
     final startupNotice =
-        bootstrapReady && diariesBootstrapAsync.hasError
+        bootstrapReady && _diariesBootstrapError != null
             ? _pickBootstrapText(
               settingsService: settingsService,
               zh: '启动时预加载日记失败，已进入主页。',

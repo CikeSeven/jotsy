@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/app_effects.dart';
+import 'package:node_diary/ui/widgets/image_cache_extent.dart';
 
 /// 探索页通用卡片容器。
 class ExploreCard extends StatelessWidget {
@@ -139,43 +140,71 @@ class ExploreMediaThumb extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth = (width * dpr).round();
-    final cacheHeight = (height * dpr).round();
-    final uri = Uri.tryParse(source);
-    final isRemote =
-        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-    final image =
-        isRemote
-            ? Image.network(
-              source,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            )
-            : Image.file(
-              File(source),
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final resolvedWidth = _resolveFiniteDimension(
+          explicit: width,
+          constrained: constraints.maxWidth,
+        );
+        final resolvedHeight = _resolveFiniteDimension(
+          explicit: height,
+          constrained: constraints.maxHeight,
+        );
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        final cacheWidth = ImageCacheExtent.fromDisplaySize(resolvedWidth, dpr);
+        final cacheHeight = ImageCacheExtent.fromDisplaySize(
+          resolvedHeight,
+          dpr,
+        );
+        final uri = Uri.tryParse(source);
+        final isRemote =
+            uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+        final image =
+            isRemote
+                ? Image.network(
+                  source,
+                  width: width,
+                  height: height,
+                  fit: BoxFit.cover,
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  filterQuality: FilterQuality.low,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                )
+                : Image.file(
+                  File(source),
+                  width: width,
+                  height: height,
+                  fit: BoxFit.cover,
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  filterQuality: FilterQuality.low,
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                );
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: Container(
-        width: width,
-        height: height,
-        color: colorScheme.surfaceContainer,
-        child: image,
-      ),
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            width: width,
+            height: height,
+            color: colorScheme.surfaceContainer,
+            child: image,
+          ),
+        );
+      },
     );
+  }
+
+  double _resolveFiniteDimension({
+    required double explicit,
+    required double constrained,
+  }) {
+    if (explicit.isFinite && explicit > 0) {
+      return explicit;
+    }
+    if (constrained.isFinite && constrained > 0) {
+      return constrained;
+    }
+    return 0;
   }
 }

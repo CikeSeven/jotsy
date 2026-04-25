@@ -24,6 +24,7 @@ import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/image_cache_extent.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
@@ -533,6 +534,12 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   Widget _buildPreviewCoverImage(String source) {
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = ImageCacheExtent.fromDisplaySize(
+      MediaQuery.sizeOf(context).width,
+      dpr,
+    );
+    final cacheHeight = ImageCacheExtent.fromDisplaySize(420, dpr);
     final uri = Uri.tryParse(source);
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
@@ -541,6 +548,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         source,
         fit: BoxFit.contain,
         alignment: Alignment.center,
+        cacheWidth: cacheWidth,
+        cacheHeight: cacheHeight,
         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
       );
     }
@@ -549,6 +558,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       File(source),
       fit: BoxFit.contain,
       alignment: Alignment.center,
+      cacheWidth: cacheWidth,
+      cacheHeight: cacheHeight,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
     );
   }

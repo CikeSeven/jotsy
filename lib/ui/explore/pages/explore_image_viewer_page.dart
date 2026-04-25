@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/image_cache_extent.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../models/explore_view_data.dart';
@@ -108,42 +109,62 @@ class _ExploreImageViewerPageState extends State<ExploreImageViewerPage> {
   }
 
   Widget _buildImagePage(String source) {
-    final uri = Uri.tryParse(source);
-    final isRemote =
-        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        final cacheWidth = ImageCacheExtent.fromDisplaySize(
+          constraints.maxWidth,
+          dpr,
+        );
+        final cacheHeight = ImageCacheExtent.fromDisplaySize(
+          constraints.maxHeight,
+          dpr,
+        );
+        final uri = Uri.tryParse(source);
+        final isRemote =
+            uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
-    final imageWidget =
-        isRemote
-            ? Image.network(
-              source,
-              fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                final totalBytes = loadingProgress.expectedTotalBytes;
-                final value =
-                    totalBytes == null
-                        ? null
-                        : loadingProgress.cumulativeBytesLoaded / totalBytes;
-                return Center(child: CircularProgressIndicator(value: value));
-              },
-              errorBuilder: (_, __, ___) => const _ImageFallback(),
-            )
-            : Image.file(
-              File(source),
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const _ImageFallback(),
-            );
+        final imageWidget =
+            isRemote
+                ? Image.network(
+                  source,
+                  fit: BoxFit.contain,
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) {
+                      return child;
+                    }
+                    final totalBytes = loadingProgress.expectedTotalBytes;
+                    final value =
+                        totalBytes == null
+                            ? null
+                            : loadingProgress.cumulativeBytesLoaded /
+                                totalBytes;
+                    return Center(
+                      child: CircularProgressIndicator(value: value),
+                    );
+                  },
+                  errorBuilder: (_, __, ___) => const _ImageFallback(),
+                )
+                : Image.file(
+                  File(source),
+                  fit: BoxFit.contain,
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  errorBuilder: (_, __, ___) => const _ImageFallback(),
+                );
 
-    return Container(
-      color: Colors.black,
-      alignment: Alignment.center,
-      child: InteractiveViewer(
-        minScale: 1,
-        maxScale: 4,
-        child: Center(child: imageWidget),
-      ),
+        return Container(
+          color: Colors.black,
+          alignment: Alignment.center,
+          child: InteractiveViewer(
+            minScale: 1,
+            maxScale: 4,
+            child: Center(child: imageWidget),
+          ),
+        );
+      },
     );
   }
 }

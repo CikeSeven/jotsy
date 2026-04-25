@@ -132,11 +132,16 @@ class _ExploreMediaGalleryPageState
               return InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () => _openViewer(index),
-                child: ExploreMediaThumb(
-                  source: item.source,
-                  width: double.infinity,
-                  height: double.infinity,
-                  radius: 12,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final side = constraints.biggest.shortestSide;
+                    return ExploreMediaThumb(
+                      source: item.source,
+                      width: side,
+                      height: side,
+                      radius: 12,
+                    );
+                  },
                 ),
               );
             }, childCount: _mediaItems.length),

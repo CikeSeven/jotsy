@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/image_cache_extent.dart';
 
 /// 发布页头图 Sliver。
 ///
@@ -78,8 +79,10 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
           child: ClipRRect(
             borderRadius: borderRadius,
             child: DecoratedBox(
-              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
-              child: _CoverImage(cover: cover),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+              ),
+              child: _CoverImage(cover: cover, displayHeight: maxExtentHeight),
             ),
           ),
         ),
@@ -97,9 +100,10 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
 }
 
 class _CoverImage extends StatelessWidget {
-  const _CoverImage({required this.cover});
+  const _CoverImage({required this.cover, required this.displayHeight});
 
   final String cover;
+  final double displayHeight;
 
   bool get _isNetworkImage {
     final uri = Uri.tryParse(cover);
@@ -113,6 +117,12 @@ class _CoverImage extends StatelessWidget {
   Widget build(BuildContext context) {
     // 封面规则：完整展示原图，不做裁切。
     // 使用 BoxFit.contain 保留图片全部尺寸比例。
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = ImageCacheExtent.fromDisplaySize(
+      MediaQuery.sizeOf(context).width,
+      dpr,
+    );
+    final cacheHeight = ImageCacheExtent.fromDisplaySize(displayHeight, dpr);
     if (_isNetworkImage) {
       return Image.network(
         cover,
@@ -120,6 +130,8 @@ class _CoverImage extends StatelessWidget {
         alignment: Alignment.center,
         width: double.infinity,
         height: double.infinity,
+        cacheWidth: cacheWidth,
+        cacheHeight: cacheHeight,
         errorBuilder: (_, __, ___) => const _CoverFallback(),
       );
     }
@@ -130,6 +142,8 @@ class _CoverImage extends StatelessWidget {
       alignment: Alignment.center,
       width: double.infinity,
       height: double.infinity,
+      cacheWidth: cacheWidth,
+      cacheHeight: cacheHeight,
       errorBuilder: (_, __, ___) => const _CoverFallback(),
     );
   }

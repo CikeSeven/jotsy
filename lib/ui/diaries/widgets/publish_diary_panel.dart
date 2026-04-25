@@ -151,6 +151,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
 
   // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
+  double? _lastReportedProgress;
 
   double get _activeExpandedHeight => _panelCoordinator.activeExpandedHeight;
 
@@ -226,7 +227,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
         return;
       }
       setState(() {});
-      widget.onProgressChanged?.call(_panelCoordinator.progress);
+      _notifyProgressChangedIfNeeded();
     }
 
     final phase = SchedulerBinding.instance.schedulerPhase;
@@ -236,6 +237,19 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       return;
     }
     apply();
+  }
+
+  void _notifyProgressChangedIfNeeded() {
+    final progress = _panelCoordinator.progress;
+    final lastReportedProgress = _lastReportedProgress;
+    final reachedEdge = progress <= 0.001 || progress >= 0.999;
+    if (lastReportedProgress != null &&
+        !reachedEdge &&
+        (progress - lastReportedProgress).abs() < 0.01) {
+      return;
+    }
+    _lastReportedProgress = progress;
+    widget.onProgressChanged?.call(progress);
   }
 
   @override

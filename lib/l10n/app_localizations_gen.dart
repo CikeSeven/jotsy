@@ -2155,6 +2155,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Take it easy, this day\'s highlights haven\'t happened yet.'**
   String get autoT0211;
+
+  /// Time capsule text for timeCapsuleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time lock'**
+  String get timeCapsuleTitle;
+
+  /// Time capsule text for timeCapsuleUnset.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sealed'**
+  String get timeCapsuleUnset;
+
+  /// Time capsule text for timeCapsuleSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks {p0}'**
+  String timeCapsuleSet(String p0);
+
+  /// Time capsule text for timeCapsulePickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose unlock time'**
+  String get timeCapsulePickTitle;
+
+  /// Time capsule text for timeCapsulePrecisionMinute.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact time'**
+  String get timeCapsulePrecisionMinute;
+
+  /// Time capsule text for timeCapsulePrecisionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date only'**
+  String get timeCapsulePrecisionDate;
+
+  /// Time capsule text for timeCapsuleQuickWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'One week'**
+  String get timeCapsuleQuickWeek;
+
+  /// Time capsule text for timeCapsuleQuickMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'One month'**
+  String get timeCapsuleQuickMonth;
+
+  /// Time capsule text for timeCapsuleQuickYear.
+  ///
+  /// In en, this message translates to:
+  /// **'One year'**
+  String get timeCapsuleQuickYear;
+
+  /// Time capsule text for timeCapsuleClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove time lock'**
+  String get timeCapsuleClear;
+
+  /// Time capsule text for timeCapsuleLockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleeping moment'**
+  String get timeCapsuleLockedTitle;
+
+  /// Time capsule text for timeCapsuleCountdownDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks in {p0}d'**
+  String timeCapsuleCountdownDays(String p0);
+
+  /// Time capsule text for timeCapsuleCountdownHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocks in {p0}h'**
+  String timeCapsuleCountdownHours(String p0);
+
+  /// Time capsule text for timeCapsuleLockedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This diary is sealed until {p0}. You can change the unlock time or delete it, but the content stays hidden.'**
+  String timeCapsuleLockedHint(String p0);
+
+  /// Time capsule text for timeCapsuleUpdateUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Change unlock time'**
+  String get timeCapsuleUpdateUnlock;
+
+  /// Time capsule text for timeCapsuleSealAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Seal diary'**
+  String get timeCapsuleSealAction;
+
+  /// Time capsule text for timeCapsuleSealing.
+  ///
+  /// In en, this message translates to:
+  /// **'Sealing this moment...'**
+  String get timeCapsuleSealing;
+
+  /// Time capsule text for timeCapsuleSealDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked until {p0}'**
+  String timeCapsuleSealDone(String p0);
+
+  /// Time capsule text for timeCapsuleUnlockedInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'When you wrote this diary, you felt {p0}. How do you feel today?'**
+  String timeCapsuleUnlockedInsight(String p0);
+
+  /// Time capsule text for timeCapsuleUnlockedInsightNoMood.
+  ///
+  /// In en, this message translates to:
+  /// **'This was sealed for your future self. How do you feel today?'**
+  String get timeCapsuleUnlockedInsightNoMood;
 }
 
 class _AppLocalizationsDelegate

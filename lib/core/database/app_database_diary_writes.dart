@@ -18,6 +18,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     String? cover,
     List<int> tagIds = const <int>[],
     DateTime? createdAtOverride,
+    DateTime? capsuleUnlockAt,
+    DateTime? capsuleLockedAt,
   }) async {
     final now = createdAtOverride ?? DateTime.now();
     final diaryId = _generateDiaryId();
@@ -36,6 +38,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
           metadata: Value<String>(normalizedMetadata),
           createdAt: now,
           updatedAt: now,
+          capsuleUnlockAt: Value<DateTime?>(capsuleUnlockAt),
+          capsuleLockedAt: Value<DateTime?>(capsuleLockedAt),
         ),
       );
 
@@ -86,6 +90,49 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
       );
 
       await _replaceDiaryTags(diary.id, normalizedTagIds);
+    });
+  }
+
+  /// 更新时间胶囊解封时间，不触碰正文以避免未解封管理页泄露内容。
+  Future<void> updateDiaryCapsuleSchedule({
+    required String diaryId,
+    required DateTime unlockAt,
+  }) async {
+    final diary =
+        await (select(diaries)
+          ..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
+    final nextMetadata = _metadataWithUpdatedCapsuleUnlockAt(
+      diary?.metadata,
+      unlockAt,
+    );
+    await (update(diaries)
+      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+      DiariesCompanion(
+        metadata: Value<String>(nextMetadata),
+        capsuleUnlockAt: Value<DateTime?>(unlockAt),
+        updatedAt: Value<DateTime>(DateTime.now()),
+      ),
+    );
+  }
+
+  String _metadataWithUpdatedCapsuleUnlockAt(String? raw, DateTime unlockAt) {
+    try {
+      final decoded = jsonDecode(raw ?? '{}');
+      if (decoded is Map<String, dynamic>) {
+        final capsule = decoded['capsule'];
+        final nextCapsule =
+            capsule is Map<String, dynamic>
+                ? Map<String, Object?>.from(capsule)
+                : <String, Object?>{};
+        nextCapsule['unlockAt'] = unlockAt.toIso8601String();
+        decoded['capsule'] = nextCapsule;
+        return jsonEncode(decoded);
+      }
+    } catch (_) {
+      // 非法 metadata 由 normalizeMetadataJson 兜底成空对象，避免管理页写入失败。
+    }
+    return jsonEncode(<String, Object?>{
+      'capsule': <String, Object?>{'unlockAt': unlockAt.toIso8601String()},
     });
   }
 

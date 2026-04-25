@@ -17,9 +17,7 @@ class PublishDiaryController {
   /// 预览页展示标题：空标题回退为默认文案。
   String get title {
     final normalized = _state.widget.initialDraft.title.trim();
-    return normalized.isEmpty
-        ? _state.context.l10n.autoT0095
-        : normalized;
+    return normalized.isEmpty ? _state.context.l10n.autoT0095 : normalized;
   }
 
   /// 规范化封面路径，空字符串按“无封面”处理。
@@ -80,12 +78,14 @@ class PublishDiaryController {
   ///
   /// 合并当前页面可编辑字段与自动采集字段，输出结构化字符串。
   String buildMetadataJson({DateTime? generatedAt}) {
+    final schedule = _state._timeCapsuleSchedule;
+    final lockedAt = generatedAt ?? DateTime.now();
     return PublishMetadataComposer.compose(
       contentText: _state.widget.initialDraft.contentText,
       selectedTagIds: _state._selectedTagIds,
       hasCover: normalizedCover != null,
       deviceInfo: buildDeviceMetadata(),
-      generatedAt: generatedAt ?? DateTime.now(),
+      generatedAt: lockedAt,
       location: normalizeOptionalText(_state._locationController.text),
       locationAddressComponent: _state._locationAddressComponent,
       locationLatitude: _state._locationLatitude,
@@ -95,6 +95,12 @@ class PublishDiaryController {
       weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
       moodEmoji: normalizeOptionalText(_state._moodEmoji),
       energyLevel: _state._energyLevel,
+      capsuleLockedAt: schedule == null ? null : lockedAt,
+      capsuleUnlockAt: schedule?.normalizedUnlockAt,
+      capsulePrecision:
+          schedule == null
+              ? null
+              : TimeCapsuleSchedule.encodePrecision(schedule.precision),
     );
   }
 
@@ -155,6 +161,16 @@ class PublishDiaryController {
     return '$year-$month-$day $hour:$minute';
   }
 
+  String get timeCapsuleLabel {
+    final schedule = _state._timeCapsuleSchedule;
+    if (schedule == null) {
+      return _state.context.l10n.timeCapsuleUnset;
+    }
+    return _state.context.l10n.timeCapsuleSet(
+      formatPublishTimeLabel(schedule.normalizedUnlockAt),
+    );
+  }
+
   /// 选择发表时间。
   ///
   /// 约束：
@@ -187,9 +203,7 @@ class PublishDiaryController {
       helpText: _state.context.l10n.autoT0097,
       builder: (BuildContext context, Widget? child) {
         return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(alwaysUse24HourFormat: true),
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
           child: child ?? const SizedBox.shrink(),
         );
       },
@@ -207,6 +221,19 @@ class PublishDiaryController {
         pickedTime.minute,
       );
     });
+  }
+
+  void updateTimeCapsule(TimeCapsuleSchedule picked) {
+    _state.setState(() {
+      _state._timeCapsuleSchedule = TimeCapsuleSchedule(
+        unlockAt: picked.normalizedUnlockAt,
+        precision: picked.precision,
+      );
+    });
+  }
+
+  void clearTimeCapsule() {
+    _state.setState(() => _state._timeCapsuleSchedule = null);
   }
 
   /// 发布页用于显示的地址文案。
@@ -286,7 +313,9 @@ class PublishDiaryController {
     if (apiKey == null || apiKey.isEmpty) {
       return null;
     }
-    _state._locationResolverService = LocationResolverService(webApiKey: apiKey);
+    _state._locationResolverService = LocationResolverService(
+      webApiKey: apiKey,
+    );
     return _state._locationResolverService;
   }
 
@@ -326,15 +355,15 @@ class PublishDiaryController {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      await showHint(
-        _state.context.l10n.autoT0088,
-      );
+      await showHint(_state.context.l10n.autoT0088);
       return;
     }
 
     final previousCover = normalizedCover;
     try {
-      final importedPath = await DiaryCoverStorageService.importCover(selectedPath);
+      final importedPath = await DiaryCoverStorageService.importCover(
+        selectedPath,
+      );
       if (!_state.mounted) {
         await DiaryCoverStorageService.deleteManagedCover(importedPath);
         return;
@@ -348,9 +377,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(
-        _state.context.l10n.autoT0089(error.toString()),
-      );
+      await showHint(_state.context.l10n.autoT0089(error.toString()));
     }
   }
 
@@ -379,9 +406,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(
-        _state.context.l10n.autoT0090(error.toString()),
-      );
+      await showHint(_state.context.l10n.autoT0090(error.toString()));
     }
   }
 
@@ -430,9 +455,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(
-        _state.context.l10n.autoT0091(error.toString()),
-      );
+      await showHint(_state.context.l10n.autoT0091(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -446,9 +469,7 @@ class PublishDiaryController {
       return;
     }
     if (_state._locationLatitude == null || _state._locationLongitude == null) {
-      await showHint(
-        _state.context.l10n.autoT0092,
-      );
+      await showHint(_state.context.l10n.autoT0092);
       return;
     }
 
@@ -465,7 +486,10 @@ class PublishDiaryController {
       final weatherNow = await service.fetchNow(
         latitude: _state._locationLatitude!,
         longitude: _state._locationLongitude!,
-        languageCode: (await _state.ref.read(settingsServiceProvider.future)).appLocaleCode,
+        languageCode:
+            (await _state.ref.read(
+              settingsServiceProvider.future,
+            )).appLocaleCode,
       );
       if (!_state.mounted) {
         return;
@@ -483,9 +507,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(
-        _state.context.l10n.autoT0093(error.toString()),
-      );
+      await showHint(_state.context.l10n.autoT0093(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -505,26 +527,38 @@ class PublishDiaryController {
 
     try {
       final db = _state.ref.read(appDatabaseProvider);
+      final schedule = _state._timeCapsuleSchedule;
+      final lockedAt = schedule == null ? null : DateTime.now();
       await db.createDiary(
         title: _state.widget.initialDraft.title,
         contentDocJson: _state.widget.initialDraft.contentDocJson,
         contentText: _state.widget.initialDraft.contentText,
         cover: normalizedCover,
-        metadataJson: buildMetadataJson(generatedAt: DateTime.now()),
+        metadataJson: buildMetadataJson(generatedAt: lockedAt),
         tagIds: _state._selectedTagIds.toList(),
-        createdAtOverride: _state._publishAt,
+        createdAtOverride: TimeCapsuleSchedule.resolveDiaryCreatedAt(
+          schedule: schedule,
+          fallbackPublishAt: _state._publishAt,
+        ),
+        capsuleUnlockAt: schedule?.normalizedUnlockAt,
+        capsuleLockedAt: lockedAt,
       );
       if (!_state.mounted) {
         return;
+      }
+      if (schedule != null) {
+        _state.setState(() => _state._showCapsuleSealOverlay = true);
+        await Future<void>.delayed(const Duration(milliseconds: 760));
+        if (!_state.mounted) {
+          return;
+        }
       }
       Navigator.of(_state.context).pop(true);
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      await showHint(
-        _state.context.l10n.autoT0098(error.toString()),
-      );
+      await showHint(_state.context.l10n.autoT0098(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._saving = false);
@@ -534,6 +568,7 @@ class PublishDiaryController {
 
   /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
   void closeWithDraft() {
+    final schedule = _state._timeCapsuleSchedule;
     Navigator.of(_state.context).pop(
       _state.widget.initialDraft.copyWith(
         cover: normalizedCover,
@@ -549,6 +584,11 @@ class PublishDiaryController {
         weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
         moodEmoji: normalizeOptionalText(_state._moodEmoji),
         energyLevel: _state._energyLevel,
+        capsuleUnlockAt: schedule?.normalizedUnlockAt,
+        capsulePrecision:
+            schedule == null
+                ? null
+                : TimeCapsuleSchedule.encodePrecision(schedule.precision),
       ),
     );
   }

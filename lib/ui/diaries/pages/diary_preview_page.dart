@@ -31,6 +31,8 @@ import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
 import 'edit_diary_page.dart';
+import 'locked_diary_page.dart';
+import '../models/time_capsule.dart';
 
 /// 预览页返回结果。
 enum DiaryPreviewResult { deleted }
@@ -959,6 +961,53 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
   }
 
+  Widget _buildCapsuleUnlockedInsight(DiaryWithTags detail) {
+    final state = TimeCapsuleState.fromFields(
+      lockedAt: detail.diary.capsuleLockedAt,
+      unlockAt: detail.diary.capsuleUnlockAt,
+      now: DateTime.now(),
+    );
+    if (!state.isCapsule || state.isLocked) {
+      return const SizedBox.shrink();
+    }
+    final colorScheme = Theme.of(context).colorScheme;
+    final metadataContext = _extractContextMetadata(detail);
+    final mood = metadataContext?['moodEmoji']?.toString().trim();
+    final message =
+        mood != null && mood.isNotEmpty
+            ? context.l10n.timeCapsuleUnlockedInsight(mood)
+            : context.l10n.timeCapsuleUnlockedInsightNoMood;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer.withValues(alpha: 0.52),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.primary.withValues(alpha: 0.24)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          FaIcon(
+            FontAwesomeIcons.unlockKeyhole,
+            size: 16,
+            color: colorScheme.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMetaChip(_MetaChipItem item, ColorScheme colorScheme) {
     final isEnergyItem =
         item.kind == _MetaChipKind.energy && item.energyLevel != null;
@@ -1126,6 +1175,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         }
 
         _hadLoadedData = true;
+        final capsuleState = TimeCapsuleState.fromFields(
+          lockedAt: detail.diary.capsuleLockedAt,
+          unlockAt: detail.diary.capsuleUnlockAt,
+          now: DateTime.now(),
+        );
+        if (capsuleState.isLocked) {
+          return LockedDiaryPage(diaryId: widget.diaryId);
+        }
         _currentDetailForTodoSave = detail;
         _bindPreviewController(detail.diary.content);
         final title =
@@ -1174,7 +1231,15 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                       SliverToBoxAdapter(
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
-                          child: _buildContentSection(detail),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              _buildCapsuleUnlockedInsight(detail),
+                              if (capsuleState.isCapsule)
+                                const SizedBox(height: 14),
+                              _buildContentSection(detail),
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -1157,4 +1157,77 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get autoT0211 =>
       'Take it easy, this day\'s highlights haven\'t happened yet.';
+
+  @override
+  String get timeCapsuleTitle => 'Time lock';
+
+  @override
+  String get timeCapsuleUnset => 'Not sealed';
+
+  @override
+  String timeCapsuleSet(String p0) {
+    return 'Unlocks $p0';
+  }
+
+  @override
+  String get timeCapsulePickTitle => 'Choose unlock time';
+
+  @override
+  String get timeCapsulePrecisionMinute => 'Exact time';
+
+  @override
+  String get timeCapsulePrecisionDate => 'Date only';
+
+  @override
+  String get timeCapsuleQuickWeek => 'One week';
+
+  @override
+  String get timeCapsuleQuickMonth => 'One month';
+
+  @override
+  String get timeCapsuleQuickYear => 'One year';
+
+  @override
+  String get timeCapsuleClear => 'Remove time lock';
+
+  @override
+  String get timeCapsuleLockedTitle => 'Sleeping moment';
+
+  @override
+  String timeCapsuleCountdownDays(String p0) {
+    return 'Unlocks in ${p0}d';
+  }
+
+  @override
+  String timeCapsuleCountdownHours(String p0) {
+    return 'Unlocks in ${p0}h';
+  }
+
+  @override
+  String timeCapsuleLockedHint(String p0) {
+    return 'This diary is sealed until $p0. You can change the unlock time or delete it, but the content stays hidden.';
+  }
+
+  @override
+  String get timeCapsuleUpdateUnlock => 'Change unlock time';
+
+  @override
+  String get timeCapsuleSealAction => 'Seal diary';
+
+  @override
+  String get timeCapsuleSealing => 'Sealing this moment...';
+
+  @override
+  String timeCapsuleSealDone(String p0) {
+    return 'Locked until $p0';
+  }
+
+  @override
+  String timeCapsuleUnlockedInsight(String p0) {
+    return 'When you wrote this diary, you felt $p0. How do you feel today?';
+  }
+
+  @override
+  String get timeCapsuleUnlockedInsightNoMood =>
+      'This was sealed for your future self. How do you feel today?';
 }

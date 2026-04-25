@@ -1124,4 +1124,76 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoT0211 => '别着急，属于这一天的精彩还没发生。';
+
+  @override
+  String get timeCapsuleTitle => '定时锁';
+
+  @override
+  String get timeCapsuleUnset => '未封存';
+
+  @override
+  String timeCapsuleSet(String p0) {
+    return '$p0 解封';
+  }
+
+  @override
+  String get timeCapsulePickTitle => '选择解封时间';
+
+  @override
+  String get timeCapsulePrecisionMinute => '精确到时间';
+
+  @override
+  String get timeCapsulePrecisionDate => '只按日期';
+
+  @override
+  String get timeCapsuleQuickWeek => '一周后';
+
+  @override
+  String get timeCapsuleQuickMonth => '一个月后';
+
+  @override
+  String get timeCapsuleQuickYear => '一年后';
+
+  @override
+  String get timeCapsuleClear => '移除定时锁';
+
+  @override
+  String get timeCapsuleLockedTitle => '沉睡时刻';
+
+  @override
+  String timeCapsuleCountdownDays(String p0) {
+    return '$p0 天后解封';
+  }
+
+  @override
+  String timeCapsuleCountdownHours(String p0) {
+    return '$p0 小时后解封';
+  }
+
+  @override
+  String timeCapsuleLockedHint(String p0) {
+    return '这篇日记会在 $p0 解封。你可以调整解封时间或删除它，但正文会继续保密。';
+  }
+
+  @override
+  String get timeCapsuleUpdateUnlock => '调整解封时间';
+
+  @override
+  String get timeCapsuleSealAction => '封存这篇日记';
+
+  @override
+  String get timeCapsuleSealing => '正在封存此刻...';
+
+  @override
+  String timeCapsuleSealDone(String p0) {
+    return '已锁定至 $p0';
+  }
+
+  @override
+  String timeCapsuleUnlockedInsight(String p0) {
+    return '写下这篇日记时，你是 $p0 的，今天感觉如何？';
+  }
+
+  @override
+  String get timeCapsuleUnlockedInsightNoMood => '这是一封写给未来自己的日记，今天感觉如何？';
 }

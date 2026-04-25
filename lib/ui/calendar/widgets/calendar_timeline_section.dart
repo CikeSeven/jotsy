@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
+import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/energy_battery_indicator.dart';
 import '../../widgets/qweather_icon.dart';
 
@@ -104,10 +105,19 @@ class CalendarTimelineSection extends StatelessWidget {
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final lineColor = colorScheme.outlineVariant.withValues(alpha: 0.6);
+    final capsuleState = TimeCapsuleState.fromFields(
+      lockedAt: diary.diary.capsuleLockedAt,
+      unlockAt: diary.diary.capsuleUnlockAt,
+      now: DateTime.now(),
+    );
+    final isLockedCapsule = capsuleState.isLocked;
     final moodEmoji = _extractMoodEmoji(diary.diary);
-    final summary = _buildSummaryText(context, diary.diary);
+    final summary =
+        isLockedCapsule
+            ? _countdownLabel(context, capsuleState)
+            : _buildSummaryText(context, diary.diary);
     final createdAtLabel = _formatHourMinute(diary.diary.createdAt);
-    final cover = _resolveCover(diary.diary);
+    final cover = isLockedCapsule ? null : _resolveCover(diary.diary);
     final contextMeta = _extractContextMetadata(diary.diary);
     final location = _extractLocation(contextMeta);
     final weather = _extractWeather(contextMeta);
@@ -197,7 +207,14 @@ class CalendarTimelineSection extends StatelessWidget {
                               style: Theme.of(
                                 context,
                               ).textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
+                                color:
+                                    isLockedCapsule
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurfaceVariant,
+                                fontWeight:
+                                    isLockedCapsule
+                                        ? FontWeight.w700
+                                        : FontWeight.w400,
                                 height: 1.35,
                               ),
                             ),
@@ -237,6 +254,16 @@ class CalendarTimelineSection extends StatelessWidget {
       return normalized;
     }
     return context.l10n.autoT0186;
+  }
+
+  String _countdownLabel(BuildContext context, TimeCapsuleState state) {
+    final hours = state.remainingDuration.inHours;
+    if (hours > 0 && hours < 24) {
+      return context.l10n.timeCapsuleCountdownHours(hours.toString());
+    }
+    return context.l10n.timeCapsuleCountdownDays(
+      state.remainingDays.toString(),
+    );
   }
 
   /// 时间线右侧封面缩略图来源：

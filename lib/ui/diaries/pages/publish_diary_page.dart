@@ -19,6 +19,7 @@ import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
@@ -63,12 +64,14 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   String? _weatherIconCode;
   double _energyLevel = 4;
   late DateTime _publishAt;
+  TimeCapsuleSchedule? _timeCapsuleSchedule;
   double _panelExpandProgress = 0;
 
   // ==================== 异步流程状态 ====================
   bool _saving = false;
   bool _locating = false;
   bool _weatherLoading = false;
+  bool _showCapsuleSealOverlay = false;
   LocationResolverService? _locationResolverService;
   QWeatherWeatherService? _weatherService;
 
@@ -93,6 +96,15 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _publishAt = _controller.resolveInitialPublishAt(
       widget.initialDraft.createdAtOverride,
     );
+    final initialCapsuleUnlockAt = widget.initialDraft.capsuleUnlockAt;
+    if (initialCapsuleUnlockAt != null) {
+      _timeCapsuleSchedule = TimeCapsuleSchedule(
+        unlockAt: initialCapsuleUnlockAt,
+        precision: TimeCapsuleSchedule.parsePrecision(
+          widget.initialDraft.capsulePrecision,
+        ),
+      );
+    }
 
     // 精力值限制在 1~5，避免历史数据越界导致 UI 异常。
     final initialEnergy = (widget.initialDraft.energyLevel ?? 4).toDouble();
@@ -291,6 +303,15 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   _publishAt,
                 ),
                 onPickPublishTime: _controller.pickPublishAt,
+                showTimeCapsuleOption: true,
+                timeCapsuleLabel: _controller.timeCapsuleLabel,
+                timeCapsuleActive: _timeCapsuleSchedule != null,
+                timeCapsuleSchedule: _timeCapsuleSchedule,
+                onTimeCapsuleChanged: _controller.updateTimeCapsule,
+                onClearTimeCapsule:
+                    _timeCapsuleSchedule == null
+                        ? null
+                        : _controller.clearTimeCapsule,
                 onToggleTag: (tagId, selected) {
                   setState(() {
                     if (selected) {
@@ -309,9 +330,74 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   );
                 },
                 onPublish: _controller.publish,
+                actionLabel:
+                    _timeCapsuleSchedule == null
+                        ? ''
+                        : context.l10n.timeCapsuleSealAction,
               ),
             ),
+            if (_showCapsuleSealOverlay) _buildCapsuleSealOverlay(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCapsuleSealOverlay(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          opacity: _showCapsuleSealOverlay ? 1 : 0,
+          duration: const Duration(milliseconds: 180),
+          child: ColoredBox(
+            color: colorScheme.scrim.withValues(alpha: 0.36),
+            child: Center(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.88, end: 1),
+                duration: const Duration(milliseconds: 620),
+                curve: Curves.easeOutBack,
+                builder: (context, value, child) {
+                  return Transform.scale(scale: value, child: child);
+                },
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: colorScheme.shadow.withValues(alpha: 0.18),
+                        blurRadius: 28,
+                        offset: const Offset(0, 14),
+                      ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 24,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        FaIcon(
+                          FontAwesomeIcons.lock,
+                          size: 34,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          context.l10n.timeCapsuleSealing,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

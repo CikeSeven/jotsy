@@ -1591,5 +1591,115 @@
   "autoT0211": "别着急，属于这一天的精彩还没发生。",
   "@autoT0211": {
     "description": "Auto-generated metadata for autoT0211."
+  },
+  "timeCapsuleTitle": "定时锁",
+  "@timeCapsuleTitle": {
+    "description": "Time capsule text for timeCapsuleTitle."
+  },
+  "timeCapsuleUnset": "未封存",
+  "@timeCapsuleUnset": {
+    "description": "Time capsule text for timeCapsuleUnset."
+  },
+  "timeCapsuleSet": "{p0} 解封",
+  "@timeCapsuleSet": {
+    "description": "Time capsule text for timeCapsuleSet.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsulePickTitle": "选择解封时间",
+  "@timeCapsulePickTitle": {
+    "description": "Time capsule text for timeCapsulePickTitle."
+  },
+  "timeCapsulePrecisionMinute": "精确到时间",
+  "@timeCapsulePrecisionMinute": {
+    "description": "Time capsule text for timeCapsulePrecisionMinute."
+  },
+  "timeCapsulePrecisionDate": "只按日期",
+  "@timeCapsulePrecisionDate": {
+    "description": "Time capsule text for timeCapsulePrecisionDate."
+  },
+  "timeCapsuleQuickWeek": "一周后",
+  "@timeCapsuleQuickWeek": {
+    "description": "Time capsule text for timeCapsuleQuickWeek."
+  },
+  "timeCapsuleQuickMonth": "一个月后",
+  "@timeCapsuleQuickMonth": {
+    "description": "Time capsule text for timeCapsuleQuickMonth."
+  },
+  "timeCapsuleQuickYear": "一年后",
+  "@timeCapsuleQuickYear": {
+    "description": "Time capsule text for timeCapsuleQuickYear."
+  },
+  "timeCapsuleClear": "移除定时锁",
+  "@timeCapsuleClear": {
+    "description": "Time capsule text for timeCapsuleClear."
+  },
+  "timeCapsuleLockedTitle": "沉睡时刻",
+  "@timeCapsuleLockedTitle": {
+    "description": "Time capsule text for timeCapsuleLockedTitle."
+  },
+  "timeCapsuleCountdownDays": "{p0} 天后解封",
+  "@timeCapsuleCountdownDays": {
+    "description": "Time capsule text for timeCapsuleCountdownDays.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleCountdownHours": "{p0} 小时后解封",
+  "@timeCapsuleCountdownHours": {
+    "description": "Time capsule text for timeCapsuleCountdownHours.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleLockedHint": "这篇日记会在 {p0} 解封。你可以调整解封时间或删除它，但正文会继续保密。",
+  "@timeCapsuleLockedHint": {
+    "description": "Time capsule text for timeCapsuleLockedHint.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleUpdateUnlock": "调整解封时间",
+  "@timeCapsuleUpdateUnlock": {
+    "description": "Time capsule text for timeCapsuleUpdateUnlock."
+  },
+  "timeCapsuleSealAction": "封存这篇日记",
+  "@timeCapsuleSealAction": {
+    "description": "Time capsule text for timeCapsuleSealAction."
+  },
+  "timeCapsuleSealing": "正在封存此刻...",
+  "@timeCapsuleSealing": {
+    "description": "Time capsule text for timeCapsuleSealing."
+  },
+  "timeCapsuleSealDone": "已锁定至 {p0}",
+  "@timeCapsuleSealDone": {
+    "description": "Time capsule text for timeCapsuleSealDone.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleUnlockedInsight": "写下这篇日记时，你是 {p0} 的，今天感觉如何？",
+  "@timeCapsuleUnlockedInsight": {
+    "description": "Time capsule text for timeCapsuleUnlockedInsight.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleUnlockedInsightNoMood": "这是一封写给未来自己的日记，今天感觉如何？",
+  "@timeCapsuleUnlockedInsightNoMood": {
+    "description": "Time capsule text for timeCapsuleUnlockedInsightNoMood."
   }
 }

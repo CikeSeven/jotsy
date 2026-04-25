@@ -86,14 +86,18 @@ class EditDiaryController {
       return;
     }
 
-    final settingsService = await _state.ref.read(settingsServiceProvider.future);
+    final settingsService = await _state.ref.read(
+      settingsServiceProvider.future,
+    );
     await settingsService.setCreateDiaryDraftRaw(rawDraft);
     _state._lastPersistedCreateDraftRaw = rawDraft;
   }
 
   /// 进入新建页时尝试恢复历史草稿。
   Future<void> restoreCreateDraftIfExists() async {
-    final settingsService = await _state.ref.read(settingsServiceProvider.future);
+    final settingsService = await _state.ref.read(
+      settingsServiceProvider.future,
+    );
     final rawDraft = settingsService.createDiaryDraftRaw;
     if (rawDraft == null || rawDraft.trim().isEmpty || !_state.mounted) {
       return;
@@ -104,7 +108,9 @@ class EditDiaryController {
       if (decoded is! Map<String, dynamic>) {
         return;
       }
-      final restoredDraft = NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
+      final restoredDraft = NewDiaryDraft.fromJson(
+        decoded.cast<String, Object?>(),
+      );
 
       // 优先恢复富文本文档；若 JSON 不可用则降级为纯文本，保证可读可编辑。
       quill.Document restoredDocument;
@@ -135,6 +141,8 @@ class EditDiaryController {
         _state._weatherController.text = restoredDraft.weather ?? '';
         _state._draftMoodEmoji = restoredDraft.moodEmoji;
         _state._draftEnergyLevel = restoredDraft.energyLevel;
+        _state._draftCapsuleUnlockAt = restoredDraft.capsuleUnlockAt;
+        _state._draftCapsulePrecision = restoredDraft.capsulePrecision;
         _state._selectedTagIds
           ..clear()
           ..addAll(restoredDraft.selectedTagIds);
@@ -153,7 +161,9 @@ class EditDiaryController {
   /// 主动清除新建草稿（发布成功或用户显式清空场景）。
   Future<void> clearCreateDraft() async {
     _state._createDraftSaveDebounceTimer?.cancel();
-    final settingsService = await _state.ref.read(settingsServiceProvider.future);
+    final settingsService = await _state.ref.read(
+      settingsServiceProvider.future,
+    );
     await settingsService.clearCreateDiaryDraft();
     _state._lastPersistedCreateDraftRaw = null;
   }
@@ -166,11 +176,7 @@ class EditDiaryController {
       unawaited(
         HomeHintVisibilityScope.showTrackedSnackBar(
           context: _state.context,
-          snackBar: SnackBar(
-            content: Text(
-              _state.context.l10n.autoT0086,
-            ),
-          ),
+          snackBar: SnackBar(content: Text(_state.context.l10n.autoT0086)),
         ),
       );
       return false;
@@ -179,11 +185,7 @@ class EditDiaryController {
       unawaited(
         HomeHintVisibilityScope.showTrackedSnackBar(
           context: _state.context,
-          snackBar: SnackBar(
-            content: Text(
-              _state.context.l10n.autoT0203,
-            ),
-          ),
+          snackBar: SnackBar(content: Text(_state.context.l10n.autoT0203)),
         ),
       );
       return false;
@@ -260,7 +262,7 @@ class EditDiaryController {
       }
       await HomeHintVisibilityScope.showTrackedSnackBar(
         context: _state.context,
-          snackBar: SnackBar(
+        snackBar: SnackBar(
           content: Text(_state.context.l10n.autoT0087(error.toString())),
         ),
       );
@@ -284,15 +286,15 @@ class EditDiaryController {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      await _showHint(
-        _state.context.l10n.autoT0088,
-      );
+      await _showHint(_state.context.l10n.autoT0088);
       return;
     }
 
     final previousCover = _normalizeOptionalText(_state._draftCover);
     try {
-      final importedPath = await DiaryCoverStorageService.importCover(selectedPath);
+      final importedPath = await DiaryCoverStorageService.importCover(
+        selectedPath,
+      );
       if (!_state.mounted) {
         await DiaryCoverStorageService.deleteManagedCover(importedPath);
         return;
@@ -308,9 +310,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(
-        _state.context.l10n.autoT0089(error.toString()),
-      );
+      await _showHint(_state.context.l10n.autoT0089(error.toString()));
     }
   }
 
@@ -345,9 +345,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(
-        _state.context.l10n.autoT0090(error.toString()),
-      );
+      await _showHint(_state.context.l10n.autoT0090(error.toString()));
     }
   }
 
@@ -392,9 +390,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(
-        _state.context.l10n.autoT0091(error.toString()),
-      );
+      await _showHint(_state.context.l10n.autoT0091(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -409,9 +405,7 @@ class EditDiaryController {
     }
     if (_state._draftLocationLatitude == null ||
         _state._draftLocationLongitude == null) {
-      await _showHint(
-        _state.context.l10n.autoT0092,
-      );
+      await _showHint(_state.context.l10n.autoT0092);
       return;
     }
 
@@ -428,7 +422,10 @@ class EditDiaryController {
       final weatherNow = await service.fetchNow(
         latitude: _state._draftLocationLatitude!,
         longitude: _state._draftLocationLongitude!,
-        languageCode: (await _state.ref.read(settingsServiceProvider.future)).appLocaleCode,
+        languageCode:
+            (await _state.ref.read(
+              settingsServiceProvider.future,
+            )).appLocaleCode,
       );
       if (!_state.mounted) {
         return;
@@ -448,9 +445,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(
-        _state.context.l10n.autoT0093(error.toString()),
-      );
+      await _showHint(_state.context.l10n.autoT0093(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -471,9 +466,7 @@ class EditDiaryController {
         final l10n = dialogContext.l10n;
         return AlertDialog(
           title: Text(l10n.autoT0094),
-          content: Text(
-            l10n.autoT0206,
-          ),
+          content: Text(l10n.autoT0206),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
@@ -535,6 +528,8 @@ class EditDiaryController {
               weatherIconCode: _state._draftWeatherIconCode,
               moodEmoji: _state._draftMoodEmoji,
               energyLevel: _state._draftEnergyLevel,
+              capsuleUnlockAt: _state._draftCapsuleUnlockAt,
+              capsulePrecision: _state._draftCapsulePrecision,
             ),
           );
         },
@@ -570,6 +565,8 @@ class EditDiaryController {
         _state._draftWeatherIconCode = result.weatherIconCode;
         _state._draftMoodEmoji = result.moodEmoji;
         _state._draftEnergyLevel = result.energyLevel;
+        _state._draftCapsuleUnlockAt = result.capsuleUnlockAt;
+        _state._draftCapsulePrecision = result.capsulePrecision;
         _state._weatherController.text = result.weather ?? '';
         _state._markEditPanelDirty();
         _state._selectedTagIds
@@ -593,12 +590,18 @@ class EditDiaryController {
       if (context is! Map<String, dynamic>) {
         return;
       }
-      _state._draftLocation = _normalizeOptionalText(context['location']?.toString());
-      _state._draftWeather = _normalizeOptionalText(context['weather']?.toString());
+      _state._draftLocation = _normalizeOptionalText(
+        context['location']?.toString(),
+      );
+      _state._draftWeather = _normalizeOptionalText(
+        context['weather']?.toString(),
+      );
       _state._draftWeatherIconCode = _normalizeOptionalText(
         context['weatherIconCode']?.toString(),
       );
-      _state._draftMoodEmoji = _normalizeOptionalText(context['moodEmoji']?.toString());
+      _state._draftMoodEmoji = _normalizeOptionalText(
+        context['moodEmoji']?.toString(),
+      );
       _state._locationController.text = _state._draftLocation ?? '';
       _state._weatherController.text = _state._draftWeather ?? '';
 
@@ -662,7 +665,9 @@ class EditDiaryController {
     if (apiKey == null || apiKey.isEmpty) {
       return null;
     }
-    _state._locationResolverService = LocationResolverService(webApiKey: apiKey);
+    _state._locationResolverService = LocationResolverService(
+      webApiKey: apiKey,
+    );
     return _state._locationResolverService;
   }
 

@@ -82,6 +82,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String? _draftWeatherIconCode;
   String? _draftMoodEmoji;
   double? _draftEnergyLevel;
+  DateTime? _draftCapsuleUnlockAt;
+  String? _draftCapsulePrecision;
   bool _panelMetadataDirty = false;
   double _editPanelExpandProgress = 0;
   bool _locating = false;
@@ -339,6 +341,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       weatherIconCode: _draftWeatherIconCode,
       moodEmoji: _draftMoodEmoji,
       energyLevel: _draftEnergyLevel,
+      capsuleUnlockAt: _draftCapsuleUnlockAt,
+      capsulePrecision: _draftCapsulePrecision,
     );
   }
 

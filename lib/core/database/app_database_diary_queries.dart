@@ -27,6 +27,8 @@ SELECT
   d.is_archived,
   d.archived_at,
   d.is_pinned,
+  d.capsule_unlock_at,
+  d.capsule_locked_at,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -41,9 +43,11 @@ FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
+  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)
 GROUP BY d.id
 ORDER BY d.is_pinned DESC, d.updated_at DESC
 ''',
+      variables: <Variable<Object>>[Variable<DateTime>(DateTime.now())],
       readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
     ).watch().map(_mapDiaryWithTagsRows);
   }
@@ -58,7 +62,12 @@ ORDER BY d.is_pinned DESC, d.updated_at DESC
   }) {
     final query =
         select(diaries)
-          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..where(
+            (tbl) =>
+                tbl.isDeleted.equals(false) &
+                (tbl.capsuleUnlockAt.isNull() |
+                    tbl.capsuleUnlockAt.isSmallerOrEqualValue(DateTime.now())),
+          )
           ..orderBy(<OrderingTerm Function(Diaries)>[
             (tbl) => OrderingTerm.desc(tbl.updatedAt),
             (tbl) => OrderingTerm.desc(tbl.id),
@@ -96,6 +105,8 @@ SELECT
   d.is_archived,
   d.archived_at,
   d.is_pinned,
+  d.capsule_unlock_at,
+  d.capsule_locked_at,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -111,12 +122,17 @@ LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
   AND d.is_archived = 0
-  AND (? = '' OR d.title LIKE ? OR d.content_text LIKE ?)
+  AND (
+    ? = ''
+    OR d.title LIKE ?
+    OR ((d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?) AND d.content_text LIKE ?)
+  )
 ''');
 
     final variables = <Variable<Object>>[
       Variable<String>(normalizedKeyword),
       Variable<String>(likePattern),
+      Variable<DateTime>(DateTime.now()),
       Variable<String>(likePattern),
     ];
 
@@ -169,6 +185,8 @@ SELECT
   d.is_archived,
   d.archived_at,
   d.is_pinned,
+  d.capsule_unlock_at,
+  d.capsule_locked_at,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -208,6 +226,8 @@ SELECT
   d.is_archived,
   d.archived_at,
   d.is_pinned,
+  d.capsule_unlock_at,
+  d.capsule_locked_at,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -250,6 +270,8 @@ SELECT
   d.is_archived,
   d.archived_at,
   d.is_pinned,
+  d.capsule_unlock_at,
+  d.capsule_locked_at,
   d.is_deleted,
   d.deleted_at,
   COALESCE(
@@ -392,6 +414,8 @@ ORDER BY updated_at DESC
       isArchived: _readBool(row, 'is_archived'),
       archivedAt: _readNullableDateTime(row, 'archived_at'),
       isPinned: _readBool(row, 'is_pinned'),
+      capsuleUnlockAt: _readNullableDateTime(row, 'capsule_unlock_at'),
+      capsuleLockedAt: _readNullableDateTime(row, 'capsule_locked_at'),
       isDeleted: _readBool(row, 'is_deleted'),
       deletedAt: _readNullableDateTime(row, 'deleted_at'),
     );

@@ -24,6 +24,8 @@ class NewDiaryDraft {
     this.weatherIconCode,
     this.moodEmoji,
     this.energyLevel,
+    this.capsuleUnlockAt,
+    this.capsulePrecision,
   });
 
   final String title;
@@ -42,6 +44,8 @@ class NewDiaryDraft {
   final String? weatherIconCode;
   final String? moodEmoji;
   final double? energyLevel;
+  final DateTime? capsuleUnlockAt;
+  final String? capsulePrecision;
 
   /// 标题和正文是否存在可见内容。
   ///
@@ -72,7 +76,9 @@ class NewDiaryDraft {
       metadataJson: (json['metadataJson'] as String?) ?? '{}',
       selectedTagIds: tagIds,
       location: json['location'] as String?,
-      locationAddressComponent: _parseObjectMap(json['locationAddressComponent']),
+      locationAddressComponent: _parseObjectMap(
+        json['locationAddressComponent'],
+      ),
       locationLatitude: (json['locationLatitude'] as num?)?.toDouble(),
       locationLongitude: (json['locationLongitude'] as num?)?.toDouble(),
       locationFromAuto: (json['locationFromAuto'] as bool?) ?? false,
@@ -80,6 +86,8 @@ class NewDiaryDraft {
       weatherIconCode: json['weatherIconCode'] as String?,
       moodEmoji: json['moodEmoji'] as String?,
       energyLevel: (json['energyLevel'] as num?)?.toDouble(),
+      capsuleUnlockAt: _parseDateTime(json['capsuleUnlockAt']),
+      capsulePrecision: json['capsulePrecision'] as String?,
     );
   }
 
@@ -102,6 +110,8 @@ class NewDiaryDraft {
       'weatherIconCode': weatherIconCode,
       'moodEmoji': moodEmoji,
       'energyLevel': energyLevel,
+      'capsuleUnlockAt': capsuleUnlockAt?.toIso8601String(),
+      'capsulePrecision': capsulePrecision,
     };
   }
 
@@ -127,6 +137,8 @@ class NewDiaryDraft {
     Object? weatherIconCode = _fieldNotChanged,
     Object? moodEmoji = _fieldNotChanged,
     Object? energyLevel = _fieldNotChanged,
+    Object? capsuleUnlockAt = _fieldNotChanged,
+    Object? capsulePrecision = _fieldNotChanged,
   }) {
     return NewDiaryDraft(
       title: title ?? this.title,
@@ -141,7 +153,9 @@ class NewDiaryDraft {
       metadataJson: metadataJson ?? this.metadataJson,
       selectedTagIds: selectedTagIds ?? this.selectedTagIds,
       location:
-          identical(location, _fieldNotChanged) ? this.location : location as String?,
+          identical(location, _fieldNotChanged)
+              ? this.location
+              : location as String?,
       locationAddressComponent:
           identical(locationAddressComponent, _fieldNotChanged)
               ? this.locationAddressComponent
@@ -155,17 +169,30 @@ class NewDiaryDraft {
               ? this.locationLongitude
               : locationLongitude as double?,
       locationFromAuto: locationFromAuto ?? this.locationFromAuto,
-      weather: identical(weather, _fieldNotChanged) ? this.weather : weather as String?,
+      weather:
+          identical(weather, _fieldNotChanged)
+              ? this.weather
+              : weather as String?,
       weatherIconCode:
           identical(weatherIconCode, _fieldNotChanged)
               ? this.weatherIconCode
               : weatherIconCode as String?,
       moodEmoji:
-          identical(moodEmoji, _fieldNotChanged) ? this.moodEmoji : moodEmoji as String?,
+          identical(moodEmoji, _fieldNotChanged)
+              ? this.moodEmoji
+              : moodEmoji as String?,
       energyLevel:
           identical(energyLevel, _fieldNotChanged)
               ? this.energyLevel
               : energyLevel as double?,
+      capsuleUnlockAt:
+          identical(capsuleUnlockAt, _fieldNotChanged)
+              ? this.capsuleUnlockAt
+              : capsuleUnlockAt as DateTime?,
+      capsulePrecision:
+          identical(capsulePrecision, _fieldNotChanged)
+              ? this.capsulePrecision
+              : capsulePrecision as String?,
     );
   }
 

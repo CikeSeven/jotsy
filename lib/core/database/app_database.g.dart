@@ -153,6 +153,30 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _capsuleUnlockAtMeta = const VerificationMeta(
+    'capsuleUnlockAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> capsuleUnlockAt =
+      GeneratedColumn<DateTime>(
+        'capsule_unlock_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _capsuleLockedAtMeta = const VerificationMeta(
+    'capsuleLockedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> capsuleLockedAt =
+      GeneratedColumn<DateTime>(
+        'capsule_locked_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _isDeletedMeta = const VerificationMeta(
     'isDeleted',
   );
@@ -193,6 +217,8 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
     isArchived,
     archivedAt,
     isPinned,
+    capsuleUnlockAt,
+    capsuleLockedAt,
     isDeleted,
     deletedAt,
   ];
@@ -290,6 +316,24 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
         isPinned.isAcceptableOrUnknown(data['is_pinned']!, _isPinnedMeta),
       );
     }
+    if (data.containsKey('capsule_unlock_at')) {
+      context.handle(
+        _capsuleUnlockAtMeta,
+        capsuleUnlockAt.isAcceptableOrUnknown(
+          data['capsule_unlock_at']!,
+          _capsuleUnlockAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('capsule_locked_at')) {
+      context.handle(
+        _capsuleLockedAtMeta,
+        capsuleLockedAt.isAcceptableOrUnknown(
+          data['capsule_locked_at']!,
+          _capsuleLockedAtMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_deleted')) {
       context.handle(
         _isDeletedMeta,
@@ -369,6 +413,14 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
             DriftSqlType.bool,
             data['${effectivePrefix}is_pinned'],
           )!,
+      capsuleUnlockAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}capsule_unlock_at'],
+      ),
+      capsuleLockedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}capsule_locked_at'],
+      ),
       isDeleted:
           attachedDatabase.typeMapping.read(
             DriftSqlType.bool,
@@ -402,6 +454,8 @@ class Diary extends DataClass implements Insertable<Diary> {
 
   /// 置顶标记：用于让重要日记固定出现在列表前部。
   final bool isPinned;
+  final DateTime? capsuleUnlockAt;
+  final DateTime? capsuleLockedAt;
   final bool isDeleted;
   final DateTime? deletedAt;
   const Diary({
@@ -417,6 +471,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     required this.isArchived,
     this.archivedAt,
     required this.isPinned,
+    this.capsuleUnlockAt,
+    this.capsuleLockedAt,
     required this.isDeleted,
     this.deletedAt,
   });
@@ -439,6 +495,12 @@ class Diary extends DataClass implements Insertable<Diary> {
       map['archived_at'] = Variable<DateTime>(archivedAt);
     }
     map['is_pinned'] = Variable<bool>(isPinned);
+    if (!nullToAbsent || capsuleUnlockAt != null) {
+      map['capsule_unlock_at'] = Variable<DateTime>(capsuleUnlockAt);
+    }
+    if (!nullToAbsent || capsuleLockedAt != null) {
+      map['capsule_locked_at'] = Variable<DateTime>(capsuleLockedAt);
+    }
     map['is_deleted'] = Variable<bool>(isDeleted);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
@@ -464,6 +526,14 @@ class Diary extends DataClass implements Insertable<Diary> {
               ? const Value.absent()
               : Value(archivedAt),
       isPinned: Value(isPinned),
+      capsuleUnlockAt:
+          capsuleUnlockAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(capsuleUnlockAt),
+      capsuleLockedAt:
+          capsuleLockedAt == null && nullToAbsent
+              ? const Value.absent()
+              : Value(capsuleLockedAt),
       isDeleted: Value(isDeleted),
       deletedAt:
           deletedAt == null && nullToAbsent
@@ -490,6 +560,8 @@ class Diary extends DataClass implements Insertable<Diary> {
       isArchived: serializer.fromJson<bool>(json['isArchived']),
       archivedAt: serializer.fromJson<DateTime?>(json['archivedAt']),
       isPinned: serializer.fromJson<bool>(json['isPinned']),
+      capsuleUnlockAt: serializer.fromJson<DateTime?>(json['capsuleUnlockAt']),
+      capsuleLockedAt: serializer.fromJson<DateTime?>(json['capsuleLockedAt']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -510,6 +582,8 @@ class Diary extends DataClass implements Insertable<Diary> {
       'isArchived': serializer.toJson<bool>(isArchived),
       'archivedAt': serializer.toJson<DateTime?>(archivedAt),
       'isPinned': serializer.toJson<bool>(isPinned),
+      'capsuleUnlockAt': serializer.toJson<DateTime?>(capsuleUnlockAt),
+      'capsuleLockedAt': serializer.toJson<DateTime?>(capsuleLockedAt),
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -528,6 +602,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     bool? isArchived,
     Value<DateTime?> archivedAt = const Value.absent(),
     bool? isPinned,
+    Value<DateTime?> capsuleUnlockAt = const Value.absent(),
+    Value<DateTime?> capsuleLockedAt = const Value.absent(),
     bool? isDeleted,
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => Diary(
@@ -543,6 +619,10 @@ class Diary extends DataClass implements Insertable<Diary> {
     isArchived: isArchived ?? this.isArchived,
     archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
     isPinned: isPinned ?? this.isPinned,
+    capsuleUnlockAt:
+        capsuleUnlockAt.present ? capsuleUnlockAt.value : this.capsuleUnlockAt,
+    capsuleLockedAt:
+        capsuleLockedAt.present ? capsuleLockedAt.value : this.capsuleLockedAt,
     isDeleted: isDeleted ?? this.isDeleted,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -563,6 +643,14 @@ class Diary extends DataClass implements Insertable<Diary> {
       archivedAt:
           data.archivedAt.present ? data.archivedAt.value : this.archivedAt,
       isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
+      capsuleUnlockAt:
+          data.capsuleUnlockAt.present
+              ? data.capsuleUnlockAt.value
+              : this.capsuleUnlockAt,
+      capsuleLockedAt:
+          data.capsuleLockedAt.present
+              ? data.capsuleLockedAt.value
+              : this.capsuleLockedAt,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -583,6 +671,8 @@ class Diary extends DataClass implements Insertable<Diary> {
           ..write('isArchived: $isArchived, ')
           ..write('archivedAt: $archivedAt, ')
           ..write('isPinned: $isPinned, ')
+          ..write('capsuleUnlockAt: $capsuleUnlockAt, ')
+          ..write('capsuleLockedAt: $capsuleLockedAt, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -603,6 +693,8 @@ class Diary extends DataClass implements Insertable<Diary> {
     isArchived,
     archivedAt,
     isPinned,
+    capsuleUnlockAt,
+    capsuleLockedAt,
     isDeleted,
     deletedAt,
   );
@@ -622,6 +714,8 @@ class Diary extends DataClass implements Insertable<Diary> {
           other.isArchived == this.isArchived &&
           other.archivedAt == this.archivedAt &&
           other.isPinned == this.isPinned &&
+          other.capsuleUnlockAt == this.capsuleUnlockAt &&
+          other.capsuleLockedAt == this.capsuleLockedAt &&
           other.isDeleted == this.isDeleted &&
           other.deletedAt == this.deletedAt);
 }
@@ -639,6 +733,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
   final Value<bool> isArchived;
   final Value<DateTime?> archivedAt;
   final Value<bool> isPinned;
+  final Value<DateTime?> capsuleUnlockAt;
+  final Value<DateTime?> capsuleLockedAt;
   final Value<bool> isDeleted;
   final Value<DateTime?> deletedAt;
   const DiariesCompanion({
@@ -654,6 +750,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     this.isArchived = const Value.absent(),
     this.archivedAt = const Value.absent(),
     this.isPinned = const Value.absent(),
+    this.capsuleUnlockAt = const Value.absent(),
+    this.capsuleLockedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
   });
@@ -670,6 +768,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     this.isArchived = const Value.absent(),
     this.archivedAt = const Value.absent(),
     this.isPinned = const Value.absent(),
+    this.capsuleUnlockAt = const Value.absent(),
+    this.capsuleLockedAt = const Value.absent(),
     this.isDeleted = const Value.absent(),
     this.deletedAt = const Value.absent(),
   }) : diaryId = Value(diaryId),
@@ -690,6 +790,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     Expression<bool>? isArchived,
     Expression<DateTime>? archivedAt,
     Expression<bool>? isPinned,
+    Expression<DateTime>? capsuleUnlockAt,
+    Expression<DateTime>? capsuleLockedAt,
     Expression<bool>? isDeleted,
     Expression<DateTime>? deletedAt,
   }) {
@@ -706,6 +808,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
       if (isArchived != null) 'is_archived': isArchived,
       if (archivedAt != null) 'archived_at': archivedAt,
       if (isPinned != null) 'is_pinned': isPinned,
+      if (capsuleUnlockAt != null) 'capsule_unlock_at': capsuleUnlockAt,
+      if (capsuleLockedAt != null) 'capsule_locked_at': capsuleLockedAt,
       if (isDeleted != null) 'is_deleted': isDeleted,
       if (deletedAt != null) 'deleted_at': deletedAt,
     });
@@ -724,6 +828,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     Value<bool>? isArchived,
     Value<DateTime?>? archivedAt,
     Value<bool>? isPinned,
+    Value<DateTime?>? capsuleUnlockAt,
+    Value<DateTime?>? capsuleLockedAt,
     Value<bool>? isDeleted,
     Value<DateTime?>? deletedAt,
   }) {
@@ -740,6 +846,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
       isArchived: isArchived ?? this.isArchived,
       archivedAt: archivedAt ?? this.archivedAt,
       isPinned: isPinned ?? this.isPinned,
+      capsuleUnlockAt: capsuleUnlockAt ?? this.capsuleUnlockAt,
+      capsuleLockedAt: capsuleLockedAt ?? this.capsuleLockedAt,
       isDeleted: isDeleted ?? this.isDeleted,
       deletedAt: deletedAt ?? this.deletedAt,
     );
@@ -784,6 +892,12 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
     if (isPinned.present) {
       map['is_pinned'] = Variable<bool>(isPinned.value);
     }
+    if (capsuleUnlockAt.present) {
+      map['capsule_unlock_at'] = Variable<DateTime>(capsuleUnlockAt.value);
+    }
+    if (capsuleLockedAt.present) {
+      map['capsule_locked_at'] = Variable<DateTime>(capsuleLockedAt.value);
+    }
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
     }
@@ -808,6 +922,8 @@ class DiariesCompanion extends UpdateCompanion<Diary> {
           ..write('isArchived: $isArchived, ')
           ..write('archivedAt: $archivedAt, ')
           ..write('isPinned: $isPinned, ')
+          ..write('capsuleUnlockAt: $capsuleUnlockAt, ')
+          ..write('capsuleLockedAt: $capsuleLockedAt, ')
           ..write('isDeleted: $isDeleted, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -1326,6 +1442,8 @@ typedef $$DiariesTableCreateCompanionBuilder =
       Value<bool> isArchived,
       Value<DateTime?> archivedAt,
       Value<bool> isPinned,
+      Value<DateTime?> capsuleUnlockAt,
+      Value<DateTime?> capsuleLockedAt,
       Value<bool> isDeleted,
       Value<DateTime?> deletedAt,
     });
@@ -1343,6 +1461,8 @@ typedef $$DiariesTableUpdateCompanionBuilder =
       Value<bool> isArchived,
       Value<DateTime?> archivedAt,
       Value<bool> isPinned,
+      Value<DateTime?> capsuleUnlockAt,
+      Value<DateTime?> capsuleLockedAt,
       Value<bool> isDeleted,
       Value<DateTime?> deletedAt,
     });
@@ -1436,6 +1556,16 @@ class $$DiariesTableFilterComposer
 
   ColumnFilters<bool> get isPinned => $composableBuilder(
     column: $table.isPinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get capsuleUnlockAt => $composableBuilder(
+    column: $table.capsuleUnlockAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get capsuleLockedAt => $composableBuilder(
+    column: $table.capsuleLockedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1544,6 +1674,16 @@ class $$DiariesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get capsuleUnlockAt => $composableBuilder(
+    column: $table.capsuleUnlockAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get capsuleLockedAt => $composableBuilder(
+    column: $table.capsuleLockedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isDeleted => $composableBuilder(
     column: $table.isDeleted,
     builder: (column) => ColumnOrderings(column),
@@ -1605,6 +1745,16 @@ class $$DiariesTableAnnotationComposer
 
   GeneratedColumn<bool> get isPinned =>
       $composableBuilder(column: $table.isPinned, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get capsuleUnlockAt => $composableBuilder(
+    column: $table.capsuleUnlockAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get capsuleLockedAt => $composableBuilder(
+    column: $table.capsuleLockedAt,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
@@ -1678,6 +1828,8 @@ class $$DiariesTableTableManager
                 Value<bool> isArchived = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
+                Value<DateTime?> capsuleUnlockAt = const Value.absent(),
+                Value<DateTime?> capsuleLockedAt = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
               }) => DiariesCompanion(
@@ -1693,6 +1845,8 @@ class $$DiariesTableTableManager
                 isArchived: isArchived,
                 archivedAt: archivedAt,
                 isPinned: isPinned,
+                capsuleUnlockAt: capsuleUnlockAt,
+                capsuleLockedAt: capsuleLockedAt,
                 isDeleted: isDeleted,
                 deletedAt: deletedAt,
               ),
@@ -1710,6 +1864,8 @@ class $$DiariesTableTableManager
                 Value<bool> isArchived = const Value.absent(),
                 Value<DateTime?> archivedAt = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
+                Value<DateTime?> capsuleUnlockAt = const Value.absent(),
+                Value<DateTime?> capsuleLockedAt = const Value.absent(),
                 Value<bool> isDeleted = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
               }) => DiariesCompanion.insert(
@@ -1725,6 +1881,8 @@ class $$DiariesTableTableManager
                 isArchived: isArchived,
                 archivedAt: archivedAt,
                 isPinned: isPinned,
+                capsuleUnlockAt: capsuleUnlockAt,
+                capsuleLockedAt: capsuleLockedAt,
                 isDeleted: isDeleted,
                 deletedAt: deletedAt,
               ),

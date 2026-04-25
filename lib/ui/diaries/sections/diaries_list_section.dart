@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:collection';
 import 'dart:io';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_item_tag_row.dart';
+import '../models/time_capsule.dart';
+import '../pages/locked_diary_page.dart';
+import '../widgets/energy_battery_indicator.dart';
 import 'diary_head_section.dart';
+import '../../widgets/qweather_icon.dart';
 
 /// 日记页主列表区块。
 ///
@@ -188,6 +193,12 @@ class DiariesListSection extends StatelessWidget {
         diary.diary.title.trim().isEmpty ? l10n.autoT0033 : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
     final hasTags = diary.tags.isNotEmpty;
+    final capsuleState = TimeCapsuleState.fromFields(
+      lockedAt: diary.diary.capsuleLockedAt,
+      unlockAt: diary.diary.capsuleUnlockAt,
+      now: DateTime.now(),
+    );
+    final isLockedCapsule = capsuleState.isLocked;
 
     return Builder(
       builder: (BuildContext _) {
@@ -291,7 +302,7 @@ class DiariesListSection extends StatelessWidget {
         );
 
         // 两种布局模式使用不同内容骨架，交互逻辑保持一致。
-        final content =
+        Widget content =
             compact
                 ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -332,6 +343,17 @@ class DiariesListSection extends StatelessWidget {
                   ],
                 );
 
+        if (isLockedCapsule) {
+          content = _buildLockedCapsuleContent(
+            context,
+            diary: diary,
+            compact: compact,
+            title: title,
+            previewCover: previewCover,
+            capsuleState: capsuleState,
+          );
+        }
+
         final itemRadius = compact ? 14.0 : 0.0;
 
         // 统一点击交互：
@@ -348,6 +370,16 @@ class DiariesListSection extends StatelessWidget {
               onTap: () {
                 if (isSelectionMode) {
                   onToggleSelection(diary.diary.diaryId, false);
+                  return;
+                }
+                if (isLockedCapsule) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder:
+                          (context) =>
+                              LockedDiaryPage(diaryId: diary.diary.diaryId),
+                    ),
+                  );
                   return;
                 }
                 onOpenEditor(diary.diary.diaryId);
@@ -460,6 +492,238 @@ class DiariesListSection extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildLockedCapsuleContent(
+    BuildContext context, {
+    required DiaryWithTags diary,
+    required bool compact,
+    required String title,
+    required String? previewCover,
+    required TimeCapsuleState capsuleState,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final contextMeta = _extractContextMetadata(diary.diary.metadata);
+    final mood = contextMeta['moodEmoji']?.toString().trim();
+    final weather = contextMeta['weather']?.toString().trim();
+    final weatherIconCode = contextMeta['weatherIconCode']?.toString().trim();
+    final energy = _parseEnergy(contextMeta['energyLevel']);
+    final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
+    final countdown = _countdownLabel(context, capsuleState);
+
+    final clearMeta = Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: <Widget>[
+        if (mood != null && mood.isNotEmpty)
+          _buildCapsuleMetaPill(context, mood),
+        if (weather != null && weather.isNotEmpty)
+          _buildCapsuleMetaPill(
+            context,
+            weather,
+            leading: QWeatherIcon(
+              iconCode: weatherIconCode,
+              weatherText: weather,
+              size: 13,
+            ),
+          ),
+        if (energy != null)
+          _buildCapsuleMetaPill(
+            context,
+            EnergyBatteryIndicator.descriptionForValue(
+              energy,
+              isZh: context.l10n.isZh,
+            ),
+            leading: EnergyBatteryIndicator(value: energy, iconSize: 16),
+          ),
+      ],
+    );
+
+    final blurredBody = ClipRRect(
+      borderRadius: BorderRadius.circular(compact ? 12 : 14),
+      child: Stack(
+        alignment: Alignment.center,
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              if (previewCover != null)
+                _buildCoverPreview(
+                  context,
+                  previewCover,
+                  width: double.infinity,
+                  height: compact ? 126 : 96,
+                  radius: 0,
+                ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                color: colorScheme.surfaceContainerHighest,
+                child: Text(
+                  preview.isEmpty ? title : preview,
+                  maxLines: compact ? 4 : 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7),
+              child: ColoredBox(
+                color: colorScheme.surface.withValues(alpha: 0.48),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: ShapeDecoration(
+                  color: colorScheme.surface.withValues(alpha: 0.82),
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: <Widget>[
+                    FaIcon(
+                      FontAwesomeIcons.lock,
+                      size: 13,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        countdown,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontSize: 11,
+                          height: 1,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        compact ? 12 : 16,
+        12,
+        compact ? 12 : 16,
+        12,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              FaIcon(
+                FontAwesomeIcons.clock,
+                size: 14,
+                color: colorScheme.primary,
+              ),
+            ],
+          ),
+          if (clearMeta.children.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 8),
+            clearMeta,
+          ],
+          const SizedBox(height: 10),
+          blurredBody,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCapsuleMetaPill(
+    BuildContext context,
+    String label, {
+    Widget? leading,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: ShapeDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        shape: const StadiumBorder(),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          if (leading != null) ...<Widget>[leading, const SizedBox(width: 5)],
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+        ],
+      ),
+    );
+  }
+
+  Map<String, Object?> _extractContextMetadata(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map<String, dynamic>) {
+        final context = decoded['context'];
+        if (context is Map<String, dynamic>) {
+          return context;
+        }
+      }
+    } catch (_) {
+      return const <String, Object?>{};
+    }
+    return const <String, Object?>{};
+  }
+
+  double? _parseEnergy(Object? raw) {
+    final parsed = switch (raw) {
+      num value => value.toDouble(),
+      String value => double.tryParse(value),
+      _ => null,
+    };
+    return parsed == null
+        ? null
+        : EnergyBatteryIndicator.normalizeValue(parsed);
+  }
+
+  String _countdownLabel(BuildContext context, TimeCapsuleState state) {
+    final hours = state.remainingDuration.inHours;
+    if (hours > 0 && hours < 24) {
+      return context.l10n.timeCapsuleCountdownHours(hours.toString());
+    }
+    return context.l10n.timeCapsuleCountdownDays(
+      state.remainingDays.toString(),
     );
   }
 

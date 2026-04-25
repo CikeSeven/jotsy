@@ -12,6 +12,7 @@ class PublishPanelCoordinator {
     required this.collapsedHeight,
     required this.mainExpandedHeight,
     required this.tagExpandedHeight,
+    required this.capsuleExpandedHeight,
   });
 
   /// 收起态高度（面板最小可见高度）。
@@ -23,6 +24,9 @@ class PublishPanelCoordinator {
   /// 标签子页展开高度（通常高于主页面）。
   final double tagExpandedHeight;
 
+  /// 时间胶囊子页展开高度，承载日期滚轮与快捷选项。
+  final double capsuleExpandedHeight;
+
   /// smooth_sheets 控制器：负责面板展开/收起吸附动画。
   final SheetController sheetController = SheetController();
 
@@ -32,11 +36,16 @@ class PublishPanelCoordinator {
   /// 当前展开进度（0=收起，1=展开）。
   double progress = 0;
 
-  /// 当前内页索引（0=主页面，1=标签页）。
+  /// 当前内页索引（0=主页面，1=标签页，2=时间胶囊页）。
   int contentPageIndex = 0;
 
-  double get activeExpandedHeight =>
-      contentPageIndex == 1 ? tagExpandedHeight : mainExpandedHeight;
+  double get activeExpandedHeight {
+    return switch (contentPageIndex) {
+      1 => tagExpandedHeight,
+      2 => capsuleExpandedHeight,
+      _ => mainExpandedHeight,
+    };
+  }
 
   double get collapsedFactor => collapsedHeight / activeExpandedHeight;
   bool get isExpandedForBackAction => progress > 0.06;
@@ -73,11 +82,20 @@ class PublishPanelCoordinator {
 
   /// 打开标签管理子页。
   Future<void> openTagPage() async {
-    if (contentPageIndex == 1 || !contentPageController.hasClients) {
+    await _openInnerPage(1);
+  }
+
+  /// 打开时间胶囊设置页。
+  Future<void> openCapsulePage() async {
+    await _openInnerPage(2);
+  }
+
+  Future<void> _openInnerPage(int index) async {
+    if (contentPageIndex == index || !contentPageController.hasClients) {
       return;
     }
     await contentPageController.animateToPage(
-      1,
+      index,
       duration: const Duration(milliseconds: 240),
       curve: Curves.easeOutCubic,
     );

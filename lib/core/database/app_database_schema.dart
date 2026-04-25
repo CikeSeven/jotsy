@@ -10,7 +10,8 @@ part of 'app_database.dart';
 /// 5. `cover` 存封面地址（可空，支持本地路径或远程 URL）；
 /// 6. `metadata` 存 JSON 对象字符串（用于扩展字段）；
 /// 7. 归档与删除分离：归档用于隐藏到归档列表，删除用于回收站语义；
-/// 8. 采用软删除字段，便于恢复与审计。
+/// 8. `capsuleUnlockAt/capsuleLockedAt` 标记时间胶囊，未到期前只展示锁定壳；
+/// 9. 采用软删除字段，便于恢复与审计。
 class Diaries extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -34,12 +35,17 @@ class Diaries extends Table {
   BoolColumn get isArchived =>
       boolean().named('is_archived').withDefault(const Constant(false))();
 
-  DateTimeColumn get archivedAt =>
-      dateTime().named('archived_at').nullable()();
+  DateTimeColumn get archivedAt => dateTime().named('archived_at').nullable()();
 
   /// 置顶标记：用于让重要日记固定出现在列表前部。
   BoolColumn get isPinned =>
       boolean().named('is_pinned').withDefault(const Constant(false))();
+
+  DateTimeColumn get capsuleUnlockAt =>
+      dateTime().named('capsule_unlock_at').nullable()();
+
+  DateTimeColumn get capsuleLockedAt =>
+      dateTime().named('capsule_locked_at').nullable()();
 
   BoolColumn get isDeleted =>
       boolean().named('is_deleted').withDefault(const Constant(false))();

@@ -1,9 +1,15 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/utils/precise_time_formatter.dart';
 
 void main() {
+  setUpAll(() async {
+    await initializeDateFormatting('en');
+    await initializeDateFormatting('zh');
+  });
+
   group('PreciseTimeFormatter', () {
     test('同一天仅显示小时分钟', () {
       final now = DateTime(2026, 3, 11, 21, 30, 59);

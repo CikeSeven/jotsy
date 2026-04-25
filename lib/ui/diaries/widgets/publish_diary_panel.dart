@@ -1,11 +1,13 @@
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
@@ -33,6 +35,12 @@ class PublishDiaryPanel extends StatefulWidget {
     this.showPublishTimeOption = false,
     this.publishTimeLabel,
     this.onPickPublishTime,
+    this.showTimeCapsuleOption = false,
+    this.timeCapsuleLabel,
+    this.timeCapsuleActive = false,
+    this.timeCapsuleSchedule,
+    this.onTimeCapsuleChanged,
+    this.onClearTimeCapsule,
     required this.weatherController,
     required this.weatherIconCode,
     required this.moodEmoji,
@@ -81,6 +89,12 @@ class PublishDiaryPanel extends StatefulWidget {
   final bool showPublishTimeOption;
   final String? publishTimeLabel;
   final VoidCallback? onPickPublishTime;
+  final bool showTimeCapsuleOption;
+  final String? timeCapsuleLabel;
+  final bool timeCapsuleActive;
+  final TimeCapsuleSchedule? timeCapsuleSchedule;
+  final ValueChanged<TimeCapsuleSchedule>? onTimeCapsuleChanged;
+  final VoidCallback? onClearTimeCapsule;
   final TextEditingController weatherController;
   final String? weatherIconCode;
   final String? moodEmoji;
@@ -145,12 +159,15 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   static const double _collapsedHeight = 56;
   static const double _mainExpandedHeight = 470;
   static const double _tagExpandedHeight = 540;
+  static const double _capsuleExpandedHeight = 540;
   static const double _collapsedHorizontalInset = 40;
   static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
 
   // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
+  late DateTime _pendingCapsuleUnlockAt;
+  late TimeCapsulePrecision _pendingCapsulePrecision;
 
   double get _activeExpandedHeight => _panelCoordinator.activeExpandedHeight;
 
@@ -167,7 +184,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       collapsedHeight: _collapsedHeight,
       mainExpandedHeight: _mainExpandedHeight,
       tagExpandedHeight: _tagExpandedHeight,
+      capsuleExpandedHeight: _capsuleExpandedHeight,
     );
+    _resetPendingCapsuleDraft();
     _panelCoordinator.sheetController.addListener(_handleSheetMetricsChanged);
     // 将状态对象挂到外部 controller，供页面层返回键逻辑调用。
     widget.controller?._attach(this);
@@ -204,12 +223,47 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
     await _panelCoordinator.openTagPage();
   }
 
+  Future<void> _openCapsulePage() async {
+    _resetPendingCapsuleDraft();
+    await _panelCoordinator.openCapsulePage();
+  }
+
   Future<bool> _popInnerPage({bool animated = true}) async {
     final popped = await _panelCoordinator.popInnerPage(animated: animated);
     if (popped && mounted) {
       setState(() {});
     }
     return popped;
+  }
+
+  void _resetPendingCapsuleDraft() {
+    final now = DateTime.now();
+    final schedule = widget.timeCapsuleSchedule;
+    _pendingCapsulePrecision = schedule?.precision ?? TimeCapsulePrecision.date;
+    final fallback = DateTime(
+      now.year,
+      now.month,
+      now.day + 7,
+      now.hour,
+      now.minute,
+    );
+    final candidate = schedule?.unlockAt ?? fallback;
+    _pendingCapsuleUnlockAt =
+        candidate.isAfter(now) ? candidate : now.add(const Duration(days: 1));
+  }
+
+  void _applyQuickCapsuleDuration(Duration duration) {
+    setState(() => _pendingCapsuleUnlockAt = DateTime.now().add(duration));
+  }
+
+  Future<void> _confirmCapsuleSchedule() async {
+    widget.onTimeCapsuleChanged?.call(
+      TimeCapsuleSchedule(
+        unlockAt: _pendingCapsuleUnlockAt,
+        precision: _pendingCapsulePrecision,
+      ),
+    );
+    await _popInnerPage();
   }
 
   /// 监听 sheet 拖拽进度，回写本地状态并向外透传进度。
@@ -345,6 +399,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       children: <Widget>[
         _buildMainPanelPage(context),
         _buildTagPanelPage(context),
+        _buildCapsulePanelPage(context),
       ],
     );
   }
@@ -373,6 +428,10 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
             const SizedBox(height: 14),
             _buildPublishTimeEntryTile(context),
           ],
+          if (widget.showTimeCapsuleOption) ...<Widget>[
+            const SizedBox(height: 14),
+            _buildTimeCapsuleEntryTile(context),
+          ],
           const SizedBox(height: 14),
           _buildMoodSection(context),
           const SizedBox(height: 14),
@@ -389,6 +448,14 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       context: context,
       header: _buildTagHeader(context),
       content: _buildTagManagePage(context),
+    );
+  }
+
+  Widget _buildCapsulePanelPage(BuildContext context) {
+    return _buildPanelPageScaffold(
+      context: context,
+      header: _buildCapsuleHeader(context),
+      content: _buildCapsuleManagePage(context),
     );
   }
 
@@ -479,6 +546,97 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
     );
   }
 
+  Widget _buildCapsuleManagePage(BuildContext context) {
+    final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
+    final now = DateTime.now();
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              ActionChip(
+                label: Text(l10n.timeCapsuleQuickWeek),
+                onPressed:
+                    () => _applyQuickCapsuleDuration(const Duration(days: 7)),
+              ),
+              ActionChip(
+                label: Text(l10n.timeCapsuleQuickMonth),
+                onPressed:
+                    () => _applyQuickCapsuleDuration(const Duration(days: 30)),
+              ),
+              ActionChip(
+                label: Text(l10n.timeCapsuleQuickYear),
+                onPressed:
+                    () => _applyQuickCapsuleDuration(const Duration(days: 365)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<TimeCapsulePrecision>(
+            segments: <ButtonSegment<TimeCapsulePrecision>>[
+              ButtonSegment<TimeCapsulePrecision>(
+                value: TimeCapsulePrecision.date,
+                label: Text(l10n.timeCapsulePrecisionDate),
+              ),
+              ButtonSegment<TimeCapsulePrecision>(
+                value: TimeCapsulePrecision.minute,
+                label: Text(l10n.timeCapsulePrecisionMinute),
+              ),
+            ],
+            selected: <TimeCapsulePrecision>{_pendingCapsulePrecision},
+            onSelectionChanged: (values) {
+              setState(() => _pendingCapsulePrecision = values.single);
+            },
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 184,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.dateAndTime,
+              minimumDate: now.add(const Duration(minutes: 1)),
+              maximumDate: DateTime(now.year + 10, now.month, now.day),
+              initialDateTime:
+                  _pendingCapsuleUnlockAt.isAfter(now)
+                      ? _pendingCapsuleUnlockAt
+                      : now.add(const Duration(days: 1)),
+              use24hFormat: true,
+              onDateTimeChanged: (value) => _pendingCapsuleUnlockAt = value,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: _popInnerPage,
+                  child: Text(l10n.commonCancel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed:
+                      widget.onTimeCapsuleChanged == null
+                          ? null
+                          : _confirmCapsuleSchedule,
+                  child: Text(l10n.commonConfirm),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMainHeader(BuildContext context) {
     final l10n = context.l10n;
     final isCollapsedVisual = _panelCoordinator.progress < 0.56;
@@ -538,6 +696,35 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
             child: Center(
               child: Text(
                 l10n.autoT0160,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+          const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCapsuleHeader(BuildContext context) {
+    final l10n = context.l10n;
+    return SizedBox(
+      height: _collapsedHeight,
+      child: Row(
+        children: <Widget>[
+          IconButton(
+            onPressed: () {
+              _popInnerPage();
+            },
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+            tooltip: l10n.commonBack,
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                l10n.timeCapsulePickTitle,
                 style: Theme.of(
                   context,
                 ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
@@ -1019,6 +1206,90 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                 icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 14),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeCapsuleEntryTile(BuildContext context) {
+    final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
+    final capsuleLabel = widget.timeCapsuleLabel?.trim();
+    final hasCapsule =
+        widget.timeCapsuleActive &&
+        capsuleLabel != null &&
+        capsuleLabel.isNotEmpty;
+
+    return Material(
+      color:
+          hasCapsule
+              ? colorScheme.primaryContainer.withValues(alpha: 0.56)
+              : colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color:
+              hasCapsule
+                  ? colorScheme.primary.withValues(alpha: 0.34)
+                  : colorScheme.outlineVariant.withValues(alpha: 0.45),
+        ),
+      ),
+      child: InkWell(
+        onTap: _openCapsulePage,
+        borderRadius: BorderRadius.circular(14),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 42),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+            child: Row(
+              children: <Widget>[
+                FaIcon(
+                  FontAwesomeIcons.clock,
+                  size: 14,
+                  color:
+                      hasCapsule
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        l10n.timeCapsuleTitle,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        hasCapsule ? capsuleLabel : l10n.timeCapsuleUnset,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (hasCapsule && widget.onClearTimeCapsule != null)
+                  IconButton(
+                    onPressed: widget.onClearTimeCapsule,
+                    tooltip: l10n.timeCapsuleClear,
+                    visualDensity: VisualDensity.compact,
+                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
+                  ),
+                IconButton(
+                  onPressed: _openCapsulePage,
+                  tooltip: l10n.timeCapsulePickTitle,
+                  visualDensity: VisualDensity.compact,
+                  icon: const FaIcon(FontAwesomeIcons.lock, size: 14),
+                ),
+              ],
+            ),
           ),
         ),
       ),

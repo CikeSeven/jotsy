@@ -1591,5 +1591,115 @@
   "autoT0211": "Take it easy, this day's highlights haven't happened yet.",
   "@autoT0211": {
     "description": "Auto-generated metadata for autoT0211."
+  },
+  "timeCapsuleTitle": "Time lock",
+  "@timeCapsuleTitle": {
+    "description": "Time capsule text for timeCapsuleTitle."
+  },
+  "timeCapsuleUnset": "Not sealed",
+  "@timeCapsuleUnset": {
+    "description": "Time capsule text for timeCapsuleUnset."
+  },
+  "timeCapsuleSet": "Unlocks {p0}",
+  "@timeCapsuleSet": {
+    "description": "Time capsule text for timeCapsuleSet.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsulePickTitle": "Choose unlock time",
+  "@timeCapsulePickTitle": {
+    "description": "Time capsule text for timeCapsulePickTitle."
+  },
+  "timeCapsulePrecisionMinute": "Exact time",
+  "@timeCapsulePrecisionMinute": {
+    "description": "Time capsule text for timeCapsulePrecisionMinute."
+  },
+  "timeCapsulePrecisionDate": "Date only",
+  "@timeCapsulePrecisionDate": {
+    "description": "Time capsule text for timeCapsulePrecisionDate."
+  },
+  "timeCapsuleQuickWeek": "One week",
+  "@timeCapsuleQuickWeek": {
+    "description": "Time capsule text for timeCapsuleQuickWeek."
+  },
+  "timeCapsuleQuickMonth": "One month",
+  "@timeCapsuleQuickMonth": {
+    "description": "Time capsule text for timeCapsuleQuickMonth."
+  },
+  "timeCapsuleQuickYear": "One year",
+  "@timeCapsuleQuickYear": {
+    "description": "Time capsule text for timeCapsuleQuickYear."
+  },
+  "timeCapsuleClear": "Remove time lock",
+  "@timeCapsuleClear": {
+    "description": "Time capsule text for timeCapsuleClear."
+  },
+  "timeCapsuleLockedTitle": "Sleeping moment",
+  "@timeCapsuleLockedTitle": {
+    "description": "Time capsule text for timeCapsuleLockedTitle."
+  },
+  "timeCapsuleCountdownDays": "Unlocks in {p0}d",
+  "@timeCapsuleCountdownDays": {
+    "description": "Time capsule text for timeCapsuleCountdownDays.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleCountdownHours": "Unlocks in {p0}h",
+  "@timeCapsuleCountdownHours": {
+    "description": "Time capsule text for timeCapsuleCountdownHours.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleLockedHint": "This diary is sealed until {p0}. You can change the unlock time or delete it, but the content stays hidden.",
+  "@timeCapsuleLockedHint": {
+    "description": "Time capsule text for timeCapsuleLockedHint.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleUpdateUnlock": "Change unlock time",
+  "@timeCapsuleUpdateUnlock": {
+    "description": "Time capsule text for timeCapsuleUpdateUnlock."
+  },
+  "timeCapsuleSealAction": "Seal diary",
+  "@timeCapsuleSealAction": {
+    "description": "Time capsule text for timeCapsuleSealAction."
+  },
+  "timeCapsuleSealing": "Sealing this moment...",
+  "@timeCapsuleSealing": {
+    "description": "Time capsule text for timeCapsuleSealing."
+  },
+  "timeCapsuleSealDone": "Locked until {p0}",
+  "@timeCapsuleSealDone": {
+    "description": "Time capsule text for timeCapsuleSealDone.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleUnlockedInsight": "When you wrote this diary, you felt {p0}. How do you feel today?",
+  "@timeCapsuleUnlockedInsight": {
+    "description": "Time capsule text for timeCapsuleUnlockedInsight.",
+    "placeholders": {
+      "p0": {
+        "type": "String"
+      }
+    }
+  },
+  "timeCapsuleUnlockedInsightNoMood": "This was sealed for your future self. How do you feel today?",
+  "@timeCapsuleUnlockedInsightNoMood": {
+    "description": "Time capsule text for timeCapsuleUnlockedInsightNoMood."
   }
 }

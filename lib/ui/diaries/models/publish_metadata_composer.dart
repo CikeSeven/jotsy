@@ -29,6 +29,9 @@ class PublishMetadataComposer {
     String? weatherIconCode,
     String? moodEmoji,
     double? energyLevel,
+    DateTime? capsuleLockedAt,
+    DateTime? capsuleUnlockAt,
+    String? capsulePrecision,
   }) {
     final normalizedLocation = _normalizeOptionalText(location);
     final normalizedWeather = _normalizeOptionalText(weather);
@@ -46,6 +49,14 @@ class PublishMetadataComposer {
       'hasCover': hasCover,
       if (deviceInfo.isNotEmpty) 'device': _filterEmptyMap(deviceInfo),
     };
+
+    if (capsuleLockedAt != null && capsuleUnlockAt != null) {
+      metadata['capsule'] = <String, Object?>{
+        'lockedAt': capsuleLockedAt.toIso8601String(),
+        'unlockAt': capsuleUnlockAt.toIso8601String(),
+        'precision': _normalizeOptionalText(capsulePrecision) ?? 'date',
+      };
+    }
 
     final context = <String, Object?>{
       if (normalizedLocation != null) 'location': normalizedLocation,

@@ -243,6 +243,8 @@ class DataArchiveService {
                     isPinned: Value<bool>(row.isPinned),
                     isDeleted: Value<bool>(row.isDeleted),
                     deletedAt: Value<DateTime?>(row.deletedAt),
+                    capsuleUnlockAt: Value<DateTime?>(row.capsuleUnlockAt),
+                    capsuleLockedAt: Value<DateTime?>(row.capsuleLockedAt),
                   );
                 })
                 .toList(growable: false),

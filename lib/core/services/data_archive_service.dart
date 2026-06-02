@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'package:archive/archive.dart';
+import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
@@ -135,8 +135,7 @@ class DataArchiveService {
     if (!await sourceZip.exists()) {
       throw const FileSystemException('备份文件不存在');
     }
-    final rawBytes = await sourceZip.readAsBytes();
-    return Isolate.run<bool>(() => _isZipPasswordProtectedSync(rawBytes));
+    return Isolate.run<bool>(() => _isZipPasswordProtectedSync(sourceZip.path));
   }
 
   static Future<Map<String, Object?>> _buildBackupPayload({
@@ -528,11 +527,10 @@ class DataArchiveService {
     Directory targetDirectory, {
     String? password,
   }) async {
-    final rawBytes = await zipFile.readAsBytes();
     // 解压与写盘也属于重操作，迁移到后台 isolate 保持 UI 可交互。
     await Isolate.run<void>(
       () => _extractZipToDirectorySync(
-        rawBytes,
+        zipFile.path,
         targetDirectory.path,
         password: password,
       ),
@@ -540,54 +538,73 @@ class DataArchiveService {
   }
 
   static void _extractZipToDirectorySync(
-    List<int> rawBytes,
+    String zipPath,
     String targetDirectoryPath, {
     String? password,
   }) {
-    final archive = ZipDecoder().decodeBytes(
-      rawBytes,
-      verify: true,
-      password: password,
-    );
-    final targetRoot = p.normalize(targetDirectoryPath);
-    for (final entry in archive.files) {
-      if (!entry.isFile) {
-        continue;
-      }
+    final input = InputFileStream(zipPath);
+    try {
+      final archive = ZipDecoder().decodeBuffer(
+        input,
+        verify: true,
+        password: password,
+      );
+      try {
+        final targetRoot = p.normalize(targetDirectoryPath);
+        for (final entry in archive.files) {
+          if (!entry.isFile) {
+            continue;
+          }
 
-      final normalizedEntryName = p.normalize(entry.name).replaceAll('\\', '/');
-      if (normalizedEntryName.isEmpty || normalizedEntryName.contains('..')) {
-        continue;
-      }
+          final normalizedEntryName = p
+              .normalize(entry.name)
+              .replaceAll('\\', '/');
+          if (normalizedEntryName.isEmpty ||
+              normalizedEntryName.contains('..')) {
+            continue;
+          }
 
-      final outputPath = p.join(targetRoot, normalizedEntryName);
-      final normalizedOutputPath = p.normalize(outputPath);
-      if (!p.isWithin(targetRoot, normalizedOutputPath) &&
-          normalizedOutputPath != targetRoot) {
-        continue;
-      }
+          final outputPath = p.join(targetRoot, normalizedEntryName);
+          final normalizedOutputPath = p.normalize(outputPath);
+          if (!p.isWithin(targetRoot, normalizedOutputPath) &&
+              normalizedOutputPath != targetRoot) {
+            continue;
+          }
 
-      final outputFile = File(normalizedOutputPath);
-      outputFile.parent.createSync(recursive: true);
-      final data = entry.content;
-      if (data is List<int>) {
-        outputFile.writeAsBytesSync(data, flush: true);
+          final outputFile = File(normalizedOutputPath);
+          outputFile.parent.createSync(recursive: true);
+          final output = OutputFileStream(outputFile.path);
+          try {
+            entry.writeContent(output);
+          } finally {
+            output.closeSync();
+          }
+        }
+      } finally {
+        archive.clearSync();
       }
+    } finally {
+      input.closeSync();
     }
   }
 
-  static bool _isZipPasswordProtectedSync(List<int> rawBytes) {
+  static bool _isZipPasswordProtectedSync(String zipPath) {
+    final input = InputFileStream(zipPath);
     final decoder = ZipDecoder();
-    decoder.decodeBytes(rawBytes, verify: false);
-    for (final header in decoder.directory.fileHeaders) {
-      final encryptedByFlag = (header.generalPurposeBitFlag & 0x1) != 0;
-      final encryptedByMethod =
-          header.compressionMethod == ZipFile.zipCompressionAexEncryption;
-      if (encryptedByFlag || encryptedByMethod) {
-        return true;
+    try {
+      decoder.decodeBuffer(input, verify: false);
+      for (final header in decoder.directory.fileHeaders) {
+        final encryptedByFlag = (header.generalPurposeBitFlag & 0x1) != 0;
+        final encryptedByMethod =
+            header.compressionMethod == ZipFile.zipCompressionAexEncryption;
+        if (encryptedByFlag || encryptedByMethod) {
+          return true;
+        }
       }
+      return false;
+    } finally {
+      input.closeSync();
     }
-    return false;
   }
 
   static String? _normalizeOptionalPassword(String? rawPassword) {

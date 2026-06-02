@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/services/app_service.dart';
+import '../../../core/services/backup_file_save_service.dart';
 import '../../../core/services/data_archive_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 
@@ -43,31 +42,11 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       );
       final fileName =
           'node_note_backup_${DateTime.now().millisecondsSinceEpoch}.zip';
-      String? savePath;
-
-      if (Platform.isAndroid || Platform.isIOS) {
-        // 移动端必须传 bytes，且系统会处理写入，不再执行二次写盘。
-        savePath = await FilePicker.platform.saveFile(
-          dialogTitle: l10n.dataMgmtSaveDialogTitle,
-          fileName: fileName,
-          type: FileType.custom,
-          allowedExtensions: const <String>['zip'],
-          bytes: await zipFile.readAsBytes(),
-        );
-      } else {
-        // 桌面端返回目标路径后由应用写入文件。
-        savePath = await FilePicker.platform.saveFile(
-          dialogTitle: l10n.dataMgmtSaveDialogTitle,
-          fileName: fileName,
-          type: FileType.custom,
-          allowedExtensions: const <String>['zip'],
-        );
-        if (savePath != null && savePath.trim().isNotEmpty) {
-          final outputFile = File(savePath);
-          await outputFile.parent.create(recursive: true);
-          await zipFile.copy(outputFile.path);
-        }
-      }
+      final savePath = await BackupFileSaveService.saveBackupFile(
+        zipFile: zipFile,
+        fileName: fileName,
+        dialogTitle: l10n.dataMgmtSaveDialogTitle,
+      );
 
       if (!mounted) {
         return;

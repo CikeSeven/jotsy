@@ -1372,4 +1372,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get webDavConfigRequired => 'Fill and save WebDAV config first';
+
+  @override
+  String get webDavErrorConfig =>
+      'Check the WebDAV URL, account, password/token, and remote directory';
+
+  @override
+  String get webDavErrorAuth =>
+      'Authentication failed. Check the username and password/token';
+
+  @override
+  String get webDavErrorNotFound =>
+      'Remote path not found. Check the NAS WebDAV directory';
+
+  @override
+  String get webDavErrorStorageFull =>
+      'The WebDAV server does not have enough storage space';
+
+  @override
+  String get webDavErrorNetwork =>
+      'Network request failed. Check the server URL, certificate, and network status';
+
+  @override
+  String get webDavErrorUnknown => 'Unknown error. Please try again later';
 }

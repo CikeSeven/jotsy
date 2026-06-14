@@ -1334,4 +1334,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get webDavConfigRequired => '请先填写并保存 WebDAV 配置';
+
+  @override
+  String get webDavErrorConfig => '请检查 WebDAV 地址、账号、密码和远程目录';
+
+  @override
+  String get webDavErrorAuth => '认证失败，请检查用户名和密码/Token';
+
+  @override
+  String get webDavErrorNotFound => '远程路径不存在，请检查 NAS WebDAV 目录';
+
+  @override
+  String get webDavErrorStorageFull => 'WebDAV 服务器存储空间不足';
+
+  @override
+  String get webDavErrorNetwork => '网络请求失败，请检查服务器地址、证书和网络状态';
+
+  @override
+  String get webDavErrorUnknown => '发生未知错误，请稍后重试';
 }

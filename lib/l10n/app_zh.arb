@@ -1893,5 +1893,29 @@
   "webDavConfigRequired": "请先填写并保存 WebDAV 配置",
   "@webDavConfigRequired": {
     "description": "WebDAV 配置缺失提示。"
+  },
+  "webDavErrorConfig": "请检查 WebDAV 地址、账号、密码和远程目录",
+  "@webDavErrorConfig": {
+    "description": "WebDAV 配置错误的本地化错误说明。"
+  },
+  "webDavErrorAuth": "认证失败，请检查用户名和密码/Token",
+  "@webDavErrorAuth": {
+    "description": "WebDAV 认证失败的本地化错误说明。"
+  },
+  "webDavErrorNotFound": "远程路径不存在，请检查 NAS WebDAV 目录",
+  "@webDavErrorNotFound": {
+    "description": "WebDAV 远程路径不存在的本地化错误说明。"
+  },
+  "webDavErrorStorageFull": "WebDAV 服务器存储空间不足",
+  "@webDavErrorStorageFull": {
+    "description": "WebDAV 存储空间不足的本地化错误说明。"
+  },
+  "webDavErrorNetwork": "网络请求失败，请检查服务器地址、证书和网络状态",
+  "@webDavErrorNetwork": {
+    "description": "WebDAV 网络请求失败的本地化错误说明。"
+  },
+  "webDavErrorUnknown": "发生未知错误，请稍后重试",
+  "@webDavErrorUnknown": {
+    "description": "WebDAV 未知错误的本地化错误说明。"
   }
 }

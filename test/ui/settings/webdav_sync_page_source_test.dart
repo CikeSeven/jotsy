@@ -30,6 +30,8 @@ void main() {
       expect(source, isNot(contains('LinearGradient')));
       expect(source, isNot(contains('RadialGradient')));
       expect(source, isNot(contains('SweepGradient')));
+      expect(source, contains('_messageForError'));
+      expect(source, isNot(contains("webDavOperationFailed('\$error')")));
     },
   );
 

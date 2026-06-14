@@ -2533,6 +2533,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fill and save WebDAV config first'**
   String get webDavConfigRequired;
+
+  /// Localized WebDAV config error detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the WebDAV URL, account, password/token, and remote directory'**
+  String get webDavErrorConfig;
+
+  /// Localized WebDAV authentication error detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. Check the username and password/token'**
+  String get webDavErrorAuth;
+
+  /// Localized WebDAV not found error detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote path not found. Check the NAS WebDAV directory'**
+  String get webDavErrorNotFound;
+
+  /// Localized WebDAV insufficient storage error detail.
+  ///
+  /// In en, this message translates to:
+  /// **'The WebDAV server does not have enough storage space'**
+  String get webDavErrorStorageFull;
+
+  /// Localized WebDAV network error detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Network request failed. Check the server URL, certificate, and network status'**
+  String get webDavErrorNetwork;
+
+  /// Localized WebDAV unknown error detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error. Please try again later'**
+  String get webDavErrorUnknown;
 }
 
 class _AppLocalizationsDelegate

@@ -1893,5 +1893,29 @@
   "webDavConfigRequired": "Fill and save WebDAV config first",
   "@webDavConfigRequired": {
     "description": "WebDAV missing config hint."
+  },
+  "webDavErrorConfig": "Check the WebDAV URL, account, password/token, and remote directory",
+  "@webDavErrorConfig": {
+    "description": "Localized WebDAV config error detail."
+  },
+  "webDavErrorAuth": "Authentication failed. Check the username and password/token",
+  "@webDavErrorAuth": {
+    "description": "Localized WebDAV authentication error detail."
+  },
+  "webDavErrorNotFound": "Remote path not found. Check the NAS WebDAV directory",
+  "@webDavErrorNotFound": {
+    "description": "Localized WebDAV not found error detail."
+  },
+  "webDavErrorStorageFull": "The WebDAV server does not have enough storage space",
+  "@webDavErrorStorageFull": {
+    "description": "Localized WebDAV insufficient storage error detail."
+  },
+  "webDavErrorNetwork": "Network request failed. Check the server URL, certificate, and network status",
+  "@webDavErrorNetwork": {
+    "description": "Localized WebDAV network error detail."
+  },
+  "webDavErrorUnknown": "Unknown error. Please try again later",
+  "@webDavErrorUnknown": {
+    "description": "Localized WebDAV unknown error detail."
   }
 }

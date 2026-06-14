@@ -156,7 +156,7 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
       await action();
     } catch (error) {
       if (mounted) {
-        _showSnack(context.l10n.webDavOperationFailed('$error'));
+        _showSnack(_messageForError(error));
       }
     } finally {
       _setBusy(false, '');
@@ -339,6 +339,20 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
     );
   }
 
+  String _messageForError(Object error) {
+    final l10n = context.l10n;
+    final detail = switch (error) {
+      WebDavConfigException() => l10n.webDavErrorConfig,
+      WebDavException(isUnauthorized: true) => l10n.webDavErrorAuth,
+      WebDavException(isNotFound: true) => l10n.webDavErrorNotFound,
+      WebDavException(isInsufficientStorage: true) =>
+        l10n.webDavErrorStorageFull,
+      WebDavException() => l10n.webDavErrorNetwork,
+      _ => l10n.webDavErrorUnknown,
+    };
+    return l10n.webDavOperationFailed(detail);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -364,9 +378,7 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
             error:
                 (error, _) => ListView(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                  children: <Widget>[
-                    Text(l10n.webDavOperationFailed('$error')),
-                  ],
+                  children: <Widget>[Text(_messageForError(error))],
                 ),
           ),
           if (_busy) _buildBusyOverlay(context, colorScheme),

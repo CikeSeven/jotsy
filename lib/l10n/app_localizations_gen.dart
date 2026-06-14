@@ -686,6 +686,24 @@ abstract class AppLocalizations {
   /// **'Submit issue'**
   String get aboutSubmitIssue;
 
+  /// Action title for copying the QQ feedback group number.
+  ///
+  /// In en, this message translates to:
+  /// **'QQ feedback group'**
+  String get aboutQqFeedbackGroup;
+
+  /// QQ feedback group number shown on the About page.
+  ///
+  /// In en, this message translates to:
+  /// **'678136434'**
+  String get aboutQqFeedbackGroupSubtitle;
+
+  /// Snackbar shown after copying the QQ feedback group number.
+  ///
+  /// In en, this message translates to:
+  /// **'QQ group number copied to clipboard'**
+  String get aboutQqFeedbackGroupCopied;
+
   /// Action title for privacy description dialog.
   ///
   /// In en, this message translates to:

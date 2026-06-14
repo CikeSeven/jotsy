@@ -432,6 +432,18 @@
   "@aboutSubmitIssue": {
     "description": "Action title to open issue feedback page."
   },
+  "aboutQqFeedbackGroup": "QQ feedback group",
+  "@aboutQqFeedbackGroup": {
+    "description": "Action title for copying the QQ feedback group number."
+  },
+  "aboutQqFeedbackGroupSubtitle": "678136434",
+  "@aboutQqFeedbackGroupSubtitle": {
+    "description": "QQ feedback group number shown on the About page."
+  },
+  "aboutQqFeedbackGroupCopied": "QQ group number copied to clipboard",
+  "@aboutQqFeedbackGroupCopied": {
+    "description": "Snackbar shown after copying the QQ feedback group number."
+  },
   "aboutPrivacyAndData": "Privacy & data security",
   "@aboutPrivacyAndData": {
     "description": "Action title for privacy description dialog."

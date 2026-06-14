@@ -319,6 +319,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutSubmitIssue => '提交 Issue';
 
   @override
+  String get aboutQqFeedbackGroup => 'QQ反馈群';
+
+  @override
+  String get aboutQqFeedbackGroupSubtitle => '678136434';
+
+  @override
+  String get aboutQqFeedbackGroupCopied => 'QQ群号已复制到剪贴板';
+
+  @override
   String get aboutPrivacyAndData => '隐私与数据安全';
 
   @override

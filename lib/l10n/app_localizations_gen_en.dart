@@ -339,6 +339,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutSubmitIssue => 'Submit issue';
 
   @override
+  String get aboutQqFeedbackGroup => 'QQ feedback group';
+
+  @override
+  String get aboutQqFeedbackGroupSubtitle => '678136434';
+
+  @override
+  String get aboutQqFeedbackGroupCopied =>
+      'QQ group number copied to clipboard';
+
+  @override
   String get aboutPrivacyAndData => 'Privacy & data security';
 
   @override

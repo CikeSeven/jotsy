@@ -432,6 +432,18 @@
   "@aboutSubmitIssue": {
     "description": "About 页面 Issue 反馈入口文案。"
   },
+  "aboutQqFeedbackGroup": "QQ反馈群",
+  "@aboutQqFeedbackGroup": {
+    "description": "About 页面 QQ 反馈群入口标题。"
+  },
+  "aboutQqFeedbackGroupSubtitle": "678136434",
+  "@aboutQqFeedbackGroupSubtitle": {
+    "description": "About 页面 QQ 反馈群群号。"
+  },
+  "aboutQqFeedbackGroupCopied": "QQ群号已复制到剪贴板",
+  "@aboutQqFeedbackGroupCopied": {
+    "description": "About 页面复制 QQ 反馈群群号后的提示。"
+  },
   "aboutPrivacyAndData": "隐私与数据安全",
   "@aboutPrivacyAndData": {
     "description": "About 页面隐私说明入口文案。"

@@ -23,6 +23,7 @@ class AboutPage extends ConsumerStatefulWidget {
   static const String _appIconAssetPath = 'assets/app_icon/mingcute_icon.png';
   static const String _repoUrl = 'https://github.com/CikeSeven/jotsy';
   static const String _issueUrl = 'https://github.com/CikeSeven/jotsy/issues';
+  static const String _qqFeedbackGroupNumber = '678136434';
 
   static Future<String> _loadAppVersion() async {
     final info = await PackageInfo.fromPlatform();
@@ -65,6 +66,21 @@ class _AboutPageState extends ConsumerState<AboutPage> {
       context: context,
       snackBar: SnackBar(
         content: Text(context.l10n.aboutOpenLinkFallbackCopied),
+      ),
+    );
+  }
+
+  Future<void> _copyQqFeedbackGroup(BuildContext context) async {
+    await Clipboard.setData(
+      const ClipboardData(text: AboutPage._qqFeedbackGroupNumber),
+    );
+    if (!context.mounted) {
+      return;
+    }
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(
+        content: Text(context.l10n.aboutQqFeedbackGroupCopied),
       ),
     );
   }
@@ -360,6 +376,13 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
+                            icon: FontAwesomeIcons.qq,
+                            title: l10n.aboutQqFeedbackGroup,
+                            subtitle: l10n.aboutQqFeedbackGroupSubtitle,
+                            onTap: () => _copyQqFeedbackGroup(context),
+                          ),
+                          const Divider(height: 1),
+                          _AboutActionTile(
                             icon: FontAwesomeIcons.shieldHalved,
                             title: l10n.aboutPrivacyAndData,
                             onTap: () => _showPrivacyDialog(context),
@@ -524,12 +547,14 @@ class _AboutActionTile extends StatelessWidget {
   const _AboutActionTile({
     required this.icon,
     required this.title,
+    this.subtitle,
     this.trailing,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
+  final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
 
@@ -551,13 +576,28 @@ class _AboutActionTile extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                title,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle != null) ...<Widget>[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
+            const SizedBox(width: 8),
             trailing ??
                 FaIcon(FontAwesomeIcons.angleRight, size: 15, color: iconColor),
           ],

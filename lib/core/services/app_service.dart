@@ -4,6 +4,8 @@ import '../database/app_database.dart';
 import 'app_update_service.dart';
 import 'settings_service.dart';
 import 'tag_order_codec.dart';
+import 'webdav_settings_service.dart';
+import 'webdav_sync_service.dart';
 
 /// 全局数据库 provider。
 ///
@@ -25,6 +27,31 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
   Ref ref,
 ) async {
   return SettingsService.create();
+});
+
+/// WebDAV 配置服务 provider。
+///
+/// 与常规 SettingsService 分离，避免 WebDAV 凭据进入 ZIP 备份 payload。
+final webDavSettingsServiceProvider = FutureProvider<WebDavSettingsService>((
+  Ref ref,
+) async {
+  final service = await WebDavSettingsService.create();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// WebDAV 备份式同步服务 provider。
+final webDavSyncServiceProvider = FutureProvider<WebDavSyncService>((
+  Ref ref,
+) async {
+  final database = ref.watch(appDatabaseProvider);
+  final settings = await ref.watch(settingsServiceProvider.future);
+  final webDavSettings = await ref.watch(webDavSettingsServiceProvider.future);
+  return WebDavSyncService(
+    database: database,
+    settingsService: settings,
+    webDavSettingsService: webDavSettings,
+  );
 });
 
 /// 应用更新检查服务 provider。

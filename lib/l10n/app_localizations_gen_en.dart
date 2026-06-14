@@ -1230,4 +1230,146 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get timeCapsuleUnlockedInsightNoMood =>
       'This was sealed for your future self. How do you feel today?';
+
+  @override
+  String get dataMgmtWebDav => 'WebDAV Sync';
+
+  @override
+  String get dataMgmtWebDavSubtitle =>
+      'Back up to NAS / private WebDAV and restore from remote backups';
+
+  @override
+  String get webDavTitle => 'WebDAV Sync';
+
+  @override
+  String get webDavConfigSection => 'Connection';
+
+  @override
+  String get webDavServerUrl => 'Server URL';
+
+  @override
+  String get webDavServerUrlHint => 'e.g. https://nas.example.com:5006/webdav/';
+
+  @override
+  String get webDavUsername => 'Username';
+
+  @override
+  String get webDavPassword => 'Password or Token';
+
+  @override
+  String get webDavRemoteDirectory => 'Remote directory';
+
+  @override
+  String get webDavRemoteDirectoryHint => 'e.g. /jotsy/';
+
+  @override
+  String get webDavSaveConfig => 'Save Config';
+
+  @override
+  String get webDavTestConnection => 'Test Connection';
+
+  @override
+  String get webDavUploadBackup => 'Upload Current Backup';
+
+  @override
+  String get webDavRefreshBackups => 'Refresh List';
+
+  @override
+  String get webDavBackupList => 'Remote Backups';
+
+  @override
+  String get webDavNoBackups => 'No remote backups yet';
+
+  @override
+  String get webDavConfigSaved => 'WebDAV config saved';
+
+  @override
+  String get webDavConnectionOk => 'WebDAV connection succeeded';
+
+  @override
+  String get webDavUploadSuccess => 'Backup uploaded to WebDAV';
+
+  @override
+  String get webDavRestoreSuccess => 'Data restored from WebDAV backup';
+
+  @override
+  String get webDavDeleteSuccess => 'Remote backup deleted';
+
+  @override
+  String webDavOperationFailed(String error) {
+    return 'Operation failed: $error';
+  }
+
+  @override
+  String get webDavBusySave => 'Saving config...';
+
+  @override
+  String get webDavBusyTest => 'Testing connection...';
+
+  @override
+  String get webDavBusyUpload => 'Uploading backup...';
+
+  @override
+  String get webDavBusyRefresh => 'Reading remote backups...';
+
+  @override
+  String get webDavBusyRestore => 'Restoring backup...';
+
+  @override
+  String get webDavBusyDelete => 'Deleting remote backup...';
+
+  @override
+  String get webDavBusyLabel => 'Processing WebDAV operation';
+
+  @override
+  String get webDavHint =>
+      'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; restore overwrites local data.';
+
+  @override
+  String get webDavRestoreConfirmTitle => 'Restore Remote Backup';
+
+  @override
+  String get webDavRestoreConfirmContent =>
+      'Restore will overwrite local data. Upload or export your current data first. Continue?';
+
+  @override
+  String get webDavDeleteConfirmTitle => 'Delete Remote Backup';
+
+  @override
+  String webDavDeleteConfirmContent(String fileName) {
+    return 'Delete $fileName from the WebDAV server? This cannot be undone.';
+  }
+
+  @override
+  String get webDavRestoreAction => 'Restore';
+
+  @override
+  String get webDavDeleteAction => 'Delete';
+
+  @override
+  String webDavBackupSize(String size) {
+    return 'Size: $size';
+  }
+
+  @override
+  String webDavBackupTime(String time) {
+    return 'Time: $time';
+  }
+
+  @override
+  String get webDavPasswordDialogTitle => 'Backup Password';
+
+  @override
+  String get webDavPasswordDialogHint =>
+      'Leave empty for no encryption; enter the original password for encrypted restore';
+
+  @override
+  String get webDavPasswordWarning =>
+      'Keep this password safe. Encrypted backups cannot be restored if you forget it.';
+
+  @override
+  String get webDavContinueWithoutPassword => 'Continue';
+
+  @override
+  String get webDavConfigRequired => 'Fill and save WebDAV config first';
 }

@@ -1701,5 +1701,197 @@
   "timeCapsuleUnlockedInsightNoMood": "这是一封写给未来自己的日记，今天感觉如何？",
   "@timeCapsuleUnlockedInsightNoMood": {
     "description": "Time capsule text for timeCapsuleUnlockedInsightNoMood."
+  },
+  "dataMgmtWebDav": "WebDAV 同步",
+  "@dataMgmtWebDav": {
+    "description": "数据管理页 WebDAV 同步入口标题。"
+  },
+  "dataMgmtWebDavSubtitle": "备份到 NAS / 私有 WebDAV，并可从远程恢复",
+  "@dataMgmtWebDavSubtitle": {
+    "description": "数据管理页 WebDAV 同步入口副标题。"
+  },
+  "webDavTitle": "WebDAV 同步",
+  "@webDavTitle": {
+    "description": "WebDAV 同步页面标题。"
+  },
+  "webDavConfigSection": "连接配置",
+  "@webDavConfigSection": {
+    "description": "WebDAV 连接配置区标题。"
+  },
+  "webDavServerUrl": "服务器地址",
+  "@webDavServerUrl": {
+    "description": "WebDAV 服务器地址输入框标签。"
+  },
+  "webDavServerUrlHint": "例如 https://nas.example.com:5006/webdav/",
+  "@webDavServerUrlHint": {
+    "description": "WebDAV 服务器地址输入框提示。"
+  },
+  "webDavUsername": "用户名",
+  "@webDavUsername": {
+    "description": "WebDAV 用户名输入框标签。"
+  },
+  "webDavPassword": "密码或 Token",
+  "@webDavPassword": {
+    "description": "WebDAV 密码或 Token 输入框标签。"
+  },
+  "webDavRemoteDirectory": "远程目录",
+  "@webDavRemoteDirectory": {
+    "description": "WebDAV 远程目录输入框标签。"
+  },
+  "webDavRemoteDirectoryHint": "例如 /jotsy/",
+  "@webDavRemoteDirectoryHint": {
+    "description": "WebDAV 远程目录输入框提示。"
+  },
+  "webDavSaveConfig": "保存配置",
+  "@webDavSaveConfig": {
+    "description": "保存 WebDAV 配置按钮。"
+  },
+  "webDavTestConnection": "测试连接",
+  "@webDavTestConnection": {
+    "description": "测试 WebDAV 连接按钮。"
+  },
+  "webDavUploadBackup": "上传当前备份",
+  "@webDavUploadBackup": {
+    "description": "上传当前数据备份到 WebDAV 的按钮。"
+  },
+  "webDavRefreshBackups": "刷新列表",
+  "@webDavRefreshBackups": {
+    "description": "刷新 WebDAV 远程备份列表按钮。"
+  },
+  "webDavBackupList": "远程备份",
+  "@webDavBackupList": {
+    "description": "WebDAV 远程备份列表标题。"
+  },
+  "webDavNoBackups": "暂无远程备份",
+  "@webDavNoBackups": {
+    "description": "WebDAV 远程备份列表空状态。"
+  },
+  "webDavConfigSaved": "WebDAV 配置已保存",
+  "@webDavConfigSaved": {
+    "description": "WebDAV 配置保存成功提示。"
+  },
+  "webDavConnectionOk": "WebDAV 连接成功",
+  "@webDavConnectionOk": {
+    "description": "WebDAV 连接测试成功提示。"
+  },
+  "webDavUploadSuccess": "备份已上传到 WebDAV",
+  "@webDavUploadSuccess": {
+    "description": "WebDAV 上传成功提示。"
+  },
+  "webDavRestoreSuccess": "已从 WebDAV 备份恢复数据",
+  "@webDavRestoreSuccess": {
+    "description": "WebDAV 恢复成功提示。"
+  },
+  "webDavDeleteSuccess": "远程备份已删除",
+  "@webDavDeleteSuccess": {
+    "description": "WebDAV 远程备份删除成功提示。"
+  },
+  "webDavOperationFailed": "操作失败：{error}",
+  "@webDavOperationFailed": {
+    "description": "WebDAV 操作失败提示。",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavBusySave": "正在保存配置...",
+  "@webDavBusySave": {
+    "description": "WebDAV 保存配置加载文案。"
+  },
+  "webDavBusyTest": "正在测试连接...",
+  "@webDavBusyTest": {
+    "description": "WebDAV 测试连接加载文案。"
+  },
+  "webDavBusyUpload": "正在上传备份...",
+  "@webDavBusyUpload": {
+    "description": "WebDAV 上传备份加载文案。"
+  },
+  "webDavBusyRefresh": "正在读取远程备份...",
+  "@webDavBusyRefresh": {
+    "description": "WebDAV 刷新列表加载文案。"
+  },
+  "webDavBusyRestore": "正在恢复备份...",
+  "@webDavBusyRestore": {
+    "description": "WebDAV 恢复备份加载文案。"
+  },
+  "webDavBusyDelete": "正在删除远程备份...",
+  "@webDavBusyDelete": {
+    "description": "WebDAV 删除远程备份加载文案。"
+  },
+  "webDavBusyLabel": "WebDAV 操作处理中",
+  "@webDavBusyLabel": {
+    "description": "WebDAV 操作加载组件语义标签。"
+  },
+  "webDavHint": "建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复会覆盖本地数据。",
+  "@webDavHint": {
+    "description": "WebDAV 同步页安全与行为说明。"
+  },
+  "webDavRestoreConfirmTitle": "恢复远程备份",
+  "@webDavRestoreConfirmTitle": {
+    "description": "WebDAV 恢复确认弹窗标题。"
+  },
+  "webDavRestoreConfirmContent": "恢复会覆盖当前本地数据。建议先上传或导出一份当前备份。确认继续吗？",
+  "@webDavRestoreConfirmContent": {
+    "description": "WebDAV 恢复确认弹窗内容。"
+  },
+  "webDavDeleteConfirmTitle": "删除远程备份",
+  "@webDavDeleteConfirmTitle": {
+    "description": "WebDAV 删除确认弹窗标题。"
+  },
+  "webDavDeleteConfirmContent": "将从 WebDAV 服务器删除 {fileName}，此操作不可撤销。",
+  "@webDavDeleteConfirmContent": {
+    "description": "WebDAV 删除确认弹窗内容。",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavRestoreAction": "恢复",
+  "@webDavRestoreAction": {
+    "description": "WebDAV 恢复操作按钮。"
+  },
+  "webDavDeleteAction": "删除",
+  "@webDavDeleteAction": {
+    "description": "WebDAV 删除操作按钮。"
+  },
+  "webDavBackupSize": "大小：{size}",
+  "@webDavBackupSize": {
+    "description": "WebDAV 备份大小展示。",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavBackupTime": "时间：{time}",
+  "@webDavBackupTime": {
+    "description": "WebDAV 备份时间展示。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavPasswordDialogTitle": "备份密码",
+  "@webDavPasswordDialogTitle": {
+    "description": "WebDAV 上传/恢复备份密码弹窗标题。"
+  },
+  "webDavPasswordDialogHint": "不填写则不加密；恢复加密备份时请输入原密码",
+  "@webDavPasswordDialogHint": {
+    "description": "WebDAV 备份密码弹窗输入提示。"
+  },
+  "webDavPasswordWarning": "请妥善保管备份密码。遗忘后无法恢复加密备份。",
+  "@webDavPasswordWarning": {
+    "description": "WebDAV 备份密码警告。"
+  },
+  "webDavContinueWithoutPassword": "继续",
+  "@webDavContinueWithoutPassword": {
+    "description": "WebDAV 备份密码弹窗继续按钮。"
+  },
+  "webDavConfigRequired": "请先填写并保存 WebDAV 配置",
+  "@webDavConfigRequired": {
+    "description": "WebDAV 配置缺失提示。"
   }
 }

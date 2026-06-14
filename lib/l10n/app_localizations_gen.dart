@@ -2275,6 +2275,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This was sealed for your future self. How do you feel today?'**
   String get timeCapsuleUnlockedInsightNoMood;
+
+  /// Data management WebDAV sync entry title.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV Sync'**
+  String get dataMgmtWebDav;
+
+  /// Data management WebDAV sync entry subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up to NAS / private WebDAV and restore from remote backups'**
+  String get dataMgmtWebDavSubtitle;
+
+  /// WebDAV sync page title.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV Sync'**
+  String get webDavTitle;
+
+  /// WebDAV connection section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get webDavConfigSection;
+
+  /// WebDAV server URL field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Server URL'**
+  String get webDavServerUrl;
+
+  /// WebDAV server URL field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://nas.example.com:5006/webdav/'**
+  String get webDavServerUrlHint;
+
+  /// WebDAV username field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get webDavUsername;
+
+  /// WebDAV password/token field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Password or Token'**
+  String get webDavPassword;
+
+  /// WebDAV remote directory field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote directory'**
+  String get webDavRemoteDirectory;
+
+  /// WebDAV remote directory field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. /jotsy/'**
+  String get webDavRemoteDirectoryHint;
+
+  /// Save WebDAV config button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Config'**
+  String get webDavSaveConfig;
+
+  /// Test WebDAV connection button.
+  ///
+  /// In en, this message translates to:
+  /// **'Test Connection'**
+  String get webDavTestConnection;
+
+  /// Upload current backup to WebDAV button.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Current Backup'**
+  String get webDavUploadBackup;
+
+  /// Refresh WebDAV remote backup list button.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh List'**
+  String get webDavRefreshBackups;
+
+  /// WebDAV remote backup list title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote Backups'**
+  String get webDavBackupList;
+
+  /// WebDAV remote backup empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No remote backups yet'**
+  String get webDavNoBackups;
+
+  /// WebDAV config saved hint.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV config saved'**
+  String get webDavConfigSaved;
+
+  /// WebDAV connection test success hint.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV connection succeeded'**
+  String get webDavConnectionOk;
+
+  /// WebDAV upload success hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup uploaded to WebDAV'**
+  String get webDavUploadSuccess;
+
+  /// WebDAV restore success hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Data restored from WebDAV backup'**
+  String get webDavRestoreSuccess;
+
+  /// WebDAV remote backup delete success hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote backup deleted'**
+  String get webDavDeleteSuccess;
+
+  /// WebDAV operation failed hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed: {error}'**
+  String webDavOperationFailed(String error);
+
+  /// WebDAV save config busy text.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving config...'**
+  String get webDavBusySave;
+
+  /// WebDAV test connection busy text.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing connection...'**
+  String get webDavBusyTest;
+
+  /// WebDAV upload backup busy text.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading backup...'**
+  String get webDavBusyUpload;
+
+  /// WebDAV refresh list busy text.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading remote backups...'**
+  String get webDavBusyRefresh;
+
+  /// WebDAV restore backup busy text.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring backup...'**
+  String get webDavBusyRestore;
+
+  /// WebDAV delete remote backup busy text.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting remote backup...'**
+  String get webDavBusyDelete;
+
+  /// WebDAV loading indicator semantic label.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing WebDAV operation'**
+  String get webDavBusyLabel;
+
+  /// WebDAV safety and behavior hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; restore overwrites local data.'**
+  String get webDavHint;
+
+  /// WebDAV restore confirm dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Remote Backup'**
+  String get webDavRestoreConfirmTitle;
+
+  /// WebDAV restore confirm dialog content.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore will overwrite local data. Upload or export your current data first. Continue?'**
+  String get webDavRestoreConfirmContent;
+
+  /// WebDAV delete confirm dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Remote Backup'**
+  String get webDavDeleteConfirmTitle;
+
+  /// WebDAV delete confirm dialog content.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {fileName} from the WebDAV server? This cannot be undone.'**
+  String webDavDeleteConfirmContent(String fileName);
+
+  /// WebDAV restore action button.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get webDavRestoreAction;
+
+  /// WebDAV delete action button.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get webDavDeleteAction;
+
+  /// WebDAV backup size label.
+  ///
+  /// In en, this message translates to:
+  /// **'Size: {size}'**
+  String webDavBackupSize(String size);
+
+  /// WebDAV backup time label.
+  ///
+  /// In en, this message translates to:
+  /// **'Time: {time}'**
+  String webDavBackupTime(String time);
+
+  /// WebDAV backup password dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup Password'**
+  String get webDavPasswordDialogTitle;
+
+  /// WebDAV backup password field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for no encryption; enter the original password for encrypted restore'**
+  String get webDavPasswordDialogHint;
+
+  /// WebDAV backup password warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this password safe. Encrypted backups cannot be restored if you forget it.'**
+  String get webDavPasswordWarning;
+
+  /// WebDAV backup password continue button.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get webDavContinueWithoutPassword;
+
+  /// WebDAV missing config hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill and save WebDAV config first'**
+  String get webDavConfigRequired;
 }
 
 class _AppLocalizationsDelegate

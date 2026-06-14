@@ -1196,4 +1196,142 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get timeCapsuleUnlockedInsightNoMood => '这是一封写给未来自己的日记，今天感觉如何？';
+
+  @override
+  String get dataMgmtWebDav => 'WebDAV 同步';
+
+  @override
+  String get dataMgmtWebDavSubtitle => '备份到 NAS / 私有 WebDAV，并可从远程恢复';
+
+  @override
+  String get webDavTitle => 'WebDAV 同步';
+
+  @override
+  String get webDavConfigSection => '连接配置';
+
+  @override
+  String get webDavServerUrl => '服务器地址';
+
+  @override
+  String get webDavServerUrlHint => '例如 https://nas.example.com:5006/webdav/';
+
+  @override
+  String get webDavUsername => '用户名';
+
+  @override
+  String get webDavPassword => '密码或 Token';
+
+  @override
+  String get webDavRemoteDirectory => '远程目录';
+
+  @override
+  String get webDavRemoteDirectoryHint => '例如 /jotsy/';
+
+  @override
+  String get webDavSaveConfig => '保存配置';
+
+  @override
+  String get webDavTestConnection => '测试连接';
+
+  @override
+  String get webDavUploadBackup => '上传当前备份';
+
+  @override
+  String get webDavRefreshBackups => '刷新列表';
+
+  @override
+  String get webDavBackupList => '远程备份';
+
+  @override
+  String get webDavNoBackups => '暂无远程备份';
+
+  @override
+  String get webDavConfigSaved => 'WebDAV 配置已保存';
+
+  @override
+  String get webDavConnectionOk => 'WebDAV 连接成功';
+
+  @override
+  String get webDavUploadSuccess => '备份已上传到 WebDAV';
+
+  @override
+  String get webDavRestoreSuccess => '已从 WebDAV 备份恢复数据';
+
+  @override
+  String get webDavDeleteSuccess => '远程备份已删除';
+
+  @override
+  String webDavOperationFailed(String error) {
+    return '操作失败：$error';
+  }
+
+  @override
+  String get webDavBusySave => '正在保存配置...';
+
+  @override
+  String get webDavBusyTest => '正在测试连接...';
+
+  @override
+  String get webDavBusyUpload => '正在上传备份...';
+
+  @override
+  String get webDavBusyRefresh => '正在读取远程备份...';
+
+  @override
+  String get webDavBusyRestore => '正在恢复备份...';
+
+  @override
+  String get webDavBusyDelete => '正在删除远程备份...';
+
+  @override
+  String get webDavBusyLabel => 'WebDAV 操作处理中';
+
+  @override
+  String get webDavHint =>
+      '建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复会覆盖本地数据。';
+
+  @override
+  String get webDavRestoreConfirmTitle => '恢复远程备份';
+
+  @override
+  String get webDavRestoreConfirmContent => '恢复会覆盖当前本地数据。建议先上传或导出一份当前备份。确认继续吗？';
+
+  @override
+  String get webDavDeleteConfirmTitle => '删除远程备份';
+
+  @override
+  String webDavDeleteConfirmContent(String fileName) {
+    return '将从 WebDAV 服务器删除 $fileName，此操作不可撤销。';
+  }
+
+  @override
+  String get webDavRestoreAction => '恢复';
+
+  @override
+  String get webDavDeleteAction => '删除';
+
+  @override
+  String webDavBackupSize(String size) {
+    return '大小：$size';
+  }
+
+  @override
+  String webDavBackupTime(String time) {
+    return '时间：$time';
+  }
+
+  @override
+  String get webDavPasswordDialogTitle => '备份密码';
+
+  @override
+  String get webDavPasswordDialogHint => '不填写则不加密；恢复加密备份时请输入原密码';
+
+  @override
+  String get webDavPasswordWarning => '请妥善保管备份密码。遗忘后无法恢复加密备份。';
+
+  @override
+  String get webDavContinueWithoutPassword => '继续';
+
+  @override
+  String get webDavConfigRequired => '请先填写并保存 WebDAV 配置';
 }

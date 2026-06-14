@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/settings/pages/webdav_sync_page.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/backup_file_save_service.dart';
@@ -369,6 +370,26 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                 subtitle: Text(context.l10n.dataMgmtImportSubtitle),
                 trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
                 onTap: _busy ? null : _importData,
+              ),
+              const Divider(),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const FaIcon(FontAwesomeIcons.cloudArrowUp, size: 16),
+                title: Text(context.l10n.dataMgmtWebDav),
+                subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
+                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                onTap:
+                    _busy
+                        ? null
+                        : () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (BuildContext context) {
+                                return const WebDavSyncPage();
+                              },
+                            ),
+                          );
+                        },
               ),
               const Divider(),
               const SizedBox(height: 8),

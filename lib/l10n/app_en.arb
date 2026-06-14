@@ -1701,5 +1701,197 @@
   "timeCapsuleUnlockedInsightNoMood": "This was sealed for your future self. How do you feel today?",
   "@timeCapsuleUnlockedInsightNoMood": {
     "description": "Time capsule text for timeCapsuleUnlockedInsightNoMood."
+  },
+  "dataMgmtWebDav": "WebDAV Sync",
+  "@dataMgmtWebDav": {
+    "description": "Data management WebDAV sync entry title."
+  },
+  "dataMgmtWebDavSubtitle": "Back up to NAS / private WebDAV and restore from remote backups",
+  "@dataMgmtWebDavSubtitle": {
+    "description": "Data management WebDAV sync entry subtitle."
+  },
+  "webDavTitle": "WebDAV Sync",
+  "@webDavTitle": {
+    "description": "WebDAV sync page title."
+  },
+  "webDavConfigSection": "Connection",
+  "@webDavConfigSection": {
+    "description": "WebDAV connection section title."
+  },
+  "webDavServerUrl": "Server URL",
+  "@webDavServerUrl": {
+    "description": "WebDAV server URL field label."
+  },
+  "webDavServerUrlHint": "e.g. https://nas.example.com:5006/webdav/",
+  "@webDavServerUrlHint": {
+    "description": "WebDAV server URL field hint."
+  },
+  "webDavUsername": "Username",
+  "@webDavUsername": {
+    "description": "WebDAV username field label."
+  },
+  "webDavPassword": "Password or Token",
+  "@webDavPassword": {
+    "description": "WebDAV password/token field label."
+  },
+  "webDavRemoteDirectory": "Remote directory",
+  "@webDavRemoteDirectory": {
+    "description": "WebDAV remote directory field label."
+  },
+  "webDavRemoteDirectoryHint": "e.g. /jotsy/",
+  "@webDavRemoteDirectoryHint": {
+    "description": "WebDAV remote directory field hint."
+  },
+  "webDavSaveConfig": "Save Config",
+  "@webDavSaveConfig": {
+    "description": "Save WebDAV config button."
+  },
+  "webDavTestConnection": "Test Connection",
+  "@webDavTestConnection": {
+    "description": "Test WebDAV connection button."
+  },
+  "webDavUploadBackup": "Upload Current Backup",
+  "@webDavUploadBackup": {
+    "description": "Upload current backup to WebDAV button."
+  },
+  "webDavRefreshBackups": "Refresh List",
+  "@webDavRefreshBackups": {
+    "description": "Refresh WebDAV remote backup list button."
+  },
+  "webDavBackupList": "Remote Backups",
+  "@webDavBackupList": {
+    "description": "WebDAV remote backup list title."
+  },
+  "webDavNoBackups": "No remote backups yet",
+  "@webDavNoBackups": {
+    "description": "WebDAV remote backup empty state."
+  },
+  "webDavConfigSaved": "WebDAV config saved",
+  "@webDavConfigSaved": {
+    "description": "WebDAV config saved hint."
+  },
+  "webDavConnectionOk": "WebDAV connection succeeded",
+  "@webDavConnectionOk": {
+    "description": "WebDAV connection test success hint."
+  },
+  "webDavUploadSuccess": "Backup uploaded to WebDAV",
+  "@webDavUploadSuccess": {
+    "description": "WebDAV upload success hint."
+  },
+  "webDavRestoreSuccess": "Data restored from WebDAV backup",
+  "@webDavRestoreSuccess": {
+    "description": "WebDAV restore success hint."
+  },
+  "webDavDeleteSuccess": "Remote backup deleted",
+  "@webDavDeleteSuccess": {
+    "description": "WebDAV remote backup delete success hint."
+  },
+  "webDavOperationFailed": "Operation failed: {error}",
+  "@webDavOperationFailed": {
+    "description": "WebDAV operation failed hint.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavBusySave": "Saving config...",
+  "@webDavBusySave": {
+    "description": "WebDAV save config busy text."
+  },
+  "webDavBusyTest": "Testing connection...",
+  "@webDavBusyTest": {
+    "description": "WebDAV test connection busy text."
+  },
+  "webDavBusyUpload": "Uploading backup...",
+  "@webDavBusyUpload": {
+    "description": "WebDAV upload backup busy text."
+  },
+  "webDavBusyRefresh": "Reading remote backups...",
+  "@webDavBusyRefresh": {
+    "description": "WebDAV refresh list busy text."
+  },
+  "webDavBusyRestore": "Restoring backup...",
+  "@webDavBusyRestore": {
+    "description": "WebDAV restore backup busy text."
+  },
+  "webDavBusyDelete": "Deleting remote backup...",
+  "@webDavBusyDelete": {
+    "description": "WebDAV delete remote backup busy text."
+  },
+  "webDavBusyLabel": "Processing WebDAV operation",
+  "@webDavBusyLabel": {
+    "description": "WebDAV loading indicator semantic label."
+  },
+  "webDavHint": "Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; restore overwrites local data.",
+  "@webDavHint": {
+    "description": "WebDAV safety and behavior hint."
+  },
+  "webDavRestoreConfirmTitle": "Restore Remote Backup",
+  "@webDavRestoreConfirmTitle": {
+    "description": "WebDAV restore confirm dialog title."
+  },
+  "webDavRestoreConfirmContent": "Restore will overwrite local data. Upload or export your current data first. Continue?",
+  "@webDavRestoreConfirmContent": {
+    "description": "WebDAV restore confirm dialog content."
+  },
+  "webDavDeleteConfirmTitle": "Delete Remote Backup",
+  "@webDavDeleteConfirmTitle": {
+    "description": "WebDAV delete confirm dialog title."
+  },
+  "webDavDeleteConfirmContent": "Delete {fileName} from the WebDAV server? This cannot be undone.",
+  "@webDavDeleteConfirmContent": {
+    "description": "WebDAV delete confirm dialog content.",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavRestoreAction": "Restore",
+  "@webDavRestoreAction": {
+    "description": "WebDAV restore action button."
+  },
+  "webDavDeleteAction": "Delete",
+  "@webDavDeleteAction": {
+    "description": "WebDAV delete action button."
+  },
+  "webDavBackupSize": "Size: {size}",
+  "@webDavBackupSize": {
+    "description": "WebDAV backup size label.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavBackupTime": "Time: {time}",
+  "@webDavBackupTime": {
+    "description": "WebDAV backup time label.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "webDavPasswordDialogTitle": "Backup Password",
+  "@webDavPasswordDialogTitle": {
+    "description": "WebDAV backup password dialog title."
+  },
+  "webDavPasswordDialogHint": "Leave empty for no encryption; enter the original password for encrypted restore",
+  "@webDavPasswordDialogHint": {
+    "description": "WebDAV backup password field hint."
+  },
+  "webDavPasswordWarning": "Keep this password safe. Encrypted backups cannot be restored if you forget it.",
+  "@webDavPasswordWarning": {
+    "description": "WebDAV backup password warning."
+  },
+  "webDavContinueWithoutPassword": "Continue",
+  "@webDavContinueWithoutPassword": {
+    "description": "WebDAV backup password continue button."
+  },
+  "webDavConfigRequired": "Fill and save WebDAV config first",
+  "@webDavConfigRequired": {
+    "description": "WebDAV missing config hint."
   }
 }

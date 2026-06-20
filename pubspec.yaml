@@ -44,6 +44,7 @@ dependencies:
   flutter_quill_to_pdf: ^2.3.9
   pdf: ^3.11.3
   xml: ^6.6.1
+  meta: ^1.15.0
   
 dev_dependencies:
   flutter_test:
@@ -54,6 +55,8 @@ dev_dependencies:
   json_serializable: ^6.13.0
   drift_dev: ^2.32.0
   flutter_launcher_icons: ^0.14.4
+  # 迁移测试中直接以原始 sqlite3 搭建旧版库结构（transitive 依赖显式声明）。
+  sqlite3: ^3.2.0
 
 flutter:
   generate: true

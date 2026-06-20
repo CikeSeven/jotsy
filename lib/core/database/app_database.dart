@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
@@ -27,8 +28,13 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
+  /// 测试专用构造：注入自定义 [QueryExecutor]（如内存库），
+  /// 便于在不依赖文件系统的前提下验证迁移与查询行为。
+  @visibleForTesting
+  AppDatabase.forTesting(super.executor);
+
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -51,6 +57,9 @@ class AppDatabase extends _$AppDatabase
       }
       if (from < 6) {
         await _migrateDiariesAddCapsuleFields();
+      }
+      if (from < 7) {
+        await _migrateAddPerformanceIndexes();
       }
     },
   );

@@ -123,4 +123,33 @@ ALTER TABLE diaries
 ADD COLUMN capsule_locked_at INTEGER NULL
 ''');
   }
+
+  /// 为高频查询列补建索引（schemaVersion 7）。
+  ///
+  /// 背景：列表默认按 `updated_at` 倒序、日历/“那年今日”按 `created_at` 范围扫描、
+  /// 时间胶囊过滤按 `capsule_unlock_at`、按标签反查走 `diary_tags.tag_id`。
+  /// 旧库这些列无索引，数据量增大后会触发全表扫描/临时排序。
+  ///
+  /// 说明：
+  /// - 新库由 `m.createAll()` 依据 `@TableIndex` 注解自动建索引，本迁移仅服务旧库升级；
+  /// - 统一使用 `IF NOT EXISTS` 保证幂等，避免与历史可能存在的同名索引冲突；
+  /// - `diary_tags.diary_id` 已由复合主键 `{diary_id, tag_id}` 的前缀覆盖，无需重复建。
+  Future<void> _migrateAddPerformanceIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_diaries_updated_at '
+      'ON diaries (updated_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_diaries_created_at '
+      'ON diaries (created_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_diaries_capsule_unlock_at '
+      'ON diaries (capsule_unlock_at)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_diary_tags_tag_id '
+      'ON diary_tags (tag_id)',
+    );
+  }
 }

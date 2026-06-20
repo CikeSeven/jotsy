@@ -12,6 +12,17 @@ part of 'app_database.dart';
 /// 7. 归档与删除分离：归档用于隐藏到归档列表，删除用于回收站语义；
 /// 8. `capsuleUnlockAt/capsuleLockedAt` 标记时间胶囊，未到期前只展示锁定壳；
 /// 9. 采用软删除字段，便于恢复与审计。
+///
+/// 索引设计：
+/// - `updated_at`：列表默认按更新时间倒序排序；
+/// - `created_at`：日历按日范围扫描、“那年今日”按创建时间过滤；
+/// - `capsule_unlock_at`：时间胶囊到期过滤。
+@TableIndex(name: 'idx_diaries_updated_at', columns: <Symbol>{#updatedAt})
+@TableIndex(name: 'idx_diaries_created_at', columns: <Symbol>{#createdAt})
+@TableIndex(
+  name: 'idx_diaries_capsule_unlock_at',
+  columns: <Symbol>{#capsuleUnlockAt},
+)
 class Diaries extends Table {
   IntColumn get id => integer().autoIncrement()();
 
@@ -28,8 +39,10 @@ class Diaries extends Table {
 
   TextColumn get metadata => text().withDefault(const Constant('{}'))();
 
+  // created_at 建索引：日历按日范围扫描、“那年今日”等查询都以创建时间为条件。
   DateTimeColumn get createdAt => dateTime().named('created_at')();
 
+  // updated_at 建索引：日记列表默认按更新时间倒序排序，建索引避免排序时全表扫描。
   DateTimeColumn get updatedAt => dateTime().named('updated_at')();
 
   BoolColumn get isArchived =>
@@ -66,6 +79,9 @@ class Tags extends Table {
 ///
 /// 通过复合主键保证同一日记不会重复绑定同一标签，
 /// 并对日记/标签删除开启级联清理。
+///
+/// `tag_id` 单列索引：支持“按标签反查日记”（复合主键前缀只覆盖 diary_id）。
+@TableIndex(name: 'idx_diary_tags_tag_id', columns: <Symbol>{#tagId})
 class DiaryTags extends Table {
   IntColumn get diaryId =>
       integer()

@@ -926,7 +926,7 @@ packages:
     source: hosted
     version: "1.0.0"
   meta:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: meta
       sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
@@ -1387,7 +1387,7 @@ packages:
     source: hosted
     version: "1.10.2"
   sqlite3:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: sqlite3
       sha256: caa693ad15a587a2b4fde093b728131a1827903872171089dedb16f7665d3a91

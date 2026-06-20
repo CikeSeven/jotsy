@@ -1400,6 +1400,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $DiariesTable diaries = $DiariesTable(this);
   late final $TagsTable tags = $TagsTable(this);
   late final $DiaryTagsTable diaryTags = $DiaryTagsTable(this);
+  late final Index idxDiariesUpdatedAt = Index(
+    'idx_diaries_updated_at',
+    'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
+  );
+  late final Index idxDiariesCreatedAt = Index(
+    'idx_diaries_created_at',
+    'CREATE INDEX idx_diaries_created_at ON diaries (created_at)',
+  );
+  late final Index idxDiariesCapsuleUnlockAt = Index(
+    'idx_diaries_capsule_unlock_at',
+    'CREATE INDEX idx_diaries_capsule_unlock_at ON diaries (capsule_unlock_at)',
+  );
+  late final Index idxDiaryTagsTagId = Index(
+    'idx_diary_tags_tag_id',
+    'CREATE INDEX idx_diary_tags_tag_id ON diary_tags (tag_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1408,6 +1424,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     diaries,
     tags,
     diaryTags,
+    idxDiariesUpdatedAt,
+    idxDiariesCreatedAt,
+    idxDiariesCapsuleUnlockAt,
+    idxDiaryTagsTagId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([

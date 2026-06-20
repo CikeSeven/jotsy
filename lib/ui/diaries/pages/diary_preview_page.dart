@@ -538,11 +538,17 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     final uri = Uri.tryParse(source);
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
+    // 预览封面框固定高 420，按设备像素比换算解码上限，
+    // 避免把原图整张解码进内存（多图日记内存峰值会明显升高）。
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheHeight = (420 * dpr).round();
     if (isRemote) {
       return Image.network(
         source,
         fit: BoxFit.contain,
         alignment: Alignment.center,
+        cacheHeight: cacheHeight,
+        filterQuality: FilterQuality.low,
         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
       );
     }
@@ -551,6 +557,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       File(source),
       fit: BoxFit.contain,
       alignment: Alignment.center,
+      cacheHeight: cacheHeight,
+      filterQuality: FilterQuality.low,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
     );
   }

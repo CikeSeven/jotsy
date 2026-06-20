@@ -78,7 +78,6 @@ class DiariesListSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final backgroundColor = colorScheme.surface;
-    final waterfallLayoutSignature = _buildWaterfallLayoutSignature(diaries);
 
     // 空态：根据是否搜索场景展示不同文案。
     if (diaries.isEmpty) {
@@ -101,6 +100,7 @@ class DiariesListSection extends StatelessWidget {
 
     // 瀑布流模式：双列卡片，卡片包含封面（如有）和摘要。
     if (layoutMode == DiaryLayoutMode.waterfall) {
+      final waterfallLayoutSignature = _waterfallLayoutSignature(diaries);
       return SliverPadding(
         key: ValueKey<int>(waterfallLayoutSignature),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
@@ -161,6 +161,23 @@ class DiariesListSection extends StatelessWidget {
 
   /// 根据当前瀑布流数据顺序生成稳定签名。
   /// 当条目排序变化（如编辑后更新时间变化）时，触发瀑布流 sliver 重建，避免旧布局残留空位。
+  ///
+  /// 性能说明：签名计算是 O(n) 遍历，列表较长时每帧重算会拖累滚动。
+  /// 这里用静态单槽 memo 缓存“上一次列表引用 → 签名”：父级未替换 diaries 列表实例时
+  /// （`identical` 命中）直接复用结果。父级每次重建若都生成新列表，则退化为原始计算，无副作用。
+  static List<DiaryWithTags>? _lastSignatureSource;
+  static int _lastSignatureValue = 0;
+
+  int _waterfallLayoutSignature(List<DiaryWithTags> items) {
+    if (identical(items, _lastSignatureSource)) {
+      return _lastSignatureValue;
+    }
+    final value = _buildWaterfallLayoutSignature(items);
+    _lastSignatureSource = items;
+    _lastSignatureValue = value;
+    return value;
+  }
+
   int _buildWaterfallLayoutSignature(List<DiaryWithTags> items) {
     var hash = 17;
     for (final item in items) {

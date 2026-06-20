@@ -2587,6 +2587,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown error. Please try again later'**
   String get webDavErrorUnknown;
+
+  /// Semantic label for the save-to-gallery action in the image viewer top bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to gallery'**
+  String get imageViewerSaveToGallery;
+
+  /// Loading hint while saving an image to the gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get imageViewerSaving;
+
+  /// Hint shown after an image is saved to the gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to gallery'**
+  String get imageViewerSaveSuccess;
+
+  /// Hint shown when saving an image fails; error is the failure reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: {error}'**
+  String imageViewerSaveFailed(String error);
+
+  /// Hint shown when gallery write permission is denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery permission denied, cannot save'**
+  String get imageViewerGalleryPermissionDenied;
+
+  /// Loading hint while preparing to share an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing to share…'**
+  String get imageViewerSharing;
+
+  /// Hint shown when sharing an image fails; error is the failure reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Share failed: {error}'**
+  String imageViewerShareFailed(String error);
+
+  /// Hint shown when downloading a remote image fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download image, please check your network and retry'**
+  String get imageViewerDownloadFailed;
 }
 
 class _AppLocalizationsDelegate

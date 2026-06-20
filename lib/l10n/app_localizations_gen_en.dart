@@ -1405,4 +1405,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get webDavErrorUnknown => 'Unknown error. Please try again later';
+
+  @override
+  String get imageViewerSaveToGallery => 'Save to gallery';
+
+  @override
+  String get imageViewerSaving => 'Saving…';
+
+  @override
+  String get imageViewerSaveSuccess => 'Saved to gallery';
+
+  @override
+  String imageViewerSaveFailed(String error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get imageViewerGalleryPermissionDenied =>
+      'Gallery permission denied, cannot save';
+
+  @override
+  String get imageViewerSharing => 'Preparing to share…';
+
+  @override
+  String imageViewerShareFailed(String error) {
+    return 'Share failed: $error';
+  }
+
+  @override
+  String get imageViewerDownloadFailed =>
+      'Failed to download image, please check your network and retry';
 }

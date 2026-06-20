@@ -45,6 +45,7 @@ dependencies:
   pdf: ^3.11.3
   xml: ^6.6.1
   meta: ^1.15.0
+  gal: ^2.3.2
   
 dev_dependencies:
   flutter_test:

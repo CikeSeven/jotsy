@@ -1361,4 +1361,32 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get webDavErrorUnknown => '发生未知错误，请稍后重试';
+
+  @override
+  String get imageViewerSaveToGallery => '保存到相册';
+
+  @override
+  String get imageViewerSaving => '正在保存…';
+
+  @override
+  String get imageViewerSaveSuccess => '已保存到相册';
+
+  @override
+  String imageViewerSaveFailed(String error) {
+    return '保存失败：$error';
+  }
+
+  @override
+  String get imageViewerGalleryPermissionDenied => '未获得相册权限，无法保存';
+
+  @override
+  String get imageViewerSharing => '正在准备分享…';
+
+  @override
+  String imageViewerShareFailed(String error) {
+    return '分享失败：$error';
+  }
+
+  @override
+  String get imageViewerDownloadFailed => '图片下载失败，请检查网络后重试';
 }

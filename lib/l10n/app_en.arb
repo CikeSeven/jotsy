@@ -1929,5 +1929,47 @@
   "webDavErrorUnknown": "Unknown error. Please try again later",
   "@webDavErrorUnknown": {
     "description": "Localized WebDAV unknown error detail."
+  },
+  "imageViewerSaveToGallery": "Save to gallery",
+  "@imageViewerSaveToGallery": {
+    "description": "Semantic label for the save-to-gallery action in the image viewer top bar."
+  },
+  "imageViewerSaving": "Saving…",
+  "@imageViewerSaving": {
+    "description": "Loading hint while saving an image to the gallery."
+  },
+  "imageViewerSaveSuccess": "Saved to gallery",
+  "@imageViewerSaveSuccess": {
+    "description": "Hint shown after an image is saved to the gallery."
+  },
+  "imageViewerSaveFailed": "Save failed: {error}",
+  "@imageViewerSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "description": "Hint shown when saving an image fails; error is the failure reason."
+  },
+  "imageViewerGalleryPermissionDenied": "Gallery permission denied, cannot save",
+  "@imageViewerGalleryPermissionDenied": {
+    "description": "Hint shown when gallery write permission is denied."
+  },
+  "imageViewerSharing": "Preparing to share…",
+  "@imageViewerSharing": {
+    "description": "Loading hint while preparing to share an image."
+  },
+  "imageViewerShareFailed": "Share failed: {error}",
+  "@imageViewerShareFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "description": "Hint shown when sharing an image fails; error is the failure reason."
+  },
+  "imageViewerDownloadFailed": "Failed to download image, please check your network and retry",
+  "@imageViewerDownloadFailed": {
+    "description": "Hint shown when downloading a remote image fails."
   }
 }

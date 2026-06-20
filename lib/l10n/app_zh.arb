@@ -1929,5 +1929,47 @@
   "webDavErrorUnknown": "发生未知错误，请稍后重试",
   "@webDavErrorUnknown": {
     "description": "WebDAV 未知错误的本地化错误说明。"
+  },
+  "imageViewerSaveToGallery": "保存到相册",
+  "@imageViewerSaveToGallery": {
+    "description": "图片查看器顶栏“保存到相册”按钮的语义标签。"
+  },
+  "imageViewerSaving": "正在保存…",
+  "@imageViewerSaving": {
+    "description": "图片保存到相册进行中的加载提示。"
+  },
+  "imageViewerSaveSuccess": "已保存到相册",
+  "@imageViewerSaveSuccess": {
+    "description": "图片成功保存到相册后的提示。"
+  },
+  "imageViewerSaveFailed": "保存失败：{error}",
+  "@imageViewerSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "description": "图片保存到相册失败的提示，error 为失败原因。"
+  },
+  "imageViewerGalleryPermissionDenied": "未获得相册权限，无法保存",
+  "@imageViewerGalleryPermissionDenied": {
+    "description": "相册写入权限被拒绝时的提示。"
+  },
+  "imageViewerSharing": "正在准备分享…",
+  "@imageViewerSharing": {
+    "description": "图片分享准备过程中的加载提示。"
+  },
+  "imageViewerShareFailed": "分享失败：{error}",
+  "@imageViewerShareFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "description": "图片分享失败的提示，error 为失败原因。"
+  },
+  "imageViewerDownloadFailed": "图片下载失败，请检查网络后重试",
+  "@imageViewerDownloadFailed": {
+    "description": "网络图片下载失败时的提示。"
   }
 }

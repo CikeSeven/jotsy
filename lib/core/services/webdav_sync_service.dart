@@ -124,12 +124,7 @@ class WebDavSyncService {
   }) async {
     final zipFile = await downloadBackup(entry);
     try {
-      await DataArchiveService.importFromZip(
-        database: _database,
-        settingsService: _settingsService,
-        zipPath: zipFile.path,
-        zipPassword: zipPassword,
-      );
+      await restoreFromLocalBackup(zipFile: zipFile, zipPassword: zipPassword);
     } finally {
       if (await zipFile.exists()) {
         await zipFile.delete();
@@ -137,15 +132,36 @@ class WebDavSyncService {
     }
   }
 
+  /// 基于已下载到本地的备份 ZIP 执行恢复，不再触发远程下载。
+  ///
+  /// 调用方负责该临时文件的生命周期（删除）；用于「下载一次 → 判断是否加密
+  /// → 必要时输入密码 → 恢复」流程，避免对同一备份重复下载。
+  Future<void> restoreFromLocalBackup({
+    required File zipFile,
+    String? zipPassword,
+  }) async {
+    await DataArchiveService.importFromZip(
+      database: _database,
+      settingsService: _settingsService,
+      zipPath: zipFile.path,
+      zipPassword: zipPassword,
+    );
+  }
+
   Future<bool> isRemoteBackupPasswordProtected(WebDavBackupEntry entry) async {
     final zipFile = await downloadBackup(entry);
     try {
-      return DataArchiveService.isZipPasswordProtected(zipPath: zipFile.path);
+      return await isLocalBackupPasswordProtected(zipFile);
     } finally {
       if (await zipFile.exists()) {
         await zipFile.delete();
       }
     }
+  }
+
+  /// 判断本地已下载的备份 ZIP 是否加密，避免与恢复流程重复下载。
+  Future<bool> isLocalBackupPasswordProtected(File zipFile) {
+    return DataArchiveService.isZipPasswordProtected(zipPath: zipFile.path);
   }
 
   Future<void> deleteRemoteBackup(WebDavBackupEntry entry) async {

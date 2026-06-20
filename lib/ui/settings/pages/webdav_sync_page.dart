@@ -114,22 +114,34 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
     String? password;
     await _runBusy(l10n.webDavBusyRestore, () async {
       final service = await ref.read(webDavSyncServiceProvider.future);
-      final passwordProtected = await service.isRemoteBackupPasswordProtected(
-        entry,
-      );
-      if (!mounted) {
-        return;
-      }
-      if (passwordProtected) {
-        _setBusy(false, '');
-        password = await _showBackupPasswordDialog(requiredPassword: true);
-        if (!mounted || password == null) {
+      // 仅下载一次：先取到本地，再判断是否加密、按需输入密码并恢复，
+      // 避免「判断加密」与「恢复」对同一备份重复下载整包。
+      final zipFile = await service.downloadBackup(entry);
+      try {
+        final passwordProtected = await service.isLocalBackupPasswordProtected(
+          zipFile,
+        );
+        if (!mounted) {
           return;
         }
-        _setBusy(true, l10n.webDavBusyRestore);
+        if (passwordProtected) {
+          _setBusy(false, '');
+          password = await _showBackupPasswordDialog(requiredPassword: true);
+          if (!mounted || password == null) {
+            return;
+          }
+          _setBusy(true, l10n.webDavBusyRestore);
+        }
+        await service.restoreFromLocalBackup(
+          zipFile: zipFile,
+          zipPassword: password,
+        );
+        _showSnack(l10n.webDavRestoreSuccess);
+      } finally {
+        if (await zipFile.exists()) {
+          await zipFile.delete();
+        }
       }
-      await service.restoreBackup(entry: entry, zipPassword: password);
-      _showSnack(l10n.webDavRestoreSuccess);
     });
   }
 

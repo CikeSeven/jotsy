@@ -17,13 +17,21 @@ class WebDavClient {
     required WebDavConfig config,
     HttpClient Function()? clientFactory,
     Duration timeout = const Duration(seconds: 30),
+    Duration idleTimeout = const Duration(seconds: 120),
   }) : _config = config.validate(),
        _clientFactory = clientFactory ?? HttpClient.new,
-       _timeout = timeout;
+       _timeout = timeout,
+       _idleTimeout = idleTimeout;
 
   final WebDavConfig _config;
   final HttpClient Function() _clientFactory;
+
+  /// 建连/首响应等控制类请求的整体超时。
   final Duration _timeout;
+
+  /// 大文件传输阶段的「无数据流动」空闲超时；按数据块间隔计时，
+  /// 而非整包传输总耗时，避免慢网络下大备份被 [_timeout] 误杀。
+  final Duration _idleTimeout;
 
   Future<void> ensureDirectory(String remoteDirectory) async {
     final normalized = WebDavConfig.normalizeRemoteDirectory(remoteDirectory);
@@ -72,8 +80,9 @@ class WebDavClient {
       final request = await client.openUrl('PUT', uri).timeout(_timeout);
       _applyHeaders(request);
       request.contentLength = await file.length();
-      await request.addStream(file.openRead()).timeout(_timeout);
-      final response = await request.close().timeout(_timeout);
+      // 传输阶段按数据块间隔判定空闲，慢网络下的大备份不会被建连超时误杀。
+      await request.addStream(file.openRead().timeout(_idleTimeout));
+      final response = await request.close().timeout(_idleTimeout);
       await _ensureStatus(response, uri, const <int>{
         HttpStatus.ok,
         HttpStatus.created,
@@ -139,7 +148,8 @@ class WebDavClient {
     await targetFile.parent.create(recursive: true);
     final sink = targetFile.openWrite();
     try {
-      await response.pipe(sink).timeout(_timeout);
+      // 同样按数据块间隔判定空闲，避免大备份下载被整体超时打断。
+      await response.timeout(_idleTimeout).pipe(sink);
     } catch (error) {
       await sink.close();
       if (await targetFile.exists()) {

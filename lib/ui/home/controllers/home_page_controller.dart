@@ -31,22 +31,42 @@ class _HomePageController {
   }
 
   /// 响应底部导航点击并执行页面切换动画。
-  void onTap(int index) {
-    if (index == _state._currentIndex) {
-      return;
-    }
-    pageController.animateToPage(
-      index,
-      duration: _pageSwitchDuration,
-      curve: pageSwitchCurve,
-    );
+  Future<void> onTap(int index) {
+    return _switchToTab(index, allowDuringSwitch: false);
   }
 
-  /// 系统返回键回退到日记首页 tab。
+  /// 统一维护目标态、重复点击拦截与动画结束校正。
   ///
-  /// 只在当前不处于日记页时调用，动画与底部导航点击保持一致。
-  void switchToDiariesTab() {
-    onTap(0);
+  /// 底部导航点击不允许打断正在进行的切页，避免多段动画竞争；系统返回
+  /// 则允许回到日记页，因为 PopScope 已经基于目标态拦截了本次退出。
+  Future<void> _switchToTab(
+    int index, {
+    required bool allowDuringSwitch,
+  }) async {
+    if (_state._isTabSwitching && !allowDuringSwitch) {
+      return;
+    }
+    if (index == _state._targetIndex) {
+      return;
+    }
+    if (!_state._isValidTabIndex(index) || !pageController.hasClients) {
+      return;
+    }
+
+    final generation = _state._beginTabSwitch(index);
+    try {
+      await pageController.animateToPage(
+        index,
+        duration: _pageSwitchDuration,
+        curve: pageSwitchCurve,
+      );
+    } finally {
+      _state._settleTabSwitch(index, generation);
+    }
+  }
+
+  Future<void> switchToDiariesTab() {
+    return _switchToTab(0, allowDuringSwitch: true);
   }
 
   /// 若存在启动提示并且尚未展示，则在首帧后展示一次。

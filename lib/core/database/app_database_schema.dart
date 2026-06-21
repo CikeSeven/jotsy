@@ -97,12 +97,44 @@ class DiaryTags extends Table {
   Set<Column<Object>> get primaryKey => <Column<Object>>{diaryId, tagId};
 }
 
+/// 日记列表查询排序模式。
+///
+/// 放在数据库层是为了让首页/搜索的分页查询能直接在 SQL 中排序，
+/// 避免先加载全量结果再在 UI 层截断造成首屏卡顿。
+enum DiaryQuerySortMode { updatedDesc, updatedAsc, titleAsc }
+
 /// 业务聚合模型：日记 + 其标签列表。
 class DiaryWithTags {
   const DiaryWithTags({required this.diary, required this.tags});
 
   final Diary diary;
   final List<Tag> tags;
+}
+
+/// 探索页轻量日记概览。
+///
+/// 相比 [DiaryWithTags] 不携带富文本 Delta `content`，只保留探索页统计、
+/// 趋势、标签云与回顾卡片所需字段，避免切入探索页时解析/传输大正文。
+class ExploreDiaryOverview {
+  const ExploreDiaryOverview({
+    required this.diaryId,
+    required this.title,
+    required this.contentText,
+    required this.metadata,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.tags,
+    this.cover,
+  });
+
+  final String diaryId;
+  final String title;
+  final String contentText;
+  final String metadata;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final List<Tag> tags;
+  final String? cover;
 }
 
 /// 日历月份打点聚合模型（轻量版）。

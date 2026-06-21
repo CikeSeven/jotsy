@@ -52,6 +52,42 @@ ORDER BY d.is_pinned DESC, d.updated_at DESC
     ).watch().map(_mapDiaryWithTagsRows);
   }
 
+  /// 监听探索页轻量概览数据。
+  ///
+  /// 只读取统计与卡片展示需要的字段，刻意避开富文本 Delta `content`，
+  /// 让探索页切入/刷新时不再被全量正文传输和正文图片解析拖慢。
+  Stream<List<ExploreDiaryOverview>> watchExploreDiaryOverviews() {
+    return customSelect(
+      '''
+SELECT
+  d.diary_id,
+  d.title,
+  d.content_text,
+  d.cover,
+  d.metadata,
+  d.created_at,
+  d.updated_at,
+  COALESCE(
+    json_group_array(
+      CASE
+        WHEN t.id IS NOT NULL THEN json_object('id', t.id, 'name', t.name, 'color', t.color)
+      END
+    ),
+    '[]'
+  ) AS tags_json
+FROM diaries d
+LEFT JOIN diary_tags dt ON dt.diary_id = d.id
+LEFT JOIN tags t ON t.id = dt.tag_id
+WHERE d.is_deleted = 0
+  AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)
+GROUP BY d.id
+ORDER BY d.updated_at DESC, d.id DESC
+''',
+      variables: <Variable<Object>>[Variable<DateTime>(DateTime.now())],
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map(_mapExploreOverviewRows);
+  }
+
   /// 分页读取“未删除日记”候选集（含归档）。
   ///
   /// 用于探索页媒体画廊按批提取图片来源，避免一次性加载全量日记导致
@@ -79,18 +115,20 @@ ORDER BY d.is_pinned DESC, d.updated_at DESC
   /// 监听日记列表（支持关键词 + 标签 AND 过滤）。
   ///
   /// 查询说明：
-  /// 1. 默认仅返回未软删除记录；
+  /// 1. 默认仅返回未软删除、未归档记录；
   /// 2. 关键词匹配 `title` 与 `content_text`；
   /// 3. 多标签过滤采用 AND 语义；
-  /// 4. 通过 SQL 聚合一次性带回标签，减少 N+1 查询。
+  /// 4. [limit]/[offset] 直接下推到 SQL，避免首页/搜索先拉全量再本地截断。
   Stream<List<DiaryWithTags>> watchDiaries({
     String keyword = '',
     List<int> requiredTagIds = const <int>[],
+    int? limit,
+    int offset = 0,
+    DiaryQuerySortMode sortMode = DiaryQuerySortMode.updatedDesc,
   }) {
     final normalizedKeyword = keyword.trim();
-    final likePattern = '%$normalizedKeyword%';
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
-
+    final variables = <Variable<Object>>[];
     final sql = StringBuffer('''
 SELECT
   d.id,
@@ -120,6 +158,44 @@ SELECT
 FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
+''');
+
+    _writeActiveDiaryFilter(
+      sql,
+      variables,
+      normalizedKeyword: normalizedKeyword,
+      normalizedTagIds: normalizedTagIds,
+    );
+
+    sql.write('''
+GROUP BY d.id
+${_diaryOrderBySql(sortMode)}
+''');
+
+    if (limit != null) {
+      final normalizedLimit = limit < 0 ? 0 : limit;
+      final normalizedOffset = offset < 0 ? 0 : offset;
+      sql.write('LIMIT ? OFFSET ?\n');
+      variables
+        ..add(Variable<int>(normalizedLimit))
+        ..add(Variable<int>(normalizedOffset));
+    }
+
+    return customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map(_mapDiaryWithTagsRows);
+  }
+
+  void _writeActiveDiaryFilter(
+    StringBuffer sql,
+    List<Variable<Object>> variables, {
+    required String normalizedKeyword,
+    required List<int> normalizedTagIds,
+  }) {
+    final likePattern = '%$normalizedKeyword%';
+    sql.write('''
 WHERE d.is_deleted = 0
   AND d.is_archived = 0
   AND (
@@ -128,20 +204,21 @@ WHERE d.is_deleted = 0
     OR ((d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?) AND d.content_text LIKE ?)
   )
 ''');
+    variables
+      ..add(Variable<String>(normalizedKeyword))
+      ..add(Variable<String>(likePattern))
+      ..add(Variable<DateTime>(DateTime.now()))
+      ..add(Variable<String>(likePattern));
 
-    final variables = <Variable<Object>>[
-      Variable<String>(normalizedKeyword),
-      Variable<String>(likePattern),
-      Variable<DateTime>(DateTime.now()),
-      Variable<String>(likePattern),
-    ];
+    if (normalizedTagIds.isEmpty) {
+      return;
+    }
 
-    if (normalizedTagIds.isNotEmpty) {
-      final placeholders = List<String>.filled(
-        normalizedTagIds.length,
-        '?',
-      ).join(', ');
-      sql.write('''
+    final placeholders = List<String>.filled(
+      normalizedTagIds.length,
+      '?',
+    ).join(', ');
+    sql.write('''
   AND d.id IN (
     SELECT dt2.diary_id
     FROM diary_tags dt2
@@ -150,22 +227,21 @@ WHERE d.is_deleted = 0
     HAVING COUNT(DISTINCT dt2.tag_id) = ?
   )
 ''');
-      variables.addAll(
-        normalizedTagIds.map<Variable<Object>>((int id) => Variable<int>(id)),
-      );
-      variables.add(Variable<int>(normalizedTagIds.length));
-    }
+    variables.addAll(
+      normalizedTagIds.map<Variable<Object>>((int id) => Variable<int>(id)),
+    );
+    variables.add(Variable<int>(normalizedTagIds.length));
+  }
 
-    sql.write('''
-GROUP BY d.id
-ORDER BY d.is_pinned DESC, d.updated_at DESC
-''');
-
-    return customSelect(
-      sql.toString(),
-      variables: variables,
-      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
-    ).watch().map(_mapDiaryWithTagsRows);
+  String _diaryOrderBySql(DiaryQuerySortMode sortMode) {
+    return switch (sortMode) {
+      DiaryQuerySortMode.updatedAsc =>
+        'ORDER BY d.is_pinned DESC, d.updated_at ASC, d.id ASC',
+      DiaryQuerySortMode.titleAsc =>
+        'ORDER BY d.is_pinned DESC, LOWER(d.title) ASC, d.updated_at DESC, d.id DESC',
+      DiaryQuerySortMode.updatedDesc =>
+        'ORDER BY d.is_pinned DESC, d.updated_at DESC, d.id DESC',
+    };
   }
 
   /// 监听已归档日记列表（仅归档且未删除）。
@@ -370,6 +446,24 @@ ORDER BY updated_at DESC
         .map((row) {
           return DiaryWithTags(
             diary: _mapDiaryFromRow(row),
+            tags: _parseTagsJson(row.read<String>('tags_json')),
+          );
+        })
+        .toList(growable: false);
+  }
+
+  /// 映射探索页轻量概览行。
+  List<ExploreDiaryOverview> _mapExploreOverviewRows(List<QueryRow> rows) {
+    return rows
+        .map((row) {
+          return ExploreDiaryOverview(
+            diaryId: row.read<String>('diary_id'),
+            title: row.read<String>('title'),
+            contentText: row.read<String>('content_text'),
+            cover: row.readNullable<String>('cover'),
+            metadata: row.read<String>('metadata'),
+            createdAt: _readDateTime(row, 'created_at'),
+            updatedAt: _readDateTime(row, 'updated_at'),
             tags: _parseTagsJson(row.read<String>('tags_json')),
           );
         })

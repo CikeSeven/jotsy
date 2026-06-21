@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -103,7 +102,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   double _fabScrollDeltaAccumulator = 0;
   int _listLayoutEpoch = 0;
   int _visibleDiaryLimit = _diaryPageSize;
-  int _lastPageableCount = 0;
+  bool _hasMoreDiaries = false;
   String _pagingSignature = '';
   bool _isPagingCooldown = false;
   Timer? _pagingCooldownTimer;
@@ -178,7 +177,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final settingsAsync = ref.watch(settingsServiceProvider);
     final filterState = ref.watch(diaryFilterProvider);
     final tagsAsync = ref.watch(tagListProvider);
-    final diariesAsync = ref.watch(filteredDiariesProvider);
     final listBottomOffset = _listBottomExtraSpace;
 
     return settingsAsync.when(
@@ -191,10 +189,22 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           ),
       data: (settingsService) {
         _controller.loadViewPreferencesIfNeeded(settingsService);
+        final currentPagingSignature = _buildPagingSignature(filterState);
+        _syncPagingStateWithFilterSignature(currentPagingSignature);
+        final diaryPageQuery = DiaryPageQuery(
+          keyword: filterState.keyword.trim(),
+          requiredTagIds: filterState.selectedTagIds.toList()..sort(),
+          limit: _visibleDiaryLimit,
+          sortMode: _toQuerySortMode(_sortMode),
+        );
+        final diariesAsync = ref.watch(pagedDiariesProvider(diaryPageQuery));
+        final latestPage = diariesAsync.asData?.value;
         final latestVisibleItems =
-            diariesAsync.asData != null
-                ? _resolveVisibleItems(diariesAsync.asData!.value)
-                : null;
+            latestPage == null ? null : _resolveVisibleItems(latestPage.items);
+
+        if (latestPage != null) {
+          _hasMoreDiaries = latestPage.hasMore;
+        }
 
         if (latestVisibleItems != null &&
             !identical(latestVisibleItems, _lastSyncedVisibleItemsRef)) {
@@ -206,13 +216,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         final shouldUnpinSelected = _controller.areAllSelectedPinned(
           displayedItems,
         );
-        final currentPagingSignature = _buildPagingSignature(filterState);
-        _syncPagingStateWithFilterSignature(currentPagingSignature);
-        final pagedDisplayedItems =
-            displayedItems.take(_visibleDiaryLimit).toList();
-        _lastPageableCount = displayedItems.length;
-        final hasMoreDiaries =
-            pagedDisplayedItems.length < displayedItems.length;
+        final hasMoreDiaries = _hasMoreDiaries;
 
         return Scaffold(
           backgroundColor: widget.pageBackgroundColor,
@@ -405,7 +409,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         key: ValueKey<String>(
                                           'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
                                         ),
-                                        diaries: pagedDisplayedItems,
+                                        diaries: displayedItems,
                                         layoutMode: _layoutMode,
                                         isSelectionMode: _isSelectionMode,
                                         selectedDiaryIds: _selectedDiaryIds,
@@ -579,7 +583,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   String _buildPagingSignature(DiaryFilterState filterState) {
     final normalizedKeyword = filterState.keyword.trim();
     final sortedTagIds = filterState.selectedTagIds.toList()..sort();
-    return '$normalizedKeyword|${sortedTagIds.join(",")}';
+    return '$normalizedKeyword|${sortedTagIds.join(",")}|${_sortMode.name}';
+  }
+
+  DiaryQuerySortMode _toQuerySortMode(DiarySortMode sortMode) {
+    return switch (sortMode) {
+      DiarySortMode.updatedAsc => DiaryQuerySortMode.updatedAsc,
+      DiarySortMode.titleAsc => DiaryQuerySortMode.titleAsc,
+      DiarySortMode.updatedDesc => DiaryQuerySortMode.updatedDesc,
+    };
   }
 
   /// 同步分页状态与筛选条件。
@@ -590,6 +602,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return;
     }
     _pagingSignature = signature;
+    _hasMoreDiaries = false;
     _visibleDiaryLimit = _diaryPageSize;
     _isPagingCooldown = false;
     _pagingCooldownTimer?.cancel();
@@ -598,16 +611,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   /// 请求加载下一批日记（每次 +20）。
   ///
-  /// 这里使用一个短冷却窗口，避免滚动通知高频触发导致瞬间连续追加多页。
+  /// 数据库查询会随 [_visibleDiaryLimit] 变化重新带 `LIMIT` 拉取窗口，
+  /// 因此这里不再依赖全量结果数量，只根据 provider 返回的 hasMore 推进。
   void _requestLoadMoreDiaries() {
-    if (_isPagingCooldown || _visibleDiaryLimit >= _lastPageableCount) {
+    if (_isPagingCooldown || !_hasMoreDiaries) {
       return;
     }
     setState(() {
-      _visibleDiaryLimit = math.min(
-        _visibleDiaryLimit + _diaryPageSize,
-        _lastPageableCount,
-      );
+      _visibleDiaryLimit += _diaryPageSize;
       _isPagingCooldown = true;
     });
     _pagingCooldownTimer?.cancel();

@@ -16,6 +16,17 @@ class LocationResolverService {
   final String webApiKey;
 
   static const Duration _networkTimeout = Duration(seconds: 10);
+  static const Duration _resolvedLocationCacheTtl = Duration(minutes: 2);
+  static const Duration _lastKnownPositionMaxAge = Duration(minutes: 5);
+  static const double _sameLocationThresholdDegrees = 0.001;
+
+  static final Map<String, _ResolvedLocationCacheEntry> _resolvedLocationCache =
+      <String, _ResolvedLocationCacheEntry>{};
+
+  @visibleForTesting
+  static void debugClearCache() {
+    _resolvedLocationCache.clear();
+  }
 
   Future<ResolvedLocation> resolveCurrentLocation() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
@@ -59,26 +70,58 @@ class LocationResolverService {
       );
     }
 
-    final position = await _getCurrentPosition();
+    final cacheKey = webApiKey.trim();
+    final cached = _resolvedLocationCache[cacheKey];
+    if (cached != null && !cached.isExpired) {
+      return cached.location;
+    }
+    if (cached != null) {
+      _resolvedLocationCache.remove(cacheKey);
+    }
+
+    final position = await _getCurrentPosition(cached?.location);
+    if (cached != null &&
+        _isSameLocation(position, cached.location) &&
+        !cached.isPositionTooOldForReuse) {
+      _resolvedLocationCache[cacheKey] = _ResolvedLocationCacheEntry(
+        location: cached.location,
+        expiresAt: DateTime.now().add(_resolvedLocationCacheTtl),
+      );
+      return cached.location;
+    }
+
     final regeo = await _reverseGeocode(
       latitude: position.latitude,
       longitude: position.longitude,
     );
 
-    return ResolvedLocation(
+    final resolved = ResolvedLocation(
       latitude: position.latitude,
       longitude: position.longitude,
       township: regeo.township,
       formattedAddress: regeo.formattedAddress,
       addressComponent: regeo.addressComponent,
     );
+    _resolvedLocationCache[cacheKey] = _ResolvedLocationCacheEntry(
+      location: resolved,
+      expiresAt: DateTime.now().add(_resolvedLocationCacheTtl),
+    );
+    return resolved;
   }
 
-  Future<Position> _getCurrentPosition() async {
+  Future<Position> _getCurrentPosition(
+    ResolvedLocation? previousLocation,
+  ) async {
     try {
+      final lastKnown = await _getLastKnownPositionOrNull();
+      if (_canReuseLastKnownPosition(lastKnown, previousLocation)) {
+        return lastKnown!;
+      }
+
       return await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 8),
         ),
       );
     } catch (error) {
@@ -90,15 +133,54 @@ class LocationResolverService {
     }
   }
 
+  Future<Position?> _getLastKnownPositionOrNull() async {
+    try {
+      return await Geolocator.getLastKnownPosition();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  bool _canReuseLastKnownPosition(
+    Position? position,
+    ResolvedLocation? previousLocation,
+  ) {
+    if (position == null) {
+      return false;
+    }
+
+    if (DateTime.now().difference(position.timestamp).abs() >
+        _lastKnownPositionMaxAge) {
+      return false;
+    }
+
+    if (previousLocation == null) {
+      return true;
+    }
+
+    return _isSameLocation(position, previousLocation);
+  }
+
+  bool _isSameLocation(Position position, ResolvedLocation location) {
+    return (position.latitude - location.latitude).abs() <=
+            _sameLocationThresholdDegrees &&
+        (position.longitude - location.longitude).abs() <=
+            _sameLocationThresholdDegrees;
+  }
+
   Future<_ReverseGeocodeResult> _reverseGeocode({
     required double latitude,
     required double longitude,
   }) async {
-    final uri = Uri.https('restapi.amap.com', '/v3/geocode/regeo', <String, String>{
-      'key': webApiKey,
-      'location': '$longitude,$latitude',
-      'extensions': 'base',
-    });
+    final uri = Uri.https(
+      'restapi.amap.com',
+      '/v3/geocode/regeo',
+      <String, String>{
+        'key': webApiKey,
+        'location': '$longitude,$latitude',
+        'extensions': 'base',
+      },
+    );
 
     final client = HttpClient();
     try {
@@ -126,7 +208,10 @@ class LocationResolverService {
         final info = decoded['info']?.toString();
         throw LocationResolveException(
           type: LocationResolveErrorType.apiError,
-          message: info == null || info.trim().isEmpty ? '高德地址解析失败' : '高德地址解析失败：$info',
+          message:
+              info == null || info.trim().isEmpty
+                  ? '高德地址解析失败'
+                  : '高德地址解析失败：$info',
         );
       }
 
@@ -155,7 +240,9 @@ class LocationResolverService {
       }
 
       final township = _normalizeOptionalText(addressComponent['township']);
-      final formattedAddress = _normalizeOptionalText(regeo['formatted_address']);
+      final formattedAddress = _normalizeOptionalText(
+        regeo['formatted_address'],
+      );
 
       return _ReverseGeocodeResult(
         township: township,
@@ -236,4 +323,23 @@ class _ReverseGeocodeResult {
   final String? township;
   final String? formattedAddress;
   final Map<String, Object?> addressComponent;
+}
+
+class _ResolvedLocationCacheEntry {
+  const _ResolvedLocationCacheEntry({
+    required this.location,
+    required this.expiresAt,
+  });
+
+  final ResolvedLocation location;
+  final DateTime expiresAt;
+
+  bool get isExpired => !DateTime.now().isBefore(expiresAt);
+
+  bool get isPositionTooOldForReuse {
+    final age = DateTime.now().difference(
+      expiresAt.subtract(LocationResolverService._resolvedLocationCacheTtl),
+    );
+    return age > LocationResolverService._lastKnownPositionMaxAge;
+  }
 }

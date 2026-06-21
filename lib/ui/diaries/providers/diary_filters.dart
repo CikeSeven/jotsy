@@ -21,6 +21,60 @@ class DiaryFilterState {
   }
 }
 
+/// 已分页的日记查询结果。
+class PagedDiariesResult {
+  const PagedDiariesResult({
+    required this.items,
+    required this.limit,
+    required this.hasMore,
+  });
+
+  final List<DiaryWithTags> items;
+  final int limit;
+  final bool hasMore;
+}
+
+/// 日记列表分页查询参数。
+class DiaryPageQuery {
+  const DiaryPageQuery({
+    required this.keyword,
+    required this.requiredTagIds,
+    required this.limit,
+    required this.sortMode,
+  });
+
+  final String keyword;
+  final List<int> requiredTagIds;
+  final int limit;
+  final DiaryQuerySortMode sortMode;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! DiaryPageQuery) {
+      return false;
+    }
+    if (keyword != other.keyword ||
+        limit != other.limit ||
+        sortMode != other.sortMode ||
+        requiredTagIds.length != other.requiredTagIds.length) {
+      return false;
+    }
+    for (var index = 0; index < requiredTagIds.length; index += 1) {
+      if (requiredTagIds[index] != other.requiredTagIds[index]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(keyword, limit, sortMode, Object.hashAll(requiredTagIds));
+}
+
 /// 日记筛选状态控制器。
 ///
 /// 负责维护筛选条件，并向列表查询 provider 提供统一输入。
@@ -61,14 +115,44 @@ final diaryFilterProvider =
       DiaryFilterNotifier.new,
     );
 
-/// 日记列表流 provider。
+/// 日记列表分页流 provider。
 ///
-/// 基于当前筛选状态实时监听数据库结果。
+/// 列表页只订阅当前可见窗口大小，数据库层通过 `LIMIT` 直接返回窗口内数据，
+/// 不再把全量命中结果交给 UI 层 `take()` 截断。
+final pagedDiariesProvider = StreamProvider.family<
+  PagedDiariesResult,
+  DiaryPageQuery
+>((Ref ref, DiaryPageQuery query) {
+  final db = ref.watch(appDatabaseProvider);
+  final fetchLimit = query.limit + 1;
+  return db
+      .watchDiaries(
+        keyword: query.keyword,
+        requiredTagIds: query.requiredTagIds,
+        limit: fetchLimit,
+        sortMode: query.sortMode,
+      )
+      .map((items) {
+        final hasMore = items.length > query.limit;
+        return PagedDiariesResult(
+          items:
+              hasMore ? items.take(query.limit).toList(growable: false) : items,
+          limit: query.limit,
+          hasMore: hasMore,
+        );
+      });
+});
+
+/// 启动预热仍只取首页窗口，避免恢复旧的全量启动查询。
 final filteredDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
   final db = ref.watch(appDatabaseProvider);
   final filter = ref.watch(diaryFilterProvider);
   final tagIds = filter.selectedTagIds.toList()..sort();
-  return db.watchDiaries(keyword: filter.keyword, requiredTagIds: tagIds);
+  return db.watchDiaries(
+    keyword: filter.keyword,
+    requiredTagIds: tagIds,
+    limit: 20,
+  );
 });
 
 /// 搜索页查询参数。
@@ -101,7 +185,8 @@ class SearchDiaryQuery {
     if (other is! SearchDiaryQuery) {
       return false;
     }
-    if (keyword != other.keyword || requiredTagIds.length != other.requiredTagIds.length) {
+    if (keyword != other.keyword ||
+        requiredTagIds.length != other.requiredTagIds.length) {
       return false;
     }
     for (var index = 0; index < requiredTagIds.length; index += 1) {
@@ -121,13 +206,26 @@ class SearchDiaryQuery {
 /// 设计目的：
 /// - 与主页 `diaryFilterProvider` 解耦，避免搜索页对主页筛选状态产生副作用；
 /// - 支持搜索页内部以局部状态驱动联合查询。
-final searchDiariesProvider = StreamProvider.family<List<DiaryWithTags>, SearchDiaryQuery>((
-  Ref ref,
-  SearchDiaryQuery query,
-) {
+final searchDiariesProvider = StreamProvider.family<
+  PagedDiariesResult,
+  DiaryPageQuery
+>((Ref ref, DiaryPageQuery query) {
   final db = ref.watch(appDatabaseProvider);
-  return db.watchDiaries(
-    keyword: query.keyword,
-    requiredTagIds: query.requiredTagIds,
-  );
+  final fetchLimit = query.limit + 1;
+  return db
+      .watchDiaries(
+        keyword: query.keyword,
+        requiredTagIds: query.requiredTagIds,
+        limit: fetchLimit,
+        sortMode: query.sortMode,
+      )
+      .map((items) {
+        final hasMore = items.length > query.limit;
+        return PagedDiariesResult(
+          items:
+              hasMore ? items.take(query.limit).toList(growable: false) : items,
+          limit: query.limit,
+          hasMore: hasMore,
+        );
+      });
 });

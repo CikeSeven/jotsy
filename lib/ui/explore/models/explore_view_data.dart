@@ -1,5 +1,3 @@
-import '../../../core/database/app_database.dart';
-
 /// 探索页聚合后的只读视图模型。
 ///
 /// 作用：
@@ -28,13 +26,22 @@ class ExploreViewData {
 
 /// “那年今日”轮播项。
 ///
-/// - `diary`：当前需要展示的历史日记；
-/// - `timeLabel`：统一在控制器侧计算好的时间标签，避免 UI 重复拼接。
+/// 回忆卡只需要轻量字段，不再持有完整 `DiaryWithTags`，避免探索页为了
+/// 卡片摘要和图片预览加载富文本 Delta 正文。
 class ExploreOnThisDayItem {
-  const ExploreOnThisDayItem({required this.diary, required this.timeLabel});
+  const ExploreOnThisDayItem({
+    required this.diaryId,
+    required this.title,
+    required this.summaryText,
+    required this.timeLabel,
+    this.mediaSource,
+  });
 
-  final DiaryWithTags diary;
+  final String diaryId;
+  final String title;
+  final String summaryText;
   final String timeLabel;
+  final String? mediaSource;
 }
 
 /// 顶部轻量看板数据。

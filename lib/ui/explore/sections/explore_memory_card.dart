@@ -157,13 +157,11 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
 
   Widget _buildMemoryItemCard(BuildContext context, ExploreOnThisDayItem item) {
     final colorScheme = Theme.of(context).colorScheme;
-    final diary = item.diary.diary;
-    final mediaSource = widget.controller.contentExtractor.resolveMediaSource(
-      diary,
-    );
+    final title = item.title.trim();
+    final mediaSource = item.mediaSource;
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () => widget.onOpenDiary(diary.diaryId),
+      onTap: () => widget.onOpenDiary(item.diaryId),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(12),
@@ -187,9 +185,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    diary.title.trim().isEmpty
-                        ? context.l10n.autoT0065
-                        : diary.title.trim(),
+                    title.isEmpty ? context.l10n.autoT0065 : title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -198,10 +194,7 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    widget.controller.contentExtractor.summaryText(
-                      diary,
-                      emptyFallback: context.l10n.autoT0186,
-                    ),
+                    item.summaryText,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(

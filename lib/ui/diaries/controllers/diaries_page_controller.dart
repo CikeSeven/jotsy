@@ -83,12 +83,12 @@ class DiariesPageController {
   ///
   /// 使用淡入覆盖式路由，弱化“页面跳转”感，保持同场景搜索体验。
   void openSearchPage() {
-    final selectedTagIds = <int>{..._state.ref.read(diaryFilterProvider).selectedTagIds};
-    Navigator.of(_state.context).push(
-      DiarySearchPage.buildRoute(
-        initialTagIds: selectedTagIds,
-      ),
-    );
+    final selectedTagIds = <int>{
+      ..._state.ref.read(diaryFilterProvider).selectedTagIds,
+    };
+    Navigator.of(
+      _state.context,
+    ).push(DiarySearchPage.buildRoute(initialTagIds: selectedTagIds));
   }
 
   /// 切换标签筛选。实际写入动作会通过过渡协调器排队，确保列表过渡连续。
@@ -111,10 +111,7 @@ class DiariesPageController {
   /// 打开编辑页（新建或编辑）。
   ///
   /// 返回后会触发一次列表刷新，确保编辑后的内容及时反映到首页。
-  void openEditor({
-    String? diaryId,
-    bool restoreCreateDraft = true,
-  }) {
+  void openEditor({String? diaryId, bool restoreCreateDraft = true}) {
     unawaited(
       Navigator.of(_state.context)
           .push(
@@ -177,16 +174,12 @@ class DiariesPageController {
                 if (!_state.mounted) {
                   return;
                 }
-                await feedback.showInfoSnackBar(
-                  l10n.autoT0076,
-                );
+                await feedback.showInfoSnackBar(l10n.autoT0076);
               } catch (_) {
                 if (!_state.mounted) {
                   return;
                 }
-                await feedback.showInfoSnackBar(
-                  l10n.autoT0077,
-                );
+                await feedback.showInfoSnackBar(l10n.autoT0077);
               }
             }
           }),
@@ -195,9 +188,9 @@ class DiariesPageController {
 
   /// 从编辑页返回后主动触发刷新节拍。
   ///
-  /// `invalidate` 让 Provider 重取数据，`_listLayoutEpoch` 用于刷新布局签名。
+  /// `invalidate` 让分页 Provider 重取当前窗口数据，`_listLayoutEpoch` 用于刷新布局签名。
   void refreshAfterEditorReturn() {
-    _state.ref.invalidate(filteredDiariesProvider);
+    _state.ref.invalidate(pagedDiariesProvider);
     _state.setState(() {
       _state._listLayoutEpoch += 1;
     });
@@ -207,7 +200,9 @@ class DiariesPageController {
   /// - 若存在未完成草稿，先弹窗让用户选择继续或清空新建；
   /// - 无草稿时直接进入创建页。
   Future<void> openCreateEditorWithDraftPrompt() async {
-    final settingsService = await _state.ref.read(settingsServiceProvider.future);
+    final settingsService = await _state.ref.read(
+      settingsServiceProvider.future,
+    );
     final existingDraft = _tryDecodeCreateDraft(
       settingsService.createDiaryDraftRaw,
     );
@@ -304,7 +299,8 @@ class DiariesPageController {
         return false;
       }
     }
-    return selectedCount == _state._selectedDiaryIds.length && selectedCount > 0;
+    return selectedCount == _state._selectedDiaryIds.length &&
+        selectedCount > 0;
   }
 
   /// 批量删除所选日记，并提供撤销入口。
@@ -344,8 +340,9 @@ class DiariesPageController {
 
     // 任意失败则回滚已成功删除项，并恢复原选择态。
     if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      final succeededIds = targetIds
+          .where((id) => !failedIds.contains(id))
+          .toList(growable: false);
       for (final diaryId in succeededIds) {
         await db.restoreDiary(diaryId, touchUpdatedAt: false);
       }
@@ -356,9 +353,7 @@ class DiariesPageController {
       _state.setState(() {
         _state._selectedDiaryIds.addAll(targetIds);
       });
-      await feedback.showInfoSnackBar(
-        _state.context.l10n.autoT0073,
-      );
+      await feedback.showInfoSnackBar(_state.context.l10n.autoT0073);
       return;
     }
 
@@ -380,9 +375,7 @@ class DiariesPageController {
         return;
       }
       transitionCoordinator.revealDiaries(targetIds, animate: true);
-      await feedback.showInfoSnackBar(
-        l10n.autoT0076,
-      );
+      await feedback.showInfoSnackBar(l10n.autoT0076);
       return;
     }
 
@@ -424,12 +417,11 @@ class DiariesPageController {
     bool animateHide = true,
   }) async {
     // 做 ID 去重与清洗，避免后续数据库操作出现重复请求。
-    final targetIds =
-        diaryIds
-            .map((id) => id.trim())
-            .where((id) => id.isNotEmpty)
-            .toSet()
-            .toList(growable: false);
+    final targetIds = diaryIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
     if (targetIds.isEmpty) {
       return;
     }
@@ -438,8 +430,8 @@ class DiariesPageController {
     }
 
     _state.setState(() {
-    // 仅多选入口需要同步退出选择模式；左滑入口保持当前选择态不变。
-    if (clearSelection) {
+      // 仅多选入口需要同步退出选择模式；左滑入口保持当前选择态不变。
+      if (clearSelection) {
         _state._selectedDiaryIds.removeAll(targetIds);
       }
       _state._archivingDiaryIds.addAll(targetIds);
@@ -466,8 +458,9 @@ class DiariesPageController {
 
     // 发生部分失败时回滚 UI + 数据，保证用户感知的一致性。
     if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      final succeededIds = targetIds
+          .where((id) => !failedIds.contains(id))
+          .toList(growable: false);
       for (final diaryId in succeededIds) {
         await db.unarchiveDiary(diaryId, touchUpdatedAt: false);
       }
@@ -481,9 +474,7 @@ class DiariesPageController {
         }
       });
       transitionCoordinator.revealDiaries(targetIds, animate: true);
-      await feedback.showInfoSnackBar(
-        _state.context.l10n.autoT0078,
-      );
+      await feedback.showInfoSnackBar(_state.context.l10n.autoT0078);
       return;
     }
 
@@ -509,9 +500,7 @@ class DiariesPageController {
           _state._archivingDiaryIds.removeAll(targetIds);
         });
         transitionCoordinator.revealDiaries(targetIds, animate: true);
-        await feedback.showInfoSnackBar(
-          l10n.autoT0080,
-        );
+        await feedback.showInfoSnackBar(l10n.autoT0080);
         return;
       }
     }
@@ -575,7 +564,8 @@ class DiariesPageController {
 
   /// 持久化当前视图偏好，确保下次打开页面仍保持同样展示方式。
   void _persistViewPreferences() {
-    final settingsService = _state.ref.read(settingsServiceProvider).asData?.value;
+    final settingsService =
+        _state.ref.read(settingsServiceProvider).asData?.value;
     if (settingsService == null) {
       return;
     }

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:meta/meta.dart';
+
 part 'qweather_models.dart';
 
 /// 和风天气实时天气查询服务。
@@ -10,6 +12,19 @@ class QWeatherWeatherService {
 
   final QWeatherConfig config;
   static const Duration _timeout = Duration(seconds: 10);
+  static const Duration _cacheTtl = Duration(minutes: 5);
+  static const double _coordinatePrecision = 1000;
+
+  static final Map<_QWeatherCacheKey, _QWeatherCacheEntry> _cache =
+      <_QWeatherCacheKey, _QWeatherCacheEntry>{};
+  static final Map<_QWeatherCacheKey, Future<QWeatherNow>> _pendingFetches =
+      <_QWeatherCacheKey, Future<QWeatherNow>>{};
+
+  @visibleForTesting
+  static void debugClearCache() {
+    _cache.clear();
+    _pendingFetches.clear();
+  }
 
   Future<QWeatherNow> fetchNow({
     required double latitude,
@@ -27,8 +42,46 @@ class QWeatherWeatherService {
 
     final normalizedLanguage =
         languageCode.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    final cacheKey = _QWeatherCacheKey(
+      host: host,
+      apiKey: key,
+      latitude: latitude,
+      longitude: longitude,
+      languageCode: normalizedLanguage,
+    );
+    _evictExpiredCacheEntries();
+    final cached = _cache[cacheKey];
+    if (cached != null && !cached.isExpired) {
+      return cached.now;
+    }
+
+    final pending = _pendingFetches[cacheKey];
+    if (pending != null) {
+      return pending;
+    }
+
+    final fetch = _fetchNowFromNetwork(
+      host: host,
+      key: key,
+      normalizedLanguage: normalizedLanguage,
+      cacheKey: cacheKey,
+    );
+    _pendingFetches[cacheKey] = fetch;
+    try {
+      return await fetch;
+    } finally {
+      _pendingFetches.remove(cacheKey);
+    }
+  }
+
+  Future<QWeatherNow> _fetchNowFromNetwork({
+    required String host,
+    required String key,
+    required String normalizedLanguage,
+    required _QWeatherCacheKey cacheKey,
+  }) async {
     final uri = Uri.https(host, '/v7/weather/now', <String, String>{
-      'location': '$longitude,$latitude',
+      'location': '${cacheKey.longitudeValue},${cacheKey.latitudeValue}',
       'lang': normalizedLanguage,
       'key': key,
     });
@@ -73,7 +126,7 @@ class QWeatherWeatherService {
         );
       }
 
-      return QWeatherNow(
+      final result = QWeatherNow(
         weatherText: weatherText,
         temperatureCelsius: temp,
         iconCode:
@@ -81,6 +134,11 @@ class QWeatherWeatherService {
                 ? null
                 : weatherIconCode,
       );
+      _cache[cacheKey] = _QWeatherCacheEntry(
+        now: result,
+        expiresAt: DateTime.now().add(_cacheTtl),
+      );
+      return result;
     } on TimeoutException catch (error) {
       throw QWeatherException(
         type: QWeatherErrorType.network,
@@ -104,6 +162,10 @@ class QWeatherWeatherService {
     }
   }
 
+  void _evictExpiredCacheEntries() {
+    _cache.removeWhere((_, entry) => entry.isExpired);
+  }
+
   Map<String, Object?> _decodeJson(String raw) {
     final decoded = jsonDecode(raw);
     if (decoded is! Map) {
@@ -113,8 +175,7 @@ class QWeatherWeatherService {
       );
     }
     return <String, Object?>{
-      for (final entry in decoded.entries)
-        entry.key.toString(): entry.value,
+      for (final entry in decoded.entries) entry.key.toString(): entry.value,
     };
   }
 
@@ -141,4 +202,48 @@ class QWeatherWeatherService {
       message: '和风天气请求失败（HTTP $statusCode）',
     );
   }
+}
+
+class _QWeatherCacheKey {
+  _QWeatherCacheKey({
+    required this.host,
+    required this.apiKey,
+    required double latitude,
+    required double longitude,
+    required this.languageCode,
+  }) : latitudeValue =
+           (latitude * QWeatherWeatherService._coordinatePrecision).round() /
+           QWeatherWeatherService._coordinatePrecision,
+       longitudeValue =
+           (longitude * QWeatherWeatherService._coordinatePrecision).round() /
+           QWeatherWeatherService._coordinatePrecision;
+
+  final String host;
+  final String apiKey;
+  final double latitudeValue;
+  final double longitudeValue;
+  final String languageCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _QWeatherCacheKey &&
+        other.host == host &&
+        other.apiKey == apiKey &&
+        other.latitudeValue == latitudeValue &&
+        other.longitudeValue == longitudeValue &&
+        other.languageCode == languageCode;
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(host, apiKey, latitudeValue, longitudeValue, languageCode);
+}
+
+class _QWeatherCacheEntry {
+  const _QWeatherCacheEntry({required this.now, required this.expiresAt});
+
+  final QWeatherNow now;
+  final DateTime expiresAt;
+
+  bool get isExpired => !DateTime.now().isBefore(expiresAt);
 }

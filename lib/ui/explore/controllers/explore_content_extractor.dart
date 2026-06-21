@@ -27,12 +27,30 @@ class ExploreContentExtractor {
     }
   }
 
-  String summaryText(Diary diary, {String emptyFallback = 'Recorded an entry'}) {
-    final text = diary.contentText.replaceAll('\n', ' ').trim();
+  String summaryFromText(
+    String contentText, {
+    String emptyFallback = 'Recorded an entry',
+  }) {
+    final text = contentText.replaceAll('\n', ' ').trim();
     if (text.isNotEmpty) {
       return text;
     }
     return emptyFallback;
+  }
+
+  String summaryText(
+    Diary diary, {
+    String emptyFallback = 'Recorded an entry',
+  }) {
+    return summaryFromText(diary.contentText, emptyFallback: emptyFallback);
+  }
+
+  String? resolveOverviewMediaSource(ExploreDiaryOverview overview) {
+    final cover = overview.cover?.trim();
+    if (cover != null && cover.isNotEmpty) {
+      return cover;
+    }
+    return null;
   }
 
   /// 媒体来源优先级：

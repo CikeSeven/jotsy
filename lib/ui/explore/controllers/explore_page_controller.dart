@@ -34,7 +34,7 @@ class ExplorePageController {
 
   /// 构建探索页整页所需数据。
   ExploreViewData buildViewData(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required DateTime now,
     required AppLocalizations l10n,
     List<int> orderedTagIds = const <int>[],
@@ -67,24 +67,21 @@ class ExplorePageController {
 
   /// 生成顶部看板统计。
   ExploreStats _buildStats(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required DateTime now,
   }) {
     final monthStart = DateTime(now.year, now.month);
     final monthChars = diaries
         .where(
-          (item) => item.diary.createdAt.isAfter(
+          (item) => item.createdAt.isAfter(
             monthStart.subtract(const Duration(seconds: 1)),
           ),
         )
-        .fold<int>(
-          0,
-          (sum, item) => sum + item.diary.contentText.trim().length,
-        );
+        .fold<int>(0, (sum, item) => sum + item.contentText.trim().length);
 
     final daySet =
         diaries
-            .map((item) => DateUtils.dateOnly(item.diary.createdAt.toLocal()))
+            .map((item) => DateUtils.dateOnly(item.createdAt.toLocal()))
             .toSet();
     var streak = 0;
     var probe = DateUtils.dateOnly(now);
@@ -106,26 +103,32 @@ class ExplorePageController {
   /// - 按创建时间倒序，最近年份优先；
   /// - 默认最多展示 12 条，避免轮播过长影响浏览体验。
   List<ExploreOnThisDayItem> _pickOnThisDayList(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required DateTime now,
     required AppLocalizations l10n,
   }) {
     final candidates =
         diaries.where((item) {
-            final created = item.diary.createdAt.toLocal();
+            final created = item.createdAt.toLocal();
             return created.month == now.month &&
                 created.day == now.day &&
                 created.year < now.year;
           }).toList()
-          ..sort((a, b) => b.diary.createdAt.compareTo(a.diary.createdAt));
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return candidates
         .take(_onThisDayMaxEntries)
         .map(
           (item) => ExploreOnThisDayItem(
-            diary: item,
+            diaryId: item.diaryId,
+            title: item.title,
+            summaryText: contentExtractor.summaryFromText(
+              item.contentText,
+              emptyFallback: l10n.autoT0186,
+            ),
+            mediaSource: contentExtractor.resolveOverviewMediaSource(item),
             timeLabel: _buildOnThisDayLabel(
-              item.diary.createdAt,
+              item.createdAt,
               now: now,
               l10n: l10n,
             ),
@@ -157,7 +160,7 @@ class ExplorePageController {
   }
 
   List<double?> _buildMoodSeries(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required int days,
     required DateTime now,
   }) {
@@ -176,7 +179,7 @@ class ExplorePageController {
   }
 
   List<double?> _buildEnergySeries(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required int days,
     required DateTime now,
   }) {
@@ -199,19 +202,19 @@ class ExplorePageController {
   ///
   /// 用于情绪和精力这类“同一天多条记录需要均值化”的趋势数据。
   List<double?> _buildDailySeries(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required int days,
     required DateTime now,
     required double? Function(Map<String, dynamic>? context) extractor,
   }) {
     final buckets = <DateTime, List<double>>{};
     for (final item in diaries) {
-      final context = contentExtractor.parseContext(item.diary.metadata);
+      final context = contentExtractor.parseContext(item.metadata);
       final value = extractor(context);
       if (value == null) {
         continue;
       }
-      final day = DateUtils.dateOnly(item.diary.createdAt.toLocal());
+      final day = DateUtils.dateOnly(item.createdAt.toLocal());
       final bucket = buckets.putIfAbsent(day, () => <double>[]);
       bucket.add(value);
     }
@@ -235,7 +238,7 @@ class ExplorePageController {
   /// - 优先遵循用户在“标签管理”中配置的顺序；
   /// - 若存在未命中顺序表的标签，则放在后面并按名称升序兜底。
   List<ExploreTagUsage> _buildTagCloud(
-    List<DiaryWithTags> diaries, {
+    List<ExploreDiaryOverview> diaries, {
     required List<int> orderedTagIds,
   }) {
     final tagMap = <int, ExploreTagUsage>{};
@@ -248,22 +251,19 @@ class ExplorePageController {
             name: tag.name,
             color: tag.color,
             count: 1,
-            latestDiaryId: item.diary.diaryId,
-            latestAt: item.diary.updatedAt,
+            latestDiaryId: item.diaryId,
+            latestAt: item.updatedAt,
             maxCount: 1,
           );
           continue;
         }
 
-        final shouldReplaceLatest = item.diary.updatedAt.isAfter(
-          previous.latestAt,
-        );
+        final shouldReplaceLatest = item.updatedAt.isAfter(previous.latestAt);
         tagMap[tag.id] = previous.copyWith(
           count: previous.count + 1,
           latestDiaryId:
-              shouldReplaceLatest ? item.diary.diaryId : previous.latestDiaryId,
-          latestAt:
-              shouldReplaceLatest ? item.diary.updatedAt : previous.latestAt,
+              shouldReplaceLatest ? item.diaryId : previous.latestDiaryId,
+          latestAt: shouldReplaceLatest ? item.updatedAt : previous.latestAt,
         );
       }
     }
@@ -292,20 +292,22 @@ class ExplorePageController {
         .toList(growable: false);
   }
 
-  /// 提取媒体画廊数据（封面优先，正文首图兜底）。
-  List<ExploreMediaItem> _buildMediaGallery(List<DiaryWithTags> diaries) {
+  /// 提取媒体画廊数据（轻量概览只使用封面，正文图片留给全量媒体页分页解析）。
+  List<ExploreMediaItem> _buildMediaGallery(
+    List<ExploreDiaryOverview> diaries,
+  ) {
     final seen = <String>{};
     final items = <ExploreMediaItem>[];
     for (final item in diaries) {
-      final source = contentExtractor.resolveMediaSource(item.diary);
+      final source = contentExtractor.resolveOverviewMediaSource(item);
       if (source == null || !seen.add(source)) {
         continue;
       }
       items.add(
         ExploreMediaItem(
           source: source,
-          diaryId: item.diary.diaryId,
-          updatedAt: item.diary.updatedAt,
+          diaryId: item.diaryId,
+          updatedAt: item.updatedAt,
         ),
       );
     }

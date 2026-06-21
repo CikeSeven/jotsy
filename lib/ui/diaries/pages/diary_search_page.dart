@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -91,9 +90,10 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   String _effectiveSearchKeyword = '';
   late final Set<int> _selectedTagIds;
   int _visibleDiaryLimit = _diaryPageSize;
-  int _lastPageableCount = 0;
+  bool _hasMoreDiaries = false;
   bool _isPagingCooldown = false;
   String _pagingSignature = '';
+  List<DiaryWithTags> _cachedSearchItems = const <DiaryWithTags>[];
 
   @override
   void initState() {
@@ -134,10 +134,26 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     );
     _syncPagingStateWithQuery(query);
     if (!query.hasAnyCondition) {
-      _lastPageableCount = 0;
+      _hasMoreDiaries = false;
+      _cachedSearchItems = const <DiaryWithTags>[];
     }
+    final pageQuery = DiaryPageQuery(
+      keyword: query.keyword,
+      requiredTagIds: query.requiredTagIds,
+      limit: _visibleDiaryLimit,
+      sortMode: DiaryQuerySortMode.updatedDesc,
+    );
     final diariesAsync =
-        query.hasAnyCondition ? ref.watch(searchDiariesProvider(query)) : null;
+        query.hasAnyCondition
+            ? ref.watch(searchDiariesProvider(pageQuery))
+            : null;
+    final latestPage = diariesAsync?.asData?.value;
+    if (latestPage != null) {
+      _cachedSearchItems = latestPage.items;
+      _hasMoreDiaries = latestPage.hasMore;
+    }
+    final displayedSearchItems = latestPage?.items ?? _cachedSearchItems;
+    final hasMoreDiaries = _hasMoreDiaries;
     final tagListAsync = ref.watch(tagListProvider);
     final selectedTags = tagListAsync.maybeWhen(
       data:
@@ -178,66 +194,79 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                         hasScrollBody: false,
                         child: SizedBox.shrink(),
                       )
+                    else if (diariesAsync!.isLoading &&
+                        displayedSearchItems.isEmpty)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: SizedBox(
+                            height: 22,
+                            width: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      )
+                    else if (diariesAsync.hasError &&
+                        displayedSearchItems.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Text(
+                            context.l10n.autoT0127(
+                              diariesAsync.asError?.error.toString() ?? '',
+                            ),
+                          ),
+                        ),
+                      )
                     else
-                      diariesAsync!.when(
-                        loading:
-                            () => const SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Center(
-                                child: SizedBox(
-                                  height: 22,
-                                  width: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                        error:
-                            (error, stackTrace) => SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Center(
-                                child: Text(
-                                  context.l10n.autoT0127(error.toString()),
-                                ),
-                              ),
-                            ),
-                        data: (diaries) {
-                          final pagedDiaries =
-                              diaries.take(_visibleDiaryLimit).toList();
-                          _lastPageableCount = diaries.length;
-                          final hasMoreDiaries =
-                              pagedDiaries.length < diaries.length;
-                          return SliverMainAxisGroup(
-                            slivers: <Widget>[
-                              DiariesListSection(
-                                diaries: pagedDiaries,
-                                layoutMode: DiaryLayoutMode.list,
-                                selectedDiaryIds: const <String>{},
-                                isSelectionMode: false,
-                                onCreate: () {},
-                                onOpenEditor: _openPreview,
-                                onToggleSelection: (_, __) {},
-                                isSearchResultEmpty: true,
-                              ),
-                              if (hasMoreDiaries || _isPagingCooldown)
-                                const SliverToBoxAdapter(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(top: 6),
-                                    child: Center(
-                                      child: SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      ),
+                      SliverMainAxisGroup(
+                        slivers: <Widget>[
+                          // 新查询 loading 时继续展示上一份结果，避免输入停顿后整屏闪白。
+                          DiariesListSection(
+                            diaries: displayedSearchItems,
+                            layoutMode: DiaryLayoutMode.list,
+                            selectedDiaryIds: const <String>{},
+                            isSelectionMode: false,
+                            onCreate: () {},
+                            onOpenEditor: _openPreview,
+                            onToggleSelection: (_, __) {},
+                            isSearchResultEmpty: true,
+                          ),
+                          if (diariesAsync.isLoading ||
+                              hasMoreDiaries ||
+                              _isPagingCooldown)
+                            const SliverToBoxAdapter(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 6),
+                                child: Center(
+                                  child: SizedBox(
+                                    height: 18,
+                                    width: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
                                     ),
                                   ),
                                 ),
-                            ],
-                          );
-                        },
+                              ),
+                            ),
+                          if (diariesAsync.hasError)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.l,
+                                  8,
+                                  AppSpacing.l,
+                                  0,
+                                ),
+                                child: Text(
+                                  context.l10n.autoT0127(
+                                    diariesAsync.asError?.error.toString() ??
+                                        '',
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
                   ],
@@ -360,6 +389,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     }
     _pagingSignature = signature;
     _visibleDiaryLimit = _diaryPageSize;
+    _hasMoreDiaries = false;
     _isPagingCooldown = false;
     _pagingCooldownTimer?.cancel();
     _pagingCooldownTimer = null;
@@ -367,14 +397,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   /// 追加一页搜索结果，使用短冷却避免高频滚动瞬间连跳多页。
   void _requestLoadMoreDiaries() {
-    if (_isPagingCooldown || _visibleDiaryLimit >= _lastPageableCount) {
+    if (_isPagingCooldown || !_hasMoreDiaries) {
       return;
     }
     setState(() {
-      _visibleDiaryLimit = math.min(
-        _visibleDiaryLimit + _diaryPageSize,
-        _lastPageableCount,
-      );
+      _visibleDiaryLimit += _diaryPageSize;
       _isPagingCooldown = true;
     });
     _pagingCooldownTimer?.cancel();

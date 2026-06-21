@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:gal/gal.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -44,8 +45,8 @@ class ImageExportException implements Exception {
 /// 职责边界：
 /// - 输入：一个媒体 `source`，可能是应用私有目录下的本地文件路径，也可能是 http(s) URL；
 /// - 输出：把该图片保存到系统相册，或交给系统分享面板；
-/// - 副作用：网络图片会先下载到应用临时目录（[getTemporaryDirectory]）再处理，
-///   临时文件不主动清理，交由系统按临时目录策略回收；
+/// - 副作用：网络图片会先流式下载到应用临时目录（[getTemporaryDirectory]）再处理，
+///   短时间重复保存/分享同一 URL 会复用仍存在的临时文件；过期缓存会被清理；
 /// - 不负责：UI 提示、loading 态、权限弹窗时机（仅触发 [Gal.requestAccess]）。
 ///
 /// 失败一律抛出 [ImageExportException]，调用方转成本地化提示，禁止静默吞错。
@@ -53,6 +54,26 @@ class ImageExportService {
   const ImageExportService();
 
   static const Duration _downloadTimeout = Duration(seconds: 20);
+  static const Duration _remoteImageCacheTtl = Duration(minutes: 15);
+  static const int _maxRemoteImageBytes = 24 * 1024 * 1024;
+  static const Set<String> _allowedImageMimeTypes = <String>{
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+  };
+
+  static final Map<String, _RemoteImageCacheEntry> _remoteImageCache =
+      <String, _RemoteImageCacheEntry>{};
+  static final Map<String, Future<File>> _remoteImageDownloads =
+      <String, Future<File>>{};
+
+  @visibleForTesting
+  static void debugClearRemoteImageCache() {
+    _remoteImageCache.clear();
+    _remoteImageDownloads.clear();
+  }
 
   /// 判断 [source] 是否为网络图片（http/https）。
   static bool isRemoteSource(String source) {
@@ -165,9 +186,35 @@ class ImageExportService {
 
   /// 下载网络图片到应用临时目录，返回落地文件。
   ///
-  /// 失败（超时 / 网络不可用 / 非 200 / 空响应）统一抛 [ImageExportErrorType.downloadFailed]。
+  /// 失败（超时 / 网络不可用 / 非 200 / 空响应 / 超出大小 / 非图片响应）统一抛
+  /// [ImageExportErrorType.downloadFailed]。
   Future<File> _downloadToTempFile(String url) async {
+    await _evictExpiredRemoteImageCache();
+
+    final cached = _remoteImageCache[url];
+    if (cached != null && !cached.isExpired && await cached.file.exists()) {
+      return cached.file;
+    }
+    _remoteImageCache.remove(url);
+
+    final pending = _remoteImageDownloads[url];
+    if (pending != null) {
+      return pending;
+    }
+
+    final download = _downloadRemoteImageToTempFile(url);
+    _remoteImageDownloads[url] = download;
+    try {
+      return await download;
+    } finally {
+      _remoteImageDownloads.remove(url);
+    }
+  }
+
+  Future<File> _downloadRemoteImageToTempFile(String url) async {
     final client = HttpClient();
+    File? file;
+    IOSink? sink;
     try {
       final uri = Uri.parse(url);
       final request = await client.getUrl(uri).timeout(_downloadTimeout);
@@ -179,20 +226,56 @@ class ImageExportService {
         );
       }
 
-      final bytes = await consolidateHttpClientResponseBytesCompat(response);
-      if (bytes.isEmpty) {
+      final contentLength = response.contentLength;
+      if (contentLength > _maxRemoteImageBytes) {
+        throw const ImageExportException(
+          type: ImageExportErrorType.downloadFailed,
+          message: 'downloaded image is too large',
+        );
+      }
+
+      final contentType = response.headers.contentType?.mimeType.toLowerCase();
+      if (!_isAllowedRemoteImageType(contentType, uri.path)) {
+        throw const ImageExportException(
+          type: ImageExportErrorType.downloadFailed,
+          message: 'downloaded file is not a supported image',
+        );
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final extension = _guessExtension(uri.path, contentType: contentType);
+      final fileName =
+          'jotsy_image_${DateTime.now().microsecondsSinceEpoch}$extension';
+      file = File(p.join(tempDir.path, fileName));
+      sink = file.openWrite();
+
+      var totalBytes = 0;
+      await for (final chunk in response.timeout(_downloadTimeout)) {
+        totalBytes += chunk.length;
+        if (totalBytes > _maxRemoteImageBytes) {
+          throw const ImageExportException(
+            type: ImageExportErrorType.downloadFailed,
+            message: 'downloaded image is too large',
+          );
+        }
+        sink.add(chunk);
+      }
+
+      if (totalBytes == 0) {
         throw const ImageExportException(
           type: ImageExportErrorType.downloadFailed,
           message: 'downloaded image is empty',
         );
       }
 
-      final tempDir = await getTemporaryDirectory();
-      final extension = _guessExtension(uri.path);
-      final fileName =
-          'jotsy_image_${DateTime.now().millisecondsSinceEpoch}$extension';
-      final file = File(p.join(tempDir.path, fileName));
-      await file.writeAsBytes(bytes, flush: true);
+      await sink.flush();
+      await sink.close();
+      sink = null;
+
+      _remoteImageCache[url] = _RemoteImageCacheEntry(
+        file: file,
+        expiresAt: DateTime.now().add(_remoteImageCacheTtl),
+      );
       return file;
     } on ImageExportException {
       rethrow;
@@ -210,29 +293,89 @@ class ImageExportService {
       );
     } finally {
       client.close(force: true);
+      if (sink != null) {
+        await sink.close();
+      }
+      if (file != null && !_isCachedRemoteImageFile(file)) {
+        await _deleteIfExists(file);
+      }
     }
   }
 
-  /// 从 URL 路径推断图片后缀，识别不到时回退为 `.jpg`。
-  String _guessExtension(String urlPath) {
+  bool _isAllowedRemoteImageType(String? mimeType, String urlPath) {
+    if (mimeType != null && mimeType.isNotEmpty) {
+      return _allowedImageMimeTypes.contains(mimeType);
+    }
+    return _hasAllowedImageExtension(urlPath);
+  }
+
+  bool _isCachedRemoteImageFile(File file) {
+    for (final entry in _remoteImageCache.values) {
+      if (entry.file.path == file.path) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<void> _evictExpiredRemoteImageCache() async {
+    final expiredFiles = <File>[];
+    _remoteImageCache.removeWhere((_, entry) {
+      final expired = entry.isExpired;
+      if (expired) {
+        expiredFiles.add(entry.file);
+      }
+      return expired;
+    });
+    for (final file in expiredFiles) {
+      await _deleteIfExists(file);
+    }
+  }
+
+  Future<void> _deleteIfExists(File file) async {
+    try {
+      if (await file.exists()) {
+        await file.delete();
+      }
+    } on FileSystemException {
+      // 临时文件清理失败不应覆盖用户正在执行的保存/分享结果。
+    }
+  }
+
+  bool _hasAllowedImageExtension(String urlPath) {
     final ext = p.extension(urlPath).toLowerCase();
     const allowed = <String>{'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'};
-    if (allowed.contains(ext)) {
+    return allowed.contains(ext);
+  }
+
+  /// 从 URL 路径或响应 MIME 推断图片后缀，识别不到时回退为 `.jpg`。
+  String _guessExtension(String urlPath, {required String? contentType}) {
+    switch (contentType) {
+      case 'image/jpeg':
+        return '.jpg';
+      case 'image/png':
+        return '.png';
+      case 'image/gif':
+        return '.gif';
+      case 'image/webp':
+        return '.webp';
+      case 'image/bmp':
+        return '.bmp';
+    }
+
+    final ext = p.extension(urlPath).toLowerCase();
+    if (_hasAllowedImageExtension(urlPath)) {
       return ext;
     }
     return '.jpg';
   }
 }
 
-/// 读取 [HttpClientResponse] 全部字节。
-///
-/// 单独抽出便于在不引入 Flutter foundation 依赖的前提下聚合响应流。
-Future<List<int>> consolidateHttpClientResponseBytesCompat(
-  HttpClientResponse response,
-) async {
-  final chunks = <int>[];
-  await for (final chunk in response) {
-    chunks.addAll(chunk);
-  }
-  return chunks;
+class _RemoteImageCacheEntry {
+  const _RemoteImageCacheEntry({required this.file, required this.expiresAt});
+
+  final File file;
+  final DateTime expiresAt;
+
+  bool get isExpired => !DateTime.now().isBefore(expiresAt);
 }

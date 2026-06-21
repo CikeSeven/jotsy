@@ -32,14 +32,14 @@ class ExplorePage extends ConsumerStatefulWidget {
 
 class _ExplorePageState extends ConsumerState<ExplorePage> {
   final ExplorePageController _controller = const ExplorePageController();
-  List<DiaryWithTags>? _cachedDiariesRef;
+  List<ExploreDiaryOverview>? _cachedDiariesRef;
   List<Tag>? _cachedTagsRef;
   String? _cachedLocaleName;
   String? _cachedDayKey;
   ExploreViewData? _cachedViewData;
 
   ExploreViewData _resolveViewData({
-    required List<DiaryWithTags> diaries,
+    required List<ExploreDiaryOverview> diaries,
     required List<Tag> orderedTags,
     required AppLocalizations l10n,
   }) {

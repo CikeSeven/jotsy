@@ -255,6 +255,16 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
                       onChanged: (value) => passwordValue = value,
                       decoration: InputDecoration(
                         hintText: l10n.webDavPasswordDialogHint,
+                        prefixIcon: const SizedBox(
+                          width: 44,
+                          child: Center(
+                            child: FaIcon(FontAwesomeIcons.lock, size: 16),
+                          ),
+                        ),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 44,
+                          minHeight: 44,
+                        ),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
@@ -263,7 +273,7 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
                             obscureText
                                 ? FontAwesomeIcons.eyeSlash
                                 : FontAwesomeIcons.eye,
-                            size: 14,
+                            size: 16,
                           ),
                         ),
                       ),
@@ -409,51 +419,44 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
-        TextField(
+        _buildConfigField(
           controller: _serverUrlController,
+          icon: FontAwesomeIcons.link,
+          labelText: l10n.webDavServerUrl,
+          hintText: l10n.webDavServerUrlHint,
           keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-            labelText: l10n.webDavServerUrl,
-            hintText: l10n.webDavServerUrlHint,
-            prefixIcon: const FaIcon(FontAwesomeIcons.link, size: 16),
-          ),
         ),
         const SizedBox(height: 12),
-        TextField(
+        _buildConfigField(
           controller: _usernameController,
-          decoration: InputDecoration(
-            labelText: l10n.webDavUsername,
-            prefixIcon: const FaIcon(FontAwesomeIcons.user, size: 16),
-          ),
+          icon: FontAwesomeIcons.user,
+          labelText: l10n.webDavUsername,
         ),
         const SizedBox(height: 12),
-        TextField(
+        _buildConfigField(
           controller: _passwordController,
+          icon: FontAwesomeIcons.lock,
+          labelText: l10n.webDavPassword,
           obscureText: _obscurePassword,
-          decoration: InputDecoration(
-            labelText: l10n.webDavPassword,
-            prefixIcon: const FaIcon(FontAwesomeIcons.lock, size: 16),
-            suffixIcon: IconButton(
-              onPressed: () {
-                setState(() => _obscurePassword = !_obscurePassword);
-              },
-              icon: FaIcon(
-                _obscurePassword
-                    ? FontAwesomeIcons.eyeSlash
-                    : FontAwesomeIcons.eye,
-                size: 14,
-              ),
+          suffixIcon: IconButton(
+            tooltip: l10n.webDavPassword,
+            onPressed: () {
+              setState(() => _obscurePassword = !_obscurePassword);
+            },
+            icon: FaIcon(
+              _obscurePassword
+                  ? FontAwesomeIcons.eyeSlash
+                  : FontAwesomeIcons.eye,
+              size: 16,
             ),
           ),
         ),
         const SizedBox(height: 12),
-        TextField(
+        _buildConfigField(
           controller: _remoteDirectoryController,
-          decoration: InputDecoration(
-            labelText: l10n.webDavRemoteDirectory,
-            hintText: l10n.webDavRemoteDirectoryHint,
-            prefixIcon: const FaIcon(FontAwesomeIcons.folder, size: 16),
-          ),
+          icon: FontAwesomeIcons.folder,
+          labelText: l10n.webDavRemoteDirectory,
+          hintText: l10n.webDavRemoteDirectoryHint,
         ),
         const SizedBox(height: 12),
         Text(
@@ -512,6 +515,42 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
         else
           ..._backups.map(_buildBackupTile),
       ],
+    );
+  }
+
+  /// 构建一个配置编辑框。
+  ///
+  /// 统一约束 prefixIcon：用固定宽度的居中盒子承载图标，
+  /// 让不同 FontAwesome 字形（宽度天然不一）在多字段列布局中保持左对齐与垂直居中，
+  /// 同时令各输入文本起始位置一致，避免出现“图标参差不齐”的观感。
+  Widget _buildConfigField({
+    required TextEditingController controller,
+    required IconData icon,
+    required String labelText,
+    String? hintText,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: SizedBox(
+          width: 44,
+          child: Center(child: FaIcon(icon, size: 16)),
+        ),
+        // 与上面的固定宽度盒子配套，关闭默认的 48 最小交互尺寸自适应，
+        // 保证四个字段的图标盒子完全等宽。
+        prefixIconConstraints: const BoxConstraints(
+          minWidth: 44,
+          minHeight: 44,
+        ),
+        suffixIcon: suffixIcon,
+      ),
     );
   }
 

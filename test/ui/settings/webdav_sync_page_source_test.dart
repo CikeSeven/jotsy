@@ -35,6 +35,20 @@ void main() {
     },
   );
 
+  test('config fields use a shared aligned prefix-icon builder', () async {
+    final source =
+        await File(
+          'lib/ui/settings/pages/webdav_sync_page.dart',
+        ).readAsString();
+
+    // 四个配置字段统一走 _buildConfigField，避免各自内联 InputDecoration
+    // 导致 prefixIcon 盒子宽度随字形漂移、图标参差不齐。
+    expect(source, contains('Widget _buildConfigField('));
+    expect(source, contains('prefixIconConstraints'));
+    // 修复后不应再出现“裸 FaIcon 直接作为 prefixIcon”的写法。
+    expect(source, isNot(contains('prefixIcon: const FaIcon(')));
+  });
+
   test('WebDAV l10n keys include metadata in both languages', () async {
     final zh = await File('lib/l10n/app_zh.arb').readAsString();
     final en = await File('lib/l10n/app_en.arb').readAsString();

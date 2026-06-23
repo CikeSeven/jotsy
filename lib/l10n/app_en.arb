@@ -1971,5 +1971,9 @@
   "imageViewerDownloadFailed": "Failed to download image, please check your network and retry",
   "@imageViewerDownloadFailed": {
     "description": "Hint shown when downloading a remote image fails."
+  },
+  "diaryToolbarInsertCurrentTime": "Insert current time",
+  "@diaryToolbarInsertCurrentTime": {
+    "description": "Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time."
   }
 }

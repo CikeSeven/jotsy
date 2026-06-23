@@ -2635,6 +2635,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to download image, please check your network and retry'**
   String get imageViewerDownloadFailed;
+
+  /// Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert current time'**
+  String get diaryToolbarInsertCurrentTime;
 }
 
 class _AppLocalizationsDelegate

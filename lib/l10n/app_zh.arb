@@ -1971,5 +1971,9 @@
   "imageViewerDownloadFailed": "图片下载失败，请检查网络后重试",
   "@imageViewerDownloadFailed": {
     "description": "网络图片下载失败时的提示。"
+  },
+  "diaryToolbarInsertCurrentTime": "插入当前时间",
+  "@diaryToolbarInsertCurrentTime": {
+    "description": "日记编辑悬浮工具栏中插入当前系统时间按钮的 tooltip 和设置页名称。"
   }
 }

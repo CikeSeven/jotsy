@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:intl/intl.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ enum DiaryToolbarItem {
   quote,
   indent,
   link,
+  currentTime,
 }
 
 /// 默认工具栏顺序（当用户未配置或配置异常时兜底）。
@@ -49,6 +51,7 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.checkList,
   DiaryToolbarItem.orderedList,
   DiaryToolbarItem.image,
+  DiaryToolbarItem.currentTime,
   DiaryToolbarItem.quote,
   DiaryToolbarItem.headerStyle,
   DiaryToolbarItem.link,
@@ -84,6 +87,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.quote => 'quote',
       DiaryToolbarItem.indent => 'indent',
       DiaryToolbarItem.link => 'link',
+      DiaryToolbarItem.currentTime => 'current_time',
     };
   }
 
@@ -109,6 +113,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.quote => '引用',
       DiaryToolbarItem.indent => '缩进（增/减）',
       DiaryToolbarItem.link => '链接',
+      DiaryToolbarItem.currentTime => '插入当前时间',
     };
   }
 
@@ -134,6 +139,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.quote => FontAwesomeIcons.quoteLeft,
       DiaryToolbarItem.indent => FontAwesomeIcons.indent,
       DiaryToolbarItem.link => FontAwesomeIcons.link,
+      DiaryToolbarItem.currentTime => FontAwesomeIcons.clock,
     };
   }
 }
@@ -364,6 +370,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   final showQuote = item == DiaryToolbarItem.quote;
   final showIndent = item == DiaryToolbarItem.indent;
   final showLink = item == DiaryToolbarItem.link;
+  final showCurrentTime = item == DiaryToolbarItem.currentTime;
 
   // 图片按钮使用自定义拣选并复制到私有目录，避免外部路径失效。
   final embedButtons =
@@ -443,17 +450,20 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
     ),
   );
 
-  // 标题样式属于自定义循环按钮，不依赖 Quill 默认 header 组。
-  final customButtons =
-      item == DiaryToolbarItem.headerStyle
-          ? <quill.QuillToolbarCustomButtonOptions>[
-            quill.QuillToolbarCustomButtonOptions(
-              icon: const FaIcon(FontAwesomeIcons.heading, size: 14),
-              tooltip: context.l10n.autoT0208,
-              onPressed: () => _cycleHeaderStyle(controller),
-            ),
-          ]
-          : <quill.QuillToolbarCustomButtonOptions>[];
+  final customButtons = <quill.QuillToolbarCustomButtonOptions>[
+    if (item == DiaryToolbarItem.headerStyle)
+      quill.QuillToolbarCustomButtonOptions(
+        icon: const FaIcon(FontAwesomeIcons.heading, size: 14),
+        tooltip: context.l10n.autoT0208,
+        onPressed: () => _cycleHeaderStyle(controller),
+      ),
+    if (showCurrentTime)
+      quill.QuillToolbarCustomButtonOptions(
+        icon: const FaIcon(FontAwesomeIcons.clock, size: 14),
+        tooltip: context.l10n.diaryToolbarInsertCurrentTime,
+        onPressed: () => _insertCurrentSystemTime(context, controller),
+      ),
+  ];
 
   return quill.QuillSimpleToolbarConfig(
     // 使用 Wrap 模式，避免每个工具项内部再生成可横向滚动容器。
@@ -507,6 +517,53 @@ void _cycleHeaderStyle(quill.QuillController controller) {
     _ => quill.Attribute.h1,
   };
   controller.formatSelection(nextHeader);
+}
+
+/// 将当前系统时间插入到编辑器当前选区。
+///
+/// 如果用户已选中文字，则替换选区；如果编辑器暂时没有有效选区，则插入到文档末尾。
+void _insertCurrentSystemTime(
+  BuildContext context,
+  quill.QuillController controller,
+) {
+  final now = DateTime.now();
+  final insertedText = _formatCurrentSystemTime(context.l10n, now);
+  final documentLength = controller.document.length;
+  final selection = controller.selection;
+  final start =
+      selection.isValid
+          ? _clampQuillOffset(selection.start, documentLength)
+          : _clampQuillOffset(documentLength - 1, documentLength);
+  final end =
+      selection.isValid
+          ? _clampQuillOffset(selection.end, documentLength)
+          : start;
+  final replaceLength = end - start;
+  controller.replaceText(
+    start,
+    replaceLength < 0 ? 0 : replaceLength,
+    insertedText,
+    TextSelection.collapsed(offset: start + insertedText.length),
+  );
+}
+
+String _formatCurrentSystemTime(AppLocalizations l10n, DateTime value) {
+  final local = value.toLocal();
+  if (l10n.isZh) {
+    return DateFormat('yyyy年M月d日 HH:mm', 'zh').format(local);
+  }
+  return DateFormat('MMM d, y HH:mm', l10n.localeName).format(local);
+}
+
+int _clampQuillOffset(int offset, int documentLength) {
+  final maxOffset = documentLength <= 0 ? 0 : documentLength - 1;
+  if (offset < 0) {
+    return maxOffset;
+  }
+  if (offset > maxOffset) {
+    return maxOffset;
+  }
+  return offset;
 }
 
 /// 拾取图片并返回可插入编辑器的最终路径。

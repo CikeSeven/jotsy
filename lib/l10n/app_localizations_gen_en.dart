@@ -1435,4 +1435,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get imageViewerDownloadFailed =>
       'Failed to download image, please check your network and retry';
+
+  @override
+  String get diaryToolbarInsertCurrentTime => 'Insert current time';
 }

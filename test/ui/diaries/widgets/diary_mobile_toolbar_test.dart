@@ -37,6 +37,49 @@ void main() {
     expect(enabled, isNot(contains(DiaryToolbarItem.bold)));
   });
 
+  test('default toolbar order includes current time tool', () {
+    expect(kDefaultDiaryToolbarOrder, contains(DiaryToolbarItem.currentTime));
+    expect(DiaryToolbarItem.currentTime.storageKey, 'current_time');
+  });
+
+  testWidgets('current time toolbar button inserts formatted time', (
+    tester,
+  ) async {
+    final controller = quill.QuillController.basic();
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          ...AppLocalizations.localizationsDelegates,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SizedBox(
+            height: 44,
+            child: buildDiaryFloatingToolbar(
+              controller: controller,
+              order: const <DiaryToolbarItem>[DiaryToolbarItem.currentTime],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    final now = DateTime.now();
+    await tester.tap(find.byTooltip('插入当前时间'));
+    await tester.pumpAndSettle();
+
+    final plainText = controller.document.toPlainText();
+    expect(plainText, contains('${now.year}年'));
+    expect(plainText, contains('月'));
+    expect(plainText, contains('日'));
+    expect(plainText, contains(':'));
+  });
+
   testWidgets('floating toolbar hides unchecked tools', (tester) async {
     final controller = quill.QuillController.basic();
     addTearDown(controller.dispose);

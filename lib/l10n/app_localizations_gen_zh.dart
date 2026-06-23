@@ -1389,4 +1389,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get imageViewerDownloadFailed => '图片下载失败，请检查网络后重试';
+
+  @override
+  String get diaryToolbarInsertCurrentTime => '插入当前时间';
 }

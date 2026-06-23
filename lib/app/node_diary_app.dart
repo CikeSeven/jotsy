@@ -35,8 +35,8 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
 }
 
 class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
-  // 启动加载页最短展示时长：即使数据提前加载完，也会等待这个时间再进入首页。
-  static const Duration _minimumLoadingDuration = Duration(milliseconds: 1800);
+  // 启动加载页最短展示时长：保留品牌化等待反馈，但避免冷启动被固定拉长。
+  static const Duration _minimumLoadingDuration = Duration(milliseconds: 1200);
   static const double _globalSnackBarSideInset = 16;
   static const double _globalSnackBarBottomInset = 16;
 
@@ -464,26 +464,26 @@ class _BootstrapHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        HomePage(
-          startupNotice: startupNotice,
-          homeHintVisibleListenable: homeHintVisibleListenable,
-        ),
-        IgnorePointer(
-          ignoring: !showLoadingOverlay,
-          child: AnimatedOpacity(
-            opacity: showLoadingOverlay ? 1 : 0,
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
-            child: ColoredBox(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              child: const AppLoadingContent(),
-            ),
-          ),
-        ),
-      ],
+    final loading = ColoredBox(
+      key: const ValueKey<String>('bootstrap_loading'),
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: const AppLoadingContent(),
+    );
+
+    final home = HomePage(
+      key: const ValueKey<String>('bootstrap_home'),
+      startupNotice: startupNotice,
+      homeHintVisibleListenable: homeHintVisibleListenable,
+    );
+
+    // 启动等待期间只绘制加载页，不提前构建 HomePage。
+    // 这样可以减少 Flutter 首帧前后的数据库监听与页面装配工作，避免
+    // Android 原生启动背景结束后又等待一段时间才看到加载动画。
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeOutCubic,
+      child: showLoadingOverlay ? loading : home,
     );
   }
 }

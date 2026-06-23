@@ -18,60 +18,89 @@ class SettingsEditorSection extends StatelessWidget {
     final l10n = context.l10n;
     return settingsAsync.when(
       data: (settingsService) {
-        final order = decodeDiaryToolbarOrder(
-          settingsService.diaryToolbarOrderRaw,
-        );
-        final preview = order
-            .take(4)
-            .map((DiaryToolbarItem item) => _labelForItem(context, item))
-            .join(' · ');
-        return ValueListenableBuilder<EditorBodyFontSizePreset>(
-          valueListenable: settingsService.editorBodyFontSizePresetNotifier,
+        return ValueListenableBuilder<String?>(
+          valueListenable: settingsService.diaryToolbarOrderRawNotifier,
           builder: (
             BuildContext context,
-            EditorBodyFontSizePreset fontSizePreset,
+            String? toolbarOrderRaw,
             Widget? child,
           ) {
-            return ValueListenableBuilder<EditorBodyLineHeightPreset>(
+            return ValueListenableBuilder<String?>(
               valueListenable:
-                  settingsService.editorBodyLineHeightPresetNotifier,
+                  settingsService.diaryToolbarHiddenItemsRawNotifier,
               builder: (
                 BuildContext context,
-                EditorBodyLineHeightPreset lineHeightPreset,
+                String? toolbarHiddenItemsRaw,
                 Widget? child,
               ) {
-                return Column(
-                  children: <Widget>[
-                    _EditorBodyFontSizeTile(
-                      settingsService: settingsService,
-                      selectedPreset: fontSizePreset,
-                    ),
-                    const Divider(height: 1),
-                    _EditorBodyLineHeightTile(
-                      settingsService: settingsService,
-                      selectedPreset: lineHeightPreset,
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      title: Text(l10n.autoT0043),
-                      subtitle: Text(l10n.autoT0044(preview)),
-                      trailing: const FaIcon(
-                        FontAwesomeIcons.angleRight,
-                        size: 14,
-                      ),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (BuildContext context) {
-                              return DiaryToolbarOrderPage(
-                                settingsService: settingsService,
-                              );
-                            },
-                          ),
+                final order = decodeDiaryToolbarOrder(toolbarOrderRaw);
+                final hiddenItems = decodeDiaryToolbarHiddenItems(
+                  toolbarHiddenItemsRaw,
+                );
+                final enabledOrder = filterEnabledDiaryToolbarOrder(
+                  order,
+                  hiddenItems,
+                );
+                final preview = enabledOrder
+                    .take(4)
+                    .map(
+                      (DiaryToolbarItem item) => _labelForItem(context, item),
+                    )
+                    .join(' · ');
+                return ValueListenableBuilder<EditorBodyFontSizePreset>(
+                  valueListenable:
+                      settingsService.editorBodyFontSizePresetNotifier,
+                  builder: (
+                    BuildContext context,
+                    EditorBodyFontSizePreset fontSizePreset,
+                    Widget? child,
+                  ) {
+                    return ValueListenableBuilder<EditorBodyLineHeightPreset>(
+                      valueListenable:
+                          settingsService.editorBodyLineHeightPresetNotifier,
+                      builder: (
+                        BuildContext context,
+                        EditorBodyLineHeightPreset lineHeightPreset,
+                        Widget? child,
+                      ) {
+                        return Column(
+                          children: <Widget>[
+                            _EditorBodyFontSizeTile(
+                              settingsService: settingsService,
+                              selectedPreset: fontSizePreset,
+                            ),
+                            const Divider(height: 1),
+                            _EditorBodyLineHeightTile(
+                              settingsService: settingsService,
+                              selectedPreset: lineHeightPreset,
+                            ),
+                            const Divider(height: 1),
+                            ListTile(
+                              title: Text(l10n.autoT0043),
+                              subtitle: Text(
+                                l10n.autoT0044(preview.isEmpty ? '-' : preview),
+                              ),
+                              trailing: const FaIcon(
+                                FontAwesomeIcons.angleRight,
+                                size: 14,
+                              ),
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) {
+                                      return DiaryToolbarOrderPage(
+                                        settingsService: settingsService,
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         );
                       },
-                    ),
-                  ],
+                    );
+                  },
                 );
               },
             );

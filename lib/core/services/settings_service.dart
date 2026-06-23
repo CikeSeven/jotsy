@@ -72,6 +72,8 @@ class SettingsService {
     required double fontScale,
     required Locale locale,
     required bool appLockEnabled,
+    required String? diaryToolbarOrderRaw,
+    required String? diaryToolbarHiddenItemsRaw,
   }) : _prefs = prefs,
        themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
@@ -86,7 +88,13 @@ class SettingsService {
            ),
        fontScaleNotifier = ValueNotifier<double>(fontScale),
        localeNotifier = ValueNotifier<Locale>(locale),
-       appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled);
+       appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled),
+       diaryToolbarOrderRawNotifier = ValueNotifier<String?>(
+         diaryToolbarOrderRaw,
+       ),
+       diaryToolbarHiddenItemsRawNotifier = ValueNotifier<String?>(
+         diaryToolbarHiddenItemsRaw,
+       );
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -99,6 +107,8 @@ class SettingsService {
   final ValueNotifier<double> fontScaleNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
+  final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
+  final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
@@ -111,6 +121,9 @@ class SettingsService {
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
   static const _keyDiaryLayoutMode = 'app.settings.diary_layout_mode';
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
+  static const _keyDiaryToolbarHiddenItems =
+      'app.settings.diary_toolbar_hidden_items';
+
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
   static const _keyReleaseMirrorStartIndex =
@@ -172,6 +185,8 @@ class SettingsService {
       fontScale: fontScale,
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
+      diaryToolbarOrderRaw: prefs.getString(_keyDiaryToolbarOrder),
+      diaryToolbarHiddenItemsRaw: prefs.getString(_keyDiaryToolbarHiddenItems),
     );
   }
 
@@ -220,7 +235,9 @@ class SettingsService {
   String get diaryLayoutModeRaw =>
       _prefs.getString(_keyDiaryLayoutMode) ?? 'list';
 
-  String? get diaryToolbarOrderRaw => _prefs.getString(_keyDiaryToolbarOrder);
+  String? get diaryToolbarOrderRaw => diaryToolbarOrderRawNotifier.value;
+  String? get diaryToolbarHiddenItemsRaw =>
+      diaryToolbarHiddenItemsRawNotifier.value;
   String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
@@ -236,7 +253,19 @@ class SettingsService {
   }
 
   Future<void> setDiaryToolbarOrderRaw(String value) async {
+    diaryToolbarOrderRawNotifier.value = value;
     await _prefs.setString(_keyDiaryToolbarOrder, value);
+  }
+
+  Future<void> setDiaryToolbarHiddenItemsRaw(String value) async {
+    final normalized = value.trim();
+    diaryToolbarHiddenItemsRawNotifier.value =
+        normalized.isEmpty ? null : normalized;
+    if (normalized.isEmpty) {
+      await _prefs.remove(_keyDiaryToolbarHiddenItems);
+      return;
+    }
+    await _prefs.setString(_keyDiaryToolbarHiddenItems, normalized);
   }
 
   Future<void> setTagOrderRaw(String value) async {

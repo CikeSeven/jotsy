@@ -18,6 +18,7 @@ class DiaryToolbarOrderPage extends StatefulWidget {
 
 class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   late List<DiaryToolbarItem> _order;
+  late Set<DiaryToolbarItem> _hiddenItems;
   bool _saving = false;
 
   @override
@@ -25,6 +26,9 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     super.initState();
     _order = decodeDiaryToolbarOrder(
       widget.settingsService.diaryToolbarOrderRaw,
+    );
+    _hiddenItems = decodeDiaryToolbarHiddenItems(
+      widget.settingsService.diaryToolbarHiddenItemsRaw,
     );
   }
 
@@ -36,9 +40,20 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     });
   }
 
+  void _handleToggleEnabled(DiaryToolbarItem item, bool? enabled) {
+    setState(() {
+      if (enabled ?? true) {
+        _hiddenItems.remove(item);
+      } else {
+        _hiddenItems.add(item);
+      }
+    });
+  }
+
   void _resetOrder() {
     setState(() {
       _order = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
+      _hiddenItems = <DiaryToolbarItem>{};
     });
   }
 
@@ -81,6 +96,9 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     try {
       await widget.settingsService.setDiaryToolbarOrderRaw(
         encodeDiaryToolbarOrder(_order),
+      );
+      await widget.settingsService.setDiaryToolbarHiddenItemsRaw(
+        encodeDiaryToolbarHiddenItems(_hiddenItems),
       );
       if (!mounted) {
         return;
@@ -129,10 +147,43 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
         onReorder: _handleReorder,
         itemBuilder: (BuildContext context, int index) {
           final item = _order[index];
+          final enabled = !_hiddenItems.contains(item);
           return ListTile(
             key: ValueKey<String>(item.storageKey),
-            leading: FaIcon(item.iconData, size: 16),
-            title: Text(_labelForItem(context, item)),
+            onTap: _saving ? null : () => _handleToggleEnabled(item, !enabled),
+            leading: SizedBox(
+              width: 80,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Checkbox(
+                    value: enabled,
+                    onChanged:
+                        _saving
+                            ? null
+                            : (value) => _handleToggleEnabled(item, value),
+                  ),
+                  const SizedBox(width: 8),
+                  FaIcon(
+                    item.iconData,
+                    size: 16,
+                    color:
+                        enabled
+                            ? null
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+            title: Text(
+              _labelForItem(context, item),
+              style:
+                  enabled
+                      ? null
+                      : TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+            ),
             subtitle:
                 item == DiaryToolbarItem.inlineCode
                     ? Text(l10n.autoT0188)

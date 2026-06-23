@@ -179,12 +179,60 @@ String encodeDiaryToolbarOrder(List<DiaryToolbarItem> order) {
   return normalized.map((item) => item.storageKey).join(',');
 }
 
+/// 将持久化字符串反序列化为“隐藏工具项”集合。
+///
+/// 这里持久化隐藏项而不是启用项，是为了让未来新增工具默认出现在悬浮工具栏；
+/// 只有用户明确取消勾选过的工具才会被过滤掉。
+Set<DiaryToolbarItem> decodeDiaryToolbarHiddenItems(String? raw) {
+  if (raw == null || raw.trim().isEmpty) {
+    return <DiaryToolbarItem>{};
+  }
+
+  final hiddenItems = <DiaryToolbarItem>{};
+  for (final segment in raw.split(',')) {
+    final item = _diaryToolbarItemFromStorageKey(segment.trim());
+    if (item != null) {
+      hiddenItems.add(item);
+    }
+  }
+  return hiddenItems;
+}
+
+/// 将隐藏工具项集合编码为可持久化字符串。
+String encodeDiaryToolbarHiddenItems(Set<DiaryToolbarItem> hiddenItems) {
+  final normalized = <DiaryToolbarItem>[];
+  for (final item in kDefaultDiaryToolbarOrder) {
+    if (hiddenItems.contains(item)) {
+      normalized.add(item);
+    }
+  }
+  return normalized.map((item) => item.storageKey).join(',');
+}
+
+/// 按用户排序输出启用的工具项。
+List<DiaryToolbarItem> filterEnabledDiaryToolbarOrder(
+  List<DiaryToolbarItem> order,
+  Set<DiaryToolbarItem> hiddenItems,
+) {
+  final normalized = _normalizeDiaryToolbarOrder(order);
+  if (hiddenItems.isEmpty) {
+    return normalized;
+  }
+  return normalized
+      .where((DiaryToolbarItem item) => !hiddenItems.contains(item))
+      .toList(growable: false);
+}
+
 /// 构建支持自定义顺序的日记编辑悬浮工具栏。
 Widget buildDiaryFloatingToolbar({
   required quill.QuillController controller,
   required List<DiaryToolbarItem> order,
+  Set<DiaryToolbarItem> hiddenItems = const <DiaryToolbarItem>{},
 }) {
-  final normalizedOrder = _normalizeDiaryToolbarOrder(order);
+  final normalizedOrder = filterEnabledDiaryToolbarOrder(order, hiddenItems);
+  if (normalizedOrder.isEmpty) {
+    return const SizedBox.shrink();
+  }
   return LayoutBuilder(
     builder: (BuildContext context, BoxConstraints constraints) {
       // 外层统一负责横向滚动，避免每个单项工具自身再出现滚动行为。

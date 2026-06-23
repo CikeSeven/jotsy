@@ -90,6 +90,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _weatherLoading = false;
   LocationResolverService? _locationResolverService;
   QWeatherWeatherService? _weatherService;
+  late List<DiaryToolbarItem> _toolbarOrder;
+  Set<DiaryToolbarItem> _toolbarHiddenItems = <DiaryToolbarItem>{};
+  SettingsService? _boundToolbarSettingsService;
+  VoidCallback? _toolbarSettingsListener;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
@@ -118,6 +122,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
     );
+    _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
     _controller = EditDiaryController(this);
     _titleController.addListener(_controller.onCreateDraftInputChanged);
     _contentController.addListener(_controller.onCreateDraftInputChanged);
@@ -142,6 +147,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _contentScrollController.dispose();
     _editorInnerScrollController.dispose();
     _contentController.dispose();
+    _unbindToolbarSettingsService();
     super.dispose();
   }
 
@@ -549,12 +555,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-    final showFloatingToolbar =
+    final rawShowFloatingToolbar =
         _isMobileRuntime &&
         keyboardInset > 0 &&
         _isEditingNoteText &&
         !_isEditPanelExpanded;
     final showEditMetaPanel = _isEditEntry;
+    final settingsAsync = ref.watch(settingsServiceProvider);
+    settingsAsync.whenData(_bindToolbarSettingsService);
+    final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
+      _toolbarOrder,
+      _toolbarHiddenItems,
+    );
+    final showFloatingToolbar =
+        rawShowFloatingToolbar && enabledToolbarOrder.isNotEmpty;
     final editPanelSpacer =
         showEditMetaPanel
             ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
@@ -567,7 +581,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         showFloatingToolbar
             ? _floatingToolbarReservedSpace
             : editorBottomSpacer;
-    final settingsAsync = ref.watch(settingsServiceProvider);
     final tagsAsync = ref.watch(tagListProvider);
 
     var tags = const <Tag>[];
@@ -601,12 +614,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
           ),
       data: (DiaryWithTags? detail) {
-        final toolbarOrder = settingsAsync.maybeWhen(
-          data:
-              (settingsService) =>
-                  decodeDiaryToolbarOrder(settingsService.diaryToolbarOrderRaw),
-          orElse: () => List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder),
-        );
+        // 工具栏顺序和启用状态已在外层解析，避免详情流重建时重复解析设置。
 
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
@@ -834,7 +842,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                           data: const IconThemeData(size: 16),
                           child: SizedBox(
                             height: 44,
-                            child: _buildFloatingToolbar(toolbarOrder),
+                            child: _buildFloatingToolbar(enabledToolbarOrder),
                           ),
                         ),
                       ),
@@ -860,6 +868,88 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         );
       },
     );
+  }
+
+  /// 绑定设置服务中的工具栏可见性配置。
+  ///
+  /// 设置页保存后只会更新 [SettingsService] 内部 ValueNotifier，
+  /// 编辑页需要监听这些 notifier，才能在返回编辑器时立刻刷新悬浮工具栏。
+  void _bindToolbarSettingsService(SettingsService settingsService) {
+    if (identical(_boundToolbarSettingsService, settingsService)) {
+      _applyToolbarSettings(settingsService, notify: false);
+      return;
+    }
+    _unbindToolbarSettingsService();
+    _boundToolbarSettingsService = settingsService;
+    _toolbarSettingsListener = () {
+      _applyToolbarSettings(settingsService, notify: true);
+    };
+    settingsService.diaryToolbarOrderRawNotifier.addListener(
+      _toolbarSettingsListener!,
+    );
+    settingsService.diaryToolbarHiddenItemsRawNotifier.addListener(
+      _toolbarSettingsListener!,
+    );
+    _applyToolbarSettings(settingsService, notify: false);
+  }
+
+  void _unbindToolbarSettingsService() {
+    final settingsService = _boundToolbarSettingsService;
+    final listener = _toolbarSettingsListener;
+    if (settingsService != null && listener != null) {
+      settingsService.diaryToolbarOrderRawNotifier.removeListener(listener);
+      settingsService.diaryToolbarHiddenItemsRawNotifier.removeListener(
+        listener,
+      );
+    }
+    _boundToolbarSettingsService = null;
+    _toolbarSettingsListener = null;
+  }
+
+  void _applyToolbarSettings(
+    SettingsService settingsService, {
+    required bool notify,
+  }) {
+    final nextOrder = decodeDiaryToolbarOrder(
+      settingsService.diaryToolbarOrderRaw,
+    );
+    final nextHiddenItems = decodeDiaryToolbarHiddenItems(
+      settingsService.diaryToolbarHiddenItemsRaw,
+    );
+    if (_hasSameToolbarSettings(nextOrder, nextHiddenItems)) {
+      return;
+    }
+    void apply() {
+      _toolbarOrder = nextOrder;
+      _toolbarHiddenItems = nextHiddenItems;
+    }
+
+    if (notify && mounted) {
+      setState(apply);
+      return;
+    }
+    apply();
+  }
+
+  bool _hasSameToolbarSettings(
+    List<DiaryToolbarItem> nextOrder,
+    Set<DiaryToolbarItem> nextHiddenItems,
+  ) {
+    if (_toolbarOrder.length != nextOrder.length ||
+        _toolbarHiddenItems.length != nextHiddenItems.length) {
+      return false;
+    }
+    for (var index = 0; index < nextOrder.length; index += 1) {
+      if (_toolbarOrder[index] != nextOrder[index]) {
+        return false;
+      }
+    }
+    for (final item in nextHiddenItems) {
+      if (!_toolbarHiddenItems.contains(item)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Widget _buildFloatingToolbar(List<DiaryToolbarItem> toolbarOrder) {

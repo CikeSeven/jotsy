@@ -170,6 +170,8 @@ class DataArchiveService {
         'diarySortModeRaw': settingsService.diarySortModeRaw,
         'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
         'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
+        'diaryToolbarHiddenItemsRaw':
+            settingsService.diaryToolbarHiddenItemsRaw,
         'tagOrderRaw': settingsService.tagOrderRaw,
         'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
         'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
@@ -367,6 +369,12 @@ class DataArchiveService {
     final toolbarRaw = settingsNode['diaryToolbarOrderRaw']?.toString();
     if (toolbarRaw != null && toolbarRaw.isNotEmpty) {
       await settingsService.setDiaryToolbarOrderRaw(toolbarRaw);
+    }
+
+    if (settingsNode.containsKey('diaryToolbarHiddenItemsRaw')) {
+      final toolbarHiddenRaw =
+          settingsNode['diaryToolbarHiddenItemsRaw']?.toString() ?? '';
+      await settingsService.setDiaryToolbarHiddenItemsRaw(toolbarHiddenRaw);
     }
 
     final tagOrderRaw = settingsNode['tagOrderRaw']?.toString();

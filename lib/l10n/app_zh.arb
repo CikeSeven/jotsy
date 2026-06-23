@@ -1975,5 +1975,34 @@
   "diaryToolbarInsertCurrentTime": "插入当前时间",
   "@diaryToolbarInsertCurrentTime": {
     "description": "日记编辑悬浮工具栏中插入当前系统时间按钮的 tooltip 和设置页名称。"
+  },
+  "diaryToolbarToolSettingsTooltip": "配置工具参数",
+  "@diaryToolbarToolSettingsTooltip": {
+    "description": "工具栏排序页中工具参数设置按钮的 tooltip。"
+  },
+  "diaryToolbarTimeFormatTitle": "配置时间格式",
+  "@diaryToolbarTimeFormatTitle": {
+    "description": "插入当前时间工具的格式配置弹窗标题。"
+  },
+  "diaryToolbarTimeFormatLabel": "时间格式",
+  "@diaryToolbarTimeFormatLabel": {
+    "description": "插入当前时间工具的格式输入框标签。"
+  },
+  "diaryToolbarTimeFormatHelp": "默认格式为 M月d日 HH:mm。可使用 yyyy、MM、dd、HH、mm 等 DateFormat 格式符，例如 yyyy-MM-dd HH:mm。",
+  "@diaryToolbarTimeFormatHelp": {
+    "description": "插入当前时间工具的格式输入帮助说明。"
+  },
+  "diaryToolbarTimeFormatPreview": "预览：{value}",
+  "@diaryToolbarTimeFormatPreview": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    },
+    "description": "插入当前时间工具格式配置弹窗中的预览文案。"
+  },
+  "diaryToolbarTimeFormatInvalid": "时间格式无效，请检查格式符。",
+  "@diaryToolbarTimeFormatInvalid": {
+    "description": "插入当前时间工具格式配置输入无效时的错误提示。"
   }
 }

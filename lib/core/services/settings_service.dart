@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+const String _defaultDiaryToolbarCurrentTimeFormat = 'M月d日 HH:mm';
+
 enum HomeTabSwitchCurveType { easeOutCirc, easeOutCubic, linear }
 
 extension HomeTabSwitchCurveTypeX on HomeTabSwitchCurveType {
@@ -74,6 +76,7 @@ class SettingsService {
     required bool appLockEnabled,
     required String? diaryToolbarOrderRaw,
     required String? diaryToolbarHiddenItemsRaw,
+    required String? diaryToolbarCurrentTimeFormatRaw,
   }) : _prefs = prefs,
        themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
@@ -94,6 +97,9 @@ class SettingsService {
        ),
        diaryToolbarHiddenItemsRawNotifier = ValueNotifier<String?>(
          diaryToolbarHiddenItemsRaw,
+       ),
+       diaryToolbarCurrentTimeFormatRawNotifier = ValueNotifier<String?>(
+         diaryToolbarCurrentTimeFormatRaw,
        );
 
   final SharedPreferences _prefs;
@@ -109,6 +115,7 @@ class SettingsService {
   final ValueNotifier<bool> appLockEnabledNotifier;
   final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
+  final ValueNotifier<String?> diaryToolbarCurrentTimeFormatRawNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
@@ -123,6 +130,8 @@ class SettingsService {
   static const _keyDiaryToolbarOrder = 'app.settings.diary_toolbar_order';
   static const _keyDiaryToolbarHiddenItems =
       'app.settings.diary_toolbar_hidden_items';
+  static const _keyDiaryToolbarCurrentTimeFormat =
+      'app.settings.diary_toolbar_current_time_format';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
@@ -187,6 +196,9 @@ class SettingsService {
       appLockEnabled: appLockEnabled,
       diaryToolbarOrderRaw: prefs.getString(_keyDiaryToolbarOrder),
       diaryToolbarHiddenItemsRaw: prefs.getString(_keyDiaryToolbarHiddenItems),
+      diaryToolbarCurrentTimeFormatRaw:
+          prefs.getString(_keyDiaryToolbarCurrentTimeFormat) ??
+          _defaultDiaryToolbarCurrentTimeFormat,
     );
   }
 
@@ -238,6 +250,8 @@ class SettingsService {
   String? get diaryToolbarOrderRaw => diaryToolbarOrderRawNotifier.value;
   String? get diaryToolbarHiddenItemsRaw =>
       diaryToolbarHiddenItemsRawNotifier.value;
+  String? get diaryToolbarCurrentTimeFormatRaw =>
+      diaryToolbarCurrentTimeFormatRawNotifier.value;
   String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
@@ -266,6 +280,15 @@ class SettingsService {
       return;
     }
     await _prefs.setString(_keyDiaryToolbarHiddenItems, normalized);
+  }
+
+  Future<void> setDiaryToolbarCurrentTimeFormatRaw(String value) async {
+    final normalized =
+        value.trim().isEmpty
+            ? _defaultDiaryToolbarCurrentTimeFormat
+            : value.trim();
+    diaryToolbarCurrentTimeFormatRawNotifier.value = normalized;
+    await _prefs.setString(_keyDiaryToolbarCurrentTimeFormat, normalized);
   }
 
   Future<void> setTagOrderRaw(String value) async {

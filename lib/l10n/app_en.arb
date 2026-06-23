@@ -1975,5 +1975,34 @@
   "diaryToolbarInsertCurrentTime": "Insert current time",
   "@diaryToolbarInsertCurrentTime": {
     "description": "Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time."
+  },
+  "diaryToolbarToolSettingsTooltip": "Configure tool parameters",
+  "@diaryToolbarToolSettingsTooltip": {
+    "description": "Tooltip for the tool parameter settings button on the toolbar order page."
+  },
+  "diaryToolbarTimeFormatTitle": "Configure time format",
+  "@diaryToolbarTimeFormatTitle": {
+    "description": "Dialog title for configuring the insert-current-time toolbar tool format."
+  },
+  "diaryToolbarTimeFormatLabel": "Time format",
+  "@diaryToolbarTimeFormatLabel": {
+    "description": "Input label for configuring the insert-current-time toolbar tool format."
+  },
+  "diaryToolbarTimeFormatHelp": "The default format is M月d日 HH:mm. You can use DateFormat tokens such as yyyy, MM, dd, HH, and mm, for example yyyy-MM-dd HH:mm.",
+  "@diaryToolbarTimeFormatHelp": {
+    "description": "Help text for configuring the insert-current-time toolbar tool format."
+  },
+  "diaryToolbarTimeFormatPreview": "Preview: {value}",
+  "@diaryToolbarTimeFormatPreview": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    },
+    "description": "Preview text in the insert-current-time toolbar tool format dialog."
+  },
+  "diaryToolbarTimeFormatInvalid": "Invalid time format. Please check the pattern.",
+  "@diaryToolbarTimeFormatInvalid": {
+    "description": "Error shown when the insert-current-time toolbar tool format is invalid."
   }
 }

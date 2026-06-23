@@ -1438,4 +1438,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryToolbarInsertCurrentTime => 'Insert current time';
+
+  @override
+  String get diaryToolbarToolSettingsTooltip => 'Configure tool parameters';
+
+  @override
+  String get diaryToolbarTimeFormatTitle => 'Configure time format';
+
+  @override
+  String get diaryToolbarTimeFormatLabel => 'Time format';
+
+  @override
+  String get diaryToolbarTimeFormatHelp =>
+      'The default format is M月d日 HH:mm. You can use DateFormat tokens such as yyyy, MM, dd, HH, and mm, for example yyyy-MM-dd HH:mm.';
+
+  @override
+  String diaryToolbarTimeFormatPreview(String value) {
+    return 'Preview: $value';
+  }
+
+  @override
+  String get diaryToolbarTimeFormatInvalid =>
+      'Invalid time format. Please check the pattern.';
 }

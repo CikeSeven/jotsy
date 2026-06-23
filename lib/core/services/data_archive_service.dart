@@ -172,6 +172,8 @@ class DataArchiveService {
         'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
         'diaryToolbarHiddenItemsRaw':
             settingsService.diaryToolbarHiddenItemsRaw,
+        'diaryToolbarCurrentTimeFormatRaw':
+            settingsService.diaryToolbarCurrentTimeFormatRaw,
         'tagOrderRaw': settingsService.tagOrderRaw,
         'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
         'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
@@ -375,6 +377,14 @@ class DataArchiveService {
       final toolbarHiddenRaw =
           settingsNode['diaryToolbarHiddenItemsRaw']?.toString() ?? '';
       await settingsService.setDiaryToolbarHiddenItemsRaw(toolbarHiddenRaw);
+    }
+
+    if (settingsNode.containsKey('diaryToolbarCurrentTimeFormatRaw')) {
+      final toolbarCurrentTimeFormatRaw =
+          settingsNode['diaryToolbarCurrentTimeFormatRaw']?.toString() ?? '';
+      await settingsService.setDiaryToolbarCurrentTimeFormatRaw(
+        toolbarCurrentTimeFormatRaw,
+      );
     }
 
     final tagOrderRaw = settingsNode['tagOrderRaw']?.toString();

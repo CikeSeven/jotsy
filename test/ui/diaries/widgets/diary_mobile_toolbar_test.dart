@@ -42,6 +42,10 @@ void main() {
     expect(DiaryToolbarItem.currentTime.storageKey, 'current_time');
   });
 
+  test('default current time format is prefilled pattern', () {
+    expect(kDefaultDiaryToolbarCurrentTimeFormat, 'M月d日 HH:mm');
+  });
+
   testWidgets('current time toolbar button inserts formatted time', (
     tester,
   ) async {
@@ -74,11 +78,61 @@ void main() {
     await tester.pumpAndSettle();
 
     final plainText = controller.document.toPlainText();
-    expect(plainText, contains('${now.year}年'));
-    expect(plainText, contains('月'));
-    expect(plainText, contains('日'));
+    expect(plainText, contains('${now.month}月'));
+    expect(plainText, contains('${now.day}日'));
     expect(plainText, contains(':'));
+    expect(plainText, isNot(contains('${now.year}')));
   });
+
+  testWidgets('current time toolbar button uses custom format', (tester) async {
+    final controller = quill.QuillController.basic();
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          ...AppLocalizations.localizationsDelegates,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SizedBox(
+            height: 44,
+            child: buildDiaryFloatingToolbar(
+              controller: controller,
+              order: const <DiaryToolbarItem>[DiaryToolbarItem.currentTime],
+              currentTimeFormatPattern: 'yyyy/MM/dd HH:mm',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    final now = DateTime.now();
+    await tester.tap(find.byTooltip('插入当前时间'));
+    await tester.pumpAndSettle();
+
+    final plainText = controller.document.toPlainText();
+    expect(plainText, contains('${now.year}/'));
+    expect(plainText, contains('/'));
+    expect(plainText, contains(':'));
+    expect(plainText, isNot(contains('年')));
+  });
+
+  test(
+    'current time format validator accepts empty and DateFormat patterns',
+    () {
+      final l10n = lookupAppLocalizations(const Locale('zh'));
+
+      expect(isValidDiaryToolbarCurrentTimeFormat(l10n, ''), isTrue);
+      expect(
+        isValidDiaryToolbarCurrentTimeFormat(l10n, 'yyyy-MM-dd HH:mm'),
+        isTrue,
+      );
+    },
+  );
 
   testWidgets('floating toolbar hides unchecked tools', (tester) async {
     final controller = quill.QuillController.basic();

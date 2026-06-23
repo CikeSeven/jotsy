@@ -1392,4 +1392,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryToolbarInsertCurrentTime => '插入当前时间';
+
+  @override
+  String get diaryToolbarToolSettingsTooltip => '配置工具参数';
+
+  @override
+  String get diaryToolbarTimeFormatTitle => '配置时间格式';
+
+  @override
+  String get diaryToolbarTimeFormatLabel => '时间格式';
+
+  @override
+  String get diaryToolbarTimeFormatHelp =>
+      '默认格式为 M月d日 HH:mm。可使用 yyyy、MM、dd、HH、mm 等 DateFormat 格式符，例如 yyyy-MM-dd HH:mm。';
+
+  @override
+  String diaryToolbarTimeFormatPreview(String value) {
+    return '预览：$value';
+  }
+
+  @override
+  String get diaryToolbarTimeFormatInvalid => '时间格式无效，请检查格式符。';
 }

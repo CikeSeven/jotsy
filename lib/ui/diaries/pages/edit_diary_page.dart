@@ -92,6 +92,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   QWeatherWeatherService? _weatherService;
   late List<DiaryToolbarItem> _toolbarOrder;
   Set<DiaryToolbarItem> _toolbarHiddenItems = <DiaryToolbarItem>{};
+  String? _toolbarCurrentTimeFormatPattern;
   SettingsService? _boundToolbarSettingsService;
   VoidCallback? _toolbarSettingsListener;
 
@@ -890,6 +891,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     settingsService.diaryToolbarHiddenItemsRawNotifier.addListener(
       _toolbarSettingsListener!,
     );
+    settingsService.diaryToolbarCurrentTimeFormatRawNotifier.addListener(
+      _toolbarSettingsListener!,
+    );
     _applyToolbarSettings(settingsService, notify: false);
   }
 
@@ -899,6 +903,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     if (settingsService != null && listener != null) {
       settingsService.diaryToolbarOrderRawNotifier.removeListener(listener);
       settingsService.diaryToolbarHiddenItemsRawNotifier.removeListener(
+        listener,
+      );
+      settingsService.diaryToolbarCurrentTimeFormatRawNotifier.removeListener(
         listener,
       );
     }
@@ -916,12 +923,19 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     final nextHiddenItems = decodeDiaryToolbarHiddenItems(
       settingsService.diaryToolbarHiddenItemsRaw,
     );
-    if (_hasSameToolbarSettings(nextOrder, nextHiddenItems)) {
+    final nextCurrentTimeFormat =
+        settingsService.diaryToolbarCurrentTimeFormatRaw;
+    if (_hasSameToolbarSettings(
+      nextOrder,
+      nextHiddenItems,
+      nextCurrentTimeFormat,
+    )) {
       return;
     }
     void apply() {
       _toolbarOrder = nextOrder;
       _toolbarHiddenItems = nextHiddenItems;
+      _toolbarCurrentTimeFormatPattern = nextCurrentTimeFormat;
     }
 
     if (notify && mounted) {
@@ -934,9 +948,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _hasSameToolbarSettings(
     List<DiaryToolbarItem> nextOrder,
     Set<DiaryToolbarItem> nextHiddenItems,
+    String? nextCurrentTimeFormat,
   ) {
     if (_toolbarOrder.length != nextOrder.length ||
-        _toolbarHiddenItems.length != nextHiddenItems.length) {
+        _toolbarHiddenItems.length != nextHiddenItems.length ||
+        _toolbarCurrentTimeFormatPattern != nextCurrentTimeFormat) {
       return false;
     }
     for (var index = 0; index < nextOrder.length; index += 1) {
@@ -956,6 +972,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     return buildDiaryFloatingToolbar(
       controller: _contentController,
       order: toolbarOrder,
+      currentTimeFormatPattern: _toolbarCurrentTimeFormatPattern,
     );
   }
 }

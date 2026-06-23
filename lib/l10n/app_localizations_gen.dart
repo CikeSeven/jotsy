@@ -2641,6 +2641,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Insert current time'**
   String get diaryToolbarInsertCurrentTime;
+
+  /// Tooltip for the tool parameter settings button on the toolbar order page.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure tool parameters'**
+  String get diaryToolbarToolSettingsTooltip;
+
+  /// Dialog title for configuring the insert-current-time toolbar tool format.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure time format'**
+  String get diaryToolbarTimeFormatTitle;
+
+  /// Input label for configuring the insert-current-time toolbar tool format.
+  ///
+  /// In en, this message translates to:
+  /// **'Time format'**
+  String get diaryToolbarTimeFormatLabel;
+
+  /// Help text for configuring the insert-current-time toolbar tool format.
+  ///
+  /// In en, this message translates to:
+  /// **'The default format is M月d日 HH:mm. You can use DateFormat tokens such as yyyy, MM, dd, HH, and mm, for example yyyy-MM-dd HH:mm.'**
+  String get diaryToolbarTimeFormatHelp;
+
+  /// Preview text in the insert-current-time toolbar tool format dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: {value}'**
+  String diaryToolbarTimeFormatPreview(String value);
+
+  /// Error shown when the insert-current-time toolbar tool format is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid time format. Please check the pattern.'**
+  String get diaryToolbarTimeFormatInvalid;
 }
 
 class _AppLocalizationsDelegate

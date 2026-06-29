@@ -1093,14 +1093,35 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     required Color color,
   }) {
     assert(icon != null || leading != null);
+    final textStyle = Theme.of(
+      context,
+    ).textTheme.bodyMedium?.copyWith(color: color, height: 1);
+    final iconSlotSize = textStyle?.fontSize ?? 14;
+    final leadingWidget = leading ?? FaIcon(icon!, size: 12, color: color);
+
+    // Row 的居中只能对齐组件布局盒，不能对齐图标和文字的可见轮廓：
+    // FontAwesome 字形与天气 SVG 都会占满自己的方形盒，而正文文字底部仍受
+    // 字体 ascent/descent 影响。这里把图标槽位收窄到正文字号，并轻微上移，
+    // 让时钟、地址、天气图标按视觉中心与文案对齐。
     return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        if (leading != null) leading else FaIcon(icon!, size: 12, color: color),
+        SizedBox.square(
+          dimension: iconSlotSize,
+          child: Center(
+            child: Transform.translate(
+              offset: const Offset(0, -1),
+              child: leadingWidget,
+            ),
+          ),
+        ),
         const SizedBox(width: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: color),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: textStyle,
         ),
       ],
     );

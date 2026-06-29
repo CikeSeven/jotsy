@@ -499,10 +499,6 @@
   "@aboutOpenLinkFallbackCopied": {
     "description": "About 页面外链打开失败后的兜底提示。"
   },
-  "aboutFooterMadeWith": "Made by 柒月",
-  "@aboutFooterMadeWith": {
-    "description": "About 页面底部作者文案。"
-  },
   "aboutFooterCopyright": "© 2026 Jot Project",
   "@aboutFooterCopyright": {
     "description": "About 页面底部版权文案。"

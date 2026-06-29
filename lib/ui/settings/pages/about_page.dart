@@ -423,14 +423,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: <Widget>[
                           Text(
-                            l10n.aboutFooterMadeWith,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
                             l10n.aboutFooterCopyright,
                             style: textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,

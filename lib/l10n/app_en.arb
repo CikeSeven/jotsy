@@ -499,10 +499,6 @@
   "@aboutOpenLinkFallbackCopied": {
     "description": "Fallback snackbar when external link cannot be opened."
   },
-  "aboutFooterMadeWith": "Made by 柒月",
-  "@aboutFooterMadeWith": {
-    "description": "Footer author line for About page."
-  },
   "aboutFooterCopyright": "© 2026 Jot Project",
   "@aboutFooterCopyright": {
     "description": "Footer copyright line for About page."

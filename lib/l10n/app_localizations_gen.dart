@@ -764,12 +764,6 @@ abstract class AppLocalizations {
   /// **'Unable to open link directly. The link has been copied.'**
   String get aboutOpenLinkFallbackCopied;
 
-  /// Footer author line for About page.
-  ///
-  /// In en, this message translates to:
-  /// **'Made by 柒月'**
-  String get aboutFooterMadeWith;
-
   /// Footer copyright line for About page.
   ///
   /// In en, this message translates to:

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/settings_service.dart';
 import 'explore_content_extractor.dart';
 import '../models/explore_view_data.dart';
 
@@ -19,25 +20,13 @@ class ExplorePageController {
       const ExploreContentExtractor();
   static const int _onThisDayMaxEntries = 12;
 
-  static const Map<String, double> _moodWeight = <String, double>{
-    '😭': 1,
-    '😢': 1.5,
-    '😞': 2,
-    '😕': 2.5,
-    '😐': 3,
-    '🙂': 3.5,
-    '😊': 4,
-    '😄': 4.5,
-    '😀': 4.8,
-    '🤩': 5,
-  };
-
   /// 构建探索页整页所需数据。
   ExploreViewData buildViewData(
     List<ExploreDiaryOverview> diaries, {
     required DateTime now,
     required AppLocalizations l10n,
     List<int> orderedTagIds = const <int>[],
+    List<String> moodOptions = SettingsService.defaultMoodOptions,
   }) {
     final fallbackPrompts = <String>[
       l10n.autoT0049,
@@ -49,7 +38,12 @@ class ExplorePageController {
     final onThisDayDiaries = _pickOnThisDayList(diaries, now: now, l10n: l10n);
     final fallbackPrompt = fallbackPrompts[now.day % fallbackPrompts.length];
 
-    final moodWeights30 = _buildMoodSeries(diaries, days: 30, now: now);
+    final moodWeights30 = _buildMoodSeries(
+      diaries,
+      days: 30,
+      now: now,
+      moodOptions: moodOptions,
+    );
     final energyValues7 = _buildEnergySeries(diaries, days: 7, now: now);
     final tagUsages = _buildTagCloud(diaries, orderedTagIds: orderedTagIds);
     final mediaItems = _buildMediaGallery(diaries);
@@ -163,6 +157,7 @@ class ExplorePageController {
     List<ExploreDiaryOverview> diaries, {
     required int days,
     required DateTime now,
+    required List<String> moodOptions,
   }) {
     return _buildDailySeries(
       diaries,
@@ -173,7 +168,7 @@ class ExplorePageController {
         if (mood == null) {
           return null;
         }
-        return _moodWeight[mood];
+        return SettingsService.moodScore(mood, moodOptions);
       },
     );
   }

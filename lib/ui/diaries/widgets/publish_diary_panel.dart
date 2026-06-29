@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
@@ -62,21 +63,12 @@ class PublishDiaryPanel extends StatefulWidget {
     this.actionLabel = '',
     this.onProgressChanged,
     this.onClearCover,
+    this.moodOptions = const <String>[],
   });
 
-  /// 心情候选列表：从低落到高兴，固定两行展示。
-  static const List<String> moodOptions = <String>[
-    '😭',
-    '😢',
-    '😞',
-    '😕',
-    '😐',
-    '🙂',
-    '😊',
-    '😄',
-    '😀',
-    '🤩',
-  ];
+  /// 默认心情候选列表：从低落到高兴，固定两行展示。
+  static const List<String> defaultMoodOptions =
+      SettingsService.defaultMoodOptions;
 
   final PublishDiaryPanelController? controller;
   final bool saving;
@@ -116,6 +108,7 @@ class PublishDiaryPanel extends StatefulWidget {
   final String actionLabel;
   final ValueChanged<double>? onProgressChanged;
   final VoidCallback? onClearCover;
+  final List<String> moodOptions;
 
   @override
   State<PublishDiaryPanel> createState() => _PublishDiaryPanelState();
@@ -1102,6 +1095,10 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
     final l10n = context.l10n;
     const moodColumns = 5;
     const horizontalSpacing = 8.0;
+    final moodOptions =
+        widget.moodOptions.isEmpty
+            ? SettingsService.defaultMoodOptions
+            : SettingsService.normalizeMoodOptions(widget.moodOptions);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -1120,7 +1117,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
             // 固定 5 列，两行排布，不允许横向滚动。
             return Wrap(
               spacing: horizontalSpacing,
-              children: PublishDiaryPanel.moodOptions
+              children: moodOptions
                   .map((emoji) {
                     return SizedBox(
                       width: itemWidth,

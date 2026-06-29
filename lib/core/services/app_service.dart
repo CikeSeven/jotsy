@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
@@ -27,6 +28,28 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
   Ref ref,
 ) async {
   return SettingsService.create();
+});
+
+/// 当前心情符号配置 provider。
+///
+/// SettingsService 通过 ValueNotifier 暴露局部设置变化，这里桥接成 Riverpod
+/// StreamProvider，让发布/编辑面板、日历和探索页能在用户保存配置后即时刷新。
+final moodOptionsProvider = StreamProvider<List<String>>((Ref ref) async* {
+  final settings = await ref.watch(settingsServiceProvider.future);
+  yield settings.moodOptions;
+
+  final controller = StreamController<List<String>>();
+  void listener() {
+    controller.add(settings.moodOptions);
+  }
+
+  settings.moodOptionsRawNotifier.addListener(listener);
+  ref.onDispose(() {
+    settings.moodOptionsRawNotifier.removeListener(listener);
+    unawaited(controller.close());
+  });
+
+  yield* controller.stream;
 });
 
 /// WebDAV 配置服务 provider。

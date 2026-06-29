@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
@@ -36,12 +37,15 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   List<Tag>? _cachedTagsRef;
   String? _cachedLocaleName;
   String? _cachedDayKey;
+  String? _cachedMoodOptionsRaw;
   ExploreViewData? _cachedViewData;
 
   ExploreViewData _resolveViewData({
     required List<ExploreDiaryOverview> diaries,
     required List<Tag> orderedTags,
     required AppLocalizations l10n,
+    required String moodOptionsRaw,
+    required List<String> moodOptions,
   }) {
     final day = DateUtils.dateOnly(DateTime.now());
     final dayKey = '${day.year}-${day.month}-${day.day}';
@@ -50,7 +54,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
         !identical(diaries, _cachedDiariesRef) ||
         !identical(orderedTags, _cachedTagsRef) ||
         _cachedLocaleName != l10n.localeName ||
-        _cachedDayKey != dayKey;
+        _cachedDayKey != dayKey ||
+        _cachedMoodOptionsRaw != moodOptionsRaw;
 
     if (!shouldRebuild) {
       return _cachedViewData!;
@@ -64,11 +69,13 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
       now: DateTime.now(),
       l10n: l10n,
       orderedTagIds: orderedTagIds,
+      moodOptions: moodOptions,
     );
     _cachedDiariesRef = diaries;
     _cachedTagsRef = orderedTags;
     _cachedLocaleName = l10n.localeName;
     _cachedDayKey = dayKey;
+    _cachedMoodOptionsRaw = moodOptionsRaw;
     return _cachedViewData!;
   }
 
@@ -77,6 +84,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     final l10n = context.l10n;
     final diariesAsync = ref.watch(exploreDiariesProvider);
     final orderedTagsAsync = ref.watch(tagListProvider);
+    final moodOptionsAsync = ref.watch(moodOptionsProvider);
+    final moodOptions = moodOptionsAsync.maybeWhen(
+      data: (options) => options,
+      orElse: () => SettingsService.defaultMoodOptions,
+    );
+    final moodOptionsRaw = moodOptions.join('\u{1F}');
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
 
@@ -110,6 +123,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                       diaries: diaries,
                       orderedTags: orderedTags,
                       l10n: l10n,
+                      moodOptionsRaw: moodOptionsRaw,
+                      moodOptions: moodOptions,
                     );
                     return SliverToBoxAdapter(
                       child: ExploreContentSection(

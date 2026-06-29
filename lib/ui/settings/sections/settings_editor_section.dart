@@ -6,6 +6,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
+import 'package:node_diary/ui/settings/pages/mood_options_page.dart';
 
 /// 设置页编辑器配置区块。
 class SettingsEditorSection extends StatelessWidget {
@@ -63,40 +64,78 @@ class SettingsEditorSection extends StatelessWidget {
                         EditorBodyLineHeightPreset lineHeightPreset,
                         Widget? child,
                       ) {
-                        return Column(
-                          children: <Widget>[
-                            _EditorBodyFontSizeTile(
-                              settingsService: settingsService,
-                              selectedPreset: fontSizePreset,
-                            ),
-                            const Divider(height: 1),
-                            _EditorBodyLineHeightTile(
-                              settingsService: settingsService,
-                              selectedPreset: lineHeightPreset,
-                            ),
-                            const Divider(height: 1),
-                            ListTile(
-                              title: Text(l10n.autoT0043),
-                              subtitle: Text(
-                                l10n.autoT0044(preview.isEmpty ? '-' : preview),
-                              ),
-                              trailing: const FaIcon(
-                                FontAwesomeIcons.angleRight,
-                                size: 14,
-                              ),
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (BuildContext context) {
-                                      return DiaryToolbarOrderPage(
-                                        settingsService: settingsService,
-                                      );
-                                    },
-                                  ),
+                        return ValueListenableBuilder<String?>(
+                          valueListenable:
+                              settingsService.moodOptionsRawNotifier,
+                          builder: (
+                            BuildContext context,
+                            String? moodOptionsRaw,
+                            Widget? child,
+                          ) {
+                            final moodOptions =
+                                SettingsService.decodeMoodOptions(
+                                  moodOptionsRaw,
                                 );
-                              },
-                            ),
-                          ],
+                            return Column(
+                              children: <Widget>[
+                                _EditorBodyFontSizeTile(
+                                  settingsService: settingsService,
+                                  selectedPreset: fontSizePreset,
+                                ),
+                                const Divider(height: 1),
+                                _EditorBodyLineHeightTile(
+                                  settingsService: settingsService,
+                                  selectedPreset: lineHeightPreset,
+                                ),
+                                const Divider(height: 1),
+                                ListTile(
+                                  title: Text(l10n.autoT0043),
+                                  subtitle: Text(
+                                    l10n.autoT0044(
+                                      preview.isEmpty ? '-' : preview,
+                                    ),
+                                  ),
+                                  trailing: const FaIcon(
+                                    FontAwesomeIcons.angleRight,
+                                    size: 14,
+                                  ),
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (BuildContext context) {
+                                          return DiaryToolbarOrderPage(
+                                            settingsService: settingsService,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                                const Divider(height: 1),
+                                ListTile(
+                                  title: Text(l10n.settingsMoodOptionsTitle),
+                                  subtitle: Text(
+                                    '${l10n.settingsMoodOptionsSubtitle}\n${moodOptions.join(' ')}',
+                                  ),
+                                  trailing: const FaIcon(
+                                    FontAwesomeIcons.angleRight,
+                                    size: 14,
+                                  ),
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (BuildContext context) {
+                                          return MoodOptionsPage(
+                                            settingsService: settingsService,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
+                          },
                         );
                       },
                     );

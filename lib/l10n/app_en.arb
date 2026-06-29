@@ -237,7 +237,7 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
-  "settingsEditorSubtitle": "Fonts, spacing, and toolbar",
+  "settingsEditorSubtitle": "Fonts, spacing, toolbar, and mood emojis",
   "@settingsEditorSubtitle": {
     "description": "Subtitle for editor settings entry on root settings page."
   },
@@ -284,6 +284,41 @@
   "settingsEditorLineHeightRelaxed": "Relaxed",
   "@settingsEditorLineHeightRelaxed": {
     "description": "Relaxed option for editor body line height."
+  },
+  "settingsMoodOptionsTitle": "Mood emojis",
+  "@settingsMoodOptionsTitle": {
+    "description": "Setting title for customizing the fixed 10 mood emojis."
+  },
+  "settingsMoodOptionsSubtitle": "Customize 10 mood choices",
+  "@settingsMoodOptionsSubtitle": {
+    "description": "Subtitle for mood emoji setting entry."
+  },
+  "settingsMoodOptionsSlotLabel": "Mood {index}",
+  "@settingsMoodOptionsSlotLabel": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    },
+    "description": "Label for one mood emoji input slot."
+  },
+  "settingsMoodOptionsSlotHelper": "Default: {emoji}",
+  "@settingsMoodOptionsSlotHelper": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    },
+    "description": "Helper text showing the default emoji for one slot."
+  },
+  "settingsMoodOptionsSaveFailed": "Save mood emojis failed: {error}",
+  "@settingsMoodOptionsSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "description": "Error message when saving mood emoji settings fails."
   },
   "settingsDataPrivacy": "Data & Privacy",
   "@settingsDataPrivacy": {

@@ -15,6 +15,7 @@ import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
@@ -144,6 +145,11 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final tagsAsync = ref.watch(tagListProvider);
+    final moodOptionsAsync = ref.watch(moodOptionsProvider);
+    final moodOptions = moodOptionsAsync.maybeWhen(
+      data: (options) => options,
+      orElse: () => SettingsService.defaultMoodOptions,
+    );
 
     // 标签数据状态拆分为三元组，便于直接透传给悬浮面板组件。
     var tags = const <Tag>[];
@@ -250,6 +256,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 weatherController: _weatherController,
                 weatherIconCode: _weatherIconCode,
                 moodEmoji: _moodEmoji,
+                moodOptions: moodOptions,
                 energyLevel: _energyLevel,
                 tags: tags,
                 tagsLoading: tagsLoading,

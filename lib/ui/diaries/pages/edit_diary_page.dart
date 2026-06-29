@@ -564,6 +564,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     final showEditMetaPanel = _isEditEntry;
     final settingsAsync = ref.watch(settingsServiceProvider);
     settingsAsync.whenData(_bindToolbarSettingsService);
+    final moodOptionsAsync = ref.watch(moodOptionsProvider);
+    final moodOptions = moodOptionsAsync.maybeWhen(
+      data: (options) => options,
+      orElse: () => SettingsService.defaultMoodOptions,
+    );
     final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
       _toolbarOrder,
       _toolbarHiddenItems,
@@ -741,6 +746,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     weatherController: _weatherController,
                     weatherIconCode: _draftWeatherIconCode,
                     moodEmoji: _draftMoodEmoji,
+                    moodOptions: moodOptions,
                     energyLevel: _draftEnergyLevel ?? 4,
                     tags: tags,
                     tagsLoading: tagsLoading,

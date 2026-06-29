@@ -237,7 +237,7 @@
   "@settingsEditorTitle": {
     "description": "Auto-generated metadata for settingsEditorTitle."
   },
-  "settingsEditorSubtitle": "字体、行距与工具栏",
+  "settingsEditorSubtitle": "字体、行距、工具栏与心情符号",
   "@settingsEditorSubtitle": {
     "description": "设置首页“编辑器”入口的副标题。"
   },
@@ -284,6 +284,41 @@
   "settingsEditorLineHeightRelaxed": "宽松",
   "@settingsEditorLineHeightRelaxed": {
     "description": "编辑器正文宽松行距选项。"
+  },
+  "settingsMoodOptionsTitle": "心情符号",
+  "@settingsMoodOptionsTitle": {
+    "description": "设置项：自定义发布/编辑面板中固定 10 个心情符号。"
+  },
+  "settingsMoodOptionsSubtitle": "自定义 10 个心情候选",
+  "@settingsMoodOptionsSubtitle": {
+    "description": "心情符号设置入口副标题。"
+  },
+  "settingsMoodOptionsSlotLabel": "心情 {index}",
+  "@settingsMoodOptionsSlotLabel": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    },
+    "description": "心情符号输入框标签。"
+  },
+  "settingsMoodOptionsSlotHelper": "默认：{emoji}",
+  "@settingsMoodOptionsSlotHelper": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      }
+    },
+    "description": "心情符号输入框帮助文案。"
+  },
+  "settingsMoodOptionsSaveFailed": "保存心情符号失败: {error}",
+  "@settingsMoodOptionsSaveFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    },
+    "description": "心情符号设置保存失败提示。"
   },
   "settingsDataPrivacy": "数据与隐私",
   "@settingsDataPrivacy": {

@@ -11,6 +11,7 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
@@ -107,6 +108,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month);
     final markersAsync = ref.watch(calendarMonthMarkersProvider(focusedMonth));
     final dayDiariesAsync = ref.watch(calendarDayDiariesProvider(_selectedDay));
+    final moodOptionsAsync = ref.watch(moodOptionsProvider);
+    final moodOptions = moodOptionsAsync.maybeWhen(
+      data: (options) => options,
+      orElse: () => SettingsService.defaultMoodOptions,
+    );
     final latestMarkers = markersAsync.asData?.value;
     final latestMarkerBuckets =
         latestMarkers == null
@@ -139,7 +145,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         _calendarCardHorizontalPadding,
                         _calendarBottomGap,
                       ),
-                      child: _buildCalendarPanel(markerBuckets, markerStatus),
+                      child: _buildCalendarPanel(
+                        markerBuckets,
+                        markerStatus,
+                        moodOptions,
+                      ),
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -180,6 +190,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Widget _buildCalendarPanel(
     Map<DateTime, List<DiaryCalendarMarker>> markerBuckets,
     _CalendarStaleStatus markerStatus,
+    List<String> moodOptions,
   ) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
@@ -253,7 +264,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 if (events.isEmpty) {
                   return null;
                 }
-                final mood = _controller.resolveMoodEmoji(events);
+                final mood = _controller.resolveMoodEmoji(events, moodOptions);
                 if (mood != null) {
                   return Align(
                     alignment: Alignment.bottomCenter,

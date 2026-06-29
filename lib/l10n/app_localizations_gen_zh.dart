@@ -178,7 +178,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsEditorTitle => '编辑器设置';
 
   @override
-  String get settingsEditorSubtitle => '字体、行距与工具栏';
+  String get settingsEditorSubtitle => '字体、行距、工具栏与心情符号';
 
   @override
   String get settingsEditorGroup => '编辑器';
@@ -212,6 +212,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsEditorLineHeightRelaxed => '宽松';
+
+  @override
+  String get settingsMoodOptionsTitle => '心情符号';
+
+  @override
+  String get settingsMoodOptionsSubtitle => '自定义 10 个心情候选';
+
+  @override
+  String settingsMoodOptionsSlotLabel(String index) {
+    return '心情 $index';
+  }
+
+  @override
+  String settingsMoodOptionsSlotHelper(String emoji) {
+    return '默认：$emoji';
+  }
+
+  @override
+  String settingsMoodOptionsSaveFailed(String error) {
+    return '保存心情符号失败: $error';
+  }
 
   @override
   String get settingsDataPrivacy => '数据与隐私';

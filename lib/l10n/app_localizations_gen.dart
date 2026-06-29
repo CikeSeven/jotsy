@@ -419,7 +419,7 @@ abstract class AppLocalizations {
   /// Subtitle for editor settings entry on root settings page.
   ///
   /// In en, this message translates to:
-  /// **'Fonts, spacing, and toolbar'**
+  /// **'Fonts, spacing, toolbar, and mood emojis'**
   String get settingsEditorSubtitle;
 
   /// Settings group title for editor-related options.
@@ -487,6 +487,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Relaxed'**
   String get settingsEditorLineHeightRelaxed;
+
+  /// Setting title for customizing the fixed 10 mood emojis.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood emojis'**
+  String get settingsMoodOptionsTitle;
+
+  /// Subtitle for mood emoji setting entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize 10 mood choices'**
+  String get settingsMoodOptionsSubtitle;
+
+  /// Label for one mood emoji input slot.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood {index}'**
+  String settingsMoodOptionsSlotLabel(String index);
+
+  /// Helper text showing the default emoji for one slot.
+  ///
+  /// In en, this message translates to:
+  /// **'Default: {emoji}'**
+  String settingsMoodOptionsSlotHelper(String emoji);
+
+  /// Error message when saving mood emoji settings fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Save mood emojis failed: {error}'**
+  String settingsMoodOptionsSaveFailed(String error);
 
   /// Settings entry label for data and privacy section.
   ///

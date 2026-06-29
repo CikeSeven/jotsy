@@ -187,7 +187,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEditorTitle => 'Editor';
 
   @override
-  String get settingsEditorSubtitle => 'Fonts, spacing, and toolbar';
+  String get settingsEditorSubtitle =>
+      'Fonts, spacing, toolbar, and mood emojis';
 
   @override
   String get settingsEditorGroup => 'Editor';
@@ -223,6 +224,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsEditorLineHeightRelaxed => 'Relaxed';
+
+  @override
+  String get settingsMoodOptionsTitle => 'Mood emojis';
+
+  @override
+  String get settingsMoodOptionsSubtitle => 'Customize 10 mood choices';
+
+  @override
+  String settingsMoodOptionsSlotLabel(String index) {
+    return 'Mood $index';
+  }
+
+  @override
+  String settingsMoodOptionsSlotHelper(String emoji) {
+    return 'Default: $emoji';
+  }
+
+  @override
+  String settingsMoodOptionsSaveFailed(String error) {
+    return 'Save mood emojis failed: $error';
+  }
 
   @override
   String get settingsDataPrivacy => 'Data & Privacy';

@@ -150,8 +150,15 @@ class ExploreMediaThumb extends StatelessWidget {
           constrained: constraints.maxHeight,
         );
         final dpr = MediaQuery.devicePixelRatioOf(context);
-        final cacheWidth = _cacheExtent(resolvedWidth, dpr);
-        final cacheHeight = _cacheExtent(resolvedHeight, dpr);
+        // 仅按缩略图容器长边给解码器一个缓存目标，避免同时指定
+        // cacheWidth/cacheHeight 把图片预缩放成容器比例，导致后续展示看起来被拉伸。
+        // 实际填充仍交给 BoxFit.cover 裁切，从而保留原图比例。
+        final cacheExtent = _cacheExtent(
+          resolvedWidth >= resolvedHeight ? resolvedWidth : resolvedHeight,
+          dpr,
+        );
+        final cacheWidth = resolvedWidth >= resolvedHeight ? cacheExtent : null;
+        final cacheHeight = resolvedWidth < resolvedHeight ? cacheExtent : null;
         final uri = Uri.tryParse(source);
         final isRemote =
             uri != null && (uri.scheme == 'http' || uri.scheme == 'https');

@@ -230,6 +230,37 @@ class _LockedDiaryContent extends ConsumerWidget {
     WidgetRef ref,
     String diaryId,
   ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final l10n = dialogContext.l10n;
+        return AlertDialog(
+          title: Text(l10n.autoT0094),
+          content: Text(l10n.autoT0113),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor:
+                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(dialogContext).colorScheme.error,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.commonDelete),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
     final db = ref.read(appDatabaseProvider);
     await db.softDeleteDiary(diaryId, touchUpdatedAt: false);
     if (context.mounted) {

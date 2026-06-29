@@ -220,9 +220,11 @@ class _LockedDiaryContent extends ConsumerWidget {
       pickedTime.hour,
       pickedTime.minute,
     );
-    await ref
-        .read(appDatabaseProvider)
-        .updateDiaryCapsuleSchedule(diaryId: diary.diaryId, unlockAt: unlockAt);
+    await updateLockedDiaryUnlockAt(
+      ref,
+      diaryId: diary.diaryId,
+      unlockAt: unlockAt,
+    );
   }
 
   Future<void> _deleteDiary(
@@ -335,6 +337,17 @@ class _LockedDiaryContent extends ConsumerWidget {
         ? '$year年$month月$day日 $hour:$minute'
         : '$year-$month-$day $hour:$minute';
   }
+}
+
+Future<void> updateLockedDiaryUnlockAt(
+  WidgetRef ref, {
+  required String diaryId,
+  required DateTime unlockAt,
+}) async {
+  await ref
+      .read(appDatabaseProvider)
+      .updateDiaryCapsuleSchedule(diaryId: diaryId, unlockAt: unlockAt);
+  ref.invalidate(diaryDetailProvider(diaryId));
 }
 
 class _MetaPill extends StatelessWidget {

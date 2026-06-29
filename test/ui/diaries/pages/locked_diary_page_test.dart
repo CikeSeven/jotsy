@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,20 +75,85 @@ void main() {
 
     await tester.pump(const Duration(seconds: 4));
   });
+
+  testWidgets('locked capsule refreshes detail after unlock time changes', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 6, 29, 9);
+    final diaryId = 'locked-capsule-1';
+    final originalUnlockAt = now.add(const Duration(days: 30));
+    final updatedUnlockAt = now.add(const Duration(days: 60));
+    final db = _RecordingAppDatabase(
+      DiaryWithTags(
+        diary: Diary(
+          id: 1,
+          diaryId: diaryId,
+          title: 'Future letter',
+          content: '[{"insert":"secret words\\n"}]',
+          contentText: 'secret words',
+          metadata: '{}',
+          createdAt: now,
+          updatedAt: now,
+          isArchived: false,
+          isPinned: false,
+          capsuleLockedAt: now,
+          capsuleUnlockAt: originalUnlockAt,
+          isDeleted: false,
+        ),
+        tags: const <Tag>[],
+      ),
+    );
+    addTearDown(db.close);
+
+    late WidgetRef capturedRef;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appDatabaseProvider.overrideWithValue(db)],
+        child: MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Consumer(
+            builder: (context, ref, child) {
+              capturedRef = ref;
+              return LockedDiaryPage(diaryId: diaryId);
+            },
+          ),
+        ),
+      ),
+    );
+    await _pumpUntilFound(tester, find.text('Future letter'));
+
+    await updateLockedDiaryUnlockAt(
+      capturedRef,
+      diaryId: diaryId,
+      unlockAt: updatedUnlockAt,
+    );
+    await _pumpUntil(
+      tester,
+      () => db.detail.diary.capsuleUnlockAt == updatedUnlockAt,
+    );
+
+    expect(db.updatedCapsuleUnlockAt, updatedUnlockAt);
+    expect(db.detailReadCount, 2);
+  });
 }
 
 class _RecordingAppDatabase extends AppDatabase {
   _RecordingAppDatabase(this.detail)
     : super.forTesting(NativeDatabase.memory());
 
-  final DiaryWithTags detail;
+  DiaryWithTags detail;
   final List<String> deletedDiaryIds = <String>[];
+  DateTime? updatedCapsuleUnlockAt;
   bool deletedWithoutTouchingUpdatedAt = false;
+  int detailReadCount = 0;
 
   int get softDeleteCalls => deletedDiaryIds.length;
 
   @override
   Future<DiaryWithTags?> getDiaryWithTagsByDiaryId(String diaryId) async {
+    detailReadCount += 1;
     if (diaryId == detail.diary.diaryId) {
       return detail;
     }
@@ -109,6 +175,21 @@ class _RecordingAppDatabase extends AppDatabase {
     bool touchUpdatedAt = true,
   }) async {
     deletedDiaryIds.remove(diaryId);
+  }
+
+  @override
+  Future<void> updateDiaryCapsuleSchedule({
+    required String diaryId,
+    required DateTime unlockAt,
+  }) async {
+    updatedCapsuleUnlockAt = unlockAt;
+    if (diaryId != detail.diary.diaryId) {
+      return;
+    }
+    detail = DiaryWithTags(
+      diary: detail.diary.copyWith(capsuleUnlockAt: Value<DateTime?>(unlockAt)),
+      tags: detail.tags,
+    );
   }
 }
 

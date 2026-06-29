@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 
 import 'package:file_picker/file_picker.dart';
@@ -275,8 +276,21 @@ Widget buildDiaryFloatingToolbar({
 }
 
 /// 统一返回 Quill Embed 渲染器（发布预览与编辑器保持一致）。
-List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders() {
-  return FlutterQuillEmbeds.defaultEditorBuilders();
+///
+/// [onImageClicked] 仅用于阅读态覆盖图片默认菜单；编辑态不传入时仍保留
+/// flutter_quill_extensions 自带的图片操作菜单，避免影响编辑/调整尺寸流程。
+List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
+  void Function(String imageSource)? onImageClicked,
+}) {
+  if (onImageClicked == null || kIsWeb) {
+    return FlutterQuillEmbeds.defaultEditorBuilders();
+  }
+
+  return FlutterQuillEmbeds.editorBuilders(
+    imageEmbedConfig: QuillEditorImageEmbedConfig(
+      onImageClicked: onImageClicked,
+    ),
+  );
 }
 
 /// 对外部传入顺序做去重 + 补全，防止配置异常导致工具项缺失。

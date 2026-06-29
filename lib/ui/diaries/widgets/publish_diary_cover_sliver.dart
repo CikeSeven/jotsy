@@ -13,12 +13,14 @@ class PublishDiaryCoverSliver extends StatelessWidget {
     this.maxExtentHeight = 220,
     this.padding = const EdgeInsets.fromLTRB(16, 12, 16, 8),
     this.borderRadius = const BorderRadius.all(Radius.circular(20)),
+    this.onTap,
   });
 
   final String cover;
   final double maxExtentHeight;
   final EdgeInsetsGeometry padding;
   final BorderRadiusGeometry borderRadius;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +31,7 @@ class PublishDiaryCoverSliver extends StatelessWidget {
         maxExtentHeight: maxExtentHeight,
         padding: padding,
         borderRadius: borderRadius,
+        onTap: onTap,
       ),
     );
   }
@@ -40,12 +43,13 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.maxExtentHeight,
     required this.padding,
     required this.borderRadius,
+    required this.onTap,
   });
-
   final String cover;
   final double maxExtentHeight;
   final EdgeInsetsGeometry padding;
   final BorderRadiusGeometry borderRadius;
+  final VoidCallback? onTap;
 
   @override
   double get minExtent => 0;
@@ -77,9 +81,14 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
           alignment: Alignment.topCenter,
           child: ClipRRect(
             borderRadius: borderRadius,
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
-              child: _CoverImage(cover: cover),
+            child: _CoverTapTarget(
+              onTap: onTap,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+                child: _CoverImage(cover: cover),
+              ),
             ),
           ),
         ),
@@ -92,7 +101,27 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
     return oldDelegate.cover != cover ||
         oldDelegate.maxExtentHeight != maxExtentHeight ||
         oldDelegate.padding != padding ||
-        oldDelegate.borderRadius != borderRadius;
+        oldDelegate.borderRadius != borderRadius ||
+        oldDelegate.onTap != onTap;
+  }
+}
+
+class _CoverTapTarget extends StatelessWidget {
+  const _CoverTapTarget({required this.onTap, required this.child});
+
+  final VoidCallback? onTap;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (onTap == null) {
+      return child;
+    }
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: child,
+    );
   }
 }
 

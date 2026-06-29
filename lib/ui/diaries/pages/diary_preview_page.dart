@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -30,6 +31,7 @@ import '../utils/diary_markdown_exporter.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
+import '../../widgets/image_viewer_page.dart';
 import 'edit_diary_page.dart';
 import 'locked_diary_page.dart';
 import '../models/time_capsule.dart';
@@ -613,6 +615,42 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
   }
 
+  void _openImageViewer(List<String> sources, String initialSource) {
+    final normalizedSources = <String>[];
+    final seenSources = <String>{};
+    for (final source in sources) {
+      final normalized = source.trim();
+      if (normalized.isEmpty || !seenSources.add(normalized)) {
+        continue;
+      }
+      normalizedSources.add(normalized);
+    }
+    final normalizedInitialSource = initialSource.trim();
+    if (normalizedInitialSource.isNotEmpty &&
+        !seenSources.contains(normalizedInitialSource)) {
+      normalizedSources.insert(0, normalizedInitialSource);
+    }
+    if (normalizedSources.isEmpty) {
+      return;
+    }
+
+    final initialIndex = math.max(
+      0,
+      normalizedSources.indexOf(normalizedInitialSource),
+    );
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder:
+            (_) => ImageViewerPage(
+              items: normalizedSources
+                  .map((source) => ImageViewerItem(source: source))
+                  .toList(growable: false),
+              initialIndex: initialIndex,
+            ),
+      ),
+    );
+  }
+
   Future<void> _openEditor() async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -731,52 +769,54 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
   }
 
-  /// 封面优先级：
+  /// 图片浏览来源优先级：
   /// 1) diary.cover；
-  /// 2) 正文第一张图片；
-  /// 3) 无封面时返回 null。
-  String? _resolvePreviewCover(Diary diary) {
+  /// 2) 正文内所有图片。
+  ///
+  /// 预览页封面与正文图片共用同一组来源，点击任一图片可直接进入图片浏览页并左右切换。
+  List<String> _resolvePreviewImages(Diary diary) {
+    final sources = <String>[];
     final explicitCover = diary.cover?.trim();
     if (explicitCover != null && explicitCover.isNotEmpty) {
-      return explicitCover;
+      sources.add(explicitCover);
     }
-    return _extractFirstImageFromContent(diary.content);
+    sources.addAll(_extractImageSourcesFromContent(diary.content));
+    return sources;
   }
 
-  String? _extractFirstImageFromContent(String contentJson) {
+  List<String> _extractImageSourcesFromContent(String contentJson) {
     final normalized = contentJson.trim();
     if (normalized.isEmpty) {
-      return null;
+      return const <String>[];
     }
 
     try {
       final decoded = jsonDecode(normalized);
-      return _extractImageFromNode(decoded);
+      final sources = <String>[];
+      _collectImagesFromNode(decoded, sources);
+      return sources;
     } catch (_) {
-      return null;
+      return const <String>[];
     }
   }
 
-  String? _extractImageFromNode(Object? node) {
+  void _collectImagesFromNode(Object? node, List<String> sources) {
     if (node is List) {
       for (final item in node) {
-        final image = _extractImageFromNode(item);
-        if (image != null) {
-          return image;
-        }
+        _collectImagesFromNode(item, sources);
       }
-      return null;
+      return;
     }
 
     if (node is! Map) {
-      return null;
+      return;
     }
 
     final insert = node['insert'];
     if (insert is Map) {
       final image = insert['image'];
       if (image is String && image.trim().isNotEmpty) {
-        return image.trim();
+        sources.add(image.trim());
       }
     }
 
@@ -786,27 +826,20 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       if (attributes is Map) {
         final url = attributes['url'];
         if (url is String && url.trim().isNotEmpty) {
-          return url.trim();
+          sources.add(url.trim());
         }
       }
     }
 
     final root = node['root'];
     if (root != null) {
-      final image = _extractImageFromNode(root);
-      if (image != null) {
-        return image;
-      }
+      _collectImagesFromNode(root, sources);
     }
 
     final children = node['children'];
     if (children != null) {
-      final image = _extractImageFromNode(children);
-      if (image != null) {
-        return image;
-      }
+      _collectImagesFromNode(children, sources);
     }
-    return null;
   }
 
   Map<String, dynamic>? _extractContextMetadata(DiaryWithTags detail) {
@@ -1090,6 +1123,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     final hasVisibleContent = diaryDocumentHasVisibleContent(
       controller.document,
     );
+    final previewImages = _resolvePreviewImages(diary);
     final contentBody =
         hasVisibleContent
             ? quill.QuillEditor.basic(
@@ -1100,7 +1134,11 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                 padding: EdgeInsets.zero,
                 showCursor: false,
                 checkBoxReadOnly: false,
-                embedBuilders: buildDiaryQuillEmbedBuilders(),
+                embedBuilders: buildDiaryQuillEmbedBuilders(
+                  onImageClicked: (imageSource) {
+                    _openImageViewer(previewImages, imageSource);
+                  },
+                ),
               ),
             )
             : Text(
@@ -1197,7 +1235,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             detail.diary.title.trim().isEmpty
                 ? context.l10n.autoT0033
                 : detail.diary.title.trim();
-        final coverSource = _resolvePreviewCover(detail.diary);
+        final previewImages = _resolvePreviewImages(detail.diary);
+        final coverSource = previewImages.firstOrNull;
 
         return Scaffold(
           body: SafeArea(
@@ -1218,6 +1257,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                               maxExtentHeight: 420,
                               padding: EdgeInsets.zero,
                               borderRadius: BorderRadius.zero,
+                              onTap: () {
+                                _openImageViewer(previewImages, coverSource);
+                              },
                             ),
 
                       SliverToBoxAdapter(

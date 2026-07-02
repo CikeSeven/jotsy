@@ -348,6 +348,14 @@
   "@settingsTagManagementSubtitle": {
     "description": "Auto-generated metadata for settingsTagManagementSubtitle."
   },
+  "settingsTagMemory": "Tag memory",
+  "@settingsTagMemory": {
+    "description": "Setting title for enabling or disabling remembered diary tag filters."
+  },
+  "settingsTagMemorySubtitle": "Remember selected diary tags and restore them next time",
+  "@settingsTagMemorySubtitle": {
+    "description": "Subtitle for tag memory setting explaining that selected diary tag filters are restored."
+  },
   "settingsRecycleBin": "Recycle Bin",
   "@settingsRecycleBin": {
     "description": "Auto-generated metadata for settingsRecycleBin."

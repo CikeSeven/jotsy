@@ -89,6 +89,7 @@ class SettingsService {
     required double fontScale,
     required Locale locale,
     required bool appLockEnabled,
+    required bool tagFilterMemoryEnabled,
     required String? diaryToolbarOrderRaw,
     required String? diaryToolbarHiddenItemsRaw,
     required String? diaryToolbarCurrentTimeFormatRaw,
@@ -108,6 +109,9 @@ class SettingsService {
        fontScaleNotifier = ValueNotifier<double>(fontScale),
        localeNotifier = ValueNotifier<Locale>(locale),
        appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled),
+       tagFilterMemoryEnabledNotifier = ValueNotifier<bool>(
+         tagFilterMemoryEnabled,
+       ),
        diaryToolbarOrderRawNotifier = ValueNotifier<String?>(
          diaryToolbarOrderRaw,
        ),
@@ -130,6 +134,7 @@ class SettingsService {
   final ValueNotifier<double> fontScaleNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
+  final ValueNotifier<bool> tagFilterMemoryEnabledNotifier;
   final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
   final ValueNotifier<String?> diaryToolbarCurrentTimeFormatRawNotifier;
@@ -151,6 +156,10 @@ class SettingsService {
   static const _keyDiaryToolbarCurrentTimeFormat =
       'app.settings.diary_toolbar_current_time_format';
   static const _keyMoodOptions = 'app.settings.mood_options';
+  static const _keyTagFilterMemoryEnabled =
+      'app.settings.tag_filter_memory_enabled';
+  static const _keyRememberedTagFilterIds =
+      'app.settings.remembered_tag_filter_ids';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
@@ -203,6 +212,8 @@ class SettingsService {
       await prefs.setString(_keyAppLocaleCode, localeCode);
     }
     final appLockEnabled = prefs.getBool(_keyAppLockEnabled) ?? false;
+    final tagFilterMemoryEnabled =
+        prefs.getBool(_keyTagFilterMemoryEnabled) ?? false;
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -213,6 +224,7 @@ class SettingsService {
       fontScale: fontScale,
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
+      tagFilterMemoryEnabled: tagFilterMemoryEnabled,
       diaryToolbarOrderRaw: prefs.getString(_keyDiaryToolbarOrder),
       diaryToolbarHiddenItemsRaw: prefs.getString(_keyDiaryToolbarHiddenItems),
       diaryToolbarCurrentTimeFormatRaw:
@@ -276,11 +288,13 @@ class SettingsService {
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
+  bool get isTagFilterMemoryEnabled => tagFilterMemoryEnabledNotifier.value;
+  String? get rememberedTagFilterIdsRaw =>
+      _prefs.getString(_keyRememberedTagFilterIds);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
   int get releaseMirrorStartIndexRaw =>
       _prefs.getInt(_keyReleaseMirrorStartIndex) ?? 0;
-
   Future<void> setDiarySortModeRaw(String value) async {
     await _prefs.setString(_keyDiarySortMode, value);
   }
@@ -323,6 +337,27 @@ class SettingsService {
   Future<void> resetMoodOptions() async {
     moodOptionsRawNotifier.value = null;
     await _prefs.remove(_keyMoodOptions);
+  }
+
+  Future<void> setTagFilterMemoryEnabled(bool enabled) async {
+    tagFilterMemoryEnabledNotifier.value = enabled;
+    await _prefs.setBool(_keyTagFilterMemoryEnabled, enabled);
+    if (!enabled) {
+      await clearRememberedTagFilterIds();
+    }
+  }
+
+  Future<void> setRememberedTagFilterIdsRaw(String value) async {
+    final normalized = value.trim();
+    if (normalized.isEmpty) {
+      await clearRememberedTagFilterIds();
+      return;
+    }
+    await _prefs.setString(_keyRememberedTagFilterIds, normalized);
+  }
+
+  Future<void> clearRememberedTagFilterIds() async {
+    await _prefs.remove(_keyRememberedTagFilterIds);
   }
 
   Future<void> setTagOrderRaw(String value) async {

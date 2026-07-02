@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/tag_order_codec.dart';
+import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
+import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
@@ -106,7 +111,19 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       final order = decodeTagOrder(settings.tagOrderRaw)
         ..removeWhere((id) => id == tag.id);
       await settings.setTagOrderRaw(encodeTagOrder(order));
+      final rememberedTagIds = decodeTagOrder(
+        settings.rememberedTagFilterIdsRaw,
+      )..removeWhere((id) => id == tag.id);
+      await settings.setRememberedTagFilterIdsRaw(
+        encodeTagOrder(rememberedTagIds),
+      );
       await db.deleteTag(tag.id);
+      final activeTagIds = ref.read(diaryFilterProvider).selectedTagIds;
+      if (activeTagIds.contains(tag.id)) {
+        ref
+            .read(diaryFilterProvider.notifier)
+            .setTags(activeTagIds.where((id) => id != tag.id));
+      }
       ref.invalidate(tagListProvider);
     } catch (error) {
       await _showHint(l10n.autoT0036(error.toString()));
@@ -184,6 +201,22 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     );
   }
 
+  Future<void> _setTagFilterMemoryEnabled(
+    SettingsService settings,
+    bool enabled,
+  ) async {
+    await settings.setTagFilterMemoryEnabled(enabled);
+    if (!enabled) {
+      return;
+    }
+    final currentTagIds = ref.read(diaryFilterProvider).selectedTagIds;
+    if (currentTagIds.isEmpty) {
+      return;
+    }
+    final sortedTagIds = currentTagIds.toList(growable: false)..sort();
+    await settings.setRememberedTagFilterIdsRaw(encodeTagOrder(sortedTagIds));
+  }
+
   /// 同步流式标签数据到页面可视列表。
   ///
   /// - 常规状态：跟随 provider 输出；
@@ -243,6 +276,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final tagsAsync = ref.watch(tagListProvider);
+    final settingsAsync = ref.watch(settingsServiceProvider);
 
     return Scaffold(
       appBar: AppTopBar(
@@ -260,63 +294,135 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
           ),
         ],
       ),
-      body: tagsAsync.when(
-        data: (tags) {
-          _syncDisplayTags(tags);
-          final displayTags = _displayTags;
-          if (displayTags.isEmpty) {
-            return Center(
-              child: TextButton(
-                onPressed: _operating ? null : _createTag,
-                child: Text(l10n.autoT0041),
+      body: settingsAsync.when(
+        data: (settings) {
+          return Column(
+            children: <Widget>[
+              _TagFilterMemorySwitch(
+                settings: settings,
+                onChanged:
+                    (enabled) => unawaited(
+                      _setTagFilterMemoryEnabled(settings, enabled),
+                    ),
               ),
-            );
-          }
-
-          return ReorderableListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            buildDefaultDragHandles: false,
-            itemCount: displayTags.length,
-            onReorder: (oldIndex, newIndex) {
-              _reorderTags(displayTags, oldIndex, newIndex);
-            },
-            itemBuilder: (BuildContext context, int index) {
-              final tag = displayTags[index];
-              return ListTile(
-                key: ValueKey<int>(tag.id),
-                onTap: _operating ? null : () => _editTag(tag),
-                leading: CircleAvatar(backgroundColor: Color(tag.color)),
-                title: Text(tag.name),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    IconButton(
-                      tooltip: l10n.autoT0038,
-                      onPressed: _operating ? null : () => _deleteTag(tag),
-                      icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
-                    ),
-                    const SizedBox(width: 12),
-                    ReorderableDragStartListener(
-                      index: index,
-                      child: const SizedBox(
-                        width: 44,
-                        height: 40,
-                        child: ColoredBox(
-                          color: Colors.transparent,
-                          child: Center(child: _TagDragHandle()),
+              const Divider(height: 1),
+              Expanded(
+                child: tagsAsync.when(
+                  data: (tags) {
+                    _syncDisplayTags(tags);
+                    final displayTags = _displayTags;
+                    if (displayTags.isEmpty) {
+                      return Center(
+                        child: TextButton(
+                          onPressed: _operating ? null : _createTag,
+                          child: Text(l10n.autoT0041),
                         ),
-                      ),
-                    ),
-                  ],
+                      );
+                    }
+
+                    return ReorderableListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      buildDefaultDragHandles: false,
+                      itemCount: displayTags.length,
+                      onReorder: (oldIndex, newIndex) {
+                        _reorderTags(displayTags, oldIndex, newIndex);
+                      },
+                      itemBuilder: (BuildContext context, int index) {
+                        final tag = displayTags[index];
+                        return ListTile(
+                          key: ValueKey<int>(tag.id),
+                          onTap: _operating ? null : () => _editTag(tag),
+                          leading: CircleAvatar(
+                            backgroundColor: Color(tag.color),
+                          ),
+                          title: Text(tag.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              IconButton(
+                                tooltip: l10n.autoT0038,
+                                onPressed:
+                                    _operating ? null : () => _deleteTag(tag),
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.trashCan,
+                                  size: 14,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const SizedBox(
+                                  width: 44,
+                                  height: 40,
+                                  child: ColoredBox(
+                                    color: Colors.transparent,
+                                    child: Center(child: _TagDragHandle()),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () => const _SettingsLoadingIndicator(),
+                  error: (error, stackTrace) {
+                    return Center(
+                      child: Text(l10n.autoT0042(error.toString())),
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) {
-          return Center(child: Text(l10n.autoT0042(error.toString())));
-        },
+        loading: () => const _SettingsLoadingIndicator(),
+        error:
+            (error, stackTrace) =>
+                Center(child: Text(l10n.autoT0045(error.toString()))),
+      ),
+    );
+  }
+}
+
+class _TagFilterMemorySwitch extends StatelessWidget {
+  const _TagFilterMemorySwitch({
+    required this.settings,
+    required this.onChanged,
+  });
+
+  final SettingsService settings;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ValueListenableBuilder<bool>(
+      valueListenable: settings.tagFilterMemoryEnabledNotifier,
+      builder: (BuildContext context, bool enabled, Widget? child) {
+        return SwitchListTile.adaptive(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          value: enabled,
+          title: Text(l10n.settingsTagMemory),
+          subtitle: Text(l10n.settingsTagMemorySubtitle),
+          onChanged: onChanged,
+        );
+      },
+    );
+  }
+}
+
+class _SettingsLoadingIndicator extends StatelessWidget {
+  const _SettingsLoadingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: LoadingIndicatorM3E(
+        variant: LoadingIndicatorM3EVariant.contained,
+        constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+        semanticLabel: context.l10n.dataMgmtBusyLabel,
       ),
     );
   }

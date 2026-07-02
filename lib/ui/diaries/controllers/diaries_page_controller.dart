@@ -91,10 +91,32 @@ class DiariesPageController {
     ).push(DiarySearchPage.buildRoute(initialTagIds: selectedTagIds));
   }
 
+  /// 应用启动后按“标签记忆”设置恢复上次的标签筛选。
+  Future<void> restoreRememberedTagFiltersOnStartup() async {
+    try {
+      final settingsService = await _state.ref.read(
+        settingsServiceProvider.future,
+      );
+      if (!_state.mounted || !settingsService.isTagFilterMemoryEnabled) {
+        return;
+      }
+      final rememberedTagIds = decodeTagOrder(
+        settingsService.rememberedTagFilterIdsRaw,
+      );
+      if (rememberedTagIds.isEmpty) {
+        return;
+      }
+      _state.ref.read(diaryFilterProvider.notifier).setTags(rememberedTagIds);
+    } catch (_) {
+      // 设置服务加载失败时由页面主体错误态兜底，这里避免启动恢复流程抛出未处理异常。
+    }
+  }
+
   /// 切换标签筛选。实际写入动作会通过过渡协调器排队，确保列表过渡连续。
   void toggleTagFilter(int tagId, bool selected) {
     transitionCoordinator.queueFilterMutation(() {
       _state.ref.read(diaryFilterProvider.notifier).toggleTag(tagId, selected);
+      _persistTagFilterMemoryIfNeeded();
     });
   }
 
@@ -105,7 +127,25 @@ class DiariesPageController {
     }
     transitionCoordinator.queueFilterMutation(() {
       _state.ref.read(diaryFilterProvider.notifier).clearTags();
+      _persistTagFilterMemoryIfNeeded();
     });
+  }
+
+  void _persistTagFilterMemoryIfNeeded() {
+    final settingsService =
+        _state.ref.read(settingsServiceProvider).asData?.value;
+    if (settingsService == null || !settingsService.isTagFilterMemoryEnabled) {
+      return;
+    }
+    final rememberedTagIds = _state.ref
+      .read(diaryFilterProvider)
+      .selectedTagIds
+      .toList(growable: false)..sort();
+    unawaited(
+      settingsService.setRememberedTagFilterIdsRaw(
+        encodeTagOrder(rememberedTagIds),
+      ),
+    );
   }
 
   /// 打开编辑页（新建或编辑）。

@@ -270,6 +270,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Deleting a tag only unlinks it from diaries';
 
   @override
+  String get settingsTagMemory => 'Tag memory';
+
+  @override
+  String get settingsTagMemorySubtitle =>
+      'Remember selected diary tags and restore them next time';
+
+  @override
   String get settingsRecycleBin => 'Recycle Bin';
 
   @override

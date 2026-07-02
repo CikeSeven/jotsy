@@ -100,6 +100,15 @@ class DiaryFilterNotifier extends Notifier<DiaryFilterState> {
     state = state.copyWith(selectedTagIds: next);
   }
 
+  /// 批量替换标签筛选，用于从设置中的“标签记忆”恢复状态。
+  void setTags(Iterable<int> tagIds) {
+    final normalized = <int>{
+      for (final tagId in tagIds)
+        if (tagId > 0) tagId,
+    };
+    state = state.copyWith(selectedTagIds: normalized);
+  }
+
   /// 清空标签筛选（保留关键词）。
   void clearTags() {
     if (state.selectedTagIds.isEmpty) {

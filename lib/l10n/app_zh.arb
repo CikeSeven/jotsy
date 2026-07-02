@@ -348,6 +348,14 @@
   "@settingsTagManagementSubtitle": {
     "description": "Auto-generated metadata for settingsTagManagementSubtitle."
   },
+  "settingsTagMemory": "标签记忆",
+  "@settingsTagMemory": {
+    "description": "标签管理页用于开启或关闭标签筛选记忆的设置项标题。"
+  },
+  "settingsTagMemorySubtitle": "记住日记列表已选标签，下次进入应用自动恢复",
+  "@settingsTagMemorySubtitle": {
+    "description": "标签记忆设置项副标题，说明开启后会恢复日记列表标签筛选。"
+  },
   "settingsRecycleBin": "回收站",
   "@settingsRecycleBin": {
     "description": "Auto-generated metadata for settingsRecycleBin."

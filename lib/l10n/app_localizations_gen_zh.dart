@@ -256,6 +256,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsTagManagementSubtitle => '删除标签会自动解除与日记的关联关系';
 
   @override
+  String get settingsTagMemory => '标签记忆';
+
+  @override
+  String get settingsTagMemorySubtitle => '记住日记列表已选标签，下次进入应用自动恢复';
+
+  @override
   String get settingsRecycleBin => '回收站';
 
   @override

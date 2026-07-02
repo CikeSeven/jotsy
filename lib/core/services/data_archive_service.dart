@@ -175,6 +175,8 @@ class DataArchiveService {
         'diaryToolbarCurrentTimeFormatRaw':
             settingsService.diaryToolbarCurrentTimeFormatRaw,
         'tagOrderRaw': settingsService.tagOrderRaw,
+        'tagFilterMemoryEnabled': settingsService.isTagFilterMemoryEnabled,
+        'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
         'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
         'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
       },
@@ -390,6 +392,28 @@ class DataArchiveService {
     final tagOrderRaw = settingsNode['tagOrderRaw']?.toString();
     if (tagOrderRaw != null && tagOrderRaw.isNotEmpty) {
       await settingsService.setTagOrderRaw(tagOrderRaw);
+    }
+
+    final tagFilterMemoryEnabledRaw = settingsNode['tagFilterMemoryEnabled'];
+    final tagFilterMemoryEnabled = switch (tagFilterMemoryEnabledRaw) {
+      bool value => value,
+      String value => value.toLowerCase() == 'true',
+      _ => null,
+    };
+    if (tagFilterMemoryEnabled != null) {
+      await settingsService.setTagFilterMemoryEnabled(tagFilterMemoryEnabled);
+    }
+    if (settingsNode.containsKey('rememberedTagFilterIdsRaw')) {
+      final rememberedTagFilterIdsRaw =
+          settingsNode['rememberedTagFilterIdsRaw']?.toString() ?? '';
+      if (settingsService.isTagFilterMemoryEnabled &&
+          rememberedTagFilterIdsRaw.isNotEmpty) {
+        await settingsService.setRememberedTagFilterIdsRaw(
+          rememberedTagFilterIdsRaw,
+        );
+      } else {
+        await settingsService.clearRememberedTagFilterIds();
+      }
     }
 
     final draftRaw = settingsNode['createDiaryDraftRaw']?.toString();

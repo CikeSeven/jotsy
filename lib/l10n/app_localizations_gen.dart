@@ -560,6 +560,18 @@ abstract class AppLocalizations {
   /// **'Deleting a tag only unlinks it from diaries'**
   String get settingsTagManagementSubtitle;
 
+  /// Setting title for enabling or disabling remembered diary tag filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag memory'**
+  String get settingsTagMemory;
+
+  /// Subtitle for tag memory setting explaining that selected diary tag filters are restored.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember selected diary tags and restore them next time'**
+  String get settingsTagMemorySubtitle;
+
   /// Auto-generated metadata for settingsRecycleBin.
   ///
   /// In en, this message translates to:

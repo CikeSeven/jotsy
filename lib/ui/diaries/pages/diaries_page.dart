@@ -19,6 +19,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/settings_service.dart';
+import '../../../core/services/tag_order_codec.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../widgets/diary_tag_filter_bar.dart';
@@ -130,6 +131,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     _controller.attachHomeHintVisibilityListener();
+    unawaited(_controller.restoreRememberedTagFiltersOnStartup());
     // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。
     _listRefreshPulseController = AnimationController(
       vsync: this,

@@ -1,0 +1,101 @@
+name: Release APK
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-apk:
+    name: Build signed split release APKs
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Restore Android release signing files
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64" || { echo "::error::Missing secret ANDROID_KEYSTORE_BASE64"; exit 1; }
+          test -n "$ANDROID_KEY_ALIAS" || { echo "::error::Missing secret ANDROID_KEY_ALIAS"; exit 1; }
+          test -n "$ANDROID_KEY_PASSWORD" || { echo "::error::Missing secret ANDROID_KEY_PASSWORD"; exit 1; }
+          test -n "$ANDROID_STORE_PASSWORD" || { echo "::error::Missing secret ANDROID_STORE_PASSWORD"; exit 1; }
+
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          {
+            printf 'storePassword=%s\n' "$ANDROID_STORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$ANDROID_KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$ANDROID_KEY_ALIAS"
+            printf 'storeFile=upload-keystore.jks\n'
+          } > android/key.properties
+
+      - name: Write Android runtime secrets
+        env:
+          AMAP_WEB_API_KEY: ${{ secrets.AMAP_WEB_API_KEY }}
+          QWEATHER_CREDENTIAL_ID: ${{ secrets.QWEATHER_CREDENTIAL_ID }}
+          QWEATHER_API_KEY: ${{ secrets.QWEATHER_API_KEY }}
+          QWEATHER_API_HOST: ${{ secrets.QWEATHER_API_HOST }}
+        run: |
+          touch android/local.properties
+          {
+            printf 'amap.web.api.key=%s\n' "$AMAP_WEB_API_KEY"
+            printf 'qweather.credential_id=%s\n' "$QWEATHER_CREDENTIAL_ID"
+            printf 'qweather.api_key=%s\n' "$QWEATHER_API_KEY"
+            printf 'qweather.api_host=%s\n' "$QWEATHER_API_HOST"
+          } >> android/local.properties
+
+      - name: Build split release APKs
+        run: flutter build apk --release --split-per-abi
+
+      - name: Prepare release artifacts
+        id: artifact
+        run: |
+          safe_ref="${GITHUB_REF_NAME//\//-}"
+          mkdir -p release-artifacts
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release-artifacts/jotsy-${safe_ref}-armeabi-v7a.apk"
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release-artifacts/jotsy-${safe_ref}-arm64-v8a.apk"
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release-artifacts/jotsy-${safe_ref}-x86_64.apk"
+          echo "artifact_name=release-apks-${safe_ref}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.artifact.outputs.artifact_name }}
+          path: release-artifacts/*.apk
+          if-no-files-found: error
+
+      - name: Upload APK to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/*.apk
+          fail_on_unmatched_files: true
+          overwrite_files: true

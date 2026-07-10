@@ -12,6 +12,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/settings_service.dart';
 import '../sections/diary_head_section.dart';
 
 part '../controllers/archived_diaries_controller.dart';
@@ -55,6 +56,9 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   @override
   Widget build(BuildContext context) {
     final archivedAsync = ref.watch(archivedDiariesProvider);
+    final diaryCardTagLimit =
+        ref.watch(diaryCardTagLimitProvider).asData?.value ??
+        SettingsService.defaultDiaryCardTagLimit;
     final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
     final pageBackgroundColor =
@@ -130,6 +134,7 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                   layoutMode: DiaryLayoutMode.list,
                   selectedDiaryIds: _selectedDiaryIds,
                   isSelectionMode: _isSelectionMode,
+                  maxVisibleTags: diaryCardTagLimit,
                   onCreate: _controller.noopCreate,
                   onOpenEditor: _controller.openPreview,
                   onToggleSelection: _controller.toggleSelection,

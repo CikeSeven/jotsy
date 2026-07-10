@@ -10,6 +10,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
@@ -124,6 +125,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
+    final diaryCardTagLimit =
+        ref.watch(diaryCardTagLimitProvider).asData?.value ??
+        SettingsService.defaultDiaryCardTagLimit;
     final pageBackgroundColor =
         brightness == Brightness.light ? Colors.white : colorScheme.surface;
     final topSafeInset = MediaQuery.paddingOf(context).top;
@@ -227,6 +231,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                             layoutMode: DiaryLayoutMode.list,
                             selectedDiaryIds: const <String>{},
                             isSelectionMode: false,
+                            maxVisibleTags: diaryCardTagLimit,
                             onCreate: () {},
                             onOpenEditor: _openPreview,
                             onToggleSelection: (_, __) {},

@@ -36,6 +36,7 @@ class DiariesListSection extends StatelessWidget {
     required this.layoutMode,
     required this.selectedDiaryIds,
     required this.isSelectionMode,
+    required this.maxVisibleTags,
     this.pendingHideDiaryIds = const <String>{},
     this.appearingDiaryIds = const <String>{},
     required this.onCreate,
@@ -57,6 +58,9 @@ class DiariesListSection extends StatelessWidget {
   /// 当前被选中的日记 ID 集合。
   final Set<String> selectedDiaryIds;
   final bool isSelectionMode;
+
+  /// 页面装配层传入的已规范化标签显示上限。
+  final int maxVisibleTags;
 
   /// 标记“正在收起隐藏”的日记项集合。
   final Set<String> pendingHideDiaryIds;
@@ -209,7 +213,7 @@ class DiariesListSection extends StatelessWidget {
     final title =
         diary.diary.title.trim().isEmpty ? l10n.autoT0033 : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
-    final hasTags = diary.tags.isNotEmpty;
+    final hasVisibleTags = diary.tags.isNotEmpty && maxVisibleTags > 0;
     final capsuleState = TimeCapsuleState.fromFields(
       lockedAt: diary.diary.capsuleLockedAt,
       unlockAt: diary.diary.capsuleUnlockAt,
@@ -232,9 +236,9 @@ class DiariesListSection extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (hasTags) ...[
+            if (hasVisibleTags) ...[
               const SizedBox(height: 6),
-              DiaryItemTagRow(tags: diary.tags),
+              DiaryItemTagRow(tags: diary.tags, maxVisibleTags: maxVisibleTags),
             ],
             if (preview.isNotEmpty) ...[
               const SizedBox(height: 6),
@@ -291,7 +295,12 @@ class DiariesListSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               compactHeader,
-              if (hasTags) ...[DiaryItemTagRow(tags: diary.tags)],
+              if (hasVisibleTags) ...[
+                DiaryItemTagRow(
+                  tags: diary.tags,
+                  maxVisibleTags: maxVisibleTags,
+                ),
+              ],
               if (preview.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(

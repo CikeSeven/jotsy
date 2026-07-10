@@ -175,6 +175,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
+    final diaryCardTagLimit =
+        ref.watch(diaryCardTagLimitProvider).asData?.value ??
+        SettingsService.defaultDiaryCardTagLimit;
     // 标签与日记列表分别独立监听，避免相互阻塞。
     final settingsAsync = ref.watch(settingsServiceProvider);
     final filterState = ref.watch(diaryFilterProvider);
@@ -415,6 +418,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         layoutMode: _layoutMode,
                                         isSelectionMode: _isSelectionMode,
                                         selectedDiaryIds: _selectedDiaryIds,
+                                        maxVisibleTags: diaryCardTagLimit,
                                         pendingHideDiaryIds:
                                             _pendingHideDiaryIds,
                                         appearingDiaryIds: _appearingDiaryIds,

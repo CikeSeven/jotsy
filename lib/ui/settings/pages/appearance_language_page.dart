@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/settings/sections/settings_diary_card_section.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
@@ -11,7 +12,7 @@ import '../../../core/services/app_service.dart';
 /// 设置-外观与语言二级页。
 ///
 /// 职责：
-/// - 收纳主题、标签页切换曲线与语言配置；
+/// - 收纳主题、日记卡片展示、标签页切换曲线与语言配置；
 /// - 降低设置首页信息密度，仅保留分组入口。
 class AppearanceLanguagePage extends ConsumerWidget {
   const AppearanceLanguagePage({super.key});
@@ -82,6 +83,8 @@ class AppearanceLanguagePage extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
         children: <Widget>[
           SettingsThemeSection(settingsAsync: settingsAsync),
+          const Divider(),
+          SettingsDiaryCardSection(settingsAsync: settingsAsync),
           const Divider(),
           settingsAsync.when(
             data: (settingsService) {

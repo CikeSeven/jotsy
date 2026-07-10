@@ -165,6 +165,23 @@
   "@settingsFontScalePreview": {
     "description": "字体大小弹窗中的预览文案。"
   },
+  "settingsDiaryCardTagLimit": "日记卡片标签",
+  "@settingsDiaryCardTagLimit": {
+    "description": "设置日记卡片最多显示多少个标签的标题。"
+  },
+  "settingsDiaryCardTagLimitHidden": "不显示标签",
+  "@settingsDiaryCardTagLimitHidden": {
+    "description": "日记卡片不显示标签时使用的取值文案。"
+  },
+  "settingsDiaryCardTagLimitValue": "最多显示 {count} 个标签",
+  "@settingsDiaryCardTagLimitValue": {
+    "description": "显示日记卡片标签数量上限的取值文案。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsTabSwitchCurve": "标签页切换曲线",
   "@settingsTabSwitchCurve": {
     "description": "Title for selecting bottom tab switch animation curve."

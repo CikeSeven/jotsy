@@ -129,6 +129,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Preview: A short diary line for sizing.';
 
   @override
+  String get settingsDiaryCardTagLimit => 'Diary card tags';
+
+  @override
+  String get settingsDiaryCardTagLimitHidden => 'Do not show tags';
+
+  @override
+  String settingsDiaryCardTagLimitValue(int count) {
+    return 'Show up to $count tags';
+  }
+
+  @override
   String get settingsTabSwitchCurve => 'Tab switch curve';
 
   @override

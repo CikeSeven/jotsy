@@ -308,6 +308,24 @@ abstract class AppLocalizations {
   /// **'Preview: A short diary line for sizing.'**
   String get settingsFontScalePreview;
 
+  /// Title for configuring how many tags are shown on each diary card.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary card tags'**
+  String get settingsDiaryCardTagLimit;
+
+  /// Value label used when diary card tags are hidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not show tags'**
+  String get settingsDiaryCardTagLimitHidden;
+
+  /// Value label showing the maximum number of tags displayed on a diary card.
+  ///
+  /// In en, this message translates to:
+  /// **'Show up to {count} tags'**
+  String settingsDiaryCardTagLimitValue(int count);
+
   /// Title for selecting bottom tab switch animation curve.
   ///
   /// In en, this message translates to:

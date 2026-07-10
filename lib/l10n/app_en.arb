@@ -165,6 +165,23 @@
   "@settingsFontScalePreview": {
     "description": "Preview text shown in font scale dialog."
   },
+  "settingsDiaryCardTagLimit": "Diary card tags",
+  "@settingsDiaryCardTagLimit": {
+    "description": "Title for configuring how many tags are shown on each diary card."
+  },
+  "settingsDiaryCardTagLimitHidden": "Do not show tags",
+  "@settingsDiaryCardTagLimitHidden": {
+    "description": "Value label used when diary card tags are hidden."
+  },
+  "settingsDiaryCardTagLimitValue": "Show up to {count} tags",
+  "@settingsDiaryCardTagLimitValue": {
+    "description": "Value label showing the maximum number of tags displayed on a diary card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "settingsTabSwitchCurve": "Tab switch curve",
   "@settingsTabSwitchCurve": {
     "description": "Title for selecting bottom tab switch animation curve."

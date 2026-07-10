@@ -124,6 +124,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsFontScalePreview => '预览文字：今天也记下了一点生活。';
 
   @override
+  String get settingsDiaryCardTagLimit => '日记卡片标签';
+
+  @override
+  String get settingsDiaryCardTagLimitHidden => '不显示标签';
+
+  @override
+  String settingsDiaryCardTagLimitValue(int count) {
+    return '最多显示 $count 个标签';
+  }
+
+  @override
   String get settingsTabSwitchCurve => '标签页切换曲线';
 
   @override

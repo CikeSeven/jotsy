@@ -52,6 +52,28 @@ final moodOptionsProvider = StreamProvider<List<String>>((Ref ref) async* {
   yield* controller.stream;
 });
 
+/// 日记卡片展示的标签数量上限 provider。
+///
+/// 将 SettingsService 的 ValueNotifier 桥接为 Riverpod StreamProvider，确保设置
+/// 变更后所有日记列表能即时刷新。
+final diaryCardTagLimitProvider = StreamProvider<int>((Ref ref) async* {
+  final settings = await ref.watch(settingsServiceProvider.future);
+  yield settings.diaryCardTagLimit;
+
+  final controller = StreamController<int>();
+  void listener() {
+    controller.add(settings.diaryCardTagLimit);
+  }
+
+  settings.diaryCardTagLimitNotifier.addListener(listener);
+  ref.onDispose(() {
+    settings.diaryCardTagLimitNotifier.removeListener(listener);
+    unawaited(controller.close());
+  });
+
+  yield* controller.stream;
+});
+
 /// WebDAV 配置服务 provider。
 ///
 /// 与常规 SettingsService 分离，避免 WebDAV 凭据进入 ZIP 备份 payload。

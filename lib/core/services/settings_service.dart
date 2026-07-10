@@ -65,6 +65,9 @@ class SettingsService {
   static const double minFontScale = 0.85;
   static const double maxFontScale = 1.25;
   static const double fontScaleStep = 0.05;
+  static const int defaultDiaryCardTagLimit = 2;
+  static const int minDiaryCardTagLimit = 0;
+  static const int maxDiaryCardTagLimit = 20;
 
   static const int moodOptionCount = 10;
   static const List<String> defaultMoodOptions = <String>[
@@ -90,6 +93,7 @@ class SettingsService {
     required Locale locale,
     required bool appLockEnabled,
     required bool tagFilterMemoryEnabled,
+    required int diaryCardTagLimit,
     required String? diaryToolbarOrderRaw,
     required String? diaryToolbarHiddenItemsRaw,
     required String? diaryToolbarCurrentTimeFormatRaw,
@@ -112,6 +116,7 @@ class SettingsService {
        tagFilterMemoryEnabledNotifier = ValueNotifier<bool>(
          tagFilterMemoryEnabled,
        ),
+       diaryCardTagLimitNotifier = ValueNotifier<int>(diaryCardTagLimit),
        diaryToolbarOrderRawNotifier = ValueNotifier<String?>(
          diaryToolbarOrderRaw,
        ),
@@ -135,6 +140,7 @@ class SettingsService {
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
   final ValueNotifier<bool> tagFilterMemoryEnabledNotifier;
+  final ValueNotifier<int> diaryCardTagLimitNotifier;
   final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
   final ValueNotifier<String?> diaryToolbarCurrentTimeFormatRawNotifier;
@@ -160,6 +166,7 @@ class SettingsService {
       'app.settings.tag_filter_memory_enabled';
   static const _keyRememberedTagFilterIds =
       'app.settings.remembered_tag_filter_ids';
+  static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
@@ -214,6 +221,16 @@ class SettingsService {
     final appLockEnabled = prefs.getBool(_keyAppLockEnabled) ?? false;
     final tagFilterMemoryEnabled =
         prefs.getBool(_keyTagFilterMemoryEnabled) ?? false;
+    final storedDiaryCardTagLimit = prefs.get(_keyDiaryCardTagLimit);
+    final diaryCardTagLimit = _normalizeDiaryCardTagLimit(
+      storedDiaryCardTagLimit is int
+          ? storedDiaryCardTagLimit
+          : defaultDiaryCardTagLimit,
+    );
+    if (storedDiaryCardTagLimit is! int ||
+        storedDiaryCardTagLimit != diaryCardTagLimit) {
+      await prefs.setInt(_keyDiaryCardTagLimit, diaryCardTagLimit);
+    }
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -225,6 +242,7 @@ class SettingsService {
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
       tagFilterMemoryEnabled: tagFilterMemoryEnabled,
+      diaryCardTagLimit: diaryCardTagLimit,
       diaryToolbarOrderRaw: prefs.getString(_keyDiaryToolbarOrder),
       diaryToolbarHiddenItemsRaw: prefs.getString(_keyDiaryToolbarHiddenItems),
       diaryToolbarCurrentTimeFormatRaw:
@@ -287,6 +305,7 @@ class SettingsService {
   String? get moodOptionsRaw => moodOptionsRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
+  int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
   String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
   bool get isTagFilterMemoryEnabled => tagFilterMemoryEnabledNotifier.value;
   String? get rememberedTagFilterIdsRaw =>
@@ -337,6 +356,12 @@ class SettingsService {
   Future<void> resetMoodOptions() async {
     moodOptionsRawNotifier.value = null;
     await _prefs.remove(_keyMoodOptions);
+  }
+
+  Future<void> setDiaryCardTagLimit(int value) async {
+    final normalized = _normalizeDiaryCardTagLimit(value);
+    diaryCardTagLimitNotifier.value = normalized;
+    await _prefs.setInt(_keyDiaryCardTagLimit, normalized);
   }
 
   Future<void> setTagFilterMemoryEnabled(bool enabled) async {
@@ -555,5 +580,9 @@ class SettingsService {
 
   static double _normalizeFontScale(double raw) {
     return raw.clamp(minFontScale, maxFontScale).toDouble();
+  }
+
+  static int _normalizeDiaryCardTagLimit(int value) {
+    return value.clamp(minDiaryCardTagLimit, maxDiaryCardTagLimit).toInt();
   }
 }

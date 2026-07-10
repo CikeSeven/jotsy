@@ -14,6 +14,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_item_tag_row.dart';
+import '../widgets/diary_selection_surface.dart';
 import '../models/time_capsule.dart';
 import '../pages/locked_diary_page.dart';
 import '../widgets/energy_battery_indicator.dart';
@@ -386,46 +387,46 @@ class DiariesListSection extends StatelessWidget {
         // - 选择模式下点击切换选中；
         // - 普通模式下点击进入详情（当前为预览页）；
         // - 长按强制选中。
-        final item = ClipRRect(
-          borderRadius: BorderRadius.circular(itemRadius),
-          child: Material(
-            color: itemBackgroundColor,
-            child: InkWell(
-              borderRadius:
-                  itemRadius > 0 ? BorderRadius.circular(itemRadius) : null,
-              onTap: () {
-                if (isSelectionMode) {
-                  onToggleSelection(diary.diary.diaryId, false);
-                  return;
-                }
-                if (isLockedCapsule) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder:
-                          (context) =>
-                              LockedDiaryPage(diaryId: diary.diary.diaryId),
-                    ),
-                  );
-                  return;
-                }
-                onOpenEditor(diary.diary.diaryId);
-              },
-              onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
-              child: Container(
-                decoration:
-                    compact
-                        ? BoxDecoration(
-                          color: itemBackgroundColor,
-                          borderRadius: BorderRadius.circular(itemRadius),
-                        )
-                        : BoxDecoration(color: itemBackgroundColor),
-                padding: EdgeInsets.fromLTRB(
-                  compact ? 0 : 16,
-                  compact ? 0 : 12,
-                  compact ? 0 : 16,
-                  compact ? 0 : 12,
+        final item = DiarySelectionSurface(
+          diaryId: diary.diary.diaryId,
+          selected: selected,
+          compact: compact,
+          backgroundColor: itemBackgroundColor,
+          borderRadius: itemRadius,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(itemRadius),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius:
+                    itemRadius > 0 ? BorderRadius.circular(itemRadius) : null,
+                onTap: () {
+                  if (isSelectionMode) {
+                    onToggleSelection(diary.diary.diaryId, false);
+                    return;
+                  }
+                  if (isLockedCapsule) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder:
+                            (context) =>
+                                LockedDiaryPage(diaryId: diary.diary.diaryId),
+                      ),
+                    );
+                    return;
+                  }
+                  onOpenEditor(diary.diary.diaryId);
+                },
+                onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    compact ? 0 : 16,
+                    compact ? 0 : 12,
+                    compact ? 0 : 16,
+                    compact ? 0 : 12,
+                  ),
+                  child: content,
                 ),
-                child: content,
               ),
             ),
           ),
@@ -436,8 +437,9 @@ class DiariesListSection extends StatelessWidget {
           child: item,
         );
 
-        // 仅普通列表启用左滑归档，瀑布流不启用侧滑动作。
-        if (!compact && !isSelectionMode && onArchiveDiary != null) {
+        // 普通列表始终保留 Dismissible 根节点，避免进入选择模式时重建子树，
+        // 从而让首次长按也能完整播放选中反馈；选择模式仅关闭滑动方向。
+        if (!compact && onArchiveDiary != null) {
           final swipeBackgroundColor =
               swipeActionBackgroundColor ??
               Theme.of(context).colorScheme.primaryContainer;
@@ -447,7 +449,10 @@ class DiariesListSection extends StatelessWidget {
 
           return Dismissible(
             key: ValueKey<String>('archive_${diary.diary.diaryId}'),
-            direction: DismissDirection.endToStart,
+            direction:
+                isSelectionMode
+                    ? DismissDirection.none
+                    : DismissDirection.endToStart,
             background: Container(
               color: swipeBackgroundColor,
               alignment: Alignment.centerRight,

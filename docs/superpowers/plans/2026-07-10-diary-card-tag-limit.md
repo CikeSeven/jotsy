@@ -170,9 +170,15 @@ Expected: compilation fails because `maxVisibleTags` is not accepted.
 
 - [ ] **Step 3: Implement the parameter and wrapping layout**
 
-Replace the private hard-coded limit with a required `maxVisibleTags` parameter. Clamp negative direct-call values to zero, return `SizedBox.shrink()` for zero or empty tags, and render the visible labels plus optional `+N` with `Wrap(spacing: 8, runSpacing: 4)`. Keep each label at `maxLines: 1` with ellipsis so a single long label cannot overflow its card.
+Replace the private hard-coded limit with a `maxVisibleTags` parameter that defaults to `2`, keeping existing callers buildable until Task 3 wires the persisted value. Clamp negative direct-call values to zero, return `SizedBox.shrink()` for zero or empty tags, and render the visible labels plus optional `+N` with `Wrap(spacing: 8, runSpacing: 4)`. Keep each label at `maxLines: 1` with ellipsis so a single long label cannot overflow its card.
 
 ```dart
+const DiaryItemTagRow({
+  super.key,
+  required this.tags,
+  this.maxVisibleTags = 2,
+});
+
 final visibleLimit = maxVisibleTags.clamp(0, tags.length).toInt();
 if (visibleLimit == 0 || tags.isEmpty) {
   return const SizedBox.shrink();

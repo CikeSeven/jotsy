@@ -181,7 +181,7 @@
   "@settingsDiaryCardTagLimitHidden": {
     "description": "Value label used when diary card tags are hidden."
   },
-  "settingsDiaryCardTagLimitValue": "Show up to {count} tags",
+  "settingsDiaryCardTagLimitValue": "{count, plural, =1{Show up to 1 tag} other{Show up to {count} tags}}",
   "@settingsDiaryCardTagLimitValue": {
     "description": "Value label showing the maximum number of tags displayed on a diary card.",
     "placeholders": {

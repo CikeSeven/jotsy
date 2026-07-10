@@ -142,7 +142,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String settingsDiaryCardTagLimitValue(int count) {
-    return 'Show up to $count tags';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show up to $count tags',
+      one: 'Show up to 1 tag',
+    );
+    return '$_temp0';
   }
 
   @override

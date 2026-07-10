@@ -85,6 +85,21 @@ void main() {
     expect(find.text('Do not show tags'), findsOneWidget);
   });
 
+  testWidgets('uses the singular English label for one tag', (
+    WidgetTester tester,
+  ) async {
+    final settings = await SettingsService.create();
+    await settings.setDiaryCardTagLimit(1);
+
+    await _pumpSection(
+      tester,
+      settingsAsync: AsyncData<SettingsService>(settings),
+    );
+
+    expect(find.text('Show up to 1 tags'), findsNothing);
+    expect(find.text('Show up to 1 tag'), findsOneWidget);
+  });
+
   testWidgets('exposes localized slider values to assistive technology', (
     WidgetTester tester,
   ) async {

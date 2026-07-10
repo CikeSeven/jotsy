@@ -335,7 +335,7 @@ abstract class AppLocalizations {
   /// Value label showing the maximum number of tags displayed on a diary card.
   ///
   /// In en, this message translates to:
-  /// **'Show up to {count} tags'**
+  /// **'{count, plural, =1{Show up to 1 tag} other{Show up to {count} tags}}'**
   String settingsDiaryCardTagLimitValue(int count);
 
   /// Title for selecting bottom tab switch animation curve.

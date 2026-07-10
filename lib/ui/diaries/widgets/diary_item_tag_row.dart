@@ -39,6 +39,7 @@ class DiaryItemTagRow extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: <Widget>[
         for (final tag in visibleTags)
           _DiaryTagText(

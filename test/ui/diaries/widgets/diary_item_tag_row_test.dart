@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_item_tag_row.dart';
 
+const _narrowCardKey = Key('narrow-diary-tag-card');
+
 void main() {
   testWidgets('uses two visible tags by default and summarizes the remainder', (
     tester,
@@ -16,6 +18,18 @@ void main() {
     expect(_tagLabel('Tag 3'), findsNothing);
     expect(_tagLabel('Tag 4'), findsNothing);
     expect(find.text('+2'), findsOneWidget);
+  });
+
+  testWidgets('centers the overflow summary with an adjacent tag', (
+    tester,
+  ) async {
+    final tags = _createTags(4);
+
+    await tester.pumpWidget(_buildTestApp(DiaryItemTagRow(tags: tags)));
+
+    final tagRect = tester.getRect(_tagLabel('Tag 2'));
+    final summaryRect = tester.getRect(find.text('+2'));
+    expect(summaryRect.center.dy, closeTo(tagRect.center.dy, 0.01));
   });
 
   testWidgets('uses a custom visible tag limit', (tester) async {
@@ -70,6 +84,7 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           SizedBox(
+            key: _narrowCardKey,
             width: 150,
             child: DiaryItemTagRow(tags: tags, maxVisibleTags: 20),
           ),
@@ -77,9 +92,18 @@ void main() {
       );
 
       expect(tester.takeException(), isNull);
+      final containerRect = tester.getRect(find.byKey(_narrowCardKey));
+      final tagRunCenters = <double>{};
       for (final tag in tags) {
-        expect(_tagLabel(tag.name), findsOneWidget);
+        final tagFinder = _tagLabel(tag.name);
+        expect(tagFinder, findsOneWidget);
+
+        final tagRect = tester.getRect(tagFinder);
+        expect(tagRect.left, greaterThanOrEqualTo(containerRect.left - 0.01));
+        expect(tagRect.right, lessThanOrEqualTo(containerRect.right + 0.01));
+        tagRunCenters.add(tagRect.center.dy);
       }
+      expect(tagRunCenters.length, greaterThan(1));
       expect(find.textContaining(RegExp(r'^\+\d+$')), findsNothing);
     },
   );

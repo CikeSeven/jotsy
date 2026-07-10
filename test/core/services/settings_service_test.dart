@@ -119,6 +119,16 @@ void main() {
       expect(prefs.get(key), 2);
     });
 
+    test('restores a valid stored diary card tag limit unchanged', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 7});
+
+      final settings = await SettingsService.create();
+      final prefs = await SharedPreferences.getInstance();
+
+      expect(settings.diaryCardTagLimit, 7);
+      expect(prefs.get(key), 7);
+    });
+
     test(
       'setting zero notifies and persists the diary card tag limit',
       () async {

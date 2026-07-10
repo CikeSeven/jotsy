@@ -58,8 +58,7 @@ final moodOptionsProvider = StreamProvider<List<String>>((Ref ref) async* {
 /// 变更后所有日记列表能即时刷新。
 final diaryCardTagLimitProvider = StreamProvider<int>((Ref ref) async* {
   final settings = await ref.watch(settingsServiceProvider.future);
-  yield settings.diaryCardTagLimit;
-
+  final initialValue = settings.diaryCardTagLimit;
   final controller = StreamController<int>();
   void listener() {
     controller.add(settings.diaryCardTagLimit);
@@ -71,6 +70,7 @@ final diaryCardTagLimitProvider = StreamProvider<int>((Ref ref) async* {
     unawaited(controller.close());
   });
 
+  yield initialValue;
   yield* controller.stream;
 });
 

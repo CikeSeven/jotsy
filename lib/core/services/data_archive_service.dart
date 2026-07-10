@@ -169,6 +169,7 @@ class DataArchiveService {
         'appLockEnabled': settingsService.isAppLockEnabled,
         'diarySortModeRaw': settingsService.diarySortModeRaw,
         'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
+        'diaryCardTagLimit': settingsService.diaryCardTagLimit,
         'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
         'diaryToolbarHiddenItemsRaw':
             settingsService.diaryToolbarHiddenItemsRaw,
@@ -368,6 +369,17 @@ class DataArchiveService {
     final layoutRaw = settingsNode['diaryLayoutModeRaw']?.toString();
     if (layoutRaw != null && layoutRaw.isNotEmpty) {
       await settingsService.setDiaryLayoutModeRaw(layoutRaw);
+    }
+
+    final diaryCardTagLimitRaw = settingsNode['diaryCardTagLimit'];
+    final diaryCardTagLimit = switch (diaryCardTagLimitRaw) {
+      int value => value,
+      num value => value.toInt(),
+      String value => int.tryParse(value),
+      _ => null,
+    };
+    if (diaryCardTagLimit != null) {
+      await settingsService.setDiaryCardTagLimit(diaryCardTagLimit);
     }
 
     final toolbarRaw = settingsNode['diaryToolbarOrderRaw']?.toString();

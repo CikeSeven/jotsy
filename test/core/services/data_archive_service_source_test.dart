@@ -28,4 +28,18 @@ void main() {
       contains('capsuleLockedAt: Value<DateTime?>(row.capsuleLockedAt)'),
     );
   });
+
+  test('backup preserves the diary card tag limit', () async {
+    final source =
+        await File(
+          'lib/core/services/data_archive_service.dart',
+        ).readAsString();
+
+    expect(
+      source,
+      contains("'diaryCardTagLimit': settingsService.diaryCardTagLimit"),
+    );
+    expect(source, contains("settingsNode['diaryCardTagLimit']"));
+    expect(source, contains('settingsService.setDiaryCardTagLimit'));
+  });
 }

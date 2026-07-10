@@ -32,6 +32,27 @@ void main() {
     expect(find.text('+2'), findsOneWidget);
   });
 
+  testWidgets('waterfall layout applies a positive visible tag limit', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        diary: _createUnlockedDiaryWithTags(),
+        layoutMode: DiaryLayoutMode.waterfall,
+        maxVisibleTags: 1,
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Visible diary'), findsOneWidget);
+    expect(_tagLabel('Tag 1'), findsOneWidget);
+    expect(_tagLabel('Tag 2'), findsNothing);
+    expect(_tagLabel('Tag 3'), findsNothing);
+    expect(find.text('+2'), findsOneWidget);
+  });
+
   testWidgets('waterfall layout hides tags when the configured limit is zero', (
     tester,
   ) async {

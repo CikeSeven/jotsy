@@ -132,6 +132,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDiaryCardTagLimit => 'Diary card tags';
 
   @override
+  String get settingsDiaryCardTagLimitLoading => 'Loading diary card settings';
+
+  @override
+  String get settingsDiaryCardTagLimitUnavailable => 'Setting unavailable';
+
+  @override
   String get settingsDiaryCardTagLimitHidden => 'Do not show tags';
 
   @override

@@ -169,6 +169,14 @@
   "@settingsDiaryCardTagLimit": {
     "description": "Title for configuring how many tags are shown on each diary card."
   },
+  "settingsDiaryCardTagLimitLoading": "Loading diary card settings",
+  "@settingsDiaryCardTagLimitLoading": {
+    "description": "Semantic label announced while diary card display settings are loading."
+  },
+  "settingsDiaryCardTagLimitUnavailable": "Setting unavailable",
+  "@settingsDiaryCardTagLimitUnavailable": {
+    "description": "Visible subtitle shown when diary card display settings cannot be loaded."
+  },
   "settingsDiaryCardTagLimitHidden": "Do not show tags",
   "@settingsDiaryCardTagLimitHidden": {
     "description": "Value label used when diary card tags are hidden."

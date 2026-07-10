@@ -314,6 +314,18 @@ abstract class AppLocalizations {
   /// **'Diary card tags'**
   String get settingsDiaryCardTagLimit;
 
+  /// Semantic label announced while diary card display settings are loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading diary card settings'**
+  String get settingsDiaryCardTagLimitLoading;
+
+  /// Visible subtitle shown when diary card display settings cannot be loaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting unavailable'**
+  String get settingsDiaryCardTagLimitUnavailable;
+
   /// Value label used when diary card tags are hidden.
   ///
   /// In en, this message translates to:

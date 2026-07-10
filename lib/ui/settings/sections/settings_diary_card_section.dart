@@ -53,6 +53,8 @@ class SettingsDiaryCardSection extends StatelessWidget {
                         SettingsService.maxDiaryCardTagLimit -
                         SettingsService.minDiaryCardTagLimit,
                     label: selectedLabel,
+                    semanticFormatterCallback:
+                        (double value) => _limitLabel(l10n, value.round()),
                     onChanged: (double value) {
                       setDialogState(() {
                         selectedLimit = value.round();
@@ -113,7 +115,7 @@ class SettingsDiaryCardSection extends StatelessWidget {
             trailing: LoadingIndicatorM3E(
               variant: LoadingIndicatorM3EVariant.contained,
               constraints: const BoxConstraints.tightFor(width: 24, height: 24),
-              semanticLabel: l10n.dataMgmtBusyLabel,
+              semanticLabel: l10n.settingsDiaryCardTagLimitLoading,
             ),
           ),
       error:
@@ -121,9 +123,7 @@ class SettingsDiaryCardSection extends StatelessWidget {
             enabled: false,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             title: Text(l10n.settingsDiaryCardTagLimit),
-            subtitle: Text(
-              _limitLabel(l10n, SettingsService.defaultDiaryCardTagLimit),
-            ),
+            subtitle: Text(l10n.settingsDiaryCardTagLimitUnavailable),
           ),
     );
   }

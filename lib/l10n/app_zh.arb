@@ -169,6 +169,14 @@
   "@settingsDiaryCardTagLimit": {
     "description": "设置日记卡片最多显示多少个标签的标题。"
   },
+  "settingsDiaryCardTagLimitLoading": "正在加载日记卡片设置",
+  "@settingsDiaryCardTagLimitLoading": {
+    "description": "日记卡片展示设置加载过程中供辅助技术播报的语义标签。"
+  },
+  "settingsDiaryCardTagLimitUnavailable": "设置暂不可用",
+  "@settingsDiaryCardTagLimitUnavailable": {
+    "description": "无法加载日记卡片展示设置时显示的副标题。"
+  },
   "settingsDiaryCardTagLimitHidden": "不显示标签",
   "@settingsDiaryCardTagLimitHidden": {
     "description": "日记卡片不显示标签时使用的取值文案。"

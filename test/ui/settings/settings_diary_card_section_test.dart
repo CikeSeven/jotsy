@@ -18,7 +18,10 @@ void main() {
   ) async {
     final settings = await SettingsService.create();
 
-    await _pumpSection(tester, settings: settings);
+    await _pumpSection(
+      tester,
+      settingsAsync: AsyncData<SettingsService>(settings),
+    );
 
     expect(settings.diaryCardTagLimit, 2);
     expect(find.text('Diary card tags'), findsOneWidget);
@@ -48,7 +51,10 @@ void main() {
   ) async {
     final settings = await SettingsService.create();
 
-    await _pumpSection(tester, settings: settings);
+    await _pumpSection(
+      tester,
+      settingsAsync: AsyncData<SettingsService>(settings),
+    );
     await tester.tap(find.text('Diary card tags'));
     await tester.pumpAndSettle();
 
@@ -70,10 +76,70 @@ void main() {
     final settings = await SettingsService.create();
     await settings.setDiaryCardTagLimit(0);
 
-    await _pumpSection(tester, settings: settings);
+    await _pumpSection(
+      tester,
+      settingsAsync: AsyncData<SettingsService>(settings),
+    );
 
     expect(find.text('Diary card tags'), findsOneWidget);
     expect(find.text('Do not show tags'), findsOneWidget);
+  });
+
+  testWidgets('exposes localized slider values to assistive technology', (
+    WidgetTester tester,
+  ) async {
+    await _withSemantics(tester, () async {
+      final settings = await SettingsService.create();
+
+      await _pumpSection(
+        tester,
+        settingsAsync: AsyncData<SettingsService>(settings),
+      );
+      await tester.tap(find.text('Diary card tags'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getSemantics(find.byType(Slider)).value,
+        'Show up to 2 tags',
+      );
+
+      final slider = tester.widget<Slider>(find.byType(Slider));
+      slider.onChanged!(0);
+      await tester.pump();
+
+      expect(
+        tester.getSemantics(find.byType(Slider)).value,
+        'Do not show tags',
+      );
+    });
+  });
+
+  testWidgets('renders localized loading and error states', (
+    WidgetTester tester,
+  ) async {
+    await _withSemantics(tester, () async {
+      await _pumpSection(
+        tester,
+        settingsAsync: const AsyncLoading<SettingsService>(),
+        settle: false,
+      );
+
+      expect(
+        find.bySemanticsLabel(RegExp('Loading diary card settings')),
+        findsOneWidget,
+      );
+
+      await _pumpSection(
+        tester,
+        settingsAsync: AsyncError<SettingsService>(
+          StateError('settings failed'),
+          StackTrace.empty,
+        ),
+      );
+
+      expect(find.text('Setting unavailable'), findsOneWidget);
+      expect(find.text('Show up to 2 tags'), findsNothing);
+    });
   });
 
   testWidgets(
@@ -88,7 +154,11 @@ void main() {
 
       for (final themeMode in <ThemeMode>[ThemeMode.light, ThemeMode.dark]) {
         final settings = await SettingsService.create();
-        await _pumpSection(tester, settings: settings, themeMode: themeMode);
+        await _pumpSection(
+          tester,
+          settingsAsync: AsyncData<SettingsService>(settings),
+          themeMode: themeMode,
+        );
 
         final screenRect = Rect.fromLTWH(
           0,
@@ -106,6 +176,7 @@ void main() {
         final dialog = find.byType(AlertDialog);
         expect(dialog, findsOneWidget);
         final dialogRect = tester.getRect(dialog);
+        _expectFitsWithin(tester, dialog, screenRect);
         _expectFitsWithin(
           tester,
           find.descendant(of: dialog, matching: find.text('Diary card tags')),
@@ -131,10 +202,23 @@ void main() {
   );
 }
 
+Future<void> _withSemantics(
+  WidgetTester tester,
+  Future<void> Function() body,
+) async {
+  final semanticsHandle = tester.ensureSemantics();
+  try {
+    await body();
+  } finally {
+    semanticsHandle.dispose();
+  }
+}
+
 Future<void> _pumpSection(
   WidgetTester tester, {
-  required SettingsService settings,
+  required AsyncValue<SettingsService> settingsAsync,
   ThemeMode themeMode = ThemeMode.light,
+  bool settle = true,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -146,13 +230,15 @@ Future<void> _pumpSection(
       darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
       themeMode: themeMode,
       home: Scaffold(
-        body: SettingsDiaryCardSection(
-          settingsAsync: AsyncData<SettingsService>(settings),
-        ),
+        body: SettingsDiaryCardSection(settingsAsync: settingsAsync),
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }
 
 void _expectFitsWithin(WidgetTester tester, Finder finder, Rect boundary) {

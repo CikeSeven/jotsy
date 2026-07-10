@@ -127,6 +127,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDiaryCardTagLimit => '日记卡片标签';
 
   @override
+  String get settingsDiaryCardTagLimitLoading => '正在加载日记卡片设置';
+
+  @override
+  String get settingsDiaryCardTagLimitUnavailable => '设置暂不可用';
+
+  @override
   String get settingsDiaryCardTagLimitHidden => '不显示标签';
 
   @override

@@ -107,6 +107,7 @@ jobs:
 
           touch android/local.properties
           {
+            printf '\n'
             printf 'amap.web.api.key=%s\n' "$AMAP_WEB_API_KEY"
             printf 'qweather.credential_id=%s\n' "$QWEATHER_CREDENTIAL_ID"
             printf 'qweather.api_key=%s\n' "$QWEATHER_API_KEY"

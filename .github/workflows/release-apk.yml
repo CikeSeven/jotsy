@@ -65,6 +65,36 @@ jobs:
           QWEATHER_API_KEY: ${{ secrets.QWEATHER_API_KEY }}
           QWEATHER_API_HOST: ${{ secrets.QWEATHER_API_HOST }}
         run: |
+          set -euo pipefail
+
+          require_single_line_secret() {
+            local name="$1"
+            local value="$2"
+
+            if [[ -z "$value" ]]; then
+              echo "::error::Missing secret $name"
+              exit 1
+            fi
+            if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]]; then
+              echo "::error::Secret $name must contain exactly one line"
+              exit 1
+            fi
+            if [[ "$value" =~ ^[[:space:]] || "$value" =~ [[:space:]]$ ]]; then
+              echo "::error::Secret $name must not contain leading or trailing whitespace"
+              exit 1
+            fi
+          }
+
+          require_single_line_secret AMAP_WEB_API_KEY "$AMAP_WEB_API_KEY"
+          require_single_line_secret QWEATHER_CREDENTIAL_ID "$QWEATHER_CREDENTIAL_ID"
+          require_single_line_secret QWEATHER_API_KEY "$QWEATHER_API_KEY"
+          require_single_line_secret QWEATHER_API_HOST "$QWEATHER_API_HOST"
+
+          if [[ ! "$AMAP_WEB_API_KEY" =~ ^[A-Za-z0-9]{32}$ ]]; then
+            echo "::error::Secret AMAP_WEB_API_KEY must be a 32-character alphanumeric key"
+            exit 1
+          fi
+
           touch android/local.properties
           {
             printf 'amap.web.api.key=%s\n' "$AMAP_WEB_API_KEY"
@@ -72,6 +102,11 @@ jobs:
             printf 'qweather.api_key=%s\n' "$QWEATHER_API_KEY"
             printf 'qweather.api_host=%s\n' "$QWEATHER_API_HOST"
           } >> android/local.properties
+
+          grep -Eq '^amap\.web\.api\.key=.+$' android/local.properties
+          grep -Eq '^qweather\.credential_id=.+$' android/local.properties
+          grep -Eq '^qweather\.api_key=.+$' android/local.properties
+          grep -Eq '^qweather\.api_host=.+$' android/local.properties
 
       - name: Build split release APKs
         run: flutter build apk --release --split-per-abi

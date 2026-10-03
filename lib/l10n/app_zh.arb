@@ -2068,5 +2068,13 @@
   "diaryToolbarTimeFormatInvalid": "时间格式无效，请检查格式符。",
   "@diaryToolbarTimeFormatInvalid": {
     "description": "插入当前时间工具格式配置输入无效时的错误提示。"
+  },
+  "diaryTagCollapse": "收起标签",
+  "@diaryTagCollapse": {
+    "description": "Action displayed in the footer of the expanded diary tag filter."
+  },
+  "diaryTagCollapseHint": "在此处上滑或点击，收起标签列表",
+  "@diaryTagCollapseHint": {
+    "description": "Gesture hint for collapsing tags from the footer without interrupting list scrolling."
   }
 }

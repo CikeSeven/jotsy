@@ -19,6 +19,7 @@ import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
 import '../viewmodels/diary_view_preferences.dart';
@@ -72,8 +73,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const double _listBottomExtraSpace = 12;
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
-  static const double _tagPinnedHeaderHeight = 46;
   static const double _headerCollapsibleHeight = 68;
+  static const Duration _tagFilterSnapDuration = Duration(milliseconds: 240);
+  static const double _tagFilterFlingVelocity = 600;
+  static const double _tagFilterDragCommitDistance = 24;
 
   // ==================== 列表选择与过渡状态 ====================
   final Set<String> _selectedDiaryIds = <String>{};
@@ -111,6 +114,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   DiarySortMode _sortMode = DiarySortMode.updatedDesc;
   DiaryLayoutMode _layoutMode = DiaryLayoutMode.list;
   bool _viewPreferencesLoaded = false;
+  late final AnimationController _tagFilterExpansionController;
+  double _tagFilterDragDelta = 0;
 
   // ==================== 页面职责拆分协作对象 ====================
   late final DiariesPageFeedback _feedback;
@@ -128,6 +133,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       this,
       feedback: _feedback,
       transitionCoordinator: _transitionCoordinator,
+    );
+    _tagFilterExpansionController = AnimationController(
+      vsync: this,
+      duration: _tagFilterSnapDuration,
     );
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
@@ -169,6 +178,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _controller.dispose();
     _transitionCoordinator.dispose();
     _pagingCooldownTimer?.cancel();
+    _tagFilterExpansionController.dispose();
     _listRefreshPulseController.dispose();
     super.dispose();
   }
@@ -222,6 +232,79 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           displayedItems,
         );
         final hasMoreDiaries = _hasMoreDiaries;
+        final tagHeaderContent = tagsAsync.when(
+          data: (tags) {
+            final visibleTagFilters = _resolveTagFiltersForDisplay(
+              allTags: tags,
+              visibleItems: displayedItems,
+              keyword: filterState.keyword,
+            );
+            return Padding(
+              padding: const EdgeInsets.only(
+                top: _tagSectionTopGap,
+                bottom: _tagSectionBottomGap,
+              ),
+              child: DiaryTagFilterBar(
+                tags: visibleTagFilters,
+                expansionProgress: _tagFilterExpansionController,
+                canExpand: () => _tagFilterExpansionController.value < 1,
+                canCollapse: () => _tagFilterExpansionController.value > 0,
+                selectedTagFilterIds: filterState.selectedTagIds,
+                onToggleTagFilter: _controller.toggleTagFilter,
+                onClearTagFilters: _controller.clearTagFilters,
+                onVerticalDragStart: (_) => _handleTagFilterDragStart(),
+                onVerticalDragUpdate: _handleTagFilterDragUpdate,
+                onVerticalDragEnd: _handleTagFilterDragEnd,
+                onCollapse: () => _animateTagFiltersTo(false),
+              ),
+            );
+          },
+          loading: () => const Padding(
+            padding: EdgeInsets.only(
+              top: _tagSectionTopGap,
+              bottom: _tagSectionBottomGap,
+            ),
+            child: SizedBox(height: 40),
+          ),
+          error: (Object error, StackTrace stackTrace) => Padding(
+            padding: const EdgeInsets.only(
+              top: _tagSectionTopGap,
+              bottom: _tagSectionBottomGap,
+              left: AppSpacing.m,
+              right: AppSpacing.m,
+            ),
+            child: SizedBox(
+              height: 40,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  context.l10n.autoT0042(error.toString()),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ),
+        );
+        final animatedTagHeader = AnimatedBuilder(
+          animation: _tagFilterExpansionController,
+          child: tagHeaderContent,
+          builder: (context, child) {
+            final collapsedExtent = DiaryTagFilterBar.collapsedHeaderExtent;
+            final expandedExtent = DiaryTagFilterBar.expandedHeaderExtent;
+            final progress = _tagFilterExpansionController.value;
+            final extent =
+                collapsedExtent + (expandedExtent - collapsedExtent) * progress;
+            return SliverPersistentHeader(
+              pinned: true,
+              delegate: _FixedSliverHeaderDelegate(
+                height: extent,
+                backgroundColor: widget.pageBackgroundColor,
+                child: child!,
+              ),
+            );
+          },
+        );
 
         return Scaffold(
           backgroundColor: widget.pageBackgroundColor,
@@ -308,68 +391,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 ),
                               ),
                             ),
-                            SliverPersistentHeader(
-                              pinned: true,
-                              delegate: _FixedSliverHeaderDelegate(
-                                height: _tagPinnedHeaderHeight,
-                                backgroundColor: widget.pageBackgroundColor,
-                                child: tagsAsync.when(
-                                  data: (tags) {
-                                    final visibleTagFilters =
-                                        _resolveTagFiltersForDisplay(
-                                          allTags: tags,
-                                          visibleItems: displayedItems,
-                                          keyword: filterState.keyword,
-                                        );
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: _tagSectionTopGap,
-                                        bottom: _tagSectionBottomGap,
-                                      ),
-                                      child: DiaryTagFilterBar(
-                                        tags: visibleTagFilters,
-                                        selectedTagFilterIds:
-                                            filterState.selectedTagIds,
-                                        onToggleTagFilter:
-                                            _controller.toggleTagFilter,
-                                        onClearTagFilters:
-                                            _controller.clearTagFilters,
-                                      ),
-                                    );
-                                  },
-                                  loading: () => const Padding(
-                                    padding: EdgeInsets.only(
-                                      top: _tagSectionTopGap,
-                                      bottom: _tagSectionBottomGap,
-                                    ),
-                                    child: SizedBox(height: 40),
-                                  ),
-                                  error: (Object error, StackTrace stackTrace) {
-                                    return Padding(
-                                      padding: const EdgeInsets.only(
-                                        top: _tagSectionTopGap,
-                                        bottom: _tagSectionBottomGap,
-                                        left: AppSpacing.m,
-                                        right: AppSpacing.m,
-                                      ),
-                                      child: SizedBox(
-                                        height: 40,
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            context.l10n.autoT0042(
-                                              error.toString(),
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
+                            animatedTagHeader,
                             SliverFadeTransition(
                               opacity: _listRefreshOpacity,
                               sliver:
@@ -510,6 +532,58 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       return false;
     }
     return false;
+  }
+
+  void _handleTagFilterDragStart() {
+    _tagFilterExpansionController.stop();
+    _tagFilterDragDelta = 0;
+  }
+
+  void _handleTagFilterDragUpdate(double delta) {
+    // The sliver extent and the bar's clipping viewport share this normalized
+    // progress, so the content follows the finger without a second animation.
+    _tagFilterDragDelta += delta;
+    final range =
+        DiaryTagFilterBar.expandedHeaderExtent -
+        DiaryTagFilterBar.collapsedHeaderExtent;
+    if (range <= 0) {
+      return;
+    }
+    final nextProgress = (_tagFilterExpansionController.value + delta / range)
+        .clamp(0.0, 1.0);
+    _tagFilterExpansionController.value = nextProgress;
+  }
+
+  void _handleTagFilterDragEnd(double velocity) {
+    // A deliberate short pull should not require traversing half of the
+    // four-row panel. Use net displacement for slow gestures so moving back
+    // towards the start cancels the intent; tiny movements retain the nearest
+    // state, while a fling can still override the final position.
+    final bool shouldExpand;
+    if (velocity.abs() >= _tagFilterFlingVelocity) {
+      shouldExpand = velocity > 0;
+    } else if (_tagFilterDragDelta.abs() >= _tagFilterDragCommitDistance) {
+      shouldExpand = _tagFilterDragDelta > 0;
+    } else {
+      shouldExpand = _tagFilterExpansionController.value >= 0.5;
+    }
+    _animateTagFiltersTo(shouldExpand);
+  }
+
+  void _animateTagFiltersTo(bool expanded) {
+    final target = expanded ? 1.0 : 0.0;
+    final duration = ExpressiveMotion.duration(context, _tagFilterSnapDuration);
+    if (duration == Duration.zero) {
+      _tagFilterExpansionController.value = target;
+      return;
+    }
+    unawaited(
+      _tagFilterExpansionController.animateTo(
+        target,
+        duration: duration,
+        curve: ExpressiveMotion.effects,
+      ),
+    );
   }
 
   /// 解析当前可见日记列表，并在输入不变时复用上次结果。

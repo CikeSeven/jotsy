@@ -2743,6 +2743,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid time format. Please check the pattern.'**
   String get diaryToolbarTimeFormatInvalid;
+
+  /// Action displayed in the footer of the expanded diary tag filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse tags'**
+  String get diaryTagCollapse;
+
+  /// Gesture hint for collapsing tags from the footer without interrupting list scrolling.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe up here or tap to collapse the tags'**
+  String get diaryTagCollapseHint;
 }
 
 class _AppLocalizationsDelegate

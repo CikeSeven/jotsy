@@ -1509,4 +1509,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryToolbarTimeFormatInvalid =>
       'Invalid time format. Please check the pattern.';
+
+  @override
+  String get diaryTagCollapse => 'Collapse tags';
+
+  @override
+  String get diaryTagCollapseHint =>
+      'Swipe up here or tap to collapse the tags';
 }

@@ -1454,4 +1454,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryToolbarTimeFormatInvalid => '时间格式无效，请检查格式符。';
+
+  @override
+  String get diaryTagCollapse => '收起标签';
+
+  @override
+  String get diaryTagCollapseHint => '在此处上滑或点击，收起标签列表';
 }

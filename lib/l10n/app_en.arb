@@ -2068,5 +2068,13 @@
   "diaryToolbarTimeFormatInvalid": "Invalid time format. Please check the pattern.",
   "@diaryToolbarTimeFormatInvalid": {
     "description": "Error shown when the insert-current-time toolbar tool format is invalid."
+  },
+  "diaryTagCollapse": "Collapse tags",
+  "@diaryTagCollapse": {
+    "description": "Action displayed in the footer of the expanded diary tag filter."
+  },
+  "diaryTagCollapseHint": "Swipe up here or tap to collapse the tags",
+  "@diaryTagCollapseHint": {
+    "description": "Gesture hint for collapsing tags from the footer without interrupting list scrolling."
   }
 }

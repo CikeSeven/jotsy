@@ -121,7 +121,14 @@ class TagFilterChip extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s),
                   ],
-                  Text(label),
+                  Flexible(
+                    fit: FlexFit.loose,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             ),

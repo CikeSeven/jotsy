@@ -6,7 +6,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.4.8+13
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.12.0
+  flutter: '>=3.44.0'
 
 dependencies:
   flutter:
@@ -18,7 +19,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.2.1
-  font_awesome_flutter: ^10.12.0
+  font_awesome_flutter: ^11.0.0
   drift: ^2.32.0
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.5
@@ -27,7 +28,7 @@ dependencies:
   json_annotation: ^4.11.0
   intl: ^0.20.2
   flutter_staggered_grid_view: ^0.7.0
-  flutter_quill: ^11.5.0
+  flutter_quill: ^11.6.0
   flutter_quill_extensions: ^11.0.0
   file_picker: ^10.3.10
   smooth_sheets: ^0.17.0

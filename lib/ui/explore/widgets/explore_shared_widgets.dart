@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/app/theme/app_effects.dart';
 
 /// 探索页通用卡片容器。
 class ExploreCard extends StatelessWidget {
@@ -12,36 +11,9 @@ class ExploreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final cardBackground =
-        isDark
-            ? colorScheme.surfaceContainerHigh
-            : colorScheme.surfaceContainerLow;
-    final cardBorderColor =
-        isDark
-            ? colorScheme.outlineVariant.withValues(alpha: 0.5)
-            : colorScheme.outlineVariant.withValues(alpha: 0.42);
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: cardBackground,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cardBorderColor, width: 0.9),
-          boxShadow: <BoxShadow>[
-            ...AppEffects.softShadow.take(1),
-            BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: isDark ? 0.12 : 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Padding(padding: const EdgeInsets.all(12), child: child),
-      ),
+    return Card.filled(
+      margin: EdgeInsets.zero,
+      child: Padding(padding: const EdgeInsets.all(16), child: child),
     );
   }
 }
@@ -54,7 +26,7 @@ class ExploreSectionTitle extends StatelessWidget {
     required this.title,
   });
 
-  final IconData icon;
+  final FaIconData icon;
   final String title;
 
   @override
@@ -83,7 +55,7 @@ class ExploreStatTile extends StatelessWidget {
     required this.value,
   });
 
-  final IconData icon;
+  final FaIconData icon;
   final String label;
   final String value;
 
@@ -114,7 +86,7 @@ class ExploreStatTile extends StatelessWidget {
           value,
           style: Theme.of(
             context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ).textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
         ),
       ],
     );
@@ -162,28 +134,27 @@ class ExploreMediaThumb extends StatelessWidget {
         final uri = Uri.tryParse(source);
         final isRemote =
             uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-        final image =
-            isRemote
-                ? Image.network(
-                  source,
-                  width: width,
-                  height: height,
-                  fit: BoxFit.cover,
-                  cacheWidth: cacheWidth,
-                  cacheHeight: cacheHeight,
-                  filterQuality: FilterQuality.low,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                )
-                : Image.file(
-                  File(source),
-                  width: width,
-                  height: height,
-                  fit: BoxFit.cover,
-                  cacheWidth: cacheWidth,
-                  cacheHeight: cacheHeight,
-                  filterQuality: FilterQuality.low,
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                );
+        final image = isRemote
+            ? Image.network(
+                source,
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+                cacheWidth: cacheWidth,
+                cacheHeight: cacheHeight,
+                filterQuality: FilterQuality.low,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              )
+            : Image.file(
+                File(source),
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+                cacheWidth: cacheWidth,
+                cacheHeight: cacheHeight,
+                filterQuality: FilterQuality.low,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              );
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(radius),
@@ -215,10 +186,9 @@ class ExploreMediaThumb extends StatelessWidget {
     if (!displayExtent.isFinite || displayExtent <= 0) {
       return null;
     }
-    final effectiveRatio =
-        devicePixelRatio.isFinite && devicePixelRatio > 0
-            ? devicePixelRatio
-            : 1.0;
+    final effectiveRatio = devicePixelRatio.isFinite && devicePixelRatio > 0
+        ? devicePixelRatio
+        : 1.0;
     final extent = (displayExtent * effectiveRatio).round();
     return extent > 0 ? extent : null;
   }

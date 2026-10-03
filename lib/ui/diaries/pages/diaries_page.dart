@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -185,13 +186,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final listBottomOffset = _listBottomExtraSpace;
 
     return settingsAsync.when(
-      loading:
-          () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error:
-          (Object error, StackTrace stackTrace) => Scaffold(
-            body: Center(child: Text(context.l10n.autoT0045(error.toString()))),
-          ),
+      loading: () =>
+          const Scaffold(body: Center(child: ExpressiveLoadingIndicator())),
+      error: (Object error, StackTrace stackTrace) => Scaffold(
+        body: Center(child: Text(context.l10n.autoT0045(error.toString()))),
+      ),
       data: (settingsService) {
         _controller.loadViewPreferencesIfNeeded(settingsService);
         final currentPagingSignature = _buildPagingSignature(filterState);
@@ -204,8 +203,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         );
         final diariesAsync = ref.watch(pagedDiariesProvider(diaryPageQuery));
         final latestPage = diariesAsync.asData?.value;
-        final latestVisibleItems =
-            latestPage == null ? null : _resolveVisibleItems(latestPage.items);
+        final latestVisibleItems = latestPage == null
+            ? null
+            : _resolveVisibleItems(latestPage.items);
 
         if (latestPage != null) {
           _hasMoreDiaries = latestPage.hasMore;
@@ -263,8 +263,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               floating: !_isSelectionMode,
                               delegate: _FixedSliverHeaderDelegate(
                                 height: _headerCollapsibleHeight,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.surface,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.surface,
                                 child: SizedBox(
                                   height: _headerCollapsibleHeight,
                                   child: Column(
@@ -276,22 +277,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         onCancelSelection:
                                             _controller.clearSelection,
                                         isPinActionUnpin: shouldUnpinSelected,
-                                        onPinSelected:
-                                            () => unawaited(
-                                              _controller.pinSelectedDiaries(
-                                                unpin: shouldUnpinSelected,
-                                              ),
-                                            ),
-                                        onArchiveSelected:
-                                            () => unawaited(
-                                              _controller
-                                                  .archiveSelectedDiaries(),
-                                            ),
-                                        onDeleteSelected:
-                                            () => unawaited(
-                                              _controller
-                                                  .deleteSelectedDiaries(),
-                                            ),
+                                        onPinSelected: () => unawaited(
+                                          _controller.pinSelectedDiaries(
+                                            unpin: shouldUnpinSelected,
+                                          ),
+                                        ),
+                                        onArchiveSelected: () => unawaited(
+                                          _controller.archiveSelectedDiaries(),
+                                        ),
+                                        onDeleteSelected: () => unawaited(
+                                          _controller.deleteSelectedDiaries(),
+                                        ),
                                         onOpenArchived:
                                             _controller.openArchivedPage,
                                         sortMode: _sortMode,
@@ -341,14 +337,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       ),
                                     );
                                   },
-                                  loading:
-                                      () => const Padding(
-                                        padding: EdgeInsets.only(
-                                          top: _tagSectionTopGap,
-                                          bottom: _tagSectionBottomGap,
-                                        ),
-                                        child: SizedBox(height: 40),
-                                      ),
+                                  loading: () => const Padding(
+                                    padding: EdgeInsets.only(
+                                      top: _tagSectionTopGap,
+                                      bottom: _tagSectionBottomGap,
+                                    ),
+                                    child: SizedBox(height: 40),
+                                  ),
                                   error: (Object error, StackTrace stackTrace) {
                                     return Padding(
                                       padding: const EdgeInsets.only(
@@ -383,67 +378,62 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   // 2) 首屏错误且无缓存；
                                   // 3) 渲染列表/空态内容。
                                   diariesAsync.isLoading &&
-                                          displayedItems.isEmpty
-                                      ? const SliverFillRemaining(
-                                        hasScrollBody: false,
-                                        child: Center(
-                                          child: SizedBox(
-                                            height: 22,
-                                            width: 22,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
+                                      displayedItems.isEmpty
+                                  ? const SliverFillRemaining(
+                                      hasScrollBody: false,
+                                      child: Center(
+                                        child: SizedBox(
+                                          height: 22,
+                                          width: 22,
+                                          child: ExpressiveLoadingIndicator(),
                                         ),
-                                      )
-                                      : diariesAsync.hasError &&
-                                          displayedItems.isEmpty
-                                      ? SliverFillRemaining(
-                                        hasScrollBody: false,
-                                        child: Center(
-                                          child: Text(
-                                            context.l10n.autoT0127(
-                                              diariesAsync.asError?.error
-                                                      .toString() ??
-                                                  '',
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                      : DiariesListSection(
-                                        key: ValueKey<String>(
-                                          'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
-                                        ),
-                                        diaries: displayedItems,
-                                        layoutMode: _layoutMode,
-                                        isSelectionMode: _isSelectionMode,
-                                        selectedDiaryIds: _selectedDiaryIds,
-                                        maxVisibleTags: diaryCardTagLimit,
-                                        pendingHideDiaryIds:
-                                            _pendingHideDiaryIds,
-                                        appearingDiaryIds: _appearingDiaryIds,
-                                        onCreate:
-                                            () => unawaited(
-                                              _controller
-                                                  .openCreateEditorWithDraftPrompt(),
-                                            ),
-                                        onOpenEditor: (diaryId) {
-                                          _controller.openPreview(diaryId);
-                                        },
-                                        onToggleSelection:
-                                            (noteId, forceSelect) =>
-                                                _controller.toggleSelection(
-                                                  noteId,
-                                                  forceSelect: forceSelect,
-                                                ),
-                                        onArchiveDiary:
-                                            (diaryId) => unawaited(
-                                              _controller.archiveDiaryBySwipe(
-                                                diaryId,
-                                              ),
-                                            ),
-                                        isSearchResultEmpty: false,
                                       ),
+                                    )
+                                  : diariesAsync.hasError &&
+                                        displayedItems.isEmpty
+                                  ? SliverFillRemaining(
+                                      hasScrollBody: false,
+                                      child: Center(
+                                        child: Text(
+                                          context.l10n.autoT0127(
+                                            diariesAsync.asError?.error
+                                                    .toString() ??
+                                                '',
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : DiariesListSection(
+                                      key: ValueKey<String>(
+                                        'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
+                                      ),
+                                      diaries: displayedItems,
+                                      layoutMode: _layoutMode,
+                                      isSelectionMode: _isSelectionMode,
+                                      selectedDiaryIds: _selectedDiaryIds,
+                                      maxVisibleTags: diaryCardTagLimit,
+                                      pendingHideDiaryIds: _pendingHideDiaryIds,
+                                      appearingDiaryIds: _appearingDiaryIds,
+                                      onCreate: () => unawaited(
+                                        _controller
+                                            .openCreateEditorWithDraftPrompt(),
+                                      ),
+                                      onOpenEditor: (diaryId) {
+                                        _controller.openPreview(diaryId);
+                                      },
+                                      onToggleSelection:
+                                          (noteId, forceSelect) =>
+                                              _controller.toggleSelection(
+                                                noteId,
+                                                forceSelect: forceSelect,
+                                              ),
+                                      onArchiveDiary: (diaryId) => unawaited(
+                                        _controller.archiveDiaryBySwipe(
+                                          diaryId,
+                                        ),
+                                      ),
+                                      isSearchResultEmpty: false,
+                                    ),
                             ),
                             if (hasMoreDiaries || _isPagingCooldown)
                               const SliverToBoxAdapter(
@@ -453,9 +443,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     child: SizedBox(
                                       height: 18,
                                       width: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
+                                      child: ExpressiveLoadingIndicator(),
                                     ),
                                   ),
                                 ),

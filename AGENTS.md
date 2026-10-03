@@ -13,7 +13,7 @@
 ├─ lib/
 │  ├─ main.dart                      # 应用入口
 │  ├─ app/                           # App 装配与主题系统
-│  │  └─ theme/                      # 主题 token / 配色 / provider
+│  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
 │  │  ├─ database/                   # Drift 数据库（schema / query / write / migration 拆分）
 │  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储等）
@@ -25,7 +25,7 @@
 │  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块
 │  │  ├─ home|calendar|explore|settings/
-│  │  └─ widgets/                    # 跨 feature 公共 UI（底部导航、加载页等）
+│  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载等）
 │  ├─ l10n/                          # 国际化封装
 │  └─ utils/                         # 工具函数
 ├─ assets/                           # 静态资源
@@ -72,6 +72,7 @@
 - 例外：语义极直白的简单 getter / 纯样板代码可不写注释。
 
 ## 6. UI/交互统一规范
+- 必须：应用组件统一继承 `MaterialTheme` 的 Material 3 Expressive 主题；新增单选连接按钮组与等待状态分别复用 `ExpressiveButtonGroup`、`ExpressiveLoadingIndicator`，新增动效通过 `ExpressiveMotion` 尊重系统减少动画设置。Expressive 仍基于 `useMaterial3: true`，禁止以关闭 Material 3 的方式迁移。
 - 必须：新增图标默认使用 `font_awesome_flutter`（`FaIcon` + `FontAwesomeIcons`）。
 - 必须：富文本工具栏与设置页工具预览图标来源一致，避免混用。
 - 必须：标题栏返回按钮统一使用 `<` 风格图标，即 `FontAwesomeIcons.angleLeft`，默认尺寸使用 `18`，避免在不同页面混用 `arrowLeft/chevronLeft/系统返回箭头`。

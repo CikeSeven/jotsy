@@ -30,8 +30,7 @@ CREATE TABLE diaries (
 )
 ''');
 
-      final rows =
-          await customSelect('''
+      final rows = await customSelect('''
 SELECT
   id,
   title,
@@ -151,5 +150,129 @@ ADD COLUMN capsule_locked_at INTEGER NULL
       'CREATE INDEX IF NOT EXISTS idx_diary_tags_tag_id '
       'ON diary_tags (tag_id)',
     );
+  }
+
+  /// Imports performed by releases before schema 8 restored image files into
+  /// this installation but kept the exporting app's absolute paths in rows.
+  /// Rebind only embedded media whose extracted target exists so external
+  /// files and remote images retain their original behavior.
+  Future<void> _migrateRebindImportedMediaPaths() async {
+    final documents = await getApplicationDocumentsDirectory();
+    final rows = await customSelect(
+      'SELECT id, content, cover FROM diaries',
+    ).get();
+    for (final row in rows) {
+      final id = row.read<int>('id');
+      final content = row.read<String>('content');
+      final cover = row.readNullable<String>('cover');
+      final repairedContent = await _rebindEmbeddedImagePaths(
+        content,
+        documents,
+      );
+      final repairedCover = await _rebindManagedMediaPath(
+        cover,
+        documents,
+        const <String>['diary_covers', 'diary_images'],
+      );
+      if (repairedContent == content && repairedCover == cover) {
+        continue;
+      }
+
+      if (repairedCover == null) {
+        await customUpdate(
+          'UPDATE diaries SET content = ?, cover = NULL WHERE id = ?',
+          variables: <Variable>[
+            Variable<String>(repairedContent),
+            Variable<int>(id),
+          ],
+          updates: {diaries},
+        );
+      } else {
+        await customUpdate(
+          'UPDATE diaries SET content = ?, cover = ? WHERE id = ?',
+          variables: <Variable>[
+            Variable<String>(repairedContent),
+            Variable<String>(repairedCover),
+            Variable<int>(id),
+          ],
+          updates: {diaries},
+        );
+      }
+    }
+  }
+
+  Future<String> _rebindEmbeddedImagePaths(
+    String content,
+    Directory documents,
+  ) async {
+    Object? value;
+    try {
+      value = jsonDecode(content);
+    } on FormatException {
+      return content;
+    }
+    await _rebindImageNode(value, documents);
+    return jsonEncode(value);
+  }
+
+  Future<void> _rebindImageNode(Object? node, Directory documents) async {
+    if (node is List) {
+      for (final child in node) {
+        await _rebindImageNode(child, documents);
+      }
+      return;
+    }
+    if (node is! Map) return;
+
+    final insert = node['insert'];
+    if (insert is Map && insert['image'] is String) {
+      insert['image'] = await _rebindManagedMediaPath(
+        insert['image'] as String,
+        documents,
+        const <String>['diary_images'],
+      );
+    }
+    if (node['type'] == 'image') {
+      final attributes = node['attributes'];
+      if (attributes is Map && attributes['url'] is String) {
+        attributes['url'] = await _rebindManagedMediaPath(
+          attributes['url'] as String,
+          documents,
+          const <String>['diary_images'],
+        );
+      }
+    }
+    for (final child in node.values.toList(growable: false)) {
+      await _rebindImageNode(child, documents);
+    }
+  }
+
+  Future<String?> _rebindManagedMediaPath(
+    String? source,
+    Directory documents,
+    List<String> managedDirectories,
+  ) async {
+    final path = source?.trim();
+    if (path == null || path.isEmpty) return source;
+
+    final segments = p.posix
+        .split(path.replaceAll('\\', '/'))
+        .where((segment) => segment.isNotEmpty && segment != '.')
+        .toList(growable: false);
+    for (final directory in managedDirectories) {
+      final index = segments.lastIndexOf(directory);
+      if (index < 0 || index + 1 >= segments.length) continue;
+      final relative = p.posix.normalize(
+        p.posix.joinAll(segments.skip(index + 1)),
+      );
+      if (relative == '..' ||
+          relative.startsWith('../') ||
+          p.posix.isAbsolute(relative)) {
+        return source;
+      }
+      final candidate = p.join(documents.path, directory, relative);
+      if (await File(candidate).exists()) return candidate;
+    }
+    return source;
   }
 }

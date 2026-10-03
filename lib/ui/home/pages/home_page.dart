@@ -16,6 +16,7 @@ import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/bottom_nav.dart';
 part '../controllers/home_page_controller.dart';
 
@@ -124,8 +125,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
     final pageController = _controller.pageController;
     final page = pageController.hasClients ? pageController.page : null;
-    final settledIndex =
-        (page?.round() ?? fallbackIndex).clamp(0, _pages.length - 1).toInt();
+    final settledIndex = (page?.round() ?? fallbackIndex)
+        .clamp(0, _pages.length - 1)
+        .toInt();
     setState(() {
       _currentIndex = settledIndex;
       _targetIndex = settledIndex;
@@ -204,16 +206,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final snackBarBottomInset = AppSpacing.l;
 
     final baseTheme = Theme.of(context);
-    final colorScheme = baseTheme.colorScheme;
     final snackBarTheme = baseTheme.snackBarTheme.copyWith(
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: colorScheme.surfaceContainerHigh.withValues(alpha: 0.96),
-      contentTextStyle: baseTheme.textTheme.bodyMedium?.copyWith(
-        color: colorScheme.onSurface,
-      ),
-      actionTextColor: colorScheme.primary,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       insetPadding: EdgeInsets.fromLTRB(
         _snackBarSideInset,
         0,
@@ -253,18 +246,19 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return ValueListenableBuilder<HomeTabSwitchCurveType>(
       valueListenable: settingsService.homeTabSwitchCurveNotifier,
-      builder: (
-        BuildContext context,
-        HomeTabSwitchCurveType curveType,
-        Widget? child,
-      ) {
-        _controller.pageSwitchCurve = curveType.curve;
-        return _buildHomeShell(
-          baseTheme: baseTheme,
-          snackBarTheme: snackBarTheme,
-          navItems: navItems,
-        );
-      },
+      builder:
+          (
+            BuildContext context,
+            HomeTabSwitchCurveType curveType,
+            Widget? child,
+          ) {
+            _controller.pageSwitchCurve = curveType.curve;
+            return _buildHomeShell(
+              baseTheme: baseTheme,
+              snackBarTheme: snackBarTheme,
+              navItems: navItems,
+            );
+          },
     );
   }
 
@@ -301,10 +295,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _buildPageView() {
     return PageView(
       controller: _controller.pageController,
-      physics:
-          _isTabSwitching
-              ? const NeverScrollableScrollPhysics()
-              : const PageScrollPhysics(),
+      physics: _isTabSwitching
+          ? const NeverScrollableScrollPhysics()
+          : const PageScrollPhysics(),
       onPageChanged: _handlePageChanged,
       children: _pages,
     );
@@ -374,25 +367,32 @@ class _HomePageState extends ConsumerState<HomePage> {
             fabBaseBottomOffset +
             (homeHintVisible ? _fabLiftOffsetWhenHintVisible : 0);
         return AnimatedPositioned(
-          duration: _fabLiftDuration,
+          duration: ExpressiveMotion.duration(context, _fabLiftDuration),
           curve: _fabLiftCurve,
           right: AppSpacing.xl,
           bottom: fabBottomOffset,
           child: IgnorePointer(
             ignoring: !shouldShow || !_canUseGlobalCreateFab,
             child: AnimatedSlide(
-              duration: _fabVisibilityDuration,
-              curve: _fabVisibilityCurve,
+              duration: ExpressiveMotion.duration(
+                context,
+                _fabVisibilityDuration,
+              ),
+              curve: ExpressiveMotion.spatial,
               offset: shouldShow ? Offset.zero : const Offset(0, 1.6),
               child: AnimatedOpacity(
-                duration: _fabVisibilityDuration,
+                duration: ExpressiveMotion.duration(
+                  context,
+                  _fabVisibilityDuration,
+                ),
                 curve: _fabVisibilityCurve,
                 opacity: shouldShow ? 1 : 0,
-                child: FloatingActionButton(
+                child: FloatingActionButton.extended(
                   onPressed: () {
                     unawaited(_openCreateFromGlobalFab());
                   },
-                  child: const FaIcon(FontAwesomeIcons.plus),
+                  icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
+                  label: Text(context.l10n.commonNew),
                 ),
               ),
             ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
@@ -53,8 +53,8 @@ class SettingsDiaryCardSection extends StatelessWidget {
                         SettingsService.maxDiaryCardTagLimit -
                         SettingsService.minDiaryCardTagLimit,
                     label: selectedLabel,
-                    semanticFormatterCallback:
-                        (double value) => _limitLabel(l10n, value.round()),
+                    semanticFormatterCallback: (double value) =>
+                        _limitLabel(l10n, value.round()),
                     onChanged: (double value) {
                       setDialogState(() {
                         selectedLimit = value.round();
@@ -94,37 +94,33 @@ class SettingsDiaryCardSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return settingsAsync.when(
-      data:
-          (SettingsService settings) => ValueListenableBuilder<int>(
-            valueListenable: settings.diaryCardTagLimitNotifier,
-            builder: (BuildContext context, int limit, Widget? child) {
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                title: Text(l10n.settingsDiaryCardTagLimit),
-                subtitle: Text(_limitLabel(l10n, limit)),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: () => _showTagLimitDialog(context, settings),
-              );
-            },
-          ),
-      loading:
-          () => ListTile(
-            enabled: false,
+      data: (SettingsService settings) => ValueListenableBuilder<int>(
+        valueListenable: settings.diaryCardTagLimitNotifier,
+        builder: (BuildContext context, int limit, Widget? child) {
+          return ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             title: Text(l10n.settingsDiaryCardTagLimit),
-            trailing: LoadingIndicatorM3E(
-              variant: LoadingIndicatorM3EVariant.contained,
-              constraints: const BoxConstraints.tightFor(width: 24, height: 24),
-              semanticLabel: l10n.settingsDiaryCardTagLimitLoading,
-            ),
-          ),
-      error:
-          (Object error, StackTrace stackTrace) => ListTile(
-            enabled: false,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            title: Text(l10n.settingsDiaryCardTagLimit),
-            subtitle: Text(l10n.settingsDiaryCardTagLimitUnavailable),
-          ),
+            subtitle: Text(_limitLabel(l10n, limit)),
+            trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+            onTap: () => _showTagLimitDialog(context, settings),
+          );
+        },
+      ),
+      loading: () => ListTile(
+        enabled: false,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        title: Text(l10n.settingsDiaryCardTagLimit),
+        trailing: ExpressiveLoadingIndicator(
+          size: 24,
+          semanticLabel: l10n.settingsDiaryCardTagLimitLoading,
+        ),
+      ),
+      error: (Object error, StackTrace stackTrace) => ListTile(
+        enabled: false,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        title: Text(l10n.settingsDiaryCardTagLimit),
+        subtitle: Text(l10n.settingsDiaryCardTagLimitUnavailable),
+      ),
     );
   }
 }

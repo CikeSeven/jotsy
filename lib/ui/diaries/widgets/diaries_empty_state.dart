@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-
 
 /// 笔记列表空状态组件。
 ///
@@ -27,24 +26,24 @@ class DiariesEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              CupertinoIcons.search,
+            FaIcon(
+              FontAwesomeIcons.magnifyingGlass,
               size: 38,
               color: color.secondary,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.autoT0152,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: color.onSurface,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: color.onSurface),
             ),
             const SizedBox(height: 6),
             Text(
               l10n.autoT0153,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: color.onSurfaceVariant,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: color.onSurfaceVariant),
             ),
           ],
         ),
@@ -57,8 +56,8 @@ class DiariesEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            CupertinoIcons.square_pencil,
+          FaIcon(
+            FontAwesomeIcons.penToSquare,
             size: 38,
             color: color.secondary,
           ),
@@ -67,7 +66,7 @@ class DiariesEmptyState extends StatelessWidget {
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: onCreate,
-            icon: const Icon(CupertinoIcons.add),
+            icon: const FaIcon(FontAwesomeIcons.plus),
             label: Text(l10n.autoT0155),
           ),
         ],

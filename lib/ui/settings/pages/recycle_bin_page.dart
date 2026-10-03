@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -29,8 +30,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
       return context.l10n.autoT0025;
     }
     final locale = Localizations.localeOf(context);
-    final pattern =
-        locale.languageCode == 'zh' ? 'yyyy-MM-dd HH:mm' : 'yyyy-MM-dd HH:mm';
+    final pattern = locale.languageCode == 'zh'
+        ? 'yyyy-MM-dd HH:mm'
+        : 'yyyy-MM-dd HH:mm';
     return DateFormat(
       pattern,
       locale.toLanguageTag(),
@@ -201,10 +203,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         ],
       ),
       body: deletedAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (error, stackTrace) =>
-                Center(child: Text(l10n.autoT0031(error.toString()))),
+        loading: () => const Center(child: ExpressiveLoadingIndicator()),
+        error: (error, stackTrace) =>
+            Center(child: Text(l10n.autoT0031(error.toString()))),
         data: (diaries) {
           if (diaries.isEmpty) {
             return Center(child: Text(l10n.autoT0032));
@@ -217,10 +218,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
             itemBuilder: (BuildContext context, int index) {
               final diary = diaries[index].diary;
               final selected = _selectedDiaryIds.contains(diary.diaryId);
-              final title =
-                  diary.title.trim().isEmpty
-                      ? l10n.autoT0033
-                      : diary.title.trim();
+              final title = diary.title.trim().isEmpty
+                  ? l10n.autoT0033
+                  : diary.title.trim();
               return ListTile(
                 onTap: () => _toggleSelection(diary.diaryId),
                 onLongPress: () => _toggleSelection(diary.diaryId),

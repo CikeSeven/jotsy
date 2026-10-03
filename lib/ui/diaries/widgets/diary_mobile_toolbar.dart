@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -119,7 +120,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
   }
 
   /// 工具项默认图标（统一使用 FontAwesome）。
-  IconData get iconData {
+  FaIconData get iconData {
     return switch (this) {
       DiaryToolbarItem.undo => FontAwesomeIcons.rotateLeft,
       DiaryToolbarItem.redo => FontAwesomeIcons.rotateRight,
@@ -332,6 +333,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
       color: colorScheme.onSurface,
       disabledColor: colorScheme.onSurfaceVariant,
       style: ButtonStyle(
+        shape: ExpressiveControls.shape,
         foregroundColor: WidgetStatePropertyAll<Color>(colorScheme.onSurface),
         iconColor: WidgetStatePropertyAll<Color>(colorScheme.onSurface),
       ),
@@ -349,6 +351,13 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
       color: colorScheme.onPrimaryContainer,
       disabledColor: colorScheme.onSurfaceVariant,
       style: ButtonStyle(
+        shape: WidgetStateProperty.resolveWith(
+          (states) => RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              states.contains(WidgetState.pressed) ? 8 : 12,
+            ),
+          ),
+        ),
         foregroundColor: WidgetStatePropertyAll<Color>(
           colorScheme.onPrimaryContainer,
         ),
@@ -390,80 +399,80 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   final showCurrentTime = item == DiaryToolbarItem.currentTime;
 
   // 图片按钮使用自定义拣选并复制到私有目录，避免外部路径失效。
-  final embedButtons =
-      item == DiaryToolbarItem.image
-          ? FlutterQuillEmbeds.toolbarButtons(
-            imageButtonOptions: QuillToolbarImageButtonOptions(
-              iconData: FontAwesomeIcons.image,
-              imageButtonConfig: QuillToolbarImageConfig(
-                onRequestPickImage: _pickAndPersistDiaryImage,
-              ),
+  final embedButtons = item == DiaryToolbarItem.image
+      ? FlutterQuillEmbeds.toolbarButtons(
+          imageButtonOptions: QuillToolbarImageButtonOptions(
+            iconData: FontAwesomeIcons.image.data,
+            imageButtonConfig: QuillToolbarImageConfig(
+              onRequestPickImage: _pickAndPersistDiaryImage,
             ),
-            videoButtonOptions: null,
-            cameraButtonOptions: null,
-          )
-          : null;
+          ),
+          videoButtonOptions: null,
+          cameraButtonOptions: null,
+        )
+      : null;
 
-  // 所有工具按钮图标统一映射为 FontAwesome，避免风格不一致。
+  // Quill 的 iconData API 仍只接受 Flutter IconData，因此仅在此边界解包
+  // FontAwesome 11 的 .data；设置预览继续使用同源 FaIconData + FaIcon。
   final buttonOptions = quill.QuillSimpleToolbarButtonOptions(
     base: quill.QuillToolbarBaseButtonOptions(
       iconSize: 13,
       iconButtonFactor: 1.2,
       iconTheme: compactIconTheme,
     ),
-    undoHistory: const quill.QuillToolbarHistoryButtonOptions(
-      iconData: FontAwesomeIcons.rotateLeft,
+    undoHistory: quill.QuillToolbarHistoryButtonOptions(
+      iconData: FontAwesomeIcons.rotateLeft.data,
     ),
-    redoHistory: const quill.QuillToolbarHistoryButtonOptions(
-      iconData: FontAwesomeIcons.rotateRight,
+    redoHistory: quill.QuillToolbarHistoryButtonOptions(
+      iconData: FontAwesomeIcons.rotateRight.data,
     ),
-    bold: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.bold,
+    bold: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.bold.data,
     ),
-    italic: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.italic,
+    italic: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.italic.data,
     ),
-    underLine: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.underline,
+    underLine: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.underline.data,
     ),
-    strikeThrough: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.strikethrough,
+    strikeThrough: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.strikethrough.data,
     ),
-    inlineCode: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.code,
+    inlineCode: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.code.data,
     ),
-    color: const quill.QuillToolbarColorButtonOptions(
-      iconData: FontAwesomeIcons.palette,
+    color: quill.QuillToolbarColorButtonOptions(
+      iconData: FontAwesomeIcons.palette.data,
     ),
-    backgroundColor: const quill.QuillToolbarColorButtonOptions(
-      iconData: FontAwesomeIcons.highlighter,
+    backgroundColor: quill.QuillToolbarColorButtonOptions(
+      iconData: FontAwesomeIcons.highlighter.data,
     ),
-    clearFormat: const quill.QuillToolbarClearFormatButtonOptions(
-      iconData: FontAwesomeIcons.eraser,
+    clearFormat: quill.QuillToolbarClearFormatButtonOptions(
+      iconData: FontAwesomeIcons.eraser.data,
     ),
-    listNumbers: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.listOl,
+    listNumbers: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.listOl.data,
     ),
-    listBullets: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.listUl,
+    listBullets: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.listUl.data,
     ),
-    toggleCheckList: const quill.QuillToolbarToggleCheckListButtonOptions(
-      iconData: FontAwesomeIcons.squareCheck,
+    toggleCheckList: quill.QuillToolbarToggleCheckListButtonOptions(
+      iconData: FontAwesomeIcons.squareCheck.data,
     ),
-    codeBlock: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.fileCode,
+    codeBlock: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.fileCode.data,
     ),
-    quote: const quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.quoteLeft,
+    quote: quill.QuillToolbarToggleStyleButtonOptions(
+      iconData: FontAwesomeIcons.quoteLeft.data,
     ),
-    indentIncrease: const quill.QuillToolbarIndentButtonOptions(
-      iconData: FontAwesomeIcons.indent,
+    indentIncrease: quill.QuillToolbarIndentButtonOptions(
+      iconData: FontAwesomeIcons.indent.data,
     ),
-    indentDecrease: const quill.QuillToolbarIndentButtonOptions(
-      iconData: FontAwesomeIcons.outdent,
+    indentDecrease: quill.QuillToolbarIndentButtonOptions(
+      iconData: FontAwesomeIcons.outdent.data,
     ),
-    linkStyle: const quill.QuillToolbarLinkStyleButtonOptions(
-      iconData: FontAwesomeIcons.link,
+    linkStyle: quill.QuillToolbarLinkStyleButtonOptions(
+      iconData: FontAwesomeIcons.link.data,
     ),
   );
 
@@ -478,12 +487,11 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
       quill.QuillToolbarCustomButtonOptions(
         icon: const FaIcon(FontAwesomeIcons.clock, size: 14),
         tooltip: context.l10n.diaryToolbarInsertCurrentTime,
-        onPressed:
-            () => _insertCurrentSystemTime(
-              context,
-              controller,
-              formatPattern: currentTimeFormatPattern,
-            ),
+        onPressed: () => _insertCurrentSystemTime(
+          context,
+          controller,
+          formatPattern: currentTimeFormatPattern,
+        ),
       ),
   ];
 
@@ -530,8 +538,9 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
 }
 
 void _cycleHeaderStyle(quill.QuillController controller) {
-  final currentHeader =
-      controller.getSelectionStyle().attributes[quill.Attribute.header.key];
+  final currentHeader = controller
+      .getSelectionStyle()
+      .attributes[quill.Attribute.header.key];
   final nextHeader = switch (currentHeader?.value) {
     1 => quill.Attribute.h2,
     2 => quill.Attribute.h3,
@@ -557,14 +566,12 @@ void _insertCurrentSystemTime(
   );
   final documentLength = controller.document.length;
   final selection = controller.selection;
-  final start =
-      selection.isValid
-          ? _clampQuillOffset(selection.start, documentLength)
-          : _clampQuillOffset(documentLength - 1, documentLength);
-  final end =
-      selection.isValid
-          ? _clampQuillOffset(selection.end, documentLength)
-          : start;
+  final start = selection.isValid
+      ? _clampQuillOffset(selection.start, documentLength)
+      : _clampQuillOffset(documentLength - 1, documentLength);
+  final end = selection.isValid
+      ? _clampQuillOffset(selection.end, documentLength)
+      : start;
   final replaceLength = end - start;
   controller.replaceText(
     start,

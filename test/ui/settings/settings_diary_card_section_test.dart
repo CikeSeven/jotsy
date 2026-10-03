@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../support/expressive_test_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -114,8 +115,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        tester.getSemantics(find.byType(Slider)).value,
-        'Show up to 2 tags',
+        find.semantics.byPredicate((node) => node.value == 'Show up to 2 tags'),
+        findsOne,
       );
 
       final slider = tester.widget<Slider>(find.byType(Slider));
@@ -123,8 +124,8 @@ void main() {
       await tester.pump();
 
       expect(
-        tester.getSemantics(find.byType(Slider)).value,
-        'Do not show tags',
+        find.semantics.byPredicate((node) => node.value == 'Do not show tags'),
+        findsOne,
       );
     });
   });
@@ -241,8 +242,8 @@ Future<void> _pumpSection(
       locale: const Locale('en'),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
-      darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
+      theme: expressiveTestTheme(Brightness.light),
+      darkTheme: expressiveTestTheme(Brightness.dark),
       themeMode: themeMode,
       home: Scaffold(
         body: SettingsDiaryCardSection(settingsAsync: settingsAsync),

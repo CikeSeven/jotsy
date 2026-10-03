@@ -163,7 +163,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(FontAwesomeIcons.bold), findsNothing);
-    expect(find.byIcon(FontAwesomeIcons.italic), findsOneWidget);
+    expect(find.byIcon(FontAwesomeIcons.bold.data), findsNothing);
+    expect(find.byIcon(FontAwesomeIcons.italic.data), findsOneWidget);
   });
 }

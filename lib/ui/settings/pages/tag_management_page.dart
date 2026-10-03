@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/tag_order_codec.dart';
@@ -300,10 +300,8 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
             children: <Widget>[
               _TagFilterMemorySwitch(
                 settings: settings,
-                onChanged:
-                    (enabled) => unawaited(
-                      _setTagFilterMemoryEnabled(settings, enabled),
-                    ),
+                onChanged: (enabled) =>
+                    unawaited(_setTagFilterMemoryEnabled(settings, enabled)),
               ),
               const Divider(height: 1),
               Expanded(
@@ -341,8 +339,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
                             children: <Widget>[
                               IconButton(
                                 tooltip: l10n.autoT0038,
-                                onPressed:
-                                    _operating ? null : () => _deleteTag(tag),
+                                onPressed: _operating
+                                    ? null
+                                    : () => _deleteTag(tag),
                                 icon: const FaIcon(
                                   FontAwesomeIcons.trashCan,
                                   size: 14,
@@ -378,9 +377,8 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
           );
         },
         loading: () => const _SettingsLoadingIndicator(),
-        error:
-            (error, stackTrace) =>
-                Center(child: Text(l10n.autoT0045(error.toString()))),
+        error: (error, stackTrace) =>
+            Center(child: Text(l10n.autoT0045(error.toString()))),
       ),
     );
   }
@@ -401,7 +399,7 @@ class _TagFilterMemorySwitch extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: settings.tagFilterMemoryEnabledNotifier,
       builder: (BuildContext context, bool enabled, Widget? child) {
-        return SwitchListTile.adaptive(
+        return SwitchListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           value: enabled,
           title: Text(l10n.settingsTagMemory),
@@ -419,9 +417,8 @@ class _SettingsLoadingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: LoadingIndicatorM3E(
-        variant: LoadingIndicatorM3EVariant.contained,
-        constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+      child: ExpressiveLoadingIndicator(
+        size: 32,
         semanticLabel: context.l10n.dataMgmtBusyLabel,
       ),
     );

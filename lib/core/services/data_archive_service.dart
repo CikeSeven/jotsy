@@ -108,7 +108,6 @@ class DataArchiveService {
         throw const FormatException('备份数据格式错误');
       }
 
-      await _restoreDatabaseFromPayload(database, decoded);
       await _restoreManagedDirectoryFromBackup(
         backupRoot: extractRoot,
         directoryName: _backupCoversDirectoryName,
@@ -117,6 +116,7 @@ class DataArchiveService {
         backupRoot: extractRoot,
         directoryName: _backupImagesDirectoryName,
       );
+      await _restoreDatabaseFromPayload(database, decoded);
       await _restoreSettingsFromPayload(settingsService, decoded);
     } finally {
       if (await extractRoot.exists()) {
@@ -197,9 +197,29 @@ class DataArchiveService {
     final tagsJson = _asMapList(databaseNode['tags']);
     final diaryTagsJson = _asMapList(databaseNode['diaryTags']);
 
-    final diaries = diariesJson
-        .map((row) => Diary.fromJson(row))
-        .toList(growable: false);
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final diaries = <Diary>[];
+    for (final row in diariesJson) {
+      final diary = Diary.fromJson(row);
+      diaries.add(
+        diary.copyWith(
+          content: await _restoreEmbeddedImagePaths(
+            diary.content,
+            documentsDirectory,
+          ),
+          cover: Value<String?>(
+            await _restoreManagedMediaPath(
+              diary.cover,
+              directoryNames: const <String>[
+                _backupCoversDirectoryName,
+                _backupImagesDirectoryName,
+              ],
+              documentsDirectory: documentsDirectory,
+            ),
+          ),
+        ),
+      );
+    }
     final tags = tagsJson
         .map((row) => Tag.fromJson(row))
         .toList(growable: false);
@@ -277,6 +297,107 @@ class DataArchiveService {
     });
   }
 
+  /// ZIP media files are restored into this installation's private documents
+  /// directory, while their database references contain absolute paths from
+  /// the exporting installation. Rebind only recognized managed-media paths
+  /// whose extracted targets exist; remote URLs and external files stay intact.
+  static Future<String?> _restoreManagedMediaPath(
+    String? sourcePath, {
+    required List<String> directoryNames,
+    required Directory documentsDirectory,
+  }) async {
+    final source = sourcePath?.trim();
+    if (source == null || source.isEmpty) {
+      return sourcePath;
+    }
+
+    final segments = p.posix
+        .split(source.replaceAll('\\', '/'))
+        .where((segment) => segment.isNotEmpty && segment != '.')
+        .toList(growable: false);
+    for (final directoryName in directoryNames) {
+      final directoryIndex = segments.lastIndexOf(directoryName);
+      if (directoryIndex < 0 || directoryIndex + 1 >= segments.length) {
+        continue;
+      }
+
+      final relativePath = p.posix.normalize(
+        p.posix.joinAll(segments.skip(directoryIndex + 1)),
+      );
+      if (p.posix.isAbsolute(relativePath) ||
+          relativePath == '..' ||
+          relativePath.startsWith('../')) {
+        return sourcePath;
+      }
+
+      final candidate = p.join(
+        documentsDirectory.path,
+        directoryName,
+        relativePath,
+      );
+      if (await File(candidate).exists()) {
+        return candidate;
+      }
+    }
+    return sourcePath;
+  }
+
+  static Future<String> _restoreEmbeddedImagePaths(
+    String content,
+    Directory documentsDirectory,
+  ) async {
+    Object? decoded;
+    try {
+      decoded = jsonDecode(content);
+    } on FormatException {
+      return content;
+    }
+
+    await _rewriteEmbeddedImagePaths(decoded, documentsDirectory);
+    return jsonEncode(decoded);
+  }
+
+  /// Handles both Quill Delta `insert.image` and legacy AppFlowy
+  /// `type=image / attributes.url` nodes without changing unrelated text.
+  static Future<void> _rewriteEmbeddedImagePaths(
+    Object? node,
+    Directory documentsDirectory,
+  ) async {
+    if (node is List) {
+      for (final child in node) {
+        await _rewriteEmbeddedImagePaths(child, documentsDirectory);
+      }
+      return;
+    }
+    if (node is! Map) {
+      return;
+    }
+
+    final insert = node['insert'];
+    if (insert is Map && insert['image'] is String) {
+      insert['image'] = await _restoreManagedMediaPath(
+        insert['image'] as String,
+        directoryNames: const <String>[_backupImagesDirectoryName],
+        documentsDirectory: documentsDirectory,
+      );
+    }
+
+    if (node['type'] == 'image') {
+      final attributes = node['attributes'];
+      if (attributes is Map && attributes['url'] is String) {
+        attributes['url'] = await _restoreManagedMediaPath(
+          attributes['url'] as String,
+          directoryNames: const <String>[_backupImagesDirectoryName],
+          documentsDirectory: documentsDirectory,
+        );
+      }
+    }
+
+    for (final child in node.values.toList(growable: false)) {
+      await _rewriteEmbeddedImagePaths(child, documentsDirectory);
+    }
+  }
+
   static Future<void> _restoreSettingsFromPayload(
     SettingsService settingsService,
     Map<String, dynamic> payload,
@@ -314,8 +435,8 @@ class DataArchiveService {
       );
     }
 
-    final editorBodyFontSizeRaw =
-        settingsNode['editorBodyFontSizePreset']?.toString();
+    final editorBodyFontSizeRaw = settingsNode['editorBodyFontSizePreset']
+        ?.toString();
     if (editorBodyFontSizeRaw != null && editorBodyFontSizeRaw.isNotEmpty) {
       await settingsService.setEditorBodyFontSizePreset(
         switch (editorBodyFontSizeRaw) {
@@ -327,8 +448,8 @@ class DataArchiveService {
       );
     }
 
-    final editorBodyLineHeightRaw =
-        settingsNode['editorBodyLineHeightPreset']?.toString();
+    final editorBodyLineHeightRaw = settingsNode['editorBodyLineHeightPreset']
+        ?.toString();
     if (editorBodyLineHeightRaw != null && editorBodyLineHeightRaw.isNotEmpty) {
       await settingsService.setEditorBodyLineHeightPreset(
         switch (editorBodyLineHeightRaw) {

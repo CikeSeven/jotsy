@@ -1,9 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
+import '../../../app/theme/app_radii.dart';
 
 /// 笔记列表卡片组件。
 ///
@@ -32,20 +33,21 @@ class DiaryCard extends StatelessWidget {
     final preview = diary.diary.contentText.replaceAll('\n', ' ');
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        border:
-            selected
-                ? Border.all(color: colorScheme.primary.withValues(alpha: 0.55))
-                : null,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        border: selected
+            ? Border.all(color: colorScheme.primary.withValues(alpha: 0.55))
+            : null,
       ),
-      child: Card(
+      child: Card.filled(
         margin: EdgeInsets.zero,
-        color: colorScheme.surface,
+        color: selected
+            ? colorScheme.secondaryContainer
+            : colorScheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadii.card),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Column(
@@ -63,8 +65,8 @@ class DiaryCard extends StatelessWidget {
                       ),
                     ),
                     if (selected)
-                      Icon(
-                        CupertinoIcons.check_mark_circled_solid,
+                      FaIcon(
+                        FontAwesomeIcons.solidCircleCheck,
                         size: 18,
                         color: colorScheme.primary,
                       ),

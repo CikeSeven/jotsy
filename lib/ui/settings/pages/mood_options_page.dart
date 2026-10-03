@@ -137,7 +137,6 @@ class _MoodOptionField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colorScheme = Theme.of(context).colorScheme;
     final label = l10n.settingsMoodOptionsSlotLabel((index + 1).toString());
     final defaultEmoji = SettingsService.defaultMoodOptions[index];
     return TextField(
@@ -150,19 +149,6 @@ class _MoodOptionField extends StatelessWidget {
         labelText: label,
         helperText: l10n.settingsMoodOptionsSlotHelper(defaultEmoji),
         counterText: '',
-        filled: true,
-        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.55),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.4),
-        ),
       ),
     );
   }

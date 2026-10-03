@@ -1,8 +1,11 @@
 import "package:flutter/material.dart";
 
+import 'expressive_controls.dart';
+import 'expressive_surfaces.dart';
+
 part 'theme_color_schemes.dart';
 
-/// 应用 Material 主题装配器。
+/// 应用 Material 3 Expressive 主题装配器。
 ///
 /// 职责：
 /// - 承载不同亮暗/对比度下的 `ColorScheme` 入口；
@@ -51,7 +54,33 @@ class MaterialTheme {
           bodyColor: colorScheme.onSurface,
           displayColor: colorScheme.onSurface,
         );
-    return baseTheme.copyWith(textTheme: resolvedTextTheme);
+    // Expressive 是 M3 的扩展而非 Material 4；继续启用 useMaterial3，
+    // 用集中式组件主题补齐形状、强调字重与表面，第三方 Material 控件也会继承。
+    final emphasizedTextTheme = resolvedTextTheme.copyWith(
+      headlineLarge: resolvedTextTheme.headlineLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+      headlineMedium: resolvedTextTheme.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+      headlineSmall: resolvedTextTheme.headlineSmall?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+      titleLarge: resolvedTextTheme.titleLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+      titleMedium: resolvedTextTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
+      labelLarge: resolvedTextTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+      ),
+    );
+    return ExpressiveSurfaces.apply(
+      ExpressiveControls.apply(
+        baseTheme.copyWith(textTheme: emphasizedTextTheme),
+      ),
+    );
   }
 
   List<ExtendedColor> get extendedColors => [];

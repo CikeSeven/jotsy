@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-/// 全局统一 AppBar（Material 原生风格）。
+/// Expressive 紧凑标题栏；统一 64dp 高度和默认返回图标，业务动作由页面注入。
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar({
     super.key,
@@ -27,7 +28,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize {
-    final resolvedToolbarHeight = toolbarHeight ?? kToolbarHeight;
+    final resolvedToolbarHeight = toolbarHeight ?? 64;
     final bottomHeight = bottom?.preferredSize.height ?? 0;
     return Size.fromHeight(resolvedToolbarHeight + bottomHeight);
   }
@@ -40,13 +41,21 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       title: title,
-      leading: leading,
+      leading:
+          leading ??
+          (automaticallyImplyLeading && Navigator.of(context).canPop()
+              ? IconButton(
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                )
+              : null),
       actions: actions,
       centerTitle: centerTitle,
       automaticallyImplyLeading: automaticallyImplyLeading,
       foregroundColor: resolvedForeground,
       backgroundColor: resolvedBackground,
-      toolbarHeight: toolbarHeight,
+      toolbarHeight: toolbarHeight ?? 64,
       bottom: bottom,
       elevation: 0,
       scrolledUnderElevation: 0,

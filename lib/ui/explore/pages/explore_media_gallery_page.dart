@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -79,7 +80,7 @@ class _ExploreMediaGalleryPageState
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     if (_mediaItems.isEmpty && _isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: ExpressiveLoadingIndicator());
     }
     if (_mediaItems.isEmpty && _errorMessage != null) {
       return Center(
@@ -261,11 +262,10 @@ class _ExploreMediaGalleryPageState
   void _openViewer(int initialIndex) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder:
-            (_) => ExploreImageViewerPage(
-              mediaItems: List<ExploreMediaItem>.from(_mediaItems),
-              initialIndex: initialIndex,
-            ),
+        builder: (_) => ExploreImageViewerPage(
+          mediaItems: List<ExploreMediaItem>.from(_mediaItems),
+          initialIndex: initialIndex,
+        ),
       ),
     );
   }
@@ -289,7 +289,7 @@ class _GalleryFooter extends StatelessWidget {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     if (isLoading) {
-      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+      return const Center(child: ExpressiveLoadingIndicator());
     }
     if (errorMessage != null) {
       return Center(

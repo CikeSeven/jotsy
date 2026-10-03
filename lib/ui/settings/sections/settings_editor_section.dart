@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
@@ -21,19 +21,11 @@ class SettingsEditorSection extends StatelessWidget {
       data: (settingsService) {
         return ValueListenableBuilder<String?>(
           valueListenable: settingsService.diaryToolbarOrderRawNotifier,
-          builder: (
-            BuildContext context,
-            String? toolbarOrderRaw,
-            Widget? child,
-          ) {
+          builder: (BuildContext context, String? toolbarOrderRaw, Widget? child) {
             return ValueListenableBuilder<String?>(
               valueListenable:
                   settingsService.diaryToolbarHiddenItemsRawNotifier,
-              builder: (
-                BuildContext context,
-                String? toolbarHiddenItemsRaw,
-                Widget? child,
-              ) {
+              builder: (BuildContext context, String? toolbarHiddenItemsRaw, Widget? child) {
                 final order = decodeDiaryToolbarOrder(toolbarOrderRaw);
                 final hiddenItems = decodeDiaryToolbarHiddenItems(
                   toolbarHiddenItemsRaw,
@@ -51,118 +43,125 @@ class SettingsEditorSection extends StatelessWidget {
                 return ValueListenableBuilder<EditorBodyFontSizePreset>(
                   valueListenable:
                       settingsService.editorBodyFontSizePresetNotifier,
-                  builder: (
-                    BuildContext context,
-                    EditorBodyFontSizePreset fontSizePreset,
-                    Widget? child,
-                  ) {
-                    return ValueListenableBuilder<EditorBodyLineHeightPreset>(
-                      valueListenable:
-                          settingsService.editorBodyLineHeightPresetNotifier,
-                      builder: (
+                  builder:
+                      (
                         BuildContext context,
-                        EditorBodyLineHeightPreset lineHeightPreset,
+                        EditorBodyFontSizePreset fontSizePreset,
                         Widget? child,
                       ) {
-                        return ValueListenableBuilder<String?>(
-                          valueListenable:
-                              settingsService.moodOptionsRawNotifier,
-                          builder: (
-                            BuildContext context,
-                            String? moodOptionsRaw,
-                            Widget? child,
-                          ) {
-                            final moodOptions =
-                                SettingsService.decodeMoodOptions(
-                                  moodOptionsRaw,
+                        return ValueListenableBuilder<
+                          EditorBodyLineHeightPreset
+                        >(
+                          valueListenable: settingsService
+                              .editorBodyLineHeightPresetNotifier,
+                          builder:
+                              (
+                                BuildContext context,
+                                EditorBodyLineHeightPreset lineHeightPreset,
+                                Widget? child,
+                              ) {
+                                return ValueListenableBuilder<String?>(
+                                  valueListenable:
+                                      settingsService.moodOptionsRawNotifier,
+                                  builder:
+                                      (
+                                        BuildContext context,
+                                        String? moodOptionsRaw,
+                                        Widget? child,
+                                      ) {
+                                        final moodOptions =
+                                            SettingsService.decodeMoodOptions(
+                                              moodOptionsRaw,
+                                            );
+                                        return Column(
+                                          children: <Widget>[
+                                            _EditorBodyFontSizeTile(
+                                              settingsService: settingsService,
+                                              selectedPreset: fontSizePreset,
+                                            ),
+                                            const Divider(height: 1),
+                                            _EditorBodyLineHeightTile(
+                                              settingsService: settingsService,
+                                              selectedPreset: lineHeightPreset,
+                                            ),
+                                            const Divider(height: 1),
+                                            ListTile(
+                                              title: Text(l10n.autoT0043),
+                                              subtitle: Text(
+                                                l10n.autoT0044(
+                                                  preview.isEmpty
+                                                      ? '-'
+                                                      : preview,
+                                                ),
+                                              ),
+                                              trailing: const FaIcon(
+                                                FontAwesomeIcons.angleRight,
+                                                size: 14,
+                                              ),
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute<void>(
+                                                    builder:
+                                                        (BuildContext context) {
+                                                          return DiaryToolbarOrderPage(
+                                                            settingsService:
+                                                                settingsService,
+                                                          );
+                                                        },
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            const Divider(height: 1),
+                                            ListTile(
+                                              title: Text(
+                                                l10n.settingsMoodOptionsTitle,
+                                              ),
+                                              subtitle: Text(
+                                                '${l10n.settingsMoodOptionsSubtitle}\n${moodOptions.join(' ')}',
+                                              ),
+                                              trailing: const FaIcon(
+                                                FontAwesomeIcons.angleRight,
+                                                size: 14,
+                                              ),
+                                              onTap: () {
+                                                Navigator.of(context).push(
+                                                  MaterialPageRoute<void>(
+                                                    builder:
+                                                        (BuildContext context) {
+                                                          return MoodOptionsPage(
+                                                            settingsService:
+                                                                settingsService,
+                                                          );
+                                                        },
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
                                 );
-                            return Column(
-                              children: <Widget>[
-                                _EditorBodyFontSizeTile(
-                                  settingsService: settingsService,
-                                  selectedPreset: fontSizePreset,
-                                ),
-                                const Divider(height: 1),
-                                _EditorBodyLineHeightTile(
-                                  settingsService: settingsService,
-                                  selectedPreset: lineHeightPreset,
-                                ),
-                                const Divider(height: 1),
-                                ListTile(
-                                  title: Text(l10n.autoT0043),
-                                  subtitle: Text(
-                                    l10n.autoT0044(
-                                      preview.isEmpty ? '-' : preview,
-                                    ),
-                                  ),
-                                  trailing: const FaIcon(
-                                    FontAwesomeIcons.angleRight,
-                                    size: 14,
-                                  ),
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (BuildContext context) {
-                                          return DiaryToolbarOrderPage(
-                                            settingsService: settingsService,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const Divider(height: 1),
-                                ListTile(
-                                  title: Text(l10n.settingsMoodOptionsTitle),
-                                  subtitle: Text(
-                                    '${l10n.settingsMoodOptionsSubtitle}\n${moodOptions.join(' ')}',
-                                  ),
-                                  trailing: const FaIcon(
-                                    FontAwesomeIcons.angleRight,
-                                    size: 14,
-                                  ),
-                                  onTap: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute<void>(
-                                        builder: (BuildContext context) {
-                                          return MoodOptionsPage(
-                                            settingsService: settingsService,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            );
-                          },
+                              },
                         );
                       },
-                    );
-                  },
                 );
               },
             );
           },
         );
       },
-      loading:
-          () => Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Center(
-              child: LoadingIndicatorM3E(
-                variant: LoadingIndicatorM3EVariant.contained,
-                constraints: const BoxConstraints.tightFor(
-                  width: 32,
-                  height: 32,
-                ),
-                semanticLabel: l10n.dataMgmtBusyLabel,
-              ),
-            ),
+      loading: () => Padding(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: ExpressiveLoadingIndicator(
+            size: 32,
+            semanticLabel: l10n.dataMgmtBusyLabel,
           ),
-      error:
-          (Object error, StackTrace stackTrace) =>
-              ListTile(title: Text(l10n.autoT0045(error.toString()))),
+        ),
+      ),
+      error: (Object error, StackTrace stackTrace) =>
+          ListTile(title: Text(l10n.autoT0045(error.toString()))),
     );
   }
 

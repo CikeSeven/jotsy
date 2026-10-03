@@ -30,10 +30,10 @@ class SettingsPage extends StatelessWidget {
             bottom: listBottomPadding,
           ),
           children: <Widget>[
-            ListTile(
-              title: Text(l10n.settingsAppearanceLanguage),
-              subtitle: Text(l10n.settingsLanguageSubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.palette,
+              title: l10n.settingsAppearanceLanguage,
+              subtitle: l10n.settingsLanguageSubtitle,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -45,10 +45,10 @@ class SettingsPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
-            ListTile(
-              title: Text(l10n.settingsEditorTitle),
-              subtitle: Text(l10n.settingsEditorSubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.penNib,
+              title: l10n.settingsEditorTitle,
+              subtitle: l10n.settingsEditorSubtitle,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -59,11 +59,11 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
-            const Divider(),
-            ListTile(
-              title: Text(l10n.settingsTagManagement),
-              subtitle: Text(l10n.settingsTagManagementSubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+            const SizedBox(height: 24),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.tags,
+              title: l10n.settingsTagManagement,
+              subtitle: l10n.settingsTagManagementSubtitle,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -75,10 +75,10 @@ class SettingsPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
-            ListTile(
-              title: Text(l10n.settingsDataPrivacy),
-              subtitle: Text(l10n.settingsDataPrivacySubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.shieldHalved,
+              title: l10n.settingsDataPrivacy,
+              subtitle: l10n.settingsDataPrivacySubtitle,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -90,10 +90,10 @@ class SettingsPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
-            ListTile(
-              title: Text(l10n.settingsAbout),
-              subtitle: Text(l10n.settingsAboutSubtitle),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.circleInfo,
+              title: l10n.settingsAbout,
+              subtitle: l10n.settingsAboutSubtitle,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -108,6 +108,47 @@ class SettingsPage extends StatelessWidget {
         ),
         PageHeader(title: l10n.settingsTitle),
       ],
+    );
+  }
+}
+
+class _SettingsDestination extends StatelessWidget {
+  const _SettingsDestination({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final FaIconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Card.filled(
+        margin: EdgeInsets.zero,
+        child: ListTile(
+          leading: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: colors.secondaryContainer,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: FaIcon(icon, size: 20, color: colors.onSecondaryContainer),
+          ),
+          title: Text(title),
+          subtitle: Text(subtitle),
+          trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+          onTap: onTap,
+        ),
+      ),
     );
   }
 }

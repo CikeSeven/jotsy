@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/energy_battery_indicator.dart';
@@ -48,17 +49,18 @@ class CalendarTimelineSection extends StatelessWidget {
         AppSpacing.s,
       ),
       child: AnimatedSwitcher(
-        duration: _switchDuration,
-        reverseDuration: _switchDuration,
+        duration: ExpressiveMotion.duration(context, _switchDuration),
+        reverseDuration: ExpressiveMotion.duration(context, _switchDuration),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (Widget child, Animation<double> animation) {
-          final slideAnimation = Tween<Offset>(
-            begin: const Offset(0, 0.025),
-            end: Offset.zero,
-          ).animate(
-            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-          );
+          final slideAnimation =
+              Tween<Offset>(
+                begin: const Offset(0, 0.025),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              );
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(position: slideAnimation, child: child),
@@ -112,10 +114,9 @@ class CalendarTimelineSection extends StatelessWidget {
     );
     final isLockedCapsule = capsuleState.isLocked;
     final moodEmoji = _extractMoodEmoji(diary.diary);
-    final summary =
-        isLockedCapsule
-            ? _countdownLabel(context, capsuleState)
-            : _buildSummaryText(context, diary.diary);
+    final summary = isLockedCapsule
+        ? _countdownLabel(context, capsuleState)
+        : _buildSummaryText(context, diary.diary);
     final createdAtLabel = _formatHourMinute(diary.diary.createdAt);
     final cover = isLockedCapsule ? null : _resolveCover(diary.diary);
     final contextMeta = _extractContextMetadata(diary.diary);
@@ -129,7 +130,7 @@ class CalendarTimelineSection extends StatelessWidget {
         energyLevel != null;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 2),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -146,24 +147,23 @@ class CalendarTimelineSection extends StatelessWidget {
                   width: 24,
                   height: 24,
                   child: Center(
-                    child:
-                        moodEmoji == null
-                            ? Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: colorScheme.tertiary.withValues(
-                                  alpha: 0.92,
-                                ),
-                                shape: BoxShape.circle,
+                    child: moodEmoji == null
+                        ? Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: colorScheme.tertiary.withValues(
+                                alpha: 0.92,
                               ),
-                            )
-                            : Text(
-                              moodEmoji,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.titleMedium?.copyWith(height: 1),
+                              shape: BoxShape.circle,
                             ),
+                          )
+                        : Text(
+                            moodEmoji,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(height: 1),
+                          ),
                   ),
                 ),
                 Container(
@@ -176,12 +176,14 @@ class CalendarTimelineSection extends StatelessWidget {
           ),
           Expanded(
             child: Material(
-              color: Colors.transparent,
+              color: colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(20),
+              clipBehavior: Clip.antiAlias,
               child: InkWell(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(20),
                 onTap: () => onOpenDiary(diary.diary.diaryId),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(2, 8, 0, 12),
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
@@ -192,31 +194,27 @@ class CalendarTimelineSection extends StatelessWidget {
                           children: <Widget>[
                             Text(
                               createdAtLabel,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.labelLarge?.copyWith(
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
+                              style: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               summary,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodyMedium?.copyWith(
-                                color:
-                                    isLockedCapsule
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: isLockedCapsule
                                         ? colorScheme.primary
                                         : colorScheme.onSurfaceVariant,
-                                fontWeight:
-                                    isLockedCapsule
+                                    fontWeight: isLockedCapsule
                                         ? FontWeight.w700
                                         : FontWeight.w400,
-                                height: 1.35,
-                              ),
+                                    height: 1.35,
+                                  ),
                             ),
                             if (hasMetaRow) ...<Widget>[
                               const SizedBox(height: 5),
@@ -288,24 +286,23 @@ class CalendarTimelineSection extends StatelessWidget {
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
-    final image =
-        isRemote
-            ? Image.network(
-              source,
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            )
-            : Image.file(
-              File(source),
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            );
+    final image = isRemote
+        ? Image.network(
+            source,
+            fit: BoxFit.cover,
+            cacheWidth: cacheWidth,
+            cacheHeight: cacheHeight,
+            filterQuality: FilterQuality.low,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          )
+        : Image.file(
+            File(source),
+            fit: BoxFit.cover,
+            cacheWidth: cacheWidth,
+            cacheHeight: cacheHeight,
+            filterQuality: FilterQuality.low,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),

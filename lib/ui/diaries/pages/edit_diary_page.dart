@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -284,25 +285,22 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               style: TextButton.styleFrom(
                 foregroundColor: colorScheme.onSurfaceVariant,
               ),
-              onPressed:
-                  () =>
-                      Navigator.of(dialogContext).pop(_EditExitDecision.cancel),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(_EditExitDecision.cancel),
               child: Text(context.l10n.commonCancel),
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_EditExitDecision.exitWithoutSaving),
+              onPressed: () => Navigator.of(
+                dialogContext,
+              ).pop(_EditExitDecision.exitWithoutSaving),
               child: Text(context.l10n.autoT0132),
             ),
             TextButton(
               style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_EditExitDecision.saveAndExit),
+              onPressed: () => Navigator.of(
+                dialogContext,
+              ).pop(_EditExitDecision.saveAndExit),
               child: Text(context.l10n.editSaveAndExit),
             ),
           ],
@@ -374,6 +372,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       style: Theme.of(context).textTheme.headlineSmall,
       maxLength: 200,
       decoration: InputDecoration(
+        // 标题属于文档画布，不使用普通表单的填充表面。
+        filled: false,
         isDense: true,
         contentPadding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
         hintText: context.l10n.autoT0106,
@@ -443,8 +443,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
-        final minEditorHeight =
-            constraints.maxHeight > 420 ? constraints.maxHeight - 140 : 280.0;
+        final minEditorHeight = constraints.maxHeight > 420
+            ? constraints.maxHeight - 140
+            : 280.0;
         return SingleChildScrollView(
           controller: _contentScrollController,
           // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
@@ -505,51 +506,49 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       data: (settingsService) {
         return ValueListenableBuilder<EditorBodyFontSizePreset>(
           valueListenable: settingsService.editorBodyFontSizePresetNotifier,
-          builder: (
-            BuildContext context,
-            EditorBodyFontSizePreset fontSizePreset,
-            Widget? child,
-          ) {
-            return ValueListenableBuilder<EditorBodyLineHeightPreset>(
-              valueListenable:
-                  settingsService.editorBodyLineHeightPresetNotifier,
-              builder: (
+          builder:
+              (
                 BuildContext context,
-                EditorBodyLineHeightPreset lineHeightPreset,
+                EditorBodyFontSizePreset fontSizePreset,
                 Widget? child,
               ) {
-                return _buildEditor(
-                  context,
-                  bottomSpacer: bottomSpacer,
-                  contentLocked: contentLocked,
-                  bodyFontSize: fontSizePreset.fontSize,
-                  bodyLineHeight: lineHeightPreset.lineHeight,
+                return ValueListenableBuilder<EditorBodyLineHeightPreset>(
+                  valueListenable:
+                      settingsService.editorBodyLineHeightPresetNotifier,
+                  builder:
+                      (
+                        BuildContext context,
+                        EditorBodyLineHeightPreset lineHeightPreset,
+                        Widget? child,
+                      ) {
+                        return _buildEditor(
+                          context,
+                          bottomSpacer: bottomSpacer,
+                          contentLocked: contentLocked,
+                          bodyFontSize: fontSizePreset.fontSize,
+                          bodyLineHeight: lineHeightPreset.lineHeight,
+                        );
+                      },
                 );
               },
-            );
-          },
         );
       },
-      loading:
-          () => _buildEditor(
-            context,
-            bottomSpacer: bottomSpacer,
-            contentLocked: contentLocked,
-            bodyFontSize:
-                SettingsService.defaultEditorBodyFontSizePreset.fontSize,
-            bodyLineHeight:
-                SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
-          ),
-      error:
-          (_, __) => _buildEditor(
-            context,
-            bottomSpacer: bottomSpacer,
-            contentLocked: contentLocked,
-            bodyFontSize:
-                SettingsService.defaultEditorBodyFontSizePreset.fontSize,
-            bodyLineHeight:
-                SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
-          ),
+      loading: () => _buildEditor(
+        context,
+        bottomSpacer: bottomSpacer,
+        contentLocked: contentLocked,
+        bodyFontSize: SettingsService.defaultEditorBodyFontSizePreset.fontSize,
+        bodyLineHeight:
+            SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
+      ),
+      error: (_, __) => _buildEditor(
+        context,
+        bottomSpacer: bottomSpacer,
+        contentLocked: contentLocked,
+        bodyFontSize: SettingsService.defaultEditorBodyFontSizePreset.fontSize,
+        bodyLineHeight:
+            SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
+      ),
     );
   }
 
@@ -575,18 +574,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
     final showFloatingToolbar =
         rawShowFloatingToolbar && enabledToolbarOrder.isNotEmpty;
-    final editPanelSpacer =
-        showEditMetaPanel
-            ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
-            : 16.0;
+    final editPanelSpacer = showEditMetaPanel
+        ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
+        : 16.0;
     final editorBottomSpacer =
         showEditMetaPanel && (!showFloatingToolbar || _isEditPanelExpanded)
-            ? editPanelSpacer
-            : 16.0;
-    final effectiveEditorBottomSpacer =
-        showFloatingToolbar
-            ? _floatingToolbarReservedSpace
-            : editorBottomSpacer;
+        ? editPanelSpacer
+        : 16.0;
+    final effectiveEditorBottomSpacer = showFloatingToolbar
+        ? _floatingToolbarReservedSpace
+        : editorBottomSpacer;
     final tagsAsync = ref.watch(tagListProvider);
 
     var tags = const <Tag>[];
@@ -598,27 +595,24 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       error: (error, stackTrace) => tagsError = '$error',
     );
 
-    final detailAsync =
-        widget.diaryId == null
-            ? const AsyncData<DiaryWithTags?>(null)
-            : ref.watch(diaryDetailProvider(widget.diaryId!));
+    final detailAsync = widget.diaryId == null
+        ? const AsyncData<DiaryWithTags?>(null)
+        : ref.watch(diaryDetailProvider(widget.diaryId!));
 
     // 编辑页统一处理三态：加载中 / 加载失败 / 数据可用。
     return detailAsync.when(
-      loading:
-          () =>
-              const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error:
-          (Object error, StackTrace stackTrace) => Scaffold(
-            appBar: AppTopBar(
-              leading: IconButton(
-                tooltip: context.l10n.commonBack,
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-              ),
-            ),
-            body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
+      loading: () =>
+          const Scaffold(body: Center(child: ExpressiveLoadingIndicator())),
+      error: (Object error, StackTrace stackTrace) => Scaffold(
+        appBar: AppTopBar(
+          leading: IconButton(
+            tooltip: context.l10n.commonBack,
+            onPressed: () => Navigator.of(context).maybePop(),
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),
+        ),
+        body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
+      ),
       data: (DiaryWithTags? detail) {
         // 工具栏顺序和启用状态已在外层解析，避免详情流重建时重复解析设置。
 
@@ -702,17 +696,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     transitionBuilder: (child, animation) {
                       return FadeTransition(opacity: animation, child: child);
                     },
-                    child:
-                        _showEditSaveSuccessIcon
-                            ? Icon(
-                              Icons.check_rounded,
-                              key: const ValueKey<String>('edit_save_success'),
-                              color: Theme.of(context).colorScheme.primary,
-                            )
-                            : const Icon(
-                              Icons.save_outlined,
-                              key: ValueKey<String>('edit_save_default'),
-                            ),
+                    child: _showEditSaveSuccessIcon
+                        ? Icon(
+                            Icons.check_rounded,
+                            key: const ValueKey<String>('edit_save_success'),
+                            color: Theme.of(context).colorScheme.primary,
+                          )
+                        : const Icon(
+                            Icons.save_outlined,
+                            key: ValueKey<String>('edit_save_default'),
+                          ),
                   ),
                   tooltip: context.l10n.commonSave,
                 ),
@@ -768,10 +761,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       setState(() => _editPanelExpandProgress = progress);
                     },
                     onPickCover: _controller.pickCoverForEdit,
-                    onClearCover:
-                        _draftCover?.trim().isNotEmpty == true
-                            ? _controller.clearCoverForEdit
-                            : null,
+                    onClearCover: _draftCover?.trim().isNotEmpty == true
+                        ? _controller.clearCoverForEdit
+                        : null,
                     onCreateTag: _controller.createTagInlineForEdit,
                     onResolveLocation: _controller.resolveLocationForEdit,
                     onResolveWeather: _controller.resolveWeatherForEdit,
@@ -780,10 +772,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                         return;
                       }
                       setState(() {
-                        _draftLocation =
-                            nextLocation.trim().isEmpty
-                                ? null
-                                : nextLocation.trim();
+                        _draftLocation = nextLocation.trim().isEmpty
+                            ? null
+                            : nextLocation.trim();
                         _markEditPanelDirty();
                       });
                     },
@@ -792,10 +783,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                         return;
                       }
                       setState(() {
-                        _draftWeather =
-                            nextWeather.trim().isEmpty
-                                ? null
-                                : nextWeather.trim();
+                        _draftWeather = nextWeather.trim().isEmpty
+                            ? null
+                            : nextWeather.trim();
                         // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
                         _draftWeatherIconCode = null;
                         _markEditPanelDirty();

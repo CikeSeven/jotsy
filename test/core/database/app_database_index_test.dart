@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -15,6 +16,8 @@ import 'package:sqlite3/sqlite3.dart';
 /// 新库由 `m.createAll()`（依据 @TableIndex 注解）建索引；
 /// 旧库由 `_migrateAddPerformanceIndexes()` 通过 `CREATE INDEX IF NOT EXISTS` 补建。
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   const expectedIndexes = <String>{
     'idx_diaries_updated_at',
     'idx_diaries_created_at',
@@ -24,13 +27,12 @@ void main() {
 
   /// 从 sqlite_master 读取当前库中所有用户定义索引名。
   Future<Set<String>> readIndexNames(AppDatabase db) async {
-    final rows =
-        await db
-            .customSelect(
-              "SELECT name FROM sqlite_master "
-              "WHERE type = 'index' AND name NOT LIKE 'sqlite_autoindex_%'",
-            )
-            .get();
+    final rows = await db
+        .customSelect(
+          "SELECT name FROM sqlite_master "
+          "WHERE type = 'index' AND name NOT LIKE 'sqlite_autoindex_%'",
+        )
+        .get();
     return rows.map((QueryRow row) => row.read<String>('name')).toSet();
   }
 
@@ -52,24 +54,44 @@ void main() {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
 
-    final rows =
-        await db
-            .customSelect(
-              "SELECT name FROM sqlite_master "
-              "WHERE type = 'index' AND name LIKE 'idx_%'",
-            )
-            .get();
+    final rows = await db
+        .customSelect(
+          "SELECT name FROM sqlite_master "
+          "WHERE type = 'index' AND name LIKE 'idx_%'",
+        )
+        .get();
     final names = rows.map((QueryRow r) => r.read<String>('name')).toList();
 
     expect(names.length, names.toSet().length, reason: '索引名不应重复');
   });
 
-  test('旧库（v6，无索引）升级到 v7 后补建全部性能索引', () async {
+  test('旧库（v6，无索引）升级到 v8 后补建全部性能索引', () async {
     // 在磁盘临时文件上手工搭建一个 schemaVersion=6 的旧库：
     // 仅建出迁移所需的两张表（无任何性能索引），并写入 user_version=6，
-    // 然后用当前 AppDatabase 打开，触发 onUpgrade(6 -> 7)。
+    // 然后用当前 AppDatabase 打开，触发 onUpgrade(6 -> 8)。
     final tempDir = await Directory.systemTemp.createTemp('jotsy_mig_test');
     addTearDown(() => tempDir.delete(recursive: true));
+    final documentsDirectory = await Directory(
+      '${tempDir.path}/documents',
+    ).create();
+    final temporaryDirectory = await Directory(
+      '${tempDir.path}/temporary',
+    ).create();
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, (call) async {
+          return switch (call.method) {
+            'getTemporaryDirectory' => temporaryDirectory.path,
+            'getApplicationDocumentsDirectory' => documentsDirectory.path,
+            _ => null,
+          };
+        });
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(pathProviderChannel, null),
+    );
     final dbFile = File('${tempDir.path}/legacy_v6.sqlite');
 
     // 第一步：以原始 sqlite3 写出 v6 结构（不含 idx_* 索引）。
@@ -126,7 +148,7 @@ CREATE TABLE diary_tags (
     expect(
       indexes,
       containsAll(expectedIndexes),
-      reason: 'v6 -> v7 升级应通过 _migrateAddPerformanceIndexes 补建全部索引',
+      reason: 'v6 -> v8 升级应通过 _migrateAddPerformanceIndexes 补建全部索引',
     );
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../support/expressive_test_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -8,6 +9,7 @@ void main() {
   testWidgets('time capsule picker stays inside publish panel', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        theme: expressiveTestTheme(Brightness.light),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(

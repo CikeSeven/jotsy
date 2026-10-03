@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 
-/// NodeJot 阴影效果常量。
+/// 浮动面板使用单层语义阴影，避免固定紫色阴影在暗色/换色主题中失配。
 class AppEffects {
   const AppEffects._();
 
-  static const List<BoxShadow> softShadow = [
+  static List<BoxShadow> softShadow(ColorScheme colors) => [
     BoxShadow(
-      color: Color(0x1A7D6AB5),
-      offset: Offset(0, 12),
-      blurRadius: 24,
-      spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Color(0x0D8D79C7),
-      offset: Offset(0, 3),
-      blurRadius: 8,
+      color: colors.shadow.withValues(
+        alpha: colors.brightness == Brightness.dark ? 0.24 : 0.12,
+      ),
+      offset: const Offset(0, 6),
+      blurRadius: 18,
       spreadRadius: 0,
     ),
   ];

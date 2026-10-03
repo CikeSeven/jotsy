@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/settings/pages/webdav_sync_page.dart';
@@ -378,18 +378,17 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                 title: Text(context.l10n.dataMgmtWebDav),
                 subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
                 trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap:
-                    _busy
-                        ? null
-                        : () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (BuildContext context) {
-                                return const WebDavSyncPage();
-                              },
-                            ),
-                          );
-                        },
+                onTap: _busy
+                    ? null
+                    : () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return const WebDavSyncPage();
+                            },
+                          ),
+                        );
+                      },
               ),
               const Divider(),
               const SizedBox(height: 8),
@@ -412,12 +411,8 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        LoadingIndicatorM3E(
-                          variant: LoadingIndicatorM3EVariant.contained,
-                          constraints: const BoxConstraints.tightFor(
-                            width: 72,
-                            height: 72,
-                          ),
+                        ExpressiveLoadingIndicator(
+                          size: 72,
                           semanticLabel: context.l10n.dataMgmtBusyLabel,
                         ),
                         const SizedBox(height: 10),

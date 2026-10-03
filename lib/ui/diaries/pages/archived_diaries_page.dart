@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -61,8 +62,9 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
         SettingsService.defaultDiaryCardTagLimit;
     final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
-    final pageBackgroundColor =
-        brightness == Brightness.light ? Colors.white : colorScheme.surface;
+    final pageBackgroundColor = brightness == Brightness.light
+        ? Colors.white
+        : colorScheme.surface;
 
     // 返回键优先退出选择模式，避免误退出页面。
     return PopScope(
@@ -81,47 +83,43 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                 ? context.l10n.autoT0099(_selectedDiaryIds.length.toString())
                 : context.l10n.autoT0100,
           ),
-          leading:
-              _isSelectionMode
-                  ? IconButton(
-                    tooltip: context.l10n.commonCancel,
-                    onPressed: _controller.clearSelection,
-                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-                  )
-                  : IconButton(
-                    tooltip: context.l10n.commonBack,
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+          leading: _isSelectionMode
+              ? IconButton(
+                  tooltip: context.l10n.commonCancel,
+                  onPressed: _controller.clearSelection,
+                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+                )
+              : IconButton(
+                  tooltip: context.l10n.commonBack,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                ),
+          actions: _isSelectionMode
+              ? <Widget>[
+                  IconButton(
+                    tooltip: context.l10n.autoT0101,
+                    onPressed: () =>
+                        unawaited(_controller.unarchiveSelectedDiaries()),
+                    icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
                   ),
-          actions:
-              _isSelectionMode
-                  ? <Widget>[
-                    IconButton(
-                      tooltip: context.l10n.autoT0101,
-                      onPressed:
-                          () =>
-                              unawaited(_controller.unarchiveSelectedDiaries()),
-                      icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
+                  IconButton(
+                    tooltip: context.l10n.commonDelete,
+                    onPressed: () =>
+                        unawaited(_controller.deleteSelectedDiaries()),
+                    icon: FaIcon(
+                      FontAwesomeIcons.trashCan,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.error,
                     ),
-                    IconButton(
-                      tooltip: context.l10n.commonDelete,
-                      onPressed:
-                          () => unawaited(_controller.deleteSelectedDiaries()),
-                      icon: FaIcon(
-                        FontAwesomeIcons.trashCan,
-                        size: 18,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ]
-                  : null,
+                  ),
+                ]
+              : null,
         ),
         // 归档页使用独立 provider，不与主页筛选逻辑共享状态。
         body: archivedAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error:
-              (Object error, StackTrace stackTrace) =>
-                  Center(child: Text(context.l10n.autoT0102(error.toString()))),
+          loading: () => const Center(child: ExpressiveLoadingIndicator()),
+          error: (Object error, StackTrace stackTrace) =>
+              Center(child: Text(context.l10n.autoT0102(error.toString()))),
           data: (List<DiaryWithTags> diaries) {
             if (diaries.isEmpty) {
               return Center(child: Text(context.l10n.autoT0103));
@@ -138,9 +136,8 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                   onCreate: _controller.noopCreate,
                   onOpenEditor: _controller.openPreview,
                   onToggleSelection: _controller.toggleSelection,
-                  onArchiveDiary:
-                      (diaryId) =>
-                          unawaited(_controller.unarchiveDiaryBySwipe(diaryId)),
+                  onArchiveDiary: (diaryId) =>
+                      unawaited(_controller.unarchiveDiaryBySwipe(diaryId)),
                   swipeActionIcon: FontAwesomeIcons.boxOpen,
                 ),
               ],

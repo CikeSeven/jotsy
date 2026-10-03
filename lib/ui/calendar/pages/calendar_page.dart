@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -114,10 +114,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       orElse: () => SettingsService.defaultMoodOptions,
     );
     final latestMarkers = markersAsync.asData?.value;
-    final latestMarkerBuckets =
-        latestMarkers == null
-            ? null
-            : _controller.groupMarkersByDay(latestMarkers);
+    final latestMarkerBuckets = latestMarkers == null
+        ? null
+        : _controller.groupMarkersByDay(latestMarkers);
     if (latestMarkerBuckets != null) {
       _cachedMarkerBuckets = latestMarkerBuckets;
     }
@@ -205,8 +204,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         AppSpacing.s,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(16),
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Stack(
         children: <Widget>[
@@ -234,12 +233,20 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             calendarStyle: CalendarStyle(
               isTodayHighlighted: true,
               todayDecoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: 0.16),
-                shape: BoxShape.circle,
+                color: colorScheme.tertiaryContainer,
+                borderRadius: BorderRadius.circular(12),
               ),
+              todayTextStyle: TextStyle(color: colorScheme.onTertiaryContainer),
               selectedDecoration: BoxDecoration(
                 color: colorScheme.primary,
                 shape: BoxShape.circle,
+              ),
+              selectedTextStyle: TextStyle(color: colorScheme.onPrimary),
+              defaultTextStyle: textTheme.bodyMedium!.copyWith(
+                color: colorScheme.onSurface,
+              ),
+              weekendTextStyle: textTheme.bodyMedium!.copyWith(
+                color: colorScheme.onSurface,
               ),
               markerDecoration: BoxDecoration(
                 color: colorScheme.primary,
@@ -314,10 +321,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                   DateTime.saturday: 'S',
                   DateTime.sunday: 'S',
                 };
-                final label =
-                    l10n.isZh
-                        ? (labelsZh[weekday] ?? '')
-                        : (labelsEn[weekday] ?? '');
+                final label = l10n.isZh
+                    ? (labelsZh[weekday] ?? '')
+                    : (labelsEn[weekday] ?? '');
                 return Center(
                   child: Text(
                     label,
@@ -348,10 +354,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     // Date changes briefly put the stream back into loading. Reuse the last
     // successful list until the next value arrives to avoid a blank spinner flash.
     final displayedDayDiaries = latestDayDiaries ?? _cachedDayDiaries;
-    final displayedSelectedDay =
-        latestDayDiaries == null
-            ? _cachedDayDiariesSelectedDay ?? _selectedDay
-            : _selectedDay;
+    final displayedSelectedDay = latestDayDiaries == null
+        ? _cachedDayDiariesSelectedDay ?? _selectedDay
+        : _selectedDay;
     final status = _CalendarStaleStatus.from(dayDiariesAsync);
     final errorMessage = dayDiariesAsync.asError?.error.toString();
 
@@ -367,14 +372,15 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               key: ValueKey<String>(
                 'empty_${_selectedDay.millisecondsSinceEpoch}_$isFutureDay',
               ),
-              onAction:
-                  isFutureDay
-                      ? _controller.jumpToToday
-                      : _openCreateFromHomeFab,
-              message:
-                  isFutureDay ? context.l10n.autoT0211 : context.l10n.autoT0182,
-              actionLabel:
-                  isFutureDay ? context.l10n.autoT0180 : context.l10n.autoT0181,
+              onAction: isFutureDay
+                  ? _controller.jumpToToday
+                  : _openCreateFromHomeFab,
+              message: isFutureDay
+                  ? context.l10n.autoT0211
+                  : context.l10n.autoT0182,
+              actionLabel: isFutureDay
+                  ? context.l10n.autoT0180
+                  : context.l10n.autoT0181,
             ),
           ),
         ),
@@ -409,56 +415,51 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       right: 0,
       child: AnimatedSwitcher(
         duration: _refreshOverlaySwitchDuration,
-        child:
-            showOverlay
-                ? DecoratedBox(
-                  key: ValueKey<Object>(error ?? 'loading'),
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.88),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: colorScheme.outlineVariant),
+        child: showOverlay
+            ? DecoratedBox(
+                key: ValueKey<Object>(error ?? 'loading'),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface.withValues(alpha: 0.88),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.s,
+                    vertical: 6,
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.s,
-                      vertical: 6,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        if (status.isLoading)
-                          const LoadingIndicatorM3E(
-                            variant: LoadingIndicatorM3EVariant.contained,
-                            constraints: BoxConstraints.tightFor(
-                              width: _refreshIndicatorSize,
-                              height: _refreshIndicatorSize,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (status.isLoading)
+                        const ExpressiveLoadingIndicator(
+                          size: _refreshIndicatorSize,
+                        ),
+                      if (error != null)
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: _refreshIndicatorSize,
+                          color: colorScheme.error,
+                        ),
+                      if (error != null) ...<Widget>[
+                        const SizedBox(width: 6),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 190),
+                          child: Text(
+                            context.l10n.autoT0210(error.toString()),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.error,
                             ),
                           ),
-                        if (error != null)
-                          Icon(
-                            Icons.info_outline_rounded,
-                            size: _refreshIndicatorSize,
-                            color: colorScheme.error,
-                          ),
-                        if (error != null) ...<Widget>[
-                          const SizedBox(width: 6),
-                          ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 190),
-                            child: Text(
-                              context.l10n.autoT0210(error.toString()),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: textTheme.labelSmall?.copyWith(
-                                color: colorScheme.error,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ],
-                    ),
+                    ],
                   ),
-                )
-                : const SizedBox.shrink(key: ValueKey<String>('idle')),
+                ),
+              )
+            : const SizedBox.shrink(key: ValueKey<String>('idle')),
       ),
     );
   }
@@ -480,14 +481,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           child: IgnorePointer(
             child: AnimatedSwitcher(
               duration: _refreshOverlaySwitchDuration,
-              child:
-                  status.isLoading
-                      ? const _CalendarInlineRefreshScrim(
-                        key: ValueKey<String>('day_loading'),
-                      )
-                      : const SizedBox.shrink(
-                        key: ValueKey<String>('day_idle'),
-                      ),
+              child: status.isLoading
+                  ? const _CalendarInlineRefreshScrim(
+                      key: ValueKey<String>('day_loading'),
+                    )
+                  : const SizedBox.shrink(key: ValueKey<String>('day_idle')),
             ),
           ),
         ),
@@ -590,12 +588,8 @@ class _CalendarInlineRefreshScrim extends StatelessWidget {
         alignment: Alignment.topRight,
         child: Padding(
           padding: EdgeInsets.only(top: AppSpacing.xs, right: AppSpacing.m),
-          child: LoadingIndicatorM3E(
-            variant: LoadingIndicatorM3EVariant.contained,
-            constraints: BoxConstraints.tightFor(
-              width: _CalendarPageState._refreshIndicatorSize,
-              height: _CalendarPageState._refreshIndicatorSize,
-            ),
+          child: ExpressiveLoadingIndicator(
+            size: _CalendarPageState._refreshIndicatorSize,
           ),
         ),
       ),

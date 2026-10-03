@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../app/theme/expressive_motion.dart';
+
 /// 日记卡片的统一选中表面。
 ///
 /// 输入为页面层已经确定的选中状态和卡片底色；输出只包含视觉与语义反馈，
@@ -30,16 +32,17 @@ class DiarySelectionSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final highlightAlpha =
-        colorScheme.brightness == Brightness.dark ? 0.22 : 0.14;
+    final highlightAlpha = colorScheme.brightness == Brightness.dark
+        ? 0.22
+        : 0.14;
 
     return Semantics(
       container: true,
       selected: selected,
       child: TweenAnimationBuilder<double>(
         tween: Tween<double>(end: selected ? 1 : 0),
-        duration: transitionDuration,
-        curve: Curves.easeOutCubic,
+        duration: ExpressiveMotion.duration(context, transitionDuration),
+        curve: ExpressiveMotion.effects,
         builder: (BuildContext context, double progress, Widget? child) {
           final highlightColor = Color.alphaBlend(
             colorScheme.primary.withValues(alpha: highlightAlpha * progress),
@@ -48,10 +51,8 @@ class DiarySelectionSurface extends StatelessWidget {
           final accentColor = colorScheme.primary.withValues(
             alpha: 0.82 * progress,
           );
-          final accentBorder =
-              compact
-                  ? Border.all(color: accentColor, width: 2)
-                  : Border(left: BorderSide(color: accentColor, width: 4));
+          // 圆角表面使用完整描边，避免单侧边框与圆角裁切不一致。
+          final accentBorder = Border.all(color: accentColor, width: 2);
           final pulseDepth = compact ? 0.016 : 0.008;
           final scale = 1 - math.sin(math.pi * progress) * pulseDepth;
 
@@ -63,19 +64,18 @@ class DiarySelectionSurface extends StatelessWidget {
               decoration: BoxDecoration(
                 color: highlightColor,
                 borderRadius: BorderRadius.circular(borderRadius),
-                boxShadow:
-                    compact && progress > 0
-                        ? <BoxShadow>[
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(
-                              alpha: 0.16 * progress,
-                            ),
-                            blurRadius: 12 * progress,
-                            spreadRadius: 0.5 * progress,
-                            offset: Offset(0, 3 * progress),
+                boxShadow: compact && progress > 0
+                    ? <BoxShadow>[
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(
+                            alpha: 0.16 * progress,
                           ),
-                        ]
-                        : const <BoxShadow>[],
+                          blurRadius: 12 * progress,
+                          spreadRadius: 0.5 * progress,
+                          offset: Offset(0, 3 * progress),
+                        ),
+                      ]
+                    : const <BoxShadow>[],
               ),
               foregroundDecoration: BoxDecoration(
                 border: accentBorder,

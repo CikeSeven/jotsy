@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 应用启动加载页。
@@ -21,9 +21,8 @@ class AppLoadingContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: LoadingIndicatorM3E(
-        variant: LoadingIndicatorM3EVariant.contained,
-        constraints: const BoxConstraints.tightFor(width: 72, height: 72),
+      child: ExpressiveLoadingIndicator(
+        size: 72,
         semanticLabel: context.l10n.autoT0001,
       ),
     );

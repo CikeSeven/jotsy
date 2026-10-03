@@ -38,7 +38,7 @@ class EnergyBatteryIndicator extends StatelessWidget {
   ///
   /// 图标本身是离散资源，因此按阈值分桶；
   /// 颜色仍按连续值做渐变，以保留“连续拖动”的反馈。
-  static IconData iconForValue(num rawValue) {
+  static FaIconData iconForValue(num rawValue) {
     final value = normalizeValue(rawValue);
     if (value < 1.8) {
       return FontAwesomeIcons.batteryEmpty;
@@ -135,7 +135,9 @@ class EnergyBatteryIndicator extends StatelessWidget {
               padding: EdgeInsets.all((iconSize * 0.11).clamp(1.2, 2.4)),
               decoration: BoxDecoration(
                 border: Border.all(color: borderColor, width: 1.4),
-                borderRadius: BorderRadius.circular((iconSize * 0.2).clamp(2, 6)),
+                borderRadius: BorderRadius.circular(
+                  (iconSize * 0.2).clamp(2, 6),
+                ),
               ),
               child: Align(
                 alignment: Alignment.centerLeft,
@@ -159,7 +161,9 @@ class EnergyBatteryIndicator extends StatelessWidget {
               height: bodyHeight * 0.42,
               decoration: BoxDecoration(
                 color: borderColor,
-                borderRadius: BorderRadius.circular((iconSize * 0.08).clamp(1, 2)),
+                borderRadius: BorderRadius.circular(
+                  (iconSize * 0.08).clamp(1, 2),
+                ),
               ),
             ),
           ],

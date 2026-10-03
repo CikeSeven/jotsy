@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../support/expressive_test_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -130,7 +131,7 @@ void main() {
         selectedSurface.foregroundDecoration! as BoxDecoration;
     final selectedBorder = selectedForeground.border! as Border;
     expect(selectedDecoration.color, isNot(unselectedColor));
-    expect(selectedBorder.left.width, 4);
+    expect(selectedBorder.left.width, 2);
     expect(selectedBorder.left.color, isNot(Colors.transparent));
   });
 
@@ -188,7 +189,7 @@ void main() {
     );
     final foreground = surface.foregroundDecoration! as BoxDecoration;
     final border = foreground.border! as Border;
-    expect(border.left.width, 4);
+    expect(border.left.width, 2);
     expect(border.left.color, isNot(Colors.transparent));
   });
 
@@ -268,12 +269,7 @@ Widget _buildTestApp({
     locale: const Locale('zh'),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF37618A),
-        brightness: brightness,
-      ),
-    ),
+    theme: expressiveTestTheme(brightness),
     home: Scaffold(
       body: SizedBox(
         key: const ValueKey<String>('test-root'),

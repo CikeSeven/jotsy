@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -338,41 +338,26 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                           _AboutActionTile(
                             icon: FontAwesomeIcons.github,
                             title: l10n.aboutOpenSourceRepo,
-                            onTap:
-                                () => _openExternalUrl(
-                                  context,
-                                  AboutPage._repoUrl,
-                                ),
+                            onTap: () =>
+                                _openExternalUrl(context, AboutPage._repoUrl),
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
                             icon: FontAwesomeIcons.arrowsRotate,
                             title: l10n.aboutCheckUpdate,
-                            onTap:
-                                _checkingUpdate
-                                    ? null
-                                    : () => _checkLatestRelease(context),
-                            trailing:
-                                _checkingUpdate
-                                    ? const LoadingIndicatorM3E(
-                                      variant:
-                                          LoadingIndicatorM3EVariant.contained,
-                                      constraints: BoxConstraints.tightFor(
-                                        width: 18,
-                                        height: 18,
-                                      ),
-                                    )
-                                    : null,
+                            onTap: _checkingUpdate
+                                ? null
+                                : () => _checkLatestRelease(context),
+                            trailing: _checkingUpdate
+                                ? const ExpressiveLoadingIndicator(size: 18)
+                                : null,
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
                             icon: FontAwesomeIcons.bug,
                             title: l10n.aboutSubmitIssue,
-                            onTap:
-                                () => _openExternalUrl(
-                                  context,
-                                  AboutPage._issueUrl,
-                                ),
+                            onTap: () =>
+                                _openExternalUrl(context, AboutPage._issueUrl),
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
@@ -544,7 +529,7 @@ class _AboutActionTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final IconData icon;
+  final FaIconData icon;
   final String title;
   final String? subtitle;
   final Widget? trailing;

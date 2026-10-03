@@ -5,12 +5,12 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -246,16 +246,15 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             _previewScrollController.jumpTo(0);
           }
           await Future<void>.delayed(const Duration(milliseconds: 60));
-          final renderObject =
-              _shareCaptureKey.currentContext?.findRenderObject();
+          final renderObject = _shareCaptureKey.currentContext
+              ?.findRenderObject();
           if (renderObject is! WidgetShotPlusRenderRepaintBoundary) {
             throw Exception('截图节点未就绪');
           }
           final imageBytes = await renderObject.screenshot(
-            scrollController:
-                _previewScrollController.hasClients
-                    ? _previewScrollController
-                    : null,
+            scrollController: _previewScrollController.hasClients
+                ? _previewScrollController
+                : null,
             format: ShotFormat.png,
             quality: 100,
             maxHeight: 22000,
@@ -331,13 +330,15 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   String _buildExportFileBaseName(DiaryWithTags detail) {
-    final rawTitle =
-        detail.diary.title.trim().isEmpty ? 'diary' : detail.diary.title.trim();
+    final rawTitle = detail.diary.title.trim().isEmpty
+        ? 'diary'
+        : detail.diary.title.trim();
     final normalized = rawTitle
         .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
         .replaceAll(RegExp(r'\s+'), '_');
-    final short =
-        normalized.length > 24 ? normalized.substring(0, 24) : normalized;
+    final short = normalized.length > 24
+        ? normalized.substring(0, 24)
+        : normalized;
     return short.isEmpty ? 'diary' : short;
   }
 
@@ -580,12 +581,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                LoadingIndicatorM3E(
-                  variant: LoadingIndicatorM3EVariant.contained,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 72,
-                    height: 72,
-                  ),
+                ExpressiveLoadingIndicator(
+                  size: 72,
                   semanticLabel: _actionLoadingLabel,
                 ),
                 const SizedBox(height: 10),
@@ -640,13 +637,12 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder:
-            (_) => ImageViewerPage(
-              items: normalizedSources
-                  .map((source) => ImageViewerItem(source: source))
-                  .toList(growable: false),
-              initialIndex: initialIndex,
-            ),
+        builder: (_) => ImageViewerPage(
+          items: normalizedSources
+              .map((source) => ImageViewerItem(source: source))
+              .toList(growable: false),
+          initialIndex: initialIndex,
+        ),
       ),
     );
   }
@@ -1014,10 +1010,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final metadataContext = _extractContextMetadata(detail);
     final mood = metadataContext?['moodEmoji']?.toString().trim();
-    final message =
-        mood != null && mood.isNotEmpty
-            ? context.l10n.timeCapsuleUnlockedInsight(mood)
-            : context.l10n.timeCapsuleUnlockedInsightNoMood;
+    final message = mood != null && mood.isNotEmpty
+        ? context.l10n.timeCapsuleUnlockedInsight(mood)
+        : context.l10n.timeCapsuleUnlockedInsightNoMood;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -1087,7 +1082,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   Widget _buildMetaInlineItem({
-    IconData? icon,
+    FaIconData? icon,
     Widget? leading,
     required String label,
     required Color color,
@@ -1134,10 +1129,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     }
     final diary = detail.diary;
     final hasBeenEdited = !diary.updatedAt.isAtSameMomentAs(diary.createdAt);
-    final editedText =
-        hasBeenEdited
-            ? '${context.l10n.autoT0118} ${_formatPreciseTime(diary.updatedAt)}'
-            : null;
+    final editedText = hasBeenEdited
+        ? '${context.l10n.autoT0118} ${_formatPreciseTime(diary.updatedAt)}'
+        : null;
 
     // 这里不能只看 contentText（纯文本镜像），否则“仅图片正文”会被误判为空。
     // 统一按 Quill 文档是否存在可见内容判断，图片/视频/嵌入都属于正文内容。
@@ -1145,27 +1139,26 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       controller.document,
     );
     final previewImages = _resolvePreviewImages(diary);
-    final contentBody =
-        hasVisibleContent
-            ? quill.QuillEditor.basic(
-              controller: controller,
-              config: quill.QuillEditorConfig(
-                autoFocus: false,
-                scrollable: false,
-                padding: EdgeInsets.zero,
-                showCursor: false,
-                checkBoxReadOnly: false,
-                embedBuilders: buildDiaryQuillEmbedBuilders(
-                  onImageClicked: (imageSource) {
-                    _openImageViewer(previewImages, imageSource);
-                  },
-                ),
+    final contentBody = hasVisibleContent
+        ? quill.QuillEditor.basic(
+            controller: controller,
+            config: quill.QuillEditorConfig(
+              autoFocus: false,
+              scrollable: false,
+              padding: EdgeInsets.zero,
+              showCursor: false,
+              checkBoxReadOnly: false,
+              embedBuilders: buildDiaryQuillEmbedBuilders(
+                onImageClicked: (imageSource) {
+                  _openImageViewer(previewImages, imageSource);
+                },
               ),
-            )
-            : Text(
-              context.l10n.autoT0119,
-              style: Theme.of(context).textTheme.bodyLarge,
-            );
+            ),
+          )
+        : Text(
+            context.l10n.autoT0119,
+            style: Theme.of(context).textTheme.bodyLarge,
+          );
 
     if (editedText == null) {
       return contentBody;
@@ -1198,7 +1191,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
           ),
-          body: const Center(child: CircularProgressIndicator()),
+          body: const Center(child: ExpressiveLoadingIndicator()),
         );
       },
       error: (Object error, StackTrace stackTrace) {
@@ -1252,10 +1245,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         }
         _currentDetailForTodoSave = detail;
         _bindPreviewController(detail.diary.content);
-        final title =
-            detail.diary.title.trim().isEmpty
-                ? context.l10n.autoT0033
-                : detail.diary.title.trim();
+        final title = detail.diary.title.trim().isEmpty
+            ? context.l10n.autoT0033
+            : detail.diary.title.trim();
         final previewImages = _resolvePreviewImages(detail.diary);
         final coverSource = previewImages.firstOrNull;
 
@@ -1274,14 +1266,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                         _shareCaptureStaticCover
                             ? _buildStaticShareCoverSliver(coverSource)
                             : PublishDiaryCoverSliver(
-                              cover: coverSource,
-                              maxExtentHeight: 420,
-                              padding: EdgeInsets.zero,
-                              borderRadius: BorderRadius.zero,
-                              onTap: () {
-                                _openImageViewer(previewImages, coverSource);
-                              },
-                            ),
+                                cover: coverSource,
+                                maxExtentHeight: 420,
+                                padding: EdgeInsets.zero,
+                                borderRadius: BorderRadius.zero,
+                                onTap: () {
+                                  _openImageViewer(previewImages, coverSource);
+                                },
+                              ),
 
                       SliverToBoxAdapter(
                         child: Padding(

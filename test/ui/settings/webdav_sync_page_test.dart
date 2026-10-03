@@ -36,7 +36,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 四个配置字段的 prefix 图标。
-    const prefixIcons = <IconData>[
+    const prefixIcons = <FaIconData>[
       FontAwesomeIcons.link,
       FontAwesomeIcons.user,
       FontAwesomeIcons.lock,
@@ -46,7 +46,7 @@ void main() {
     final centers = <double>[];
     for (final icon in prefixIcons) {
       final finder = find.byWidgetPredicate(
-        (Widget w) => w is FaIcon && w.icon == icon,
+        (Widget w) => w is FaIcon && w.icon == icon.data,
       );
       expect(finder, findsOneWidget, reason: '应能找到 $icon 的 prefix 图标');
       centers.add(tester.getCenter(finder).dx);

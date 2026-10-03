@@ -3,12 +3,12 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:ui' show ImageFilter;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_radii.dart';
 import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
@@ -72,7 +72,7 @@ class DiariesListSection extends StatelessWidget {
   final void Function(String diaryId) onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
   final ValueChanged<String>? onArchiveDiary;
-  final IconData swipeActionIcon;
+  final FaIconData swipeActionIcon;
   final Color? swipeActionBackgroundColor;
   final Color? swipeActionIconColor;
 
@@ -118,44 +118,27 @@ class DiariesListSection extends StatelessWidget {
             final diary = diaries[index];
             return KeyedSubtree(
               key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
-              child: _buildDiaryItem(
-                context,
-                diary: diary,
-                compact: true,
-                backgroundColor: backgroundColor,
-              ),
+              child: _buildDiaryItem(context, diary: diary, compact: true),
             );
           },
         ),
       );
     }
 
-    // 普通列表模式：单列行列表，使用分割线分隔条目。
+    // 普通列表同样使用独立圆角表面；间距代替粗分割线，和瀑布流共享视觉层级。
     return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final diary = diaries[index];
         final isLast = index == diaries.length - 1;
         return KeyedSubtree(
           key: ValueKey<String>('list_${diary.diary.diaryId}'),
-          child: ColoredBox(
-            color: backgroundColor,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                _buildDiaryItem(
-                  context,
-                  diary: diary,
-                  compact: false,
-                  backgroundColor: backgroundColor,
-                ),
-                if (!isLast)
-                  Container(
-                    height: 3,
-                    width: double.infinity,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outlineVariant.withValues(alpha: 0.22),
-                  ),
+                _buildDiaryItem(context, diary: diary, compact: false),
+                if (!isLast) const SizedBox(height: AppSpacing.s),
               ],
             ),
           ),
@@ -196,23 +179,21 @@ class DiariesListSection extends StatelessWidget {
     BuildContext context, {
     required DiaryWithTags diary,
     required bool compact,
-    required Color backgroundColor,
   }) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final baseItemBackgroundColor =
-        compact ? colorScheme.surfaceContainerLow : backgroundColor;
-    final itemBackgroundColor =
-        diary.diary.isPinned
-            ? Color.alphaBlend(
-              colorScheme.primary.withAlpha(14),
-              baseItemBackgroundColor,
-            )
-            : baseItemBackgroundColor;
+    final baseItemBackgroundColor = colorScheme.surfaceContainerLow;
+    final itemBackgroundColor = diary.diary.isPinned
+        ? Color.alphaBlend(
+            colorScheme.primary.withAlpha(14),
+            baseItemBackgroundColor,
+          )
+        : baseItemBackgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
     final previewCover = _resolvePreviewCover(diary.diary);
-    final title =
-        diary.diary.title.trim().isEmpty ? l10n.autoT0033 : diary.diary.title;
+    final title = diary.diary.title.trim().isEmpty
+        ? l10n.autoT0033
+        : diary.diary.title;
     final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
     final hasVisibleTags = diary.tags.isNotEmpty && maxVisibleTags > 0;
     final capsuleState = TimeCapsuleState.fromFields(
@@ -281,8 +262,8 @@ class DiariesListSection extends StatelessWidget {
               ),
             ),
             if (selected)
-              Icon(
-                CupertinoIcons.check_mark_circled_solid,
+              FaIcon(
+                FontAwesomeIcons.solidCircleCheck,
                 size: 18,
                 color: colorScheme.primary,
               ),
@@ -329,46 +310,45 @@ class DiariesListSection extends StatelessWidget {
         );
 
         // 两种布局模式使用不同内容骨架，交互逻辑保持一致。
-        Widget content =
-            compact
-                ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (previewCover != null)
-                      _buildCoverPreview(
-                        context,
-                        previewCover,
-                        width: double.infinity,
-                        height: 132,
-                        radius: 0,
-                      ),
-                    compactTextContent,
+        Widget content = compact
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (previewCover != null)
+                    _buildCoverPreview(
+                      context,
+                      previewCover,
+                      width: double.infinity,
+                      height: 132,
+                      radius: 0,
+                    ),
+                  compactTextContent,
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (previewCover != null) ...[
+                    _buildCoverPreview(
+                      context,
+                      previewCover,
+                      width: 84,
+                      height: 84,
+                      radius: 10,
+                    ),
+                    const SizedBox(width: 12),
                   ],
-                )
-                : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (previewCover != null) ...[
-                      _buildCoverPreview(
-                        context,
-                        previewCover,
-                        width: 84,
-                        height: 84,
-                        radius: 10,
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    Expanded(child: detailContent),
-                    if (selected) ...[
-                      const SizedBox(width: 8),
-                      Icon(
-                        CupertinoIcons.check_mark_circled_solid,
-                        size: 18,
-                        color: colorScheme.primary,
-                      ),
-                    ],
+                  Expanded(child: detailContent),
+                  if (selected) ...[
+                    const SizedBox(width: 8),
+                    FaIcon(
+                      FontAwesomeIcons.solidCircleCheck,
+                      size: 18,
+                      color: colorScheme.primary,
+                    ),
                   ],
-                );
+                ],
+              );
 
         if (isLockedCapsule) {
           content = _buildLockedCapsuleContent(
@@ -381,7 +361,7 @@ class DiariesListSection extends StatelessWidget {
           );
         }
 
-        final itemRadius = compact ? 14.0 : 0.0;
+        const itemRadius = AppRadii.card;
 
         // 统一点击交互：
         // - 选择模式下点击切换选中；
@@ -398,8 +378,9 @@ class DiariesListSection extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                borderRadius:
-                    itemRadius > 0 ? BorderRadius.circular(itemRadius) : null,
+                borderRadius: itemRadius > 0
+                    ? BorderRadius.circular(itemRadius)
+                    : null,
                 onTap: () {
                   if (isSelectionMode) {
                     onToggleSelection(diary.diary.diaryId, false);
@@ -408,9 +389,8 @@ class DiariesListSection extends StatelessWidget {
                   if (isLockedCapsule) {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder:
-                            (context) =>
-                                LockedDiaryPage(diaryId: diary.diary.diaryId),
+                        builder: (context) =>
+                            LockedDiaryPage(diaryId: diary.diary.diaryId),
                       ),
                     );
                     return;
@@ -449,10 +429,9 @@ class DiariesListSection extends StatelessWidget {
 
           return Dismissible(
             key: ValueKey<String>('archive_${diary.diary.diaryId}'),
-            direction:
-                isSelectionMode
-                    ? DismissDirection.none
-                    : DismissDirection.endToStart,
+            direction: isSelectionMode
+                ? DismissDirection.none
+                : DismissDirection.endToStart,
             background: Container(
               color: swipeBackgroundColor,
               alignment: Alignment.centerRight,
@@ -477,13 +456,9 @@ class DiariesListSection extends StatelessWidget {
     final isAppearing = appearingDiaryIds.contains(diaryId);
 
     // 退出态切换为空组件，配合 AnimatedSwitcher 做“收起并淡出”。
-    final switchedChild =
-        isExiting
-            ? SizedBox(key: ValueKey<String>('hidden_$diaryId'))
-            : KeyedSubtree(
-              key: ValueKey<String>('visible_$diaryId'),
-              child: child,
-            );
+    final switchedChild = isExiting
+        ? SizedBox(key: ValueKey<String>('hidden_$diaryId'))
+        : KeyedSubtree(key: ValueKey<String>('visible_$diaryId'), child: child);
 
     final switcher = AnimatedSwitcher(
       duration: _itemTransitionDuration,
@@ -769,10 +744,9 @@ class DiariesListSection extends StatelessWidget {
     }
 
     final explicitCover = diary.cover?.trim();
-    final resolvedCover =
-        (explicitCover != null && explicitCover.isNotEmpty)
-            ? explicitCover
-            : _extractFirstImageFromContent(diary.content);
+    final resolvedCover = (explicitCover != null && explicitCover.isNotEmpty)
+        ? explicitCover
+        : _extractFirstImageFromContent(diary.content);
 
     _cacheResolvedPreviewCover(cacheKey, resolvedCover);
     return resolvedCover;
@@ -871,45 +845,38 @@ class DiariesListSection extends StatelessWidget {
     required double radius,
   }) {
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth =
-        width != null && width.isFinite && width > 0
-            ? (width * dpr).round()
-            : null;
-    final cacheHeight =
-        height.isFinite && height > 0 ? (height * dpr).round() : null;
+    final cacheWidth = width != null && width.isFinite && width > 0
+        ? (width * dpr).round()
+        : null;
+    final cacheHeight = height.isFinite && height > 0
+        ? (height * dpr).round()
+        : null;
     final trimmed = imageSource.trim();
     final uri = Uri.tryParse(trimmed);
     final isNetwork =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
-    final imageWidget =
-        isNetwork
-            ? Image.network(
-              trimmed,
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder:
-                  (
-                    BuildContext context,
-                    Object error,
-                    StackTrace? stackTrace,
-                  ) => _buildCoverFallback(),
-            )
-            : Image.file(
-              File(trimmed),
-              fit: BoxFit.cover,
-              cacheWidth: cacheWidth,
-              cacheHeight: cacheHeight,
-              filterQuality: FilterQuality.low,
-              errorBuilder:
-                  (
-                    BuildContext context,
-                    Object error,
-                    StackTrace? stackTrace,
-                  ) => _buildCoverFallback(),
-            );
+    final imageWidget = isNetwork
+        ? Image.network(
+            trimmed,
+            fit: BoxFit.cover,
+            cacheWidth: cacheWidth,
+            cacheHeight: cacheHeight,
+            filterQuality: FilterQuality.low,
+            errorBuilder:
+                (BuildContext context, Object error, StackTrace? stackTrace) =>
+                    _buildCoverFallback(),
+          )
+        : Image.file(
+            File(trimmed),
+            fit: BoxFit.cover,
+            cacheWidth: cacheWidth,
+            cacheHeight: cacheHeight,
+            filterQuality: FilterQuality.low,
+            errorBuilder:
+                (BuildContext context, Object error, StackTrace? stackTrace) =>
+                    _buildCoverFallback(),
+          );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -922,7 +889,7 @@ class DiariesListSection extends StatelessWidget {
     return Container(
       color: Colors.black12,
       alignment: Alignment.center,
-      child: const Icon(CupertinoIcons.photo, size: 20),
+      child: const FaIcon(FontAwesomeIcons.image, size: 20),
     );
   }
 }

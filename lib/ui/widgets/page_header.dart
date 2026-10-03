@@ -6,7 +6,7 @@ class PageHeader extends StatelessWidget {
   const PageHeader({super.key, required this.title});
 
   // 与日记列表页头部体感高度对齐，避免 Explore/Settings 看起来偏高。
-  static const double contentHeight = 56;
+  static const double contentHeight = 64;
 
   final String title;
 
@@ -37,9 +37,7 @@ class PageHeader extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                 ),
               ),

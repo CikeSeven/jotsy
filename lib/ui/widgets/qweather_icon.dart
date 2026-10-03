@@ -24,7 +24,7 @@ class QWeatherIcon extends StatelessWidget {
   final String? iconCode;
   final String? weatherText;
   final double size;
-  final IconData fallbackIcon;
+  final FaIconData fallbackIcon;
   final Color? fallbackColor;
   final String semanticLabel;
 
@@ -55,31 +55,19 @@ class QWeatherIcon extends StatelessWidget {
       code: '318',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(暴雨到大暴雨|storm to heavy storm)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(暴雨到大暴雨|storm to heavy storm)', caseSensitive: false),
       code: '317',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(大到暴雨|heavy rain to storm)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(大到暴雨|heavy rain to storm)', caseSensitive: false),
       code: '316',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(中到大雨|moderate to heavy rain)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(中到大雨|moderate to heavy rain)', caseSensitive: false),
       code: '315',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(小到中雨|light to moderate rain)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(小到中雨|light to moderate rain)', caseSensitive: false),
       code: '314',
     ),
     _WeatherKeywordRule(
@@ -90,10 +78,7 @@ class QWeatherIcon extends StatelessWidget {
       code: '304',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(强雷阵雨|heavy thunderstorm)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(强雷阵雨|heavy thunderstorm)', caseSensitive: false),
       code: '303',
     ),
     _WeatherKeywordRule(
@@ -104,17 +89,11 @@ class QWeatherIcon extends StatelessWidget {
       code: '302',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(强阵雨|heavy shower rain)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(强阵雨|heavy shower rain)', caseSensitive: false),
       code: '301',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(?<!强)(阵雨|shower rain)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(?<!强)(阵雨|shower rain)', caseSensitive: false),
       code: '300',
     ),
     _WeatherKeywordRule(
@@ -154,24 +133,15 @@ class QWeatherIcon extends StatelessWidget {
       code: '313',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(大到暴雪|heavy snow to snowstorm)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(大到暴雪|heavy snow to snowstorm)', caseSensitive: false),
       code: '410',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(中到大雪|moderate to heavy snow)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(中到大雪|moderate to heavy snow)', caseSensitive: false),
       code: '409',
     ),
     _WeatherKeywordRule(
-      pattern: RegExp(
-        r'(小到中雪|light to moderate snow)',
-        caseSensitive: false,
-      ),
+      pattern: RegExp(r'(小到中雪|light to moderate snow)', caseSensitive: false),
       code: '408',
     ),
     _WeatherKeywordRule(
@@ -355,7 +325,8 @@ class QWeatherIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final assetPath = iconUrl(iconCode, weatherText: weatherText);
-    final fallbackIconColor = fallbackColor ?? Theme.of(context).colorScheme.onSurfaceVariant;
+    final fallbackIconColor =
+        fallbackColor ?? Theme.of(context).colorScheme.onSurfaceVariant;
 
     Widget buildFallbackIcon() {
       return Center(

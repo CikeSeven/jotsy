@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/webdav_models.dart';
 import 'package:node_diary/core/services/webdav_settings_service.dart';
@@ -397,11 +397,10 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
               return _buildContent(context, colorScheme);
             },
             loading: () => const SizedBox.shrink(),
-            error:
-                (error, _) => ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                  children: <Widget>[Text(_messageForError(error))],
-                ),
+            error: (error, _) => ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: <Widget>[Text(_messageForError(error))],
+            ),
           ),
           if (_busy) _buildBusyOverlay(context, colorScheme),
         ],
@@ -525,7 +524,7 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
   /// 同时令各输入文本起始位置一致，避免出现“图标参差不齐”的观感。
   Widget _buildConfigField({
     required TextEditingController controller,
-    required IconData icon,
+    required FaIconData icon,
     required String labelText,
     String? hintText,
     TextInputType? keyboardType,
@@ -595,12 +594,8 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                LoadingIndicatorM3E(
-                  variant: LoadingIndicatorM3EVariant.contained,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 72,
-                    height: 72,
-                  ),
+                ExpressiveLoadingIndicator(
+                  size: 72,
                   semanticLabel: context.l10n.webDavBusyLabel,
                 ),
                 const SizedBox(height: 10),

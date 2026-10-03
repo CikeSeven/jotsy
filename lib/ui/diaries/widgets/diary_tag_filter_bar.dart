@@ -111,21 +111,8 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = widget.selectedTagFilterIds.isNotEmpty;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    // 统一走语义表面色，避免亮色主题出现“纯白突兀”的标签底色。
-    final unselectedChipColor =
-        isDark
-            ? colorScheme.surfaceContainerHigh.withValues(alpha: 0.86)
-            : colorScheme.surfaceContainerLow.withValues(alpha: 0.98);
-    // 选中态混入少量主色，避免亮色主题接近纯白导致“未选中感”。
-    final selectedChipBaseColor =
-        isDark
-            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.94)
-            : colorScheme.surfaceContainerLow.withValues(alpha: 0.98);
-    final selectedChipColor = Color.alphaBlend(
-      colorScheme.primary.withValues(alpha: isDark ? 0.18 : 0.10),
-      selectedChipBaseColor,
-    );
+    final unselectedChipColor = colorScheme.surfaceContainerHigh;
+    final selectedChipColor = colorScheme.secondaryContainer;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -164,10 +151,9 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
                       child: FaIcon(
                         FontAwesomeIcons.xmark,
                         size: 16,
-                        color:
-                            hasSelection
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
+                        color: hasSelection
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -184,10 +170,10 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar>
               colorDotSize: 12,
               selected: selected,
               selectedColor: selectedChipColor,
-              selectedForegroundColor: colorScheme.primary,
+              selectedForegroundColor: colorScheme.onSecondaryContainer,
               unselectedColor: unselectedChipColor,
               unselectedForegroundColor: colorScheme.onSurface,
-              radius: 9,
+              radius: 12,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               animateBorder: true,
               showSelectedShadow: false,

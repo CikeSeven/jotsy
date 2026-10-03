@@ -106,30 +106,27 @@ class DataPrivacyPage extends ConsumerWidget {
               return ValueListenableBuilder<bool>(
                 valueListenable: settingsService.appLockEnabledNotifier,
                 builder: (BuildContext context, bool enabled, Widget? child) {
-                  return SwitchListTile.adaptive(
+                  return SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     value: enabled,
                     title: Text(l10n.settingsAppLock),
                     subtitle: Text(l10n.settingsAppLockSubtitle),
-                    onChanged:
-                        (bool value) =>
-                            _toggleAppLock(context, settingsService, value),
+                    onChanged: (bool value) =>
+                        _toggleAppLock(context, settingsService, value),
                   );
                 },
               );
             },
-            loading:
-                () => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.settingsAppLock),
-                  subtitle: Text(l10n.settingsAppLockSubtitle),
-                ),
-            error:
-                (_, __) => ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.settingsAppLock),
-                  subtitle: Text(l10n.settingsAppLockSubtitle),
-                ),
+            loading: () => ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.settingsAppLock),
+              subtitle: Text(l10n.settingsAppLockSubtitle),
+            ),
+            error: (_, __) => ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(l10n.settingsAppLock),
+              subtitle: Text(l10n.settingsAppLockSubtitle),
+            ),
           ),
           const Divider(),
           ListTile(

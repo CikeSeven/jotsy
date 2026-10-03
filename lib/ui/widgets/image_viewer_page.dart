@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:node_diary/core/services/image_export_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
@@ -72,10 +72,10 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     final total = widget.items.length;
     final hasImages = total > 0;
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: colorScheme.surface,
       appBar: AppTopBar(
-        backgroundColor: Colors.black.withValues(alpha: 0.88),
-        foregroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
@@ -83,37 +83,28 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         title: Text(
           total == 0 ? l10n.autoT0052 : '${_activeIndex + 1} / $total',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Colors.white,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
-        actions:
-            hasImages
-                ? <Widget>[
-                  // 保存到相册：忙碌时禁用，避免并发触发。
-                  IconButton(
-                    tooltip: l10n.imageViewerSaveToGallery,
-                    onPressed: _isBusy ? null : _handleSaveToGallery,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.download,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                  // 分享当前图片。
-                  IconButton(
-                    tooltip: l10n.commonShare,
-                    onPressed: _isBusy ? null : _handleShare,
-                    icon: const FaIcon(
-                      FontAwesomeIcons.shareNodes,
-                      size: 18,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                ]
-                : null,
+        actions: hasImages
+            ? <Widget>[
+                // 保存到相册：忙碌时禁用，避免并发触发。
+                IconButton(
+                  tooltip: l10n.imageViewerSaveToGallery,
+                  onPressed: _isBusy ? null : _handleSaveToGallery,
+                  icon: const FaIcon(FontAwesomeIcons.download, size: 18),
+                ),
+                // 分享当前图片。
+                IconButton(
+                  tooltip: l10n.commonShare,
+                  onPressed: _isBusy ? null : _handleShare,
+                  icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 18),
+                ),
+                const SizedBox(width: 4),
+              ]
+            : null,
       ),
       body: Stack(
         children: <Widget>[
@@ -271,20 +262,22 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
   Widget _buildBusyOverlay() {
     return Positioned.fill(
       child: ColoredBox(
-        color: Colors.black.withValues(alpha: 0.55),
+        color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.55),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const LoadingIndicatorM3E(
-                variant: LoadingIndicatorM3EVariant.contained,
-                constraints: BoxConstraints.tightFor(width: 64, height: 64),
-              ),
+              const ExpressiveLoadingIndicator(size: 64),
               if (_busyLabel.isNotEmpty) ...<Widget>[
                 const SizedBox(height: 12),
                 Text(
                   _busyLabel,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
+                  ),
                 ),
               ],
             ],
@@ -299,32 +292,26 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
-    final imageWidget =
-        isRemote
-            ? Image.network(
-              source,
-              fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  return child;
-                }
-                return const Center(
-                  child: LoadingIndicatorM3E(
-                    variant: LoadingIndicatorM3EVariant.contained,
-                    constraints: BoxConstraints.tightFor(width: 48, height: 48),
-                  ),
-                );
-              },
-              errorBuilder: (_, __, ___) => const _ImageFallback(),
-            )
-            : Image.file(
-              File(source),
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const _ImageFallback(),
-            );
+    final imageWidget = isRemote
+        ? Image.network(
+            source,
+            fit: BoxFit.contain,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return const Center(child: ExpressiveLoadingIndicator(size: 48));
+            },
+            errorBuilder: (_, __, ___) => const _ImageFallback(),
+          )
+        : Image.file(
+            File(source),
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const _ImageFallback(),
+          );
 
     return Container(
-      color: Colors.black,
+      color: Theme.of(context).colorScheme.surface,
       alignment: Alignment.center,
       child: InteractiveViewer(
         minScale: 1,
@@ -340,8 +327,12 @@ class _ImageFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: FaIcon(FontAwesomeIcons.image, size: 28, color: Colors.white54),
+    return Center(
+      child: FaIcon(
+        FontAwesomeIcons.image,
+        size: 28,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 }

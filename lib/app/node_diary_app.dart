@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:loading_indicator_m3e/loading_indicator_m3e.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/app/theme/theme.dart';
+import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
@@ -37,8 +38,6 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
 class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   // 启动加载页最短展示时长：保留品牌化等待反馈，但避免冷启动被固定拉长。
   static const Duration _minimumLoadingDuration = Duration(milliseconds: 1200);
-  static const double _globalSnackBarSideInset = 16;
-  static const double _globalSnackBarBottomInset = 16;
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
@@ -92,14 +91,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         diariesBootstrapAsync.hasValue || diariesBootstrapAsync.hasError;
     final bootstrapReady =
         _minimumLoadingElapsed && settingsReady && diariesSettled;
-    final startupNotice =
-        bootstrapReady && diariesBootstrapAsync.hasError
-            ? _pickBootstrapText(
-              settingsService: settingsService,
-              zh: '启动时预加载日记失败，已进入主页。',
-              en: 'Startup preload failed. Entered home anyway.',
-            )
-            : null;
+    final startupNotice = bootstrapReady && diariesBootstrapAsync.hasError
+        ? _pickBootstrapText(
+            settingsService: settingsService,
+            zh: '启动时预加载日记失败，已进入主页。',
+            en: 'Startup preload failed. Entered home anyway.',
+          )
+        : null;
 
     if (settingsError != null && _minimumLoadingElapsed) {
       return _buildAppShell(
@@ -133,28 +131,30 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
             builder: (BuildContext context, Locale locale, Widget? child) {
               return ValueListenableBuilder<Color>(
                 valueListenable: settingsService.themeSeedColorNotifier,
-                builder: (
-                  BuildContext context,
-                  Color themeSeedColor,
-                  Widget? child,
-                ) {
-                  return ValueListenableBuilder<double>(
-                    valueListenable: settingsService.fontScaleNotifier,
-                    builder: (
+                builder:
+                    (
                       BuildContext context,
-                      double fontScale,
+                      Color themeSeedColor,
                       Widget? child,
                     ) {
-                      return _buildAppShell(
-                        home: home,
-                        themeMode: themeMode,
-                        locale: locale,
-                        themeSeedColor: themeSeedColor,
-                        fontScale: fontScale,
+                      return ValueListenableBuilder<double>(
+                        valueListenable: settingsService.fontScaleNotifier,
+                        builder:
+                            (
+                              BuildContext context,
+                              double fontScale,
+                              Widget? child,
+                            ) {
+                              return _buildAppShell(
+                                home: home,
+                                themeMode: themeMode,
+                                locale: locale,
+                                themeSeedColor: themeSeedColor,
+                                fontScale: fontScale,
+                              );
+                            },
                       );
                     },
-                  );
-                },
               );
             },
           );
@@ -174,20 +174,18 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     ),
     double fontScale = SettingsService.defaultFontScale,
   }) {
-    final lightTheme = _withGlobalSnackBarTheme(
-      _lightMaterialTheme.theme(
-        ColorScheme.fromSeed(
-          seedColor: themeSeedColor,
-          brightness: Brightness.light,
-        ),
+    final lightTheme = _lightMaterialTheme.theme(
+      ColorScheme.fromSeed(
+        seedColor: themeSeedColor,
+        brightness: Brightness.light,
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
       ),
     );
-    final darkTheme = _withGlobalSnackBarTheme(
-      _darkMaterialTheme.theme(
-        ColorScheme.fromSeed(
-          seedColor: themeSeedColor,
-          brightness: Brightness.dark,
-        ),
+    final darkTheme = _darkMaterialTheme.theme(
+      ColorScheme.fromSeed(
+        seedColor: themeSeedColor,
+        brightness: Brightness.dark,
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
       ),
     );
     return MaterialApp(
@@ -216,7 +214,12 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         );
         final scaledChild = MediaQuery(
           data: mediaQuery.copyWith(textScaler: effectiveTextScaler),
-          child: child,
+          child: mediaQuery.disableAnimations
+              ? Theme(
+                  data: ExpressiveControls.withoutMotion(Theme.of(context)),
+                  child: child,
+                )
+              : child,
         );
         return HomeHintVisibilityScope(
           controller: _homeHintVisibilityController,
@@ -234,33 +237,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         );
       },
       home: home,
-    );
-  }
-
-  /// 为整个应用提供统一的提示样式（与 Home 视觉一致）。
-  ///
-  /// Home 页仍会在此基础上覆盖底部 inset，以避让底部导航栏。
-  ThemeData _withGlobalSnackBarTheme(ThemeData baseTheme) {
-    final colorScheme = baseTheme.colorScheme;
-    return baseTheme.copyWith(
-      snackBarTheme: baseTheme.snackBarTheme.copyWith(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: colorScheme.surfaceContainerHigh.withValues(
-          alpha: 0.96,
-        ),
-        contentTextStyle: baseTheme.textTheme.bodyMedium?.copyWith(
-          color: colorScheme.onSurface,
-        ),
-        actionTextColor: colorScheme.primary,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        insetPadding: const EdgeInsets.fromLTRB(
-          _globalSnackBarSideInset,
-          0,
-          _globalSnackBarSideInset,
-          _globalSnackBarBottomInset,
-        ),
-      ),
     );
   }
 
@@ -535,12 +511,8 @@ class _AppLockOverlay extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 if (unlocking)
-                  LoadingIndicatorM3E(
-                    variant: LoadingIndicatorM3EVariant.contained,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 64,
-                      height: 64,
-                    ),
+                  ExpressiveLoadingIndicator(
+                    size: 64,
                     semanticLabel: l10n.appLockUnlocking,
                   )
                 else

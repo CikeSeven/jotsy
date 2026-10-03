@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -79,7 +80,7 @@ class DiarySearchPage extends ConsumerStatefulWidget {
 
 class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
-  static const double _headerContentHeight = 48;
+  static const double _headerContentHeight = 64;
   static const int _diaryPageSize = 20;
   static const double _loadMoreTriggerExtent = 420;
 
@@ -128,8 +129,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
-    final pageBackgroundColor =
-        brightness == Brightness.light ? Colors.white : colorScheme.surface;
+    final pageBackgroundColor = brightness == Brightness.light
+        ? Colors.white
+        : colorScheme.surface;
     final topSafeInset = MediaQuery.paddingOf(context).top;
     final headerOverlayHeight = topSafeInset + _headerContentHeight;
     final query = SearchDiaryQuery(
@@ -147,10 +149,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       limit: _visibleDiaryLimit,
       sortMode: DiaryQuerySortMode.updatedDesc,
     );
-    final diariesAsync =
-        query.hasAnyCondition
-            ? ref.watch(searchDiariesProvider(pageQuery))
-            : null;
+    final diariesAsync = query.hasAnyCondition
+        ? ref.watch(searchDiariesProvider(pageQuery))
+        : null;
     final latestPage = diariesAsync?.asData?.value;
     if (latestPage != null) {
       _cachedSearchItems = latestPage.items;
@@ -160,10 +161,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final hasMoreDiaries = _hasMoreDiaries;
     final tagListAsync = ref.watch(tagListProvider);
     final selectedTags = tagListAsync.maybeWhen(
-      data:
-          (tags) => tags
-              .where((tag) => _selectedTagIds.contains(tag.id))
-              .toList(growable: false),
+      data: (tags) => tags
+          .where((tag) => _selectedTagIds.contains(tag.id))
+          .toList(growable: false),
       orElse: () {
         final fallbackTagIds = _selectedTagIds.toList(growable: false)..sort();
         return fallbackTagIds
@@ -206,7 +206,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                           child: SizedBox(
                             height: 22,
                             width: 22,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: ExpressiveLoadingIndicator(),
                           ),
                         ),
                       )
@@ -247,9 +247,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                                   child: SizedBox(
                                     height: 18,
                                     width: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
+                                    child: ExpressiveLoadingIndicator(),
                                   ),
                                 ),
                               ),
@@ -449,7 +447,7 @@ class _SearchInputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      height: 44,
+      height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
         color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
@@ -468,91 +466,99 @@ class _SearchInputBar extends StatelessWidget {
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
             Expanded(
-              child:
-                  selectedTags.isEmpty
-                      ? TextField(
-                        controller: searchController,
-                        focusNode: searchFocusNode,
-                        autofocus: true,
-                        textInputAction: TextInputAction.search,
-                        onChanged: onSearchChanged,
-                        decoration: InputDecoration(
-                          isDense: true,
-                          hintText: context.l10n.autoT0129,
-                          border: InputBorder.none,
-                          hintStyle: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                      )
-                      : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: <Widget>[
-                            for (final tag in selectedTags) ...[
-                              _TagConditionChip(
-                                tag: tag,
-                                onRemove: () => onRemoveTagCondition(tag.id),
-                              ),
-                              const SizedBox(width: 6),
-                            ],
-                            SizedBox(
-                              width: 220,
-                              child: Focus(
-                                onKeyEvent: (node, event) {
-                                  final isBackspace =
-                                      event is KeyDownEvent &&
-                                      event.logicalKey ==
-                                          LogicalKeyboardKey.backspace;
-                                  final isInputEmpty =
-                                      searchController.text.trim().isEmpty;
-                                  if (isBackspace &&
-                                      isInputEmpty &&
-                                      selectedTags.isNotEmpty) {
-                                    onRemoveTagCondition(selectedTags.last.id);
-                                    return KeyEventResult.handled;
-                                  }
-                                  return KeyEventResult.ignored;
-                                },
-                                child: TextField(
-                                  controller: searchController,
-                                  focusNode: searchFocusNode,
-                                  autofocus: true,
-                                  textInputAction: TextInputAction.search,
-                                  onChanged: onSearchChanged,
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    hintText: context.l10n.autoT0129,
-                                    border: InputBorder.none,
-                                    hintStyle: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
+              child: selectedTags.isEmpty
+                  ? TextField(
+                      controller: searchController,
+                      focusNode: searchFocusNode,
+                      autofocus: true,
+                      textInputAction: TextInputAction.search,
+                      onChanged: onSearchChanged,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: context.l10n.autoT0129,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
+                        hintStyle: Theme.of(context).textTheme.bodyMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: <Widget>[
+                          for (final tag in selectedTags) ...[
+                            _TagConditionChip(
+                              tag: tag,
+                              onRemove: () => onRemoveTagCondition(tag.id),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          SizedBox(
+                            width: 220,
+                            child: Focus(
+                              onKeyEvent: (node, event) {
+                                final isBackspace =
+                                    event is KeyDownEvent &&
+                                    event.logicalKey ==
+                                        LogicalKeyboardKey.backspace;
+                                final isInputEmpty = searchController.text
+                                    .trim()
+                                    .isEmpty;
+                                if (isBackspace &&
+                                    isInputEmpty &&
+                                    selectedTags.isNotEmpty) {
+                                  onRemoveTagCondition(selectedTags.last.id);
+                                  return KeyEventResult.handled;
+                                }
+                                return KeyEventResult.ignored;
+                              },
+                              child: TextField(
+                                controller: searchController,
+                                focusNode: searchFocusNode,
+                                autofocus: true,
+                                textInputAction: TextInputAction.search,
+                                onChanged: onSearchChanged,
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  hintText: context.l10n.autoT0129,
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  filled: false,
+                                  contentPadding: EdgeInsets.zero,
+                                  hintStyle: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
+                    ),
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
-              child:
-                  hasSearchText
-                      ? IconButton(
-                        key: const ValueKey<String>('search_clear_button'),
-                        tooltip: context.l10n.autoT0130,
-                        splashRadius: 18,
-                        onPressed: onClearSearch,
-                        icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
-                      )
-                      : const SizedBox(
-                        key: ValueKey<String>('search_clear_placeholder'),
-                        width: 40,
-                      ),
+              child: hasSearchText
+                  ? IconButton(
+                      key: const ValueKey<String>('search_clear_button'),
+                      tooltip: context.l10n.autoT0130,
+                      splashRadius: 18,
+                      onPressed: onClearSearch,
+                      icon: const FaIcon(FontAwesomeIcons.xmark, size: 14),
+                    )
+                  : const SizedBox(
+                      key: ValueKey<String>('search_clear_placeholder'),
+                      width: 40,
+                    ),
             ),
           ],
         ),

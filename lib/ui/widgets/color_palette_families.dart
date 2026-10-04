@@ -183,13 +183,14 @@ ColorPaletteSelection resolveColorPaletteSelection({
     }
   }
 
-  final fallbackColor =
-      kColorPaletteFamilies[fallbackFamilyIndex].colors[fallbackColorIndex]
-          .toARGB32();
+  final fallbackColor = kColorPaletteFamilies[fallbackFamilyIndex]
+      .colors[fallbackColorIndex]
+      .toARGB32();
   return ColorPaletteSelection(
     familyIndex: fallbackFamilyIndex,
     colorIndex: fallbackColorIndex,
-    colorValue:
-        preserveUnknownColor ? (initialColor ?? fallbackColor) : fallbackColor,
+    colorValue: preserveUnknownColor
+        ? (initialColor ?? fallbackColor)
+        : fallbackColor,
   );
 }

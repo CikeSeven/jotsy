@@ -77,8 +77,8 @@ void main() {
     (tester) async {
       final tags = _createTags(
         20,
-        nameForIndex:
-            (index) => 'Long unique tag label $index for a narrow diary card',
+        nameForIndex: (index) =>
+            'Long unique tag label $index for a narrow diary card',
       );
 
       await tester.pumpWidget(

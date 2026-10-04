@@ -208,10 +208,9 @@ class LocationResolverService {
         final info = decoded['info']?.toString();
         throw LocationResolveException(
           type: LocationResolveErrorType.apiError,
-          message:
-              info == null || info.trim().isEmpty
-                  ? '高德地址解析失败'
-                  : '高德地址解析失败：$info',
+          message: info == null || info.trim().isEmpty
+              ? '高德地址解析失败'
+              : '高德地址解析失败：$info',
         );
       }
 

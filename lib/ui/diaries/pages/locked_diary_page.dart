@@ -25,16 +25,14 @@ class LockedDiaryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(diaryDetailProvider(diaryId));
     return detailAsync.when(
-      loading:
-          () => Scaffold(
-            appBar: _buildAppBar(context),
-            body: const AppLoadingContent(),
-          ),
-      error:
-          (error, stackTrace) => Scaffold(
-            appBar: _buildAppBar(context),
-            body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
-          ),
+      loading: () => Scaffold(
+        appBar: _buildAppBar(context),
+        body: const AppLoadingContent(),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        appBar: _buildAppBar(context),
+        body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
+      ),
       data: (detail) {
         if (detail == null) {
           return Scaffold(
@@ -74,8 +72,9 @@ class _LockedDiaryContent extends ConsumerWidget {
       unlockAt: unlockAt,
       now: DateTime.now(),
     );
-    final title =
-        diary.title.trim().isEmpty ? context.l10n.autoT0033 : diary.title;
+    final title = diary.title.trim().isEmpty
+        ? context.l10n.autoT0033
+        : diary.title;
     final contextMeta = _extractContextMetadata(diary.metadata);
     final mood = contextMeta['moodEmoji']?.toString().trim();
     final weather = contextMeta['weather']?.toString().trim();
@@ -191,8 +190,9 @@ class _LockedDiaryContent extends ConsumerWidget {
     final current = diary.capsuleUnlockAt ?? now.add(const Duration(days: 1));
     final pickedDate = await showDatePicker(
       context: context,
-      initialDate:
-          current.isAfter(now) ? current : now.add(const Duration(days: 1)),
+      initialDate: current.isAfter(now)
+          ? current
+          : now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: DateTime(now.year + 10, now.month, now.day),
       helpText: context.l10n.timeCapsulePickTitle,
@@ -242,8 +242,9 @@ class _LockedDiaryContent extends ConsumerWidget {
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor:
-                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                foregroundColor: Theme.of(
+                  dialogContext,
+                ).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(l10n.commonCancel),

@@ -422,10 +422,9 @@ class EditDiaryController {
       final weatherNow = await service.fetchNow(
         latitude: _state._draftLocationLatitude!,
         longitude: _state._draftLocationLongitude!,
-        languageCode:
-            (await _state.ref.read(
-              settingsServiceProvider.future,
-            )).appLocaleCode,
+        languageCode: (await _state.ref.read(
+          settingsServiceProvider.future,
+        )).appLocaleCode,
       );
       if (!_state.mounted) {
         return;
@@ -470,8 +469,9 @@ class EditDiaryController {
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor:
-                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                foregroundColor: Theme.of(
+                  dialogContext,
+                ).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(l10n.commonCancel),

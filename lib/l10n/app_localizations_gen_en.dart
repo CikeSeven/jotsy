@@ -217,6 +217,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEditorGroup => 'Editor';
 
   @override
+  String get settingsEditorToolsGroup => 'Toolbar & mood';
+
+  @override
   String get settingsEditorBodyFontSize => 'Editor font size';
 
   @override
@@ -1516,4 +1519,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryTagCollapseHint =>
       'Swipe up here or tap to collapse the tags';
+
+  @override
+  String get diaryPinnedBadge => 'Pinned';
 }

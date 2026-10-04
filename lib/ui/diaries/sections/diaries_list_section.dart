@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_radii.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
@@ -182,7 +183,7 @@ class DiariesListSection extends StatelessWidget {
   }) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final baseItemBackgroundColor = colorScheme.surfaceContainerLow;
+    final baseItemBackgroundColor = ExpressiveSurfaces.cardColor(colorScheme);
     final itemBackgroundColor = diary.diary.isPinned
         ? Color.alphaBlend(
             colorScheme.primary.withAlpha(14),
@@ -202,20 +203,62 @@ class DiariesListSection extends StatelessWidget {
       now: DateTime.now(),
     );
     final isLockedCapsule = capsuleState.isLocked;
+    final contextMeta = _extractContextMetadata(diary.diary.metadata);
+    final moodEmoji =
+        (contextMeta['mood'] is String &&
+            (contextMeta['mood'] as String).trim().isNotEmpty)
+        ? (contextMeta['mood'] as String).trim()
+        : null;
+    final weatherCode =
+        (contextMeta['weather_icon_code'] is String &&
+            (contextMeta['weather_icon_code'] as String).trim().isNotEmpty)
+        ? (contextMeta['weather_icon_code'] as String).trim()
+        : null;
 
     return Builder(
       builder: (BuildContext _) {
-        // 列表模式正文区域（标题/标签/摘要/时间）结构。
+        // 列表模式正文区域（顶部眉线/标题/标签/摘要/时间）结构。
         final detailContent = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 顶部杂志眉线：日期 · 星期 + （置顶标签） + （天气/心情印章）
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  l10n.formatEyebrowDate(diary.diary.createdAt),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontSize: 13,
+                    color: diary.diary.isPinned
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.82),
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.15,
+                  ),
+                ),
+                if (diary.diary.isPinned) ...[
+                  const SizedBox(width: 6),
+                  _buildPinnedBadge(context),
+                ],
+                const Spacer(),
+                _buildMetaIndicators(
+                  context,
+                  moodEmoji: moodEmoji,
+                  weatherCode: weatherCode,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            // 标题行
             Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 18.5,
                 color: colorScheme.onSurface,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
               ),
             ),
             if (hasVisibleTags) ...[
@@ -229,21 +272,53 @@ class DiariesListSection extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.88),
+                  height: 1.42,
                 ),
               ),
             ],
-            const SizedBox(height: 6),
-            Text(
-              RelativeTimeFormatter.formatUpdatedAt(
-                updatedAt: diary.diary.updatedAt,
-                now: DateTime.now(),
-                l10n: l10n,
-              ),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  RelativeTimeFormatter.formatUpdatedAt(
+                    updatedAt: diary.diary.updatedAt,
+                    now: DateTime.now(),
+                    l10n: l10n,
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.72),
+                    fontSize: 11.5,
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+          ],
+        );
+
+        // 瀑布流模式眉线行：日期星期 + 置顶胶囊。
+        final compactEyebrow = Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.formatEyebrowDate(diary.diary.createdAt),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  fontSize: 12,
+                  color: diary.diary.isPinned
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.82),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (diary.diary.isPinned) ...[
+              const SizedBox(width: 4),
+              _buildPinnedBadge(context, compact: true),
+            ],
           ],
         );
 
@@ -253,57 +328,83 @@ class DiariesListSection extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                maxLines: 1,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16.5,
                   color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.15,
+                  height: 1.3,
                 ),
               ),
             ),
-            if (selected)
+            if (selected) ...[
+              const SizedBox(width: 6),
               FaIcon(
                 FontAwesomeIcons.solidCircleCheck,
-                size: 18,
+                size: 16,
                 color: colorScheme.primary,
               ),
+            ],
           ],
         );
 
         // 瀑布流文本区域（位于可选封面下方）。
         final compactTextContent = Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              compactEyebrow,
+              const SizedBox(height: 5),
               compactHeader,
               if (hasVisibleTags) ...[
+                const SizedBox(height: 5),
                 DiaryItemTagRow(
                   tags: diary.tags,
                   maxVisibleTags: maxVisibleTags,
                 ),
               ],
               if (preview.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   preview,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.88),
+                    height: 1.36,
                   ),
                 ),
               ],
-              const SizedBox(height: 6),
-              Text(
-                RelativeTimeFormatter.formatUpdatedAt(
-                  updatedAt: diary.diary.updatedAt,
-                  now: DateTime.now(),
-                  l10n: l10n,
-                ),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      RelativeTimeFormatter.formatUpdatedAt(
+                        updatedAt: diary.diary.updatedAt,
+                        now: DateTime.now(),
+                        l10n: l10n,
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.72,
+                        ),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  _buildMetaIndicators(
+                    context,
+                    moodEmoji: moodEmoji,
+                    weatherCode: weatherCode,
+                    compact: true,
+                  ),
+                ],
               ),
             ],
           ),
@@ -314,14 +415,24 @@ class DiariesListSection extends StatelessWidget {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (previewCover != null)
+                  if (previewCover != null) ...[
                     _buildCoverPreview(
                       context,
                       previewCover,
                       width: double.infinity,
-                      height: 132,
+                      height: 140,
                       radius: 0,
                     ),
+                    Divider(
+                      height: 0.6,
+                      thickness: 0.6,
+                      color: colorScheme.outlineVariant.withValues(
+                        alpha: colorScheme.brightness == Brightness.light
+                            ? 0.25
+                            : 0.2,
+                      ),
+                    ),
+                  ],
                   compactTextContent,
                 ],
               )
@@ -332,11 +443,11 @@ class DiariesListSection extends StatelessWidget {
                     _buildCoverPreview(
                       context,
                       previewCover,
-                      width: 84,
-                      height: 84,
-                      radius: 10,
+                      width: 88,
+                      height: 88,
+                      radius: 16,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                   ],
                   Expanded(child: detailContent),
                   if (selected) ...[
@@ -373,6 +484,7 @@ class DiariesListSection extends StatelessWidget {
           compact: compact,
           backgroundColor: itemBackgroundColor,
           borderRadius: itemRadius,
+          isPinned: diary.diary.isPinned,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(itemRadius),
             child: Material(
@@ -469,7 +581,7 @@ class DiariesListSection extends StatelessWidget {
           opacity: animation,
           child: SizeTransition(
             sizeFactor: animation,
-            axisAlignment: -1,
+            alignment: Alignment.topCenter,
             child: transitionChild,
           ),
         );
@@ -868,7 +980,7 @@ class DiariesListSection extends StatelessWidget {
             filterQuality: FilterQuality.low,
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stackTrace) =>
-                    _buildCoverFallback(),
+                    _buildCoverFallback(context),
           )
         : Image.file(
             File(trimmed),
@@ -878,7 +990,7 @@ class DiariesListSection extends StatelessWidget {
             filterQuality: FilterQuality.low,
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stackTrace) =>
-                    _buildCoverFallback(),
+                    _buildCoverFallback(context),
           );
 
     return ClipRRect(
@@ -887,12 +999,110 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
-  /// 封面加载失败占位图。
-  Widget _buildCoverFallback() {
+  /// 封面加载失败占位图（暗色模式自适应）。
+  Widget _buildCoverFallback(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
-      color: Colors.black12,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
       alignment: Alignment.center,
-      child: const FaIcon(FontAwesomeIcons.image, size: 20),
+      child: FaIcon(
+        FontAwesomeIcons.image,
+        size: 20,
+        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+      ),
+    );
+  }
+
+  /// 渲染日记卡片的情绪与天气指示器（精致微胶囊印章）。
+  Widget _buildMetaIndicators(
+    BuildContext context, {
+    required String? moodEmoji,
+    required String? weatherCode,
+    bool compact = false,
+  }) {
+    if (moodEmoji == null && weatherCode == null) {
+      return const SizedBox.shrink();
+    }
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 5.5 : 7,
+        vertical: compact ? 1.5 : 2.5,
+      ),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isLight ? 0.6 : 0.45,
+        ),
+        borderRadius: BorderRadius.circular(compact ? 6 : 8),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isLight ? 0.25 : 0.2,
+          ),
+          width: 0.6,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (weatherCode != null) ...[
+            QWeatherIcon(
+              iconCode: weatherCode,
+              size: compact ? 11.5 : 13,
+              fallbackColor: colorScheme.onSurfaceVariant,
+            ),
+            if (moodEmoji != null) SizedBox(width: compact ? 3 : 4.5),
+          ],
+          if (moodEmoji != null)
+            Text(
+              moodEmoji,
+              style: TextStyle(fontSize: compact ? 11 : 12.5, height: 1.1),
+            ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建置顶微徽章胶囊。
+  Widget _buildPinnedBadge(BuildContext context, {bool compact = false}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 5 : 6,
+        vertical: compact ? 1.5 : 2,
+      ),
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.22),
+          width: 0.65,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          FaIcon(
+            FontAwesomeIcons.thumbtack,
+            size: compact ? 8.5 : 9.5,
+            color: colorScheme.primary,
+          ),
+          if (!compact) ...[
+            const SizedBox(width: 3.5),
+            Text(
+              context.l10n.diaryPinnedBadge,
+              style: TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.primary,
+                height: 1.1,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

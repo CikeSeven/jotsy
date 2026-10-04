@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
@@ -504,18 +505,30 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      color: colorScheme.surfaceContainer,
-      shape: RoundedRectangleBorder(
+    final isLight = colorScheme.brightness == Brightness.light;
+    return Container(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.card),
-        side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
-          width: 0.8,
-        ),
+        boxShadow: isLight
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
-      child: Padding(padding: padding, child: child),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        color: ExpressiveSurfaces.cardColor(colorScheme),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.card),
+          side: ExpressiveSurfaces.cardBorderSide(colorScheme),
+        ),
+        child: Padding(padding: padding, child: child),
+      ),
     );
   }
 }

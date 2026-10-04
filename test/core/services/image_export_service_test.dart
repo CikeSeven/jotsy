@@ -61,7 +61,9 @@ void main() {
   });
 
   group('远程图片下载缓存', () {
-    const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
     const shareChannel = MethodChannel('dev.fluttercommunity.plus/share');
     const service = ImageExportService();
     const imageHost = 'image.test';
@@ -75,7 +77,9 @@ void main() {
       ImageExportService.debugClearRemoteImageCache();
       requestCount = 0;
       sharedPaths.clear();
-      tempDir = await Directory.systemTemp.createTemp('jotsy_image_export_test_');
+      tempDir = await Directory.systemTemp.createTemp(
+        'jotsy_image_export_test_',
+      );
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(pathProviderChannel, (call) async {
             if (call.method == 'getTemporaryDirectory') {
@@ -238,11 +242,7 @@ class _RedirectingHttpClient implements HttpClient {
   Future<HttpClientRequest> getUrl(Uri url) {
     if (url.host == host) {
       return delegate.getUrl(
-        url.replace(
-          scheme: 'http',
-          host: '127.0.0.1',
-          port: serverPort,
-        ),
+        url.replace(scheme: 'http', host: '127.0.0.1', port: serverPort),
       );
     }
     return delegate.getUrl(url);

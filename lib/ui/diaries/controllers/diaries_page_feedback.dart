@@ -23,29 +23,26 @@ class DiariesPageFeedback {
         final l10n = dialogContext.l10n;
         return AlertDialog(
           title: Text(l10n.autoT0081),
-          content: Text(
-            l10n.autoT0202,
-          ),
+          content: Text(l10n.autoT0202),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor:
-                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                foregroundColor: Theme.of(
+                  dialogContext,
+                ).colorScheme.onSurfaceVariant,
               ),
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_CreateDraftDecision.newEmpty),
+              onPressed: () => Navigator.of(
+                dialogContext,
+              ).pop(_CreateDraftDecision.newEmpty),
               child: Text(l10n.autoT0082),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 foregroundColor: Theme.of(dialogContext).colorScheme.primary,
               ),
-              onPressed:
-                  () => Navigator.of(
-                    dialogContext,
-                  ).pop(_CreateDraftDecision.continueEditing),
+              onPressed: () => Navigator.of(
+                dialogContext,
+              ).pop(_CreateDraftDecision.continueEditing),
               child: Text(l10n.autoT0083),
             ),
           ],
@@ -62,14 +59,13 @@ class DiariesPageFeedback {
         final l10n = dialogContext.l10n;
         return AlertDialog(
           title: Text(l10n.autoT0070),
-          content: Text(
-            l10n.autoT0084(count.toString()),
-          ),
+          content: Text(l10n.autoT0084(count.toString())),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor:
-                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                foregroundColor: Theme.of(
+                  dialogContext,
+                ).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(l10n.commonCancel),
@@ -94,10 +90,7 @@ class DiariesPageFeedback {
     Duration duration = _DiariesPage._restoreHintDuration,
   }) async {
     await showTrackedSnackBar(
-      snackBar: SnackBar(
-        content: Text(message),
-        duration: duration,
-      ),
+      snackBar: SnackBar(content: Text(message), duration: duration),
     );
   }
 

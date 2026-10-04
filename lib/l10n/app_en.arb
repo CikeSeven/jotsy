@@ -270,6 +270,10 @@
   "@settingsEditorGroup": {
     "description": "Settings group title for editor-related options."
   },
+  "settingsEditorToolsGroup": "Toolbar & mood",
+  "@settingsEditorToolsGroup": {
+    "description": "Settings group title for editor toolbar and mood options."
+  },
   "settingsEditorBodyFontSize": "Editor font size",
   "@settingsEditorBodyFontSize": {
     "description": "Setting title for editor body font size."
@@ -2076,5 +2080,9 @@
   "diaryTagCollapseHint": "Swipe up here or tap to collapse the tags",
   "@diaryTagCollapseHint": {
     "description": "Gesture hint for collapsing tags from the footer without interrupting list scrolling."
+  },
+  "diaryPinnedBadge": "Pinned",
+  "@diaryPinnedBadge": {
+    "description": "Pinned micro-badge text displayed at the top of a diary card"
   }
 }

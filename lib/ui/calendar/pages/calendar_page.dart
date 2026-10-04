@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
@@ -204,8 +205,21 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         AppSpacing.s,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: ExpressiveSurfaces.cardColor(colorScheme),
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+          width: 0.8,
+        ),
+        boxShadow: colorScheme.brightness == Brightness.light
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.032),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Stack(
         children: <Widget>[
@@ -234,14 +248,20 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
               isTodayHighlighted: true,
               todayDecoration: BoxDecoration(
                 color: colorScheme.tertiaryContainer,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
-              todayTextStyle: TextStyle(color: colorScheme.onTertiaryContainer),
+              todayTextStyle: TextStyle(
+                color: colorScheme.onTertiaryContainer,
+                fontWeight: FontWeight.w700,
+              ),
               selectedDecoration: BoxDecoration(
                 color: colorScheme.primary,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(14),
               ),
-              selectedTextStyle: TextStyle(color: colorScheme.onPrimary),
+              selectedTextStyle: TextStyle(
+                color: colorScheme.onPrimary,
+                fontWeight: FontWeight.w700,
+              ),
               defaultTextStyle: textTheme.bodyMedium!.copyWith(
                 color: colorScheme.onSurface,
               ),

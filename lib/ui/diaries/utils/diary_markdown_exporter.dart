@@ -53,7 +53,9 @@ class DiaryMarkdownExporter {
           ? (attrs['header'] as num).toInt().clamp(1, 6)
           : null;
       final isBlockquote = attrs['blockquote'] == true;
-      final indent = attrs['indent'] is num ? (attrs['indent'] as num).toInt() : 0;
+      final indent = attrs['indent'] is num
+          ? (attrs['indent'] as num).toInt()
+          : 0;
       final indentPrefix = '  ' * indent;
 
       if (isCodeLine && !inCodeBlock) {

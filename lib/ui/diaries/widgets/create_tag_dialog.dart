@@ -47,13 +47,12 @@ Future<NewTagDraft?> showTagDraftDialog(
 }) async {
   return showDialog<NewTagDraft>(
     context: context,
-    builder:
-        (BuildContext _) => _CreateTagDialog(
-          title: title,
-          actionLabel: actionLabel,
-          initialName: initialName,
-          initialColor: initialColor,
-        ),
+    builder: (BuildContext _) => _CreateTagDialog(
+      title: title,
+      actionLabel: actionLabel,
+      initialName: initialName,
+      initialColor: initialColor,
+    ),
   );
 }
 
@@ -130,8 +129,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
   void _selectColor(int index) {
     setState(() {
       _selectedColorIndex = index;
-      _selectedColorValue =
-          kColorPaletteFamilies[_selectedFamilyIndex].colors[index].toARGB32();
+      _selectedColorValue = kColorPaletteFamilies[_selectedFamilyIndex]
+          .colors[index]
+          .toARGB32();
     });
   }
 
@@ -233,10 +233,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                             final selected = _selectedFamilyIndex == index;
                             return Padding(
                               padding: EdgeInsets.only(
-                                right:
-                                    index == kColorPaletteFamilies.length - 1
-                                        ? 0
-                                        : 10,
+                                right: index == kColorPaletteFamilies.length - 1
+                                    ? 0
+                                    : 10,
                               ),
                               child: GestureDetector(
                                 onTap: () => _selectFamily(index),
@@ -248,10 +247,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                                     color: family.colors[2],
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color:
-                                          selected
-                                              ? colorScheme.onSurface
-                                              : colorScheme.outlineVariant,
+                                      color: selected
+                                          ? colorScheme.onSurface
+                                          : colorScheme.outlineVariant,
                                       width: selected ? 2.2 : 1.2,
                                     ),
                                   ),
@@ -285,27 +283,25 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                                 color: color,
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color:
-                                      selected
-                                          ? colorScheme.onSurface
-                                          : colorScheme.outlineVariant,
+                                  color: selected
+                                      ? colorScheme.onSurface
+                                      : colorScheme.outlineVariant,
                                   width: selected ? 2.4 : 1.2,
                                 ),
                               ),
-                              child:
-                                  selected
-                                      ? Icon(
-                                        Icons.check_rounded,
-                                        size: 18,
-                                        color:
-                                            ThemeData.estimateBrightnessForColor(
-                                                      color,
-                                                    ) ==
-                                                    Brightness.dark
-                                                ? Colors.white
-                                                : Colors.black87,
-                                      )
-                                      : null,
+                              child: selected
+                                  ? Icon(
+                                      Icons.check_rounded,
+                                      size: 18,
+                                      color:
+                                          ThemeData.estimateBrightnessForColor(
+                                                color,
+                                              ) ==
+                                              Brightness.dark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    )
+                                  : null,
                             ),
                           );
                         },
@@ -314,10 +310,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                   ],
                 ),
               ),
-              crossFadeState:
-                  _colorPickerExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
+              crossFadeState: _colorPickerExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
               duration: const Duration(milliseconds: 180),
             ),
           ],
@@ -333,8 +328,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
         ),
         TextButton(
           style: TextButton.styleFrom(
-            foregroundColor:
-                _canSubmit ? colorScheme.primary : colorScheme.onSurfaceVariant,
+            foregroundColor: _canSubmit
+                ? colorScheme.primary
+                : colorScheme.onSurfaceVariant,
           ),
           onPressed: _canSubmit ? _submit : null,
           child: Text(widget.actionLabel),

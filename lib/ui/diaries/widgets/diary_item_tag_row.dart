@@ -20,12 +20,11 @@ class DiaryItemTagRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveLimit =
-        maxVisibleTags < 0
-            ? 0
-            : maxVisibleTags > tags.length
-            ? tags.length
-            : maxVisibleTags;
+    final effectiveLimit = maxVisibleTags < 0
+        ? 0
+        : maxVisibleTags > tags.length
+        ? tags.length
+        : maxVisibleTags;
     if (tags.isEmpty || effectiveLimit == 0) {
       return const SizedBox.shrink();
     }
@@ -37,7 +36,7 @@ class DiaryItemTagRow extends StatelessWidget {
     // 较高展示上限会让标签超过一行，瀑布流窄卡片尤其明显；按可用宽度换行
     // 可避免横向 RenderFlex 溢出，同时保留每个标签自身的单行省略行为。
     return Wrap(
-      spacing: 8,
+      spacing: 6,
       runSpacing: 4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: <Widget>[
@@ -48,13 +47,27 @@ class DiaryItemTagRow extends StatelessWidget {
             textColor: colorScheme.onSurfaceVariant,
           ),
         if (hiddenCount > 0)
-          Text(
-            '+$hiddenCount',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.65,
+              ),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.25),
+                width: 0.65,
+              ),
+            ),
+            child: Text(
+              '+$hiddenCount',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+                fontSize: 10.5,
+              ),
             ),
           ),
       ],
@@ -62,7 +75,7 @@ class DiaryItemTagRow extends StatelessWidget {
   }
 }
 
-/// 单个标签文案片段：彩色 `#` + 标签名。
+/// 单个标签微胶囊：彩色 `#` + 标签名 + 柔和主题色微底与细微描边。
 class _DiaryTagText extends StatelessWidget {
   const _DiaryTagText({
     required this.label,
@@ -76,27 +89,41 @@ class _DiaryTagText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: '# ',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: hashColor,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          TextSpan(
-            text: label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: hashColor.withValues(alpha: isLight ? 0.08 : 0.16),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: hashColor.withValues(alpha: isLight ? 0.22 : 0.32),
+          width: 0.65,
+        ),
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: '# ',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: hashColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 10.5,
+              ),
+            ),
+            TextSpan(
+              text: label,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: textColor,
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }

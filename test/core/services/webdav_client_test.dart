@@ -39,11 +39,10 @@ void main() {
 
     await client.ensureDirectory(config().normalizedRemoteDirectory);
 
-    final mkcolPaths =
-        requests
-            .where((request) => request.method == 'MKCOL')
-            .map((request) => request.path)
-            .toList();
+    final mkcolPaths = requests
+        .where((request) => request.method == 'MKCOL')
+        .map((request) => request.path)
+        .toList();
     expect(mkcolPaths, contains('/dav/jotsy/'));
     expect(mkcolPaths, contains('/dav/jotsy/nested/'));
     expect(

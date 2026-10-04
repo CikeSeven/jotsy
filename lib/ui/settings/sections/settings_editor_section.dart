@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 import 'package:node_diary/ui/settings/pages/mood_options_page.dart';
+import '../widgets/settings_card_group.dart';
 
 /// 设置页编辑器配置区块。
 class SettingsEditorSection extends StatelessWidget {
@@ -75,68 +76,87 @@ class SettingsEditorSection extends StatelessWidget {
                                             );
                                         return Column(
                                           children: <Widget>[
-                                            _EditorBodyFontSizeTile(
-                                              settingsService: settingsService,
-                                              selectedPreset: fontSizePreset,
-                                            ),
-                                            const Divider(height: 1),
-                                            _EditorBodyLineHeightTile(
-                                              settingsService: settingsService,
-                                              selectedPreset: lineHeightPreset,
-                                            ),
-                                            const Divider(height: 1),
-                                            ListTile(
-                                              title: Text(l10n.autoT0043),
-                                              subtitle: Text(
-                                                l10n.autoT0044(
-                                                  preview.isEmpty
-                                                      ? '-'
-                                                      : preview,
+                                            SettingsCardGroup(
+                                              title: l10n.settingsEditorGroup,
+                                              children: <Widget>[
+                                                _EditorBodyFontSizeTile(
+                                                  settingsService:
+                                                      settingsService,
+                                                  selectedPreset:
+                                                      fontSizePreset,
                                                 ),
-                                              ),
-                                              trailing: const FaIcon(
-                                                FontAwesomeIcons.angleRight,
-                                                size: 14,
-                                              ),
-                                              onTap: () {
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute<void>(
-                                                    builder:
-                                                        (BuildContext context) {
-                                                          return DiaryToolbarOrderPage(
-                                                            settingsService:
-                                                                settingsService,
-                                                          );
-                                                        },
-                                                  ),
-                                                );
-                                              },
+                                                _EditorBodyLineHeightTile(
+                                                  settingsService:
+                                                      settingsService,
+                                                  selectedPreset:
+                                                      lineHeightPreset,
+                                                ),
+                                              ],
                                             ),
-                                            const Divider(height: 1),
-                                            ListTile(
-                                              title: Text(
-                                                l10n.settingsMoodOptionsTitle,
-                                              ),
-                                              subtitle: Text(
-                                                '${l10n.settingsMoodOptionsSubtitle}\n${moodOptions.join(' ')}',
-                                              ),
-                                              trailing: const FaIcon(
-                                                FontAwesomeIcons.angleRight,
-                                                size: 14,
-                                              ),
-                                              onTap: () {
-                                                Navigator.of(context).push(
-                                                  MaterialPageRoute<void>(
-                                                    builder:
-                                                        (BuildContext context) {
-                                                          return MoodOptionsPage(
-                                                            settingsService:
-                                                                settingsService,
-                                                          );
-                                                        },
+                                            const SizedBox(height: 16),
+                                            SettingsCardGroup(
+                                              title:
+                                                  l10n.settingsEditorToolsGroup,
+                                              children: <Widget>[
+                                                ListTile(
+                                                  title: Text(l10n.autoT0043),
+                                                  subtitle: Text(
+                                                    l10n.autoT0044(
+                                                      preview.isEmpty
+                                                          ? '-'
+                                                          : preview,
+                                                    ),
                                                   ),
-                                                );
-                                              },
+                                                  trailing: const FaIcon(
+                                                    FontAwesomeIcons.angleRight,
+                                                    size: 14,
+                                                  ),
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute<void>(
+                                                        builder:
+                                                            (
+                                                              BuildContext
+                                                              context,
+                                                            ) {
+                                                              return DiaryToolbarOrderPage(
+                                                                settingsService:
+                                                                    settingsService,
+                                                              );
+                                                            },
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                                ListTile(
+                                                  title: Text(
+                                                    l10n.settingsMoodOptionsTitle,
+                                                  ),
+                                                  subtitle: Text(
+                                                    '${l10n.settingsMoodOptionsSubtitle}\n${moodOptions.join(' ')}',
+                                                  ),
+                                                  trailing: const FaIcon(
+                                                    FontAwesomeIcons.angleRight,
+                                                    size: 14,
+                                                  ),
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                      MaterialPageRoute<void>(
+                                                        builder:
+                                                            (
+                                                              BuildContext
+                                                              context,
+                                                            ) {
+                                                              return MoodOptionsPage(
+                                                                settingsService:
+                                                                    settingsService,
+                                                              );
+                                                            },
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ],
                                             ),
                                           ],
                                         );

@@ -41,4 +41,3 @@ class RelativeTimeFormatter {
     return l10n.formatFullDate(localUpdatedAt);
   }
 }
-

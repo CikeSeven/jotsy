@@ -355,64 +355,54 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
   Diary map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Diary(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}id'],
-          )!,
-      diaryId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}diary_id'],
-          )!,
-      title:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}title'],
-          )!,
-      content:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}content'],
-          )!,
-      contentText:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}content_text'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      diaryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}diary_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      contentText: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content_text'],
+      )!,
       cover: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}cover'],
       ),
-      metadata:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}metadata'],
-          )!,
-      createdAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}created_at'],
-          )!,
-      updatedAt:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.dateTime,
-            data['${effectivePrefix}updated_at'],
-          )!,
-      isArchived:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_archived'],
-          )!,
+      metadata: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}metadata'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      isArchived: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_archived'],
+      )!,
       archivedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}archived_at'],
       ),
-      isPinned:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_pinned'],
-          )!,
+      isPinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pinned'],
+      )!,
       capsuleUnlockAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}capsule_unlock_at'],
@@ -421,11 +411,10 @@ class $DiariesTable extends Diaries with TableInfo<$DiariesTable, Diary> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}capsule_locked_at'],
       ),
-      isDeleted:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_deleted'],
-          )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
       deletedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
@@ -515,30 +504,27 @@ class Diary extends DataClass implements Insertable<Diary> {
       title: Value(title),
       content: Value(content),
       contentText: Value(contentText),
-      cover:
-          cover == null && nullToAbsent ? const Value.absent() : Value(cover),
+      cover: cover == null && nullToAbsent
+          ? const Value.absent()
+          : Value(cover),
       metadata: Value(metadata),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       isArchived: Value(isArchived),
-      archivedAt:
-          archivedAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(archivedAt),
+      archivedAt: archivedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(archivedAt),
       isPinned: Value(isPinned),
-      capsuleUnlockAt:
-          capsuleUnlockAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(capsuleUnlockAt),
-      capsuleLockedAt:
-          capsuleLockedAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(capsuleLockedAt),
+      capsuleUnlockAt: capsuleUnlockAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(capsuleUnlockAt),
+      capsuleLockedAt: capsuleLockedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(capsuleLockedAt),
       isDeleted: Value(isDeleted),
-      deletedAt:
-          deletedAt == null && nullToAbsent
-              ? const Value.absent()
-              : Value(deletedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
     );
   }
 
@@ -619,10 +605,12 @@ class Diary extends DataClass implements Insertable<Diary> {
     isArchived: isArchived ?? this.isArchived,
     archivedAt: archivedAt.present ? archivedAt.value : this.archivedAt,
     isPinned: isPinned ?? this.isPinned,
-    capsuleUnlockAt:
-        capsuleUnlockAt.present ? capsuleUnlockAt.value : this.capsuleUnlockAt,
-    capsuleLockedAt:
-        capsuleLockedAt.present ? capsuleLockedAt.value : this.capsuleLockedAt,
+    capsuleUnlockAt: capsuleUnlockAt.present
+        ? capsuleUnlockAt.value
+        : this.capsuleUnlockAt,
+    capsuleLockedAt: capsuleLockedAt.present
+        ? capsuleLockedAt.value
+        : this.capsuleLockedAt,
     isDeleted: isDeleted ?? this.isDeleted,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -632,25 +620,26 @@ class Diary extends DataClass implements Insertable<Diary> {
       diaryId: data.diaryId.present ? data.diaryId.value : this.diaryId,
       title: data.title.present ? data.title.value : this.title,
       content: data.content.present ? data.content.value : this.content,
-      contentText:
-          data.contentText.present ? data.contentText.value : this.contentText,
+      contentText: data.contentText.present
+          ? data.contentText.value
+          : this.contentText,
       cover: data.cover.present ? data.cover.value : this.cover,
       metadata: data.metadata.present ? data.metadata.value : this.metadata,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      isArchived:
-          data.isArchived.present ? data.isArchived.value : this.isArchived,
-      archivedAt:
-          data.archivedAt.present ? data.archivedAt.value : this.archivedAt,
+      isArchived: data.isArchived.present
+          ? data.isArchived.value
+          : this.isArchived,
+      archivedAt: data.archivedAt.present
+          ? data.archivedAt.value
+          : this.archivedAt,
       isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
-      capsuleUnlockAt:
-          data.capsuleUnlockAt.present
-              ? data.capsuleUnlockAt.value
-              : this.capsuleUnlockAt,
-      capsuleLockedAt:
-          data.capsuleLockedAt.present
-              ? data.capsuleLockedAt.value
-              : this.capsuleLockedAt,
+      capsuleUnlockAt: data.capsuleUnlockAt.present
+          ? data.capsuleUnlockAt.value
+          : this.capsuleUnlockAt,
+      capsuleLockedAt: data.capsuleLockedAt.present
+          ? data.capsuleLockedAt.value
+          : this.capsuleLockedAt,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -1014,21 +1003,18 @@ class $TagsTable extends Tags with TableInfo<$TagsTable, Tag> {
   Tag map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Tag(
-      id:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}id'],
-          )!,
-      name:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.string,
-            data['${effectivePrefix}name'],
-          )!,
-      color:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}color'],
-          )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      color: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}color'],
+      )!,
     );
   }
 
@@ -1247,16 +1233,14 @@ class $DiaryTagsTable extends DiaryTags
   DiaryTag map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return DiaryTag(
-      diaryId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}diary_id'],
-          )!,
-      tagId:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.int,
-            data['${effectivePrefix}tag_id'],
-          )!,
+      diaryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}diary_id'],
+      )!,
+      tagId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}tag_id'],
+      )!,
     );
   }
 
@@ -1828,12 +1812,12 @@ class $$DiariesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$DiariesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$DiariesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$DiariesTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$DiariesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DiariesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DiariesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -1906,16 +1890,14 @@ class $$DiariesTableTableManager
                 isDeleted: isDeleted,
                 deletedAt: deletedAt,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$DiariesTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DiariesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({diaryTagsRefs = false}) {
             return PrefetchHooks(
               db: db,
@@ -1928,17 +1910,10 @@ class $$DiariesTableTableManager
                       currentTable: table,
                       referencedTable: $$DiariesTableReferences
                           ._diaryTagsRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
-                              $$DiariesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).diaryTagsRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) => referencedItems.where(
-                            (e) => e.diaryId == item.id,
-                          ),
+                      managerFromTypedResult: (p0) =>
+                          $$DiariesTableReferences(db, table, p0).diaryTagsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.diaryId == item.id),
                       typedResults: items,
                     ),
                 ];
@@ -2136,12 +2111,12 @@ class $$TagsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$TagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$TagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$TagsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$TagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TagsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
@@ -2154,16 +2129,12 @@ class $$TagsTableTableManager
                 required String name,
                 required int color,
               }) => TagsCompanion.insert(id: id, name: name, color: color),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$TagsTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$TagsTableReferences(db, table, e)),
+              )
+              .toList(),
           prefetchHooksCallback: ({diaryTagsRefs = false}) {
             return PrefetchHooks(
               db: db,
@@ -2176,16 +2147,10 @@ class $$TagsTableTableManager
                       currentTable: table,
                       referencedTable: $$TagsTableReferences
                           ._diaryTagsRefsTable(db),
-                      managerFromTypedResult:
-                          (p0) =>
-                              $$TagsTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).diaryTagsRefs,
-                      referencedItemsForCurrentItem:
-                          (item, referencedItems) =>
-                              referencedItems.where((e) => e.tagId == item.id),
+                      managerFromTypedResult: (p0) =>
+                          $$TagsTableReferences(db, table, p0).diaryTagsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.tagId == item.id),
                       typedResults: items,
                     ),
                 ];
@@ -2450,12 +2415,12 @@ class $$DiaryTagsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          createFilteringComposer:
-              () => $$DiaryTagsTableFilterComposer($db: db, $table: table),
-          createOrderingComposer:
-              () => $$DiaryTagsTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer:
-              () => $$DiaryTagsTableAnnotationComposer($db: db, $table: table),
+          createFilteringComposer: () =>
+              $$DiaryTagsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DiaryTagsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DiaryTagsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<int> diaryId = const Value.absent(),
@@ -2476,62 +2441,63 @@ class $$DiaryTagsTableTableManager
                 tagId: tagId,
                 rowid: rowid,
               ),
-          withReferenceMapper:
-              (p0) =>
-                  p0
-                      .map(
-                        (e) => (
-                          e.readTable(table),
-                          $$DiaryTagsTableReferences(db, table, e),
-                        ),
-                      )
-                      .toList(),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$DiaryTagsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
           prefetchHooksCallback: ({diaryId = false, tagId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                T extends TableManagerState<
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic,
-                  dynamic
-                >
-              >(state) {
-                if (diaryId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.diaryId,
-                            referencedTable: $$DiaryTagsTableReferences
-                                ._diaryIdTable(db),
-                            referencedColumn:
-                                $$DiaryTagsTableReferences._diaryIdTable(db).id,
-                          )
-                          as T;
-                }
-                if (tagId) {
-                  state =
-                      state.withJoin(
-                            currentTable: table,
-                            currentColumn: table.tagId,
-                            referencedTable: $$DiaryTagsTableReferences
-                                ._tagIdTable(db),
-                            referencedColumn:
-                                $$DiaryTagsTableReferences._tagIdTable(db).id,
-                          )
-                          as T;
-                }
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (diaryId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.diaryId,
+                                referencedTable: $$DiaryTagsTableReferences
+                                    ._diaryIdTable(db),
+                                referencedColumn: $$DiaryTagsTableReferences
+                                    ._diaryIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (tagId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.tagId,
+                                referencedTable: $$DiaryTagsTableReferences
+                                    ._tagIdTable(db),
+                                referencedColumn: $$DiaryTagsTableReferences
+                                    ._tagIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },

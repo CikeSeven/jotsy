@@ -76,4 +76,29 @@ extension AppLocalizationsProjectX on AppLocalizations {
     }
     return '${DateFormat.yMMMd(localeName).format(localTarget)} $timePart';
   }
+
+  /// 杂志眉线日期格式化（如：10月5日 · 周一 / Oct 5 · Mon）。
+  String formatEyebrowDate(DateTime value) {
+    final local = value.toLocal();
+    final now = DateTime.now();
+    final isSameYear = local.year == now.year;
+    if (isZh) {
+      final weekdayStr = switch (local.weekday) {
+        DateTime.monday => '周一',
+        DateTime.tuesday => '周二',
+        DateTime.wednesday => '周三',
+        DateTime.thursday => '周四',
+        DateTime.friday => '周五',
+        DateTime.saturday => '周六',
+        DateTime.sunday => '周日',
+        _ => '',
+      };
+      if (isSameYear) {
+        return '${local.month}月${local.day}日 · $weekdayStr';
+      }
+      return '${local.year}年${local.month}月${local.day}日 · $weekdayStr';
+    }
+    final pattern = isSameYear ? 'MMM d · EEE' : 'MMM d, yyyy · EEE';
+    return DateFormat(pattern, localeName).format(local);
+  }
 }

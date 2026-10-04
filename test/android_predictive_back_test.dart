@@ -6,10 +6,9 @@ import 'package:node_diary/app/theme/theme.dart';
 
 void main() {
   test('FlutterFragmentActivity bridges Android predictive back progress', () {
-    final mainActivity =
-        File(
-          'android/app/src/main/kotlin/com/jotsy/diary/MainActivity.kt',
-        ).readAsStringSync();
+    final mainActivity = File(
+      'android/app/src/main/kotlin/com/jotsy/diary/MainActivity.kt',
+    ).readAsStringSync();
 
     expect(mainActivity, contains('OnBackAnimationCallback'));
     expect(mainActivity, contains('onBackStarted'));
@@ -19,18 +18,18 @@ void main() {
   });
 
   test('predictive back bridge restores registration after recreation', () {
-    final mainActivity =
-        File(
-          'android/app/src/main/kotlin/com/jotsy/diary/MainActivity.kt',
-        ).readAsStringSync();
+    final mainActivity = File(
+      'android/app/src/main/kotlin/com/jotsy/diary/MainActivity.kt',
+    ).readAsStringSync();
 
     expect(mainActivity, contains('override fun onCreate'));
     expect(mainActivity, contains('backCallbackState'));
   });
 
   test('Android activity opts in to predictive back callbacks', () {
-    final manifest =
-        File('android/app/src/main/AndroidManifest.xml').readAsStringSync();
+    final manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
 
     expect(manifest, contains('android:enableOnBackInvokedCallback="true"'));
   });

@@ -49,7 +49,8 @@ class DiaryCoverStorageService {
     final coversDirectory = await _ensureCoversDirectory();
     final coversRoot = p.normalize(coversDirectory.path);
     final normalizedPath = p.normalize(path);
-    return p.isWithin(coversRoot, normalizedPath) || normalizedPath == coversRoot;
+    return p.isWithin(coversRoot, normalizedPath) ||
+        normalizedPath == coversRoot;
   }
 
   static Future<Directory> _ensureCoversDirectory() async {

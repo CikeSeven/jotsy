@@ -132,15 +132,19 @@ class DiariesPageController {
   }
 
   void _persistTagFilterMemoryIfNeeded() {
-    final settingsService =
-        _state.ref.read(settingsServiceProvider).asData?.value;
+    final settingsService = _state.ref
+        .read(settingsServiceProvider)
+        .asData
+        ?.value;
     if (settingsService == null || !settingsService.isTagFilterMemoryEnabled) {
       return;
     }
-    final rememberedTagIds = _state.ref
-      .read(diaryFilterProvider)
-      .selectedTagIds
-      .toList(growable: false)..sort();
+    final rememberedTagIds =
+        _state.ref
+            .read(diaryFilterProvider)
+            .selectedTagIds
+            .toList(growable: false)
+          ..sort();
     unawaited(
       settingsService.setRememberedTagFilterIdsRaw(
         encodeTagOrder(rememberedTagIds),
@@ -159,10 +163,9 @@ class DiariesPageController {
               builder: (BuildContext context) {
                 return EditDiaryPage(
                   diaryId: diaryId,
-                  entryMode:
-                      diaryId == null
-                          ? EditDiaryEntryMode.create
-                          : EditDiaryEntryMode.edit,
+                  entryMode: diaryId == null
+                      ? EditDiaryEntryMode.create
+                      : EditDiaryEntryMode.edit,
                   restoreCreateDraft: restoreCreateDraft,
                 );
               },
@@ -604,8 +607,10 @@ class DiariesPageController {
 
   /// 持久化当前视图偏好，确保下次打开页面仍保持同样展示方式。
   void _persistViewPreferences() {
-    final settingsService =
-        _state.ref.read(settingsServiceProvider).asData?.value;
+    final settingsService = _state.ref
+        .read(settingsServiceProvider)
+        .asData
+        ?.value;
     if (settingsService == null) {
       return;
     }
@@ -631,10 +636,9 @@ class DiariesPageController {
   /// 1. 排除正在归档动画中的项；
   /// 2. 套用排序规则。
   List<DiaryWithTags> buildVisibleItems(List<DiaryWithTags> items) {
-    final visibleItems =
-        items.where((DiaryWithTags item) {
-          return !_state._optimisticHiddenDiaryIds.contains(item.diary.diaryId);
-        }).toList();
+    final visibleItems = items.where((DiaryWithTags item) {
+      return !_state._optimisticHiddenDiaryIds.contains(item.diary.diaryId);
+    }).toList();
     _sortDiaries(visibleItems);
     return visibleItems;
   }

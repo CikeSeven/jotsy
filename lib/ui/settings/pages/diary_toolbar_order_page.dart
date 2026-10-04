@@ -197,40 +197,36 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
                 children: <Widget>[
                   Checkbox(
                     value: enabled,
-                    onChanged:
-                        _saving
-                            ? null
-                            : (value) => _handleToggleEnabled(item, value),
+                    onChanged: _saving
+                        ? null
+                        : (value) => _handleToggleEnabled(item, value),
                   ),
                   const SizedBox(width: 8),
                   FaIcon(
                     item.iconData,
                     size: 16,
-                    color:
-                        enabled
-                            ? null
-                            : Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: enabled
+                        ? null
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ],
               ),
             ),
             title: Text(
               _labelForItem(context, item),
-              style:
-                  enabled
-                      ? null
-                      : TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+              style: enabled
+                  ? null
+                  : TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
             ),
-            subtitle:
-                item == DiaryToolbarItem.inlineCode
-                    ? Text(l10n.autoT0188)
-                    : item == DiaryToolbarItem.codeBlock
-                    ? Text(l10n.autoT0189)
-                    : item == DiaryToolbarItem.indent
-                    ? Text(l10n.autoT0190)
-                    : null,
+            subtitle: item == DiaryToolbarItem.inlineCode
+                ? Text(l10n.autoT0188)
+                : item == DiaryToolbarItem.codeBlock
+                ? Text(l10n.autoT0189)
+                : item == DiaryToolbarItem.indent
+                ? Text(l10n.autoT0190)
+                : null,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -364,10 +360,8 @@ class _CurrentTimeFormatDialogState extends State<_CurrentTimeFormatDialog> {
           style: TextButton.styleFrom(
             foregroundColor: colorScheme.onSurfaceVariant,
           ),
-          onPressed:
-              () => Navigator.of(
-                context,
-              ).pop(kDefaultDiaryToolbarCurrentTimeFormat),
+          onPressed: () =>
+              Navigator.of(context).pop(kDefaultDiaryToolbarCurrentTimeFormat),
           child: Text(l10n.commonReset),
         ),
         TextButton(

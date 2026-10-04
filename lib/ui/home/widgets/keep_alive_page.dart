@@ -8,10 +8,10 @@ class KeepAlivePage extends StatefulWidget {
   State<KeepAlivePage> createState() => _KeepAlivePageState();
 }
 
-class _KeepAlivePageState extends State<KeepAlivePage> 
-    with AutomaticKeepAliveClientMixin<KeepAlivePage>{
-      @override
-      bool get wantKeepAlive => true;
+class _KeepAlivePageState extends State<KeepAlivePage>
+    with AutomaticKeepAliveClientMixin<KeepAlivePage> {
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {

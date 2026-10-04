@@ -22,24 +22,22 @@ void main() {
 
     test('rejects unsupported server urls and missing host', () {
       expect(
-        () =>
-            WebDavConfig(
-              serverUrl: 'ftp://nas.example.com/dav',
-              username: 'u',
-              password: 'p',
-              remoteDirectory: '/jotsy',
-            ).validate(),
+        () => WebDavConfig(
+          serverUrl: 'ftp://nas.example.com/dav',
+          username: 'u',
+          password: 'p',
+          remoteDirectory: '/jotsy',
+        ).validate(),
         throwsA(isA<WebDavConfigException>()),
       );
 
       expect(
-        () =>
-            WebDavConfig(
-              serverUrl: 'https:///dav',
-              username: 'u',
-              password: 'p',
-              remoteDirectory: '/jotsy',
-            ).validate(),
+        () => WebDavConfig(
+          serverUrl: 'https:///dav',
+          username: 'u',
+          password: 'p',
+          remoteDirectory: '/jotsy',
+        ).validate(),
         throwsA(isA<WebDavConfigException>()),
       );
     });

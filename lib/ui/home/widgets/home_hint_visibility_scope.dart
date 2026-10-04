@@ -54,8 +54,8 @@ class HomeHintVisibilityScope extends InheritedWidget {
   final HomeHintVisibilityController controller;
 
   static HomeHintVisibilityController? maybeController(BuildContext context) {
-    final element =
-        context.getElementForInheritedWidgetOfExactType<HomeHintVisibilityScope>();
+    final element = context
+        .getElementForInheritedWidgetOfExactType<HomeHintVisibilityScope>();
     final widget = element?.widget;
     if (widget is! HomeHintVisibilityScope) {
       return null;
@@ -81,10 +81,9 @@ class HomeHintVisibilityScope extends InheritedWidget {
 
     controller?.onHintShown();
     final featureController = messenger.showSnackBar(snackBar);
-    final forceCloseTimer =
-        forceCloseAfter == null
-            ? null
-            : Timer(forceCloseAfter, featureController.close);
+    final forceCloseTimer = forceCloseAfter == null
+        ? null
+        : Timer(forceCloseAfter, featureController.close);
 
     final reason = await featureController.closed;
     forceCloseTimer?.cancel();

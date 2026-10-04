@@ -458,6 +458,12 @@ abstract class AppLocalizations {
   /// **'Editor'**
   String get settingsEditorGroup;
 
+  /// Settings group title for editor toolbar and mood options.
+  ///
+  /// In en, this message translates to:
+  /// **'Toolbar & mood'**
+  String get settingsEditorToolsGroup;
+
   /// Setting title for editor body font size.
   ///
   /// In en, this message translates to:
@@ -2755,6 +2761,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Swipe up here or tap to collapse the tags'**
   String get diaryTagCollapseHint;
+
+  /// Pinned micro-badge text displayed at the top of a diary card
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get diaryPinnedBadge;
 }
 
 class _AppLocalizationsDelegate

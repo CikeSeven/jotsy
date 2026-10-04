@@ -270,6 +270,10 @@
   "@settingsEditorGroup": {
     "description": "Settings group title for editor-related options."
   },
+  "settingsEditorToolsGroup": "工具栏与心情",
+  "@settingsEditorToolsGroup": {
+    "description": "设置项分组标题：编辑器工具栏排序与心情选项。"
+  },
   "settingsEditorBodyFontSize": "编辑字体大小",
   "@settingsEditorBodyFontSize": {
     "description": "设置项：编辑页正文的字体大小。"
@@ -2076,5 +2080,9 @@
   "diaryTagCollapseHint": "在此处上滑或点击，收起标签列表",
   "@diaryTagCollapseHint": {
     "description": "Gesture hint for collapsing tags from the footer without interrupting list scrolling."
+  },
+  "diaryPinnedBadge": "置顶",
+  "@diaryPinnedBadge": {
+    "description": "日记卡片顶部的置顶微徽章文案"
   }
 }

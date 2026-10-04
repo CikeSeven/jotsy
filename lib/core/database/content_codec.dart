@@ -152,8 +152,9 @@ void _appendAppFlowyNode(dynamic rawNode, List<Map<String, Object>> ops) {
   final type = rawNode['type'] as String?;
   if (type == 'image') {
     final attributes = rawNode['attributes'];
-    final url =
-        attributes is Map<String, dynamic> ? attributes['url'] as String? : null;
+    final url = attributes is Map<String, dynamic>
+        ? attributes['url'] as String?
+        : null;
     if (url != null && url.isNotEmpty) {
       ops.add(<String, Object>{
         'insert': <String, Object>{'image': url},
@@ -215,10 +216,7 @@ bool _isBlockNode(String? type) {
 }
 
 String _normalizePlainText(String text) {
-  return text
-      .replaceAll('\uFFFC', '')
-      .replaceAll('\r\n', '\n')
-      .trimRight();
+  return text.replaceAll('\uFFFC', '').replaceAll('\r\n', '\n').trimRight();
 }
 
 /// 规范化 metadata 字段，保证最终存储为 JSON 对象字符串。

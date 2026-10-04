@@ -128,29 +128,31 @@ final diaryFilterProvider =
 ///
 /// 列表页只订阅当前可见窗口大小，数据库层通过 `LIMIT` 直接返回窗口内数据，
 /// 不再把全量命中结果交给 UI 层 `take()` 截断。
-final pagedDiariesProvider = StreamProvider.family<
-  PagedDiariesResult,
-  DiaryPageQuery
->((Ref ref, DiaryPageQuery query) {
-  final db = ref.watch(appDatabaseProvider);
-  final fetchLimit = query.limit + 1;
-  return db
-      .watchDiaries(
-        keyword: query.keyword,
-        requiredTagIds: query.requiredTagIds,
-        limit: fetchLimit,
-        sortMode: query.sortMode,
-      )
-      .map((items) {
-        final hasMore = items.length > query.limit;
-        return PagedDiariesResult(
-          items:
-              hasMore ? items.take(query.limit).toList(growable: false) : items,
-          limit: query.limit,
-          hasMore: hasMore,
-        );
-      });
-});
+final pagedDiariesProvider =
+    StreamProvider.family<PagedDiariesResult, DiaryPageQuery>((
+      Ref ref,
+      DiaryPageQuery query,
+    ) {
+      final db = ref.watch(appDatabaseProvider);
+      final fetchLimit = query.limit + 1;
+      return db
+          .watchDiaries(
+            keyword: query.keyword,
+            requiredTagIds: query.requiredTagIds,
+            limit: fetchLimit,
+            sortMode: query.sortMode,
+          )
+          .map((items) {
+            final hasMore = items.length > query.limit;
+            return PagedDiariesResult(
+              items: hasMore
+                  ? items.take(query.limit).toList(growable: false)
+                  : items,
+              limit: query.limit,
+              hasMore: hasMore,
+            );
+          });
+    });
 
 /// 启动预热仍只取首页窗口，避免恢复旧的全量启动查询。
 final filteredDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
@@ -215,26 +217,28 @@ class SearchDiaryQuery {
 /// 设计目的：
 /// - 与主页 `diaryFilterProvider` 解耦，避免搜索页对主页筛选状态产生副作用；
 /// - 支持搜索页内部以局部状态驱动联合查询。
-final searchDiariesProvider = StreamProvider.family<
-  PagedDiariesResult,
-  DiaryPageQuery
->((Ref ref, DiaryPageQuery query) {
-  final db = ref.watch(appDatabaseProvider);
-  final fetchLimit = query.limit + 1;
-  return db
-      .watchDiaries(
-        keyword: query.keyword,
-        requiredTagIds: query.requiredTagIds,
-        limit: fetchLimit,
-        sortMode: query.sortMode,
-      )
-      .map((items) {
-        final hasMore = items.length > query.limit;
-        return PagedDiariesResult(
-          items:
-              hasMore ? items.take(query.limit).toList(growable: false) : items,
-          limit: query.limit,
-          hasMore: hasMore,
-        );
-      });
-});
+final searchDiariesProvider =
+    StreamProvider.family<PagedDiariesResult, DiaryPageQuery>((
+      Ref ref,
+      DiaryPageQuery query,
+    ) {
+      final db = ref.watch(appDatabaseProvider);
+      final fetchLimit = query.limit + 1;
+      return db
+          .watchDiaries(
+            keyword: query.keyword,
+            requiredTagIds: query.requiredTagIds,
+            limit: fetchLimit,
+            sortMode: query.sortMode,
+          )
+          .map((items) {
+            final hasMore = items.length > query.limit;
+            return PagedDiariesResult(
+              items: hasMore
+                  ? items.take(query.limit).toList(growable: false)
+                  : items,
+              limit: query.limit,
+              hasMore: hasMore,
+            );
+          });
+    });

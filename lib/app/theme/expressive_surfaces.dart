@@ -5,12 +5,33 @@ import 'app_radii.dart';
 /// 为容器、导航、输入与弹层提供同一组 Expressive 表面 token。
 /// 只依赖传入的 ColorScheme，因此种子色、暗色与高对比度入口不会分叉。
 abstract final class ExpressiveSurfaces {
+  /// 卡片纯净表面底色：
+  /// - 亮色模式下使用纯白 (surfaceContainerLowest)，彻底消除发灰与脏感；
+  /// - 暗色模式下使用温和深灰 (surfaceContainerLow)，与深色底形成舒适层次。
+  static Color cardColor(ColorScheme colors) =>
+      colors.brightness == Brightness.light
+      ? colors.surfaceContainerLowest
+      : colors.surfaceContainerLow;
+
+  /// 卡片边框颜色：带有细腻的低不透明度，在明暗主题下均显轻盈精致。
+  static Color cardBorderColor(ColorScheme colors) => colors.outlineVariant
+      .withValues(alpha: colors.brightness == Brightness.light ? 0.35 : 0.2);
+
+  /// 卡片统一微边框。
+  static BorderSide cardBorderSide(ColorScheme colors) =>
+      BorderSide(color: cardBorderColor(colors), width: 0.8);
+
+  /// 卡片统一样式。
+  static OutlinedBorder cardShape(ColorScheme colors) => RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(AppRadii.card),
+    side: cardBorderSide(colors),
+  );
+
   static ThemeData apply(ThemeData theme) {
     final colors = theme.colorScheme;
     final text = theme.textTheme;
-    final cardShape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppRadii.card),
-    );
+    final isLight = colors.brightness == Brightness.light;
+    final cardShape = ExpressiveSurfaces.cardShape(colors);
     final dialogShape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadii.dialog),
     );
@@ -20,31 +41,57 @@ abstract final class ExpressiveSurfaces {
     );
     return theme.copyWith(
       appBarTheme: AppBarThemeData(
-        backgroundColor: colors.surface,
+        backgroundColor: isLight ? const Color(0xFFF7F9FC) : colors.surface,
         foregroundColor: colors.onSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         toolbarHeight: 64,
-        titleTextStyle: text.titleLarge,
+        titleTextStyle: text.titleLarge?.copyWith(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: colors.onSurface,
+        ),
       ),
       cardTheme: CardThemeData(
-        color: colors.surfaceContainerLow,
+        color: cardColor(colors),
         elevation: 0,
         shape: cardShape,
         clipBehavior: Clip.antiAlias,
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: colors.surfaceContainerHigh,
+        backgroundColor: isLight
+            ? colors.surfaceContainerLowest
+            : colors.surfaceContainerHigh,
         shape: dialogShape,
         elevation: 0,
-        titleTextStyle: text.headlineSmall,
+        titleTextStyle: text.headlineSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
         contentTextStyle: text.bodyMedium,
         actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       ),
+      listTileTheme: ListTileThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        iconColor: colors.onSurfaceVariant,
+        textColor: colors.onSurface,
+        titleTextStyle: text.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: 16.5,
+          color: colors.onSurface,
+        ),
+        subtitleTextStyle: text.bodyMedium?.copyWith(
+          color: colors.onSurfaceVariant,
+          fontSize: 13.5,
+        ),
+      ),
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: colors.surfaceContainerLow,
-        modalBackgroundColor: colors.surfaceContainerLow,
+        backgroundColor: isLight
+            ? colors.surfaceContainerLowest
+            : colors.surfaceContainerLow,
+        modalBackgroundColor: isLight
+            ? colors.surfaceContainerLowest
+            : colors.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         showDragHandle: true,
         dragHandleColor: colors.onSurfaceVariant,
@@ -55,7 +102,9 @@ abstract final class ExpressiveSurfaces {
       ),
       inputDecorationTheme: InputDecorationThemeData(
         filled: true,
-        fillColor: colors.surfaceContainerHighest,
+        fillColor: isLight
+            ? colors.surfaceContainerLow.withValues(alpha: 0.6)
+            : colors.surfaceContainerHighest,
         border: inputBorder,
         enabledBorder: inputBorder,
         disabledBorder: inputBorder,
@@ -75,7 +124,9 @@ abstract final class ExpressiveSurfaces {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 80,
-        backgroundColor: colors.surfaceContainer,
+        backgroundColor: isLight
+            ? const Color(0xFFF7F9FC)
+            : colors.surfaceContainer,
         elevation: 0,
         indicatorColor: colors.secondaryContainer,
         indicatorShape: const StadiumBorder(),
@@ -89,12 +140,16 @@ abstract final class ExpressiveSurfaces {
         ),
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: colors.surfaceContainer,
+        backgroundColor: isLight
+            ? const Color(0xFFF7F9FC)
+            : colors.surfaceContainer,
         indicatorColor: colors.secondaryContainer,
         indicatorShape: const StadiumBorder(),
       ),
       navigationDrawerTheme: NavigationDrawerThemeData(
-        backgroundColor: colors.surfaceContainerLow,
+        backgroundColor: isLight
+            ? colors.surfaceContainerLowest
+            : colors.surfaceContainerLow,
         indicatorColor: colors.secondaryContainer,
         indicatorShape: const StadiumBorder(),
       ),

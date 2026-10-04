@@ -7,8 +7,9 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
   /// 按名称升序实时监听全部标签。
   Stream<List<Tag>> watchAllTags() {
     return (select(tags)..orderBy(<OrderingTerm Function(Tags)>[
-      (Tags t) => OrderingTerm.asc(t.name),
-    ])).watch();
+          (Tags t) => OrderingTerm.asc(t.name),
+        ]))
+        .watch();
   }
 
   /// 创建标签。
@@ -20,14 +21,14 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
       throw const FormatException('标签名不能为空');
     }
 
-    final existing =
-        await (select(tags)
-          ..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
+    final existing = await (select(
+      tags,
+    )..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
     if (existing != null) {
       if (existing.color != color) {
-        await (update(tags)..where(
-          (Tags t) => t.id.equals(existing.id),
-        )).write(TagsCompanion(color: Value<int>(color)));
+        await (update(tags)..where((Tags t) => t.id.equals(existing.id))).write(
+          TagsCompanion(color: Value<int>(color)),
+        );
       }
       return existing.id;
     }
@@ -52,9 +53,9 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
       throw const FormatException('标签名不能为空');
     }
 
-    final duplicate =
-        await (select(tags)
-          ..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
+    final duplicate = await (select(
+      tags,
+    )..where((Tags t) => t.name.equals(normalizedName))).getSingleOrNull();
     if (duplicate != null && duplicate.id != tagId) {
       throw const FormatException('已存在同名标签');
     }

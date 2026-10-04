@@ -40,8 +40,9 @@ class QWeatherWeatherService {
       );
     }
 
-    final normalizedLanguage =
-        languageCode.toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    final normalizedLanguage = languageCode.toLowerCase().startsWith('zh')
+        ? 'zh'
+        : 'en';
     final cacheKey = _QWeatherCacheKey(
       host: host,
       apiKey: key,
@@ -129,10 +130,9 @@ class QWeatherWeatherService {
       final result = QWeatherNow(
         weatherText: weatherText,
         temperatureCelsius: temp,
-        iconCode:
-            (weatherIconCode == null || weatherIconCode.isEmpty)
-                ? null
-                : weatherIconCode,
+        iconCode: (weatherIconCode == null || weatherIconCode.isEmpty)
+            ? null
+            : weatherIconCode,
       );
       _cache[cacheKey] = _QWeatherCacheEntry(
         now: result,

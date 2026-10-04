@@ -4,10 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('WebDAV credentials are not exported by DataArchiveService', () async {
-    final source =
-        await File(
-          'lib/core/services/data_archive_service.dart',
-        ).readAsString();
+    final source = await File(
+      'lib/core/services/data_archive_service.dart',
+    ).readAsString();
 
     expect(source, isNot(contains('webdav')));
     expect(source, isNot(contains('WebDav')));
@@ -18,12 +17,12 @@ void main() {
   test(
     'WebDAV client and sync service keep backup ZIP transfer stream-safe',
     () async {
-      final clientSource =
-          await File('lib/core/services/webdav_client.dart').readAsString();
-      final syncSource =
-          await File(
-            'lib/core/services/webdav_sync_service.dart',
-          ).readAsString();
+      final clientSource = await File(
+        'lib/core/services/webdav_client.dart',
+      ).readAsString();
+      final syncSource = await File(
+        'lib/core/services/webdav_sync_service.dart',
+      ).readAsString();
 
       expect(clientSource, contains('file.openRead()'));
       expect(clientSource, contains('targetFile.openWrite()'));
@@ -35,12 +34,12 @@ void main() {
   test(
     'WebDAV sync uses Jotsy backup filename policy and manifest file',
     () async {
-      final modelsSource =
-          await File('lib/core/services/webdav_models.dart').readAsString();
-      final syncSource =
-          await File(
-            'lib/core/services/webdav_sync_service.dart',
-          ).readAsString();
+      final modelsSource = await File(
+        'lib/core/services/webdav_models.dart',
+      ).readAsString();
+      final syncSource = await File(
+        'lib/core/services/webdav_sync_service.dart',
+      ).readAsString();
 
       expect(modelsSource, contains('jotsy_backup_'));
       expect(modelsSource, contains('manifest.json'));
@@ -50,8 +49,9 @@ void main() {
   );
 
   test('app service registers WebDAV providers', () async {
-    final source =
-        await File('lib/core/services/app_service.dart').readAsString();
+    final source = await File(
+      'lib/core/services/app_service.dart',
+    ).readAsString();
 
     expect(source, contains('webDavSettingsServiceProvider'));
     expect(source, contains('webDavSyncServiceProvider'));

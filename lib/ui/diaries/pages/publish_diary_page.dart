@@ -285,10 +285,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   applyProgress();
                 },
                 onPickCover: _controller.pickCover,
-                onClearCover:
-                    _controller.normalizedCover == null
-                        ? null
-                        : _controller.clearCover,
+                onClearCover: _controller.normalizedCover == null
+                    ? null
+                    : _controller.clearCover,
                 onCreateTag: _controller.createTagInline,
                 onResolveLocation: _controller.resolveLocation,
                 onResolveWeather: _controller.resolveWeather,
@@ -315,10 +314,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 timeCapsuleActive: _timeCapsuleSchedule != null,
                 timeCapsuleSchedule: _timeCapsuleSchedule,
                 onTimeCapsuleChanged: _controller.updateTimeCapsule,
-                onClearTimeCapsule:
-                    _timeCapsuleSchedule == null
-                        ? null
-                        : _controller.clearTimeCapsule,
+                onClearTimeCapsule: _timeCapsuleSchedule == null
+                    ? null
+                    : _controller.clearTimeCapsule,
                 onToggleTag: (tagId, selected) {
                   setState(() {
                     if (selected) {
@@ -337,10 +335,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   );
                 },
                 onPublish: _controller.publish,
-                actionLabel:
-                    _timeCapsuleSchedule == null
-                        ? ''
-                        : context.l10n.timeCapsuleSealAction,
+                actionLabel: _timeCapsuleSchedule == null
+                    ? ''
+                    : context.l10n.timeCapsuleSealAction,
               ),
             ),
             if (_showCapsuleSealOverlay) _buildCapsuleSealOverlay(context),

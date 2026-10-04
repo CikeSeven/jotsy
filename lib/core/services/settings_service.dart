@@ -329,8 +329,9 @@ class SettingsService {
 
   Future<void> setDiaryToolbarHiddenItemsRaw(String value) async {
     final normalized = value.trim();
-    diaryToolbarHiddenItemsRawNotifier.value =
-        normalized.isEmpty ? null : normalized;
+    diaryToolbarHiddenItemsRawNotifier.value = normalized.isEmpty
+        ? null
+        : normalized;
     if (normalized.isEmpty) {
       await _prefs.remove(_keyDiaryToolbarHiddenItems);
       return;
@@ -339,10 +340,9 @@ class SettingsService {
   }
 
   Future<void> setDiaryToolbarCurrentTimeFormatRaw(String value) async {
-    final normalized =
-        value.trim().isEmpty
-            ? _defaultDiaryToolbarCurrentTimeFormat
-            : value.trim();
+    final normalized = value.trim().isEmpty
+        ? _defaultDiaryToolbarCurrentTimeFormat
+        : value.trim();
     diaryToolbarCurrentTimeFormatRawNotifier.value = normalized;
     await _prefs.setString(_keyDiaryToolbarCurrentTimeFormat, normalized);
   }

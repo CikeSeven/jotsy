@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 
 void main() {
@@ -15,4 +15,3 @@ void main() {
     expect(isValidMetadataJsonObject('[1,2,3]'), isFalse);
   });
 }
-

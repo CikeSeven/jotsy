@@ -45,31 +45,35 @@ class ExploreTagCloudCard extends StatelessWidget {
               runSpacing: 5,
               children: tags
                   .map((tag) {
-                    final ratio =
-                        tag.maxCount <= 0
-                            ? 0.2
-                            : (tag.count / tag.maxCount).clamp(0.2, 1.0);
+                    final ratio = tag.maxCount <= 0
+                        ? 0.2
+                        : (tag.count / tag.maxCount).clamp(0.2, 1.0);
                     return ActionChip(
                       onPressed: () => onOpenTagSearch(tag),
                       visualDensity: VisualDensity.compact,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 3,
-                        vertical: 0,
+                        horizontal: 6,
+                        vertical: 2,
                       ),
-                      labelPadding: const EdgeInsets.symmetric(
-                        horizontal: 3,
-                        vertical: 0,
+                      labelPadding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(
+                          color: Color(tag.color).withValues(alpha: 0.3),
+                          width: 0.8,
+                        ),
                       ),
                       label: Text(
                         '# ${tag.name}',
                         style: baseTagStyle?.copyWith(
                           fontSize: baseTagFontSize * (0.92 + 0.16 * ratio),
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       backgroundColor: Color(
                         tag.color,
-                      ).withValues(alpha: 0.08 + ratio * 0.25),
+                      ).withValues(alpha: 0.10 + ratio * 0.20),
                     );
                   })
                   .toList(growable: false),

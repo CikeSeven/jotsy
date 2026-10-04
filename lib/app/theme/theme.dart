@@ -39,13 +39,16 @@ class MaterialTheme {
   ThemeData darkHighContrast() => theme(darkHighContrastScheme());
 
   ThemeData theme(ColorScheme colorScheme) {
+    final isLight = colorScheme.brightness == Brightness.light;
+    // 亮色模式下使用温润极净的淡浅底色，让纯白卡片清爽浮起，彻底消灭水泥灰发暗脏感；暗色模式维持深色底。
+    final scaffoldBg = isLight ? const Color(0xFFF7F9FC) : colorScheme.surface;
     final baseTheme = ThemeData(
       useMaterial3: true,
       fontFamily: 'HarmonyOSSansSC',
       brightness: colorScheme.brightness,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.surface,
-      canvasColor: colorScheme.surface,
+      scaffoldBackgroundColor: scaffoldBg,
+      canvasColor: scaffoldBg,
     );
     final resolvedTextTheme = baseTheme.textTheme
         .merge(textTheme)

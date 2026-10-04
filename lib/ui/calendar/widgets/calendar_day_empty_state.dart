@@ -20,10 +20,8 @@ class CalendarDayEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final displayMessage =
-        message ?? l10n.autoT0182;
-    final displayActionLabel =
-        actionLabel ?? l10n.autoT0181;
+    final displayMessage = message ?? l10n.autoT0182;
+    final displayActionLabel = actionLabel ?? l10n.autoT0181;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.l,

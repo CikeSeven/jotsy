@@ -97,10 +97,9 @@ class PublishDiaryController {
       energyLevel: _state._energyLevel,
       capsuleLockedAt: schedule == null ? null : lockedAt,
       capsuleUnlockAt: schedule?.normalizedUnlockAt,
-      capsulePrecision:
-          schedule == null
-              ? null
-              : TimeCapsuleSchedule.encodePrecision(schedule.precision),
+      capsulePrecision: schedule == null
+          ? null
+          : TimeCapsuleSchedule.encodePrecision(schedule.precision),
     );
   }
 
@@ -123,19 +122,18 @@ class PublishDiaryController {
         local.second == 0 &&
         local.millisecond == 0 &&
         local.microsecond == 0;
-    final normalized =
-        isDateOnly
-            ? DateTime(
-              local.year,
-              local.month,
-              local.day,
-              now.hour,
-              now.minute,
-              now.second,
-              now.millisecond,
-              now.microsecond,
-            )
-            : local;
+    final normalized = isDateOnly
+        ? DateTime(
+            local.year,
+            local.month,
+            local.day,
+            now.hour,
+            now.minute,
+            now.second,
+            now.millisecond,
+            now.microsecond,
+          )
+        : local;
     if (normalized.isAfter(now)) {
       return now;
     }
@@ -181,10 +179,9 @@ class PublishDiaryController {
     final current = _state._publishAt.toLocal();
     final firstDate = DateTime(2010, 1, 1);
     final lastDate = DateUtils.dateOnly(now);
-    final initialDate =
-        DateUtils.dateOnly(current).isAfter(lastDate)
-            ? lastDate
-            : DateUtils.dateOnly(current);
+    final initialDate = DateUtils.dateOnly(current).isAfter(lastDate)
+        ? lastDate
+        : DateUtils.dateOnly(current);
 
     final pickedDate = await showDatePicker(
       context: _state.context,
@@ -486,10 +483,9 @@ class PublishDiaryController {
       final weatherNow = await service.fetchNow(
         latitude: _state._locationLatitude!,
         longitude: _state._locationLongitude!,
-        languageCode:
-            (await _state.ref.read(
-              settingsServiceProvider.future,
-            )).appLocaleCode,
+        languageCode: (await _state.ref.read(
+          settingsServiceProvider.future,
+        )).appLocaleCode,
       );
       if (!_state.mounted) {
         return;
@@ -585,10 +581,9 @@ class PublishDiaryController {
         moodEmoji: normalizeOptionalText(_state._moodEmoji),
         energyLevel: _state._energyLevel,
         capsuleUnlockAt: schedule?.normalizedUnlockAt,
-        capsulePrecision:
-            schedule == null
-                ? null
-                : TimeCapsuleSchedule.encodePrecision(schedule.precision),
+        capsulePrecision: schedule == null
+            ? null
+            : TimeCapsuleSchedule.encodePrecision(schedule.precision),
       ),
     );
   }

@@ -178,14 +178,14 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       ColorScheme.fromSeed(
         seedColor: themeSeedColor,
         brightness: Brightness.light,
-        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
       ),
     );
     final darkTheme = _darkMaterialTheme.theme(
       ColorScheme.fromSeed(
         seedColor: themeSeedColor,
         brightness: Brightness.dark,
-        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
       ),
     );
     return MaterialApp(

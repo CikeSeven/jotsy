@@ -90,10 +90,12 @@ class _FakeGeolocatorPlatform extends GeolocatorPlatform {
   Future<bool> isLocationServiceEnabled() async => true;
 
   @override
-  Future<LocationPermission> checkPermission() async => LocationPermission.always;
+  Future<LocationPermission> checkPermission() async =>
+      LocationPermission.always;
 
   @override
-  Future<LocationPermission> requestPermission() async => LocationPermission.always;
+  Future<LocationPermission> requestPermission() async =>
+      LocationPermission.always;
 
   @override
   Future<Position?> getLastKnownPosition({bool forceLocationManager = false}) {
@@ -125,7 +127,10 @@ class _AmapHttpOverrides extends HttpOverrides {
 }
 
 class _AmapRedirectingHttpClient implements HttpClient {
-  _AmapRedirectingHttpClient({required this.delegate, required this.serverPort});
+  _AmapRedirectingHttpClient({
+    required this.delegate,
+    required this.serverPort,
+  });
 
   final HttpClient delegate;
   final int serverPort;
@@ -134,11 +139,7 @@ class _AmapRedirectingHttpClient implements HttpClient {
   Future<HttpClientRequest> getUrl(Uri url) {
     if (url.host == 'restapi.amap.com') {
       return delegate.getUrl(
-        url.replace(
-          scheme: 'http',
-          host: '127.0.0.1',
-          port: serverPort,
-        ),
+        url.replace(scheme: 'http', host: '127.0.0.1', port: serverPort),
       );
     }
     return delegate.getUrl(url);

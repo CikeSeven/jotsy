@@ -111,10 +111,9 @@ class ImageExportService {
       // gal 在权限相关失败时也会抛 GalException，做一次细分映射。
       final isAccessDenied = error.type == GalExceptionType.accessDenied;
       throw ImageExportException(
-        type:
-            isAccessDenied
-                ? ImageExportErrorType.permissionDenied
-                : ImageExportErrorType.unknown,
+        type: isAccessDenied
+            ? ImageExportErrorType.permissionDenied
+            : ImageExportErrorType.unknown,
         message: 'gal putImage failed: ${error.type}',
         cause: error,
       );
@@ -289,6 +288,12 @@ class ImageExportService {
       throw ImageExportException(
         type: ImageExportErrorType.downloadFailed,
         message: 'network unavailable',
+        cause: error,
+      );
+    } on HttpException catch (error) {
+      throw ImageExportException(
+        type: ImageExportErrorType.downloadFailed,
+        message: 'http error',
         cause: error,
       );
     } finally {

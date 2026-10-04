@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
@@ -106,14 +107,11 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
                 sliver: diariesAsync.when(
-                  loading:
-                      () => const SliverToBoxAdapter(
-                        child: _ExplorePageSkeleton(),
-                      ),
-                  error:
-                      (error, stackTrace) => SliverToBoxAdapter(
-                        child: _ExploreErrorCard(message: '$error'),
-                      ),
+                  loading: () =>
+                      const SliverToBoxAdapter(child: _ExplorePageSkeleton()),
+                  error: (error, stackTrace) => SliverToBoxAdapter(
+                    child: _ExploreErrorCard(message: '$error'),
+                  ),
                   data: (diaries) {
                     final orderedTags = orderedTagsAsync.maybeWhen(
                       data: (tags) => tags,
@@ -167,8 +165,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   void _openCreateToday(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder:
-            (_) => const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+        builder: (_) =>
+            const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
       ),
     );
   }
@@ -236,10 +234,11 @@ class _ExploreErrorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: ExpressiveSurfaces.cardColor(colorScheme),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.42),
+          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+          width: 0.8,
         ),
       ),
       child: Column(

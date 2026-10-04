@@ -53,8 +53,8 @@ class ExploreMediaGalleryCard extends StatelessWidget {
                 Text(
                   l10n.autoT0062,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 )
               else
                 IgnorePointer(

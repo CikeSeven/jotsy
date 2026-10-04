@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
@@ -446,13 +447,17 @@ class _SearchInputBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
     return Container(
       height: 56,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
+        color: isLight
+            ? ExpressiveSurfaces.cardColor(colorScheme)
+            : colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+          width: 0.8,
         ),
       ),
       child: Padding(

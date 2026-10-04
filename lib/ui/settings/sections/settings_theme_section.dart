@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
+import '../widgets/settings_card_group.dart';
 
 /// 设置页主题模式区块。
 ///
@@ -54,95 +55,100 @@ class SettingsThemeSection extends StatelessWidget {
                                 final selectedFamily =
                                     kColorPaletteFamilies[selection
                                         .familyIndex];
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: ExpressiveButtonGroup<ThemeMode>(
-                                          selected: <ThemeMode>{mode},
-                                          onSelectionChanged:
-                                              (Set<ThemeMode> selection) {
-                                                final next =
-                                                    selection.firstOrNull;
-                                                if (next != null) {
-                                                  settingsService.setThemeMode(
-                                                    next,
-                                                  );
-                                                }
-                                              },
-                                          segments: <ButtonSegment<ThemeMode>>[
-                                            ButtonSegment<ThemeMode>(
-                                              value: ThemeMode.system,
-                                              label: Text(l10n.autoT0046),
-                                              icon: const FaIcon(
-                                                FontAwesomeIcons
-                                                    .circleHalfStroke,
-                                                size: 18,
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    SettingsCardGroup(
+                                      title: l10n.settingsThemeMode,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child:
+                                              ExpressiveButtonGroup<ThemeMode>(
+                                                selected: <ThemeMode>{mode},
+                                                onSelectionChanged:
+                                                    (Set<ThemeMode> selection) {
+                                                      final next =
+                                                          selection.firstOrNull;
+                                                      if (next != null) {
+                                                        settingsService
+                                                            .setThemeMode(next);
+                                                      }
+                                                    },
+                                                segments:
+                                                    <ButtonSegment<ThemeMode>>[
+                                                      ButtonSegment<ThemeMode>(
+                                                        value: ThemeMode.system,
+                                                        label: Text(
+                                                          l10n.autoT0046,
+                                                        ),
+                                                        icon: const FaIcon(
+                                                          FontAwesomeIcons
+                                                              .circleHalfStroke,
+                                                          size: 18,
+                                                        ),
+                                                      ),
+                                                      ButtonSegment<ThemeMode>(
+                                                        value: ThemeMode.light,
+                                                        label: Text(
+                                                          l10n.autoT0047,
+                                                        ),
+                                                        icon: const FaIcon(
+                                                          FontAwesomeIcons.sun,
+                                                          size: 18,
+                                                        ),
+                                                      ),
+                                                      ButtonSegment<ThemeMode>(
+                                                        value: ThemeMode.dark,
+                                                        label: Text(
+                                                          l10n.autoT0048,
+                                                        ),
+                                                        icon: const FaIcon(
+                                                          FontAwesomeIcons.moon,
+                                                          size: 18,
+                                                        ),
+                                                      ),
+                                                    ],
                                               ),
-                                            ),
-                                            ButtonSegment<ThemeMode>(
-                                              value: ThemeMode.light,
-                                              label: Text(l10n.autoT0047),
-                                              icon: const FaIcon(
-                                                FontAwesomeIcons.sun,
-                                                size: 18,
-                                              ),
-                                            ),
-                                            ButtonSegment<ThemeMode>(
-                                              value: ThemeMode.dark,
-                                              label: Text(l10n.autoT0048),
-                                              icon: const FaIcon(
-                                                FontAwesomeIcons.moon,
-                                                size: 18,
-                                              ),
-                                            ),
-                                          ],
                                         ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _TabSwitchCurveSelector(
-                                        selectedCurveType: curveType,
-                                        onChanged: settingsService
-                                            .setHomeTabSwitchCurveType,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      _FontScaleSelector(
-                                        selectedScale: fontScale,
-                                        onChanged: settingsService.setFontScale,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Divider(
-                                        height: 1,
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .outlineVariant
-                                            .withValues(alpha: 0.45),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      _ThemeSeedColorPicker(
-                                        selectedColor: themeSeedColor,
-                                        selectedFamilyIndex:
-                                            selection.familyIndex,
-                                        selectedColorIndex:
-                                            selection.colorIndex,
-                                        selectedFamily: selectedFamily,
-                                        onSelectFamily: (int familyIndex) {
-                                          settingsService.setThemeSeedColor(
-                                            kColorPaletteFamilies[familyIndex]
-                                                .colors[0],
-                                          );
-                                        },
-                                        onSelectColor:
-                                            settingsService.setThemeSeedColor,
-                                      ),
-                                    ],
-                                  ),
+                                        _TabSwitchCurveSelector(
+                                          selectedCurveType: curveType,
+                                          onChanged: settingsService
+                                              .setHomeTabSwitchCurveType,
+                                        ),
+                                        _FontScaleSelector(
+                                          selectedScale: fontScale,
+                                          onChanged:
+                                              settingsService.setFontScale,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    SettingsCardGroup(
+                                      title: l10n.settingsThemeColor,
+                                      children: <Widget>[
+                                        Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child: _ThemeSeedColorPicker(
+                                            selectedColor: themeSeedColor,
+                                            selectedFamilyIndex:
+                                                selection.familyIndex,
+                                            selectedColorIndex:
+                                                selection.colorIndex,
+                                            selectedFamily: selectedFamily,
+                                            onSelectFamily: (int familyIndex) {
+                                              settingsService.setThemeSeedColor(
+                                                kColorPaletteFamilies[familyIndex]
+                                                    .colors[0],
+                                              );
+                                            },
+                                            onSelectColor: settingsService
+                                                .setThemeSeedColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 );
                               },
                         );
@@ -442,7 +448,6 @@ class _ThemeSeedColorPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -451,23 +456,30 @@ class _ThemeSeedColorPicker extends StatelessWidget {
         Row(
           children: <Widget>[
             Container(
-              width: 18,
-              height: 18,
+              width: 22,
+              height: 22,
               decoration: BoxDecoration(
                 color: selectedColor,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 1.5,
+                ),
               ),
             ),
             const SizedBox(width: 10),
             Text(
-              l10n.settingsThemeColor,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              '#${selectedColor.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                letterSpacing: 0.5,
+                color: colorScheme.onSurface,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -484,16 +496,16 @@ class _ThemeSeedColorPicker extends StatelessWidget {
                   onTap: () => onSelectFamily(index),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    width: 30,
-                    height: 30,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: family.colors[2],
-                      borderRadius: BorderRadius.circular(9),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: selected
-                            ? colorScheme.onSurface
+                            ? colorScheme.primary
                             : colorScheme.outlineVariant,
-                        width: selected ? 2.0 : 1.0,
+                        width: selected ? 2.2 : 1.0,
                       ),
                     ),
                   ),
@@ -502,10 +514,10 @@ class _ThemeSeedColorPicker extends StatelessWidget {
             }),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Wrap(
-          spacing: 10,
-          runSpacing: 10,
+          spacing: 12,
+          runSpacing: 12,
           children: List<Widget>.generate(selectedFamily.colors.length, (
             index,
           ) {
@@ -515,16 +527,16 @@ class _ThemeSeedColorPicker extends StatelessWidget {
               onTap: () => onSelectColor(color),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                width: 30,
-                height: 30,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: selected
-                        ? colorScheme.onSurface
-                        : colorScheme.outline,
-                    width: selected ? 2.2 : 1.0,
+                        ? colorScheme.primary
+                        : colorScheme.outline.withValues(alpha: 0.5),
+                    width: selected ? 2.5 : 1.0,
                   ),
                 ),
               ),

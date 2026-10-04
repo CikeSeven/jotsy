@@ -197,8 +197,8 @@ class _CalendarPageController {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
           MaterialPageRoute<DiaryPreviewResult?>(
-            builder:
-                (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+            builder: (BuildContext context) =>
+                DiaryPreviewPage(diaryId: diaryId),
           ),
         )
         .then((DiaryPreviewResult? result) async {
@@ -280,8 +280,10 @@ class _CalendarPageController {
     if (fromPageContext != null) {
       return fromPageContext;
     }
-    final rootNavigatorContext =
-        Navigator.of(_state.context, rootNavigator: true).context;
+    final rootNavigatorContext = Navigator.of(
+      _state.context,
+      rootNavigator: true,
+    ).context;
     return HomeHintVisibilityScope.maybeController(rootNavigatorContext);
   }
 

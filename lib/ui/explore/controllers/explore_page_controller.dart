@@ -73,10 +73,9 @@ class ExplorePageController {
         )
         .fold<int>(0, (sum, item) => sum + item.contentText.trim().length);
 
-    final daySet =
-        diaries
-            .map((item) => DateUtils.dateOnly(item.createdAt.toLocal()))
-            .toSet();
+    final daySet = diaries
+        .map((item) => DateUtils.dateOnly(item.createdAt.toLocal()))
+        .toSet();
     var streak = 0;
     var probe = DateUtils.dateOnly(now);
     while (daySet.contains(probe)) {
@@ -101,14 +100,12 @@ class ExplorePageController {
     required DateTime now,
     required AppLocalizations l10n,
   }) {
-    final candidates =
-        diaries.where((item) {
-            final created = item.createdAt.toLocal();
-            return created.month == now.month &&
-                created.day == now.day &&
-                created.year < now.year;
-          }).toList()
-          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final candidates = diaries.where((item) {
+      final created = item.createdAt.toLocal();
+      return created.month == now.month &&
+          created.day == now.day &&
+          created.year < now.year;
+    }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return candidates
         .take(_onThisDayMaxEntries)
@@ -256,8 +253,9 @@ class ExplorePageController {
         final shouldReplaceLatest = item.updatedAt.isAfter(previous.latestAt);
         tagMap[tag.id] = previous.copyWith(
           count: previous.count + 1,
-          latestDiaryId:
-              shouldReplaceLatest ? item.diaryId : previous.latestDiaryId,
+          latestDiaryId: shouldReplaceLatest
+              ? item.diaryId
+              : previous.latestDiaryId,
           latestAt: shouldReplaceLatest ? item.updatedAt : previous.latestAt,
         );
       }
@@ -266,22 +264,22 @@ class ExplorePageController {
     final orderRank = <int, int>{
       for (int i = 0; i < orderedTagIds.length; i++) orderedTagIds[i]: i,
     };
-    final usages = tagMap.values.toList(growable: false)..sort((a, b) {
-      final rankA = orderRank[a.id] ?? 1 << 20;
-      final rankB = orderRank[b.id] ?? 1 << 20;
-      if (rankA != rankB) {
-        return rankA.compareTo(rankB);
-      }
-      return a.name.compareTo(b.name);
-    });
-    final maxCount =
-        usages.isEmpty
-            ? 1
-            : usages.fold<int>(
-              1,
-              (currentMax, item) =>
-                  item.count > currentMax ? item.count : currentMax,
-            );
+    final usages = tagMap.values.toList(growable: false)
+      ..sort((a, b) {
+        final rankA = orderRank[a.id] ?? 1 << 20;
+        final rankB = orderRank[b.id] ?? 1 << 20;
+        if (rankA != rankB) {
+          return rankA.compareTo(rankB);
+        }
+        return a.name.compareTo(b.name);
+      });
+    final maxCount = usages.isEmpty
+        ? 1
+        : usages.fold<int>(
+            1,
+            (currentMax, item) =>
+                item.count > currentMax ? item.count : currentMax,
+          );
     return usages
         .map((item) => item.copyWith(maxCount: maxCount))
         .toList(growable: false);

@@ -126,7 +126,7 @@ class WebDavClient {
         uri: uri,
         expectedStatuses: const <int>{HttpStatus.ok},
       );
-      return utf8.decoder.bind(response).join();
+      return await utf8.decoder.bind(response).join();
     } on WebDavException catch (error) {
       if (error.isNotFound) {
         return null;
@@ -271,8 +271,10 @@ class WebDavClient {
     final files = <WebDavRemoteFile>[];
     final normalizedRequestPath = _normalizeResponsePath(requestPath);
     for (final response in responses) {
-      final href =
-          response.getElement('href', namespace: '*')?.innerText.trim();
+      final href = response
+          .getElement('href', namespace: '*')
+          ?.innerText
+          .trim();
       if (href == null || href.isEmpty) {
         continue;
       }
@@ -281,11 +283,10 @@ class WebDavClient {
       if (normalizedPath == normalizedRequestPath) {
         continue;
       }
-      final resourceType =
-          response
-              .findAllElements('resourcetype', namespace: '*')
-              .map((node) => node.innerXml)
-              .join();
+      final resourceType = response
+          .findAllElements('resourcetype', namespace: '*')
+          .map((node) => node.innerXml)
+          .join();
       final isDirectory =
           resourceType.contains('collection') || normalizedPath.endsWith('/');
       final fileName = _lastPathSegment(normalizedPath);
@@ -309,12 +310,11 @@ class WebDavClient {
                 .firstOrNull
                 ?.innerText,
           ),
-          etag:
-              response
-                  .findAllElements('getetag', namespace: '*')
-                  .firstOrNull
-                  ?.innerText
-                  .trim(),
+          etag: response
+              .findAllElements('getetag', namespace: '*')
+              .firstOrNull
+              ?.innerText
+              .trim(),
         ),
       );
     }
@@ -353,8 +353,9 @@ class WebDavClient {
   }
 
   String _lastPathSegment(String path) {
-    final trimmed =
-        path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+    final trimmed = path.endsWith('/')
+        ? path.substring(0, path.length - 1)
+        : path;
     final index = trimmed.lastIndexOf('/');
     return index < 0 ? trimmed : trimmed.substring(index + 1);
   }

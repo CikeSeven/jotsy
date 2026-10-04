@@ -7,6 +7,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/energy_battery_indicator.dart';
@@ -139,101 +140,128 @@ class CalendarTimelineSection extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 Container(
-                  width: 1,
-                  height: 12,
+                  width: 1.5,
+                  height: 14,
                   color: index == 0 ? Colors.transparent : lineColor,
                 ),
                 SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 28,
+                  height: 28,
                   child: Center(
                     child: moodEmoji == null
                         ? Container(
-                            width: 8,
-                            height: 8,
+                            width: 10,
+                            height: 10,
                             decoration: BoxDecoration(
-                              color: colorScheme.tertiary.withValues(
-                                alpha: 0.92,
-                              ),
+                              color: colorScheme.primary,
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.primaryContainer,
+                                width: 2,
+                              ),
                             ),
                           )
-                        : Text(
-                            moodEmoji,
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleMedium?.copyWith(height: 1),
+                        : Container(
+                            width: 26,
+                            height: 26,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: colorScheme.secondaryContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              moodEmoji,
+                              style: const TextStyle(fontSize: 14, height: 1),
+                            ),
                           ),
                   ),
                 ),
                 Container(
-                  width: 1,
-                  height: 60,
+                  width: 1.5,
+                  height: 64,
                   color: isLast ? Colors.transparent : lineColor,
                 ),
               ],
             ),
           ),
           Expanded(
-            child: Material(
-              color: colorScheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(20),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () => onOpenDiary(diary.diary.diaryId),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text(
-                              createdAtLabel,
-                              style: Theme.of(context).textTheme.labelLarge
-                                  ?.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              summary,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: isLockedCapsule
-                                        ? colorScheme.primary
-                                        : colorScheme.onSurfaceVariant,
-                                    fontWeight: isLockedCapsule
-                                        ? FontWeight.w700
-                                        : FontWeight.w400,
-                                    height: 1.35,
-                                  ),
-                            ),
-                            if (hasMetaRow) ...<Widget>[
-                              const SizedBox(height: 5),
-                              _buildMetaInlineRow(
-                                context,
-                                location: location,
-                                weather: weather,
-                                weatherIconCode: weatherIconCode,
-                                energyLevel: energyLevel,
-                              ),
-                            ],
-                          ],
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+                  width: 0.8,
+                ),
+                boxShadow: colorScheme.brightness == Brightness.light
+                    ? <BoxShadow>[
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      if (cover != null) ...<Widget>[
-                        const SizedBox(width: 10),
-                        _buildCoverThumbnail(context, cover),
+                      ]
+                    : null,
+              ),
+              child: Material(
+                color: ExpressiveSurfaces.cardColor(colorScheme),
+                borderRadius: BorderRadius.circular(22),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22),
+                  onTap: () => onOpenDiary(diary.diary.diaryId),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text(
+                                createdAtLabel,
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                summary,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: isLockedCapsule
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurfaceVariant,
+                                      fontWeight: isLockedCapsule
+                                          ? FontWeight.w700
+                                          : FontWeight.w400,
+                                      height: 1.38,
+                                    ),
+                              ),
+                              if (hasMetaRow) ...<Widget>[
+                                const SizedBox(height: 6),
+                                _buildMetaInlineRow(
+                                  context,
+                                  location: location,
+                                  weather: weather,
+                                  weatherIconCode: weatherIconCode,
+                                  energyLevel: energyLevel,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (cover != null) ...<Widget>[
+                          const SizedBox(width: 12),
+                          _buildCoverThumbnail(context, cover),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),

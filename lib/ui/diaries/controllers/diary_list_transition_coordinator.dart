@@ -151,8 +151,9 @@ class DiaryListTransitionCoordinator {
     if (_state._appearingDiaryIds.isEmpty) {
       return;
     }
-    final visibleIds =
-        visibleItems.map((DiaryWithTags item) => item.diary.diaryId).toSet();
+    final visibleIds = visibleItems
+        .map((DiaryWithTags item) => item.diary.diaryId)
+        .toSet();
     final targetIds = _state._appearingDiaryIds.intersection(visibleIds);
     if (targetIds.isEmpty) {
       return;

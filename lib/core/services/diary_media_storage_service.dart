@@ -32,7 +32,8 @@ class DiaryMediaStorageService {
     final imageDirectory = await _ensureImagesDirectory();
     final imagesRoot = p.normalize(imageDirectory.path);
     final normalizedPath = p.normalize(path);
-    return p.isWithin(imagesRoot, normalizedPath) || normalizedPath == imagesRoot;
+    return p.isWithin(imagesRoot, normalizedPath) ||
+        normalizedPath == imagesRoot;
   }
 
   static Future<Directory> _ensureImagesDirectory() async {

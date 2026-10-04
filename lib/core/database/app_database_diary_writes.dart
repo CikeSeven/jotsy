@@ -65,16 +65,16 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     final normalizedTagIds = tagIds.toSet().toList();
 
     await transaction<void>(() async {
-      final diary =
-          await (select(
-            diaries,
-          )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
+      final diary = await (select(
+        diaries,
+      )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
       if (diary == null) {
         throw StateError('未找到 diaryId=$diaryId 对应的日记');
       }
 
-      await (update(diaries)
-        ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+      await (update(
+        diaries,
+      )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
         DiariesCompanion(
           title: Value<String>(title.trim()),
           content: Value<String>(contentDocJson),
@@ -98,15 +98,16 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     required String diaryId,
     required DateTime unlockAt,
   }) async {
-    final diary =
-        await (select(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
+    final diary = await (select(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
     final nextMetadata = _metadataWithUpdatedCapsuleUnlockAt(
       diary?.metadata,
       unlockAt,
     );
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         metadata: Value<String>(nextMetadata),
         capsuleUnlockAt: Value<DateTime?>(unlockAt),
@@ -120,10 +121,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
       final decoded = jsonDecode(raw ?? '{}');
       if (decoded is Map<String, dynamic>) {
         final capsule = decoded['capsule'];
-        final nextCapsule =
-            capsule is Map<String, dynamic>
-                ? Map<String, Object?>.from(capsule)
-                : <String, Object?>{};
+        final nextCapsule = capsule is Map<String, dynamic>
+            ? Map<String, Object?>.from(capsule)
+            : <String, Object?>{};
         nextCapsule['unlockAt'] = unlockAt.toIso8601String();
         decoded['capsule'] = nextCapsule;
         return jsonEncode(decoded);
@@ -140,28 +140,28 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
   ///
   /// 默认不修改 `updatedAt`，避免仅置顶操作打乱“最近编辑时间”语义。
   Future<void> pinDiary(String diaryId, {bool touchUpdatedAt = false}) async {
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isPinned: const Value<bool>(true),
-        updatedAt:
-            touchUpdatedAt
-                ? Value<DateTime>(DateTime.now())
-                : const Value.absent(),
+        updatedAt: touchUpdatedAt
+            ? Value<DateTime>(DateTime.now())
+            : const Value.absent(),
       ),
     );
   }
 
   /// 取消置顶日记。
   Future<void> unpinDiary(String diaryId, {bool touchUpdatedAt = false}) async {
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isPinned: const Value<bool>(false),
-        updatedAt:
-            touchUpdatedAt
-                ? Value<DateTime>(DateTime.now())
-                : const Value.absent(),
+        updatedAt: touchUpdatedAt
+            ? Value<DateTime>(DateTime.now())
+            : const Value.absent(),
       ),
     );
   }
@@ -172,8 +172,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     bool touchUpdatedAt = true,
   }) async {
     final now = DateTime.now();
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(true),
         archivedAt: Value<DateTime?>(now),
@@ -187,15 +188,15 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     String diaryId, {
     bool touchUpdatedAt = true,
   }) async {
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
-        updatedAt:
-            touchUpdatedAt
-                ? Value<DateTime>(DateTime.now())
-                : const Value.absent(),
+        updatedAt: touchUpdatedAt
+            ? Value<DateTime>(DateTime.now())
+            : const Value.absent(),
       ),
     );
   }
@@ -208,8 +209,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     bool touchUpdatedAt = true,
   }) async {
     final now = DateTime.now();
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
@@ -227,17 +229,17 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     String diaryId, {
     bool touchUpdatedAt = true,
   }) async {
-    await (update(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
       DiariesCompanion(
         isArchived: const Value<bool>(false),
         archivedAt: const Value<DateTime?>(null),
         isDeleted: const Value<bool>(false),
         deletedAt: const Value<DateTime?>(null),
-        updatedAt:
-            touchUpdatedAt
-                ? Value<DateTime>(DateTime.now())
-                : const Value.absent(),
+        updatedAt: touchUpdatedAt
+            ? Value<DateTime>(DateTime.now())
+            : const Value.absent(),
       ),
     );
   }
@@ -246,9 +248,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
   ///
   /// 依赖外键级联自动清理 diary_tags 关联关系。
   Future<void> hardDeleteDiary(String diaryId) async {
-    final targetDiary =
-        await (select(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
+    final targetDiary = await (select(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
     if (targetDiary == null) {
       return;
     }
@@ -256,15 +258,16 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     // 彻删前先清理托管资源文件，避免私有目录残留无主文件。
     await _deleteDiaryManagedAssets(targetDiary);
 
-    await (delete(diaries)
-      ..where((Diaries t) => t.diaryId.equals(diaryId))).go();
+    await (delete(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).go();
   }
 
   /// 按业务 diaryId 获取单条日记及其标签。
   Future<DiaryWithTags?> getDiaryWithTagsByDiaryId(String diaryId) async {
-    final diary =
-        await (select(diaries)
-          ..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
+    final diary = await (select(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).getSingleOrNull();
     if (diary == null) {
       return null;
     }
@@ -275,8 +278,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 覆盖写入某条日记的标签关系。
   Future<void> _replaceDiaryTags(int diaryId, List<int> tagIds) async {
-    await (delete(diaryTags)
-      ..where((DiaryTags t) => t.diaryId.equals(diaryId))).go();
+    await (delete(
+      diaryTags,
+    )..where((DiaryTags t) => t.diaryId.equals(diaryId))).go();
 
     if (tagIds.isEmpty) {
       return;
@@ -395,8 +399,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     final bytes = List<int>.generate(16, (_) => random.nextInt(256));
     bytes[6] = (bytes[6] & 0x0f) | 0x40;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    final hex =
-        bytes.map((int byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+    final hex = bytes
+        .map((int byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
     return '${hex.substring(0, 8)}-'
         '${hex.substring(8, 12)}-'
         '${hex.substring(12, 16)}-'

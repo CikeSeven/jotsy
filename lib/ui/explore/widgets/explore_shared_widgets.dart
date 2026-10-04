@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../app/theme/expressive_surfaces.dart';
+
 /// 探索页通用卡片容器。
 class ExploreCard extends StatelessWidget {
   const ExploreCard({super.key, required this.child});
@@ -11,14 +13,35 @@ class ExploreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card.filled(
-      margin: EdgeInsets.zero,
-      child: Padding(padding: const EdgeInsets.all(16), child: child),
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: isLight
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.032),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: Card.filled(
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: ExpressiveSurfaces.cardBorderSide(colorScheme),
+        ),
+        color: ExpressiveSurfaces.cardColor(colorScheme),
+        child: Padding(padding: const EdgeInsets.all(18), child: child),
+      ),
     );
   }
 }
 
-/// 探索页模块标题（小图标 + 文案）。
+/// 探索页模块标题（彩色徽章图标 + 标题文案）。
 class ExploreSectionTitle extends StatelessWidget {
   const ExploreSectionTitle({
     super.key,
@@ -31,15 +54,30 @@ class ExploreSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: <Widget>[
-        FaIcon(icon, size: 13),
-        const SizedBox(width: 8),
+        Container(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: FaIcon(
+            icon,
+            size: 13,
+            color: colorScheme.onSecondaryContainer,
+          ),
+        ),
+        const SizedBox(width: 10),
         Text(
           title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.2,
+          ),
         ),
       ],
     );
@@ -67,7 +105,7 @@ class ExploreStatTile extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            FaIcon(icon, size: 10, color: colorScheme.onSurfaceVariant),
+            FaIcon(icon, size: 11, color: colorScheme.onSurfaceVariant),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
@@ -76,6 +114,7 @@ class ExploreStatTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -84,9 +123,11 @@ class ExploreStatTile extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           value,
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(color: colorScheme.primary),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: colorScheme.primary,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
         ),
       ],
     );

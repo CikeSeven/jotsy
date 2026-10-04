@@ -6,8 +6,9 @@ void main() {
   test(
     'about page exposes QQ feedback group and copies group number',
     () async {
-      final source =
-          await File('lib/ui/settings/pages/about_page.dart').readAsString();
+      final source = await File(
+        'lib/ui/settings/pages/about_page.dart',
+      ).readAsString();
       final zhArb = await File('lib/l10n/app_zh.arb').readAsString();
       final enArb = await File('lib/l10n/app_en.arb').readAsString();
 

@@ -25,11 +25,7 @@ void main() {
         request.response.write(
           jsonEncode(<String, Object?>{
             'code': '200',
-            'now': <String, String>{
-              'text': '晴',
-              'temp': '26',
-              'icon': '100',
-            },
+            'now': <String, String>{'text': '晴', 'temp': '26', 'icon': '100'},
           }),
         );
         await request.response.close();
@@ -45,10 +41,7 @@ void main() {
 
   test('短时间同坐标同语言复用天气缓存', () async {
     final service = QWeatherWeatherService(
-      config: QWeatherConfig(
-        apiKey: 'test-key',
-        apiHost: apiHost,
-      ),
+      config: QWeatherConfig(apiKey: 'test-key', apiHost: apiHost),
     );
 
     final first = await service.fetchNow(
@@ -69,10 +62,7 @@ void main() {
 
   test('同一天气请求并发时复用 pending Future', () async {
     final service = QWeatherWeatherService(
-      config: QWeatherConfig(
-        apiKey: 'test-key',
-        apiHost: apiHost,
-      ),
+      config: QWeatherConfig(apiKey: 'test-key', apiHost: apiHost),
     );
 
     final results = await Future.wait(<Future<QWeatherNow>>[
@@ -116,11 +106,7 @@ class _RedirectingHttpClient implements HttpClient {
   Future<HttpClientRequest> getUrl(Uri url) {
     if (url.host == host) {
       return delegate.getUrl(
-        url.replace(
-          scheme: 'http',
-          host: '127.0.0.1',
-          port: serverPort,
-        ),
+        url.replace(scheme: 'http', host: '127.0.0.1', port: serverPort),
       );
     }
     return delegate.getUrl(url);

@@ -201,6 +201,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsEditorGroup => '编辑器';
 
   @override
+  String get settingsEditorToolsGroup => '工具栏与心情';
+
+  @override
   String get settingsEditorBodyFontSize => '编辑字体大小';
 
   @override
@@ -1460,4 +1463,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTagCollapseHint => '在此处上滑或点击，收起标签列表';
+
+  @override
+  String get diaryPinnedBadge => '置顶';
 }

@@ -2,11 +2,7 @@ part of 'qweather_weather_service.dart';
 
 /// 和风天气配置。
 class QWeatherConfig {
-  const QWeatherConfig({
-    required this.apiKey,
-    this.credentialId,
-    this.apiHost,
-  });
+  const QWeatherConfig({required this.apiKey, this.credentialId, this.apiHost});
 
   final String apiKey;
   final String? credentialId;

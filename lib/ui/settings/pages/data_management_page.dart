@@ -7,6 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/settings/pages/webdav_sync_page.dart';
+import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/backup_file_save_service.dart';
@@ -352,50 +353,82 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
       body: Stack(
         children: <Widget>[
           ListView(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
             children: <Widget>[
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const FaIcon(FontAwesomeIcons.fileExport, size: 16),
-                title: Text(context.l10n.dataMgmtExport),
-                subtitle: Text(context.l10n.dataMgmtExportSubtitle),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: _busy ? null : _exportData,
+              SettingsCardGroup(
+                children: <Widget>[
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const FaIcon(
+                      FontAwesomeIcons.fileExport,
+                      size: 16,
+                    ),
+                    title: Text(context.l10n.dataMgmtExport),
+                    subtitle: Text(context.l10n.dataMgmtExportSubtitle),
+                    trailing: const FaIcon(
+                      FontAwesomeIcons.angleRight,
+                      size: 14,
+                    ),
+                    onTap: _busy ? null : _exportData,
+                  ),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const FaIcon(
+                      FontAwesomeIcons.fileImport,
+                      size: 16,
+                    ),
+                    title: Text(context.l10n.dataMgmtImport),
+                    subtitle: Text(context.l10n.dataMgmtImportSubtitle),
+                    trailing: const FaIcon(
+                      FontAwesomeIcons.angleRight,
+                      size: 14,
+                    ),
+                    onTap: _busy ? null : _importData,
+                  ),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const FaIcon(
+                      FontAwesomeIcons.cloudArrowUp,
+                      size: 16,
+                    ),
+                    title: Text(context.l10n.dataMgmtWebDav),
+                    subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
+                    trailing: const FaIcon(
+                      FontAwesomeIcons.angleRight,
+                      size: 14,
+                    ),
+                    onTap: _busy
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (BuildContext context) {
+                                  return const WebDavSyncPage();
+                                },
+                              ),
+                            );
+                          },
+                  ),
+                ],
               ),
-              const Divider(),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const FaIcon(FontAwesomeIcons.fileImport, size: 16),
-                title: Text(context.l10n.dataMgmtImport),
-                subtitle: Text(context.l10n.dataMgmtImportSubtitle),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: _busy ? null : _importData,
-              ),
-              const Divider(),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const FaIcon(FontAwesomeIcons.cloudArrowUp, size: 16),
-                title: Text(context.l10n.dataMgmtWebDav),
-                subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
-                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-                onTap: _busy
-                    ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (BuildContext context) {
-                              return const WebDavSyncPage();
-                            },
-                          ),
-                        );
-                      },
-              ),
-              const Divider(),
-              const SizedBox(height: 8),
-              Text(
-                context.l10n.dataMgmtHint,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  context.l10n.dataMgmtHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],

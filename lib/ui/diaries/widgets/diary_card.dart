@@ -5,6 +5,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../../../app/theme/app_radii.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 
 /// 笔记列表卡片组件。
 ///
@@ -31,46 +32,89 @@ class DiaryCard extends StatelessWidget {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final preview = diary.diary.contentText.replaceAll('\n', ' ');
+    final isLight = colorScheme.brightness == Brightness.light;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.card),
         border: selected
-            ? Border.all(color: colorScheme.primary.withValues(alpha: 0.55))
-            : null,
+            ? Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.82),
+                width: 1.5,
+              )
+            : Border.all(
+                color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+                width: 0.8,
+              ),
+        boxShadow: isLight
+            ? <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1.5),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.32),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Card.filled(
         margin: EdgeInsets.zero,
         color: selected
             ? colorScheme.secondaryContainer
-            : colorScheme.surfaceContainerLow,
+            : ExpressiveSurfaces.cardColor(colorScheme),
         surfaceTintColor: Colors.transparent,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(AppRadii.card),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 标题行（含选中态图标）。
+                // 顶部眉线（日期）
                 Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        diary.diary.title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      l10n.formatEyebrowDate(diary.diary.createdAt),
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.82,
+                        ),
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.15,
                       ),
                     ),
+                    const Spacer(),
                     if (selected)
                       FaIcon(
                         FontAwesomeIcons.solidCircleCheck,
-                        size: 18,
+                        size: 16,
                         color: colorScheme.primary,
                       ),
                   ],
+                ),
+                const SizedBox(height: 6),
+                // 标题行
+                Text(
+                  diary.diary.title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 // 正文摘要（无正文则不占位）。
                 if (diary.diary.content.isNotEmpty) ...[
@@ -79,12 +123,17 @@ class DiaryCard extends StatelessWidget {
                     preview,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.88,
+                      ),
+                      height: 1.42,
+                    ),
                   ),
                   // 更新时间行。
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                 ] else
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
@@ -93,7 +142,12 @@ class DiaryCard extends StatelessWidget {
                         now: DateTime.now(),
                         l10n: l10n,
                       ),
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.72,
+                        ),
+                        fontSize: 11.5,
+                      ),
                     ),
                     const Spacer(),
                   ],

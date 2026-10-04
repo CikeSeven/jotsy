@@ -697,14 +697,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       return FadeTransition(opacity: animation, child: child);
                     },
                     child: _showEditSaveSuccessIcon
-                        ? Icon(
-                            Icons.check_rounded,
+                        ? FaIcon(
+                            FontAwesomeIcons.check,
                             key: const ValueKey<String>('edit_save_success'),
                             color: Theme.of(context).colorScheme.primary,
+                            size: 18,
                           )
-                        : const Icon(
-                            Icons.save_outlined,
+                        : const FaIcon(
+                            FontAwesomeIcons.floppyDisk,
                             key: ValueKey<String>('edit_save_default'),
+                            size: 18,
                           ),
                   ),
                   tooltip: context.l10n.commonSave,

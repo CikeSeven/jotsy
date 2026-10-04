@@ -9,6 +9,7 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../widgets/settings_card_group.dart';
 import 'data_management_page.dart';
 
 /// 设置-数据与隐私二级页。
@@ -82,68 +83,91 @@ class DataPrivacyPage extends ConsumerWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
         children: <Widget>[
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const FaIcon(FontAwesomeIcons.database, size: 16),
-            title: Text(l10n.settingsDataManagement),
-            subtitle: Text(l10n.settingsDataManagementSubtitle),
-            trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) {
-                    return const DataManagementPage();
-                  },
+          SettingsCardGroup(
+            children: <Widget>[
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
                 ),
-              );
-            },
-          ),
-          const Divider(),
-          settingsAsync.when(
-            data: (settingsService) {
-              return ValueListenableBuilder<bool>(
-                valueListenable: settingsService.appLockEnabledNotifier,
-                builder: (BuildContext context, bool enabled, Widget? child) {
-                  return SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    value: enabled,
-                    title: Text(l10n.settingsAppLock),
-                    subtitle: Text(l10n.settingsAppLockSubtitle),
-                    onChanged: (bool value) =>
-                        _toggleAppLock(context, settingsService, value),
+                leading: const FaIcon(FontAwesomeIcons.database, size: 16),
+                title: Text(l10n.settingsDataManagement),
+                subtitle: Text(l10n.settingsDataManagementSubtitle),
+                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) {
+                        return const DataManagementPage();
+                      },
+                    ),
                   );
                 },
-              );
-            },
-            loading: () => ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.settingsAppLock),
-              subtitle: Text(l10n.settingsAppLockSubtitle),
-            ),
-            error: (_, __) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(l10n.settingsAppLock),
-              subtitle: Text(l10n.settingsAppLockSubtitle),
-            ),
+              ),
+            ],
           ),
-          const Divider(),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const FaIcon(FontAwesomeIcons.trashCan, size: 16),
-            title: Text(l10n.settingsRecycleBin),
-            subtitle: Text(l10n.settingsRecycleBinSubtitle),
-            trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (BuildContext context) {
-                    return const RecycleBinPage();
-                  },
+          const SizedBox(height: 16),
+          SettingsCardGroup(
+            children: <Widget>[
+              settingsAsync.when(
+                data: (settingsService) {
+                  return ValueListenableBuilder<bool>(
+                    valueListenable: settingsService.appLockEnabledNotifier,
+                    builder:
+                        (BuildContext context, bool enabled, Widget? child) {
+                          return SwitchListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            value: enabled,
+                            title: Text(l10n.settingsAppLock),
+                            subtitle: Text(l10n.settingsAppLockSubtitle),
+                            onChanged: (bool value) =>
+                                _toggleAppLock(context, settingsService, value),
+                          );
+                        },
+                  );
+                },
+                loading: () => ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  title: Text(l10n.settingsAppLock),
+                  subtitle: Text(l10n.settingsAppLockSubtitle),
                 ),
-              );
-            },
+                error: (_, __) => ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  title: Text(l10n.settingsAppLock),
+                  subtitle: Text(l10n.settingsAppLockSubtitle),
+                ),
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: const FaIcon(FontAwesomeIcons.trashCan, size: 16),
+                title: Text(l10n.settingsRecycleBin),
+                subtitle: Text(l10n.settingsRecycleBinSubtitle),
+                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) {
+                        return const RecycleBinPage();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

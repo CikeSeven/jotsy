@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 
 /// 顶部排序模式。
 enum DiarySortMode { updatedDesc, updatedAsc, titleAsc }
@@ -27,8 +28,8 @@ enum DiaryMenuAction {
 /// - 右侧展示操作按钮（取消选择、归档、删除、归档列表入口）。
 class DiaryHeadSection extends StatelessWidget {
   // ==================== 头部过渡动画常量 ====================
-  static const double _headerContentHeight = 48;
-  static const double _searchPreviewHeight = 36;
+  static const double _headerContentHeight = 52;
+  static const double _searchPreviewHeight = 40;
 
   const DiaryHeadSection({
     super.key,
@@ -77,9 +78,10 @@ class DiaryHeadSection extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Jotsy',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -116,13 +118,15 @@ class DiaryHeadSection extends StatelessWidget {
               // 普通模式：标题、搜索预览、右侧操作区三段布局。
               Text(
                 'Jotsy',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontSize: 25,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(width: AppSpacing.xl),
+              const SizedBox(width: AppSpacing.l),
               Expanded(
                 child: _SearchPreview(
                   key: const ValueKey<String>('search_preview'),
@@ -130,7 +134,7 @@ class DiaryHeadSection extends StatelessWidget {
                   onTap: onOpenSearchPage,
                 ),
               ),
-              const SizedBox(width: AppSpacing.m),
+              const SizedBox(width: AppSpacing.s),
               _AnimatedTrailingActions(
                 onOpenArchived: onOpenArchived,
                 onOpenSettings: () => _showSettingsSheet(context),
@@ -166,13 +170,15 @@ class DiaryHeadSection extends StatelessWidget {
                   children: [
                     FaIcon(
                       FontAwesomeIcons.arrowDownWideShort,
-                      size: 18,
+                      size: 16,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: AppSpacing.s),
                     Text(
                       context.l10n.autoT0141,
-                      style: Theme.of(context).textTheme.titleSmall,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -206,13 +212,15 @@ class DiaryHeadSection extends StatelessWidget {
                   children: [
                     FaIcon(
                       FontAwesomeIcons.tableCellsLarge,
-                      size: 18,
+                      size: 16,
                       color: Theme.of(context).colorScheme.primary,
                     ),
                     const SizedBox(width: AppSpacing.s),
                     Text(
                       context.l10n.autoT0145,
-                      style: Theme.of(context).textTheme.titleSmall,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
@@ -251,15 +259,19 @@ class _SearchPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
 
-    // 未进入搜索页时展示的“可点击搜索预览条”。
+    // 未进入搜索页时展示的“可点击搜索预览条”，采用 Expressive 柔和胶囊风格。
     return Container(
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.92),
+        color: isLight
+            ? ExpressiveSurfaces.cardColor(colorScheme)
+            : colorScheme.surfaceContainerHigh,
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.75),
+          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+          width: 0.8,
         ),
       ),
       child: Material(
@@ -268,7 +280,7 @@ class _SearchPreview extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadii.nav),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
                 FaIcon(
@@ -276,7 +288,7 @@ class _SearchPreview extends StatelessWidget {
                   size: 14,
                   color: colorScheme.onSurfaceVariant,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     context.l10n.autoT0129,
@@ -339,17 +351,35 @@ class _ActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return ListTile(
-      dense: true,
-      minLeadingWidth: 28,
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-      onTap: onTap,
-      leading: FaIcon(
-        selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
-        size: 16,
-        color: selected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: selected ? colorScheme.secondaryContainer : Colors.transparent,
       ),
-      title: Text(label),
+      child: ListTile(
+        dense: true,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        minLeadingWidth: 24,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        onTap: onTap,
+        leading: FaIcon(
+          selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
+          size: 16,
+          color: selected
+              ? colorScheme.onSecondaryContainer
+              : colorScheme.onSurfaceVariant,
+        ),
+        title: Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            color: selected
+                ? colorScheme.onSecondaryContainer
+                : colorScheme.onSurface,
+          ),
+        ),
+      ),
     );
   }
 }

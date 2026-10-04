@@ -59,13 +59,9 @@ class NewDiaryDraft {
   /// 反序列化：从本地 JSON 恢复草稿对象。
   factory NewDiaryDraft.fromJson(Map<String, Object?> json) {
     final rawTagIds = json['selectedTagIds'];
-    final tagIds =
-        rawTagIds is List<Object?>
-            ? rawTagIds
-                .whereType<num>()
-                .map((num value) => value.toInt())
-                .toSet()
-            : const <int>{};
+    final tagIds = rawTagIds is List<Object?>
+        ? rawTagIds.whereType<num>().map((num value) => value.toInt()).toSet()
+        : const <int>{};
 
     return NewDiaryDraft(
       title: (json['title'] as String?) ?? '',
@@ -144,55 +140,45 @@ class NewDiaryDraft {
       title: title ?? this.title,
       contentDocJson: contentDocJson ?? this.contentDocJson,
       contentText: contentText ?? this.contentText,
-      createdAtOverride:
-          identical(createdAtOverride, _fieldNotChanged)
-              ? this.createdAtOverride
-              : createdAtOverride as DateTime?,
+      createdAtOverride: identical(createdAtOverride, _fieldNotChanged)
+          ? this.createdAtOverride
+          : createdAtOverride as DateTime?,
       // `cover` 需要支持“显式置空”，因此不能用 `??` 合并。
       cover: identical(cover, _fieldNotChanged) ? this.cover : cover as String?,
       metadataJson: metadataJson ?? this.metadataJson,
       selectedTagIds: selectedTagIds ?? this.selectedTagIds,
-      location:
-          identical(location, _fieldNotChanged)
-              ? this.location
-              : location as String?,
+      location: identical(location, _fieldNotChanged)
+          ? this.location
+          : location as String?,
       locationAddressComponent:
           identical(locationAddressComponent, _fieldNotChanged)
-              ? this.locationAddressComponent
-              : locationAddressComponent as Map<String, Object?>?,
-      locationLatitude:
-          identical(locationLatitude, _fieldNotChanged)
-              ? this.locationLatitude
-              : locationLatitude as double?,
-      locationLongitude:
-          identical(locationLongitude, _fieldNotChanged)
-              ? this.locationLongitude
-              : locationLongitude as double?,
+          ? this.locationAddressComponent
+          : locationAddressComponent as Map<String, Object?>?,
+      locationLatitude: identical(locationLatitude, _fieldNotChanged)
+          ? this.locationLatitude
+          : locationLatitude as double?,
+      locationLongitude: identical(locationLongitude, _fieldNotChanged)
+          ? this.locationLongitude
+          : locationLongitude as double?,
       locationFromAuto: locationFromAuto ?? this.locationFromAuto,
-      weather:
-          identical(weather, _fieldNotChanged)
-              ? this.weather
-              : weather as String?,
-      weatherIconCode:
-          identical(weatherIconCode, _fieldNotChanged)
-              ? this.weatherIconCode
-              : weatherIconCode as String?,
-      moodEmoji:
-          identical(moodEmoji, _fieldNotChanged)
-              ? this.moodEmoji
-              : moodEmoji as String?,
-      energyLevel:
-          identical(energyLevel, _fieldNotChanged)
-              ? this.energyLevel
-              : energyLevel as double?,
-      capsuleUnlockAt:
-          identical(capsuleUnlockAt, _fieldNotChanged)
-              ? this.capsuleUnlockAt
-              : capsuleUnlockAt as DateTime?,
-      capsulePrecision:
-          identical(capsulePrecision, _fieldNotChanged)
-              ? this.capsulePrecision
-              : capsulePrecision as String?,
+      weather: identical(weather, _fieldNotChanged)
+          ? this.weather
+          : weather as String?,
+      weatherIconCode: identical(weatherIconCode, _fieldNotChanged)
+          ? this.weatherIconCode
+          : weatherIconCode as String?,
+      moodEmoji: identical(moodEmoji, _fieldNotChanged)
+          ? this.moodEmoji
+          : moodEmoji as String?,
+      energyLevel: identical(energyLevel, _fieldNotChanged)
+          ? this.energyLevel
+          : energyLevel as double?,
+      capsuleUnlockAt: identical(capsuleUnlockAt, _fieldNotChanged)
+          ? this.capsuleUnlockAt
+          : capsuleUnlockAt as DateTime?,
+      capsulePrecision: identical(capsulePrecision, _fieldNotChanged)
+          ? this.capsulePrecision
+          : capsulePrecision as String?,
     );
   }
 

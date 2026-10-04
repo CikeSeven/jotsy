@@ -83,15 +83,13 @@ class Tags extends Table {
 /// `tag_id` 单列索引：支持“按标签反查日记”（复合主键前缀只覆盖 diary_id）。
 @TableIndex(name: 'idx_diary_tags_tag_id', columns: <Symbol>{#tagId})
 class DiaryTags extends Table {
-  IntColumn get diaryId =>
-      integer()
-          .named('diary_id')
-          .references(Diaries, #id, onDelete: KeyAction.cascade)();
+  IntColumn get diaryId => integer()
+      .named('diary_id')
+      .references(Diaries, #id, onDelete: KeyAction.cascade)();
 
-  IntColumn get tagId =>
-      integer()
-          .named('tag_id')
-          .references(Tags, #id, onDelete: KeyAction.cascade)();
+  IntColumn get tagId => integer()
+      .named('tag_id')
+      .references(Tags, #id, onDelete: KeyAction.cascade)();
 
   @override
   Set<Column<Object>> get primaryKey => <Column<Object>>{diaryId, tagId};

@@ -96,19 +96,18 @@ ORDER BY d.updated_at DESC, d.id DESC
     required int limit,
     required int offset,
   }) {
-    final query =
-        select(diaries)
-          ..where(
-            (tbl) =>
-                tbl.isDeleted.equals(false) &
-                (tbl.capsuleUnlockAt.isNull() |
-                    tbl.capsuleUnlockAt.isSmallerOrEqualValue(DateTime.now())),
-          )
-          ..orderBy(<OrderingTerm Function(Diaries)>[
-            (tbl) => OrderingTerm.desc(tbl.updatedAt),
-            (tbl) => OrderingTerm.desc(tbl.id),
-          ])
-          ..limit(limit, offset: offset);
+    final query = select(diaries)
+      ..where(
+        (tbl) =>
+            tbl.isDeleted.equals(false) &
+            (tbl.capsuleUnlockAt.isNull() |
+                tbl.capsuleUnlockAt.isSmallerOrEqualValue(DateTime.now())),
+      )
+      ..orderBy(<OrderingTerm Function(Diaries)>[
+        (tbl) => OrderingTerm.desc(tbl.updatedAt),
+        (tbl) => OrderingTerm.desc(tbl.id),
+      ])
+      ..limit(limit, offset: offset);
     return query.get();
   }
 
@@ -420,9 +419,8 @@ ORDER BY created_at ASC
     required String jsonPath,
     required String expectedValue,
   }) async {
-    final rows =
-        await customSelect(
-          '''
+    final rows = await customSelect(
+      '''
 SELECT *
 FROM diaries
 WHERE is_deleted = 0
@@ -430,12 +428,12 @@ WHERE is_deleted = 0
   AND json_extract(metadata, ?) = ?
 ORDER BY updated_at DESC
 ''',
-          variables: <Variable<Object>>[
-            Variable<String>(jsonPath),
-            Variable<String>(expectedValue),
-          ],
-          readsFrom: <TableInfo<Table, Object>>{diaries},
-        ).get();
+      variables: <Variable<Object>>[
+        Variable<String>(jsonPath),
+        Variable<String>(expectedValue),
+      ],
+      readsFrom: <TableInfo<Table, Object>>{diaries},
+    ).get();
 
     return rows.map(_mapDiaryFromRow).toList();
   }

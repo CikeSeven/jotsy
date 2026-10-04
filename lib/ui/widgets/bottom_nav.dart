@@ -53,14 +53,27 @@ class BottomNav extends StatelessWidget {
     }
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final navBackgroundColor = colorScheme.surfaceContainer;
+    final isLight = colorScheme.brightness == Brightness.light;
+    final navBackgroundColor = isLight
+        ? const Color(0xFFF7F9FC)
+        : colorScheme.surfaceContainer;
     final maxIndex = items.length - 1;
     final clampedIndex = selectedIndex < 0
         ? 0
         : (selectedIndex > maxIndex ? maxIndex : selectedIndex);
 
-    return ColoredBox(
-      color: navBackgroundColor,
+    return Container(
+      decoration: BoxDecoration(
+        color: navBackgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withValues(
+              alpha: isLight ? 0.35 : 0.15,
+            ),
+            width: 0.6,
+          ),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: navHorizontalInset),
         child: NavigationBar(

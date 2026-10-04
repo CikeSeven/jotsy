@@ -47,10 +47,7 @@ class ArchivedDiariesController {
   }) async {
     await HomeHintVisibilityScope.showTrackedSnackBar(
       context: _state.context,
-      snackBar: SnackBar(
-        content: Text(message),
-        duration: duration,
-      ),
+      snackBar: SnackBar(content: Text(message), duration: duration),
     );
   }
 
@@ -84,14 +81,13 @@ class ArchivedDiariesController {
         final l10n = dialogContext.l10n;
         return AlertDialog(
           title: Text(l10n.autoT0070),
-          content: Text(
-            l10n.autoT0200(count.toString()),
-          ),
+          content: Text(l10n.autoT0200(count.toString())),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor:
-                    Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                foregroundColor: Theme.of(
+                  dialogContext,
+                ).colorScheme.onSurfaceVariant,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(l10n.commonCancel),
@@ -135,12 +131,11 @@ class ArchivedDiariesController {
     required bool showUndoSnack,
   }) async {
     // 统一做一次 ID 归一化，避免空字符串或重复值进入数据库操作链路。
-    final targetIds =
-        diaryIds
-            .map((id) => id.trim())
-            .where((id) => id.isNotEmpty)
-            .toSet()
-            .toList(growable: false);
+    final targetIds = diaryIds
+        .map((id) => id.trim())
+        .where((id) => id.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
     if (targetIds.isEmpty) {
       return;
     }
@@ -168,8 +163,9 @@ class ArchivedDiariesController {
 
     // 任意失败都做“全量回滚”，保证这次批处理对用户来说要么全成功要么不生效。
     if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      final succeededIds = targetIds
+          .where((id) => !failedIds.contains(id))
+          .toList(growable: false);
       for (final diaryId in succeededIds) {
         await db.archiveDiary(diaryId, touchUpdatedAt: false);
       }
@@ -181,9 +177,7 @@ class ArchivedDiariesController {
           _state._selectedDiaryIds.addAll(targetIds);
         });
       }
-      await showInfoSnackBar(
-        _state.context.l10n.autoT0071,
-      );
+      await showInfoSnackBar(_state.context.l10n.autoT0071);
       return;
     }
 
@@ -206,9 +200,7 @@ class ArchivedDiariesController {
     if (!_state.mounted) {
       return;
     }
-    await showInfoSnackBar(
-      _state.context.l10n.autoT0072,
-    );
+    await showInfoSnackBar(_state.context.l10n.autoT0072);
   }
 
   Future<void> deleteSelectedDiaries() async {
@@ -243,8 +235,9 @@ class ArchivedDiariesController {
 
     // 失败时将已成功删除的日记恢复并重新归档，维持归档页数据一致性。
     if (failedIds.isNotEmpty) {
-      final succeededIds =
-          targetIds.where((id) => !failedIds.contains(id)).toList(growable: false);
+      final succeededIds = targetIds
+          .where((id) => !failedIds.contains(id))
+          .toList(growable: false);
       for (final diaryId in succeededIds) {
         await db.restoreDiary(diaryId, touchUpdatedAt: false);
         await db.archiveDiary(diaryId, touchUpdatedAt: false);
@@ -255,9 +248,7 @@ class ArchivedDiariesController {
       _state.setState(() {
         _state._selectedDiaryIds.addAll(targetIds);
       });
-      await showInfoSnackBar(
-        _state.context.l10n.autoT0073,
-      );
+      await showInfoSnackBar(_state.context.l10n.autoT0073);
       return;
     }
 
@@ -273,8 +264,8 @@ class ArchivedDiariesController {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
           MaterialPageRoute<DiaryPreviewResult?>(
-            builder:
-                (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+            builder: (BuildContext context) =>
+                DiaryPreviewPage(diaryId: diaryId),
           ),
         )
         .then((DiaryPreviewResult? result) async {
@@ -295,16 +286,12 @@ class ArchivedDiariesController {
               if (!_state.mounted) {
                 return;
               }
-              await showInfoSnackBar(
-                _state.context.l10n.autoT0076,
-              );
+              await showInfoSnackBar(_state.context.l10n.autoT0076);
             } catch (_) {
               if (!_state.mounted) {
                 return;
               }
-              await showInfoSnackBar(
-                _state.context.l10n.autoT0077,
-              );
+              await showInfoSnackBar(_state.context.l10n.autoT0077);
             }
           }
         });

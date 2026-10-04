@@ -1,3 +1,5 @@
+import 'package:node_diary/core/database/content_codec.dart';
+
 /// 新建日记草稿模型。
 ///
 /// 作用：
@@ -53,7 +55,9 @@ class NewDiaryDraft {
   /// - 决定是否写入自动草稿；
   /// - 决定新建入口是否提示“继续编辑”。
   bool get hasContent {
-    return title.trim().isNotEmpty || contentText.trim().isNotEmpty;
+    return title.trim().isNotEmpty ||
+        contentText.trim().isNotEmpty ||
+        diaryContentHasEmbeddedContent(contentDocJson);
   }
 
   /// 反序列化：从本地 JSON 恢复草稿对象。

@@ -2044,6 +2044,62 @@
   "@diaryToolbarInsertCurrentTime": {
     "description": "Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time."
   },
+  "diaryToolbarRecording": "Recording",
+  "@diaryToolbarRecording": {
+    "description": "Tooltip and settings label for the diary recording toolbar action."
+  },
+  "recordingStart": "Start recording",
+  "@recordingStart": {
+    "description": "Accessible label and tooltip for the centered microphone button."
+  },
+  "recordingPause": "Pause recording",
+  "@recordingPause": {
+    "description": "Tooltip for pausing microphone capture."
+  },
+  "recordingResume": "Resume recording",
+  "@recordingResume": {
+    "description": "Tooltip for resuming capture into the same audio file."
+  },
+  "recordingFinish": "Finish recording",
+  "@recordingFinish": {
+    "description": "Tooltip for stopping capture and immediately inserting the audio attachment."
+  },
+  "recordingClose": "Close recording",
+  "@recordingClose": {
+    "description": "Tooltip for closing the panel and discarding an uncommitted recording."
+  },
+  "recordingPaused": "Paused",
+  "@recordingPaused": {
+    "description": "Status shown while recording is paused."
+  },
+  "recordingPermissionDenied": "Microphone access is not allowed",
+  "@recordingPermissionDenied": {
+    "description": "Shown only when the recording plugin confirms this app lacks microphone permission."
+  },
+  "recordingFailed": "Recording failed. Please try again.",
+  "@recordingFailed": {
+    "description": "Shown when microphone capture cannot start or is unexpectedly interrupted."
+  },
+  "recordingSaveFailed": "Recording could not be saved. Please try again.",
+  "@recordingSaveFailed": {
+    "description": "Shown when the audio file cannot be saved or inserted into the document."
+  },
+  "recordingAttachment": "Recording",
+  "@recordingAttachment": {
+    "description": "Title of the audio player embedded in a diary."
+  },
+  "recordingPlaybackPlay": "Play recording",
+  "@recordingPlaybackPlay": {
+    "description": "Tooltip for the play button on a diary audio attachment."
+  },
+  "recordingPlaybackPause": "Pause playback",
+  "@recordingPlaybackPause": {
+    "description": "Tooltip for the pause button on a diary audio attachment."
+  },
+  "recordingPlaybackFailed": "Recording cannot be played",
+  "@recordingPlaybackFailed": {
+    "description": "Shown for a missing or undecodable diary audio attachment."
+  },
   "diaryToolbarToolSettingsTooltip": "Configure tool parameters",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "Tooltip for the tool parameter settings button on the toolbar order page."

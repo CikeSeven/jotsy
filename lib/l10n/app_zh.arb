@@ -2044,6 +2044,62 @@
   "@diaryToolbarInsertCurrentTime": {
     "description": "日记编辑悬浮工具栏中插入当前系统时间按钮的 tooltip 和设置页名称。"
   },
+  "diaryToolbarRecording": "录音",
+  "@diaryToolbarRecording": {
+    "description": "编辑器工具栏的录音按钮和工具排序页名称。"
+  },
+  "recordingStart": "开始录音",
+  "@recordingStart": {
+    "description": "居中麦克风按钮的无障碍标签和 tooltip。"
+  },
+  "recordingPause": "暂停录音",
+  "@recordingPause": {
+    "description": "暂停当前音频录制的按钮 tooltip。"
+  },
+  "recordingResume": "继续录音",
+  "@recordingResume": {
+    "description": "在同一个音频文件中继续录制的按钮 tooltip。"
+  },
+  "recordingFinish": "结束录音",
+  "@recordingFinish": {
+    "description": "结束录制并直接把音频附件插入正文的按钮 tooltip。"
+  },
+  "recordingClose": "关闭录音",
+  "@recordingClose": {
+    "description": "关闭录音面板并丢弃尚未插入的录音的按钮 tooltip。"
+  },
+  "recordingPaused": "已暂停",
+  "@recordingPaused": {
+    "description": "录音暂停时的状态文案。"
+  },
+  "recordingPermissionDenied": "未允许使用麦克风",
+  "@recordingPermissionDenied": {
+    "description": "录音插件确认本应用麦克风权限未授予时的提示。"
+  },
+  "recordingFailed": "录音失败，请重试",
+  "@recordingFailed": {
+    "description": "音频采集启动失败或会话异常中断时的提示。"
+  },
+  "recordingSaveFailed": "录音保存失败，请重试",
+  "@recordingSaveFailed": {
+    "description": "录音文件无法保存或正文音频附件无法插入时的提示。"
+  },
+  "recordingAttachment": "录音",
+  "@recordingAttachment": {
+    "description": "日记正文内的音频播放器标题。"
+  },
+  "recordingPlaybackPlay": "播放录音",
+  "@recordingPlaybackPlay": {
+    "description": "正文录音附件的播放按钮 tooltip。"
+  },
+  "recordingPlaybackPause": "暂停播放",
+  "@recordingPlaybackPause": {
+    "description": "正文录音附件的暂停播放按钮 tooltip。"
+  },
+  "recordingPlaybackFailed": "录音无法播放",
+  "@recordingPlaybackFailed": {
+    "description": "正文录音附件丢失或无法解码播放时的提示。"
+  },
   "diaryToolbarToolSettingsTooltip": "配置工具参数",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "工具栏排序页中工具参数设置按钮的 tooltip。"

@@ -310,7 +310,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     return rows.map((TypedResult row) => row.readTable(tags)).toList();
   }
 
-  /// 删除日记关联的托管资源文件（封面 + 正文图片）。
+  /// 删除日记关联的托管资源文件（封面 + 正文图片 + 录音）。
   Future<void> _deleteDiaryManagedAssets(Diary diary) async {
     await DiaryCoverStorageService.deleteManagedCover(
       _normalizeCover(diary.cover),
@@ -319,6 +319,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     final imagePaths = _extractManagedImagePathsFromContent(diary.content);
     for (final imagePath in imagePaths) {
       await DiaryMediaStorageService.deleteManagedDiaryImage(imagePath);
+    }
+    for (final audioPath in extractDiaryAudioPaths(diary.content)) {
+      await const DiaryAudioStorageService().deleteManagedRecording(audioPath);
     }
   }
 

@@ -10,6 +10,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
+import '../database/audio_embed_codec.dart';
+import 'diary_audio_storage_service.dart';
 import 'settings_service.dart';
 
 /// 数据归档服务（ZIP 导入/导出）。
@@ -24,6 +26,8 @@ class DataArchiveService {
   static const String _backupPayloadFileName = 'backup_data.json';
   static const String _backupCoversDirectoryName = 'diary_covers';
   static const String _backupImagesDirectoryName = 'diary_images';
+  static const String _backupAudioDirectoryName =
+      DiaryAudioStorageService.directoryName;
   static const int _backupFormatVersion = 1;
 
   /// 导出当前数据到 zip，返回生成的 zip 文件对象（位于临时目录）。
@@ -52,6 +56,10 @@ class DataArchiveService {
         sourceDirectoryName: _backupImagesDirectoryName,
         targetRoot: tempRoot,
       );
+      await _copyManagedDirectoryToWorkingDir(
+        sourceDirectoryName: _backupAudioDirectoryName,
+        targetRoot: tempRoot,
+      );
 
       final outputZipPath = p.join(
         (await getTemporaryDirectory()).path,
@@ -75,7 +83,7 @@ class DataArchiveService {
   ///
   /// 导入策略：
   /// 1) 恢复数据库表数据（清空后重建）；
-  /// 2) 恢复本地媒体目录（封面/正文图片）；
+  /// 2) 恢复本地媒体目录（封面/正文图片/录音）；
   /// 3) 恢复设置项（主题、排序、布局、工具栏顺序、标签顺序、草稿）。
   static Future<void> importFromZip({
     required AppDatabase database,
@@ -115,6 +123,10 @@ class DataArchiveService {
       await _restoreManagedDirectoryFromBackup(
         backupRoot: extractRoot,
         directoryName: _backupImagesDirectoryName,
+      );
+      await _restoreManagedDirectoryFromBackup(
+        backupRoot: extractRoot,
+        directoryName: _backupAudioDirectoryName,
       );
       await _restoreDatabaseFromPayload(database, decoded);
       await _restoreSettingsFromPayload(settingsService, decoded);
@@ -203,7 +215,7 @@ class DataArchiveService {
       final diary = Diary.fromJson(row);
       diaries.add(
         diary.copyWith(
-          content: await _restoreEmbeddedImagePaths(
+          content: await _restoreEmbeddedMediaPaths(
             diary.content,
             documentsDirectory,
           ),
@@ -342,7 +354,7 @@ class DataArchiveService {
     return sourcePath;
   }
 
-  static Future<String> _restoreEmbeddedImagePaths(
+  static Future<String> _restoreEmbeddedMediaPaths(
     String content,
     Directory documentsDirectory,
   ) async {
@@ -353,19 +365,19 @@ class DataArchiveService {
       return content;
     }
 
-    await _rewriteEmbeddedImagePaths(decoded, documentsDirectory);
+    await _rewriteEmbeddedMediaPaths(decoded, documentsDirectory);
     return jsonEncode(decoded);
   }
 
-  /// Handles both Quill Delta `insert.image` and legacy AppFlowy
+  /// Handles Quill Delta image/audio embeds and legacy AppFlowy
   /// `type=image / attributes.url` nodes without changing unrelated text.
-  static Future<void> _rewriteEmbeddedImagePaths(
+  static Future<void> _rewriteEmbeddedMediaPaths(
     Object? node,
     Directory documentsDirectory,
   ) async {
     if (node is List) {
       for (final child in node) {
-        await _rewriteEmbeddedImagePaths(child, documentsDirectory);
+        await _rewriteEmbeddedMediaPaths(child, documentsDirectory);
       }
       return;
     }
@@ -381,6 +393,20 @@ class DataArchiveService {
         documentsDirectory: documentsDirectory,
       );
     }
+    if (insert is Map) {
+      final audio = DiaryAudioAttachment.tryDecode(insert[diaryAudioEmbedType]);
+      if (audio != null) {
+        final restoredPath = await _restoreManagedMediaPath(
+          audio.path,
+          directoryNames: const [_backupAudioDirectoryName],
+          documentsDirectory: documentsDirectory,
+        );
+        insert[diaryAudioEmbedType] = DiaryAudioAttachment(
+          path: restoredPath ?? audio.path,
+          duration: audio.duration,
+        ).encode();
+      }
+    }
 
     if (node['type'] == 'image') {
       final attributes = node['attributes'];
@@ -394,7 +420,7 @@ class DataArchiveService {
     }
 
     for (final child in node.values.toList(growable: false)) {
-      await _rewriteEmbeddedImagePaths(child, documentsDirectory);
+      await _rewriteEmbeddedMediaPaths(child, documentsDirectory);
     }
   }
 
@@ -551,7 +577,21 @@ class DataArchiveService {
 
     final draftRaw = settingsNode['createDiaryDraftRaw']?.toString();
     if (draftRaw != null && draftRaw.isNotEmpty) {
-      await settingsService.setCreateDiaryDraftRaw(draftRaw);
+      var restoredDraftRaw = draftRaw;
+      try {
+        final draft = jsonDecode(draftRaw);
+        if (draft is Map<String, dynamic> &&
+            draft['contentDocJson'] is String) {
+          draft['contentDocJson'] = await _restoreEmbeddedMediaPaths(
+            draft['contentDocJson'] as String,
+            await getApplicationDocumentsDirectory(),
+          );
+          restoredDraftRaw = jsonEncode(draft);
+        }
+      } on FormatException {
+        // Preserve the previous draft behavior when a legacy draft is invalid.
+      }
+      await settingsService.setCreateDiaryDraftRaw(restoredDraftRaw);
     } else {
       await settingsService.clearCreateDiaryDraft();
     }

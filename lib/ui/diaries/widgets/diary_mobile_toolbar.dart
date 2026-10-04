@@ -11,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_audio_embed_builder.dart';
 
 /// 编辑器工具项标识。
 ///
@@ -39,6 +40,7 @@ enum DiaryToolbarItem {
   indent,
   link,
   currentTime,
+  recording,
 }
 
 /// 默认工具栏顺序（当用户未配置或配置异常时兜底）。
@@ -53,6 +55,7 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.checkList,
   DiaryToolbarItem.orderedList,
   DiaryToolbarItem.image,
+  DiaryToolbarItem.recording,
   DiaryToolbarItem.currentTime,
   DiaryToolbarItem.quote,
   DiaryToolbarItem.headerStyle,
@@ -90,32 +93,7 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.indent => 'indent',
       DiaryToolbarItem.link => 'link',
       DiaryToolbarItem.currentTime => 'current_time',
-    };
-  }
-
-  /// 设置页展示文案。
-  String get label {
-    return switch (this) {
-      DiaryToolbarItem.undo => '撤销',
-      DiaryToolbarItem.redo => '重做',
-      DiaryToolbarItem.bold => '加粗',
-      DiaryToolbarItem.italic => '斜体',
-      DiaryToolbarItem.underline => '下划线',
-      DiaryToolbarItem.strikeThrough => '删除线',
-      DiaryToolbarItem.inlineCode => '行内代码（单行）',
-      DiaryToolbarItem.textColor => '文字颜色',
-      DiaryToolbarItem.backgroundColor => '背景颜色',
-      DiaryToolbarItem.clearFormat => '清除格式',
-      DiaryToolbarItem.image => '插入图片',
-      DiaryToolbarItem.headerStyle => '标题样式',
-      DiaryToolbarItem.orderedList => '有序列表',
-      DiaryToolbarItem.bulletList => '无序列表',
-      DiaryToolbarItem.checkList => '待办列表',
-      DiaryToolbarItem.codeBlock => '代码块（多行）',
-      DiaryToolbarItem.quote => '引用',
-      DiaryToolbarItem.indent => '缩进（增/减）',
-      DiaryToolbarItem.link => '链接',
-      DiaryToolbarItem.currentTime => '插入当前时间',
+      DiaryToolbarItem.recording => 'recording',
     };
   }
 
@@ -142,11 +120,14 @@ extension DiaryToolbarItemX on DiaryToolbarItem {
       DiaryToolbarItem.indent => FontAwesomeIcons.indent,
       DiaryToolbarItem.link => FontAwesomeIcons.link,
       DiaryToolbarItem.currentTime => FontAwesomeIcons.clock,
+      DiaryToolbarItem.recording => FontAwesomeIcons.microphone,
     };
   }
 }
 
 DiaryToolbarItem? _diaryToolbarItemFromStorageKey(String value) {
+  // Keep order/visibility settings from the briefly shipped speech-input tool.
+  if (value == 'voice_input') return DiaryToolbarItem.recording;
   for (final item in DiaryToolbarItem.values) {
     if (item.storageKey == value) {
       return item;
@@ -237,6 +218,8 @@ Widget buildDiaryFloatingToolbar({
   required List<DiaryToolbarItem> order,
   Set<DiaryToolbarItem> hiddenItems = const <DiaryToolbarItem>{},
   String? currentTimeFormatPattern,
+  VoidCallback? onRecordingPressed,
+  bool recordingOpen = false,
 }) {
   final normalizedOrder = filterEnabledDiaryToolbarOrder(order, hiddenItems);
   if (normalizedOrder.isEmpty) {
@@ -263,6 +246,8 @@ Widget buildDiaryFloatingToolbar({
                       normalizedOrder[i],
                       controller,
                       currentTimeFormatPattern: currentTimeFormatPattern,
+                      onRecordingPressed: onRecordingPressed,
+                      recordingOpen: recordingOpen,
                     ),
                   ),
                   if (i != normalizedOrder.length - 1) const SizedBox(width: 2),
@@ -284,14 +269,20 @@ List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
   void Function(String imageSource)? onImageClicked,
 }) {
   if (onImageClicked == null || kIsWeb) {
-    return FlutterQuillEmbeds.defaultEditorBuilders();
+    return [
+      ...FlutterQuillEmbeds.defaultEditorBuilders(),
+      const DiaryAudioEmbedBuilder(),
+    ];
   }
 
-  return FlutterQuillEmbeds.editorBuilders(
-    imageEmbedConfig: QuillEditorImageEmbedConfig(
-      onImageClicked: onImageClicked,
+  return [
+    ...FlutterQuillEmbeds.editorBuilders(
+      imageEmbedConfig: QuillEditorImageEmbedConfig(
+        onImageClicked: onImageClicked,
+      ),
     ),
-  );
+    const DiaryAudioEmbedBuilder(),
+  ];
 }
 
 /// 对外部传入顺序做去重 + 补全，防止配置异常导致工具项缺失。
@@ -322,6 +313,8 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   DiaryToolbarItem item,
   quill.QuillController controller, {
   String? currentTimeFormatPattern,
+  VoidCallback? onRecordingPressed,
+  bool recordingOpen = false,
 }) {
   final colorScheme = Theme.of(context).colorScheme;
   // 显式固定移动端悬浮工具栏图标尺寸，避免受主题密度或系统缩放影响出现“放大”。
@@ -397,6 +390,7 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   final showIndent = item == DiaryToolbarItem.indent;
   final showLink = item == DiaryToolbarItem.link;
   final showCurrentTime = item == DiaryToolbarItem.currentTime;
+  final showRecording = item == DiaryToolbarItem.recording;
 
   // 图片按钮使用自定义拣选并复制到私有目录，避免外部路径失效。
   final embedButtons = item == DiaryToolbarItem.image
@@ -492,6 +486,16 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
           controller,
           formatPattern: currentTimeFormatPattern,
         ),
+      ),
+    if (showRecording)
+      quill.QuillToolbarCustomButtonOptions(
+        icon: FaIcon(
+          FontAwesomeIcons.microphone,
+          size: 14,
+          color: recordingOpen ? colorScheme.primary : colorScheme.onSurface,
+        ),
+        tooltip: context.l10n.diaryToolbarRecording,
+        onPressed: onRecordingPressed,
       ),
   ];
 

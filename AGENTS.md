@@ -30,6 +30,7 @@
 │  └─ utils/                         # 工具函数
 ├─ assets/                           # 静态资源
 ├─ test/                             # 测试
+├─ integration_test/                 # 实机集成测试（隔离设置与数据库，验证录音/播放）
 ├─ android/ ios/ web/ windows/ ...  # 各平台工程
 └─ AGENTS.md                         # 协作规范
 ```

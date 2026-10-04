@@ -1438,6 +1438,48 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryToolbarInsertCurrentTime => '插入当前时间';
 
   @override
+  String get diaryToolbarRecording => '录音';
+
+  @override
+  String get recordingStart => '开始录音';
+
+  @override
+  String get recordingPause => '暂停录音';
+
+  @override
+  String get recordingResume => '继续录音';
+
+  @override
+  String get recordingFinish => '结束录音';
+
+  @override
+  String get recordingClose => '关闭录音';
+
+  @override
+  String get recordingPaused => '已暂停';
+
+  @override
+  String get recordingPermissionDenied => '未允许使用麦克风';
+
+  @override
+  String get recordingFailed => '录音失败，请重试';
+
+  @override
+  String get recordingSaveFailed => '录音保存失败，请重试';
+
+  @override
+  String get recordingAttachment => '录音';
+
+  @override
+  String get recordingPlaybackPlay => '播放录音';
+
+  @override
+  String get recordingPlaybackPause => '暂停播放';
+
+  @override
+  String get recordingPlaybackFailed => '录音无法播放';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => '配置工具参数';
 
   @override

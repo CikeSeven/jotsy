@@ -19,18 +19,24 @@ import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
+import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
+import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 part '../controllers/edit_diary_controller.dart';
+part '../controllers/edit_diary_recording_controller.dart';
 
 /// 日记编辑页。
 ///
@@ -56,6 +62,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
 
 class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   static const double _floatingToolbarReservedSpace = 56.0;
+  static const double _recordingPanelReservedSpace = 310.0;
 
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
@@ -66,6 +73,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final FocusNode _contentFocusNode = FocusNode();
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
+  final DiaryRecordingController _recordingController =
+      DiaryRecordingController();
   final PublishDiaryPanelController _editPanelController =
       PublishDiaryPanelController();
   DateTime? _createDateOverride;
@@ -96,6 +105,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String? _toolbarCurrentTimeFormatPattern;
   SettingsService? _boundToolbarSettingsService;
   VoidCallback? _toolbarSettingsListener;
+  bool _recordingPanelOpen = false;
+  int _recordingPanelGeneration = 0;
+  TextSelection? _recordingSelection;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
@@ -149,6 +161,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _contentScrollController.dispose();
     _editorInnerScrollController.dispose();
     _contentController.dispose();
+    _recordingController.dispose();
     _unbindToolbarSettingsService();
     super.dispose();
   }
@@ -165,7 +178,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
   bool get _isEditEntry =>
       widget.diaryId != null && widget.entryMode == EditDiaryEntryMode.edit;
-  bool get _canSaveEdit => _isEditEntry && !_saving && _hasPendingEditChanges;
+  bool get _canSaveEdit =>
+      _isEditEntry &&
+      !_saving &&
+      _hasPendingEditChanges &&
+      !_recordingPanelOpen;
   bool get _isEditPanelExpanded =>
       _isEditEntry && _editPanelExpandProgress >= 0.56;
   bool get _isEditingNoteText =>
@@ -253,6 +270,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   }
 
   Future<void> _attemptExitEditPage() async {
+    if (_recordingPanelOpen) {
+      _closeRecordingPanel();
+      return;
+    }
     // 返回键优先级：
     // 1) 标签子页 -> 回到主面板；
     // 2) 主面板展开 -> 收起面板；
@@ -573,7 +594,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       _toolbarHiddenItems,
     );
     final showFloatingToolbar =
-        rawShowFloatingToolbar && enabledToolbarOrder.isNotEmpty;
+        enabledToolbarOrder.isNotEmpty &&
+        (rawShowFloatingToolbar ||
+            (_isMobileRuntime && _recordingPanelOpen && !_isEditPanelExpanded));
     final editPanelSpacer = showEditMetaPanel
         ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
         : 16.0;
@@ -582,7 +605,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         ? editPanelSpacer
         : 16.0;
     final effectiveEditorBottomSpacer = showFloatingToolbar
-        ? _floatingToolbarReservedSpace
+        ? _recordingPanelOpen
+              ? _recordingPanelReservedSpace
+              : _floatingToolbarReservedSpace
         : editorBottomSpacer;
     final tagsAsync = ref.watch(tagListProvider);
 
@@ -682,7 +707,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               ),
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
-                  onPressed: _saving ? null : _controller.openPublishPage,
+                  onPressed: _saving || _recordingPanelOpen
+                      ? null
+                      : _controller.openPublishPage,
                   icon: const FaIcon(FontAwesomeIcons.plus),
                   tooltip: context.l10n.autoT0136,
                 )
@@ -721,7 +748,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 context,
                 settingsAsync: settingsAsync,
                 bottomSpacer: effectiveEditorBottomSpacer,
-                contentLocked: _isEditPanelExpanded,
+                contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
               ),
               if (showEditMetaPanel &&
                   (!showFloatingToolbar || _isEditPanelExpanded))
@@ -828,30 +855,41 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   child: SafeArea(
                     top: false,
                     minimum: const EdgeInsets.only(bottom: 8),
-                    child: Material(
-                      color: Theme.of(context).colorScheme.surface,
-                      elevation: 8,
-                      borderRadius: BorderRadius.circular(18),
-                      clipBehavior: Clip.antiAlias,
-                      child: MediaQuery(
-                        data: MediaQuery.of(
-                          context,
-                        ).copyWith(textScaler: TextScaler.noScaling),
-                        child: IconTheme(
-                          data: const IconThemeData(size: 16),
-                          child: SizedBox(
-                            height: 44,
-                            child: _buildFloatingToolbar(enabledToolbarOrder),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Material(
+                          color: Theme.of(context).colorScheme.surface,
+                          elevation: 8,
+                          borderRadius: BorderRadius.circular(18),
+                          clipBehavior: Clip.antiAlias,
+                          child: MediaQuery(
+                            data: MediaQuery.of(
+                              context,
+                            ).copyWith(textScaler: TextScaler.noScaling),
+                            child: IconTheme(
+                              data: const IconThemeData(size: 16),
+                              child: SizedBox(
+                                height: 44,
+                                child: _buildFloatingToolbar(
+                                  enabledToolbarOrder,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        if (_recordingPanelOpen) ...[
+                          const SizedBox(height: 8),
+                          _buildRecordingPanel(),
+                        ],
+                      ],
                     ),
                   ),
                 ),
             ],
           ),
         );
-        if (!_isEditEntry) {
+        if (!_isEditEntry && !_recordingPanelOpen) {
           return scaffold;
         }
         return PopScope(
@@ -971,7 +1009,53 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       controller: _contentController,
       order: toolbarOrder,
       currentTimeFormatPattern: _toolbarCurrentTimeFormatPattern,
+      onRecordingPressed: _toggleRecordingPanel,
+      recordingOpen: _recordingPanelOpen,
     );
+  }
+
+  Widget _buildRecordingPanel() {
+    return AnimatedBuilder(
+      animation: _recordingController,
+      builder: (BuildContext context, Widget? child) {
+        return DiaryRecordingPanel(
+          phase: _recordingController.phase,
+          elapsed: _recordingController.elapsed,
+          failure: _recordingController.failure,
+          onStart: () => unawaited(_controller.startRecording()),
+          onPause: () => unawaited(_recordingController.pause()),
+          onResume: () => unawaited(_recordingController.resume()),
+          onFinish: () => unawaited(_controller.finishRecording()),
+          onClose: _closeRecordingPanel,
+        );
+      },
+    );
+  }
+
+  void _toggleRecordingPanel() {
+    if (_recordingPanelOpen) {
+      _closeRecordingPanel();
+      return;
+    }
+
+    setState(() {
+      _recordingPanelOpen = true;
+      _recordingPanelGeneration++;
+      _recordingSelection = _contentController.selection;
+    });
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  void _closeRecordingPanel() {
+    if (!_recordingPanelOpen) {
+      return;
+    }
+    unawaited(_recordingController.cancel());
+    setState(() {
+      _recordingPanelOpen = false;
+      _recordingPanelGeneration++;
+      _recordingSelection = null;
+    });
   }
 }
 

@@ -1,0 +1,50 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/audio_embed_codec.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+
+void main() {
+  for (final readOnly in [false, true]) {
+    testWidgets('recording renders as a player with readOnly=$readOnly', (
+      tester,
+    ) async {
+      final controller = quill.QuillController.basic();
+      insertDiaryRecording(
+        controller: controller,
+        selection: const TextSelection.collapsed(offset: 0),
+        recording: const DiaryAudioAttachment(
+          path: '/documents/diary_recordings/entry.m4a',
+          duration: Duration(seconds: 12),
+        ),
+      );
+      controller.readOnly = readOnly;
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: const [
+            ...AppLocalizations.localizationsDelegates,
+            quill.FlutterQuillLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: quill.QuillEditor.basic(
+              controller: controller,
+              config: quill.QuillEditorConfig(
+                embedBuilders: buildDiaryQuillEmbedBuilders(),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byTooltip('播放录音'), findsOneWidget);
+      expect(find.text('00:00 / 00:12'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
+}

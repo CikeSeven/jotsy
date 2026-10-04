@@ -208,6 +208,7 @@ class SettingsEditorSection extends StatelessWidget {
       DiaryToolbarItem.indent => l10n.autoT0023,
       DiaryToolbarItem.link => l10n.autoT0024,
       DiaryToolbarItem.currentTime => l10n.diaryToolbarInsertCurrentTime,
+      DiaryToolbarItem.recording => l10n.diaryToolbarRecording,
     };
   }
 }

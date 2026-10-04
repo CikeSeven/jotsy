@@ -40,6 +40,41 @@ void main() {
   test('default toolbar order includes current time tool', () {
     expect(kDefaultDiaryToolbarOrder, contains(DiaryToolbarItem.currentTime));
     expect(DiaryToolbarItem.currentTime.storageKey, 'current_time');
+    expect(kDefaultDiaryToolbarOrder, contains(DiaryToolbarItem.recording));
+    expect(DiaryToolbarItem.recording.storageKey, 'recording');
+  });
+
+  testWidgets('recording toolbar action opens the recording panel', (
+    tester,
+  ) async {
+    final controller = quill.QuillController.basic();
+    addTearDown(controller.dispose);
+    var opened = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('zh'),
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          ...AppLocalizations.localizationsDelegates,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SizedBox(
+            height: 44,
+            child: buildDiaryFloatingToolbar(
+              controller: controller,
+              order: const <DiaryToolbarItem>[DiaryToolbarItem.recording],
+              onRecordingPressed: () => opened = true,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('录音'));
+    expect(opened, isTrue);
   });
 
   test('default current time format is prefilled pattern', () {

@@ -2714,6 +2714,90 @@ abstract class AppLocalizations {
   /// **'Insert current time'**
   String get diaryToolbarInsertCurrentTime;
 
+  /// Tooltip and settings label for the diary recording toolbar action.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get diaryToolbarRecording;
+
+  /// Accessible label and tooltip for the centered microphone button.
+  ///
+  /// In en, this message translates to:
+  /// **'Start recording'**
+  String get recordingStart;
+
+  /// Tooltip for pausing microphone capture.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause recording'**
+  String get recordingPause;
+
+  /// Tooltip for resuming capture into the same audio file.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume recording'**
+  String get recordingResume;
+
+  /// Tooltip for stopping capture and immediately inserting the audio attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish recording'**
+  String get recordingFinish;
+
+  /// Tooltip for closing the panel and discarding an uncommitted recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Close recording'**
+  String get recordingClose;
+
+  /// Status shown while recording is paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get recordingPaused;
+
+  /// Shown only when the recording plugin confirms this app lacks microphone permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access is not allowed'**
+  String get recordingPermissionDenied;
+
+  /// Shown when microphone capture cannot start or is unexpectedly interrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording failed. Please try again.'**
+  String get recordingFailed;
+
+  /// Shown when the audio file cannot be saved or inserted into the document.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording could not be saved. Please try again.'**
+  String get recordingSaveFailed;
+
+  /// Title of the audio player embedded in a diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get recordingAttachment;
+
+  /// Tooltip for the play button on a diary audio attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Play recording'**
+  String get recordingPlaybackPlay;
+
+  /// Tooltip for the pause button on a diary audio attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause playback'**
+  String get recordingPlaybackPause;
+
+  /// Shown for a missing or undecodable diary audio attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording cannot be played'**
+  String get recordingPlaybackFailed;
+
   /// Tooltip for the tool parameter settings button on the toolbar order page.
   ///
   /// In en, this message translates to:

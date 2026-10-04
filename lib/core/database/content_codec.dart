@@ -93,6 +93,21 @@ bool diaryDocumentHasVisibleContent(quill.Document document) {
   return false;
 }
 
+/// Drafts can contain only an attachment, whose plain-text mirror is empty.
+/// Inspect actual Delta embeds rather than counting arbitrary JSON metadata.
+bool diaryContentHasEmbeddedContent(String rawContent) {
+  try {
+    final delta = jsonDecode(rawContent);
+    if (delta is! List) return false;
+    return delta.any(
+      (op) =>
+          op is Map && op['insert'] is Map && (op['insert'] as Map).isNotEmpty,
+    );
+  } on FormatException {
+    return false;
+  }
+}
+
 /// 从纯文本构建一个最小可编辑文档。
 quill.Document documentFromPlainText(String plainText) {
   return quill.Document.fromJson(

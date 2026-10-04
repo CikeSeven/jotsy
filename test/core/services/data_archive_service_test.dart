@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/services/data_archive_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:path/path.dart' as p;
@@ -73,6 +74,70 @@ void main() {
     final recreatedSettings = await SettingsService.create();
     expect(recreatedSettings.diaryCardTagLimit, 7);
   });
+
+  test(
+    'backup restores recording bytes and rebinds diary and draft audio paths',
+    () async {
+      final audioDirectory = await Directory(
+        p.join(documentsDirectory.path, 'diary_recordings'),
+      ).create();
+      final oldPath = p.join(audioDirectory.path, 'entry.m4a');
+      const bytes = <int>[0, 0, 0, 24, 102, 116, 121, 112, 77, 52, 65];
+      await File(oldPath).writeAsBytes(bytes);
+      final audio = DiaryAudioAttachment(
+        path: oldPath,
+        duration: const Duration(seconds: 12),
+      );
+      final content = jsonEncode([
+        {
+          'insert': {diaryAudioEmbedType: audio.encode()},
+        },
+        {'insert': '\n'},
+      ]);
+      await database.createDiary(
+        title: '',
+        contentDocJson: content,
+        contentText: '',
+        metadataJson: '{}',
+      );
+      await settingsService.setCreateDiaryDraftRaw(
+        jsonEncode({'title': '', 'contentDocJson': content, 'contentText': ''}),
+      );
+      final backup = await DataArchiveService.exportToZip(
+        database: database,
+        settingsService: settingsService,
+      );
+      documentsDirectory = await Directory(
+        p.join(testRoot.path, 'audio_imported_documents'),
+      ).create();
+      await DataArchiveService.importFromZip(
+        database: database,
+        settingsService: settingsService,
+        zipPath: backup.path,
+      );
+      final restoredPath = p.join(
+        documentsDirectory.path,
+        'diary_recordings',
+        'entry.m4a',
+      );
+      final restoredDiary = await database.select(database.diaries).getSingle();
+      expect(extractDiaryAudioPaths(restoredDiary.content), {restoredPath});
+      expect(await File(restoredPath).readAsBytes(), bytes);
+      final restoredDraft =
+          jsonDecode(settingsService.createDiaryDraftRaw!) as Map;
+      expect(
+        extractDiaryAudioPaths(restoredDraft['contentDocJson'] as String),
+        {restoredPath},
+      );
+      final inserted = (jsonDecode(restoredDiary.content) as List).first as Map;
+      expect(
+        DiaryAudioAttachment.tryDecode(
+          (inserted['insert'] as Map)[diaryAudioEmbedType],
+        )?.duration,
+        const Duration(seconds: 12),
+      );
+    },
+  );
 
   test(
     'import restores private image paths for a different app installation',

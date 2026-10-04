@@ -1492,6 +1492,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryToolbarInsertCurrentTime => 'Insert current time';
 
   @override
+  String get diaryToolbarRecording => 'Recording';
+
+  @override
+  String get recordingStart => 'Start recording';
+
+  @override
+  String get recordingPause => 'Pause recording';
+
+  @override
+  String get recordingResume => 'Resume recording';
+
+  @override
+  String get recordingFinish => 'Finish recording';
+
+  @override
+  String get recordingClose => 'Close recording';
+
+  @override
+  String get recordingPaused => 'Paused';
+
+  @override
+  String get recordingPermissionDenied => 'Microphone access is not allowed';
+
+  @override
+  String get recordingFailed => 'Recording failed. Please try again.';
+
+  @override
+  String get recordingSaveFailed =>
+      'Recording could not be saved. Please try again.';
+
+  @override
+  String get recordingAttachment => 'Recording';
+
+  @override
+  String get recordingPlaybackPlay => 'Play recording';
+
+  @override
+  String get recordingPlaybackPause => 'Pause playback';
+
+  @override
+  String get recordingPlaybackFailed => 'Recording cannot be played';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => 'Configure tool parameters';
 
   @override

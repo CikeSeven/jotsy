@@ -47,9 +47,12 @@ dependencies:
   xml: ^6.6.1
   meta: ^1.15.0
   gal: ^2.3.2
-  
+  record: ^6.2.0
+  audioplayers: ^6.5.0
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
 
   flutter_lints: ^5.0.0

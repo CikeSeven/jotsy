@@ -3,8 +3,10 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audioplayers_linux
   dynamic_color
   file_selector_linux
+  record_linux
   url_launcher_linux
 )
 

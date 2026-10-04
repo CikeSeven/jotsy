@@ -1045,35 +1045,83 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   Widget _buildMetaChip(_MetaChipItem item, ColorScheme colorScheme) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final isEnergyItem =
         item.kind == _MetaChipKind.energy && item.energyLevel != null;
     final isTagItem = item.kind == _MetaChipKind.tag && item.tagColor != null;
+
+    if (isTagItem) {
+      final tagColor = Color(item.tagColor!);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: tagColor.withValues(alpha: isLight ? 0.08 : 0.16),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: tagColor.withValues(alpha: isLight ? 0.22 : 0.32),
+            width: 0.75,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              '#',
+              style: TextStyle(
+                color: tagColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(width: 5),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260),
+              child: Text(
+                item.label,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
-        borderRadius: BorderRadius.circular(10),
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isLight ? 0.45 : 0.65,
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isLight ? 0.35 : 0.25,
+          ),
+          width: 0.75,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          if (isEnergyItem)
-            EnergyBatteryIndicator(value: item.energyLevel!, iconSize: 14)
-          else if (isTagItem)
-            Text(
-              '#',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Color(item.tagColor!),
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          if (isEnergyItem || isTagItem) const SizedBox(width: 6),
+          if (isEnergyItem) ...[
+            EnergyBatteryIndicator(value: item.energyLevel!, iconSize: 14),
+            const SizedBox(width: 6),
+          ],
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 260),
             child: Text(
               item.label,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+                fontSize: 12.5,
+              ),
             ),
           ),
         ],

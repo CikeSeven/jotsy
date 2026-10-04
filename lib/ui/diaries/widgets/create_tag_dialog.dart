@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
 
@@ -175,6 +176,49 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               decoration: InputDecoration(labelText: l10n.autoT0150),
               onSubmitted: (_) => _submit(),
             ),
+            if (_nameController.text.trim().isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _selectedColor.withValues(
+                    alpha: colorScheme.brightness == Brightness.light
+                        ? 0.08
+                        : 0.16,
+                  ),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: _selectedColor.withValues(
+                      alpha: colorScheme.brightness == Brightness.light
+                          ? 0.22
+                          : 0.32,
+                    ),
+                    width: 0.65,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      '#',
+                      style: TextStyle(
+                        color: _selectedColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _nameController.text.trim(),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             // 颜色选择区域的展开/收起入口。
             InkWell(
@@ -187,11 +231,17 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                 child: Row(
                   children: <Widget>[
                     Container(
-                      width: 18,
-                      height: 18,
+                      width: 20,
+                      height: 20,
                       decoration: BoxDecoration(
                         color: _selectedColor,
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.4,
+                          ),
+                          width: 1,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -203,10 +253,11 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                         ),
                       ),
                     ),
-                    Icon(
+                    FaIcon(
                       _colorPickerExpanded
-                          ? Icons.keyboard_arrow_up_rounded
-                          : Icons.keyboard_arrow_down_rounded,
+                          ? FontAwesomeIcons.angleUp
+                          : FontAwesomeIcons.angleDown,
+                      size: 14,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ],

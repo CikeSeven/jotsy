@@ -29,6 +29,8 @@ class TagFilterChip extends StatelessWidget {
     ),
     this.animateBorder = false,
     this.showSelectedShadow = false,
+    this.selectedBorderColor,
+    this.unselectedBorderColor,
   });
 
   /// 文案标签。
@@ -40,6 +42,8 @@ class TagFilterChip extends StatelessWidget {
   final Color selectedForegroundColor;
   final Color unselectedColor;
   final Color unselectedForegroundColor;
+  final Color? selectedBorderColor;
+  final Color? unselectedBorderColor;
 
   /// 点击回调。
   final VoidCallback onTap;
@@ -63,8 +67,10 @@ class TagFilterChip extends StatelessWidget {
         ? selectedForegroundColor
         : unselectedForegroundColor;
     final borderColor = selected
-        ? selectedForegroundColor.withValues(alpha: 0.45)
-        : colorScheme.outlineVariant.withValues(alpha: 0.55);
+        ? (selectedBorderColor ??
+              selectedForegroundColor.withValues(alpha: 0.45))
+        : (unselectedBorderColor ??
+              colorScheme.outlineVariant.withValues(alpha: 0.55));
 
     final effectiveRadius = selected ? 24.0 : radius;
     return Semantics(
@@ -98,7 +104,7 @@ class TagFilterChip extends StatelessWidget {
             child: DefaultTextStyle(
               style: Theme.of(context).textTheme.labelMedium!.copyWith(
                 color: foregroundColor,
-                fontWeight: FontWeight.w600,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -111,15 +117,20 @@ class TagFilterChip extends StatelessWidget {
                     const SizedBox(width: AppSpacing.xs),
                   ],
                   if (colorDot != null) ...[
-                    Container(
-                      width: colorDotSize,
-                      height: colorDotSize,
-                      decoration: BoxDecoration(
-                        color: colorDot,
-                        shape: BoxShape.circle,
+                    SizedBox(
+                      width: 14,
+                      child: Center(
+                        child: Text(
+                          '#',
+                          style: TextStyle(
+                            color: colorDot,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12.5,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.s),
+                    const SizedBox(width: 6),
                   ],
                   Flexible(
                     fit: FlexFit.loose,

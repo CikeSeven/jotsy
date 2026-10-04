@@ -330,10 +330,31 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
                         return ListTile(
                           key: ValueKey<int>(tag.id),
                           onTap: _operating ? null : () => _editTag(tag),
-                          leading: CircleAvatar(
-                            backgroundColor: Color(tag.color),
+                          leading: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Color(tag.color).withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Color(tag.color).withValues(alpha: 0.4),
+                                width: 1,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '#',
+                              style: TextStyle(
+                                color: Color(tag.color),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 14,
+                              ),
+                            ),
                           ),
-                          title: Text(tag.name),
+                          title: Text(
+                            tag.name,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[

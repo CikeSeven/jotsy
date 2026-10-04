@@ -246,6 +246,21 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
 
     final tag = widget.tags[index - 1];
     final selected = widget.selectedTagFilterIds.contains(tag.id);
+    final tagColor = Color(tag.color);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
+    final unselectedBg = tagColor.withValues(alpha: isLight ? 0.08 : 0.16);
+    final unselectedBorder = tagColor.withValues(alpha: isLight ? 0.22 : 0.32);
+    final unselectedText = colorScheme.onSurface;
+
+    final selectedBg = tagColor.withValues(alpha: isLight ? 0.22 : 0.36);
+    final selectedBorder = tagColor;
+    final selectedText = isLight
+        ? (ThemeData.estimateBrightnessForColor(tagColor) == Brightness.dark
+              ? tagColor
+              : colorScheme.onSurface)
+        : Colors.white;
+
     // A horizontal ListView supplies a tight 32dp cross-axis constraint, but a
     // Multi-row layout otherwise uses the chip's smaller intrinsic height. Retain that same
     // constraint here so expansion changes only positions, never card styling.
@@ -253,13 +268,14 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
       height: DiaryTagFilterBar.chipExtent,
       child: TagFilterChip(
         label: tag.name,
-        colorDot: Color(tag.color),
-        colorDotSize: 12,
+        colorDot: tagColor,
         selected: selected,
-        selectedColor: colorScheme.secondaryContainer,
-        selectedForegroundColor: colorScheme.onSecondaryContainer,
-        unselectedColor: colorScheme.surfaceContainerHigh,
-        unselectedForegroundColor: colorScheme.onSurface,
+        selectedColor: selectedBg,
+        selectedForegroundColor: selectedText,
+        selectedBorderColor: selectedBorder,
+        unselectedColor: unselectedBg,
+        unselectedForegroundColor: unselectedText,
+        unselectedBorderColor: unselectedBorder,
         radius: 12,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         animateBorder: true,

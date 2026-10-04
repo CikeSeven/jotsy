@@ -802,9 +802,6 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
         .toList();
 
     final colorScheme = theme.colorScheme;
-    final tagChipBackgroundColor = theme.brightness == Brightness.light
-        ? colorScheme.surface
-        : colorScheme.surfaceContainerHigh;
     // 标签入口卡片：仅展示已选择标签摘要，点击进入标签页。
     return Material(
       color: colorScheme.surfaceContainerHighest,
@@ -841,37 +838,64 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                       : SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: selectedTags
-                                .map(
-                                  (tag) => Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: RawChip(
-                                      visualDensity: VisualDensity.compact,
-                                      side: BorderSide.none,
-                                      elevation: 0,
-                                      pressElevation: 0,
-                                      shadowColor: Colors.transparent,
-                                      shape: const StadiumBorder(),
-                                      backgroundColor: tagChipBackgroundColor,
-                                      label: Text(
-                                        tag.name,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodySmall,
+                            children: selectedTags.map((tag) {
+                              final tagColor = Color(tag.color);
+                              final isLight =
+                                  Theme.of(context).brightness ==
+                                  Brightness.light;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 6),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: tagColor.withValues(
+                                      alpha: isLight ? 0.08 : 0.16,
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: tagColor.withValues(
+                                        alpha: isLight ? 0.22 : 0.32,
                                       ),
-                                      avatar: CircleAvatar(
-                                        radius: 7,
-                                        backgroundColor: Color(tag.color),
-                                      ),
+                                      width: 0.65,
                                     ),
                                   ),
-                                )
-                                .toList(),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      Text(
+                                        '#',
+                                        style: TextStyle(
+                                          color: tagColor,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        tag.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelSmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
                         ),
                 ),
                 const SizedBox(width: 8),
-                const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
+                const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               ],
             ),
           ),
@@ -909,36 +933,65 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
 
   Widget _buildTagListRow(BuildContext context, {required Tag tag}) {
     final selected = widget.selectedTagIds.contains(tag.id);
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final tagColor = Color(tag.color);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: selected
+            ? tagColor.withValues(alpha: isLight ? 0.12 : 0.22)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () => widget.onToggleTag(tag.id, !selected),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 40),
+            constraints: const BoxConstraints(minHeight: 44),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               child: Row(
                 children: <Widget>[
-                  CircleAvatar(radius: 8, backgroundColor: Color(tag.color)),
-                  const SizedBox(width: 10),
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: tagColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: tagColor.withValues(alpha: 0.45),
+                        width: 1,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '#',
+                      style: TextStyle(
+                        color: tagColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       tag.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
                     ),
                   ),
-                  IgnorePointer(
-                    child: Checkbox(
-                      value: selected,
-                      shape: const CircleBorder(),
-                      onChanged: (_) {},
-                    ),
+                  FaIcon(
+                    selected
+                        ? FontAwesomeIcons.solidCircleCheck
+                        : FontAwesomeIcons.circle,
+                    size: 18,
+                    color: selected ? tagColor : colorScheme.outlineVariant,
                   ),
                 ],
               ),

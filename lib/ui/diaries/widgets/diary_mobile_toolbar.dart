@@ -45,9 +45,10 @@ enum DiaryToolbarItem {
 
 /// 默认工具栏顺序（当用户未配置或配置异常时兜底）。
 const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
-  // 轻度日记用户高频功能前置：基础编辑 + 列表/待办 + 图片。
+  // 轻度日记用户高频功能前置：基础操作 + 录音/媒体插入 + 基础排版 + 列表/待办。
   DiaryToolbarItem.undo,
   DiaryToolbarItem.redo,
+  DiaryToolbarItem.recording,
   DiaryToolbarItem.bold,
   DiaryToolbarItem.italic,
   DiaryToolbarItem.underline,
@@ -55,7 +56,6 @@ const List<DiaryToolbarItem> kDefaultDiaryToolbarOrder = <DiaryToolbarItem>[
   DiaryToolbarItem.checkList,
   DiaryToolbarItem.orderedList,
   DiaryToolbarItem.image,
-  DiaryToolbarItem.recording,
   DiaryToolbarItem.currentTime,
   DiaryToolbarItem.quote,
   DiaryToolbarItem.headerStyle,

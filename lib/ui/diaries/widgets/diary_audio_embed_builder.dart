@@ -19,6 +19,24 @@ class DiaryAudioEmbedBuilder extends quill.EmbedBuilder {
         style: TextStyle(color: Theme.of(context).colorScheme.error),
       );
     }
-    return DiaryAudioPlayer(key: ValueKey(audio.path), recording: audio);
+    return DiaryAudioPlayer(
+      key: ValueKey(audio.path),
+      recording: audio,
+      onRename: embedContext.readOnly
+          ? null
+          : (newName) {
+              final trimmed = newName.trim();
+              final updated = audio.copyWith(
+                name: trimmed.isNotEmpty ? trimmed : null,
+              );
+              final offset = embedContext.node.offset;
+              embedContext.controller.replaceText(
+                offset,
+                1,
+                quill.BlockEmbed(diaryAudioEmbedType, updated.encode()),
+                null,
+              );
+            },
+    );
   }
 }

@@ -125,6 +125,22 @@ void main() {
     expect(controller.phase, DiaryRecordingPhase.paused);
     expect(recorder.resumeCalls, 0);
   });
+
+  test(
+    'setting custom recording name and completing attaches name and waveform',
+    () async {
+      controller.setName('灵感闪现');
+      expect(controller.name, '灵感闪现');
+
+      await controller.start();
+      clock.elapse(const Duration(milliseconds: 300));
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+
+      final recording = await controller.finish();
+      expect(recording?.name, '灵感闪现');
+      expect(recording?.waveform, isNotNull);
+    },
+  );
 }
 
 class FakeRecorder implements AudioRecordingService {
@@ -180,6 +196,9 @@ class FakeRecorder implements AudioRecordingService {
 
   @override
   Future<void> dispose() async {}
+
+  @override
+  Future<double> getAmplitude() async => 0.5;
 }
 
 class FakeRecordingStorage extends DiaryAudioStorageService {

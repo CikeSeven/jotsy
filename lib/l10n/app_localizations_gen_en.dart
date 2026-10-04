@@ -1535,6 +1535,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordingPlaybackFailed => 'Recording cannot be played';
 
   @override
+  String get recordingRename => 'Rename recording';
+
+  @override
+  String get recordingNameHint => 'Enter recording name';
+
+  @override
+  String get recordingDefaultTitle => 'Voice note';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => 'Configure tool parameters';
 
   @override

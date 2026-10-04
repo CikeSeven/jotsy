@@ -2,18 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_waveform_visualizer.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 
-/// Icon-led recording controls. Loading occupies its own bounded slot, never
-/// the elapsed-time or error text; all colors follow the Expressive theme.
+/// Redesigned Material 3 Expressive recording panel.
+///
+/// Features real-time voiceprint (amplitude soundwave) visualization,
+/// inline recording renaming, tactile morphing controls, and clean surfaces.
 class DiaryRecordingPanel extends StatelessWidget {
   const DiaryRecordingPanel({
     super.key,
     required this.phase,
     required this.elapsed,
     required this.failure,
+    this.amplitude = 0.0,
+    this.recordingName,
+    this.onNameChanged,
     required this.onStart,
     required this.onPause,
     required this.onResume,
@@ -24,11 +31,66 @@ class DiaryRecordingPanel extends StatelessWidget {
   final DiaryRecordingPhase phase;
   final Duration elapsed;
   final DiaryRecordingFailure? failure;
+  final double amplitude;
+  final String? recordingName;
+  final ValueChanged<String>? onNameChanged;
   final VoidCallback onStart;
   final VoidCallback onPause;
   final VoidCallback onResume;
   final VoidCallback onFinish;
   final VoidCallback onClose;
+
+  Future<void> _openRenameDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+    ColorScheme colors,
+  ) async {
+    final currentTitle = recordingName ?? l10n.recordingDefaultTitle;
+    final textController = TextEditingController(text: currentTitle);
+    final chosen = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.recordingRename),
+          content: TextField(
+            controller: textController,
+            autofocus: true,
+            maxLength: 30,
+            decoration: InputDecoration(
+              hintText: l10n.recordingNameHint,
+              counterText: '',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            onSubmitted: (val) => Navigator.of(dialogContext).pop(val.trim()),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colors.onSurfaceVariant,
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.commonCancel),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: colors.primary,
+                textStyle: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(textController.text.trim()),
+              child: Text(l10n.commonConfirm),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (chosen != null && onNameChanged != null) {
+      onNameChanged!(chosen.isEmpty ? l10n.recordingDefaultTitle : chosen);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,18 +102,77 @@ class DiaryRecordingPanel extends StatelessWidget {
         phase == DiaryRecordingPhase.preparing ||
         phase == DiaryRecordingPhase.finishing;
     final hasSession = recording || paused;
+    final displayName = recordingName ?? l10n.recordingDefaultTitle;
 
     return Material(
-      color: colors.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(24),
+      color: ExpressiveSurfaces.cardColor(colors),
+      shape: ExpressiveSurfaces.cardShape(colors),
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Header: Name title pill + close button
+            Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => _openRenameDialog(context, l10n, colors),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FaIcon(
+                              FontAwesomeIcons.microphoneLines,
+                              size: 13,
+                              color: colors.primary,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                displayName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: colors.onSurface,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            FaIcon(
+                              FontAwesomeIcons.penToSquare,
+                              size: 11,
+                              color: colors.onSurfaceVariant,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l10n.recordingClose,
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onClose,
+                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+
+            // Top center: Microphone button or Loading
             SizedBox(
-              height: 104,
+              height: 96,
               width: double.infinity,
               child: Stack(
                 alignment: Alignment.center,
@@ -104,45 +225,89 @@ class DiaryRecordingPanel extends StatelessWidget {
                             ),
                           ),
                   ),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: IconButton(
-                      tooltip: l10n.recordingClose,
-                      onPressed: onClose,
-                      icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
-                    ),
-                  ),
                 ],
               ),
             ),
+
+            // Timer display
             Text(
               formatRecordingDuration(elapsed),
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
                 color: colors.onSurface,
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
-            if (paused) ...[
-              const SizedBox(height: 4),
-              Text(l10n.recordingPaused),
-            ],
-            if (failure != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                switch (failure!) {
-                  DiaryRecordingFailure.permissionDenied =>
-                    l10n.recordingPermissionDenied,
-                  DiaryRecordingFailure.recordingFailed => l10n.recordingFailed,
-                  DiaryRecordingFailure.saveFailed => l10n.recordingSaveFailed,
-                },
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: colors.error),
+
+            // Dynamic live voiceprint soundwave
+            if (hasSession) ...[
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: LiveVoiceprintVisualizer(
+                  amplitude: amplitude,
+                  isRecording: recording,
+                  isPaused: paused,
+                  height: 36,
+                ),
               ),
             ],
+
+            if (paused) ...[
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  l10n.recordingPaused,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+
+            if (failure != null) ...[
+              const SizedBox(height: 6),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  FaIcon(
+                    FontAwesomeIcons.circleExclamation,
+                    size: 13,
+                    color: colors.error,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      switch (failure!) {
+                        DiaryRecordingFailure.permissionDenied =>
+                          l10n.recordingPermissionDenied,
+                        DiaryRecordingFailure.recordingFailed =>
+                          l10n.recordingFailed,
+                        DiaryRecordingFailure.saveFailed =>
+                          l10n.recordingSaveFailed,
+                      },
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: colors.error),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            // Session action controls (Pause/Resume, Finish)
             if (hasSession) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -150,17 +315,23 @@ class DiaryRecordingPanel extends StatelessWidget {
                     tooltip: paused
                         ? l10n.recordingResume
                         : l10n.recordingPause,
-                    style: ButtonStyle(shape: ExpressiveControls.shape),
+                    style: ButtonStyle(
+                      shape: ExpressiveControls.shape,
+                      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+                    ),
                     onPressed: paused ? onResume : onPause,
                     icon: FaIcon(
                       paused ? FontAwesomeIcons.play : FontAwesomeIcons.pause,
-                      size: 20,
+                      size: 18,
                     ),
                   ),
                   const SizedBox(width: 24),
                   IconButton.filled(
                     tooltip: l10n.recordingFinish,
-                    style: ButtonStyle(shape: ExpressiveControls.shape),
+                    style: ButtonStyle(
+                      shape: ExpressiveControls.shape,
+                      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+                    ),
                     onPressed: onFinish,
                     icon: const FaIcon(FontAwesomeIcons.stop, size: 18),
                   ),

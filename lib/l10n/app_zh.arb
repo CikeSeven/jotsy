@@ -2100,6 +2100,18 @@
   "@recordingPlaybackFailed": {
     "description": "正文录音附件丢失或无法解码播放时的提示。"
   },
+  "recordingRename": "重命名录音",
+  "@recordingRename": {
+    "description": "修改录音附件名称的按钮提示或弹窗标题。"
+  },
+  "recordingNameHint": "输入录音名称",
+  "@recordingNameHint": {
+    "description": "重命名录音弹窗中文本输入框的提示占位文案。"
+  },
+  "recordingDefaultTitle": "语音备注",
+  "@recordingDefaultTitle": {
+    "description": "未命名录音的默认展示标题。"
+  },
   "diaryToolbarToolSettingsTooltip": "配置工具参数",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "工具栏排序页中工具参数设置按钮的 tooltip。"

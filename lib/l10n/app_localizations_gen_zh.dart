@@ -1480,6 +1480,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordingPlaybackFailed => '录音无法播放';
 
   @override
+  String get recordingRename => '重命名录音';
+
+  @override
+  String get recordingNameHint => '输入录音名称';
+
+  @override
+  String get recordingDefaultTitle => '语音备注';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => '配置工具参数';
 
   @override

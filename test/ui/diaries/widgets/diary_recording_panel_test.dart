@@ -87,6 +87,26 @@ void main() {
     expect(find.text('录音失败，请重试'), findsOneWidget);
     expect(find.text('未允许使用麦克风'), findsNothing);
   });
+
+  testWidgets('tapping recording title opens rename dialog and updates name', (
+    tester,
+  ) async {
+    String? updatedName;
+    await tester.pumpWidget(
+      _app(recordingName: '默认语音', onNameChanged: (val) => updatedName = val),
+    );
+
+    expect(find.text('默认语音'), findsOneWidget);
+    await tester.tap(find.text('默认语音'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('重命名录音'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '晨间反思');
+    await tester.tap(find.text('确认'));
+    await tester.pumpAndSettle();
+
+    expect(updatedName, '晨间反思');
+  });
 }
 
 Widget _app({
@@ -94,6 +114,8 @@ Widget _app({
   DiaryRecordingFailure? failure,
   Brightness brightness = Brightness.light,
   double textScale = 1,
+  String? recordingName,
+  ValueChanged<String>? onNameChanged,
   VoidCallback onStart = _noop,
   VoidCallback onPause = _noop,
   VoidCallback onResume = _noop,
@@ -119,6 +141,8 @@ Widget _app({
       phase: phase,
       elapsed: const Duration(seconds: 12),
       failure: failure,
+      recordingName: recordingName,
+      onNameChanged: onNameChanged,
       onStart: onStart,
       onPause: onPause,
       onResume: onResume,

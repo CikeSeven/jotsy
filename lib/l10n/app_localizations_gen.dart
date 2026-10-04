@@ -2798,6 +2798,24 @@ abstract class AppLocalizations {
   /// **'Recording cannot be played'**
   String get recordingPlaybackFailed;
 
+  /// Tooltip or dialog title for renaming an audio recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename recording'**
+  String get recordingRename;
+
+  /// Hint text for the text field in the rename recording dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter recording name'**
+  String get recordingNameHint;
+
+  /// Default title shown for an unnamed audio recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice note'**
+  String get recordingDefaultTitle;
+
   /// Tooltip for the tool parameter settings button on the toolbar order page.
   ///
   /// In en, this message translates to:

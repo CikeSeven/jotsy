@@ -9,6 +9,7 @@ abstract interface class AudioRecordingService {
   Future<String?> stop();
   Future<void> cancel();
   Future<void> dispose();
+  Future<double> getAmplitude();
 }
 
 /// Records microphone audio locally as AAC in an M4A container. No speech
@@ -53,5 +54,21 @@ class MicrophoneRecordingService implements AudioRecordingService {
   Future<void> dispose() async {
     await _recorder?.dispose();
     _recorder = null;
+  }
+
+  @override
+  Future<double> getAmplitude() async {
+    try {
+      if (_recorder == null) return 0.0;
+      final amp = await _audioRecorder.getAmplitude();
+      final current = amp.current;
+      // Record package returns current amplitude in dBFS (-160.0 to 0.0).
+      // Normalize -60.0dB to 0.0dB range into 0.0 to 1.0.
+      if (current.isInfinite || current.isNaN || current < -60.0) return 0.0;
+      if (current >= 0.0) return 1.0;
+      return ((current + 60.0) / 60.0).clamp(0.0, 1.0);
+    } catch (_) {
+      return 0.0;
+    }
   }
 }

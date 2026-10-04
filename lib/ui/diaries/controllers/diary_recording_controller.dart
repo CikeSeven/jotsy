@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/services/audio_recording_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
+import 'package:node_diary/ui/diaries/models/diary_audio_waveform.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:record/record.dart' show RecordState;
 
@@ -36,9 +37,17 @@ class DiaryRecordingController extends ChangeNotifier
 
   DiaryRecordingPhase _phase = DiaryRecordingPhase.idle;
   DiaryRecordingFailure? _failure;
+  double _amplitude = 0.0;
+  final List<double> _waveform = [];
+  String? _name;
+
   DiaryRecordingPhase get phase => _phase;
   DiaryRecordingFailure? get failure => _failure;
   Duration get elapsed => _clock.elapsed;
+  double get amplitude => _amplitude;
+  List<double> get waveform => List.unmodifiable(_waveform);
+  String? get name => _name;
+
   bool get hasSession =>
       _phase == DiaryRecordingPhase.recording ||
       _phase == DiaryRecordingPhase.paused;
@@ -46,10 +55,17 @@ class DiaryRecordingController extends ChangeNotifier
       _phase == DiaryRecordingPhase.preparing ||
       _phase == DiaryRecordingPhase.finishing;
 
+  void setName(String? name) {
+    _name = name?.trim().isEmpty ?? true ? null : name!.trim();
+    notifyListeners();
+  }
+
   Future<void> start() async {
     if (_disposed || _phase != DiaryRecordingPhase.idle) return;
     final generation = ++_generation;
     _failure = null;
+    _amplitude = 0.0;
+    _waveform.clear();
     _clock.reset();
     _setPhase(DiaryRecordingPhase.preparing);
     await _enqueue(() async {
@@ -73,9 +89,14 @@ class DiaryRecordingController extends ChangeNotifier
         if (_isStale(generation)) return;
         _clock.start();
         _setPhase(DiaryRecordingPhase.recording);
-        _timer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+        _timer = Timer.periodic(const Duration(milliseconds: 120), (_) async {
           if (!_disposed && _phase == DiaryRecordingPhase.recording) {
-            notifyListeners();
+            final amp = await _recorder.getAmplitude();
+            if (!_disposed && _phase == DiaryRecordingPhase.recording) {
+              _amplitude = amp;
+              _waveform.add(amp);
+              notifyListeners();
+            }
           }
         });
       } catch (_) {
@@ -145,9 +166,12 @@ class DiaryRecordingController extends ChangeNotifier
           await _storage.deleteManagedRecording(durablePath);
           return null;
         }
+        final compressedWaveform = compressRecordingWaveform(_waveform);
         final recording = DiaryAudioAttachment(
           path: durablePath,
           duration: elapsed,
+          name: _name,
+          waveform: compressedWaveform,
         );
         _setPhase(DiaryRecordingPhase.idle);
         return recording;
@@ -175,6 +199,9 @@ class DiaryRecordingController extends ChangeNotifier
       await _discardPending();
       _clock.reset();
       _failure = null;
+      _amplitude = 0.0;
+      _waveform.clear();
+      _name = null;
       _setPhase(DiaryRecordingPhase.idle);
     });
   }

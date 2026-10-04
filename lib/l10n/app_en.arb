@@ -2100,6 +2100,18 @@
   "@recordingPlaybackFailed": {
     "description": "Shown for a missing or undecodable diary audio attachment."
   },
+  "recordingRename": "Rename recording",
+  "@recordingRename": {
+    "description": "Tooltip or dialog title for renaming an audio recording."
+  },
+  "recordingNameHint": "Enter recording name",
+  "@recordingNameHint": {
+    "description": "Hint text for the text field in the rename recording dialog."
+  },
+  "recordingDefaultTitle": "Voice note",
+  "@recordingDefaultTitle": {
+    "description": "Default title shown for an unnamed audio recording."
+  },
   "diaryToolbarToolSettingsTooltip": "Configure tool parameters",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "Tooltip for the tool parameter settings button on the toolbar order page."

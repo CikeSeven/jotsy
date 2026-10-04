@@ -41,30 +41,6 @@ class DiarySelectionSurface extends StatelessWidget {
         ? colorScheme.primary.withValues(alpha: isLight ? 0.35 : 0.45)
         : ExpressiveSurfaces.cardBorderColor(colorScheme);
 
-    Widget effectiveChild = child;
-    if (isPinned && !compact) {
-      effectiveChild = Stack(
-        fit: StackFit.passthrough,
-        children: [
-          child,
-          Positioned(
-            left: 0,
-            top: 14,
-            bottom: 14,
-            child: Container(
-              width: 3.5,
-              decoration: BoxDecoration(
-                color: colorScheme.primary,
-                borderRadius: const BorderRadius.horizontal(
-                  right: Radius.circular(3),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
     return Semantics(
       container: true,
       selected: selected,
@@ -150,7 +126,7 @@ class DiarySelectionSurface extends StatelessWidget {
             ),
           );
         },
-        child: effectiveChild,
+        child: child,
       ),
     );
   }

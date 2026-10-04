@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -12,6 +13,7 @@ void main() {
     required String title,
     required bool isPinned,
     DateTime? createdAt,
+    String? cover,
   }) {
     final now = createdAt ?? DateTime(2026, 10, 5, 14, 30);
     return DiaryWithTags(
@@ -27,6 +29,7 @@ void main() {
         isArchived: false,
         isPinned: isPinned,
         isDeleted: false,
+        cover: cover,
       ),
       tags: [
         const Tag(id: 1, name: '生活', color: 0xFF4CAF50),
@@ -39,6 +42,8 @@ void main() {
     required List<DiaryWithTags> diaries,
     required DiaryLayoutMode layoutMode,
     Brightness brightness = Brightness.light,
+    Set<String> selectedDiaryIds = const {},
+    bool isSelectionMode = false,
   }) {
     final themeData = brightness == Brightness.light
         ? const MaterialTheme(TextTheme()).light()
@@ -55,8 +60,8 @@ void main() {
             DiariesListSection(
               diaries: diaries,
               layoutMode: layoutMode,
-              selectedDiaryIds: const {},
-              isSelectionMode: false,
+              selectedDiaryIds: selectedDiaryIds,
+              isSelectionMode: isSelectionMode,
               maxVisibleTags: 3,
               onCreate: () {},
               onOpenEditor: (_) {},
@@ -143,6 +148,62 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('暗黑模式日记'), findsOneWidget);
       expect(find.text('置顶'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'diaries list card displays cover preview on the left when diary has cover',
+    (tester) async {
+      final diaryWithCover = createMockDiary(
+        id: 'cover_diary_100',
+        title: '带封面日记',
+        isPinned: false,
+        cover: '/test-cover.jpg',
+      );
+
+      await tester.pumpWidget(
+        buildApp(diaries: [diaryWithCover], layoutMode: DiaryLayoutMode.list),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('带封面日记'), findsOneWidget);
+      // Cover image should be present on the left
+      expect(find.byType(Image), findsOneWidget);
+      final image = tester.widget<Image>(find.byType(Image));
+      final resizedImage = image.image as ResizeImage;
+      expect(image.fit, BoxFit.cover);
+      expect(resizedImage.width, isNotNull);
+      expect(resizedImage.height, isNull);
+    },
+  );
+
+  testWidgets(
+    'diaries list card shows selection checkmark in title row when selected',
+    (tester) async {
+      final diary = createMockDiary(id: 'd1', title: '被选中的日记', isPinned: false);
+
+      await tester.pumpWidget(
+        buildApp(
+          diaries: [diary],
+          layoutMode: DiaryLayoutMode.list,
+          selectedDiaryIds: {'d1'},
+          isSelectionMode: true,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('被选中的日记'), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is FaIcon &&
+              widget.icon?.codePoint ==
+                  FontAwesomeIcons.solidCircleCheck.codePoint,
+        ),
+        findsOneWidget,
+      );
     },
   );
 }

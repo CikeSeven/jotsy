@@ -240,26 +240,47 @@ class DiariesListSection extends StatelessWidget {
                   const SizedBox(width: 6),
                   _buildPinnedBadge(context),
                 ],
-                const Spacer(),
-                _buildMetaIndicators(
-                  context,
-                  moodEmoji: moodEmoji,
-                  weatherCode: weatherCode,
-                ),
+                if (moodEmoji != null || weatherCode != null) ...[
+                  const Spacer(),
+                  _buildMetaIndicators(
+                    context,
+                    moodEmoji: moodEmoji,
+                    weatherCode: weatherCode,
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 6),
-            // 标题行
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 18.5,
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.2,
-              ),
+            // 标题行，多选态在右侧显示选中指示。
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 18.5,
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+                if (selected) ...[
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: FaIcon(
+                      FontAwesomeIcons.solidCircleCheck,
+                      size: 18,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ],
             ),
             if (hasVisibleTags) ...[
               const SizedBox(height: 6),
@@ -411,6 +432,7 @@ class DiariesListSection extends StatelessWidget {
         );
 
         // 两种布局模式使用不同内容骨架，交互逻辑保持一致。
+        // 普通列表模式（单列）封面保持在左侧，尺寸扩大至 116×116（大画幅展示，告别局促的 88dp 嵌套感）。
         Widget content = compact
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -443,21 +465,13 @@ class DiariesListSection extends StatelessWidget {
                     _buildCoverPreview(
                       context,
                       previewCover,
-                      width: 88,
-                      height: 88,
+                      width: 116,
+                      height: 116,
                       radius: 16,
                     ),
                     const SizedBox(width: 14),
                   ],
                   Expanded(child: detailContent),
-                  if (selected) ...[
-                    const SizedBox(width: 8),
-                    FaIcon(
-                      FontAwesomeIcons.solidCircleCheck,
-                      size: 18,
-                      color: colorScheme.primary,
-                    ),
-                  ],
                 ],
               );
 
@@ -512,10 +526,10 @@ class DiariesListSection extends StatelessWidget {
                 onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
-                    compact ? 0 : 16,
-                    compact ? 0 : 12,
-                    compact ? 0 : 16,
-                    compact ? 0 : 12,
+                    (compact || isLockedCapsule) ? 0 : 16,
+                    (compact || isLockedCapsule) ? 0 : 14,
+                    (compact || isLockedCapsule) ? 0 : 16,
+                    (compact || isLockedCapsule) ? 0 : 14,
                   ),
                   child: content,
                 ),
@@ -671,7 +685,7 @@ class DiariesListSection extends StatelessWidget {
                   context,
                   previewCover,
                   width: double.infinity,
-                  height: compact ? 126 : 96,
+                  height: compact ? 126 : 140,
                   radius: 0,
                 ),
               Container(

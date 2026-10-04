@@ -848,7 +848,10 @@ class DiariesListSection extends StatelessWidget {
     final cacheWidth = width != null && width.isFinite && width > 0
         ? (width * dpr).round()
         : null;
-    final cacheHeight = height.isFinite && height > 0
+    // Supplying both dimensions makes ResizeImage decode to an exact rectangle
+    // and distorts photos whose source aspect ratio differs from the card.
+    // One bounded edge is enough; BoxFit.cover handles the crop at paint time.
+    final cacheHeight = cacheWidth == null && height.isFinite && height > 0
         ? (height * dpr).round()
         : null;
     final trimmed = imageSource.trim();

@@ -54,6 +54,40 @@ void main() {
     expect(find.text('+2'), findsOneWidget);
   });
 
+  testWidgets('list cover crops without distorting the source image', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        diary: _createUnlockedDiaryWithTags(cover: '/missing-cover.png'),
+        layoutMode: DiaryLayoutMode.list,
+        maxVisibleTags: 2,
+      ),
+    );
+
+    final image = tester.widget<Image>(find.byType(Image));
+    final resizedImage = image.image as ResizeImage;
+    expect(image.fit, BoxFit.cover);
+    expect(resizedImage.width, isNotNull);
+    expect(resizedImage.height, isNull);
+  });
+
+  testWidgets('waterfall cover keeps filling its card', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        diary: _createUnlockedDiaryWithTags(cover: '/missing-cover.png'),
+        layoutMode: DiaryLayoutMode.waterfall,
+        maxVisibleTags: 2,
+      ),
+    );
+
+    final image = tester.widget<Image>(find.byType(Image));
+    final resizedImage = image.image as ResizeImage;
+    expect(image.fit, BoxFit.cover);
+    expect(resizedImage.width, isNull);
+    expect(resizedImage.height, isNotNull);
+  });
+
   testWidgets('waterfall layout hides tags when the configured limit is zero', (
     tester,
   ) async {
@@ -216,7 +250,7 @@ void main() {
   );
 }
 
-DiaryWithTags _createUnlockedDiaryWithTags() {
+DiaryWithTags _createUnlockedDiaryWithTags({String? cover}) {
   final now = DateTime.now();
   return DiaryWithTags(
     diary: Diary(
@@ -226,6 +260,7 @@ DiaryWithTags _createUnlockedDiaryWithTags() {
       content: '[{"insert":"visible content\\n"}]',
       contentText: 'visible content',
       metadata: '{}',
+      cover: cover,
       createdAt: now,
       updatedAt: now,
       isArchived: false,

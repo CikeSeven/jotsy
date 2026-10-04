@@ -11,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:node_diary/ui/diaries/models/image_insertion.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_audio_embed_builder.dart';
 
 /// 编辑器工具项标识。
@@ -392,13 +393,13 @@ quill.QuillSimpleToolbarConfig _buildSingleItemConfig(
   final showCurrentTime = item == DiaryToolbarItem.currentTime;
   final showRecording = item == DiaryToolbarItem.recording;
 
-  // 图片按钮使用自定义拣选并复制到私有目录，避免外部路径失效。
+  // 图片按钮使用自定义拣选并复制到私有目录，支持一次性多选并保持独立块级排版。
   final embedButtons = item == DiaryToolbarItem.image
       ? FlutterQuillEmbeds.toolbarButtons(
           imageButtonOptions: QuillToolbarImageButtonOptions(
             iconData: FontAwesomeIcons.image.data,
             imageButtonConfig: QuillToolbarImageConfig(
-              onRequestPickImage: _pickAndPersistDiaryImage,
+              onRequestPickImage: (_) => _pickAndInsertDiaryImages(controller),
             ),
           ),
           videoButtonOptions: null,
@@ -631,26 +632,49 @@ int _clampQuillOffset(int offset, int documentLength) {
   return offset;
 }
 
-/// 拾取图片并返回可插入编辑器的最终路径。
-Future<String?> _pickAndPersistDiaryImage(BuildContext context) async {
-  final result = await FilePicker.platform.pickFiles(
-    allowMultiple: false,
-    type: FileType.image,
-  );
-  if (result == null || result.files.isEmpty) {
-    return null;
-  }
+/// 拾取图片、持久化并批量插入到日记文档中。
+///
+/// 支持一次性多选图片。由于内部已将所有选中的图片完整插入编辑器，
+/// 此处返回 `null` 避免 flutter_quill 触发默认的单图二次插入流程。
+Future<String?> _pickAndInsertDiaryImages(
+  quill.QuillController controller,
+) async {
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.image,
+    );
+    if (result == null || result.files.isEmpty) {
+      return null;
+    }
 
-  final path = result.files.first.path;
-  if (path == null || path.isEmpty) {
-    return null;
-  }
+    final paths = result.files
+        .map((file) => file.path)
+        .whereType<String>()
+        .where((path) => path.trim().isNotEmpty)
+        .toList();
+    if (paths.isEmpty) {
+      return null;
+    }
 
-  return _persistDiaryImage(path);
+    final persistedPaths = <String>[];
+    for (var i = 0; i < paths.length; i++) {
+      final persisted = await _persistDiaryImage(paths[i], indexSuffix: i);
+      persistedPaths.add(persisted);
+    }
+
+    insertDiaryImages(controller: controller, imagePaths: persistedPaths);
+  } catch (error, stackTrace) {
+    debugPrint('Failed to pick or insert diary images: $error\n$stackTrace');
+  }
+  return null;
 }
 
 /// 将外部图片复制到应用私有目录，确保日记长期可访问。
-Future<String> _persistDiaryImage(String sourcePath) async {
+Future<String> _persistDiaryImage(
+  String sourcePath, {
+  int indexSuffix = 0,
+}) async {
   final sourceFile = File(sourcePath);
   if (!await sourceFile.exists()) {
     return sourcePath;
@@ -664,7 +688,7 @@ Future<String> _persistDiaryImage(String sourcePath) async {
 
   final extension = p.extension(sourcePath);
   final targetName =
-      'img_${DateTime.now().microsecondsSinceEpoch}${extension.isEmpty ? '.jpg' : extension}';
+      'img_${DateTime.now().microsecondsSinceEpoch}_$indexSuffix${extension.isEmpty ? '.jpg' : extension}';
   final targetPath = p.join(imageDir.path, targetName);
 
   await sourceFile.copy(targetPath);

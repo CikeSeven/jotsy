@@ -201,4 +201,31 @@ void main() {
     expect(find.byIcon(FontAwesomeIcons.bold.data), findsNothing);
     expect(find.byIcon(FontAwesomeIcons.italic.data), findsOneWidget);
   });
+
+  testWidgets('floating toolbar renders image button', (tester) async {
+    final controller = quill.QuillController.basic();
+    addTearDown(controller.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          ...AppLocalizations.localizationsDelegates,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SizedBox(
+            height: 44,
+            child: buildDiaryFloatingToolbar(
+              controller: controller,
+              order: const <DiaryToolbarItem>[DiaryToolbarItem.image],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.byIcon(FontAwesomeIcons.image.data), findsOneWidget);
+  });
 }

@@ -72,6 +72,7 @@
 - 例外：语义极直白的简单 getter / 纯样板代码可不写注释。
 
 ## 6. UI/交互统一规范
+- 必须：项目视觉系统、色彩层次、字阶排版、组件规格与设计哲学详见 [DESIGN.md](DESIGN.md)，所有 UI 模块开发与评审均须遵循该规范。
 - 必须：应用组件统一继承 `MaterialTheme` 的 Material 3 Expressive 主题；新增单选连接按钮组与等待状态分别复用 `ExpressiveButtonGroup`、`ExpressiveLoadingIndicator`，新增动效通过 `ExpressiveMotion` 尊重系统减少动画设置。Expressive 仍基于 `useMaterial3: true`，禁止以关闭 Material 3 的方式迁移。
 - 必须：新增图标默认使用 `font_awesome_flutter`（`FaIcon` + `FontAwesomeIcons`）。
 - 必须：富文本工具栏与设置页工具预览图标来源一致，避免混用。

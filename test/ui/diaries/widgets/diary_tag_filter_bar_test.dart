@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/app/theme/app_spacing.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/diaries/widgets/expanded_tag_filter_list.dart';
@@ -115,7 +116,9 @@ void main() {
     expect(find.byType(ExpandedTagFilterList), findsOneWidget);
     expect(
       tester.getSize(find.byType(DiaryTagFilterBar)).height,
-      DiaryTagFilterBar.expandedBarExtent,
+      tester.getSize(find.byType(ExpandedTagFilterList)).height +
+          DiaryTagFilterBar.collapseHandleExtent +
+          AppSpacing.xs * 2,
     );
 
     await tester.drag(
@@ -197,7 +200,7 @@ void main() {
     expect(key.currentState!.pageScrollController.offset, 0);
   });
 
-  testWidgets('four-row viewport scrolls to the last tag without collapsing', (
+  testWidgets('five-row viewport scrolls to the last tag without collapsing', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 800);
@@ -221,7 +224,7 @@ void main() {
     final scroll = tester.state<ScrollableState>(scrollable);
     expect(
       scroll.position.viewportDimension,
-      DiaryTagFilterBar.expandedRowsExtent,
+      DiaryTagFilterBar.chipExtent * 5 + AppSpacing.xs * 4,
     );
     expect(find.byType(TagFilterChip).evaluate().length, lessThan(30));
     expect(find.text('Tag 200'), findsNothing);

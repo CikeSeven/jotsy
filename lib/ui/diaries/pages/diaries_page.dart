@@ -286,24 +286,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             ),
           ),
         );
-        final animatedTagHeader = AnimatedBuilder(
-          animation: _tagFilterExpansionController,
-          child: tagHeaderContent,
-          builder: (context, child) {
-            final collapsedExtent = DiaryTagFilterBar.collapsedHeaderExtent;
-            final expandedExtent = DiaryTagFilterBar.expandedHeaderExtent;
-            final progress = _tagFilterExpansionController.value;
-            final extent =
-                collapsedExtent + (expandedExtent - collapsedExtent) * progress;
-            return SliverPersistentHeader(
-              pinned: true,
-              delegate: _FixedSliverHeaderDelegate(
-                height: extent,
-                backgroundColor: widget.pageBackgroundColor,
-                child: child!,
-              ),
-            );
-          },
+        // Measure the animated bar itself instead of reserving a fixed
+        // maximum-height sliver. Content changes and width/text-scale changes then
+        // update the pinned extent in the same layout pass, without a delayed
+        // size callback or a second independently calculated animation.
+        final tagHeader = PinnedHeaderSliver(
+          child: ColoredBox(
+            color: widget.pageBackgroundColor,
+            child: tagHeaderContent,
+          ),
         );
 
         return Scaffold(
@@ -391,7 +382,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 ),
                               ),
                             ),
-                            animatedTagHeader,
+                            tagHeader,
                             SliverFadeTransition(
                               opacity: _listRefreshOpacity,
                               sliver:
@@ -539,24 +530,24 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     _tagFilterDragDelta = 0;
   }
 
-  void _handleTagFilterDragUpdate(double delta) {
+  void _handleTagFilterDragUpdate(double delta, double expansionExtent) {
     // The sliver extent and the bar's clipping viewport share this normalized
     // progress, so the content follows the finger without a second animation.
     _tagFilterDragDelta += delta;
-    final range =
-        DiaryTagFilterBar.expandedHeaderExtent -
-        DiaryTagFilterBar.collapsedHeaderExtent;
-    if (range <= 0) {
+    if (expansionExtent <= 0) {
       return;
     }
-    final nextProgress = (_tagFilterExpansionController.value + delta / range)
-        .clamp(0.0, 1.0);
+    final nextProgress =
+        (_tagFilterExpansionController.value + delta / expansionExtent).clamp(
+          0.0,
+          1.0,
+        );
     _tagFilterExpansionController.value = nextProgress;
   }
 
   void _handleTagFilterDragEnd(double velocity) {
     // A deliberate short pull should not require traversing half of the
-    // four-row panel. Use net displacement for slow gestures so moving back
+    // visible panel. Use net displacement for slow gestures so moving back
     // towards the start cancels the intent; tiny movements retain the nearest
     // state, while a fling can still override the final position.
     final bool shouldExpand;

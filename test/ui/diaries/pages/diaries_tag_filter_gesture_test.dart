@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
@@ -39,7 +40,18 @@ void main() {
           );
           expect(
             tester.getSize(tagBarFinder).height,
-            DiaryTagFilterBar.expandedBarExtent,
+            tagCount == 3
+                ? DiaryTagFilterBar.chipExtent +
+                      DiaryTagFilterBar.collapseHandleExtent +
+                      8
+                : DiaryTagFilterBar.maxExpandedBarExtent,
+          );
+          final header = tester.renderObject<RenderSliver>(
+            find.byType(PinnedHeaderSliver),
+          );
+          expect(
+            header.geometry!.scrollExtent,
+            tester.getSize(tagBarFinder).height + 6,
           );
           expect(verticalDiaryScroll(tester).position.pixels, 0);
           final container = ProviderScope.containerOf(

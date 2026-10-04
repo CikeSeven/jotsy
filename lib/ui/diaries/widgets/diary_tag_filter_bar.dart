@@ -8,12 +8,13 @@ import 'tag_filter_chip.dart';
 import 'tag_filter_clear_button.dart';
 import 'tag_filter_collapse_handle.dart';
 import 'tag_filter_expansion_gesture.dart';
+import 'tag_filter_layout.dart';
 
 /// 日记页顶部标签筛选栏。
 ///
 /// 结构：
 /// - 左侧纯 `X` 清空筛选按钮（带缩放 + 旋转反馈）；
-/// - 收起时横向滚动，展开时用四行高的独立窗口浏览全部标签；
+/// - 收起时横向滚动，展开高度随实际行数变化，最多五行并独立滚动；
 /// - 卡片尺寸和主题样式在两种排列中一致；
 /// - 标签区域的拖动不移交给日记滚动或 Home 切页。
 class DiaryTagFilterBar extends StatefulWidget {
@@ -32,19 +33,15 @@ class DiaryTagFilterBar extends StatefulWidget {
     required this.onCollapse,
   });
 
-  static const int maxExpandedRows = 4;
-  static const double collapsedHeaderExtent = 46;
+  static const int maxExpandedRows = 5;
   static const double chipExtent = 32;
   static const double _expandedRowSpacing = AppSpacing.xs;
-  static const double expandedRowsExtent =
+  static const double maxExpandedRowsExtent =
       chipExtent * maxExpandedRows +
       _expandedRowSpacing * (maxExpandedRows - 1);
   static const double collapseHandleExtent = 24;
-  static const double expandedContentExtent =
-      expandedRowsExtent + collapseHandleExtent;
-  static const double expandedBarExtent =
-      expandedContentExtent + AppSpacing.xs * 2;
-  static const double expandedHeaderExtent = expandedContentExtent + 14;
+  static const double maxExpandedBarExtent =
+      maxExpandedRowsExtent + collapseHandleExtent + AppSpacing.xs * 2;
   static const collapseHandleKey = ValueKey<String>(
     'diary_tag_collapse_handle',
   );
@@ -57,7 +54,11 @@ class DiaryTagFilterBar extends StatefulWidget {
   final void Function(int tagId, bool selected) onToggleTagFilter;
   final VoidCallback onClearTagFilters;
   final ValueChanged<bool> onVerticalDragStart;
-  final ValueChanged<double> onVerticalDragUpdate;
+
+  /// Passes the raw drag distance and current content's expansion travel so
+  /// the parent can track gesture intent without assuming a fixed row count.
+  final void Function(double delta, double expansionExtent)
+  onVerticalDragUpdate;
   final ValueChanged<double> onVerticalDragEnd;
   final VoidCallback onCollapse;
 
@@ -69,7 +70,12 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
   final ScrollController _horizontalController = ScrollController();
   final ScrollController _verticalController = ScrollController();
   final GlobalKey _clearKey = GlobalKey();
+  final TagFilterLayoutCache _layoutCache = TagFilterLayoutCache();
   double _contentWidth = 0;
+  double _expandedRowsExtent = DiaryTagFilterBar.chipExtent;
+
+  double get _expandedContentExtent =>
+      _expandedRowsExtent + DiaryTagFilterBar.collapseHandleExtent;
 
   @override
   void dispose() {
@@ -80,19 +86,37 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
 
   @override
   Widget build(BuildContext context) {
-    final expandedTags = _buildExpandedTags();
     final collapsedTags = _buildCollapsedTags();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        _contentWidth = constraints.maxWidth - AppSpacing.m * 2;
+        _contentWidth = (constraints.maxWidth - AppSpacing.m * 2).clamp(
+          0.0,
+          double.infinity,
+        );
+        final layout = _layoutCache.resolve(
+          context,
+          tags: widget.tags,
+          selectedTagIds: widget.selectedTagFilterIds,
+          width: _contentWidth,
+          spacing: AppSpacing.s,
+        );
+        _expandedRowsExtent = layout.visibleRowsExtent(
+          rowHeight: DiaryTagFilterBar.chipExtent,
+          rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
+          maxRows: DiaryTagFilterBar.maxExpandedRows,
+        );
+        final expandedContentExtent = _expandedContentExtent;
         return TagFilterExpansionGesture(
           canExpand: () => widget.tags.isNotEmpty && widget.canExpand(),
           canCollapse: _canCollapseFrom,
           allowVerticalScroll: _canScrollVertically,
           allowHorizontalScroll: _canScrollHorizontally,
           onStart: widget.onVerticalDragStart,
-          onUpdate: widget.onVerticalDragUpdate,
+          onUpdate: (delta) => widget.onVerticalDragUpdate(
+            delta,
+            expandedContentExtent - DiaryTagFilterBar.chipExtent,
+          ),
           onEnd: widget.onVerticalDragEnd,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -103,13 +127,12 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
             ),
             child: ValueListenableBuilder<double>(
               valueListenable: widget.expansionProgress,
-              child: expandedTags,
+              child: _buildExpandedTags(layout),
               builder: (BuildContext context, double progress, Widget? child) {
                 final normalizedProgress = progress.clamp(0.0, 1.0);
                 final contentHeight =
                     DiaryTagFilterBar.chipExtent +
-                    (DiaryTagFilterBar.expandedContentExtent -
-                            DiaryTagFilterBar.chipExtent) *
+                    (expandedContentExtent - DiaryTagFilterBar.chipExtent) *
                         normalizedProgress;
                 final showExpandedLayout = normalizedProgress > 0;
                 return SizedBox(
@@ -119,8 +142,8 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
                       ? ClipRect(
                           child: OverflowBox(
                             alignment: Alignment.topCenter,
-                            minHeight: DiaryTagFilterBar.expandedContentExtent,
-                            maxHeight: DiaryTagFilterBar.expandedContentExtent,
+                            minHeight: expandedContentExtent,
+                            maxHeight: expandedContentExtent,
                             child: child,
                           ),
                         )
@@ -141,13 +164,13 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
       widget.expansionProgress.value > 0 &&
       _inContentWidth(start) &&
       start.dy >= AppSpacing.xs &&
-      start.dy < AppSpacing.xs + DiaryTagFilterBar.expandedRowsExtent;
+      start.dy < AppSpacing.xs + _expandedRowsExtent;
 
   bool _canCollapseFrom(Offset start) =>
       widget.canCollapse() &&
       _inContentWidth(start) &&
-      start.dy >= AppSpacing.xs + DiaryTagFilterBar.expandedRowsExtent &&
-      start.dy <= AppSpacing.xs + DiaryTagFilterBar.expandedContentExtent;
+      start.dy >= AppSpacing.xs + _expandedRowsExtent &&
+      start.dy <= AppSpacing.xs + _expandedContentExtent;
 
   bool _canScrollHorizontally(Offset startPosition) {
     if (widget.expansionProgress.value > 0 ||
@@ -182,21 +205,20 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     );
   }
 
-  Widget _buildExpandedTags() {
+  Widget _buildExpandedTags(TagFilterLayout layout) {
     return SizedBox(
-      height: DiaryTagFilterBar.expandedContentExtent,
+      height: _expandedContentExtent,
       child: Column(
         children: <Widget>[
           SizedBox(
-            height: DiaryTagFilterBar.expandedRowsExtent,
+            height: _expandedRowsExtent,
             child: ExpandedTagFilterList(
-              tags: widget.tags,
-              selectedTagIds: widget.selectedTagFilterIds,
+              layout: layout,
               controller: _verticalController,
               itemBuilder: _buildTagItem,
               rowHeight: DiaryTagFilterBar.chipExtent,
               spacing: AppSpacing.s,
-              rowSpacing: AppSpacing.xs,
+              rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
             ),
           ),
           SizedBox(

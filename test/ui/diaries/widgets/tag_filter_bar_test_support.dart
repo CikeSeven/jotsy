@@ -105,14 +105,9 @@ class TagBarHarnessState extends State<TagBarHarness> {
               verticalDragStarts.add(expanding);
               setState(() => expanded = expanding);
             },
-            onVerticalDragUpdate: (delta) {
-              final range =
-                  DiaryTagFilterBar.expandedHeaderExtent -
-                  DiaryTagFilterBar.collapsedHeaderExtent;
-              _progress.value = (_progress.value + delta / range).clamp(
-                0.0,
-                1.0,
-              );
+            onVerticalDragUpdate: (delta, expansionExtent) {
+              _progress.value = (_progress.value + delta / expansionExtent)
+                  .clamp(0.0, 1.0);
             },
             onVerticalDragEnd: (velocity) {
               final target = velocity.abs() >= 600

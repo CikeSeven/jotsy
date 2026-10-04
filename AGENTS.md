@@ -98,6 +98,10 @@
   - `flutter pub get`
   - `flutter test`
   - `dart run build_runner build --delete-conflicting-outputs`
+- 必须：用户要求安装 Android 包时，先用 `adb devices -l` 确认设备；存在多台设备时必须指定目标序列号。构建后使用 `adb -s <serial> install -r <apk>` 覆盖安装，以保留现有应用数据。
+- 必须：profile 包覆盖安装到已有 release 包时，必须使用相同 release signing config；签名材料缺失或不匹配时停止安装，不得改用 debug 签名。
+- 禁止：为安装或升级应用执行 `adb uninstall`、`pm clear`、清除应用数据或恢复出厂设置。
+- 必须：若覆盖安装因签名不匹配、版本降级或其他原因失败，保留设备上的应用与数据并报告原因；未经用户明确要求不得改用会丢失数据的安装方式。
 - 禁止：未经请求接管长生命周期运行任务并长时间阻塞终端。
 - 例外：用户明确要求接管运行/调试时可执行，并在过程里持续同步状态。
 

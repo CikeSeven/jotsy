@@ -8,6 +8,7 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 extension EditDiaryRecordingFlow on EditDiaryController {
   Future<void> startRecording() async {
     await DiaryAudioPlayerController.pauseActive();
+    await DiaryVideoPlayerController.pauseActive();
     if (!_state.mounted || !_state._recordingPanelOpen) return;
     await _state._recordingController.start();
   }

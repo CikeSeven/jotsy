@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:node_diary/core/database/audio_embed_codec.dart';
+import 'package:node_diary/core/services/audio_playback_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_audio_player.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_playback_interaction_guard.dart';
 
 class DiaryAudioEmbedBuilder extends quill.EmbedBuilder {
-  const DiaryAudioEmbedBuilder();
+  const DiaryAudioEmbedBuilder({this.player});
+
+  final AudioPlaybackService? player;
 
   @override
   String get key => diaryAudioEmbedType;
@@ -19,24 +23,28 @@ class DiaryAudioEmbedBuilder extends quill.EmbedBuilder {
         style: TextStyle(color: Theme.of(context).colorScheme.error),
       );
     }
-    return DiaryAudioPlayer(
-      key: ValueKey(audio.path),
-      recording: audio,
-      onRename: embedContext.readOnly
-          ? null
-          : (newName) {
-              final trimmed = newName.trim();
-              final updated = audio.copyWith(
-                name: trimmed.isNotEmpty ? trimmed : null,
-              );
-              final offset = embedContext.node.offset;
-              embedContext.controller.replaceText(
-                offset,
-                1,
-                quill.BlockEmbed(diaryAudioEmbedType, updated.encode()),
-                null,
-              );
-            },
+    return DiaryPlaybackInteractionGuard(
+      child: DiaryAudioPlayer(
+        key: ValueKey(audio.path),
+        recording: audio,
+        player: player,
+        onRename: embedContext.readOnly
+            ? null
+            : (newName) {
+                final trimmed = newName.trim();
+                final updated = audio.copyWith(
+                  name: trimmed.isNotEmpty ? trimmed : null,
+                );
+                final offset = embedContext.node.offset;
+                embedContext.controller.replaceText(
+                  offset,
+                  1,
+                  quill.BlockEmbed(diaryAudioEmbedType, updated.encode()),
+                  null,
+                  ignoreFocus: true,
+                );
+              },
+      ),
     );
   }
 }

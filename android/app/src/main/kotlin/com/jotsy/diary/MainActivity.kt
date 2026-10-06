@@ -30,6 +30,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var predictiveBackCallbackRegistered = false
   private var pendingBackupSaveResult: MethodChannel.Result? = null
   private var pendingBackupSourcePath: String? = null
+  private var galleryVideoPicker: DiaryGalleryVideoPicker? = null
 
   override fun createFlutterFragment(): FlutterFragment {
     val backgroundMode = backgroundMode
@@ -138,6 +139,11 @@ class MainActivity : FlutterFragmentActivity() {
 
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
+    galleryVideoPicker?.dispose()
+    galleryVideoPicker = DiaryGalleryVideoPicker(
+      this,
+      flutterEngine.dartExecutor.binaryMessenger,
+    )
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, configChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
@@ -212,6 +218,9 @@ class MainActivity : FlutterFragmentActivity() {
   }
 
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (galleryVideoPicker?.onActivityResult(requestCode, resultCode, data) == true) {
+      return
+    }
     if (requestCode != backupFileSaverRequestCode) {
       super.onActivityResult(requestCode, resultCode, data)
       return
@@ -269,6 +278,8 @@ class MainActivity : FlutterFragmentActivity() {
   }
 
   override fun onDestroy() {
+    galleryVideoPicker?.dispose()
+    galleryVideoPicker = null
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     setPredictiveBackProgressEnabled(false)

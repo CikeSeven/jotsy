@@ -87,6 +87,8 @@ void main() {
       final audio = DiaryAudioAttachment(
         path: oldPath,
         duration: const Duration(seconds: 12),
+        name: '会议录音',
+        waveform: const [0.2, 0.8],
       );
       final content = jsonEncode([
         {
@@ -130,6 +132,11 @@ void main() {
         {restoredPath},
       );
       final inserted = (jsonDecode(restoredDiary.content) as List).first as Map;
+      final restoredAudio = DiaryAudioAttachment.tryDecode(
+        (inserted['insert'] as Map)[diaryAudioEmbedType],
+      );
+      expect(restoredAudio?.name, '会议录音');
+      expect(restoredAudio?.waveform, [0.2, 0.8]);
       expect(
         DiaryAudioAttachment.tryDecode(
           (inserted['insert'] as Map)[diaryAudioEmbedType],

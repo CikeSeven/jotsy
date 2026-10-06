@@ -49,6 +49,8 @@ dependencies:
   gal: ^2.3.2
   record: ^6.2.0
   audioplayers: ^6.5.0
+  open_filex: ^4.7.0
+  video_player: ^2.11.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

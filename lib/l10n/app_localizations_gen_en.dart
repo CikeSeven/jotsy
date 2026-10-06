@@ -431,7 +431,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataMgmtExportSubtitle =>
-      'Export ZIP with diaries, tags, settings, and local media';
+      'Export a ZIP containing diaries, tags, settings, images, recordings, videos, and attachments';
 
   @override
   String get dataMgmtImport => 'Import Data';
@@ -1580,4 +1580,107 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEnergySwitchTooltip => 'Toggle energy level recording';
+
+  @override
+  String get diaryToolbarInsertVideo => 'Insert video';
+
+  @override
+  String get diaryToolbarInsertAttachment => 'Insert attachment';
+
+  @override
+  String get diaryMediaImporting => 'Importing files…';
+
+  @override
+  String get diaryMediaImportFailed =>
+      'Files could not be imported. Please try again.';
+
+  @override
+  String get diaryMediaImportUnsupported =>
+      'File import is not available on this platform.';
+
+  @override
+  String get attachmentOpen => 'Open attachment';
+
+  @override
+  String get attachmentOpenHint => 'Tap to open with another app';
+
+  @override
+  String get attachmentOpening => 'Opening attachment…';
+
+  @override
+  String get attachmentFileMissing =>
+      'The attachment is missing or unavailable.';
+
+  @override
+  String get attachmentNoApp => 'No installed app can open this file.';
+
+  @override
+  String get attachmentPermissionDenied =>
+      'The attachment could not be accessed.';
+
+  @override
+  String get attachmentOpenFailed =>
+      'The attachment could not be opened. Please try again.';
+
+  @override
+  String get videoLoading => 'Loading video…';
+
+  @override
+  String get videoPlay => 'Play video';
+
+  @override
+  String get videoPause => 'Pause video';
+
+  @override
+  String get videoProgress => 'Video progress';
+
+  @override
+  String get videoPlaybackFailed =>
+      'Video cannot be played here. Tap to open with another app.';
+
+  @override
+  String get videoExport => 'Export video';
+
+  @override
+  String get videoExportConfirmTitle => 'Export video';
+
+  @override
+  String videoExportConfirmMessage(String name) {
+    return 'Save \"$name\" to your gallery?';
+  }
+
+  @override
+  String get videoExporting => 'Exporting video…';
+
+  @override
+  String get videoExportSuccess => 'Video saved to gallery';
+
+  @override
+  String get videoExportFileMissing => 'The video file is missing or empty.';
+
+  @override
+  String get videoExportPermissionDenied =>
+      'Gallery access is not allowed. Video could not be exported.';
+
+  @override
+  String get videoExportNotEnoughSpace =>
+      'Not enough storage to export this video.';
+
+  @override
+  String get videoExportUnsupportedFormat =>
+      'This video format cannot be saved to the gallery.';
+
+  @override
+  String get videoExportDownloadFailed =>
+      'Video download failed. Please try again.';
+
+  @override
+  String get videoExportFailed =>
+      'Video could not be exported. Please try again.';
+
+  @override
+  String get videoFullscreen => 'Fullscreen playback';
+
+  @override
+  String get videoExitFullscreen => 'Exit fullscreen';
 }

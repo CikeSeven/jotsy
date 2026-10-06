@@ -3,9 +3,68 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 void main() {
+  test(
+    'older toolbar preferences gain visible video and attachment actions',
+    () {
+      final order = decodeDiaryToolbarOrder('image,bold');
+      expect(order.take(2), [DiaryToolbarItem.image, DiaryToolbarItem.bold]);
+      expect(
+        order,
+        containsAll([DiaryToolbarItem.video, DiaryToolbarItem.attachment]),
+      );
+      expect(order.toSet().length, order.length);
+      expect(
+        decodeDiaryToolbarHiddenItems('bold'),
+        isNot(contains(DiaryToolbarItem.video)),
+      );
+    },
+  );
+
+  testWidgets(
+    'image video and attachment toolbar actions invoke the matching import flow',
+    (tester) async {
+      final controller = quill.QuillController.basic();
+      addTearDown(controller.dispose);
+      final requested = <DiaryMediaKind>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: const [
+            ...AppLocalizations.localizationsDelegates,
+            quill.FlutterQuillLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              height: 44,
+              child: buildDiaryFloatingToolbar(
+                controller: controller,
+                order: const [
+                  DiaryToolbarItem.image,
+                  DiaryToolbarItem.video,
+                  DiaryToolbarItem.attachment,
+                ],
+                onMediaPressed: requested.add,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('插入图片'));
+      await tester.tap(find.byTooltip('插入视频'));
+      await tester.tap(find.byTooltip('插入附件'));
+      expect(requested, [
+        DiaryMediaKind.image,
+        DiaryMediaKind.video,
+        DiaryMediaKind.attachment,
+      ]);
+    },
+  );
   test('toolbar hidden item codec round-trips and ignores invalid keys', () {
     final hidden = <DiaryToolbarItem>{
       DiaryToolbarItem.bold,

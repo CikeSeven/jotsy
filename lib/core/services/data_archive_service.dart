@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
-import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
 import 'package:drift/drift.dart' show Value;
@@ -11,7 +10,9 @@ import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
 import '../database/audio_embed_codec.dart';
+import '../database/file_embed_codec.dart';
 import 'diary_audio_storage_service.dart';
+import 'diary_media_storage_service.dart';
 import 'settings_service.dart';
 
 /// 数据归档服务（ZIP 导入/导出）。
@@ -29,6 +30,13 @@ class DataArchiveService {
   static const String _backupAudioDirectoryName =
       DiaryAudioStorageService.directoryName;
   static const int _backupFormatVersion = 1;
+  static const List<String> _managedMediaDirectories = [
+    _backupCoversDirectoryName,
+    _backupImagesDirectoryName,
+    _backupAudioDirectoryName,
+    DiaryMediaStorageService.videosDirectoryName,
+    DiaryMediaStorageService.attachmentsDirectoryName,
+  ];
 
   /// 导出当前数据到 zip，返回生成的 zip 文件对象（位于临时目录）。
   static Future<File> exportToZip({
@@ -48,30 +56,23 @@ class DataArchiveService {
         flush: true,
       );
 
-      await _copyManagedDirectoryToWorkingDir(
-        sourceDirectoryName: _backupCoversDirectoryName,
-        targetRoot: tempRoot,
-      );
-      await _copyManagedDirectoryToWorkingDir(
-        sourceDirectoryName: _backupImagesDirectoryName,
-        targetRoot: tempRoot,
-      );
-      await _copyManagedDirectoryToWorkingDir(
-        sourceDirectoryName: _backupAudioDirectoryName,
-        targetRoot: tempRoot,
-      );
+      for (final directory in _managedMediaDirectories) {
+        await _copyManagedDirectoryToWorkingDir(
+          sourceDirectoryName: directory,
+          targetRoot: tempRoot,
+        );
+      }
 
       final outputZipPath = p.join(
         (await getTemporaryDirectory()).path,
         'node_note_backup_${DateTime.now().millisecondsSinceEpoch}.zip',
       );
-      final bytes = await _encodeDirectoryToZipBytes(
+      await _encodeDirectoryToZipFile(
         tempRoot,
+        outputZipPath: outputZipPath,
         password: _normalizeOptionalPassword(zipPassword),
       );
-      final zipFile = File(outputZipPath);
-      await zipFile.writeAsBytes(bytes, flush: true);
-      return zipFile;
+      return File(outputZipPath);
     } finally {
       if (await tempRoot.exists()) {
         await tempRoot.delete(recursive: true);
@@ -83,7 +84,7 @@ class DataArchiveService {
   ///
   /// 导入策略：
   /// 1) 恢复数据库表数据（清空后重建）；
-  /// 2) 恢复本地媒体目录（封面/正文图片/录音）；
+  /// 2) 恢复本地媒体目录（封面/正文图片/录音/视频/附件）；
   /// 3) 恢复设置项（主题、排序、布局、工具栏顺序、标签顺序、草稿）。
   static Future<void> importFromZip({
     required AppDatabase database,
@@ -116,18 +117,12 @@ class DataArchiveService {
         throw const FormatException('备份数据格式错误');
       }
 
-      await _restoreManagedDirectoryFromBackup(
-        backupRoot: extractRoot,
-        directoryName: _backupCoversDirectoryName,
-      );
-      await _restoreManagedDirectoryFromBackup(
-        backupRoot: extractRoot,
-        directoryName: _backupImagesDirectoryName,
-      );
-      await _restoreManagedDirectoryFromBackup(
-        backupRoot: extractRoot,
-        directoryName: _backupAudioDirectoryName,
-      );
+      for (final directory in _managedMediaDirectories) {
+        await _restoreManagedDirectoryFromBackup(
+          backupRoot: extractRoot,
+          directoryName: directory,
+        );
+      }
       await _restoreDatabaseFromPayload(database, decoded);
       await _restoreSettingsFromPayload(settingsService, decoded);
     } finally {
@@ -323,8 +318,19 @@ class DataArchiveService {
       return sourcePath;
     }
 
+    final uri = Uri.tryParse(source);
+    if (uri != null &&
+        uri.hasScheme &&
+        uri.scheme != 'file' &&
+        !RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(source)) {
+      return sourcePath;
+    }
+    final localSource = uri?.scheme == 'file'
+        ? Uri.decodeComponent(uri!.path)
+        : source;
+
     final segments = p.posix
-        .split(source.replaceAll('\\', '/'))
+        .split(localSource.replaceAll('\\', '/'))
         .where((segment) => segment.isNotEmpty && segment != '.')
         .toList(growable: false);
     for (final directoryName in directoryNames) {
@@ -369,8 +375,7 @@ class DataArchiveService {
     return jsonEncode(decoded);
   }
 
-  /// Handles Quill Delta image/audio embeds and legacy AppFlowy
-  /// `type=image / attributes.url` nodes without changing unrelated text.
+  /// 恢复 Quill 及旧版 AppFlowy 的媒体引用，保留文件 metadata 和远程 URL。
   static Future<void> _rewriteEmbeddedMediaPaths(
     Object? node,
     Directory documentsDirectory,
@@ -401,10 +406,24 @@ class DataArchiveService {
           directoryNames: const [_backupAudioDirectoryName],
           documentsDirectory: documentsDirectory,
         );
-        insert[diaryAudioEmbedType] = DiaryAudioAttachment(
-          path: restoredPath ?? audio.path,
-          duration: audio.duration,
-        ).encode();
+        insert[diaryAudioEmbedType] = audio
+            .copyWith(path: restoredPath ?? audio.path)
+            .encode();
+      }
+      for (final type in ['video', ...diaryFileEmbedTypes]) {
+        final file = DiaryFileAttachment.tryDecode(insert[type]);
+        if (file == null) continue;
+        final path = await _restoreManagedMediaPath(
+          file.path,
+          directoryNames: const [
+            DiaryMediaStorageService.videosDirectoryName,
+            DiaryMediaStorageService.attachmentsDirectoryName,
+          ],
+          documentsDirectory: documentsDirectory,
+        );
+        if (path != file.path) {
+          insert[type] = replaceDiaryFilePath(insert[type], path!);
+        }
       }
     }
 
@@ -416,6 +435,22 @@ class DataArchiveService {
           directoryNames: const <String>[_backupImagesDirectoryName],
           documentsDirectory: documentsDirectory,
         );
+      }
+    }
+    if (node['type'] == 'video' || diaryFileEmbedTypes.contains(node['type'])) {
+      final file = DiaryFileAttachment.tryDecode(node['attributes']);
+      if (file != null) {
+        final path = await _restoreManagedMediaPath(
+          file.path,
+          directoryNames: const [
+            DiaryMediaStorageService.videosDirectoryName,
+            DiaryMediaStorageService.attachmentsDirectoryName,
+          ],
+          documentsDirectory: documentsDirectory,
+        );
+        if (path != file.path) {
+          node['attributes'] = replaceDiaryFilePath(node['attributes'], path!);
+        }
       }
     }
 
@@ -698,45 +733,66 @@ class DataArchiveService {
     }
   }
 
-  static Future<Uint8List> _encodeDirectoryToZipBytes(
+  static Future<void> _encodeDirectoryToZipFile(
     Directory root, {
+    required String outputZipPath,
     String? password,
   }) async {
-    // ZIP 编码是纯 CPU + 大量字节处理，放到后台 isolate 避免阻塞主线程动画。
-    return Isolate.run<Uint8List>(
-      () => _encodeDirectoryToZipBytesSync(root.path, password: password),
+    // 不把整个含视频的备份放进内存或跨 isolate 传递；仅返回已经落盘的文件。
+    await Isolate.run<void>(
+      () => _encodeDirectoryToZipFileSync(
+        root.path,
+        outputZipPath: outputZipPath,
+        password: password,
+      ),
     );
   }
 
-  static Uint8List _encodeDirectoryToZipBytesSync(
+  static void _encodeDirectoryToZipFileSync(
     String rootPath, {
+    required String outputZipPath,
     String? password,
   }) {
-    final archive = Archive();
     final normalizedRootPath = p.normalize(rootPath);
-    final rootDirectory = Directory(rootPath);
-    final entities = rootDirectory.listSync(
-      recursive: true,
-      followLinks: false,
-    );
-    for (final entity in entities) {
-      if (entity is! File) {
-        continue;
+    final output = OutputFileStream(outputZipPath);
+    final encoder = ZipEncoder(password: password)..startEncode(output);
+    try {
+      for (final entity in Directory(
+        rootPath,
+      ).listSync(recursive: true, followLinks: false)) {
+        if (entity is! File) continue;
+        final relativePath = p
+            .relative(p.normalize(entity.path), from: normalizedRootPath)
+            .replaceAll('\\', '/');
+        final input = InputFileStream(entity.path);
+        try {
+          final entry =
+              ArchiveFile.stream(relativePath, entity.lengthSync(), input)
+                ..lastModTime =
+                    entity.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
+          // 视频和常见附件多已压缩，STORE 可保持文件流，避免 Deflate 整条目
+          // 缓冲。加密仍沿用 archive 的单条目 AES 缓冲，不同时保留整包内容。
+          if (relativePath.startsWith(
+                '${DiaryMediaStorageService.videosDirectoryName}/',
+              ) ||
+              relativePath.startsWith(
+                '${DiaryMediaStorageService.attachmentsDirectoryName}/',
+              )) {
+            entry.compress = false;
+          }
+          encoder.addFile(entry);
+        } finally {
+          input.closeSync();
+        }
       }
-      final normalizedEntityPath = p.normalize(entity.path);
-      final relativePath = p
-          .relative(normalizedEntityPath, from: normalizedRootPath)
-          .replaceAll('\\', '/');
-      final bytes = entity.readAsBytesSync();
-      final entry = ArchiveFile(relativePath, bytes.length, bytes);
-      archive.addFile(entry);
+      encoder.endEncode();
+    } catch (_) {
+      output.closeSync();
+      File(outputZipPath).deleteSync();
+      rethrow;
+    } finally {
+      output.closeSync();
     }
-
-    final encoded = ZipEncoder(password: password).encode(archive);
-    if (encoded == null) {
-      throw const FileSystemException('创建 zip 失败');
-    }
-    return Uint8List.fromList(encoded);
   }
 
   static Future<void> _extractZipToDirectory(

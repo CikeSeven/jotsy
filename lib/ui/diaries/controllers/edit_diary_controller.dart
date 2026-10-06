@@ -41,6 +41,7 @@ class EditDiaryController {
 
   /// 替换正文控制器时同步管理监听，避免旧控制器泄漏。
   void replaceContentController(quill.QuillController nextController) {
+    _state._mediaImportController.cancel();
     _state._contentController.removeListener(onCreateDraftInputChanged);
     _state._contentController.dispose();
     _state._contentController = nextController;

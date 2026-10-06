@@ -20,16 +20,21 @@ import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
+import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
+import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
@@ -37,6 +42,7 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_recording_controller.dart';
+part '../controllers/edit_diary_media_controller.dart';
 
 /// 日记编辑页。
 ///
@@ -75,6 +81,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   final ScrollController _editorInnerScrollController = ScrollController();
   final DiaryRecordingController _recordingController =
       DiaryRecordingController();
+  final DiaryMediaImportController _mediaImportController =
+      DiaryMediaImportController();
   final PublishDiaryPanelController _editPanelController =
       PublishDiaryPanelController();
   DateTime? _createDateOverride;
@@ -138,6 +146,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
     _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
     _controller = EditDiaryController(this);
+    _mediaImportController.addListener(_onMediaImportChanged);
     _titleController.addListener(_controller.onCreateDraftInputChanged);
     _contentController.addListener(_controller.onCreateDraftInputChanged);
     // 新建模式无需等详情查询，直接允许渲染编辑区域。
@@ -153,6 +162,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _editSaveSuccessIconTimer?.cancel();
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
+    _mediaImportController.removeListener(_onMediaImportChanged);
+    _mediaImportController.dispose();
     _titleController.dispose();
     _locationController.dispose();
     _weatherController.dispose();
@@ -182,11 +193,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       _isEditEntry &&
       !_saving &&
       _hasPendingEditChanges &&
+      !_mediaImportController.isBusy &&
       !_recordingPanelOpen;
   bool get _isEditPanelExpanded =>
       _isEditEntry && _editPanelExpandProgress >= 0.56;
   bool get _isEditingNoteText =>
       _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
+
+  void _onMediaImportChanged() {
+    if (mounted) setState(() {});
+  }
 
   String? _normalizeOptionalText(String? raw) {
     final normalized = raw?.trim();
@@ -497,6 +513,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                           autoFocus: widget.diaryId == null,
                           placeholder: context.l10n.autoT0133,
                           scrollable: false,
+                          onTapUp: (details, getPosition) => isDiaryPlaybackTap(
+                            _contentController,
+                            getPosition(details.globalPosition),
+                          ),
                           padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
                           customStyles: _buildEditorCustomStyles(
                             context: context,
@@ -707,7 +727,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               ),
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
-                  onPressed: _saving || _recordingPanelOpen
+                  onPressed:
+                      _saving ||
+                          _recordingPanelOpen ||
+                          _mediaImportController.isBusy
                       ? null
                       : _controller.openPublishPage,
                   icon: const FaIcon(FontAwesomeIcons.plus),
@@ -886,6 +909,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     ),
                   ),
                 ),
+              if (_mediaImportController.isCopying)
+                const DiaryMediaImportOverlay(),
             ],
           ),
         );
@@ -1008,9 +1033,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     return buildDiaryFloatingToolbar(
       controller: _contentController,
       order: toolbarOrder,
+      hiddenItems: _toolbarHiddenItems,
       currentTimeFormatPattern: _toolbarCurrentTimeFormatPattern,
       onRecordingPressed: _toggleRecordingPanel,
       recordingOpen: _recordingPanelOpen,
+      mediaImportController: _mediaImportController,
+      onMediaPressed: (kind) => unawaited(_controller.importMedia(kind)),
     );
   }
 
@@ -1036,6 +1064,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   }
 
   void _toggleRecordingPanel() {
+    if (_mediaImportController.isBusy) return;
     if (_recordingPanelOpen) {
       _closeRecordingPanel();
       return;

@@ -548,7 +548,7 @@
   "@dataMgmtExport": {
     "description": "Auto-generated metadata for dataMgmtExport."
   },
-  "dataMgmtExportSubtitle": "导出为 zip，包含日记、标签、设置与本地图片资源",
+  "dataMgmtExportSubtitle": "导出为 zip，包含日记、标签、设置与本地图片、录音、视频和附件",
   "@dataMgmtExportSubtitle": {
     "description": "Auto-generated metadata for dataMgmtExportSubtitle."
   },
@@ -2160,5 +2160,128 @@
   "diaryEnergySwitchTooltip": "开启或关闭精力记录",
   "@diaryEnergySwitchTooltip": {
     "description": "发表日记面板中精力开关的无障碍提示。"
+  },
+  "diaryToolbarInsertVideo": "插入视频",
+  "@diaryToolbarInsertVideo": {
+    "description": "Toolbar action for importing videos into diary content."
+  },
+  "diaryToolbarInsertAttachment": "插入附件",
+  "@diaryToolbarInsertAttachment": {
+    "description": "Toolbar action for importing any file as a diary attachment."
+  },
+  "diaryMediaImporting": "正在导入文件…",
+  "@diaryMediaImporting": {
+    "description": "Loading label while selected files are copied into application storage."
+  },
+  "diaryMediaImportFailed": "文件导入失败，请重试",
+  "@diaryMediaImportFailed": {
+    "description": "Shown when picking, copying, or inserting diary media fails."
+  },
+  "diaryMediaImportUnsupported": "当前平台暂不支持文件导入",
+  "@diaryMediaImportUnsupported": {
+    "description": "Shown when local diary media import is requested on an unsupported platform."
+  },
+  "attachmentOpen": "打开附件",
+  "@attachmentOpen": {
+    "description": "Tooltip for opening a diary attachment with the system file handler."
+  },
+  "attachmentOpenHint": "点击使用其他应用打开",
+  "@attachmentOpenHint": {
+    "description": "Subtitle for imported attachments without known file size."
+  },
+  "attachmentOpening": "正在打开附件…",
+  "@attachmentOpening": {
+    "description": "Loading label while the system is opening an attachment."
+  },
+  "attachmentFileMissing": "附件文件不存在或无法访问",
+  "@attachmentFileMissing": {
+    "description": "Shown for malformed or missing diary attachment files."
+  },
+  "attachmentNoApp": "手机上没有可打开此文件的应用",
+  "@attachmentNoApp": {
+    "description": "Shown when the system has no application for the attachment file type."
+  },
+  "attachmentPermissionDenied": "无法访问此附件文件",
+  "@attachmentPermissionDenied": {
+    "description": "Shown when the native file handler rejects access to an attachment."
+  },
+  "attachmentOpenFailed": "附件打开失败，请重试",
+  "@attachmentOpenFailed": {
+    "description": "Shown for unexpected errors when opening diary attachments."
+  },
+  "videoLoading": "正在加载视频…",
+  "@videoLoading": {
+    "description": "Loading label while an inline diary video is initialized."
+  },
+  "videoPlay": "播放视频",
+  "@videoPlay": {
+    "description": "Tooltip for playing an inline diary video."
+  },
+  "videoPause": "暂停视频",
+  "@videoPause": {
+    "description": "Tooltip for pausing an inline diary video."
+  },
+  "videoProgress": "视频播放进度",
+  "@videoProgress": {
+    "description": "Accessibility label for the inline video seek slider."
+  },
+  "videoPlaybackFailed": "视频暂时无法播放，点击使用其他应用打开",
+  "@videoPlaybackFailed": {
+    "description": "Subtitle offering a system file handler when inline video playback fails."
+  },
+  "videoExport": "导出视频",
+  "@videoExport": {
+    "description": "Tooltip for saving the diary video to the system gallery after confirmation."
+  },
+  "videoExportConfirmTitle": "导出视频",
+  "@videoExportConfirmTitle": {
+    "description": "Title of the confirmation dialog before exporting a video."
+  },
+  "videoExportConfirmMessage": "确认将“{name}”保存到手机相册？",
+  "@videoExportConfirmMessage": {
+    "description": "Confirmation message naming the video that will be saved to the system gallery.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "videoExporting": "正在导出视频…",
+  "@videoExporting": {
+    "description": "Loading label while a confirmed video export is in progress."
+  },
+  "videoExportSuccess": "视频已保存到相册",
+  "@videoExportSuccess": {
+    "description": "Confirmation that the diary video has been saved to the system gallery."
+  },
+  "videoExportFileMissing": "视频文件不存在或为空，无法导出",
+  "@videoExportFileMissing": {
+    "description": "Shown when the video source cannot be found or is empty during export."
+  },
+  "videoExportPermissionDenied": "未获得相册权限，无法导出视频",
+  "@videoExportPermissionDenied": {
+    "description": "Shown when the system denies writing the exported video to the gallery."
+  },
+  "videoExportNotEnoughSpace": "手机存储空间不足，无法导出视频",
+  "@videoExportNotEnoughSpace": {
+    "description": "Shown when gallery video export fails because the device storage is full."
+  },
+  "videoExportUnsupportedFormat": "此视频格式暂不支持保存到相册",
+  "@videoExportUnsupportedFormat": {
+    "description": "Shown when the system gallery rejects the video's format."
+  },
+  "videoExportDownloadFailed": "视频下载失败，请重试",
+  "@videoExportDownloadFailed": {
+    "description": "Shown when a remote video cannot be downloaded before gallery export."
+  },
+  "videoExportFailed": "视频导出失败，请重试",
+  "@videoExportFailed": {
+    "description": "Shown for an unexpected error during video export."
+  },
+  "videoFullscreen": "全屏播放",
+  "@videoFullscreen": {
+    "description": "Tooltip and page title for fullscreen diary video playback."
+  },
+  "videoExitFullscreen": "退出全屏",
+  "@videoExitFullscreen": {
+    "description": "Tooltip for returning to the diary from fullscreen video playback."
   }
 }

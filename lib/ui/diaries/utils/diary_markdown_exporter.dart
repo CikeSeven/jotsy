@@ -1,12 +1,13 @@
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:intl/intl.dart';
+import 'package:node_diary/core/database/file_embed_codec.dart';
 
 /// 日记 Markdown 导出工具。
 ///
 /// 设计目标：
 /// - 在不引入额外 Markdown 转换依赖的前提下，覆盖日记场景常见格式；
 /// - 保留标题、时间、标签等基础信息；
-/// - 对列表/待办/引用/标题/代码块/图片做可读导出。
+/// - 对列表/待办/引用/标题/代码块/图片/视频/附件做可读导出。
 class DiaryMarkdownExporter {
   const DiaryMarkdownExporter._();
 
@@ -123,12 +124,17 @@ class DiaryMarkdownExporter {
           out.writeln('![image](${image.trim()})');
           continue;
         }
-        final video = insert['video'];
-        if (video is String && video.trim().isNotEmpty) {
+        for (final type in ['video', ...diaryFileEmbedTypes]) {
+          final file = DiaryFileAttachment.tryDecode(insert[type]);
+          if (file == null) continue;
           if (lineBuffer.isNotEmpty) {
             flushLine();
           }
-          out.writeln(video.trim());
+          final destination = Uri.encodeFull(
+            file.path,
+          ).replaceAll('(', '%28').replaceAll(')', '%29');
+          out.writeln('[${_escape(file.displayName)}]($destination)');
+          break;
         }
       }
     }

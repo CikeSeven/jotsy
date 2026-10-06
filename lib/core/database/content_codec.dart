@@ -1,6 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_quill/quill_delta.dart';
+
+import 'file_embed_codec.dart';
+import 'legacy_content_codec.dart';
 
 /// 将纯文本转换为最小可用的 Delta JSON 结构。
 String plainTextToDeltaJson(String plainText) {
@@ -15,7 +19,7 @@ String deltaJsonToPlainText(String deltaJson) {
   try {
     final decoded = jsonDecode(deltaJson);
     if (decoded is List) {
-      final document = quill.Document.fromJson(List<dynamic>.from(decoded));
+      final document = _documentFromDiaryDelta(List<dynamic>.from(decoded));
       return _normalizePlainText(document.toPlainText());
     }
   } catch (_) {
@@ -54,12 +58,12 @@ quill.Document decodeDiaryContentToDocument(String rawContent) {
     final decoded = jsonDecode(trimmed);
     if (decoded is List) {
       return _ensureRenderableDocument(
-        quill.Document.fromJson(List<dynamic>.from(decoded)),
+        _documentFromDiaryDelta(List<dynamic>.from(decoded)),
       );
     }
     if (decoded is Map<String, dynamic>) {
       return _ensureRenderableDocument(
-        quill.Document.fromJson(_appFlowyDocumentToQuillDelta(decoded)),
+        _documentFromDiaryDelta(legacyDocumentToQuillDelta(decoded)),
       );
     }
   } catch (_) {
@@ -123,111 +127,41 @@ quill.Document _ensureRenderableDocument(quill.Document document) {
   return documentFromPlainText('');
 }
 
-List<Map<String, Object>> _appFlowyDocumentToQuillDelta(
-  Map<String, dynamic> rawDocument,
-) {
-  final ops = <Map<String, Object>>[];
-  for (final node in _extractChildren(rawDocument)) {
-    _appendAppFlowyNode(node, ops);
-  }
-
-  if (ops.isEmpty) {
-    return <Map<String, Object>>[
-      <String, Object>{'insert': '\n'},
-    ];
-  }
-
-  final lastInsert = ops.last['insert'];
-  if (lastInsert is! String || !lastInsert.endsWith('\n')) {
-    ops.add(<String, Object>{'insert': '\n'});
-  }
-  return ops;
-}
-
-List<dynamic> _extractChildren(Map<String, dynamic> node) {
-  final directChildren = node['children'];
-  if (directChildren is List) {
-    return directChildren;
-  }
-  final root = node['root'];
-  if (root is Map<String, dynamic>) {
-    final rootChildren = root['children'];
-    if (rootChildren is List) {
-      return rootChildren;
-    }
-  }
-  return const <dynamic>[];
-}
-
-void _appendAppFlowyNode(dynamic rawNode, List<Map<String, Object>> ops) {
-  if (rawNode is! Map<String, dynamic>) {
-    return;
-  }
-
-  final type = rawNode['type'] as String?;
-  if (type == 'image') {
-    final attributes = rawNode['attributes'];
-    final url = attributes is Map<String, dynamic>
-        ? attributes['url'] as String?
-        : null;
-    if (url != null && url.isNotEmpty) {
-      ops.add(<String, Object>{
-        'insert': <String, Object>{'image': url},
-      });
-      ops.add(<String, Object>{'insert': '\n'});
-    }
-    return;
-  }
-
-  final text = _extractAppFlowyNodeText(rawNode);
-  if (text.isNotEmpty) {
-    ops.add(<String, Object>{'insert': text});
-  }
-
-  if (_isBlockNode(type) && (text.isNotEmpty || type == 'paragraph')) {
-    ops.add(<String, Object>{'insert': '\n'});
-  }
-
-  for (final child in _extractChildren(rawNode)) {
-    _appendAppFlowyNode(child, ops);
-  }
-}
-
-String _extractAppFlowyNodeText(Map<String, dynamic> rawNode) {
-  final attributes = rawNode['attributes'];
-  if (attributes is! Map<String, dynamic>) {
-    return '';
-  }
-
-  final delta = attributes['delta'];
-  if (delta is! List) {
-    return '';
-  }
-
-  final buffer = StringBuffer();
-  for (final op in delta) {
-    if (op is Map<String, dynamic>) {
-      final insert = op['insert'];
-      if (insert is String) {
-        buffer.write(insert);
+/// Quill 的 fromJson 会为尾部视频重复补换行，反复打开/保存会让正文持续增长。
+/// 在此只补确实缺失的块边界，再从 Delta 建文档，保证解码是幂等的。
+quill.Document _documentFromDiaryDelta(List<dynamic> rawOps) {
+  final ops = <dynamic>[];
+  Object? insertOf(Object? op) => op is Map ? op['insert'] : null;
+  for (var i = 0; i < rawOps.length; i++) {
+    final op = rawOps[i];
+    final insert = insertOf(op);
+    if (insert is Map && insert.containsKey('video')) {
+      final previous = ops.isEmpty ? null : insertOf(ops.last);
+      if (ops.isNotEmpty && (previous is! String || !previous.endsWith('\n'))) {
+        ops.add({'insert': '\n'});
       }
+      ops.add(op);
+      final next = i + 1 < rawOps.length ? insertOf(rawOps[i + 1]) : null;
+      if (next is! String || !next.startsWith('\n')) {
+        ops.add({'insert': '\n'});
+      }
+    } else {
+      ops.add(op);
     }
   }
-
-  return buffer.toString().replaceAll(RegExp(r'\n+$'), '');
-}
-
-bool _isBlockNode(String? type) {
-  return switch (type) {
-    'paragraph' => true,
-    'quote' => true,
-    'bulleted_list' => true,
-    'numbered_list' => true,
-    'todo_list' => true,
-    'heading' => true,
-    'code_block' => true,
-    _ => false,
-  };
+  final last = ops.isEmpty ? null : insertOf(ops.last);
+  if (last is! String || !last.endsWith('\n')) {
+    ops.add({'insert': '\n'});
+  }
+  final beforeLast = ops.length >= 2 ? insertOf(ops[ops.length - 2]) : null;
+  if (insertOf(ops.last) == '\n' &&
+      beforeLast is Map &&
+      (beforeLast.containsKey('video') ||
+          diaryFileEmbedTypes.any(beforeLast.containsKey))) {
+    // 仅媒体正文也需要一个可放置光标的末尾空行。
+    ops.add({'insert': '\n'});
+  }
+  return quill.Document.fromDelta(Delta.fromJson(ops));
 }
 
 String _normalizePlainText(String text) {

@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for dataMgmtExportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Export ZIP with diaries, tags, settings, and local media'**
+  /// **'Export a ZIP containing diaries, tags, settings, images, recordings, videos, and attachments'**
   String get dataMgmtExportSubtitle;
 
   /// Auto-generated metadata for dataMgmtImport.
@@ -2881,6 +2881,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Toggle energy level recording'**
   String get diaryEnergySwitchTooltip;
+
+  /// Toolbar action for importing videos into diary content.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert video'**
+  String get diaryToolbarInsertVideo;
+
+  /// Toolbar action for importing any file as a diary attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert attachment'**
+  String get diaryToolbarInsertAttachment;
+
+  /// Loading label while selected files are copied into application storage.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing files…'**
+  String get diaryMediaImporting;
+
+  /// Shown when picking, copying, or inserting diary media fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Files could not be imported. Please try again.'**
+  String get diaryMediaImportFailed;
+
+  /// Shown when local diary media import is requested on an unsupported platform.
+  ///
+  /// In en, this message translates to:
+  /// **'File import is not available on this platform.'**
+  String get diaryMediaImportUnsupported;
+
+  /// Tooltip for opening a diary attachment with the system file handler.
+  ///
+  /// In en, this message translates to:
+  /// **'Open attachment'**
+  String get attachmentOpen;
+
+  /// Subtitle for imported attachments without known file size.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to open with another app'**
+  String get attachmentOpenHint;
+
+  /// Loading label while the system is opening an attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening attachment…'**
+  String get attachmentOpening;
+
+  /// Shown for malformed or missing diary attachment files.
+  ///
+  /// In en, this message translates to:
+  /// **'The attachment is missing or unavailable.'**
+  String get attachmentFileMissing;
+
+  /// Shown when the system has no application for the attachment file type.
+  ///
+  /// In en, this message translates to:
+  /// **'No installed app can open this file.'**
+  String get attachmentNoApp;
+
+  /// Shown when the native file handler rejects access to an attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'The attachment could not be accessed.'**
+  String get attachmentPermissionDenied;
+
+  /// Shown for unexpected errors when opening diary attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'The attachment could not be opened. Please try again.'**
+  String get attachmentOpenFailed;
+
+  /// Loading label while an inline diary video is initialized.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading video…'**
+  String get videoLoading;
+
+  /// Tooltip for playing an inline diary video.
+  ///
+  /// In en, this message translates to:
+  /// **'Play video'**
+  String get videoPlay;
+
+  /// Tooltip for pausing an inline diary video.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause video'**
+  String get videoPause;
+
+  /// Accessibility label for the inline video seek slider.
+  ///
+  /// In en, this message translates to:
+  /// **'Video progress'**
+  String get videoProgress;
+
+  /// Subtitle offering a system file handler when inline video playback fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Video cannot be played here. Tap to open with another app.'**
+  String get videoPlaybackFailed;
+
+  /// Tooltip for saving the diary video to the system gallery after confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Export video'**
+  String get videoExport;
+
+  /// Title of the confirmation dialog before exporting a video.
+  ///
+  /// In en, this message translates to:
+  /// **'Export video'**
+  String get videoExportConfirmTitle;
+
+  /// Confirmation message naming the video that will be saved to the system gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Save \"{name}\" to your gallery?'**
+  String videoExportConfirmMessage(String name);
+
+  /// Loading label while a confirmed video export is in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting video…'**
+  String get videoExporting;
+
+  /// Confirmation that the diary video has been saved to the system gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Video saved to gallery'**
+  String get videoExportSuccess;
+
+  /// Shown when the video source cannot be found or is empty during export.
+  ///
+  /// In en, this message translates to:
+  /// **'The video file is missing or empty.'**
+  String get videoExportFileMissing;
+
+  /// Shown when the system denies writing the exported video to the gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery access is not allowed. Video could not be exported.'**
+  String get videoExportPermissionDenied;
+
+  /// Shown when gallery video export fails because the device storage is full.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough storage to export this video.'**
+  String get videoExportNotEnoughSpace;
+
+  /// Shown when the system gallery rejects the video's format.
+  ///
+  /// In en, this message translates to:
+  /// **'This video format cannot be saved to the gallery.'**
+  String get videoExportUnsupportedFormat;
+
+  /// Shown when a remote video cannot be downloaded before gallery export.
+  ///
+  /// In en, this message translates to:
+  /// **'Video download failed. Please try again.'**
+  String get videoExportDownloadFailed;
+
+  /// Shown for an unexpected error during video export.
+  ///
+  /// In en, this message translates to:
+  /// **'Video could not be exported. Please try again.'**
+  String get videoExportFailed;
+
+  /// Tooltip and page title for fullscreen diary video playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Fullscreen playback'**
+  String get videoFullscreen;
+
+  /// Tooltip for returning to the diary from fullscreen video playback.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit fullscreen'**
+  String get videoExitFullscreen;
 }
 
 class _AppLocalizationsDelegate

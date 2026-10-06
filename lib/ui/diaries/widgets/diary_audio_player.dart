@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
+import 'package:node_diary/core/services/audio_playback_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_audio_waveform.dart';
@@ -17,10 +18,16 @@ import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 /// Features interactive audio waveform seeking, audio renaming,
 /// refined surface aesthetics, and lifecycle-safe playback teardown.
 class DiaryAudioPlayer extends StatefulWidget {
-  const DiaryAudioPlayer({super.key, required this.recording, this.onRename});
+  const DiaryAudioPlayer({
+    super.key,
+    required this.recording,
+    this.onRename,
+    this.player,
+  });
 
   final DiaryAudioAttachment recording;
   final ValueChanged<String>? onRename;
+  final AudioPlaybackService? player;
 
   @override
   State<DiaryAudioPlayer> createState() => _DiaryAudioPlayerState();
@@ -34,7 +41,10 @@ class _DiaryAudioPlayerState extends State<DiaryAudioPlayer>
   @override
   void initState() {
     super.initState();
-    _controller = DiaryAudioPlayerController(recording: widget.recording);
+    _controller = DiaryAudioPlayerController(
+      recording: widget.recording,
+      player: widget.player,
+    );
     _displayWaveform = generateEffectiveWaveform(
       samples: widget.recording.waveform,
       seedKey: widget.recording.path,
@@ -46,9 +56,13 @@ class _DiaryAudioPlayerState extends State<DiaryAudioPlayer>
   @override
   void didUpdateWidget(DiaryAudioPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.recording.path != oldWidget.recording.path) {
+    if (widget.recording.path != oldWidget.recording.path ||
+        widget.player != oldWidget.player) {
       _controller.dispose();
-      _controller = DiaryAudioPlayerController(recording: widget.recording);
+      _controller = DiaryAudioPlayerController(
+        recording: widget.recording,
+        player: widget.player,
+      );
       _displayWaveform = generateEffectiveWaveform(
         samples: widget.recording.waveform,
         seedKey: widget.recording.path,
@@ -122,7 +136,7 @@ class _DiaryAudioPlayerState extends State<DiaryAudioPlayer>
       },
     );
 
-    if (chosen != null && widget.onRename != null) {
+    if (mounted && chosen != null && widget.onRename != null) {
       widget.onRename!(chosen);
     }
   }

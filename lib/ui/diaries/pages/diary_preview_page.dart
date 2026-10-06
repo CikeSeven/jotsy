@@ -35,6 +35,7 @@ import '../../widgets/image_viewer_page.dart';
 import 'edit_diary_page.dart';
 import 'locked_diary_page.dart';
 import '../models/time_capsule.dart';
+import '../models/diary_export_document.dart';
 
 /// 预览页返回结果。
 enum DiaryPreviewResult { deleted }
@@ -473,7 +474,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
           );
           final converter = PDFConverter(
             pageFormat: PDFPageFormat.a4,
-            document: controller.document.toDelta(),
+            document: buildDiaryPdfExportDocument(
+              controller.document,
+            ).toDelta(),
             textDirection: textDirection,
             themeData: unifiedTheme,
             codeBlockFont: unifiedFont,

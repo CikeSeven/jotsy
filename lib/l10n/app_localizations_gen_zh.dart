@@ -399,7 +399,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataMgmtExport => '导出数据';
 
   @override
-  String get dataMgmtExportSubtitle => '导出为 zip，包含日记、标签、设置与本地图片资源';
+  String get dataMgmtExportSubtitle => '导出为 zip，包含日记、标签、设置与本地图片、录音、视频和附件';
 
   @override
   String get dataMgmtImport => '导入数据';
@@ -1523,4 +1523,96 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryEnergySwitchTooltip => '开启或关闭精力记录';
+
+  @override
+  String get diaryToolbarInsertVideo => '插入视频';
+
+  @override
+  String get diaryToolbarInsertAttachment => '插入附件';
+
+  @override
+  String get diaryMediaImporting => '正在导入文件…';
+
+  @override
+  String get diaryMediaImportFailed => '文件导入失败，请重试';
+
+  @override
+  String get diaryMediaImportUnsupported => '当前平台暂不支持文件导入';
+
+  @override
+  String get attachmentOpen => '打开附件';
+
+  @override
+  String get attachmentOpenHint => '点击使用其他应用打开';
+
+  @override
+  String get attachmentOpening => '正在打开附件…';
+
+  @override
+  String get attachmentFileMissing => '附件文件不存在或无法访问';
+
+  @override
+  String get attachmentNoApp => '手机上没有可打开此文件的应用';
+
+  @override
+  String get attachmentPermissionDenied => '无法访问此附件文件';
+
+  @override
+  String get attachmentOpenFailed => '附件打开失败，请重试';
+
+  @override
+  String get videoLoading => '正在加载视频…';
+
+  @override
+  String get videoPlay => '播放视频';
+
+  @override
+  String get videoPause => '暂停视频';
+
+  @override
+  String get videoProgress => '视频播放进度';
+
+  @override
+  String get videoPlaybackFailed => '视频暂时无法播放，点击使用其他应用打开';
+
+  @override
+  String get videoExport => '导出视频';
+
+  @override
+  String get videoExportConfirmTitle => '导出视频';
+
+  @override
+  String videoExportConfirmMessage(String name) {
+    return '确认将“$name”保存到手机相册？';
+  }
+
+  @override
+  String get videoExporting => '正在导出视频…';
+
+  @override
+  String get videoExportSuccess => '视频已保存到相册';
+
+  @override
+  String get videoExportFileMissing => '视频文件不存在或为空，无法导出';
+
+  @override
+  String get videoExportPermissionDenied => '未获得相册权限，无法导出视频';
+
+  @override
+  String get videoExportNotEnoughSpace => '手机存储空间不足，无法导出视频';
+
+  @override
+  String get videoExportUnsupportedFormat => '此视频格式暂不支持保存到相册';
+
+  @override
+  String get videoExportDownloadFailed => '视频下载失败，请重试';
+
+  @override
+  String get videoExportFailed => '视频导出失败，请重试';
+
+  @override
+  String get videoFullscreen => '全屏播放';
+
+  @override
+  String get videoExitFullscreen => '退出全屏';
 }

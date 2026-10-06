@@ -2152,5 +2152,13 @@
   "diaryPinnedBadge": "置顶",
   "@diaryPinnedBadge": {
     "description": "日记卡片顶部的置顶微徽章文案"
+  },
+  "diaryEnergyUnrecorded": "未记录",
+  "@diaryEnergyUnrecorded": {
+    "description": "发表日记面板中精力关闭时的提示文案。"
+  },
+  "diaryEnergySwitchTooltip": "开启或关闭精力记录",
+  "@diaryEnergySwitchTooltip": {
+    "description": "发表日记面板中精力开关的无障碍提示。"
   }
 }

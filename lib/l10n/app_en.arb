@@ -2152,5 +2152,13 @@
   "diaryPinnedBadge": "Pinned",
   "@diaryPinnedBadge": {
     "description": "Pinned micro-badge text displayed at the top of a diary card"
+  },
+  "diaryEnergyUnrecorded": "Not recorded",
+  "@diaryEnergyUnrecorded": {
+    "description": "Text displayed in publish diary panel when energy level recording is disabled."
+  },
+  "diaryEnergySwitchTooltip": "Toggle energy level recording",
+  "@diaryEnergySwitchTooltip": {
+    "description": "Accessibility tooltip for the energy toggle switch in publish diary panel."
   }
 }

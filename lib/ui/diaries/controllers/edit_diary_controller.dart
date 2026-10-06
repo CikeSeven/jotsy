@@ -611,9 +611,7 @@ class EditDiaryController {
         String value => double.tryParse(value),
         _ => null,
       };
-      if (parsedEnergy != null) {
-        _state._draftEnergyLevel = parsedEnergy.clamp(1, 5).toDouble();
-      }
+      _state._draftEnergyLevel = parsedEnergy?.clamp(1, 5).toDouble();
 
       final geo = context['geo'];
       if (geo is Map<String, dynamic>) {

@@ -2869,6 +2869,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pinned'**
   String get diaryPinnedBadge;
+
+  /// Text displayed in publish diary panel when energy level recording is disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not recorded'**
+  String get diaryEnergyUnrecorded;
+
+  /// Accessibility tooltip for the energy toggle switch in publish diary panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle energy level recording'**
+  String get diaryEnergySwitchTooltip;
 }
 
 class _AppLocalizationsDelegate

@@ -91,7 +91,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String? _draftWeather;
   String? _draftWeatherIconCode;
   String? _draftMoodEmoji;
-  double? _draftEnergyLevel;
+  double? _draftEnergyLevel = 4;
   DateTime? _draftCapsuleUnlockAt;
   String? _draftCapsulePrecision;
   bool _panelMetadataDirty = false;
@@ -769,7 +769,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     weatherIconCode: _draftWeatherIconCode,
                     moodEmoji: _draftMoodEmoji,
                     moodOptions: moodOptions,
-                    energyLevel: _draftEnergyLevel ?? 4,
+                    energyLevel: _draftEnergyLevel,
                     tags: tags,
                     tagsLoading: tagsLoading,
                     tagsError: tagsError,
@@ -838,7 +838,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                     },
                     onEnergyChanged: (nextValue) {
                       setState(() {
-                        _draftEnergyLevel = nextValue.clamp(1, 5).toDouble();
+                        _draftEnergyLevel = nextValue?.clamp(1, 5).toDouble();
                         _markEditPanelDirty();
                       });
                     },

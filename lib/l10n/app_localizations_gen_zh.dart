@@ -1517,4 +1517,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryPinnedBadge => '置顶';
+
+  @override
+  String get diaryEnergyUnrecorded => '未记录';
+
+  @override
+  String get diaryEnergySwitchTooltip => '开启或关闭精力记录';
 }

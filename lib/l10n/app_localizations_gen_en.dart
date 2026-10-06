@@ -1574,4 +1574,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPinnedBadge => 'Pinned';
+
+  @override
+  String get diaryEnergyUnrecorded => 'Not recorded';
+
+  @override
+  String get diaryEnergySwitchTooltip => 'Toggle energy level recording';
 }

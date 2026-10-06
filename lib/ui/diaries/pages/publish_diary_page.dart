@@ -63,7 +63,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   double? _locationLongitude;
   bool _locationFromAuto = false;
   String? _weatherIconCode;
-  double _energyLevel = 4;
+  double? _energyLevel = 4;
   late DateTime _publishAt;
   TimeCapsuleSchedule? _timeCapsuleSchedule;
   double _panelExpandProgress = 0;
@@ -107,14 +107,12 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       );
     }
 
-    // 精力值限制在 1~5，避免历史数据越界导致 UI 异常。
-    final initialEnergy = (widget.initialDraft.energyLevel ?? 4).toDouble();
-    if (initialEnergy < 1) {
-      _energyLevel = 1;
-    } else if (initialEnergy > 5) {
-      _energyLevel = 5;
+    // 精力值：未设置时保留为 null；存在时限制在 1~5，避免历史数据越界导致 UI 异常。
+    final rawEnergy = widget.initialDraft.energyLevel?.toDouble();
+    if (rawEnergy != null) {
+      _energyLevel = rawEnergy.clamp(1, 5).toDouble();
     } else {
-      _energyLevel = initialEnergy;
+      _energyLevel = null;
     }
 
     // 预览正文优先走 Delta JSON；失败时降级纯文本，确保页面总能打开。
@@ -331,7 +329,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 },
                 onEnergyChanged: (nextValue) {
                   setState(
-                    () => _energyLevel = nextValue.clamp(1, 5).toDouble(),
+                    () => _energyLevel = nextValue?.clamp(1, 5).toDouble(),
                   );
                 },
                 onPublish: _controller.publish,

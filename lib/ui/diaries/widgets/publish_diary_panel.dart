@@ -15,6 +15,7 @@ import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/qweather_icon.dart';
 import 'energy_battery_indicator.dart';
 
@@ -47,7 +48,7 @@ class PublishDiaryPanel extends StatefulWidget {
     required this.weatherController,
     required this.weatherIconCode,
     required this.moodEmoji,
-    required this.energyLevel,
+    this.energyLevel,
     required this.tags,
     required this.tagsLoading,
     required this.tagsError,
@@ -92,7 +93,7 @@ class PublishDiaryPanel extends StatefulWidget {
   final TextEditingController weatherController;
   final String? weatherIconCode;
   final String? moodEmoji;
-  final double energyLevel;
+  final double? energyLevel;
   final List<Tag> tags;
   final bool tagsLoading;
   final String? tagsError;
@@ -105,7 +106,7 @@ class PublishDiaryPanel extends StatefulWidget {
   final VoidCallback onCreateTag;
   final void Function(int tagId, bool selected) onToggleTag;
   final ValueChanged<String?> onMoodChanged;
-  final ValueChanged<double> onEnergyChanged;
+  final ValueChanged<double?> onEnergyChanged;
   final VoidCallback onPublish;
   final String actionLabel;
   final ValueChanged<double>? onProgressChanged;
@@ -163,6 +164,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   late final PublishPanelCoordinator _panelCoordinator;
   late DateTime _pendingCapsuleUnlockAt;
   late TimeCapsulePrecision _pendingCapsulePrecision;
+  double _lastEnergyLevel = 4;
 
   double get _activeExpandedHeight => _panelCoordinator.activeExpandedHeight;
 
@@ -175,6 +177,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   @override
   void initState() {
     super.initState();
+    if (widget.energyLevel != null) {
+      _lastEnergyLevel = widget.energyLevel!;
+    }
     _panelCoordinator = PublishPanelCoordinator(
       collapsedHeight: _collapsedHeight,
       mainExpandedHeight: _mainExpandedHeight,
@@ -190,6 +195,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   @override
   void didUpdateWidget(covariant PublishDiaryPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.energyLevel != null) {
+      _lastEnergyLevel = widget.energyLevel!;
+    }
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller?._detach(this);
       widget.controller?._attach(this);
@@ -1335,44 +1343,88 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
 
   Widget _buildEnergySection(BuildContext context) {
     final l10n = context.l10n;
+    final isEnergyEnabled = widget.energyLevel != null;
     final energyLevel = EnergyBatteryIndicator.normalizeValue(
-      widget.energyLevel,
+      widget.energyLevel ?? _lastEnergyLevel,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Row(
           children: <Widget>[
-            Text(
-              l10n.autoT0175,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  Text(
+                    l10n.autoT0175,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (isEnergyEnabled) ...<Widget>[
+                    EnergyBatteryIndicator(value: energyLevel, iconSize: 22),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        EnergyBatteryIndicator.descriptionForValue(
+                          energyLevel,
+                          isZh: l10n.isZh,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ] else ...<Widget>[
+                    Flexible(
+                      child: Text(
+                        l10n.diaryEnergyUnrecorded,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
             const SizedBox(width: 8),
-            EnergyBatteryIndicator(value: energyLevel, iconSize: 22),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                EnergyBatteryIndicator.descriptionForValue(
-                  energyLevel,
-                  isZh: l10n.isZh,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+            Tooltip(
+              message: l10n.diaryEnergySwitchTooltip,
+              child: Switch(
+                value: isEnergyEnabled,
+                onChanged: (enabled) {
+                  if (enabled) {
+                    widget.onEnergyChanged(_lastEnergyLevel);
+                  } else {
+                    widget.onEnergyChanged(null);
+                  }
+                },
               ),
             ),
           ],
         ),
-        Slider(
-          value: energyLevel,
-          min: 1,
-          max: 5,
-          label: EnergyBatteryIndicator.formatValue(energyLevel),
-          onChanged: widget.onEnergyChanged,
+        AnimatedSize(
+          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+          curve: ExpressiveMotion.effects,
+          alignment: Alignment.topCenter,
+          child: isEnergyEnabled
+              ? Slider(
+                  value: energyLevel,
+                  min: 1,
+                  max: 5,
+                  label: EnergyBatteryIndicator.formatValue(energyLevel),
+                  onChanged: (nextValue) {
+                    _lastEnergyLevel = nextValue;
+                    widget.onEnergyChanged(nextValue);
+                  },
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );

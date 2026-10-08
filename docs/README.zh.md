@@ -2,7 +2,7 @@
 
 [English](./README.en.md) | 简体中文
 
-![Release](https://img.shields.io/badge/Release-v0.1.0-orange?style=flat-square)
+![Release](https://img.shields.io/badge/Release-v0.5.1-orange?style=flat-square)
 
 Jot 是一款完全免费、开源的本地日记应用。开发这款应用的初衷很简单：希望能有一个没有任何广告打扰、不用强制注册账号、不需要连网就能使用的纯粹记录工具。
 

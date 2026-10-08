@@ -2,7 +2,7 @@
 
 English | [简体中文](../README.md)
 
-![Release](https://img.shields.io/badge/Release-v0.1.0-orange?style=flat-square)
+![Release](https://img.shields.io/badge/Release-v0.5.1-orange?style=flat-square)
 
 Jot is a fully free and open-source local diary app.  
 The goal is simple: provide a clean writing tool with no ads, no forced account signup, and no network dependency.

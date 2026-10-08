@@ -13,10 +13,12 @@ String encodeTagOrder(List<int> tagIds) {
   return normalized.join(',');
 }
 
-/// 将持久化字符串解析为标签 id 顺序。
+/// 将持久化字符串解析为独立、可增删的标签 id 顺序。
+///
+/// 未保存排序或记忆筛选时也要允许更新 id，不能返回只读的 const 空列表。
 List<int> decodeTagOrder(String? raw) {
   if (raw == null || raw.trim().isEmpty) {
-    return const <int>[];
+    return <int>[];
   }
   final result = <int>[];
   final seen = <int>{};

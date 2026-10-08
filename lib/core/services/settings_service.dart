@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+part 'settings_service_backup.dart';
+
 const String _defaultDiaryToolbarCurrentTimeFormat = 'M月d日 HH:mm';
 
 enum HomeTabSwitchCurveType { easeOutCirc, easeOutCubic, linear }
@@ -255,40 +257,46 @@ class SettingsService {
   /// 设置主题模式
   Future<void> setThemeMode(ThemeMode mode) async {
     themeModeNotifier.value = mode;
-    await _prefs.setString(_keyThemeMode, mode.name);
+    await _writePreference(_prefs.setString(_keyThemeMode, mode.name));
   }
 
   Future<void> setThemeSeedColor(Color color) async {
     final value = color.toARGB32();
     themeSeedColorNotifier.value = Color(value);
-    await _prefs.setInt(_keyThemeSeedColorValue, value);
+    await _writePreference(_prefs.setInt(_keyThemeSeedColorValue, value));
   }
 
   Future<void> setHomeTabSwitchCurveType(
     HomeTabSwitchCurveType curveType,
   ) async {
     homeTabSwitchCurveNotifier.value = curveType;
-    await _prefs.setString(_keyHomeTabSwitchCurve, curveType.storageValue);
+    await _writePreference(
+      _prefs.setString(_keyHomeTabSwitchCurve, curveType.storageValue),
+    );
   }
 
   Future<void> setEditorBodyFontSizePreset(
     EditorBodyFontSizePreset preset,
   ) async {
     editorBodyFontSizePresetNotifier.value = preset;
-    await _prefs.setString(_keyEditorBodyFontSizePreset, preset.storageValue);
+    await _writePreference(
+      _prefs.setString(_keyEditorBodyFontSizePreset, preset.storageValue),
+    );
   }
 
   Future<void> setEditorBodyLineHeightPreset(
     EditorBodyLineHeightPreset preset,
   ) async {
     editorBodyLineHeightPresetNotifier.value = preset;
-    await _prefs.setString(_keyEditorBodyLineHeightPreset, preset.storageValue);
+    await _writePreference(
+      _prefs.setString(_keyEditorBodyLineHeightPreset, preset.storageValue),
+    );
   }
 
   Future<void> setFontScale(double scale) async {
     final normalized = _normalizeFontScale(scale);
     fontScaleNotifier.value = normalized;
-    await _prefs.setDouble(_keyFontScale, normalized);
+    await _writePreference(_prefs.setDouble(_keyFontScale, normalized));
   }
 
   String get diarySortModeRaw =>
@@ -315,16 +323,16 @@ class SettingsService {
   int get releaseMirrorStartIndexRaw =>
       _prefs.getInt(_keyReleaseMirrorStartIndex) ?? 0;
   Future<void> setDiarySortModeRaw(String value) async {
-    await _prefs.setString(_keyDiarySortMode, value);
+    await _writePreference(_prefs.setString(_keyDiarySortMode, value));
   }
 
   Future<void> setDiaryLayoutModeRaw(String value) async {
-    await _prefs.setString(_keyDiaryLayoutMode, value);
+    await _writePreference(_prefs.setString(_keyDiaryLayoutMode, value));
   }
 
   Future<void> setDiaryToolbarOrderRaw(String value) async {
     diaryToolbarOrderRawNotifier.value = value;
-    await _prefs.setString(_keyDiaryToolbarOrder, value);
+    await _writePreference(_prefs.setString(_keyDiaryToolbarOrder, value));
   }
 
   Future<void> setDiaryToolbarHiddenItemsRaw(String value) async {
@@ -333,10 +341,12 @@ class SettingsService {
         ? null
         : normalized;
     if (normalized.isEmpty) {
-      await _prefs.remove(_keyDiaryToolbarHiddenItems);
+      await _writePreference(_prefs.remove(_keyDiaryToolbarHiddenItems));
       return;
     }
-    await _prefs.setString(_keyDiaryToolbarHiddenItems, normalized);
+    await _writePreference(
+      _prefs.setString(_keyDiaryToolbarHiddenItems, normalized),
+    );
   }
 
   Future<void> setDiaryToolbarCurrentTimeFormatRaw(String value) async {
@@ -344,7 +354,9 @@ class SettingsService {
         ? _defaultDiaryToolbarCurrentTimeFormat
         : value.trim();
     diaryToolbarCurrentTimeFormatRawNotifier.value = normalized;
-    await _prefs.setString(_keyDiaryToolbarCurrentTimeFormat, normalized);
+    await _writePreference(
+      _prefs.setString(_keyDiaryToolbarCurrentTimeFormat, normalized),
+    );
   }
 
   Future<void> setMoodOptions(List<String> options) async {
@@ -361,12 +373,12 @@ class SettingsService {
   Future<void> setDiaryCardTagLimit(int value) async {
     final normalized = _normalizeDiaryCardTagLimit(value);
     diaryCardTagLimitNotifier.value = normalized;
-    await _prefs.setInt(_keyDiaryCardTagLimit, normalized);
+    await _writePreference(_prefs.setInt(_keyDiaryCardTagLimit, normalized));
   }
 
   Future<void> setTagFilterMemoryEnabled(bool enabled) async {
     tagFilterMemoryEnabledNotifier.value = enabled;
-    await _prefs.setBool(_keyTagFilterMemoryEnabled, enabled);
+    await _writePreference(_prefs.setBool(_keyTagFilterMemoryEnabled, enabled));
     if (!enabled) {
       await clearRememberedTagFilterIds();
     }
@@ -378,28 +390,32 @@ class SettingsService {
       await clearRememberedTagFilterIds();
       return;
     }
-    await _prefs.setString(_keyRememberedTagFilterIds, normalized);
+    await _writePreference(
+      _prefs.setString(_keyRememberedTagFilterIds, normalized),
+    );
   }
 
   Future<void> clearRememberedTagFilterIds() async {
-    await _prefs.remove(_keyRememberedTagFilterIds);
+    await _writePreference(_prefs.remove(_keyRememberedTagFilterIds));
   }
 
   Future<void> setTagOrderRaw(String value) async {
-    await _prefs.setString(_keyTagOrder, value);
+    await _writePreference(_prefs.setString(_keyTagOrder, value));
   }
 
   Future<void> setCreateDiaryDraftRaw(String value) async {
-    await _prefs.setString(_keyCreateDiaryDraft, value);
+    await _writePreference(_prefs.setString(_keyCreateDiaryDraft, value));
   }
 
   Future<void> clearCreateDiaryDraft() async {
-    await _prefs.remove(_keyCreateDiaryDraft);
+    await _writePreference(_prefs.remove(_keyCreateDiaryDraft));
   }
 
   Future<void> setReleaseMirrorStartIndex(int index) async {
     final normalized = index < 0 ? 0 : index;
-    await _prefs.setInt(_keyReleaseMirrorStartIndex, normalized);
+    await _writePreference(
+      _prefs.setInt(_keyReleaseMirrorStartIndex, normalized),
+    );
   }
 
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);
@@ -425,12 +441,12 @@ class SettingsService {
     final normalized = _normalizeLocaleCode(localeCode) ?? 'en';
     final nextLocale = _localeFromCode(normalized);
     localeNotifier.value = nextLocale;
-    await _prefs.setString(_keyAppLocaleCode, normalized);
+    await _writePreference(_prefs.setString(_keyAppLocaleCode, normalized));
   }
 
   Future<void> setAppLockEnabled(bool enabled) async {
     appLockEnabledNotifier.value = enabled;
-    await _prefs.setBool(_keyAppLockEnabled, enabled);
+    await _writePreference(_prefs.setBool(_keyAppLockEnabled, enabled));
   }
 
   static String _resolveInitialLocaleCodeFromSystem() {

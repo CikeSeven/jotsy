@@ -1,890 +1,176 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
-import 'package:archive/archive_io.dart';
-import 'package:drift/drift.dart' show Value;
-import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
-import '../database/audio_embed_codec.dart';
-import '../database/file_embed_codec.dart';
-import 'diary_audio_storage_service.dart';
-import 'diary_media_storage_service.dart';
+import 'backup_archive_io.dart';
+import 'backup_constants.dart';
+import 'backup_media_paths.dart';
+import 'backup_media_transaction.dart';
+import 'backup_payload.dart';
+import 'backup_settings.dart';
 import 'settings_service.dart';
 
-/// 数据归档服务（ZIP 导入/导出）。
-///
-/// 职责边界：
-/// - 导出：打包数据库表数据、设置项与本地媒体资源到 zip；
-/// - 导入：从 zip 恢复数据库表数据、设置项与本地媒体资源；
-/// - 不参与 UI 提示与交互，页面层负责 loading 与反馈文案。
+/// 数据归档编排：导出完整 ZIP，或先校验再覆盖恢复媒体、数据库与设置。
+/// 本地与远程备份共用同一串行队列；IO、路径映射和载荷校验由独立服务负责。
 class DataArchiveService {
   DataArchiveService._();
 
-  static const String _backupPayloadFileName = 'backup_data.json';
-  static const String _backupCoversDirectoryName = 'diary_covers';
-  static const String _backupImagesDirectoryName = 'diary_images';
-  static const String _backupAudioDirectoryName =
-      DiaryAudioStorageService.directoryName;
-  static const int _backupFormatVersion = 1;
-  static const List<String> _managedMediaDirectories = [
-    _backupCoversDirectoryName,
-    _backupImagesDirectoryName,
-    _backupAudioDirectoryName,
-    DiaryMediaStorageService.videosDirectoryName,
-    DiaryMediaStorageService.attachmentsDirectoryName,
-  ];
+  static Future<void> _pending = Future<void>.value();
 
-  /// 导出当前数据到 zip，返回生成的 zip 文件对象（位于临时目录）。
+  static Future<T> _run<T>(Future<T> Function() action) {
+    final result = _pending.then((_) => action());
+    // 一次失败不能阻塞后续恢复；调用方仍从 result 收到原异常。
+    _pending = result.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stack) {},
+    );
+    return result;
+  }
+
   static Future<File> exportToZip({
     required AppDatabase database,
     required SettingsService settingsService,
     String? zipPassword,
-  }) async {
-    final tempRoot = await _prepareWorkingDirectory(prefix: 'backup_export');
+  }) => _run(() => _export(database, settingsService, zipPassword));
+
+  static Future<File> _export(
+    AppDatabase database,
+    SettingsService settingsService,
+    String? password,
+  ) async {
+    final temporary = await getTemporaryDirectory();
+    final working = await temporary.createTemp('backup_export_');
     try {
-      final payload = await _buildBackupPayload(
+      final payload = await BackupPayload.capture(
         database: database,
         settingsService: settingsService,
       );
-      final payloadFile = File(p.join(tempRoot.path, _backupPayloadFileName));
-      await payloadFile.writeAsString(
+      await File(p.join(working.path, backupPayloadFileName)).writeAsString(
         const JsonEncoder.withIndent('  ').convert(payload),
         flush: true,
       );
-
-      for (final directory in _managedMediaDirectories) {
-        await _copyManagedDirectoryToWorkingDir(
-          sourceDirectoryName: directory,
-          targetRoot: tempRoot,
-        );
+      final documents = await getApplicationDocumentsDirectory();
+      for (final name in backupMediaDirectories) {
+        final source = Directory(p.join(documents.path, name));
+        if (await source.exists()) {
+          await BackupArchiveIO.copyDirectory(
+            source,
+            Directory(p.join(working.path, name)),
+          );
+        }
       }
-
-      final outputZipPath = p.join(
-        (await getTemporaryDirectory()).path,
-        'node_note_backup_${DateTime.now().millisecondsSinceEpoch}.zip',
+      final output = p.join(
+        temporary.path,
+        'node_note_backup_${DateTime.now().microsecondsSinceEpoch}.zip',
       );
-      await _encodeDirectoryToZipFile(
-        tempRoot,
-        outputZipPath: outputZipPath,
-        password: _normalizeOptionalPassword(zipPassword),
+      await BackupArchiveIO.encodeDirectory(
+        working,
+        outputZipPath: output,
+        password: _password(password),
       );
-      return File(outputZipPath);
+      return File(output);
     } finally {
-      if (await tempRoot.exists()) {
-        await tempRoot.delete(recursive: true);
-      }
+      await _cleanWorkingDirectory(working);
     }
   }
 
-  /// 从 zip 覆盖导入数据。
-  ///
-  /// 导入策略：
-  /// 1) 恢复数据库表数据（清空后重建）；
-  /// 2) 恢复本地媒体目录（封面/正文图片/录音/视频/附件）；
-  /// 3) 恢复设置项（主题、排序、布局、工具栏顺序、标签顺序、草稿）。
+  /// 所有数据先解压并校验到隔离目录；换入失败时数据库事务、文件和设置一同回滚。
   static Future<void> importFromZip({
     required AppDatabase database,
     required SettingsService settingsService,
     required String zipPath,
     String? zipPassword,
-  }) async {
-    final sourceZip = File(zipPath);
-    if (!await sourceZip.exists()) {
+  }) => _run(() => _import(database, settingsService, zipPath, zipPassword));
+
+  static Future<void> _import(
+    AppDatabase database,
+    SettingsService settingsService,
+    String zipPath,
+    String? password,
+  ) async {
+    if (!await File(zipPath).exists()) {
       throw const FileSystemException('备份文件不存在');
     }
-
-    final extractRoot = await _prepareWorkingDirectory(prefix: 'backup_import');
+    final documents = await getApplicationDocumentsDirectory();
+    await documents.create(recursive: true);
+    // 位于相同文件系统，换入/回滚大媒体仅需 rename，避免额外复制或空间不足。
+    final working = await documents.createTemp('.backup_import_');
+    var cleanup = true;
     try {
-      await _extractZipToDirectory(
-        sourceZip,
-        extractRoot,
-        password: _normalizeOptionalPassword(zipPassword),
+      await BackupArchiveIO.extract(
+        zipPath,
+        working,
+        password: _password(password),
       );
-      final payloadFile = File(
-        p.join(extractRoot.path, _backupPayloadFileName),
-      );
+      final payloadFile = File(p.join(working.path, backupPayloadFileName));
       if (!await payloadFile.exists()) {
         throw const FormatException('备份文件缺少 backup_data.json');
       }
-
-      final payloadRaw = await payloadFile.readAsString();
-      final decoded = jsonDecode(payloadRaw);
-      if (decoded is! Map<String, dynamic>) {
-        throw const FormatException('备份数据格式错误');
-      }
-
-      for (final directory in _managedMediaDirectories) {
-        await _restoreManagedDirectoryFromBackup(
-          backupRoot: extractRoot,
-          directoryName: directory,
-        );
-      }
-      await _restoreDatabaseFromPayload(database, decoded);
-      await _restoreSettingsFromPayload(settingsService, decoded);
-    } finally {
-      if (await extractRoot.exists()) {
-        await extractRoot.delete(recursive: true);
-      }
-    }
-  }
-
-  /// 判断 zip 是否为加密包。
-  ///
-  /// 规则：
-  /// - 任意文件头存在加密位（generalPurposeBitFlag bit0）则认为需要密码；
-  /// - 或压缩方法标记为 AES 加密（99）也视为加密包。
-  static Future<bool> isZipPasswordProtected({required String zipPath}) async {
-    final sourceZip = File(zipPath);
-    if (!await sourceZip.exists()) {
-      throw const FileSystemException('备份文件不存在');
-    }
-    return Isolate.run<bool>(() => _isZipPasswordProtectedSync(sourceZip.path));
-  }
-
-  static Future<Map<String, Object?>> _buildBackupPayload({
-    required AppDatabase database,
-    required SettingsService settingsService,
-  }) async {
-    final diaries = await database.select(database.diaries).get();
-    final tags = await database.select(database.tags).get();
-    final diaryTags = await database.select(database.diaryTags).get();
-
-    return <String, Object?>{
-      'formatVersion': _backupFormatVersion,
-      'generatedAt': DateTime.now().toIso8601String(),
-      'database': <String, Object?>{
-        'diaries': diaries.map((row) => row.toJson()).toList(growable: false),
-        'tags': tags.map((row) => row.toJson()).toList(growable: false),
-        'diaryTags': diaryTags
-            .map((row) => row.toJson())
-            .toList(growable: false),
-      },
-      'settings': <String, Object?>{
-        'themeMode': settingsService.themeModeNotifier.value.name,
-        'themeSeedColorValue': settingsService.themeSeedColorValue,
-        'homeTabSwitchCurveType': settingsService.homeTabSwitchCurveTypeValue,
-        'editorBodyFontSizePreset':
-            settingsService.editorBodyFontSizePresetStorageValue,
-        'editorBodyLineHeightPreset':
-            settingsService.editorBodyLineHeightPresetStorageValue,
-        'fontScale': settingsService.fontScaleValue,
-        'appLocaleCode': settingsService.appLocaleCode,
-        'appLockEnabled': settingsService.isAppLockEnabled,
-        'diarySortModeRaw': settingsService.diarySortModeRaw,
-        'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
-        'diaryCardTagLimit': settingsService.diaryCardTagLimit,
-        'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
-        'diaryToolbarHiddenItemsRaw':
-            settingsService.diaryToolbarHiddenItemsRaw,
-        'diaryToolbarCurrentTimeFormatRaw':
-            settingsService.diaryToolbarCurrentTimeFormatRaw,
-        'tagOrderRaw': settingsService.tagOrderRaw,
-        'tagFilterMemoryEnabled': settingsService.isTagFilterMemoryEnabled,
-        'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
-        'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
-        'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
-      },
-    };
-  }
-
-  static Future<void> _restoreDatabaseFromPayload(
-    AppDatabase database,
-    Map<String, dynamic> payload,
-  ) async {
-    final databaseNode = payload['database'];
-    if (databaseNode is! Map<String, dynamic>) {
-      throw const FormatException('备份数据缺少 database 节点');
-    }
-
-    final diariesJson = _asMapList(databaseNode['diaries']);
-    final tagsJson = _asMapList(databaseNode['tags']);
-    final diaryTagsJson = _asMapList(databaseNode['diaryTags']);
-
-    final documentsDirectory = await getApplicationDocumentsDirectory();
-    final diaries = <Diary>[];
-    for (final row in diariesJson) {
-      final diary = Diary.fromJson(row);
-      diaries.add(
-        diary.copyWith(
-          content: await _restoreEmbeddedMediaPaths(
-            diary.content,
-            documentsDirectory,
-          ),
-          cover: Value<String?>(
-            await _restoreManagedMediaPath(
-              diary.cover,
-              directoryNames: const <String>[
-                _backupCoversDirectoryName,
-                _backupImagesDirectoryName,
-              ],
-              documentsDirectory: documentsDirectory,
-            ),
-          ),
+      final payload = BackupPayload.decode(await payloadFile.readAsString());
+      final restored = await payload.rebindMedia(
+        BackupMediaPaths(
+          documentsDirectory: documents,
+          stagingDirectory: working,
         ),
       );
-    }
-    final tags = tagsJson
-        .map((row) => Tag.fromJson(row))
-        .toList(growable: false);
-    final diaryTags = diaryTagsJson
-        .map((row) => DiaryTag.fromJson(row))
-        .toList(growable: false);
-
-    await database.transaction(() async {
-      await database.delete(database.diaryTags).go();
-      await database.delete(database.diaries).go();
-      await database.delete(database.tags).go();
-
-      if (tags.isNotEmpty) {
-        await database.batch((batch) {
-          batch.insertAll(
-            database.tags,
-            tags
-                .map((row) {
-                  return TagsCompanion(
-                    id: Value<int>(row.id),
-                    name: Value<String>(row.name),
-                    color: Value<int>(row.color),
-                  );
-                })
-                .toList(growable: false),
-          );
-        });
-      }
-
-      if (diaries.isNotEmpty) {
-        await database.batch((batch) {
-          batch.insertAll(
-            database.diaries,
-            diaries
-                .map((row) {
-                  return DiariesCompanion(
-                    id: Value<int>(row.id),
-                    diaryId: Value<String>(row.diaryId),
-                    title: Value<String>(row.title),
-                    content: Value<String>(row.content),
-                    contentText: Value<String>(row.contentText),
-                    cover: Value<String?>(row.cover),
-                    metadata: Value<String>(row.metadata),
-                    createdAt: Value<DateTime>(row.createdAt),
-                    updatedAt: Value<DateTime>(row.updatedAt),
-                    isArchived: Value<bool>(row.isArchived),
-                    archivedAt: Value<DateTime?>(row.archivedAt),
-                    isPinned: Value<bool>(row.isPinned),
-                    isDeleted: Value<bool>(row.isDeleted),
-                    deletedAt: Value<DateTime?>(row.deletedAt),
-                    capsuleUnlockAt: Value<DateTime?>(row.capsuleUnlockAt),
-                    capsuleLockedAt: Value<DateTime?>(row.capsuleLockedAt),
-                  );
-                })
-                .toList(growable: false),
-          );
-        });
-      }
-
-      if (diaryTags.isNotEmpty) {
-        await database.batch((batch) {
-          batch.insertAll(
-            database.diaryTags,
-            diaryTags
-                .map((row) {
-                  return DiaryTagsCompanion(
-                    diaryId: Value<int>(row.diaryId),
-                    tagId: Value<int>(row.tagId),
-                  );
-                })
-                .toList(growable: false),
-          );
-        });
-      }
-    });
-  }
-
-  /// ZIP media files are restored into this installation's private documents
-  /// directory, while their database references contain absolute paths from
-  /// the exporting installation. Rebind only recognized managed-media paths
-  /// whose extracted targets exist; remote URLs and external files stay intact.
-  static Future<String?> _restoreManagedMediaPath(
-    String? sourcePath, {
-    required List<String> directoryNames,
-    required Directory documentsDirectory,
-  }) async {
-    final source = sourcePath?.trim();
-    if (source == null || source.isEmpty) {
-      return sourcePath;
-    }
-
-    final uri = Uri.tryParse(source);
-    if (uri != null &&
-        uri.hasScheme &&
-        uri.scheme != 'file' &&
-        !RegExp(r'^[a-zA-Z]:[\\/]').hasMatch(source)) {
-      return sourcePath;
-    }
-    final localSource = uri?.scheme == 'file'
-        ? Uri.decodeComponent(uri!.path)
-        : source;
-
-    final segments = p.posix
-        .split(localSource.replaceAll('\\', '/'))
-        .where((segment) => segment.isNotEmpty && segment != '.')
-        .toList(growable: false);
-    for (final directoryName in directoryNames) {
-      final directoryIndex = segments.lastIndexOf(directoryName);
-      if (directoryIndex < 0 || directoryIndex + 1 >= segments.length) {
-        continue;
-      }
-
-      final relativePath = p.posix.normalize(
-        p.posix.joinAll(segments.skip(directoryIndex + 1)),
+      final media = BackupMediaTransaction(
+        documents: documents,
+        staging: working,
       );
-      if (p.posix.isAbsolute(relativePath) ||
-          relativePath == '..' ||
-          relativePath.startsWith('../')) {
-        return sourcePath;
-      }
-
-      final candidate = p.join(
-        documentsDirectory.path,
-        directoryName,
-        relativePath,
-      );
-      if (await File(candidate).exists()) {
-        return candidate;
-      }
-    }
-    return sourcePath;
-  }
-
-  static Future<String> _restoreEmbeddedMediaPaths(
-    String content,
-    Directory documentsDirectory,
-  ) async {
-    Object? decoded;
-    try {
-      decoded = jsonDecode(content);
-    } on FormatException {
-      return content;
-    }
-
-    await _rewriteEmbeddedMediaPaths(decoded, documentsDirectory);
-    return jsonEncode(decoded);
-  }
-
-  /// 恢复 Quill 及旧版 AppFlowy 的媒体引用，保留文件 metadata 和远程 URL。
-  static Future<void> _rewriteEmbeddedMediaPaths(
-    Object? node,
-    Directory documentsDirectory,
-  ) async {
-    if (node is List) {
-      for (final child in node) {
-        await _rewriteEmbeddedMediaPaths(child, documentsDirectory);
-      }
-      return;
-    }
-    if (node is! Map) {
-      return;
-    }
-
-    final insert = node['insert'];
-    if (insert is Map && insert['image'] is String) {
-      insert['image'] = await _restoreManagedMediaPath(
-        insert['image'] as String,
-        directoryNames: const <String>[_backupImagesDirectoryName],
-        documentsDirectory: documentsDirectory,
-      );
-    }
-    if (insert is Map) {
-      final audio = DiaryAudioAttachment.tryDecode(insert[diaryAudioEmbedType]);
-      if (audio != null) {
-        final restoredPath = await _restoreManagedMediaPath(
-          audio.path,
-          directoryNames: const [_backupAudioDirectoryName],
-          documentsDirectory: documentsDirectory,
-        );
-        insert[diaryAudioEmbedType] = audio
-            .copyWith(path: restoredPath ?? audio.path)
-            .encode();
-      }
-      for (final type in ['video', ...diaryFileEmbedTypes]) {
-        final file = DiaryFileAttachment.tryDecode(insert[type]);
-        if (file == null) continue;
-        final path = await _restoreManagedMediaPath(
-          file.path,
-          directoryNames: const [
-            DiaryMediaStorageService.videosDirectoryName,
-            DiaryMediaStorageService.attachmentsDirectoryName,
-          ],
-          documentsDirectory: documentsDirectory,
-        );
-        if (path != file.path) {
-          insert[type] = replaceDiaryFilePath(insert[type], path!);
-        }
-      }
-    }
-
-    if (node['type'] == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map && attributes['url'] is String) {
-        attributes['url'] = await _restoreManagedMediaPath(
-          attributes['url'] as String,
-          directoryNames: const <String>[_backupImagesDirectoryName],
-          documentsDirectory: documentsDirectory,
-        );
-      }
-    }
-    if (node['type'] == 'video' || diaryFileEmbedTypes.contains(node['type'])) {
-      final file = DiaryFileAttachment.tryDecode(node['attributes']);
-      if (file != null) {
-        final path = await _restoreManagedMediaPath(
-          file.path,
-          directoryNames: const [
-            DiaryMediaStorageService.videosDirectoryName,
-            DiaryMediaStorageService.attachmentsDirectoryName,
-          ],
-          documentsDirectory: documentsDirectory,
-        );
-        if (path != file.path) {
-          node['attributes'] = replaceDiaryFilePath(node['attributes'], path!);
-        }
-      }
-    }
-
-    for (final child in node.values.toList(growable: false)) {
-      await _rewriteEmbeddedMediaPaths(child, documentsDirectory);
-    }
-  }
-
-  static Future<void> _restoreSettingsFromPayload(
-    SettingsService settingsService,
-    Map<String, dynamic> payload,
-  ) async {
-    final settingsNode = payload['settings'];
-    if (settingsNode is! Map<String, dynamic>) {
-      return;
-    }
-
-    final themeRaw = settingsNode['themeMode']?.toString();
-    if (themeRaw != null) {
-      await settingsService.setThemeMode(_parseThemeMode(themeRaw));
-    }
-
-    final themeSeedColorRaw = settingsNode['themeSeedColorValue'];
-    final themeSeedColorValue = switch (themeSeedColorRaw) {
-      int value => value,
-      num value => value.toInt(),
-      String value => int.tryParse(value),
-      _ => null,
-    };
-    if (themeSeedColorValue != null) {
-      await settingsService.setThemeSeedColor(Color(themeSeedColorValue));
-    }
-
-    final tabSwitchCurveTypeRaw = settingsNode['homeTabSwitchCurveType'];
-    if (tabSwitchCurveTypeRaw is String && tabSwitchCurveTypeRaw.isNotEmpty) {
-      await settingsService.setHomeTabSwitchCurveType(
-        switch (tabSwitchCurveTypeRaw) {
-          'easeOutCubic' => HomeTabSwitchCurveType.easeOutCubic,
-          'linear' => HomeTabSwitchCurveType.linear,
-          'easeOutCirc' => HomeTabSwitchCurveType.easeOutCirc,
-          _ => SettingsService.defaultHomeTabSwitchCurveType,
-        },
-      );
-    }
-
-    final editorBodyFontSizeRaw = settingsNode['editorBodyFontSizePreset']
-        ?.toString();
-    if (editorBodyFontSizeRaw != null && editorBodyFontSizeRaw.isNotEmpty) {
-      await settingsService.setEditorBodyFontSizePreset(
-        switch (editorBodyFontSizeRaw) {
-          'small' => EditorBodyFontSizePreset.small,
-          'large' => EditorBodyFontSizePreset.large,
-          'medium' => EditorBodyFontSizePreset.medium,
-          _ => SettingsService.defaultEditorBodyFontSizePreset,
-        },
-      );
-    }
-
-    final editorBodyLineHeightRaw = settingsNode['editorBodyLineHeightPreset']
-        ?.toString();
-    if (editorBodyLineHeightRaw != null && editorBodyLineHeightRaw.isNotEmpty) {
-      await settingsService.setEditorBodyLineHeightPreset(
-        switch (editorBodyLineHeightRaw) {
-          'compact' => EditorBodyLineHeightPreset.compact,
-          'relaxed' => EditorBodyLineHeightPreset.relaxed,
-          'normal' => EditorBodyLineHeightPreset.normal,
-          _ => SettingsService.defaultEditorBodyLineHeightPreset,
-        },
-      );
-    }
-
-    final fontScaleRaw = settingsNode['fontScale'];
-    final fontScale = switch (fontScaleRaw) {
-      double value => value,
-      int value => value.toDouble(),
-      String value => double.tryParse(value),
-      _ => null,
-    };
-    if (fontScale != null) {
-      await settingsService.setFontScale(fontScale);
-    }
-
-    final localeRaw = settingsNode['appLocaleCode']?.toString();
-    if (localeRaw != null && localeRaw.trim().isNotEmpty) {
-      await settingsService.setAppLocaleCode(localeRaw);
-    }
-
-    final appLockRaw = settingsNode['appLockEnabled'];
-    if (appLockRaw is bool) {
-      await settingsService.setAppLockEnabled(appLockRaw);
-    }
-
-    final sortRaw = settingsNode['diarySortModeRaw']?.toString();
-    if (sortRaw != null && sortRaw.isNotEmpty) {
-      await settingsService.setDiarySortModeRaw(sortRaw);
-    }
-
-    final layoutRaw = settingsNode['diaryLayoutModeRaw']?.toString();
-    if (layoutRaw != null && layoutRaw.isNotEmpty) {
-      await settingsService.setDiaryLayoutModeRaw(layoutRaw);
-    }
-
-    final diaryCardTagLimitRaw = settingsNode['diaryCardTagLimit'];
-    final diaryCardTagLimit = switch (diaryCardTagLimitRaw) {
-      int value => value,
-      num value => value.toInt(),
-      String value => int.tryParse(value),
-      _ => null,
-    };
-    if (diaryCardTagLimit != null) {
-      await settingsService.setDiaryCardTagLimit(diaryCardTagLimit);
-    }
-
-    final toolbarRaw = settingsNode['diaryToolbarOrderRaw']?.toString();
-    if (toolbarRaw != null && toolbarRaw.isNotEmpty) {
-      await settingsService.setDiaryToolbarOrderRaw(toolbarRaw);
-    }
-
-    if (settingsNode.containsKey('diaryToolbarHiddenItemsRaw')) {
-      final toolbarHiddenRaw =
-          settingsNode['diaryToolbarHiddenItemsRaw']?.toString() ?? '';
-      await settingsService.setDiaryToolbarHiddenItemsRaw(toolbarHiddenRaw);
-    }
-
-    if (settingsNode.containsKey('diaryToolbarCurrentTimeFormatRaw')) {
-      final toolbarCurrentTimeFormatRaw =
-          settingsNode['diaryToolbarCurrentTimeFormatRaw']?.toString() ?? '';
-      await settingsService.setDiaryToolbarCurrentTimeFormatRaw(
-        toolbarCurrentTimeFormatRaw,
-      );
-    }
-
-    final tagOrderRaw = settingsNode['tagOrderRaw']?.toString();
-    if (tagOrderRaw != null && tagOrderRaw.isNotEmpty) {
-      await settingsService.setTagOrderRaw(tagOrderRaw);
-    }
-
-    final tagFilterMemoryEnabledRaw = settingsNode['tagFilterMemoryEnabled'];
-    final tagFilterMemoryEnabled = switch (tagFilterMemoryEnabledRaw) {
-      bool value => value,
-      String value => value.toLowerCase() == 'true',
-      _ => null,
-    };
-    if (tagFilterMemoryEnabled != null) {
-      await settingsService.setTagFilterMemoryEnabled(tagFilterMemoryEnabled);
-    }
-    if (settingsNode.containsKey('rememberedTagFilterIdsRaw')) {
-      final rememberedTagFilterIdsRaw =
-          settingsNode['rememberedTagFilterIdsRaw']?.toString() ?? '';
-      if (settingsService.isTagFilterMemoryEnabled &&
-          rememberedTagFilterIdsRaw.isNotEmpty) {
-        await settingsService.setRememberedTagFilterIdsRaw(
-          rememberedTagFilterIdsRaw,
-        );
-      } else {
-        await settingsService.clearRememberedTagFilterIds();
-      }
-    }
-
-    final draftRaw = settingsNode['createDiaryDraftRaw']?.toString();
-    if (draftRaw != null && draftRaw.isNotEmpty) {
-      var restoredDraftRaw = draftRaw;
+      final settingsSnapshot = settingsService.captureBackupSnapshot();
       try {
-        final draft = jsonDecode(draftRaw);
-        if (draft is Map<String, dynamic> &&
-            draft['contentDocJson'] is String) {
-          draft['contentDocJson'] = await _restoreEmbeddedMediaPaths(
-            draft['contentDocJson'] as String,
-            await getApplicationDocumentsDirectory(),
-          );
-          restoredDraftRaw = jsonEncode(draft);
-        }
-      } on FormatException {
-        // Preserve the previous draft behavior when a legacy draft is invalid.
-      }
-      await settingsService.setCreateDiaryDraftRaw(restoredDraftRaw);
-    } else {
-      await settingsService.clearCreateDiaryDraft();
-    }
-
-    final releaseMirrorStartIndexRaw = settingsNode['releaseMirrorStartIndex'];
-    final releaseMirrorStartIndex = switch (releaseMirrorStartIndexRaw) {
-      int value => value,
-      num value => value.toInt(),
-      String value => int.tryParse(value),
-      _ => null,
-    };
-    if (releaseMirrorStartIndex != null) {
-      await settingsService.setReleaseMirrorStartIndex(releaseMirrorStartIndex);
-    }
-  }
-
-  static ThemeMode _parseThemeMode(String value) {
-    switch (value) {
-      case 'light':
-        return ThemeMode.light;
-      case 'dark':
-        return ThemeMode.dark;
-      case 'system':
-      default:
-        return ThemeMode.system;
-    }
-  }
-
-  static List<Map<String, dynamic>> _asMapList(Object? value) {
-    if (value is! List) {
-      return const <Map<String, dynamic>>[];
-    }
-    return value
-        .whereType<Map>()
-        .map((entry) => entry.cast<String, dynamic>())
-        .toList(growable: false);
-  }
-
-  static Future<Directory> _prepareWorkingDirectory({
-    required String prefix,
-  }) async {
-    final temp = await getTemporaryDirectory();
-    final target = Directory(
-      p.join(temp.path, '${prefix}_${DateTime.now().millisecondsSinceEpoch}'),
-    );
-    if (await target.exists()) {
-      await target.delete(recursive: true);
-    }
-    await target.create(recursive: true);
-    return target;
-  }
-
-  static Future<void> _copyManagedDirectoryToWorkingDir({
-    required String sourceDirectoryName,
-    required Directory targetRoot,
-  }) async {
-    final docs = await getApplicationDocumentsDirectory();
-    final sourceDir = Directory(p.join(docs.path, sourceDirectoryName));
-    if (!await sourceDir.exists()) {
-      return;
-    }
-    final targetDir = Directory(p.join(targetRoot.path, sourceDirectoryName));
-    await _copyDirectoryRecursively(sourceDir, targetDir);
-  }
-
-  static Future<void> _restoreManagedDirectoryFromBackup({
-    required Directory backupRoot,
-    required String directoryName,
-  }) async {
-    final docs = await getApplicationDocumentsDirectory();
-    final targetDir = Directory(p.join(docs.path, directoryName));
-    if (await targetDir.exists()) {
-      await targetDir.delete(recursive: true);
-    }
-
-    final sourceDir = Directory(p.join(backupRoot.path, directoryName));
-    if (!await sourceDir.exists()) {
-      await targetDir.create(recursive: true);
-      return;
-    }
-    await _copyDirectoryRecursively(sourceDir, targetDir);
-  }
-
-  static Future<void> _copyDirectoryRecursively(
-    Directory source,
-    Directory target,
-  ) async {
-    if (!await target.exists()) {
-      await target.create(recursive: true);
-    }
-
-    await for (final entity in source.list(
-      recursive: false,
-      followLinks: false,
-    )) {
-      final targetPath = p.join(target.path, p.basename(entity.path));
-      if (entity is Directory) {
-        await _copyDirectoryRecursively(entity, Directory(targetPath));
-        continue;
-      }
-      if (entity is File) {
-        await File(entity.path).copy(targetPath);
-      }
-    }
-  }
-
-  static Future<void> _encodeDirectoryToZipFile(
-    Directory root, {
-    required String outputZipPath,
-    String? password,
-  }) async {
-    // 不把整个含视频的备份放进内存或跨 isolate 传递；仅返回已经落盘的文件。
-    await Isolate.run<void>(
-      () => _encodeDirectoryToZipFileSync(
-        root.path,
-        outputZipPath: outputZipPath,
-        password: password,
-      ),
-    );
-  }
-
-  static void _encodeDirectoryToZipFileSync(
-    String rootPath, {
-    required String outputZipPath,
-    String? password,
-  }) {
-    final normalizedRootPath = p.normalize(rootPath);
-    final output = OutputFileStream(outputZipPath);
-    final encoder = ZipEncoder(password: password)..startEncode(output);
-    try {
-      for (final entity in Directory(
-        rootPath,
-      ).listSync(recursive: true, followLinks: false)) {
-        if (entity is! File) continue;
-        final relativePath = p
-            .relative(p.normalize(entity.path), from: normalizedRootPath)
-            .replaceAll('\\', '/');
-        final input = InputFileStream(entity.path);
+        await database.transaction(() async {
+          await media.install();
+          await restored.writeDatabase(database);
+          await BackupSettings.restore(settingsService, restored.settings);
+        });
+      } catch (error, stack) {
+        final rollbackErrors = <Object>[];
         try {
-          final entry =
-              ArchiveFile.stream(relativePath, entity.lengthSync(), input)
-                ..lastModTime =
-                    entity.lastModifiedSync().millisecondsSinceEpoch ~/ 1000;
-          // 视频和常见附件多已压缩，STORE 可保持文件流，避免 Deflate 整条目
-          // 缓冲。加密仍沿用 archive 的单条目 AES 缓冲，不同时保留整包内容。
-          if (relativePath.startsWith(
-                '${DiaryMediaStorageService.videosDirectoryName}/',
-              ) ||
-              relativePath.startsWith(
-                '${DiaryMediaStorageService.attachmentsDirectoryName}/',
-              )) {
-            entry.compress = false;
-          }
-          encoder.addFile(entry);
-        } finally {
-          input.closeSync();
+          await media.rollback();
+        } catch (failure) {
+          rollbackErrors.add(failure);
         }
+        try {
+          await settingsSnapshot.restore();
+        } catch (failure) {
+          rollbackErrors.add(failure);
+        }
+        if (rollbackErrors.isNotEmpty) {
+          // 恢复原目录失败时必须保留暂存区的原文件，不能在 finally 中将其删除。
+          cleanup = false;
+          throw FileSystemException(
+            '备份恢复失败，暂存数据已保留：$error；回滚失败：$rollbackErrors',
+            working.path,
+          );
+        }
+        Error.throwWithStackTrace(error, stack);
       }
-      encoder.endEncode();
-    } catch (_) {
-      output.closeSync();
-      File(outputZipPath).deleteSync();
-      rethrow;
     } finally {
-      output.closeSync();
+      if (cleanup) await _cleanWorkingDirectory(working);
     }
   }
 
-  static Future<void> _extractZipToDirectory(
-    File zipFile,
-    Directory targetDirectory, {
-    String? password,
-  }) async {
-    // 解压与写盘也属于重操作，迁移到后台 isolate 保持 UI 可交互。
-    await Isolate.run<void>(
-      () => _extractZipToDirectorySync(
-        zipFile.path,
-        targetDirectory.path,
-        password: password,
-      ),
-    );
+  static Future<bool> isZipPasswordProtected({required String zipPath}) async {
+    if (!await File(zipPath).exists()) {
+      throw const FileSystemException('备份文件不存在');
+    }
+    return BackupArchiveIO.isPasswordProtected(zipPath);
   }
 
-  static void _extractZipToDirectorySync(
-    String zipPath,
-    String targetDirectoryPath, {
-    String? password,
-  }) {
-    final input = InputFileStream(zipPath);
+  static Future<void> _cleanWorkingDirectory(Directory directory) async {
     try {
-      final archive = ZipDecoder().decodeBuffer(
-        input,
-        verify: true,
-        password: password,
-      );
-      try {
-        final targetRoot = p.normalize(targetDirectoryPath);
-        for (final entry in archive.files) {
-          if (!entry.isFile) {
-            continue;
-          }
-
-          final normalizedEntryName = p
-              .normalize(entry.name)
-              .replaceAll('\\', '/');
-          if (normalizedEntryName.isEmpty ||
-              normalizedEntryName.contains('..')) {
-            continue;
-          }
-
-          final outputPath = p.join(targetRoot, normalizedEntryName);
-          final normalizedOutputPath = p.normalize(outputPath);
-          if (!p.isWithin(targetRoot, normalizedOutputPath) &&
-              normalizedOutputPath != targetRoot) {
-            continue;
-          }
-
-          final outputFile = File(normalizedOutputPath);
-          outputFile.parent.createSync(recursive: true);
-          final output = OutputFileStream(outputFile.path);
-          try {
-            entry.writeContent(output);
-          } finally {
-            output.closeSync();
-          }
-        }
-      } finally {
-        archive.clearSync();
-      }
-    } finally {
-      input.closeSync();
+      if (await directory.exists()) await directory.delete(recursive: true);
+    } on FileSystemException {
+      // 提交或回滚已经结束，临时目录清理失败不能改变其结果或掩盖原异常。
     }
   }
 
-  static bool _isZipPasswordProtectedSync(String zipPath) {
-    final input = InputFileStream(zipPath);
-    final decoder = ZipDecoder();
-    try {
-      decoder.decodeBuffer(input, verify: false);
-      for (final header in decoder.directory.fileHeaders) {
-        final encryptedByFlag = (header.generalPurposeBitFlag & 0x1) != 0;
-        final encryptedByMethod =
-            header.compressionMethod == ZipFile.zipCompressionAexEncryption;
-        if (encryptedByFlag || encryptedByMethod) {
-          return true;
-        }
-      }
-      return false;
-    } finally {
-      input.closeSync();
-    }
-  }
-
-  static String? _normalizeOptionalPassword(String? rawPassword) {
-    final normalized = rawPassword?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
+  static String? _password(String? raw) {
+    final value = raw?.trim();
+    return value == null || value.isEmpty ? null : value;
   }
 }

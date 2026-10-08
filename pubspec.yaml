@@ -64,6 +64,8 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   # 迁移测试中直接以原始 sqlite3 搭建旧版库结构（transitive 依赖显式声明）。
   sqlite3: ^3.2.0
+  # 模拟备份恢复时偏好写入返回 false 或异常，验证跨数据库/媒体回滚。
+  shared_preferences_platform_interface: ^2.4.1
 
 flutter:
   generate: true

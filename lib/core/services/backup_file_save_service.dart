@@ -5,13 +5,12 @@ import 'package:flutter/services.dart';
 
 /// 备份文件保存服务。
 ///
-/// Android 的 `file_picker.saveFile(bytes: ...)` 会把整个 ZIP 通过
-/// MethodChannel 传给原生层，大备份会同时占用 Dart 堆和 Android 堆。
-/// 因此 Android 走应用自有通道，仅传临时文件路径，由原生 SAF 按流复制。
+/// 移动端仅把临时 ZIP 路径交给原生文件选择器，避免在 Dart 和原生堆中
+/// 同时保留整个含视频的备份。返回保存位置；取消返回 null，失败保留源文件。
 class BackupFileSaveService {
   BackupFileSaveService._();
 
-  static const MethodChannel _androidChannel = MethodChannel(
+  static const MethodChannel _mobileChannel = MethodChannel(
     'com.jotsy.diary/backup_file_saver',
   );
   static const String _zipMimeType = 'application/zip';
@@ -21,18 +20,8 @@ class BackupFileSaveService {
     required String fileName,
     required String dialogTitle,
   }) async {
-    if (Platform.isAndroid) {
-      return saveAndroidBackupFile(zipFile: zipFile, fileName: fileName);
-    }
-
-    if (Platform.isIOS) {
-      return FilePicker.platform.saveFile(
-        dialogTitle: dialogTitle,
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: const <String>['zip'],
-        bytes: await zipFile.readAsBytes(),
-      );
+    if (Platform.isAndroid || Platform.isIOS) {
+      return saveNativeBackupFile(zipFile: zipFile, fileName: fileName);
     }
 
     final savePath = await FilePicker.platform.saveFile(
@@ -49,11 +38,11 @@ class BackupFileSaveService {
     return savePath;
   }
 
-  static Future<String?> saveAndroidBackupFile({
+  static Future<String?> saveNativeBackupFile({
     required File zipFile,
     required String fileName,
   }) {
-    return _androidChannel.invokeMethod<String>('saveBackupFile', {
+    return _mobileChannel.invokeMethod<String>('saveBackupFile', {
       'sourcePath': zipFile.path,
       'fileName': fileName,
       'mimeType': _zipMimeType,

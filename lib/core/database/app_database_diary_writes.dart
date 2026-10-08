@@ -246,7 +246,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 彻底删除日记（物理删除，不可恢复）。
   ///
-  /// 依赖外键级联自动清理 diary_tags 关联关系。
+  /// 显式清理 diary_tags，兼容没有开启外键级联的历史连接。
   Future<void> hardDeleteDiary(String diaryId) async {
     final targetDiary = await (select(
       diaries,
@@ -258,9 +258,15 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     // 彻删前先清理托管资源文件，避免私有目录残留无主文件。
     await _deleteDiaryManagedAssets(targetDiary);
 
-    await (delete(
-      diaries,
-    )..where((Diaries t) => t.diaryId.equals(diaryId))).go();
+    // 旧连接可能没有开启外键，显式清理绑定，避免再次导出悬空关联。
+    await transaction(() async {
+      await (delete(
+        diaryTags,
+      )..where((DiaryTags t) => t.diaryId.equals(targetDiary.id))).go();
+      await (delete(
+        diaries,
+      )..where((Diaries t) => t.diaryId.equals(diaryId))).go();
+    });
   }
 
   /// 按业务 diaryId 获取单条日记及其标签。

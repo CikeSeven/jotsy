@@ -30,13 +30,6 @@ void main() {
       'diaryTags': [],
     },
     'missing tags': {'diaries': [], 'diaryTags': []},
-    'invalid relation': {
-      'diaries': [],
-      'tags': [],
-      'diaryTags': [
-        {'diaryId': 1, 'tagId': 2},
-      ],
-    },
   };
   for (final entry in invalidDatabases.entries) {
     test(

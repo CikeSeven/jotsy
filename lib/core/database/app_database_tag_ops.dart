@@ -68,8 +68,13 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
     );
   }
 
-  /// 删除标签（关联关系由外键级联删除）。
+  /// 删除标签及其关联，不依赖历史连接是否开启了 SQLite 外键级联。
   Future<void> deleteTag(int tagId) async {
-    await (delete(tags)..where((Tags t) => t.id.equals(tagId))).go();
+    await transaction(() async {
+      await (delete(
+        diaryTags,
+      )..where((DiaryTags t) => t.tagId.equals(tagId))).go();
+      await (delete(tags)..where((Tags t) => t.id.equals(tagId))).go();
+    });
   }
 }

@@ -62,8 +62,8 @@ class BackupPayload {
         ).map(DiaryTag.fromJson).toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
-      payload._validateRelations();
-      return payload;
+      payload._validateKeys();
+      return payload._withRestorableTagRelations();
     } on TypeError {
       throw const FormatException('备份数据字段格式错误');
     }
@@ -81,27 +81,32 @@ class BackupPayload {
     return rows.cast<Map<String, dynamic>>();
   }
 
-  void _validateRelations() {
-    final diaryIds = _unique(diaries.map((row) => row.id));
-    final tagIds = _unique(tags.map((row) => row.id));
+  void _validateKeys() {
+    _unique(diaries.map((row) => row.id));
+    _unique(tags.map((row) => row.id));
     _unique(diaries.map((row) => row.diaryId));
     _unique(tags.map((row) => row.name));
     _unique(diaryTags.map((row) => (row.diaryId, row.tagId)));
-    if (diaries.any(
-          (row) =>
-              row.id <= 0 ||
-              row.diaryId.trim().isEmpty ||
-              row.title.length > 200,
-        ) ||
-        tags.any(
-          (row) => row.id <= 0 || row.name.isEmpty || row.name.length > 40,
-        ) ||
-        diaryTags.any(
-          (row) =>
-              !diaryIds.contains(row.diaryId) || !tagIds.contains(row.tagId),
-        )) {
-      throw const FormatException('备份数据约束或标签关联无效');
-    }
+  }
+
+  BackupPayload _withRestorableTagRelations() {
+    final diaryIds = diaries.map((row) => row.id).toSet();
+    final tagIds = tags.map((row) => row.id).toSet();
+    // 历史连接没有一直开启 SQLite 外键，删除记录可能留下悬空关联。
+    // 旧版本会把这些关联一起导出；它们不是整份备份损坏的证据。
+    // 保留全部日记、标签及有效关联，只有已不存在的两端无法恢复为标签绑定。
+    // 不对历史数据额外施加编辑器的长度或正数 ID 规则，避免拒绝旧库真实行。
+    return BackupPayload(
+      diaries: diaries,
+      tags: tags,
+      diaryTags: diaryTags
+          .where(
+            (row) =>
+                diaryIds.contains(row.diaryId) && tagIds.contains(row.tagId),
+          )
+          .toList(growable: false),
+      settings: settings,
+    );
   }
 
   static Set<T> _unique<T>(Iterable<T> values) {

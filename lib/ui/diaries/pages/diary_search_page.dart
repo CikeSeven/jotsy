@@ -125,14 +125,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
-    final pageBackgroundColor = brightness == Brightness.light
-        ? Colors.white
-        : colorScheme.surface;
+    final pageBackgroundColor = colorScheme.surface;
     final topSafeInset = MediaQuery.paddingOf(context).top;
     final headerOverlayHeight = topSafeInset + _headerContentHeight;
     final query = SearchDiaryQuery(

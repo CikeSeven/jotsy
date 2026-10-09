@@ -85,6 +85,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tabPageConfigRevision.value++;
+  }
+
+  @override
   void didUpdateWidget(covariant HomePage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.homeHintVisibleListenable !=
@@ -280,6 +286,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           unawaited(_controller.switchToDiariesTab());
         },
         child: Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           resizeToAvoidBottomInset: false,
           body: Stack(children: [_buildPageView(), _buildGlobalCreateFab()]),
           bottomNavigationBar: BottomNav(

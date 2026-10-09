@@ -182,6 +182,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         }
       },
       child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppTopBar(
           title: Text(context.l10n.autoT0138),
           leading: IconButton(

@@ -11,9 +11,9 @@ import '../../widgets/page_header.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key, required this.pageBackgroundColor});
+  const SettingsPage({super.key, this.pageBackgroundColor});
 
-  final Color pageBackgroundColor;
+  final Color? pageBackgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +21,12 @@ class SettingsPage extends StatelessWidget {
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
     const listBottomPadding = 8.0;
+    final pageBgColor =
+        pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
 
     return Stack(
       children: <Widget>[
-        Positioned.fill(child: ColoredBox(color: pageBackgroundColor)),
+        Positioned.fill(child: ColoredBox(color: pageBgColor)),
         ListView(
           padding: EdgeInsets.only(
             top: headerHeight,

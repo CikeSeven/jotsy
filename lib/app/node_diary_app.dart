@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -207,6 +208,17 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         if (child == null) {
           return const SizedBox.shrink();
         }
+        final theme = Theme.of(context);
+        final isLight = theme.brightness == Brightness.light;
+        final systemOverlayStyle = SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: isLight
+              ? Brightness.dark
+              : Brightness.light,
+        );
         final mediaQuery = MediaQuery.of(context);
         final effectiveTextScaler = _AppMultiplierTextScaler(
           baseScaler: mediaQuery.textScaler,
@@ -221,18 +233,21 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                 )
               : child,
         );
-        return HomeHintVisibilityScope(
-          controller: _homeHintVisibilityController,
-          child: Stack(
-            fit: StackFit.expand,
-            children: <Widget>[
-              scaledChild,
-              if (_appLocked || _unlockingApp)
-                _AppLockOverlay(
-                  unlocking: _unlockingApp,
-                  onTapUnlock: _handleManualUnlockTap,
-                ),
-            ],
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: systemOverlayStyle,
+          child: HomeHintVisibilityScope(
+            controller: _homeHintVisibilityController,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                scaledChild,
+                if (_appLocked || _unlockingApp)
+                  _AppLockOverlay(
+                    unlocking: _unlockingApp,
+                    onTapUnlock: _handleManualUnlockTap,
+                  ),
+              ],
+            ),
           ),
         );
       },

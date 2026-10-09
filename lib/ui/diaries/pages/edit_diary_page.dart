@@ -477,7 +477,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     required double bodyFontSize,
     required double bodyLineHeight,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final minEditorHeight = constraints.maxHeight > 420
@@ -487,50 +486,41 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           controller: _contentScrollController,
           // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-          padding: EdgeInsets.fromLTRB(8, 0, 8, bottomSpacer),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  _buildTitleInput(context, contentLocked: contentLocked),
-                  const SizedBox(height: 12),
-                  ConstrainedBox(
-                    // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
-                    constraints: BoxConstraints(minHeight: minEditorHeight),
-                    child: IgnorePointer(
-                      ignoring: contentLocked,
-                      child: quill.QuillEditor.basic(
-                        controller: _contentController,
-                        focusNode: _contentFocusNode,
-                        scrollController: _editorInnerScrollController,
-                        config: quill.QuillEditorConfig(
-                          autoFocus: widget.diaryId == null,
-                          placeholder: context.l10n.autoT0133,
-                          scrollable: false,
-                          onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-                            _contentController,
-                            getPosition(details.globalPosition),
-                          ),
-                          padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                          customStyles: _buildEditorCustomStyles(
-                            context: context,
-                            bodyFontSize: bodyFontSize,
-                            bodyLineHeight: bodyLineHeight,
-                          ),
-                          embedBuilders: buildDiaryQuillEmbedBuilders(),
-                        ),
+          padding: EdgeInsets.fromLTRB(16, 4, 16, bottomSpacer),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildTitleInput(context, contentLocked: contentLocked),
+              const SizedBox(height: 12),
+              ConstrainedBox(
+                // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
+                constraints: BoxConstraints(minHeight: minEditorHeight),
+                child: IgnorePointer(
+                  ignoring: contentLocked,
+                  child: quill.QuillEditor.basic(
+                    controller: _contentController,
+                    focusNode: _contentFocusNode,
+                    scrollController: _editorInnerScrollController,
+                    config: quill.QuillEditorConfig(
+                      autoFocus: widget.diaryId == null,
+                      placeholder: context.l10n.autoT0133,
+                      scrollable: false,
+                      onTapUp: (details, getPosition) => isDiaryPlaybackTap(
+                        _contentController,
+                        getPosition(details.globalPosition),
                       ),
+                      padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+                      customStyles: _buildEditorCustomStyles(
+                        context: context,
+                        bodyFontSize: bodyFontSize,
+                        bodyLineHeight: bodyLineHeight,
+                      ),
+                      embedBuilders: buildDiaryQuillEmbedBuilders(),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         );
       },
@@ -646,9 +636,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
     // 编辑页统一处理三态：加载中 / 加载失败 / 数据可用。
     return detailAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: ExpressiveLoadingIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        body: const Center(child: ExpressiveLoadingIndicator()),
+      ),
       error: (Object error, StackTrace stackTrace) => Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppTopBar(
           leading: IconButton(
             tooltip: context.l10n.commonBack,
@@ -663,6 +656,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
         if (widget.diaryId != null && detail == null) {
           return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
             appBar: AppTopBar(
               leading: IconButton(
                 tooltip: context.l10n.commonBack,
@@ -700,6 +694,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         }
 
         final scaffold = Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppTopBar(
             leading: IconButton(
               tooltip: context.l10n.commonBack,

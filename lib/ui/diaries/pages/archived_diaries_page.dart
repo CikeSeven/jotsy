@@ -60,11 +60,8 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
-    final brightness = Theme.of(context).brightness;
     final colorScheme = Theme.of(context).colorScheme;
-    final pageBackgroundColor = brightness == Brightness.light
-        ? Colors.white
-        : colorScheme.surface;
+    final pageBackgroundColor = colorScheme.surface;
 
     // 返回键优先退出选择模式，避免误退出页面。
     return PopScope(

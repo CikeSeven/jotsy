@@ -37,13 +37,13 @@ part '../controllers/diaries_page_controller.dart';
 class DiariesPage extends ConsumerStatefulWidget {
   const DiariesPage({
     super.key,
-    required this.pageBackgroundColor,
+    this.pageBackgroundColor,
     this.homeHintVisibleListenable,
     this.onCreateActionChanged,
     this.onFabVisibilityChanged,
   });
 
-  final Color pageBackgroundColor;
+  final Color? pageBackgroundColor;
   final ValueListenable<bool>? homeHintVisibleListenable;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
@@ -185,7 +185,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
+    final theme = Theme.of(context);
+    final brightness = theme.brightness;
+    final colorScheme = theme.colorScheme;
+    final pageBgColor = widget.pageBackgroundColor ?? colorScheme.surface;
     final diaryCardTagLimit =
         ref.watch(diaryCardTagLimitProvider).asData?.value ??
         SettingsService.defaultDiaryCardTagLimit;
@@ -291,14 +294,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         // update the pinned extent in the same layout pass, without a delayed
         // size callback or a second independently calculated animation.
         final tagHeader = PinnedHeaderSliver(
-          child: ColoredBox(
-            color: widget.pageBackgroundColor,
-            child: tagHeaderContent,
-          ),
+          child: ColoredBox(color: pageBgColor, child: tagHeaderContent),
         );
 
         return Scaffold(
-          backgroundColor: widget.pageBackgroundColor,
+          backgroundColor: pageBgColor,
           resizeToAvoidBottomInset: false,
           body: Stack(
             children: [
@@ -324,7 +324,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   child: SafeArea(
                     top: true,
                     child: ColoredBox(
-                      color: widget.pageBackgroundColor,
+                      color: pageBgColor,
                       child: NotificationListener<ScrollNotification>(
                         onNotification: _handlePrimaryScrollNotification,
                         child: CustomScrollView(

@@ -33,12 +33,12 @@ part '../controllers/calendar_page_controller.dart';
 class CalendarPage extends ConsumerStatefulWidget {
   const CalendarPage({
     super.key,
-    required this.pageBackgroundColor,
+    this.pageBackgroundColor,
     this.onCreateActionChanged,
     this.onFabVisibilityChanged,
   });
 
-  final Color pageBackgroundColor;
+  final Color? pageBackgroundColor;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
 
@@ -125,9 +125,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     // successful buckets visible so month navigation does not read as data loss.
     final markerBuckets = latestMarkerBuckets ?? _cachedMarkerBuckets;
     final markerStatus = _CalendarStaleStatus.from(markersAsync);
+    final pageBgColor =
+        widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
 
     return Scaffold(
-      backgroundColor: widget.pageBackgroundColor,
+      backgroundColor: pageBgColor,
       body: Stack(
         children: <Widget>[
           SafeArea(

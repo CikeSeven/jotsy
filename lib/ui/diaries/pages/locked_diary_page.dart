@@ -24,18 +24,22 @@ class LockedDiaryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(diaryDetailProvider(diaryId));
+    final surfaceColor = Theme.of(context).colorScheme.surface;
     return detailAsync.when(
       loading: () => Scaffold(
+        backgroundColor: surfaceColor,
         appBar: _buildAppBar(context),
         body: const AppLoadingContent(),
       ),
       error: (error, stackTrace) => Scaffold(
+        backgroundColor: surfaceColor,
         appBar: _buildAppBar(context),
         body: Center(child: Text(context.l10n.autoT0121(error.toString()))),
       ),
       data: (detail) {
         if (detail == null) {
           return Scaffold(
+            backgroundColor: surfaceColor,
             appBar: _buildAppBar(context),
             body: Center(child: Text(context.l10n.autoT0124)),
           );
@@ -82,6 +86,7 @@ class _LockedDiaryContent extends ConsumerWidget {
     final energy = _parseEnergy(contextMeta['energyLevel']);
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
         leading: IconButton(
           tooltip: context.l10n.commonBack,

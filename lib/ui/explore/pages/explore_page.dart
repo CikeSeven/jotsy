@@ -24,9 +24,9 @@ import '../sections/explore_content_section.dart';
 /// - 处理导航回调；
 /// - 将聚合数据交给 sections 渲染。
 class ExplorePage extends ConsumerStatefulWidget {
-  const ExplorePage({super.key, required this.pageBackgroundColor});
+  const ExplorePage({super.key, this.pageBackgroundColor});
 
-  final Color pageBackgroundColor;
+  final Color? pageBackgroundColor;
 
   @override
   ConsumerState<ExplorePage> createState() => _ExplorePageState();
@@ -94,9 +94,12 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
 
+    final pageBgColor =
+        widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
+
     return Stack(
       children: <Widget>[
-        Positioned.fill(child: ColoredBox(color: widget.pageBackgroundColor)),
+        Positioned.fill(child: ColoredBox(color: pageBgColor)),
         SafeArea(
           top: false,
           child: CustomScrollView(

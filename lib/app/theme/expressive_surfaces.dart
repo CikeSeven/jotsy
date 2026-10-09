@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app_radii.dart';
 
@@ -41,12 +42,21 @@ abstract final class ExpressiveSurfaces {
     );
     return theme.copyWith(
       appBarTheme: AppBarThemeData(
-        backgroundColor: isLight ? const Color(0xFFF7F9FC) : colors.surface,
+        backgroundColor: colors.surface,
         foregroundColor: colors.onSurface,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         toolbarHeight: 64,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: isLight
+              ? Brightness.dark
+              : Brightness.light,
+        ),
         titleTextStyle: text.titleLarge?.copyWith(
           fontSize: 20,
           fontWeight: FontWeight.w700,

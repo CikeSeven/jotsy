@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Expressive 紧凑标题栏；统一 64dp 高度和默认返回图标，业务动作由页面注入。
@@ -14,6 +15,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor,
     this.toolbarHeight,
     this.bottom,
+    this.systemOverlayStyle,
   });
 
   final Widget? title;
@@ -25,6 +27,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
   final double? toolbarHeight;
   final PreferredSizeWidget? bottom;
+  final SystemUiOverlayStyle? systemOverlayStyle;
 
   @override
   Size get preferredSize {
@@ -35,9 +38,23 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
     final resolvedForeground = foregroundColor ?? colorScheme.onSurface;
     final resolvedBackground = backgroundColor ?? colorScheme.surface;
+    final resolvedOverlay =
+        systemOverlayStyle ??
+        theme.appBarTheme.systemOverlayStyle ??
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: isLight
+              ? Brightness.dark
+              : Brightness.light,
+        );
 
     return AppBar(
       title: title,
@@ -55,6 +72,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: automaticallyImplyLeading,
       foregroundColor: resolvedForeground,
       backgroundColor: resolvedBackground,
+      systemOverlayStyle: resolvedOverlay,
       toolbarHeight: toolbarHeight ?? 64,
       bottom: bottom,
       elevation: 0,

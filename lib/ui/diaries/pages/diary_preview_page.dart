@@ -83,7 +83,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   }
 
   SliverAppBar _buildPreviewSliverAppBar({required DiaryWithTags detail}) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
     return SliverAppBar(
       floating: true,
       pinned: false,
@@ -91,6 +93,19 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       automaticallyImplyLeading: false,
       leading: _buildBackLeading(),
       title: Text(context.l10n.autoT0120),
+      systemOverlayStyle:
+          theme.appBarTheme.systemOverlayStyle ??
+          SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: isLight
+                ? Brightness.dark
+                : Brightness.light,
+            statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarIconBrightness: isLight
+                ? Brightness.dark
+                : Brightness.light,
+          ),
       actions: <Widget>[
         IconButton(
           tooltip: context.l10n.commonEdit,
@@ -1237,6 +1252,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     return detailAsync.when(
       loading: () {
         return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppTopBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
@@ -1247,6 +1263,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       },
       error: (Object error, StackTrace stackTrace) {
         return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppTopBar(
             centerTitle: true,
             title: Text(context.l10n.autoT0120),
@@ -1266,6 +1283,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               Navigator.of(context).pop();
             });
             return Scaffold(
+              backgroundColor: Theme.of(context).colorScheme.surface,
               appBar: AppTopBar(
                 centerTitle: true,
                 title: Text(context.l10n.autoT0120),
@@ -1276,6 +1294,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
           }
 
           return Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
             appBar: AppTopBar(
               centerTitle: true,
               title: Text(context.l10n.autoT0120),
@@ -1303,8 +1322,9 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         final coverSource = previewImages.firstOrNull;
 
         return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
           body: SafeArea(
-            top: true,
+            top: false,
             child: Stack(
               children: <Widget>[
                 WidgetShotPlus(

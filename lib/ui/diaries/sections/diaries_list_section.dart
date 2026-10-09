@@ -591,13 +591,25 @@ class DiariesListSection extends StatelessWidget {
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (Widget transitionChild, Animation<double> animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: SizeTransition(
-            sizeFactor: animation,
-            alignment: Alignment.topCenter,
-            child: transitionChild,
-          ),
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (BuildContext context, Widget? _) {
+            // Flutter 的 SizeTransition 内部无条件包裹了 ClipRect(clipBehavior: Clip.hardEdge)。
+            // 若在静止态（非折叠切换期）依然包裹 SizeTransition，ClipRect 会沿卡片外边界
+            // 硬裁切，导致外散 BoxShadow 在卡片四角形成直角切边（直角阴影）。
+            // 因此仅在动画未完成的过渡期间启用 SizeTransition，完成后直接返回子组件。
+            if (animation.isCompleted) {
+              return transitionChild;
+            }
+            return FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                alignment: Alignment.topCenter,
+                child: transitionChild,
+              ),
+            );
+          },
         );
       },
       child: switchedChild,
@@ -609,6 +621,7 @@ class DiariesListSection extends StatelessWidget {
     }
 
     // 出现态额外加一层高度与透明度补间，形成“从无到有”感。
+    // 同理，补间完成（value >= 1.0）后移除 ClipRect，避免卡片阴影被矩形切边。
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('appear_$diaryId'),
       tween: Tween<double>(begin: 0, end: 1),
@@ -616,6 +629,9 @@ class DiariesListSection extends StatelessWidget {
       curve: Curves.easeOutCubic,
       child: switcher,
       builder: (BuildContext context, double value, Widget? animatedChild) {
+        if (value >= 1.0) {
+          return animatedChild!;
+        }
         return ClipRect(
           child: Align(
             alignment: Alignment.topCenter,

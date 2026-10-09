@@ -206,4 +206,58 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'diary card in resting list and waterfall mode does not have hard-edge ClipRect clipping shadow',
+    (tester) async {
+      final diary = createMockDiary(id: 'd1', title: '阴影测试日记', isPinned: false);
+
+      // 1. List mode
+      await tester.pumpWidget(
+        buildApp(diaries: [diary], layoutMode: DiaryLayoutMode.list),
+      );
+      await tester.pumpAndSettle();
+
+      final surface = find.byKey(
+        const ValueKey<String>('diary_selection_surface_d1'),
+      );
+      expect(surface, findsOneWidget);
+
+      final listClipRects = find.ancestor(
+        of: surface,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ClipRect && widget.clipBehavior != Clip.none,
+        ),
+      );
+      expect(
+        listClipRects,
+        findsNothing,
+        reason: 'List mode card should not be clipped by hard-edge ClipRect',
+      );
+
+      // 2. Waterfall mode
+      await tester.pumpWidget(
+        buildApp(diaries: [diary], layoutMode: DiaryLayoutMode.waterfall),
+      );
+      await tester.pumpAndSettle();
+
+      final waterfallSurface = find.byKey(
+        const ValueKey<String>('diary_selection_surface_d1'),
+      );
+      expect(waterfallSurface, findsOneWidget);
+
+      final waterfallClipRects = find.ancestor(
+        of: waterfallSurface,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ClipRect && widget.clipBehavior != Clip.none,
+        ),
+      );
+      expect(
+        waterfallClipRects,
+        findsNothing,
+        reason:
+            'Waterfall mode card should not be clipped by hard-edge ClipRect',
+      );
+    },
+  );
 }

@@ -33,8 +33,12 @@ class DiaryCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final preview = diary.diary.contentText.replaceAll('\n', ' ');
     final isLight = colorScheme.brightness == Brightness.light;
+    final itemBackgroundColor = selected
+        ? colorScheme.secondaryContainer
+        : ExpressiveSurfaces.cardColor(colorScheme);
     return Container(
       decoration: BoxDecoration(
+        color: itemBackgroundColor,
         borderRadius: BorderRadius.circular(AppRadii.card),
         border: selected
             ? Border.all(
@@ -66,12 +70,10 @@ class DiaryCard extends StatelessWidget {
                 ),
               ],
       ),
-      child: Card.filled(
-        margin: EdgeInsets.zero,
-        color: selected
-            ? colorScheme.secondaryContainer
-            : ExpressiveSurfaces.cardColor(colorScheme),
-        surfaceTintColor: Colors.transparent,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           onLongPress: onLongPress,

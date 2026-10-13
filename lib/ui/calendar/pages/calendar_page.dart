@@ -18,8 +18,10 @@ import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../providers/calendar_diary_providers.dart';
+import '../widgets/calendar_day_content_switcher.dart';
 import '../widgets/calendar_day_empty_state.dart';
 import '../widgets/calendar_header.dart';
+import '../../widgets/delayed_loading_gate.dart';
 import '../widgets/calendar_timeline_section.dart';
 
 part '../controllers/calendar_page_controller.dart';
@@ -53,7 +55,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _calendarBottomGap = AppSpacing.m;
   static const double _listBottomExtraSpace = 12;
   static const Duration _calendarMorphDuration = Duration(milliseconds: 260);
-  static const Duration _dayContentSwitchDuration = Duration(milliseconds: 220);
   static const Duration _refreshOverlaySwitchDuration = Duration(
     milliseconds: 160,
   );
@@ -428,61 +429,76 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   }
 
   Widget _buildCalendarRefreshOverlay(_CalendarStaleStatus status) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final error = status.error;
-    final showOverlay = status.isLoading || error != null;
     return Positioned(
       top: 0,
       right: 0,
-      child: AnimatedSwitcher(
-        duration: _refreshOverlaySwitchDuration,
-        child: showOverlay
-            ? DecoratedBox(
-                key: ValueKey<Object>(error ?? 'loading'),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface.withValues(alpha: 0.88),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: colorScheme.outlineVariant),
+      // 翻月后 family provider 换 key，首帧必为 loading；本地查询通常几毫秒
+      // 即返回，延迟显示加载胶囊避免每次翻月都闪一下。错误态立即显示。
+      child: DelayedLoadingGate(
+        loading: status.isLoading,
+        builder: (context, showLoading) => _buildCalendarRefreshCapsule(
+          showLoading: showLoading,
+          error: error,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalendarRefreshCapsule({
+    required bool showLoading,
+    required Object? error,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final showOverlay = showLoading || error != null;
+    return AnimatedSwitcher(
+      duration: _refreshOverlaySwitchDuration,
+      child: showOverlay
+          ? DecoratedBox(
+              key: ValueKey<Object>(error ?? 'loading'),
+              decoration: BoxDecoration(
+                color: colorScheme.surface.withValues(alpha: 0.88),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: colorScheme.outlineVariant),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.s,
+                  vertical: 6,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.s,
-                    vertical: 6,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      if (status.isLoading)
-                        const ExpressiveLoadingIndicator(
-                          size: _refreshIndicatorSize,
-                        ),
-                      if (error != null)
-                        Icon(
-                          Icons.info_outline_rounded,
-                          size: _refreshIndicatorSize,
-                          color: colorScheme.error,
-                        ),
-                      if (error != null) ...<Widget>[
-                        const SizedBox(width: 6),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 190),
-                          child: Text(
-                            context.l10n.autoT0210(error.toString()),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.labelSmall?.copyWith(
-                              color: colorScheme.error,
-                            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    if (showLoading)
+                      const ExpressiveLoadingIndicator(
+                        size: _refreshIndicatorSize,
+                      ),
+                    if (error != null)
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: _refreshIndicatorSize,
+                        color: colorScheme.error,
+                      ),
+                    if (error != null) ...<Widget>[
+                      const SizedBox(width: 6),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 190),
+                        child: Text(
+                          context.l10n.autoT0210(error.toString()),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.error,
                           ),
                         ),
-                      ],
+                      ),
                     ],
-                  ),
+                  ],
                 ),
-              )
-            : const SizedBox.shrink(key: ValueKey<String>('idle')),
-      ),
+              ),
+            )
+          : const SizedBox.shrink(key: ValueKey<String>('idle')),
     );
   }
 
@@ -491,36 +507,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     required String? errorMessage,
     required Widget child,
   }) {
-    return Stack(
-      children: <Widget>[
-        AnimatedSwitcher(
-          duration: _dayContentSwitchDuration,
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          child: child,
-        ),
-        Positioned.fill(
-          child: IgnorePointer(
-            child: AnimatedSwitcher(
-              duration: _refreshOverlaySwitchDuration,
-              child: status.isLoading
-                  ? const _CalendarInlineRefreshScrim(
-                      key: ValueKey<String>('day_loading'),
-                    )
-                  : const SizedBox.shrink(key: ValueKey<String>('day_idle')),
-            ),
-          ),
-        ),
-        if (errorMessage != null)
-          Positioned(
-            left: AppSpacing.m,
-            right: AppSpacing.m,
-            top: 0,
-            child: _CalendarErrorBanner(
-              message: context.l10n.autoT0210(errorMessage),
-            ),
-          ),
-      ],
+    return CalendarDayContentSwitcher(
+      loading: status.isLoading,
+      errorMessage: errorMessage == null
+          ? null
+          : context.l10n.autoT0210(errorMessage),
+      child: child,
     );
   }
 
@@ -594,60 +586,6 @@ class _CalendarStaleStatus {
 
   final bool isLoading;
   final Object? error;
-}
-
-class _CalendarInlineRefreshScrim extends StatelessWidget {
-  const _CalendarInlineRefreshScrim({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.32),
-      ),
-      child: const Align(
-        alignment: Alignment.topRight,
-        child: Padding(
-          padding: EdgeInsets.only(top: AppSpacing.xs, right: AppSpacing.m),
-          child: ExpressiveLoadingIndicator(
-            size: _CalendarPageState._refreshIndicatorSize,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CalendarErrorBanner extends StatelessWidget {
-  const _CalendarErrorBanner({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.errorContainer.withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s,
-          vertical: AppSpacing.xs,
-        ),
-        child: Text(
-          message,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: colorScheme.onErrorContainer),
-        ),
-      ),
-    );
-  }
 }
 
 enum _CalendarCreateDraftDecision { newEmpty, continueEditing }

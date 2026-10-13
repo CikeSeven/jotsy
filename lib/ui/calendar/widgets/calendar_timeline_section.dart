@@ -12,6 +12,7 @@ import '../../../core/database/app_database.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/energy_battery_indicator.dart';
 import '../../widgets/qweather_icon.dart';
+import 'calendar_day_content_switcher.dart';
 
 /// 日历页“选中日期列表”的时间线区块。
 ///
@@ -54,6 +55,8 @@ class CalendarTimelineSection extends StatelessWidget {
         reverseDuration: ExpressiveMotion.duration(context, _switchDuration),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
+        // 同日内容增删时新旧列表高度不同，贴顶叠放避免默认居中造成的跳动。
+        layoutBuilder: CalendarDayContentSwitcher.topAlignedSwitcherLayout,
         transitionBuilder: (Widget child, Animation<double> animation) {
           final slideAnimation =
               Tween<Offset>(

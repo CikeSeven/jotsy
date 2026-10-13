@@ -89,9 +89,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   // ==================== 列表整体过渡动画 ====================
   late final AnimationController _listRefreshPulseController;
-  late final Animation<double> _listRefreshOpacity;
-  VoidCallback? _pendingFilterMutation;
+  // 筛选过渡状态（由 DiaryListTransitionCoordinator 读写）：
+  // - generation：每次筛选变更自增，过渡只为最新一轮淡入；
+  // - held：淡出期间冻结的展示列表，防止新旧数据在半透明时互换；
+  // - lastDisplayed/currentQuery：build 写入，供冻结与等待首帧数据使用。
+  int _filterMutationGeneration = 0;
   Future<void>? _queuedFilterTransition;
+  Completer<void>? _filterQueryWaiter;
+  List<DiaryWithTags>? _heldDisplayedItems;
+  List<DiaryWithTags> _lastDisplayedItems = const <DiaryWithTags>[];
+  DiaryPageQuery? _currentDiaryPageQuery;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   List<DiaryWithTags>? _cachedVisibleSourceItemsRef;
   DiarySortMode? _cachedVisibleSortMode;
@@ -142,17 +149,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     _controller.attachHomeHintVisibilityListener();
     unawaited(_controller.restoreRememberedTagFiltersOnStartup());
-    // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。
+    // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。控制器值直接作为
+    // 不透明度，曲线只在 animateTo 中给一次，避免与 CurvedAnimation 叠加。
     _listRefreshPulseController = AnimationController(
       vsync: this,
       duration: _listRefreshFadeInDuration,
       value: 1,
-    );
-    _listRefreshOpacity = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _listRefreshPulseController,
-        curve: Curves.easeInOutSine,
-      ),
     );
   }
 
@@ -230,7 +232,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           _lastSyncedVisibleItemsRef = latestVisibleItems;
         }
 
-        final displayedItems = latestVisibleItems ?? _cachedVisibleItems;
+        // 筛选过渡淡出期间优先展示冻结列表，新查询首帧数据到达后才释放。
+        final displayedItems =
+            _heldDisplayedItems ?? latestVisibleItems ?? _cachedVisibleItems;
+        _lastDisplayedItems = displayedItems;
+        _currentDiaryPageQuery = diaryPageQuery;
         final shouldUnpinSelected = _controller.areAllSelectedPinned(
           displayedItems,
         );
@@ -384,7 +390,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                             ),
                             tagHeader,
                             SliverFadeTransition(
-                              opacity: _listRefreshOpacity,
+                              opacity: _listRefreshPulseController,
                               sliver:
                                   // 数据状态优先级：
                                   // 1) 首屏加载且无缓存；

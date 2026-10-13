@@ -5,7 +5,7 @@ part of 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 /// 日记列表过渡协调器。
 ///
 /// 职责边界：
-/// - 处理筛选切换的淡入淡出节奏；
+/// - 处理筛选切换的淡入淡出节奏（冻结旧列表、等待新数据首帧再淡入）；
 /// - 维护删除/归档过程中的隐藏与出现动画状态；
 /// - 统一管理相关计时器，避免页面销毁后回调触发。
 class DiaryListTransitionCoordinator {
@@ -14,45 +14,103 @@ class DiaryListTransitionCoordinator {
   /// 页面状态引用，内部动画状态都托管在页面 State 字段里。
   final _DiariesPage _state;
 
-  /// 把筛选变更加入队列。
+  /// 新查询首帧数据的最长等待时间；超时后照常淡入（退化为旧行为），
+  /// 避免查询异常挂起时列表一直不可见。
+  static const Duration _maxFreshPageWait = Duration(milliseconds: 600);
+
+  /// 应用筛选变更并启动列表过渡。
   ///
-  /// 连续多次切换时只保留最新 mutation，保证过渡顺序稳定且不会抖动。
+  /// 时序：
+  /// 1) 冻结当前展示列表，然后立即写入筛选（标签选中态下一帧即反馈）；
+  /// 2) 后台过渡：淡出 -> 等新查询首帧数据 -> 释放冻结 -> 淡入；
+  /// 3) 过渡途中再次变更只会递增 generation，循环会继续处理最新一轮，
+  ///    且只为最新结果淡入，不会把中间态或旧数据淡入出来。
   void queueFilterMutation(VoidCallback mutation) {
-    _state._pendingFilterMutation = mutation;
-    _state._queuedFilterTransition ??= _drainQueuedFilterMutations();
+    _state._heldDisplayedItems ??= _state._lastDisplayedItems;
+    _state._filterMutationGeneration++;
+    mutation();
+    _state._queuedFilterTransition ??= _runFilterTransition();
   }
 
-  /// 串行消费筛选队列：淡出 -> 应用筛选 -> 等待一帧 -> 淡入。
-  Future<void> _drainQueuedFilterMutations() async {
-    while (_state.mounted && _state._pendingFilterMutation != null) {
-      await _fadeOutListIfNeeded();
-      if (!_state.mounted) {
-        break;
+  Future<void> _runFilterTransition() async {
+    var settledGeneration = -1;
+    try {
+      while (_state.mounted &&
+          settledGeneration != _state._filterMutationGeneration) {
+        final generation = _state._filterMutationGeneration;
+        await _fadeOutListIfNeeded();
+        // 筛选写入后要到下一帧重建才会产生新的分页 query。
+        await WidgetsBinding.instance.endOfFrame;
+        if (!_state.mounted) {
+          return;
+        }
+        await _waitForFreshPage();
+        if (!_state.mounted) {
+          return;
+        }
+        if (generation != _state._filterMutationGeneration) {
+          // 等待期间又有新筛选：保持淡出与冻结，直接处理最新一轮。
+          continue;
+        }
+        _state.setState(() => _state._heldDisplayedItems = null);
+        await WidgetsBinding.instance.endOfFrame;
+        if (!_state.mounted) {
+          return;
+        }
+        await _fadeInListIfNeeded();
+        settledGeneration = generation;
       }
-
-      // 每轮只处理一次筛选变更，避免完全隐藏状态下吞并多次更新。
-      final mutation = _state._pendingFilterMutation!;
-      _state._pendingFilterMutation = null;
-      mutation();
-      await WidgetsBinding.instance.endOfFrame;
-      if (!_state.mounted) {
-        break;
-      }
-
-      await _fadeInListIfNeeded();
+    } finally {
+      _state._queuedFilterTransition = null;
     }
-    _state._queuedFilterTransition = null;
   }
+
+  /// 等待当前分页 query 拿到首帧数据（或错误）。
+  ///
+  /// family 换 key 后首帧必为 loading；若只等一帧就淡入，淡入的会是旧列表，
+  /// 新数据随后在半透明状态下硬替换。已缓存的 query 会经 fireImmediately
+  /// 立刻完成。页面销毁时由 [dispose] 提前完成，避免悬挂计时器。
+  Future<void> _waitForFreshPage() async {
+    final query = _state._currentDiaryPageQuery;
+    if (query == null) {
+      return;
+    }
+    final waiter = Completer<void>();
+    _state._filterQueryWaiter = waiter;
+    final subscription = _state.ref
+        .listenManual<AsyncValue<PagedDiariesResult>>(
+          pagedDiariesProvider(query),
+          (previous, next) {
+            if ((next.hasValue || next.hasError) && !waiter.isCompleted) {
+              waiter.complete();
+            }
+          },
+          fireImmediately: true,
+        );
+    try {
+      await waiter.future.timeout(_maxFreshPageWait, onTimeout: () {});
+    } finally {
+      subscription.close();
+      if (identical(_state._filterQueryWaiter, waiter)) {
+        _state._filterQueryWaiter = null;
+      }
+    }
+  }
+
+  /// 系统开启“减少动画”时不做整列表淡入淡出，只保留“数据到齐再替换”。
+  bool get _reduceMotion => MediaQuery.disableAnimationsOf(_state.context);
 
   /// 当列表当前可见时执行整体淡出。
   Future<void> _fadeOutListIfNeeded() async {
-    if (!_state.mounted || _state._listRefreshPulseController.value <= 0) {
+    if (!_state.mounted ||
+        _reduceMotion ||
+        _state._listRefreshPulseController.value <= 0) {
       return;
     }
     await _state._listRefreshPulseController.animateTo(
       0,
       duration: _DiariesPage._listRefreshFadeOutDuration,
-      curve: Curves.easeInOutSine,
+      curve: ExpressiveMotion.effects,
     );
   }
 
@@ -61,10 +119,14 @@ class DiaryListTransitionCoordinator {
     if (!_state.mounted || _state._listRefreshPulseController.value >= 1) {
       return;
     }
+    if (_reduceMotion) {
+      _state._listRefreshPulseController.value = 1;
+      return;
+    }
     await _state._listRefreshPulseController.animateTo(
       1,
       duration: _DiariesPage._listRefreshFadeInDuration,
-      curve: Curves.easeInOutSine,
+      curve: ExpressiveMotion.effects,
     );
   }
 
@@ -180,6 +242,10 @@ class DiaryListTransitionCoordinator {
 
   /// 页面销毁时释放所有动画计时器。
   void dispose() {
+    final waiter = _state._filterQueryWaiter;
+    if (waiter != null && !waiter.isCompleted) {
+      waiter.complete();
+    }
     for (final timer in _state._pendingHideTimers.values) {
       timer.cancel();
     }

@@ -11,15 +11,18 @@ permissions:
 jobs:
   build-release-apk:
     name: Build signed split release APKs
-    runs-on: ubuntu-latest
+    # Pin the image instead of `ubuntu-latest`: the label migrates to Ubuntu 26 on
+    # 2026-10-19 while this workflow is pinned to Flutter 3.47.5, so an unplanned
+    # image jump could break signed release builds mid-window. Move deliberately.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -137,7 +140,7 @@ jobs:
           echo "artifact_name=release-apks-${safe_ref}" >> "$GITHUB_OUTPUT"
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact.outputs.artifact_name }}
           path: release-artifacts/*.apk
@@ -145,7 +148,7 @@ jobs:
 
       - name: Upload APK to GitHub Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: release-artifacts/*.apk
           fail_on_unmatched_files: true

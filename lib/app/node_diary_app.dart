@@ -42,6 +42,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
+  Color? _cachedThemeSeedColor;
+  (ThemeData, ThemeData)? _cachedThemes;
   late final HomeHintVisibilityController _homeHintVisibilityController;
   final LocalAuthentication _localAuthentication = LocalAuthentication();
   Timer? _minimumLoadingTimer;
@@ -81,18 +83,23 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   Widget build(BuildContext context) {
     // 启动门控：设置服务 + 首帧日记列表 + 最短展示时长。
     final settingsAsync = ref.watch(settingsServiceProvider);
-    final diariesBootstrapAsync = ref.watch(filteredDiariesProvider);
+    // 只订阅启动门控需要的两个布尔量：直接 watch 整个 AsyncValue 会让每次
+    // 日记列表变化（编辑、筛选、排序）都重建整个 MaterialApp。record 按值比较，
+    // 列表内容变化但状态不变时 select 不会通知。
+    final (diariesSettled, diariesBootstrapFailed) = ref.watch(
+      filteredDiariesProvider.select(
+        (async) => (async.hasValue || async.hasError, async.hasError),
+      ),
+    );
     final settingsReady = settingsAsync.hasValue;
     final settingsError = settingsAsync.asError?.error;
     final settingsService = settingsAsync.asData?.value;
     if (settingsService != null) {
       _bindSettingsForAppLock(settingsService);
     }
-    final diariesSettled =
-        diariesBootstrapAsync.hasValue || diariesBootstrapAsync.hasError;
     final bootstrapReady =
         _minimumLoadingElapsed && settingsReady && diariesSettled;
-    final startupNotice = bootstrapReady && diariesBootstrapAsync.hasError
+    final startupNotice = bootstrapReady && diariesBootstrapFailed
         ? _pickBootstrapText(
             settingsService: settingsService,
             zh: '启动时预加载日记失败，已进入主页。',
@@ -166,6 +173,34 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     return _buildAppShell(home: home);
   }
 
+  /// 按种子色缓存明暗 ThemeData。
+  ///
+  /// `ColorScheme.fromSeed` 需要做 HCT 色调板计算，ThemeData 组装也不便宜；
+  /// 字号、语言、主题模式变化都会重建应用壳，但只有种子色变化才需要重算主题。
+  (ThemeData, ThemeData) _themesForSeed(Color seedColor) {
+    final cached = _cachedThemes;
+    if (cached != null && _cachedThemeSeedColor == seedColor) {
+      return cached;
+    }
+    ThemeData build(MaterialTheme materialTheme, Brightness brightness) {
+      return materialTheme.theme(
+        ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: brightness,
+          dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
+        ),
+      );
+    }
+
+    final themes = (
+      build(_lightMaterialTheme, Brightness.light),
+      build(_darkMaterialTheme, Brightness.dark),
+    );
+    _cachedThemeSeedColor = seedColor;
+    _cachedThemes = themes;
+    return themes;
+  }
+
   MaterialApp _buildAppShell({
     required Widget home,
     ThemeMode themeMode = ThemeMode.system,
@@ -175,20 +210,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     ),
     double fontScale = SettingsService.defaultFontScale,
   }) {
-    final lightTheme = _lightMaterialTheme.theme(
-      ColorScheme.fromSeed(
-        seedColor: themeSeedColor,
-        brightness: Brightness.light,
-        dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-      ),
-    );
-    final darkTheme = _darkMaterialTheme.theme(
-      ColorScheme.fromSeed(
-        seedColor: themeSeedColor,
-        brightness: Brightness.dark,
-        dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-      ),
-    );
+    final (lightTheme, darkTheme) = _themesForSeed(themeSeedColor);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Jotsy',

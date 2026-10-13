@@ -28,6 +28,7 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
+import '../widgets/diary_action_loading_overlay.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
@@ -581,40 +582,6 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       cacheHeight: cacheHeight,
       filterQuality: FilterQuality.low,
       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-    );
-  }
-
-  Widget _buildActionLoadingOverlay() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return IgnorePointer(
-      ignoring: !_showActionLoading,
-      child: AnimatedOpacity(
-        opacity: _showActionLoading ? 1 : 0,
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        child: ColoredBox(
-          color: colorScheme.surface.withValues(alpha: 0.72),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ExpressiveLoadingIndicator(
-                  size: 72,
-                  semanticLabel: _actionLoadingLabel,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  _actionLoadingLabel,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -1379,7 +1346,12 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                     ],
                   ),
                 ),
-                Positioned.fill(child: _buildActionLoadingOverlay()),
+                Positioned.fill(
+                  child: DiaryActionLoadingOverlay(
+                    visible: _showActionLoading,
+                    label: _actionLoadingLabel,
+                  ),
+                ),
               ],
             ),
           ),

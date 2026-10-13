@@ -642,10 +642,7 @@ class DiariesListSection extends StatelessWidget {
         if (energy != null)
           _buildCapsuleMetaPill(
             context,
-            EnergyBatteryIndicator.descriptionForValue(
-              energy,
-              isZh: context.l10n.isZh,
-            ),
+            EnergyBatteryIndicator.descriptionForValue(energy, context.l10n),
             leading: EnergyBatteryIndicator(value: energy, iconSize: 16),
           ),
       ],

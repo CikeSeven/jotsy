@@ -895,7 +895,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             kind: _MetaChipKind.energy,
             label: EnergyBatteryIndicator.descriptionForValue(
               normalizedEnergy,
-              isZh: context.l10n.isZh,
+              context.l10n,
             ),
             energyLevel: normalizedEnergy,
           ),

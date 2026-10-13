@@ -541,6 +541,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonLoading => 'Loading';
 
   @override
+  String exploreOnThisDayYearsAgo(int years) {
+    String _temp0 = intl.Intl.pluralLogic(
+      years,
+      locale: localeName,
+      other: '$years years ago today',
+      one: '1 year ago today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dateTimeMinutePattern => 'yyyy-MM-dd HH:mm';
+
+  @override
+  String get energyLevelExhausted => 'Exhausted';
+
+  @override
+  String get energyLevelTired => 'A bit tired';
+
+  @override
+  String get energyLevelSoSo => 'So-so';
+
+  @override
+  String get energyLevelGood => 'Pretty good';
+
+  @override
+  String get energyLevelFull => 'Fully charged';
+
+  @override
+  String get startupPreloadFailedNotice =>
+      'Startup preload failed. Entered home anyway.';
+
+  @override
+  String startupInitFailed(String error) {
+    return 'Initialization failed: $error';
+  }
+
+  @override
+  String get appLockAuthReason => 'Please authenticate to unlock the app';
+
+  @override
   String get autoT0001 => 'Loading app';
 
   @override

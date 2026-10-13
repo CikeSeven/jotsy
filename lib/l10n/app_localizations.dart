@@ -20,6 +20,13 @@ extension AppLocalizationsProjectX on AppLocalizations {
   /// 是否当前为中文语言环境。
   bool get isZh => localeName.toLowerCase().startsWith('zh');
 
+  /// 精确到分钟的日期时间（发布时间、胶囊解封时间等）。
+  ///
+  /// 格式模板来自 ARB（`dateTimeMinutePattern`），新增语言只需补文案。
+  /// 中文示例：`2026年03月12日 09:05`；英文示例：`2026-03-12 09:05`
+  String formatDateTimeMinute(DateTime value) =>
+      DateFormat(dateTimeMinutePattern, localeName).format(value.toLocal());
+
   /// 同年日期显示（用于相对时间回退）。
   ///
   /// 中文示例：`3月12日`

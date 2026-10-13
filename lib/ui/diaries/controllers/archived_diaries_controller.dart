@@ -41,6 +41,41 @@ class ArchivedDiariesController {
     });
   }
 
+  /// 多选操作：先播放收起动画，结束后再提交数据库。数据流随后移除条目时
+  /// 它已收成 0 高度，列表不会硬跳；减少动画时时长为 0，立即提交。
+  Future<void> _collapseBeforeCommit(List<String> diaryIds) async {
+    _state.setState(() {
+      _state._appearingDiaryIds.removeAll(diaryIds);
+      _state._pendingHideDiaryIds.addAll(diaryIds);
+    });
+    await Future<void>.delayed(
+      ExpressiveMotion.duration(
+        _state.context,
+        DiariesListSection.itemTransitionDuration,
+      ),
+    );
+  }
+
+  /// 失败回滚或撤销：让条目以展开动画重新出现。
+  ///
+  /// 出现标记只在条目插入/重新可见的那一刻生效，稍后清除即可，无需重建；
+  /// 不清除的话条目滚出视口再回来时会重复播放展开。
+  void _reveal(List<String> diaryIds) {
+    if (!_state.mounted) {
+      return;
+    }
+    _state.setState(() {
+      _state._pendingHideDiaryIds.removeAll(diaryIds);
+      _state._sweptAwayDiaryIds.removeAll(diaryIds);
+      _state._appearingDiaryIds.addAll(diaryIds);
+    });
+    _state._appearingClearTimer?.cancel();
+    _state._appearingClearTimer = Timer(
+      DiariesListSection.itemTransitionDuration * 4,
+      _state._appearingDiaryIds.clear,
+    );
+  }
+
   Future<void> showInfoSnackBar(
     String message, {
     Duration duration = _ArchivedDiariesPageState._restoreHintDuration,
@@ -118,6 +153,8 @@ class ArchivedDiariesController {
   }
 
   Future<void> unarchiveDiaryBySwipe(String diaryId) async {
+    // Dismissible 已播放离场动画，必须在本帧同步移出列表。
+    _state.setState(() => _state._sweptAwayDiaryIds.add(diaryId));
     await _unarchiveDiaries(
       <String>[diaryId],
       clearSelection: false,
@@ -140,11 +177,16 @@ class ArchivedDiariesController {
       return;
     }
 
-    // 多选入口触发时先在 UI 层退出选择，降低“操作后仍高亮”错觉。
+    // 多选入口触发时先在 UI 层退出选择，降低“操作后仍高亮”错觉，
+    // 并先收起条目再写库。
     if (clearSelection) {
       _state.setState(() {
         _state._selectedDiaryIds.removeAll(targetIds);
       });
+      await _collapseBeforeCommit(targetIds);
+      if (!_state.mounted) {
+        return;
+      }
     }
 
     final db = _state.ref.read(appDatabaseProvider);
@@ -172,6 +214,7 @@ class ArchivedDiariesController {
       if (!_state.mounted) {
         return;
       }
+      _reveal(targetIds);
       if (clearSelection) {
         _state.setState(() {
           _state._selectedDiaryIds.addAll(targetIds);
@@ -194,6 +237,8 @@ class ArchivedDiariesController {
       return;
     }
 
+    // 撤销：条目重新归档后经数据流回到列表，以展开动画出现。
+    _reveal(targetIds);
     for (final diaryId in targetIds) {
       await db.archiveDiary(diaryId, touchUpdatedAt: false);
     }
@@ -217,6 +262,10 @@ class ArchivedDiariesController {
     _state.setState(() {
       _state._selectedDiaryIds.clear();
     });
+    await _collapseBeforeCommit(targetIds);
+    if (!_state.mounted) {
+      return;
+    }
 
     // 删除归档日记时不刷新 updatedAt，避免恢复后冲到列表最前面。
     final db = _state.ref.read(appDatabaseProvider);
@@ -245,6 +294,7 @@ class ArchivedDiariesController {
       if (!_state.mounted) {
         return;
       }
+      _reveal(targetIds);
       _state.setState(() {
         _state._selectedDiaryIds.addAll(targetIds);
       });
@@ -282,6 +332,7 @@ class ArchivedDiariesController {
             }
             try {
               final db = _state.ref.read(appDatabaseProvider);
+              _reveal(<String>[diaryId]);
               await db.restoreDiary(diaryId, touchUpdatedAt: false);
               if (!_state.mounted) {
                 return;

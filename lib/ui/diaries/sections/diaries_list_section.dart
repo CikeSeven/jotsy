@@ -21,7 +21,7 @@ import '../widgets/energy_battery_indicator.dart';
 import 'diary_head_section.dart';
 import '../../widgets/qweather_icon.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../widgets/diary_item_presence.dart';
+import '../../widgets/list_item_presence.dart';
 
 /// 日记页主列表区块。
 ///
@@ -595,7 +595,7 @@ class DiariesListSection extends StatelessWidget {
     );
     final isExiting = pendingHideDiaryIds.contains(diaryId);
     final isAppearing = appearingDiaryIds.contains(diaryId);
-    return DiaryItemPresence(
+    return ListItemPresence(
       key: ValueKey<String>('presence_$diaryId'),
       visible: !isExiting,
       appearing: isAppearing && !isExiting,

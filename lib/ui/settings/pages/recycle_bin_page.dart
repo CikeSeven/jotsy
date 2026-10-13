@@ -6,7 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/empty_hint.dart';
+import 'package:node_diary/ui/widgets/list_item_presence.dart';
 
 /// 回收站页面：
 /// - 展示已软删除日记；
@@ -22,6 +25,19 @@ class RecycleBinPage extends ConsumerStatefulWidget {
 class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
   final Set<String> _selectedDiaryIds = <String>{};
   bool _operating = false;
+
+  /// 恢复/彻底删除时正在播放收起动画、等待提交的条目；数据流确认移除后在
+  /// build 中清理，提交失败的条目会重新展开。
+  final Set<String> _pendingHideDiaryIds = <String>{};
+
+  /// 先收起条目再提交数据库：数据流随后移除条目时它已收成 0 高度，列表不会
+  /// 硬跳；减少动画时时长为 0，立即提交。
+  Future<void> _collapseBeforeCommit(List<String> diaryIds) async {
+    setState(() => _pendingHideDiaryIds.addAll(diaryIds));
+    await Future<void>.delayed(
+      ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+    );
+  }
 
   bool get _hasSelection => _selectedDiaryIds.isNotEmpty;
 
@@ -59,6 +75,10 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
     final targetIds = _selectedDiaryIds.toList(growable: false);
     setState(() => _operating = true);
     try {
+      await _collapseBeforeCommit(targetIds);
+      if (!mounted) {
+        return;
+      }
       final db = ref.read(appDatabaseProvider);
       final failedIds = <String>[];
       for (final diaryId in targetIds) {
@@ -76,6 +96,8 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         _selectedDiaryIds.removeAll(
           targetIds.where((id) => !failedIds.contains(id)),
         );
+        // 提交失败的条目仍在数据中，取消收起使其重新展开。
+        _pendingHideDiaryIds.removeAll(failedIds);
       });
 
       if (failedIds.isEmpty) {
@@ -102,6 +124,10 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
 
     setState(() => _operating = true);
     try {
+      await _collapseBeforeCommit(targetIds);
+      if (!mounted) {
+        return;
+      }
       final db = ref.read(appDatabaseProvider);
       final failedIds = <String>[];
       for (final diaryId in targetIds) {
@@ -119,6 +145,8 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         _selectedDiaryIds.removeAll(
           targetIds.where((id) => !failedIds.contains(id)),
         );
+        // 提交失败的条目仍在数据中，取消收起使其重新展开。
+        _pendingHideDiaryIds.removeAll(failedIds);
       });
 
       if (failedIds.isEmpty) {
@@ -207,39 +235,64 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         error: (error, stackTrace) =>
             Center(child: Text(l10n.autoT0031(error.toString()))),
         data: (diaries) {
-          if (diaries.isEmpty) {
-            return Center(child: Text(l10n.autoT0032));
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: diaries.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (BuildContext context, int index) {
-              final diary = diaries[index].diary;
-              final selected = _selectedDiaryIds.contains(diary.diaryId);
-              final title = diary.title.trim().isEmpty
-                  ? l10n.autoT0033
-                  : diary.title.trim();
-              return ListTile(
-                onTap: () => _toggleSelection(diary.diaryId),
-                onLongPress: () => _toggleSelection(diary.diaryId),
-                leading: Checkbox(
-                  value: selected,
-                  onChanged: (_) => _toggleSelection(diary.diaryId),
-                ),
-                title: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  l10n.autoT0194(_formatDeletedAt(diary.deletedAt)),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            },
+          final currentIds = <String>{
+            for (final diary in diaries) diary.diary.diaryId,
+          };
+          _pendingHideDiaryIds.removeWhere((id) => !currentIds.contains(id));
+          final itemDuration = ExpressiveMotion.duration(
+            context,
+            ExpressiveMotion.medium,
+          );
+          // 最后一条移走后与空态交叉淡入。
+          return AnimatedSwitcher(
+            duration: itemDuration,
+            switchInCurve: ExpressiveMotion.effects,
+            switchOutCurve: ExpressiveMotion.exit,
+            child: diaries.isEmpty
+                ? EmptyHint(
+                    key: const ValueKey<String>('recycle_empty'),
+                    icon: FontAwesomeIcons.trashCan,
+                    message: l10n.autoT0032,
+                  )
+                : ListView.separated(
+                    key: const ValueKey<String>('recycle_list'),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: diaries.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (BuildContext context, int index) {
+                      final diary = diaries[index].diary;
+                      final selected = _selectedDiaryIds.contains(
+                        diary.diaryId,
+                      );
+                      final title = diary.title.trim().isEmpty
+                          ? l10n.autoT0033
+                          : diary.title.trim();
+                      return ListItemPresence(
+                        key: ValueKey<String>('recycle_${diary.diaryId}'),
+                        visible: !_pendingHideDiaryIds.contains(diary.diaryId),
+                        appearing: false,
+                        duration: itemDuration,
+                        child: ListTile(
+                          onTap: () => _toggleSelection(diary.diaryId),
+                          onLongPress: () => _toggleSelection(diary.diaryId),
+                          leading: Checkbox(
+                            value: selected,
+                            onChanged: (_) => _toggleSelection(diary.diaryId),
+                          ),
+                          title: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            l10n.autoT0194(_formatDeletedAt(diary.deletedAt)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
           );
         },
       ),

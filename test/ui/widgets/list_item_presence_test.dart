@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_item_presence.dart';
+import 'package:node_diary/ui/widgets/list_item_presence.dart';
 
 class _Probe extends StatefulWidget {
   const _Probe();
@@ -24,7 +24,7 @@ Widget _host({
     home: Scaffold(
       body: Column(
         children: <Widget>[
-          DiaryItemPresence(
+          ListItemPresence(
             visible: visible,
             appearing: appearing,
             duration: duration,
@@ -51,19 +51,19 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(tester.state(find.byType(_Probe)), same(probe));
     await tester.pumpAndSettle();
-    expect(tester.getSize(find.byType(DiaryItemPresence)).height, 0);
+    expect(tester.getSize(find.byType(ListItemPresence)).height, 0);
   });
 
   testWidgets('settled item does not clip its shadow', (tester) async {
     await tester.pumpWidget(_host(visible: true, appearing: false));
     final clip = tester.widget<ClipRect>(
       find.descendant(
-        of: find.byType(DiaryItemPresence),
+        of: find.byType(ListItemPresence),
         matching: find.byType(ClipRect),
       ),
     );
     expect(clip.clipBehavior, Clip.none);
-    expect(tester.getSize(find.byType(DiaryItemPresence)).height, 100);
+    expect(tester.getSize(find.byType(ListItemPresence)).height, 100);
   });
 
   testWidgets('zero duration settles immediately for reduce motion', (
@@ -73,6 +73,6 @@ void main() {
       _host(visible: true, appearing: true, duration: Duration.zero),
     );
     await tester.pump();
-    expect(tester.getSize(find.byType(DiaryItemPresence)).height, 100);
+    expect(tester.getSize(find.byType(ListItemPresence)).height, 100);
   });
 }

@@ -11,7 +11,9 @@ import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/empty_hint.dart';
 
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../sections/diary_head_section.dart';
@@ -43,6 +45,18 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   /// 当前多选集合（仅归档页内维护）。
   final Set<String> _selectedDiaryIds = <String>{};
 
+  /// 多选取消归档/删除时正在播放收起动画、等待提交的条目。数据流确认移除后
+  /// 在 build 中清理。
+  final Set<String> _pendingHideDiaryIds = <String>{};
+
+  /// 滑动取消归档后同步隐藏的条目：Dismissible 离场后必须立即移出列表，
+  /// 不能等待异步写库后的数据流更新。
+  final Set<String> _sweptAwayDiaryIds = <String>{};
+
+  /// 撤销或失败回滚后重新出现、需要播放展开动画的条目。
+  final Set<String> _appearingDiaryIds = <String>{};
+  Timer? _appearingClearTimer;
+
   /// 业务控制器：处理删除/取消归档/撤销等流程。
   late final ArchivedDiariesController _controller;
 
@@ -52,6 +66,27 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
   void initState() {
     super.initState();
     _controller = ArchivedDiariesController(this);
+  }
+
+  @override
+  void dispose() {
+    _appearingClearTimer?.cancel();
+    super.dispose();
+  }
+
+  /// 数据流已不含的条目无需再隐藏/收起，返回本次应展示的列表。
+  List<DiaryWithTags> _resolveVisibleDiaries(List<DiaryWithTags> diaries) {
+    final currentIds = <String>{
+      for (final diary in diaries) diary.diary.diaryId,
+    };
+    _pendingHideDiaryIds.removeWhere((id) => !currentIds.contains(id));
+    _sweptAwayDiaryIds.removeWhere((id) => !currentIds.contains(id));
+    if (_sweptAwayDiaryIds.isEmpty) {
+      return diaries;
+    }
+    return diaries
+        .where((diary) => !_sweptAwayDiaryIds.contains(diary.diary.diaryId))
+        .toList(growable: false);
   }
 
   @override
@@ -118,26 +153,43 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
           error: (Object error, StackTrace stackTrace) =>
               Center(child: Text(context.l10n.autoT0102(error.toString()))),
           data: (List<DiaryWithTags> diaries) {
-            if (diaries.isEmpty) {
-              return Center(child: Text(context.l10n.autoT0103));
-            }
-            return CustomScrollView(
-              slivers: <Widget>[
-                // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
-                DiariesListSection(
-                  diaries: diaries,
-                  layoutMode: DiaryLayoutMode.list,
-                  selectedDiaryIds: _selectedDiaryIds,
-                  isSelectionMode: _isSelectionMode,
-                  maxVisibleTags: diaryCardTagLimit,
-                  onCreate: _controller.noopCreate,
-                  onOpenEditor: _controller.openPreview,
-                  onToggleSelection: _controller.toggleSelection,
-                  onArchiveDiary: (diaryId) =>
-                      unawaited(_controller.unarchiveDiaryBySwipe(diaryId)),
-                  swipeActionIcon: FontAwesomeIcons.boxOpen,
-                ),
-              ],
+            final visibleDiaries = _resolveVisibleDiaries(diaries);
+            // 最后一条被移走后与空态交叉淡入，而不是硬切成一行文字。
+            return AnimatedSwitcher(
+              duration: ExpressiveMotion.duration(
+                context,
+                ExpressiveMotion.medium,
+              ),
+              switchInCurve: ExpressiveMotion.effects,
+              switchOutCurve: ExpressiveMotion.exit,
+              child: visibleDiaries.isEmpty
+                  ? EmptyHint(
+                      key: const ValueKey<String>('archived_empty'),
+                      icon: FontAwesomeIcons.boxArchive,
+                      message: context.l10n.autoT0103,
+                    )
+                  : CustomScrollView(
+                      key: const ValueKey<String>('archived_list'),
+                      slivers: <Widget>[
+                        // 列表组件与主页复用，行为通过回调注入实现“归档页语义”。
+                        DiariesListSection(
+                          diaries: visibleDiaries,
+                          pendingHideDiaryIds: _pendingHideDiaryIds,
+                          appearingDiaryIds: _appearingDiaryIds,
+                          layoutMode: DiaryLayoutMode.list,
+                          selectedDiaryIds: _selectedDiaryIds,
+                          isSelectionMode: _isSelectionMode,
+                          maxVisibleTags: diaryCardTagLimit,
+                          onCreate: _controller.noopCreate,
+                          onOpenEditor: _controller.openPreview,
+                          onToggleSelection: _controller.toggleSelection,
+                          onArchiveDiary: (diaryId) => unawaited(
+                            _controller.unarchiveDiaryBySwipe(diaryId),
+                          ),
+                          swipeActionIcon: FontAwesomeIcons.boxOpen,
+                        ),
+                      ],
+                    ),
             );
           },
         ),

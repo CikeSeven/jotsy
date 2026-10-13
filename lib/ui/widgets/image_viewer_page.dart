@@ -77,6 +77,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         leading: IconButton(
+          tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).pop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),

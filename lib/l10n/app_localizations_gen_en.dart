@@ -508,6 +508,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataMgmtImportPasswordHint => 'Enter the import password';
 
   @override
+  String colorFamilySwatchLabel(int index, String hex) {
+    return 'Palette $index, $hex';
+  }
+
+  @override
+  String colorSwatchLabel(String hex) {
+    return 'Color $hex';
+  }
+
+  @override
+  String get diaryPinSelected => 'Pin';
+
+  @override
+  String get diaryUnpinSelected => 'Unpin';
+
+  @override
+  String get tagFilterClearLabel => 'Clear tag filters';
+
+  @override
+  String searchRemoveTagCondition(String tagName) {
+    return 'Remove tag $tagName';
+  }
+
+  @override
+  String get passwordShow => 'Show password';
+
+  @override
+  String get passwordHide => 'Hide password';
+
+  @override
+  String get commonLoading => 'Loading';
+
+  @override
   String get autoT0001 => 'Loading app';
 
   @override

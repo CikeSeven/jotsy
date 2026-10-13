@@ -185,6 +185,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
         appBar: AppTopBar(
           title: Text(context.l10n.autoT0138),
           leading: IconButton(
+            tooltip: context.l10n.commonBack,
             onPressed: _controller.closeWithDraft,
             icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),

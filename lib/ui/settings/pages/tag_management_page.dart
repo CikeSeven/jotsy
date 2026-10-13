@@ -439,12 +439,7 @@ class _SettingsLoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ExpressiveLoadingIndicator(
-        size: 32,
-        semanticLabel: context.l10n.dataMgmtBusyLabel,
-      ),
-    );
+    return Center(child: ExpressiveLoadingIndicator(size: 32));
   }
 }
 

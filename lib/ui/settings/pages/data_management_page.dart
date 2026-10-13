@@ -97,6 +97,9 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                       decoration: InputDecoration(
                         hintText: context.l10n.dataMgmtExportPasswordHint,
                         suffixIcon: IconButton(
+                          tooltip: obscureText
+                              ? context.l10n.passwordShow
+                              : context.l10n.passwordHide,
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
                           },
@@ -247,6 +250,9 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                       decoration: InputDecoration(
                         hintText: context.l10n.dataMgmtImportPasswordHint,
                         suffixIcon: IconButton(
+                          tooltip: obscureText
+                              ? context.l10n.passwordShow
+                              : context.l10n.passwordHide,
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
                           },

@@ -92,6 +92,9 @@ class DiaryHeadSection extends StatelessWidget {
                 icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
               ),
               IconButton(
+                tooltip: isPinActionUnpin
+                    ? context.l10n.diaryUnpinSelected
+                    : context.l10n.diaryPinSelected,
                 onPressed: onPinSelected,
                 icon: FaIcon(
                   isPinActionUnpin
@@ -351,13 +354,14 @@ class _ActionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: selected ? colorScheme.secondaryContainer : Colors.transparent,
-      ),
+    // 选中底色交给 ListTile 的 tileColor（经 Ink 绘制），外层不包不透明
+    // Container，避免水波纹被盖住；selected 同时为读屏暴露选中态。
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: ListTile(
+        selected: selected,
+        tileColor: selected ? colorScheme.secondaryContainer : null,
+        selectedTileColor: colorScheme.secondaryContainer,
         dense: true,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         minLeadingWidth: 24,

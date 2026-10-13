@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Clear-only feedback; filter mutations stay with the parent callback. A
 /// cancelled ticker during lazy row removal is normal and never updates a
@@ -93,19 +94,24 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
         angle: _baseAngle + _rotation.value,
         child: Transform.scale(scale: _scale.value, child: child),
       ),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => unawaited(_clear()),
-        child: SizedBox(
-          width: 26,
-          height: 32,
-          child: Center(
-            child: FaIcon(
-              FontAwesomeIcons.xmark,
-              size: 16,
-              color: widget.hasSelection
-                  ? colors.primary
-                  : colors.onSurfaceVariant,
+      // 宽度受标签栏布局（TagFilterLayout 固定 26dp）约束，至少补齐读屏语义。
+      child: Semantics(
+        button: true,
+        label: context.l10n.tagFilterClearLabel,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => unawaited(_clear()),
+          child: SizedBox(
+            width: 26,
+            height: 32,
+            child: Center(
+              child: FaIcon(
+                FontAwesomeIcons.xmark,
+                size: 16,
+                color: widget.hasSelection
+                    ? colors.primary
+                    : colors.onSurfaceVariant,
+              ),
             ),
           ),
         ),

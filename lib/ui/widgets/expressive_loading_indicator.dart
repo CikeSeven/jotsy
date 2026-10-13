@@ -25,7 +25,7 @@ class ExpressiveLoadingIndicator extends StatelessWidget {
         color: colors.onPrimaryContainer,
         containerColor: colors.primaryContainer,
         constraints: BoxConstraints.tightFor(width: size, height: size),
-        semanticLabel: semanticLabel ?? context.l10n.autoT0001,
+        semanticLabel: semanticLabel ?? context.l10n.commonLoading,
       ),
     );
   }

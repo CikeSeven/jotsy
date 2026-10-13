@@ -667,13 +667,23 @@ class _TagConditionChip extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 2),
-          InkResponse(
-            onTap: onRemove,
-            radius: 12,
-            child: FaIcon(
-              FontAwesomeIcons.xmark,
-              size: 10,
-              color: colorScheme.onSurfaceVariant,
+          // 点击区域扩到 24dp（与胶囊最小高度一致，不撑高搜索栏），并补读屏标签。
+          Semantics(
+            button: true,
+            label: context.l10n.searchRemoveTagCondition(tag.name),
+            child: InkResponse(
+              onTap: onRemove,
+              radius: 12,
+              child: SizedBox.square(
+                dimension: 24,
+                child: Center(
+                  child: FaIcon(
+                    FontAwesomeIcons.xmark,
+                    size: 10,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

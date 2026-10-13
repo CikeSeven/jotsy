@@ -266,6 +266,9 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
                           minHeight: 44,
                         ),
                         suffixIcon: IconButton(
+                          tooltip: obscureText
+                              ? context.l10n.passwordShow
+                              : context.l10n.passwordHide,
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
                           },

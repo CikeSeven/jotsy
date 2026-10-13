@@ -909,13 +909,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
             ],
           ),
         );
-        if (!_isEditEntry && !_recordingPanelOpen) {
-          return scaffold;
-        }
+        // 根节点必须恒为 PopScope：若按 `_recordingPanelOpen` 在 Scaffold 与
+        // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
+        // 连带 QuillEditor、播放器与输入法连接一起重建。只用 canPop 表达差异。
         return PopScope(
-          // 编辑页返回统一交给 `_attemptExitEditPage`，
-          // 避免面板展开态下系统直接 pop 路由。
-          canPop: false,
+          // 编辑模式或录音面板打开时，返回统一交给 `_attemptExitEditPage`，
+          // 避免面板展开态下系统直接 pop 路由；新建模式则直接放行。
+          canPop: !_isEditEntry && !_recordingPanelOpen,
           onPopInvokedWithResult: (didPop, result) {
             if (!didPop) {
               _attemptExitEditPage();

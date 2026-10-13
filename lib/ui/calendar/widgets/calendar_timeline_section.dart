@@ -308,8 +308,10 @@ class CalendarTimelineSection extends StatelessWidget {
   Widget _buildCoverThumbnail(BuildContext context, String source) {
     final colorScheme = Theme.of(context).colorScheme;
     final dpr = MediaQuery.devicePixelRatioOf(context);
+    // 只限制解码宽度：同时指定 cacheWidth/cacheHeight 会按默认的
+    // ResizeImagePolicy.exact 把非方形原图压成正方形，BoxFit.cover 再裁切时
+    // 画面已被拉伸变形。与探索页 ExploreMediaThumb 的策略保持一致。
     final cacheWidth = (52 * dpr).round();
-    final cacheHeight = (52 * dpr).round();
     final uri = Uri.tryParse(source);
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
@@ -319,7 +321,6 @@ class CalendarTimelineSection extends StatelessWidget {
             source,
             fit: BoxFit.cover,
             cacheWidth: cacheWidth,
-            cacheHeight: cacheHeight,
             filterQuality: FilterQuality.low,
             errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           )
@@ -327,7 +328,6 @@ class CalendarTimelineSection extends StatelessWidget {
             File(source),
             fit: BoxFit.cover,
             cacheWidth: cacheWidth,
-            cacheHeight: cacheHeight,
             filterQuality: FilterQuality.low,
             errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           );

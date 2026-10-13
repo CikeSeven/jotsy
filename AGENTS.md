@@ -75,6 +75,7 @@
 ## 6. UI/交互统一规范
 - 必须：项目视觉系统、色彩层次、字阶排版、组件规格与设计哲学详见 [DESIGN.md](DESIGN.md)，所有 UI 模块开发与评审均须遵循该规范。
 - 必须：应用组件统一继承 `MaterialTheme` 的 Material 3 Expressive 主题；新增单选连接按钮组与等待状态分别复用 `ExpressiveButtonGroup`、`ExpressiveLoadingIndicator`，新增动效通过 `ExpressiveMotion` 尊重系统减少动画设置。Expressive 仍基于 `useMaterial3: true`，禁止以关闭 Material 3 的方式迁移。
+- 必须：动画时长与曲线只取 `ExpressiveMotion` token（`fast/medium/standard/long`、`effects/exit/spatial`），并经 `ExpressiveMotion.duration(context, …)` 解析；禁止在 UI 层新增 `Duration(milliseconds: …)` 形式的动画时长（防抖/超时等非动画计时不受此限）。
 - 必须：新增图标默认使用 `font_awesome_flutter`（`FaIcon` + `FontAwesomeIcons`）。
 - 必须：富文本工具栏与设置页工具预览图标来源一致，避免混用。
 - 必须：标题栏返回按钮统一使用 `<` 风格图标，即 `FontAwesomeIcons.angleLeft`，默认尺寸使用 `18`，避免在不同页面混用 `arrowLeft/chevronLeft/系统返回箭头`。

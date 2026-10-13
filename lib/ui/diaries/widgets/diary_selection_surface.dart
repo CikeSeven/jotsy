@@ -22,7 +22,7 @@ class DiarySelectionSurface extends StatelessWidget {
     required this.child,
   });
 
-  static const Duration transitionDuration = Duration(milliseconds: 220);
+  static const Duration transitionDuration = ExpressiveMotion.medium;
 
   final String diaryId;
   final bool selected;

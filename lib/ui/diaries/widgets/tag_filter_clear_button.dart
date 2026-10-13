@@ -73,10 +73,7 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
       return;
     }
     widget.onClear();
-    _controller.duration = ExpressiveMotion.duration(
-      context,
-      const Duration(milliseconds: 340),
-    );
+    _controller.duration = ExpressiveMotion.duration(context);
     try {
       await _controller.forward(from: 0).orCancel;
       if (mounted) {

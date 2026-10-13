@@ -21,11 +21,6 @@ class _CalendarPageController {
     return DateFormat('MMM yyyy', 'en').format(_state._focusedMonth);
   }
 
-  /// 保存 TableCalendar 内部页面控制器，供头部「上月/下月」按钮直接驱动翻页。
-  void onCalendarCreated(PageController pageController) {
-    _state._calendarPageController = pageController;
-  }
-
   /// 日历月/周格式切换回调（支持上下滑手势触发）。
   void onCalendarFormatChanged(CalendarFormat format) {
     if (_state._calendarFormat == format) {
@@ -109,45 +104,22 @@ class _CalendarPageController {
     });
   }
 
-  /// 统一处理头部快捷翻月：
-  /// 1) 周视图：同一次 setState 切回月视图并直接定位到目标月；
-  /// 2) 月视图：优先使用 TableCalendar 的 PageController 做原生翻页动画；
-  /// 3) 若控制器暂不可用，回退为直接更新焦点月份。
+  /// 统一处理头部快捷翻月：在同一次 setState 中提交月视图格式与目标月份，
+  /// 由 TableCalendar 根据 focusedDay 变化自行播放翻页动画（时长/曲线与
+  /// 减少动画开关在页面上统一配置）。
+  ///
+  /// 周视图下不能「先切格式、再 nextPage」：此刻 PageController 仍是周分页，
+  /// 下一帧 TableCalendar 因格式变化在 didUpdateWidget 中 jumpToPage，会打断
+  /// 正在进行的翻页动画，结果只切回月视图却没有翻月。
   void _switchMonth(int offset) {
     final targetMonth = DateTime(
       _state._focusedMonth.year,
       _state._focusedMonth.month + offset,
     );
-
-    // 周视图下不能「先切格式、再 nextPage」：此刻 PageController 仍是周分页，
-    // 下一帧 TableCalendar 因格式变化在 didUpdateWidget 中 jumpToPage，会打断
-    // 正在进行的翻页动画，结果只切回月视图却没有翻月。改为同一次 setState
-    // 同时提交格式与目标月份，由 TableCalendar 自己 jump + animate 到目标月。
-    if (_state._calendarFormat != CalendarFormat.month) {
-      _state.applyState(() {
-        _state._calendarFormat = CalendarFormat.month;
-        _state._focusedMonth = targetMonth;
-      });
-      return;
-    }
-
-    final pageController = _state._calendarPageController;
-    if (pageController != null && pageController.hasClients) {
-      if (offset < 0) {
-        pageController.previousPage(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-        );
-      } else {
-        pageController.nextPage(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-        );
-      }
-      return;
-    }
-
-    _state.applyState(() => _state._focusedMonth = targetMonth);
+    _state.applyState(() {
+      _state._calendarFormat = CalendarFormat.month;
+      _state._focusedMonth = targetMonth;
+    });
   }
 
   /// 月份打点按“本地日期”聚合，供 TableCalendar 的 eventLoader 使用。

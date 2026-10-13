@@ -39,6 +39,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_recording_controller.dart';
@@ -786,9 +787,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                 IconButton(
                   onPressed: _canSaveEdit ? _controller.save : null,
                   icon: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
+                    duration: ExpressiveMotion.duration(
+                      context,
+                      ExpressiveMotion.fast,
+                    ),
+                    switchInCurve: ExpressiveMotion.effects,
+                    switchOutCurve: ExpressiveMotion.exit,
                     transitionBuilder: (child, animation) {
                       return FadeTransition(opacity: animation, child: child);
                     },

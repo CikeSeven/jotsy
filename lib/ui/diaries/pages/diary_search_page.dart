@@ -17,6 +17,7 @@ import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
 import 'diary_preview_page.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// 日记搜索页（独立覆盖层）。
 ///
@@ -39,11 +40,11 @@ class DiarySearchPage extends ConsumerStatefulWidget {
     String initialKeyword = '',
     Set<int> initialTagIds = const <int>{},
   }) {
+    // 不透明路由：转场期间下层仍会绘制，完成后下层转为 offstage，不再在
+    // 搜索期间持续绘制整屏日记列表（并暂停其 ticker）。
     return PageRouteBuilder<void>(
-      opaque: false,
-      barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 320),
-      reverseTransitionDuration: const Duration(milliseconds: 240),
+      transitionDuration: ExpressiveMotion.standard,
+      reverseTransitionDuration: ExpressiveMotion.medium,
       pageBuilder: (context, animation, secondaryAnimation) {
         return DiarySearchPage(
           initialKeyword: initialKeyword,
@@ -51,6 +52,9 @@ class DiarySearchPage extends ConsumerStatefulWidget {
         );
       },
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (ExpressiveMotion.reduceMotion(context)) {
+          return child;
+        }
         final easedAnimation = CurvedAnimation(
           parent: animation,
           curve: Curves.easeInOutCubicEmphasized,
@@ -87,6 +91,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  // 首次聚焦推迟到路由转场结束：转场途中弹出键盘会让 viewInsets 逐帧变化，
+  // 页面在动画期间被反复重新布局。之后输入框切换布局时仍需 autofocus 保持焦点。
+  bool _searchAutofocusEnabled = false;
+  Animation<double>? _routeAnimation;
+  AnimationStatusListener? _routeAnimationListener;
   Timer? _searchDebounceTimer;
   Timer? _pagingCooldownTimer;
   String _searchInput = '';
@@ -106,16 +115,62 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     _searchInput = normalizedInitialKeyword;
     _effectiveSearchKeyword = normalizedInitialKeyword;
     _searchController.text = normalizedInitialKeyword;
+    _scheduleInitialSearchFocus();
+  }
+
+  /// 首帧之后再判断路由转场状态：存在 HeroController 时，新路由的第一帧
+  /// 以 offstage 构建，期间 animation 被代理为 kAlwaysCompleteAnimation，
+  /// 直接读取会误判“转场已完成”而提前弹出键盘。
+  void _scheduleInitialSearchFocus() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
+      final route = ModalRoute.of(context);
+      final animation = route?.animation;
+      if (route == null ||
+          animation == null ||
+          ExpressiveMotion.reduceMotion(context) ||
+          (animation.isCompleted && !route.offstage)) {
+        _enableSearchAutofocus();
+        return;
+      }
+      void listener(AnimationStatus status) {
+        if (!status.isCompleted || route.offstage) {
+          return;
+        }
+        _detachRouteAnimationListener();
+        _enableSearchAutofocus();
+      }
+
+      _routeAnimation = animation;
+      _routeAnimationListener = listener;
+      animation.addStatusListener(listener);
+    });
+  }
+
+  void _detachRouteAnimationListener() {
+    final listener = _routeAnimationListener;
+    if (listener != null) {
+      _routeAnimation?.removeStatusListener(listener);
+    }
+    _routeAnimation = null;
+    _routeAnimationListener = null;
+  }
+
+  void _enableSearchAutofocus() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _searchAutofocusEnabled = true);
       _searchFocusNode.requestFocus();
     });
   }
 
   @override
   void dispose() {
+    _detachRouteAnimationListener();
     _searchDebounceTimer?.cancel();
     _pagingCooldownTimer?.cancel();
     _searchController.dispose();
@@ -294,6 +349,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                     child: _SearchInputBar(
                       searchController: _searchController,
                       searchFocusNode: _searchFocusNode,
+                      autofocus: _searchAutofocusEnabled,
                       hasSearchText: _searchInput.trim().isNotEmpty,
                       selectedTags: selectedTags,
                       onExitSearch: _closePage,
@@ -424,6 +480,7 @@ class _SearchInputBar extends StatelessWidget {
   const _SearchInputBar({
     required this.searchController,
     required this.searchFocusNode,
+    required this.autofocus,
     required this.hasSearchText,
     required this.selectedTags,
     required this.onExitSearch,
@@ -434,6 +491,7 @@ class _SearchInputBar extends StatelessWidget {
 
   final TextEditingController searchController;
   final FocusNode searchFocusNode;
+  final bool autofocus;
   final bool hasSearchText;
   final List<Tag> selectedTags;
   final VoidCallback onExitSearch;
@@ -472,7 +530,7 @@ class _SearchInputBar extends StatelessWidget {
                   ? TextField(
                       controller: searchController,
                       focusNode: searchFocusNode,
-                      autofocus: true,
+                      autofocus: autofocus,
                       textInputAction: TextInputAction.search,
                       onChanged: onSearchChanged,
                       decoration: InputDecoration(
@@ -520,7 +578,7 @@ class _SearchInputBar extends StatelessWidget {
                               child: TextField(
                                 controller: searchController,
                                 focusNode: searchFocusNode,
-                                autofocus: true,
+                                autofocus: autofocus,
                                 textInputAction: TextInputAction.search,
                                 onChanged: onSearchChanged,
                                 decoration: InputDecoration(
@@ -546,9 +604,12 @@ class _SearchInputBar extends StatelessWidget {
                     ),
             ),
             AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
+              duration: ExpressiveMotion.duration(
+                context,
+                ExpressiveMotion.fast,
+              ),
+              switchInCurve: ExpressiveMotion.effects,
+              switchOutCurve: ExpressiveMotion.exit,
               child: hasSearchText
                   ? IconButton(
                       key: const ValueKey<String>('search_clear_button'),

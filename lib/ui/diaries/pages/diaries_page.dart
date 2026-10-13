@@ -58,15 +58,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _deleteUndoSnackDuration = Duration(seconds: 4);
   static const Duration _archiveUndoSnackDuration = Duration(seconds: 4);
   static const Duration _restoreHintDuration = Duration(seconds: 2);
-  static const Duration _listItemTransitionDuration = Duration(
-    milliseconds: 220,
-  );
-  static const Duration _listRefreshFadeOutDuration = Duration(
-    milliseconds: 160,
-  );
-  static const Duration _listRefreshFadeInDuration = Duration(
-    milliseconds: 260,
-  );
+  static const Duration _listItemTransitionDuration =
+      DiariesListSection.itemTransitionDuration;
+  static const Duration _listRefreshFadeOutDuration = ExpressiveMotion.fast;
+  static const Duration _listRefreshFadeInDuration = ExpressiveMotion.medium;
   static const double _fabToggleScrollThreshold = 26;
   static const int _diaryPageSize = 20;
   static const double _loadMoreTriggerExtent = 420;
@@ -74,7 +69,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const double _tagSectionTopGap = 2;
   static const double _tagSectionBottomGap = 4;
   static const double _headerCollapsibleHeight = 68;
-  static const Duration _tagFilterSnapDuration = Duration(milliseconds: 240);
+  static const Duration _tagFilterSnapDuration = ExpressiveMotion.medium;
   static const double _tagFilterFlingVelocity = 600;
   static const double _tagFilterDragCommitDistance = 24;
 

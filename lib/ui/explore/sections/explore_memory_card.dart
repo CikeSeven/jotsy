@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// “那年今日”情感回顾卡片。
 ///
@@ -144,7 +145,11 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
                 children: List<Widget>.generate(memories.length, (index) {
                   final selected = index == _activeIndex;
                   return AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
+                    duration: ExpressiveMotion.duration(
+                      context,
+                      ExpressiveMotion.fast,
+                    ),
+                    curve: ExpressiveMotion.effects,
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     width: selected ? 14 : 6,
                     height: 6,

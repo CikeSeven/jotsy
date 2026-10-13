@@ -96,7 +96,14 @@ Expressive 设计系统强调有机、舒适的大圆角曲率：
 - **控件按压形变**：
   按钮（Filled, Outlined, Elevated）默认圆角为 `28dp`（完全圆润胶囊）；在手指按压（Pressed）态瞬间缩减为 `12dp`（小圆角方块），释放后弹回 `28dp`。
 - **空间过渡**：
-  位移与缩放允许使用微弹簧曲线（`ExpressiveMotion.spatial`），时长约 `180ms - 350ms`；透明度与色彩使用 `easeOutCubic` 确保柔和不越界。
+  位移与缩放允许使用微弹簧曲线（`ExpressiveMotion.spatial`）；透明度与色彩使用 `ExpressiveMotion.effects`（`easeOutCubic`）进场、`ExpressiveMotion.exit`（`easeInCubic`）退场，确保柔和不越界。
+- **时长分档**（UI 层禁止手写动画毫秒数，统一取 `ExpressiveMotion` token）：
+  - `fast`（180ms）：微交互，图标/颜色切换、小元素显隐、遮罩淡入淡出；
+  - `medium`（250ms）：内容切换，列表项进出、区块交叉淡入、面板吸附、翻页与 Tab 切换；
+  - `standard`（350ms）：空间过渡，页面级转场、较大位移/形变、FAB 显隐；
+  - `long`（500ms）：强调型/仪式感动画，如时间胶囊封存。
+- **减少动画**：实际时长一律经 `ExpressiveMotion.duration(context, token)` 解析，系统开启“减少动态效果”时为 0；不能接受 0 时长的 API（如 `animateTo`/`animateToPage`）改用跳转或 1ms 近似瞬时，循环动画不启动。页面转场在该模式下由主题直接切换。
+- **加载反馈防闪**：本地查询等通常毫秒级返回的等待，经 `DelayedLoadingGate` 延迟约 300ms 再显示指示器，避免每次交互都闪一下。
 
 ---
 

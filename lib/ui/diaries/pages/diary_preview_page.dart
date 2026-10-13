@@ -328,7 +328,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     }
 
     // 先渲染 loading，再执行 IO/截图等重任务，避免动画“卡住不动”。
-    await Future<void>.delayed(const Duration(milliseconds: 24));
+    // 等到包含遮罩的那一帧真正提交，而不是猜一个固定毫秒数。
+    await WidgetsBinding.instance.endOfFrame;
 
     try {
       await action();

@@ -184,6 +184,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       mainExpandedHeight: _mainExpandedHeight,
       tagExpandedHeight: _tagExpandedHeight,
       capsuleExpandedHeight: _capsuleExpandedHeight,
+      resolveDuration: (token) => ExpressiveMotion.duration(context, token),
     );
     _resetPendingCapsuleDraft();
     _panelCoordinator.sheetController.addListener(_handleSheetMetricsChanged);

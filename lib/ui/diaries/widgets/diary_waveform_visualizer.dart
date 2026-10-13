@@ -167,24 +167,42 @@ class LiveVoiceprintVisualizer extends StatefulWidget {
 
 class _LiveVoiceprintVisualizerState extends State<LiveVoiceprintVisualizer>
     with SingleTickerProviderStateMixin {
+  /// 呼吸波相位循环周期：只驱动安静时的轻微起伏，与录音振幅无关。
+  static const Duration _breathingPeriod = Duration(milliseconds: 1400);
+
   late final AnimationController _motionController;
+  bool _reduceMotion = false;
 
   @override
   void initState() {
     super.initState();
     _motionController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
-    )..repeat();
+      duration: _breathingPeriod,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _syncMotion();
   }
 
   @override
   void didUpdateWidget(LiveVoiceprintVisualizer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isPaused && _motionController.isAnimating) {
-      _motionController.stop();
-    } else if (widget.isRecording && !_motionController.isAnimating) {
+    _syncMotion();
+  }
+
+  /// 仅在非暂停且未开启“减少动画”时循环相位：减少动画时画笔本就绘制静态
+  /// 基线，继续 repeat 只会让控制器按刷新率空转并逐帧重绘。
+  void _syncMotion() {
+    final shouldAnimate = !widget.isPaused && !_reduceMotion;
+    if (shouldAnimate && !_motionController.isAnimating) {
       _motionController.repeat();
+    } else if (!shouldAnimate && _motionController.isAnimating) {
+      _motionController.stop();
     }
   }
 
@@ -203,26 +221,29 @@ class _LiveVoiceprintVisualizerState extends State<LiveVoiceprintVisualizer>
       alpha: isDark ? 0.35 : 0.25,
     );
 
-    return AnimatedBuilder(
-      animation: _motionController,
-      builder: (context, child) {
-        return SizedBox(
-          height: widget.height,
-          width: double.infinity,
-          child: CustomPaint(
-            painter: _LiveVoiceprintPainter(
-              amplitude: widget.amplitude,
-              phase: _motionController.value * 2 * math.pi,
-              isRecording: widget.isRecording,
-              isPaused: widget.isPaused,
-              barCount: widget.barCount,
-              activeColor: activeBarColor,
-              pausedColor: pausedBarColor,
-              reduceMotion: MediaQuery.disableAnimationsOf(context),
+    // 声纹逐帧重绘，隔离到独立图层，避免波及外层工具栏（含阴影）。
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _motionController,
+        builder: (context, child) {
+          return SizedBox(
+            height: widget.height,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _LiveVoiceprintPainter(
+                amplitude: widget.amplitude,
+                phase: _motionController.value * 2 * math.pi,
+                isRecording: widget.isRecording,
+                isPaused: widget.isPaused,
+                barCount: widget.barCount,
+                activeColor: activeBarColor,
+                pausedColor: pausedBarColor,
+                reduceMotion: _reduceMotion,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
@@ -304,6 +325,7 @@ class _LiveVoiceprintPainter extends CustomPainter {
         oldDelegate.phase != phase ||
         oldDelegate.isRecording != isRecording ||
         oldDelegate.isPaused != isPaused ||
+        oldDelegate.reduceMotion != reduceMotion ||
         oldDelegate.activeColor != activeColor ||
         oldDelegate.pausedColor != pausedColor;
   }

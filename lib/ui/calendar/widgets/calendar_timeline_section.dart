@@ -37,7 +37,7 @@ class CalendarTimelineSection extends StatelessWidget {
   /// 点击条目后的导航回调（打开预览页）。
   final ValueChanged<String> onOpenDiary;
 
-  static const Duration _switchDuration = Duration(milliseconds: 280);
+  static const Duration _switchDuration = ExpressiveMotion.medium;
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +53,8 @@ class CalendarTimelineSection extends StatelessWidget {
       child: AnimatedSwitcher(
         duration: ExpressiveMotion.duration(context, _switchDuration),
         reverseDuration: ExpressiveMotion.duration(context, _switchDuration),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
+        switchInCurve: ExpressiveMotion.effects,
+        switchOutCurve: ExpressiveMotion.exit,
         // 同日内容增删时新旧列表高度不同，贴顶叠放避免默认居中造成的跳动。
         layoutBuilder: CalendarDayContentSwitcher.topAlignedSwitcherLayout,
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -63,7 +63,10 @@ class CalendarTimelineSection extends StatelessWidget {
                 begin: const Offset(0, 0.025),
                 end: Offset.zero,
               ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+                CurvedAnimation(
+                  parent: animation,
+                  curve: ExpressiveMotion.effects,
+                ),
               );
           return FadeTransition(
             opacity: animation,

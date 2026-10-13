@@ -38,10 +38,10 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   // SnackBar 左右留白，统一 Home 内提示视觉。
   static const double _snackBarSideInset = 16;
-  static const Duration _fabVisibilityDuration = Duration(milliseconds: 320);
-  static const Duration _fabLiftDuration = Duration(milliseconds: 260);
-  static const Curve _fabVisibilityCurve = Curves.easeOutCubic;
-  static const Curve _fabLiftCurve = Curves.easeOutCubic;
+  static const Duration _fabVisibilityDuration = ExpressiveMotion.standard;
+  static const Duration _fabLiftDuration = ExpressiveMotion.medium;
+  static const Curve _fabVisibilityCurve = ExpressiveMotion.effects;
+  static const Curve _fabLiftCurve = ExpressiveMotion.effects;
   static const double _fabBottomGapAboveNav = 10;
   static const double _fabLiftOffsetWhenHintVisible = 60;
 

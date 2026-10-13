@@ -9,7 +9,7 @@ part of 'package:node_diary/ui/home/pages/home_page.dart';
 class _HomePageController {
   _HomePageController(this._state);
 
-  static const Duration _pageSwitchDuration = Duration(milliseconds: 270);
+  static const Duration _pageSwitchDuration = ExpressiveMotion.medium;
 
   final _HomePageState _state;
   late final PageController pageController;
@@ -55,14 +55,30 @@ class _HomePageController {
 
     final generation = _state._beginTabSwitch(index);
     try {
-      await pageController.animateToPage(
-        index,
-        duration: _pageSwitchDuration,
-        curve: pageSwitchCurve,
-      );
+      await _animateToTab(index);
     } finally {
       _state._settleTabSwitch(index, generation);
     }
+  }
+
+  /// 切页动画：
+  /// - 减少动画时直接跳页；
+  /// - 跨多页时先无动画跳到目标的相邻页，只动画最后一页，避免 250ms 内
+  ///   把中间的日历/探索页整页滑过（既晃眼又要额外布局绘制中间页）。
+  Future<void> _animateToTab(int index) async {
+    if (ExpressiveMotion.reduceMotion(_state.context)) {
+      pageController.jumpToPage(index);
+      return;
+    }
+    final currentPage = (pageController.page ?? _state._currentIndex).round();
+    if ((index - currentPage).abs() > 1) {
+      pageController.jumpToPage(index > currentPage ? index - 1 : index + 1);
+    }
+    await pageController.animateToPage(
+      index,
+      duration: _pageSwitchDuration,
+      curve: pageSwitchCurve,
+    );
   }
 
   Future<void> switchToDiariesTab() {

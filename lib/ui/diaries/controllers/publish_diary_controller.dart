@@ -11,6 +11,12 @@ part of 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 class PublishDiaryController {
   const PublishDiaryController(this._state);
 
+  /// 时间胶囊封存卡片的入场（缩放回弹）时长，页面动画与返回前等待共用。
+  static const Duration capsuleSealAnimationDuration = ExpressiveMotion.long;
+
+  /// 封存提示入场完成后的停留时间，供用户读到“封存中”再返回。
+  static const Duration _capsuleSealHoldDuration = Duration(milliseconds: 260);
+
   /// 发布页状态引用，控制器通过它访问输入值、临时状态与路由上下文。
   final _PublishDiaryPageState _state;
 
@@ -544,7 +550,15 @@ class PublishDiaryController {
       }
       if (schedule != null) {
         _state.setState(() => _state._showCapsuleSealOverlay = true);
-        await Future<void>.delayed(const Duration(milliseconds: 760));
+        // 等封存卡片入场动画播完，再停留片刻让用户读到提示后返回；
+        // 减少动画时入场时长为 0，只保留停留时间。
+        await Future<void>.delayed(
+          ExpressiveMotion.duration(
+                _state.context,
+                capsuleSealAnimationDuration,
+              ) +
+              _capsuleSealHoldDuration,
+        );
         if (!_state.mounted) {
           return;
         }

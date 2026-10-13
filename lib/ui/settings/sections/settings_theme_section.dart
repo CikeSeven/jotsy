@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
 import '../widgets/settings_card_group.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// 设置页主题模式区块。
 ///
@@ -495,7 +496,11 @@ class _ThemeSeedColorPicker extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => onSelectFamily(index),
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
+                    duration: ExpressiveMotion.duration(
+                      context,
+                      ExpressiveMotion.fast,
+                    ),
+                    curve: ExpressiveMotion.effects,
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
@@ -526,7 +531,11 @@ class _ThemeSeedColorPicker extends StatelessWidget {
             return GestureDetector(
               onTap: () => onSelectColor(color),
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.fast,
+                ),
+                curve: ExpressiveMotion.effects,
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(

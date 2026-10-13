@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// 弹窗创建标签时的临时数据对象。
 class NewTagDraft {
@@ -291,7 +292,11 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                               child: GestureDetector(
                                 onTap: () => _selectFamily(index),
                                 child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 180),
+                                  duration: ExpressiveMotion.duration(
+                                    context,
+                                    ExpressiveMotion.fast,
+                                  ),
+                                  curve: ExpressiveMotion.effects,
                                   width: 34,
                                   height: 34,
                                   decoration: BoxDecoration(
@@ -327,7 +332,11 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                           return GestureDetector(
                             onTap: () => _selectColor(index),
                             child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
+                              duration: ExpressiveMotion.duration(
+                                context,
+                                ExpressiveMotion.fast,
+                              ),
+                              curve: ExpressiveMotion.effects,
                               width: 34,
                               height: 34,
                               decoration: BoxDecoration(
@@ -364,7 +373,11 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               crossFadeState: _colorPickerExpanded
                   ? CrossFadeState.showSecond
                   : CrossFadeState.showFirst,
-              duration: const Duration(milliseconds: 180),
+              duration: ExpressiveMotion.duration(
+                context,
+                ExpressiveMotion.fast,
+              ),
+              sizeCurve: ExpressiveMotion.effects,
             ),
           ],
         ),

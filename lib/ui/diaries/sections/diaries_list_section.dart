@@ -21,13 +21,15 @@ import '../pages/locked_diary_page.dart';
 import '../widgets/energy_battery_indicator.dart';
 import 'diary_head_section.dart';
 import '../../widgets/qweather_icon.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// 日记页主列表区块。
 ///
 /// 仅负责输出“日记内容本身”的 sliver，不再承载顶部标签条或独立滚动容器。
 class DiariesListSection extends StatelessWidget {
-  /// 单条日记项进入/退出列表时的过渡时长。
-  static const Duration _itemTransitionDuration = Duration(milliseconds: 220);
+  /// 单条日记项进入/退出列表时的过渡时长。日记页的隐藏/出现计时器复用
+  /// 同一常量，保证动画结束与状态收尾同步。
+  static const Duration itemTransitionDuration = ExpressiveMotion.medium;
   static const int _maxPreviewCoverCacheEntries = 600;
   static final Map<String, String?> _previewCoverCache = <String, String?>{};
   static final ListQueue<String> _previewCoverCacheOrder = ListQueue<String>();
@@ -549,6 +551,7 @@ class DiariesListSection extends StatelessWidget {
         );
 
         final animatedBaseItem = _buildAnimatedDiaryItem(
+          context,
           diaryId: diary.diary.diaryId,
           child: item,
         );
@@ -584,10 +587,15 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAnimatedDiaryItem({
+  Widget _buildAnimatedDiaryItem(
+    BuildContext context, {
     required String diaryId,
     required Widget child,
   }) {
+    final transitionDuration = ExpressiveMotion.duration(
+      context,
+      itemTransitionDuration,
+    );
     final isExiting = pendingHideDiaryIds.contains(diaryId);
     final isAppearing = appearingDiaryIds.contains(diaryId);
 
@@ -597,9 +605,9 @@ class DiariesListSection extends StatelessWidget {
         : KeyedSubtree(key: ValueKey<String>('visible_$diaryId'), child: child);
 
     final switcher = AnimatedSwitcher(
-      duration: _itemTransitionDuration,
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
+      duration: transitionDuration,
+      switchInCurve: ExpressiveMotion.effects,
+      switchOutCurve: ExpressiveMotion.exit,
       transitionBuilder: (Widget transitionChild, Animation<double> animation) {
         return AnimatedBuilder(
           animation: animation,
@@ -635,8 +643,8 @@ class DiariesListSection extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey<String>('appear_$diaryId'),
       tween: Tween<double>(begin: 0, end: 1),
-      duration: _itemTransitionDuration,
-      curve: Curves.easeOutCubic,
+      duration: transitionDuration,
+      curve: ExpressiveMotion.effects,
       child: switcher,
       builder: (BuildContext context, double value, Widget? animatedChild) {
         if (value >= 1.0) {

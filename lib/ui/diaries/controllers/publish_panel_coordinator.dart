@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
+import '../../../app/theme/expressive_motion.dart';
+
 /// 发布面板状态协调器。
 ///
 /// 负责 smooth_sheets 与内部分页状态同步，集中管理：
@@ -13,7 +15,21 @@ class PublishPanelCoordinator {
     required this.mainExpandedHeight,
     required this.tagExpandedHeight,
     required this.capsuleExpandedHeight,
+    required this.resolveDuration,
   });
+
+  /// 把动效 token 解析为实际时长；由面板传入
+  /// `ExpressiveMotion.duration(context, …)`，减少动画时返回 0。
+  final Duration Function(Duration token) resolveDuration;
+
+  /// smooth_sheets 与 PageController 的动画都断言 duration > 0；减少动画时
+  /// 用 1ms 近似瞬时完成，保持 Future 语义不变。
+  Duration _animationDuration(Duration token) {
+    final resolved = resolveDuration(token);
+    return resolved > Duration.zero
+        ? resolved
+        : const Duration(milliseconds: 1);
+  }
 
   /// 收起态高度（面板最小可见高度）。
   final double collapsedHeight;
@@ -63,8 +79,8 @@ class PublishPanelCoordinator {
     }
     await sheetController.animateTo(
       SheetOffset(collapsedFactor),
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
+      duration: _animationDuration(ExpressiveMotion.medium),
+      curve: ExpressiveMotion.effects,
     );
   }
 
@@ -75,8 +91,8 @@ class PublishPanelCoordinator {
     }
     await sheetController.animateTo(
       const SheetOffset(1),
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
+      duration: _animationDuration(ExpressiveMotion.medium),
+      curve: ExpressiveMotion.effects,
     );
   }
 
@@ -96,8 +112,8 @@ class PublishPanelCoordinator {
     }
     await contentPageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
+      duration: _animationDuration(ExpressiveMotion.medium),
+      curve: ExpressiveMotion.effects,
     );
   }
 
@@ -111,8 +127,8 @@ class PublishPanelCoordinator {
     if (animated) {
       await contentPageController.animateToPage(
         0,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
+        duration: _animationDuration(ExpressiveMotion.medium),
+        curve: ExpressiveMotion.effects,
       );
       return true;
     }

@@ -9,6 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
@@ -54,10 +55,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _calendarCardTopPadding = AppSpacing.m;
   static const double _calendarBottomGap = AppSpacing.m;
   static const double _listBottomExtraSpace = 12;
-  static const Duration _calendarMorphDuration = Duration(milliseconds: 260);
-  static const Duration _refreshOverlaySwitchDuration = Duration(
-    milliseconds: 160,
-  );
   static const double _refreshIndicatorSize = 18;
   Map<DateTime, List<DiaryCalendarMarker>> _cachedMarkerBuckets =
       const <DateTime, List<DiaryCalendarMarker>>{};
@@ -68,7 +65,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   late DateTime _focusedMonth;
   late DateTime _selectedDay;
   CalendarFormat _calendarFormat = CalendarFormat.month;
-  PageController? _calendarPageController;
   bool _fabVisibleByScroll = true;
   double _fabScrollDeltaAccumulator = 0;
 
@@ -198,9 +194,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return AnimatedContainer(
-      duration: _calendarMorphDuration,
-      curve: Curves.easeOutCubic,
+    // 面板外观不随交互变化（主题切换已由 MaterialApp 的主题动画插值），
+    // 用普通 Container 避免 AnimatedContainer 在主题动画中二次追赶目标值。
+    return Container(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.s,
         AppSpacing.l,
@@ -246,7 +242,15 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             onFormatChanged: _controller.onCalendarFormatChanged,
             onDaySelected: _controller.onDaySelected,
             onPageChanged: _controller.onPageChanged,
-            onCalendarCreated: _controller.onCalendarCreated,
+            // 翻页与月/周切换动画统一走 Expressive token；减少动画时直接跳转。
+            pageAnimationEnabled: !ExpressiveMotion.reduceMotion(context),
+            pageAnimationDuration: ExpressiveMotion.medium,
+            pageAnimationCurve: ExpressiveMotion.effects,
+            formatAnimationDuration: ExpressiveMotion.duration(
+              context,
+              ExpressiveMotion.medium,
+            ),
+            formatAnimationCurve: ExpressiveMotion.effects,
             calendarStyle: CalendarStyle(
               isTodayHighlighted: true,
               todayDecoration: BoxDecoration(
@@ -453,7 +457,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final textTheme = Theme.of(context).textTheme;
     final showOverlay = showLoading || error != null;
     return AnimatedSwitcher(
-      duration: _refreshOverlaySwitchDuration,
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
       child: showOverlay
           ? DecoratedBox(
               key: ValueKey<Object>(error ?? 'loading'),

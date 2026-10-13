@@ -11,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
@@ -213,6 +214,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     final (lightTheme, darkTheme) = _themesForSeed(themeSeedColor);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      // 切换明暗/主题色时 AnimatedTheme 会逐帧 lerp 整份 ThemeData；减少动画时
+      // 直接切换，曲线与其余颜色过渡统一为 effects。
+      themeAnimationDuration: ExpressiveMotion.duration(
+        context,
+        ExpressiveMotion.fast,
+      ),
+      themeAnimationCurve: ExpressiveMotion.effects,
       title: 'Jotsy',
       theme: lightTheme,
       darkTheme: darkTheme,
@@ -493,9 +501,9 @@ class _BootstrapHome extends StatelessWidget {
     // 这样可以减少 Flutter 首帧前后的数据库监听与页面装配工作，避免
     // Android 原生启动背景结束后又等待一段时间才看到加载动画。
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 220),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeOutCubic,
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      switchInCurve: ExpressiveMotion.effects,
+      switchOutCurve: ExpressiveMotion.effects,
       child: showLoadingOverlay ? loading : home,
     );
   }

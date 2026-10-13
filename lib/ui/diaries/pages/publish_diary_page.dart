@@ -26,6 +26,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 part '../controllers/publish_diary_controller.dart';
 
@@ -338,18 +339,26 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   Widget _buildCapsuleSealOverlay(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // 遮罩只在封存时才插入树中，AnimatedOpacity 首帧即为目标值、从不淡入；
+    // 改用插入即播放的 0→1 补间。减少动画时两段补间时长为 0，直接显示。
     return Positioned.fill(
       child: IgnorePointer(
-        child: AnimatedOpacity(
-          opacity: _showCapsuleSealOverlay ? 1 : 0,
-          duration: const Duration(milliseconds: 180),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: 1),
+          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+          curve: ExpressiveMotion.effects,
+          builder: (context, opacity, child) =>
+              Opacity(opacity: opacity, child: child),
           child: ColoredBox(
             color: colorScheme.scrim.withValues(alpha: 0.36),
             child: Center(
               child: TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0.88, end: 1),
-                duration: const Duration(milliseconds: 620),
-                curve: Curves.easeOutBack,
+                duration: ExpressiveMotion.duration(
+                  context,
+                  PublishDiaryController.capsuleSealAnimationDuration,
+                ),
+                curve: ExpressiveMotion.spatial,
                 builder: (context, value, child) {
                   return Transform.scale(scale: value, child: child);
                 },

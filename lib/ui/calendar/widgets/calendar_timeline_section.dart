@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -14,6 +13,7 @@ import '../../diaries/widgets/energy_battery_indicator.dart';
 import '../../widgets/qweather_icon.dart';
 import 'calendar_day_content_switcher.dart';
 import '../../../app/theme/app_effects.dart';
+import '../../diaries/viewmodels/diary_card_view_data.dart';
 
 /// 日历页“选中日期列表”的时间线区块。
 ///
@@ -121,17 +121,24 @@ class CalendarTimelineSection extends StatelessWidget {
       now: DateTime.now(),
     );
     final isLockedCapsule = capsuleState.isLocked;
-    final moodEmoji = _extractMoodEmoji(diary.diary);
+    // 与日记列表共用按 (diaryId, updatedAt) 缓存的派生数据：选日/翻月重建
+    // 时间线不再重复 jsonDecode metadata，也不再为无封面条目解析整段正文。
+    final viewData = DiaryCardViewData.of(diary.diary);
+    final moodEmoji = viewData.moodEmoji;
     final summary = isLockedCapsule
         ? _countdownLabel(context, capsuleState)
-        : _buildSummaryText(context, diary.diary);
+        : (viewData.previewText.isNotEmpty
+              ? viewData.previewText
+              : context.l10n.autoT0186);
     final createdAtLabel = _formatHourMinute(diary.diary.createdAt);
-    final cover = isLockedCapsule ? null : _resolveCover(diary.diary);
-    final contextMeta = _extractContextMetadata(diary.diary);
-    final location = _extractLocation(contextMeta);
-    final weather = _extractWeather(contextMeta);
-    final weatherIconCode = _extractWeatherIconCode(contextMeta);
-    final energyLevel = _extractEnergyLevel(contextMeta);
+    final cover = isLockedCapsule ? null : viewData.previewCover;
+    final location = viewData.location;
+    final weather = viewData.weather;
+    final weatherIconCode = viewData.weatherIconCode;
+    final rawEnergy = viewData.energyLevel;
+    final energyLevel = rawEnergy == null
+        ? null
+        : EnergyBatteryIndicator.normalizeValue(rawEnergy);
     final hasMetaRow =
         (location != null && location.isNotEmpty) ||
         (weather != null && weather.isNotEmpty) ||
@@ -271,16 +278,6 @@ class CalendarTimelineSection extends StatelessWidget {
     );
   }
 
-  /// 条目摘要优先使用正文纯文本镜像。
-  /// 若正文文本为空（例如仅图片日记），返回统一占位文案，避免视觉空行。
-  String _buildSummaryText(BuildContext context, Diary diary) {
-    final normalized = diary.contentText.replaceAll('\n', ' ').trim();
-    if (normalized.isNotEmpty) {
-      return normalized;
-    }
-    return context.l10n.autoT0186;
-  }
-
   String _countdownLabel(BuildContext context, TimeCapsuleState state) {
     final hours = state.remainingDuration.inHours;
     if (hours > 0 && hours < 24) {
@@ -289,18 +286,6 @@ class CalendarTimelineSection extends StatelessWidget {
     return context.l10n.timeCapsuleCountdownDays(
       state.remainingDays.toString(),
     );
-  }
-
-  /// 时间线右侧封面缩略图来源：
-  /// 1) diary.cover；
-  /// 2) 正文 Delta 中第一张图片；
-  /// 3) 都不存在时不展示缩略图。
-  String? _resolveCover(Diary diary) {
-    final normalizedCover = diary.cover?.trim();
-    if (normalizedCover != null && normalizedCover.isNotEmpty) {
-      return normalizedCover;
-    }
-    return _extractFirstImageFromContent(diary.content);
   }
 
   /// 构建时间线条目右侧的小封面缩略图（圆角）。
@@ -340,139 +325,6 @@ class CalendarTimelineSection extends StatelessWidget {
         child: image,
       ),
     );
-  }
-
-  /// 从 Quill Delta JSON 中提取第一张图片地址。
-  String? _extractFirstImageFromContent(String contentJson) {
-    final normalized = contentJson.trim();
-    if (normalized.isEmpty) {
-      return null;
-    }
-
-    try {
-      final decoded = jsonDecode(normalized);
-      return _extractImageFromNode(decoded);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// 递归扫描 Delta 节点，兼容 list/map 嵌套和 image embed 写法。
-  String? _extractImageFromNode(Object? node) {
-    if (node is List) {
-      for (final item in node) {
-        final image = _extractImageFromNode(item);
-        if (image != null) {
-          return image;
-        }
-      }
-      return null;
-    }
-
-    if (node is! Map) {
-      return null;
-    }
-
-    final insert = node['insert'];
-    if (insert is Map) {
-      final image = insert['image'];
-      if (image is String && image.trim().isNotEmpty) {
-        return image.trim();
-      }
-    }
-
-    final type = node['type'];
-    if (type == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map) {
-        final url = attributes['url'];
-        if (url is String && url.trim().isNotEmpty) {
-          return url.trim();
-        }
-      }
-    }
-
-    final root = node['root'];
-    if (root != null) {
-      final image = _extractImageFromNode(root);
-      if (image != null) {
-        return image;
-      }
-    }
-
-    final children = node['children'];
-    if (children != null) {
-      final image = _extractImageFromNode(children);
-      if (image != null) {
-        return image;
-      }
-    }
-
-    return null;
-  }
-
-  /// 从 metadata.context 中提取 moodEmoji 作为时间线节点。
-  String? _extractMoodEmoji(Diary diary) {
-    final context = _extractContextMetadata(diary);
-    final mood = context?['moodEmoji']?.toString().trim();
-    if (mood == null || mood.isEmpty) {
-      return null;
-    }
-    return mood;
-  }
-
-  /// 解析 metadata.context，用于展示地点、天气、精力等行内信息。
-  Map<String, dynamic>? _extractContextMetadata(Diary diary) {
-    try {
-      final decoded = jsonDecode(diary.metadata);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-      final context = decoded['context'];
-      if (context is! Map<String, dynamic>) {
-        return null;
-      }
-      return context;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String? _extractLocation(Map<String, dynamic>? context) {
-    final location = context?['location']?.toString().trim();
-    if (location == null || location.isEmpty) {
-      return null;
-    }
-    return location;
-  }
-
-  String? _extractWeather(Map<String, dynamic>? context) {
-    final weather = context?['weather']?.toString().trim();
-    if (weather == null || weather.isEmpty) {
-      return null;
-    }
-    return weather;
-  }
-
-  String? _extractWeatherIconCode(Map<String, dynamic>? context) {
-    final iconCode = context?['weatherIconCode']?.toString().trim();
-    if (iconCode == null || iconCode.isEmpty) {
-      return null;
-    }
-    return iconCode;
-  }
-
-  double? _extractEnergyLevel(Map<String, dynamic>? context) {
-    final raw = context?['energyLevel'];
-    final parsed = switch (raw) {
-      num value => value.toDouble(),
-      String value => double.tryParse(value),
-      _ => null,
-    };
-    if (parsed == null) {
-      return null;
-    }
-    return EnergyBatteryIndicator.normalizeValue(parsed);
   }
 
   Widget _buildMetaInlineRow(

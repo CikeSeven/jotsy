@@ -60,6 +60,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _refreshIndicatorSize = 18;
   Map<DateTime, List<DiaryCalendarMarker>> _cachedMarkerBuckets =
       const <DateTime, List<DiaryCalendarMarker>>{};
+  List<DiaryCalendarMarker>? _groupedMarkersSource;
   List<DiaryWithTags> _cachedDayDiaries = const <DiaryWithTags>[];
   DateTime? _cachedDayDiariesSelectedDay;
 
@@ -114,9 +115,17 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       orElse: () => SettingsService.defaultMoodOptions,
     );
     final latestMarkers = markersAsync.asData?.value;
-    final latestMarkerBuckets = latestMarkers == null
-        ? null
-        : _controller.groupMarkersByDay(latestMarkers);
+    // 选日、切换月/周格式等 setState 都会重建页面；打点列表引用未变时复用
+    // 上次的分桶结果，只在 provider 推送新列表时重新分组。
+    final Map<DateTime, List<DiaryCalendarMarker>>? latestMarkerBuckets;
+    if (latestMarkers == null) {
+      latestMarkerBuckets = null;
+    } else if (identical(latestMarkers, _groupedMarkersSource)) {
+      latestMarkerBuckets = _cachedMarkerBuckets;
+    } else {
+      latestMarkerBuckets = _controller.groupMarkersByDay(latestMarkers);
+      _groupedMarkersSource = latestMarkers;
+    }
     if (latestMarkerBuckets != null) {
       _cachedMarkerBuckets = latestMarkerBuckets;
     }

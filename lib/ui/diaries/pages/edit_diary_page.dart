@@ -135,6 +135,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   String? _lastPersistedCreateDraftRaw;
   _EditPersistedSnapshot? _savedEditSnapshot;
   bool _hasPendingEditChanges = false;
+  // 编辑态“未保存”判定节流：完整比对需把整篇文档序列化为 JSON（O(n)），而
+  // 标题/正文控制器在每次按键与光标移动时都会通知。首个变化立即比对（保存
+  // 按钮及时亮起），窗口内的后续通知合并为窗口结束时的一次比对。
+  static const Duration _editChangeCheckThrottle = Duration(milliseconds: 300);
+  Timer? _editChangeCheckTimer;
+  bool _editChangeCheckQueued = false;
+  // 保存快照时的正文长度：长度不同一定有改动，可免序列化直接判定为未保存。
+  int _savedContentLength = 0;
   bool _showEditSaveSuccessIcon = false;
 
   // ==================== 业务控制器 ====================
@@ -170,6 +178,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   void dispose() {
     _createDraftSaveDebounceTimer?.cancel();
     _editSaveSuccessIconTimer?.cancel();
+    _editChangeCheckTimer?.cancel();
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _mediaImportController.removeListener(_onMediaImportChanged);
@@ -233,14 +242,51 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
+  /// 节流执行 [_refreshPendingEditChanges]：窗口期内只排队一次尾随比对，
+  /// 保证停止输入后状态与实际内容一致（包括把内容改回原样时清除标记）。
+  void _scheduleEditChangeCheck() {
+    // 详情回填（初始化）与保存中的通知无需比对，也不应占用节流窗口，
+    // 否则紧随其后的第一次真实输入会被推迟到窗口末尾。
+    if (!_isEditEntry || !_initialized || _saving) {
+      return;
+    }
+    // 低成本判定：标题文本或正文长度与快照不同，必然存在未保存改动，直接
+    // 标记即可，日常输入因此完全不需要序列化文档。
+    final saved = _savedEditSnapshot;
+    if (saved != null &&
+        (_titleController.text != saved.title ||
+            _contentController.document.length != _savedContentLength)) {
+      _applyPendingEditChanges(true);
+      return;
+    }
+    // 长度相同：可能只是光标移动，也可能是等长替换或改回原样，需完整比对。
+    if (_editChangeCheckTimer != null) {
+      _editChangeCheckQueued = true;
+      return;
+    }
+    _refreshPendingEditChanges();
+    _editChangeCheckTimer = Timer(_editChangeCheckThrottle, () {
+      _editChangeCheckTimer = null;
+      if (_editChangeCheckQueued && mounted) {
+        _editChangeCheckQueued = false;
+        _scheduleEditChangeCheck();
+      }
+    });
+  }
+
   void _refreshPendingEditChanges() {
     if (!_isEditEntry || !_initialized || _saving) {
       return;
     }
-    final nextPending =
-        _panelMetadataDirty ||
-        (_savedEditSnapshot != null &&
-            _buildCurrentEditSnapshot() != _savedEditSnapshot);
+    _applyPendingEditChanges(
+      _panelMetadataDirty ||
+          (_savedEditSnapshot != null &&
+              _buildCurrentEditSnapshot() != _savedEditSnapshot),
+    );
+  }
+
+  /// 写入“是否有未保存改动”，状态未变化时不触发重建。
+  void _applyPendingEditChanges(bool nextPending) {
     final shouldClearSuccessIcon = nextPending && _showEditSaveSuccessIcon;
     if (nextPending == _hasPendingEditChanges && !shouldClearSuccessIcon) {
       return;
@@ -262,8 +308,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     });
   }
 
-  void _markEditSaved() {
+  /// 记录“已保存”基准快照，同时缓存正文长度供低成本预判使用。
+  void _captureSavedEditSnapshot() {
     _savedEditSnapshot = _buildCurrentEditSnapshot();
+    _savedContentLength = _contentController.document.length;
+  }
+
+  void _markEditSaved() {
+    _captureSavedEditSnapshot();
     _panelMetadataDirty = false;
     _hasPendingEditChanges = false;
   }
@@ -739,7 +791,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           _selectedTagIds
             ..clear()
             ..addAll(detail.tags.map((Tag t) => t.id));
-          _savedEditSnapshot = _buildCurrentEditSnapshot();
+          _captureSavedEditSnapshot();
           _hasPendingEditChanges = false;
           _panelMetadataDirty = false;
           _initialized = true;

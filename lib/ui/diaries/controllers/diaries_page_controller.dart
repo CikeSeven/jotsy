@@ -26,42 +26,6 @@ class DiariesPageController {
   /// 列表过渡协调器，集中控制筛选切换和项目删改时的过渡动画节奏。
   final DiaryListTransitionCoordinator transitionCoordinator;
 
-  /// 监听 Home 级提示可见性，用于驱动 FAB 上移避让。
-  void attachHomeHintVisibilityListener() {
-    final listenable = _state.widget.homeHintVisibleListenable;
-    if (listenable == null) {
-      return;
-    }
-    _state._homeHintVisible = listenable.value;
-    listenable.addListener(_onHomeHintVisibilityChanged);
-  }
-
-  void detachHomeHintVisibilityListener(ValueListenable<bool>? listenable) {
-    listenable?.removeListener(_onHomeHintVisibilityChanged);
-  }
-
-  /// Home 组件替换 listenable 时重新绑定监听，避免监听泄漏。
-  void handleHomeHintListenableUpdate({
-    required ValueListenable<bool>? previous,
-    required ValueListenable<bool>? next,
-  }) {
-    if (previous == next) {
-      return;
-    }
-    detachHomeHintVisibilityListener(previous);
-    attachHomeHintVisibilityListener();
-  }
-
-  void _onHomeHintVisibilityChanged() {
-    final visible = _state.widget.homeHintVisibleListenable?.value ?? false;
-    if (visible == _state._homeHintVisible || !_state.mounted) {
-      return;
-    }
-    _state.setState(() {
-      _state._homeHintVisible = visible;
-    });
-  }
-
   /// 清空列表多选状态。
   void clearSelection() {
     if (_state._selectedDiaryIds.isEmpty) {
@@ -708,10 +672,5 @@ class DiariesPageController {
         });
         break;
     }
-  }
-
-  /// 释放控制器内部资源，重点是计时器和外部监听。
-  void dispose() {
-    detachHomeHintVisibilityListener(_state.widget.homeHintVisibleListenable);
   }
 }

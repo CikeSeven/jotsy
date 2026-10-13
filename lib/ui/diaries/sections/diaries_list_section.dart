@@ -1,7 +1,5 @@
-import 'dart:convert';
-import 'dart:collection';
 import 'dart:io';
-import 'dart:ui' show ImageFilter;
+import 'dart:ui' show ImageFilter, TileMode;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -14,6 +12,7 @@ import '../../../core/database/app_database.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../widgets/diaries_empty_state.dart';
+import '../viewmodels/diary_card_view_data.dart';
 import '../widgets/diary_item_tag_row.dart';
 import '../widgets/diary_selection_surface.dart';
 import '../models/time_capsule.dart';
@@ -22,6 +21,7 @@ import '../widgets/energy_battery_indicator.dart';
 import 'diary_head_section.dart';
 import '../../widgets/qweather_icon.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../widgets/diary_item_presence.dart';
 
 /// 日记页主列表区块。
 ///
@@ -30,9 +30,6 @@ class DiariesListSection extends StatelessWidget {
   /// 单条日记项进入/退出列表时的过渡时长。日记页的隐藏/出现计时器复用
   /// 同一常量，保证动画结束与状态收尾同步。
   static const Duration itemTransitionDuration = ExpressiveMotion.medium;
-  static const int _maxPreviewCoverCacheEntries = 600;
-  static final Map<String, String?> _previewCoverCache = <String, String?>{};
-  static final ListQueue<String> _previewCoverCacheOrder = ListQueue<String>();
 
   const DiariesListSection({
     super.key,
@@ -193,11 +190,13 @@ class DiariesListSection extends StatelessWidget {
           )
         : baseItemBackgroundColor;
     final selected = selectedDiaryIds.contains(diary.diary.diaryId);
-    final previewCover = _resolvePreviewCover(diary.diary);
+    // metadata、摘要与封面按 (diaryId, updatedAt) 缓存，滚动重建不再重复解析。
+    final viewData = DiaryCardViewData.of(diary.diary);
+    final previewCover = viewData.previewCover;
     final title = diary.diary.title.trim().isEmpty
         ? l10n.autoT0033
         : diary.diary.title;
-    final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
+    final preview = viewData.previewText;
     final hasVisibleTags = diary.tags.isNotEmpty && maxVisibleTags > 0;
     final capsuleState = TimeCapsuleState.fromFields(
       lockedAt: diary.diary.capsuleLockedAt,
@@ -205,10 +204,8 @@ class DiariesListSection extends StatelessWidget {
       now: DateTime.now(),
     );
     final isLockedCapsule = capsuleState.isLocked;
-    // 键名必须与写入方 `PublishMetadataComposer` 保持一致（camelCase）。
-    final contextMeta = _extractContextMetadata(diary.diary.metadata);
-    final moodEmoji = _readNonEmptyString(contextMeta['moodEmoji']);
-    final weatherCode = _readNonEmptyString(contextMeta['weatherIconCode']);
+    final moodEmoji = viewData.moodEmoji;
+    final weatherCode = viewData.weatherIconCode;
 
     return Builder(
       builder: (BuildContext _) {
@@ -598,66 +595,12 @@ class DiariesListSection extends StatelessWidget {
     );
     final isExiting = pendingHideDiaryIds.contains(diaryId);
     final isAppearing = appearingDiaryIds.contains(diaryId);
-
-    // 退出态切换为空组件，配合 AnimatedSwitcher 做“收起并淡出”。
-    final switchedChild = isExiting
-        ? SizedBox(key: ValueKey<String>('hidden_$diaryId'))
-        : KeyedSubtree(key: ValueKey<String>('visible_$diaryId'), child: child);
-
-    final switcher = AnimatedSwitcher(
+    return DiaryItemPresence(
+      key: ValueKey<String>('presence_$diaryId'),
+      visible: !isExiting,
+      appearing: isAppearing && !isExiting,
       duration: transitionDuration,
-      switchInCurve: ExpressiveMotion.effects,
-      switchOutCurve: ExpressiveMotion.exit,
-      transitionBuilder: (Widget transitionChild, Animation<double> animation) {
-        return AnimatedBuilder(
-          animation: animation,
-          builder: (BuildContext context, Widget? _) {
-            // Flutter 的 SizeTransition 内部无条件包裹了 ClipRect(clipBehavior: Clip.hardEdge)。
-            // 若在静止态（非折叠切换期）依然包裹 SizeTransition，ClipRect 会沿卡片外边界
-            // 硬裁切，导致外散 BoxShadow 在卡片四角形成直角切边（直角阴影）。
-            // 因此仅在动画未完成的过渡期间启用 SizeTransition，完成后直接返回子组件。
-            if (animation.isCompleted) {
-              return transitionChild;
-            }
-            return FadeTransition(
-              opacity: animation,
-              child: SizeTransition(
-                sizeFactor: animation,
-                alignment: Alignment.topCenter,
-                child: transitionChild,
-              ),
-            );
-          },
-        );
-      },
-      child: switchedChild,
-    );
-
-    // 非“新增出现态”时直接返回基础切换器。
-    if (!isAppearing || isExiting) {
-      return switcher;
-    }
-
-    // 出现态额外加一层高度与透明度补间，形成“从无到有”感。
-    // 同理，补间完成（value >= 1.0）后移除 ClipRect，避免卡片阴影被矩形切边。
-    return TweenAnimationBuilder<double>(
-      key: ValueKey<String>('appear_$diaryId'),
-      tween: Tween<double>(begin: 0, end: 1),
-      duration: transitionDuration,
-      curve: ExpressiveMotion.effects,
-      child: switcher,
-      builder: (BuildContext context, double value, Widget? animatedChild) {
-        if (value >= 1.0) {
-          return animatedChild!;
-        }
-        return ClipRect(
-          child: Align(
-            alignment: Alignment.topCenter,
-            heightFactor: value.clamp(0, 1),
-            child: Opacity(opacity: value.clamp(0, 1), child: animatedChild),
-          ),
-        );
-      },
+      child: child,
     );
   }
 
@@ -670,12 +613,14 @@ class DiariesListSection extends StatelessWidget {
     required TimeCapsuleState capsuleState,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    final contextMeta = _extractContextMetadata(diary.diary.metadata);
-    final mood = contextMeta['moodEmoji']?.toString().trim();
-    final weather = contextMeta['weather']?.toString().trim();
-    final weatherIconCode = contextMeta['weatherIconCode']?.toString().trim();
-    final energy = _parseEnergy(contextMeta['energyLevel']);
-    final preview = diary.diary.contentText.replaceAll('\n', ' ').trim();
+    final viewData = DiaryCardViewData.of(diary.diary);
+    final mood = viewData.moodEmoji;
+    final weather = viewData.weather;
+    final weatherIconCode = viewData.weatherIconCode;
+    final rawEnergy = viewData.energyLevel;
+    final energy = rawEnergy == null
+        ? null
+        : EnergyBatteryIndicator.normalizeValue(rawEnergy);
     final countdown = _countdownLabel(context, capsuleState);
 
     final clearMeta = Wrap(
@@ -706,6 +651,10 @@ class DiariesListSection extends StatelessWidget {
       ],
     );
 
+    // 未解封胶囊只渲染“占位条 + 低清模糊封面”，不再绘制真实正文：
+    // 1) 隐私：真实文字即使被模糊，也会进入语义树被读屏读出；
+    // 2) 性能：原先每张卡一个 BackdropFilter，需回读背景再模糊，屏上有多张
+    //    时滚动卡顿；改为只对封面自身做 ImageFiltered，且封面按极小尺寸解码。
     final blurredBody = ClipRRect(
       borderRadius: BorderRadius.circular(compact ? 12 : 14),
       child: Stack(
@@ -715,34 +664,39 @@ class DiariesListSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               if (previewCover != null)
-                _buildCoverPreview(
-                  context,
-                  previewCover,
-                  width: double.infinity,
-                  height: compact ? 126 : 140,
-                  radius: 0,
+                // clamp 采样边缘像素，避免模糊在封面四周采到透明而出现光晕；
+                // ClipRect 防止模糊结果溢出到下方占位区。
+                ClipRect(
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(
+                      sigmaX: 6,
+                      sigmaY: 6,
+                      tileMode: TileMode.clamp,
+                    ),
+                    child: _buildCoverPreview(
+                      context,
+                      previewCover,
+                      width: double.infinity,
+                      height: compact ? 126 : 140,
+                      radius: 0,
+                      lowResolution: true,
+                    ),
+                  ),
                 ),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 color: colorScheme.surfaceContainerHighest,
-                child: Text(
-                  preview.isEmpty ? title : preview,
-                  maxLines: compact ? 4 : 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                child: _buildSealedTextPlaceholder(
+                  context,
+                  lineCount: compact ? 4 : 3,
                 ),
               ),
             ],
           ),
           Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7),
-              child: ColoredBox(
-                color: colorScheme.surface.withValues(alpha: 0.48),
-              ),
+            child: ColoredBox(
+              color: colorScheme.surface.withValues(alpha: 0.48),
             ),
           ),
           Align(
@@ -835,6 +789,37 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
+  /// 封存正文占位：用长短不一的圆角条示意“这里有文字”，不渲染任何真实内容。
+  Widget _buildSealedTextPlaceholder(
+    BuildContext context, {
+    required int lineCount,
+  }) {
+    final barColor = Theme.of(
+      context,
+    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.16);
+    const widthFactors = <double>[1, 0.88, 0.94, 0.62];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        for (var line = 0; line < lineCount; line++) ...<Widget>[
+          if (line > 0) const SizedBox(height: 9),
+          FractionallySizedBox(
+            widthFactor: line == lineCount - 1
+                ? widthFactors.last
+                : widthFactors[line % (widthFactors.length - 1)],
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: barColor,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: const SizedBox(height: 10),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildCapsuleMetaPill(
     BuildContext context,
     String label, {
@@ -857,40 +842,6 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
-  Map<String, Object?> _extractContextMetadata(String raw) {
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map<String, dynamic>) {
-        final context = decoded['context'];
-        if (context is Map<String, dynamic>) {
-          return context;
-        }
-      }
-    } catch (_) {
-      return const <String, Object?>{};
-    }
-    return const <String, Object?>{};
-  }
-
-  String? _readNonEmptyString(Object? raw) {
-    if (raw is! String) {
-      return null;
-    }
-    final trimmed = raw.trim();
-    return trimmed.isEmpty ? null : trimmed;
-  }
-
-  double? _parseEnergy(Object? raw) {
-    final parsed = switch (raw) {
-      num value => value.toDouble(),
-      String value => double.tryParse(value),
-      _ => null,
-    };
-    return parsed == null
-        ? null
-        : EnergyBatteryIndicator.normalizeValue(parsed);
-  }
-
   String _countdownLabel(BuildContext context, TimeCapsuleState state) {
     final hours = state.remainingDuration.inHours;
     if (hours > 0 && hours < 24) {
@@ -901,127 +852,77 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 
-  /// 封面解析优先级：
-  /// 1) 日记显式封面字段；
-  /// 2) 正文内容中第一张图片。
-  String? _resolvePreviewCover(Diary diary) {
-    final cacheKey =
-        '${diary.diaryId}_${diary.updatedAt.microsecondsSinceEpoch}';
-    if (_previewCoverCache.containsKey(cacheKey)) {
-      return _previewCoverCache[cacheKey];
-    }
-
-    final explicitCover = diary.cover?.trim();
-    final resolvedCover = (explicitCover != null && explicitCover.isNotEmpty)
-        ? explicitCover
-        : _extractFirstImageFromContent(diary.content);
-
-    _cacheResolvedPreviewCover(cacheKey, resolvedCover);
-    return resolvedCover;
-  }
-
-  /// 维护固定容量缓存，避免滚动期间重复解析正文 JSON。
-  void _cacheResolvedPreviewCover(String key, String? cover) {
-    if (_previewCoverCache.containsKey(key)) {
-      return;
-    }
-
-    _previewCoverCache[key] = cover;
-    _previewCoverCacheOrder.addLast(key);
-
-    while (_previewCoverCacheOrder.length > _maxPreviewCoverCacheEntries) {
-      final oldestKey = _previewCoverCacheOrder.removeFirst();
-      _previewCoverCache.remove(oldestKey);
-    }
-  }
-
-  /// 从 Quill Delta JSON 中提取第一张图片地址。
-  String? _extractFirstImageFromContent(String contentJson) {
-    final normalized = contentJson.trim();
-    if (normalized.isEmpty) {
-      return null;
-    }
-
-    try {
-      final decoded = jsonDecode(normalized);
-      return _extractImageFromNode(decoded);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// 递归解析图片节点，兼容不同嵌套结构。
-  String? _extractImageFromNode(Object? node) {
-    if (node is List) {
-      for (final item in node) {
-        final image = _extractImageFromNode(item);
-        if (image != null) {
-          return image;
-        }
-      }
-      return null;
-    }
-
-    if (node is! Map) {
-      return null;
-    }
-
-    final insert = node['insert'];
-    if (insert is Map) {
-      final image = insert['image'];
-      if (image is String && image.trim().isNotEmpty) {
-        return image.trim();
-      }
-    }
-
-    final type = node['type'];
-    if (type == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map) {
-        final url = attributes['url'];
-        if (url is String && url.trim().isNotEmpty) {
-          return url.trim();
-        }
-      }
-    }
-
-    final root = node['root'];
-    if (root != null) {
-      final image = _extractImageFromNode(root);
-      if (image != null) {
-        return image;
-      }
-    }
-
-    final children = node['children'];
-    if (children != null) {
-      final image = _extractImageFromNode(children);
-      if (image != null) {
-        return image;
-      }
-    }
-
-    return null;
-  }
-
   /// 构建封面预览图（自动区分网络图与本地图）。
+  /// 封面缩略图。
+  ///
+  /// 解码尺寸只限定一条边：同时给出宽高会按 ResizeImagePolicy.exact 把原图
+  /// 压成卡片比例而变形，BoxFit.cover 负责绘制时裁切。
+  /// - 宽度有限：按宽度解码；
+  /// - 宽度为 infinity（瀑布流通栏封面）：用 LayoutBuilder 取实际列宽解码，
+  ///   不再退化为只限高——那样竖图只解码出约 140dp 宽，拉伸到整列后发糊；
+  /// - [lowResolution]：未解封胶囊的模糊封面，按极小尺寸解码，配合模糊既
+  ///   省内存又无需高清细节。
   Widget _buildCoverPreview(
     BuildContext context,
     String imageSource, {
     double? width,
     required double height,
     required double radius,
+    bool lowResolution = false,
   }) {
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth = width != null && width.isFinite && width > 0
-        ? (width * dpr).round()
+    final hasFiniteWidth = width != null && width.isFinite && width > 0;
+    if (!hasFiniteWidth && !lowResolution) {
+      return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final resolvedWidth = constraints.maxWidth.isFinite
+              ? constraints.maxWidth
+              : null;
+          return _buildCoverImage(
+            context,
+            imageSource,
+            width: width,
+            decodeWidth: resolvedWidth,
+            height: height,
+            radius: radius,
+          );
+        },
+      );
+    }
+    return _buildCoverImage(
+      context,
+      imageSource,
+      width: width,
+      decodeWidth: lowResolution ? _sealedCoverDecodeWidth : width,
+      height: height,
+      radius: radius,
+      lowResolution: lowResolution,
+    );
+  }
+
+  /// 未解封胶囊封面的解码宽度（逻辑像素，不乘 dpr）：模糊后无需细节。
+  static const double _sealedCoverDecodeWidth = 48;
+
+  Widget _buildCoverImage(
+    BuildContext context,
+    String imageSource, {
+    required double? width,
+    required double? decodeWidth,
+    required double height,
+    required double radius,
+    bool lowResolution = false,
+  }) {
+    final dpr = lowResolution ? 1.0 : MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth =
+        decodeWidth != null && decodeWidth.isFinite && decodeWidth > 0
+        ? (decodeWidth * dpr).round()
         : null;
-    // Supplying both dimensions makes ResizeImage decode to an exact rectangle
-    // and distorts photos whose source aspect ratio differs from the card.
-    // One bounded edge is enough; BoxFit.cover handles the crop at paint time.
     final cacheHeight = cacheWidth == null && height.isFinite && height > 0
         ? (height * dpr).round()
         : null;
+    // 低清封面放大绘制时用双线性插值，避免出现马赛克块。
+    final filterQuality = lowResolution
+        ? FilterQuality.medium
+        : FilterQuality.low;
     final trimmed = imageSource.trim();
     final uri = Uri.tryParse(trimmed);
     final isNetwork =
@@ -1033,7 +934,7 @@ class DiariesListSection extends StatelessWidget {
             fit: BoxFit.cover,
             cacheWidth: cacheWidth,
             cacheHeight: cacheHeight,
-            filterQuality: FilterQuality.low,
+            filterQuality: filterQuality,
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stackTrace) =>
                     _buildCoverFallback(context),
@@ -1043,16 +944,18 @@ class DiariesListSection extends StatelessWidget {
             fit: BoxFit.cover,
             cacheWidth: cacheWidth,
             cacheHeight: cacheHeight,
-            filterQuality: FilterQuality.low,
+            filterQuality: filterQuality,
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stackTrace) =>
                     _buildCoverFallback(context),
           );
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: SizedBox(width: width, height: height, child: imageWidget),
-    );
+    final sized = SizedBox(width: width, height: height, child: imageWidget);
+    // 通栏封面（radius 0）由外层卡片圆角裁切，无需再加一层裁剪。
+    if (radius <= 0) {
+      return sized;
+    }
+    return ClipRRect(borderRadius: BorderRadius.circular(radius), child: sized);
   }
 
   /// 封面加载失败占位图（暗色模式自适应）。

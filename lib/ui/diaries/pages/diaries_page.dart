@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
@@ -38,13 +37,11 @@ class DiariesPage extends ConsumerStatefulWidget {
   const DiariesPage({
     super.key,
     this.pageBackgroundColor,
-    this.homeHintVisibleListenable,
     this.onCreateActionChanged,
     this.onFabVisibilityChanged,
   });
 
   final Color? pageBackgroundColor;
-  final ValueListenable<bool>? homeHintVisibleListenable;
   final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
   final ValueChanged<bool>? onFabVisibilityChanged;
 
@@ -103,8 +100,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   List<DiaryWithTags>? _cachedTagFilterVisibleItemsRef;
   String _cachedTagFilterKeyword = '';
   List<Tag> _cachedTagFilters = const <Tag>[];
-  int _localHintVisibleCount = 0;
-  bool _homeHintVisible = false;
   bool _fabVisibleByScroll = true;
   double _fabScrollDeltaAccumulator = 0;
   int _listLayoutEpoch = 0;
@@ -142,7 +137,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     );
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
-    _controller.attachHomeHintVisibilityListener();
     unawaited(_controller.restoreRememberedTagFiltersOnStartup());
     // 筛选切换时做整列表淡入淡出，降低“突兀跳变”的观感。控制器值直接作为
     // 不透明度，曲线只在 animateTo 中给一次，避免与 CurvedAnimation 叠加。
@@ -163,16 +157,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     if (oldWidget.onFabVisibilityChanged != widget.onFabVisibilityChanged) {
       widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     }
-    _controller.handleHomeHintListenableUpdate(
-      previous: oldWidget.homeHintVisibleListenable,
-      next: widget.homeHintVisibleListenable,
-    );
   }
 
   @override
   void dispose() {
     widget.onCreateActionChanged?.call(null);
-    _controller.dispose();
     _transitionCoordinator.dispose();
     _pagingCooldownTimer?.cancel();
     _tagFilterExpansionController.dispose();

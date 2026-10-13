@@ -111,4 +111,39 @@ void main() {
       await unmount(tester);
     },
   );
+
+  testWidgets(
+    'save button tracks edits immediately and clears after reverting',
+    (tester) async {
+      await pumpEditPage(tester);
+      final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
+      bool saveEnabled() =>
+          tester
+              .widget<IconButton>(
+                find.ancestor(
+                  of: find.byTooltip(l10n.commonSave),
+                  matching: find.byType(IconButton),
+                ),
+              )
+              .onPressed !=
+          null;
+      final titleField = find.widgetWithText(TextField, 'Rebuild probe');
+      expect(saveEnabled(), isFalse);
+
+      // 节流的首个变化立即比对：改动后下一帧保存按钮即可用。
+      await tester.enterText(titleField, 'Rebuild probe!');
+      await tester.pump();
+      expect(saveEnabled(), isTrue);
+
+      // 窗口内连续改回原文：尾随比对在窗口结束后清除未保存标记。
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Rebuild probe!'),
+        'Rebuild probe',
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(saveEnabled(), isFalse);
+      await unmount(tester);
+    },
+  );
 }

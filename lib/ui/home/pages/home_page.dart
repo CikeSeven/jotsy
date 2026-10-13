@@ -162,7 +162,6 @@ class _HomePageState extends ConsumerState<HomePage> {
             return DiariesPage(
               key: const PageStorageKey<String>('tab_diaries'),
               pageBackgroundColor: Theme.of(context).colorScheme.surface,
-              homeHintVisibleListenable: widget.homeHintVisibleListenable,
               onCreateActionChanged: _diariesCreateActionChanged,
               onFabVisibilityChanged: _diariesFabVisibilityChanged,
             );

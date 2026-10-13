@@ -54,8 +54,9 @@ class EditDiaryController {
       scheduleCreateDraftAutoSave();
       return;
     }
-    // 编辑模式下的输入变更仅更新“未保存状态”，不触发自动草稿写入。
-    _state._refreshPendingEditChanges();
+    // 编辑模式下的输入变更仅更新“未保存状态”，不触发自动草稿写入；
+    // 比对需序列化整篇文档，经节流避免每次按键/光标移动都做一次。
+    _state._scheduleEditChangeCheck();
   }
 
   /// 1.3 秒防抖自动保存草稿。

@@ -54,9 +54,10 @@ class BottomNav extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
-    final navBackgroundColor = isLight
-        ? const Color(0xFFF7F9FC)
-        : colorScheme.surfaceContainer;
+    // 底色由主题 navigationBarTheme 统一给出（亮色与页面画布同色）。
+    final navBackgroundColor =
+        theme.navigationBarTheme.backgroundColor ??
+        colorScheme.surfaceContainer;
     final maxIndex = items.length - 1;
     final clampedIndex = selectedIndex < 0
         ? 0

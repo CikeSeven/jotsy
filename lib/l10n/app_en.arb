@@ -630,6 +630,26 @@
   "@dataMgmtBusyLabel": {
     "description": "Auto-generated metadata for dataMgmtBusyLabel."
   },
+  "dataMgmtExportPasswordTitle": "Set export password (optional)",
+  "@dataMgmtExportPasswordTitle": {
+    "description": "Title of the optional export password dialog in data management."
+  },
+  "dataMgmtExportPasswordHint": "Leave empty to skip encryption",
+  "@dataMgmtExportPasswordHint": {
+    "description": "Hint text for the export password field."
+  },
+  "dataMgmtExportPasswordWarning": "Keep this password safe. Data is encrypted end-to-end on this device and we cannot recover the password. If you forget it, the exported data can never be restored.",
+  "@dataMgmtExportPasswordWarning": {
+    "description": "Warning shown below the export password field."
+  },
+  "dataMgmtImportPasswordTitle": "Import password",
+  "@dataMgmtImportPasswordTitle": {
+    "description": "Title of the import password dialog in data management."
+  },
+  "dataMgmtImportPasswordHint": "Enter the import password",
+  "@dataMgmtImportPasswordHint": {
+    "description": "Hint text for the import password field."
+  },
   "autoT0001": "Loading app",
   "@autoT0001": {
     "description": "Auto-generated metadata for autoT0001."

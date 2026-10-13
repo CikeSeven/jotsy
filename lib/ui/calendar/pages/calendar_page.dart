@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -24,6 +25,7 @@ import '../widgets/calendar_day_empty_state.dart';
 import '../widgets/calendar_header.dart';
 import '../../widgets/delayed_loading_gate.dart';
 import '../widgets/calendar_timeline_section.dart';
+import '../../../app/theme/app_effects.dart';
 
 part '../controllers/calendar_page_controller.dart';
 
@@ -210,15 +212,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           color: ExpressiveSurfaces.cardBorderColor(colorScheme),
           width: 0.8,
         ),
-        boxShadow: colorScheme.brightness == Brightness.light
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.032),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
+        boxShadow: AppEffects.restingCardShadow(colorScheme),
       ),
       child: Stack(
         children: <Widget>[
@@ -479,8 +473,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         size: _refreshIndicatorSize,
                       ),
                     if (error != null)
-                      Icon(
-                        Icons.info_outline_rounded,
+                      FaIcon(
+                        FontAwesomeIcons.circleInfo,
                         size: _refreshIndicatorSize,
                         color: colorScheme.error,
                       ),

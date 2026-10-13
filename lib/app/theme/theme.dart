@@ -39,9 +39,9 @@ class MaterialTheme {
   ThemeData darkHighContrast() => theme(darkHighContrastScheme());
 
   ThemeData theme(ColorScheme colorScheme) {
-    final isLight = colorScheme.brightness == Brightness.light;
-    // 亮色模式下使用温润极净的淡浅底色，让纯白卡片清爽浮起，彻底消灭水泥灰发暗脏感；暗色模式维持深色底。
-    final scaffoldBg = isLight ? const Color(0xFFF7F9FC) : colorScheme.surface;
+    // 页面画布统一取种子色派生的 surface：纯白卡片在其上清爽浮起，换主题色时
+    // 底色随之带上同一色调，不再与固定冷灰蓝底色产生色差。
+    final scaffoldBg = ExpressiveSurfaces.pageBackground(colorScheme);
     final baseTheme = ThemeData(
       useMaterial3: true,
       fontFamily: 'HarmonyOSSansSC',

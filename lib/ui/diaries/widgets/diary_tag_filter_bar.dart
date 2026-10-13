@@ -259,7 +259,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
         ? (ThemeData.estimateBrightnessForColor(tagColor) == Brightness.dark
               ? tagColor
               : colorScheme.onSurface)
-        : Colors.white;
+        : colorScheme.onSurface;
 
     // A horizontal ListView supplies a tight 32dp cross-axis constraint, but a
     // Multi-row layout otherwise uses the chip's smaller intrinsic height. Retain that same

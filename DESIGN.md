@@ -35,12 +35,12 @@ NodeJot 旨在提供一种**安静、温润、优雅且富有现代呼吸感**�
 
 | 语义层级 | 亮色模式 (Light) | 暗色模式 (Dark) | 用途说明 |
 | :--- | :--- | :--- | :--- |
-| **Scaffold 底色** | `#F7F9FC` (暖柔冷灰) | `colorScheme.surface` (`#111318`) | 整个页面的背景衬底 |
+| **Scaffold 底色** | `colorScheme.surface`（默认种子色约 `#F6FAFE`） | `colorScheme.surface` (`#111318`) | 整个页面与亮色底部导航的背景衬底，统一取 `ExpressiveSurfaces.pageBackground`，随主题色带上同一色调 |
 | **卡片/容器主表面** | `surfaceContainerLowest` (`#FFFFFF`) | `surfaceContainerLow` (`#1A1C20`) | 日记卡片、设置分组、悬浮模块主表面 |
 | **二级表面/对话框** | `surfaceContainerLowest` (`#FFFFFF`) | `surfaceContainerHigh` (`#282A2F`) | 弹窗 (Dialog)、底部抽屉 (BottomSheet) |
 | **输入框填充底色** | `surfaceContainerLow` (0.6 Alpha) | `surfaceContainerHighest` | 文本框、搜索框、选择器底色 |
 | **卡片微边框** | `outlineVariant` (0.35 Alpha) | `outlineVariant` (0.20 Alpha) | 0.8dp 极细微边框，构建精致感 |
-| **阴影规范** | 单层微柔和语义阴影 (0.12 Alpha) | 单层深色扩散阴影 (0.24 Alpha) | `AppEffects.softShadow`，禁彩色阴影 |
+| **阴影规范** | 单层微柔和语义阴影 (0.12 Alpha) | 单层深色扩散阴影 (0.24 Alpha) | 浮动面板用 `AppEffects.softShadow`；静止卡片用 `AppEffects.restingCardShadow`（仅亮色 0.03 Alpha）；颜色一律取 `colorScheme.shadow`，禁彩色阴影 |
 
 ### 2.2 配色禁令与兼容性
 - ❌ **严禁使用任何渐变色**：禁止在卡片、按钮、顶部栏使用 `LinearGradient` 或 `SweepGradient`。

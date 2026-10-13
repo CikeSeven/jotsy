@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../widgets/expressive_reorder_proxy.dart';
 
 /// 标签管理页：
 /// 1. 标签排序（拖拽）；
@@ -321,6 +322,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
                     return ReorderableListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       buildDefaultDragHandles: false,
+                      proxyDecorator: expressiveReorderProxyDecorator,
                       itemCount: displayTags.length,
                       onReorder: (oldIndex, newIndex) {
                         _reorderTags(displayTags, oldIndex, newIndex);

@@ -6,6 +6,14 @@ import 'app_radii.dart';
 /// 为容器、导航、输入与弹层提供同一组 Expressive 表面 token。
 /// 只依赖传入的 ColorScheme，因此种子色、暗色与高对比度入口不会分叉。
 abstract final class ExpressiveSurfaces {
+  /// 页面画布底色（Scaffold、底部导航、侧边导航共用）。
+  ///
+  /// 统一取 `colorScheme.surface`：默认种子色下约为 #F6FAFE，与早期固定的
+  /// #F7F9FC 肉眼无差；换成暖色/绿色等种子色时底栏与页面不再出现
+  /// “冷灰蓝底栏 + 带色调页面”的接缝。白色卡片（surfaceContainerLowest）
+  /// 仍在其上清晰浮起。
+  static Color pageBackground(ColorScheme colors) => colors.surface;
+
   /// 卡片纯净表面底色：
   /// - 亮色模式下使用纯白 (surfaceContainerLowest)，彻底消除发灰与脏感；
   /// - 暗色模式下使用温和深灰 (surfaceContainerLow)，与深色底形成舒适层次。
@@ -135,7 +143,7 @@ abstract final class ExpressiveSurfaces {
       navigationBarTheme: NavigationBarThemeData(
         height: 80,
         backgroundColor: isLight
-            ? const Color(0xFFF7F9FC)
+            ? pageBackground(colors)
             : colors.surfaceContainer,
         elevation: 0,
         indicatorColor: colors.secondaryContainer,
@@ -151,7 +159,7 @@ abstract final class ExpressiveSurfaces {
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: isLight
-            ? const Color(0xFFF7F9FC)
+            ? pageBackground(colors)
             : colors.surfaceContainer,
         indicatorColor: colors.secondaryContainer,
         indicatorShape: const StadiumBorder(),

@@ -630,6 +630,26 @@
   "@dataMgmtBusyLabel": {
     "description": "Auto-generated metadata for dataMgmtBusyLabel."
   },
+  "dataMgmtExportPasswordTitle": "设置导出密码（可选）",
+  "@dataMgmtExportPasswordTitle": {
+    "description": "数据管理导出密码弹窗标题。"
+  },
+  "dataMgmtExportPasswordHint": "不填写则不加密",
+  "@dataMgmtExportPasswordHint": {
+    "description": "导出密码输入框提示。"
+  },
+  "dataMgmtExportPasswordWarning": "请妥善保管此密码。本应用采用本地端到端加密，我们无法为您找回密码。一旦遗忘，导出的数据将永久无法恢复。",
+  "@dataMgmtExportPasswordWarning": {
+    "description": "导出密码输入框下方的警告。"
+  },
+  "dataMgmtImportPasswordTitle": "导入密码",
+  "@dataMgmtImportPasswordTitle": {
+    "description": "数据管理导入密码弹窗标题。"
+  },
+  "dataMgmtImportPasswordHint": "请输入导入密码",
+  "@dataMgmtImportPasswordHint": {
+    "description": "导入密码输入框提示。"
+  },
   "autoT0001": "应用加载中",
   "@autoT0001": {
     "description": "Auto-generated metadata for autoT0001."

@@ -15,6 +15,7 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../../app/theme/app_effects.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
 class AboutPage extends ConsumerStatefulWidget {
@@ -505,19 +506,10 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.card),
-        boxShadow: isLight
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
+        boxShadow: AppEffects.restingCardShadow(colorScheme),
       ),
       child: Card(
         margin: EdgeInsets.zero,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../../app/theme/app_effects.dart';
 
 /// 设置页统一分组卡片组件。
 ///
@@ -60,15 +61,7 @@ class SettingsCardGroup extends StatelessWidget {
                 color: ExpressiveSurfaces.cardBorderColor(colorScheme),
                 width: 0.8,
               ),
-              boxShadow: isLight
-                  ? <BoxShadow>[
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
+              boxShadow: AppEffects.restingCardShadow(colorScheme),
             ),
             child: Material(
               color: ExpressiveSurfaces.cardColor(colorScheme),

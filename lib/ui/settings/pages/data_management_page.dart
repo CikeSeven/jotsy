@@ -84,7 +84,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setDialogState) {
             return AlertDialog(
-              title: const Text('设置导出密码（可选）'),
+              title: Text(context.l10n.dataMgmtExportPasswordTitle),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -95,7 +95,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                       obscureText: obscureText,
                       onChanged: (value) => passwordValue = value,
                       decoration: InputDecoration(
-                        hintText: '不填写则不加密',
+                        hintText: context.l10n.dataMgmtExportPasswordHint,
                         suffixIcon: IconButton(
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
@@ -111,7 +111,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '请妥善保管此密码。本应用采用本地端到端加密，我们无法为您找回密码。一旦遗忘，导出的数据将永久无法恢复。',
+                      context.l10n.dataMgmtExportPasswordWarning,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.error,
                         fontWeight: FontWeight.w700,
@@ -234,7 +234,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setDialogState) {
             return AlertDialog(
-              title: const Text('导入密码'),
+              title: Text(context.l10n.dataMgmtImportPasswordTitle),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -245,7 +245,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                       obscureText: obscureText,
                       onChanged: (value) => passwordValue = value,
                       decoration: InputDecoration(
-                        hintText: '请输入导入密码',
+                        hintText: context.l10n.dataMgmtImportPasswordHint,
                         suffixIcon: IconButton(
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);

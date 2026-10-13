@@ -27,74 +27,47 @@ class AppearanceLanguagePage extends ConsumerWidget {
       builder: (BuildContext dialogContext) {
         final l10n = dialogContext.l10n;
         final colorScheme = Theme.of(dialogContext).colorScheme;
-        final isZh = settingsService.appLocaleCode == 'zh';
-        final isEn = settingsService.appLocaleCode == 'en';
+        // 选中底色交给 ListTile 自身绘制（tileColor 经 Ink 画在对话框 Material
+        // 上），外层不再包不透明 Container，否则点击水波纹会被底色盖住。
+        Widget buildOption(String code, String label) {
+          final selected = settingsService.appLocaleCode == code;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: ListTile(
+              selected: selected,
+              tileColor: selected ? colorScheme.secondaryContainer : null,
+              selectedTileColor: colorScheme.secondaryContainer,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onTap: () => Navigator.of(dialogContext).pop(code),
+              leading: FaIcon(
+                selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
+                size: 16,
+                color: selected
+                    ? colorScheme.onSecondaryContainer
+                    : colorScheme.onSurfaceVariant,
+              ),
+              title: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected
+                      ? colorScheme.onSecondaryContainer
+                      : colorScheme.onSurface,
+                ),
+              ),
+            ),
+          );
+        }
+
         return AlertDialog(
           title: Text(l10n.languageDialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                decoration: BoxDecoration(
-                  color: isZh
-                      ? colorScheme.secondaryContainer
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  onTap: () => Navigator.of(dialogContext).pop('zh'),
-                  leading: FaIcon(
-                    isZh ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
-                    size: 16,
-                    color: isZh
-                        ? colorScheme.onSecondaryContainer
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                  title: Text(
-                    '中文',
-                    style: TextStyle(
-                      fontWeight: isZh ? FontWeight.w700 : FontWeight.w500,
-                      color: isZh
-                          ? colorScheme.onSecondaryContainer
-                          : colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: isEn
-                      ? colorScheme.secondaryContainer
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  onTap: () => Navigator.of(dialogContext).pop('en'),
-                  leading: FaIcon(
-                    isEn ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
-                    size: 16,
-                    color: isEn
-                        ? colorScheme.onSecondaryContainer
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                  title: Text(
-                    'English',
-                    style: TextStyle(
-                      fontWeight: isEn ? FontWeight.w700 : FontWeight.w500,
-                      color: isEn
-                          ? colorScheme.onSecondaryContainer
-                          : colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
+              buildOption('zh', '中文'),
+              buildOption('en', 'English'),
             ],
           ),
         );

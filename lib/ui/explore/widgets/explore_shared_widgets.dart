@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../../app/theme/app_effects.dart';
 
 /// 探索页通用卡片容器。
 class ExploreCard extends StatelessWidget {
@@ -14,19 +15,10 @@ class ExploreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isLight = colorScheme.brightness == Brightness.light;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        boxShadow: isLight
-            ? <BoxShadow>[
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.032),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
+        boxShadow: AppEffects.restingCardShadow(colorScheme),
       ),
       child: Card.filled(
         margin: EdgeInsets.zero,

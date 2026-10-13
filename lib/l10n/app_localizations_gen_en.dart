@@ -492,6 +492,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataMgmtBusyLabel => 'Processing data';
 
   @override
+  String get dataMgmtExportPasswordTitle => 'Set export password (optional)';
+
+  @override
+  String get dataMgmtExportPasswordHint => 'Leave empty to skip encryption';
+
+  @override
+  String get dataMgmtExportPasswordWarning =>
+      'Keep this password safe. Data is encrypted end-to-end on this device and we cannot recover the password. If you forget it, the exported data can never be restored.';
+
+  @override
+  String get dataMgmtImportPasswordTitle => 'Import password';
+
+  @override
+  String get dataMgmtImportPasswordHint => 'Enter the import password';
+
+  @override
   String get autoT0001 => 'Loading app';
 
   @override

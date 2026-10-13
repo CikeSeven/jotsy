@@ -938,6 +938,36 @@ abstract class AppLocalizations {
   /// **'Processing data'**
   String get dataMgmtBusyLabel;
 
+  /// Title of the optional export password dialog in data management.
+  ///
+  /// In en, this message translates to:
+  /// **'Set export password (optional)'**
+  String get dataMgmtExportPasswordTitle;
+
+  /// Hint text for the export password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty to skip encryption'**
+  String get dataMgmtExportPasswordHint;
+
+  /// Warning shown below the export password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this password safe. Data is encrypted end-to-end on this device and we cannot recover the password. If you forget it, the exported data can never be restored.'**
+  String get dataMgmtExportPasswordWarning;
+
+  /// Title of the import password dialog in data management.
+  ///
+  /// In en, this message translates to:
+  /// **'Import password'**
+  String get dataMgmtImportPasswordTitle;
+
+  /// Hint text for the import password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the import password'**
+  String get dataMgmtImportPasswordHint;
+
   /// Auto-generated metadata for autoT0001.
   ///
   /// In en, this message translates to:

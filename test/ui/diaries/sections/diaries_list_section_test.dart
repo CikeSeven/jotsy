@@ -72,7 +72,7 @@ void main() {
     expect(resizedImage.height, isNull);
   });
 
-  testWidgets('waterfall cover keeps filling its card', (tester) async {
+  testWidgets('waterfall cover decodes at the column width', (tester) async {
     await tester.pumpWidget(
       _buildTestApp(
         diary: _createUnlockedDiaryWithTags(cover: '/missing-cover.png'),
@@ -83,9 +83,13 @@ void main() {
 
     final image = tester.widget<Image>(find.byType(Image));
     final resizedImage = image.image as ResizeImage;
+    final dpr = tester.view.devicePixelRatio;
+    final imageWidth = tester.getSize(find.byType(Image)).width;
     expect(image.fit, BoxFit.cover);
-    expect(resizedImage.width, isNull);
-    expect(resizedImage.height, isNotNull);
+    // 只限高时竖图只解码出约 140dp 宽、被拉伸到整列宽而发糊；按列宽解码，
+    // 高度交给 BoxFit.cover 裁切（不同时限定宽高，避免按容器比例拉伸）。
+    expect(resizedImage.width, (imageWidth * dpr).round());
+    expect(resizedImage.height, isNull);
   });
 
   testWidgets('waterfall layout hides tags when the configured limit is zero', (
@@ -248,6 +252,80 @@ void main() {
       expect(_tagLabel('Tag 1'), findsNothing);
     },
   );
+
+  for (final layoutMode in DiaryLayoutMode.values) {
+    testWidgets(
+      'locked capsule ${layoutMode.name} card hides its content without backdrop blur',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        final diary = _createLockedDiaryWithTags(DateTime.now());
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            diary: diary,
+            layoutMode: layoutMode,
+            maxVisibleTags: 3,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // 未解封正文既不能被绘制，也不能出现在语义树里供读屏读出。
+        expect(find.textContaining('hidden content'), findsNothing);
+        expect(find.bySemanticsLabel(RegExp('hidden content')), findsNothing);
+        // 每张卡一个 BackdropFilter 会回读背景模糊，滚动时光栅线程压力大。
+        expect(find.byType(BackdropFilter), findsNothing);
+        expect(find.text('365 天后解封'), findsOneWidget);
+        semantics.dispose();
+      },
+    );
+  }
+
+  testWidgets('undo reveal keeps the same card element after settling', (
+    tester,
+  ) async {
+    final diary = _createUnlockedDiaryWithTags();
+    const surfaceKey = ValueKey<String>('diary_selection_surface_unlocked-1');
+    await tester.pumpWidget(
+      _buildTestApp(
+        diary: diary,
+        layoutMode: DiaryLayoutMode.list,
+        maxVisibleTags: 2,
+        appearingDiaryIds: const <String>{'unlocked-1'},
+      ),
+    );
+    final appearingElement = tester.element(
+      find.byKey(surfaceKey, skipOffstage: false),
+    );
+    await tester.pumpAndSettle();
+
+    // 协调器在出现动画结束后清除标记；此前包装层随之变化会重新挂载卡片。
+    await tester.pumpWidget(
+      _buildTestApp(
+        diary: diary,
+        layoutMode: DiaryLayoutMode.list,
+        maxVisibleTags: 2,
+      ),
+    );
+    expect(
+      tester.element(find.byKey(surfaceKey, skipOffstage: false)),
+      same(appearingElement),
+    );
+
+    await tester.pumpWidget(
+      _buildTestApp(
+        diary: diary,
+        layoutMode: DiaryLayoutMode.list,
+        maxVisibleTags: 2,
+        pendingHideDiaryIds: const <String>{'unlocked-1'},
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 60));
+    expect(
+      tester.element(find.byKey(surfaceKey, skipOffstage: false)),
+      same(appearingElement),
+    );
+    await tester.pumpAndSettle();
+  });
 }
 
 DiaryWithTags _createUnlockedDiaryWithTags({String? cover}) {
@@ -297,6 +375,8 @@ Widget _buildTestApp({
   required DiaryLayoutMode layoutMode,
   required int maxVisibleTags,
   Set<String> selectedDiaryIds = const <String>{},
+  Set<String> appearingDiaryIds = const <String>{},
+  Set<String> pendingHideDiaryIds = const <String>{},
   Brightness brightness = Brightness.light,
   bool enableSwipeAction = false,
 }) {
@@ -321,6 +401,8 @@ Widget _buildTestApp({
               onOpenEditor: (_) {},
               onToggleSelection: (_, _) {},
               onArchiveDiary: enableSwipeAction ? (_) {} : null,
+              appearingDiaryIds: appearingDiaryIds,
+              pendingHideDiaryIds: pendingHideDiaryIds,
             ),
           ],
         ),

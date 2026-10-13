@@ -32,8 +32,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(player.value.isPlaying, isTrue);
         expect(find.byTooltip('暂停视频'), findsOneWidget);
-        final slider = tester.widget<Slider>(find.byType(Slider));
-        slider.onChanged!(4000);
+        _dragSliderTo(tester, 4000);
         await tester.pumpAndSettle();
         expect(find.text('00:04 / 00:12'), findsOneWidget);
         await tester.tap(find.byTooltip('暂停视频'));
@@ -99,7 +98,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('播放视频').last);
         await tester.pumpAndSettle();
-        tester.widget<Slider>(find.byType(Slider)).onChanged!(4000);
+        _dragSliderTo(tester, 4000);
         await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('全屏播放'));
         await tester.pumpAndSettle();
@@ -107,7 +106,7 @@ void main() {
         expect(find.text('00:04 / 00:12'), findsOneWidget);
         expect(player.value.isPlaying, isTrue);
         expect(player.wasDisposed, isFalse);
-        tester.widget<Slider>(find.byType(Slider)).onChanged!(8000);
+        _dragSliderTo(tester, 8000);
         await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('暂停视频'));
         await tester.pumpAndSettle();
@@ -231,4 +230,11 @@ class FakeVideoExportService extends VideoExportService {
     await completion?.future;
     if (failure != null) throw VideoExportException(failure!);
   }
+}
+
+/// 模拟一次完整的滑块拖动：拖动中只更新显示，松手（onChangeEnd）才 seek。
+void _dragSliderTo(WidgetTester tester, double milliseconds) {
+  final slider = tester.widget<Slider>(find.byType(Slider));
+  slider.onChanged!(milliseconds);
+  slider.onChangeEnd!(milliseconds);
 }

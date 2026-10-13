@@ -88,36 +88,81 @@ class DiaryVideoControls extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Semantics(
-                  label: context.l10n.videoProgress,
-                  child: Slider(
-                    min: 0,
-                    max: value.duration.inMilliseconds <= 0
-                        ? 1
-                        : value.duration.inMilliseconds.toDouble(),
-                    value: value.position.inMilliseconds
-                        .clamp(0, value.duration.inMilliseconds)
-                        .toDouble(),
-                    onChanged: controller.isLoading || controller.hasFailed
-                        ? null
-                        : (position) => unawaited(
-                            controller.seek(
-                              Duration(milliseconds: position.round()),
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              Text(
-                '${formatRecordingDuration(value.position)} / ${formatRecordingDuration(value.duration)}',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+                child: _VideoProgressBar(
+                  controller: controller,
+                  enabled: !controller.isLoading && !controller.hasFailed,
                 ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 视频进度条 + 时间文字。
+///
+/// 拖动期间只更新本地值（滑块与时间文字跟手），松手时才 seek 一次：若在
+/// onChanged 中逐帧 seek，原生播放器会收到成串请求，滑块还会被尚未完成的
+/// 播放位置拉回。seek 完成前保留拖动值，避免松手瞬间回跳。
+class _VideoProgressBar extends StatefulWidget {
+  const _VideoProgressBar({required this.controller, required this.enabled});
+
+  final DiaryVideoPlayerController controller;
+  final bool enabled;
+
+  @override
+  State<_VideoProgressBar> createState() => _VideoProgressBarState();
+}
+
+class _VideoProgressBarState extends State<_VideoProgressBar> {
+  double? _dragMilliseconds;
+
+  Future<void> _commitSeek(double milliseconds) async {
+    setState(() => _dragMilliseconds = milliseconds);
+    await widget.controller.seek(Duration(milliseconds: milliseconds.round()));
+    if (mounted && _dragMilliseconds == milliseconds) {
+      setState(() => _dragMilliseconds = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final value = widget.controller.player.value;
+    final durationMs = value.duration.inMilliseconds;
+    final positionMs =
+        _dragMilliseconds ??
+        value.position.inMilliseconds.clamp(0, durationMs).toDouble();
+    final displayedPosition = Duration(milliseconds: positionMs.round());
+    return Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            label: context.l10n.videoProgress,
+            child: Slider(
+              min: 0,
+              max: durationMs <= 0 ? 1 : durationMs.toDouble(),
+              value: positionMs
+                  .clamp(0, durationMs <= 0 ? 1 : durationMs)
+                  .toDouble(),
+              onChanged: widget.enabled
+                  ? (position) => setState(() => _dragMilliseconds = position)
+                  : null,
+              onChangeEnd: widget.enabled
+                  ? (position) => unawaited(_commitSeek(position))
+                  : null,
+            ),
+          ),
+        ),
+        Text(
+          '${formatRecordingDuration(displayedPosition)} / ${formatRecordingDuration(value.duration)}',
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: colors.onSurfaceVariant),
+        ),
+      ],
     );
   }
 }

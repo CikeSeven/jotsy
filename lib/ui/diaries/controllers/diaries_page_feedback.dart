@@ -94,33 +94,19 @@ class DiariesPageFeedback {
     );
   }
 
-  /// 带可见计数追踪的 SnackBar。
+  /// 页面内所有提示的统一入口；FAB 避让由 HomeHintVisibilityScope 统一计数。
   ///
-  /// 该方法是页面内所有提示的统一入口，确保 FAB 避让状态与提示一致。
+  /// 不在这里 setState：提示显隐与日记页渲染无关，此前的本地计数从未被
+  /// build 读取，却会在每次提示出现/关闭时重建标签栏与所有可见卡片。
   Future<SnackBarClosedReason> showTrackedSnackBar({
     required SnackBar snackBar,
     Duration? forceCloseAfter,
-  }) async {
-    if (_state.mounted) {
-      _state.setState(() {
-        _state._localHintVisibleCount += 1;
-      });
-    }
-
-    final closedReason = await HomeHintVisibilityScope.showTrackedSnackBar(
+  }) {
+    return HomeHintVisibilityScope.showTrackedSnackBar(
       context: _state.context,
       snackBar: snackBar,
       forceCloseAfter: forceCloseAfter,
     );
-
-    if (_state.mounted) {
-      _state.setState(() {
-        if (_state._localHintVisibleCount > 0) {
-          _state._localHintVisibleCount -= 1;
-        }
-      });
-    }
-    return closedReason;
   }
 
   /// 统一展示“可撤销”提示，并在无障碍场景下强制到时关闭。

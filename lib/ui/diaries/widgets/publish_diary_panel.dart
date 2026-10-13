@@ -30,7 +30,6 @@ class PublishDiaryPanel extends StatefulWidget {
     super.key,
     this.controller,
     required this.saving,
-    required this.bottomInset,
     required this.hasCover,
     required this.coverLabel,
     required this.locating,
@@ -75,7 +74,6 @@ class PublishDiaryPanel extends StatefulWidget {
 
   final PublishDiaryPanelController? controller;
   final bool saving;
-  final double bottomInset;
   final bool hasCover;
   final String? coverLabel;
   final bool locating;
@@ -159,6 +157,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   static const double _collapsedHorizontalInset = 40;
   static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
+  static const double _collapsedBottomGap = 10;
 
   // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
@@ -317,20 +316,17 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       0,
       _panelCoordinator.progress,
     )!;
-    // 避免展开态输入时被键盘整体顶得过高：随展开进度逐步降低键盘抬升量。
-    final keyboardLiftFactor = (1 - _panelCoordinator.progress)
-        .clamp(0.0, 1.0)
-        .toDouble();
-    final keyboardLift = widget.bottomInset * keyboardLiftFactor;
-    final baseBottom = keyboardLift > 0 ? keyboardLift + 8 : 10.0;
 
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 90),
-      curve: Curves.easeOut,
+    // 1) 不叠加键盘高度：宿主页 Scaffold 默认 resizeToAvoidBottomInset，body
+    //    底边已经是键盘顶边，面板以 Positioned(bottom: 0) 挂在 body 内；再加
+    //    viewInsets 会抬升两倍键盘高度（收起态会悬在键盘上方 300+dp）。
+    // 2) 用普通 Padding 而非 AnimatedPadding：内缩量由拖拽进度逐帧给出，
+    //    AnimatedPadding 每帧被重新定向，会让面板宽度滞后于手指。
+    return Padding(
       padding: EdgeInsets.only(
         left: horizontalInset,
         right: horizontalInset,
-        bottom: baseBottom + extraLift,
+        bottom: _collapsedBottomGap + extraLift,
       ),
       child: SizedBox(
         // SheetViewport 需要有限高度约束，否则会触发布局断言。

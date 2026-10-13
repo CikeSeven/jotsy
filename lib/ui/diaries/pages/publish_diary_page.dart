@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -66,7 +65,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   double? _energyLevel = 4;
   late DateTime _publishAt;
   TimeCapsuleSchedule? _timeCapsuleSchedule;
-  double _panelExpandProgress = 0;
+  // 面板展开进度只驱动正文底部占位：用 ValueNotifier 局部刷新占位条，
+  // 避免拖拽时每帧 setState 重建整页（含只读 QuillEditor 预览）。
+  final ValueNotifier<double> _panelExpandProgress = ValueNotifier<double>(0);
 
   // ==================== 异步流程状态 ====================
   bool _saving = false;
@@ -136,12 +137,12 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _locationController.dispose();
     _weatherController.dispose();
     _previewController.dispose();
+    _panelExpandProgress.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final tagsAsync = ref.watch(tagListProvider);
     final moodOptionsAsync = ref.watch(moodOptionsProvider);
     final moodOptions = moodOptionsAsync.maybeWhen(
@@ -158,9 +159,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       loading: () => tagsLoading = true,
       error: (error, stackTrace) => tagsError = '$error',
     );
-
-    // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
-    final panelSpacer = lerpDouble(140, 460, _panelExpandProgress) ?? 140;
 
     // 返回键策略：
     // 1) 优先返回面板子页；
@@ -235,7 +233,14 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(child: SizedBox(height: panelSpacer)),
+                // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
+                SliverToBoxAdapter(
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _panelExpandProgress,
+                    builder: (context, progress, _) =>
+                        SizedBox(height: lerpDouble(140, 460, progress) ?? 140),
+                  ),
+                ),
               ],
             ),
             Positioned(
@@ -246,7 +251,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               child: PublishDiaryPanel(
                 controller: _panelController,
                 saving: _saving,
-                bottomInset: keyboardInset,
                 hasCover: _controller.normalizedCover != null,
                 coverLabel: _controller.coverLabel,
                 locating: _locating,
@@ -261,27 +265,13 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 tagsLoading: tagsLoading,
                 tagsError: tagsError,
                 selectedTagIds: _selectedTagIds,
-                // 通过进度回调驱动正文区底部占位，维持滚动可见性。
+                // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                // 非构建/布局阶段回调（见 _handleSheetMetricsChanged），此处可
+                // 直接写入 ValueNotifier。
                 onProgressChanged: (progress) {
-                  void applyProgress() {
-                    if (!mounted) {
-                      return;
-                    }
-                    if ((progress - _panelExpandProgress).abs() < 0.0001) {
-                      return;
-                    }
-                    setState(() => _panelExpandProgress = progress);
+                  if (mounted) {
+                    _panelExpandProgress.value = progress;
                   }
-
-                  final phase = SchedulerBinding.instance.schedulerPhase;
-                  if (phase == SchedulerPhase.persistentCallbacks ||
-                      phase == SchedulerPhase.midFrameMicrotasks) {
-                    WidgetsBinding.instance.addPostFrameCallback(
-                      (_) => applyProgress(),
-                    );
-                    return;
-                  }
-                  applyProgress();
                 },
                 onPickCover: _controller.pickCover,
                 onClearCover: _controller.normalizedCover == null

@@ -103,7 +103,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   DateTime? _draftCapsuleUnlockAt;
   String? _draftCapsulePrecision;
   bool _panelMetadataDirty = false;
-  double _editPanelExpandProgress = 0;
+  // 元数据面板拖拽进度逐帧变化，只用于正文底部占位的连续插值；放进
+  // ValueNotifier 让占位局部刷新，页面仅在跨越展开阈值时 setState。
+  final ValueNotifier<double> _editPanelExpandProgress = ValueNotifier<double>(
+    0,
+  );
+  // 缓存 QuillEditor widget 实例：键盘动画期间页面会随 viewInsets 逐帧重建，
+  // LayoutBuilder 也会随 body 高度逐帧重跑；返回同一实例时 Element 直接跳过
+  // 更新，避免 QuillRawEditor 对整篇文档逐行重建子树。输入变化时才重建。
+  Widget? _cachedQuillEditor;
+  Object? _cachedQuillEditorInputs;
   bool _locating = false;
   bool _weatherLoading = false;
   LocationResolverService? _locationResolverService;
@@ -171,6 +180,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     _contentFocusNode.dispose();
     _contentScrollController.dispose();
     _editorInnerScrollController.dispose();
+    _editPanelExpandProgress.dispose();
     _contentController.dispose();
     _recordingController.dispose();
     _unbindToolbarSettingsService();
@@ -196,7 +206,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       !_mediaImportController.isBusy &&
       !_recordingPanelOpen;
   bool get _isEditPanelExpanded =>
-      _isEditEntry && _editPanelExpandProgress >= 0.56;
+      _isEditEntry && _editPanelExpandProgress.value >= 0.56;
   bool get _isEditingNoteText =>
       _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
 
@@ -470,58 +480,97 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     );
   }
 
+  Widget _buildQuillEditor(
+    BuildContext context, {
+    required double bodyFontSize,
+    required double bodyLineHeight,
+  }) {
+    final placeholder = context.l10n.autoT0133;
+    // QuillController 未覆写 ==，按实例比较；ThemeData 为值比较。
+    final inputs = (
+      _contentController,
+      placeholder,
+      Theme.of(context),
+      bodyFontSize,
+      bodyLineHeight,
+    );
+    final cached = _cachedQuillEditor;
+    if (cached != null && _cachedQuillEditorInputs == inputs) {
+      return cached;
+    }
+    final editor = quill.QuillEditor.basic(
+      controller: _contentController,
+      focusNode: _contentFocusNode,
+      scrollController: _editorInnerScrollController,
+      config: quill.QuillEditorConfig(
+        autoFocus: widget.diaryId == null,
+        placeholder: placeholder,
+        scrollable: false,
+        onTapUp: (details, getPosition) => isDiaryPlaybackTap(
+          _contentController,
+          getPosition(details.globalPosition),
+        ),
+        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+        customStyles: _buildEditorCustomStyles(
+          context: context,
+          bodyFontSize: bodyFontSize,
+          bodyLineHeight: bodyLineHeight,
+        ),
+        embedBuilders: buildDiaryQuillEmbedBuilders(),
+      ),
+    );
+    _cachedQuillEditor = editor;
+    _cachedQuillEditorInputs = inputs;
+    return editor;
+  }
+
   Widget _buildEditor(
     BuildContext context, {
-    required double bottomSpacer,
+    required double Function(double panelProgress) resolveBottomSpacer,
     required bool contentLocked,
     required double bodyFontSize,
     required double bodyLineHeight,
   }) {
+    final quillEditor = _buildQuillEditor(
+      context,
+      bodyFontSize: bodyFontSize,
+      bodyLineHeight: bodyLineHeight,
+    );
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final minEditorHeight = constraints.maxHeight > 420
             ? constraints.maxHeight - 140
             : 280.0;
-        return SingleChildScrollView(
-          controller: _contentScrollController,
-          // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-          padding: EdgeInsets.fromLTRB(16, 4, 16, bottomSpacer),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildTitleInput(context, contentLocked: contentLocked),
-              const SizedBox(height: 12),
-              ConstrainedBox(
-                // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
-                constraints: BoxConstraints(minHeight: minEditorHeight),
-                child: IgnorePointer(
-                  ignoring: contentLocked,
-                  child: quill.QuillEditor.basic(
-                    controller: _contentController,
-                    focusNode: _contentFocusNode,
-                    scrollController: _editorInnerScrollController,
-                    config: quill.QuillEditorConfig(
-                      autoFocus: widget.diaryId == null,
-                      placeholder: context.l10n.autoT0133,
-                      scrollable: false,
-                      onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-                        _contentController,
-                        getPosition(details.globalPosition),
-                      ),
-                      padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                      customStyles: _buildEditorCustomStyles(
-                        context: context,
-                        bodyFontSize: bodyFontSize,
-                        bodyLineHeight: bodyLineHeight,
-                      ),
-                      embedBuilders: buildDiaryQuillEmbedBuilders(),
-                    ),
-                  ),
-                ),
+        final content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildTitleInput(context, contentLocked: contentLocked),
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
+              constraints: BoxConstraints(minHeight: minEditorHeight),
+              child: IgnorePointer(ignoring: contentLocked, child: quillEditor),
+            ),
+          ],
+        );
+        // 底部占位随面板拖拽进度连续变化，仅重建滚动容器这一层。
+        return ValueListenableBuilder<double>(
+          valueListenable: _editPanelExpandProgress,
+          child: content,
+          builder: (BuildContext context, double progress, Widget? child) {
+            return SingleChildScrollView(
+              controller: _contentScrollController,
+              // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+              padding: EdgeInsets.fromLTRB(
+                16,
+                4,
+                16,
+                resolveBottomSpacer(progress),
               ),
-            ],
-          ),
+              child: child,
+            );
+          },
         );
       },
     );
@@ -530,7 +579,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   Widget _buildEditorWithLiveTextSettings(
     BuildContext context, {
     required AsyncValue<SettingsService> settingsAsync,
-    required double bottomSpacer,
+    required double Function(double panelProgress) resolveBottomSpacer,
     required bool contentLocked,
   }) {
     return settingsAsync.when(
@@ -554,7 +603,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       ) {
                         return _buildEditor(
                           context,
-                          bottomSpacer: bottomSpacer,
+                          resolveBottomSpacer: resolveBottomSpacer,
                           contentLocked: contentLocked,
                           bodyFontSize: fontSizePreset.fontSize,
                           bodyLineHeight: lineHeightPreset.lineHeight,
@@ -566,7 +615,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       },
       loading: () => _buildEditor(
         context,
-        bottomSpacer: bottomSpacer,
+        resolveBottomSpacer: resolveBottomSpacer,
         contentLocked: contentLocked,
         bodyFontSize: SettingsService.defaultEditorBodyFontSizePreset.fontSize,
         bodyLineHeight:
@@ -574,7 +623,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       ),
       error: (_, __) => _buildEditor(
         context,
-        bottomSpacer: bottomSpacer,
+        resolveBottomSpacer: resolveBottomSpacer,
         contentLocked: contentLocked,
         bodyFontSize: SettingsService.defaultEditorBodyFontSizePreset.fontSize,
         bodyLineHeight:
@@ -607,18 +656,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         enabledToolbarOrder.isNotEmpty &&
         (rawShowFloatingToolbar ||
             (_isMobileRuntime && _recordingPanelOpen && !_isEditPanelExpanded));
-    final editPanelSpacer = showEditMetaPanel
-        ? ((lerpDouble(140, 460, _editPanelExpandProgress) ?? 140) + 16)
-        : 16.0;
-    final editorBottomSpacer =
-        showEditMetaPanel && (!showFloatingToolbar || _isEditPanelExpanded)
-        ? editPanelSpacer
-        : 16.0;
-    final effectiveEditorBottomSpacer = showFloatingToolbar
-        ? _recordingPanelOpen
-              ? _recordingPanelReservedSpace
-              : _floatingToolbarReservedSpace
-        : editorBottomSpacer;
+    // 正文底部占位：悬浮工具栏/录音面板优先；否则编辑模式按面板展开进度
+    // 在 140~460 之间插值（进度由 ValueNotifier 驱动，不触发整页重建）。
+    double resolveEditorBottomSpacer(double panelProgress) {
+      if (showFloatingToolbar) {
+        return _recordingPanelOpen
+            ? _recordingPanelReservedSpace
+            : _floatingToolbarReservedSpace;
+      }
+      if (!showEditMetaPanel) {
+        return 16.0;
+      }
+      return (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
+    }
+
     final tagsAsync = ref.watch(tagListProvider);
 
     var tags = const <Tag>[];
@@ -765,7 +816,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
               _buildEditorWithLiveTextSettings(
                 context,
                 settingsAsync: settingsAsync,
-                bottomSpacer: effectiveEditorBottomSpacer,
+                resolveBottomSpacer: resolveEditorBottomSpacer,
                 contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
               ),
               if (showEditMetaPanel &&
@@ -777,7 +828,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   child: PublishDiaryPanel(
                     controller: _editPanelController,
                     saving: _saving,
-                    bottomInset: keyboardInset,
                     hasCover: _draftCover?.trim().isNotEmpty == true,
                     coverLabel: _controller.coverLabelForEdit,
                     locating: _locating,
@@ -796,16 +846,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       if (!mounted) {
                         return;
                       }
-                      if ((progress - _editPanelExpandProgress).abs() <
-                          0.0001) {
+                      final wasExpanded = _isEditPanelExpanded;
+                      // 连续进度只通知底部占位；页面层仅在越过展开阈值时
+                      // setState（切换正文锁定、悬浮工具栏等离散状态）。
+                      _editPanelExpandProgress.value = progress;
+                      final nextExpanded = _isEditPanelExpanded;
+                      if (wasExpanded == nextExpanded) {
                         return;
                       }
-                      final wasExpanded = _isEditPanelExpanded;
-                      final nextExpanded = progress >= 0.56;
-                      if (!wasExpanded && nextExpanded) {
+                      if (nextExpanded) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       }
-                      setState(() => _editPanelExpandProgress = progress);
+                      setState(() {});
                     },
                     onPickCover: _controller.pickCoverForEdit,
                     onClearCover: _draftCover?.trim().isNotEmpty == true

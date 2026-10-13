@@ -9,6 +9,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
@@ -267,16 +268,13 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
           value: systemOverlayStyle,
           child: HomeHintVisibilityScope(
             controller: _homeHintVisibilityController,
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                scaledChild,
-                if (_appLocked || _unlockingApp)
-                  _AppLockOverlay(
-                    unlocking: _unlockingApp,
-                    onTapUnlock: _handleManualUnlockTap,
-                  ),
-              ],
+            child: AppLockLayer(
+              locked: _appLocked || _unlockingApp,
+              overlayBuilder: (_) => _AppLockOverlay(
+                unlocking: _unlockingApp,
+                onTapUnlock: _handleManualUnlockTap,
+              ),
+              child: scaledChild,
             ),
           ),
         );

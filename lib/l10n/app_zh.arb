@@ -650,6 +650,60 @@
   "@dataMgmtImportPasswordHint": {
     "description": "导入密码输入框提示。"
   },
+  "colorFamilySwatchLabel": "色系 {index}，{hex}",
+  "@colorFamilySwatchLabel": {
+    "description": "色系色块的读屏标签。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "colorSwatchLabel": "颜色 {hex}",
+  "@colorSwatchLabel": {
+    "description": "单个颜色色块的读屏标签。",
+    "placeholders": {
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPinSelected": "置顶",
+  "@diaryPinSelected": {
+    "description": "置顶所选日记的按钮提示。"
+  },
+  "diaryUnpinSelected": "取消置顶",
+  "@diaryUnpinSelected": {
+    "description": "取消置顶所选日记的按钮提示。"
+  },
+  "tagFilterClearLabel": "清除标签筛选",
+  "@tagFilterClearLabel": {
+    "description": "标签筛选栏清除按钮的读屏标签。"
+  },
+  "searchRemoveTagCondition": "移除标签 {tagName}",
+  "@searchRemoveTagCondition": {
+    "description": "搜索页移除标签条件的读屏标签。",
+    "placeholders": {
+      "tagName": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordShow": "显示密码",
+  "@passwordShow": {
+    "description": "显示密码输入内容的按钮提示。"
+  },
+  "passwordHide": "隐藏密码",
+  "@passwordHide": {
+    "description": "隐藏密码输入内容的按钮提示。"
+  },
+  "commonLoading": "加载中",
+  "@commonLoading": {
+    "description": "页面内通用加载指示器的读屏标签。"
+  },
   "autoT0001": "应用加载中",
   "@autoT0001": {
     "description": "Auto-generated metadata for autoT0001."

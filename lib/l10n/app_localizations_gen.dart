@@ -968,6 +968,60 @@ abstract class AppLocalizations {
   /// **'Enter the import password'**
   String get dataMgmtImportPasswordHint;
 
+  /// Screen reader label for a color family swatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Palette {index}, {hex}'**
+  String colorFamilySwatchLabel(int index, String hex);
+
+  /// Screen reader label for a single color swatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Color {hex}'**
+  String colorSwatchLabel(String hex);
+
+  /// Tooltip for pinning the selected diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get diaryPinSelected;
+
+  /// Tooltip for unpinning the selected diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get diaryUnpinSelected;
+
+  /// Screen reader label for the clear button in the tag filter bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear tag filters'**
+  String get tagFilterClearLabel;
+
+  /// Screen reader label for removing a tag condition in search.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove tag {tagName}'**
+  String searchRemoveTagCondition(String tagName);
+
+  /// Tooltip for revealing a password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get passwordShow;
+
+  /// Tooltip for hiding a password field.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get passwordHide;
+
+  /// Generic screen reader label for in-page loading indicators.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading'**
+  String get commonLoading;
+
   /// Auto-generated metadata for autoT0001.
   ///
   /// In en, this message translates to:

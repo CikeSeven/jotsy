@@ -146,4 +146,17 @@ void main() {
     expect(find.text('Fresh'), findsNothing);
     expect(_listOpacity(tester), 1);
   });
+
+  testWidgets('tag filter clear button is announced as a button', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
+
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Clear tag filters')),
+      isSemantics(isButton: true, hasTapAction: true),
+    );
+    semantics.dispose();
+  });
 }

@@ -650,6 +650,60 @@
   "@dataMgmtImportPasswordHint": {
     "description": "Hint text for the import password field."
   },
+  "colorFamilySwatchLabel": "Palette {index}, {hex}",
+  "@colorFamilySwatchLabel": {
+    "description": "Screen reader label for a color family swatch.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "colorSwatchLabel": "Color {hex}",
+  "@colorSwatchLabel": {
+    "description": "Screen reader label for a single color swatch.",
+    "placeholders": {
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPinSelected": "Pin",
+  "@diaryPinSelected": {
+    "description": "Tooltip for pinning the selected diaries."
+  },
+  "diaryUnpinSelected": "Unpin",
+  "@diaryUnpinSelected": {
+    "description": "Tooltip for unpinning the selected diaries."
+  },
+  "tagFilterClearLabel": "Clear tag filters",
+  "@tagFilterClearLabel": {
+    "description": "Screen reader label for the clear button in the tag filter bar."
+  },
+  "searchRemoveTagCondition": "Remove tag {tagName}",
+  "@searchRemoveTagCondition": {
+    "description": "Screen reader label for removing a tag condition in search.",
+    "placeholders": {
+      "tagName": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordShow": "Show password",
+  "@passwordShow": {
+    "description": "Tooltip for revealing a password field."
+  },
+  "passwordHide": "Hide password",
+  "@passwordHide": {
+    "description": "Tooltip for hiding a password field."
+  },
+  "commonLoading": "Loading",
+  "@commonLoading": {
+    "description": "Generic screen reader label for in-page loading indicators."
+  },
   "autoT0001": "Loading app",
   "@autoT0001": {
     "description": "Auto-generated metadata for autoT0001."

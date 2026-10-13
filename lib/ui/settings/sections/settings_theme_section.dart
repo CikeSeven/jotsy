@@ -7,7 +7,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
 import '../widgets/settings_card_group.dart';
-import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/color_swatch_button.dart';
 
 /// 设置页主题模式区块。
 ///
@@ -162,12 +162,7 @@ class SettingsThemeSection extends StatelessWidget {
       },
       loading: () => Padding(
         padding: EdgeInsets.symmetric(vertical: 12),
-        child: Center(
-          child: ExpressiveLoadingIndicator(
-            size: 32,
-            semanticLabel: l10n.dataMgmtBusyLabel,
-          ),
-        ),
+        child: Center(child: ExpressiveLoadingIndicator(size: 32)),
       ),
       error: (Object error, StackTrace stackTrace) =>
           ListTile(title: Text(l10n.autoT0045(error.toString()))),
@@ -343,6 +338,8 @@ class _TabSwitchCurveSelector extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
+                selected:
+                    selectedCurveType == HomeTabSwitchCurveType.easeOutCirc,
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -360,6 +357,8 @@ class _TabSwitchCurveSelector extends StatelessWidget {
                 title: Text(l10n.settingsTabSwitchCurveEaseOutCirc),
               ),
               ListTile(
+                selected:
+                    selectedCurveType == HomeTabSwitchCurveType.easeOutCubic,
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -377,6 +376,7 @@ class _TabSwitchCurveSelector extends StatelessWidget {
                 title: Text(l10n.settingsTabSwitchCurveEaseOutCubic),
               ),
               ListTile(
+                selected: selectedCurveType == HomeTabSwitchCurveType.linear,
                 dense: true,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -489,66 +489,34 @@ class _ThemeSeedColorPicker extends StatelessWidget {
             ) {
               final family = kColorPaletteFamilies[index];
               final selected = selectedFamilyIndex == index;
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index == kColorPaletteFamilies.length - 1 ? 0 : 10,
+              return ColorSwatchButton(
+                color: family.colors[2],
+                selected: selected,
+                borderRadius: 10,
+                showCheck: false,
+                semanticLabel: context.l10n.colorFamilySwatchLabel(
+                  index + 1,
+                  colorSwatchHex(family.colors[2]),
                 ),
-                child: GestureDetector(
-                  onTap: () => onSelectFamily(index),
-                  child: AnimatedContainer(
-                    duration: ExpressiveMotion.duration(
-                      context,
-                      ExpressiveMotion.fast,
-                    ),
-                    curve: ExpressiveMotion.effects,
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: family.colors[2],
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: selected
-                            ? colorScheme.primary
-                            : colorScheme.outlineVariant,
-                        width: selected ? 2.2 : 1.0,
-                      ),
-                    ),
-                  ),
-                ),
+                onTap: () => onSelectFamily(index),
               );
             }),
           ),
         ),
         const SizedBox(height: 14),
+        // 48dp 点击区域内已含 16dp 视觉留白，色块之间不再额外加间距。
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
           children: List<Widget>.generate(selectedFamily.colors.length, (
             index,
           ) {
             final color = selectedFamily.colors[index];
-            final selected = selectedColorIndex == index;
-            return GestureDetector(
-              onTap: () => onSelectColor(color),
-              child: AnimatedContainer(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  ExpressiveMotion.fast,
-                ),
-                curve: ExpressiveMotion.effects,
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: selected
-                        ? colorScheme.primary
-                        : colorScheme.outline.withValues(alpha: 0.5),
-                    width: selected ? 2.5 : 1.0,
-                  ),
-                ),
+            return ColorSwatchButton(
+              color: color,
+              selected: selectedColorIndex == index,
+              semanticLabel: context.l10n.colorSwatchLabel(
+                colorSwatchHex(color),
               ),
+              onTap: () => onSelectColor(color),
             );
           }),
         ),

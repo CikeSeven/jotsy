@@ -173,12 +173,7 @@ class SettingsEditorSection extends StatelessWidget {
       },
       loading: () => Padding(
         padding: EdgeInsets.symmetric(vertical: 12),
-        child: Center(
-          child: ExpressiveLoadingIndicator(
-            size: 32,
-            semanticLabel: l10n.dataMgmtBusyLabel,
-          ),
-        ),
+        child: Center(child: ExpressiveLoadingIndicator(size: 32)),
       ),
       error: (Object error, StackTrace stackTrace) =>
           ListTile(title: Text(l10n.autoT0045(error.toString()))),
@@ -217,6 +212,7 @@ class _EditorBodyFontSizeTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
+                selected: selectedPreset == EditorBodyFontSizePreset.small,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 onTap: () {
@@ -233,6 +229,7 @@ class _EditorBodyFontSizeTile extends StatelessWidget {
                 title: Text(l10n.settingsEditorBodyFontSizeSmall),
               ),
               ListTile(
+                selected: selectedPreset == EditorBodyFontSizePreset.medium,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 onTap: () {
@@ -249,6 +246,7 @@ class _EditorBodyFontSizeTile extends StatelessWidget {
                 title: Text(l10n.settingsEditorBodyFontSizeMedium),
               ),
               ListTile(
+                selected: selectedPreset == EditorBodyFontSizePreset.large,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 onTap: () {
@@ -332,6 +330,7 @@ class _EditorBodyLineHeightTile extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
+                selected: selectedPreset == EditorBodyLineHeightPreset.compact,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 onTap: () {
@@ -348,6 +347,7 @@ class _EditorBodyLineHeightTile extends StatelessWidget {
                 title: Text(l10n.settingsEditorLineHeightCompact),
               ),
               ListTile(
+                selected: selectedPreset == EditorBodyLineHeightPreset.normal,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 onTap: () {
@@ -364,6 +364,7 @@ class _EditorBodyLineHeightTile extends StatelessWidget {
                 title: Text(l10n.settingsEditorLineHeightNormal),
               ),
               ListTile(
+                selected: selectedPreset == EditorBodyLineHeightPreset.relaxed,
                 dense: true,
                 contentPadding: EdgeInsets.zero,
                 onTap: () {

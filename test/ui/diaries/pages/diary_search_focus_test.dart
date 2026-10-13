@@ -52,4 +52,48 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.testTextInput.isVisible, isTrue);
   });
+
+  testWidgets('tag condition remove button is an actionable labelled button', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final settings = await SettingsService.create();
+    const tag = Tag(id: 1, name: 'Travel', color: 0xff336699);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          settingsServiceProvider.overrideWith((ref) async => settings),
+          tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[tag])),
+          searchDiariesProvider.overrideWith(
+            (ref, query) => Stream.value(
+              PagedDiariesResult(
+                items: const <DiaryWithTags>[],
+                limit: query.limit,
+                hasMore: false,
+              ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          theme: expressiveTestTheme(Brightness.light),
+          locale: const Locale('en'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const DiarySearchPage(initialTagIds: <int>{1}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final remove = find.bySemanticsLabel('Remove tag Travel');
+    expect(
+      tester.getSemantics(remove),
+      isSemantics(isButton: true, hasTapAction: true),
+    );
+    await tester.tap(remove);
+    await tester.pumpAndSettle();
+    expect(find.bySemanticsLabel('Remove tag Travel'), findsNothing);
+    semantics.dispose();
+  });
 }

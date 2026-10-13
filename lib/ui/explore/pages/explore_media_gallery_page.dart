@@ -68,6 +68,7 @@ class _ExploreMediaGalleryPageState
         centerTitle: true,
         title: Text(l10n.autoT0054),
         leading: IconButton(
+          tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).pop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),

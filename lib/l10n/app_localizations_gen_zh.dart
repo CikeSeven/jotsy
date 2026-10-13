@@ -473,6 +473,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataMgmtImportPasswordHint => '请输入导入密码';
 
   @override
+  String colorFamilySwatchLabel(int index, String hex) {
+    return '色系 $index，$hex';
+  }
+
+  @override
+  String colorSwatchLabel(String hex) {
+    return '颜色 $hex';
+  }
+
+  @override
+  String get diaryPinSelected => '置顶';
+
+  @override
+  String get diaryUnpinSelected => '取消置顶';
+
+  @override
+  String get tagFilterClearLabel => '清除标签筛选';
+
+  @override
+  String searchRemoveTagCondition(String tagName) {
+    return '移除标签 $tagName';
+  }
+
+  @override
+  String get passwordShow => '显示密码';
+
+  @override
+  String get passwordHide => '隐藏密码';
+
+  @override
+  String get commonLoading => '加载中';
+
+  @override
   String get autoT0001 => '应用加载中';
 
   @override

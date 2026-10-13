@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/color_swatch_button.dart';
 
 /// 弹窗创建标签时的临时数据对象。
 class NewTagDraft {
@@ -283,43 +284,26 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                           (index) {
                             final family = kColorPaletteFamilies[index];
                             final selected = _selectedFamilyIndex == index;
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                right: index == kColorPaletteFamilies.length - 1
-                                    ? 0
-                                    : 10,
-                              ),
-                              child: GestureDetector(
-                                onTap: () => _selectFamily(index),
-                                child: AnimatedContainer(
-                                  duration: ExpressiveMotion.duration(
-                                    context,
-                                    ExpressiveMotion.fast,
+                            return ColorSwatchButton(
+                              color: family.colors[2],
+                              selected: selected,
+                              swatchSize: 34,
+                              borderRadius: 10,
+                              showCheck: false,
+                              semanticLabel: context.l10n
+                                  .colorFamilySwatchLabel(
+                                    index + 1,
+                                    colorSwatchHex(family.colors[2]),
                                   ),
-                                  curve: ExpressiveMotion.effects,
-                                  width: 34,
-                                  height: 34,
-                                  decoration: BoxDecoration(
-                                    color: family.colors[2],
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: selected
-                                          ? colorScheme.onSurface
-                                          : colorScheme.outlineVariant,
-                                      width: selected ? 2.2 : 1.2,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                              onTap: () => _selectFamily(index),
                             );
                           },
                         ),
                       ),
                     ),
                     const SizedBox(height: 12),
+                    // 48dp 点击区域内已含视觉留白，色块之间不再额外加间距。
                     Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
                       children: List<Widget>.generate(
                         kColorPaletteFamilies[_selectedFamilyIndex]
                             .colors
@@ -328,45 +312,14 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                           final color =
                               kColorPaletteFamilies[_selectedFamilyIndex]
                                   .colors[index];
-                          final selected = _selectedColorIndex == index;
-                          return GestureDetector(
-                            onTap: () => _selectColor(index),
-                            child: AnimatedContainer(
-                              duration: ExpressiveMotion.duration(
-                                context,
-                                ExpressiveMotion.fast,
-                              ),
-                              curve: ExpressiveMotion.effects,
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: selected
-                                      ? colorScheme.onSurface
-                                      : colorScheme.outlineVariant,
-                                  width: selected ? 2.4 : 1.2,
-                                ),
-                              ),
-                              // 勾选图标画在任意用户色块上，对比色只能由色块
-                              // 自身明度决定，不跟随主题（AGENTS §6 例外条款）。
-                              child: selected
-                                  ? Center(
-                                      child: FaIcon(
-                                        FontAwesomeIcons.check,
-                                        size: 14,
-                                        color:
-                                            ThemeData.estimateBrightnessForColor(
-                                                  color,
-                                                ) ==
-                                                Brightness.dark
-                                            ? Colors.white
-                                            : Colors.black87,
-                                      ),
-                                    )
-                                  : null,
+                          return ColorSwatchButton(
+                            color: color,
+                            selected: _selectedColorIndex == index,
+                            swatchSize: 34,
+                            semanticLabel: context.l10n.colorSwatchLabel(
+                              colorSwatchHex(color),
                             ),
+                            onTap: () => _selectColor(index),
                           );
                         },
                       ),

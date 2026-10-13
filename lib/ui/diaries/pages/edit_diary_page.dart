@@ -41,6 +41,7 @@ import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_entrance.dart';
+import '../../widgets/unsaved_changes_dialog.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_recording_controller.dart';
@@ -374,50 +375,17 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       return;
     }
 
-    final exitDecision = await showDialog<_EditExitDecision>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final colorScheme = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
-          title: Text(context.l10n.autoT0131),
-          content: Text(context.l10n.autoT0207),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(_EditExitDecision.cancel),
-              child: Text(context.l10n.commonCancel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(_EditExitDecision.exitWithoutSaving),
-              child: Text(context.l10n.autoT0132),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(_EditExitDecision.saveAndExit),
-              child: Text(context.l10n.editSaveAndExit),
-            ),
-          ],
-        );
-      },
-    );
+    final exitDecision = await showUnsavedChangesDialog(context);
 
     if (!mounted) {
       return;
     }
 
-    if (exitDecision == _EditExitDecision.exitWithoutSaving) {
+    if (exitDecision == UnsavedChangesDecision.discard) {
       Navigator.of(context).pop();
       return;
     }
-    if (exitDecision == _EditExitDecision.saveAndExit) {
+    if (exitDecision == UnsavedChangesDecision.saveAndExit) {
       await _controller.save();
       if (!mounted) {
         return;
@@ -1211,8 +1179,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 }
 
 enum EditDiaryEntryMode { create, edit }
-
-enum _EditExitDecision { cancel, exitWithoutSaving, saveAndExit }
 
 class _EditPersistedSnapshot {
   const _EditPersistedSnapshot({

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -6,6 +8,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
+import '../../widgets/unsaved_changes_dialog.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 class DiaryToolbarOrderPage extends StatefulWidget {
@@ -23,6 +26,11 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   late String _currentTimeFormatPattern;
   bool _saving = false;
 
+  // 进入页面时已持久化的配置（编码后），用于判断是否存在未保存的修改。
+  late final String _savedOrderRaw;
+  late final String _savedHiddenItemsRaw;
+  late final String _savedTimeFormatPattern;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +43,40 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     _currentTimeFormatPattern =
         widget.settingsService.diaryToolbarCurrentTimeFormatRaw ??
         kDefaultDiaryToolbarCurrentTimeFormat;
+    // 以解码后再编码的结果作基准，避免原始字符串格式差异被误判为修改。
+    _savedOrderRaw = encodeDiaryToolbarOrder(_order);
+    _savedHiddenItemsRaw = encodeDiaryToolbarHiddenItems(_hiddenItems);
+    _savedTimeFormatPattern = _currentTimeFormatPattern;
+  }
+
+  bool get _hasUnsavedChanges =>
+      encodeDiaryToolbarOrder(_order) != _savedOrderRaw ||
+      encodeDiaryToolbarHiddenItems(_hiddenItems) != _savedHiddenItemsRaw ||
+      _currentTimeFormatPattern != _savedTimeFormatPattern;
+
+  /// 返回键与标题栏返回统一入口：有未保存修改时先确认，避免拖拽排序、
+  /// 启用开关与时间格式的调整被静默丢弃。
+  Future<void> _attemptExit() async {
+    if (_saving) {
+      return;
+    }
+    if (!_hasUnsavedChanges) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final decision = await showUnsavedChangesDialog(context);
+    if (!mounted) {
+      return;
+    }
+    switch (decision) {
+      case UnsavedChangesDecision.discard:
+        Navigator.of(context).pop();
+      case UnsavedChangesDecision.saveAndExit:
+        // 保存成功后 _saveOrder 自行返回上一页；失败则停留并提示。
+        await _saveOrder();
+      case UnsavedChangesDecision.cancel:
+        return;
+    }
   }
 
   void _handleReorder(int oldIndex, int newIndex) {
@@ -161,98 +203,110 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Scaffold(
-      appBar: AppTopBar(
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+    return PopScope(
+      // 有未保存修改或正在保存时拦截系统返回，交给 _attemptExit 处理；
+      // 保存成功后的 Navigator.pop 为直接出栈，不受此处限制。
+      canPop: !_saving && !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          unawaited(_attemptExit());
+        }
+      },
+      child: Scaffold(
+        appBar: AppTopBar(
+          leading: IconButton(
+            tooltip: l10n.commonBack,
+            onPressed: () => unawaited(_attemptExit()),
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+          ),
+          title: Text(l10n.autoT0005),
+          actions: <Widget>[
+            TextButton(
+              onPressed: _saving ? null : _confirmResetOrder,
+              child: Text(l10n.commonReset),
+            ),
+            TextButton(
+              onPressed: _saving ? null : _saveOrder,
+              child: Text(l10n.commonSave),
+            ),
+          ],
         ),
-        title: Text(l10n.autoT0005),
-        actions: <Widget>[
-          TextButton(
-            onPressed: _saving ? null : _confirmResetOrder,
-            child: Text(l10n.commonReset),
-          ),
-          TextButton(
-            onPressed: _saving ? null : _saveOrder,
-            child: Text(l10n.commonSave),
-          ),
-        ],
-      ),
-      body: ReorderableListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        buildDefaultDragHandles: false,
-        proxyDecorator: expressiveReorderProxyDecorator,
-        itemCount: _order.length,
-        onReorder: _handleReorder,
-        itemBuilder: (BuildContext context, int index) {
-          final item = _order[index];
-          final enabled = !_hiddenItems.contains(item);
-          return ListTile(
-            key: ValueKey<String>(item.storageKey),
-            onTap: _saving ? null : () => _handleToggleEnabled(item, !enabled),
-            leading: SizedBox(
-              width: 80,
-              child: Row(
+        body: ReorderableListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          buildDefaultDragHandles: false,
+          proxyDecorator: expressiveReorderProxyDecorator,
+          itemCount: _order.length,
+          onReorder: _handleReorder,
+          itemBuilder: (BuildContext context, int index) {
+            final item = _order[index];
+            final enabled = !_hiddenItems.contains(item);
+            return ListTile(
+              key: ValueKey<String>(item.storageKey),
+              onTap: _saving
+                  ? null
+                  : () => _handleToggleEnabled(item, !enabled),
+              leading: SizedBox(
+                width: 80,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Checkbox(
+                      value: enabled,
+                      onChanged: _saving
+                          ? null
+                          : (value) => _handleToggleEnabled(item, value),
+                    ),
+                    const SizedBox(width: 8),
+                    FaIcon(
+                      item.iconData,
+                      size: 16,
+                      color: enabled
+                          ? null
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ],
+                ),
+              ),
+              title: Text(
+                _labelForItem(context, item),
+                style: enabled
+                    ? null
+                    : TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+              ),
+              subtitle: item == DiaryToolbarItem.inlineCode
+                  ? Text(l10n.autoT0188)
+                  : item == DiaryToolbarItem.codeBlock
+                  ? Text(l10n.autoT0189)
+                  : item == DiaryToolbarItem.indent
+                  ? Text(l10n.autoT0190)
+                  : null,
+              trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Checkbox(
-                    value: enabled,
-                    onChanged: _saving
-                        ? null
-                        : (value) => _handleToggleEnabled(item, value),
-                  ),
-                  const SizedBox(width: 8),
-                  FaIcon(
-                    item.iconData,
-                    size: 16,
-                    color: enabled
-                        ? null
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  if (_hasToolSettings(item))
+                    IconButton(
+                      tooltip: l10n.diaryToolbarToolSettingsTooltip,
+                      onPressed: _saving ? null : () => _openToolSettings(item),
+                      icon: const FaIcon(FontAwesomeIcons.gear, size: 14),
+                    ),
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: const SizedBox(
+                      width: 44,
+                      height: 40,
+                      child: ColoredBox(
+                        color: Colors.transparent,
+                        child: Center(child: _TripleBarDragHandle()),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            title: Text(
-              _labelForItem(context, item),
-              style: enabled
-                  ? null
-                  : TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-            ),
-            subtitle: item == DiaryToolbarItem.inlineCode
-                ? Text(l10n.autoT0188)
-                : item == DiaryToolbarItem.codeBlock
-                ? Text(l10n.autoT0189)
-                : item == DiaryToolbarItem.indent
-                ? Text(l10n.autoT0190)
-                : null,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                if (_hasToolSettings(item))
-                  IconButton(
-                    tooltip: l10n.diaryToolbarToolSettingsTooltip,
-                    onPressed: _saving ? null : () => _openToolSettings(item),
-                    icon: const FaIcon(FontAwesomeIcons.gear, size: 14),
-                  ),
-                ReorderableDragStartListener(
-                  index: index,
-                  child: const SizedBox(
-                    width: 44,
-                    height: 40,
-                    child: ColoredBox(
-                      color: Colors.transparent,
-                      child: Center(child: _TripleBarDragHandle()),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

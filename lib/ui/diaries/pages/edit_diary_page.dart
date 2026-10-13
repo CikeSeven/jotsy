@@ -40,6 +40,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/expressive_entrance.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_recording_controller.dart';
@@ -881,95 +882,98 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   left: 16,
                   right: 16,
                   bottom: 0,
-                  child: PublishDiaryPanel(
-                    controller: _editPanelController,
-                    saving: _saving,
-                    hasCover: _draftCover?.trim().isNotEmpty == true,
-                    coverLabel: _controller.coverLabelForEdit,
-                    locating: _locating,
-                    weatherLoading: _weatherLoading,
-                    locationController: _locationController,
-                    weatherController: _weatherController,
-                    weatherIconCode: _draftWeatherIconCode,
-                    moodEmoji: _draftMoodEmoji,
-                    moodOptions: moodOptions,
-                    energyLevel: _draftEnergyLevel,
-                    tags: tags,
-                    tagsLoading: tagsLoading,
-                    tagsError: tagsError,
-                    selectedTagIds: _selectedTagIds,
-                    onProgressChanged: (progress) {
-                      if (!mounted) {
-                        return;
-                      }
-                      final wasExpanded = _isEditPanelExpanded;
-                      // 连续进度只通知底部占位；页面层仅在越过展开阈值时
-                      // setState（切换正文锁定、悬浮工具栏等离散状态）。
-                      _editPanelExpandProgress.value = progress;
-                      final nextExpanded = _isEditPanelExpanded;
-                      if (wasExpanded == nextExpanded) {
-                        return;
-                      }
-                      if (nextExpanded) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      }
-                      setState(() {});
-                    },
-                    onPickCover: _controller.pickCoverForEdit,
-                    onClearCover: _draftCover?.trim().isNotEmpty == true
-                        ? _controller.clearCoverForEdit
-                        : null,
-                    onCreateTag: _controller.createTagInlineForEdit,
-                    onResolveLocation: _controller.resolveLocationForEdit,
-                    onResolveWeather: _controller.resolveWeatherForEdit,
-                    onLocationChanged: (nextLocation) {
-                      if (!mounted) {
-                        return;
-                      }
-                      setState(() {
-                        _draftLocation = nextLocation.trim().isEmpty
-                            ? null
-                            : nextLocation.trim();
-                        _markEditPanelDirty();
-                      });
-                    },
-                    onWeatherChanged: (nextWeather) {
-                      if (!mounted) {
-                        return;
-                      }
-                      setState(() {
-                        _draftWeather = nextWeather.trim().isEmpty
-                            ? null
-                            : nextWeather.trim();
-                        // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
-                        _draftWeatherIconCode = null;
-                        _markEditPanelDirty();
-                      });
-                    },
-                    onToggleTag: (tagId, selected) {
-                      setState(() {
-                        if (selected) {
-                          _selectedTagIds.add(tagId);
-                        } else {
-                          _selectedTagIds.remove(tagId);
+                  // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
+                  child: ExpressiveEntrance(
+                    child: PublishDiaryPanel(
+                      controller: _editPanelController,
+                      saving: _saving,
+                      hasCover: _draftCover?.trim().isNotEmpty == true,
+                      coverLabel: _controller.coverLabelForEdit,
+                      locating: _locating,
+                      weatherLoading: _weatherLoading,
+                      locationController: _locationController,
+                      weatherController: _weatherController,
+                      weatherIconCode: _draftWeatherIconCode,
+                      moodEmoji: _draftMoodEmoji,
+                      moodOptions: moodOptions,
+                      energyLevel: _draftEnergyLevel,
+                      tags: tags,
+                      tagsLoading: tagsLoading,
+                      tagsError: tagsError,
+                      selectedTagIds: _selectedTagIds,
+                      onProgressChanged: (progress) {
+                        if (!mounted) {
+                          return;
                         }
-                        _markEditPanelDirty();
-                      });
-                    },
-                    onMoodChanged: (nextMood) {
-                      setState(() {
-                        _draftMoodEmoji = nextMood;
-                        _markEditPanelDirty();
-                      });
-                    },
-                    onEnergyChanged: (nextValue) {
-                      setState(() {
-                        _draftEnergyLevel = nextValue?.clamp(1, 5).toDouble();
-                        _markEditPanelDirty();
-                      });
-                    },
-                    onPublish: _controller.save,
-                    actionLabel: context.l10n.autoT0137,
+                        final wasExpanded = _isEditPanelExpanded;
+                        // 连续进度只通知底部占位；页面层仅在越过展开阈值时
+                        // setState（切换正文锁定、悬浮工具栏等离散状态）。
+                        _editPanelExpandProgress.value = progress;
+                        final nextExpanded = _isEditPanelExpanded;
+                        if (wasExpanded == nextExpanded) {
+                          return;
+                        }
+                        if (nextExpanded) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        }
+                        setState(() {});
+                      },
+                      onPickCover: _controller.pickCoverForEdit,
+                      onClearCover: _draftCover?.trim().isNotEmpty == true
+                          ? _controller.clearCoverForEdit
+                          : null,
+                      onCreateTag: _controller.createTagInlineForEdit,
+                      onResolveLocation: _controller.resolveLocationForEdit,
+                      onResolveWeather: _controller.resolveWeatherForEdit,
+                      onLocationChanged: (nextLocation) {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _draftLocation = nextLocation.trim().isEmpty
+                              ? null
+                              : nextLocation.trim();
+                          _markEditPanelDirty();
+                        });
+                      },
+                      onWeatherChanged: (nextWeather) {
+                        if (!mounted) {
+                          return;
+                        }
+                        setState(() {
+                          _draftWeather = nextWeather.trim().isEmpty
+                              ? null
+                              : nextWeather.trim();
+                          // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
+                          _draftWeatherIconCode = null;
+                          _markEditPanelDirty();
+                        });
+                      },
+                      onToggleTag: (tagId, selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedTagIds.add(tagId);
+                          } else {
+                            _selectedTagIds.remove(tagId);
+                          }
+                          _markEditPanelDirty();
+                        });
+                      },
+                      onMoodChanged: (nextMood) {
+                        setState(() {
+                          _draftMoodEmoji = nextMood;
+                          _markEditPanelDirty();
+                        });
+                      },
+                      onEnergyChanged: (nextValue) {
+                        setState(() {
+                          _draftEnergyLevel = nextValue?.clamp(1, 5).toDouble();
+                          _markEditPanelDirty();
+                        });
+                      },
+                      onPublish: _controller.save,
+                      actionLabel: context.l10n.autoT0137,
+                    ),
                   ),
                 ),
               if (showFloatingToolbar)
@@ -978,37 +982,49 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                   right: 12,
                   // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
                   bottom: 0,
-                  child: SafeArea(
-                    top: false,
-                    minimum: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Material(
-                          color: Theme.of(context).colorScheme.surface,
-                          elevation: 8,
-                          borderRadius: BorderRadius.circular(18),
-                          clipBehavior: Clip.antiAlias,
-                          child: MediaQuery(
-                            data: MediaQuery.of(
-                              context,
-                            ).copyWith(textScaler: TextScaler.noScaling),
-                            child: IconTheme(
-                              data: const IconThemeData(size: 16),
-                              child: SizedBox(
-                                height: 44,
-                                child: _buildFloatingToolbar(
-                                  enabledToolbarOrder,
+                  child: ExpressiveEntrance(
+                    child: SafeArea(
+                      top: false,
+                      minimum: const EdgeInsets.only(bottom: 8),
+                      // 录音面板插入/移除时整列高度平滑变化，工具栏随之上移，
+                      // 不再瞬间跳到 300dp 之上。
+                      child: AnimatedSize(
+                        duration: ExpressiveMotion.duration(
+                          context,
+                          ExpressiveMotion.medium,
+                        ),
+                        curve: ExpressiveMotion.effects,
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Material(
+                              color: Theme.of(context).colorScheme.surface,
+                              elevation: 8,
+                              borderRadius: BorderRadius.circular(18),
+                              clipBehavior: Clip.antiAlias,
+                              child: MediaQuery(
+                                data: MediaQuery.of(
+                                  context,
+                                ).copyWith(textScaler: TextScaler.noScaling),
+                                child: IconTheme(
+                                  data: const IconThemeData(size: 16),
+                                  child: SizedBox(
+                                    height: 44,
+                                    child: _buildFloatingToolbar(
+                                      enabledToolbarOrder,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                            if (_recordingPanelOpen) ...[
+                              const SizedBox(height: 8),
+                              ExpressiveEntrance(child: _buildRecordingPanel()),
+                            ],
+                          ],
                         ),
-                        if (_recordingPanelOpen) ...[
-                          const SizedBox(height: 8),
-                          _buildRecordingPanel(),
-                        ],
-                      ],
+                      ),
                     ),
                   ),
                 ),

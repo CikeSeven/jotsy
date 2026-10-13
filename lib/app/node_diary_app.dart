@@ -39,8 +39,13 @@ class NodeDiaryApp extends ConsumerStatefulWidget {
 }
 
 class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
-  // 启动加载页最短展示时长：保留品牌化等待反馈，但避免冷启动被固定拉长。
-  static const Duration _minimumLoadingDuration = Duration(milliseconds: 1200);
+  // 启动等待反馈采用“延迟出现 + 最短展示”：
+  // - 设置与首屏日记在 [_loaderShowDelay] 内就绪：直接淡入首页，不出现加载页，
+  //   避免此前固定 1.2s 最短展示把快速冷启动人为拉长；
+  // - 超过该时长仍未就绪：显示加载页，且至少保留 [_loaderMinVisible]，避免
+  //   加载动画刚出现就消失的闪烁。
+  static const Duration _loaderShowDelay = Duration(milliseconds: 250);
+  static const Duration _loaderMinVisible = Duration(milliseconds: 500);
 
   late final MaterialTheme _lightMaterialTheme;
   late final MaterialTheme _darkMaterialTheme;
@@ -48,8 +53,10 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   (ThemeData, ThemeData)? _cachedThemes;
   late final HomeHintVisibilityController _homeHintVisibilityController;
   final LocalAuthentication _localAuthentication = LocalAuthentication();
-  Timer? _minimumLoadingTimer;
-  bool _minimumLoadingElapsed = false;
+  Timer? _loaderShowTimer;
+  Timer? _loaderMinVisibleTimer;
+  bool _loaderShown = false;
+  bool _loaderHolding = false;
 
   SettingsService? _boundSettingsService;
   VoidCallback? _appLockToggleListener;
@@ -63,19 +70,37 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     _lightMaterialTheme = MaterialTheme(Typography.material2021().black);
     _darkMaterialTheme = MaterialTheme(Typography.material2021().white);
     _homeHintVisibilityController = HomeHintVisibilityController();
-    _minimumLoadingTimer = Timer(_minimumLoadingDuration, () {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _minimumLoadingElapsed = true;
-      });
+    _loaderShowTimer = Timer(_loaderShowDelay, _handleLoaderShowDelayElapsed);
+  }
+
+  /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。
+  void _handleLoaderShowDelayElapsed() {
+    _loaderShowTimer = null;
+    if (!mounted || _isBootstrapDataReady()) {
+      return;
+    }
+    setState(() {
+      _loaderShown = true;
+      _loaderHolding = true;
     });
+    _loaderMinVisibleTimer = Timer(_loaderMinVisible, () {
+      _loaderMinVisibleTimer = null;
+      if (mounted) {
+        setState(() => _loaderHolding = false);
+      }
+    });
+  }
+
+  bool _isBootstrapDataReady() {
+    final diaries = ref.read(filteredDiariesProvider);
+    return ref.read(settingsServiceProvider).hasValue &&
+        (diaries.hasValue || diaries.hasError);
   }
 
   @override
   void dispose() {
-    _minimumLoadingTimer?.cancel();
+    _loaderShowTimer?.cancel();
+    _loaderMinVisibleTimer?.cancel();
     _unbindAppLockListener();
     _homeHintVisibilityController.dispose();
     super.dispose();
@@ -99,8 +124,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     if (settingsService != null) {
       _bindSettingsForAppLock(settingsService);
     }
-    final bootstrapReady =
-        _minimumLoadingElapsed && settingsReady && diariesSettled;
+    final bootstrapReady = settingsReady && diariesSettled && !_loaderHolding;
     final startupNotice = bootstrapReady && diariesBootstrapFailed
         ? _pickBootstrapText(
             settingsService: settingsService,
@@ -109,7 +133,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
           )
         : null;
 
-    if (settingsError != null && _minimumLoadingElapsed) {
+    if (settingsError != null && !_loaderHolding) {
       return _buildAppShell(
         home: Scaffold(
           body: Center(
@@ -126,7 +150,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     }
 
     final home = _BootstrapHome(
-      showLoadingOverlay: !bootstrapReady,
+      phase: bootstrapReady
+          ? _BootstrapPhase.home
+          : (_loaderShown ? _BootstrapPhase.loading : _BootstrapPhase.blank),
       startupNotice: startupNotice,
       homeHintVisibleListenable:
           _homeHintVisibilityController.isHintVisibleNotifier,
@@ -470,39 +496,49 @@ class _AppMultiplierTextScaler implements TextScaler {
   int get hashCode => Object.hash(baseScaler, factor);
 }
 
+/// 启动阶段：空白底（等待中但尚未到加载页延迟）→ 加载页 → 首页。
+enum _BootstrapPhase { blank, loading, home }
+
 class _BootstrapHome extends StatelessWidget {
   const _BootstrapHome({
-    required this.showLoadingOverlay,
+    required this.phase,
     required this.startupNotice,
     required this.homeHintVisibleListenable,
   });
 
-  final bool showLoadingOverlay;
+  final _BootstrapPhase phase;
   final String? startupNotice;
   final ValueListenable<bool> homeHintVisibleListenable;
 
   @override
   Widget build(BuildContext context) {
-    final loading = ColoredBox(
-      key: const ValueKey<String>('bootstrap_loading'),
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: const AppLoadingContent(),
-    );
+    final background = Theme.of(context).scaffoldBackgroundColor;
+    final child = switch (phase) {
+      // 与页面同色的空白底：快速启动时直接从这里淡入首页，不闪加载动画。
+      _BootstrapPhase.blank => ColoredBox(
+        key: const ValueKey<String>('bootstrap_blank'),
+        color: background,
+      ),
+      _BootstrapPhase.loading => ColoredBox(
+        key: const ValueKey<String>('bootstrap_loading'),
+        color: background,
+        child: const AppLoadingContent(),
+      ),
+      _BootstrapPhase.home => HomePage(
+        key: const ValueKey<String>('bootstrap_home'),
+        startupNotice: startupNotice,
+        homeHintVisibleListenable: homeHintVisibleListenable,
+      ),
+    };
 
-    final home = HomePage(
-      key: const ValueKey<String>('bootstrap_home'),
-      startupNotice: startupNotice,
-      homeHintVisibleListenable: homeHintVisibleListenable,
-    );
-
-    // 启动等待期间只绘制加载页，不提前构建 HomePage。
+    // 启动等待期间只绘制空白底或加载页，不提前构建 HomePage。
     // 这样可以减少 Flutter 首帧前后的数据库监听与页面装配工作，避免
     // Android 原生启动背景结束后又等待一段时间才看到加载动画。
     return AnimatedSwitcher(
       duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
       switchInCurve: ExpressiveMotion.effects,
       switchOutCurve: ExpressiveMotion.effects,
-      child: showLoadingOverlay ? loading : home,
+      child: child,
     );
   }
 }

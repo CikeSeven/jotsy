@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -13,6 +12,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/backup_file_save_service.dart';
 import '../../../core/services/data_archive_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../widgets/settings_busy_overlay.dart';
 
 /// 数据管理页面：提供 zip 导出与导入入口。
 class DataManagementPage extends ConsumerStatefulWidget {
@@ -347,126 +347,109 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppTopBar(
-        title: Text(context.l10n.dataMgmtTitle),
-        leading: IconButton(
-          tooltip: context.l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-      ),
-      body: Stack(
-        children: <Widget>[
-          ListView(
-            padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-            children: <Widget>[
-              SettingsCardGroup(
-                children: <Widget>[
-                  ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    leading: const FaIcon(
-                      FontAwesomeIcons.fileExport,
-                      size: 16,
-                    ),
-                    title: Text(context.l10n.dataMgmtExport),
-                    subtitle: Text(context.l10n.dataMgmtExportSubtitle),
-                    trailing: const FaIcon(
-                      FontAwesomeIcons.angleRight,
-                      size: 14,
-                    ),
-                    onTap: _busy ? null : _exportData,
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    leading: const FaIcon(
-                      FontAwesomeIcons.fileImport,
-                      size: 16,
-                    ),
-                    title: Text(context.l10n.dataMgmtImport),
-                    subtitle: Text(context.l10n.dataMgmtImportSubtitle),
-                    trailing: const FaIcon(
-                      FontAwesomeIcons.angleRight,
-                      size: 14,
-                    ),
-                    onTap: _busy ? null : _importData,
-                  ),
-                  ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    leading: const FaIcon(
-                      FontAwesomeIcons.cloudArrowUp,
-                      size: 16,
-                    ),
-                    title: Text(context.l10n.dataMgmtWebDav),
-                    subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
-                    trailing: const FaIcon(
-                      FontAwesomeIcons.angleRight,
-                      size: 14,
-                    ),
-                    onTap: _busy
-                        ? null
-                        : () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute<void>(
-                                builder: (BuildContext context) {
-                                  return const WebDavSyncPage();
-                                },
-                              ),
-                            );
-                          },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  context.l10n.dataMgmtHint,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
+    // 导入/恢复会覆盖本地数据，进行中禁止返回，避免页面销毁后流程仍在后台
+    // 改写数据库而用户无从得知结果。
+    return PopScope(
+      canPop: !_busy,
+      child: Scaffold(
+        appBar: AppTopBar(
+          title: Text(context.l10n.dataMgmtTitle),
+          leading: IconButton(
+            tooltip: context.l10n.commonBack,
+            onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),
-          if (_busy)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface.withValues(alpha: 0.82),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        ExpressiveLoadingIndicator(
-                          size: 72,
-                          semanticLabel: context.l10n.dataMgmtBusyLabel,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _busyText,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
+        ),
+        body: Stack(
+          children: <Widget>[
+            ListView(
+              padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+              children: <Widget>[
+                SettingsCardGroup(
+                  children: <Widget>[
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: const FaIcon(
+                        FontAwesomeIcons.fileExport,
+                        size: 16,
+                      ),
+                      title: Text(context.l10n.dataMgmtExport),
+                      subtitle: Text(context.l10n.dataMgmtExportSubtitle),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: _busy ? null : _exportData,
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: const FaIcon(
+                        FontAwesomeIcons.fileImport,
+                        size: 16,
+                      ),
+                      title: Text(context.l10n.dataMgmtImport),
+                      subtitle: Text(context.l10n.dataMgmtImportSubtitle),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: _busy ? null : _importData,
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: const FaIcon(
+                        FontAwesomeIcons.cloudArrowUp,
+                        size: 16,
+                      ),
+                      title: Text(context.l10n.dataMgmtWebDav),
+                      subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: _busy
+                          ? null
+                          : () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (BuildContext context) {
+                                    return const WebDavSyncPage();
+                                  },
+                                ),
+                              );
+                            },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    context.l10n.dataMgmtHint,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.4,
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-        ],
+            if (_busy)
+              SettingsBusyOverlay(
+                message: _busyText,
+                semanticLabel: context.l10n.dataMgmtBusyLabel,
+              ),
+          ],
+        ),
       ),
     );
   }

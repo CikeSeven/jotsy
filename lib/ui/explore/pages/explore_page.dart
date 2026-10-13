@@ -16,6 +16,7 @@ import '../models/explore_view_data.dart';
 import 'explore_media_gallery_page.dart';
 import '../providers/explore_providers.dart';
 import '../sections/explore_content_section.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// 探索页壳层。
 ///
@@ -109,43 +110,60 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
               ),
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-                sliver: diariesAsync.when(
-                  loading: () =>
-                      const SliverToBoxAdapter(child: _ExplorePageSkeleton()),
-                  error: (error, stackTrace) => SliverToBoxAdapter(
-                    child: _ExploreErrorCard(message: '$error'),
-                  ),
-                  data: (diaries) {
-                    final orderedTags = orderedTagsAsync.maybeWhen(
-                      data: (tags) => tags,
-                      orElse: () => const <Tag>[],
-                    );
-                    final viewData = _resolveViewData(
-                      diaries: diaries,
-                      orderedTags: orderedTags,
-                      l10n: l10n,
-                      moodOptionsRaw: moodOptionsRaw,
-                      moodOptions: moodOptions,
-                    );
-                    return SliverToBoxAdapter(
-                      child: ExploreContentSection(
-                        viewData: viewData,
-                        controller: _controller,
-                        onOpenDiary: (diaryId) {
-                          _openPreview(context, diaryId);
-                        },
-                        onOpenMediaGallery: () {
-                          _openMediaGallery(context);
-                        },
-                        onOpenTagSearch: (tagUsage) {
-                          _openTagSearch(context, tagUsage);
-                        },
-                        onCreateToday: () {
-                          _openCreateToday(context);
-                        },
+                // 骨架屏 → 内容 / 错误之间顶部对齐交叉淡入，不再硬切；内容
+                // 区使用固定 key，数据刷新时不会重复播放过渡。
+                sliver: SliverToBoxAdapter(
+                  child: AnimatedSwitcher(
+                    duration: ExpressiveMotion.duration(
+                      context,
+                      ExpressiveMotion.medium,
+                    ),
+                    switchInCurve: ExpressiveMotion.effects,
+                    switchOutCurve: ExpressiveMotion.exit,
+                    layoutBuilder: (currentChild, previousChildren) => Stack(
+                      alignment: Alignment.topCenter,
+                      children: <Widget>[...previousChildren, ?currentChild],
+                    ),
+                    child: diariesAsync.when(
+                      loading: () => const _ExplorePageSkeleton(
+                        key: ValueKey<String>('explore_skeleton'),
                       ),
-                    );
-                  },
+                      error: (error, stackTrace) => _ExploreErrorCard(
+                        key: const ValueKey<String>('explore_error'),
+                        message: '$error',
+                      ),
+                      data: (diaries) {
+                        final orderedTags = orderedTagsAsync.maybeWhen(
+                          data: (tags) => tags,
+                          orElse: () => const <Tag>[],
+                        );
+                        final viewData = _resolveViewData(
+                          diaries: diaries,
+                          orderedTags: orderedTags,
+                          l10n: l10n,
+                          moodOptionsRaw: moodOptionsRaw,
+                          moodOptions: moodOptions,
+                        );
+                        return ExploreContentSection(
+                          key: const ValueKey<String>('explore_content'),
+                          viewData: viewData,
+                          controller: _controller,
+                          onOpenDiary: (diaryId) {
+                            _openPreview(context, diaryId);
+                          },
+                          onOpenMediaGallery: () {
+                            _openMediaGallery(context);
+                          },
+                          onOpenTagSearch: (tagUsage) {
+                            _openTagSearch(context, tagUsage);
+                          },
+                          onCreateToday: () {
+                            _openCreateToday(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
               SliverToBoxAdapter(child: SizedBox(height: 12)),
@@ -190,7 +208,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 }
 
 class _ExplorePageSkeleton extends StatelessWidget {
-  const _ExplorePageSkeleton();
+  const _ExplorePageSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +245,7 @@ class _ExplorePageSkeleton extends StatelessWidget {
 }
 
 class _ExploreErrorCard extends StatelessWidget {
-  const _ExploreErrorCard({required this.message});
+  const _ExploreErrorCard({super.key, required this.message});
 
   final String message;
 

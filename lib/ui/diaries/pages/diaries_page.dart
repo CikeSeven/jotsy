@@ -438,7 +438,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       isSearchResultEmpty: false,
                                     ),
                             ),
-                            if (hasMoreDiaries || _isPagingCooldown)
+                            if (hasMoreDiaries)
                               const SliverToBoxAdapter(
                                 child: Padding(
                                   padding: EdgeInsets.only(top: 6),
@@ -670,14 +670,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       _visibleDiaryLimit += _diaryPageSize;
       _isPagingCooldown = true;
     });
+    // 冷却只是“连续触底时不重复加页”的节流标志，与 UI 无关，到期无需重建；
+    // 底部加载指示器只由 hasMore 决定（下一页返回前仍为 true）。
     _pagingCooldownTimer?.cancel();
     _pagingCooldownTimer = Timer(const Duration(milliseconds: 140), () {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isPagingCooldown = false;
-      });
+      _isPagingCooldown = false;
     });
   }
 

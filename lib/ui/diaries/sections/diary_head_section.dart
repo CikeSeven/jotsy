@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 
 /// 顶部排序模式。
@@ -71,81 +72,114 @@ class DiaryHeadSection extends StatelessWidget {
       ),
       child: SizedBox(
         height: _headerContentHeight,
-        child: Row(
-          children: [
-            // 多选模式：显示批量操作按钮组。
-            if (isSelectionMode) ...[
-              Expanded(
-                child: Text(
-                  'Jotsy',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              IconButton(
-                tooltip: context.l10n.commonCancel,
-                onPressed: onCancelSelection,
-                icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-              ),
-              IconButton(
-                tooltip: isPinActionUnpin
-                    ? context.l10n.diaryUnpinSelected
-                    : context.l10n.diaryPinSelected,
-                onPressed: onPinSelected,
-                icon: FaIcon(
-                  isPinActionUnpin
-                      ? FontAwesomeIcons.thumbtackSlash
-                      : FontAwesomeIcons.thumbtack,
-                  size: 18,
-                ),
-              ),
-              IconButton(
-                tooltip: context.l10n.autoT0140,
-                onPressed: onArchiveSelected,
-                icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
-              ),
-              IconButton(
-                tooltip: context.l10n.commonDelete,
-                onPressed: onDeleteSelected,
-                icon: FaIcon(
-                  FontAwesomeIcons.trashCan,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-            ] else ...[
-              // 普通模式：标题、搜索预览、右侧操作区三段布局。
-              Text(
-                'Jotsy',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(width: AppSpacing.l),
-              Expanded(
-                child: _SearchPreview(
-                  key: const ValueKey<String>('search_preview'),
-                  height: _searchPreviewHeight,
-                  onTap: onOpenSearchPage,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.s),
-              _AnimatedTrailingActions(
-                onOpenArchived: onOpenArchived,
-                onOpenSettings: () => _showSettingsSheet(context),
-              ),
-            ],
-          ],
+        // 普通态与多选态之间交叉淡入并轻微横移，避免长按进入多选时整行
+        // 按钮硬切；两态各自以 key 区分，内部按钮状态互不复用。
+        child: AnimatedSwitcher(
+          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+          switchInCurve: ExpressiveMotion.effects,
+          switchOutCurve: ExpressiveMotion.exit,
+          layoutBuilder: (currentChild, previousChildren) => Stack(
+            alignment: Alignment.centerLeft,
+            children: <Widget>[...previousChildren, ?currentChild],
+          ),
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.12),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          ),
+          child: isSelectionMode
+              ? _buildSelectionRow(context)
+              : _buildDefaultRow(context),
         ),
       ),
+    );
+  }
+
+  /// 多选态：已选数量 + 批量操作按钮组。
+  Widget _buildSelectionRow(BuildContext context) {
+    return Row(
+      key: const ValueKey<String>('head_selection'),
+      children: [
+        Expanded(
+          child: Text(
+            context.l10n.autoT0099(selectedCount.toString()),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        IconButton(
+          tooltip: context.l10n.commonCancel,
+          onPressed: onCancelSelection,
+          icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+        ),
+        IconButton(
+          tooltip: isPinActionUnpin
+              ? context.l10n.diaryUnpinSelected
+              : context.l10n.diaryPinSelected,
+          onPressed: onPinSelected,
+          icon: FaIcon(
+            isPinActionUnpin
+                ? FontAwesomeIcons.thumbtackSlash
+                : FontAwesomeIcons.thumbtack,
+            size: 18,
+          ),
+        ),
+        IconButton(
+          tooltip: context.l10n.autoT0140,
+          onPressed: onArchiveSelected,
+          icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
+        ),
+        IconButton(
+          tooltip: context.l10n.commonDelete,
+          onPressed: onDeleteSelected,
+          icon: FaIcon(
+            FontAwesomeIcons.trashCan,
+            size: 18,
+            color: Theme.of(context).colorScheme.error,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 普通态：标题、搜索预览、右侧操作区三段布局。
+  Widget _buildDefaultRow(BuildContext context) {
+    return Row(
+      key: const ValueKey<String>('head_default'),
+      children: [
+        Text(
+          'Jotsy',
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontSize: 25,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(width: AppSpacing.l),
+        Expanded(
+          child: _SearchPreview(
+            key: const ValueKey<String>('search_preview'),
+            height: _searchPreviewHeight,
+            onTap: onOpenSearchPage,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.s),
+        _TrailingActions(
+          onOpenArchived: onOpenArchived,
+          onOpenSettings: () => _showSettingsSheet(context),
+        ),
+      ],
     );
   }
 
@@ -311,8 +345,8 @@ class _SearchPreview extends StatelessWidget {
   }
 }
 
-class _AnimatedTrailingActions extends StatelessWidget {
-  const _AnimatedTrailingActions({
+class _TrailingActions extends StatelessWidget {
+  const _TrailingActions({
     required this.onOpenArchived,
     required this.onOpenSettings,
   });

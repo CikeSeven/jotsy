@@ -18,6 +18,7 @@ import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
 import 'diary_preview_page.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/delayed_loading_gate.dart';
 
 /// 日记搜索页（独立覆盖层）。
 ///
@@ -290,21 +291,26 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                             onToggleSelection: (_, __) {},
                             isSearchResultEmpty: true,
                           ),
-                          if (diariesAsync.isLoading ||
-                              hasMoreDiaries ||
-                              _isPagingCooldown)
-                            const SliverToBoxAdapter(
-                              child: Padding(
-                                padding: EdgeInsets.only(top: 6),
-                                child: Center(
-                                  child: SizedBox(
-                                    height: 18,
-                                    width: 18,
-                                    child: ExpressiveLoadingIndicator(),
-                                  ),
-                                ),
-                              ),
+                          // 还有下一页时常显；输入关键词触发的本地查询通常
+                          // 几毫秒即返回，经延迟门控避免每次输入都闪一下。
+                          SliverToBoxAdapter(
+                            child: DelayedLoadingGate(
+                              loading: diariesAsync.isLoading,
+                              builder: (context, showLoading) =>
+                                  showLoading || hasMoreDiaries
+                                  ? const Padding(
+                                      padding: EdgeInsets.only(top: 6),
+                                      child: Center(
+                                        child: SizedBox(
+                                          height: 18,
+                                          width: 18,
+                                          child: ExpressiveLoadingIndicator(),
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
+                          ),
                           if (diariesAsync.hasError)
                             SliverToBoxAdapter(
                               child: Padding(
@@ -461,14 +467,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       _visibleDiaryLimit += _diaryPageSize;
       _isPagingCooldown = true;
     });
+    // 冷却只是“连续触底时不重复加页”的节流标志，与 UI 无关，到期无需重建；
+    // 底部加载指示器只由 hasMore 决定（下一页返回前仍为 true）。
     _pagingCooldownTimer?.cancel();
     _pagingCooldownTimer = Timer(const Duration(milliseconds: 140), () {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isPagingCooldown = false;
-      });
+      _isPagingCooldown = false;
     });
   }
 }

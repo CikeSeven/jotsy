@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   static const Curve _fabVisibilityCurve = ExpressiveMotion.effects;
   static const Curve _fabLiftCurve = ExpressiveMotion.effects;
   static const double _fabBottomGapAboveNav = 10;
+  // 未测得提示高度时的默认上移量（单行 SnackBar）。
   static const double _fabLiftOffsetWhenHintVisible = 60;
+  // FAB 与提示上沿之间保留的间隙。
+  static const double _fabGapAboveHint = 6;
 
   // 页面切换状态。
   int _currentIndex = 0;
@@ -366,12 +370,25 @@ class _HomePageState extends ConsumerState<HomePage> {
     final shouldShow = isCreateTab && followScrollVisibility;
     final fabBaseBottomOffset = _fabBottomGapAboveNav;
 
-    return ValueListenableBuilder<bool>(
-      valueListenable: widget.homeHintVisibleListenable,
-      builder: (context, homeHintVisible, child) {
+    final hintExtent = HomeHintVisibilityScope.maybeController(
+      context,
+    )?.hintExtentNotifier;
+    return ListenableBuilder(
+      listenable: Listenable.merge(<Listenable?>[
+        widget.homeHintVisibleListenable,
+        hintExtent,
+      ]),
+      builder: (context, child) {
+        final homeHintVisible = widget.homeHintVisibleListenable.value;
+        // 上移量取“实测提示高度 + 间隙”与默认值的较大者：双行提示或大字号
+        // 时 SnackBar 更高，固定 60dp 会让 FAB 压在提示上。
+        final measuredLift =
+            (hintExtent?.value ?? 0) + _fabGapAboveHint - fabBaseBottomOffset;
         final fabBottomOffset =
             fabBaseBottomOffset +
-            (homeHintVisible ? _fabLiftOffsetWhenHintVisible : 0);
+            (homeHintVisible
+                ? math.max(_fabLiftOffsetWhenHintVisible, measuredLift)
+                : 0);
         return AnimatedPositioned(
           duration: ExpressiveMotion.duration(context, _fabLiftDuration),
           curve: _fabLiftCurve,

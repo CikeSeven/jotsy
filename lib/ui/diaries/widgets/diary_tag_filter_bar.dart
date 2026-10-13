@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +36,14 @@ class DiaryTagFilterBar extends StatefulWidget {
   });
 
   static const int maxExpandedRows = 5;
+
+  /// 1 倍字号下的标签行高（基准值）；下列 max* 常量同样按基准字号计算。
   static const double chipExtent = 32;
+
+  /// 按当前字号缩放的标签行高：labelMedium 行高 16dp + 上下内边距与选中
+  /// 描边共 16dp。固定 32dp 时，系统字号放大到约 1.5 倍以上标签文字会被截断。
+  static double chipExtentFor(TextScaler scaler) =>
+      math.max(chipExtent, scaler.scale(16) + 16);
   static const double _expandedRowSpacing = AppSpacing.xs;
   static const double maxExpandedRowsExtent =
       chipExtent * maxExpandedRows +
@@ -72,6 +81,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
   final GlobalKey _clearKey = GlobalKey();
   final TagFilterLayoutCache _layoutCache = TagFilterLayoutCache();
   double _contentWidth = 0;
+  double _chipExtent = DiaryTagFilterBar.chipExtent;
   double _expandedRowsExtent = DiaryTagFilterBar.chipExtent;
 
   double get _expandedContentExtent =>
@@ -86,6 +96,9 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
 
   @override
   Widget build(BuildContext context) {
+    _chipExtent = DiaryTagFilterBar.chipExtentFor(
+      MediaQuery.textScalerOf(context),
+    );
     final collapsedTags = _buildCollapsedTags();
 
     return LayoutBuilder(
@@ -102,7 +115,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
           spacing: AppSpacing.s,
         );
         _expandedRowsExtent = layout.visibleRowsExtent(
-          rowHeight: DiaryTagFilterBar.chipExtent,
+          rowHeight: _chipExtent,
           rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
           maxRows: DiaryTagFilterBar.maxExpandedRows,
         );
@@ -115,7 +128,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
           onStart: widget.onVerticalDragStart,
           onUpdate: (delta) => widget.onVerticalDragUpdate(
             delta,
-            expandedContentExtent - DiaryTagFilterBar.chipExtent,
+            expandedContentExtent - _chipExtent,
           ),
           onEnd: widget.onVerticalDragEnd,
           child: Padding(
@@ -131,9 +144,8 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
               builder: (BuildContext context, double progress, Widget? child) {
                 final normalizedProgress = progress.clamp(0.0, 1.0);
                 final contentHeight =
-                    DiaryTagFilterBar.chipExtent +
-                    (expandedContentExtent - DiaryTagFilterBar.chipExtent) *
-                        normalizedProgress;
+                    _chipExtent +
+                    (expandedContentExtent - _chipExtent) * normalizedProgress;
                 final showExpandedLayout = normalizedProgress > 0;
                 return SizedBox(
                   width: double.infinity,
@@ -188,7 +200,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     if (startPosition.dx < AppSpacing.m ||
         startPosition.dx > position.viewportDimension + AppSpacing.m ||
         startPosition.dy < AppSpacing.xs ||
-        startPosition.dy > DiaryTagFilterBar.chipExtent + AppSpacing.xs) {
+        startPosition.dy > _chipExtent + AppSpacing.xs) {
       return false;
     }
     return position.maxScrollExtent > position.minScrollExtent;
@@ -216,7 +228,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
               layout: layout,
               controller: _verticalController,
               itemBuilder: _buildTagItem,
-              rowHeight: DiaryTagFilterBar.chipExtent,
+              rowHeight: _chipExtent,
               spacing: AppSpacing.s,
               rowSpacing: DiaryTagFilterBar._expandedRowSpacing,
             ),
@@ -261,11 +273,11 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
               : colorScheme.onSurface)
         : colorScheme.onSurface;
 
-    // A horizontal ListView supplies a tight 32dp cross-axis constraint, but a
+    // A horizontal ListView supplies a tight chip-extent cross-axis constraint, but a
     // Multi-row layout otherwise uses the chip's smaller intrinsic height. Retain that same
     // constraint here so expansion changes only positions, never card styling.
     return SizedBox(
-      height: DiaryTagFilterBar.chipExtent,
+      height: _chipExtent,
       child: TagFilterChip(
         label: tag.name,
         colorDot: tagColor,

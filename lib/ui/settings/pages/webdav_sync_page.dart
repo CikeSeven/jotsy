@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/webdav_settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../widgets/settings_busy_overlay.dart';
 
 /// WebDAV 备份式同步页。
 ///
@@ -383,30 +384,38 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final settingsAsync = ref.watch(webDavSettingsServiceProvider);
-    return Scaffold(
-      appBar: AppTopBar(
-        title: Text(l10n.webDavTitle),
-        leading: IconButton(
-          tooltip: l10n.commonBack,
-          onPressed: () => Navigator.of(context).maybePop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-      ),
-      body: Stack(
-        children: <Widget>[
-          settingsAsync.when(
-            data: (settings) {
-              _loadConfigIfNeeded(settings);
-              return _buildContent(context, colorScheme);
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (error, _) => ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              children: <Widget>[Text(_messageForError(error))],
-            ),
+    // 上传/恢复进行中禁止返回：恢复会覆盖本地数据，中途离开无法得知结果。
+    return PopScope(
+      canPop: !_busy,
+      child: Scaffold(
+        appBar: AppTopBar(
+          title: Text(l10n.webDavTitle),
+          leading: IconButton(
+            tooltip: l10n.commonBack,
+            onPressed: _busy ? null : () => Navigator.of(context).maybePop(),
+            icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),
-          if (_busy) _buildBusyOverlay(context, colorScheme),
-        ],
+        ),
+        body: Stack(
+          children: <Widget>[
+            settingsAsync.when(
+              data: (settings) {
+                _loadConfigIfNeeded(settings);
+                return _buildContent(context, colorScheme);
+              },
+              loading: () => const Center(child: ExpressiveLoadingIndicator()),
+              error: (error, _) => ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                children: <Widget>[Text(_messageForError(error))],
+              ),
+            ),
+            if (_busy)
+              SettingsBusyOverlay(
+                message: _busyText,
+                semanticLabel: l10n.webDavBusyLabel,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -582,36 +591,6 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
             icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildBusyOverlay(BuildContext context, ColorScheme colorScheme) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: colorScheme.surface.withValues(alpha: 0.82),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                ExpressiveLoadingIndicator(
-                  size: 72,
-                  semanticLabel: context.l10n.webDavBusyLabel,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  _busyText,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

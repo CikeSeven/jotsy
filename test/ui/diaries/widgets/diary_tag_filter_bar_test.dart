@@ -290,4 +290,36 @@ void main() {
     expect(tester.getSize(chip).width, lessThanOrEqualTo(296));
     expect(tester.takeException(), isNull);
   });
+
+  for (final expanded in <bool>[false, true]) {
+    testWidgets('large text grows the chip row instead of clipping labels '
+        'when expanded is $expanded', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 1.8;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(
+        buildTagBarHarness(
+          key: GlobalKey<TagBarHarnessState>(),
+          tags: createTags(3),
+          initiallyExpanded: expanded,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final chip = find.byWidgetPredicate(
+        (widget) => widget is TagFilterChip && widget.label == 'Tag 1',
+      );
+      final label = find.descendant(of: chip, matching: find.text('Tag 1'));
+      final expectedExtent = DiaryTagFilterBar.chipExtentFor(
+        const TextScaler.linear(1.8),
+      );
+      expect(expectedExtent, greaterThan(DiaryTagFilterBar.chipExtent));
+      expect(tester.getSize(chip).height, expectedExtent);
+      // 文字完整落在 chip 内，没有被行高裁掉。
+      final chipRect = tester.getRect(chip);
+      final labelRect = tester.getRect(label);
+      expect(labelRect.top, greaterThanOrEqualTo(chipRect.top));
+      expect(labelRect.bottom, lessThanOrEqualTo(chipRect.bottom));
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

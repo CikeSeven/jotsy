@@ -704,6 +704,56 @@
   "@commonLoading": {
     "description": "页面内通用加载指示器的读屏标签。"
   },
+  "exploreOnThisDayYearsAgo": "{years, plural, other{{years}年前的今天}}",
+  "@exploreOnThisDayYearsAgo": {
+    "description": "“那年今日”卡片的年份差标签。",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "dateTimeMinutePattern": "yyyy年MM月dd日 HH:mm",
+  "@dateTimeMinutePattern": {
+    "description": "精确到分钟的日期时间 intl 格式模板（发布时间、胶囊解封时间）。"
+  },
+  "energyLevelExhausted": "疲惫不堪",
+  "@energyLevelExhausted": {
+    "description": "最低档精力描述。"
+  },
+  "energyLevelTired": "有点疲惫",
+  "@energyLevelTired": {
+    "description": "较低档精力描述。"
+  },
+  "energyLevelSoSo": "状态一般",
+  "@energyLevelSoSo": {
+    "description": "中档精力描述。"
+  },
+  "energyLevelGood": "精力不错",
+  "@energyLevelGood": {
+    "description": "较高档精力描述。"
+  },
+  "energyLevelFull": "精力满满",
+  "@energyLevelFull": {
+    "description": "最高档精力描述。"
+  },
+  "startupPreloadFailedNotice": "启动时预加载日记失败，已进入主页。",
+  "@startupPreloadFailedNotice": {
+    "description": "启动预加载日记失败但仍进入主页时的提示。"
+  },
+  "startupInitFailed": "初始化失败: {error}",
+  "@startupInitFailed": {
+    "description": "应用设置初始化失败时的全屏提示。",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "appLockAuthReason": "请验证身份以解锁应用",
+  "@appLockAuthReason": {
+    "description": "应用锁系统验证弹窗中的原因说明。"
+  },
   "autoT0001": "应用加载中",
   "@autoT0001": {
     "description": "Auto-generated metadata for autoT0001."

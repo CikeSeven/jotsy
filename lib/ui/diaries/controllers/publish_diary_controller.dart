@@ -147,23 +147,8 @@ class PublishDiaryController {
   }
 
   /// 发表时间展示文案（固定到分钟）。
-  String formatPublishTimeLabel(DateTime value) {
-    final local = value.toLocal();
-    if (_state.context.l10n.isZh) {
-      final year = local.year.toString().padLeft(4, '0');
-      final month = local.month.toString().padLeft(2, '0');
-      final day = local.day.toString().padLeft(2, '0');
-      final hour = local.hour.toString().padLeft(2, '0');
-      final minute = local.minute.toString().padLeft(2, '0');
-      return '$year年$month月$day日 $hour:$minute';
-    }
-    final year = local.year.toString().padLeft(4, '0');
-    final month = local.month.toString().padLeft(2, '0');
-    final day = local.day.toString().padLeft(2, '0');
-    final hour = local.hour.toString().padLeft(2, '0');
-    final minute = local.minute.toString().padLeft(2, '0');
-    return '$year-$month-$day $hour:$minute';
-  }
+  String formatPublishTimeLabel(DateTime value) =>
+      _state.context.l10n.formatDateTimeMinute(value);
 
   String get timeCapsuleLabel {
     final schedule = _state._timeCapsuleSchedule;

@@ -1022,6 +1022,66 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get commonLoading;
 
+  /// On-this-day memory label showing how many years ago it was.
+  ///
+  /// In en, this message translates to:
+  /// **'{years, plural, =1{1 year ago today} other{{years} years ago today}}'**
+  String exploreOnThisDayYearsAgo(int years);
+
+  /// intl DateFormat pattern for date and time precise to the minute (publish time, capsule unlock time).
+  ///
+  /// In en, this message translates to:
+  /// **'yyyy-MM-dd HH:mm'**
+  String get dateTimeMinutePattern;
+
+  /// Energy level description for the lowest range.
+  ///
+  /// In en, this message translates to:
+  /// **'Exhausted'**
+  String get energyLevelExhausted;
+
+  /// Energy level description for the low range.
+  ///
+  /// In en, this message translates to:
+  /// **'A bit tired'**
+  String get energyLevelTired;
+
+  /// Energy level description for the middle range.
+  ///
+  /// In en, this message translates to:
+  /// **'So-so'**
+  String get energyLevelSoSo;
+
+  /// Energy level description for the high range.
+  ///
+  /// In en, this message translates to:
+  /// **'Pretty good'**
+  String get energyLevelGood;
+
+  /// Energy level description for the highest range.
+  ///
+  /// In en, this message translates to:
+  /// **'Fully charged'**
+  String get energyLevelFull;
+
+  /// Snackbar shown when the startup diary preload failed but home was opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Startup preload failed. Entered home anyway.'**
+  String get startupPreloadFailedNotice;
+
+  /// Full-screen message when app settings fail to initialize.
+  ///
+  /// In en, this message translates to:
+  /// **'Initialization failed: {error}'**
+  String startupInitFailed(String error);
+
+  /// Reason shown in the system authentication prompt for app lock.
+  ///
+  /// In en, this message translates to:
+  /// **'Please authenticate to unlock the app'**
+  String get appLockAuthReason;
+
   /// Auto-generated metadata for autoT0001.
   ///
   /// In en, this message translates to:

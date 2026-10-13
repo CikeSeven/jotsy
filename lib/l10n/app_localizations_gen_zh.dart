@@ -506,6 +506,45 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonLoading => '加载中';
 
   @override
+  String exploreOnThisDayYearsAgo(int years) {
+    String _temp0 = intl.Intl.pluralLogic(
+      years,
+      locale: localeName,
+      other: '$years年前的今天',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dateTimeMinutePattern => 'yyyy年MM月dd日 HH:mm';
+
+  @override
+  String get energyLevelExhausted => '疲惫不堪';
+
+  @override
+  String get energyLevelTired => '有点疲惫';
+
+  @override
+  String get energyLevelSoSo => '状态一般';
+
+  @override
+  String get energyLevelGood => '精力不错';
+
+  @override
+  String get energyLevelFull => '精力满满';
+
+  @override
+  String get startupPreloadFailedNotice => '启动时预加载日记失败，已进入主页。';
+
+  @override
+  String startupInitFailed(String error) {
+    return '初始化失败: $error';
+  }
+
+  @override
+  String get appLockAuthReason => '请验证身份以解锁应用';
+
+  @override
   String get autoT0001 => '应用加载中';
 
   @override

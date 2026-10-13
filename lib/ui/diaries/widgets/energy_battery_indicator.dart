@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// 精力电池指示器（连续值，范围 1~5）。
 ///
@@ -72,37 +73,22 @@ class EnergyBatteryIndicator extends StatelessWidget {
     return oneDecimal;
   }
 
-  /// 将连续值映射为用户可读的精力文案（从低到高）。
-  static String descriptionForValue(num rawValue, {bool isZh = true}) {
+  /// 将连续值映射为用户可读的精力文案（从低到高），文案来自 ARB。
+  static String descriptionForValue(num rawValue, AppLocalizations l10n) {
     final value = normalizeValue(rawValue);
-    if (!isZh) {
-      if (value < 1.8) {
-        return 'Exhausted';
-      }
-      if (value < 2.6) {
-        return 'A bit tired';
-      }
-      if (value < 3.4) {
-        return 'So-so';
-      }
-      if (value < 4.2) {
-        return 'Pretty good';
-      }
-      return 'Fully charged';
-    }
     if (value < 1.8) {
-      return '疲惫不堪';
+      return l10n.energyLevelExhausted;
     }
     if (value < 2.6) {
-      return '有点疲惫';
+      return l10n.energyLevelTired;
     }
     if (value < 3.4) {
-      return '状态一般';
+      return l10n.energyLevelSoSo;
     }
     if (value < 4.2) {
-      return '精力不错';
+      return l10n.energyLevelGood;
     }
-    return '精力满满';
+    return l10n.energyLevelFull;
   }
 
   /// 电量连续映射到 [0, 1]，用于控制填充宽度。

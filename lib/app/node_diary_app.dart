@@ -126,11 +126,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     }
     final bootstrapReady = settingsReady && diariesSettled && !_loaderHolding;
     final startupNotice = bootstrapReady && diariesBootstrapFailed
-        ? _pickBootstrapText(
-            settingsService: settingsService,
-            zh: '启动时预加载日记失败，已进入主页。',
-            en: 'Startup preload failed. Entered home anyway.',
-          )
+        ? _bootstrapL10n(settingsService).startupPreloadFailedNotice
         : null;
 
     if (settingsError != null && !_loaderHolding) {
@@ -138,11 +134,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
         home: Scaffold(
           body: Center(
             child: Text(
-              _pickBootstrapText(
-                settingsService: settingsService,
-                zh: '初始化失败: $settingsError',
-                en: 'Initialization failed: $settingsError',
-              ),
+              _bootstrapL10n(
+                settingsService,
+              ).startupInitFailed(settingsError.toString()),
             ),
           ),
         ),
@@ -309,12 +303,19 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     );
   }
 
-  String _pickBootstrapText({
-    required SettingsService? settingsService,
-    required String zh,
-    required String en,
-  }) {
-    return settingsService?.appLocaleCode == 'zh' ? zh : en;
+  /// 启动阶段文案：此处位于 MaterialApp 之上，没有 Localizations 可用，
+  /// 直接按设置语言查找生成的本地化实例；设置不可用（如初始化失败）时按
+  /// 系统语言，系统语言不受支持再回退英文。
+  AppLocalizations _bootstrapL10n(SettingsService? settingsService) {
+    final languageCode =
+        settingsService?.appLocaleCode ??
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final locale = Locale(languageCode);
+    return lookupAppLocalizations(
+      AppLocalizations.delegate.isSupported(locale)
+          ? locale
+          : const Locale('en'),
+    );
   }
 
   void _bindSettingsForAppLock(SettingsService settingsService) {
@@ -417,7 +418,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     bool authenticated = false;
     try {
       authenticated = await _localAuthentication.authenticate(
-        localizedReason: _localizedAuthReason(settingsService),
+        localizedReason: _bootstrapL10n(settingsService).appLockAuthReason,
         biometricOnly: false,
         sensitiveTransaction: true,
         persistAcrossBackgrounding: true,
@@ -445,13 +446,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     } catch (_) {
       return false;
     }
-  }
-
-  String _localizedAuthReason(SettingsService settingsService) {
-    if (settingsService.appLocaleCode == 'zh') {
-      return '请验证身份以解锁应用';
-    }
-    return 'Please authenticate to unlock the app';
   }
 }
 

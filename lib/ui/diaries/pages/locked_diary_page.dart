@@ -162,7 +162,7 @@ class _LockedDiaryContent extends ConsumerWidget {
                 _MetaPill(
                   label: EnergyBatteryIndicator.descriptionForValue(
                     energy,
-                    isZh: context.l10n.isZh,
+                    context.l10n,
                   ),
                   leading: EnergyBatteryIndicator(value: energy, iconSize: 18),
                 ),
@@ -332,17 +332,8 @@ class _LockedDiaryContent extends ConsumerWidget {
     );
   }
 
-  String _formatDateTime(BuildContext context, DateTime value) {
-    final local = value.toLocal();
-    final year = local.year.toString().padLeft(4, '0');
-    final month = local.month.toString().padLeft(2, '0');
-    final day = local.day.toString().padLeft(2, '0');
-    final hour = local.hour.toString().padLeft(2, '0');
-    final minute = local.minute.toString().padLeft(2, '0');
-    return context.l10n.isZh
-        ? '$year年$month月$day日 $hour:$minute'
-        : '$year-$month-$day $hour:$minute';
-  }
+  String _formatDateTime(BuildContext context, DateTime value) =>
+      context.l10n.formatDateTimeMinute(value);
 }
 
 Future<void> updateLockedDiaryUnlockAt(

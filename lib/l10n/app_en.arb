@@ -704,6 +704,56 @@
   "@commonLoading": {
     "description": "Generic screen reader label for in-page loading indicators."
   },
+  "exploreOnThisDayYearsAgo": "{years, plural, =1{1 year ago today} other{{years} years ago today}}",
+  "@exploreOnThisDayYearsAgo": {
+    "description": "On-this-day memory label showing how many years ago it was.",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "dateTimeMinutePattern": "yyyy-MM-dd HH:mm",
+  "@dateTimeMinutePattern": {
+    "description": "intl DateFormat pattern for date and time precise to the minute (publish time, capsule unlock time)."
+  },
+  "energyLevelExhausted": "Exhausted",
+  "@energyLevelExhausted": {
+    "description": "Energy level description for the lowest range."
+  },
+  "energyLevelTired": "A bit tired",
+  "@energyLevelTired": {
+    "description": "Energy level description for the low range."
+  },
+  "energyLevelSoSo": "So-so",
+  "@energyLevelSoSo": {
+    "description": "Energy level description for the middle range."
+  },
+  "energyLevelGood": "Pretty good",
+  "@energyLevelGood": {
+    "description": "Energy level description for the high range."
+  },
+  "energyLevelFull": "Fully charged",
+  "@energyLevelFull": {
+    "description": "Energy level description for the highest range."
+  },
+  "startupPreloadFailedNotice": "Startup preload failed. Entered home anyway.",
+  "@startupPreloadFailedNotice": {
+    "description": "Snackbar shown when the startup diary preload failed but home was opened."
+  },
+  "startupInitFailed": "Initialization failed: {error}",
+  "@startupInitFailed": {
+    "description": "Full-screen message when app settings fail to initialize.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "appLockAuthReason": "Please authenticate to unlock the app",
+  "@appLockAuthReason": {
+    "description": "Reason shown in the system authentication prompt for app lock."
+  },
   "autoT0001": "Loading app",
   "@autoT0001": {
     "description": "Auto-generated metadata for autoT0001."

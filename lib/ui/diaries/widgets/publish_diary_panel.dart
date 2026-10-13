@@ -1366,7 +1366,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                       child: Text(
                         EnergyBatteryIndicator.descriptionForValue(
                           energyLevel,
-                          isZh: l10n.isZh,
+                          l10n,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

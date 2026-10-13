@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
@@ -139,15 +138,9 @@ class ExplorePageController {
     final localCreated = createdAt.toLocal();
     final yearDiff = now.year - localCreated.year;
     if (yearDiff > 0) {
-      if (l10n.isZh) {
-        return '$yearDiff年前的今天';
-      }
-      return yearDiff == 1 ? '1 year ago today' : '$yearDiff years ago today';
+      return l10n.exploreOnThisDayYearsAgo(yearDiff);
     }
-    if (l10n.isZh) {
-      return '${localCreated.year}年${localCreated.month}月${localCreated.day}日';
-    }
-    return DateFormat('MMM d, y', 'en').format(localCreated);
+    return l10n.formatFullDate(localCreated);
   }
 
   List<double?> _buildMoodSeries(

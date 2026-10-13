@@ -170,10 +170,10 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         AppSpacing.m,
                         AppSpacing.s,
                       ),
+                      // 日期格式交给 intl 按语言区域决定（中文“10月5日”、
+                      // 英文“Oct 5”），不再手写中英分支。
                       child: Text(
-                        l10n.isZh
-                            ? DateFormat('M月d日', 'zh').format(_selectedDay)
-                            : DateFormat('MMM d', 'en').format(_selectedDay),
+                        DateFormat.MMMd(l10n.localeName).format(_selectedDay),
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
@@ -226,7 +226,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       child: Stack(
         children: <Widget>[
           TableCalendar<DiaryCalendarMarker>(
-            locale: l10n.isZh ? 'zh_CN' : 'en_US',
+            locale: l10n.localeName,
             firstDay: DateTime(2010, 1, 1),
             lastDay: DateTime(2100, 12, 31),
             focusedDay: _focusedMonth,
@@ -332,28 +332,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 );
               },
               dowBuilder: (context, day) {
-                final weekday = day.weekday;
-                final labelsZh = <int, String>{
-                  DateTime.monday: '一',
-                  DateTime.tuesday: '二',
-                  DateTime.wednesday: '三',
-                  DateTime.thursday: '四',
-                  DateTime.friday: '五',
-                  DateTime.saturday: '六',
-                  DateTime.sunday: '日',
-                };
-                final labelsEn = <int, String>{
-                  DateTime.monday: 'M',
-                  DateTime.tuesday: 'T',
-                  DateTime.wednesday: 'W',
-                  DateTime.thursday: 'T',
-                  DateTime.friday: 'F',
-                  DateTime.saturday: 'S',
-                  DateTime.sunday: 'S',
-                };
-                final label = l10n.isZh
-                    ? (labelsZh[weekday] ?? '')
-                    : (labelsEn[weekday] ?? '');
+                // 独立窄星期（ccccc）：中文“一…日”、英文“M…S”，
+                // 由 intl 语言数据提供，新增语言无需改代码。
+                final label = DateFormat('ccccc', l10n.localeName).format(day);
                 return Center(
                   child: Text(
                     label,

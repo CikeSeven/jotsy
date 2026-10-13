@@ -14,6 +14,7 @@ import 'package:table_calendar/table_calendar.dart';
 Future<void> _pumpCalendar(
   WidgetTester tester, {
   Duration otherMonthDelay = Duration.zero,
+  Locale locale = const Locale('zh'),
 }) async {
   // 日历面板左右合计 41.6dp 内缩（含 0.8 边框），默认 800 宽测试窗口下
   // PageView 页宽为 758.4，乘以数千页后触发 SliverFillViewport 的浮点精度
@@ -44,7 +45,7 @@ Future<void> _pumpCalendar(
         ),
       ],
       child: MaterialApp(
-        locale: const Locale('zh'),
+        locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: const CalendarPage(),
@@ -82,10 +83,7 @@ void main() {
     final now = DateTime.now();
     final nextMonth = DateTime(now.year, now.month + 1);
     expect(currentFormat(), CalendarFormat.month);
-    expect(
-      find.text(DateFormat('yyyy年MM月', 'zh').format(nextMonth)),
-      findsOneWidget,
-    );
+    expect(find.text(DateFormat.yMMM('zh').format(nextMonth)), findsOneWidget);
   });
 
   testWidgets('fast month query does not flash the loading capsule', (
@@ -127,4 +125,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(ExpressiveLoadingIndicator), findsNothing);
   });
+
+  for (final (locale, weekdayLabels, monthTitle, dayTitle)
+      in <
+        (
+          Locale,
+          List<String>,
+          String Function(DateTime),
+          String Function(DateTime),
+        )
+      >[
+        (
+          const Locale('zh'),
+          const <String>['一', '二', '三', '四', '五', '六', '日'],
+          (date) => '${date.year}年${date.month}月',
+          (date) => '${date.month}月${date.day}日',
+        ),
+        (
+          const Locale('en'),
+          const <String>['M', 'T', 'W', 'F', 'S'],
+          (date) => DateFormat('MMM yyyy', 'en').format(date),
+          (date) => DateFormat('MMM d', 'en').format(date),
+        ),
+      ]) {
+    testWidgets('calendar labels follow the ${locale.languageCode} locale', (
+      tester,
+    ) async {
+      await _pumpCalendar(tester, locale: locale);
+      final now = DateTime.now();
+
+      // 星期栏、月份标题与选中日标题均由 intl 按语言区域生成。
+      for (final label in weekdayLabels) {
+        expect(find.text(label), findsWidgets, reason: label);
+      }
+      expect(find.text(monthTitle(now)), findsOneWidget);
+      expect(find.text(dayTitle(now)), findsOneWidget);
+    });
+  }
 }

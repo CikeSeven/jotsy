@@ -45,13 +45,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
     if (deletedAt == null) {
       return context.l10n.autoT0025;
     }
-    final locale = Localizations.localeOf(context);
-    final pattern = locale.languageCode == 'zh'
-        ? 'yyyy-MM-dd HH:mm'
-        : 'yyyy-MM-dd HH:mm';
     return DateFormat(
-      pattern,
-      locale.toLanguageTag(),
+      'yyyy-MM-dd HH:mm',
+      Localizations.localeOf(context).toLanguageTag(),
     ).format(deletedAt.toLocal());
   }
 

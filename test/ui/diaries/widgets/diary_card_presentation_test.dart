@@ -23,7 +23,8 @@ void main() {
         title: title,
         content: '{"ops":[{"insert":"Hello World\\n"}]}',
         contentText: 'Hello World, today was a wonderful day.',
-        metadata: '{"context":{"mood":"😊","weather_icon_code":"100"}}',
+        // 与 PublishMetadataComposer 写入的 context 键名保持一致。
+        metadata: '{"context":{"moodEmoji":"😊","weatherIconCode":"100"}}',
         createdAt: now,
         updatedAt: now,
         isArchived: false,
@@ -95,8 +96,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Eyebrow date
-      expect(find.textContaining('10月5日'), findsNWidgets(2));
+      // Eyebrow date（底部更新时间也会显示“10月5日”，需精确匹配眉线文本）
+      expect(find.text('10月5日 · 周一'), findsNWidgets(2));
       // Pinned badge text (only on pinned diary)
       expect(find.text('置顶'), findsOneWidget);
       // Titles
@@ -121,7 +122,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.textContaining('10月5日'), findsOneWidget);
+      expect(find.text('10月5日 · 周一'), findsOneWidget);
       expect(find.text('瀑布流置顶'), findsOneWidget);
       expect(find.text('😊'), findsOneWidget);
     },
@@ -147,6 +148,33 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('暗黑模式日记'), findsOneWidget);
+      expect(find.text('置顶'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'list card eyebrow truncates instead of overflowing on narrow screens',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final crowdedDiary = createMockDiary(
+        id: 'narrow_diary',
+        title: '窄屏眉线',
+        isPinned: true,
+        createdAt: DateTime(2025, 12, 28, 9, 0),
+        cover: '/test-cover.jpg',
+      );
+
+      await tester.pumpWidget(
+        buildApp(diaries: [crowdedDiary], layoutMode: DiaryLayoutMode.list),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('😊'), findsOneWidget);
       expect(find.text('置顶'), findsOneWidget);
     },
   );

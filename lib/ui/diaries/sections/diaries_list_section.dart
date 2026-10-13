@@ -203,17 +203,10 @@ class DiariesListSection extends StatelessWidget {
       now: DateTime.now(),
     );
     final isLockedCapsule = capsuleState.isLocked;
+    // 键名必须与写入方 `PublishMetadataComposer` 保持一致（camelCase）。
     final contextMeta = _extractContextMetadata(diary.diary.metadata);
-    final moodEmoji =
-        (contextMeta['mood'] is String &&
-            (contextMeta['mood'] as String).trim().isNotEmpty)
-        ? (contextMeta['mood'] as String).trim()
-        : null;
-    final weatherCode =
-        (contextMeta['weather_icon_code'] is String &&
-            (contextMeta['weather_icon_code'] as String).trim().isNotEmpty)
-        ? (contextMeta['weather_icon_code'] as String).trim()
-        : null;
+    final moodEmoji = _readNonEmptyString(contextMeta['moodEmoji']);
+    final weatherCode = _readNonEmptyString(contextMeta['weatherIconCode']);
 
     return Builder(
       builder: (BuildContext _) {
@@ -225,23 +218,40 @@ class DiariesListSection extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  l10n.formatEyebrowDate(diary.diary.createdAt),
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontSize: 13,
-                    color: diary.diary.isPinned
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.82),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.15,
+                // 带封面时右侧文本列在 360dp 屏上只剩约 170dp，日期需可截断，
+                // 否则与置顶徽章、天气心情印章同行时会溢出。外层 Expanded
+                // 占满剩余宽度让印章贴右；内层日期是唯一弹性子项，只在空间
+                // 不足时才截断（不能用 Flexible + Spacer，二者会平分空间）。
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          l10n.formatEyebrowDate(diary.diary.createdAt),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                fontSize: 13,
+                                color: diary.diary.isPinned
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurfaceVariant.withValues(
+                                        alpha: 0.82,
+                                      ),
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.15,
+                              ),
+                        ),
+                      ),
+                      if (diary.diary.isPinned) ...[
+                        const SizedBox(width: 6),
+                        _buildPinnedBadge(context),
+                      ],
+                    ],
                   ),
                 ),
-                if (diary.diary.isPinned) ...[
-                  const SizedBox(width: 6),
-                  _buildPinnedBadge(context),
-                ],
                 if (moodEmoji != null || weatherCode != null) ...[
-                  const Spacer(),
+                  const SizedBox(width: 6),
                   _buildMetaIndicators(
                     context,
                     moodEmoji: moodEmoji,
@@ -852,6 +862,14 @@ class DiariesListSection extends StatelessWidget {
       return const <String, Object?>{};
     }
     return const <String, Object?>{};
+  }
+
+  String? _readNonEmptyString(Object? raw) {
+    if (raw is! String) {
+      return null;
+    }
+    final trimmed = raw.trim();
+    return trimmed.isEmpty ? null : trimmed;
   }
 
   double? _parseEnergy(Object? raw) {

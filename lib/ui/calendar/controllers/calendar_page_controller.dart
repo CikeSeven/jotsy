@@ -13,13 +13,9 @@ class _CalendarPageController {
   final _CalendarPageState _state;
 
   /// 当前焦点月份标题（用于头部显示）。
-  String get focusedMonthTitle {
-    final locale = Localizations.localeOf(_state.context);
-    if (locale.languageCode == 'zh') {
-      return DateFormat('yyyy年MM月', 'zh').format(_state._focusedMonth);
-    }
-    return DateFormat('MMM yyyy', 'en').format(_state._focusedMonth);
-  }
+  String get focusedMonthTitle => DateFormat.yMMM(
+    _state.context.l10n.localeName,
+  ).format(_state._focusedMonth);
 
   /// 日历月/周格式切换回调（支持上下滑手势触发）。
   void onCalendarFormatChanged(CalendarFormat format) {

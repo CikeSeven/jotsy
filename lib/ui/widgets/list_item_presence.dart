@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/expressive_motion.dart';
+import '../../app/theme/expressive_motion.dart';
 
-/// 日记列表条目的进出场容器（收起/展开 + 淡入淡出）。
+/// 列表条目的进出场容器（收起/展开 + 淡入淡出），日记列表、归档页、回收站共用。
 ///
 /// 输入：
 /// - [visible]：false 时收起并淡出（删除/归档等待撤销期间）；
 /// - [appearing]：首次构建或由 false 变 true 时从 0 展开（撤销后重新出现）；
 /// - [duration]：已经过 `ExpressiveMotion.duration` 解析的时长（减少动画为 0）。
-/// 无副作用；动画结束后的列表数据收尾仍由日记页的过渡协调器负责。
+/// 无副作用；动画结束后的列表数据收尾由宿主页负责。
 ///
 /// 为什么不用 AnimatedSwitcher/SizeTransition：此前按“动画中/已完成”返回不同
 /// 类型的包装组件，类型一变卡片子树就会被重新挂载，一次出场最多重建 3 次，
 /// 卡片内选中高亮等状态也随之丢失。这里结构恒定为
 /// FadeTransition → ClipRect → Align，只在动画进行时启用硬边裁剪；静止态使用
 /// Clip.none，避免卡片外散阴影被矩形切成直角（见 dfb8442）。
-class DiaryItemPresence extends StatefulWidget {
-  const DiaryItemPresence({
+class ListItemPresence extends StatefulWidget {
+  const ListItemPresence({
     super.key,
     required this.visible,
     required this.appearing,
@@ -30,10 +30,10 @@ class DiaryItemPresence extends StatefulWidget {
   final Widget child;
 
   @override
-  State<DiaryItemPresence> createState() => _DiaryItemPresenceState();
+  State<ListItemPresence> createState() => _ListItemPresenceState();
 }
 
-class _DiaryItemPresenceState extends State<DiaryItemPresence>
+class _ListItemPresenceState extends State<ListItemPresence>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -55,7 +55,7 @@ class _DiaryItemPresenceState extends State<DiaryItemPresence>
   }
 
   @override
-  void didUpdateWidget(covariant DiaryItemPresence oldWidget) {
+  void didUpdateWidget(covariant ListItemPresence oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.duration = widget.duration;
     if (widget.visible != oldWidget.visible) {

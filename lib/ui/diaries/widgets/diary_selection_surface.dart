@@ -70,12 +70,12 @@ class DiarySelectionSurface extends StatelessWidget {
           final baseShadows = isLight
               ? <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: colorScheme.shadow.withValues(alpha: 0.03),
                     blurRadius: 4,
                     offset: const Offset(0, 1.5),
                   ),
                   BoxShadow(
-                    color: Colors.black.withValues(
+                    color: colorScheme.shadow.withValues(
                       alpha: isPinned ? 0.055 : 0.04,
                     ),
                     blurRadius: 10,
@@ -90,7 +90,7 @@ class DiarySelectionSurface extends StatelessWidget {
                 ]
               : <BoxShadow>[
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.32),
+                    color: colorScheme.shadow.withValues(alpha: 0.32),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

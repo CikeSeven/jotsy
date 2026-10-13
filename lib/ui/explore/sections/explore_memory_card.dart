@@ -174,80 +174,83 @@ class _ExploreMemoryCardState extends State<ExploreMemoryCard> {
     final title = item.title.trim();
     final mediaSource = item.mediaSource;
     final isLight = colorScheme.brightness == Brightness.light;
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () => widget.onOpenDiary(item.diaryId),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isLight
-              ? colorScheme.surfaceContainerLow
-              : colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colorScheme.outlineVariant.withValues(
-              alpha: isLight ? 0.3 : 0.15,
-            ),
-            width: 0.8,
+    // 底色与描边由 Material 承载，InkWell 的水波纹画在同一 Material 上；
+    // 若用带底色的 Container 包在 InkWell 里，水波纹会被底色完全盖住。
+    return Material(
+      color: isLight
+          ? colorScheme.surfaceContainerLow
+          : colorScheme.surfaceContainer,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isLight ? 0.3 : 0.15,
           ),
+          width: 0.8,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => widget.onOpenDiary(item.diaryId),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        item.timeLabel,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      item.timeLabel,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
+                    const SizedBox(height: 6),
+                    Text(
+                      title.isEmpty ? context.l10n.autoT0065 : title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    title.isEmpty ? context.l10n.autoT0065 : title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                    const SizedBox(height: 4),
+                    Text(
+                      item.summaryText,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.35,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    item.summaryText,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (mediaSource != null) ...<Widget>[
-              const SizedBox(width: 12),
-              ExploreMediaThumb(
-                source: mediaSource,
-                width: 96,
-                height: 96,
-                radius: 14,
-              ),
+              if (mediaSource != null) ...<Widget>[
+                const SizedBox(width: 12),
+                ExploreMediaThumb(
+                  source: mediaSource,
+                  width: 96,
+                  height: 96,
+                  radius: 14,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

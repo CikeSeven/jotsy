@@ -457,6 +457,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataMgmtBusyLabel => '数据处理中';
 
   @override
+  String get dataMgmtExportPasswordTitle => '设置导出密码（可选）';
+
+  @override
+  String get dataMgmtExportPasswordHint => '不填写则不加密';
+
+  @override
+  String get dataMgmtExportPasswordWarning =>
+      '请妥善保管此密码。本应用采用本地端到端加密，我们无法为您找回密码。一旦遗忘，导出的数据将永久无法恢复。';
+
+  @override
+  String get dataMgmtImportPasswordTitle => '导入密码';
+
+  @override
+  String get dataMgmtImportPasswordHint => '请输入导入密码';
+
+  @override
   String get autoT0001 => '应用加载中';
 
   @override

@@ -130,20 +130,29 @@ class _ExploreMediaGalleryPageState
           sliver: SliverGrid(
             delegate: SliverChildBuilderDelegate((context, index) {
               final item = _mediaItems[index];
-              return InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () => _openViewer(index),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final side = constraints.biggest.shortestSide;
-                    return ExploreMediaThumb(
-                      source: item.source,
-                      width: side,
-                      height: side,
-                      radius: 12,
-                    );
-                  },
-                ),
+              // 缩略图本身不透明，水波纹需画在叠于其上的透明 Material 上。
+              return Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final side = constraints.biggest.shortestSide;
+                      return ExploreMediaThumb(
+                        source: item.source,
+                        width: side,
+                        height: side,
+                        radius: 12,
+                      );
+                    },
+                  ),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => _openViewer(index),
+                    ),
+                  ),
+                ],
               );
             }, childCount: _mediaItems.length),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

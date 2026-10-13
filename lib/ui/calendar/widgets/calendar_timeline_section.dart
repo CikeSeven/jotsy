@@ -13,6 +13,7 @@ import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/energy_battery_indicator.dart';
 import '../../widgets/qweather_icon.dart';
 import 'calendar_day_content_switcher.dart';
+import '../../../app/theme/app_effects.dart';
 
 /// 日历页“选中日期列表”的时间线区块。
 ///
@@ -198,15 +199,7 @@ class CalendarTimelineSection extends StatelessWidget {
                   color: ExpressiveSurfaces.cardBorderColor(colorScheme),
                   width: 0.8,
                 ),
-                boxShadow: colorScheme.brightness == Brightness.light
-                    ? <BoxShadow>[
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
+                boxShadow: AppEffects.restingCardShadow(colorScheme),
               ),
               child: Material(
                 color: ExpressiveSurfaces.cardColor(colorScheme),

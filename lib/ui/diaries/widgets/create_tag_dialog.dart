@@ -349,17 +349,21 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                                   width: selected ? 2.4 : 1.2,
                                 ),
                               ),
+                              // 勾选图标画在任意用户色块上，对比色只能由色块
+                              // 自身明度决定，不跟随主题（AGENTS §6 例外条款）。
                               child: selected
-                                  ? Icon(
-                                      Icons.check_rounded,
-                                      size: 18,
-                                      color:
-                                          ThemeData.estimateBrightnessForColor(
-                                                color,
-                                              ) ==
-                                              Brightness.dark
-                                          ? Colors.white
-                                          : Colors.black87,
+                                  ? Center(
+                                      child: FaIcon(
+                                        FontAwesomeIcons.check,
+                                        size: 14,
+                                        color:
+                                            ThemeData.estimateBrightnessForColor(
+                                                  color,
+                                                ) ==
+                                                Brightness.dark
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
                                     )
                                   : null,
                             ),

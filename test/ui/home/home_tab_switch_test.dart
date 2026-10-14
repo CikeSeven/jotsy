@@ -7,10 +7,13 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
+import 'package:node_diary/ui/settings/pages/settings_page.dart';
+import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<void> _pumpHome(WidgetTester tester) async {
+Future<void> _pumpHome(WidgetTester tester, {int diaryCount = 0}) async {
   tester.view.physicalSize = const Size(400, 860);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
@@ -18,6 +21,16 @@ Future<void> _pumpHome(WidgetTester tester) async {
   final database = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(database.close);
   final settings = await SettingsService.create();
+  await tester.runAsync(() async {
+    for (var i = 0; i < diaryCount; i++) {
+      await database.createDiary(
+        title: 'Diary $i',
+        contentDocJson: '[{"insert":"content $i\\n"}]',
+        contentText: 'content $i',
+        metadataJson: '{}',
+      );
+    }
+  });
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -42,6 +55,17 @@ double _homePage(WidgetTester tester) => tester
     )
     .controller!
     .page!;
+
+/// 日记页主列表。切到其他 Tab 后日记页仍被保活，只是不在可见视口里。
+Finder _diariesList() => find
+    .descendant(
+      of: find.byType(DiariesPage, skipOffstage: false),
+      matching: find.byType(Scrollable, skipOffstage: false),
+    )
+    .first;
+
+ScrollPosition _diariesListPosition(WidgetTester tester) =>
+    tester.state<ScrollableState>(_diariesList()).position;
 
 Future<void> _unmount(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox.shrink());
@@ -78,6 +102,78 @@ void main() {
     await tester.pump();
     expect(_homePage(tester), 3);
     await tester.pumpAndSettle();
+    await _unmount(tester);
+  });
+
+  testWidgets('tapping the current tab scrolls its list back to the top', (
+    tester,
+  ) async {
+    await _pumpHome(tester, diaryCount: 18);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+
+    await tester.drag(_diariesList(), const Offset(0, -1200));
+    await tester.pumpAndSettle();
+    final scrolled = _diariesListPosition(tester).pixels;
+    expect(scrolled, greaterThan(0));
+
+    await tester.tap(find.text(l10n.navDiaries));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+    // 平滑滚动而不是一帧跳到顶。
+    expect(_diariesListPosition(tester).pixels, inExclusiveRange(0, scrolled));
+    await tester.pumpAndSettle();
+    expect(_diariesListPosition(tester).pixels, 0);
+    await _unmount(tester);
+  });
+
+  testWidgets('each tab keeps its own primary scroll controller', (
+    tester,
+  ) async {
+    await _pumpHome(tester, diaryCount: 18);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    await tester.drag(_diariesList(), const Offset(0, -600));
+    await tester.pumpAndSettle();
+    final diariesOffset = _diariesListPosition(tester).pixels;
+
+    // 切到设置页再点一次设置：只有设置页回到顶部，日记列表位置保持不变。
+    final settingsNav = find.descendant(
+      of: find.byType(BottomNav),
+      matching: find.text(l10n.navSettings),
+    );
+    await tester.tap(settingsNav);
+    await tester.pumpAndSettle();
+    await tester.tap(settingsNav);
+    await tester.pumpAndSettle();
+
+    expect(_diariesListPosition(tester).pixels, diariesOffset);
+    expect(tester.takeException(), isNull);
+    await _unmount(tester);
+  });
+
+  testWidgets('only the visible tab keeps its tickers running', (tester) async {
+    await _pumpHome(tester);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    bool tickersEnabled(Type page) => TickerMode.valuesOf(
+      tester.element(find.byType(page, skipOffstage: false)),
+    ).enabled;
+
+    // PageView 只构建可见页：此时设置页尚未构建。
+    expect(tickersEnabled(DiariesPage), isTrue);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomNav),
+        matching: find.text(l10n.navSettings),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    // 切换途中目标页与相邻页都在动，不会冻结半露出的内容。
+    expect(tickersEnabled(SettingsPage), isTrue);
+    await tester.pumpAndSettle();
+
+    expect(tickersEnabled(SettingsPage), isTrue);
+    expect(tickersEnabled(DiariesPage), isFalse);
     await _unmount(tester);
   });
 }

@@ -10,6 +10,7 @@ class _HomePageController {
   _HomePageController(this._state);
 
   static const Duration _pageSwitchDuration = ExpressiveMotion.medium;
+  static const Duration _scrollToTopDuration = ExpressiveMotion.standard;
 
   final _HomePageState _state;
   late final PageController pageController;
@@ -30,9 +31,58 @@ class _HomePageController {
     pageController.dispose();
   }
 
-  /// 响应底部导航点击并执行页面切换动画。
+  /// 响应底部导航点击：切到其他 Tab 时执行切页动画；重复点击当前 Tab 时
+  /// 把它的主列表滚回顶部（移动端通用的“回到顶部”手势）。
   Future<void> onTap(int index) {
+    if (index == _state._targetIndex && !_state._isTabSwitching) {
+      return _scrollTabToTop(index);
+    }
     return _switchToTab(index, allowDuringSwitch: false);
+  }
+
+  /// 把 [index] 对应 Tab 的主列表滚回顶部。
+  ///
+  /// - 已在顶部时不做任何事；
+  /// - 减少动画时直接跳到顶部；
+  /// - 距顶部超过约 3 屏时先无动画跳到 1 屏处，再用 standard 动画收尾：长列表
+  ///   若在 350ms 内整段滚过，几十张卡片飞驰而过既晃眼又要逐帧布局大量条目。
+  Future<void> _scrollTabToTop(int index) async {
+    if (!_state._isValidTabIndex(index)) {
+      return;
+    }
+    final controller = _state._tabScrollControllers[index];
+    if (!controller.hasClients) {
+      return;
+    }
+    final reduceMotion = ExpressiveMotion.reduceMotion(_state.context);
+    // 布局切换的交叉淡入期间可能短暂挂着两个位置，逐个处理。
+    await Future.wait<void>(<Future<void>>[
+      for (final position in controller.positions.toList(growable: false))
+        _scrollPositionToTop(position, reduceMotion: reduceMotion),
+    ]);
+  }
+
+  Future<void> _scrollPositionToTop(
+    ScrollPosition position, {
+    required bool reduceMotion,
+  }) async {
+    final top = position.minScrollExtent;
+    if (position.pixels <= top) {
+      return;
+    }
+    if (reduceMotion) {
+      position.jumpTo(top);
+      return;
+    }
+    final viewport = position.viewportDimension;
+    if (position.pixels - top > viewport * 3) {
+      position.jumpTo(top + viewport);
+    }
+    await position.animateTo(
+      top,
+      duration: _scrollToTopDuration,
+      curve: ExpressiveMotion.effects,
+    );
   }
 
   /// 统一维护目标态、重复点击拦截与动画结束校正。

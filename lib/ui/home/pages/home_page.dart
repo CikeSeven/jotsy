@@ -48,6 +48,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   static const double _fabLiftOffsetWhenHintVisible = 60;
   // FAB 与提示上沿之间保留的间隙。
   static const double _fabGapAboveHint = 6;
+  static const int _tabCount = 4;
 
   // 页面切换状态。
   int _currentIndex = 0;
@@ -66,6 +67,18 @@ class _HomePageState extends ConsumerState<HomePage> {
   late final ValueChanged<bool> _calendarFabVisibilityChanged;
   late final List<Widget> _pages;
   late final _HomePageController _controller;
+
+  /// 当前（含滑动途中）可见的 Tab 区间，驱动各页的 TickerMode。
+  late final ValueNotifier<_VisibleTabRange> _visibleTabs;
+
+  /// 每个 Tab 独立的主滚动控制器，由 [_buildTabPage] 以 PrimaryScrollController
+  /// 下发给该 Tab 的主列表。
+  ///
+  /// 四个 Tab 被 KeepAlivePage 同时保活，若都继承路由级 PrimaryScrollController，
+  /// 同一个控制器会同时挂上 4 个滚动位置：“重复点击当前 Tab 回到顶部”会把所有
+  /// Tab 一起滚动，读取 offset 也会断言。
+  final List<ScrollController> _tabScrollControllers =
+      List<ScrollController>.generate(_tabCount, (_) => ScrollController());
 
   @override
   void initState() {
@@ -86,6 +99,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     _pages = _buildStablePages();
     _controller = _HomePageController(this);
     _controller.init();
+    _visibleTabs = ValueNotifier<_VisibleTabRange>(
+      _VisibleTabRange(_currentIndex, _currentIndex),
+    );
+    _controller.pageController.addListener(_syncVisibleTabs);
   }
 
   @override
@@ -106,7 +123,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void dispose() {
+    _controller.pageController.removeListener(_syncVisibleTabs);
+    _visibleTabs.dispose();
     _controller.dispose();
+    for (final controller in _tabScrollControllers) {
+      controller.dispose();
+    }
     _tabPageConfigRevision.dispose();
     super.dispose();
   }
@@ -158,56 +180,60 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   List<Widget> _buildStablePages() {
-    return <Widget>[
-      KeepAlivePage(
-        child: ValueListenableBuilder<int>(
-          valueListenable: _tabPageConfigRevision,
-          builder: (context, _, __) {
-            return DiariesPage(
-              key: const PageStorageKey<String>('tab_diaries'),
-              pageBackgroundColor: Theme.of(context).colorScheme.surface,
-              onCreateActionChanged: _diariesCreateActionChanged,
-              onFabVisibilityChanged: _diariesFabVisibilityChanged,
-            );
-          },
+    final pages = <Widget>[
+      _buildTabPage(
+        0,
+        (context) => DiariesPage(
+          key: const PageStorageKey<String>('tab_diaries'),
+          pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          onCreateActionChanged: _diariesCreateActionChanged,
+          onFabVisibilityChanged: _diariesFabVisibilityChanged,
         ),
       ),
-      KeepAlivePage(
-        child: ValueListenableBuilder<int>(
-          valueListenable: _tabPageConfigRevision,
-          builder: (context, _, __) {
-            return CalendarPage(
-              key: const PageStorageKey<String>('tab_calendar'),
-              pageBackgroundColor: Theme.of(context).colorScheme.surface,
-              onCreateActionChanged: _calendarCreateActionChanged,
-              onFabVisibilityChanged: _calendarFabVisibilityChanged,
-            );
-          },
+      _buildTabPage(
+        1,
+        (context) => CalendarPage(
+          key: const PageStorageKey<String>('tab_calendar'),
+          pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          onCreateActionChanged: _calendarCreateActionChanged,
+          onFabVisibilityChanged: _calendarFabVisibilityChanged,
         ),
       ),
-      KeepAlivePage(
-        child: ValueListenableBuilder<int>(
-          valueListenable: _tabPageConfigRevision,
-          builder: (context, _, __) {
-            return ExplorePage(
-              key: const PageStorageKey<String>('tab_explore'),
-              pageBackgroundColor: Theme.of(context).colorScheme.surface,
-            );
-          },
+      _buildTabPage(
+        2,
+        (context) => ExplorePage(
+          key: const PageStorageKey<String>('tab_explore'),
+          pageBackgroundColor: Theme.of(context).colorScheme.surface,
         ),
       ),
-      KeepAlivePage(
-        child: ValueListenableBuilder<int>(
-          valueListenable: _tabPageConfigRevision,
-          builder: (context, _, __) {
-            return SettingsPage(
-              key: const PageStorageKey<String>('tab_settings'),
-              pageBackgroundColor: Theme.of(context).colorScheme.surface,
-            );
-          },
+      _buildTabPage(
+        3,
+        (context) => SettingsPage(
+          key: const PageStorageKey<String>('tab_settings'),
+          pageBackgroundColor: Theme.of(context).colorScheme.surface,
         ),
       ),
     ];
+    assert(pages.length == _tabCount);
+    return pages;
+  }
+
+  /// 保活 + 独立主滚动控制器 + 配置变更时重建。
+  ///
+  /// 所有平台都让主列表继承该控制器（默认只有移动端继承），桌面端同样支持
+  /// 回到顶部；主列表会对子树下发 PrimaryScrollController.none，内层纵向列表
+  /// 不会误挂到这个控制器上。
+  Widget _buildTabPage(int index, WidgetBuilder builder) {
+    return KeepAlivePage(
+      child: PrimaryScrollController(
+        controller: _tabScrollControllers[index],
+        automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
+        child: ValueListenableBuilder<int>(
+          valueListenable: _tabPageConfigRevision,
+          builder: (context, _, __) => builder(context),
+        ),
+      ),
+    );
   }
 
   @override
@@ -303,14 +329,45 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildPageView() {
-    return PageView(
-      controller: _controller.pageController,
-      physics: _isTabSwitching
-          ? const NeverScrollableScrollPhysics()
-          : const PageScrollPhysics(),
-      onPageChanged: _handlePageChanged,
-      children: _pages,
+    return ValueListenableBuilder<_VisibleTabRange>(
+      valueListenable: _visibleTabs,
+      builder: (BuildContext context, _VisibleTabRange visible, Widget? _) {
+        return PageView(
+          controller: _controller.pageController,
+          physics: _isTabSwitching
+              ? const NeverScrollableScrollPhysics()
+              : const PageScrollPhysics(),
+          onPageChanged: _handlePageChanged,
+          children: <Widget>[
+            for (var index = 0; index < _pages.length; index++)
+              // 被保活但不可见的 Tab 静音 ticker：其中仍在播放或循环的动画
+              // （加载指示、入场动画等）不再在后台逐帧出帧；切回来时从当前
+              // 时刻续上。滑动途中两侧页面都启用，不会冻结半露出的内容。
+              // 同理关闭不可见 Tab 的 Hero：四个 Tab 同属一个路由，否则从日历
+              // 打开预览时，会从后台日记列表里同一篇的封面飞出来。
+              TickerMode(
+                enabled: visible.contains(index),
+                child: HeroMode(
+                  enabled: visible.contains(index),
+                  child: _pages[index],
+                ),
+              ),
+          ],
+        );
+      },
     );
+  }
+
+  /// 根据 PageView 的实时位置更新可见 Tab 区间；只有区间变化才重建。
+  void _syncVisibleTabs() {
+    final controller = _controller.pageController;
+    final page = controller.hasClients
+        ? (controller.page ?? _currentIndex.toDouble())
+        : _currentIndex.toDouble();
+    final next = _VisibleTabRange(page.floor(), page.ceil());
+    if (next != _visibleTabs.value) {
+      _visibleTabs.value = next;
+    }
   }
 
   void _handleCreateActionChanged({
@@ -424,4 +481,22 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
     );
   }
+}
+
+/// 可见 Tab 的闭区间 [first, last]；静止时两端相同，滑动途中跨两页。
+@immutable
+class _VisibleTabRange {
+  const _VisibleTabRange(this.first, this.last);
+
+  final int first;
+  final int last;
+
+  bool contains(int index) => index >= first && index <= last;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _VisibleTabRange && other.first == first && other.last == last;
+
+  @override
+  int get hashCode => Object.hash(first, last);
 }

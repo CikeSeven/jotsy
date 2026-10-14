@@ -30,7 +30,8 @@ import '../l10n/app_localizations.dart';
 /// 2. 监听主题模式变化；
 /// 3. 处理启动加载页和最短展示时长；
 /// 4. 提供 MaterialApp 壳与首页入口；
-/// 5. 在启用应用锁时，统一处理前台解锁门禁。
+/// 5. 在启用应用锁时，统一处理前台解锁门禁；
+/// 6. 安排启动后的媒体文件回收。
 class NodeDiaryApp extends ConsumerStatefulWidget {
   const NodeDiaryApp({super.key});
 
@@ -71,6 +72,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     _darkMaterialTheme = MaterialTheme(Typography.material2021().white);
     _homeHintVisibilityController = HomeHintVisibilityController();
     _loaderShowTimer = Timer(_loaderShowDelay, _handleLoaderShowDelayElapsed);
+    // 编辑期不删除媒体文件，冷启动后延迟回收无人引用的文件与选择器缓存。
+    ref.read(diaryMediaCleanupServiceProvider).scheduleStartupSweep();
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。

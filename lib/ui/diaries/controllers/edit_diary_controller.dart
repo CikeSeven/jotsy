@@ -292,7 +292,6 @@ class EditDiaryController {
       return;
     }
 
-    final previousCover = _normalizeOptionalText(_state._draftCover);
     try {
       final importedPath = await DiaryCoverStorageService.importCover(
         selectedPath,
@@ -301,29 +300,28 @@ class EditDiaryController {
         await DiaryCoverStorageService.deleteManagedCover(importedPath);
         return;
       }
+      // 旧封面仍是已保存日记的封面，放弃修改时必须原样保留，
+      // 不在这里删除；无人引用后由 DiaryMediaCleanupService 回收。
       _state.setState(() {
         _state._draftCover = importedPath;
         _state._markEditPanelDirty();
       });
-      if (previousCover != null && previousCover != importedPath) {
-        await DiaryCoverStorageService.deleteManagedCover(previousCover);
-      }
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
       await _showHint(_state.context.l10n.autoT0089(error.toString()));
+    } finally {
+      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
   }
 
-  /// 编辑态清除封面并删除托管文件（若存在）。
+  /// 编辑态清除封面；理由同上，文件不在编辑期删除。
   Future<void> clearCoverForEdit() async {
-    final coverToDelete = _normalizeOptionalText(_state._draftCover);
     _state.setState(() {
       _state._draftCover = null;
       _state._markEditPanelDirty();
     });
-    await DiaryCoverStorageService.deleteManagedCover(coverToDelete);
   }
 
   /// 编辑态内联创建标签，并自动选中新标签。

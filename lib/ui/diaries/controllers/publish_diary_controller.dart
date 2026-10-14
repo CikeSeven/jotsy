@@ -331,7 +331,8 @@ class PublishDiaryController {
 
   /// 选择封面并拷贝到应用私有目录。
   ///
-  /// 若之前已有私有封面文件，会在替换后尝试清理旧文件。
+  /// 被替换的旧封面不在这里删除：它可能已写入持久化草稿，进程在草稿更新前
+  /// 被杀会留下坏封面；无人引用后由 DiaryMediaCleanupService 回收。
   Future<void> pickCover() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -347,7 +348,6 @@ class PublishDiaryController {
       return;
     }
 
-    final previousCover = normalizedCover;
     try {
       final importedPath = await DiaryCoverStorageService.importCover(
         selectedPath,
@@ -358,22 +358,19 @@ class PublishDiaryController {
       }
 
       _state.setState(() => _state._draftCover = importedPath);
-      if (previousCover != null && previousCover != importedPath) {
-        await DiaryCoverStorageService.deleteManagedCover(previousCover);
-      }
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
       await showHint(_state.context.l10n.autoT0089(error.toString()));
+    } finally {
+      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
   }
 
-  /// 清除封面并删除私有目录中的旧文件（若存在）。
+  /// 清除封面；文件同样交给 DiaryMediaCleanupService 按引用回收。
   Future<void> clearCover() async {
-    final coverToDelete = normalizedCover;
     _state.setState(() => _state._draftCover = null);
-    await DiaryCoverStorageService.deleteManagedCover(coverToDelete);
   }
 
   /// 发布页内联创建标签，成功后自动加入当前选中集合。

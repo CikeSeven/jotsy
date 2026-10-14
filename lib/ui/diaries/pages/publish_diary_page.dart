@@ -13,6 +13,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
+import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';

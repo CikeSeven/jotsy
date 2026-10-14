@@ -67,12 +67,13 @@ class DiaryMediaImportController extends ChangeNotifier {
       }
     });
     final imported = <DiaryFileAttachment>[];
+    List<PlatformFile>? files;
     Delta? previousContent;
     TextSelection? previousSelection;
     _activeKind = kind;
     notifyListeners();
     try {
-      final files = await _picker(kind);
+      files = await _picker(kind);
       if (!canCommit() || files == null || files.isEmpty) {
         return DiaryMediaImportOutcome.cancelled;
       }
@@ -127,6 +128,10 @@ class DiaryMediaImportController extends ChangeNotifier {
         } catch (error) {
           debugPrint('Uncommitted diary file cleanup failed: $error');
         }
+      }
+      // 无论成功与否，选择器在缓存里的中转副本都已无用（视频可达数百 MB）。
+      for (final file in files ?? const <PlatformFile>[]) {
+        await DiaryMediaStorageService.discardPickerCopy(file.path);
       }
       if (!_disposed) {
         _copying = false;

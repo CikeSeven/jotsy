@@ -79,7 +79,12 @@ List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
       ...FlutterQuillEmbeds.defaultEditorBuilders()
     else ...[
       DiaryImageEmbedBuilder(
-        config: QuillEditorImageEmbedConfig(onImageClicked: onImageClicked),
+        config: QuillEditorImageEmbedConfig(
+          onImageClicked: onImageClicked,
+          // 上游默认在移动端立即删除被移除图片的文件，撤销或放弃修改后
+          // 原日记会坏图；文件改由 DiaryMediaCleanupService 按引用回收。
+          onImageRemovedCallback: (_) async {},
+        ),
       ),
       const DiaryVideoEmbedBuilder(),
     ],

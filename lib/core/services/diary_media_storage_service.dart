@@ -13,13 +13,24 @@ enum DiaryMediaKind { image, video, attachment }
 /// 约束：
 /// - 外部路径/文件流复制到私有目录后才允许写入正文；
 /// - 每次导入使用独立子目录，保留文件名及扩展名且不覆盖同名文件；
-/// - 删除操作只针对托管文件，避免误删用户外部路径。
+/// - 删除操作只针对托管文件，避免误删用户外部路径；
+/// - 这里的删除只用于从未交给正文的文件（导入失败/取消）。已写入正文的文件
+///   可能被撤销、放弃修改或其他日记复用，统一由 DiaryMediaCleanupService
+///   按引用回收。
 class DiaryMediaStorageService {
   const DiaryMediaStorageService._();
 
   static const String imagesDirectoryName = 'diary_images';
   static const String videosDirectoryName = 'diary_videos';
   static const String attachmentsDirectoryName = 'diary_attachments';
+
+  /// 选择器在应用缓存里生成的中转副本目录：file_picker 的
+  /// `cache/file_picker/<时间戳>/`，以及 Android 相册视频入口的
+  /// `cache/diary_video_gallery/selection_*/<序号>/`。
+  static const List<String> pickerCacheDirectoryNames = [
+    'file_picker',
+    'diary_video_gallery',
+  ];
 
   static String directoryNameFor(DiaryMediaKind kind) => switch (kind) {
     DiaryMediaKind.image => imagesDirectoryName,
@@ -89,25 +100,6 @@ class DiaryMediaStorageService {
     return utf8.encode(safe).length <= 240 ? safe : 'attachment';
   }
 
-  static Future<void> deleteManagedDiaryImage(String? rawPath) async {
-    final normalizedPath = rawPath?.trim();
-    if (normalizedPath == null || normalizedPath.isEmpty) {
-      return;
-    }
-    if (!await isManagedDiaryImage(normalizedPath)) {
-      return;
-    }
-
-    await deleteManagedDiaryFile(normalizedPath);
-  }
-
-  static Future<bool> isManagedDiaryImage(String path) async {
-    final root = await getApplicationDocumentsDirectory();
-    final imagesRoot = p.normalize(p.join(root.path, imagesDirectoryName));
-    final normalizedPath = p.normalize(path);
-    return p.isWithin(imagesRoot, normalizedPath);
-  }
-
   static Future<void> deleteManagedDiaryFile(String? rawPath) async {
     var path = rawPath?.trim();
     if (path == null || path.isEmpty) return;
@@ -133,6 +125,36 @@ class DiaryMediaStorageService {
         await parent.delete();
       }
       return;
+    }
+  }
+
+  /// 导入结束后丢弃选择器留在缓存里的副本（成功或失败都不再需要）。
+  ///
+  /// 只处理位于 [pickerCacheDirectoryNames] 内的路径，桌面端等直接返回原文件
+  /// 路径的平台不受影响；随后逐级移除变空的批次目录，缓存根目录保留。
+  /// 清理是尽力而为：失败只会多占缓存，启动后的媒体回收会按宽限期兜底。
+  static Future<void> discardPickerCopy(String? rawPath) async {
+    final path = rawPath?.trim();
+    if (path == null || path.isEmpty) return;
+    try {
+      final temporary = p.normalize((await getTemporaryDirectory()).path);
+      final normalized = p.normalize(path);
+      for (final name in pickerCacheDirectoryNames) {
+        final cacheRoot = p.join(temporary, name);
+        if (!p.isWithin(cacheRoot, normalized)) continue;
+        final file = File(normalized);
+        if (await file.exists()) await file.delete();
+        var parent = file.parent;
+        while (p.isWithin(cacheRoot, parent.path) &&
+            await parent.exists() &&
+            await parent.list().isEmpty) {
+          await parent.delete();
+          parent = parent.parent;
+        }
+        return;
+      }
+    } catch (_) {
+      // 见上：缓存清理失败不影响导入结果。
     }
   }
 }

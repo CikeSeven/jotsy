@@ -247,6 +247,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
   /// 彻底删除日记（物理删除，不可恢复）。
   ///
   /// 显式清理 diary_tags，兼容没有开启外键级联的历史连接。
+  /// 只删除数据库记录：正文媒体可能被其他日记或草稿复用（复制粘贴图片），
+  /// 文件由 DiaryMediaCleanupService 确认无人引用后再回收。
   Future<void> hardDeleteDiary(String diaryId) async {
     final targetDiary = await (select(
       diaries,
@@ -254,9 +256,6 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     if (targetDiary == null) {
       return;
     }
-
-    // 彻删前先清理托管资源文件，避免私有目录残留无主文件。
-    await _deleteDiaryManagedAssets(targetDiary);
 
     // 旧连接可能没有开启外键，显式清理绑定，避免再次导出悬空关联。
     await transaction(() async {
@@ -314,88 +313,6 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
             .get();
 
     return rows.map((TypedResult row) => row.readTable(tags)).toList();
-  }
-
-  /// 删除日记关联的托管资源文件（封面、图片、录音、视频、附件）。
-  Future<void> _deleteDiaryManagedAssets(Diary diary) async {
-    await DiaryCoverStorageService.deleteManagedCover(
-      _normalizeCover(diary.cover),
-    );
-
-    final imagePaths = _extractManagedImagePathsFromContent(diary.content);
-    for (final imagePath in imagePaths) {
-      await DiaryMediaStorageService.deleteManagedDiaryImage(imagePath);
-    }
-    for (final audioPath in extractDiaryAudioPaths(diary.content)) {
-      await const DiaryAudioStorageService().deleteManagedRecording(audioPath);
-    }
-    for (final filePath in extractDiaryFilePaths(diary.content)) {
-      await DiaryMediaStorageService.deleteManagedDiaryFile(filePath);
-    }
-  }
-
-  /// 从正文 JSON 中提取所有图片路径（去重）。
-  Set<String> _extractManagedImagePathsFromContent(String rawContent) {
-    final normalizedContent = rawContent.trim();
-    if (normalizedContent.isEmpty) {
-      return <String>{};
-    }
-
-    try {
-      final decoded = jsonDecode(normalizedContent);
-      final paths = <String>{};
-      _collectImagePathsFromNode(decoded, paths);
-      return paths;
-    } catch (_) {
-      return <String>{};
-    }
-  }
-
-  /// 递归扫描 JSON 节点，提取图片 embed 路径。
-  void _collectImagePathsFromNode(Object? node, Set<String> output) {
-    if (node is List) {
-      for (final item in node) {
-        _collectImagePathsFromNode(item, output);
-      }
-      return;
-    }
-    if (node is! Map) {
-      return;
-    }
-
-    final insert = node['insert'];
-    if (insert is Map) {
-      final imagePath = _normalizeImagePath(insert['image']);
-      if (imagePath != null) {
-        output.add(imagePath);
-      }
-    }
-
-    final type = node['type'];
-    if (type == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map) {
-        final attributePath = _normalizeImagePath(attributes['url']);
-        if (attributePath != null) {
-          output.add(attributePath);
-        }
-      }
-    }
-
-    for (final value in node.values) {
-      _collectImagePathsFromNode(value, output);
-    }
-  }
-
-  String? _normalizeImagePath(Object? rawPath) {
-    if (rawPath is! String) {
-      return null;
-    }
-    final normalized = rawPath.trim();
-    if (normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
   }
 
   String? _normalizeCover(String? rawCover) {

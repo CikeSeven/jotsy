@@ -132,6 +132,35 @@ void main() {
     );
   }
 
+  test('picker cache copies are discarded once the import finishes', () async {
+    // path_provider 的 mock 让临时目录与 documents 同为 root。
+    final cached = File(p.join(root.path, 'file_picker', '1700', 'IMG_1.jpg'));
+    await cached.parent.create(recursive: true);
+    await cached.writeAsBytes([9, 9]);
+    final importer = DiaryMediaImportController(
+      picker: (_) async => [
+        PlatformFile(name: 'IMG_1.jpg', size: 2, path: cached.path),
+        PlatformFile(name: 'picked.bin', size: 3, path: pickedFile.path),
+      ],
+    );
+    addTearDown(importer.dispose);
+
+    expect(
+      await importer.pickAndInsert(
+        controller: documentController,
+        kind: DiaryMediaKind.image,
+        isCurrent: () => true,
+      ),
+      DiaryMediaImportOutcome.inserted,
+    );
+
+    expect(await cached.exists(), isFalse);
+    expect(await cached.parent.exists(), isFalse);
+    expect(await Directory(p.join(root.path, 'file_picker')).exists(), isTrue);
+    // 选择器缓存之外的路径（桌面端原文件）不受影响。
+    expect(await pickedFile.exists(), isTrue);
+  });
+
   test('cancelling the picker leaves the document unchanged', () async {
     final importer = DiaryMediaImportController(picker: (_) async => null);
     addTearDown(importer.dispose);

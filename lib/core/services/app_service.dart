@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
 import 'app_update_service.dart';
+import 'diary_media_cleanup_service.dart';
 import 'settings_service.dart';
 import 'tag_order_codec.dart';
 import 'webdav_settings_service.dart';
@@ -28,6 +29,18 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
   Ref ref,
 ) async {
   return SettingsService.create();
+});
+
+/// 日记媒体回收服务；随容器销毁取消尚未触发的启动回收。
+final diaryMediaCleanupServiceProvider = Provider<DiaryMediaCleanupService>((
+  Ref ref,
+) {
+  final service = DiaryMediaCleanupService(
+    database: ref.watch(appDatabaseProvider),
+    settings: () => ref.read(settingsServiceProvider.future),
+  );
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 /// 当前心情符号配置 provider。

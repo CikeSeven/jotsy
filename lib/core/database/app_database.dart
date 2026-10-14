@@ -7,12 +7,7 @@ import 'package:drift/native.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:node_diary/core/services/diary_cover_storage_service.dart';
-import 'package:node_diary/core/services/diary_media_storage_service.dart';
-import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 
-import 'audio_embed_codec.dart';
-import 'file_embed_codec.dart';
 import 'content_codec.dart';
 
 part 'app_database.g.dart';

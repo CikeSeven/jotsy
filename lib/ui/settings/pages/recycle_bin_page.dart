@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,6 +127,8 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         return;
       }
       final db = ref.read(appDatabaseProvider);
+      // 先取出服务：循环期间页面可能已销毁，之后不能再使用 ref。
+      final mediaCleanup = ref.read(diaryMediaCleanupServiceProvider);
       final failedIds = <String>[];
       for (final diaryId in targetIds) {
         try {
@@ -132,6 +136,10 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         } catch (_) {
           failedIds.add(diaryId);
         }
+      }
+      // 彻底删除只移除记录，文件按引用在后台回收，不阻塞删除结果提示。
+      if (failedIds.length < targetIds.length) {
+        unawaited(mediaCleanup.sweep());
       }
 
       if (!mounted) {

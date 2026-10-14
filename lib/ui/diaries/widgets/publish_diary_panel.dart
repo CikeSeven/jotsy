@@ -61,7 +61,7 @@ class PublishDiaryPanel extends StatefulWidget {
     required this.onToggleTag,
     required this.onMoodChanged,
     required this.onEnergyChanged,
-    required this.onPublish,
+    this.onPublish,
     this.actionLabel = '',
     this.onProgressChanged,
     this.onClearCover,
@@ -105,7 +105,9 @@ class PublishDiaryPanel extends StatefulWidget {
   final void Function(int tagId, bool selected) onToggleTag;
   final ValueChanged<String?> onMoodChanged;
   final ValueChanged<double?> onEnergyChanged;
-  final VoidCallback onPublish;
+
+  /// 编辑页自动保存时不传主操作，发布页仍显示发布按钮。
+  final VoidCallback? onPublish;
   final String actionLabel;
   final ValueChanged<double>? onProgressChanged;
   final VoidCallback? onClearCover;
@@ -440,8 +442,10 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
           _buildMoodSection(context),
           const SizedBox(height: 14),
           _buildEnergySection(context),
-          const SizedBox(height: 14),
-          _buildPublishAction(context),
+          if (widget.onPublish != null) ...<Widget>[
+            const SizedBox(height: 14),
+            _buildPublishAction(context),
+          ],
         ],
       ),
     );

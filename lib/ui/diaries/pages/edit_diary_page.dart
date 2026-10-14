@@ -22,10 +22,12 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
 import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
@@ -41,9 +43,9 @@ import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_entrance.dart';
-import '../../widgets/unsaved_changes_dialog.dart';
 
 part '../controllers/edit_diary_controller.dart';
+part '../controllers/edit_diary_persistence_controller.dart';
 part '../controllers/edit_diary_recording_controller.dart';
 part '../controllers/edit_diary_media_controller.dart';
 
@@ -69,7 +71,8 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
 }
 
-class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
+class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
+    with WidgetsBindingObserver {
   static const double _floatingToolbarReservedSpace = 56.0;
   static const double _recordingPanelReservedSpace = 310.0;
 
@@ -133,19 +136,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   bool _initialized = false;
   bool _saving = false;
   Timer? _createDraftSaveDebounceTimer;
-  Timer? _editSaveSuccessIconTimer;
   String? _lastPersistedCreateDraftRaw;
-  _EditPersistedSnapshot? _savedEditSnapshot;
-  bool _hasPendingEditChanges = false;
-  // 编辑态“未保存”判定节流：完整比对需把整篇文档序列化为 JSON（O(n)），而
-  // 标题/正文控制器在每次按键与光标移动时都会通知。首个变化立即比对（保存
-  // 按钮及时亮起），窗口内的后续通知合并为窗口结束时的一次比对。
-  static const Duration _editChangeCheckThrottle = Duration(milliseconds: 300);
-  Timer? _editChangeCheckTimer;
-  bool _editChangeCheckQueued = false;
-  // 保存快照时的正文长度：长度不同一定有改动，可免序列化直接判定为未保存。
-  int _savedContentLength = 0;
-  bool _showEditSaveSuccessIcon = false;
 
   // ==================== 业务控制器 ====================
   late final EditDiaryController _controller;
@@ -159,6 +150,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _createDateOverride = widget.createDateOverride;
     _contentController = quill.QuillController(
       document: documentFromPlainText(''),
@@ -178,9 +170,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller.dispose();
     _createDraftSaveDebounceTimer?.cancel();
-    _editSaveSuccessIconTimer?.cancel();
-    _editChangeCheckTimer?.cancel();
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _mediaImportController.removeListener(_onMediaImportChanged);
@@ -199,6 +191,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     super.dispose();
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isEditEntry &&
+        (state == AppLifecycleState.inactive ||
+            state == AppLifecycleState.paused)) {
+      unawaited(_controller.flushEditAutoSave());
+    }
+  }
+
   /// 当前正文纯文本（用于搜索、字数统计和空内容判断）。
   String get _currentContentText =>
       extractPlainTextFromDiaryDocument(_contentController.document);
@@ -211,12 +212,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
   bool get _isEditEntry =>
       widget.diaryId != null && widget.entryMode == EditDiaryEntryMode.edit;
-  bool get _canSaveEdit =>
-      _isEditEntry &&
-      !_saving &&
-      _hasPendingEditChanges &&
-      !_mediaImportController.isBusy &&
-      !_recordingPanelOpen;
   bool get _isEditPanelExpanded =>
       _isEditEntry && _editPanelExpandProgress.value >= 0.56;
   bool get _isEditingNoteText =>
@@ -226,174 +221,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
     if (mounted) setState(() {});
   }
 
-  String? _normalizeOptionalText(String? raw) {
-    final normalized = raw?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-
-  _EditPersistedSnapshot _buildCurrentEditSnapshot() {
-    return _EditPersistedSnapshot(
-      title: _titleController.text,
-      contentDocJson: _currentContentDocJson,
-      cover: _normalizeOptionalText(_draftCover),
-      metadataJson: _metadataJson.trim(),
-      selectedTagIds: <int>{..._selectedTagIds},
-    );
-  }
-
-  /// 节流执行 [_refreshPendingEditChanges]：窗口期内只排队一次尾随比对，
-  /// 保证停止输入后状态与实际内容一致（包括把内容改回原样时清除标记）。
-  void _scheduleEditChangeCheck() {
-    // 详情回填（初始化）与保存中的通知无需比对，也不应占用节流窗口，
-    // 否则紧随其后的第一次真实输入会被推迟到窗口末尾。
-    if (!_isEditEntry || !_initialized || _saving) {
-      return;
-    }
-    // 低成本判定：标题文本或正文长度与快照不同，必然存在未保存改动，直接
-    // 标记即可，日常输入因此完全不需要序列化文档。
-    final saved = _savedEditSnapshot;
-    if (saved != null &&
-        (_titleController.text != saved.title ||
-            _contentController.document.length != _savedContentLength)) {
-      _applyPendingEditChanges(true);
-      return;
-    }
-    // 长度相同：可能只是光标移动，也可能是等长替换或改回原样，需完整比对。
-    if (_editChangeCheckTimer != null) {
-      _editChangeCheckQueued = true;
-      return;
-    }
-    _refreshPendingEditChanges();
-    _editChangeCheckTimer = Timer(_editChangeCheckThrottle, () {
-      _editChangeCheckTimer = null;
-      if (_editChangeCheckQueued && mounted) {
-        _editChangeCheckQueued = false;
-        _scheduleEditChangeCheck();
-      }
-    });
-  }
-
-  void _refreshPendingEditChanges() {
-    if (!_isEditEntry || !_initialized || _saving) {
-      return;
-    }
-    _applyPendingEditChanges(
-      _panelMetadataDirty ||
-          (_savedEditSnapshot != null &&
-              _buildCurrentEditSnapshot() != _savedEditSnapshot),
-    );
-  }
-
-  /// 写入“是否有未保存改动”，状态未变化时不触发重建。
-  void _applyPendingEditChanges(bool nextPending) {
-    final shouldClearSuccessIcon = nextPending && _showEditSaveSuccessIcon;
-    if (nextPending == _hasPendingEditChanges && !shouldClearSuccessIcon) {
-      return;
-    }
-    if (!mounted) {
-      _hasPendingEditChanges = nextPending;
-      if (shouldClearSuccessIcon) {
-        _editSaveSuccessIconTimer?.cancel();
-        _showEditSaveSuccessIcon = false;
-      }
-      return;
-    }
-    setState(() {
-      _hasPendingEditChanges = nextPending;
-      if (shouldClearSuccessIcon) {
-        _editSaveSuccessIconTimer?.cancel();
-        _showEditSaveSuccessIcon = false;
-      }
-    });
-  }
-
-  /// 记录“已保存”基准快照，同时缓存正文长度供低成本预判使用。
-  void _captureSavedEditSnapshot() {
-    _savedEditSnapshot = _buildCurrentEditSnapshot();
-    _savedContentLength = _contentController.document.length;
-  }
-
-  void _markEditSaved() {
-    _captureSavedEditSnapshot();
-    _panelMetadataDirty = false;
-    _hasPendingEditChanges = false;
-  }
-
-  /// 编辑模式保存成功后临时展示成功图标。
-  ///
-  /// 交互规则：展示 `check` 1 秒，然后自动恢复为保存图标。
-  void _showEditSavedSuccessIcon() {
-    _editSaveSuccessIconTimer?.cancel();
-    if (!mounted) {
-      _showEditSaveSuccessIcon = true;
-      return;
-    }
-    setState(() => _showEditSaveSuccessIcon = true);
-    _editSaveSuccessIconTimer = Timer(const Duration(milliseconds: 1000), () {
-      if (!mounted) {
-        return;
-      }
-      setState(() => _showEditSaveSuccessIcon = false);
-    });
-  }
-
-  /// 标记编辑态 metadata 相关字段已变更，并立即让保存按钮可用。
-  ///
-  /// 该方法只在编辑模式生效；新建模式仍走草稿自动保存链路。
+  /// 面板输入同正文一样自动保存，新建模式继续沿用草稿链路。
   void _markEditPanelDirty() {
     _panelMetadataDirty = true;
-    if (_isEditEntry) {
-      _hasPendingEditChanges = true;
-    }
-  }
-
-  Future<void> _attemptExitEditPage() async {
-    if (_recordingPanelOpen) {
-      _closeRecordingPanel();
-      return;
-    }
-    // 返回键优先级：
-    // 1) 标签子页 -> 回到主面板；
-    // 2) 主面板展开 -> 收起面板；
-    // 3) 再进入页面退出判定（未保存提示或直接退出）。
-    if (_editPanelController.canPopInnerPage) {
-      await _editPanelController.popInnerPage();
-      return;
-    }
-    if (_editPanelController.isExpanded) {
-      await _editPanelController.collapse();
-      return;
-    }
-
-    if (!_isEditEntry || !_hasPendingEditChanges) {
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-      return;
-    }
-
-    final exitDecision = await showUnsavedChangesDialog(context);
-
-    if (!mounted) {
-      return;
-    }
-
-    if (exitDecision == UnsavedChangesDecision.discard) {
-      Navigator.of(context).pop();
-      return;
-    }
-    if (exitDecision == UnsavedChangesDecision.saveAndExit) {
-      await _controller.save();
-      if (!mounted) {
-        return;
-      }
-      if (!_hasPendingEditChanges && !_saving) {
-        Navigator.of(context).pop();
-      }
-    }
+    _controller.scheduleEditAutoSave();
   }
 
   /// 汇总当前编辑态数据，形成可持久化的新建草稿对象。
@@ -760,9 +591,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           _selectedTagIds
             ..clear()
             ..addAll(detail.tags.map((Tag t) => t.id));
-          _captureSavedEditSnapshot();
-          _hasPendingEditChanges = false;
           _panelMetadataDirty = false;
+          _controller.initializeEditAutoSave();
           _initialized = true;
         }
 
@@ -771,7 +601,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           appBar: AppTopBar(
             leading: IconButton(
               tooltip: context.l10n.commonBack,
-              onPressed: _attemptExitEditPage,
+              onPressed: _controller.attemptExit,
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
             title: Text(
@@ -803,34 +633,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       : _controller.openPublishPage,
                   icon: const FaIcon(FontAwesomeIcons.plus),
                   tooltip: context.l10n.autoT0136,
-                )
-              else
-                IconButton(
-                  onPressed: _canSaveEdit ? _controller.save : null,
-                  icon: AnimatedSwitcher(
-                    duration: ExpressiveMotion.duration(
-                      context,
-                      ExpressiveMotion.fast,
-                    ),
-                    switchInCurve: ExpressiveMotion.effects,
-                    switchOutCurve: ExpressiveMotion.exit,
-                    transitionBuilder: (child, animation) {
-                      return FadeTransition(opacity: animation, child: child);
-                    },
-                    child: _showEditSaveSuccessIcon
-                        ? FaIcon(
-                            FontAwesomeIcons.check,
-                            key: const ValueKey<String>('edit_save_success'),
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 18,
-                          )
-                        : const FaIcon(
-                            FontAwesomeIcons.floppyDisk,
-                            key: ValueKey<String>('edit_save_default'),
-                            size: 18,
-                          ),
-                  ),
-                  tooltip: context.l10n.commonSave,
                 ),
             ],
           ),
@@ -939,8 +741,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                           _markEditPanelDirty();
                         });
                       },
-                      onPublish: _controller.save,
-                      actionLabel: context.l10n.autoT0137,
                     ),
                   ),
                 ),
@@ -1005,12 +805,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
         // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
         // 连带 QuillEditor、播放器与输入法连接一起重建。只用 canPop 表达差异。
         return PopScope(
-          // 编辑模式或录音面板打开时，返回统一交给 `_attemptExitEditPage`，
-          // 避免面板展开态下系统直接 pop 路由；新建模式则直接放行。
+          // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起。
           canPop: !_isEditEntry && !_recordingPanelOpen,
           onPopInvokedWithResult: (didPop, result) {
             if (!didPop) {
-              _attemptExitEditPage();
+              unawaited(_controller.attemptExit());
             }
           },
           child: scaffold,
@@ -1179,45 +978,3 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
 }
 
 enum EditDiaryEntryMode { create, edit }
-
-class _EditPersistedSnapshot {
-  const _EditPersistedSnapshot({
-    required this.title,
-    required this.contentDocJson,
-    required this.cover,
-    required this.metadataJson,
-    required this.selectedTagIds,
-  });
-
-  final String title;
-  final String contentDocJson;
-  final String? cover;
-  final String metadataJson;
-  final Set<int> selectedTagIds;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    return other is _EditPersistedSnapshot &&
-        other.title == title &&
-        other.contentDocJson == contentDocJson &&
-        other.cover == cover &&
-        other.metadataJson == metadataJson &&
-        other.selectedTagIds.length == selectedTagIds.length &&
-        other.selectedTagIds.containsAll(selectedTagIds);
-  }
-
-  @override
-  int get hashCode {
-    final sortedTagIds = selectedTagIds.toList()..sort();
-    return Object.hash(
-      title,
-      contentDocJson,
-      cover,
-      metadataJson,
-      Object.hashAll(sortedTagIds),
-    );
-  }
-}

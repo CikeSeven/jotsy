@@ -6,13 +6,24 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 ///
 /// 职责边界：
 /// - 处理草稿自动保存与恢复；
-/// - 处理保存、删除、发布跳转链路；
+/// - 协调已有笔记自动保存、删除与新建发布跳转链路；
 /// - 不构建 UI，仅协调页面状态与数据层。
 class EditDiaryController {
-  const EditDiaryController(this._state);
+  EditDiaryController(this._state) {
+    _editAutoSave = EditDiaryAutoSaveController(
+      readSnapshot: _captureEditSnapshot,
+      writeSnapshot: _persistEditSnapshot,
+      onError: (error) {
+        if (_state.mounted) {
+          unawaited(_showHint(_state.context.l10n.autoT0087(error.toString())));
+        }
+      },
+    );
+  }
 
   /// 页面状态引用，承载控制器需要读写的输入与临时状态。
   final _EditDiaryPageState _state;
+  late final EditDiaryAutoSaveController _editAutoSave;
 
   /// 编辑态封面标签文案：网络图展示 URL，本地图展示文件名。
   String? get coverLabelForEdit {
@@ -48,15 +59,13 @@ class EditDiaryController {
     _state._contentController.addListener(onCreateDraftInputChanged);
   }
 
-  /// 新建模式下的标题/正文输入监听回调。
+  /// 新建模式保存草稿，已有笔记直接自动保存；详情回填阶段不触发写入。
   void onCreateDraftInputChanged() {
     if (_state._isCreateEntry) {
       scheduleCreateDraftAutoSave();
       return;
     }
-    // 编辑模式下的输入变更仅更新“未保存状态”，不触发自动草稿写入；
-    // 比对需序列化整篇文档，经节流避免每次按键/光标移动都做一次。
-    _state._scheduleEditChangeCheck();
+    scheduleEditAutoSave();
   }
 
   /// 1.3 秒防抖自动保存草稿。
@@ -195,87 +204,6 @@ class EditDiaryController {
     return true;
   }
 
-  /// 保存日记（创建或更新）。
-  Future<void> save() async {
-    if (_state._saving) {
-      return;
-    }
-    // 仅编辑模式存在底部面板，且仅在面板发生变更时重算 metadata。
-    if (_state._isEditEntry && _state._panelMetadataDirty) {
-      _state._metadataJson = _buildMetadataJsonForEdit();
-      _state._panelMetadataDirty = false;
-    }
-    if (!validateDraft()) {
-      return;
-    }
-
-    _state.setState(() => _state._saving = true);
-
-    final db = _state.ref.read(appDatabaseProvider);
-    final title = _state._titleController.text;
-    final contentText = _state._currentContentText;
-    final contentDocJson = _state._currentContentDocJson;
-    final cover = _state._draftCover;
-
-    try {
-      if (_state.widget.diaryId == null) {
-        final createdAtForCreate = _resolveCreatedAtForCreate(
-          _state._createDateOverride,
-        );
-        await db.createDiary(
-          title: title,
-          contentDocJson: contentDocJson,
-          contentText: contentText,
-          cover: cover,
-          metadataJson: _state._metadataJson,
-          tagIds: _state._selectedTagIds.toList(),
-          createdAtOverride: createdAtForCreate,
-        );
-      } else {
-        await db.updateDiary(
-          diaryId: _state.widget.diaryId!,
-          title: title,
-          contentDocJson: contentDocJson,
-          contentText: contentText,
-          cover: cover,
-          metadataJson: _state._metadataJson,
-          tagIds: _state._selectedTagIds.toList(),
-        );
-      }
-
-      if (!_state.mounted) {
-        return;
-      }
-      if (_state._isCreateEntry) {
-        await clearCreateDraft();
-        if (!_state.mounted) {
-          return;
-        }
-        Navigator.of(_state.context).pop(true);
-        return;
-      }
-
-      // 编辑模式保存成功后留在当前页：不弹提示、不自动返回。
-      _state._markEditSaved();
-      _state._showEditSavedSuccessIcon();
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await HomeHintVisibilityScope.showTrackedSnackBar(
-        context: _state.context,
-        snackBar: SnackBar(
-          content: Text(_state.context.l10n.autoT0087(error.toString())),
-        ),
-      );
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._saving = false);
-        _state._refreshPendingEditChanges();
-      }
-    }
-  }
-
   /// 编辑态封面选择：导入到应用私有目录，替换时清理旧封面。
   Future<void> pickCoverForEdit() async {
     final result = await FilePicker.platform.pickFiles(
@@ -300,8 +228,8 @@ class EditDiaryController {
         await DiaryCoverStorageService.deleteManagedCover(importedPath);
         return;
       }
-      // 旧封面仍是已保存日记的封面，放弃修改时必须原样保留，
-      // 不在这里删除；无人引用后由 DiaryMediaCleanupService 回收。
+      // 自动保存完成前旧封面仍被数据库引用，不能提前删除；
+      // 更新成功且无人引用后由 DiaryMediaCleanupService 回收。
       _state.setState(() {
         _state._draftCover = importedPath;
         _state._markEditPanelDirty();
@@ -701,37 +629,6 @@ class EditDiaryController {
       return null;
     }
     return normalized;
-  }
-
-  /// 将“只含日期”的补写需求转为真实创建时间。
-  ///
-  /// 规则：使用选中日期的年月日 + 当前时分秒，既保持“归属日正确”，
-  /// 又让同一天内的多条记录仍有自然时间顺序。
-  ///
-  /// 若上游已经给出了明确的时分秒（例如发布页手动选择发表时间），
-  /// 则直接保留该时间，不再覆盖。
-  DateTime? _resolveCreatedAtForCreate(DateTime? dateOverride) {
-    if (dateOverride == null) {
-      return null;
-    }
-    if (dateOverride.hour != 0 ||
-        dateOverride.minute != 0 ||
-        dateOverride.second != 0 ||
-        dateOverride.millisecond != 0 ||
-        dateOverride.microsecond != 0) {
-      return dateOverride;
-    }
-    final now = DateTime.now();
-    return DateTime(
-      dateOverride.year,
-      dateOverride.month,
-      dateOverride.day,
-      now.hour,
-      now.minute,
-      now.second,
-      now.millisecond,
-      now.microsecond,
-    );
   }
 
   String? _resolveLocationCity(Map<String, Object?>? addressComponent) {

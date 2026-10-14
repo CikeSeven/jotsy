@@ -113,36 +113,33 @@ void main() {
   );
 
   testWidgets(
-    'save button tracks edits immediately and clears after reverting',
+    'automatic saving preserves the editor and skips a reverted title',
     (tester) async {
       await pumpEditPage(tester);
       final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-      bool saveEnabled() =>
-          tester
-              .widget<IconButton>(
-                find.ancestor(
-                  of: find.byTooltip(l10n.commonSave),
-                  matching: find.byType(IconButton),
-                ),
-              )
-              .onPressed !=
-          null;
+      final editorBefore = currentEditor(tester);
       final titleField = find.widgetWithText(TextField, 'Rebuild probe');
-      expect(saveEnabled(), isFalse);
+      expect(find.byTooltip(l10n.commonSave), findsNothing);
 
-      // 节流的首个变化立即比对：改动后下一帧保存按钮即可用。
       await tester.enterText(titleField, 'Rebuild probe!');
       await tester.pump();
-      expect(saveEnabled(), isTrue);
+      expect(identical(currentEditor(tester), editorBefore), isTrue);
 
-      // 窗口内连续改回原文：尾随比对在窗口结束后清除未保存标记。
+      // 防抖窗口内改回原文，不应更新数据库的最后编辑时间。
+      final before = await tester.runAsync(
+        () => database.getDiaryWithTagsByDiaryId(diaryId),
+      );
       await tester.enterText(
         find.widgetWithText(TextField, 'Rebuild probe!'),
         'Rebuild probe',
       );
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 350));
-      expect(saveEnabled(), isFalse);
+      await tester.pump(const Duration(milliseconds: 600));
+      final after = await tester.runAsync(
+        () => database.getDiaryWithTagsByDiaryId(diaryId),
+      );
+      expect(after!.diary.updatedAt, before!.diary.updatedAt);
+      expect(identical(currentEditor(tester), editorBefore), isTrue);
       await unmount(tester);
     },
   );

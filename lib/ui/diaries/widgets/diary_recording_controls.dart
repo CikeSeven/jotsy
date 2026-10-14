@@ -8,6 +8,7 @@ import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/expressive_entrance.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// 录音面板底部的操作区：一个随阶段变形的主按钮，加上会话中才展开的暂停/继续键。
 ///
@@ -110,52 +111,62 @@ class _HeroButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     // 实心主色只在“正在录音、可以结束”时出现；待机与等待都用柔和容器色。
+    // ButtonStyle 只补间形状，换色经 ExpressiveStateBlend 与形变同步过渡。
     final soft = !session || waiting;
-    final background = soft ? colors.primaryContainer : colors.primary;
-    final foreground = soft ? colors.onPrimaryContainer : colors.onPrimary;
     // 待机是圆，会话中收成圆角方块（“停止”的形状），按压再收紧一档。
     final restingRadius = session ? 26.0 : 36.0;
 
     return Tooltip(
       message: session ? l10n.recordingFinish : l10n.recordingStart,
-      child: FilledButton(
-        onPressed: busy ? null : onPressed,
-        style: ButtonStyle(
-          animationDuration: ExpressiveMotion.duration(
-            context,
-            ExpressiveMotion.medium,
-          ),
-          fixedSize: const WidgetStatePropertyAll(
-            Size.square(DiaryRecordingControls.heroSize),
-          ),
-          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
-          // 禁用态也使用同一套颜色：busy 是“正在处理”而不是“不可用”，不能闪成灰色。
-          backgroundColor: WidgetStatePropertyAll(background),
-          foregroundColor: WidgetStatePropertyAll(foreground),
-          shape: WidgetStateProperty.resolveWith(
-            (states) => RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(
-                states.contains(WidgetState.pressed)
-                    ? restingRadius - 10
-                    : restingRadius,
+      child: ExpressiveStateBlend(
+        active: !soft,
+        duration: ExpressiveMotion.medium,
+        child: _buildIcon(),
+        builder: (context, t, icon) => FilledButton(
+          onPressed: busy ? null : onPressed,
+          style: ButtonStyle(
+            animationDuration: ExpressiveMotion.duration(
+              context,
+              ExpressiveMotion.medium,
+            ),
+            fixedSize: const WidgetStatePropertyAll(
+              Size.square(DiaryRecordingControls.heroSize),
+            ),
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            // 禁用态也使用同一套颜色：busy 是“正在处理”而不是“不可用”，不能闪成灰色。
+            backgroundColor: WidgetStatePropertyAll(
+              Color.lerp(colors.primaryContainer, colors.primary, t),
+            ),
+            foregroundColor: WidgetStatePropertyAll(
+              Color.lerp(colors.onPrimaryContainer, colors.onPrimary, t),
+            ),
+            shape: WidgetStateProperty.resolveWith(
+              (states) => RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  states.contains(WidgetState.pressed)
+                      ? restingRadius - 10
+                      : restingRadius,
+                ),
               ),
             ),
           ),
+          child: icon,
         ),
-        child: DelayedLoadingGate(
-          loading: waiting,
-          builder: (context, showLoading) => ExpressiveIconSwap(
-            switchKey: showLoading ? 'loading' : (session ? 'stop' : 'mic'),
-            child: showLoading
-                ? const ExpressiveLoadingIndicator(size: 40)
-                : FaIcon(
-                    session
-                        ? FontAwesomeIcons.stop
-                        : FontAwesomeIcons.microphone,
-                    size: session ? 22 : 28,
-                  ),
-          ),
-        ),
+      ),
+    );
+  }
+
+  Widget _buildIcon() {
+    return DelayedLoadingGate(
+      loading: waiting,
+      builder: (context, showLoading) => ExpressiveIconSwap(
+        switchKey: showLoading ? 'loading' : (session ? 'stop' : 'mic'),
+        child: showLoading
+            ? const ExpressiveLoadingIndicator(size: 40)
+            : FaIcon(
+                session ? FontAwesomeIcons.stop : FontAwesomeIcons.microphone,
+                size: session ? 22 : 28,
+              ),
       ),
     );
   }

@@ -10,6 +10,8 @@ import 'package:node_diary/ui/diaries/controllers/diary_file_open_controller.dar
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:path/path.dart' as p;
+import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
+import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 
 /// 编辑态、阅读态共用的文件卡片；文件打开由 controller/service 管理。
 class DiaryAttachmentTile extends StatefulWidget {
@@ -141,17 +143,29 @@ class _DiaryAttachmentTileState extends State<DiaryAttachmentTile> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    if (_controller.isOpening)
-                      ExpressiveLoadingIndicator(
-                        size: 24,
-                        semanticLabel: context.l10n.attachmentOpening,
-                      )
-                    else
-                      FaIcon(
-                        FontAwesomeIcons.arrowUpRightFromSquare,
-                        size: 16,
-                        color: colors.primary,
+                    // 交给系统打开通常瞬间完成：超过 300ms 才把图标换成等待
+                    // 指示，两者缩放淡入切换，不再一闪。
+                    SizedBox.square(
+                      dimension: 24,
+                      child: DelayedLoadingGate(
+                        loading: _controller.isOpening,
+                        builder: (context, showLoading) => ExpressiveIconSwap(
+                          switchKey: showLoading,
+                          child: showLoading
+                              ? ExpressiveLoadingIndicator(
+                                  size: 24,
+                                  semanticLabel: context.l10n.attachmentOpening,
+                                )
+                              : Center(
+                                  child: FaIcon(
+                                    FontAwesomeIcons.arrowUpRightFromSquare,
+                                    size: 16,
+                                    color: colors.primary,
+                                  ),
+                                ),
+                        ),
                       ),
+                    ),
                   ],
                 ),
               ),

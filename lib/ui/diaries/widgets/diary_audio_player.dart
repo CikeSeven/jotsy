@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/models/diary_audio_waveform.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_audio_player_controls.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_rename_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_waveform_visualizer.dart';
+import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// Redesigned Material 3 Expressive audio player for diary notes.
 ///
@@ -115,18 +116,22 @@ class _DiaryAudioPlayerState extends State<DiaryAudioPlayer>
             borderRadius: BorderRadius.circular(AppRadii.card),
             boxShadow: AppEffects.restingCardShadow(colors),
           ),
-          child: Material(
-            // 正在播放的卡片染上一层淡淡的主色容器色，多段录音并列时一眼能看出
-            // 哪一段在响；颜色由 Material 自带的隐式动画过渡。
-            animationDuration: ExpressiveMotion.duration(
-              context,
-              ExpressiveMotion.medium,
+          // 正在播放的卡片染上一层淡淡的主色容器色，多段录音并列时一眼能看出
+          // 哪一段在响。Material 的隐式动画只补间形状与阴影，颜色会硬切，染色
+          // 经 ExpressiveStateBlend 补间。
+          child: ExpressiveStateBlend(
+            active: playing,
+            duration: ExpressiveMotion.medium,
+            builder: (context, t, child) => Material(
+              color: Color.lerp(
+                cardColor,
+                Color.lerp(cardColor, colors.primaryContainer, 0.28),
+                t,
+              ),
+              shape: ExpressiveSurfaces.cardShape(colors),
+              clipBehavior: Clip.antiAlias,
+              child: child,
             ),
-            color: playing
-                ? Color.lerp(cardColor, colors.primaryContainer, 0.28)
-                : cardColor,
-            shape: ExpressiveSurfaces.cardShape(colors),
-            clipBehavior: Clip.antiAlias,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
               child: Column(

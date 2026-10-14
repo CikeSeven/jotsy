@@ -119,7 +119,12 @@ class _DiaryVideoPlayerState extends State<DiaryVideoPlayer> {
       builder: (context, _) {
         final colors = Theme.of(context).colorScheme;
         final value = _controller.player.value;
-        final ratio = value.aspectRatio.isFinite && value.aspectRatio > 0
+        // VideoPlayerValue.aspectRatio 在初始化前返回 1.0，必须先看 isInitialized：
+        // 否则卡片先是正方形，初始化后再跳成真实比例，下方正文整体位移。
+        final ratio =
+            value.isInitialized &&
+                value.aspectRatio.isFinite &&
+                value.aspectRatio > 0
             ? value.aspectRatio
             : 16 / 9;
         return Padding(
@@ -138,11 +143,20 @@ class _DiaryVideoPlayerState extends State<DiaryVideoPlayer> {
                     subtitle: context.l10n.videoPlaybackFailed,
                   )
                 else
-                  AspectRatio(
-                    aspectRatio: ratio.clamp(0.6, 3).toDouble(),
-                    child: _controller.isFullscreen
-                        ? const SizedBox.expand()
-                        : DiaryVideoSurface(controller: _controller),
+                  // 16:9 占位到真实比例（如竖屏视频）的高度变化平滑过渡。
+                  AnimatedSize(
+                    duration: ExpressiveMotion.durationNonZero(
+                      context,
+                      ExpressiveMotion.medium,
+                    ),
+                    curve: ExpressiveMotion.effects,
+                    alignment: Alignment.topCenter,
+                    child: AspectRatio(
+                      aspectRatio: ratio.clamp(0.6, 3).toDouble(),
+                      child: _controller.isFullscreen
+                          ? const SizedBox.expand()
+                          : DiaryVideoSurface(controller: _controller),
+                    ),
                   ),
                 DiaryVideoControls(
                   video: widget.video,

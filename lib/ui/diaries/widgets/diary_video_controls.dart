@@ -8,6 +8,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_video_export_controller.
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_export_button.dart';
+import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 
 /// 内嵌/全屏共享控件，窄屏把命令和进度分为两行，避免挤占播放进度。
 class DiaryVideoControls extends StatelessWidget {
@@ -79,11 +80,14 @@ class DiaryVideoControls extends StatelessWidget {
                   onPressed: controller.isLoading || controller.hasFailed
                       ? null
                       : () => unawaited(controller.toggle()),
-                  icon: FaIcon(
-                    value.isPlaying
-                        ? FontAwesomeIcons.pause
-                        : FontAwesomeIcons.play,
-                    size: 16,
+                  icon: ExpressiveIconSwap(
+                    switchKey: value.isPlaying,
+                    child: FaIcon(
+                      value.isPlaying
+                          ? FontAwesomeIcons.pause
+                          : FontAwesomeIcons.play,
+                      size: 16,
+                    ),
                   ),
                 ),
               ),

@@ -149,4 +149,41 @@ void main() {
     );
     handle.dispose();
   });
+
+  testWidgets('playback rewinding to the start does not sweep backwards', (
+    tester,
+  ) async {
+    Widget waveform(double progress) => MaterialApp(
+      home: Scaffold(
+        body: SizedBox(
+          width: 300,
+          child: DiaryWaveformBarVisualizer(
+            waveform: List<double>.filled(24, 0.6),
+            progress: progress,
+          ),
+        ),
+      ),
+    );
+    double paintedProgress() => tester
+        .widget<TweenAnimationBuilder<double>>(
+          find.descendant(
+            of: find.byType(DiaryWaveformBarVisualizer),
+            matching: find.byType(TweenAnimationBuilder<double>),
+          ),
+        )
+        .duration
+        .inMicroseconds
+        .toDouble();
+
+    await tester.pumpWidget(waveform(0.4));
+    await tester.pumpWidget(waveform(0.9));
+    // 正向播放：用补间抹平步进。
+    expect(paintedProgress(), greaterThan(0));
+    await tester.pumpAndSettle();
+
+    // 播放结束复位到 0：直接落位，不再让播放头倒扫回起点。
+    await tester.pumpWidget(waveform(0));
+    expect(paintedProgress(), 0);
+    await tester.pumpAndSettle();
+  });
 }

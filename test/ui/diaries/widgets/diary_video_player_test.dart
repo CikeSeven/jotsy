@@ -149,6 +149,8 @@ void main() {
       await tester.tap(find.widgetWithText(TextButton, '确认'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
+      // 超过 300ms 才换成等待指示，再等图标切换动画走完。
+      await tester.pump(const Duration(milliseconds: 300));
       expect(find.byType(ExpressiveLoadingIndicator), findsOneWidget);
       expect(find.byTooltip('导出视频'), findsNothing);
       expect(service.sources, [video.path]);
@@ -187,6 +189,34 @@ void main() {
     },
   );
 
+  testWidgets('card keeps a 16:9 placeholder until the video is ready', (
+    tester,
+  ) async {
+    final gate = Completer<void>();
+    final player = FakeVideoPlayer()..initializationGate = gate;
+    await tester.pumpWidget(
+      _app(Brightness.light, DiaryVideoPlayer(video: video, player: player)),
+    );
+    double cardRatio() => tester
+        .widget<AspectRatio>(
+          find
+              .descendant(
+                of: find.byType(DiaryVideoPlayer),
+                matching: find.byType(AspectRatio),
+              )
+              .first,
+        )
+        .aspectRatio;
+
+    // 初始化前 VideoPlayerValue.aspectRatio 恒为 1.0：若直接采用，卡片会先是
+    // 正方形再跳成真实比例。
+    expect(cardRatio(), closeTo(16 / 9, 1e-6));
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(cardRatio(), closeTo(320 / 180, 1e-6));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets(
     'video initialization uses Expressive loading and offers native open on failure',
     (tester) async {
@@ -197,6 +227,10 @@ void main() {
       await tester.pumpWidget(
         _app(Brightness.dark, DiaryVideoPlayer(video: video, player: player)),
       );
+      // 本地视频通常很快就绪：300ms 内不出现等待指示，超时后才淡入。
+      expect(find.byType(ExpressiveLoadingIndicator), findsNothing);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
       expect(find.byType(ExpressiveLoadingIndicator), findsOneWidget);
       gate.complete();
       await tester.pumpAndSettle();

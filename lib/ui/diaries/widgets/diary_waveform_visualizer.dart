@@ -43,6 +43,16 @@ class _DiaryWaveformBarVisualizerState
     extends State<DiaryWaveformBarVisualizer> {
   bool _dragging = false;
 
+  /// 进度往回跳（播放结束复位到 0、点按更早的位置）时不补间，直接落位：
+  /// 补间只为抹平正向播放的步进，倒放会让播放头扫回起点。
+  bool _jumpingBack = false;
+
+  @override
+  void didUpdateWidget(covariant DiaryWaveformBarVisualizer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _jumpingBack = widget.progress < oldWidget.progress;
+  }
+
   void _handleTouch(Offset localPosition, double totalWidth) {
     final onSeek = widget.onSeek;
     if (totalWidth <= 0 || onSeek == null) return;
@@ -91,20 +101,26 @@ class _DiaryWaveformBarVisualizerState
               // 间隔相当的补间把步进抹平成连续扫动。必须是线性曲线：缓动曲线会让
               // 每段先快后慢，匀速播放时反而出现周期性的“一顿一顿”。拖动时补间
               // 归零，播放头直接跟手。
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(end: target),
-                duration: _dragging
-                    ? Duration.zero
-                    : ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-                curve: Curves.linear,
-                builder: (context, progress, _) => CustomPaint(
-                  size: Size(width, widget.height),
-                  painter: _WaveformBarPainter(
-                    waveform: widget.waveform,
-                    progress: progress,
-                    activeColor: activeColor,
-                    inactiveColor: inactiveColor,
-                    dragging: _dragging,
+              // 补间期间逐帧重绘只限于波形本身，不牵连整张音频卡片。
+              child: RepaintBoundary(
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(end: target),
+                  duration: _dragging || _jumpingBack
+                      ? Duration.zero
+                      : ExpressiveMotion.duration(
+                          context,
+                          ExpressiveMotion.fast,
+                        ),
+                  curve: Curves.linear,
+                  builder: (context, progress, _) => CustomPaint(
+                    size: Size(width, widget.height),
+                    painter: _WaveformBarPainter(
+                      waveform: widget.waveform,
+                      progress: progress,
+                      activeColor: activeColor,
+                      inactiveColor: inactiveColor,
+                      dragging: _dragging,
+                    ),
                   ),
                 ),
               ),

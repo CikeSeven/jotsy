@@ -6,6 +6,7 @@ import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// 顶行：录音徽标、名称（可重命名）、已播/总时长。
 class DiaryAudioPlayerHeader extends StatelessWidget {
@@ -134,48 +135,59 @@ class DiaryAudioPlayButton extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final restingRadius = playing ? 16.0 : _size / 2;
-    return IconButton.filledTonal(
-      tooltip: playing
-          ? l10n.recordingPlaybackPause
-          : l10n.recordingPlaybackPlay,
-      style: ButtonStyle(
-        animationDuration: ExpressiveMotion.duration(
-          context,
-          ExpressiveMotion.medium,
-        ),
-        fixedSize: const WidgetStatePropertyAll(Size.square(_size)),
-        // 失败时交还给主题的禁用配色，才能看出“不可用”。
-        backgroundColor: failed
-            ? null
-            : WidgetStatePropertyAll(
-                playing ? colors.primary : colors.secondaryContainer,
+    // 形状随 ButtonStyle 的隐式动画形变，但它不补间颜色：tonal ↔ 实心主色的
+    // 换色经 ExpressiveStateBlend 与形变同步过渡，而不是一帧跳色。
+    return ExpressiveStateBlend(
+      active: playing,
+      duration: ExpressiveMotion.medium,
+      child: _buildIcon(),
+      builder: (context, t, icon) => IconButton.filledTonal(
+        tooltip: playing
+            ? l10n.recordingPlaybackPause
+            : l10n.recordingPlaybackPlay,
+        style: ButtonStyle(
+          animationDuration: ExpressiveMotion.duration(
+            context,
+            ExpressiveMotion.medium,
+          ),
+          fixedSize: const WidgetStatePropertyAll(Size.square(_size)),
+          // 失败时交还给主题的禁用配色，才能看出“不可用”。
+          backgroundColor: failed
+              ? null
+              : WidgetStatePropertyAll(
+                  Color.lerp(colors.secondaryContainer, colors.primary, t),
+                ),
+          foregroundColor: failed
+              ? null
+              : WidgetStatePropertyAll(
+                  Color.lerp(colors.onSecondaryContainer, colors.onPrimary, t),
+                ),
+          shape: WidgetStateProperty.resolveWith(
+            (states) => RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                states.contains(WidgetState.pressed) ? 12 : restingRadius,
               ),
-        foregroundColor: failed
-            ? null
-            : WidgetStatePropertyAll(
-                playing ? colors.onPrimary : colors.onSecondaryContainer,
-              ),
-        shape: WidgetStateProperty.resolveWith(
-          (states) => RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-              states.contains(WidgetState.pressed) ? 12 : restingRadius,
             ),
           ),
         ),
+        onPressed: failed ? null : onPressed,
+        icon: icon!,
       ),
-      onPressed: failed ? null : onPressed,
-      // 取音频通常很快：延迟出现等待指示，避免每次点播放都闪一下。
-      icon: DelayedLoadingGate(
-        loading: loading,
-        builder: (context, showLoading) => ExpressiveIconSwap(
-          switchKey: showLoading ? 'loading' : (playing ? 'pause' : 'play'),
-          child: showLoading
-              ? const ExpressiveLoadingIndicator(size: 24)
-              : FaIcon(
-                  playing ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
-                  size: 15,
-                ),
-        ),
+    );
+  }
+
+  Widget _buildIcon() {
+    // 取音频通常很快：延迟出现等待指示，避免每次点播放都闪一下。
+    return DelayedLoadingGate(
+      loading: loading,
+      builder: (context, showLoading) => ExpressiveIconSwap(
+        switchKey: showLoading ? 'loading' : (playing ? 'pause' : 'play'),
+        child: showLoading
+            ? const ExpressiveLoadingIndicator(size: 24)
+            : FaIcon(
+                playing ? FontAwesomeIcons.pause : FontAwesomeIcons.play,
+                size: 15,
+              ),
       ),
     );
   }

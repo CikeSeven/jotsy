@@ -95,6 +95,10 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('会议报告.pdf'));
       await tester.pump();
+      // 打开通常瞬间完成：300ms 内不换成等待指示，超时后才出现。
+      expect(find.byType(ExpressiveLoadingIndicator), findsNothing);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
       expect(find.byType(ExpressiveLoadingIndicator), findsOneWidget);
       await tester.tap(find.text('会议报告.pdf'));
       expect(service.openedPaths, [file.path]);

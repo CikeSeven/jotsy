@@ -8,6 +8,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_export_controller.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
+import 'package:node_diary/ui/widgets/expressive_icon_swap.dart';
 
 /// 弹出二次确认后才授权 controller 保存，取消及页面退出均不会触发导出。
 class DiaryVideoExportButton extends StatefulWidget {
@@ -83,22 +85,29 @@ class _DiaryVideoExportButtonState extends State<DiaryVideoExportButton> {
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: widget.controller,
+    // 导出较快时不闪等待指示：超过 300ms 才换成指示器，两者缩放淡入切换。
     builder: (context, _) => SizedBox.square(
       dimension: 44,
-      child: widget.controller.isExporting
-          ? Center(
-              child: ExpressiveLoadingIndicator(
-                size: 24,
-                semanticLabel: context.l10n.videoExporting,
-              ),
-            )
-          : IconButton(
-              tooltip: context.l10n.videoExport,
-              onPressed: widget.controller.isBusy
-                  ? null
-                  : () => unawaited(_confirmExport()),
-              icon: const FaIcon(FontAwesomeIcons.download, size: 16),
-            ),
+      child: DelayedLoadingGate(
+        loading: widget.controller.isExporting,
+        builder: (context, showLoading) => ExpressiveIconSwap(
+          switchKey: showLoading,
+          child: showLoading
+              ? Center(
+                  child: ExpressiveLoadingIndicator(
+                    size: 24,
+                    semanticLabel: context.l10n.videoExporting,
+                  ),
+                )
+              : IconButton(
+                  tooltip: context.l10n.videoExport,
+                  onPressed: widget.controller.isBusy
+                      ? null
+                      : () => unawaited(_confirmExport()),
+                  icon: const FaIcon(FontAwesomeIcons.download, size: 16),
+                ),
+        ),
+      ),
     ),
   );
 }

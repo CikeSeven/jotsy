@@ -330,7 +330,9 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
               crossFadeState: _colorPickerExpanded
                   ? CrossFadeState.showSecond
                   : CrossFadeState.showFirst,
-              duration: ExpressiveMotion.duration(
+              // AnimatedCrossFade 内部用 AnimatedSize 过渡高度，减少动画时同样
+              // 不能传 0 时长（见 ExpressiveMotion.durationNonZero）。
+              duration: ExpressiveMotion.durationNonZero(
                 context,
                 ExpressiveMotion.fast,
               ),

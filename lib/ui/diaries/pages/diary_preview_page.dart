@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
@@ -17,6 +17,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/content_codec.dart';
 import '../../../core/services/app_service.dart';
@@ -24,14 +25,15 @@ import '../../../l10n/app_localizations.dart';
 import '../../../utils/precise_time_formatter.dart';
 import '../../../utils/relative_time_formatter.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/qweather_icon.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
-import '../widgets/diary_action_loading_overlay.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
+import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/image_viewer_page.dart';
 import 'edit_diary_page.dart';
 import 'locked_diary_page.dart';
@@ -48,9 +50,21 @@ enum DiaryPreviewResult { deleted }
 /// - 避免“后台详情卡片”观感；
 /// - 保留右上角动作菜单（分享/编辑/删除）。
 class DiaryPreviewPage extends ConsumerStatefulWidget {
-  const DiaryPreviewPage({super.key, required this.diaryId});
+  const DiaryPreviewPage({
+    super.key,
+    required this.diaryId,
+    this.initialDetail,
+    this.coverHero,
+  });
 
   final String diaryId;
+
+  /// 列表封面抓取的画面：头图以它为共享元素落点与占位，本页销毁时释放。
+  final ImageViewerHero? coverHero;
+
+  /// 入口已持有的同一篇日记（`diary.diaryId` 必须等于 [diaryId]）；提供时首帧
+  /// 直接渲染，详情查询返回后由最新数据接管。
+  final DiaryWithTags? initialDetail;
 
   @override
   ConsumerState<DiaryPreviewPage> createState() => _DiaryPreviewPageState();
@@ -130,6 +144,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
 
   @override
   void dispose() {
+    // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
+    widget.coverHero?.dispose();
     _todoAutoSaveDebounceTimer?.cancel();
     _previewDocChangesSubscription?.cancel();
     _previewController?.dispose();
@@ -598,7 +614,13 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
   }
 
-  void _openImageViewer(List<String> sources, String initialSource) {
+  /// 打开看图页；[hero] 为点按处抓取的共享元素（封面或正文图），所有权随之
+  /// 转交看图页。
+  void _openImageViewer(
+    List<String> sources,
+    String initialSource, {
+    ImageViewerHero? hero,
+  }) {
     final normalizedSources = <String>[];
     final seenSources = <String>{};
     for (final source in sources) {
@@ -614,6 +636,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       normalizedSources.insert(0, normalizedInitialSource);
     }
     if (normalizedSources.isEmpty) {
+      hero?.dispose();
       return;
     }
 
@@ -621,14 +644,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       0,
       normalizedSources.indexOf(normalizedInitialSource),
     );
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ImageViewerPage(
-          items: normalizedSources
-              .map((source) => ImageViewerItem(source: source))
-              .toList(growable: false),
-          initialIndex: initialIndex,
-        ),
+    unawaited(
+      openImageViewer(
+        context,
+        items: normalizedSources
+            .map((source) => ImageViewerItem(source: source))
+            .toList(growable: false),
+        initialIndex: initialIndex,
+        hero: hero,
       ),
     );
   }
@@ -696,6 +719,10 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
       context: context,
       useSafeArea: true,
       showDragHandle: true,
+      // 底部面板默认滑入不读取系统“减少动态效果”；该模式下直接出现。
+      sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
+          ? AnimationStyle.noAnimation
+          : null,
       builder: (BuildContext sheetContext) {
         final colorScheme = Theme.of(sheetContext).colorScheme;
         return SafeArea(
@@ -756,14 +783,31 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   /// 2) 正文内所有图片。
   ///
   /// 预览页封面与正文图片共用同一组来源，点击任一图片可直接进入图片浏览页并左右切换。
+  /// 预览图片列表（封面 + 正文图）的缓存键与结果。
+  ///
+  /// 正文可能很长，整段 jsonDecode 只在封面或正文变化时重做：入口数据渲染
+  /// 首帧后，详情查询往往在路由滑入途中返回同一份正文，此时不再重复解析，
+  /// 避免转场半途多出一次长任务；加载遮罩等局部 setState 也不再重新解析。
+  String? _previewImagesCover;
+  String? _previewImagesContent;
+  List<String> _previewImages = const <String>[];
+
   List<String> _resolvePreviewImages(Diary diary) {
+    if (_previewImagesContent != null &&
+        diary.content == _previewImagesContent &&
+        diary.cover == _previewImagesCover) {
+      return _previewImages;
+    }
     final sources = <String>[];
     final explicitCover = diary.cover?.trim();
     if (explicitCover != null && explicitCover.isNotEmpty) {
       sources.add(explicitCover);
     }
     sources.addAll(_extractImageSourcesFromContent(diary.content));
-    return sources;
+    _previewImagesCover = diary.cover;
+    _previewImagesContent = diary.content;
+    _previewImages = List<String>.unmodifiable(sources);
+    return _previewImages;
   }
 
   List<String> _extractImageSourcesFromContent(String contentJson) {
@@ -1183,8 +1227,8 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               showCursor: false,
               checkBoxReadOnly: false,
               embedBuilders: buildDiaryQuillEmbedBuilders(
-                onImageClicked: (imageSource) {
-                  _openImageViewer(previewImages, imageSource);
+                onImageOpen: (imageSource, hero) {
+                  _openImageViewer(previewImages, imageSource, hero: hero);
                 },
               ),
             ),
@@ -1217,6 +1261,17 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   Widget build(BuildContext context) {
     final detailAsync = ref.watch(diaryDetailProvider(widget.diaryId));
 
+    // 入口（列表、搜索、日历）已持有同一篇日记的完整数据（分页查询包含正文与
+    // 标签）：详情首查返回前直接用它渲染整页，路由滑入时就是完整内容，而不是
+    // 先出 1~2 帧空壳再整页硬切。查询返回后渲染同一结构；正文未变时 Quill
+    // 控制器不会重建，画面没有变化。
+    final initialDetail = widget.initialDetail;
+    if (initialDetail != null &&
+        !detailAsync.hasValue &&
+        !detailAsync.hasError) {
+      return _buildDetailPage(initialDetail);
+    }
+
     return detailAsync.when(
       loading: () {
         return Scaffold(
@@ -1226,7 +1281,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
             title: Text(context.l10n.autoT0120),
             leading: _buildBackLeading(),
           ),
-          body: const Center(child: ExpressiveLoadingIndicator()),
+          body: const DelayedLoadingIndicator(),
         );
       },
       error: (Object error, StackTrace stackTrace) {
@@ -1272,92 +1327,103 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
           );
         }
 
-        _hadLoadedData = true;
-        final capsuleState = TimeCapsuleState.fromFields(
-          lockedAt: detail.diary.capsuleLockedAt,
-          unlockAt: detail.diary.capsuleUnlockAt,
-          now: DateTime.now(),
-        );
-        if (capsuleState.isLocked) {
-          return LockedDiaryPage(diaryId: widget.diaryId);
-        }
-        _currentDetailForTodoSave = detail;
-        _bindPreviewController(detail.diary.content);
-        final title = detail.diary.title.trim().isEmpty
-            ? context.l10n.autoT0033
-            : detail.diary.title.trim();
-        final previewImages = _resolvePreviewImages(detail.diary);
-        final coverSource = previewImages.firstOrNull;
-
-        return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          body: SafeArea(
-            top: false,
-            child: Stack(
-              children: <Widget>[
-                WidgetShotPlus(
-                  key: _shareCaptureKey,
-                  child: CustomScrollView(
-                    controller: _previewScrollController,
-                    slivers: <Widget>[
-                      _buildPreviewSliverAppBar(detail: detail),
-                      if (coverSource != null)
-                        _shareCaptureStaticCover
-                            ? _buildStaticShareCoverSliver(coverSource)
-                            : PublishDiaryCoverSliver(
-                                cover: coverSource,
-                                maxExtentHeight: 420,
-                                padding: EdgeInsets.zero,
-                                borderRadius: BorderRadius.zero,
-                                onTap: () {
-                                  _openImageViewer(previewImages, coverSource);
-                                },
-                              ),
-
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                          child: Text(
-                            title,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                          child: _buildMetaSection(detail),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              _buildCapsuleUnlockedInsight(detail),
-                              if (capsuleState.isCapsule)
-                                const SizedBox(height: 14),
-                              _buildContentSection(detail),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned.fill(
-                  child: DiaryActionLoadingOverlay(
-                    visible: _showActionLoading,
-                    label: _actionLoadingLabel,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return _buildDetailPage(detail);
       },
+    );
+  }
+
+  /// 已拿到日记数据时的完整页面（首查返回前的入口数据与查询结果共用）。
+  Widget _buildDetailPage(DiaryWithTags detail) {
+    _hadLoadedData = true;
+    final capsuleState = TimeCapsuleState.fromFields(
+      lockedAt: detail.diary.capsuleLockedAt,
+      unlockAt: detail.diary.capsuleUnlockAt,
+      now: DateTime.now(),
+    );
+    if (capsuleState.isLocked) {
+      return LockedDiaryPage(diaryId: widget.diaryId, initialDetail: detail);
+    }
+    _currentDetailForTodoSave = detail;
+    _bindPreviewController(detail.diary.content);
+    final title = detail.diary.title.trim().isEmpty
+        ? context.l10n.autoT0033
+        : detail.diary.title.trim();
+    final previewImages = _resolvePreviewImages(detail.diary);
+    final coverSource = previewImages.firstOrNull;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: SafeArea(
+        top: false,
+        child: Stack(
+          children: <Widget>[
+            WidgetShotPlus(
+              key: _shareCaptureKey,
+              child: CustomScrollView(
+                controller: _previewScrollController,
+                slivers: <Widget>[
+                  _buildPreviewSliverAppBar(detail: detail),
+                  if (coverSource != null)
+                    _shareCaptureStaticCover
+                        ? _buildStaticShareCoverSliver(coverSource)
+                        : PublishDiaryCoverSliver(
+                            cover: coverSource,
+                            maxExtentHeight: 420,
+                            padding: EdgeInsets.zero,
+                            borderRadius: BorderRadius.zero,
+                            heroTag: diaryCoverHeroTag(widget.diaryId),
+                            placeholder: widget.coverHero?.placeholder,
+                            onTap: (hero) {
+                              _openImageViewer(
+                                previewImages,
+                                coverSource,
+                                hero: hero,
+                              );
+                            },
+                          ),
+
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                      child: _buildMetaSection(detail),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 28),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          _buildCapsuleUnlockedInsight(detail),
+                          if (capsuleState.isCapsule)
+                            const SizedBox(height: 14),
+                          _buildContentSection(detail),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned.fill(
+              child: ActionLoadingOverlay(
+                visible: _showActionLoading,
+                label: _actionLoadingLabel,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

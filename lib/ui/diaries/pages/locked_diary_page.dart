@@ -9,7 +9,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
-import '../../widgets/app_loading_page.dart';
+import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/qweather_icon.dart';
 import '../models/time_capsule.dart';
@@ -17,19 +17,26 @@ import '../providers/diary_detail_provider.dart';
 import '../widgets/energy_battery_indicator.dart';
 
 class LockedDiaryPage extends ConsumerWidget {
-  const LockedDiaryPage({super.key, required this.diaryId});
+  const LockedDiaryPage({super.key, required this.diaryId, this.initialDetail});
 
   final String diaryId;
+
+  /// 入口已持有的同一篇日记；详情首查返回前直接用它渲染（见 DiaryPreviewPage）。
+  final DiaryWithTags? initialDetail;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final detailAsync = ref.watch(diaryDetailProvider(diaryId));
     final surfaceColor = Theme.of(context).colorScheme.surface;
+    final seeded = initialDetail;
+    if (seeded != null && !detailAsync.hasValue && !detailAsync.hasError) {
+      return _LockedDiaryContent(detail: seeded);
+    }
     return detailAsync.when(
       loading: () => Scaffold(
         backgroundColor: surfaceColor,
         appBar: _buildAppBar(context),
-        body: const AppLoadingContent(),
+        body: const DelayedLoadingIndicator(),
       ),
       error: (error, stackTrace) => Scaffold(
         backgroundColor: surfaceColor,

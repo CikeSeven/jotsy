@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 
 Future<String> _pngDataUri(int width, int height) async {
   final recorder = ui.PictureRecorder();
@@ -23,7 +24,7 @@ Future<String> _pngDataUri(int width, int height) async {
 Future<void> _pumpEditor(
   WidgetTester tester,
   quill.QuillController controller, {
-  void Function(String imageSource)? onImageClicked,
+  void Function(String imageSource, ImageViewerHero? hero)? onImageOpen,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -38,7 +39,7 @@ Future<void> _pumpEditor(
           controller: controller,
           config: quill.QuillEditorConfig(
             embedBuilders: buildDiaryQuillEmbedBuilders(
-              onImageClicked: onImageClicked,
+              onImageOpen: onImageOpen,
             ),
           ),
         ),
@@ -70,11 +71,15 @@ void main() {
       );
       addTearDown(controller.dispose);
       String? clicked;
+      ImageViewerHero? hero;
 
       await _pumpEditor(
         tester,
         controller,
-        onImageClicked: (imageSource) => clicked = imageSource,
+        onImageOpen: (imageSource, capturedHero) {
+          clicked = imageSource;
+          hero = capturedHero;
+        },
       );
 
       final image = find.descendant(
@@ -99,6 +104,15 @@ void main() {
       await tester.tap(image);
       await tester.pump();
       expect(clicked, isNotNull);
+      // 点按时抓取已绘制的画面作为看图页飞入画面，比例与原图一致。
+      expect(hero, isNotNull);
+      expect(hero!.aspectRatio, 2);
+      // 圆角挂在来源 Hero 上：飞行中从 16 补间到看图页的 0。
+      expect(
+        tester.widget<ImageHero>(find.byType(ImageHero)).borderRadius,
+        BorderRadius.circular(16),
+      );
+      hero!.dispose();
       expect(tester.takeException(), isNull);
     },
   );

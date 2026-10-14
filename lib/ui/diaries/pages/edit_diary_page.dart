@@ -5,7 +5,8 @@ import 'dart:ui';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:flutter/services.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,6 +22,7 @@ import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
+import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
@@ -43,6 +45,7 @@ import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_entrance.dart';
+import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
 
 part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_persistence_controller.dart';
@@ -83,6 +86,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   String? _draftCover;
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
+  final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
   final DiaryRecordingController _recordingController =
@@ -166,10 +170,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (_isCreateEntry && widget.restoreCreateDraft) {
       unawaited(_controller.restoreCreateDraftIfExists());
     }
+    if (widget.diaryId == null) {
+      _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
+    }
   }
 
   @override
   void dispose() {
+    _routeEntranceWaiter.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     _createDraftSaveDebounceTimer?.cancel();
@@ -355,8 +363,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       controller: _contentController,
       focusNode: _contentFocusNode,
       scrollController: _editorInnerScrollController,
+      // 新建时不在构建期自动聚焦：键盘会与页面滑入同时弹出并逐帧挤压布局。
+      // 改由 [RouteEntranceWaiter] 在转场结束后聚焦（见 initState）。
       config: quill.QuillEditorConfig(
-        autoFocus: widget.diaryId == null,
+        autoFocus: false,
         placeholder: placeholder,
         scrollable: false,
         onTapUp: (details, getPosition) => isDiaryPlaybackTap(
@@ -542,7 +552,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     return detailAsync.when(
       loading: () => Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
-        body: const Center(child: ExpressiveLoadingIndicator()),
+        body: const DelayedLoadingIndicator(),
       ),
       error: (Object error, StackTrace stackTrace) => Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -796,8 +806,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                     ),
                   ),
                 ),
-              if (_mediaImportController.isCopying)
-                const DiaryMediaImportOverlay(),
+              DiaryMediaImportOverlay(
+                copying: _mediaImportController.isCopying,
+              ),
             ],
           ),
         );

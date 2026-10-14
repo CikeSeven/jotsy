@@ -3,20 +3,25 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/app_radii.dart';
-import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
+import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 
 /// 正文图片按独立块渲染，圆角、微边框与上下留白和视频/附件卡片保持同一节奏。
 ///
 /// 上游 [QuillEditorImageEmbedBuilder] 把图片当作行内 WidgetSpan 放进文本行：
 /// 直角、贴着文字基线、没有段间距。这里只接管显示层：
-/// - 点击仍复用上游构建出的回调：编辑页保留缩放/复制/删除/保存菜单，阅读页
-///   继续经 `onImageClicked` 打开大图（上游菜单未导出，无法在这里直接构造）；
+/// - 编辑页点击仍复用上游构建出的回调，保留缩放/复制/删除/保存菜单（上游菜单
+///   未导出，无法在这里直接构造）；
+/// - 只读正文提供 [onImageOpen] 时由这里接管点击：图片作为看图页的共享元素
+///   来源，点按瞬间抓取画面并交给回调，看图页从图片原位展开；
 /// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]。
 class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
-  DiaryImageEmbedBuilder({required super.config});
+  DiaryImageEmbedBuilder({required super.config, this.onImageOpen});
+
+  final void Function(String imageSource, ImageViewerHero? hero)? onImageOpen;
 
   /// 图片独占一行时走 EmbedProxy 块级布局；与文字同行的旧数据 Quill 仍按行内渲染。
   @override
@@ -27,11 +32,25 @@ class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
     final upstream = super.build(context, embedContext);
     // 升级后若上游不再以 GestureDetector 包裹，退回原样渲染，至少不丢点击菜单。
     if (upstream is! GestureDetector) return upstream;
-    final image = GestureDetector(
-      onTap: upstream.onTap,
-      child: DiaryEmbeddedImage(
-        source: embedContext.node.value.data.toString(),
-        bounds: diaryImageEmbedBounds(embedContext.node),
+    final source = embedContext.node.value.data.toString();
+    final open = embedContext.readOnly ? onImageOpen : null;
+    // 标签按 embed 在文档中的位置区分：同一张图可能在正文里出现多次。
+    final heroTag = open == null
+        ? null
+        : ImageViewerHeroTag('diary_body', embedContext.node.documentOffset);
+    final image = Builder(
+      builder: (imageContext) => GestureDetector(
+        onTap: open == null
+            ? upstream.onTap
+            : () => open(
+                source,
+                ImageViewerHero.capture(imageContext, tag: heroTag!),
+              ),
+        child: DiaryEmbeddedImage(
+          source: source,
+          bounds: diaryImageEmbedBounds(embedContext.node),
+          heroTag: heroTag,
+        ),
       ),
     );
     if (embedContext.inline) return image;
@@ -50,10 +69,14 @@ class DiaryEmbeddedImage extends StatefulWidget {
     super.key,
     required this.source,
     this.bounds = const BoxConstraints(),
+    this.heroTag,
   });
 
   final String source;
   final BoxConstraints bounds;
+
+  /// 看图页共享元素标签；为 null（编辑页）时不建立 Hero。
+  final Object? heroTag;
 
   @override
   State<DiaryEmbeddedImage> createState() => _DiaryEmbeddedImageState();
@@ -78,34 +101,40 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
     // 裁切与边框因此贴合画面本身。
     return ConstrainedBox(
       constraints: widget.bounds,
-      child: Image(
-        image: _provider,
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          final framed = ClipRRect(
-            borderRadius: radius,
-            child: DecoratedBox(
-              position: DecorationPosition.foreground,
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                border: Border.fromBorderSide(
-                  ExpressiveSurfaces.cardBorderSide(colors),
-                ),
-              ),
-              child: child,
-            ),
-          );
-          // 已在缓存中的图片直接显示；首次解码时淡入，避免尺寸确定瞬间硬切。
-          if (wasSynchronouslyLoaded) return framed;
-          return AnimatedOpacity(
-            opacity: frame == null ? 0 : 1,
-            duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-            curve: ExpressiveMotion.effects,
-            child: framed,
-          );
-        },
-        errorBuilder: (context, error, stackTrace) =>
-            const _DiaryImageFallback(),
+      child: ImageViewerHeroSource(
+        tag: widget.heroTag,
+        borderRadius: BorderRadius.circular(AppRadii.input),
+        child: _buildImage(colors, radius),
       ),
+    );
+  }
+
+  Widget _buildImage(ColorScheme colors, BorderRadius radius) {
+    return Image(
+      image: _provider,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        final framed = ClipRRect(
+          borderRadius: radius,
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: Border.fromBorderSide(
+                ExpressiveSurfaces.cardBorderSide(colors),
+              ),
+            ),
+            child: child,
+          ),
+        );
+        // 已在缓存中的图片直接显示；首次解码时淡入，避免尺寸确定瞬间硬切。
+        return expressiveImageFrameBuilder(
+          context,
+          framed,
+          frame,
+          wasSynchronouslyLoaded,
+        );
+      },
+      errorBuilder: (context, error, stackTrace) => const _DiaryImageFallback(),
     );
   }
 }

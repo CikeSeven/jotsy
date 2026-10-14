@@ -149,7 +149,12 @@ class PublishPanelCoordinator {
   /// 根据 sheet metrics 同步进度，返回值表示进度是否有变化。
   bool syncProgressFromMetrics(SheetMetrics? metrics) {
     final nextProgress = resolveProgress(metrics);
-    if ((nextProgress - progress).abs() < 0.0001) {
+    // 过滤极小抖动，但端点（0/1）总是落实：吸附动画最后一步往往不足阈值，
+    // 不落实会让收起/展开态停在 0.9999 这类值上，依赖进度的宽度、箭头朝向
+    // 差之毫厘。
+    final reachedEnd =
+        (nextProgress == 0 || nextProgress == 1) && nextProgress != progress;
+    if (!reachedEnd && (nextProgress - progress).abs() < 0.0001) {
       return false;
     }
     progress = nextProgress;

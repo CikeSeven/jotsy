@@ -501,7 +501,8 @@ class PublishDiaryController {
 
   /// 执行发布写库。
   ///
-  /// 成功后返回上一级页面，失败时仅提示不退出。
+  /// 成功后先通知打开者（[PublishDiaryPage.onPublished]，编辑页借此静默移出
+  /// 路由栈），再以新日记 id 作为结果退场；失败时仅提示不退出。
   Future<void> publish() async {
     if (_state._saving) {
       return;
@@ -513,7 +514,7 @@ class PublishDiaryController {
       final db = _state.ref.read(appDatabaseProvider);
       final schedule = _state._timeCapsuleSchedule;
       final lockedAt = schedule == null ? null : DateTime.now();
-      await db.createDiary(
+      final diaryId = await db.createDiary(
         title: _state.widget.initialDraft.title,
         contentDocJson: _state.widget.initialDraft.contentDocJson,
         contentText: _state.widget.initialDraft.contentText,
@@ -532,6 +533,8 @@ class PublishDiaryController {
       }
       if (schedule != null) {
         _state.setState(() => _state._showCapsuleSealOverlay = true);
+        // 封存是一次性的仪式动作：与封存卡片同时给出“成功”触觉。
+        unawaited(HapticFeedback.successNotification());
         // 等封存卡片入场动画播完，再停留片刻让用户读到提示后返回；
         // 减少动画时入场时长为 0，只保留停留时间。
         await Future<void>.delayed(
@@ -545,7 +548,8 @@ class PublishDiaryController {
           return;
         }
       }
-      Navigator.of(_state.context).pop(true);
+      _state.widget.onPublished?.call(diaryId);
+      Navigator.of(_state.context).pop(diaryId);
     } catch (error) {
       if (!_state.mounted) {
         return;

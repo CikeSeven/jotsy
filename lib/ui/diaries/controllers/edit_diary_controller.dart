@@ -429,6 +429,22 @@ class EditDiaryController {
     Navigator.of(_state.context).pop(true);
   }
 
+  /// 发布成功、发布页即将退场时调用：清除新建草稿，并把编辑页静默移出路由栈。
+  ///
+  /// 必须赶在发布页退场之前：导航器只允许在上层路由静止且不透明时立即移除
+  /// 下层路由，若等发布页开始退场再移除，会被推迟到退场结束——编辑页先露出
+  /// 再瞬间消失。此前的做法是发布页退场后编辑页再 pop 一次，两段退场叠在
+  /// 一起。现在发布页滑走时露出的直接是列表；新日记 id 作为编辑页的结果交给
+  /// 打开者，列表据此播放新卡片的出现动画。草稿清理不依赖页面状态，页面被
+  /// 移除后继续完成。
+  void _handlePublished(String diaryId) {
+    unawaited(clearCreateDraft());
+    final route = ModalRoute.of(_state.context);
+    if (route != null && route.isActive) {
+      Navigator.of(_state.context).removeRoute(route, diaryId);
+    }
+  }
+
   /// 跳转到发布页，并在返回后回写发布页修改过的草稿上下文。
   Future<void> openPublishPage() async {
     if (!validateDraft()) {
@@ -439,6 +455,7 @@ class EditDiaryController {
       MaterialPageRoute<Object>(
         builder: (BuildContext context) {
           return PublishDiaryPage(
+            onPublished: _handlePublished,
             initialDraft: NewDiaryDraft(
               title: _state._titleController.text,
               contentDocJson: _state._currentContentDocJson,
@@ -465,15 +482,6 @@ class EditDiaryController {
     );
 
     if (!_state.mounted) {
-      return;
-    }
-
-    if (result == true) {
-      await clearCreateDraft();
-      if (!_state.mounted) {
-        return;
-      }
-      Navigator.of(_state.context).pop(true);
       return;
     }
 

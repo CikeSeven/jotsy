@@ -11,6 +11,12 @@ extension EditDiaryRecordingFlow on EditDiaryController {
     await DiaryVideoPlayerController.pauseActive();
     if (!_state.mounted || !_state._recordingPanelOpen) return;
     await _state._recordingController.start();
+    // 真正进入录音（权限通过、原生会话建立）才震一下，确认“已经在录”；失败时
+    // 面板状态行会给出原因，不再额外震动。
+    if (_state.mounted &&
+        _state._recordingController.phase == DiaryRecordingPhase.recording) {
+      unawaited(HapticFeedback.mediumImpact());
+    }
   }
 
   Future<void> finishRecording() async {
@@ -33,6 +39,8 @@ extension EditDiaryRecordingFlow on EditDiaryController {
         selection: selection,
         recording: recording,
       );
+      // 录音已插入正文：轻震确认结束动作生效。
+      unawaited(HapticFeedback.lightImpact());
       _state.setState(() {
         _state._recordingPanelOpen = false;
         _state._recordingSelection = null;

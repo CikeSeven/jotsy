@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -23,7 +25,7 @@ import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
+import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
@@ -38,9 +40,17 @@ part '../controllers/publish_diary_controller.dart';
 /// - 承载底部面板交互（封面/标签/位置/天气/心情/精力）；
 /// - 最终调用控制器执行发布写库。
 class PublishDiaryPage extends ConsumerStatefulWidget {
-  const PublishDiaryPage({super.key, required this.initialDraft});
+  const PublishDiaryPage({
+    super.key,
+    required this.initialDraft,
+    this.onPublished,
+  });
 
   final NewDiaryDraft initialDraft;
+
+  /// 写库成功、本页即将退场时调用（参数为新日记 id）。此刻本页静止且不透明，
+  /// 打开者（编辑页）可以在这里把自己静默移出路由栈。
+  final ValueChanged<String>? onPublished;
 
   @override
   ConsumerState<PublishDiaryPage> createState() => _PublishDiaryPageState();
@@ -197,8 +207,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
             CustomScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: <Widget>[
-                if (_controller.normalizedCover != null)
-                  PublishDiaryCoverSliver(cover: _controller.normalizedCover!),
+                AnimatedPublishDiaryCoverSliver(
+                  cover: _controller.normalizedCover,
+                ),
                 SliverToBoxAdapter(
                   // 标题与正文预览区域。
                   child: Padding(

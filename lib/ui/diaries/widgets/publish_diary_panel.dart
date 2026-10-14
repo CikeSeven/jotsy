@@ -16,8 +16,11 @@ import 'package:smooth_sheets/smooth_sheets.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/qweather_icon.dart';
 import 'energy_battery_indicator.dart';
+import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// 发布页底部悬浮面板（smooth_sheets 版）。
 ///
@@ -167,6 +170,14 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   late TimeCapsulePrecision _pendingCapsulePrecision;
   double _lastEnergyLevel = 4;
 
+  /// 展开进度（0=收起，1=展开）的可监听副本。
+  ///
+  /// 拖拽面板时进度逐帧变化：只让依赖进度的局部（宽度内缩与抬升、详情淡入与
+  /// 可交互阈值、表头箭头与文案）跟随重建，三张子页的内容子树保持不变，不再
+  /// 每帧整面板 setState。只在 [_handleSheetMetricsChanged] 确认处于非构建/
+  /// 布局阶段后写入，监听者可以安全地标脏重建。
+  final ValueNotifier<double> _progress = ValueNotifier<double>(0);
+
   double get _activeExpandedHeight => _panelCoordinator.activeExpandedHeight;
 
   double get _collapsedFactor => _collapsedHeight / _activeExpandedHeight;
@@ -213,6 +224,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       _handleSheetMetricsChanged,
     );
     _panelCoordinator.dispose();
+    _progress.dispose();
     super.dispose();
   }
 
@@ -285,7 +297,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       if (!mounted) {
         return;
       }
-      setState(() {});
+      _progress.value = _panelCoordinator.progress;
       widget.onProgressChanged?.call(_panelCoordinator.progress);
     }
 
@@ -308,29 +320,31 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
       ),
       colorScheme.surfaceContainerHighest,
     );
-    // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
-    final horizontalInset = lerpDouble(
-      _collapsedHorizontalInset,
-      _expandedHorizontalInset,
-      _panelCoordinator.progress,
-    )!;
-    final extraLift = lerpDouble(
-      _collapsedExtraLift,
-      0,
-      _panelCoordinator.progress,
-    )!;
-
     // 1) 不叠加键盘高度：宿主页 Scaffold 默认 resizeToAvoidBottomInset，body
     //    底边已经是键盘顶边，面板以 Positioned(bottom: 0) 挂在 body 内；再加
     //    viewInsets 会抬升两倍键盘高度（收起态会悬在键盘上方 300+dp）。
     // 2) 用普通 Padding 而非 AnimatedPadding：内缩量由拖拽进度逐帧给出，
     //    AnimatedPadding 每帧被重新定向，会让面板宽度滞后于手指。
-    return Padding(
-      padding: EdgeInsets.only(
-        left: horizontalInset,
-        right: horizontalInset,
-        bottom: _collapsedBottomGap + extraLift,
-      ),
+    // 3) 只有这层 Padding 随进度重建，面板本体作为缓存的 child 传入。
+    return ValueListenableBuilder<double>(
+      valueListenable: _progress,
+      builder: (BuildContext context, double progress, Widget? child) {
+        // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
+        final horizontalInset = lerpDouble(
+          _collapsedHorizontalInset,
+          _expandedHorizontalInset,
+          progress,
+        )!;
+        final extraLift = lerpDouble(_collapsedExtraLift, 0, progress)!;
+        return Padding(
+          padding: EdgeInsets.only(
+            left: horizontalInset,
+            right: horizontalInset,
+            bottom: _collapsedBottomGap + extraLift,
+          ),
+          child: child,
+        );
+      },
       child: SizedBox(
         // SheetViewport 需要有限高度约束，否则会触发布局断言。
         height: _activeExpandedHeight,
@@ -472,9 +486,6 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
     required Widget header,
     required Widget content,
   }) {
-    final detailsOpacity = ((_panelCoordinator.progress - 0.15) / 0.85)
-        .clamp(0.0, 1.0)
-        .toDouble();
     final dividerColor = Theme.of(
       context,
     ).colorScheme.outlineVariant.withValues(alpha: 0.5);
@@ -484,10 +495,20 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
         Positioned.fill(
           top: _collapsedHeight + 1,
           child: ClipRect(
-            child: IgnorePointer(
-              // 只在展开到一定程度后开放内部交互，避免半展开误触。
-              ignoring: _panelCoordinator.progress < 0.58,
-              child: Opacity(opacity: detailsOpacity, child: content),
+            // 拖拽中只重建淡入层与交互开关，子页内容作为缓存 child 不随进度重建。
+            child: ValueListenableBuilder<double>(
+              valueListenable: _progress,
+              builder: (BuildContext context, double progress, Widget? child) {
+                final detailsOpacity = ((progress - 0.15) / 0.85)
+                    .clamp(0.0, 1.0)
+                    .toDouble();
+                return IgnorePointer(
+                  // 只在展开到一定程度后开放内部交互，避免半展开误触。
+                  ignoring: progress < 0.58,
+                  child: Opacity(opacity: detailsOpacity, child: child),
+                );
+              },
+              child: content,
             ),
           ),
         ),
@@ -649,40 +670,64 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
 
   Widget _buildMainHeader(BuildContext context) {
     final l10n = context.l10n;
-    final isCollapsedVisual = _panelCoordinator.progress < 0.56;
-    final icon = isCollapsedVisual
-        ? FontAwesomeIcons.anglesUp
-        : FontAwesomeIcons.anglesDown;
-    final title = isCollapsedVisual ? l10n.autoT0158 : l10n.autoT0159;
+    final titleStyle = Theme.of(
+      context,
+    ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700);
+    final reduceMotion = ExpressiveMotion.reduceMotion(context);
     return SizedBox(
       height: _collapsedHeight,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: () {
-            if (isCollapsedVisual) {
-              _expandToMax();
-              return;
-            }
-            _collapseToMin();
-          },
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                FaIcon(icon, size: 14),
-                const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+      child: ValueListenableBuilder<double>(
+        valueListenable: _progress,
+        builder: (BuildContext context, double progress, Widget? _) {
+          final isCollapsedVisual = progress < 0.56;
+          // 箭头随拖拽进度连续翻转：纵向缩放 1 → -1，上指的双箭头先压扁成一道
+          // 横线再翻成下指，跟手且不会在越过阈值的那一帧突然掉头；文案仍按
+          // 阈值切换，用短交叉淡入衔接。减少动态效果时朝向按阈值直接切换。
+          final flip = reduceMotion
+              ? (isCollapsedVisual ? 1.0 : -1.0)
+              : 1 - 2 * progress;
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: isCollapsedVisual ? _expandToMax : _collapseToMin,
+              child: Center(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.diagonal3Values(1, flip, 1),
+                      child: const FaIcon(FontAwesomeIcons.anglesUp, size: 14),
+                    ),
+                    const SizedBox(width: 10),
+                    // 中英文案长短不一：宽度随文案平滑过渡，箭头不会跳位。
+                    AnimatedSize(
+                      duration: ExpressiveMotion.durationNonZero(
+                        context,
+                        ExpressiveMotion.fast,
+                      ),
+                      curve: ExpressiveMotion.effects,
+                      child: AnimatedSwitcher(
+                        duration: ExpressiveMotion.duration(
+                          context,
+                          ExpressiveMotion.fast,
+                        ),
+                        switchInCurve: ExpressiveMotion.effects,
+                        switchOutCurve: ExpressiveMotion.exit,
+                        child: Text(
+                          isCollapsedVisual ? l10n.autoT0158 : l10n.autoT0159,
+                          key: ValueKey<bool>(isCollapsedVisual),
+                          style: titleStyle,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -945,13 +990,20 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
     final tagColor = Color(tag.color);
+    // 选中换色经 ExpressiveStateBlend 补间（Material 不补间颜色）。
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: selected
-            ? tagColor.withValues(alpha: isLight ? 0.12 : 0.22)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(12),
+      child: ExpressiveStateBlend(
+        active: selected,
+        builder: (context, t, child) => Material(
+          color: Color.lerp(
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+            tagColor.withValues(alpha: isLight ? 0.12 : 0.22),
+            t,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          child: child,
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () => widget.onToggleTag(tag.id, !selected),
@@ -995,12 +1047,15 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                       ),
                     ),
                   ),
-                  FaIcon(
-                    selected
-                        ? FontAwesomeIcons.solidCircleCheck
-                        : FontAwesomeIcons.circle,
-                    size: 18,
-                    color: selected ? tagColor : colorScheme.outlineVariant,
+                  ExpressiveIconSwap(
+                    switchKey: selected,
+                    child: FaIcon(
+                      selected
+                          ? FontAwesomeIcons.solidCircleCheck
+                          : FontAwesomeIcons.circle,
+                      size: 18,
+                      color: selected ? tagColor : colorScheme.outlineVariant,
+                    ),
                   ),
                 ],
               ),
@@ -1065,16 +1120,13 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                         : widget.onResolveLocation,
                     tooltip: l10n.autoT0169,
                     visualDensity: VisualDensity.compact,
-                    icon: widget.locating
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: ExpressiveLoadingIndicator(),
-                          )
-                        : const FaIcon(
-                            FontAwesomeIcons.locationCrosshairs,
-                            size: 14,
-                          ),
+                    icon: _buildResolvingIcon(
+                      resolving: widget.locating,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.locationCrosshairs,
+                        size: 14,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -1127,17 +1179,14 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                         : widget.onResolveWeather,
                     tooltip: l10n.autoT0171,
                     visualDensity: VisualDensity.compact,
-                    icon: widget.weatherLoading
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: ExpressiveLoadingIndicator(),
-                          )
-                        : QWeatherIcon(
-                            iconCode: widget.weatherIconCode,
-                            weatherText: widget.weatherController.text,
-                            size: 14,
-                          ),
+                    icon: _buildResolvingIcon(
+                      resolving: widget.weatherLoading,
+                      icon: QWeatherIcon(
+                        iconCode: widget.weatherIconCode,
+                        weatherText: widget.weatherController.text,
+                        size: 14,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -1145,6 +1194,25 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
           ),
         ),
       ],
+    );
+  }
+
+  /// 定位/天气按钮的图标：按钮在请求开始时立即禁用防止连点；请求超过
+  /// [DelayedLoadingGate.defaultDelay] 才把图标换成加载指示器，命中缓存的
+  /// 快速返回不会闪一下转圈，切换本身经 [ExpressiveIconSwap] 过渡。
+  Widget _buildResolvingIcon({required bool resolving, required Widget icon}) {
+    return DelayedLoadingGate(
+      loading: resolving,
+      builder: (BuildContext context, bool showLoading) => ExpressiveIconSwap(
+        switchKey: showLoading,
+        child: showLoading
+            ? const SizedBox(
+                width: 14,
+                height: 14,
+                child: ExpressiveLoadingIndicator(),
+              )
+            : icon,
+      ),
     );
   }
 
@@ -1270,17 +1338,27 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
         capsuleLabel != null &&
         capsuleLabel.isNotEmpty;
 
-    return Material(
-      color: hasCapsule
-          ? colorScheme.primaryContainer.withValues(alpha: 0.56)
-          : colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: hasCapsule
-              ? colorScheme.primary.withValues(alpha: 0.34)
-              : colorScheme.outlineVariant.withValues(alpha: 0.45),
+    // 设置/清除时间胶囊后底色与描边经 ExpressiveStateBlend 补间（Material 只
+    // 补间形状，不补间颜色）。
+    return ExpressiveStateBlend(
+      active: hasCapsule,
+      builder: (context, t, child) => Material(
+        color: Color.lerp(
+          colorScheme.surfaceContainerHighest,
+          colorScheme.primaryContainer.withValues(alpha: 0.56),
+          t,
         ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(
+            color: Color.lerp(
+              colorScheme.outlineVariant.withValues(alpha: 0.45),
+              colorScheme.primary.withValues(alpha: 0.34),
+              t,
+            )!,
+          ),
+        ),
+        child: child,
       ),
       child: InkWell(
         onTap: _openCapsulePage,
@@ -1411,7 +1489,12 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
           ],
         ),
         AnimatedSize(
-          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+          // 减少动画时用 1ms 近似瞬时：0 时长的 AnimatedSize 会在自身
+          // performLayout 内重新标脏而触发断言（见 ExpressiveMotion.durationNonZero）。
+          duration: ExpressiveMotion.durationNonZero(
+            context,
+            ExpressiveMotion.fast,
+          ),
           curve: ExpressiveMotion.effects,
           alignment: Alignment.topCenter,
           child: isEnergyEnabled

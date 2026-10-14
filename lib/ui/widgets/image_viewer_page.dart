@@ -1,12 +1,16 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/core/services/image_export_service.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/double_tap_zoom_viewer.dart';
+import 'package:node_diary/ui/widgets/image_viewer_export_controller.dart';
+import 'package:node_diary/ui/widgets/image_viewer_full_image.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/image_viewer_page_counter.dart';
+import 'package:node_diary/ui/widgets/swipe_dismiss_viewer.dart';
 
 /// 通用图片查看项。
 class ImageViewerItem {
@@ -15,22 +19,67 @@ class ImageViewerItem {
   final String source;
 }
 
+/// 打开看图页。
+///
+/// 专用路由：不透明度为 false（下拉关闭时能看到下层页面）、整页淡入淡出，时长
+/// 走 standard，减少动画时直接切换。[hero] 描述初始页的共享元素飞入（见
+/// [ImageViewerHero.capture]），所有权随之转交看图页；为 null 时只做淡入。
+Future<void> openImageViewer(
+  BuildContext context, {
+  required List<ImageViewerItem> items,
+  required int initialIndex,
+  ImageViewerHero? hero,
+}) {
+  final duration = ExpressiveMotion.duration(
+    context,
+    ExpressiveMotion.standard,
+  );
+  return Navigator.of(context).push<void>(
+    PageRouteBuilder<void>(
+      opaque: false,
+      transitionDuration: duration,
+      reverseTransitionDuration: duration,
+      pageBuilder: (context, animation, secondaryAnimation) => ImageViewerPage(
+        items: items,
+        initialIndex: initialIndex,
+        initialHero: hero,
+      ),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+          FadeTransition(
+            opacity: animation.drive(
+              CurveTween(curve: ExpressiveMotion.effects),
+            ),
+            child: child,
+          ),
+    ),
+  );
+}
+
 /// 通用图片浏览页。
 ///
 /// 职责边界：
-/// - 负责“全屏浏览 + 左右切图 + 索引展示 + 保存到相册 / 分享当前图片”；
+/// - 负责“全屏浏览 + 左右切图 + 双击/捏合缩放 + 下拉关闭 + 索引展示 + 保存到
+///   相册 / 分享当前图片”；当前页放大时禁用左右翻页与下拉关闭，拖动只用于平移
+///   查看细节；
+/// - 初始页可携带共享元素（[initialHero]）：从缩略图/正文图连续展开，返回时
+///   飞回原处；翻到其他页后返回只做淡出；
 /// - 不承担数据加载、去重或业务归属判断，图片列表由调用方透传；
 /// - 渲染层同时兼容本地图片路径与网络图片 URL；
-/// - 保存/分享委托给 [ImageExportService]，本页只负责触发、loading 态与结果提示。
+/// - 保存/分享的流程编排在 [ImageViewerExportController]，本页只负责触发、
+///   loading 遮罩与结果提示。
 class ImageViewerPage extends StatefulWidget {
   const ImageViewerPage({
     super.key,
     required this.items,
     required this.initialIndex,
+    this.initialHero,
   });
 
   final List<ImageViewerItem> items;
   final int initialIndex;
+
+  /// 初始页的共享元素；本页负责在销毁时释放其占位画面。
+  final ImageViewerHero? initialHero;
 
   @override
   State<ImageViewerPage> createState() => _ImageViewerPageState();
@@ -40,28 +89,31 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
   late final PageController _pageController;
   late int _activeIndex;
 
-  static const ImageExportService _exportService = ImageExportService();
+  /// 规范化后的初始页，共享元素只属于这一页。
+  late final int _initialPage;
 
-  /// 当前是否有保存/分享任务在执行。
-  ///
-  /// 作用：
-  /// - 阻止重复点击导致并发保存/分享；
-  /// - 驱动顶栏按钮禁用态与底部 loading 遮罩显隐。
-  bool _isBusy = false;
+  final ImageViewerExportController _export = ImageViewerExportController();
 
-  /// loading 遮罩文案（保存中 / 分享准备中），仅在 [_isBusy] 时展示。
-  String _busyLabel = '';
+  /// 当前页是否处于放大态；放大时 PageView 不再响应水平拖动。
+  bool _pageZoomed = false;
 
   @override
   void initState() {
     super.initState();
     _activeIndex = _normalizeInitialIndex();
+    _initialPage = _activeIndex;
     _pageController = PageController(initialPage: _activeIndex);
+    _export.addListener(_handleExportChanged);
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _export
+      ..removeListener(_handleExportChanged)
+      ..dispose();
+    // 页面销毁发生在本帧绘制之后，返回飞行的画面此时已从 Overlay 移除。
+    widget.initialHero?.dispose();
     super.dispose();
   }
 
@@ -71,70 +123,94 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final total = widget.items.length;
     final hasImages = total > 0;
-    return Scaffold(
+    final titleStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
+      color: colorScheme.onSurface,
+      fontWeight: FontWeight.w600,
+    );
+    final appBar = AppTopBar(
       backgroundColor: colorScheme.surface,
-      appBar: AppTopBar(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        leading: IconButton(
-          tooltip: context.l10n.commonBack,
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-        ),
-        title: Text(
-          total == 0 ? l10n.autoT0052 : '${_activeIndex + 1} / $total',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-        actions: hasImages
-            ? <Widget>[
-                // 保存到相册：忙碌时禁用，避免并发触发。
-                IconButton(
-                  tooltip: l10n.imageViewerSaveToGallery,
-                  onPressed: _isBusy ? null : _handleSaveToGallery,
-                  icon: const FaIcon(FontAwesomeIcons.download, size: 18),
-                ),
-                // 分享当前图片。
-                IconButton(
-                  tooltip: l10n.commonShare,
-                  onPressed: _isBusy ? null : _handleShare,
-                  icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 18),
-                ),
-                const SizedBox(width: 4),
-              ]
-            : null,
+      foregroundColor: colorScheme.onSurface,
+      leading: IconButton(
+        tooltip: context.l10n.commonBack,
+        onPressed: () => Navigator.of(context).pop(),
+        icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
       ),
-      body: Stack(
-        children: <Widget>[
-          if (!hasImages)
-            Center(
-              child: Text(
-                l10n.autoT0053,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
+      title: hasImages
+          ? ImageViewerPageCounter(
+              index: _activeIndex,
+              total: total,
+              style: titleStyle,
             )
-          else
-            PageView.builder(
-              controller: _pageController,
-              itemCount: total,
-              onPageChanged: (index) {
-                setState(() {
-                  _activeIndex = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                final source = widget.items[index].source;
-                return _buildImagePage(source);
-              },
+          : Text(l10n.autoT0052, style: titleStyle),
+      centerTitle: true,
+      actions: hasImages
+          ? <Widget>[
+              // 保存到相册：忙碌时禁用，避免并发触发。
+              IconButton(
+                tooltip: l10n.imageViewerSaveToGallery,
+                onPressed: _export.isBusy ? null : _handleSaveToGallery,
+                icon: const FaIcon(FontAwesomeIcons.download, size: 18),
+              ),
+              // 分享当前图片。
+              IconButton(
+                tooltip: l10n.commonShare,
+                onPressed: _export.isBusy ? null : _handleShare,
+                icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 18),
+              ),
+              const SizedBox(width: 4),
+            ]
+          : null,
+    );
+    final pages = hasImages
+        ? PageView.builder(
+            controller: _pageController,
+            physics: _pageZoomed ? const NeverScrollableScrollPhysics() : null,
+            itemCount: total,
+            onPageChanged: (index) {
+              setState(() {
+                _activeIndex = index;
+              });
+            },
+            itemBuilder: (context, index) => _buildImagePage(index),
+          )
+        : Center(
+            child: Text(
+              l10n.autoT0053,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
-          if (_isBusy) _buildBusyOverlay(),
-        ],
-      ),
+          );
+
+    // 背景、顶栏随下拉距离淡出（路由不透明度为 false，能看到下层页面）；每页
+    // 不再各自铺底色，否则底色会跟着图片一起被拖动。
+    return SwipeDismissViewer(
+      enabled: hasImages && !_pageZoomed,
+      onDismiss: () => Navigator.of(context).pop(),
+      child: pages,
+      builder: (BuildContext context, double chromeOpacity, Widget content) {
+        return ColoredBox(
+          color: colorScheme.surface.withValues(alpha: chromeOpacity),
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: PreferredSize(
+              preferredSize: appBar.preferredSize,
+              child: Opacity(opacity: chromeOpacity, child: appBar),
+            ),
+            body: Stack(
+              children: <Widget>[
+                Positioned.fill(child: content),
+                Positioned.fill(
+                  child: ActionLoadingOverlay(
+                    visible: _export.isBusy,
+                    label: _export.busyLabel,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -160,91 +236,37 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     return widget.items[_activeIndex].source;
   }
 
-  /// 处理“保存到相册”：进入忙碌态 → 调用服务 → 按结果提示。
+  void _handleExportChanged() => setState(() {});
+
+  /// 保存到相册，按结果提示。
   Future<void> _handleSaveToGallery() async {
     final source = _currentSource();
-    if (source == null || _isBusy) {
+    if (source == null) {
       return;
     }
-    final l10n = context.l10n;
-    _enterBusy(l10n.imageViewerSaving);
-    try {
-      await _exportService.saveToGallery(source);
-      if (!mounted) {
-        return;
-      }
-      _showHint(l10n.imageViewerSaveSuccess);
-    } on ImageExportException catch (error) {
-      if (!mounted) {
-        return;
-      }
-      _showHint(_mapSaveError(l10n, error));
-    } finally {
-      if (mounted) {
-        _exitBusy();
-      }
+    final hint = await _export.saveToGallery(source, context.l10n);
+    if (hint != null && mounted) {
+      _showHint(hint);
     }
   }
 
-  /// 处理“分享当前图片”：进入忙碌态 → 调用服务 → 失败提示。
+  /// 分享当前图片，失败时提示。
   Future<void> _handleShare() async {
     final source = _currentSource();
-    if (source == null || _isBusy) {
+    if (source == null) {
       return;
     }
-    final l10n = context.l10n;
-    _enterBusy(l10n.imageViewerSharing);
-    try {
-      await _exportService.shareImage(source);
-    } on ImageExportException catch (error) {
-      if (!mounted) {
-        return;
-      }
-      _showHint(_mapShareError(l10n, error));
-    } finally {
-      if (mounted) {
-        _exitBusy();
-      }
+    final hint = await _export.share(source, context.l10n);
+    if (hint != null && mounted) {
+      _showHint(hint);
     }
   }
 
-  /// 把保存失败的领域异常映射为本地化提示。
-  String _mapSaveError(AppLocalizations l10n, ImageExportException error) {
-    switch (error.type) {
-      case ImageExportErrorType.permissionDenied:
-        return l10n.imageViewerGalleryPermissionDenied;
-      case ImageExportErrorType.downloadFailed:
-        return l10n.imageViewerDownloadFailed;
-      case ImageExportErrorType.invalidSource:
-      case ImageExportErrorType.unknown:
-        return l10n.imageViewerSaveFailed(error.message);
+  void _handleZoomChanged(bool zoomed) {
+    if (zoomed == _pageZoomed || !mounted) {
+      return;
     }
-  }
-
-  /// 把分享失败的领域异常映射为本地化提示。
-  String _mapShareError(AppLocalizations l10n, ImageExportException error) {
-    switch (error.type) {
-      case ImageExportErrorType.downloadFailed:
-        return l10n.imageViewerDownloadFailed;
-      case ImageExportErrorType.invalidSource:
-      case ImageExportErrorType.permissionDenied:
-      case ImageExportErrorType.unknown:
-        return l10n.imageViewerShareFailed(error.message);
-    }
-  }
-
-  void _enterBusy(String label) {
-    setState(() {
-      _isBusy = true;
-      _busyLabel = label;
-    });
-  }
-
-  void _exitBusy() {
-    setState(() {
-      _isBusy = false;
-      _busyLabel = '';
-    });
+    setState(() => _pageZoomed = zoomed);
   }
 
   /// 统一提示：复用 Home 提示追踪能力，scope 缺失时自动降级为普通 SnackBar。
@@ -259,80 +281,34 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     );
   }
 
-  /// 保存/分享进行中的半透明遮罩，沿用 loading_indicator_m3e 统一加载表现。
-  Widget _buildBusyOverlay() {
-    return Positioned.fill(
-      child: ColoredBox(
-        color: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.55),
+  Widget _buildImagePage(int index) {
+    final source = widget.items[index].source;
+    final hero = index == _initialPage ? widget.initialHero : null;
+    if (hero == null) {
+      return DoubleTapZoomViewer(
+        onZoomChanged: _handleZoomChanged,
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              const ExpressiveLoadingIndicator(size: 64),
-              if (_busyLabel.isNotEmpty) ...<Widget>[
-                const SizedBox(height: 12),
-                Text(
-                  _busyLabel,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer,
-                  ),
-                ),
-              ],
-            ],
+          child: ImageViewerFullImage(
+            source: source,
+            fit: BoxFit.contain,
+            placeholderBehind: false,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildImagePage(String source) {
-    final uri = Uri.tryParse(source);
-    final isRemote =
-        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-
-    final imageWidget = isRemote
-        ? Image.network(
-            source,
-            fit: BoxFit.contain,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) {
-                return child;
-              }
-              return const Center(child: ExpressiveLoadingIndicator(size: 48));
-            },
-            errorBuilder: (_, __, ___) => const _ImageFallback(),
-          )
-        : Image.file(
-            File(source),
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const _ImageFallback(),
-          );
-
-    return Container(
-      color: Theme.of(context).colorScheme.surface,
-      alignment: Alignment.center,
-      child: InteractiveViewer(
-        minScale: 1,
-        maxScale: 4,
-        child: Center(child: imageWidget),
-      ),
-    );
-  }
-}
-
-class _ImageFallback extends StatelessWidget {
-  const _ImageFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: FaIcon(
-        FontAwesomeIcons.image,
-        size: 28,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      );
+    }
+    // 放大后返回不做飞行（放大的画面飞回缩略图会先猛地缩一大截），只淡出。
+    return DoubleTapZoomViewer(
+      onZoomChanged: _handleZoomChanged,
+      child: HeroMode(
+        enabled: !_pageZoomed,
+        child: ImageViewerHeroTarget(
+          hero: hero,
+          fullImage: ImageViewerFullImage(
+            source: source,
+            fit: BoxFit.cover,
+            placeholderBehind: true,
+          ),
+        ),
       ),
     );
   }

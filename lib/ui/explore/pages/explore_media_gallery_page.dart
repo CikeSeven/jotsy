@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_service.dart';
 import '../controllers/explore_media_gallery_controller.dart';
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
-import 'explore_image_viewer_page.dart';
 
 /// 探索页“媒体画廊”全量浏览页。
 ///
@@ -77,18 +79,29 @@ class _ExploreMediaGalleryPageState
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
       ),
-      body: _buildBody(context),
+      // 首次加载 → 网格 / 空态 / 错误之间交叉淡入，而不是硬切；网格内追加
+      // 分页时 key 不变，不会重复淡入。
+      body: AnimatedSwitcher(
+        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+        switchInCurve: ExpressiveMotion.effects,
+        switchOutCurve: ExpressiveMotion.exit,
+        child: _buildBody(context),
+      ),
     );
   }
 
   Widget _buildBody(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    if (_mediaItems.isEmpty && _isLoading) {
-      return const Center(child: ExpressiveLoadingIndicator());
+    // 首次加载在首帧之后才发起，此前 isLoading 仍为 false：把“还没加载过”也
+    // 当作加载中，避免先闪一帧“暂无媒体”。本地查询通常很快，指示器延迟出现。
+    final neverLoaded = _hasMore && _errorMessage == null;
+    if (_mediaItems.isEmpty && (_isLoading || neverLoaded)) {
+      return const DelayedLoadingIndicator(key: ValueKey<String>('loading'));
     }
     if (_mediaItems.isEmpty && _errorMessage != null) {
       return Center(
+        key: const ValueKey<String>('error'),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.l),
           child: Column(
@@ -113,6 +126,7 @@ class _ExploreMediaGalleryPageState
     }
     if (_mediaItems.isEmpty) {
       return Center(
+        key: const ValueKey<String>('empty'),
         child: Text(
           l10n.autoT0055,
           style: Theme.of(
@@ -123,6 +137,7 @@ class _ExploreMediaGalleryPageState
     }
 
     return CustomScrollView(
+      key: const ValueKey<String>('grid'),
       controller: _scrollController,
       slivers: <Widget>[
         SliverPadding(
@@ -136,28 +151,36 @@ class _ExploreMediaGalleryPageState
             delegate: SliverChildBuilderDelegate((context, index) {
               final item = _mediaItems[index];
               // 缩略图本身不透明，水波纹需画在叠于其上的透明 Material 上。
-              return Stack(
-                fit: StackFit.expand,
-                children: <Widget>[
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final side = constraints.biggest.shortestSide;
-                      return ExploreMediaThumb(
-                        source: item.source,
-                        width: side,
-                        height: side,
-                        radius: 12,
-                      );
-                    },
-                  ),
-                  Material(
-                    type: MaterialType.transparency,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () => _openViewer(index),
+              // Builder 提供格子自己的 context：点按时从这里抓取已绘制的缩略图
+              // 作为看图页的飞入画面（delegate 的 context 是整个网格）。
+              return Builder(
+                builder: (cellContext) => Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    ImageViewerHeroSource(
+                      tag: _heroTag(item.source),
+                      borderRadius: BorderRadius.circular(_thumbRadius),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final side = constraints.biggest.shortestSide;
+                          return ExploreMediaThumb(
+                            source: item.source,
+                            width: side,
+                            height: side,
+                            radius: _thumbRadius,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                    Material(
+                      type: MaterialType.transparency,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(_thumbRadius),
+                        onTap: () => _openViewer(index, cellContext),
+                      ),
+                    ),
+                  ],
+                ),
               );
             }, childCount: _mediaItems.length),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -205,14 +228,21 @@ class _ExploreMediaGalleryPageState
 
   Future<void> _loadMore() => _controller.loadMore();
 
-  void _openViewer(int initialIndex) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ExploreImageViewerPage(
-          mediaItems: List<ExploreMediaItem>.from(_mediaItems),
-          initialIndex: initialIndex,
-        ),
-      ),
+  static const double _thumbRadius = 12;
+
+  static Object _heroTag(String source) =>
+      ImageViewerHeroTag('explore_gallery', source);
+
+  /// 打开看图页：缩略图以共享元素展开成原图，返回时飞回原格子。
+  void _openViewer(int initialIndex, BuildContext cellContext) {
+    final source = _mediaItems[initialIndex].source;
+    openImageViewer(
+      context,
+      items: _mediaItems
+          .map((item) => ImageViewerItem(source: item.source))
+          .toList(growable: false),
+      initialIndex: initialIndex,
+      hero: ImageViewerHero.capture(cellContext, tag: _heroTag(source)),
     );
   }
 }
@@ -234,16 +264,19 @@ class _GalleryFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
+    final Widget content;
     if (isLoading) {
-      return const Center(child: ExpressiveLoadingIndicator());
-    }
-    if (errorMessage != null) {
-      return Center(
+      content = const DelayedLoadingIndicator(
+        key: ValueKey<String>('footer_loading'),
+      );
+    } else if (errorMessage != null) {
+      content = Center(
+        key: const ValueKey<String>('footer_error'),
         child: TextButton(onPressed: onRetry, child: Text(l10n.autoT0056)),
       );
-    }
-    if (!hasMore) {
-      return Center(
+    } else if (!hasMore) {
+      content = Center(
+        key: const ValueKey<String>('footer_end'),
         child: Text(
           l10n.autoT0057,
           style: Theme.of(
@@ -251,7 +284,15 @@ class _GalleryFooter extends StatelessWidget {
           ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       );
+    } else {
+      content = const SizedBox.shrink(key: ValueKey<String>('footer_idle'));
     }
-    return const SizedBox.shrink();
+    // 指示器、重试与“已到底”之间淡入淡出，而不是硬切。
+    return AnimatedSwitcher(
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+      switchInCurve: ExpressiveMotion.effects,
+      switchOutCurve: ExpressiveMotion.exit,
+      child: content,
+    );
   }
 }

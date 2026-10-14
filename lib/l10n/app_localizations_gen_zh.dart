@@ -1577,6 +1577,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recordingDefaultTitle => '语音备注';
 
   @override
+  String get recordingStatusRecording => '录音中';
+
+  @override
+  String get recordingIdleHint => '点按麦克风开始录音';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => '配置工具参数';
 
   @override

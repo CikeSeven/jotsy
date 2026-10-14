@@ -1634,6 +1634,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recordingDefaultTitle => 'Voice note';
 
   @override
+  String get recordingStatusRecording => 'Recording';
+
+  @override
+  String get recordingIdleHint => 'Tap the microphone to start';
+
+  @override
   String get diaryToolbarToolSettingsTooltip => 'Configure tool parameters';
 
   @override

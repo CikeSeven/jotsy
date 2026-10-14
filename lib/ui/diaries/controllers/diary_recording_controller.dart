@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
@@ -37,15 +38,16 @@ class DiaryRecordingController extends ChangeNotifier
 
   DiaryRecordingPhase _phase = DiaryRecordingPhase.idle;
   DiaryRecordingFailure? _failure;
-  double _amplitude = 0.0;
   final List<double> _waveform = [];
   String? _name;
 
   DiaryRecordingPhase get phase => _phase;
   DiaryRecordingFailure? get failure => _failure;
   Duration get elapsed => _clock.elapsed;
-  double get amplitude => _amplitude;
-  List<double> get waveform => List.unmodifiable(_waveform);
+
+  /// 振幅采样的只读实时视图（旧→新），不做拷贝：实时声纹每个采样都会读取它，
+  /// 全量拷贝会随录音时长线性变慢。视图随录音增长；`start()` 会清空它。
+  List<double> get waveform => UnmodifiableListView<double>(_waveform);
   String? get name => _name;
 
   bool get hasSession =>
@@ -64,7 +66,6 @@ class DiaryRecordingController extends ChangeNotifier
     if (_disposed || _phase != DiaryRecordingPhase.idle) return;
     final generation = ++_generation;
     _failure = null;
-    _amplitude = 0.0;
     _waveform.clear();
     _clock.reset();
     _setPhase(DiaryRecordingPhase.preparing);
@@ -89,11 +90,10 @@ class DiaryRecordingController extends ChangeNotifier
         if (_isStale(generation)) return;
         _clock.start();
         _setPhase(DiaryRecordingPhase.recording);
-        _timer = Timer.periodic(const Duration(milliseconds: 120), (_) async {
+        _timer = Timer.periodic(recordingAmplitudeSamplePeriod, (_) async {
           if (!_disposed && _phase == DiaryRecordingPhase.recording) {
             final amp = await _recorder.getAmplitude();
             if (!_disposed && _phase == DiaryRecordingPhase.recording) {
-              _amplitude = amp;
               _waveform.add(amp);
               notifyListeners();
             }
@@ -199,7 +199,6 @@ class DiaryRecordingController extends ChangeNotifier
       await _discardPending();
       _clock.reset();
       _failure = null;
-      _amplitude = 0.0;
       _waveform.clear();
       _name = null;
       _setPhase(DiaryRecordingPhase.idle);

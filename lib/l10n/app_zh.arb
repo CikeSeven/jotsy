@@ -2236,6 +2236,14 @@
   "@recordingDefaultTitle": {
     "description": "未命名录音的默认展示标题。"
   },
+  "recordingStatusRecording": "录音中",
+  "@recordingStatusRecording": {
+    "description": "麦克风采集进行中时，在跳动圆点旁显示的状态文案。"
+  },
+  "recordingIdleHint": "点按麦克风开始录音",
+  "@recordingIdleHint": {
+    "description": "尚未开始录音时，计时器下方的操作提示。"
+  },
   "diaryToolbarToolSettingsTooltip": "配置工具参数",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "工具栏排序页中工具参数设置按钮的 tooltip。"

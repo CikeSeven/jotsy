@@ -141,6 +141,40 @@ void main() {
       expect(recording?.waveform, isNotNull);
     },
   );
+
+  test(
+    'waveform is a live read-only view that grows while recording',
+    () async {
+      await controller.start();
+      expect(controller.waveform, isEmpty);
+      final view = controller.waveform;
+
+      // 采样每 recordingAmplitudeSamplePeriod 一次；多等一个周期确保至少采到一个。
+      await Future<void>.delayed(recordingAmplitudeSamplePeriod * 2);
+      expect(view, isNotEmpty, reason: 'a view taken earlier must stay live');
+      expect(view, everyElement(0.5));
+      expect(() => controller.waveform.add(0.1), throwsUnsupportedError);
+
+      // 暂停后不再采样，实时声纹据此静止。
+      await controller.pause();
+      final pausedLength = controller.waveform.length;
+      await Future<void>.delayed(recordingAmplitudeSamplePeriod * 2);
+      expect(controller.waveform.length, pausedLength);
+    },
+  );
+
+  test(
+    'starting a new session clears the previous amplitude history',
+    () async {
+      await controller.start();
+      await Future<void>.delayed(recordingAmplitudeSamplePeriod * 2);
+      expect(controller.waveform, isNotEmpty);
+
+      await controller.cancel();
+      await controller.start();
+      expect(controller.waveform, isEmpty);
+    },
+  );
 }
 
 class FakeRecorder implements AudioRecordingService {

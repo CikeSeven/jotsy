@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_waveform_visualizer.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_live_voiceprint.dart';
 
 import '../../support/expressive_test_theme.dart';
 
@@ -81,23 +81,20 @@ void main() {
     expect(tester.getSize(find.byType(AnimatedSize)).height, 120);
   });
 
-  testWidgets('voiceprint stops its breathing loop under reduce motion', (
-    tester,
-  ) async {
+  testWidgets('voiceprint stops scrolling under reduce motion', (tester) async {
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: LiveVoiceprintVisualizer(
-            amplitude: 0.5,
-            isRecording: true,
-            isPaused: false,
-          ),
-        ),
+    final samples = <double>[0.3, 0.5];
+    Widget voiceprint() => MaterialApp(
+      home: Scaffold(
+        body: LiveVoiceprintVisualizer(samples: samples, active: true),
       ),
     );
+    await tester.pumpWidget(voiceprint());
+    // 新采样到达：减少动画时直接落位，不启动滚动 ticker。
+    samples.add(0.8);
+    await tester.pumpWidget(voiceprint());
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(tester.binding.hasScheduledFrame, isFalse);

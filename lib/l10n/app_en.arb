@@ -2236,6 +2236,14 @@
   "@recordingDefaultTitle": {
     "description": "Default title shown for an unnamed audio recording."
   },
+  "recordingStatusRecording": "Recording",
+  "@recordingStatusRecording": {
+    "description": "Status label shown next to the pulsing dot while microphone capture is running."
+  },
+  "recordingIdleHint": "Tap the microphone to start",
+  "@recordingIdleHint": {
+    "description": "Hint under the timer before a recording has started."
+  },
   "diaryToolbarToolSettingsTooltip": "Configure tool parameters",
   "@diaryToolbarToolSettingsTooltip": {
     "description": "Tooltip for the tool parameter settings button on the toolbar order page."

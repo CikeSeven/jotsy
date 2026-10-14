@@ -43,28 +43,32 @@ void main() {
     }
   });
 
+  Widget host({
+    required double progress,
+    ValueChanged<double>? onSeek,
+    List<double> waveform = const [0.2, 0.5, 0.8, 0.4, 0.6],
+  }) => MaterialApp(
+    home: Scaffold(
+      body: Center(
+        child: SizedBox(
+          width: 200,
+          height: 40,
+          child: DiaryWaveformBarVisualizer(
+            waveform: waveform,
+            progress: progress,
+            onSeek: onSeek,
+          ),
+        ),
+      ),
+    ),
+  );
+
   testWidgets('DiaryWaveformBarVisualizer renders and triggers seek callback', (
     tester,
   ) async {
     double? soughtProgress;
-    final waveform = [0.2, 0.5, 0.8, 0.4, 0.6];
-
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: SizedBox(
-              width: 200,
-              height: 40,
-              child: DiaryWaveformBarVisualizer(
-                waveform: waveform,
-                progress: 0.3,
-                onSeek: (val) => soughtProgress = val,
-              ),
-            ),
-          ),
-        ),
-      ),
+      host(progress: 0.3, onSeek: (val) => soughtProgress = val),
     );
 
     expect(find.byType(DiaryWaveformBarVisualizer), findsOneWidget);
@@ -76,37 +80,73 @@ void main() {
     expect(soughtProgress!, closeTo(0.5, 0.1));
   });
 
-  testWidgets(
-    'LiveVoiceprintVisualizer renders in recording and paused states',
-    (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: LiveVoiceprintVisualizer(
-              amplitude: 0.7,
-              isRecording: true,
-              isPaused: false,
-            ),
-          ),
-        ),
-      );
+  testWidgets('dragging scrubs continuously and stays within 0..1', (
+    tester,
+  ) async {
+    final seeks = <double>[];
+    await tester.pumpWidget(host(progress: 0.1, onSeek: seeks.add));
 
-      expect(find.byType(LiveVoiceprintVisualizer), findsOneWidget);
-      await tester.pump(const Duration(milliseconds: 200));
+    final gesture = await tester.startGesture(
+      tester.getTopLeft(find.byType(DiaryWaveformBarVisualizer)) +
+          const Offset(20, 20),
+    );
+    // 第一段位移只用来越过拖动阈值、确认手势归属，之后每次移动才产生 seek。
+    await gesture.moveBy(const Offset(30, 0));
+    await gesture.moveBy(const Offset(60, 0));
+    await gesture.moveBy(const Offset(400, 0));
+    await gesture.up();
+    await tester.pumpAndSettle();
 
-      // Update to paused
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: LiveVoiceprintVisualizer(
-              amplitude: 0.0,
-              isRecording: false,
-              isPaused: true,
-            ),
-          ),
-        ),
-      );
-      expect(find.byType(LiveVoiceprintVisualizer), findsOneWidget);
-    },
-  );
+    expect(seeks.length, greaterThanOrEqualTo(2));
+    expect(seeks, everyElement(inInclusiveRange(0.0, 1.0)));
+    // 拖出控件右缘后被夹在 1.0，而不是越界。
+    expect(seeks.last, 1.0);
+    expect(seeks.first, lessThan(seeks.last));
+  });
+
+  testWidgets('without onSeek the waveform ignores touches', (tester) async {
+    await tester.pumpWidget(host(progress: 0.4));
+    await tester.tap(find.byType(DiaryWaveformBarVisualizer));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('progress sweeps smoothly and then stops scheduling frames', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host(progress: 0.1));
+    await tester.pumpAndSettle();
+    expect(tester.binding.hasScheduledFrame, isFalse);
+
+    // 位置事件到达：补间启动，期间持续出帧。
+    await tester.pumpWidget(host(progress: 0.6));
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(tester.binding.hasScheduledFrame, isTrue);
+
+    // 补间走完后静止，不会空转。
+    await tester.pumpAndSettle();
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('reduce motion jumps progress without animating', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await tester.pumpWidget(host(progress: 0.1));
+    await tester.pumpWidget(host(progress: 0.6));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(tester.binding.hasScheduledFrame, isFalse);
+  });
+
+  testWidgets('semantics expose progress as a percentage slider', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(host(progress: 0.5));
+    expect(
+      tester.getSemantics(find.byType(DiaryWaveformBarVisualizer)),
+      matchesSemantics(isSlider: true, value: '50%'),
+    );
+    handle.dispose();
+  });
 }

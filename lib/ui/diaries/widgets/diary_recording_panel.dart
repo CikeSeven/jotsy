@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/app/theme/expressive_controls.dart';
+import 'package:node_diary/app/theme/app_effects.dart';
+import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_waveform_visualizer.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_live_voiceprint.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_recording_controls.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_recording_readout.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_recording_rename_dialog.dart';
 
-/// Redesigned Material 3 Expressive recording panel.
+/// 悬浮在编辑器工具栏下方的录音面板。
 ///
-/// Features real-time voiceprint (amplitude soundwave) visualization,
-/// inline recording renaming, tactile morphing controls, and clean surfaces.
-class DiaryRecordingPanel extends StatelessWidget {
+/// 输入：控制器的阶段、计时、失败原因与振幅采样；输出：开始/暂停/继续/结束/
+/// 关闭/重命名回调。面板不持有录音状态，只负责排版与动效：
+/// - 版面由“稳定阶段”决定（见 [settleRecordingPhase]），暂停/继续途中不塌缩；
+/// - 面板高度在三个阶段间恒定，不会因为出现声纹或按钮而跳动；
+/// - REC 圆点与暂停时的计时闪烁共用一个呼吸循环，减少动画时不启动。
+class DiaryRecordingPanel extends StatefulWidget {
   const DiaryRecordingPanel({
     super.key,
     required this.phase,
     required this.elapsed,
     required this.failure,
-    this.amplitude = 0.0,
+    this.waveform = const <double>[],
     this.recordingName,
     this.onNameChanged,
     required this.onStart,
@@ -31,7 +37,9 @@ class DiaryRecordingPanel extends StatelessWidget {
   final DiaryRecordingPhase phase;
   final Duration elapsed;
   final DiaryRecordingFailure? failure;
-  final double amplitude;
+
+  /// 本次录音已采集的振幅（旧→新），驱动实时声纹。
+  final List<double> waveform;
   final String? recordingName;
   final ValueChanged<String>? onNameChanged;
   final VoidCallback onStart;
@@ -40,307 +48,210 @@ class DiaryRecordingPanel extends StatelessWidget {
   final VoidCallback onFinish;
   final VoidCallback onClose;
 
-  Future<void> _openRenameDialog(
-    BuildContext context,
-    AppLocalizations l10n,
-    ColorScheme colors,
-  ) async {
-    final currentTitle = recordingName ?? l10n.recordingDefaultTitle;
-    final textController = TextEditingController(text: currentTitle);
-    final chosen = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.recordingRename),
-          content: TextField(
-            controller: textController,
-            autofocus: true,
-            maxLength: 30,
-            decoration: InputDecoration(
-              hintText: l10n.recordingNameHint,
-              counterText: '',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            onSubmitted: (val) => Navigator.of(dialogContext).pop(val.trim()),
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colors.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colors.primary,
-                textStyle: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(textController.text.trim()),
-              child: Text(l10n.commonConfirm),
-            ),
-          ],
-        );
-      },
-    );
+  @override
+  State<DiaryRecordingPanel> createState() => _DiaryRecordingPanelState();
+}
 
-    if (chosen != null && onNameChanged != null) {
-      onNameChanged!(chosen.isEmpty ? l10n.recordingDefaultTitle : chosen);
+class _DiaryRecordingPanelState extends State<DiaryRecordingPanel>
+    with SingleTickerProviderStateMixin {
+  /// 呼吸周期：渐隐 + 渐显各一个 `long`，整体约 1 秒一个来回。
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: ExpressiveMotion.long,
+  );
+  late final Animation<double> _breath = Tween<double>(begin: 1, end: 0.3)
+      .animate(
+        CurvedAnimation(
+          parent: _pulse,
+          curve: ExpressiveMotion.effects,
+          reverseCurve: ExpressiveMotion.exit,
+        ),
+      );
+  late DiaryRecordingPhase _settled = settleRecordingPhase(
+    widget.phase,
+    DiaryRecordingPhase.idle,
+  );
+  bool _reduceMotion = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _syncPulse();
+  }
+
+  @override
+  void didUpdateWidget(DiaryRecordingPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _settled = settleRecordingPhase(widget.phase, _settled);
+    _syncPulse();
+  }
+
+  /// 只有会话期间才需要呼吸；待机或减少动画时停掉并回到完全不透明，避免控制器
+  /// 空转，也避免停在半透明的中间值。
+  void _syncPulse() {
+    final shouldRun = !_reduceMotion && _settled != DiaryRecordingPhase.idle;
+    if (shouldRun) {
+      if (!_pulse.isAnimating) _pulse.repeat(reverse: true);
+    } else if (_pulse.isAnimating || _pulse.value != 0) {
+      _pulse.stop();
+      _pulse.value = 0;
     }
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  Future<void> _rename(BuildContext context) async {
+    final l10n = context.l10n;
+    final chosen = await showDiaryRecordingRenameDialog(
+      context,
+      initialName: widget.recordingName ?? l10n.recordingDefaultTitle,
+    );
+    // 弹窗打开期间面板可能已随页面关闭；此时回调的控制器可能已释放。
+    if (chosen == null || !mounted) return;
+    widget.onNameChanged?.call(
+      chosen.isEmpty ? l10n.recordingDefaultTitle : chosen,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    final recording = phase == DiaryRecordingPhase.recording;
-    final paused = phase == DiaryRecordingPhase.paused;
-    final busy =
-        phase == DiaryRecordingPhase.preparing ||
-        phase == DiaryRecordingPhase.finishing;
-    final hasSession = recording || paused;
-    final displayName = recordingName ?? l10n.recordingDefaultTitle;
+    final recording = _settled == DiaryRecordingPhase.recording;
 
-    return Material(
-      color: ExpressiveSurfaces.cardColor(colors),
-      shape: ExpressiveSurfaces.cardShape(colors),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header: Name title pill + close button
-            Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () => _openRenameDialog(context, l10n, colors),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            FaIcon(
-                              FontAwesomeIcons.microphoneLines,
-                              size: 13,
-                              color: colors.primary,
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                displayName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.labelLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: colors.onSurface,
-                                    ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            FaIcon(
-                              FontAwesomeIcons.penToSquare,
-                              size: 11,
-                              color: colors.onSurfaceVariant,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  tooltip: l10n.recordingClose,
-                  visualDensity: VisualDensity.compact,
-                  onPressed: onClose,
-                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-
-            // Top center: Microphone button or Loading
-            SizedBox(
-              height: 96,
-              width: double.infinity,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox.square(
-                    dimension: 88,
-                    child: busy
-                        ? const Center(
-                            child: SizedBox.square(
-                              dimension: 40,
-                              child: ClipRect(
-                                child: ExpressiveLoadingIndicator(size: 40),
-                              ),
-                            ),
-                          )
-                        : FilledButton(
-                            style: ButtonStyle(
-                              animationDuration: ExpressiveMotion.duration(
-                                context,
-                                ExpressiveMotion.fast,
-                              ),
-                              padding: const WidgetStatePropertyAll(
-                                EdgeInsets.zero,
-                              ),
-                              shape: WidgetStateProperty.resolveWith((states) {
-                                return RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    states.contains(WidgetState.pressed)
-                                        ? 24
-                                        : 44,
-                                  ),
-                                );
-                              }),
-                              backgroundColor: WidgetStatePropertyAll(
-                                recording
-                                    ? colors.primaryContainer
-                                    : colors.secondaryContainer,
-                              ),
-                            ),
-                            onPressed: hasSession ? null : onStart,
-                            child: Tooltip(
-                              message: l10n.recordingStart,
-                              child: FaIcon(
-                                FontAwesomeIcons.microphone,
-                                size: 32,
-                                color: recording
-                                    ? colors.onPrimaryContainer
-                                    : colors.onSecondaryContainer,
-                              ),
-                            ),
-                          ),
-                  ),
-                ],
+    // 浮动面板按设计规范使用单层软阴影；阴影画在裁剪之外的 DecoratedBox 上。
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadii.card),
+        boxShadow: AppEffects.softShadow(colors),
+      ),
+      child: Material(
+        color: ExpressiveSurfaces.cardColor(colors),
+        shape: ExpressiveSurfaces.cardShape(colors),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _RecordingHeader(
+                name: widget.recordingName ?? l10n.recordingDefaultTitle,
+                onRename: () => _rename(context),
+                onClose: widget.onClose,
               ),
-            ),
-
-            // Timer display
-            Text(
-              formatRecordingDuration(elapsed),
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: colors.onSurface,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-
-            // Dynamic live voiceprint soundwave
-            if (hasSession) ...[
-              const SizedBox(height: 6),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: LiveVoiceprintVisualizer(
-                  amplitude: amplitude,
-                  isRecording: recording,
-                  isPaused: paused,
-                  height: 36,
-                ),
-              ),
-            ],
-
-            if (paused) ...[
               const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  l10n.recordingPaused,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              DiaryRecordingStatus(
+                settled: _settled,
+                failure: widget.failure,
+                breath: _breath,
+              ),
+              DiaryRecordingTimer(
+                text: formatRecordingDuration(widget.elapsed),
+                settled: _settled,
+                breath: _breath,
+              ),
+              const SizedBox(height: 8),
+              LiveVoiceprintVisualizer(
+                samples: widget.waveform,
+                active: recording,
+                height: 48,
+              ),
+              const SizedBox(height: 20),
+              DiaryRecordingControls(
+                settled: _settled,
+                phase: widget.phase,
+                onStart: widget.onStart,
+                onPause: widget.onPause,
+                onResume: widget.onResume,
+                onFinish: widget.onFinish,
               ),
             ],
-
-            if (failure != null) ...[
-              const SizedBox(height: 6),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FaIcon(
-                    FontAwesomeIcons.circleExclamation,
-                    size: 13,
-                    color: colors.error,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      switch (failure!) {
-                        DiaryRecordingFailure.permissionDenied =>
-                          l10n.recordingPermissionDenied,
-                        DiaryRecordingFailure.recordingFailed =>
-                          l10n.recordingFailed,
-                        DiaryRecordingFailure.saveFailed =>
-                          l10n.recordingSaveFailed,
-                      },
-                      textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: colors.error),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-
-            // Session action controls (Pause/Resume, Finish)
-            if (hasSession) ...[
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton.filledTonal(
-                    tooltip: paused
-                        ? l10n.recordingResume
-                        : l10n.recordingPause,
-                    style: ButtonStyle(
-                      shape: ExpressiveControls.shape,
-                      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-                    ),
-                    onPressed: paused ? onResume : onPause,
-                    icon: FaIcon(
-                      paused ? FontAwesomeIcons.play : FontAwesomeIcons.pause,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                  IconButton.filled(
-                    tooltip: l10n.recordingFinish,
-                    style: ButtonStyle(
-                      shape: ExpressiveControls.shape,
-                      minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-                    ),
-                    onPressed: onFinish,
-                    icon: const FaIcon(FontAwesomeIcons.stop, size: 18),
-                  ),
-                ],
-              ),
-            ],
-          ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// 顶部：可点击重命名的名称胶囊 + 关闭按钮。
+class _RecordingHeader extends StatelessWidget {
+  const _RecordingHeader({
+    required this.name,
+    required this.onRename,
+    required this.onClose,
+  });
+
+  final String name;
+  final VoidCallback onRename;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            // 微胶囊：主色低透明度底、无边框，与标签胶囊同一套视觉语言。
+            child: Material(
+              color: colors.primary.withValues(alpha: 0.12),
+              shape: const StadiumBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: onRename,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      FaIcon(
+                        FontAwesomeIcons.microphoneLines,
+                        size: 13,
+                        color: colors.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colors.onSurface,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      FaIcon(
+                        FontAwesomeIcons.penToSquare,
+                        size: 11,
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          tooltip: context.l10n.recordingClose,
+          visualDensity: VisualDensity.compact,
+          color: colors.onSurfaceVariant,
+          onPressed: onClose,
+          icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+        ),
+      ],
     );
   }
 }

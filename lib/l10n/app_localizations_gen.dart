@@ -2960,6 +2960,18 @@ abstract class AppLocalizations {
   /// **'Voice note'**
   String get recordingDefaultTitle;
 
+  /// Status label shown next to the pulsing dot while microphone capture is running.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get recordingStatusRecording;
+
+  /// Hint under the timer before a recording has started.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the microphone to start'**
+  String get recordingIdleHint;
+
   /// Tooltip for the tool parameter settings button on the toolbar order page.
   ///
   /// In en, this message translates to:

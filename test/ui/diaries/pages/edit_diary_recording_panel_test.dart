@@ -62,6 +62,28 @@ void main() {
   }
 
   testWidgets(
+    'toolbar microphone opens the recording panel and close hides it',
+    (tester) async {
+      await pumpCreatePage(tester);
+      expect(find.byType(DiaryRecordingPanel), findsNothing);
+
+      await tester.tap(find.byTooltip('录音'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryRecordingPanel), findsOneWidget);
+      expect(find.byTooltip('开始录音'), findsOneWidget);
+      expect(find.text('点按麦克风开始录音'), findsOneWidget);
+      // 待机面板不得带着循环动画，否则编辑页会一直出帧。
+      expect(tester.binding.hasScheduledFrame, isFalse);
+
+      await tester.tap(find.byTooltip('关闭录音'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryRecordingPanel), findsNothing);
+      expect(tester.takeException(), isNull);
+      await unmount(tester);
+    },
+  );
+
+  testWidgets(
     'opening the panel with reduce motion on raises no layout errors',
     (tester) async {
       // 工具栏与面板外层的 AnimatedSize 时长为 0 时，面板插入造成的尺寸变化会

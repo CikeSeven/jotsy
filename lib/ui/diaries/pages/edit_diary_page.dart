@@ -1137,7 +1137,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
           phase: _recordingController.phase,
           elapsed: _recordingController.elapsed,
           failure: _recordingController.failure,
-          amplitude: _recordingController.amplitude,
+          waveform: _recordingController.waveform,
           recordingName: _recordingController.name,
           onNameChanged: _recordingController.setName,
           onStart: () => unawaited(_controller.startRecording()),

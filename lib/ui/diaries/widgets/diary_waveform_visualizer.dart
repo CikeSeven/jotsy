@@ -1,12 +1,11 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
 
 /// Interactive playback waveform visualizer for diary audio attachments.
 ///
 /// Displays normalized amplitude bars filled up to the current playback [progress].
 /// Users can tap or drag across the waveform to seek directly in the audio track.
-class DiaryWaveformBarVisualizer extends StatelessWidget {
+class DiaryWaveformBarVisualizer extends StatefulWidget {
   const DiaryWaveformBarVisualizer({
     super.key,
     required this.waveform,
@@ -35,44 +34,78 @@ class DiaryWaveformBarVisualizer extends StatelessWidget {
   /// Height of the waveform visualizer container.
   final double height;
 
+  @override
+  State<DiaryWaveformBarVisualizer> createState() =>
+      _DiaryWaveformBarVisualizerState();
+}
+
+class _DiaryWaveformBarVisualizerState
+    extends State<DiaryWaveformBarVisualizer> {
+  bool _dragging = false;
+
   void _handleTouch(Offset localPosition, double totalWidth) {
+    final onSeek = widget.onSeek;
     if (totalWidth <= 0 || onSeek == null) return;
     final clampedX = localPosition.dx.clamp(0.0, totalWidth);
-    final targetProgress = (clampedX / totalWidth).clamp(0.0, 1.0);
-    onSeek!(targetProgress);
+    onSeek((clampedX / totalWidth).clamp(0.0, 1.0));
+  }
+
+  void _setDragging(bool value) {
+    if (_dragging != value) setState(() => _dragging = value);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final effectiveActiveColor = activeColor ?? colors.primary;
-    final effectiveInactiveColor =
-        inactiveColor ?? colors.outlineVariant.withValues(alpha: 0.35);
+    final isDark = colors.brightness == Brightness.dark;
+    final activeColor = widget.activeColor ?? colors.primary;
+    // 未播放的柱子要在白色卡片上清晰可辨：取 onSurfaceVariant 的弱化色，而不是
+    // 与卡片描边同级的 outlineVariant（浅色下几乎看不见）。
+    final inactiveColor =
+        widget.inactiveColor ??
+        colors.onSurfaceVariant.withValues(alpha: isDark ? 0.34 : 0.3);
+    final target = widget.progress.clamp(0.0, 1.0);
+    final seekable = widget.onSeek != null;
 
     return Semantics(
       slider: true,
-      value: '${(progress * 100).toInt()}%',
+      value: '${(target * 100).toInt()}%',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
           return GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTapDown: onSeek == null
-                ? null
-                : (details) => _handleTouch(details.localPosition, width),
-            onHorizontalDragUpdate: onSeek == null
-                ? null
-                : (details) => _handleTouch(details.localPosition, width),
+            onTapDown: seekable
+                ? (details) => _handleTouch(details.localPosition, width)
+                : null,
+            onHorizontalDragStart: seekable ? (_) => _setDragging(true) : null,
+            onHorizontalDragUpdate: seekable
+                ? (details) => _handleTouch(details.localPosition, width)
+                : null,
+            onHorizontalDragEnd: seekable ? (_) => _setDragging(false) : null,
+            onHorizontalDragCancel: seekable ? () => _setDragging(false) : null,
             child: SizedBox(
-              height: height,
+              height: widget.height,
               width: double.infinity,
-              child: CustomPaint(
-                size: Size(width, height),
-                painter: _WaveformBarPainter(
-                  waveform: waveform,
-                  progress: progress.clamp(0.0, 1.0),
-                  activeColor: effectiveActiveColor,
-                  inactiveColor: effectiveInactiveColor,
+              // 播放位置事件约每 200ms 一次，短录音每次会跨过好几根柱子；用与事件
+              // 间隔相当的补间把步进抹平成连续扫动。必须是线性曲线：缓动曲线会让
+              // 每段先快后慢，匀速播放时反而出现周期性的“一顿一顿”。拖动时补间
+              // 归零，播放头直接跟手。
+              child: TweenAnimationBuilder<double>(
+                tween: Tween<double>(end: target),
+                duration: _dragging
+                    ? Duration.zero
+                    : ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+                curve: Curves.linear,
+                builder: (context, progress, _) => CustomPaint(
+                  size: Size(width, widget.height),
+                  painter: _WaveformBarPainter(
+                    waveform: widget.waveform,
+                    progress: progress,
+                    activeColor: activeColor,
+                    inactiveColor: inactiveColor,
+                    dragging: _dragging,
+                  ),
                 ),
               ),
             ),
@@ -89,12 +122,14 @@ class _WaveformBarPainter extends CustomPainter {
     required this.progress,
     required this.activeColor,
     required this.inactiveColor,
+    required this.dragging,
   });
 
   final List<double> waveform;
   final double progress;
   final Color activeColor;
   final Color inactiveColor;
+  final bool dragging;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -106,28 +141,50 @@ class _WaveformBarPainter extends CustomPainter {
     const minBarHeight = 4.0;
     final maxBarHeight = size.height;
 
-    final activePaint = Paint()
-      ..color = activeColor
-      ..style = PaintingStyle.fill;
-
-    final inactivePaint = Paint()
-      ..color = inactiveColor
-      ..style = PaintingStyle.fill;
-
+    final bars = <RRect>[];
     for (var i = 0; i < count; i++) {
-      final x = i * slotWidth + (slotWidth - barWidth) / 2;
-      final sample = waveform[i].clamp(0.0, 1.0);
-      final barHeight = minBarHeight + sample * (maxBarHeight - minBarHeight);
-      final y = (size.height - barHeight) / 2;
-
-      final isPlayed = (i / count) <= progress;
-      final paint = isPlayed ? activePaint : inactivePaint;
-
-      final rrect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, y, barWidth, barHeight),
-        Radius.circular(barWidth / 2),
+      final barHeight =
+          minBarHeight +
+          waveform[i].clamp(0.0, 1.0) * (maxBarHeight - minBarHeight);
+      bars.add(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(
+            i * slotWidth + (slotWidth - barWidth) / 2,
+            (size.height - barHeight) / 2,
+            barWidth,
+            barHeight,
+          ),
+          Radius.circular(barWidth / 2),
+        ),
       );
-      canvas.drawRRect(rrect, paint);
+    }
+
+    // 先整体画未播放色，再裁剪到播放头左侧叠画已播放色：播放头能平滑扫过柱体
+    // 内部，而不是逐柱跳变颜色。
+    final paint = Paint()..color = inactiveColor;
+    for (final bar in bars) {
+      canvas.drawRRect(bar, paint);
+    }
+    final playheadX = size.width * progress;
+    canvas
+      ..save()
+      ..clipRect(Rect.fromLTRB(0, 0, playheadX, size.height));
+    paint.color = activeColor;
+    for (final bar in bars) {
+      canvas.drawRRect(bar, paint);
+    }
+    canvas.restore();
+
+    // 起止两端不画播放头：0 处会像贴边的竖线，播完则与最后一根柱子重叠。
+    if (progress > 0.004 && progress < 0.996) {
+      final lineWidth = dragging ? 3.0 : 2.0;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(playheadX - lineWidth / 2, 0, lineWidth, size.height),
+          Radius.circular(lineWidth / 2),
+        ),
+        paint,
+      );
     }
   }
 
@@ -136,197 +193,7 @@ class _WaveformBarPainter extends CustomPainter {
     return oldDelegate.progress != progress ||
         oldDelegate.waveform != waveform ||
         oldDelegate.activeColor != activeColor ||
-        oldDelegate.inactiveColor != inactiveColor;
-  }
-}
-
-/// Dynamic live voiceprint visualizer during recording.
-///
-/// Reacts dynamically to input [amplitude] (normalized 0.0 to 1.0).
-/// When paused or quiet, gracefully settles into a gentle baseline.
-class LiveVoiceprintVisualizer extends StatefulWidget {
-  const LiveVoiceprintVisualizer({
-    super.key,
-    required this.amplitude,
-    required this.isRecording,
-    required this.isPaused,
-    this.barCount = 23,
-    this.height = 42.0,
-  });
-
-  final double amplitude;
-  final bool isRecording;
-  final bool isPaused;
-  final int barCount;
-  final double height;
-
-  @override
-  State<LiveVoiceprintVisualizer> createState() =>
-      _LiveVoiceprintVisualizerState();
-}
-
-class _LiveVoiceprintVisualizerState extends State<LiveVoiceprintVisualizer>
-    with SingleTickerProviderStateMixin {
-  /// 呼吸波相位循环周期：只驱动安静时的轻微起伏，与录音振幅无关。
-  static const Duration _breathingPeriod = Duration(milliseconds: 1400);
-
-  late final AnimationController _motionController;
-  bool _reduceMotion = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _motionController = AnimationController(
-      vsync: this,
-      duration: _breathingPeriod,
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _reduceMotion = MediaQuery.disableAnimationsOf(context);
-    _syncMotion();
-  }
-
-  @override
-  void didUpdateWidget(LiveVoiceprintVisualizer oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _syncMotion();
-  }
-
-  /// 仅在非暂停且未开启“减少动画”时循环相位：减少动画时画笔本就绘制静态
-  /// 基线，继续 repeat 只会让控制器按刷新率空转并逐帧重绘。
-  void _syncMotion() {
-    final shouldAnimate = !widget.isPaused && !_reduceMotion;
-    if (shouldAnimate && !_motionController.isAnimating) {
-      _motionController.repeat();
-    } else if (!shouldAnimate && _motionController.isAnimating) {
-      _motionController.stop();
-    }
-  }
-
-  @override
-  void dispose() {
-    _motionController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
-    final activeBarColor = colors.primary;
-    final pausedBarColor = colors.onSurfaceVariant.withValues(
-      alpha: isDark ? 0.35 : 0.25,
-    );
-
-    // 声纹逐帧重绘，隔离到独立图层，避免波及外层工具栏（含阴影）。
-    return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: _motionController,
-        builder: (context, child) {
-          return SizedBox(
-            height: widget.height,
-            width: double.infinity,
-            child: CustomPaint(
-              painter: _LiveVoiceprintPainter(
-                amplitude: widget.amplitude,
-                phase: _motionController.value * 2 * math.pi,
-                isRecording: widget.isRecording,
-                isPaused: widget.isPaused,
-                barCount: widget.barCount,
-                activeColor: activeBarColor,
-                pausedColor: pausedBarColor,
-                reduceMotion: _reduceMotion,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _LiveVoiceprintPainter extends CustomPainter {
-  const _LiveVoiceprintPainter({
-    required this.amplitude,
-    required this.phase,
-    required this.isRecording,
-    required this.isPaused,
-    required this.barCount,
-    required this.activeColor,
-    required this.pausedColor,
-    required this.reduceMotion,
-  });
-
-  final double amplitude;
-  final double phase;
-  final bool isRecording;
-  final bool isPaused;
-  final int barCount;
-  final Color activeColor;
-  final Color pausedColor;
-  final bool reduceMotion;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (barCount <= 0 || size.width <= 0 || size.height <= 0) return;
-
-    final slotWidth = size.width / barCount;
-    final barWidth = (slotWidth * 0.52).clamp(2.5, 5.0);
-    const minHeight = 4.0;
-    final maxHeight = size.height;
-
-    final paint = Paint()
-      ..color = isPaused ? pausedColor : activeColor
-      ..style = PaintingStyle.fill;
-
-    final half = (barCount - 1) / 2.0;
-
-    for (var i = 0; i < barCount; i++) {
-      final x = i * slotWidth + (slotWidth - barWidth) / 2;
-
-      double barHeight;
-      if (isPaused) {
-        barHeight = minHeight;
-      } else if (reduceMotion) {
-        // Subtle non-animated baseline when user prefers reduced motion
-        final bell = 1.0 - math.pow((i - half) / half, 2).clamp(0.0, 1.0);
-        barHeight = minHeight + (amplitude * (maxHeight - minHeight) * bell);
-      } else {
-        // Bell-curve envelope centered in the middle of voiceprint
-        final normalizedDist = ((i - half).abs() / half).clamp(0.0, 1.0);
-        final bell = math.cos(normalizedDist * math.pi * 0.5);
-
-        // Gentle breathing wave when quiet + high reaction when speaking
-        final wave = math.sin(phase + i * 0.45) * 0.15;
-        final dynamicAmp = (amplitude * 0.85 + wave.abs() * 0.15).clamp(
-          0.05,
-          1.0,
-        );
-
-        final target = minHeight + (maxHeight - minHeight) * bell * dynamicAmp;
-        barHeight = target.clamp(minHeight, maxHeight);
-      }
-
-      final y = (size.height - barHeight) / 2;
-      final rrect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, y, barWidth, barHeight),
-        Radius.circular(barWidth / 2),
-      );
-      canvas.drawRRect(rrect, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _LiveVoiceprintPainter oldDelegate) {
-    return oldDelegate.amplitude != amplitude ||
-        oldDelegate.phase != phase ||
-        oldDelegate.isRecording != isRecording ||
-        oldDelegate.isPaused != isPaused ||
-        oldDelegate.reduceMotion != reduceMotion ||
-        oldDelegate.activeColor != activeColor ||
-        oldDelegate.pausedColor != pausedColor;
+        oldDelegate.inactiveColor != inactiveColor ||
+        oldDelegate.dragging != dragging;
   }
 }

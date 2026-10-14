@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -18,7 +18,8 @@ import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
 import 'diary_preview_page.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/route_entrance_waiter.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 
 /// 日记搜索页（独立覆盖层）。
 ///
@@ -95,8 +96,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   // 首次聚焦推迟到路由转场结束：转场途中弹出键盘会让 viewInsets 逐帧变化，
   // 页面在动画期间被反复重新布局。之后输入框切换布局时仍需 autofocus 保持焦点。
   bool _searchAutofocusEnabled = false;
-  Animation<double>? _routeAnimation;
-  AnimationStatusListener? _routeAnimationListener;
+  final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   Timer? _searchDebounceTimer;
   Timer? _pagingCooldownTimer;
   String _searchInput = '';
@@ -119,44 +119,9 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     _scheduleInitialSearchFocus();
   }
 
-  /// 首帧之后再判断路由转场状态：存在 HeroController 时，新路由的第一帧
-  /// 以 offstage 构建，期间 animation 被代理为 kAlwaysCompleteAnimation，
-  /// 直接读取会误判“转场已完成”而提前弹出键盘。
+  /// 路由转场结束后再聚焦，避免键盘与路由动画叠加（见 [RouteEntranceWaiter]）。
   void _scheduleInitialSearchFocus() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      final route = ModalRoute.of(context);
-      final animation = route?.animation;
-      if (route == null ||
-          animation == null ||
-          ExpressiveMotion.reduceMotion(context) ||
-          (animation.isCompleted && !route.offstage)) {
-        _enableSearchAutofocus();
-        return;
-      }
-      void listener(AnimationStatus status) {
-        if (!status.isCompleted || route.offstage) {
-          return;
-        }
-        _detachRouteAnimationListener();
-        _enableSearchAutofocus();
-      }
-
-      _routeAnimation = animation;
-      _routeAnimationListener = listener;
-      animation.addStatusListener(listener);
-    });
-  }
-
-  void _detachRouteAnimationListener() {
-    final listener = _routeAnimationListener;
-    if (listener != null) {
-      _routeAnimation?.removeStatusListener(listener);
-    }
-    _routeAnimation = null;
-    _routeAnimationListener = null;
+    _routeEntranceWaiter.schedule(this, _enableSearchAutofocus);
   }
 
   void _enableSearchAutofocus() {
@@ -171,7 +136,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   @override
   void dispose() {
-    _detachRouteAnimationListener();
+    _routeEntranceWaiter.dispose();
     _searchDebounceTimer?.cancel();
     _pagingCooldownTimer?.cancel();
     _searchController.dispose();
@@ -256,13 +221,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                         displayedSearchItems.isEmpty)
                       const SliverFillRemaining(
                         hasScrollBody: false,
-                        child: Center(
-                          child: SizedBox(
-                            height: 22,
-                            width: 22,
-                            child: ExpressiveLoadingIndicator(),
-                          ),
-                        ),
+                        child: DelayedLoadingIndicator(size: 22),
                       )
                     else if (diariesAsync.hasError &&
                         displayedSearchItems.isEmpty)
@@ -291,25 +250,23 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                             onToggleSelection: (_, __) {},
                             isSearchResultEmpty: true,
                           ),
-                          // 还有下一页时常显；输入关键词触发的本地查询通常
-                          // 几毫秒即返回，经延迟门控避免每次输入都闪一下。
+                          // 还有下一页时保留固定高度的槽位，指示器只在查询
+                          // 真正进行且超过 300ms 时出现：输入关键词触发的本地
+                          // 查询通常几毫秒即返回，常驻的循环指示器则会持续出帧。
                           SliverToBoxAdapter(
-                            child: DelayedLoadingGate(
-                              loading: diariesAsync.isLoading,
-                              builder: (context, showLoading) =>
-                                  showLoading || hasMoreDiaries
-                                  ? const Padding(
-                                      padding: EdgeInsets.only(top: 6),
-                                      child: Center(
-                                        child: SizedBox(
-                                          height: 18,
-                                          width: 18,
-                                          child: ExpressiveLoadingIndicator(),
-                                        ),
-                                      ),
-                                    )
-                                  : const SizedBox.shrink(),
-                            ),
+                            child: hasMoreDiaries || diariesAsync.isLoading
+                                ? Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: SizedBox(
+                                      height: 18,
+                                      child: diariesAsync.isLoading
+                                          ? const DelayedLoadingIndicator(
+                                              size: 18,
+                                            )
+                                          : null,
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
                           ),
                           if (diariesAsync.hasError)
                             SliverToBoxAdapter(
@@ -425,10 +382,14 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     Navigator.of(context).maybePop();
   }
 
-  void _openPreview(String diaryId) {
+  void _openPreview(DiaryWithTags diary, ImageViewerHero? coverHero) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+        builder: (BuildContext context) => DiaryPreviewPage(
+          diaryId: diary.diary.diaryId,
+          initialDetail: diary,
+          coverHero: coverHero,
+        ),
       ),
     );
   }

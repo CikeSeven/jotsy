@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -17,6 +17,8 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import '../sections/diary_head_section.dart';
+import '../../widgets/expressive_icon_swap.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 
 part '../controllers/archived_diaries_controller.dart';
 
@@ -109,47 +111,71 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
       },
       child: Scaffold(
         backgroundColor: pageBackgroundColor,
+        // 进入/退出多选时标题、返回键与操作按钮缩放淡入切换，而不是整条
+        // 标题栏硬换。
         appBar: AppTopBar(
-          title: Text(
-            _isSelectionMode
-                ? context.l10n.autoT0099(_selectedDiaryIds.length.toString())
-                : context.l10n.autoT0100,
+          title: AnimatedSwitcher(
+            duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+            switchInCurve: ExpressiveMotion.effects,
+            switchOutCurve: ExpressiveMotion.exit,
+            child: Text(
+              _isSelectionMode
+                  ? context.l10n.autoT0099(_selectedDiaryIds.length.toString())
+                  : context.l10n.autoT0100,
+              key: ValueKey<int>(
+                _isSelectionMode ? _selectedDiaryIds.length : -1,
+              ),
+            ),
           ),
-          leading: _isSelectionMode
-              ? IconButton(
-                  tooltip: context.l10n.commonCancel,
-                  onPressed: _controller.clearSelection,
-                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-                )
-              : IconButton(
-                  tooltip: context.l10n.commonBack,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                ),
-          actions: _isSelectionMode
-              ? <Widget>[
-                  IconButton(
-                    tooltip: context.l10n.autoT0101,
-                    onPressed: () =>
-                        unawaited(_controller.unarchiveSelectedDiaries()),
-                    icon: const FaIcon(FontAwesomeIcons.boxOpen, size: 18),
+          leading: ExpressiveIconSwap(
+            switchKey: _isSelectionMode,
+            child: _isSelectionMode
+                ? IconButton(
+                    tooltip: context.l10n.commonCancel,
+                    onPressed: _controller.clearSelection,
+                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+                  )
+                : IconButton(
+                    tooltip: context.l10n.commonBack,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
                   ),
-                  IconButton(
-                    tooltip: context.l10n.commonDelete,
-                    onPressed: () =>
-                        unawaited(_controller.deleteSelectedDiaries()),
-                    icon: FaIcon(
-                      FontAwesomeIcons.trashCan,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ]
-              : null,
+          ),
+          actions: <Widget>[
+            ExpressiveIconSwap(
+              switchKey: _isSelectionMode,
+              child: _isSelectionMode
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        IconButton(
+                          tooltip: context.l10n.autoT0101,
+                          onPressed: () =>
+                              unawaited(_controller.unarchiveSelectedDiaries()),
+                          icon: const FaIcon(
+                            FontAwesomeIcons.boxOpen,
+                            size: 18,
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: context.l10n.commonDelete,
+                          onPressed: () =>
+                              unawaited(_controller.deleteSelectedDiaries()),
+                          icon: FaIcon(
+                            FontAwesomeIcons.trashCan,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ),
         // 归档页使用独立 provider，不与主页筛选逻辑共享状态。
         body: archivedAsync.when(
-          loading: () => const Center(child: ExpressiveLoadingIndicator()),
+          loading: () => const DelayedLoadingIndicator(),
           error: (Object error, StackTrace stackTrace) =>
               Center(child: Text(context.l10n.autoT0102(error.toString()))),
           data: (List<DiaryWithTags> diaries) {
@@ -181,7 +207,12 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                           isSelectionMode: _isSelectionMode,
                           maxVisibleTags: diaryCardTagLimit,
                           onCreate: _controller.noopCreate,
-                          onOpenEditor: _controller.openPreview,
+                          onOpenEditor: (diary, coverHero) =>
+                              _controller.openPreview(
+                                diary.diary.diaryId,
+                                initialDetail: diary,
+                                coverHero: coverHero,
+                              ),
                           onToggleSelection: _controller.toggleSelection,
                           onArchiveDiary: (diaryId) => unawaited(
                             _controller.unarchiveDiaryBySwipe(diaryId),

@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_selection_surface.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -71,7 +72,7 @@ void main() {
     );
     final fullHeight = _presenceHeight(tester);
 
-    await tester.longPress(find.text('Stored diary'));
+    await tester.longPress(_storedCard());
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('取消归档'));
     await tester.pump();
@@ -96,7 +97,7 @@ void main() {
       prepare: (db, id) => db.archiveDiary(id),
     );
 
-    await tester.drag(find.text('Stored diary'), const Offset(-500, 0));
+    await tester.drag(_storedCard(), const Offset(-500, 0));
     await tester.pumpAndSettle();
     // 已 dismiss 的 Dismissible 若仍留在树中会抛断言。
     expect(tester.takeException(), isNull);
@@ -129,3 +130,10 @@ void main() {
     await _unmount(tester);
   });
 }
+
+/// 整张卡片：点按/长按/拖动由叠在内容之上的前景墨水层接收，直接对文字取点
+/// 会命中墨水层而非文字本身。
+Finder _storedCard() => find.ancestor(
+  of: find.text('Stored diary'),
+  matching: find.byType(DiarySelectionSurface),
+);

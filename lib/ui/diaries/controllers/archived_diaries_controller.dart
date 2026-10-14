@@ -310,12 +310,19 @@ class ArchivedDiariesController {
   /// 打开预览页（归档列表默认入口）。
   ///
   /// 若在预览页中删除，返回后补一条轻提示反馈。
-  void openPreview(String diaryId) {
+  void openPreview(
+    String diaryId, {
+    DiaryWithTags? initialDetail,
+    ImageViewerHero? coverHero,
+  }) {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
           MaterialPageRoute<DiaryPreviewResult?>(
-            builder: (BuildContext context) =>
-                DiaryPreviewPage(diaryId: diaryId),
+            builder: (BuildContext context) => DiaryPreviewPage(
+              diaryId: diaryId,
+              initialDetail: initialDetail,
+              coverHero: coverHero,
+            ),
           ),
         )
         .then((DiaryPreviewResult? result) async {

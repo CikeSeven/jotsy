@@ -30,7 +30,7 @@ DiaryWithTags _diary(int index) => DiaryWithTags(
 );
 
 void main() {
-  testWidgets('loading footer disappears as soon as the last page arrives', (
+  testWidgets('idle footer stays still and clears once the last page arrives', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(390, 800);
@@ -64,13 +64,17 @@ void main() {
         ),
       ),
     );
-    // 第一页仍有更多数据时底部指示器常驻转动，不能 pumpAndSettle。
+    // 第一页仍有更多数据，但下一页并未在加载：底部只保留固定高度的槽位，
+    // 不再挂一个常驻循环的指示器，列表静止时不再持续出帧。
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
     expect(
       find.byType(ExpressiveLoadingIndicator, skipOffstage: false),
-      findsOneWidget,
+      findsNothing,
     );
+    // 首屏入场动画收尾后不再排帧（此前常驻指示器让列表永远“动着”）。
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.binding.hasScheduledFrame, isFalse);
 
     // 滚到底触发加载第二页（25 条，hasMore = false）。用瞬时 drag 而非
     // fling：fling 会按手势时长推进时钟，掩盖冷却期内的闪烁。

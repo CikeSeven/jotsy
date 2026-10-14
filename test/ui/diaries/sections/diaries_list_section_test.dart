@@ -398,7 +398,7 @@ Widget _buildTestApp({
               isSelectionMode: selectedDiaryIds.isNotEmpty,
               maxVisibleTags: maxVisibleTags,
               onCreate: () {},
-              onOpenEditor: (_) {},
+              onOpenEditor: (_, _) {},
               onToggleSelection: (_, _) {},
               onArchiveDiary: enableSwipeAction ? (_) {} : null,
               appearingDiaryIds: appearingDiaryIds,

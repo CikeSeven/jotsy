@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -23,7 +23,9 @@ import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
+import '../widgets/diaries_header_sliver.dart';
 import '../widgets/diary_tag_filter_bar.dart';
+import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 
 part '../controllers/diaries_page_feedback.dart';
 part '../controllers/diary_list_transition_coordinator.dart';
@@ -60,7 +62,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   static const Duration _listRefreshFadeOutDuration = ExpressiveMotion.fast;
   static const Duration _listRefreshFadeInDuration = ExpressiveMotion.medium;
   static const double _fabToggleScrollThreshold = 26;
-  static const int _diaryPageSize = 20;
+  static const int _diaryPageSize = diaryFirstPageSize;
   static const double _loadMoreTriggerExtent = 420;
   static const double _listBottomExtraSpace = 12;
   static const double _tagSectionTopGap = 2;
@@ -102,7 +104,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   List<Tag> _cachedTagFilters = const <Tag>[];
   bool _fabVisibleByScroll = true;
   double _fabScrollDeltaAccumulator = 0;
-  int _listLayoutEpoch = 0;
   int _visibleDiaryLimit = _diaryPageSize;
   bool _hasMoreDiaries = false;
   String _pagingSignature = '';
@@ -185,8 +186,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final listBottomOffset = _listBottomExtraSpace;
 
     return settingsAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: ExpressiveLoadingIndicator())),
+      loading: () => const Scaffold(body: DelayedLoadingIndicator()),
       error: (Object error, StackTrace stackTrace) => Scaffold(
         body: Center(child: Text(context.l10n.autoT0045(error.toString()))),
       ),
@@ -322,53 +322,50 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                             'diaries_scroll_${brightness.name}_${_layoutMode.name}',
                           ),
                           slivers: <Widget>[
-                            SliverPersistentHeader(
+                            DiariesHeaderSliver(
                               pinned: _isSelectionMode,
-                              floating: !_isSelectionMode,
-                              delegate: _FixedSliverHeaderDelegate(
+                              height: _headerCollapsibleHeight,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.surface,
+                              child: SizedBox(
                                 height: _headerCollapsibleHeight,
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.surface,
-                                child: SizedBox(
-                                  height: _headerCollapsibleHeight,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: <Widget>[
-                                      DiaryHeadSection(
-                                        isSelectionMode: _isSelectionMode,
-                                        selectedCount: _selectedDiaryIds.length,
-                                        onCancelSelection:
-                                            _controller.clearSelection,
-                                        isPinActionUnpin: shouldUnpinSelected,
-                                        onPinSelected: () => unawaited(
-                                          _controller.pinSelectedDiaries(
-                                            unpin: shouldUnpinSelected,
-                                          ),
-                                        ),
-                                        onArchiveSelected: () => unawaited(
-                                          _controller.archiveSelectedDiaries(),
-                                        ),
-                                        onDeleteSelected: () => unawaited(
-                                          _controller.deleteSelectedDiaries(),
-                                        ),
-                                        onOpenArchived:
-                                            _controller.openArchivedPage,
-                                        sortMode: _sortMode,
-                                        layoutMode: _layoutMode,
-                                        onMenuSelected:
-                                            _controller.onMenuSelected,
-                                        onOpenSearchPage:
-                                            _controller.openSearchPage,
-                                      ),
-                                      Container(
-                                        height: 1,
-                                        margin: const EdgeInsets.only(
-                                          top: AppSpacing.xs,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    DiaryHeadSection(
+                                      isSelectionMode: _isSelectionMode,
+                                      selectedCount: _selectedDiaryIds.length,
+                                      onCancelSelection:
+                                          _controller.clearSelection,
+                                      isPinActionUnpin: shouldUnpinSelected,
+                                      onPinSelected: () => unawaited(
+                                        _controller.pinSelectedDiaries(
+                                          unpin: shouldUnpinSelected,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                      onArchiveSelected: () => unawaited(
+                                        _controller.archiveSelectedDiaries(),
+                                      ),
+                                      onDeleteSelected: () => unawaited(
+                                        _controller.deleteSelectedDiaries(),
+                                      ),
+                                      onOpenArchived:
+                                          _controller.openArchivedPage,
+                                      sortMode: _sortMode,
+                                      layoutMode: _layoutMode,
+                                      onMenuSelected:
+                                          _controller.onMenuSelected,
+                                      onOpenSearchPage:
+                                          _controller.openSearchPage,
+                                    ),
+                                    Container(
+                                      height: 1,
+                                      margin: const EdgeInsets.only(
+                                        top: AppSpacing.xs,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -384,13 +381,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       displayedItems.isEmpty
                                   ? const SliverFillRemaining(
                                       hasScrollBody: false,
-                                      child: Center(
-                                        child: SizedBox(
-                                          height: 22,
-                                          width: 22,
-                                          child: ExpressiveLoadingIndicator(),
-                                        ),
-                                      ),
+                                      child: DelayedLoadingIndicator(size: 22),
                                     )
                                   : diariesAsync.hasError &&
                                         displayedItems.isEmpty
@@ -408,7 +399,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                     )
                                   : DiariesListSection(
                                       key: ValueKey<String>(
-                                        'diaries_list_${_layoutMode.name}_$_listLayoutEpoch',
+                                        'diaries_list_${_layoutMode.name}',
                                       ),
                                       diaries: displayedItems,
                                       layoutMode: _layoutMode,
@@ -421,8 +412,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         _controller
                                             .openCreateEditorWithDraftPrompt(),
                                       ),
-                                      onOpenEditor: (diaryId) {
-                                        _controller.openPreview(diaryId);
+                                      onOpenEditor: (diary, coverHero) {
+                                        _controller.openPreview(
+                                          diary.diary.diaryId,
+                                          initialDetail: diary,
+                                          coverHero: coverHero,
+                                        );
                                       },
                                       onToggleSelection:
                                           (noteId, forceSelect) =>
@@ -438,16 +433,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       isSearchResultEmpty: false,
                                     ),
                             ),
+                            // 还有下一页时常驻一个固定高度的槽位（加载前后
+                            // 列表底部不跳），指示器只在下一页真正加载且超过
+                            // 300ms 时出现：常驻的循环指示器即使滚出屏幕、
+                            // 切到其他 Tab 也会逐帧出帧耗电。
                             if (hasMoreDiaries)
-                              const SliverToBoxAdapter(
+                              SliverToBoxAdapter(
                                 child: Padding(
-                                  padding: EdgeInsets.only(top: 6),
-                                  child: Center(
-                                    child: SizedBox(
-                                      height: 18,
-                                      width: 18,
-                                      child: ExpressiveLoadingIndicator(),
-                                    ),
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: SizedBox(
+                                    height: 18,
+                                    child: diariesAsync.isLoading
+                                        ? const DelayedLoadingIndicator(
+                                            size: 18,
+                                          )
+                                        : null,
                                   ),
                                 ),
                               ),
@@ -688,40 +688,3 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 }
 
 enum _CreateDraftDecision { newEmpty, continueEditing }
-
-class _FixedSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
-  const _FixedSliverHeaderDelegate({
-    required this.height,
-    required this.backgroundColor,
-    required this.child,
-  });
-
-  final double height;
-  final Color backgroundColor;
-  final Widget child;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return ColoredBox(
-      color: backgroundColor,
-      child: SizedBox.expand(child: child),
-    );
-  }
-
-  @override
-  bool shouldRebuild(covariant _FixedSliverHeaderDelegate oldDelegate) {
-    return oldDelegate.height != height ||
-        oldDelegate.backgroundColor != backgroundColor ||
-        oldDelegate.child != child;
-  }
-}

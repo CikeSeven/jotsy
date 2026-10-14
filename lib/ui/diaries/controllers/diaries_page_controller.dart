@@ -118,12 +118,14 @@ class DiariesPageController {
 
   /// 打开编辑页（新建或编辑）。
   ///
-  /// 返回后会触发一次列表刷新，确保编辑后的内容及时反映到首页。
+  /// 返回后会触发一次列表刷新，确保编辑后的内容及时反映到首页；新建并发布
+  /// 时编辑页以新日记 id 作为结果，新卡片在发布页退场后以出现动画插入。
+  /// 结果类型放宽为 Object?：编辑页删除日记时以 true 返回。
   void openEditor({String? diaryId, bool restoreCreateDraft = true}) {
     unawaited(
       Navigator.of(_state.context)
-          .push(
-            MaterialPageRoute<void>(
+          .push<Object?>(
+            MaterialPageRoute<Object?>(
               builder: (BuildContext context) {
                 return EditDiaryPage(
                   diaryId: diaryId,
@@ -135,11 +137,13 @@ class DiariesPageController {
               },
             ),
           )
-          .then((_) {
+          .then((Object? result) {
             if (!_state.mounted) {
               return;
             }
-            refreshAfterEditorReturn();
+            refreshAfterEditorReturn(
+              createdDiaryId: result is String ? result : null,
+            );
           }),
     );
   }
@@ -149,13 +153,21 @@ class DiariesPageController {
   /// 预览页内可能触发删除或编辑：
   /// - 删除通过返回值触发撤销提示；
   /// - 其余数据变更依赖数据库流自动回推，避免强制刷新导致滚动回跳。
-  void openPreview(String diaryId) {
+  void openPreview(
+    String diaryId, {
+    DiaryWithTags? initialDetail,
+    ImageViewerHero? coverHero,
+  }) {
     unawaited(
       Navigator.of(_state.context)
           .push<DiaryPreviewResult?>(
             MaterialPageRoute<DiaryPreviewResult?>(
               builder: (BuildContext context) {
-                return DiaryPreviewPage(diaryId: diaryId);
+                return DiaryPreviewPage(
+                  diaryId: diaryId,
+                  initialDetail: initialDetail,
+                  coverHero: coverHero,
+                );
               },
             ),
           )
@@ -195,12 +207,15 @@ class DiariesPageController {
 
   /// 从编辑页返回后主动触发刷新节拍。
   ///
-  /// `invalidate` 让分页 Provider 重取当前窗口数据，`_listLayoutEpoch` 用于刷新布局签名。
-  void refreshAfterEditorReturn() {
+  /// `invalidate` 让分页 Provider 重取当前窗口数据（refresh 语义，不会回到
+  /// loading）。不再整表重挂载：瀑布流空位由按 id + 更新时间生成的布局签名
+  /// key 处理，重挂载只会让返回首帧所有卡片整体重建、新卡片也无从播放出现
+  /// 动画。[createdDiaryId] 为新建发布的日记，交给协调器在退场后放出。
+  void refreshAfterEditorReturn({String? createdDiaryId}) {
     _state.ref.invalidate(pagedDiariesProvider);
-    _state.setState(() {
-      _state._listLayoutEpoch += 1;
-    });
+    if (createdDiaryId != null) {
+      transitionCoordinator.revealCreatedDiary(createdDiaryId);
+    }
   }
 
   /// 处理“新建日记”入口：
@@ -547,26 +562,44 @@ class DiariesPageController {
 
   /// 处理头部菜单动作（排序/布局切换）。
   void onMenuSelected(DiaryMenuAction action) {
-    _state.setState(() {
-      switch (action) {
-        case DiaryMenuAction.sortUpdatedDesc:
-          _state._sortMode = DiarySortMode.updatedDesc;
-          break;
-        case DiaryMenuAction.sortUpdatedAsc:
-          _state._sortMode = DiarySortMode.updatedAsc;
-          break;
-        case DiaryMenuAction.sortTitleAsc:
-          _state._sortMode = DiarySortMode.titleAsc;
-          break;
-        case DiaryMenuAction.layoutList:
-          _state._layoutMode = DiaryLayoutMode.list;
-          break;
-        case DiaryMenuAction.layoutWaterfall:
-          _state._layoutMode = DiaryLayoutMode.waterfall;
-          break;
-      }
+    switch (action) {
+      case DiaryMenuAction.sortUpdatedDesc:
+        _changeSortMode(DiarySortMode.updatedDesc);
+      case DiaryMenuAction.sortUpdatedAsc:
+        _changeSortMode(DiarySortMode.updatedAsc);
+      case DiaryMenuAction.sortTitleAsc:
+        _changeSortMode(DiarySortMode.titleAsc);
+      case DiaryMenuAction.layoutList:
+        _changeLayoutMode(DiaryLayoutMode.list);
+      case DiaryMenuAction.layoutWaterfall:
+        _changeLayoutMode(DiaryLayoutMode.waterfall);
+    }
+  }
+
+  /// 切换排序：与标签筛选走同一套过渡——旧列表冻结并淡出，新排序的分页数据
+  /// 到齐后再淡入。此前直接 setState，本地缓存先按新规则重排（卡片瞬间换位），
+  /// 新窗口数据到达后又变一次。
+  void _changeSortMode(DiarySortMode mode) {
+    if (_state._sortMode == mode) {
+      return;
+    }
+    transitionCoordinator.queueFilterMutation(() {
+      _state.setState(() => _state._sortMode = mode);
     });
     _persistViewPreferences();
+  }
+
+  /// 切换列表/瀑布流：先整体淡出，再换布局并淡入，而不是整表硬切成另一种排布。
+  void _changeLayoutMode(DiaryLayoutMode mode) {
+    if (_state._layoutMode == mode) {
+      return;
+    }
+    unawaited(
+      transitionCoordinator.switchLayout(() {
+        _state.setState(() => _state._layoutMode = mode);
+        _persistViewPreferences();
+      }),
+    );
   }
 
   /// 持久化当前视图偏好，确保下次打开页面仍保持同样展示方式。

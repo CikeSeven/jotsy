@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -65,7 +66,7 @@ void main() {
               isSelectionMode: isSelectionMode,
               maxVisibleTags: 3,
               onCreate: () {},
-              onOpenEditor: (_) {},
+              onOpenEditor: (_, _) {},
               onToggleSelection: (_, __) {},
             ),
           ],
@@ -288,4 +289,112 @@ void main() {
       );
     },
   );
+
+  for (final layoutMode in DiaryLayoutMode.values) {
+    testWidgets('card press ink sits above the cover image in $layoutMode', (
+      tester,
+    ) async {
+      // 卡片展示数据按 (id, updatedAt) 全局缓存，用独立 id 避免复用无封面的缓存。
+      final diary = createMockDiary(
+        id: 'ink_cover_${layoutMode.name}',
+        title: '按压反馈',
+        isPinned: false,
+        cover: '/missing-cover.png',
+      );
+      await tester.pumpWidget(
+        buildApp(diaries: [diary], layoutMode: layoutMode),
+      );
+      await tester.pumpAndSettle();
+
+      // 前景墨水层先于封面图被命中，说明它画在图片之上，按压高亮不会被盖住。
+      final result = HitTestResult();
+      tester.binding.hitTestInView(
+        result,
+        tester.getCenter(find.byType(Image)),
+        tester.view.viewId,
+      );
+      final hitInk = result.path.any(
+        (entry) =>
+            entry.target ==
+            tester.renderObject(
+              find
+                  .descendant(
+                    of: find.byType(InkWell),
+                    matching: find.byType(MouseRegion),
+                  )
+                  .first,
+            ),
+      );
+      final hitImage = result.path.any(
+        (entry) => entry.target == tester.renderObject(find.byType(RawImage)),
+      );
+      expect(hitInk, isTrue);
+      expect(hitImage, isFalse);
+    });
+  }
+
+  testWidgets('toggling selection swaps the mark without reflowing the title', (
+    tester,
+  ) async {
+    final diary = createMockDiary(
+      id: 'd1',
+      title: '一个足够长的标题，用来确认选中时不会被勾选图标挤得重新折行',
+      isPinned: false,
+    );
+    Finder mark(FaIconData icon) => find.byWidgetPredicate(
+      (widget) => widget is FaIcon && widget.icon?.codePoint == icon.codePoint,
+    );
+
+    await tester.pumpWidget(
+      buildApp(
+        diaries: [diary],
+        layoutMode: DiaryLayoutMode.list,
+        isSelectionMode: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+    final titleFinder = find.textContaining('一个足够长的标题');
+    final unselectedSize = tester.getSize(titleFinder);
+    expect(mark(FontAwesomeIcons.circle), findsOneWidget);
+
+    await tester.pumpWidget(
+      buildApp(
+        diaries: [diary],
+        layoutMode: DiaryLayoutMode.list,
+        selectedDiaryIds: {'d1'},
+        isSelectionMode: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(mark(FontAwesomeIcons.solidCircleCheck), findsOneWidget);
+    expect(tester.getSize(titleFinder), unselectedSize);
+  });
+
+  testWidgets('selection marks expand in smoothly when entering selection', (
+    tester,
+  ) async {
+    final diary = createMockDiary(id: 'd1', title: '进入多选', isPinned: false);
+    await tester.pumpWidget(
+      buildApp(diaries: [diary], layoutMode: DiaryLayoutMode.list),
+    );
+    await tester.pumpAndSettle();
+    final restingWidth = tester.getSize(find.text('进入多选')).width;
+
+    await tester.pumpWidget(
+      buildApp(
+        diaries: [diary],
+        layoutMode: DiaryLayoutMode.list,
+        isSelectionMode: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final midWidth = tester.getSize(find.text('进入多选')).width;
+    await tester.pumpAndSettle();
+    final selectionWidth = tester.getSize(find.text('进入多选')).width;
+
+    expect(selectionWidth, lessThan(restingWidth));
+    expect(midWidth, inExclusiveRange(selectionWidth, restingWidth));
+  });
 }

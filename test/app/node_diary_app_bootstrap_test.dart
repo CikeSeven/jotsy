@@ -24,11 +24,15 @@ Future<void> _pumpApp(WidgetTester tester, {Duration? diariesDelay}) async {
         appDatabaseProvider.overrideWithValue(database),
         settingsServiceProvider.overrideWith((ref) async => settings),
         if (diariesDelay != null)
-          filteredDiariesProvider.overrideWith(
-            (ref) => Stream.fromFuture(
-              Future<List<DiaryWithTags>>.delayed(
+          pagedDiariesProvider.overrideWith(
+            (ref, query) => Stream.fromFuture(
+              Future<PagedDiariesResult>.delayed(
                 diariesDelay,
-                () => const <DiaryWithTags>[],
+                () => PagedDiariesResult(
+                  items: const <DiaryWithTags>[],
+                  limit: query.limit,
+                  hasMore: false,
+                ),
               ),
             ),
           ),
@@ -76,6 +80,50 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(AppLoadingContent), findsNothing);
+    await _unmount(tester);
+  });
+
+  testWidgets('the diary list is already there on the first home frame', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final settings = await SettingsService.create();
+    // 非默认排序：预热必须与日记页首帧的查询完全一致才能命中同一实例。
+    await settings.setDiarySortModeRaw('titleAsc');
+    await tester.runAsync(
+      () => database.createDiary(
+        title: 'Warm start',
+        contentDocJson: '[{"insert":"body\\n"}]',
+        contentText: 'body',
+        metadataJson: '{}',
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          settingsServiceProvider.overrideWith((ref) async => settings),
+        ],
+        child: const NodeDiaryApp(),
+      ),
+    );
+    var sawHome = false;
+    for (var frame = 0; frame < 120 && !sawHome; frame++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 2)),
+      );
+      await tester.pump(const Duration(milliseconds: 16));
+      if (find.byType(HomePage).evaluate().isEmpty) {
+        continue;
+      }
+      sawHome = true;
+      // 首页出现的同一帧里列表已有数据，不会先空白/转圈再硬切。
+      expect(find.text('Warm start'), findsOneWidget);
+    }
+    expect(sawHome, isTrue);
     await _unmount(tester);
   });
 }

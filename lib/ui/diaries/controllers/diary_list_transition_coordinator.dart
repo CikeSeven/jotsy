@@ -18,6 +18,10 @@ class DiaryListTransitionCoordinator {
   /// 避免查询异常挂起时列表一直不可见。
   static const Duration _maxFreshPageWait = Duration(milliseconds: 600);
 
+  /// 新建日记放出的兜底超时（非动画计时）：上层路由退场被打断、或新卡片不在
+  /// 当前筛选窗口里时，到点仍放出 / 清除出现标记。
+  static const Duration _createdRevealTimeout = Duration(milliseconds: 1200);
+
   /// 应用筛选变更并启动列表过渡。
   ///
   /// 时序：
@@ -95,6 +99,27 @@ class DiaryListTransitionCoordinator {
         _state._filterQueryWaiter = null;
       }
     }
+  }
+
+  /// 切换布局：整体淡出 → 应用 [apply]（换布局）→ 下一帧淡入。
+  ///
+  /// 布局必须在淡出完成后再换：先换再淡出等于硬切后补一个淡出。减少动画或
+  /// 筛选过渡正在进行时直接应用（后者结束时会自行淡入）。
+  Future<void> switchLayout(VoidCallback apply) async {
+    if (_reduceMotion || _state._queuedFilterTransition != null) {
+      apply();
+      return;
+    }
+    await _fadeOutListIfNeeded();
+    if (!_state.mounted) {
+      return;
+    }
+    apply();
+    await WidgetsBinding.instance.endOfFrame;
+    if (!_state.mounted) {
+      return;
+    }
+    await _fadeInListIfNeeded();
   }
 
   /// 系统开启“减少动画”时不做整列表淡入淡出，只保留“数据到齐再替换”。
@@ -196,6 +221,59 @@ class DiaryListTransitionCoordinator {
         _state._appearingDiaryIds.addAll(targetIds);
       } else {
         _state._appearingDiaryIds.removeAll(targetIds);
+      }
+    });
+  }
+
+  /// 新建日记发布后回到列表：等上层路由退场结束，再让新卡片展开出现。
+  ///
+  /// 退场途中列表正随路由滑入，若此时插入卡片，展开动画会和转场叠在一起、
+  /// 大半被遮住；先把它压住不参与构建，本页所在路由的 secondaryAnimation 回到
+  /// dismissed（上层退场结束）后再以出现动画放出。减少动画时直接显示。
+  void revealCreatedDiary(String diaryId) {
+    final secondary = ModalRoute.of(_state.context)?.secondaryAnimation;
+    if (ExpressiveMotion.reduceMotion(_state.context) ||
+        secondary == null ||
+        secondary.isDismissed) {
+      _revealCreatedDiary(diaryId);
+      return;
+    }
+    _state.setState(() => _state._optimisticHiddenDiaryIds.add(diaryId));
+    var released = false;
+    late final AnimationStatusListener listener;
+    void release() {
+      if (released) {
+        return;
+      }
+      released = true;
+      secondary.removeStatusListener(listener);
+      _state._appearingTimers.remove(diaryId)?.cancel();
+      if (_state.mounted) {
+        _revealCreatedDiary(diaryId);
+      }
+    }
+
+    listener = (AnimationStatus status) {
+      if (status.isDismissed) {
+        release();
+      }
+    };
+    secondary.addStatusListener(listener);
+    _state._appearingTimers.remove(diaryId)?.cancel();
+    _state._appearingTimers[diaryId] = Timer(_createdRevealTimeout, release);
+  }
+
+  void _revealCreatedDiary(String diaryId) {
+    revealDiaries(<String>[
+      diaryId,
+    ], animate: !ExpressiveMotion.reduceMotion(_state.context));
+    // 新日记可能不在当前筛选/排序窗口里，永远不会被构建；到点清除出现标记，
+    // 免得之后某次筛选变化时它意外播放出现动画。已经可见时 syncAppearingTimers
+    // 会因这里已有计时器而跳过，标记晚一点清除不影响已播完的动画。
+    _state._appearingTimers[diaryId] = Timer(_createdRevealTimeout, () {
+      _state._appearingTimers.remove(diaryId);
+      if (_state.mounted) {
+        _state.setState(() => _state._appearingDiaryIds.remove(diaryId));
       }
     });
   }

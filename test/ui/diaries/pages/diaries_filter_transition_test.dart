@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -158,5 +159,55 @@ void main() {
       isSemantics(isButton: true, hasTapAction: true),
     );
     semantics.dispose();
+  });
+
+  testWidgets('switching layout fades out before the grid replaces the list', (
+    tester,
+  ) async {
+    await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
+    final l10n = tester.element(find.byType(DiariesPage)).l10n;
+
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.autoT0147));
+
+    var sawListFading = false;
+    var gridAppeared = false;
+    for (var frame = 0; frame < 40 && !gridAppeared; frame++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      final grid = find.byType(SliverMasonryGrid).evaluate().isNotEmpty;
+      final opacity = _listOpacity(tester);
+      if (!grid && opacity < 1) {
+        sawListFading = true;
+      }
+      if (grid) {
+        gridAppeared = true;
+        // 布局只在旧列表淡到底之后才切换，而不是先硬切再补淡出。
+        expect(opacity, lessThan(0.05), reason: 'frame $frame');
+      }
+    }
+    expect(sawListFading, isTrue);
+    expect(gridAppeared, isTrue);
+    await tester.pumpAndSettle();
+    expect(_listOpacity(tester), 1);
+    expect(find.text('Old'), findsOneWidget);
+  });
+
+  testWidgets('the view sheet appears without sliding under reduce motion', (
+    tester,
+  ) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await _pumpPage(tester, filteredDelay: const Duration(milliseconds: 20));
+    final l10n = tester.element(find.byType(DiariesPage)).l10n;
+
+    await tester.tap(find.byTooltip(l10n.autoT0125));
+    await tester.pump();
+    await tester.pump();
+    final settledTop = tester.getTopLeft(find.text(l10n.autoT0141)).dy;
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(tester.getTopLeft(find.text(l10n.autoT0141)).dy, settledTop);
+    await tester.pumpAndSettle();
   });
 }

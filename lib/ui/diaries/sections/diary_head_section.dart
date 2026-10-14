@@ -6,6 +6,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../widgets/expressive_icon_swap.dart';
 
 /// 顶部排序模式。
 enum DiarySortMode { updatedDesc, updatedAsc, titleAsc }
@@ -126,11 +127,15 @@ class DiaryHeadSection extends StatelessWidget {
               ? context.l10n.diaryUnpinSelected
               : context.l10n.diaryPinSelected,
           onPressed: onPinSelected,
-          icon: FaIcon(
-            isPinActionUnpin
-                ? FontAwesomeIcons.thumbtackSlash
-                : FontAwesomeIcons.thumbtack,
-            size: 18,
+          // 选中项全部已置顶时变为“取消置顶”：图标缩放淡入切换，而不是硬切。
+          icon: ExpressiveIconSwap(
+            switchKey: isPinActionUnpin,
+            child: FaIcon(
+              isPinActionUnpin
+                  ? FontAwesomeIcons.thumbtackSlash
+                  : FontAwesomeIcons.thumbtack,
+              size: 18,
+            ),
           ),
         ),
         IconButton(
@@ -189,6 +194,10 @@ class DiaryHeadSection extends StatelessWidget {
       context: context,
       useSafeArea: true,
       showDragHandle: true,
+      // 底部面板默认滑入不读取系统“减少动态效果”；该模式下直接出现。
+      sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
+          ? AnimationStyle.noAnimation
+          : null,
       builder: (BuildContext sheetContext) {
         return SafeArea(
           top: false,

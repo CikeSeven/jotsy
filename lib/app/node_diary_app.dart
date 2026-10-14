@@ -95,7 +95,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   }
 
   bool _isBootstrapDataReady() {
-    final diaries = ref.read(filteredDiariesProvider);
+    final diaries = ref.read(startupDiariesProvider);
     return ref.read(settingsServiceProvider).hasValue &&
         (diaries.hasValue || diaries.hasError);
   }
@@ -117,7 +117,7 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     // 日记列表变化（编辑、筛选、排序）都重建整个 MaterialApp。record 按值比较，
     // 列表内容变化但状态不变时 select 不会通知。
     final (diariesSettled, diariesBootstrapFailed) = ref.watch(
-      filteredDiariesProvider.select(
+      startupDiariesProvider.select(
         (async) => (async.hasValue || async.hasError, async.hasError),
       ),
     );
@@ -586,17 +586,36 @@ class _AppLockOverlay extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 18),
-                if (unlocking)
-                  ExpressiveLoadingIndicator(
-                    size: 64,
-                    semanticLabel: l10n.appLockUnlocking,
-                  )
-                else
-                  FilledButton.icon(
-                    onPressed: onTapUnlock,
-                    icon: const FaIcon(FontAwesomeIcons.key, size: 14),
-                    label: Text(l10n.appLockUnlockNow),
+                // 固定高度的槽位：取消生物识别后 64dp 指示器换回 48dp 按钮时
+                // 整块不再跳动，两者之间淡入淡出。
+                SizedBox(
+                  height: 64,
+                  child: AnimatedSwitcher(
+                    duration: ExpressiveMotion.duration(
+                      context,
+                      ExpressiveMotion.fast,
+                    ),
+                    switchInCurve: ExpressiveMotion.effects,
+                    switchOutCurve: ExpressiveMotion.exit,
+                    child: unlocking
+                        ? ExpressiveLoadingIndicator(
+                            key: const ValueKey<String>('unlocking'),
+                            size: 64,
+                            semanticLabel: l10n.appLockUnlocking,
+                          )
+                        : Center(
+                            key: const ValueKey<String>('unlock'),
+                            child: FilledButton.icon(
+                              onPressed: onTapUnlock,
+                              icon: const FaIcon(
+                                FontAwesomeIcons.key,
+                                size: 14,
+                              ),
+                              label: Text(l10n.appLockUnlockNow),
+                            ),
+                          ),
                   ),
+                ),
               ],
             ),
           ),

@@ -69,8 +69,18 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
     super.dispose();
   }
 
+  /// 按下时的即时反馈：图标先轻微缩小，松手后再播放清除动画。
+  bool _pressed = false;
+
+  void _setPressed(bool pressed) {
+    if (_pressed != pressed && widget.hasSelection) {
+      setState(() => _pressed = pressed);
+    }
+  }
+
   Future<void> _clear() async {
-    if (_controller.isAnimating) {
+    // 没有选中的标签时点按什么都不会发生：不再白转一圈给出误导性的反馈。
+    if (_controller.isAnimating || !widget.hasSelection) {
       return;
     }
     widget.onClear();
@@ -100,17 +110,28 @@ class _TagFilterClearButtonState extends State<TagFilterClearButton>
         label: context.l10n.tagFilterClearLabel,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
+          onTapDown: (_) => _setPressed(true),
+          onTapUp: (_) => _setPressed(false),
+          onTapCancel: () => _setPressed(false),
           onTap: () => unawaited(_clear()),
           child: SizedBox(
             width: 26,
             height: 32,
             child: Center(
-              child: FaIcon(
-                FontAwesomeIcons.xmark,
-                size: 16,
-                color: widget.hasSelection
-                    ? colors.primary
-                    : colors.onSurfaceVariant,
+              child: AnimatedScale(
+                scale: _pressed ? 0.8 : 1,
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.fast,
+                ),
+                curve: ExpressiveMotion.spatial,
+                child: FaIcon(
+                  FontAwesomeIcons.xmark,
+                  size: 16,
+                  color: widget.hasSelection
+                      ? colors.primary
+                      : colors.onSurfaceVariant,
+                ),
               ),
             ),
           ),

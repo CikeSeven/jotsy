@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_view_preferences.dart';
 
 /// 列表筛选状态：关键词 + 选中的标签集合。
 class DiaryFilterState {
@@ -124,15 +127,43 @@ final diaryFilterProvider =
       DiaryFilterNotifier.new,
     );
 
+/// 分页/搜索查询实例在无人监听后的保留时长。
+///
+/// 两个查询 family 以（关键词、标签、窗口大小、排序）为 key：每次翻页、切换
+/// 标签、输入搜索词都会产生新实例。实例此前永不释放，每个都常驻一份完整
+/// 结果列表（含正文），用得越久内存只增不减。现在无人监听超过该时长才释放：
+/// 短时间内来回切换（取消再勾回同一标签、从搜索返回）仍直接命中缓存，首帧
+/// 不必等待重新查询；更早的查询不再常驻。
+const Duration diaryQueryIdleRetention = Duration(seconds: 30);
+
+/// 让 autoDispose 查询在失去最后一个活跃监听者后再保留
+/// [diaryQueryIdleRetention]。
+///
+/// - 期间重新被监听（onResume）则取消释放；
+/// - 计时结束只是放开保活：若仍有暂停中的监听者（如不可见 Tab 里的列表），
+///   Riverpod 不会释放它，之后失去监听时立即释放；
+/// - 生命周期回调里不能再调用 `ref.keepAlive()`，所以保活链接只在构建时取一次。
+void _retainWhileRecentlyUsed(Ref ref) {
+  final link = ref.keepAlive();
+  Timer? releaseTimer;
+  ref.onCancel(() {
+    releaseTimer?.cancel();
+    releaseTimer = Timer(diaryQueryIdleRetention, link.close);
+  });
+  ref.onResume(() => releaseTimer?.cancel());
+  ref.onDispose(() => releaseTimer?.cancel());
+}
+
 /// 日记列表分页流 provider。
 ///
 /// 列表页只订阅当前可见窗口大小，数据库层通过 `LIMIT` 直接返回窗口内数据，
 /// 不再把全量命中结果交给 UI 层 `take()` 截断。
-final pagedDiariesProvider =
-    StreamProvider.family<PagedDiariesResult, DiaryPageQuery>((
+final pagedDiariesProvider = StreamProvider.autoDispose
+    .family<PagedDiariesResult, DiaryPageQuery>((
       Ref ref,
       DiaryPageQuery query,
     ) {
+      _retainWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       final fetchLimit = query.limit + 1;
       return db
@@ -154,15 +185,37 @@ final pagedDiariesProvider =
           });
     });
 
-/// 启动预热仍只取首页窗口，避免恢复旧的全量启动查询。
-final filteredDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
-  final db = ref.watch(appDatabaseProvider);
-  final filter = ref.watch(diaryFilterProvider);
-  final tagIds = filter.selectedTagIds.toList()..sort();
-  return db.watchDiaries(
-    keyword: filter.keyword,
-    requiredTagIds: tagIds,
-    limit: 20,
+/// 日记页首屏窗口大小：日记页的初始窗口与启动预热共用，保证命中同一个查询。
+const int diaryFirstPageSize = 20;
+
+/// 启动预热：订阅日记页首帧将要使用的同一条分页查询（空筛选 + 持久化排序 +
+/// 首屏窗口）。
+///
+/// 门控放行时日记页首帧直接命中这个已就绪的 provider 实例，列表随首页一起
+/// 出现。此前预热的是另一条查询（默认排序、不多取一条判断 hasMore），结果被
+/// 直接丢弃，首页还要再查一次并先闪加载指示再硬切成列表。
+/// 只依赖设置服务（加载后实例稳定）：之后的筛选、排序变化不会让它切换到
+/// 新实例，门控一旦放行就保持放行；仍开启标签记忆的用户首帧后会再换一次查询。
+final startupDiariesProvider = Provider<AsyncValue<PagedDiariesResult>>((
+  Ref ref,
+) {
+  final settings = ref.watch(settingsServiceProvider).asData?.value;
+  if (settings == null) {
+    return const AsyncValue<PagedDiariesResult>.loading();
+  }
+  final sortMode = DiaryViewPreferences.fromRaw(
+    sortRaw: settings.diarySortModeRaw,
+    layoutRaw: settings.diaryLayoutModeRaw,
+  ).sortMode;
+  return ref.watch(
+    pagedDiariesProvider(
+      DiaryPageQuery(
+        keyword: '',
+        requiredTagIds: const <int>[],
+        limit: diaryFirstPageSize,
+        sortMode: DiaryQuerySortMode.values.byName(sortMode.name),
+      ),
+    ),
   );
 });
 
@@ -217,11 +270,12 @@ class SearchDiaryQuery {
 /// 设计目的：
 /// - 与主页 `diaryFilterProvider` 解耦，避免搜索页对主页筛选状态产生副作用；
 /// - 支持搜索页内部以局部状态驱动联合查询。
-final searchDiariesProvider =
-    StreamProvider.family<PagedDiariesResult, DiaryPageQuery>((
+final searchDiariesProvider = StreamProvider.autoDispose
+    .family<PagedDiariesResult, DiaryPageQuery>((
       Ref ref,
       DiaryPageQuery query,
     ) {
+      _retainWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       final fetchLimit = query.limit + 1;
       return db

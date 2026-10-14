@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' show ImageFilter, TileMode;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -15,10 +17,15 @@ import '../widgets/diaries_empty_state.dart';
 import '../viewmodels/diary_card_view_data.dart';
 import '../widgets/diary_item_tag_row.dart';
 import '../widgets/diary_selection_surface.dart';
+import '../widgets/diary_swipe_action_item.dart';
 import '../models/time_capsule.dart';
 import '../pages/locked_diary_page.dart';
 import '../widgets/energy_battery_indicator.dart';
 import 'diary_head_section.dart';
+import '../../widgets/expressive_entrance.dart';
+import '../../widgets/expressive_icon_swap.dart';
+import '../../widgets/expressive_image_frame.dart';
+import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/qweather_icon.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/list_item_presence.dart';
@@ -69,7 +76,10 @@ class DiariesListSection extends StatelessWidget {
   /// 标记“正在出现动画”的日记项集合。
   final Set<String> appearingDiaryIds;
   final VoidCallback onCreate;
-  final void Function(String diaryId) onOpenEditor;
+
+  /// 普通模式点击卡片：传入整条数据（预览页可直接用它渲染首帧）与从封面抓取
+  /// 的画面（预览页头图以它为共享元素落点，无封面或减少动画时为 null）。
+  final DiaryOpenCallback onOpenEditor;
   final void Function(String noteId, bool forceSelect) onToggleSelection;
   final ValueChanged<String>? onArchiveDiary;
   final FaIconData swipeActionIcon;
@@ -94,9 +104,12 @@ class DiariesListSection extends StatelessWidget {
               horizontal: AppSpacing.m,
               vertical: AppSpacing.m,
             ),
-            child: DiariesEmptyState(
-              onCreate: onCreate,
-              isSearchResultEmpty: isSearchResultEmpty,
+            // 最后一篇被归档/删除、或首屏没有日记时淡入上移，而不是硬切出现。
+            child: ExpressiveEntrance(
+              child: DiariesEmptyState(
+                onCreate: onCreate,
+                isSearchResultEmpty: isSearchResultEmpty,
+              ),
             ),
           ),
         ),
@@ -204,6 +217,9 @@ class DiariesListSection extends StatelessWidget {
       now: DateTime.now(),
     );
     final isLockedCapsule = capsuleState.isLocked;
+    // 封面所在的 context：点按卡片时从这里抓取已绘制的封面画面（只看封面子树，
+    // 避免误抓天气图标等其他图片）。未解封胶囊的模糊封面不参与共享元素。
+    final coverAnchor = ImageViewerHeroAnchor();
     final moodEmoji = viewData.moodEmoji;
     final weatherCode = viewData.weatherIconCode;
 
@@ -278,17 +294,11 @@ class DiariesListSection extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (selected) ...[
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: FaIcon(
-                      FontAwesomeIcons.solidCircleCheck,
-                      size: 18,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ],
+                _buildSelectionMark(
+                  context,
+                  selected: selected,
+                  compact: false,
+                ),
               ],
             ),
             if (hasVisibleTags) ...[
@@ -369,14 +379,7 @@ class DiariesListSection extends StatelessWidget {
                 ),
               ),
             ),
-            if (selected) ...[
-              const SizedBox(width: 6),
-              FaIcon(
-                FontAwesomeIcons.solidCircleCheck,
-                size: 16,
-                color: colorScheme.primary,
-              ),
-            ],
+            _buildSelectionMark(context, selected: selected, compact: true),
           ],
         );
 
@@ -447,12 +450,20 @@ class DiariesListSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (previewCover != null) ...[
-                    _buildCoverPreview(
-                      context,
-                      previewCover,
-                      width: double.infinity,
-                      height: 140,
-                      radius: 0,
+                    _buildCoverHeroSource(
+                      diaryId: diary.diary.diaryId,
+                      anchor: coverAnchor,
+                      // 瀑布流封面贴着卡片顶边，上方两角由卡片裁圆。
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppRadii.card),
+                      ),
+                      child: _buildCoverPreview(
+                        context,
+                        previewCover,
+                        width: double.infinity,
+                        height: 140,
+                        radius: 0,
+                      ),
                     ),
                     Divider(
                       height: 0.6,
@@ -471,12 +482,17 @@ class DiariesListSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (previewCover != null) ...[
-                    _buildCoverPreview(
-                      context,
-                      previewCover,
-                      width: 116,
-                      height: 116,
-                      radius: 16,
+                    _buildCoverHeroSource(
+                      diaryId: diary.diary.diaryId,
+                      anchor: coverAnchor,
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
+                      child: _buildCoverPreview(
+                        context,
+                        previewCover,
+                        width: 116,
+                        height: 116,
+                        radius: 16,
+                      ),
                     ),
                     const SizedBox(width: 14),
                   ],
@@ -510,30 +526,13 @@ class DiariesListSection extends StatelessWidget {
           isPinned: diary.diary.isPinned,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(itemRadius),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: itemRadius > 0
-                    ? BorderRadius.circular(itemRadius)
-                    : null,
-                onTap: () {
-                  if (isSelectionMode) {
-                    onToggleSelection(diary.diary.diaryId, false);
-                    return;
-                  }
-                  if (isLockedCapsule) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (context) =>
-                            LockedDiaryPage(diaryId: diary.diary.diaryId),
-                      ),
-                    );
-                    return;
-                  }
-                  onOpenEditor(diary.diary.diaryId);
-                },
-                onLongPress: () => onToggleSelection(diary.diary.diaryId, true),
-                child: Padding(
+            // 水波纹与按压高亮叠在内容之上：画在内容下方透明 Material 上的墨水会被
+            // 封面图、未解封胶囊的不透明主体盖住，按下去几乎看不到反馈。卡片内容
+            // 不含可点击子控件，前景层不会吞掉其他交互；点击/长按语义仍并入
+            // DiarySelectionSurface 的容器节点。
+            child: Stack(
+              children: <Widget>[
+                Padding(
                   padding: EdgeInsets.fromLTRB(
                     (compact || isLockedCapsule) ? 0 : 16,
                     (compact || isLockedCapsule) ? 0 : 14,
@@ -542,7 +541,48 @@ class DiariesListSection extends StatelessWidget {
                   ),
                   child: content,
                 ),
-              ),
+                Positioned.fill(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      borderRadius: itemRadius > 0
+                          ? BorderRadius.circular(itemRadius)
+                          : null,
+                      onTap: () {
+                        if (isSelectionMode) {
+                          onToggleSelection(diary.diary.diaryId, false);
+                          return;
+                        }
+                        if (isLockedCapsule) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (context) => LockedDiaryPage(
+                                diaryId: diary.diary.diaryId,
+                                initialDetail: diary,
+                              ),
+                            ),
+                          );
+                          return;
+                        }
+                        onOpenEditor(
+                          diary,
+                          coverAnchor.capture(
+                            tag: diaryCoverHeroTag(diary.diary.diaryId),
+                          ),
+                        );
+                      },
+                      onLongPress: () {
+                        // Android 上 InkWell 已经通过 Feedback.forLongPress
+                        // 震动；iOS 不会，补一次以确认进入多选。
+                        if (Theme.of(context).platform == TargetPlatform.iOS) {
+                          unawaited(HapticFeedback.mediumImpact());
+                        }
+                        onToggleSelection(diary.diary.diaryId, true);
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -556,30 +596,88 @@ class DiariesListSection extends StatelessWidget {
         // 普通列表始终保留 Dismissible 根节点，避免进入选择模式时重建子树，
         // 从而让首次长按也能完整播放选中反馈；选择模式仅关闭滑动方向。
         if (!compact && onArchiveDiary != null) {
-          final swipeBackgroundColor =
-              swipeActionBackgroundColor ??
-              Theme.of(context).colorScheme.primaryContainer;
-          final swipeIconColor =
-              swipeActionIconColor ??
-              Theme.of(context).colorScheme.onPrimaryContainer;
-
-          return Dismissible(
-            key: ValueKey<String>('archive_${diary.diary.diaryId}'),
-            direction: isSelectionMode
-                ? DismissDirection.none
-                : DismissDirection.endToStart,
-            background: Container(
-              color: swipeBackgroundColor,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: AppSpacing.l),
-              child: FaIcon(swipeActionIcon, size: 16, color: swipeIconColor),
-            ),
-            onDismissed: (_) => onArchiveDiary!(diary.diary.diaryId),
+          final colorScheme = Theme.of(context).colorScheme;
+          return DiarySwipeActionItem(
+            diaryId: diary.diary.diaryId,
+            enabled: !isSelectionMode,
+            icon: swipeActionIcon,
+            actionColor:
+                swipeActionBackgroundColor ?? colorScheme.primaryContainer,
+            actionIconColor:
+                swipeActionIconColor ?? colorScheme.onPrimaryContainer,
+            borderRadius: itemRadius,
+            onSwiped: () => onArchiveDiary!(diary.diary.diaryId),
             child: animatedBaseItem,
           );
         }
 
         return animatedBaseItem;
+      },
+    );
+  }
+
+  /// 普通卡片的封面：作为预览页头图的共享元素来源，并把所在 context 记到
+  /// [anchor] 供点按时抓取画面。
+  Widget _buildCoverHeroSource({
+    required String diaryId,
+    required ImageViewerHeroAnchor anchor,
+    required BorderRadius borderRadius,
+    required Widget child,
+  }) {
+    return Builder(
+      builder: (BuildContext coverContext) {
+        anchor.context = coverContext;
+        return ImageViewerHeroSource(
+          tag: diaryCoverHeroTag(diaryId),
+          borderRadius: borderRadius,
+          child: child,
+        );
+      },
+    );
+  }
+
+  /// 标题行末尾的选择标记。
+  ///
+  /// 选择模式下常驻：未选中为空心圆、选中为实心勾，切换选中只替换图标
+  /// （[ExpressiveIconSwap]），标题可用宽度不变——此前勾选图标按需插入，会把
+  /// 标题挤窄、重新折行，整张卡片跳一下。进出选择模式时槽位宽度经补间展开/收起
+  /// （Align.widthFactor + ClipRect，结构恒定），减少动画时直接落位。
+  Widget _buildSelectionMark(
+    BuildContext context, {
+    required bool selected,
+    required bool compact,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(end: isSelectionMode ? 1 : 0),
+      duration: ExpressiveMotion.duration(context, itemTransitionDuration),
+      curve: ExpressiveMotion.effects,
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(
+          start: compact ? 6 : 8,
+          top: compact ? 0 : 2,
+        ),
+        child: ExpressiveIconSwap(
+          switchKey: selected,
+          child: FaIcon(
+            selected
+                ? FontAwesomeIcons.solidCircleCheck
+                : FontAwesomeIcons.circle,
+            size: compact ? 16 : 18,
+            color: selected
+                ? colorScheme.primary
+                : colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+          ),
+        ),
+      ),
+      builder: (BuildContext context, double reveal, Widget? child) {
+        return ClipRect(
+          child: Align(
+            alignment: AlignmentDirectional.topEnd,
+            widthFactor: reveal,
+            child: Opacity(opacity: reveal, child: child),
+          ),
+        );
       },
     );
   }
@@ -925,6 +1023,8 @@ class DiariesListSection extends StatelessWidget {
     final isNetwork =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
+    // 封面解码完成才出画面：用统一淡入替代“啪”地冒出，缓存命中（滚回已显示过
+    // 的卡片）则直接显示，不会重复闪烁。
     final imageWidget = isNetwork
         ? Image.network(
             trimmed,
@@ -932,6 +1032,7 @@ class DiariesListSection extends StatelessWidget {
             cacheWidth: cacheWidth,
             cacheHeight: cacheHeight,
             filterQuality: filterQuality,
+            frameBuilder: expressiveImageFrameBuilder,
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stackTrace) =>
                     _buildCoverFallback(context),
@@ -942,6 +1043,7 @@ class DiariesListSection extends StatelessWidget {
             cacheWidth: cacheWidth,
             cacheHeight: cacheHeight,
             filterQuality: filterQuality,
+            frameBuilder: expressiveImageFrameBuilder,
             errorBuilder:
                 (BuildContext context, Object error, StackTrace? stackTrace) =>
                     _buildCoverFallback(context),
@@ -1062,3 +1164,7 @@ class DiariesListSection extends StatelessWidget {
     );
   }
 }
+
+/// 打开日记：整条数据 + 从封面抓取的共享元素画面（可能为 null）。
+typedef DiaryOpenCallback =
+    void Function(DiaryWithTags diary, ImageViewerHero? coverHero);

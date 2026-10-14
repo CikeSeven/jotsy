@@ -102,8 +102,25 @@ Expressive 设计系统强调有机、舒适的大圆角曲率：
   - `medium`（250ms）：内容切换，列表项进出、区块交叉淡入、面板吸附、翻页与 Tab 切换；
   - `standard`（350ms）：空间过渡，页面级转场、较大位移/形变、FAB 显隐；
   - `long`（500ms）：强调型/仪式感动画，如时间胶囊封存。
-- **减少动画**：实际时长一律经 `ExpressiveMotion.duration(context, token)` 解析，系统开启“减少动态效果”时为 0；不能接受 0 时长的 API 改用跳转或 1ms 近似瞬时：`animateTo`/`animateToPage` 用跳转；`AnimatedSize`（0 时长会在自身 performLayout 内重新标脏而触发断言）使用 `ExpressiveMotion.durationNonZero`；循环动画不启动。页面转场在该模式下由主题直接切换。
-- **加载反馈防闪**：本地查询等通常毫秒级返回的等待，经 `DelayedLoadingGate` 延迟约 300ms 再显示指示器，避免每次交互都闪一下。
+- **减少动画**：实际时长一律经 `ExpressiveMotion.duration(context, token)` 解析，系统开启“减少动态效果”时为 0；不能接受 0 时长的 API 改用跳转或 1ms 近似瞬时：`animateTo`/`animateToPage` 用跳转；`AnimatedSize`（0 时长会在自身 performLayout 内重新标脏而触发断言，`AnimatedCrossFade` 与 table_calendar 的 `formatAnimationDuration` 内部同样是 AnimatedSize）使用 `ExpressiveMotion.durationNonZero`；循环动画不启动。页面转场在该模式下由主题直接切换；底部面板传 `sheetAnimationStyle: AnimationStyle.noAnimation`（对话框保留框架淡入，淡入本就是减少动画的推荐替代）。
+- **加载反馈防闪**：本地查询等通常毫秒级返回的等待，经 `DelayedLoadingGate` 延迟约 300ms 再显示指示器，避免每次交互都闪一下；页面首屏的 `loading` 分支统一用 `DelayedLoadingIndicator`（300ms 内保持空白，超时后淡入居中指示器），不再在路由滑入途中闪一下 spinner。动作类等待遮罩（导出、保存、分享）统一用 `ActionLoadingOverlay`，淡入淡出且隐藏时静音指示器。
+- **图片出场**：展示型图片（列表/瀑布流封面、日历与探索缩略图、发布/预览头图、正文嵌图、看图页）统一挂 `expressiveImageFrameBuilder`：首次解码完成后 `fast + effects` 淡入，ImageCache 命中直接显示、不重复闪烁。分享长图的静态封面例外（截图不等解码，淡入中途会截到半透明）。
+- **跟手手势**：拖动过程中的反馈直接映射手指位移，不做补间；只有“状态越界”才触发补间。左滑归档/取消归档（`DiarySwipeActionItem`）：背景与卡片同圆角，阈值（40%）以前为弱化色、图标随距离淡入放大，越过阈值切到动作色、图标弹性放大并轻震一次，拖回阈值以下恢复，用户随时可以反悔。看图页（`DoubleTapZoomViewer`）：双击以点按处为不动点放大到 2.5 倍、再双击复原，过程为 `medium` 补间；放大态锁定左右翻页，拖动只用于平移；页码数字按翻页方向滚动切换。发布面板（`PublishDiaryPanel`）：拖动进度经 `ValueNotifier` 只驱动宽度内缩、详情淡入与表头，面板内容不随进度逐帧重建；表头双箭头随进度纵向翻转（先压扁成横线再翻成下指），文案越过阈值时短交叉淡入，减少动画时朝向按阈值直接切换。
+- **触觉反馈**：只用于“动作生效/越过阈值”的瞬间，普通点按不额外加震动：
+  - `lightImpact`：手势越过生效阈值（左滑归档、看图页下拉关闭；来回拖动只在进入生效态时震一次）、录音插入正文；
+  - `mediumImpact`：拿起可排序条目（拖拽手柄不经过长按，系统不会反馈）、真正开始录音、iOS 长按进入多选（Android 由 InkWell 的系统长按反馈负责，避免震两次）；
+  - `successNotification`：时间胶囊封存。
+- **状态变色**：`Material` 与 `ButtonStyle` 的隐式动画只补间形状与阴影，颜色会硬切；状态驱动的换色（播放中卡片染色、按钮待机/会话态、选中标签行、时间胶囊入口）统一经 `ExpressiveStateBlend` 补间 0↔1 进度后插值颜色，与形变同步。
+- **按压反馈**：可点卡片的墨水层叠在内容之上（封面图、不透明主体不会盖住水波纹），探索卡片的点击墨水画在卡片自身表面；小尺寸色块、清除按钮等按下时以 `spatial` 轻微缩小。
+- **导航连续性**：
+  - 列表/搜索/日历打开预览页时传入已有的 `DiaryWithTags`（`initialDetail`），首帧即完整内容，详情查询返回后无缝接管；列表封面与日历时间线缩略图是预览页头图的共享元素，点按时抓取已绘制画面（`ImageViewerHeroAnchor`），飞入后展开成完整头图；启动预热订阅日记页首帧要用的同一条分页查询（`startupDiariesProvider`），首页出现时列表已就绪；
+  - 看图页经 `openImageViewer` 打开：透明背景路由 + 淡入；缩略图/正文图/头图以共享元素（`ImageViewerHeroSource` → `ImageViewerHeroTarget`）从原位展开，盒子取原图比例、两端均按 cover 铺满，飞行与原图解码前显示来源已解码画面，圆角逐角补间到目标端（来源圆角包含外层裁切，如瀑布流封面只有上方两角圆），直线飞行；放大态返回只淡出；减少动画时不建立 Hero；
+  - 看图页支持下拉关闭（`SwipeDismissViewer`）：跟手移动并缩小到 0.82，背景与顶栏按距离淡出，越过视口 15% 或快速甩动即关闭（轻震一次），否则 `spatial` 弹回；
+  - 新建日记发布成功时，编辑页在发布页退场前静默移出路由栈，只剩发布页一段退场；列表等退场结束后让新卡片以展开动画插入；
+  - 重复点击当前 Tab 回到顶部（超过 3 屏先跳到 1 屏处再 `standard` 收尾）；各 Tab 拥有独立的主滚动控制器，且只有可见 Tab 的 ticker 运行（`TickerMode`），后台 Tab 的动画不再空转出帧；
+  - 新建日记、搜索页等需要弹键盘的页面经 `RouteEntranceWaiter` 在路由入场结束后再聚焦，键盘不与页面滑入叠加。
+- **内容插入与移除**：会推动下方内容的区块不在一帧内出现/消失。发布页选中封面时头图从 0 高度展开并淡入、正文平滑下移，清除时反向收起（解码尺寸固定，过渡期间不重新解码）；日记页进入多选时顶栏由浮动转为固定，从此刻露出的高度展开、下方标签栏同步下移，退出时先收回到浮动态应处的位置再切换，顶栏内容挂在 GlobalKey 下跨形态保留状态（普通行 ↔ 多选行的交叉淡入得以播放）。
+- **首次呈现的生长动效**：探索页统计数字首次出现时从 0 递增（`long`，等宽数字），能量柱与心情格共用一个进度错峰生长/着色；只在首次构建播放，之后数据变化从当前值补间；生长期间以 `RepaintBoundary` 隔离重绘。
 
 ---
 
@@ -166,7 +183,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率：
   - 右侧按钮：主色加粗文本按钮（确定/保存）；
   - 危险动作：右侧按钮使用 `colorScheme.error`。
 - **耗时等待操作**：
-  - 启动预热、首屏分页加载统一使用 `loading_indicator_m3e`（`ExpressiveLoadingIndicator`），不再新增裸 `CircularProgressIndicator`。
+  - 启动预热、首屏分页加载统一使用 `loading_indicator_m3e`（`ExpressiveLoadingIndicator`），不再新增裸 `CircularProgressIndicator`；页面首屏 `loading` 分支用 `DelayedLoadingIndicator` 包装，动作等待遮罩用 `ActionLoadingOverlay`。
 - **全局提示 (SnackBar)**：
   - 统一调用 `HomeHintVisibilityScope.showTrackedSnackBar`，严禁直接裸调 `ScaffoldMessenger`，确保与首页 FAB 联动规避。
 

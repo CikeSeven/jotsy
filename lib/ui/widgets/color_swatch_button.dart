@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../app/theme/expressive_motion.dart';
+import 'expressive_icon_swap.dart';
 
 /// 色块选择按钮（主题色、标签色等色板共用）。
 ///
@@ -11,8 +12,10 @@ import '../../app/theme/expressive_motion.dart';
 /// - 视觉色块保持 [swatchSize]，点击区域扩展到 48dp 并带水波纹，满足 Material
 ///   最小触控尺寸；按钮与选中状态暴露给读屏；
 /// - 选中态用 onSurface 外环 + 色块上的勾选：不用 primary 描边，因为主题色
-///   选择器中 primary 正是由该色块派生，二者几乎同色、难以分辨。
-class ColorSwatchButton extends StatelessWidget {
+///   选择器中 primary 正是由该色块派生，二者几乎同色、难以分辨；
+/// - 按下时色块弹性缩小（spatial，水波纹之外的直接反馈：32dp 色块会盖住大半
+///   墨水），勾选缩放淡入而不是硬切。
+class ColorSwatchButton extends StatefulWidget {
   const ColorSwatchButton({
     super.key,
     required this.color,
@@ -37,9 +40,19 @@ class ColorSwatchButton extends StatelessWidget {
   final bool showCheck;
 
   @override
+  State<ColorSwatchButton> createState() => _ColorSwatchButtonState();
+}
+
+class _ColorSwatchButtonState extends State<ColorSwatchButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final radius = borderRadius;
+    final color = widget.color;
+    final selected = widget.selected;
+    final swatchSize = widget.swatchSize;
+    final radius = widget.borderRadius;
     final side = BorderSide(
       color: selected ? colors.onSurface : colors.outlineVariant,
       width: selected ? 2.4 : 1.0,
@@ -56,36 +69,53 @@ class ColorSwatchButton extends StatelessWidget {
         ThemeData.estimateBrightnessForColor(color) == Brightness.dark
         ? Colors.white
         : Colors.black87;
+    final showCheck = selected && widget.showCheck;
     return Semantics(
       button: true,
       selected: selected,
-      label: semanticLabel,
+      label: widget.semanticLabel,
       child: SizedBox.square(
-        dimension: tapTargetSize,
+        dimension: ColorSwatchButton.tapTargetSize,
         child: Material(
           type: MaterialType.transparency,
           child: InkResponse(
-            onTap: onTap,
-            radius: tapTargetSize / 2,
+            onTap: widget.onTap,
+            onHighlightChanged: (highlighted) {
+              if (highlighted != _pressed) {
+                setState(() => _pressed = highlighted);
+              }
+            },
+            radius: ColorSwatchButton.tapTargetSize / 2,
             child: Center(
-              child: AnimatedContainer(
+              child: AnimatedScale(
+                scale: _pressed ? 0.88 : 1,
                 duration: ExpressiveMotion.duration(
                   context,
                   ExpressiveMotion.fast,
                 ),
-                curve: ExpressiveMotion.effects,
-                width: swatchSize,
-                height: swatchSize,
-                decoration: ShapeDecoration(color: color, shape: shape),
-                child: selected && showCheck
-                    ? Center(
-                        child: FaIcon(
-                          FontAwesomeIcons.check,
-                          size: swatchSize * 0.4,
-                          color: checkColor,
-                        ),
-                      )
-                    : null,
+                curve: ExpressiveMotion.spatial,
+                child: AnimatedContainer(
+                  duration: ExpressiveMotion.duration(
+                    context,
+                    ExpressiveMotion.fast,
+                  ),
+                  curve: ExpressiveMotion.effects,
+                  width: swatchSize,
+                  height: swatchSize,
+                  decoration: ShapeDecoration(color: color, shape: shape),
+                  child: Center(
+                    child: ExpressiveIconSwap(
+                      switchKey: showCheck,
+                      child: showCheck
+                          ? FaIcon(
+                              FontAwesomeIcons.check,
+                              size: swatchSize * 0.4,
+                              color: checkColor,
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

@@ -2321,6 +2321,10 @@
   "@attachmentFileMissing": {
     "description": "Shown for malformed or missing diary attachment files."
   },
+  "imageLoadFailed": "图片文件不存在或无法加载",
+  "@imageLoadFailed": {
+    "description": "Placeholder shown inside the diary body when an embedded image file is missing or cannot be decoded."
+  },
   "attachmentNoApp": "手机上没有可打开此文件的应用",
   "@attachmentNoApp": {
     "description": "Shown when the system has no application for the attachment file type."

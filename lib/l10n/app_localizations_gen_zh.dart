@@ -1640,6 +1640,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get attachmentFileMissing => '附件文件不存在或无法访问';
 
   @override
+  String get imageLoadFailed => '图片文件不存在或无法加载';
+
+  @override
   String get attachmentNoApp => '手机上没有可打开此文件的应用';
 
   @override

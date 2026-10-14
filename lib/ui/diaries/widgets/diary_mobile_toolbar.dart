@@ -7,6 +7,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_attachment_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_audio_embed_builder.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_config.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_embed_builder.dart';
 
@@ -77,11 +78,8 @@ List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
     if (kIsWeb)
       ...FlutterQuillEmbeds.defaultEditorBuilders()
     else ...[
-      ...FlutterQuillEmbeds.editorBuilders(
-        imageEmbedConfig: QuillEditorImageEmbedConfig(
-          onImageClicked: onImageClicked,
-        ),
-        videoEmbedConfig: null,
+      DiaryImageEmbedBuilder(
+        config: QuillEditorImageEmbedConfig(onImageClicked: onImageClicked),
       ),
       const DiaryVideoEmbedBuilder(),
     ],

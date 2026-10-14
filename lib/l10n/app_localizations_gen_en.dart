@@ -1702,6 +1702,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'The attachment is missing or unavailable.';
 
   @override
+  String get imageLoadFailed => 'The image is missing or can\'t be loaded.';
+
+  @override
   String get attachmentNoApp => 'No installed app can open this file.';
 
   @override

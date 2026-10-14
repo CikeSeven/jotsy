@@ -3080,6 +3080,12 @@ abstract class AppLocalizations {
   /// **'The attachment is missing or unavailable.'**
   String get attachmentFileMissing;
 
+  /// Placeholder shown inside the diary body when an embedded image file is missing or cannot be decoded.
+  ///
+  /// In en, this message translates to:
+  /// **'The image is missing or can\'t be loaded.'**
+  String get imageLoadFailed;
+
   /// Shown when the system has no application for the attachment file type.
   ///
   /// In en, this message translates to:

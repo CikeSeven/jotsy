@@ -15,33 +15,37 @@ class ExploreStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    return ExploreCard(
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: ExploreStatTile(
-              icon: FontAwesomeIcons.bookOpen,
-              label: l10n.autoT0066,
-              value: '${stats.totalRecords}',
+    // 数字递增期间只重绘本卡（探索页内容同在一个 SliverToBoxAdapter 里，
+    // 没有自己的重绘边界）。
+    return RepaintBoundary(
+      child: ExploreCard(
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: ExploreStatTile(
+                icon: FontAwesomeIcons.bookOpen,
+                label: l10n.autoT0066,
+                value: stats.totalRecords,
+              ),
             ),
-          ),
-          _buildDivider(colorScheme),
-          Expanded(
-            child: ExploreStatTile(
-              icon: FontAwesomeIcons.fire,
-              label: l10n.autoT0067,
-              value: '${stats.streakDays}',
+            _buildDivider(colorScheme),
+            Expanded(
+              child: ExploreStatTile(
+                icon: FontAwesomeIcons.fire,
+                label: l10n.autoT0067,
+                value: stats.streakDays,
+              ),
             ),
-          ),
-          _buildDivider(colorScheme),
-          Expanded(
-            child: ExploreStatTile(
-              icon: FontAwesomeIcons.penNib,
-              label: l10n.autoT0068,
-              value: '${stats.currentMonthChars}',
+            _buildDivider(colorScheme),
+            Expanded(
+              child: ExploreStatTile(
+                icon: FontAwesomeIcons.penNib,
+                label: l10n.autoT0068,
+                value: stats.currentMonthChars,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

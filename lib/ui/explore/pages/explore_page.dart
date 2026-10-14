@@ -17,6 +17,8 @@ import 'explore_media_gallery_page.dart';
 import '../providers/explore_providers.dart';
 import '../sections/explore_content_section.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/expressive_entrance.dart';
 
 /// 探索页壳层。
 ///
@@ -125,8 +127,19 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                       children: <Widget>[...previousChildren, ?currentChild],
                     ),
                     child: diariesAsync.when(
-                      loading: () => const _ExplorePageSkeleton(
-                        key: ValueKey<String>('explore_skeleton'),
+                      // 本地查询通常很快：300ms 内保持空白、内容直接淡入，不再先
+                      // 闪一帧骨架屏、又在 250ms 交叉淡入里残留成重影；慢查询
+                      // 才淡入骨架屏。
+                      loading: () => DelayedLoadingGate(
+                        key: const ValueKey<String>('explore_skeleton'),
+                        loading: true,
+                        builder: (context, showSkeleton) => showSkeleton
+                            ? const ExpressiveEntrance(
+                                offset: Offset.zero,
+                                duration: ExpressiveMotion.fast,
+                                child: _ExplorePageSkeleton(),
+                              )
+                            : const SizedBox.shrink(),
                       ),
                       error: (error, stackTrace) => _ExploreErrorCard(
                         key: const ValueKey<String>('explore_error'),
@@ -208,7 +221,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 }
 
 class _ExplorePageSkeleton extends StatelessWidget {
-  const _ExplorePageSkeleton({super.key});
+  const _ExplorePageSkeleton();
 
   @override
   Widget build(BuildContext context) {

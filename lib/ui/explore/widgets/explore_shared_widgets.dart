@@ -3,14 +3,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../app/theme/app_effects.dart';
+import '../../widgets/expressive_image_frame.dart';
 
 /// 探索页通用卡片容器。
+///
+/// 提供 [onTap] 时整张卡可点：墨水画在卡片自身的 Material 上并按 24dp 圆角
+/// 裁切。外包透明 Material + InkWell 的做法会被不透明的卡片表面盖住，按下去
+/// 看不到任何反馈。
 class ExploreCard extends StatelessWidget {
-  const ExploreCard({super.key, required this.child});
+  const ExploreCard({super.key, required this.child, this.onTap});
 
   final Widget child;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +34,13 @@ class ExploreCard extends StatelessWidget {
           side: ExpressiveSurfaces.cardBorderSide(colorScheme),
         ),
         color: ExpressiveSurfaces.cardColor(colorScheme),
-        child: Padding(padding: const EdgeInsets.all(18), child: child),
+        clipBehavior: onTap == null ? Clip.none : Clip.antiAlias,
+        child: onTap == null
+            ? Padding(padding: const EdgeInsets.all(18), child: child)
+            : InkWell(
+                onTap: onTap,
+                child: Padding(padding: const EdgeInsets.all(18), child: child),
+              ),
       ),
     );
   }
@@ -77,6 +90,10 @@ class ExploreSectionTitle extends StatelessWidget {
 }
 
 /// 顶部看板单项。
+///
+/// 数字在首次出现时从 0 递增到实际值（long + effects），之后数据变化时从当前值
+/// 补间到新值，而不是每次重建都重播；等宽数字避免递增时宽度抖动，读屏只读
+/// 最终值。减少动画时直接显示。
 class ExploreStatTile extends StatelessWidget {
   const ExploreStatTile({
     super.key,
@@ -87,7 +104,7 @@ class ExploreStatTile extends StatelessWidget {
 
   final FaIconData icon;
   final String label;
-  final String value;
+  final int value;
 
   @override
   Widget build(BuildContext context) {
@@ -113,12 +130,30 @@ class ExploreStatTile extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 6),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+        Semantics(
+          label: '$value',
+          child: ExcludeSemantics(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: value.toDouble()),
+              duration: ExpressiveMotion.duration(
+                context,
+                ExpressiveMotion.long,
+              ),
+              curve: ExpressiveMotion.effects,
+              builder: (BuildContext context, double animated, Widget? _) {
+                return Text(
+                  '${animated.round()}',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -176,6 +211,7 @@ class ExploreMediaThumb extends StatelessWidget {
                 cacheWidth: cacheWidth,
                 cacheHeight: cacheHeight,
                 filterQuality: FilterQuality.low,
+                frameBuilder: expressiveImageFrameBuilder,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               )
             : Image.file(
@@ -186,6 +222,7 @@ class ExploreMediaThumb extends StatelessWidget {
                 cacheWidth: cacheWidth,
                 cacheHeight: cacheHeight,
                 filterQuality: FilterQuality.low,
+                frameBuilder: expressiveImageFrameBuilder,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink(),
               );
 

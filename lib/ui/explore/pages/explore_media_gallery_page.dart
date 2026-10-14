@@ -7,7 +7,7 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
-import '../controllers/explore_content_extractor.dart';
+import '../controllers/explore_media_gallery_controller.dart';
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
 import 'explore_image_viewer_page.dart';
@@ -15,7 +15,7 @@ import 'explore_image_viewer_page.dart';
 /// 探索页“媒体画廊”全量浏览页。
 ///
 /// 职责边界：
-/// - 负责分页拉取、按 source 去重、滚动触底续载；
+/// - 监听页面控制器的分页结果，滚动触底时请求续载；
 /// - 负责三列网格渲染与图片查看页跳转；
 /// - 不负责日记聚合统计（保持与 ExplorePageController 解耦）。
 class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
@@ -28,32 +28,36 @@ class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
 
 class _ExploreMediaGalleryPageState
     extends ConsumerState<ExploreMediaGalleryPage> {
-  static const int _candidateBatchSize = 40;
-  static const int _targetMediaAppendCount = 30;
-  static const int _maxBatchRoundsPerLoad = 8;
   static const double _prefetchExtent = 720;
 
   final ScrollController _scrollController = ScrollController();
-  final ExploreContentExtractor _extractor = const ExploreContentExtractor();
-  final List<ExploreMediaItem> _mediaItems = <ExploreMediaItem>[];
-  final Set<String> _seenSources = <String>{};
+  late final ExploreMediaGalleryController _controller;
 
-  int _nextOffset = 0;
-  bool _isLoading = false;
-  bool _hasMore = true;
-  String? _errorMessage;
+  List<ExploreMediaItem> get _mediaItems => _controller.items;
+  bool get _isLoading => _controller.isLoading;
+  bool get _hasMore => _controller.hasMore;
+  String? get _errorMessage =>
+      _controller.hasError ? context.l10n.autoT0197 : null;
 
   @override
   void initState() {
     super.initState();
+    _controller = ExploreMediaGalleryController(
+      database: ref.read(appDatabaseProvider),
+    )..addListener(_handleGalleryChanged);
     _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadMore();
+      if (mounted) {
+        _controller.loadMore();
+      }
     });
   }
 
   @override
   void dispose() {
+    _controller
+      ..removeListener(_handleGalleryChanged)
+      ..dispose();
     _scrollController
       ..removeListener(_handleScroll)
       ..dispose();
@@ -193,81 +197,13 @@ class _ExploreMediaGalleryPageState
     }
   }
 
-  /// 分批加载策略：
-  /// - 每轮先按 offset 取一批候选日记；
-  /// - 从候选里提取图片来源并按 source 去重；
-  /// - 如果本轮新增图片不够，再继续取下一批，直到达到目标数量或无更多数据。
-  Future<void> _loadMore() async {
-    if (_isLoading || !_hasMore) {
-      return;
-    }
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final db = ref.read(appDatabaseProvider);
-      final localSources = Set<String>.from(_seenSources);
-      final appended = <ExploreMediaItem>[];
-      var localOffset = _nextOffset;
-      var localHasMore = _hasMore;
-      var rounds = 0;
-
-      while (appended.length < _targetMediaAppendCount &&
-          localHasMore &&
-          rounds < _maxBatchRoundsPerLoad) {
-        rounds += 1;
-        final diaries = await db.getActiveDiariesPage(
-          limit: _candidateBatchSize,
-          offset: localOffset,
-        );
-        if (diaries.isEmpty) {
-          localHasMore = false;
-          break;
-        }
-        localOffset += diaries.length;
-        if (diaries.length < _candidateBatchSize) {
-          localHasMore = false;
-        }
-
-        for (final diary in diaries) {
-          final source = _extractor.resolveMediaSource(diary);
-          if (source == null || source.isEmpty || !localSources.add(source)) {
-            continue;
-          }
-          appended.add(
-            ExploreMediaItem(
-              source: source,
-              diaryId: diary.diaryId,
-              updatedAt: diary.updatedAt,
-            ),
-          );
-        }
-      }
-
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isLoading = false;
-        _hasMore = localHasMore;
-        _nextOffset = localOffset;
-        _mediaItems.addAll(appended);
-        _seenSources
-          ..clear()
-          ..addAll(localSources);
-      });
-    } catch (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isLoading = false;
-        _errorMessage = context.l10n.autoT0197;
-      });
+  void _handleGalleryChanged() {
+    if (mounted) {
+      setState(() {});
     }
   }
+
+  Future<void> _loadMore() => _controller.loadMore();
 
   void _openViewer(int initialIndex) {
     Navigator.of(context).push(

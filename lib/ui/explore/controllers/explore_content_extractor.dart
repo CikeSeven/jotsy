@@ -53,49 +53,40 @@ class ExploreContentExtractor {
     return null;
   }
 
-  /// 媒体来源优先级：
-  /// 1) 封面；
-  /// 2) 正文 Delta 第一张图片。
-  String? resolveMediaSource(Diary diary) {
+  /// 封面优先，随后按正文顺序收集全部图片；同一来源只保留一次。
+  List<String> resolveMediaSources(Diary diary) {
+    final sources = <String>{};
     final cover = diary.cover?.trim();
     if (cover != null && cover.isNotEmpty) {
-      return cover;
+      sources.add(cover);
     }
-    return _extractFirstImageFromContent(diary.content);
+    final raw = diary.content.trim();
+    if (raw.isNotEmpty) {
+      try {
+        _collectImagesFromNode(jsonDecode(raw), sources);
+      } on FormatException {
+        // 旧记录可能保存纯文本或损坏的 JSON，正文解析失败仍保留独立封面。
+      }
+    }
+    return sources.toList(growable: false);
   }
 
-  String? _extractFirstImageFromContent(String contentJson) {
-    final raw = contentJson.trim();
-    if (raw.isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(raw);
-      return _extractImageFromNode(decoded);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String? _extractImageFromNode(Object? node) {
+  void _collectImagesFromNode(Object? node, Set<String> sources) {
     if (node is List) {
       for (final item in node) {
-        final image = _extractImageFromNode(item);
-        if (image != null) {
-          return image;
-        }
+        _collectImagesFromNode(item, sources);
       }
-      return null;
+      return;
     }
     if (node is! Map) {
-      return null;
+      return;
     }
 
     final insert = node['insert'];
     if (insert is Map) {
       final image = insert['image'];
       if (image is String && image.trim().isNotEmpty) {
-        return image.trim();
+        sources.add(image.trim());
       }
     }
 
@@ -104,25 +95,13 @@ class ExploreContentExtractor {
       if (attributes is Map) {
         final url = attributes['url'];
         if (url is String && url.trim().isNotEmpty) {
-          return url.trim();
+          sources.add(url.trim());
         }
       }
     }
 
-    final children = node['children'];
-    if (children != null) {
-      final image = _extractImageFromNode(children);
-      if (image != null) {
-        return image;
-      }
-    }
-    final root = node['root'];
-    if (root != null) {
-      final image = _extractImageFromNode(root);
-      if (image != null) {
-        return image;
-      }
-    }
-    return null;
+    // 同时兼容 Quill Delta 和旧版 AppFlowy 的嵌套图片节点。
+    _collectImagesFromNode(node['children'], sources);
+    _collectImagesFromNode(node['root'], sources);
   }
 }

@@ -46,4 +46,24 @@ void main() {
 
     expect(find.byKey(const ValueKey<String>('day_loading')), findsNothing);
   });
+
+  testWidgets('reduce motion swaps day content without asserting', (
+    tester,
+  ) async {
+    // 0 时长的 AnimatedSize 会在自身 performLayout 内重新标脏而触发断言；
+    // 减少动画时改用 1ms 近似瞬时，高度应立刻到位。
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await tester.pumpWidget(
+      host(const SizedBox(key: ValueKey<String>('tall'), height: 400)),
+    );
+    await tester.pumpWidget(
+      host(const SizedBox(key: ValueKey<String>('short'), height: 80)),
+    );
+    await tester.pump(const Duration(milliseconds: 16));
+
+    expect(tester.takeException(), isNull);
+    expect(tester.getSize(find.byType(AnimatedSize)).height, 80);
+  });
 }

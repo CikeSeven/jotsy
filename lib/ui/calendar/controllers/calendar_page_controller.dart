@@ -170,12 +170,21 @@ class _CalendarPageController {
   }
 
   /// 打开日记预览页（与主页列表行为保持一致）。
-  void openPreview(String diaryId) {
+  ///
+  /// [coverHero] 为从时间线缩略图抓取的共享元素画面，所有权转交预览页。
+  void openPreview(
+    String diaryId, {
+    DiaryWithTags? initialDetail,
+    ImageViewerHero? coverHero,
+  }) {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
           MaterialPageRoute<DiaryPreviewResult?>(
-            builder: (BuildContext context) =>
-                DiaryPreviewPage(diaryId: diaryId),
+            builder: (BuildContext context) => DiaryPreviewPage(
+              diaryId: diaryId,
+              initialDetail: initialDetail,
+              coverHero: coverHero,
+            ),
           ),
         )
         .then((DiaryPreviewResult? result) async {

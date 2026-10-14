@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 日历的 Expressive 双行页头。月份控制单独成行，避免窄屏或英文标题
@@ -8,6 +9,7 @@ class CalendarHeader extends StatelessWidget {
   const CalendarHeader({
     super.key,
     required this.title,
+    this.month,
     required this.onJumpToToday,
     required this.onPreviousMonth,
     required this.onNextMonth,
@@ -17,6 +19,9 @@ class CalendarHeader extends StatelessWidget {
   static const double contentHeight = 112;
 
   final String title;
+
+  /// 标题对应的月份；提供时月份标题随翻月方向滑入，与下方网格翻页同向。
+  final DateTime? month;
   final VoidCallback onJumpToToday;
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
@@ -76,11 +81,7 @@ class CalendarHeader extends StatelessWidget {
                     Expanded(
                       child: TextButton(
                         onPressed: onPickDate,
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: _MonthTitle(title: title, month: month),
                       ),
                     ),
                     IconButton(
@@ -93,6 +94,74 @@ class CalendarHeader extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 月份标题：随翻月方向滑动交替（下一月从右侧进入、上一月从左侧进入），与网格
+/// 翻页同时长同方向；此前标题在网格滑到一半时瞬间换字。方向未知（首帧、选择
+/// 日期跳转到同一月）时只做淡入淡出。
+class _MonthTitle extends StatefulWidget {
+  const _MonthTitle({required this.title, required this.month});
+
+  final String title;
+  final DateTime? month;
+
+  @override
+  State<_MonthTitle> createState() => _MonthTitleState();
+}
+
+class _MonthTitleState extends State<_MonthTitle> {
+  /// 1：翻到后面的月份；-1：翻到前面的月份；0：方向未知。
+  int _direction = 0;
+
+  @override
+  void didUpdateWidget(covariant _MonthTitle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final month = widget.month;
+    final previous = oldWidget.month;
+    if (widget.title == oldWidget.title) {
+      return;
+    }
+    _direction = month == null || previous == null || month == previous
+        ? 0
+        : (month.isAfter(previous) ? 1 : -1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentKey = ValueKey<String>(widget.title);
+    return ClipRect(
+      child: AnimatedSwitcher(
+        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+        switchInCurve: ExpressiveMotion.effects,
+        switchOutCurve: ExpressiveMotion.exit,
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          alignment: Alignment.center,
+          children: <Widget>[...previousChildren, ?currentChild],
+        ),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          // 离开的标题动画从 1 倒放到 0，所以起点取反方向即可向另一侧滑出。
+          final incoming = child.key == currentKey;
+          final dx = 0.3 * (incoming ? _direction : -_direction);
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset(dx, 0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          );
+        },
+        child: Text(
+          widget.title,
+          key: currentKey,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );

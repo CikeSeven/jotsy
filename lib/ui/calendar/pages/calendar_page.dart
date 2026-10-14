@@ -24,6 +24,7 @@ import '../widgets/calendar_day_content_switcher.dart';
 import '../widgets/calendar_day_empty_state.dart';
 import '../widgets/calendar_header.dart';
 import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/image_viewer_hero.dart';
 import '../widgets/calendar_timeline_section.dart';
 import '../../../app/theme/app_effects.dart';
 
@@ -50,6 +51,11 @@ class CalendarPage extends ConsumerStatefulWidget {
   @override
   ConsumerState<CalendarPage> createState() => _CalendarPageState();
 }
+
+/// 无底色的日期格：与“今天/选中”同形状，见 [CalendarStyle] 处说明。
+const BoxDecoration _calendarCellDecoration = BoxDecoration(
+  borderRadius: BorderRadius.all(Radius.circular(14)),
+);
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
   static const double _fabToggleScrollThreshold = 26;
@@ -171,11 +177,29 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                         AppSpacing.s,
                       ),
                       // 日期格式交给 intl 按语言区域决定（中文“10月5日”、
-                      // 英文“Oct 5”），不再手写中英分支。
-                      child: Text(
-                        DateFormat.MMMd(l10n.localeName).format(_selectedDay),
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                      // 英文“Oct 5”），不再手写中英分支。选日后与下方内容
+                      // 一起交叉淡入，而不是标签先硬切。
+                      child: AnimatedSwitcher(
+                        duration: ExpressiveMotion.duration(
+                          context,
+                          ExpressiveMotion.fast,
+                        ),
+                        switchInCurve: ExpressiveMotion.effects,
+                        switchOutCurve: ExpressiveMotion.exit,
+                        layoutBuilder: (currentChild, previousChildren) =>
+                            Stack(
+                              alignment: AlignmentDirectional.centerStart,
+                              children: <Widget>[
+                                ...previousChildren,
+                                ?currentChild,
+                              ],
+                            ),
+                        child: Text(
+                          DateFormat.MMMd(l10n.localeName).format(_selectedDay),
+                          key: ValueKey<DateTime>(_selectedDay),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                   ),
@@ -187,6 +211,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
           ),
           CalendarHeader(
             title: _controller.focusedMonthTitle,
+            month: _focusedMonth,
             onJumpToToday: _controller.jumpToToday,
             onPreviousMonth: _controller.goToPreviousMonth,
             onNextMonth: _controller.goToNextMonth,
@@ -249,7 +274,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             pageAnimationEnabled: !ExpressiveMotion.reduceMotion(context),
             pageAnimationDuration: ExpressiveMotion.medium,
             pageAnimationCurve: ExpressiveMotion.effects,
-            formatAnimationDuration: ExpressiveMotion.duration(
+            // table_calendar 用 AnimatedSize 过渡月/周高度，减少动画时不能传 0。
+            formatAnimationDuration: ExpressiveMotion.durationNonZero(
               context,
               ExpressiveMotion.medium,
             ),
@@ -272,6 +298,14 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 color: colorScheme.onPrimary,
                 fontWeight: FontWeight.w700,
               ),
+              // 普通/周末/月外格与“今天/选中”同为 14dp 圆角矩形（透明底）：
+              // table_calendar 用 AnimatedContainer 在两种 decoration 间补间，
+              // 圆形 ↔ 圆角矩形会在补间中点突变形状，选中高亮半途“啪”地换形；
+              // 形状一致后只补间颜色。
+              defaultDecoration: _calendarCellDecoration,
+              weekendDecoration: _calendarCellDecoration,
+              outsideDecoration: _calendarCellDecoration,
+              disabledDecoration: _calendarCellDecoration,
               defaultTextStyle: textTheme.bodyMedium!.copyWith(
                 color: colorScheme.onSurface,
               ),
@@ -409,7 +443,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             ),
             selectedDay: displayedSelectedDay,
             diaries: displayedDayDiaries,
-            onOpenDiary: _controller.openPreview,
+            onOpenDiary: (diary, coverHero) => _controller.openPreview(
+              diary.diary.diaryId,
+              initialDetail: diary,
+              coverHero: coverHero,
+            ),
           ),
         ),
       ),

@@ -32,7 +32,9 @@ class CalendarDayContentSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final duration = ExpressiveMotion.duration(context);
+    // 高度过渡交给 AnimatedSize：减少动画时用 1ms 近似瞬时而不是 0，0 时长会
+    // 在自身 performLayout 内重新标脏而触发断言。
+    final sizeDuration = ExpressiveMotion.durationNonZero(context);
     final fastDuration = ExpressiveMotion.duration(
       context,
       ExpressiveMotion.fast,
@@ -40,7 +42,7 @@ class CalendarDayContentSwitcher extends StatelessWidget {
     return Stack(
       children: <Widget>[
         AnimatedSize(
-          duration: duration,
+          duration: sizeDuration,
           curve: ExpressiveMotion.effects,
           alignment: Alignment.topCenter,
           // 时间线卡片带外阴影，默认 hardEdge 裁剪会切出硬边；高度过渡期间

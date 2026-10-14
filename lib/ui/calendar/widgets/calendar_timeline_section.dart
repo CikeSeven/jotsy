@@ -9,7 +9,11 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/models/time_capsule.dart';
+import '../../diaries/sections/diaries_list_section.dart'
+    show DiaryOpenCallback;
 import '../../diaries/widgets/energy_battery_indicator.dart';
+import '../../widgets/expressive_image_frame.dart';
+import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/qweather_icon.dart';
 import 'calendar_day_content_switcher.dart';
 import '../../../app/theme/app_effects.dart';
@@ -35,8 +39,9 @@ class CalendarTimelineSection extends StatelessWidget {
   /// 当天日记集合（已按 createdAt 升序）。
   final List<DiaryWithTags> diaries;
 
-  /// 点击条目后的导航回调（打开预览页）。
-  final ValueChanged<String> onOpenDiary;
+  /// 点击时间线条目：传入整条数据（预览页直接用它渲染首帧）与从封面缩略图
+  /// 抓取的共享元素画面（无封面、未解码或减少动画时为 null）。
+  final DiaryOpenCallback onOpenDiary;
 
   static const Duration _switchDuration = ExpressiveMotion.medium;
 
@@ -115,6 +120,7 @@ class CalendarTimelineSection extends StatelessWidget {
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     final lineColor = colorScheme.outlineVariant.withValues(alpha: 0.6);
+    final coverAnchor = ImageViewerHeroAnchor();
     final capsuleState = TimeCapsuleState.fromFields(
       lockedAt: diary.diary.capsuleLockedAt,
       unlockAt: diary.diary.capsuleUnlockAt,
@@ -214,7 +220,12 @@ class CalendarTimelineSection extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(22),
-                  onTap: () => onOpenDiary(diary.diary.diaryId),
+                  onTap: () => onOpenDiary(
+                    diary,
+                    coverAnchor.capture(
+                      tag: diaryCoverHeroTag(diary.diary.diaryId),
+                    ),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
                     child: Row(
@@ -264,7 +275,12 @@ class CalendarTimelineSection extends StatelessWidget {
                         ),
                         if (cover != null) ...<Widget>[
                           const SizedBox(width: 12),
-                          _buildCoverThumbnail(context, cover),
+                          _buildCoverThumbnail(
+                            context,
+                            cover,
+                            diaryId: diary.diary.diaryId,
+                            anchor: coverAnchor,
+                          ),
                         ],
                       ],
                     ),
@@ -289,7 +305,15 @@ class CalendarTimelineSection extends StatelessWidget {
   }
 
   /// 构建时间线条目右侧的小封面缩略图（圆角）。
-  Widget _buildCoverThumbnail(BuildContext context, String source) {
+  ///
+  /// 缩略图是预览页头图的共享元素来源：点按条目时从这里抓取已绘制的画面，
+  /// 飞入后在预览页展开成完整头图（与日记列表封面一致）。
+  Widget _buildCoverThumbnail(
+    BuildContext context,
+    String source, {
+    required String diaryId,
+    required ImageViewerHeroAnchor anchor,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final dpr = MediaQuery.devicePixelRatioOf(context);
     // 只限制解码宽度：同时指定 cacheWidth/cacheHeight 会按默认的
@@ -306,6 +330,7 @@ class CalendarTimelineSection extends StatelessWidget {
             fit: BoxFit.cover,
             cacheWidth: cacheWidth,
             filterQuality: FilterQuality.low,
+            frameBuilder: expressiveImageFrameBuilder,
             errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           )
         : Image.file(
@@ -313,17 +338,28 @@ class CalendarTimelineSection extends StatelessWidget {
             fit: BoxFit.cover,
             cacheWidth: cacheWidth,
             filterQuality: FilterQuality.low,
+            frameBuilder: expressiveImageFrameBuilder,
             errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           );
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        width: 52,
-        height: 52,
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-        child: image,
-      ),
+    const radius = BorderRadius.all(Radius.circular(10));
+    return Builder(
+      builder: (BuildContext thumbContext) {
+        anchor.context = thumbContext;
+        return ImageViewerHeroSource(
+          tag: diaryCoverHeroTag(diaryId),
+          borderRadius: radius,
+          child: ClipRRect(
+            borderRadius: radius,
+            child: Container(
+              width: 52,
+              height: 52,
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              child: image,
+            ),
+          ),
+        );
+      },
     );
   }
 

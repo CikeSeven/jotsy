@@ -957,7 +957,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage> {
                       // 录音面板插入/移除时整列高度平滑变化，工具栏随之上移，
                       // 不再瞬间跳到 300dp 之上。
                       child: AnimatedSize(
-                        duration: ExpressiveMotion.duration(
+                        duration: ExpressiveMotion.durationNonZero(
                           context,
                           ExpressiveMotion.medium,
                         ),

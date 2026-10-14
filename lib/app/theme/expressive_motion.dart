@@ -28,6 +28,19 @@ abstract final class ExpressiveMotion {
 
   static Duration duration(BuildContext context, [Duration value = standard]) =>
       reduceMotion(context) ? Duration.zero : value;
+
+  /// 近似瞬时（1ms），只用于不接受 0 时长的 API，见 [durationNonZero]。
+  static const nearInstant = Duration(milliseconds: 1);
+
+  /// 与 [duration] 相同，但减少动画时返回 [nearInstant] 而不是 0。
+  ///
+  /// 用于不能接受 0 时长的 API：`AnimatedSize` 时长为 0 时，子树尺寸一变就会在
+  /// 自己的 performLayout 里同步 forward 并通知监听者，从而重新标脏自身（debug 下
+  /// 触发 “mutated in its own performLayout” 断言）。1ms 在视觉上与 0 等价。
+  static Duration durationNonZero(
+    BuildContext context, [
+    Duration value = standard,
+  ]) => reduceMotion(context) ? nearInstant : value;
 }
 
 class _ExpressiveSpringCurve extends Curve {

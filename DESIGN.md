@@ -102,7 +102,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率：
   - `medium`（250ms）：内容切换，列表项进出、区块交叉淡入、面板吸附、翻页与 Tab 切换；
   - `standard`（350ms）：空间过渡，页面级转场、较大位移/形变、FAB 显隐；
   - `long`（500ms）：强调型/仪式感动画，如时间胶囊封存。
-- **减少动画**：实际时长一律经 `ExpressiveMotion.duration(context, token)` 解析，系统开启“减少动态效果”时为 0；不能接受 0 时长的 API（如 `animateTo`/`animateToPage`）改用跳转或 1ms 近似瞬时，循环动画不启动。页面转场在该模式下由主题直接切换。
+- **减少动画**：实际时长一律经 `ExpressiveMotion.duration(context, token)` 解析，系统开启“减少动态效果”时为 0；不能接受 0 时长的 API 改用跳转或 1ms 近似瞬时：`animateTo`/`animateToPage` 用跳转；`AnimatedSize`（0 时长会在自身 performLayout 内重新标脏而触发断言）使用 `ExpressiveMotion.durationNonZero`；循环动画不启动。页面转场在该模式下由主题直接切换。
 - **加载反馈防闪**：本地查询等通常毫秒级返回的等待，经 `DelayedLoadingGate` 延迟约 300ms 再显示指示器，避免每次交互都闪一下。
 
 ---

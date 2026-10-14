@@ -22,7 +22,15 @@ void main() {
 
       expect(source, contains('HomeHintVisibilityScope.showTrackedSnackBar'));
       expect(source, isNot(contains('ScaffoldMessenger')));
-      expect(source, contains('ExpressiveLoadingIndicator'));
+      // 首屏等待走 DelayedLoadingIndicator（内部即 ExpressiveLoadingIndicator，
+      // 300ms 内返回时不出现），其余等待直接用 ExpressiveLoadingIndicator。
+      expect(
+        source,
+        anyOf(
+          contains('ExpressiveLoadingIndicator'),
+          contains('DelayedLoadingIndicator'),
+        ),
+      );
       expect(source, isNot(contains('CircularProgressIndicator')));
       expect(source, contains('FontAwesomeIcons.angleLeft'));
       expect(source, isNot(contains('LinearGradient')));

@@ -1,7 +1,9 @@
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -157,4 +159,114 @@ void main() {
       );
     }
   }
+
+  Future<void> pumpTagPage(WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          settingsServiceProvider.overrideWith((ref) async => settings),
+        ],
+        child: MaterialApp(
+          theme: expressiveTestTheme(Brightness.light),
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const TagManagementPage(),
+        ),
+      ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+    expect(find.byKey(ValueKey<int>(removedTagId)), findsOneWidget);
+  }
+
+  testWidgets('deleting a tag collapses its row before it disappears', (
+    tester,
+  ) async {
+    await pumpTagPage(tester);
+    final l10n = tester.element(find.byType(TagManagementPage)).l10n;
+    final removedTile = find.byKey(ValueKey<int>(removedTagId));
+    final fullHeight = tester.getSize(removedTile).height;
+
+    await tester.tap(
+      find.descendant(
+        of: removedTile,
+        matching: find.byTooltip(l10n.autoT0038),
+      ),
+    );
+    // 对话框入场动画用定长推进：本页在测试里不会稳定到“无待绘制帧”。
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonDelete));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 120));
+
+    // 收起进行中：行高介于 0 与原高之间，其他按钮保持可用、不闪灰。
+    expect(tester.getSize(removedTile).height, inExclusiveRange(0, fullHeight));
+    final addButton = tester.widget<IconButton>(
+      find.ancestor(
+        of: find.byWidgetPredicate(
+          (widget) =>
+              widget is FaIcon &&
+              widget.icon?.codePoint == FontAwesomeIcons.plus.codePoint,
+        ),
+        matching: find.byType(IconButton),
+      ),
+    );
+    expect(addButton.onPressed, isNotNull);
+
+    for (var i = 0; i < 20 && removedTile.evaluate().isNotEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(removedTile, findsNothing);
+    expect(find.byKey(ValueKey<int>(retainedTagId)), findsOneWidget);
+    // 卸载后冲刷 drift 流取消时排入的零时长计时器，避免测试结束时残留。
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
+  });
+
+  testWidgets('picking up a tag to reorder gives one haptic', (tester) async {
+    final haptics = <Object?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (MethodCall call) async {
+        if (call.method == 'HapticFeedback.vibrate') {
+          haptics.add(call.arguments);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await pumpTagPage(tester);
+
+    final handle = find.descendant(
+      of: find.byKey(ValueKey<int>(lastTagId)),
+      matching: find.byType(ReorderableDragStartListener),
+    );
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await gesture.moveBy(const Offset(0, -30));
+    await tester.pump();
+    await gesture.moveBy(const Offset(0, -30));
+    await tester.pump();
+    expect(haptics, <Object?>['HapticFeedbackType.mediumImpact']);
+
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 400));
+    // 卸载后冲刷 drift 流取消时排入的零时长计时器，避免测试结束时残留。
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
+  });
 }

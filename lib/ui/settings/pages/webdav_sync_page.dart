@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -9,7 +9,10 @@ import 'package:node_diary/core/services/webdav_settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
-import '../widgets/settings_busy_overlay.dart';
+import '../../../app/theme/expressive_motion.dart';
+import '../../widgets/action_loading_overlay.dart';
+import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/expressive_icon_swap.dart';
 
 /// WebDAV 备份式同步页。
 ///
@@ -273,11 +276,14 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
                           },
-                          icon: FaIcon(
-                            obscureText
-                                ? FontAwesomeIcons.eyeSlash
-                                : FontAwesomeIcons.eye,
-                            size: 16,
+                          icon: ExpressiveIconSwap(
+                            switchKey: obscureText,
+                            child: FaIcon(
+                              obscureText
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 16,
+                            ),
                           ),
                         ),
                       ),
@@ -343,13 +349,16 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
     );
   }
 
+  /// 切换忙碌态。结束时保留上一条步骤文案，让它随遮罩一起淡出。
   void _setBusy(bool busy, String text) {
     if (!mounted) {
       return;
     }
     setState(() {
       _busy = busy;
-      _busyText = text;
+      if (busy) {
+        _busyText = text;
+      }
     });
   }
 
@@ -403,17 +412,22 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
                 _loadConfigIfNeeded(settings);
                 return _buildContent(context, colorScheme);
               },
-              loading: () => const Center(child: ExpressiveLoadingIndicator()),
+              loading: () => const DelayedLoadingIndicator(),
               error: (error, _) => ListView(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 children: <Widget>[Text(_messageForError(error))],
               ),
             ),
-            if (_busy)
-              SettingsBusyOverlay(
-                message: _busyText,
+            // 忙碌期间立即拦截点击，画面在超过 300ms 后才淡入：保存配置这类
+            // 本地操作几十毫秒就结束，不再闪一下；按钮也不再随之整体变灰。
+            Positioned.fill(
+              child: ActionLoadingOverlay(
+                visible: _busy,
+                label: _busyText,
                 semanticLabel: l10n.webDavBusyLabel,
+                revealDelay: DelayedLoadingGate.defaultDelay,
               ),
+            ),
           ],
         ),
       ),
@@ -454,11 +468,14 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
             onPressed: () {
               setState(() => _obscurePassword = !_obscurePassword);
             },
-            icon: FaIcon(
-              _obscurePassword
-                  ? FontAwesomeIcons.eyeSlash
-                  : FontAwesomeIcons.eye,
-              size: 16,
+            icon: ExpressiveIconSwap(
+              switchKey: _obscurePassword,
+              child: FaIcon(
+                _obscurePassword
+                    ? FontAwesomeIcons.eyeSlash
+                    : FontAwesomeIcons.eye,
+                size: 16,
+              ),
             ),
           ),
         ),
@@ -482,12 +499,12 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
           runSpacing: 8,
           children: <Widget>[
             FilledButton.icon(
-              onPressed: _busy ? null : _saveConfig,
+              onPressed: _saveConfig,
               icon: const FaIcon(FontAwesomeIcons.floppyDisk, size: 14),
               label: Text(l10n.webDavSaveConfig),
             ),
             OutlinedButton.icon(
-              onPressed: _busy ? null : _testConnection,
+              onPressed: _testConnection,
               icon: const FaIcon(FontAwesomeIcons.plugCircleCheck, size: 14),
               label: Text(l10n.webDavTestConnection),
             ),
@@ -499,12 +516,12 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
           runSpacing: 8,
           children: <Widget>[
             FilledButton.icon(
-              onPressed: _busy ? null : _uploadBackup,
+              onPressed: _uploadBackup,
               icon: const FaIcon(FontAwesomeIcons.cloudArrowUp, size: 14),
               label: Text(l10n.webDavUploadBackup),
             ),
             OutlinedButton.icon(
-              onPressed: _busy ? null : _refreshBackups,
+              onPressed: _refreshBackups,
               icon: const FaIcon(FontAwesomeIcons.rotate, size: 14),
               label: Text(l10n.webDavRefreshBackups),
             ),
@@ -516,15 +533,28 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        if (_backups.isEmpty)
-          Text(
-            l10n.webDavNoBackups,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          )
-        else
-          ..._backups.map(_buildBackupTile),
+        // 刷新、上传、删除后备份数量变化时高度平滑过渡，而不是整块跳动。
+        AnimatedSize(
+          duration: ExpressiveMotion.durationNonZero(
+            context,
+            ExpressiveMotion.medium,
+          ),
+          curve: ExpressiveMotion.effects,
+          alignment: Alignment.topCenter,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: _backups.isEmpty
+                ? <Widget>[
+                    Text(
+                      l10n.webDavNoBackups,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ]
+                : _backups.map(_buildBackupTile).toList(growable: false),
+          ),
+        ),
       ],
     );
   }
@@ -582,12 +612,12 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
         children: <Widget>[
           IconButton(
             tooltip: l10n.webDavRestoreAction,
-            onPressed: _busy ? null : () => _restoreBackup(entry),
+            onPressed: () => _restoreBackup(entry),
             icon: const FaIcon(FontAwesomeIcons.rotateLeft, size: 14),
           ),
           IconButton(
             tooltip: l10n.webDavDeleteAction,
-            onPressed: _busy ? null : () => _deleteBackup(entry),
+            onPressed: () => _deleteBackup(entry),
             icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
           ),
         ],

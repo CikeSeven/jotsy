@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:flutter/services.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -13,7 +14,10 @@ import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
+import '../../widgets/list_item_presence.dart';
+import '../widgets/tag_management_tile.dart';
 
 /// 标签管理页：
 /// 1. 标签排序（拖拽）；
@@ -28,9 +32,18 @@ class TagManagementPage extends ConsumerStatefulWidget {
 
 class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   bool _savingOrder = false;
+
+  /// 新建/编辑/删除进行中：各入口据此直接忽略重复触发。按钮本身保持可用，
+  /// 不再随每次操作整体变灰闪一下。
   bool _operating = false;
   List<Tag> _displayTags = <Tag>[];
   bool _displayTagsInitialized = false;
+
+  /// 正在收起、等待写库删除的标签：数据流移除它们时行高已是 0，不再硬跳。
+  final Set<int> _pendingRemovalTagIds = <int>{};
+
+  /// 新建后以展开动画出现的标签。只在该行首次构建时生效，留在集合里无副作用。
+  final Set<int> _appearingTagIds = <int>{};
 
   Future<void> _createTag() async {
     final l10n = context.l10n;
@@ -50,6 +63,9 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         name: draft.name,
         color: draft.color,
       );
+      if (mounted) {
+        setState(() => _appearingTagIds.add(createdId));
+      }
       final settings = await ref.read(settingsServiceProvider.future);
       final order = decodeTagOrder(settings.tagOrderRaw);
       if (!order.contains(createdId)) {
@@ -107,6 +123,14 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
 
     setState(() => _operating = true);
     try {
+      // 先收起再提交：行在写库前收成 0 高度，数据流移除它时列表不再硬跳。
+      setState(() => _pendingRemovalTagIds.add(tag.id));
+      await Future<void>.delayed(
+        ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      );
+      if (!mounted) {
+        return;
+      }
       final db = ref.read(appDatabaseProvider);
       final settings = await ref.read(settingsServiceProvider.future);
       final order = decodeTagOrder(settings.tagOrderRaw)
@@ -127,6 +151,10 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       }
       ref.invalidate(tagListProvider);
     } catch (error) {
+      // 删除失败：标签仍在数据里，取消收起使其重新展开。
+      if (mounted) {
+        setState(() => _pendingRemovalTagIds.remove(tag.id));
+      }
       await _showHint(l10n.autoT0036(error.toString()));
     } finally {
       if (mounted) {
@@ -166,6 +194,47 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         setState(() => _savingOrder = false);
       }
     }
+  }
+
+  Widget _buildTagList(BuildContext context, List<Tag> displayTags) {
+    final l10n = context.l10n;
+    final itemDuration = ExpressiveMotion.duration(
+      context,
+      ExpressiveMotion.medium,
+    );
+    return ReorderableListView.builder(
+      key: const ValueKey<String>('tags_list'),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      buildDefaultDragHandles: false,
+      proxyDecorator: expressiveReorderProxyDecorator,
+      itemCount: displayTags.length,
+      // 拿起条目即生效的瞬间给一次触觉：拖拽手柄是立即拖动，不经过长按，系统
+      // 不会自动反馈。
+      onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
+      onReorder: (oldIndex, newIndex) {
+        _reorderTags(displayTags, oldIndex, newIndex);
+      },
+      itemBuilder: (BuildContext context, int index) {
+        final tag = displayTags[index];
+        final removing = _pendingRemovalTagIds.contains(tag.id);
+        // 可排序列表要求每项最外层带稳定 key；进出场容器结构恒定，删除收起、
+        // 新建展开都不会重新挂载整行。
+        return ListItemPresence(
+          key: ValueKey<int>(tag.id),
+          visible: !removing,
+          appearing: _appearingTagIds.contains(tag.id),
+          duration: itemDuration,
+          child: TagManagementTile(
+            tag: tag,
+            index: index,
+            deleteTooltip: l10n.autoT0038,
+            dragEnabled: !removing,
+            onEdit: () => _editTag(tag),
+            onDelete: () => _deleteTag(tag),
+          ),
+        );
+      },
+    );
   }
 
   Future<bool?> _confirmDeleteTag(Tag tag) {
@@ -223,6 +292,10 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
   /// - 常规状态：跟随 provider 输出；
   /// - 排序保存中：保留当前可视顺序，避免拖拽落地后瞬间回弹闪动。
   void _syncDisplayTags(List<Tag> incomingTags) {
+    // 已从数据中消失的标签不再需要收起标记。
+    _pendingRemovalTagIds.removeWhere(
+      (id) => !incomingTags.any((tag) => tag.id == id),
+    );
     if (!_displayTagsInitialized) {
       _displayTags = List<Tag>.from(incomingTags);
       _displayTagsInitialized = true;
@@ -290,7 +363,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
         actions: <Widget>[
           IconButton(
             tooltip: l10n.autoT0040,
-            onPressed: _operating ? null : _createTag,
+            onPressed: _createTag,
             icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
           ),
         ],
@@ -310,85 +383,26 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
                   data: (tags) {
                     _syncDisplayTags(tags);
                     final displayTags = _displayTags;
-                    if (displayTags.isEmpty) {
-                      return Center(
-                        child: TextButton(
-                          onPressed: _operating ? null : _createTag,
-                          child: Text(l10n.autoT0041),
-                        ),
-                      );
-                    }
-
-                    return ReorderableListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      buildDefaultDragHandles: false,
-                      proxyDecorator: expressiveReorderProxyDecorator,
-                      itemCount: displayTags.length,
-                      onReorder: (oldIndex, newIndex) {
-                        _reorderTags(displayTags, oldIndex, newIndex);
-                      },
-                      itemBuilder: (BuildContext context, int index) {
-                        final tag = displayTags[index];
-                        return ListTile(
-                          key: ValueKey<int>(tag.id),
-                          onTap: _operating ? null : () => _editTag(tag),
-                          leading: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: Color(tag.color).withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Color(tag.color).withValues(alpha: 0.4),
-                                width: 1,
+                    // 最后一个标签被删除后与空态交叉淡入，而不是硬切。
+                    return AnimatedSwitcher(
+                      duration: ExpressiveMotion.duration(
+                        context,
+                        ExpressiveMotion.medium,
+                      ),
+                      switchInCurve: ExpressiveMotion.effects,
+                      switchOutCurve: ExpressiveMotion.exit,
+                      child: displayTags.isEmpty
+                          ? Center(
+                              key: const ValueKey<String>('tags_empty'),
+                              child: TextButton(
+                                onPressed: _createTag,
+                                child: Text(l10n.autoT0041),
                               ),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              '#',
-                              style: TextStyle(
-                                color: Color(tag.color),
-                                fontWeight: FontWeight.w800,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            tag.name,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              IconButton(
-                                tooltip: l10n.autoT0038,
-                                onPressed: _operating
-                                    ? null
-                                    : () => _deleteTag(tag),
-                                icon: const FaIcon(
-                                  FontAwesomeIcons.trashCan,
-                                  size: 14,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: const SizedBox(
-                                  width: 44,
-                                  height: 40,
-                                  child: ColoredBox(
-                                    color: Colors.transparent,
-                                    child: Center(child: _TagDragHandle()),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                            )
+                          : _buildTagList(context, displayTags),
                     );
                   },
-                  loading: () => const _SettingsLoadingIndicator(),
+                  loading: () => const DelayedLoadingIndicator(size: 32),
                   error: (error, stackTrace) {
                     return Center(
                       child: Text(l10n.autoT0042(error.toString())),
@@ -399,7 +413,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
             ],
           );
         },
-        loading: () => const _SettingsLoadingIndicator(),
+        loading: () => const DelayedLoadingIndicator(size: 32),
         error: (error, stackTrace) =>
             Center(child: Text(l10n.autoT0045(error.toString()))),
       ),
@@ -430,47 +444,6 @@ class _TagFilterMemorySwitch extends StatelessWidget {
           onChanged: onChanged,
         );
       },
-    );
-  }
-}
-
-class _SettingsLoadingIndicator extends StatelessWidget {
-  const _SettingsLoadingIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: ExpressiveLoadingIndicator(size: 32));
-  }
-}
-
-class _TagDragHandle extends StatelessWidget {
-  const _TagDragHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SizedBox(
-      width: 16,
-      height: 18,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBar(color),
-          _buildBar(color),
-          _buildBar(color),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBar(Color color) {
-    return Container(
-      width: 2,
-      height: 16,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(1.2),
-      ),
     );
   }
 }

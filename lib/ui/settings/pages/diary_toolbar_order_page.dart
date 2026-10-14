@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -9,6 +10,7 @@ import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
+import '../../../app/theme/expressive_motion.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 class DiaryToolbarOrderPage extends StatefulWidget {
@@ -97,8 +99,12 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     });
   }
 
+  /// 每次恢复默认递增：列表以新 key 交叉淡入，而不是所有条目一帧跳回默认顺序。
+  int _resetGeneration = 0;
+
   void _resetOrder() {
     setState(() {
+      _resetGeneration++;
       _order = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
       _hiddenItems = <DiaryToolbarItem>{};
       _currentTimeFormatPattern = kDefaultDiaryToolbarCurrentTimeFormat;
@@ -231,81 +237,95 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
             ),
           ],
         ),
-        body: ReorderableListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          buildDefaultDragHandles: false,
-          proxyDecorator: expressiveReorderProxyDecorator,
-          itemCount: _order.length,
-          onReorder: _handleReorder,
-          itemBuilder: (BuildContext context, int index) {
-            final item = _order[index];
-            final enabled = !_hiddenItems.contains(item);
-            return ListTile(
-              key: ValueKey<String>(item.storageKey),
-              onTap: _saving
-                  ? null
-                  : () => _handleToggleEnabled(item, !enabled),
-              leading: SizedBox(
-                width: 80,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Checkbox(
-                      value: enabled,
-                      onChanged: _saving
-                          ? null
-                          : (value) => _handleToggleEnabled(item, value),
-                    ),
-                    const SizedBox(width: 8),
-                    FaIcon(
-                      item.iconData,
-                      size: 16,
-                      color: enabled
-                          ? null
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ],
-                ),
-              ),
-              title: Text(
-                _labelForItem(context, item),
-                style: enabled
-                    ? null
-                    : TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-              ),
-              subtitle: item == DiaryToolbarItem.inlineCode
-                  ? Text(l10n.autoT0188)
-                  : item == DiaryToolbarItem.codeBlock
-                  ? Text(l10n.autoT0189)
-                  : item == DiaryToolbarItem.indent
-                  ? Text(l10n.autoT0190)
-                  : null,
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  if (_hasToolSettings(item))
-                    IconButton(
-                      tooltip: l10n.diaryToolbarToolSettingsTooltip,
-                      onPressed: _saving ? null : () => _openToolSettings(item),
-                      icon: const FaIcon(FontAwesomeIcons.gear, size: 14),
-                    ),
-                  ReorderableDragStartListener(
-                    index: index,
-                    child: const SizedBox(
-                      width: 44,
-                      height: 40,
-                      child: ColoredBox(
-                        color: Colors.transparent,
-                        child: Center(child: _TripleBarDragHandle()),
-                      ),
+        body: AnimatedSwitcher(
+          duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+          switchInCurve: ExpressiveMotion.effects,
+          switchOutCurve: ExpressiveMotion.exit,
+          child: KeyedSubtree(
+            key: ValueKey<int>(_resetGeneration),
+            child: ReorderableListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              buildDefaultDragHandles: false,
+              proxyDecorator: expressiveReorderProxyDecorator,
+              itemCount: _order.length,
+              // 拖拽手柄立即拖动、不经过长按，系统不会反馈；拿起时补一次触觉。
+              onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
+              onReorder: _handleReorder,
+              itemBuilder: (BuildContext context, int index) {
+                final item = _order[index];
+                final enabled = !_hiddenItems.contains(item);
+                return ListTile(
+                  key: ValueKey<String>(item.storageKey),
+                  onTap: _saving
+                      ? null
+                      : () => _handleToggleEnabled(item, !enabled),
+                  leading: SizedBox(
+                    width: 80,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Checkbox(
+                          value: enabled,
+                          onChanged: _saving
+                              ? null
+                              : (value) => _handleToggleEnabled(item, value),
+                        ),
+                        const SizedBox(width: 8),
+                        FaIcon(
+                          item.iconData,
+                          size: 16,
+                          color: enabled
+                              ? null
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            );
-          },
+                  title: Text(
+                    _labelForItem(context, item),
+                    style: enabled
+                        ? null
+                        : TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                  ),
+                  subtitle: item == DiaryToolbarItem.inlineCode
+                      ? Text(l10n.autoT0188)
+                      : item == DiaryToolbarItem.codeBlock
+                      ? Text(l10n.autoT0189)
+                      : item == DiaryToolbarItem.indent
+                      ? Text(l10n.autoT0190)
+                      : null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      if (_hasToolSettings(item))
+                        IconButton(
+                          tooltip: l10n.diaryToolbarToolSettingsTooltip,
+                          onPressed: _saving
+                              ? null
+                              : () => _openToolSettings(item),
+                          icon: const FaIcon(FontAwesomeIcons.gear, size: 14),
+                        ),
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: const SizedBox(
+                          width: 44,
+                          height: 40,
+                          child: ColoredBox(
+                            color: Colors.transparent,
+                            child: Center(child: _TripleBarDragHandle()),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

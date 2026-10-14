@@ -16,6 +16,9 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/app_update_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../app/theme/app_effects.dart';
+import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/expressive_icon_swap.dart';
+import '../../widgets/expressive_image_frame.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
 class AboutPage extends ConsumerStatefulWidget {
@@ -301,6 +304,7 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                                     width: 72,
                                     height: 72,
                                     fit: BoxFit.cover,
+                                    frameBuilder: expressiveImageFrameBuilder,
                                   ),
                                 ),
                               ),
@@ -350,9 +354,26 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                             onTap: _checkingUpdate
                                 ? null
                                 : () => _checkLatestRelease(context),
-                            trailing: _checkingUpdate
-                                ? const ExpressiveLoadingIndicator(size: 18)
-                                : null,
+                            // 检查更新超过 300ms 才把箭头换成等待指示，
+                            // 两者之间缩放淡入切换，而不是硬切或一闪。
+                            trailing: DelayedLoadingGate(
+                              loading: _checkingUpdate,
+                              builder: (context, showLoading) =>
+                                  ExpressiveIconSwap(
+                                    switchKey: showLoading,
+                                    child: showLoading
+                                        ? const ExpressiveLoadingIndicator(
+                                            size: 18,
+                                          )
+                                        : FaIcon(
+                                            FontAwesomeIcons.angleRight,
+                                            size: 15,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                          ),
+                                  ),
+                            ),
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(

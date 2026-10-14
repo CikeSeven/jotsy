@@ -12,7 +12,9 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/backup_file_save_service.dart';
 import '../../../core/services/data_archive_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
-import '../widgets/settings_busy_overlay.dart';
+import '../../widgets/action_loading_overlay.dart';
+import '../../widgets/delayed_loading_gate.dart';
+import '../../widgets/expressive_icon_swap.dart';
 
 /// 数据管理页面：提供 zip 导出与导入入口。
 class DataManagementPage extends ConsumerStatefulWidget {
@@ -27,6 +29,9 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   String _busyText = '';
 
   Future<void> _exportData() async {
+    if (_busy) {
+      return;
+    }
     final l10n = context.l10n;
     final exportPassword = await _showExportPasswordDialog();
     if (!mounted || exportPassword == null) {
@@ -103,11 +108,14 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
                           },
-                          icon: FaIcon(
-                            obscureText
-                                ? FontAwesomeIcons.eyeSlash
-                                : FontAwesomeIcons.eye,
-                            size: 14,
+                          icon: ExpressiveIconSwap(
+                            switchKey: obscureText,
+                            child: FaIcon(
+                              obscureText
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 14,
+                            ),
                           ),
                         ),
                       ),
@@ -150,6 +158,9 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
   }
 
   Future<void> _importData() async {
+    if (_busy) {
+      return;
+    }
     final l10n = context.l10n;
     final shouldImport = await _confirmImport();
     if (!mounted || !shouldImport) {
@@ -256,11 +267,14 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                           onPressed: () {
                             setDialogState(() => obscureText = !obscureText);
                           },
-                          icon: FaIcon(
-                            obscureText
-                                ? FontAwesomeIcons.eyeSlash
-                                : FontAwesomeIcons.eye,
-                            size: 14,
+                          icon: ExpressiveIconSwap(
+                            switchKey: obscureText,
+                            child: FaIcon(
+                              obscureText
+                                  ? FontAwesomeIcons.eyeSlash
+                                  : FontAwesomeIcons.eye,
+                              size: 14,
+                            ),
                           ),
                         ),
                       ),
@@ -322,13 +336,17 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
     return confirmed == true;
   }
 
+  /// 切换忙碌态。结束时保留上一条步骤文案，让它随遮罩一起淡出，而不是先
+  /// 变空再消失。
   void _setBusy(bool busy, String text) {
     if (!mounted) {
       return;
     }
     setState(() {
       _busy = busy;
-      _busyText = text;
+      if (busy) {
+        _busyText = text;
+      }
     });
   }
 
@@ -382,7 +400,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                         FontAwesomeIcons.angleRight,
                         size: 14,
                       ),
-                      onTap: _busy ? null : _exportData,
+                      onTap: _exportData,
                     ),
                     ListTile(
                       contentPadding: const EdgeInsets.symmetric(
@@ -399,7 +417,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                         FontAwesomeIcons.angleRight,
                         size: 14,
                       ),
-                      onTap: _busy ? null : _importData,
+                      onTap: _importData,
                     ),
                     ListTile(
                       contentPadding: const EdgeInsets.symmetric(
@@ -416,17 +434,18 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                         FontAwesomeIcons.angleRight,
                         size: 14,
                       ),
-                      onTap: _busy
-                          ? null
-                          : () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (BuildContext context) {
-                                    return const WebDavSyncPage();
-                                  },
-                                ),
-                              );
+                      onTap: () {
+                        if (_busy) {
+                          return;
+                        }
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return const WebDavSyncPage();
                             },
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -443,11 +462,16 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage> {
                 ),
               ],
             ),
-            if (_busy)
-              SettingsBusyOverlay(
-                message: _busyText,
+            // 忙碌期间立即拦截点击，画面在超过 300ms 后才淡入；条目不再随
+            // 忙碌态整体变灰闪一下。
+            Positioned.fill(
+              child: ActionLoadingOverlay(
+                visible: _busy,
+                label: _busyText,
                 semanticLabel: context.l10n.dataMgmtBusyLabel,
+                revealDelay: DelayedLoadingGate.defaultDelay,
               ),
+            ),
           ],
         ),
       ),

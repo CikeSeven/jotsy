@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -212,10 +212,17 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
         ),
-        title: Text(
-          _hasSelection
-              ? l10n.autoT0099(_selectedDiaryIds.length.toString())
-              : l10n.autoT0029,
+        // 进入/退出多选、选择数量变化时标题淡入淡出，而不是硬切。
+        title: AnimatedSwitcher(
+          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+          switchInCurve: ExpressiveMotion.effects,
+          switchOutCurve: ExpressiveMotion.exit,
+          child: Text(
+            _hasSelection
+                ? l10n.autoT0099(_selectedDiaryIds.length.toString())
+                : l10n.autoT0029,
+            key: ValueKey<int>(_hasSelection ? _selectedDiaryIds.length : -1),
+          ),
         ),
         actions: <Widget>[
           IconButton(
@@ -235,7 +242,7 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
         ],
       ),
       body: deletedAsync.when(
-        loading: () => const Center(child: ExpressiveLoadingIndicator()),
+        loading: () => const DelayedLoadingIndicator(),
         error: (error, stackTrace) =>
             Center(child: Text(l10n.autoT0031(error.toString()))),
         data: (diaries) {

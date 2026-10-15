@@ -20,6 +20,8 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
+import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
@@ -68,7 +70,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   // ==================== 页面草稿态字段 ====================
   String? _draftCover;
   String? _moodEmoji;
-  String? _locationTownship;
+  late DiaryLocationPrecision _locationPrecision;
   Map<String, Object?>? _locationAddressComponent;
   double? _locationLatitude;
   double? _locationLongitude;
@@ -98,7 +100,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _controller = PublishDiaryController(this);
     _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
     _draftCover = _controller.normalizeOptionalText(widget.initialDraft.cover);
-    _locationTownship = widget.initialDraft.location;
+    _locationPrecision = widget.initialDraft.locationPrecision;
     _locationAddressComponent = widget.initialDraft.locationAddressComponent;
     _locationLatitude = widget.initialDraft.locationLatitude;
     _locationLongitude = widget.initialDraft.locationLongitude;
@@ -270,6 +272,11 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 locating: _locating,
                 weatherLoading: _weatherLoading,
                 locationController: _locationController,
+                locationPrecision: _locationPrecision,
+                locationAddressComponent: _locationFromAuto
+                    ? _locationAddressComponent
+                    : null,
+                onLocationPrecisionChanged: _controller.updateLocationPrecision,
                 weatherController: _weatherController,
                 weatherIconCode: _weatherIconCode,
                 moodEmoji: _moodEmoji,
@@ -294,13 +301,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 onCreateTag: _controller.createTagInline,
                 onResolveLocation: _controller.resolveLocation,
                 onResolveWeather: _controller.resolveWeather,
-                onLocationChanged: (nextLocation) {
-                  setState(() {
-                    _locationTownship = _controller.normalizeOptionalText(
-                      nextLocation,
-                    );
-                  });
-                },
+                onLocationChanged: _controller.updateLocationText,
                 onWeatherChanged: (nextWeather) {
                   setState(() {
                     // 手动修改天气文本后，旧天气 code 可能与文案不一致，清空后走文案兜底图标。

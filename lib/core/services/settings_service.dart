@@ -172,6 +172,8 @@ class SettingsService {
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
+  static const _keyDiaryLocationPrecision =
+      'app.settings.diary_location_precision';
   static const _keyReleaseMirrorStartIndex =
       'app.settings.release_mirror_start_index';
   static const _keyAppLocaleCode = 'app.settings.locale_code';
@@ -320,6 +322,11 @@ class SettingsService {
       _prefs.getString(_keyRememberedTagFilterIds);
 
   String? get createDiaryDraftRaw => _prefs.getString(_keyCreateDiaryDraft);
+
+  /// 最近一次选择的日记地址层级，新建日记沿用；原样保存枚举名，解析与
+  /// 未知值回退由日记模块负责，服务层不依赖 UI 模型。
+  String? get diaryLocationPrecisionRaw =>
+      _prefs.getString(_keyDiaryLocationPrecision);
   int get releaseMirrorStartIndexRaw =>
       _prefs.getInt(_keyReleaseMirrorStartIndex) ?? 0;
   Future<void> setDiarySortModeRaw(String value) async {
@@ -409,6 +416,10 @@ class SettingsService {
 
   Future<void> clearCreateDiaryDraft() async {
     await _writePreference(_prefs.remove(_keyCreateDiaryDraft));
+  }
+
+  Future<void> setDiaryLocationPrecisionRaw(String value) async {
+    await _writePreference(_prefs.setString(_keyDiaryLocationPrecision, value));
   }
 
   Future<void> setReleaseMirrorStartIndex(int index) async {

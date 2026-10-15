@@ -1782,4 +1782,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get videoExitFullscreen => 'Exit fullscreen';
+
+  @override
+  String get locationPrecisionTitle => 'Address detail';
+
+  @override
+  String get locationPrecisionCity => 'City';
+
+  @override
+  String get locationPrecisionDistrict => 'District / county';
+
+  @override
+  String get locationPrecisionTownship => 'Subdistrict / town';
+
+  @override
+  String get locationPrecisionStreet => 'Road';
+
+  @override
+  String get locationPrecisionAddress => 'House number';
+
+  @override
+  String get locationPrecisionHint =>
+      'Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.';
 }

@@ -11,6 +11,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -173,6 +174,75 @@ void main() {
     expect(saved.tags.map((tag) => tag.id), [tagId]);
     await unmount(tester);
   });
+
+  testWidgets('address detail changes save and restore when editing again', (
+    tester,
+  ) async {
+    await openEditor(tester);
+    var panel = tester.widget<PublishDiaryPanel>(
+      find.byType(PublishDiaryPanel),
+    );
+    expect(panel.locationPrecision, DiaryLocationPrecision.township);
+    panel.onLocationPrecisionChanged!(DiaryLocationPrecision.address);
+    await tester.pump(const Duration(milliseconds: 600));
+
+    final saved = await storedDiary(tester);
+    final metadata = jsonDecode(saved.diary.metadata) as Map;
+    expect((metadata['context'] as Map)['locationPrecision'], 'address');
+    expect(settings.diaryLocationPrecisionRaw, 'address');
+    await unmount(tester);
+    await openEditor(tester);
+    panel = tester.widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel));
+    expect(panel.locationPrecision, DiaryLocationPrecision.address);
+    await unmount(tester);
+  });
+
+  // 旧版本自动定位后再手改地点仍会保存 geo，重新编辑时不能把手写地点
+  // 当成自动文案覆盖；未改过的自动地址照常跟随层级。
+  for (final (stored, expected) in [
+    ('望京 SOHO', '望京 SOHO'),
+    ('北京市 · 望京街道', '北京市'),
+  ]) {
+    testWidgets('a level change on a located diary turns "$stored" into '
+        '"$expected"', (tester) async {
+      diaryId = (await tester.runAsync(
+        () => database.createDiary(
+          title: 'Located',
+          contentDocJson: '[{"insert":"Located\\n"}]',
+          contentText: 'Located',
+          metadataJson: jsonEncode({
+            'context': {
+              'location': stored,
+              'geo': {
+                'source': 'amap_auto',
+                'latitude': 39.98941,
+                'longitude': 116.480881,
+                'addressComponent': {
+                  'province': '北京市',
+                  'city': <Object?>[],
+                  'district': '朝阳区',
+                  'township': '望京街道',
+                },
+              },
+            },
+          }),
+        ),
+      ))!;
+      await openEditor(tester);
+      tester
+          .widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel))
+          .onLocationPrecisionChanged!(DiaryLocationPrecision.city);
+      await tester.pump(const Duration(milliseconds: 600));
+
+      final saved = await storedDiary(tester);
+      final context =
+          (jsonDecode(saved.diary.metadata) as Map)['context'] as Map;
+      expect(context['location'], expected);
+      expect(context['locationPrecision'], 'city');
+      expect((context['geo'] as Map)['latitude'], 39.98941);
+      await unmount(tester);
+    });
+  }
 
   testWidgets('clearing an existing note automatically saves empty content', (
     tester,

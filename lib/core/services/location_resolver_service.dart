@@ -278,17 +278,26 @@ class LocationResolverService {
       if (key == null || key.isEmpty) {
         continue;
       }
-      // 遵循产品约束：不保留 street/number 细粒度信息。
-      if (key == 'street' || key == 'number' || key == 'streetNumber') {
-        continue;
-      }
-      final value = _sanitizeJsonValue(entry.value);
+      // 保留道路和门牌组件，供地址层级切换复用；展示层只取用户选择的层级，
+      // 避免每次调整文案都重新定位和请求逆地理编码。
+      final rawValue = entry.value;
+      final value = key == 'streetNumber' && rawValue is Map
+          ? _sanitizeStreetNumber(rawValue)
+          : _sanitizeJsonValue(rawValue);
       if (value != null) {
         output[key] = value;
       }
     }
     return output;
   }
+
+  /// 门牌组件只留道路名和门牌号：高德附带的门牌坐标、方位与距离和 geo
+  /// 经纬度重复，地址层级也用不到，不随日记 metadata 落盘。
+  Map<String, Object?> _sanitizeStreetNumber(Map raw) =>
+      _sanitizeAddressComponent({
+        for (final key in const ['street', 'number'])
+          if (raw.containsKey(key)) key: raw[key],
+      });
 
   Object? _sanitizeJsonValue(Object? value) {
     if (value == null || value is num || value is bool || value is String) {

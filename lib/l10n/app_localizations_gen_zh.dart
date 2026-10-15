@@ -1712,4 +1712,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get videoExitFullscreen => '退出全屏';
+
+  @override
+  String get locationPrecisionTitle => '地址层级';
+
+  @override
+  String get locationPrecisionCity => '城市';
+
+  @override
+  String get locationPrecisionDistrict => '区县';
+
+  @override
+  String get locationPrecisionTownship => '街道／乡镇';
+
+  @override
+  String get locationPrecisionStreet => '道路';
+
+  @override
+  String get locationPrecisionAddress => '门牌号';
+
+  @override
+  String get locationPrecisionHint => '定位时按所选层级填写，缺少的信息用上一级代替；手动输入的地点不受影响。';
 }

@@ -29,6 +29,7 @@ class BackupSettings {
     'tagFilterMemoryEnabled': settingsService.isTagFilterMemoryEnabled,
     'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
     'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
+    'diaryLocationPrecisionRaw': settingsService.diaryLocationPrecisionRaw,
     'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
   };
 
@@ -184,6 +185,12 @@ class BackupSettings {
       await settingsService.setCreateDiaryDraftRaw(draftRaw);
     } else {
       await settingsService.clearCreateDiaryDraft();
+    }
+
+    final locationPrecisionRaw = settingsNode['diaryLocationPrecisionRaw']
+        ?.toString();
+    if (locationPrecisionRaw != null && locationPrecisionRaw.isNotEmpty) {
+      await settingsService.setDiaryLocationPrecisionRaw(locationPrecisionRaw);
     }
 
     final releaseMirrorStartIndexRaw = settingsNode['releaseMirrorStartIndex'];

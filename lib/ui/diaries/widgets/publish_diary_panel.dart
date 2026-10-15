@@ -10,6 +10,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart';
+import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
@@ -20,6 +21,7 @@ import '../../widgets/delayed_loading_gate.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/qweather_icon.dart';
 import 'energy_battery_indicator.dart';
+import 'publish_location_precision_picker.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// 发布页底部悬浮面板（smooth_sheets 版）。
@@ -38,6 +40,9 @@ class PublishDiaryPanel extends StatefulWidget {
     required this.locating,
     required this.weatherLoading,
     required this.locationController,
+    this.locationPrecision = DiaryLocationPrecision.township,
+    this.locationAddressComponent,
+    this.onLocationPrecisionChanged,
     this.showPublishTimeOption = false,
     this.publishTimeLabel,
     this.onPickPublishTime,
@@ -82,6 +87,11 @@ class PublishDiaryPanel extends StatefulWidget {
   final bool locating;
   final bool weatherLoading;
   final TextEditingController locationController;
+  final DiaryLocationPrecision locationPrecision;
+
+  /// 自动定位的地址组件，只用于层级菜单预览；手动地点或未定位时传 null。
+  final Map<String, Object?>? locationAddressComponent;
+  final ValueChanged<DiaryLocationPrecision>? onLocationPrecisionChanged;
   final bool showPublishTimeOption;
   final String? publishTimeLabel;
   final VoidCallback? onPickPublishTime;
@@ -1133,6 +1143,18 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
             ),
           ),
         ),
+        if (widget.onLocationPrecisionChanged != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: PublishLocationPrecisionPicker(
+              precision: widget.locationPrecision,
+              locationController: widget.locationController,
+              addressComponent: widget.locationAddressComponent,
+              onChanged: widget.locating || widget.saving
+                  ? null
+                  : widget.onLocationPrecisionChanged,
+            ),
+          ),
         const SizedBox(height: 8),
         Material(
           color: colorScheme.surfaceContainerHighest,

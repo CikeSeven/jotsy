@@ -36,6 +36,13 @@ void main() {
                 'city': <Object?>[],
                 'district': '浦东新区',
                 'township': '陆家嘴街道',
+                'streetNumber': <String, Object?>{
+                  'street': '陆家嘴环路',
+                  'number': '1号',
+                  'location': '121.499718,31.239703',
+                  'direction': '东北',
+                  'distance': '23.4',
+                },
               },
             },
           }),
@@ -63,6 +70,11 @@ void main() {
 
     expect(identical(first, second), isTrue);
     expect(first.township, '陆家嘴街道');
+    // 门牌坐标、方位和距离不进 metadata，只留地址层级需要的道路与门牌号。
+    expect(first.addressComponent['streetNumber'], {
+      'street': '陆家嘴环路',
+      'number': '1号',
+    });
     expect(fakeGeolocator.currentPositionCalls, 1);
     expect(requestCount, 1);
   });

@@ -75,6 +75,25 @@ void main() {
     expect(recreatedSettings.diaryCardTagLimit, 7);
   });
 
+  test('export and import round-trips the remembered address detail', () async {
+    await settingsService.setDiaryLocationPrecisionRaw('city');
+    final backup = await DataArchiveService.exportToZip(
+      database: database,
+      settingsService: settingsService,
+    );
+
+    await settingsService.setDiaryLocationPrecisionRaw('address');
+    await DataArchiveService.importFromZip(
+      database: database,
+      settingsService: settingsService,
+      zipPath: backup.path,
+    );
+
+    expect(settingsService.diaryLocationPrecisionRaw, 'city');
+    final recreatedSettings = await SettingsService.create();
+    expect(recreatedSettings.diaryLocationPrecisionRaw, 'city');
+  });
+
   test(
     'backup restores recording bytes and rebinds diary and draft audio paths',
     () async {

@@ -38,18 +38,6 @@ class EditDiaryController {
     return path.basename(cover);
   }
 
-  /// 编辑页定位展示文案，与发布页保持一致（城市 · 街道）。
-  String? get locationLabelForEdit {
-    final location = _normalizeOptionalText(_state._draftLocation);
-    if (location != null) {
-      return location;
-    }
-    if (_state._draftLocationFromAuto) {
-      return _state.context.l10n.autoT0085;
-    }
-    return null;
-  }
-
   /// 替换正文控制器时同步管理监听，避免旧控制器泄漏。
   void replaceContentController(quill.QuillController nextController) {
     _state._mediaImportController.cancel();
@@ -104,6 +92,16 @@ class EditDiaryController {
     _state._lastPersistedCreateDraftRaw = rawDraft;
   }
 
+  /// 新建页初始化：先沿用上次选择的地址层级，再按需恢复草稿。两步串行，
+  /// 草稿里保存的层级一定覆盖默认值，而不依赖两个异步回调的执行顺序。
+  /// 新建页不展示面板，层级只随草稿带进发布页，因此无需 setState。
+  Future<void> prepareCreateEntry({required bool restoreDraft}) async {
+    final precision = await DiaryLocationPreference.load(_state.ref);
+    if (!_state.mounted) return;
+    _state._draftLocationPrecision = precision;
+    if (restoreDraft) await restoreCreateDraftIfExists();
+  }
+
   /// 进入新建页时尝试恢复历史草稿。
   Future<void> restoreCreateDraftIfExists() async {
     final settingsService = await _state.ref.read(
@@ -147,6 +145,7 @@ class EditDiaryController {
         _state._draftLocationLatitude = restoredDraft.locationLatitude;
         _state._draftLocationLongitude = restoredDraft.locationLongitude;
         _state._draftLocationFromAuto = restoredDraft.locationFromAuto;
+        _state._draftLocationPrecision = restoredDraft.locationPrecision;
         _state._draftWeather = restoredDraft.weather;
         _state._draftWeatherIconCode = restoredDraft.weatherIconCode;
         _state._weatherController.text = restoredDraft.weather ?? '';
@@ -277,6 +276,42 @@ class EditDiaryController {
     }
   }
 
+  /// 层级变化只改写仍是自动文案的地址，手动地点（含旧版本自动定位后手改、
+  /// metadata 仍带 geo 的日记）不被覆盖；变更与其他面板字段一起自动保存，
+  /// 并记为新建日记的默认层级。
+  void updateLocationPrecisionForEdit(DiaryLocationPrecision precision) {
+    if (_state._locating || _state._saving) return;
+    unawaited(DiaryLocationPreference.remember(_state.ref, precision));
+    final components = _state._draftLocationAddressComponent;
+    final followsPrecision =
+        _state._draftLocationFromAuto &&
+        DiaryLocationLabel.isAutoLabel(
+          _state._draftLocation,
+          components,
+          _state._draftLocationPrecision,
+        );
+    _state.setState(() {
+      _state._draftLocationPrecision = precision;
+      if (followsPrecision) {
+        final label = DiaryLocationLabel.format(components, precision);
+        _state._draftLocation = label;
+        _state._locationController.text = label ?? '';
+      }
+      _state._markEditPanelDirty();
+    });
+  }
+
+  /// 与发布页一致：手改地点保留坐标，清空地点则停止保存 geo。
+  void updateLocationTextForEdit(String value) {
+    _state.setState(() {
+      _state._draftLocation = _normalizeOptionalText(value);
+      if (_state._draftLocation == null) {
+        _state._draftLocationFromAuto = false;
+      }
+      _state._markEditPanelDirty();
+    });
+  }
+
   /// 编辑态定位：获取最新地址并写入面板字段。
   Future<void> resolveLocationForEdit() async {
     if (_state._locating) {
@@ -296,9 +331,9 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      final autoLocationLabel = _buildAutoLocationLabel(
-        addressComponent: result.addressComponent,
-        township: result.township,
+      final autoLocationLabel = DiaryLocationLabel.format(
+        result.addressComponent,
+        _state._draftLocationPrecision,
       );
       _state.setState(() {
         _state._draftLocation = autoLocationLabel;
@@ -469,6 +504,7 @@ class EditDiaryController {
               locationLatitude: _state._draftLocationLatitude,
               locationLongitude: _state._draftLocationLongitude,
               locationFromAuto: _state._draftLocationFromAuto,
+              locationPrecision: _state._draftLocationPrecision,
               weather: _state._draftWeather,
               weatherIconCode: _state._draftWeatherIconCode,
               moodEmoji: _state._draftMoodEmoji,
@@ -497,6 +533,7 @@ class EditDiaryController {
         _state._draftLocationLatitude = result.locationLatitude;
         _state._draftLocationLongitude = result.locationLongitude;
         _state._draftLocationFromAuto = result.locationFromAuto;
+        _state._draftLocationPrecision = result.locationPrecision;
         _state._draftWeather = result.weather;
         _state._draftWeatherIconCode = result.weatherIconCode;
         _state._draftMoodEmoji = result.moodEmoji;
@@ -526,6 +563,9 @@ class EditDiaryController {
       if (context is! Map<String, dynamic>) {
         return;
       }
+      _state._draftLocationPrecision = DiaryLocationPrecision.parse(
+        context['locationPrecision'],
+      );
       _state._draftLocation = _normalizeOptionalText(
         context['location']?.toString(),
       );
@@ -575,6 +615,7 @@ class EditDiaryController {
       locationLatitude: _state._draftLocationLatitude,
       locationLongitude: _state._draftLocationLongitude,
       locationFromAuto: _state._draftLocationFromAuto,
+      locationPrecision: _state._draftLocationPrecision,
       weather: _normalizeOptionalText(_state._weatherController.text),
       weatherIconCode: _normalizeOptionalText(_state._draftWeatherIconCode),
       moodEmoji: _normalizeOptionalText(_state._draftMoodEmoji),
@@ -637,49 +678,6 @@ class EditDiaryController {
       return null;
     }
     return normalized;
-  }
-
-  String? _resolveLocationCity(Map<String, Object?>? addressComponent) {
-    if (addressComponent == null || addressComponent.isEmpty) {
-      return null;
-    }
-    final city = _normalizeAddressComponentText(addressComponent['city']);
-    if (city != null) {
-      return city;
-    }
-    return _normalizeAddressComponentText(addressComponent['province']);
-  }
-
-  String? _normalizeAddressComponentText(Object? raw) {
-    if (raw is String) {
-      return _normalizeOptionalText(raw);
-    }
-    if (raw is List) {
-      for (final item in raw) {
-        final normalized = _normalizeAddressComponentText(item);
-        if (normalized != null) {
-          return normalized;
-        }
-      }
-    }
-    return null;
-  }
-
-  /// 自动定位成功后的地址文案：
-  /// 优先展示“城市 · 街道”；仅命中其一时降级为单字段。
-  String? _buildAutoLocationLabel({
-    required Map<String, Object?>? addressComponent,
-    required String? township,
-  }) {
-    final normalizedTownship = _normalizeOptionalText(township);
-    final city = _resolveLocationCity(addressComponent);
-    if (city != null && normalizedTownship != null) {
-      return '$city · $normalizedTownship';
-    }
-    if (city != null) {
-      return city;
-    }
-    return normalizedTownship;
   }
 
   Map<String, Object?>? _parseObjectMap(Object? raw) {

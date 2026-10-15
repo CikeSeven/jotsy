@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:node_diary/ui/diaries/models/diary_location.dart';
+
 /// 发布页 metadata 组装器。
 ///
 /// 约束：
@@ -25,6 +27,7 @@ class PublishMetadataComposer {
     double? locationLatitude,
     double? locationLongitude,
     bool locationFromAuto = false,
+    DiaryLocationPrecision locationPrecision = DiaryLocationPrecision.township,
     String? weather,
     String? weatherIconCode,
     String? moodEmoji,
@@ -60,6 +63,10 @@ class PublishMetadataComposer {
 
     final context = <String, Object?>{
       if (normalizedLocation != null) 'location': normalizedLocation,
+      if (normalizedLocation != null ||
+          locationFromAuto ||
+          locationPrecision != DiaryLocationPrecision.township)
+        'locationPrecision': locationPrecision.name,
       if (locationFromAuto &&
           locationLatitude != null &&
           locationLongitude != null)

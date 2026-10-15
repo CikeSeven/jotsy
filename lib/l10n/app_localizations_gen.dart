@@ -3223,6 +3223,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exit fullscreen'**
   String get videoExitFullscreen;
+
+  /// Label for expanding the diary location address detail options.
+  ///
+  /// In en, this message translates to:
+  /// **'Address detail'**
+  String get locationPrecisionTitle;
+
+  /// Address detail option showing only the city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get locationPrecisionCity;
+
+  /// Address detail option including the district or county.
+  ///
+  /// In en, this message translates to:
+  /// **'District / county'**
+  String get locationPrecisionDistrict;
+
+  /// Address detail option including the administrative subdistrict or township, rather than a road.
+  ///
+  /// In en, this message translates to:
+  /// **'Subdistrict / town'**
+  String get locationPrecisionTownship;
+
+  /// Address detail option including the road name without a house number.
+  ///
+  /// In en, this message translates to:
+  /// **'Road'**
+  String get locationPrecisionStreet;
+
+  /// Address detail option including the road and house number when available.
+  ///
+  /// In en, this message translates to:
+  /// **'House number'**
+  String get locationPrecisionAddress;
+
+  /// Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places.
+  ///
+  /// In en, this message translates to:
+  /// **'Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.'**
+  String get locationPrecisionHint;
 }
 
 class _AppLocalizationsDelegate

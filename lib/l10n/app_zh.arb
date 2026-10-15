@@ -2419,5 +2419,33 @@
   "videoExitFullscreen": "退出全屏",
   "@videoExitFullscreen": {
     "description": "Tooltip for returning to the diary from fullscreen video playback."
+  },
+  "locationPrecisionTitle": "地址层级",
+  "@locationPrecisionTitle": {
+    "description": "Label for expanding the diary location address detail options."
+  },
+  "locationPrecisionCity": "城市",
+  "@locationPrecisionCity": {
+    "description": "Address detail option showing only the city."
+  },
+  "locationPrecisionDistrict": "区县",
+  "@locationPrecisionDistrict": {
+    "description": "Address detail option including the district or county."
+  },
+  "locationPrecisionTownship": "街道／乡镇",
+  "@locationPrecisionTownship": {
+    "description": "Address detail option including the administrative subdistrict or township, rather than a road."
+  },
+  "locationPrecisionStreet": "道路",
+  "@locationPrecisionStreet": {
+    "description": "Address detail option including the road name without a house number."
+  },
+  "locationPrecisionAddress": "门牌号",
+  "@locationPrecisionAddress": {
+    "description": "Address detail option including the road and house number when available."
+  },
+  "locationPrecisionHint": "定位时按所选层级填写，缺少的信息用上一级代替；手动输入的地点不受影响。",
+  "@locationPrecisionHint": {
+    "description": "Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places."
   }
 }

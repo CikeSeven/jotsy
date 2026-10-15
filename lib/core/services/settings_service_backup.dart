@@ -21,6 +21,7 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyTagFilterMemoryEnabled,
       SettingsService._keyRememberedTagFilterIds,
       SettingsService._keyCreateDiaryDraft,
+      SettingsService._keyDiaryLocationPrecision,
       SettingsService._keyReleaseMirrorStartIndex,
       SettingsService._keyAppLocaleCode,
       SettingsService._keyAppLockEnabled,

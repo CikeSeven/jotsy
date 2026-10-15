@@ -1,4 +1,5 @@
 import 'package:node_diary/core/database/content_codec.dart';
+import 'package:node_diary/ui/diaries/models/diary_location.dart';
 
 /// 新建日记草稿模型。
 ///
@@ -22,6 +23,7 @@ class NewDiaryDraft {
     this.locationLatitude,
     this.locationLongitude,
     this.locationFromAuto = false,
+    this.locationPrecision = DiaryLocationPrecision.township,
     this.weather,
     this.weatherIconCode,
     this.moodEmoji,
@@ -42,6 +44,7 @@ class NewDiaryDraft {
   final double? locationLatitude;
   final double? locationLongitude;
   final bool locationFromAuto;
+  final DiaryLocationPrecision locationPrecision;
   final String? weather;
   final String? weatherIconCode;
   final String? moodEmoji;
@@ -82,6 +85,9 @@ class NewDiaryDraft {
       locationLatitude: (json['locationLatitude'] as num?)?.toDouble(),
       locationLongitude: (json['locationLongitude'] as num?)?.toDouble(),
       locationFromAuto: (json['locationFromAuto'] as bool?) ?? false,
+      locationPrecision: DiaryLocationPrecision.parse(
+        json['locationPrecision'],
+      ),
       weather: json['weather'] as String?,
       weatherIconCode: json['weatherIconCode'] as String?,
       moodEmoji: json['moodEmoji'] as String?,
@@ -106,6 +112,7 @@ class NewDiaryDraft {
       'locationLatitude': locationLatitude,
       'locationLongitude': locationLongitude,
       'locationFromAuto': locationFromAuto,
+      'locationPrecision': locationPrecision.name,
       'weather': weather,
       'weatherIconCode': weatherIconCode,
       'moodEmoji': moodEmoji,
@@ -133,6 +140,7 @@ class NewDiaryDraft {
     Object? locationLatitude = _fieldNotChanged,
     Object? locationLongitude = _fieldNotChanged,
     bool? locationFromAuto,
+    DiaryLocationPrecision? locationPrecision,
     Object? weather = _fieldNotChanged,
     Object? weatherIconCode = _fieldNotChanged,
     Object? moodEmoji = _fieldNotChanged,
@@ -165,6 +173,7 @@ class NewDiaryDraft {
           ? this.locationLongitude
           : locationLongitude as double?,
       locationFromAuto: locationFromAuto ?? this.locationFromAuto,
+      locationPrecision: locationPrecision ?? this.locationPrecision,
       weather: identical(weather, _fieldNotChanged)
           ? this.weather
           : weather as String?,

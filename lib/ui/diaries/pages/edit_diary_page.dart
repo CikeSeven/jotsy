@@ -22,12 +22,14 @@ import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
+import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
 import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
@@ -106,6 +108,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   double? _draftLocationLatitude;
   double? _draftLocationLongitude;
   bool _draftLocationFromAuto = false;
+  DiaryLocationPrecision _draftLocationPrecision =
+      DiaryLocationPrecision.township;
   String? _draftWeather;
   String? _draftWeatherIconCode;
   String? _draftMoodEmoji;
@@ -167,8 +171,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _contentController.addListener(_controller.onCreateDraftInputChanged);
     // 新建模式无需等详情查询，直接允许渲染编辑区域。
     _initialized = widget.diaryId == null;
-    if (_isCreateEntry && widget.restoreCreateDraft) {
-      unawaited(_controller.restoreCreateDraftIfExists());
+    if (_isCreateEntry) {
+      unawaited(
+        _controller.prepareCreateEntry(restoreDraft: widget.restoreCreateDraft),
+      );
     }
     if (widget.diaryId == null) {
       _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
@@ -250,6 +256,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       locationLatitude: _draftLocationLatitude,
       locationLongitude: _draftLocationLongitude,
       locationFromAuto: _draftLocationFromAuto,
+      locationPrecision: _draftLocationPrecision,
       weather: _draftWeather,
       weatherIconCode: _draftWeatherIconCode,
       moodEmoji: _draftMoodEmoji,
@@ -672,6 +679,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                       locating: _locating,
                       weatherLoading: _weatherLoading,
                       locationController: _locationController,
+                      locationPrecision: _draftLocationPrecision,
+                      locationAddressComponent: _draftLocationFromAuto
+                          ? _draftLocationAddressComponent
+                          : null,
+                      onLocationPrecisionChanged:
+                          _controller.updateLocationPrecisionForEdit,
                       weatherController: _weatherController,
                       weatherIconCode: _draftWeatherIconCode,
                       moodEmoji: _draftMoodEmoji,
@@ -705,17 +718,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                       onCreateTag: _controller.createTagInlineForEdit,
                       onResolveLocation: _controller.resolveLocationForEdit,
                       onResolveWeather: _controller.resolveWeatherForEdit,
-                      onLocationChanged: (nextLocation) {
-                        if (!mounted) {
-                          return;
-                        }
-                        setState(() {
-                          _draftLocation = nextLocation.trim().isEmpty
-                              ? null
-                              : nextLocation.trim();
-                          _markEditPanelDirty();
-                        });
-                      },
+                      onLocationChanged: _controller.updateLocationTextForEdit,
                       onWeatherChanged: (nextWeather) {
                         if (!mounted) {
                           return;

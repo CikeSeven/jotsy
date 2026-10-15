@@ -2419,5 +2419,33 @@
   "videoExitFullscreen": "Exit fullscreen",
   "@videoExitFullscreen": {
     "description": "Tooltip for returning to the diary from fullscreen video playback."
+  },
+  "locationPrecisionTitle": "Address detail",
+  "@locationPrecisionTitle": {
+    "description": "Label for expanding the diary location address detail options."
+  },
+  "locationPrecisionCity": "City",
+  "@locationPrecisionCity": {
+    "description": "Address detail option showing only the city."
+  },
+  "locationPrecisionDistrict": "District / county",
+  "@locationPrecisionDistrict": {
+    "description": "Address detail option including the district or county."
+  },
+  "locationPrecisionTownship": "Subdistrict / town",
+  "@locationPrecisionTownship": {
+    "description": "Address detail option including the administrative subdistrict or township, rather than a road."
+  },
+  "locationPrecisionStreet": "Road",
+  "@locationPrecisionStreet": {
+    "description": "Address detail option including the road name without a house number."
+  },
+  "locationPrecisionAddress": "House number",
+  "@locationPrecisionAddress": {
+    "description": "Address detail option including the road and house number when available."
+  },
+  "locationPrecisionHint": "Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.",
+  "@locationPrecisionHint": {
+    "description": "Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places."
   }
 }

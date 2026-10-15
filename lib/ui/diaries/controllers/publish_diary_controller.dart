@@ -97,6 +97,7 @@ class PublishDiaryController {
       locationLatitude: _state._locationLatitude,
       locationLongitude: _state._locationLongitude,
       locationFromAuto: _state._locationFromAuto,
+      locationPrecision: _state._locationPrecision,
       weather: normalizeOptionalText(_state._weatherController.text),
       weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
       moodEmoji: normalizeOptionalText(_state._moodEmoji),
@@ -224,72 +225,37 @@ class PublishDiaryController {
     _state.setState(() => _state._timeCapsuleSchedule = null);
   }
 
-  /// 发布页用于显示的地址文案。
-  ///
-  /// 优先展示“城市 · 街道”，仅有其一时降级显示单字段。
-  String? get locationLabel {
-    final township = normalizeOptionalText(_state._locationTownship);
-    final city = _resolveLocationCity(_state._locationAddressComponent);
-    if (city != null && township != null) {
-      return '$city · $township';
-    }
-    if (city != null) {
-      return city;
-    }
-    if (township != null) {
-      return township;
-    }
-    if (_state._locationFromAuto) {
-      return _state.context.l10n.autoT0085;
-    }
-    return null;
-  }
-
-  /// 解析展示城市：
-  /// - 常规城市取 city；
-  /// - 直辖市 city 为空时回退 province。
-  String? _resolveLocationCity(Map<String, Object?>? addressComponent) {
-    if (addressComponent == null || addressComponent.isEmpty) {
-      return null;
-    }
-    final city = _normalizeAddressComponentText(addressComponent['city']);
-    if (city != null) {
-      return city;
-    }
-    return _normalizeAddressComponentText(addressComponent['province']);
-  }
-
-  /// 地址组件值标准化（兼容字符串/列表混合结构）。
-  String? _normalizeAddressComponentText(Object? raw) {
-    if (raw is String) {
-      return normalizeOptionalText(raw);
-    }
-    if (raw is List) {
-      for (final item in raw) {
-        final normalized = _normalizeAddressComponentText(item);
-        if (normalized != null) {
-          return normalized;
-        }
+  /// 只重组已解析的地址，不触发定位或网络请求。仅当前文案仍是自动文案时
+  /// 才按新层级改写；手动输入原样保留，避免用户调整下次定位的层级时丢失
+  /// 自己写的地点名称。选择同时记为新建日记的默认层级。
+  void updateLocationPrecision(DiaryLocationPrecision precision) {
+    if (_state._locating || _state._saving) return;
+    unawaited(DiaryLocationPreference.remember(_state.ref, precision));
+    final components = _state._locationAddressComponent;
+    final followsPrecision =
+        _state._locationFromAuto &&
+        DiaryLocationLabel.isAutoLabel(
+          _state._locationController.text,
+          components,
+          _state._locationPrecision,
+        );
+    _state.setState(() {
+      _state._locationPrecision = precision;
+      if (followsPrecision) {
+        _state._locationController.text =
+            DiaryLocationLabel.format(components, precision) ?? '';
       }
-    }
-    return null;
+    });
   }
 
-  /// 自动定位成功后的地址文案：
-  /// 优先展示“城市 · 街道”；仅命中其一时降级为单字段。
-  String? _buildAutoLocationLabel({
-    required Map<String, Object?>? addressComponent,
-    required String? township,
-  }) {
-    final normalizedTownship = normalizeOptionalText(township);
-    final city = _resolveLocationCity(addressComponent);
-    if (city != null && normalizedTownship != null) {
-      return '$city · $normalizedTownship';
+  /// 手动修改地点不影响坐标：自动定位后补几个字仍记录在哪里写的日记。
+  /// 清空地点则视为不记录位置，停止保存 geo，避免 metadata 残留用户看不到
+  /// 的经纬度；内存中的坐标保留给天气查询，重新定位后恢复保存。
+  void updateLocationText(String value) {
+    if (normalizeOptionalText(value) != null || !_state._locationFromAuto) {
+      return;
     }
-    if (city != null) {
-      return city;
-    }
-    return normalizedTownship;
+    _state.setState(() => _state._locationFromAuto = false);
   }
 
   /// 获取定位服务实例（按需懒加载，避免页面初始化即做网络准备）。
@@ -396,7 +362,7 @@ class PublishDiaryController {
   }
 
   /// 自动定位并逆地理解析：
-  /// - 保存 township 作为展示文案来源；
+  /// - 按选择的层级组装展示文案；
   /// - 保存 addressComponent + 经纬度用于 metadata 组装。
   Future<void> resolveLocation() async {
     if (_state._locating) {
@@ -419,12 +385,11 @@ class PublishDiaryController {
         return;
       }
 
-      final autoLocationLabel = _buildAutoLocationLabel(
-        addressComponent: result.addressComponent,
-        township: result.township,
+      final autoLocationLabel = DiaryLocationLabel.format(
+        result.addressComponent,
+        _state._locationPrecision,
       );
       _state.setState(() {
-        _state._locationTownship = result.township;
         _state._locationController.text = autoLocationLabel ?? '';
         _state._locationAddressComponent = result.addressComponent;
         _state._locationLatitude = result.latitude;
@@ -576,6 +541,7 @@ class PublishDiaryController {
         locationLatitude: _state._locationLatitude,
         locationLongitude: _state._locationLongitude,
         locationFromAuto: _state._locationFromAuto,
+        locationPrecision: _state._locationPrecision,
         weather: normalizeOptionalText(_state._weatherController.text),
         weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
         moodEmoji: normalizeOptionalText(_state._moodEmoji),

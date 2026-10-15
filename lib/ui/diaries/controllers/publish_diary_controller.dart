@@ -400,12 +400,13 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(error.userMessage);
+      // 提示的关闭 Future 不属于定位请求，避免错误已经显示后仍禁用按钮。
+      unawaited(showHint(locationResolveHint(_state.context.l10n, error.type)));
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      await showHint(_state.context.l10n.autoT0091(error.toString()));
+      unawaited(showHint(_state.context.l10n.autoT0091(error.toString())));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);

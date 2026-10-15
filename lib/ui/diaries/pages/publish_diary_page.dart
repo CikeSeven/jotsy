@@ -22,6 +22,7 @@ import 'package:node_diary/core/services/location_resolver_service.dart';
 import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
+import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';

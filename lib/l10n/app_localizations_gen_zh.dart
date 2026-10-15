@@ -1733,4 +1733,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get locationPrecisionHint => '定位时按所选层级填写，缺少的信息用上一级代替；手动输入的地点不受影响。';
+
+  @override
+  String get locationUnsupported => '当前平台暂不支持自动获取位置。';
+
+  @override
+  String get locationPermissionDenied => '未获得定位权限，请允许访问位置后重试；也支持仅授权大致位置。';
+
+  @override
+  String get locationPermissionDeniedForever => '定位权限已被禁止，请在系统设置中允许访问位置，再返回重试。';
+
+  @override
+  String get locationServiceDisabled => '系统定位服务未开启，请在系统设置中开启后重试。';
+
+  @override
+  String get locationNetworkError => '地址解析请求失败或超时，请检查网络后重试。';
+
+  @override
+  String get locationApiError => '地址服务暂时不可用，请稍后重试。';
+
+  @override
+  String get locationAddressInvalid => '未获取到有效地址，请稍后重试或手动填写地点。';
+
+  @override
+  String get locationUnavailable => '暂时无法获取位置，请到卫星信号较好的位置重试，或手动填写地点。';
 }

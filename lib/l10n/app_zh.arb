@@ -2447,5 +2447,37 @@
   "locationPrecisionHint": "定位时按所选层级填写，缺少的信息用上一级代替；手动输入的地点不受影响。",
   "@locationPrecisionHint": {
     "description": "Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places."
+  },
+  "locationUnsupported": "当前平台暂不支持自动获取位置。",
+  "@locationUnsupported": {
+    "description": "Hint when automatic location is unavailable on the current platform."
+  },
+  "locationPermissionDenied": "未获得定位权限，请允许访问位置后重试；也支持仅授权大致位置。",
+  "@locationPermissionDenied": {
+    "description": "Hint when foreground location permission is denied or undetermined."
+  },
+  "locationPermissionDeniedForever": "定位权限已被禁止，请在系统设置中允许访问位置，再返回重试。",
+  "@locationPermissionDeniedForever": {
+    "description": "Hint when the OS will no longer show a location permission prompt."
+  },
+  "locationServiceDisabled": "系统定位服务未开启，请在系统设置中开启后重试。",
+  "@locationServiceDisabled": {
+    "description": "Hint when the device location service is disabled, including during a request."
+  },
+  "locationNetworkError": "地址解析请求失败或超时，请检查网络后重试。",
+  "@locationNetworkError": {
+    "description": "Hint when coordinate conversion or reverse geocoding fails due to a network error."
+  },
+  "locationApiError": "地址服务暂时不可用，请稍后重试。",
+  "@locationApiError": {
+    "description": "Hint when the address API rejects a request; technical details stay in the service exception."
+  },
+  "locationAddressInvalid": "未获取到有效地址，请稍后重试或手动填写地点。",
+  "@locationAddressInvalid": {
+    "description": "Hint when the address service returns malformed or empty data."
+  },
+  "locationUnavailable": "暂时无法获取位置，请到卫星信号较好的位置重试，或手动填写地点。",
+  "@locationUnavailable": {
+    "description": "Hint after both fused and system location providers fail to return a usable position."
   }
 }

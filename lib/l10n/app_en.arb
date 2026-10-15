@@ -2447,5 +2447,37 @@
   "locationPrecisionHint": "Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.",
   "@locationPrecisionHint": {
     "description": "Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places."
+  },
+  "locationUnsupported": "Automatic location is not supported on this platform.",
+  "@locationUnsupported": {
+    "description": "Hint when automatic location is unavailable on the current platform."
+  },
+  "locationPermissionDenied": "Location permission was denied. Allow location access and try again; approximate location is also supported.",
+  "@locationPermissionDenied": {
+    "description": "Hint when foreground location permission is denied or undetermined."
+  },
+  "locationPermissionDeniedForever": "Location permission is blocked. Enable it in system settings, then return and try again.",
+  "@locationPermissionDeniedForever": {
+    "description": "Hint when the OS will no longer show a location permission prompt."
+  },
+  "locationServiceDisabled": "Location services are off. Turn them on in system settings, then try again.",
+  "@locationServiceDisabled": {
+    "description": "Hint when the device location service is disabled, including during a request."
+  },
+  "locationNetworkError": "The address request failed or timed out. Check your connection and try again.",
+  "@locationNetworkError": {
+    "description": "Hint when coordinate conversion or reverse geocoding fails due to a network error."
+  },
+  "locationApiError": "The address service is temporarily unavailable. Please try again later.",
+  "@locationApiError": {
+    "description": "Hint when the address API rejects a request; technical details stay in the service exception."
+  },
+  "locationAddressInvalid": "No usable address was returned. Please try again later or enter a place manually.",
+  "@locationAddressInvalid": {
+    "description": "Hint when the address service returns malformed or empty data."
+  },
+  "locationUnavailable": "Could not get your location. Try again where the satellite signal is stronger, or enter a place manually.",
+  "@locationUnavailable": {
+    "description": "Hint after both fused and system location providers fail to return a usable position."
   }
 }

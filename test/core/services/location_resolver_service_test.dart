@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -7,174 +5,163 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
 
+import 'location_test_support.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late GeolocatorPlatform originalPlatform;
-  late _FakeGeolocatorPlatform fakeGeolocator;
-  late HttpServer server;
-  late int requestCount;
+  late LocationTestHarness harness;
+  const service = LocationResolverService(webApiKey: ' test-key ');
 
   setUp(() async {
-    LocationResolverService.debugClearCache();
-    originalPlatform = GeolocatorPlatform.instance;
-    fakeGeolocator = _FakeGeolocatorPlatform();
-    GeolocatorPlatform.instance = fakeGeolocator;
-    requestCount = 0;
-    server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    unawaited(
-      server.forEach((request) async {
-        requestCount += 1;
-        request.response.headers.contentType = ContentType.json;
-        request.response.write(
-          jsonEncode(<String, Object?>{
-            'status': '1',
-            'regeocode': <String, Object?>{
-              'formatted_address': '上海市浦东新区',
-              'addressComponent': <String, Object?>{
-                'province': '上海市',
-                'city': <Object?>[],
-                'district': '浦东新区',
-                'township': '陆家嘴街道',
-                'streetNumber': <String, Object?>{
-                  'street': '陆家嘴环路',
-                  'number': '1号',
-                  'location': '121.499718,31.239703',
-                  'direction': '东北',
-                  'distance': '23.4',
-                },
-              },
-            },
-          }),
-        );
-        await request.response.close();
-      }),
-    );
-    HttpOverrides.global = _AmapHttpOverrides(serverPort: server.port);
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    harness = LocationTestHarness();
+    await harness.setUp();
   });
+  tearDown(() => harness.tearDown());
 
-  tearDown(() async {
-    debugDefaultTargetPlatformOverride = null;
-    HttpOverrides.global = null;
-    GeolocatorPlatform.instance = originalPlatform;
-    LocationResolverService.debugClearCache();
-    await server.close(force: true);
-  });
-
-  test('短时间重复定位复用 ResolvedLocation 缓存', () async {
-    final service = LocationResolverService(webApiKey: 'test-key');
-
+  test('短时间重复定位复用地址缓存且不重复请求权限', () async {
     final first = await service.resolveCurrentLocation();
     final second = await service.resolveCurrentLocation();
 
     expect(identical(first, second), isTrue);
     expect(first.township, '陆家嘴街道');
-    // 门牌坐标、方位和距离不进 metadata，只留地址层级需要的道路与门牌号。
     expect(first.addressComponent['streetNumber'], {
       'street': '陆家嘴环路',
       'number': '1号',
     });
-    expect(fakeGeolocator.currentPositionCalls, 1);
-    expect(requestCount, 1);
+    expect(harness.geolocator.settings, hasLength(1));
+    expect(harness.geolocator.permissionRequests, 0);
+    expect(harness.requests, hasLength(2));
   });
 
-  test('有新鲜 lastKnownPosition 时不触发当前定位', () async {
-    fakeGeolocator.lastKnownPosition = _position(
-      latitude: 31.2304,
-      longitude: 121.4737,
+  test('先转换 GPS 坐标再查高德地址而保存坐标保持 WGS84', () async {
+    final result = await service.resolveCurrentLocation();
+
+    expect(harness.requests.first.path, '/v3/assistant/coordinate/convert');
+    expect(harness.requests.first.queryParameters, {
+      'key': 'test-key',
+      'locations': '121.473700,31.230400',
+      'coordsys': 'gps',
+    });
+    expect(harness.requests.last.path, '/v3/geocode/regeo');
+    expect(
+      harness.requests.last.queryParameters['location'],
+      '121.478223,31.228458',
     );
-    final service = LocationResolverService(webApiKey: 'another-key');
-
-    final location = await service.resolveCurrentLocation();
-
-    expect(location.latitude, 31.2304);
-    expect(fakeGeolocator.currentPositionCalls, 0);
-    expect(requestCount, 1);
-  });
-}
-
-class _FakeGeolocatorPlatform extends GeolocatorPlatform {
-  Position? lastKnownPosition;
-  var currentPositionCalls = 0;
-
-  @override
-  Future<bool> isLocationServiceEnabled() async => true;
-
-  @override
-  Future<LocationPermission> checkPermission() async =>
-      LocationPermission.always;
-
-  @override
-  Future<LocationPermission> requestPermission() async =>
-      LocationPermission.always;
-
-  @override
-  Future<Position?> getLastKnownPosition({bool forceLocationManager = false}) {
-    return Future<Position?>.value(lastKnownPosition);
-  }
-
-  @override
-  Future<Position> getCurrentPosition({LocationSettings? locationSettings}) {
-    currentPositionCalls += 1;
-    expect(locationSettings?.accuracy, LocationAccuracy.medium);
-    return Future<Position>.value(
-      _position(latitude: 31.2304, longitude: 121.4737),
-    );
-  }
-}
-
-class _AmapHttpOverrides extends HttpOverrides {
-  _AmapHttpOverrides({required this.serverPort});
-
-  final int serverPort;
-
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return _AmapRedirectingHttpClient(
-      delegate: super.createHttpClient(context),
-      serverPort: serverPort,
-    );
-  }
-}
-
-class _AmapRedirectingHttpClient implements HttpClient {
-  _AmapRedirectingHttpClient({
-    required this.delegate,
-    required this.serverPort,
+    expect(result.latitude, 31.2304);
+    expect(result.longitude, 121.4737);
   });
 
-  final HttpClient delegate;
-  final int serverPort;
+  test('缺少 API key 时不请求权限或访问定位', () async {
+    await expectLater(
+      const LocationResolverService(webApiKey: ' ').resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.missingApiKey)),
+    );
+    expect(harness.geolocator.permissionRequests, 0);
+    expect(harness.geolocator.lastKnownProviders, isEmpty);
+    expect(harness.requests, isEmpty);
+  });
 
-  @override
-  Future<HttpClientRequest> getUrl(Uri url) {
-    if (url.host == 'restapi.amap.com') {
-      return delegate.getUrl(
-        url.replace(scheme: 'http', host: '127.0.0.1', port: serverPort),
+  test('暂不支持的平台不进入设备定位', () async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    await expectLater(
+      service.resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.unsupported)),
+    );
+    expect(harness.geolocator.lastKnownProviders, isEmpty);
+  });
+
+  test('缓存命中前仍检查权限避免撤权后返回位置', () async {
+    await service.resolveCurrentLocation();
+    harness.geolocator.permission = LocationPermission.deniedForever;
+    await expectLater(
+      service.resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.permissionDeniedForever)),
+    );
+    expect(harness.requests, hasLength(2));
+  });
+
+  test('缓存命中前仍检查系统定位开关', () async {
+    await service.resolveCurrentLocation();
+    harness.geolocator.serviceEnabled = false;
+    await expectLater(
+      service.resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.serviceDisabled)),
+    );
+  });
+
+  test('高德拒绝转换时报告 API 错误且不把 GPS 坐标直接当高德坐标', () async {
+    harness.responses['/v3/assistant/coordinate/convert'] = {
+      'status': '0',
+      'infocode': '10001',
+      'info': 'INVALID_USER_KEY',
+    };
+    await expectLater(
+      service.resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.apiError)),
+    );
+    expect(harness.requests, hasLength(1));
+  });
+
+  for (final coordinates in ['invalid', 'NaN,31', '121,91', '181,31']) {
+    test('转换返回非法坐标 $coordinates 时停止解析', () async {
+      harness.responses['/v3/assistant/coordinate/convert'] = {
+        'status': '1',
+        'locations': coordinates,
+      };
+      await expectLater(
+        service.resolveCurrentLocation(),
+        throwsA(locationError(LocationResolveErrorType.parseError)),
       );
-    }
-    return delegate.getUrl(url);
+      expect(harness.requests, hasLength(1));
+    });
   }
 
-  @override
-  void close({bool force = false}) => delegate.close(force: force);
+  test('地址服务返回 HTTP 错误后可以立即重试成功', () async {
+    harness.statusCode = HttpStatus.serviceUnavailable;
+    await expectLater(
+      service.resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.networkError)),
+    );
+    harness.statusCode = HttpStatus.ok;
+    final result = await service.resolveCurrentLocation();
+    expect(result.addressComponent['province'], '上海市');
+    expect(harness.requests, hasLength(3));
+  });
 
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+  for (final badResponse in [
+    <Object?>[],
+    {'status': '1'},
+    {
+      'status': '1',
+      'regeocode': {'addressComponent': <String, Object?>{}},
+    },
+    {
+      'status': '1',
+      'regeocode': {
+        'addressComponent': {
+          'province': [],
+          'city': [],
+          'district': '',
+          'township': [],
+        },
+      },
+    },
+  ]) {
+    test('缺失或无效的地址组件不会被当作定位成功', () async {
+      harness.responses['/v3/geocode/regeo'] = badResponse;
+      await expectLater(
+        service.resolveCurrentLocation(),
+        throwsA(locationError(LocationResolveErrorType.parseError)),
+      );
+    });
+  }
 
-Position _position({required double latitude, required double longitude}) {
-  return Position(
-    latitude: latitude,
-    longitude: longitude,
-    timestamp: DateTime.now(),
-    accuracy: 100,
-    altitude: 0,
-    altitudeAccuracy: 0,
-    heading: 0,
-    headingAccuracy: 0,
-    speed: 0,
-    speedAccuracy: 0,
-  );
+  test('地址正文断流会超时退出而不是永久等待', () async {
+    harness.stallBodyPath = '/v3/geocode/regeo';
+    await expectLater(
+      service.resolveCurrentLocation(),
+      throwsA(locationError(LocationResolveErrorType.networkError)),
+    );
+    expect(harness.requests, hasLength(2));
+  });
 }

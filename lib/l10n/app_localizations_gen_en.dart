@@ -1804,4 +1804,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get locationPrecisionHint =>
       'Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.';
+
+  @override
+  String get locationUnsupported =>
+      'Automatic location is not supported on this platform.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Location permission was denied. Allow location access and try again; approximate location is also supported.';
+
+  @override
+  String get locationPermissionDeniedForever =>
+      'Location permission is blocked. Enable it in system settings, then return and try again.';
+
+  @override
+  String get locationServiceDisabled =>
+      'Location services are off. Turn them on in system settings, then try again.';
+
+  @override
+  String get locationNetworkError =>
+      'The address request failed or timed out. Check your connection and try again.';
+
+  @override
+  String get locationApiError =>
+      'The address service is temporarily unavailable. Please try again later.';
+
+  @override
+  String get locationAddressInvalid =>
+      'No usable address was returned. Please try again later or enter a place manually.';
+
+  @override
+  String get locationUnavailable =>
+      'Could not get your location. Try again where the satellite signal is stronger, or enter a place manually.';
 }

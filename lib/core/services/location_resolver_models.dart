@@ -10,6 +10,7 @@ class ResolvedLocation {
     this.formattedAddress,
   });
 
+  /// 设备原始 WGS84 坐标；高德转换后的坐标只用于地址请求，不落盘。
   final double latitude;
   final double longitude;
   final String? township;
@@ -51,4 +52,26 @@ class LocationResolveException implements Exception {
     }
     return 'LocationResolveException($type): $message, cause: $cause';
   }
+}
+
+class _ReverseGeocodeResult {
+  const _ReverseGeocodeResult({
+    required this.addressComponent,
+    this.township,
+    this.formattedAddress,
+  });
+
+  final String? township;
+  final String? formattedAddress;
+  final Map<String, Object?> addressComponent;
+}
+
+class _ResolvedLocationCacheEntry {
+  const _ResolvedLocationCacheEntry({
+    required this.location,
+    required this.expiresAt,
+  });
+
+  final ResolvedLocation location;
+  final DateTime expiresAt;
 }

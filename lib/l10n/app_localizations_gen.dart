@@ -3265,6 +3265,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.'**
   String get locationPrecisionHint;
+
+  /// Hint when automatic location is unavailable on the current platform.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic location is not supported on this platform.'**
+  String get locationUnsupported;
+
+  /// Hint when foreground location permission is denied or undetermined.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission was denied. Allow location access and try again; approximate location is also supported.'**
+  String get locationPermissionDenied;
+
+  /// Hint when the OS will no longer show a location permission prompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission is blocked. Enable it in system settings, then return and try again.'**
+  String get locationPermissionDeniedForever;
+
+  /// Hint when the device location service is disabled, including during a request.
+  ///
+  /// In en, this message translates to:
+  /// **'Location services are off. Turn them on in system settings, then try again.'**
+  String get locationServiceDisabled;
+
+  /// Hint when coordinate conversion or reverse geocoding fails due to a network error.
+  ///
+  /// In en, this message translates to:
+  /// **'The address request failed or timed out. Check your connection and try again.'**
+  String get locationNetworkError;
+
+  /// Hint when the address API rejects a request; technical details stay in the service exception.
+  ///
+  /// In en, this message translates to:
+  /// **'The address service is temporarily unavailable. Please try again later.'**
+  String get locationApiError;
+
+  /// Hint when the address service returns malformed or empty data.
+  ///
+  /// In en, this message translates to:
+  /// **'No usable address was returned. Please try again later or enter a place manually.'**
+  String get locationAddressInvalid;
+
+  /// Hint after both fused and system location providers fail to return a usable position.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get your location. Try again where the satellite signal is stronger, or enter a place manually.'**
+  String get locationUnavailable;
 }
 
 class _AppLocalizationsDelegate

@@ -5,96 +5,49 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
+part 'location_device_position.dart';
 part 'location_resolver_models.dart';
+part 'location_reverse_geocoder.dart';
 
-/// 发布页定位服务：
-/// 1) 获取设备经纬度；
-/// 2) 调用高德逆地理编码返回地址组件。
+/// 发布与编辑共用的定位入口：检查前台授权、获取 WGS84 坐标，再解析地址。
+/// 短期缓存只在权限与系统开关仍有效时复用；地址失败不写缓存，允许立即重试。
 class LocationResolverService {
   const LocationResolverService({required this.webApiKey});
 
   final String webApiKey;
 
-  static const Duration _networkTimeout = Duration(seconds: 10);
   static const Duration _resolvedLocationCacheTtl = Duration(minutes: 2);
-  static const Duration _lastKnownPositionMaxAge = Duration(minutes: 5);
-  static const double _sameLocationThresholdDegrees = 0.001;
-
   static final Map<String, _ResolvedLocationCacheEntry> _resolvedLocationCache =
       <String, _ResolvedLocationCacheEntry>{};
 
   @visibleForTesting
-  static void debugClearCache() {
-    _resolvedLocationCache.clear();
-  }
+  static void debugClearCache() => _resolvedLocationCache.clear();
 
   Future<ResolvedLocation> resolveCurrentLocation() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       throw const LocationResolveException(
         type: LocationResolveErrorType.unsupported,
-        message: '当前平台暂不支持自动获取位置',
-      );
-    }
-
-    if (webApiKey.trim().isEmpty) {
-      throw const LocationResolveException(
-        type: LocationResolveErrorType.missingApiKey,
-        message: '未检测到高德 Web 服务 key，请先配置 amap.web.api.key',
-      );
-    }
-
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      throw const LocationResolveException(
-        type: LocationResolveErrorType.serviceDisabled,
-        message: '定位服务未开启，请先在系统中开启定位',
-      );
-    }
-
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    if (permission == LocationPermission.denied) {
-      throw const LocationResolveException(
-        type: LocationResolveErrorType.permissionDenied,
-        message: '定位权限被拒绝，无法获取当前位置',
-      );
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      throw const LocationResolveException(
-        type: LocationResolveErrorType.permissionDeniedForever,
-        message: '定位权限已被永久拒绝，请在系统设置中手动开启',
+        message: 'Automatic location is only supported on Android.',
       );
     }
 
     final cacheKey = webApiKey.trim();
-    final cached = _resolvedLocationCache[cacheKey];
-    if (cached != null && !cached.isExpired) {
-      return cached.location;
-    }
-    if (cached != null) {
-      _resolvedLocationCache.remove(cacheKey);
-    }
-
-    final position = await _getCurrentPosition(cached?.location);
-    if (cached != null &&
-        _isSameLocation(position, cached.location) &&
-        !cached.isPositionTooOldForReuse) {
-      _resolvedLocationCache[cacheKey] = _ResolvedLocationCacheEntry(
-        location: cached.location,
-        expiresAt: DateTime.now().add(_resolvedLocationCacheTtl),
+    if (cacheKey.isEmpty) {
+      throw const LocationResolveException(
+        type: LocationResolveErrorType.missingApiKey,
+        message: 'Missing AMap web service API key.',
       );
-      return cached.location;
     }
 
-    final regeo = await _reverseGeocode(
-      latitude: position.latitude,
-      longitude: position.longitude,
-    );
+    await _DevicePositionResolver.ensureAccess(requestPermission: true);
+    final cached = _resolvedLocationCache[cacheKey];
+    if (cached != null && DateTime.now().isBefore(cached.expiresAt)) {
+      return cached.location;
+    }
+    _resolvedLocationCache.remove(cacheKey);
 
+    final position = await _DevicePositionResolver.resolve();
+    final regeo = await _AmapReverseGeocoder(cacheKey).resolve(position);
     final resolved = ResolvedLocation(
       latitude: position.latitude,
       longitude: position.longitude,
@@ -107,247 +60,5 @@ class LocationResolverService {
       expiresAt: DateTime.now().add(_resolvedLocationCacheTtl),
     );
     return resolved;
-  }
-
-  Future<Position> _getCurrentPosition(
-    ResolvedLocation? previousLocation,
-  ) async {
-    try {
-      final lastKnown = await _getLastKnownPositionOrNull();
-      if (_canReuseLastKnownPosition(lastKnown, previousLocation)) {
-        return lastKnown!;
-      }
-
-      return await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 8),
-        ),
-      );
-    } catch (error) {
-      throw LocationResolveException(
-        type: LocationResolveErrorType.unavailable,
-        message: '无法获取当前位置，请稍后重试',
-        cause: error,
-      );
-    }
-  }
-
-  Future<Position?> _getLastKnownPositionOrNull() async {
-    try {
-      return await Geolocator.getLastKnownPosition();
-    } catch (_) {
-      return null;
-    }
-  }
-
-  bool _canReuseLastKnownPosition(
-    Position? position,
-    ResolvedLocation? previousLocation,
-  ) {
-    if (position == null) {
-      return false;
-    }
-
-    if (DateTime.now().difference(position.timestamp).abs() >
-        _lastKnownPositionMaxAge) {
-      return false;
-    }
-
-    if (previousLocation == null) {
-      return true;
-    }
-
-    return _isSameLocation(position, previousLocation);
-  }
-
-  bool _isSameLocation(Position position, ResolvedLocation location) {
-    return (position.latitude - location.latitude).abs() <=
-            _sameLocationThresholdDegrees &&
-        (position.longitude - location.longitude).abs() <=
-            _sameLocationThresholdDegrees;
-  }
-
-  Future<_ReverseGeocodeResult> _reverseGeocode({
-    required double latitude,
-    required double longitude,
-  }) async {
-    final uri = Uri.https(
-      'restapi.amap.com',
-      '/v3/geocode/regeo',
-      <String, String>{
-        'key': webApiKey,
-        'location': '$longitude,$latitude',
-        'extensions': 'base',
-      },
-    );
-
-    final client = HttpClient();
-    try {
-      final request = await client.getUrl(uri).timeout(_networkTimeout);
-      final response = await request.close().timeout(_networkTimeout);
-      final body = await response.transform(utf8.decoder).join();
-
-      if (response.statusCode != HttpStatus.ok) {
-        throw LocationResolveException(
-          type: LocationResolveErrorType.networkError,
-          message: '地址解析请求失败（HTTP ${response.statusCode}）',
-        );
-      }
-
-      final decoded = jsonDecode(body);
-      if (decoded is! Map<String, dynamic>) {
-        throw const LocationResolveException(
-          type: LocationResolveErrorType.parseError,
-          message: '地址解析返回数据格式异常',
-        );
-      }
-
-      final status = decoded['status']?.toString();
-      if (status != '1') {
-        final info = decoded['info']?.toString();
-        throw LocationResolveException(
-          type: LocationResolveErrorType.apiError,
-          message: info == null || info.trim().isEmpty
-              ? '高德地址解析失败'
-              : '高德地址解析失败：$info',
-        );
-      }
-
-      final regeo = decoded['regeocode'];
-      if (regeo is! Map<String, dynamic>) {
-        throw const LocationResolveException(
-          type: LocationResolveErrorType.parseError,
-          message: '地址解析结果缺少字段',
-        );
-      }
-
-      final rawAddressComponent = regeo['addressComponent'];
-      if (rawAddressComponent is! Map) {
-        throw const LocationResolveException(
-          type: LocationResolveErrorType.parseError,
-          message: '地址组件数据缺失',
-        );
-      }
-
-      final addressComponent = _sanitizeAddressComponent(rawAddressComponent);
-      if (addressComponent.isEmpty) {
-        throw const LocationResolveException(
-          type: LocationResolveErrorType.parseError,
-          message: '地址组件数据为空',
-        );
-      }
-
-      final township = _normalizeOptionalText(addressComponent['township']);
-      final formattedAddress = _normalizeOptionalText(
-        regeo['formatted_address'],
-      );
-
-      return _ReverseGeocodeResult(
-        township: township,
-        formattedAddress: formattedAddress,
-        addressComponent: addressComponent,
-      );
-    } on TimeoutException catch (error) {
-      throw LocationResolveException(
-        type: LocationResolveErrorType.networkError,
-        message: '地址解析请求超时，请检查网络后重试',
-        cause: error,
-      );
-    } on SocketException catch (error) {
-      throw LocationResolveException(
-        type: LocationResolveErrorType.networkError,
-        message: '网络不可用，无法解析地址',
-        cause: error,
-      );
-    } on FormatException catch (error) {
-      throw LocationResolveException(
-        type: LocationResolveErrorType.parseError,
-        message: '地址解析结果无法读取',
-        cause: error,
-      );
-    } finally {
-      client.close(force: true);
-    }
-  }
-
-  Map<String, Object?> _sanitizeAddressComponent(Map raw) {
-    final output = <String, Object?>{};
-    for (final entry in raw.entries) {
-      final key = entry.key?.toString();
-      if (key == null || key.isEmpty) {
-        continue;
-      }
-      // 保留道路和门牌组件，供地址层级切换复用；展示层只取用户选择的层级，
-      // 避免每次调整文案都重新定位和请求逆地理编码。
-      final rawValue = entry.value;
-      final value = key == 'streetNumber' && rawValue is Map
-          ? _sanitizeStreetNumber(rawValue)
-          : _sanitizeJsonValue(rawValue);
-      if (value != null) {
-        output[key] = value;
-      }
-    }
-    return output;
-  }
-
-  /// 门牌组件只留道路名和门牌号：高德附带的门牌坐标、方位与距离和 geo
-  /// 经纬度重复，地址层级也用不到，不随日记 metadata 落盘。
-  Map<String, Object?> _sanitizeStreetNumber(Map raw) =>
-      _sanitizeAddressComponent({
-        for (final key in const ['street', 'number'])
-          if (raw.containsKey(key)) key: raw[key],
-      });
-
-  Object? _sanitizeJsonValue(Object? value) {
-    if (value == null || value is num || value is bool || value is String) {
-      return value;
-    }
-    if (value is Map) {
-      return _sanitizeAddressComponent(value);
-    }
-    if (value is List) {
-      return value.map(_sanitizeJsonValue).toList(growable: false);
-    }
-    return value.toString();
-  }
-
-  String? _normalizeOptionalText(Object? raw) {
-    final normalized = raw?.toString().trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-}
-
-class _ReverseGeocodeResult {
-  const _ReverseGeocodeResult({
-    required this.addressComponent,
-    this.township,
-    this.formattedAddress,
-  });
-
-  final String? township;
-  final String? formattedAddress;
-  final Map<String, Object?> addressComponent;
-}
-
-class _ResolvedLocationCacheEntry {
-  const _ResolvedLocationCacheEntry({
-    required this.location,
-    required this.expiresAt,
-  });
-
-  final ResolvedLocation location;
-  final DateTime expiresAt;
-
-  bool get isExpired => !DateTime.now().isBefore(expiresAt);
-
-  bool get isPositionTooOldForReuse {
-    final age = DateTime.now().difference(
-      expiresAt.subtract(LocationResolverService._resolvedLocationCacheTtl),
-    );
-    return age > LocationResolverService._lastKnownPositionMaxAge;
   }
 }

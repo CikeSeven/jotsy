@@ -1802,10 +1802,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get locationPrecisionAddress => 'House number';
 
   @override
-  String get locationPrecisionHint =>
-      'Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.';
-
-  @override
   String get locationUnsupported =>
       'Automatic location is not supported on this platform.';
 

@@ -1732,9 +1732,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locationPrecisionAddress => '门牌号';
 
   @override
-  String get locationPrecisionHint => '定位时按所选层级填写，缺少的信息用上一级代替；手动输入的地点不受影响。';
-
-  @override
   String get locationUnsupported => '当前平台暂不支持自动获取位置。';
 
   @override

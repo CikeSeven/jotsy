@@ -88,7 +88,6 @@ class _PublishLocationPrecisionPickerState
                 onClose: () => _setMenuOpen(false),
                 alignmentOffset: const Offset(0, 4),
                 menuChildren: [
-                  _buildHint(context, contentWidth),
                   for (final precision in DiaryLocationPrecision.values)
                     _buildOption(
                       context,
@@ -166,23 +165,6 @@ class _PublishLocationPrecisionPickerState
               child: const FaIcon(FontAwesomeIcons.angleDown, size: 12),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHint(BuildContext context, double contentWidth) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
-      child: ConstrainedBox(
-        // 提示没有勾选列，与选项同宽：文字列 + 勾选图标 16 + 间距 12。
-        constraints: BoxConstraints(maxWidth: contentWidth + 28),
-        child: Text(
-          context.l10n.locationPrecisionHint,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
         ),
       ),
     );

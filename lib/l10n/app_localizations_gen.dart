@@ -3260,12 +3260,6 @@ abstract class AppLocalizations {
   /// **'House number'**
   String get locationPrecisionAddress;
 
-  /// Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places.
-  ///
-  /// In en, this message translates to:
-  /// **'Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.'**
-  String get locationPrecisionHint;
-
   /// Hint when automatic location is unavailable on the current platform.
   ///
   /// In en, this message translates to:

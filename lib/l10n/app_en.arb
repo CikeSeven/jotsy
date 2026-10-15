@@ -2444,10 +2444,6 @@
   "@locationPrecisionAddress": {
     "description": "Address detail option including the road and house number when available."
   },
-  "locationPrecisionHint": "Located addresses use this level and fall back to a broader one when details are missing. Places you type yourself stay unchanged.",
-  "@locationPrecisionHint": {
-    "description": "Explains in the address detail menu that the level applies to located addresses, falls back when detailed fields are missing, and never rewrites manually typed places."
-  },
   "locationUnsupported": "Automatic location is not supported on this platform.",
   "@locationUnsupported": {
     "description": "Hint when automatic location is unavailable on the current platform."

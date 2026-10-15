@@ -531,10 +531,19 @@ class _BootstrapHome extends StatelessWidget {
     // 启动等待期间只绘制空白底或加载页，不提前构建 HomePage。
     // 这样可以减少 Flutter 首帧前后的数据库监听与页面装配工作，避免
     // Android 原生启动背景结束后又等待一段时间才看到加载动画。
+    //
+    // 默认 layoutBuilder 的 Stack 给子级宽松约束，无子级的空白底会缩成 0×0、
+    // 什么都不画；Flutter 首帧一到原生启动背景就被移除，Android 上透出的是
+    // 黑色 Surface，表现为启动黑屏一闪。这里强制铺满，空白底与原生启动背景
+    // 同色衔接，首页也从同色底而不是黑底上淡入。
     return AnimatedSwitcher(
       duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
       switchInCurve: ExpressiveMotion.effects,
       switchOutCurve: ExpressiveMotion.effects,
+      layoutBuilder: (currentChild, previousChildren) => Stack(
+        fit: StackFit.expand,
+        children: <Widget>[...previousChildren, ?currentChild],
+      ),
       child: child,
     );
   }

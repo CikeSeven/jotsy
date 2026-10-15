@@ -61,6 +61,22 @@ void main() {
     await _unmount(tester);
   });
 
+  testWidgets('the first bootstrap frame paints a full-screen background', (
+    tester,
+  ) async {
+    await _pumpApp(tester);
+    // 首帧设置仍在加载，处于空白底阶段；它必须铺满屏幕，否则什么都不画，
+    // Android 移除原生启动背景后会透出黑色 Surface。
+    final blank = find.byKey(const ValueKey<String>('bootstrap_blank'));
+    expect(blank, findsOneWidget);
+    expect(
+      tester.getSize(blank),
+      tester.view.physicalSize / tester.view.devicePixelRatio,
+    );
+    await tester.pumpAndSettle();
+    await _unmount(tester);
+  });
+
   testWidgets('slow bootstrap shows the loader for a minimum duration', (
     tester,
   ) async {

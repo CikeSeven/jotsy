@@ -11,10 +11,13 @@ import 'backup_zip_encryption.dart';
 class BackupZipReader {
   const BackupZipReader._();
 
+  /// [only] 非空时仍校验全部条目的路径与类型，但只写出其中列出的条目：导入
+  /// 预检只需读载荷判断类型与冲突，不必为此解压整包视频。
   static void extract(
     String zipPath,
     String directoryPath, {
     String? password,
+    Set<String>? only,
     void Function(int)? onChunkRead,
   }) {
     final input = InputFileStream(zipPath);
@@ -45,6 +48,7 @@ class BackupZipReader {
         if (!p.isWithin(directoryPath, outputPath)) {
           throw const FormatException('ZIP entry escapes the backup directory');
         }
+        if (only != null && !only.contains(normalized)) continue;
         final file = File(outputPath);
         if (file.existsSync()) {
           throw const FormatException('Duplicate ZIP file path');

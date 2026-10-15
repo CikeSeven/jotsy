@@ -4,6 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../database/app_database.dart';
+import 'backup_import_models.dart';
 import 'data_archive_service.dart';
 import 'settings_service.dart';
 import 'webdav_client.dart';
@@ -132,17 +133,32 @@ class WebDavSyncService {
     }
   }
 
-  /// 基于已下载到本地的备份 ZIP 执行恢复，不再触发远程下载。
+  /// 基于已下载到本地的备份 ZIP 按 [mode] 执行恢复，不再触发远程下载。
   ///
   /// 调用方负责该临时文件的生命周期（删除）；用于「下载一次 → 判断是否加密
-  /// → 必要时输入密码 → 恢复」流程，避免对同一备份重复下载。
-  Future<void> restoreFromLocalBackup({
+  /// → 必要时输入密码 → 预检并选择导入方式 → 恢复」流程，避免对同一备份
+  /// 重复下载。默认覆盖全部，与原有恢复语义一致。
+  Future<BackupImportResult> restoreFromLocalBackup({
     required File zipFile,
     String? zipPassword,
-  }) async {
-    await DataArchiveService.importFromZip(
+    BackupImportMode mode = BackupImportMode.replaceAll,
+  }) {
+    return DataArchiveService.importFromZip(
       database: _database,
       settingsService: _settingsService,
+      zipPath: zipFile.path,
+      zipPassword: zipPassword,
+      mode: mode,
+    );
+  }
+
+  /// 只读预检已下载的备份：识别类型并统计与本机重复的日记，供选择导入方式。
+  Future<BackupArchivePreview> inspectLocalBackup({
+    required File zipFile,
+    String? zipPassword,
+  }) {
+    return DataArchiveService.inspectZip(
+      database: _database,
       zipPath: zipFile.path,
       zipPassword: zipPassword,
     );

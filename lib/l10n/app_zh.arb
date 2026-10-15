@@ -365,7 +365,7 @@
   "@settingsDataManagement": {
     "description": "Auto-generated metadata for settingsDataManagement."
   },
-  "settingsDataManagementSubtitle": "导入/导出 zip 备份文件",
+  "settingsDataManagementSubtitle": "导入/导出备份与日记文件",
   "@settingsDataManagementSubtitle": {
     "description": "Auto-generated metadata for settingsDataManagementSubtitle."
   },
@@ -556,11 +556,11 @@
   "@dataMgmtImport": {
     "description": "Auto-generated metadata for dataMgmtImport."
   },
-  "dataMgmtImportSubtitle": "从 zip 恢复数据，会覆盖当前内容",
+  "dataMgmtImportSubtitle": "导入完整备份或日记文件，可选择合并或覆盖",
   "@dataMgmtImportSubtitle": {
     "description": "Auto-generated metadata for dataMgmtImportSubtitle."
   },
-  "dataMgmtHint": "建议先执行一次导出备份，再进行导入操作。",
+  "dataMgmtHint": "单篇日记可在日记预览页的「更多」菜单中导出。合并导入只会添加本机没有的日记，不改动现有内容；覆盖导入会永久替换本机数据，操作前建议先导出备份。",
   "@dataMgmtHint": {
     "description": "Auto-generated metadata for dataMgmtHint."
   },
@@ -613,14 +613,6 @@
       }
     },
     "description": "Auto-generated metadata for dataMgmtImportFailed."
-  },
-  "dataMgmtImportConfirmTitle": "导入数据",
-  "@dataMgmtImportConfirmTitle": {
-    "description": "Auto-generated metadata for dataMgmtImportConfirmTitle."
-  },
-  "dataMgmtImportConfirmContent": "导入会覆盖当前数据，确认继续吗？",
-  "@dataMgmtImportConfirmContent": {
-    "description": "Auto-generated metadata for dataMgmtImportConfirmContent."
   },
   "dataMgmtImportAction": "导入",
   "@dataMgmtImportAction": {
@@ -2015,17 +2007,9 @@
   "@webDavBusyLabel": {
     "description": "WebDAV 操作加载组件语义标签。"
   },
-  "webDavHint": "建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复会覆盖本地数据。",
+  "webDavHint": "建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复时可选择合并或覆盖本地数据。",
   "@webDavHint": {
     "description": "WebDAV 同步页安全与行为说明。"
-  },
-  "webDavRestoreConfirmTitle": "恢复远程备份",
-  "@webDavRestoreConfirmTitle": {
-    "description": "WebDAV 恢复确认弹窗标题。"
-  },
-  "webDavRestoreConfirmContent": "恢复会覆盖当前本地数据。建议先上传或导出一份当前备份。确认继续吗？",
-  "@webDavRestoreConfirmContent": {
-    "description": "WebDAV 恢复确认弹窗内容。"
   },
   "webDavDeleteConfirmTitle": "删除远程备份",
   "@webDavDeleteConfirmTitle": {
@@ -2523,5 +2507,192 @@
   "diaryToolbarOverflowDivider": "以下收进「更多」",
   "@diaryToolbarOverflowDivider": {
     "description": "Divider in the toolbar order settings page. Tools above it stay on the editor toolbar row; tools below it are in the More panel, based on the current screen width."
+  },
+  "backupBusyInspect": "正在读取文件...",
+  "@backupBusyInspect": {
+    "description": "导入前读取并检查所选备份或日记文件时的等待文案。"
+  },
+  "backupImportOptionsTitle": "选择导入方式",
+  "@backupImportOptionsTitle": {
+    "description": "导入方式面板标题：概述导入文件并选择合并或覆盖。"
+  },
+  "backupImportKindFull": "完整备份",
+  "@backupImportKindFull": {
+    "description": "导入文件类型：包含全部日记、标签、媒体与设置的完整备份。"
+  },
+  "backupImportKindDiary": "日记文件",
+  "@backupImportKindDiary": {
+    "description": "导入文件类型：从单篇日记导出、不含应用设置的日记文件。"
+  },
+  "backupImportSummary": "{diaries} 篇日记 · {tags} 个标签",
+  "@backupImportSummary": {
+    "description": "导入文件内的日记数与标签数。",
+    "placeholders": {
+      "diaries": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportIncludesSettings": "包含应用设置",
+  "@backupImportIncludesSettings": {
+    "description": "说明完整备份还包含应用设置。"
+  },
+  "backupImportExistingCount": "其中 {count} 篇本机已存在",
+  "@backupImportExistingCount": {
+    "description": "导入文件中有多少篇日记本机已存在（同一篇日记）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeMerge": "合并（推荐）",
+  "@backupImportModeMerge": {
+    "description": "导入方式：保留本机全部数据，只添加本机没有的日记。"
+  },
+  "backupImportModeMergeDescription": "保留本机全部数据，只添加本机没有的日记，已存在的日记保持不变",
+  "@backupImportModeMergeDescription": {
+    "description": "“合并”导入方式的说明。"
+  },
+  "backupImportModeOverwriteExisting": "覆盖已存在的日记",
+  "@backupImportModeOverwriteExisting": {
+    "description": "导入方式：添加新日记，并替换本机已存在的日记。"
+  },
+  "backupImportModeOverwriteExistingDescription": "添加新日记，并用文件中的版本替换本机已存在的 {count} 篇日记",
+  "@backupImportModeOverwriteExistingDescription": {
+    "description": "“覆盖已存在的日记”导入方式的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeReplaceAll": "覆盖全部数据",
+  "@backupImportModeReplaceAll": {
+    "description": "导入方式：清空本机数据并替换为完整备份。"
+  },
+  "backupImportModeReplaceAllDescription": "清空本机全部日记、标签、媒体与设置，替换为备份内容",
+  "@backupImportModeReplaceAllDescription": {
+    "description": "“覆盖全部数据”导入方式的说明。"
+  },
+  "backupOverwriteAllTitle": "覆盖全部数据？",
+  "@backupOverwriteAllTitle": {
+    "description": "导入覆盖全部本机数据前的严重警告标题。"
+  },
+  "backupOverwriteExistingTitle": "覆盖已存在的日记？",
+  "@backupOverwriteExistingTitle": {
+    "description": "导入替换本机已存在日记前的严重警告标题。"
+  },
+  "backupOverwriteIrreversible": "此操作无法撤销",
+  "@backupOverwriteIrreversible": {
+    "description": "覆盖警告中的强调语。"
+  },
+  "backupOverwriteAllLead": "本机现有的以下数据将被永久删除，并替换为备份中的内容：",
+  "@backupOverwriteAllLead": {
+    "description": "“覆盖全部数据”警告中被删除数据列表的引导语。"
+  },
+  "backupOverwriteAllDiaries": "{count} 篇日记（含归档与回收站）",
+  "@backupOverwriteAllDiaries": {
+    "description": "列表项：“覆盖全部数据”会删除的本机日记数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteAllTags": "{count} 个标签",
+  "@backupOverwriteAllTags": {
+    "description": "列表项：“覆盖全部数据”会删除的本机标签数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteAllMedia": "全部图片、录音、视频与附件",
+  "@backupOverwriteAllMedia": {
+    "description": "列表项：“覆盖全部数据”会删除的本机媒体文件。"
+  },
+  "backupOverwriteAllSettings": "应用设置与未发布的草稿",
+  "@backupOverwriteAllSettings": {
+    "description": "列表项：“覆盖全部数据”会替换的应用设置与新建日记草稿。"
+  },
+  "backupOverwriteExistingBody": "本机已存在的 {count} 篇日记将被文件中的版本整篇替换，它们在本机上的修改与标签都会永久丢失。其他日记不受影响。",
+  "@backupOverwriteExistingBody": {
+    "description": "替换本机已存在日记前的警告正文。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteBackupTip": "如需保留当前数据，请先取消并导出一份备份。",
+  "@backupOverwriteBackupTip": {
+    "description": "覆盖警告中建议先备份的提示。"
+  },
+  "backupOverwriteAcknowledge": "我已了解被覆盖的数据无法恢复",
+  "@backupOverwriteAcknowledge": {
+    "description": "确认覆盖前必须勾选的知情确认项。"
+  },
+  "backupOverwriteConfirm": "确认覆盖",
+  "@backupOverwriteConfirm": {
+    "description": "覆盖警告的危险确认按钮。"
+  },
+  "backupOverwriteConfirmCountdown": "确认覆盖（{seconds}）",
+  "@backupOverwriteConfirmCountdown": {
+    "description": "覆盖警告确认按钮在锁定倒计时期间的文案，附剩余秒数。",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportMergeResult": "导入完成：新增 {added} 篇日记",
+  "@backupImportMergeResult": {
+    "description": "合并导入完成且没有已存在日记时的结果提示。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportMergeSkippedResult": "导入完成：新增 {added} 篇，跳过 {skipped} 篇本机已存在的日记",
+  "@backupImportMergeSkippedResult": {
+    "description": "合并导入跳过了本机已存在日记时的结果提示。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportOverwriteResult": "导入完成：新增 {added} 篇，覆盖 {replaced} 篇日记",
+  "@backupImportOverwriteResult": {
+    "description": "覆盖已存在日记的导入完成后的结果提示。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "replaced": {
+        "type": "int"
+      }
+    }
+  },
+  "previewExportDiaryFile": "导出为日记文件",
+  "@previewExportDiaryFile": {
+    "description": "将日记导出为可再次导入的日记文件（含标签与媒体的 ZIP）的菜单文案。"
+  },
+  "previewExportDiaryFileConfirm": "导出",
+  "@previewExportDiaryFileConfirm": {
+    "description": "导出日记文件时可选密码弹窗的确认按钮。"
+  },
+  "previewExportDiaryFileSuccess": "日记文件已导出，可在「数据管理」中导入",
+  "@previewExportDiaryFileSuccess": {
+    "description": "日记文件保存后的提示，并说明在哪里导入。"
   }
 }

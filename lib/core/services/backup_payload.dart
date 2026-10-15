@@ -145,6 +145,52 @@ class BackupPayload {
     };
   }
 
+  /// 日记包载荷：指定日记及其标签与关联，不含应用设置。
+  ///
+  /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
+  /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行，导出
+  /// 方据此收集被引用的媒体文件。
+  static Future<({Map<String, Object?> json, List<Diary> diaries})>
+  captureDiaries({
+    required AppDatabase database,
+    required Iterable<String> diaryIds,
+  }) {
+    final ids = diaryIds.toSet();
+    return database.transaction(() async {
+      final diaries = await (database.select(
+        database.diaries,
+      )..where((row) => row.diaryId.isIn(ids))).get();
+      if (diaries.isEmpty) {
+        throw StateError('未找到要导出的日记');
+      }
+      final relations = await (database.select(
+        database.diaryTags,
+      )..where((row) => row.diaryId.isIn(diaries.map((d) => d.id)))).get();
+      final tags = relations.isEmpty
+          ? const <Tag>[]
+          : await (database.select(database.tags)..where(
+                  (row) => row.id.isIn(relations.map((r) => r.tagId).toSet()),
+                ))
+                .get();
+      final tagIds = tags.map((tag) => tag.id).toSet();
+      return (
+        json: <String, Object?>{
+          'formatVersion': backupFormatVersion,
+          'generatedAt': DateTime.now().toIso8601String(),
+          'database': <String, Object?>{
+            'diaries': diaries.map((row) => row.toJson()).toList(),
+            'tags': tags.map((row) => row.toJson()).toList(),
+            'diaryTags': relations
+                .where((row) => tagIds.contains(row.tagId))
+                .map((row) => row.toJson())
+                .toList(),
+          },
+        },
+        diaries: diaries,
+      );
+    });
+  }
+
   Future<BackupPayload> rebindMedia(BackupMediaPaths paths) async {
     final restored = <Diary>[];
     for (final diary in diaries) {

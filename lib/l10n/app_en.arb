@@ -365,7 +365,7 @@
   "@settingsDataManagement": {
     "description": "Auto-generated metadata for settingsDataManagement."
   },
-  "settingsDataManagementSubtitle": "Import/export ZIP backups",
+  "settingsDataManagementSubtitle": "Import/export backups and diary files",
   "@settingsDataManagementSubtitle": {
     "description": "Auto-generated metadata for settingsDataManagementSubtitle."
   },
@@ -556,11 +556,11 @@
   "@dataMgmtImport": {
     "description": "Auto-generated metadata for dataMgmtImport."
   },
-  "dataMgmtImportSubtitle": "Restore from ZIP and overwrite current data",
+  "dataMgmtImportSubtitle": "Import a full backup or a diary file, merging or overwriting",
   "@dataMgmtImportSubtitle": {
     "description": "Auto-generated metadata for dataMgmtImportSubtitle."
   },
-  "dataMgmtHint": "It is recommended to export a backup before importing.",
+  "dataMgmtHint": "To export a single diary, use the More menu on its preview page. Merging only adds diaries this device doesn't have and never changes existing ones; overwriting permanently replaces data on this device, so export a backup first.",
   "@dataMgmtHint": {
     "description": "Auto-generated metadata for dataMgmtHint."
   },
@@ -613,14 +613,6 @@
       }
     },
     "description": "Auto-generated metadata for dataMgmtImportFailed."
-  },
-  "dataMgmtImportConfirmTitle": "Import Data",
-  "@dataMgmtImportConfirmTitle": {
-    "description": "Auto-generated metadata for dataMgmtImportConfirmTitle."
-  },
-  "dataMgmtImportConfirmContent": "Import will overwrite current data. Continue?",
-  "@dataMgmtImportConfirmContent": {
-    "description": "Auto-generated metadata for dataMgmtImportConfirmContent."
   },
   "dataMgmtImportAction": "Import",
   "@dataMgmtImportAction": {
@@ -2015,17 +2007,9 @@
   "@webDavBusyLabel": {
     "description": "WebDAV loading indicator semantic label."
   },
-  "webDavHint": "Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; restore overwrites local data.",
+  "webDavHint": "Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.",
   "@webDavHint": {
     "description": "WebDAV safety and behavior hint."
-  },
-  "webDavRestoreConfirmTitle": "Restore Remote Backup",
-  "@webDavRestoreConfirmTitle": {
-    "description": "WebDAV restore confirm dialog title."
-  },
-  "webDavRestoreConfirmContent": "Restore will overwrite local data. Upload or export your current data first. Continue?",
-  "@webDavRestoreConfirmContent": {
-    "description": "WebDAV restore confirm dialog content."
   },
   "webDavDeleteConfirmTitle": "Delete Remote Backup",
   "@webDavDeleteConfirmTitle": {
@@ -2523,5 +2507,192 @@
   "diaryToolbarOverflowDivider": "Tools below go into More",
   "@diaryToolbarOverflowDivider": {
     "description": "Divider in the toolbar order settings page. Tools above it stay on the editor toolbar row; tools below it are in the More panel, based on the current screen width."
+  },
+  "backupBusyInspect": "Reading file...",
+  "@backupBusyInspect": {
+    "description": "Busy label while the selected backup or diary file is read and checked before choosing how to import it."
+  },
+  "backupImportOptionsTitle": "How to import",
+  "@backupImportOptionsTitle": {
+    "description": "Title of the sheet that summarizes an import file and lets the user choose merge or overwrite."
+  },
+  "backupImportKindFull": "Full backup",
+  "@backupImportKindFull": {
+    "description": "Import file type: a full backup with all diaries, tags, media and settings."
+  },
+  "backupImportKindDiary": "Diary file",
+  "@backupImportKindDiary": {
+    "description": "Import file type: a diary file exported from a single diary, without app settings."
+  },
+  "backupImportSummary": "{diaries, plural, =1{1 diary} other{{diaries} diaries}} · {tags, plural, =1{1 tag} other{{tags} tags}}",
+  "@backupImportSummary": {
+    "description": "Counts of diaries and tags in the import file.",
+    "placeholders": {
+      "diaries": {
+        "type": "int"
+      },
+      "tags": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportIncludesSettings": "Includes app settings",
+  "@backupImportIncludesSettings": {
+    "description": "Note that a full backup also contains app settings."
+  },
+  "backupImportExistingCount": "{count, plural, =1{1 of them is already on this device} other{{count} of them are already on this device}}",
+  "@backupImportExistingCount": {
+    "description": "How many diaries in the import file already exist on this device (same diary).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeMerge": "Merge (recommended)",
+  "@backupImportModeMerge": {
+    "description": "Import option that keeps all local data and only adds diaries this device does not have."
+  },
+  "backupImportModeMergeDescription": "Keeps everything on this device. Only diaries it doesn't have are added; existing ones stay as they are.",
+  "@backupImportModeMergeDescription": {
+    "description": "Description of the merge import option."
+  },
+  "backupImportModeOverwriteExisting": "Overwrite existing diaries",
+  "@backupImportModeOverwriteExisting": {
+    "description": "Import option that adds new diaries and replaces diaries that already exist on this device."
+  },
+  "backupImportModeOverwriteExistingDescription": "{count, plural, =1{Adds new diaries and replaces the existing diary with the version in the file} other{Adds new diaries and replaces the {count} existing diaries with the versions in the file}}",
+  "@backupImportModeOverwriteExistingDescription": {
+    "description": "Description of the overwrite-existing import option.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeReplaceAll": "Overwrite all data",
+  "@backupImportModeReplaceAll": {
+    "description": "Import option that erases all local data and replaces it with the full backup."
+  },
+  "backupImportModeReplaceAllDescription": "Erases all diaries, tags, media and settings on this device and replaces them with the backup",
+  "@backupImportModeReplaceAllDescription": {
+    "description": "Description of the overwrite-all import option."
+  },
+  "backupOverwriteAllTitle": "Overwrite all data?",
+  "@backupOverwriteAllTitle": {
+    "description": "Title of the severe warning shown before an import replaces all local data."
+  },
+  "backupOverwriteExistingTitle": "Overwrite existing diaries?",
+  "@backupOverwriteExistingTitle": {
+    "description": "Title of the severe warning shown before an import replaces diaries that already exist on this device."
+  },
+  "backupOverwriteIrreversible": "This can't be undone",
+  "@backupOverwriteIrreversible": {
+    "description": "Emphasized line in the overwrite warning."
+  },
+  "backupOverwriteAllLead": "The following data on this device will be permanently deleted and replaced with the backup:",
+  "@backupOverwriteAllLead": {
+    "description": "Lead-in of the list of local data erased by an overwrite-all import."
+  },
+  "backupOverwriteAllDiaries": "{count, plural, =1{1 diary} other{{count} diaries}} (including archived and deleted ones)",
+  "@backupOverwriteAllDiaries": {
+    "description": "List item: how many local diaries an overwrite-all import deletes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteAllTags": "{count, plural, =1{1 tag} other{{count} tags}}",
+  "@backupOverwriteAllTags": {
+    "description": "List item: how many local tags an overwrite-all import deletes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteAllMedia": "All images, recordings, videos and attachments",
+  "@backupOverwriteAllMedia": {
+    "description": "List item: local media files deleted by an overwrite-all import."
+  },
+  "backupOverwriteAllSettings": "App settings and the unpublished draft",
+  "@backupOverwriteAllSettings": {
+    "description": "List item: local settings and the new-diary draft replaced by an overwrite-all import."
+  },
+  "backupOverwriteExistingBody": "{count, plural, =1{The diary already on this device will be replaced entirely by the version in the file. Its local edits and tags will be lost for good.} other{The {count} diaries already on this device will be replaced entirely by the versions in the file. Their local edits and tags will be lost for good.}} Other diaries are not affected.",
+  "@backupOverwriteExistingBody": {
+    "description": "Body of the warning shown before replacing diaries that already exist on this device.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteBackupTip": "To keep your current data, cancel and export a backup first.",
+  "@backupOverwriteBackupTip": {
+    "description": "Suggestion in the overwrite warning to back up first."
+  },
+  "backupOverwriteAcknowledge": "I understand overwritten data can't be recovered",
+  "@backupOverwriteAcknowledge": {
+    "description": "Checkbox the user must tick before the overwrite can be confirmed."
+  },
+  "backupOverwriteConfirm": "Overwrite",
+  "@backupOverwriteConfirm": {
+    "description": "Destructive confirm button of the overwrite warning."
+  },
+  "backupOverwriteConfirmCountdown": "Overwrite ({seconds})",
+  "@backupOverwriteConfirmCountdown": {
+    "description": "Destructive confirm button of the overwrite warning while it is still locked, with the remaining seconds.",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportMergeResult": "{added, plural, =0{Import complete: no new diaries} =1{Import complete: 1 diary added} other{Import complete: {added} diaries added}}",
+  "@backupImportMergeResult": {
+    "description": "Result of a merge import without diaries that already existed.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportMergeSkippedResult": "Import complete: {added} added, {skipped} skipped (already on this device)",
+  "@backupImportMergeSkippedResult": {
+    "description": "Result of a merge import that skipped diaries already on this device.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportOverwriteResult": "Import complete: {added} added, {replaced} overwritten",
+  "@backupImportOverwriteResult": {
+    "description": "Result of an import that overwrote diaries already on this device.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "replaced": {
+        "type": "int"
+      }
+    }
+  },
+  "previewExportDiaryFile": "Export as diary file",
+  "@previewExportDiaryFile": {
+    "description": "Menu label for exporting a diary as a diary file (ZIP with its tags and media) that can be imported again."
+  },
+  "previewExportDiaryFileConfirm": "Export",
+  "@previewExportDiaryFileConfirm": {
+    "description": "Confirm button of the optional password dialog when exporting a diary file."
+  },
+  "previewExportDiaryFileSuccess": "Diary file exported. Import it from Data Management.",
+  "@previewExportDiaryFileSuccess": {
+    "description": "SnackBar after a diary file is saved, telling where to import it."
   }
 }

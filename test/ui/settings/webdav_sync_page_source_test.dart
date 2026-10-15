@@ -63,7 +63,7 @@ void main() {
       'webDavTitle',
       'webDavServerUrl',
       'webDavUploadBackup',
-      'webDavRestoreConfirmContent',
+      'webDavRestoreSuccess',
       'webDavDeleteConfirmContent',
     ]) {
       expect(zh, contains('"$key"'));

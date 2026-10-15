@@ -27,7 +27,9 @@ import '../../../utils/relative_time_formatter.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_top_bar.dart';
+import '../../widgets/backup_password_dialog.dart';
 import '../../widgets/qweather_icon.dart';
+import '../controllers/diary_file_export_controller.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
 import '../widgets/diary_mobile_toolbar.dart';
@@ -558,6 +560,54 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
   }
 
+  /// 导出为可重新导入的日记文件；密码可选，流程见 [DiaryFileExportController]。
+  Future<void> _exportDiaryFile(DiaryWithTags detail) async {
+    if (_isExportingFile || _showActionLoading) {
+      return;
+    }
+    final password = await showBackupPasswordDialog(
+      context,
+      purpose: BackupPasswordPurpose.export,
+      confirmLabel: context.l10n.previewExportDiaryFileConfirm,
+    );
+    if (!mounted || password == null) {
+      return;
+    }
+    await _runPreviewActionWithLoading(
+      label: context.l10n.previewExportDiaryFile,
+      action: () async {
+        setState(() => _isExportingFile = true);
+        try {
+          final saved = await DiaryFileExportController.export(
+            database: ref.read(appDatabaseProvider),
+            diaryId: detail.diary.diaryId,
+            fileName:
+                'jotsy_${_buildExportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.zip',
+            dialogTitle: context.l10n.previewExportSaveDialogTitle,
+            password: password,
+          );
+          if (!mounted) {
+            return;
+          }
+          _showHint(
+            saved
+                ? context.l10n.previewExportDiaryFileSuccess
+                : context.l10n.previewExportCanceled,
+          );
+        } catch (error) {
+          if (!mounted) {
+            return;
+          }
+          _showHint(context.l10n.previewExportFailed(error.toString()));
+        } finally {
+          if (mounted) {
+            setState(() => _isExportingFile = false);
+          }
+        }
+      },
+    );
+  }
+
   Widget _buildStaticShareCoverSliver(String source) {
     return SliverToBoxAdapter(
       child: SizedBox(
@@ -752,6 +802,14 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                 onTap: () async {
                   Navigator.of(sheetContext).pop();
                   await _exportPdf(detail);
+                },
+              ),
+              ListTile(
+                leading: const FaIcon(FontAwesomeIcons.fileZipper, size: 16),
+                title: Text(context.l10n.previewExportDiaryFile),
+                onTap: () async {
+                  Navigator.of(sheetContext).pop();
+                  await _exportDiaryFile(detail);
                 },
               ),
               ListTile(

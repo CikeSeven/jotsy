@@ -29,12 +29,38 @@ class BackupArchiveIO {
     String zipPath,
     Directory directory, {
     String? password,
+    Set<String>? only,
   }) => Isolate.run<void>(
-    () => BackupZipReader.extract(zipPath, directory.path, password: password),
+    () => BackupZipReader.extract(
+      zipPath,
+      directory.path,
+      password: password,
+      only: only,
+    ),
   );
 
   static Future<bool> isPasswordProtected(String zipPath) =>
       Isolate.run<bool>(() => BackupZipReader.isPasswordProtected(zipPath));
+
+  /// 按托管媒体键（如 `diary_images/media_x/a.jpg`）把文件复制到 [target] 下的
+  /// 同一相对位置，日记包因此只携带被引用的媒体。键已由 `diaryMediaKeyOf`
+  /// 排除 `..`；文件已不存在或不是普通文件（如符号链接）时跳过，正文里残留
+  /// 的失效引用不应阻断导出。
+  static Future<void> copyMediaFiles(
+    Directory documents,
+    Directory target,
+    Iterable<String> mediaKeys,
+  ) async {
+    for (final key in mediaKeys) {
+      final segments = key.split('/');
+      final source = p.joinAll([documents.path, ...segments]);
+      final type = await FileSystemEntity.type(source, followLinks: false);
+      if (type != FileSystemEntityType.file) continue;
+      final destination = File(p.joinAll([target.path, ...segments]));
+      await destination.parent.create(recursive: true);
+      await File(source).copy(destination.path);
+    }
+  }
 
   static Future<void> copyDirectory(Directory source, Directory target) async {
     if (!await target.exists()) {

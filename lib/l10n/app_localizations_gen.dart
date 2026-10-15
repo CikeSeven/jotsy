@@ -581,7 +581,7 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for settingsDataManagementSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Import/export ZIP backups'**
+  /// **'Import/export backups and diary files'**
   String get settingsDataManagementSubtitle;
 
   /// Auto-generated metadata for settingsTagManagement.
@@ -845,13 +845,13 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for dataMgmtImportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Restore from ZIP and overwrite current data'**
+  /// **'Import a full backup or a diary file, merging or overwriting'**
   String get dataMgmtImportSubtitle;
 
   /// Auto-generated metadata for dataMgmtHint.
   ///
   /// In en, this message translates to:
-  /// **'It is recommended to export a backup before importing.'**
+  /// **'To export a single diary, use the More menu on its preview page. Merging only adds diaries this device doesn\'t have and never changes existing ones; overwriting permanently replaces data on this device, so export a backup first.'**
   String get dataMgmtHint;
 
   /// Auto-generated metadata for dataMgmtBusyExport.
@@ -913,18 +913,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import failed: {error}'**
   String dataMgmtImportFailed(String error);
-
-  /// Auto-generated metadata for dataMgmtImportConfirmTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Import Data'**
-  String get dataMgmtImportConfirmTitle;
-
-  /// Auto-generated metadata for dataMgmtImportConfirmContent.
-  ///
-  /// In en, this message translates to:
-  /// **'Import will overwrite current data. Continue?'**
-  String get dataMgmtImportConfirmContent;
 
   /// Auto-generated metadata for dataMgmtImportAction.
   ///
@@ -2669,20 +2657,8 @@ abstract class AppLocalizations {
   /// WebDAV safety and behavior hint.
   ///
   /// In en, this message translates to:
-  /// **'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; restore overwrites local data.'**
+  /// **'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.'**
   String get webDavHint;
-
-  /// WebDAV restore confirm dialog title.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore Remote Backup'**
-  String get webDavRestoreConfirmTitle;
-
-  /// WebDAV restore confirm dialog content.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore will overwrite local data. Upload or export your current data first. Continue?'**
-  String get webDavRestoreConfirmContent;
 
   /// WebDAV delete confirm dialog title.
   ///
@@ -3379,6 +3355,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tools below go into More'**
   String get diaryToolbarOverflowDivider;
+
+  /// Busy label while the selected backup or diary file is read and checked before choosing how to import it.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading file...'**
+  String get backupBusyInspect;
+
+  /// Title of the sheet that summarizes an import file and lets the user choose merge or overwrite.
+  ///
+  /// In en, this message translates to:
+  /// **'How to import'**
+  String get backupImportOptionsTitle;
+
+  /// Import file type: a full backup with all diaries, tags, media and settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Full backup'**
+  String get backupImportKindFull;
+
+  /// Import file type: a diary file exported from a single diary, without app settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary file'**
+  String get backupImportKindDiary;
+
+  /// Counts of diaries and tags in the import file.
+  ///
+  /// In en, this message translates to:
+  /// **'{diaries, plural, =1{1 diary} other{{diaries} diaries}} · {tags, plural, =1{1 tag} other{{tags} tags}}'**
+  String backupImportSummary(int diaries, int tags);
+
+  /// Note that a full backup also contains app settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes app settings'**
+  String get backupImportIncludesSettings;
+
+  /// How many diaries in the import file already exist on this device (same diary).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 of them is already on this device} other{{count} of them are already on this device}}'**
+  String backupImportExistingCount(int count);
+
+  /// Import option that keeps all local data and only adds diaries this device does not have.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge (recommended)'**
+  String get backupImportModeMerge;
+
+  /// Description of the merge import option.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps everything on this device. Only diaries it doesn\'t have are added; existing ones stay as they are.'**
+  String get backupImportModeMergeDescription;
+
+  /// Import option that adds new diaries and replaces diaries that already exist on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing diaries'**
+  String get backupImportModeOverwriteExisting;
+
+  /// Description of the overwrite-existing import option.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Adds new diaries and replaces the existing diary with the version in the file} other{Adds new diaries and replaces the {count} existing diaries with the versions in the file}}'**
+  String backupImportModeOverwriteExistingDescription(int count);
+
+  /// Import option that erases all local data and replaces it with the full backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite all data'**
+  String get backupImportModeReplaceAll;
+
+  /// Description of the overwrite-all import option.
+  ///
+  /// In en, this message translates to:
+  /// **'Erases all diaries, tags, media and settings on this device and replaces them with the backup'**
+  String get backupImportModeReplaceAllDescription;
+
+  /// Title of the severe warning shown before an import replaces all local data.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite all data?'**
+  String get backupOverwriteAllTitle;
+
+  /// Title of the severe warning shown before an import replaces diaries that already exist on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite existing diaries?'**
+  String get backupOverwriteExistingTitle;
+
+  /// Emphasized line in the overwrite warning.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone'**
+  String get backupOverwriteIrreversible;
+
+  /// Lead-in of the list of local data erased by an overwrite-all import.
+  ///
+  /// In en, this message translates to:
+  /// **'The following data on this device will be permanently deleted and replaced with the backup:'**
+  String get backupOverwriteAllLead;
+
+  /// List item: how many local diaries an overwrite-all import deletes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 diary} other{{count} diaries}} (including archived and deleted ones)'**
+  String backupOverwriteAllDiaries(int count);
+
+  /// List item: how many local tags an overwrite-all import deletes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tag} other{{count} tags}}'**
+  String backupOverwriteAllTags(int count);
+
+  /// List item: local media files deleted by an overwrite-all import.
+  ///
+  /// In en, this message translates to:
+  /// **'All images, recordings, videos and attachments'**
+  String get backupOverwriteAllMedia;
+
+  /// List item: local settings and the new-diary draft replaced by an overwrite-all import.
+  ///
+  /// In en, this message translates to:
+  /// **'App settings and the unpublished draft'**
+  String get backupOverwriteAllSettings;
+
+  /// Body of the warning shown before replacing diaries that already exist on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The diary already on this device will be replaced entirely by the version in the file. Its local edits and tags will be lost for good.} other{The {count} diaries already on this device will be replaced entirely by the versions in the file. Their local edits and tags will be lost for good.}} Other diaries are not affected.'**
+  String backupOverwriteExistingBody(int count);
+
+  /// Suggestion in the overwrite warning to back up first.
+  ///
+  /// In en, this message translates to:
+  /// **'To keep your current data, cancel and export a backup first.'**
+  String get backupOverwriteBackupTip;
+
+  /// Checkbox the user must tick before the overwrite can be confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand overwritten data can\'t be recovered'**
+  String get backupOverwriteAcknowledge;
+
+  /// Destructive confirm button of the overwrite warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite'**
+  String get backupOverwriteConfirm;
+
+  /// Destructive confirm button of the overwrite warning while it is still locked, with the remaining seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Overwrite ({seconds})'**
+  String backupOverwriteConfirmCountdown(int seconds);
+
+  /// Result of a merge import without diaries that already existed.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =0{Import complete: no new diaries} =1{Import complete: 1 diary added} other{Import complete: {added} diaries added}}'**
+  String backupImportMergeResult(int added);
+
+  /// Result of a merge import that skipped diaries already on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete: {added} added, {skipped} skipped (already on this device)'**
+  String backupImportMergeSkippedResult(int added, int skipped);
+
+  /// Result of an import that overwrote diaries already on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'Import complete: {added} added, {replaced} overwritten'**
+  String backupImportOverwriteResult(int added, int replaced);
+
+  /// Menu label for exporting a diary as a diary file (ZIP with its tags and media) that can be imported again.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as diary file'**
+  String get previewExportDiaryFile;
+
+  /// Confirm button of the optional password dialog when exporting a diary file.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get previewExportDiaryFileConfirm;
+
+  /// SnackBar after a diary file is saved, telling where to import it.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary file exported. Import it from Data Management.'**
+  String get previewExportDiaryFileSuccess;
 }
 
 class _AppLocalizationsDelegate

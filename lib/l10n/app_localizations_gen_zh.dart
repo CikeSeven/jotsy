@@ -267,7 +267,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDataManagement => '数据管理';
 
   @override
-  String get settingsDataManagementSubtitle => '导入/导出 zip 备份文件';
+  String get settingsDataManagementSubtitle => '导入/导出备份与日记文件';
 
   @override
   String get settingsTagManagement => '标签管理';
@@ -405,10 +405,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataMgmtImport => '导入数据';
 
   @override
-  String get dataMgmtImportSubtitle => '从 zip 恢复数据，会覆盖当前内容';
+  String get dataMgmtImportSubtitle => '导入完整备份或日记文件，可选择合并或覆盖';
 
   @override
-  String get dataMgmtHint => '建议先执行一次导出备份，再进行导入操作。';
+  String get dataMgmtHint =>
+      '单篇日记可在日记预览页的「更多」菜单中导出。合并导入只会添加本机没有的日记，不改动现有内容；覆盖导入会永久替换本机数据，操作前建议先导出备份。';
 
   @override
   String get dataMgmtBusyExport => '正在导出数据...';
@@ -443,12 +444,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String dataMgmtImportFailed(String error) {
     return '导入失败: $error';
   }
-
-  @override
-  String get dataMgmtImportConfirmTitle => '导入数据';
-
-  @override
-  String get dataMgmtImportConfirmContent => '导入会覆盖当前数据，确认继续吗？';
 
   @override
   String get dataMgmtImportAction => '导入';
@@ -1420,13 +1415,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get webDavHint =>
-      '建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复会覆盖本地数据。';
-
-  @override
-  String get webDavRestoreConfirmTitle => '恢复远程备份';
-
-  @override
-  String get webDavRestoreConfirmContent => '恢复会覆盖当前本地数据。建议先上传或导出一份当前备份。确认继续吗？';
+      '建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复时可选择合并或覆盖本地数据。';
 
   @override
   String get webDavDeleteConfirmTitle => '删除远程备份';
@@ -1790,4 +1779,122 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryToolbarOverflowDivider => '以下收进「更多」';
+
+  @override
+  String get backupBusyInspect => '正在读取文件...';
+
+  @override
+  String get backupImportOptionsTitle => '选择导入方式';
+
+  @override
+  String get backupImportKindFull => '完整备份';
+
+  @override
+  String get backupImportKindDiary => '日记文件';
+
+  @override
+  String backupImportSummary(int diaries, int tags) {
+    return '$diaries 篇日记 · $tags 个标签';
+  }
+
+  @override
+  String get backupImportIncludesSettings => '包含应用设置';
+
+  @override
+  String backupImportExistingCount(int count) {
+    return '其中 $count 篇本机已存在';
+  }
+
+  @override
+  String get backupImportModeMerge => '合并（推荐）';
+
+  @override
+  String get backupImportModeMergeDescription =>
+      '保留本机全部数据，只添加本机没有的日记，已存在的日记保持不变';
+
+  @override
+  String get backupImportModeOverwriteExisting => '覆盖已存在的日记';
+
+  @override
+  String backupImportModeOverwriteExistingDescription(int count) {
+    return '添加新日记，并用文件中的版本替换本机已存在的 $count 篇日记';
+  }
+
+  @override
+  String get backupImportModeReplaceAll => '覆盖全部数据';
+
+  @override
+  String get backupImportModeReplaceAllDescription =>
+      '清空本机全部日记、标签、媒体与设置，替换为备份内容';
+
+  @override
+  String get backupOverwriteAllTitle => '覆盖全部数据？';
+
+  @override
+  String get backupOverwriteExistingTitle => '覆盖已存在的日记？';
+
+  @override
+  String get backupOverwriteIrreversible => '此操作无法撤销';
+
+  @override
+  String get backupOverwriteAllLead => '本机现有的以下数据将被永久删除，并替换为备份中的内容：';
+
+  @override
+  String backupOverwriteAllDiaries(int count) {
+    return '$count 篇日记（含归档与回收站）';
+  }
+
+  @override
+  String backupOverwriteAllTags(int count) {
+    return '$count 个标签';
+  }
+
+  @override
+  String get backupOverwriteAllMedia => '全部图片、录音、视频与附件';
+
+  @override
+  String get backupOverwriteAllSettings => '应用设置与未发布的草稿';
+
+  @override
+  String backupOverwriteExistingBody(int count) {
+    return '本机已存在的 $count 篇日记将被文件中的版本整篇替换，它们在本机上的修改与标签都会永久丢失。其他日记不受影响。';
+  }
+
+  @override
+  String get backupOverwriteBackupTip => '如需保留当前数据，请先取消并导出一份备份。';
+
+  @override
+  String get backupOverwriteAcknowledge => '我已了解被覆盖的数据无法恢复';
+
+  @override
+  String get backupOverwriteConfirm => '确认覆盖';
+
+  @override
+  String backupOverwriteConfirmCountdown(int seconds) {
+    return '确认覆盖（$seconds）';
+  }
+
+  @override
+  String backupImportMergeResult(int added) {
+    return '导入完成：新增 $added 篇日记';
+  }
+
+  @override
+  String backupImportMergeSkippedResult(int added, int skipped) {
+    return '导入完成：新增 $added 篇，跳过 $skipped 篇本机已存在的日记';
+  }
+
+  @override
+  String backupImportOverwriteResult(int added, int replaced) {
+    return '导入完成：新增 $added 篇，覆盖 $replaced 篇日记';
+  }
+
+  @override
+  String get previewExportDiaryFile => '导出为日记文件';
+
+  @override
+  String get previewExportDiaryFileConfirm => '导出';
+
+  @override
+  String get previewExportDiaryFileSuccess => '日记文件已导出，可在「数据管理」中导入';
 }

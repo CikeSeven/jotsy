@@ -40,6 +40,10 @@ class DiaryMediaReferences {
   final Set<String> _keys = <String>{};
   final List<String> _mentions = <String>[];
 
+  /// 精确识别出的托管媒体键，不含只能靠“原文包含”兜底的提及；导出日记包时
+  /// 据此复制被引用的文件。
+  Set<String> get keys => Set.unmodifiable(_keys);
+
   bool contains(String key) =>
       _keys.contains(key) || _mentions.any((mention) => mention.contains(key));
 

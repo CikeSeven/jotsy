@@ -1,0 +1,88 @@
+/// 备份文件的类型，决定可用的导入方式。
+enum BackupArchiveKind {
+  /// 完整备份（`backup_data.json`）：全部日记、标签、媒体与应用设置。
+  fullBackup,
+
+  /// 日记包（`diary_package.json`）：一篇或几篇日记及其标签、媒体，不含设置。
+  diaryPackage,
+}
+
+/// 导入方式。
+///
+/// 日记按业务 diaryId 判定是否“同一篇”；本地自增 id 在不同安装之间没有意义。
+enum BackupImportMode {
+  /// 合并：保留本机全部数据，只新增本机没有的日记；本机已有的同一篇日记保持
+  /// 本机版本。标签按名称复用，不修改应用设置与新建日记草稿。
+  merge,
+
+  /// 合并并覆盖：在 [merge] 的基础上，把本机已有的同一篇日记整篇替换为文件
+  /// 中的版本（正文、标签、归档/置顶/回收站状态一并替换）。
+  mergeOverwrite,
+
+  /// 覆盖全部：清空本机日记、标签、媒体与设置后换入备份内容，仅限完整备份。
+  replaceAll;
+
+  /// 是否会永久改写本机已有数据；UI 必须先经严重警告确认。
+  bool get overwritesLocalData => this != merge;
+}
+
+/// 导入前的只读预检结果，用于选择导入方式与组织警告文案；生成过程不修改
+/// 本机任何数据。
+class BackupArchivePreview {
+  const BackupArchivePreview({
+    required this.kind,
+    required this.diaryCount,
+    required this.tagCount,
+    required this.existingDiaryCount,
+    required this.localDiaryCount,
+    required this.localTagCount,
+    this.soleDiaryTitle,
+  });
+
+  final BackupArchiveKind kind;
+
+  /// 文件内的日记数（含归档、回收站与时间胶囊）。
+  final int diaryCount;
+  final int tagCount;
+
+  /// 文件内本机已有的日记数，也就是 [BackupImportMode.mergeOverwrite] 会替换
+  /// 的篇数。
+  final int existingDiaryCount;
+
+  /// 本机当前日记总数（含归档与回收站），即 [BackupImportMode.replaceAll]
+  /// 会删除的篇数。
+  final int localDiaryCount;
+  final int localTagCount;
+
+  /// 文件只含一篇日记时它的标题（可能为空串），确认时点名是哪一篇。
+  final String? soleDiaryTitle;
+
+  /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记
+  /// 时不提供“覆盖已存在”；日记包不能覆盖全部数据。
+  List<BackupImportMode> get availableModes => <BackupImportMode>[
+    BackupImportMode.merge,
+    if (existingDiaryCount > 0) BackupImportMode.mergeOverwrite,
+    if (kind == BackupArchiveKind.fullBackup) BackupImportMode.replaceAll,
+  ];
+}
+
+/// 导入完成后的统计，用于结果提示。
+class BackupImportResult {
+  const BackupImportResult({
+    required this.mode,
+    required this.addedDiaries,
+    required this.replacedDiaries,
+    required this.skippedDiaries,
+  });
+
+  final BackupImportMode mode;
+
+  /// 新增的日记数；[BackupImportMode.replaceAll] 时为换入的全部日记数。
+  final int addedDiaries;
+
+  /// 被导入版本替换的本机日记数。
+  final int replacedDiaries;
+
+  /// 本机已有、按 [BackupImportMode.merge] 保留本机版本而跳过的日记数。
+  final int skippedDiaries;
+}

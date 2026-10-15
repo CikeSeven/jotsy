@@ -11,13 +11,23 @@ import 'diary_media_storage_service.dart';
 /// 将正文、旧版文档和草稿中的托管引用映射到当前安装目录。
 /// 只绑定暂存区里确实存在的文件，不能误用即将被替换的原媒体。
 class BackupMediaPaths {
-  const BackupMediaPaths({
+  BackupMediaPaths({
     required this.documentsDirectory,
     required this.stagingDirectory,
+    this.targetSubdirectory,
   });
 
   final Directory documentsDirectory;
   final Directory stagingDirectory;
+
+  /// 非空时引用重绑到 `<托管目录>/<targetSubdirectory>/<相对路径>`。覆盖恢复
+  /// 整目录换入，相对路径保持不变；合并导入不能动本机已有文件，新文件统一
+  /// 落进这个独立批次子目录，同名文件也不会互相覆盖。
+  final String? targetSubdirectory;
+
+  /// 已重绑的暂存文件 → 目标路径。合并导入据此只搬运实际写入的日记引用到
+  /// 的文件；同一文件被多处引用时只记一次。
+  final Map<String, String> boundFiles = <String, String>{};
 
   /// ZIP media files are restored into this installation's private documents
   /// directory, while their database references contain absolute paths from
@@ -62,17 +72,19 @@ class BackupMediaPaths {
         return sourcePath;
       }
 
-      final candidate = p.join(
+      final candidate = p.joinAll([
         documentsDirectory.path,
         directoryName,
+        ?targetSubdirectory,
         relativePath,
-      );
+      ]);
       final extracted = p.join(
         stagingDirectory.path,
         directoryName,
         relativePath,
       );
       if (await File(extracted).exists()) {
+        boundFiles[extracted] = candidate;
         return candidate;
       }
     }

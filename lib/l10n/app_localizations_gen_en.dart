@@ -286,7 +286,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDataManagement => 'Data Management';
 
   @override
-  String get settingsDataManagementSubtitle => 'Import/export ZIP backups';
+  String get settingsDataManagementSubtitle =>
+      'Import/export backups and diary files';
 
   @override
   String get settingsTagManagement => 'Tag Management';
@@ -438,11 +439,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataMgmtImportSubtitle =>
-      'Restore from ZIP and overwrite current data';
+      'Import a full backup or a diary file, merging or overwriting';
 
   @override
   String get dataMgmtHint =>
-      'It is recommended to export a backup before importing.';
+      'To export a single diary, use the More menu on its preview page. Merging only adds diaries this device doesn\'t have and never changes existing ones; overwriting permanently replaces data on this device, so export a backup first.';
 
   @override
   String get dataMgmtBusyExport => 'Exporting data...';
@@ -477,13 +478,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String dataMgmtImportFailed(String error) {
     return 'Import failed: $error';
   }
-
-  @override
-  String get dataMgmtImportConfirmTitle => 'Import Data';
-
-  @override
-  String get dataMgmtImportConfirmContent =>
-      'Import will overwrite current data. Continue?';
 
   @override
   String get dataMgmtImportAction => 'Import';
@@ -1466,14 +1460,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get webDavHint =>
-      'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; restore overwrites local data.';
-
-  @override
-  String get webDavRestoreConfirmTitle => 'Restore Remote Backup';
-
-  @override
-  String get webDavRestoreConfirmContent =>
-      'Restore will overwrite local data. Upload or export your current data first. Continue?';
+      'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.';
 
   @override
   String get webDavDeleteConfirmTitle => 'Delete Remote Backup';
@@ -1868,4 +1855,181 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryToolbarOverflowDivider => 'Tools below go into More';
+
+  @override
+  String get backupBusyInspect => 'Reading file...';
+
+  @override
+  String get backupImportOptionsTitle => 'How to import';
+
+  @override
+  String get backupImportKindFull => 'Full backup';
+
+  @override
+  String get backupImportKindDiary => 'Diary file';
+
+  @override
+  String backupImportSummary(int diaries, int tags) {
+    String _temp0 = intl.Intl.pluralLogic(
+      diaries,
+      locale: localeName,
+      other: '$diaries diaries',
+      one: '1 diary',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      tags,
+      locale: localeName,
+      other: '$tags tags',
+      one: '1 tag',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get backupImportIncludesSettings => 'Includes app settings';
+
+  @override
+  String backupImportExistingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of them are already on this device',
+      one: '1 of them is already on this device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupImportModeMerge => 'Merge (recommended)';
+
+  @override
+  String get backupImportModeMergeDescription =>
+      'Keeps everything on this device. Only diaries it doesn\'t have are added; existing ones stay as they are.';
+
+  @override
+  String get backupImportModeOverwriteExisting => 'Overwrite existing diaries';
+
+  @override
+  String backupImportModeOverwriteExistingDescription(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Adds new diaries and replaces the $count existing diaries with the versions in the file',
+      one:
+          'Adds new diaries and replaces the existing diary with the version in the file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupImportModeReplaceAll => 'Overwrite all data';
+
+  @override
+  String get backupImportModeReplaceAllDescription =>
+      'Erases all diaries, tags, media and settings on this device and replaces them with the backup';
+
+  @override
+  String get backupOverwriteAllTitle => 'Overwrite all data?';
+
+  @override
+  String get backupOverwriteExistingTitle => 'Overwrite existing diaries?';
+
+  @override
+  String get backupOverwriteIrreversible => 'This can\'t be undone';
+
+  @override
+  String get backupOverwriteAllLead =>
+      'The following data on this device will be permanently deleted and replaced with the backup:';
+
+  @override
+  String backupOverwriteAllDiaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diaries',
+      one: '1 diary',
+    );
+    return '$_temp0 (including archived and deleted ones)';
+  }
+
+  @override
+  String backupOverwriteAllTags(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tags',
+      one: '1 tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupOverwriteAllMedia =>
+      'All images, recordings, videos and attachments';
+
+  @override
+  String get backupOverwriteAllSettings =>
+      'App settings and the unpublished draft';
+
+  @override
+  String backupOverwriteExistingBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The $count diaries already on this device will be replaced entirely by the versions in the file. Their local edits and tags will be lost for good.',
+      one:
+          'The diary already on this device will be replaced entirely by the version in the file. Its local edits and tags will be lost for good.',
+    );
+    return '$_temp0 Other diaries are not affected.';
+  }
+
+  @override
+  String get backupOverwriteBackupTip =>
+      'To keep your current data, cancel and export a backup first.';
+
+  @override
+  String get backupOverwriteAcknowledge =>
+      'I understand overwritten data can\'t be recovered';
+
+  @override
+  String get backupOverwriteConfirm => 'Overwrite';
+
+  @override
+  String backupOverwriteConfirmCountdown(int seconds) {
+    return 'Overwrite ($seconds)';
+  }
+
+  @override
+  String backupImportMergeResult(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Import complete: $added diaries added',
+      one: 'Import complete: 1 diary added',
+      zero: 'Import complete: no new diaries',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportMergeSkippedResult(int added, int skipped) {
+    return 'Import complete: $added added, $skipped skipped (already on this device)';
+  }
+
+  @override
+  String backupImportOverwriteResult(int added, int replaced) {
+    return 'Import complete: $added added, $replaced overwritten';
+  }
+
+  @override
+  String get previewExportDiaryFile => 'Export as diary file';
+
+  @override
+  String get previewExportDiaryFileConfirm => 'Export';
+
+  @override
+  String get previewExportDiaryFileSuccess =>
+      'Diary file exported. Import it from Data Management.';
 }

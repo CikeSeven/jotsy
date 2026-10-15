@@ -13,13 +13,15 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/delayed_loading_gate.dart';
 import '../../widgets/expressive_icon_swap.dart';
+import '../controllers/backup_import_flow.dart';
 
 /// WebDAV 备份式同步页。
 ///
 /// 职责边界：
 /// - 负责配置表单、连接测试、上传备份、远程列表、恢复与删除交互；
 /// - 业务流程委托 WebDavSyncService，凭据持久化委托 WebDavSettingsService；
-/// - 通过明确确认弹窗强调“恢复会覆盖本地数据”，避免误认为是逐条合并同步。
+/// - 恢复前预检备份并选择合并或覆盖（[chooseBackupImportMode]），覆盖本地
+///   数据必须经过严重警告确认。
 class WebDavSyncPage extends ConsumerStatefulWidget {
   const WebDavSyncPage({super.key});
 
@@ -110,16 +112,11 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
 
   Future<void> _restoreBackup(WebDavBackupEntry entry) async {
     final l10n = context.l10n;
-    final confirmed = await _confirmRestore();
-    if (!mounted || !confirmed) {
-      return;
-    }
-
     String? password;
     await _runBusy(l10n.webDavBusyRestore, () async {
       final service = await ref.read(webDavSyncServiceProvider.future);
-      // 仅下载一次：先取到本地，再判断是否加密、按需输入密码并恢复，
-      // 避免「判断加密」与「恢复」对同一备份重复下载整包。
+      // 仅下载一次：先取到本地，再判断是否加密、按需输入密码、预检并选择
+      // 合并或覆盖，避免对同一备份重复下载整包。下载与预检都不改动本地数据。
       final zipFile = await service.downloadBackup(entry);
       try {
         final passwordProtected = await service.isLocalBackupPasswordProtected(
@@ -134,13 +131,33 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
           if (!mounted || password == null) {
             return;
           }
-          _setBusy(true, l10n.webDavBusyRestore);
+          _setBusy(true, l10n.backupBusyInspect);
         }
-        await service.restoreFromLocalBackup(
+        final preview = await service.inspectLocalBackup(
           zipFile: zipFile,
           zipPassword: password,
         );
-        _showSnack(l10n.webDavRestoreSuccess);
+        if (!mounted) {
+          return;
+        }
+        _setBusy(false, '');
+        final mode = await chooseBackupImportMode(context, preview);
+        if (!mounted || mode == null) {
+          return;
+        }
+        _setBusy(true, l10n.webDavBusyRestore);
+        final result = await service.restoreFromLocalBackup(
+          zipFile: zipFile,
+          zipPassword: password,
+          mode: mode,
+        );
+        _showSnack(
+          describeBackupImportResult(
+            l10n,
+            result,
+            replaceAllMessage: l10n.webDavRestoreSuccess,
+          ),
+        );
       } finally {
         if (await zipFile.exists()) {
           await zipFile.delete();
@@ -177,35 +194,6 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
     } finally {
       _setBusy(false, '');
     }
-  }
-
-  Future<bool> _confirmRestore() async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final colorScheme = Theme.of(dialogContext).colorScheme;
-        final l10n = dialogContext.l10n;
-        return AlertDialog(
-          title: Text(l10n.webDavRestoreConfirmTitle),
-          content: Text(l10n.webDavRestoreConfirmContent),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.webDavRestoreAction),
-            ),
-          ],
-        );
-      },
-    );
-    return result == true;
   }
 
   Future<bool> _confirmDelete(WebDavBackupEntry entry) async {
@@ -393,7 +381,7 @@ class _WebDavSyncPageState extends ConsumerState<WebDavSyncPage> {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     final settingsAsync = ref.watch(webDavSettingsServiceProvider);
-    // 上传/恢复进行中禁止返回：恢复会覆盖本地数据，中途离开无法得知结果。
+    // 上传/恢复进行中禁止返回：恢复会改写本地数据，中途离开无法得知结果。
     return PopScope(
       canPop: !_busy,
       child: Scaffold(

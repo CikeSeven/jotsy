@@ -6,8 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../widgets/expressive_button_group.dart';
-import '../../widgets/expressive_icon_swap.dart';
-import '../../widgets/expressive_state_blend.dart';
+import '../../widgets/expressive_choice_tile.dart';
 import 'diary_head_section.dart';
 
 /// 打开日记列表的视图选项面板：排序依据、正/倒序与布局。
@@ -103,7 +102,7 @@ class _DiaryViewOptionsSheetState extends State<DiaryViewOptionsSheet> {
             _SectionHeader(icon: FontAwesomeIcons.sort, label: l10n.autoT0141),
             const SizedBox(height: AppSpacing.xs),
             for (final field in DiarySortField.values)
-              _OptionTile(
+              ExpressiveChoiceTile(
                 label: _sortFieldLabel(l10n, field),
                 selected: _sortMode.field == field,
                 // 换排序依据时保留当前正/倒序。
@@ -141,12 +140,12 @@ class _DiaryViewOptionsSheetState extends State<DiaryViewOptionsSheet> {
               label: l10n.autoT0145,
             ),
             const SizedBox(height: AppSpacing.xs),
-            _OptionTile(
+            ExpressiveChoiceTile(
               label: l10n.autoT0146,
               selected: _layoutMode == DiaryLayoutMode.list,
               onTap: () => _selectLayoutMode(DiaryLayoutMode.list),
             ),
-            _OptionTile(
+            ExpressiveChoiceTile(
               label: l10n.autoT0147,
               selected: _layoutMode == DiaryLayoutMode.waterfall,
               onTap: () => _selectLayoutMode(DiaryLayoutMode.waterfall),
@@ -231,74 +230,6 @@ class _SortEffectHint extends StatelessWidget {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// 面板中的单选项。
-///
-/// 选中项只换容器色、字重与单选图标颜色，文字保持 onSurface：部分配色下
-/// onSecondaryContainer 偏浅，会让选中项看起来比其他项更弱（与地址层级菜单
-/// 一致）。面板保持打开，选中态变化会被看到：容器色与图标颜色经
-/// [ExpressiveStateBlend] 补间（ListTile 的 tileColor 不做隐式动画），单选图标
-/// 缩放淡入切换。容器色经 ListTile 的 tileColor（Ink 绘制）给出，外层不包
-/// 不透明容器，避免盖住水波纹；`selected` 同时为读屏暴露选中态。
-class _OptionTile extends StatelessWidget {
-  const _OptionTile({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: ExpressiveStateBlend(
-        active: selected,
-        builder: (BuildContext context, double t, Widget? child) {
-          final tileColor = colorScheme.secondaryContainer.withValues(alpha: t);
-          return ListTile(
-            selected: selected,
-            tileColor: tileColor,
-            selectedTileColor: tileColor,
-            dense: true,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            minLeadingWidth: 24,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.l,
-            ),
-            onTap: onTap,
-            leading: ExpressiveIconSwap(
-              switchKey: selected,
-              child: FaIcon(
-                selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
-                size: 16,
-                color: Color.lerp(
-                  colorScheme.onSurfaceVariant,
-                  colorScheme.primary,
-                  t,
-                ),
-              ),
-            ),
-            title: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          );
-        },
       ),
     );
   }

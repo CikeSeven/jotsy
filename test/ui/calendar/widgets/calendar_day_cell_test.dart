@@ -121,7 +121,7 @@ void main() {
       options: dots,
       summary: summaryOf(<DiaryCalendarMarker>[entry(8), entry(9)]),
     );
-    expect(find.byType(CalendarCellCountBadge), findsNothing);
+    expect(find.byType(CalendarCellCountMark), findsNothing);
 
     // 超过 3 个记号的上限时仍要标出篇数。
     await pumpCell(
@@ -143,10 +143,20 @@ void main() {
         entry(9, mood: moods[8]),
       ]),
     );
-    expect(find.byType(CalendarCellCountBadge), findsNothing);
+    expect(find.byType(CalendarCellCountMark), findsNothing);
+
+    // 照片样式没有照片时退回圆点，同样不重复标篇数。
+    await pumpCell(
+      tester,
+      options: const CalendarDisplayOptions(cellStyle: CalendarCellStyle.photo),
+      summary: summaryOf(<DiaryCalendarMarker>[entry(8), entry(9)]),
+    );
+    expect(find.byType(CalendarCellCountMark), findsNothing);
   });
 
-  testWidgets('the count badge hangs on its own day number', (tester) async {
+  testWidgets('the count sits beside its day number without covering it', (
+    tester,
+  ) async {
     await pumpCell(
       tester,
       options: const CalendarDisplayOptions(cellStyle: CalendarCellStyle.tags),
@@ -154,11 +164,11 @@ void main() {
     );
 
     final number = tester.getRect(find.text('12'));
-    final badge = tester.getRect(find.byType(CalendarCellCountBadge));
-    // 压住数字右上角：与数字框重叠，且整体在数字的右上方。
-    expect(badge.overlaps(number), isTrue);
-    expect(badge.center.dx, greaterThan(number.center.dx));
-    expect(badge.center.dy, lessThan(number.center.dy));
+    final mark = tester.getRect(find.byType(CalendarCellCountMark));
+    // 上标：在数字右侧紧贴、略高于数字，且不遮挡数字。
+    expect(mark.overlaps(number), isFalse);
+    expect(mark.left - number.right, inInclusiveRange(0, 3));
+    expect(mark.top, lessThan(number.top + 1));
   });
 
   testWidgets('weekend shading gives weekend cells a neutral tile', (

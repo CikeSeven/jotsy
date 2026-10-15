@@ -129,9 +129,10 @@ class CalendarDayCell extends StatelessWidget {
       number: _buildNumber(context, colorScheme, onFill: onFill),
       indicator: indicator,
       leadingBadge: _buildLeadingBadge(colorScheme, onFill: onFill),
-      trailingBadge: CalendarCellCountBadge.resolve(
+      trailingBadge: CalendarCellCountMark.resolve(
         summary: summary,
         options: options,
+        color: onFill ?? colorScheme.primary,
       ),
     );
   }
@@ -150,7 +151,8 @@ class CalendarDayCell extends StatelessWidget {
     if (options.cellStyle == CalendarCellStyle.photo) {
       final image = this.image;
       if (image != null) {
-        // 角标挂在格子外角，排版层放在裁切之外，只裁照片本身。
+        // 排版层放在裁切之外，挂在日期小底块外侧的锁/天气不被裁掉；篇数
+        // 直接写进日期小底块，照片上的裸字看不清。
         return Padding(
           padding: const EdgeInsets.all(_ringGap),
           child: Stack(
@@ -165,12 +167,15 @@ class CalendarDayCell extends StatelessWidget {
                 ),
               ),
               CalendarCellLayout(
-                number: _buildPhotoNumber(context, colorScheme),
-                leadingBadge: _buildLeadingBadge(colorScheme, onPhoto: true),
-                trailingBadge: CalendarCellCountBadge.resolve(
-                  summary: summary,
-                  options: options,
+                number: _buildPhotoNumber(
+                  context,
+                  colorScheme,
+                  count: CalendarCellCountMark.countFor(
+                    summary: summary,
+                    options: options,
+                  ),
                 ),
+                leadingBadge: _buildLeadingBadge(colorScheme, onPhoto: true),
               ),
             ],
           ),
@@ -192,9 +197,11 @@ class CalendarDayCell extends StatelessWidget {
               options: options,
             ),
             leadingBadge: _buildLeadingBadge(colorScheme),
-            trailingBadge: CalendarCellCountBadge.resolve(
+            trailingBadge: CalendarCellCountMark.resolve(
               summary: summary,
               options: options,
+              color: colorScheme.primary,
+              dotsShown: true,
             ),
           ),
         ),
@@ -225,9 +232,10 @@ class CalendarDayCell extends StatelessWidget {
         child: CalendarCellLayout(
           number: _buildNumber(context, colorScheme, onFill: foreground),
           leadingBadge: _buildLeadingBadge(colorScheme, onFill: foreground),
-          trailingBadge: CalendarCellCountBadge.resolve(
+          trailingBadge: CalendarCellCountMark.resolve(
             summary: summary,
             options: options,
+            color: foreground ?? colorScheme.primary,
           ),
         ),
       ),
@@ -288,25 +296,49 @@ class CalendarDayCell extends StatelessWidget {
     );
   }
 
-  /// 照片上的日期数字放在半透明小底块上，任何照片上都读得清。
-  Widget _buildPhotoNumber(BuildContext context, ColorScheme colorScheme) {
+  /// 照片上的日期数字放在半透明小底块上，任何照片上都读得清；有篇数时
+  /// 以上标写在同一个底块里。
+  Widget _buildPhotoNumber(
+    BuildContext context,
+    ColorScheme colorScheme, {
+    int? count,
+  }) {
     final textTheme = Theme.of(context).textTheme;
     final selected = isSelected;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: selected
-            ? colorScheme.primary
-            : colorScheme.surface.withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-        child: Text(
-          '${day.day}',
-          style: textTheme.labelMedium?.copyWith(
-            color: selected ? colorScheme.onPrimary : colorScheme.onSurface,
-            fontWeight: FontWeight.w700,
-            height: 1.1,
+    final foreground = selected ? colorScheme.onPrimary : colorScheme.onSurface;
+    // 窄屏加周数列、或大字号时格子放不下“日期 + 上标”，整体等比缩小而不是
+    // 溢出。
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: selected
+              ? colorScheme.primary
+              : colorScheme.surface.withValues(alpha: 0.78),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                '${day.day}',
+                style: textTheme.labelMedium?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
+              ),
+              if (count != null) ...<Widget>[
+                const SizedBox(width: 1.5),
+                CalendarCellCountMark(
+                  count: count,
+                  color: selected ? colorScheme.onPrimary : colorScheme.primary,
+                ),
+              ],
+            ],
           ),
         ),
       ),

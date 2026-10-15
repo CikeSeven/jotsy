@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/expressive_image_frame.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
@@ -82,29 +81,37 @@ abstract final class CalendarCellIndicator {
   }
 }
 
-/// 篇数角标：压住日期数字右上角的小胶囊，两篇及以上时显示。
+/// 篇数上标：紧贴日期数字右上方的小号数字（“12³”），两篇及以上时显示。
 ///
-/// 用 primaryContainer 色调而不是实心 primary：满月都有多篇时一排实心小
-/// 胶囊过于抢眼。外圈一道卡片色描边，压在选中/今天的填充色、热力深色格
-/// 与照片上也分得开。
-class CalendarCellCountBadge extends StatelessWidget {
-  const CalendarCellCountBadge({super.key, required this.count});
+/// 不加底色、不与日期重叠：压住数字一角的角标胶囊会遮挡日期本身；紧贴
+/// 数字的上标靠位置就能看出属于哪一天，也不挡任何笔画。颜色由所在格子
+/// 决定（普通格 primary，选中/今天/热力格取该格的前景色）。
+class CalendarCellCountMark extends StatelessWidget {
+  const CalendarCellCountMark({
+    super.key,
+    required this.count,
+    required this.color,
+  });
 
   final int count;
+  final Color color;
 
-  /// 按选项与当天篇数决定是否显示；不显示时为 null。
+  /// 需要标出的篇数；不显示时为 null。
   ///
-  /// 圆点样式与“逐篇显示”的心情样式里一篇就有一个记号，3 篇以内篇数已经
-  /// 一目了然，不再重复标数字；超过记号上限（3 个）时才显示。
-  static Widget? resolve({
+  /// 圆点样式、“逐篇显示”的心情样式，以及照片样式里没有照片时退回的
+  /// 圆点（[dotsShown]）都是一篇一个记号，3 篇以内篇数已经一目了然，不再
+  /// 重复标数字；超过记号上限（3 个）时才标。
+  static int? countFor({
     required CalendarDaySummary? summary,
     required CalendarDisplayOptions options,
+    bool dotsShown = false,
   }) {
     final count = summary?.entryCount ?? 0;
     if (summary == null || !options.showCountBadge || count < 2) {
       return null;
     }
     final oneMarkPerEntry = switch (options.cellStyle) {
+      _ when dotsShown => true,
       CalendarCellStyle.dot => true,
       CalendarCellStyle.mood =>
         options.moodAggregation == CalendarMoodAggregation.each &&
@@ -114,45 +121,47 @@ class CalendarCellCountBadge extends StatelessWidget {
     if (oneMarkPerEntry && count <= CalendarDaySummary.maxMoods) {
       return null;
     }
-    return CalendarCellCountBadge(count: count);
+    return count;
+  }
+
+  /// 按选项决定是否显示上标；不显示时为 null。
+  static Widget? resolve({
+    required CalendarDaySummary? summary,
+    required CalendarDisplayOptions options,
+    required Color color,
+    bool dotsShown = false,
+  }) {
+    final count = countFor(
+      summary: summary,
+      options: options,
+      dotsShown: dotsShown,
+    );
+    return count == null
+        ? null
+        : CalendarCellCountMark(count: count, color: color);
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      constraints: const BoxConstraints(minWidth: 12),
-      height: 12,
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: ExpressiveSurfaces.cardColor(colorScheme),
-          width: 1,
-        ),
-      ),
-      child: Text(
-        count > 9 ? '9+' : '$count',
-        textScaler: TextScaler.noScaling,
-        style: TextStyle(
-          fontSize: 7.5,
-          height: 1,
-          fontWeight: FontWeight.w700,
-          color: colorScheme.onPrimaryContainer,
-        ),
+    return Text(
+      count > 9 ? '9+' : '$count',
+      textScaler: TextScaler.noScaling,
+      style: TextStyle(
+        fontSize: 9,
+        height: 1,
+        fontWeight: FontWeight.w800,
+        color: color,
       ),
     );
   }
 }
 
-/// 日期格内部排版：数字居中，指示物贴底；角标挂在数字上而不是格子角上。
+/// 日期格内部排版：数字居中，指示物贴底；角标挂在数字两侧而不是格子角上。
 ///
 /// 圆点/心情/标签色样式的格子没有可见边框，角标若放在格子四角，会落在
-/// 两个日期数字之间，看不出属于哪一天；压住数字一角（像应用图标上的
-/// 消息角标）归属才明确。角标溢出数字的范围用负偏移表示，不改变数字的
-/// 居中位置。
+/// 两个日期数字之间，看不出属于哪一天；紧贴数字左上、右上（各留 1.5dp
+/// 间隙，不与数字重叠）归属才明确，也不遮挡日期。角标以固定宽度的槽位
+/// 挂在数字框外侧，不改变数字的居中位置。
 class CalendarCellLayout extends StatelessWidget {
   const CalendarCellLayout({
     super.key,
@@ -162,13 +171,17 @@ class CalendarCellLayout extends StatelessWidget {
     this.trailingBadge,
   });
 
+  /// 角标槽位宽度：放得下“9+”上标与带底的照片角标（13dp）。
+  static const double _slot = 13;
+  static const double _gap = 1.5;
+
   final Widget number;
   final Widget? indicator;
 
-  /// 数字左上角：未解封胶囊的锁或天气。
+  /// 数字左上方：未解封胶囊的锁或天气。
   final Widget? leadingBadge;
 
-  /// 数字右上角：篇数。
+  /// 数字右上方：篇数上标。
   final Widget? trailingBadge;
 
   @override
@@ -185,9 +198,25 @@ class CalendarCellLayout extends StatelessWidget {
             children: <Widget>[
               number,
               if (leadingBadge != null)
-                Positioned(top: -6, left: -8, child: leadingBadge),
+                Positioned(
+                  top: -5,
+                  left: -(_slot + _gap),
+                  width: _slot,
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: leadingBadge,
+                  ),
+                ),
               if (trailingBadge != null)
-                Positioned(top: -6, right: -9, child: trailingBadge),
+                Positioned(
+                  top: -2,
+                  right: -(_slot + _gap),
+                  width: _slot,
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: trailingBadge,
+                  ),
+                ),
             ],
           ),
         ),

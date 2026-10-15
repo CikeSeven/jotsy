@@ -89,7 +89,13 @@ class DiaryCardViewData {
     if (explicit != null && explicit.isNotEmpty) {
       return explicit;
     }
-    final normalized = _contentJson.trim();
+    return firstImageInContent(_contentJson);
+  }
+
+  /// 正文 Delta（或旧版 AppFlowy 文档）中的第一张图片；无图或正文损坏时为
+  /// null。日历照片样式复用这一取图规则，与列表封面口径一致。
+  static String? firstImageInContent(String contentJson) {
+    final normalized = contentJson.trim();
     if (normalized.isEmpty) {
       return null;
     }

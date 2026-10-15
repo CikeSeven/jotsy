@@ -3637,6 +3637,462 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 media file is missing from the export and will be skipped} other{{count} media files are missing from the export and will be skipped}}'**
   String backupImportMissingMedia(int count);
+
+  /// Tooltip of the calendar header button that opens the display options sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar display'**
+  String get calendarDisplayOptionsTooltip;
+
+  /// Title of the calendar display options sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar display'**
+  String get calendarOptionsTitle;
+
+  /// Button that restores every calendar display option to its default.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get calendarOptionsReset;
+
+  /// Section header for choosing what each calendar day cell shows.
+  ///
+  /// In en, this message translates to:
+  /// **'Day cells'**
+  String get calendarOptionsCellStyle;
+
+  /// Day cell style that draws one dot per entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Dots'**
+  String get calendarCellStyleDot;
+
+  /// Day cell style that shows the day's mood emoji.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get calendarCellStyleMood;
+
+  /// Day cell style that tints busier days darker.
+  ///
+  /// In en, this message translates to:
+  /// **'Heat'**
+  String get calendarCellStyleHeat;
+
+  /// Day cell style that fills the cell with the day's photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get calendarCellStylePhoto;
+
+  /// Day cell style that shows the colors of the day's tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get calendarCellStyleTags;
+
+  /// Explains the dots day cell style.
+  ///
+  /// In en, this message translates to:
+  /// **'One dot for each entry, up to three.'**
+  String get calendarCellStyleDotDescription;
+
+  /// Explains the mood day cell style.
+  ///
+  /// In en, this message translates to:
+  /// **'The mood you picked for the day.'**
+  String get calendarCellStyleMoodDescription;
+
+  /// Explains the heatmap day cell style.
+  ///
+  /// In en, this message translates to:
+  /// **'The more you wrote, the darker the day.'**
+  String get calendarCellStyleHeatDescription;
+
+  /// Explains the photos day cell style.
+  ///
+  /// In en, this message translates to:
+  /// **'The cover, or the first photo in the entry, fills the day.'**
+  String get calendarCellStylePhotoDescription;
+
+  /// Explains the tag colors day cell style.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors of up to three tags used that day.'**
+  String get calendarCellStyleTagsDescription;
+
+  /// Mood style option: show the average mood when a day has several entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get calendarMoodAverage;
+
+  /// Mood style option: show every entry's mood side by side.
+  ///
+  /// In en, this message translates to:
+  /// **'Each entry'**
+  String get calendarMoodEach;
+
+  /// Heatmap option: shade days by the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'By entries'**
+  String get calendarHeatBasisEntries;
+
+  /// Heatmap option: shade days by how much text was written.
+  ///
+  /// In en, this message translates to:
+  /// **'By length'**
+  String get calendarHeatBasisWords;
+
+  /// Section header for the small badges drawn on day cells.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get calendarOptionsBadges;
+
+  /// Badge option: show how many entries a day has when there are two or more.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry count'**
+  String get calendarBadgeCount;
+
+  /// Badge option: show a lock on days with a sealed time capsule.
+  ///
+  /// In en, this message translates to:
+  /// **'Sealed time capsules'**
+  String get calendarBadgeCapsule;
+
+  /// Badge option: show the day's weather icon.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get calendarBadgeWeather;
+
+  /// Section header for calendar layout options.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get calendarOptionsLayout;
+
+  /// Label of the first-day-of-week option.
+  ///
+  /// In en, this message translates to:
+  /// **'Week starts on'**
+  String get calendarOptionsWeekStart;
+
+  /// Week start option that follows the app language (Monday in Chinese, Sunday in English).
+  ///
+  /// In en, this message translates to:
+  /// **'Language default'**
+  String get calendarWeekStartLocale;
+
+  /// Week start option: Monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get calendarWeekStartMonday;
+
+  /// Week start option: Sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get calendarWeekStartSunday;
+
+  /// Label of the option choosing month or week view when the calendar opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in'**
+  String get calendarOptionsDefaultFormat;
+
+  /// Open-in option: month view.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get calendarFormatMonth;
+
+  /// Open-in option: week view.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get calendarFormatWeek;
+
+  /// Open-in option: whichever of month or week view was used last.
+  ///
+  /// In en, this message translates to:
+  /// **'Last used'**
+  String get calendarFormatRemember;
+
+  /// Switch that colors Saturdays and Sundays differently.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight weekends'**
+  String get calendarHighlightWeekends;
+
+  /// Switch that shows ISO week numbers beside the grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Week numbers'**
+  String get calendarShowWeekNumbers;
+
+  /// Switch that keeps six rows in month view so the height never changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Always show 6 weeks'**
+  String get calendarFixedSixWeeks;
+
+  /// Explains the always-show-6-weeks switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps the calendar height steady between months.'**
+  String get calendarFixedSixWeeksDescription;
+
+  /// Section header for toggling calendar page sections.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get calendarOptionsSections;
+
+  /// Switch that shows the monthly summary under the calendar grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly summary'**
+  String get calendarShowMonthSummary;
+
+  /// Explains what the monthly summary shows.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries, days written, length, top mood and longest streak for the month.'**
+  String get calendarShowMonthSummaryDescription;
+
+  /// Monthly summary tooltip: number of entries in the month.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry this month} other{{count} entries this month}}'**
+  String calendarSummaryEntries(int count);
+
+  /// Monthly summary tooltip: days with entries out of days elapsed in the month.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrote on {recorded} of {elapsed} days'**
+  String calendarSummaryDays(int recorded, int elapsed);
+
+  /// Monthly summary tooltip for a future month: days with entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Wrote on 1 day} other{Wrote on {count} days}}'**
+  String calendarSummaryDaysNoTotal(int count);
+
+  /// Monthly summary tooltip: total characters written in the month (formatted number).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} characters this month'**
+  String calendarSummaryChars(String count);
+
+  /// Monthly summary tooltip: the mood picked most often in the month.
+  ///
+  /// In en, this message translates to:
+  /// **'Most frequent mood: {mood}'**
+  String calendarSummaryMood(String mood);
+
+  /// Monthly summary tooltip: longest run of consecutive days with entries in the month.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Longest streak: 1 day} other{Longest streak: {count} days}}'**
+  String calendarSummaryStreak(int count);
+
+  /// Monthly summary text when the month has no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries this month yet'**
+  String get calendarSummaryEmpty;
+
+  /// Monthly summary text for a future month without entries.
+  ///
+  /// In en, this message translates to:
+  /// **'This month hasn\'t started yet'**
+  String get calendarSummaryFuture;
+
+  /// Relative label next to the selected date: today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get calendarRelativeToday;
+
+  /// Relative label next to the selected date: yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get calendarRelativeYesterday;
+
+  /// Relative label next to the selected date: tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get calendarRelativeTomorrow;
+
+  /// Relative label next to a past selected date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day ago} other{{count} days ago}}'**
+  String calendarRelativeDaysAgo(int count);
+
+  /// Relative label next to a future selected date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{in 1 day} other{in {count} days}}'**
+  String calendarRelativeDaysLater(int count);
+
+  /// Selected day stats: number of entries and characters (formatted number).
+  ///
+  /// In en, this message translates to:
+  /// **'{entries, plural, =1{1 entry} other{{entries} entries}} · {chars} chars'**
+  String calendarDayStats(int entries, String chars);
+
+  /// Tooltip of the calendar month title, which zooms out to the year view.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the whole year'**
+  String get calendarYearViewTooltip;
+
+  /// Year view coloring option: color each day by its average mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get calendarYearBasisMood;
+
+  /// Year view coloring option: shade each day by its number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get calendarYearBasisEntries;
+
+  /// Year view coloring option: shade each day by how much was written.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get calendarYearBasisWords;
+
+  /// Year view legend label at the light end of the scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get calendarYearLegendLess;
+
+  /// Year view legend label at the dark end of the scale.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get calendarYearLegendMore;
+
+  /// Year view legend entry for days with entries but no mood.
+  ///
+  /// In en, this message translates to:
+  /// **'No mood'**
+  String get calendarYearLegendNoMood;
+
+  /// Tooltip of the button that exports the year view as an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this year'**
+  String get calendarYearExport;
+
+  /// Shown when exporting the year view image fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create the image. Please try again.'**
+  String get calendarYearExportFailed;
+
+  /// Header of the list of entries written on the same date in other years.
+  ///
+  /// In en, this message translates to:
+  /// **'On this day'**
+  String get calendarOnThisDayTitle;
+
+  /// On-this-day card label for an entry from an earlier year than the selected date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 year ago} other{{count} years ago}}'**
+  String calendarOnThisDayYearsAgo(int count);
+
+  /// On-this-day card label for an entry from a later year than the selected date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 year later} other{{count} years later}}'**
+  String calendarOnThisDayYearsLater(int count);
+
+  /// Long-press menu action that selects the pressed date.
+  ///
+  /// In en, this message translates to:
+  /// **'Show this day'**
+  String get calendarDayActionView;
+
+  /// Long-press menu action that starts an entry dated on the pressed date.
+  ///
+  /// In en, this message translates to:
+  /// **'Write for this day'**
+  String get calendarDayActionWrite;
+
+  /// Long-press menu action on a future date that starts a time capsule unlocking that day.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a time capsule'**
+  String get calendarDayActionCapsule;
+
+  /// Explains the time capsule action in the long-press menu.
+  ///
+  /// In en, this message translates to:
+  /// **'It can only be opened on this day'**
+  String get calendarDayActionCapsuleDescription;
+
+  /// Button in the empty state of a future date that starts a time capsule unlocking that day.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a capsule for this day'**
+  String get calendarFutureCapsuleAction;
+
+  /// Label of the option choosing how the selected day's entries are shown.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries of the day'**
+  String get calendarOptionsDayContent;
+
+  /// Show the selected day's entries as a timeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline'**
+  String get calendarDayContentTimeline;
+
+  /// Show the selected day's entries as diary list cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get calendarDayContentCards;
+
+  /// Switch that shows the same date from other years under the day's entries.
+  ///
+  /// In en, this message translates to:
+  /// **'On this day'**
+  String get calendarShowOnThisDay;
+
+  /// Explains the on-this-day switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries from the same date in other years.'**
+  String get calendarShowOnThisDayDescription;
+
+  /// Tooltip of the year view button that goes to the previous year.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous year'**
+  String get calendarPreviousYear;
+
+  /// Tooltip of the year view button that goes to the next year.
+  ///
+  /// In en, this message translates to:
+  /// **'Next year'**
+  String get calendarNextYear;
 }
 
 class _AppLocalizationsDelegate

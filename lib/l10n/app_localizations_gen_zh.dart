@@ -1952,4 +1952,255 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportMissingMedia(int count) {
     return '$count 个媒体文件不在导出中，将跳过';
   }
+
+  @override
+  String get calendarDisplayOptionsTooltip => '调整日历';
+
+  @override
+  String get calendarOptionsTitle => '日历显示';
+
+  @override
+  String get calendarOptionsReset => '恢复默认';
+
+  @override
+  String get calendarOptionsCellStyle => '日期格';
+
+  @override
+  String get calendarCellStyleDot => '圆点';
+
+  @override
+  String get calendarCellStyleMood => '心情';
+
+  @override
+  String get calendarCellStyleHeat => '热力';
+
+  @override
+  String get calendarCellStylePhoto => '照片';
+
+  @override
+  String get calendarCellStyleTags => '标签色';
+
+  @override
+  String get calendarCellStyleDotDescription => '有几篇画几个点，最多 3 个。';
+
+  @override
+  String get calendarCellStyleMoodDescription => '当天记录的心情表情。';
+
+  @override
+  String get calendarCellStyleHeatDescription => '写得越多，格子颜色越深。';
+
+  @override
+  String get calendarCellStylePhotoDescription => '封面或正文第一张图铺满格子。';
+
+  @override
+  String get calendarCellStyleTagsDescription => '当天所用标签的颜色，最多 3 个。';
+
+  @override
+  String get calendarMoodAverage => '取平均';
+
+  @override
+  String get calendarMoodEach => '逐篇显示';
+
+  @override
+  String get calendarHeatBasisEntries => '按篇数';
+
+  @override
+  String get calendarHeatBasisWords => '按字数';
+
+  @override
+  String get calendarOptionsBadges => '角标';
+
+  @override
+  String get calendarBadgeCount => '篇数';
+
+  @override
+  String get calendarBadgeCapsule => '未解封的时间胶囊';
+
+  @override
+  String get calendarBadgeWeather => '天气';
+
+  @override
+  String get calendarOptionsLayout => '布局';
+
+  @override
+  String get calendarOptionsWeekStart => '一周起始日';
+
+  @override
+  String get calendarWeekStartLocale => '跟随语言';
+
+  @override
+  String get calendarWeekStartMonday => '周一';
+
+  @override
+  String get calendarWeekStartSunday => '周日';
+
+  @override
+  String get calendarOptionsDefaultFormat => '打开时显示';
+
+  @override
+  String get calendarFormatMonth => '月视图';
+
+  @override
+  String get calendarFormatWeek => '周视图';
+
+  @override
+  String get calendarFormatRemember => '上次的视图';
+
+  @override
+  String get calendarHighlightWeekends => '周末着色';
+
+  @override
+  String get calendarShowWeekNumbers => '显示周数';
+
+  @override
+  String get calendarFixedSixWeeks => '固定显示 6 行';
+
+  @override
+  String get calendarFixedSixWeeksDescription => '翻月时日历高度不再跳动。';
+
+  @override
+  String get calendarOptionsSections => '区块';
+
+  @override
+  String get calendarShowMonthSummary => '月度概览';
+
+  @override
+  String get calendarShowMonthSummaryDescription =>
+      '本月篇数、记录天数、字数、最常见心情与最长连续天数。';
+
+  @override
+  String calendarSummaryEntries(int count) {
+    return '本月 $count 篇日记';
+  }
+
+  @override
+  String calendarSummaryDays(int recorded, int elapsed) {
+    return '$elapsed 天里记录了 $recorded 天';
+  }
+
+  @override
+  String calendarSummaryDaysNoTotal(int count) {
+    return '记录了 $count 天';
+  }
+
+  @override
+  String calendarSummaryChars(String count) {
+    return '本月共 $count 字';
+  }
+
+  @override
+  String calendarSummaryMood(String mood) {
+    return '最常见的心情：$mood';
+  }
+
+  @override
+  String calendarSummaryStreak(int count) {
+    return '最长连续记录 $count 天';
+  }
+
+  @override
+  String get calendarSummaryEmpty => '这个月还没有日记';
+
+  @override
+  String get calendarSummaryFuture => '这个月还没开始';
+
+  @override
+  String get calendarRelativeToday => '今天';
+
+  @override
+  String get calendarRelativeYesterday => '昨天';
+
+  @override
+  String get calendarRelativeTomorrow => '明天';
+
+  @override
+  String calendarRelativeDaysAgo(int count) {
+    return '$count 天前';
+  }
+
+  @override
+  String calendarRelativeDaysLater(int count) {
+    return '$count 天后';
+  }
+
+  @override
+  String calendarDayStats(int entries, String chars) {
+    return '$entries 篇 · $chars 字';
+  }
+
+  @override
+  String get calendarYearViewTooltip => '查看全年';
+
+  @override
+  String get calendarYearBasisMood => '心情';
+
+  @override
+  String get calendarYearBasisEntries => '篇数';
+
+  @override
+  String get calendarYearBasisWords => '字数';
+
+  @override
+  String get calendarYearLegendLess => '少';
+
+  @override
+  String get calendarYearLegendMore => '多';
+
+  @override
+  String get calendarYearLegendNoMood => '未选心情';
+
+  @override
+  String get calendarYearExport => '分享这一年';
+
+  @override
+  String get calendarYearExportFailed => '图片生成失败，请重试';
+
+  @override
+  String get calendarOnThisDayTitle => '那年今日';
+
+  @override
+  String calendarOnThisDayYearsAgo(int count) {
+    return '$count 年前';
+  }
+
+  @override
+  String calendarOnThisDayYearsLater(int count) {
+    return '$count 年后';
+  }
+
+  @override
+  String get calendarDayActionView => '查看这一天';
+
+  @override
+  String get calendarDayActionWrite => '在这一天写日记';
+
+  @override
+  String get calendarDayActionCapsule => '写一封时间胶囊';
+
+  @override
+  String get calendarDayActionCapsuleDescription => '到这一天才能打开';
+
+  @override
+  String get calendarFutureCapsuleAction => '写给这一天的时间胶囊';
+
+  @override
+  String get calendarOptionsDayContent => '当天日记';
+
+  @override
+  String get calendarDayContentTimeline => '时间线';
+
+  @override
+  String get calendarDayContentCards => '卡片';
+
+  @override
+  String get calendarShowOnThisDay => '那年今日';
+
+  @override
+  String get calendarShowOnThisDayDescription => '其他年份的这一天写下的日记。';
+
+  @override
+  String get calendarPreviousYear => '上一年';
+
+  @override
+  String get calendarNextYear => '下一年';
 }

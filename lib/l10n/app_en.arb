@@ -2774,5 +2774,370 @@
         "type": "int"
       }
     }
+  },
+  "calendarDisplayOptionsTooltip": "Calendar display",
+  "@calendarDisplayOptionsTooltip": {
+    "description": "Tooltip of the calendar header button that opens the display options sheet."
+  },
+  "calendarOptionsTitle": "Calendar display",
+  "@calendarOptionsTitle": {
+    "description": "Title of the calendar display options sheet."
+  },
+  "calendarOptionsReset": "Reset",
+  "@calendarOptionsReset": {
+    "description": "Button that restores every calendar display option to its default."
+  },
+  "calendarOptionsCellStyle": "Day cells",
+  "@calendarOptionsCellStyle": {
+    "description": "Section header for choosing what each calendar day cell shows."
+  },
+  "calendarCellStyleDot": "Dots",
+  "@calendarCellStyleDot": {
+    "description": "Day cell style that draws one dot per entry."
+  },
+  "calendarCellStyleMood": "Mood",
+  "@calendarCellStyleMood": {
+    "description": "Day cell style that shows the day's mood emoji."
+  },
+  "calendarCellStyleHeat": "Heat",
+  "@calendarCellStyleHeat": {
+    "description": "Day cell style that tints busier days darker."
+  },
+  "calendarCellStylePhoto": "Photos",
+  "@calendarCellStylePhoto": {
+    "description": "Day cell style that fills the cell with the day's photo."
+  },
+  "calendarCellStyleTags": "Tags",
+  "@calendarCellStyleTags": {
+    "description": "Day cell style that shows the colors of the day's tags."
+  },
+  "calendarCellStyleDotDescription": "One dot for each entry, up to three.",
+  "@calendarCellStyleDotDescription": {
+    "description": "Explains the dots day cell style."
+  },
+  "calendarCellStyleMoodDescription": "The mood you picked for the day.",
+  "@calendarCellStyleMoodDescription": {
+    "description": "Explains the mood day cell style."
+  },
+  "calendarCellStyleHeatDescription": "The more you wrote, the darker the day.",
+  "@calendarCellStyleHeatDescription": {
+    "description": "Explains the heatmap day cell style."
+  },
+  "calendarCellStylePhotoDescription": "The cover, or the first photo in the entry, fills the day.",
+  "@calendarCellStylePhotoDescription": {
+    "description": "Explains the photos day cell style."
+  },
+  "calendarCellStyleTagsDescription": "Colors of up to three tags used that day.",
+  "@calendarCellStyleTagsDescription": {
+    "description": "Explains the tag colors day cell style."
+  },
+  "calendarMoodAverage": "Average",
+  "@calendarMoodAverage": {
+    "description": "Mood style option: show the average mood when a day has several entries."
+  },
+  "calendarMoodEach": "Each entry",
+  "@calendarMoodEach": {
+    "description": "Mood style option: show every entry's mood side by side."
+  },
+  "calendarHeatBasisEntries": "By entries",
+  "@calendarHeatBasisEntries": {
+    "description": "Heatmap option: shade days by the number of entries."
+  },
+  "calendarHeatBasisWords": "By length",
+  "@calendarHeatBasisWords": {
+    "description": "Heatmap option: shade days by how much text was written."
+  },
+  "calendarOptionsBadges": "Badges",
+  "@calendarOptionsBadges": {
+    "description": "Section header for the small badges drawn on day cells."
+  },
+  "calendarBadgeCount": "Entry count",
+  "@calendarBadgeCount": {
+    "description": "Badge option: show how many entries a day has when there are two or more."
+  },
+  "calendarBadgeCapsule": "Sealed time capsules",
+  "@calendarBadgeCapsule": {
+    "description": "Badge option: show a lock on days with a sealed time capsule."
+  },
+  "calendarBadgeWeather": "Weather",
+  "@calendarBadgeWeather": {
+    "description": "Badge option: show the day's weather icon."
+  },
+  "calendarOptionsLayout": "Layout",
+  "@calendarOptionsLayout": {
+    "description": "Section header for calendar layout options."
+  },
+  "calendarOptionsWeekStart": "Week starts on",
+  "@calendarOptionsWeekStart": {
+    "description": "Label of the first-day-of-week option."
+  },
+  "calendarWeekStartLocale": "Language default",
+  "@calendarWeekStartLocale": {
+    "description": "Week start option that follows the app language (Monday in Chinese, Sunday in English)."
+  },
+  "calendarWeekStartMonday": "Monday",
+  "@calendarWeekStartMonday": {
+    "description": "Week start option: Monday."
+  },
+  "calendarWeekStartSunday": "Sunday",
+  "@calendarWeekStartSunday": {
+    "description": "Week start option: Sunday."
+  },
+  "calendarOptionsDefaultFormat": "Open in",
+  "@calendarOptionsDefaultFormat": {
+    "description": "Label of the option choosing month or week view when the calendar opens."
+  },
+  "calendarFormatMonth": "Month",
+  "@calendarFormatMonth": {
+    "description": "Open-in option: month view."
+  },
+  "calendarFormatWeek": "Week",
+  "@calendarFormatWeek": {
+    "description": "Open-in option: week view."
+  },
+  "calendarFormatRemember": "Last used",
+  "@calendarFormatRemember": {
+    "description": "Open-in option: whichever of month or week view was used last."
+  },
+  "calendarHighlightWeekends": "Highlight weekends",
+  "@calendarHighlightWeekends": {
+    "description": "Switch that colors Saturdays and Sundays differently."
+  },
+  "calendarShowWeekNumbers": "Week numbers",
+  "@calendarShowWeekNumbers": {
+    "description": "Switch that shows ISO week numbers beside the grid."
+  },
+  "calendarFixedSixWeeks": "Always show 6 weeks",
+  "@calendarFixedSixWeeks": {
+    "description": "Switch that keeps six rows in month view so the height never changes."
+  },
+  "calendarFixedSixWeeksDescription": "Keeps the calendar height steady between months.",
+  "@calendarFixedSixWeeksDescription": {
+    "description": "Explains the always-show-6-weeks switch."
+  },
+  "calendarOptionsSections": "Sections",
+  "@calendarOptionsSections": {
+    "description": "Section header for toggling calendar page sections."
+  },
+  "calendarShowMonthSummary": "Monthly summary",
+  "@calendarShowMonthSummary": {
+    "description": "Switch that shows the monthly summary under the calendar grid."
+  },
+  "calendarShowMonthSummaryDescription": "Entries, days written, length, top mood and longest streak for the month.",
+  "@calendarShowMonthSummaryDescription": {
+    "description": "Explains what the monthly summary shows."
+  },
+  "calendarSummaryEntries": "{count, plural, =1{1 entry this month} other{{count} entries this month}}",
+  "@calendarSummaryEntries": {
+    "description": "Monthly summary tooltip: number of entries in the month.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryDays": "Wrote on {recorded} of {elapsed} days",
+  "@calendarSummaryDays": {
+    "description": "Monthly summary tooltip: days with entries out of days elapsed in the month.",
+    "placeholders": {
+      "recorded": {
+        "type": "int"
+      },
+      "elapsed": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryDaysNoTotal": "{count, plural, =1{Wrote on 1 day} other{Wrote on {count} days}}",
+  "@calendarSummaryDaysNoTotal": {
+    "description": "Monthly summary tooltip for a future month: days with entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryChars": "{count} characters this month",
+  "@calendarSummaryChars": {
+    "description": "Monthly summary tooltip: total characters written in the month (formatted number).",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarSummaryMood": "Most frequent mood: {mood}",
+  "@calendarSummaryMood": {
+    "description": "Monthly summary tooltip: the mood picked most often in the month.",
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarSummaryStreak": "{count, plural, =1{Longest streak: 1 day} other{Longest streak: {count} days}}",
+  "@calendarSummaryStreak": {
+    "description": "Monthly summary tooltip: longest run of consecutive days with entries in the month.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryEmpty": "No entries this month yet",
+  "@calendarSummaryEmpty": {
+    "description": "Monthly summary text when the month has no entries."
+  },
+  "calendarSummaryFuture": "This month hasn't started yet",
+  "@calendarSummaryFuture": {
+    "description": "Monthly summary text for a future month without entries."
+  },
+  "calendarRelativeToday": "Today",
+  "@calendarRelativeToday": {
+    "description": "Relative label next to the selected date: today."
+  },
+  "calendarRelativeYesterday": "Yesterday",
+  "@calendarRelativeYesterday": {
+    "description": "Relative label next to the selected date: yesterday."
+  },
+  "calendarRelativeTomorrow": "Tomorrow",
+  "@calendarRelativeTomorrow": {
+    "description": "Relative label next to the selected date: tomorrow."
+  },
+  "calendarRelativeDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@calendarRelativeDaysAgo": {
+    "description": "Relative label next to a past selected date.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarRelativeDaysLater": "{count, plural, =1{in 1 day} other{in {count} days}}",
+  "@calendarRelativeDaysLater": {
+    "description": "Relative label next to a future selected date.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarDayStats": "{entries, plural, =1{1 entry} other{{entries} entries}} · {chars} chars",
+  "@calendarDayStats": {
+    "description": "Selected day stats: number of entries and characters (formatted number).",
+    "placeholders": {
+      "entries": {
+        "type": "int"
+      },
+      "chars": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarYearViewTooltip": "Show the whole year",
+  "@calendarYearViewTooltip": {
+    "description": "Tooltip of the calendar month title, which zooms out to the year view."
+  },
+  "calendarYearBasisMood": "Mood",
+  "@calendarYearBasisMood": {
+    "description": "Year view coloring option: color each day by its average mood."
+  },
+  "calendarYearBasisEntries": "Entries",
+  "@calendarYearBasisEntries": {
+    "description": "Year view coloring option: shade each day by its number of entries."
+  },
+  "calendarYearBasisWords": "Length",
+  "@calendarYearBasisWords": {
+    "description": "Year view coloring option: shade each day by how much was written."
+  },
+  "calendarYearLegendLess": "Less",
+  "@calendarYearLegendLess": {
+    "description": "Year view legend label at the light end of the scale."
+  },
+  "calendarYearLegendMore": "More",
+  "@calendarYearLegendMore": {
+    "description": "Year view legend label at the dark end of the scale."
+  },
+  "calendarYearLegendNoMood": "No mood",
+  "@calendarYearLegendNoMood": {
+    "description": "Year view legend entry for days with entries but no mood."
+  },
+  "calendarYearExport": "Share this year",
+  "@calendarYearExport": {
+    "description": "Tooltip of the button that exports the year view as an image."
+  },
+  "calendarYearExportFailed": "Couldn't create the image. Please try again.",
+  "@calendarYearExportFailed": {
+    "description": "Shown when exporting the year view image fails."
+  },
+  "calendarOnThisDayTitle": "On this day",
+  "@calendarOnThisDayTitle": {
+    "description": "Header of the list of entries written on the same date in other years."
+  },
+  "calendarOnThisDayYearsAgo": "{count, plural, =1{1 year ago} other{{count} years ago}}",
+  "@calendarOnThisDayYearsAgo": {
+    "description": "On-this-day card label for an entry from an earlier year than the selected date.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarOnThisDayYearsLater": "{count, plural, =1{1 year later} other{{count} years later}}",
+  "@calendarOnThisDayYearsLater": {
+    "description": "On-this-day card label for an entry from a later year than the selected date.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarDayActionView": "Show this day",
+  "@calendarDayActionView": {
+    "description": "Long-press menu action that selects the pressed date."
+  },
+  "calendarDayActionWrite": "Write for this day",
+  "@calendarDayActionWrite": {
+    "description": "Long-press menu action that starts an entry dated on the pressed date."
+  },
+  "calendarDayActionCapsule": "Write a time capsule",
+  "@calendarDayActionCapsule": {
+    "description": "Long-press menu action on a future date that starts a time capsule unlocking that day."
+  },
+  "calendarDayActionCapsuleDescription": "It can only be opened on this day",
+  "@calendarDayActionCapsuleDescription": {
+    "description": "Explains the time capsule action in the long-press menu."
+  },
+  "calendarFutureCapsuleAction": "Write a capsule for this day",
+  "@calendarFutureCapsuleAction": {
+    "description": "Button in the empty state of a future date that starts a time capsule unlocking that day."
+  },
+  "calendarOptionsDayContent": "Entries of the day",
+  "@calendarOptionsDayContent": {
+    "description": "Label of the option choosing how the selected day's entries are shown."
+  },
+  "calendarDayContentTimeline": "Timeline",
+  "@calendarDayContentTimeline": {
+    "description": "Show the selected day's entries as a timeline."
+  },
+  "calendarDayContentCards": "Cards",
+  "@calendarDayContentCards": {
+    "description": "Show the selected day's entries as diary list cards."
+  },
+  "calendarShowOnThisDay": "On this day",
+  "@calendarShowOnThisDay": {
+    "description": "Switch that shows the same date from other years under the day's entries."
+  },
+  "calendarShowOnThisDayDescription": "Entries from the same date in other years.",
+  "@calendarShowOnThisDayDescription": {
+    "description": "Explains the on-this-day switch."
+  },
+  "calendarPreviousYear": "Previous year",
+  "@calendarPreviousYear": {
+    "description": "Tooltip of the year view button that goes to the previous year."
+  },
+  "calendarNextYear": "Next year",
+  "@calendarNextYear": {
+    "description": "Tooltip of the year view button that goes to the next year."
   }
 }

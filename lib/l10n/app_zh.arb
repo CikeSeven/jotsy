@@ -2774,5 +2774,370 @@
         "type": "int"
       }
     }
+  },
+  "calendarDisplayOptionsTooltip": "调整日历",
+  "@calendarDisplayOptionsTooltip": {
+    "description": "日历页头部打开显示选项面板的按钮提示。"
+  },
+  "calendarOptionsTitle": "日历显示",
+  "@calendarOptionsTitle": {
+    "description": "日历显示选项面板的标题。"
+  },
+  "calendarOptionsReset": "恢复默认",
+  "@calendarOptionsReset": {
+    "description": "把日历显示选项全部恢复为默认值的按钮。"
+  },
+  "calendarOptionsCellStyle": "日期格",
+  "@calendarOptionsCellStyle": {
+    "description": "选择日期格显示内容的分组标题。"
+  },
+  "calendarCellStyleDot": "圆点",
+  "@calendarCellStyleDot": {
+    "description": "每篇日记画一个圆点的日期格样式。"
+  },
+  "calendarCellStyleMood": "心情",
+  "@calendarCellStyleMood": {
+    "description": "显示当天心情表情的日期格样式。"
+  },
+  "calendarCellStyleHeat": "热力",
+  "@calendarCellStyleHeat": {
+    "description": "记录越多颜色越深的日期格样式。"
+  },
+  "calendarCellStylePhoto": "照片",
+  "@calendarCellStylePhoto": {
+    "description": "用当天照片铺满格子的日期格样式。"
+  },
+  "calendarCellStyleTags": "标签色",
+  "@calendarCellStyleTags": {
+    "description": "显示当天标签颜色的日期格样式。"
+  },
+  "calendarCellStyleDotDescription": "有几篇画几个点，最多 3 个。",
+  "@calendarCellStyleDotDescription": {
+    "description": "圆点日期格样式的说明。"
+  },
+  "calendarCellStyleMoodDescription": "当天记录的心情表情。",
+  "@calendarCellStyleMoodDescription": {
+    "description": "心情日期格样式的说明。"
+  },
+  "calendarCellStyleHeatDescription": "写得越多，格子颜色越深。",
+  "@calendarCellStyleHeatDescription": {
+    "description": "热力日期格样式的说明。"
+  },
+  "calendarCellStylePhotoDescription": "封面或正文第一张图铺满格子。",
+  "@calendarCellStylePhotoDescription": {
+    "description": "照片日期格样式的说明。"
+  },
+  "calendarCellStyleTagsDescription": "当天所用标签的颜色，最多 3 个。",
+  "@calendarCellStyleTagsDescription": {
+    "description": "标签色日期格样式的说明。"
+  },
+  "calendarMoodAverage": "取平均",
+  "@calendarMoodAverage": {
+    "description": "心情样式选项：一天多篇时显示平均心情。"
+  },
+  "calendarMoodEach": "逐篇显示",
+  "@calendarMoodEach": {
+    "description": "心情样式选项：一天多篇时逐篇并排显示心情。"
+  },
+  "calendarHeatBasisEntries": "按篇数",
+  "@calendarHeatBasisEntries": {
+    "description": "热力样式选项：按篇数分档着色。"
+  },
+  "calendarHeatBasisWords": "按字数",
+  "@calendarHeatBasisWords": {
+    "description": "热力样式选项：按字数分档着色。"
+  },
+  "calendarOptionsBadges": "角标",
+  "@calendarOptionsBadges": {
+    "description": "日期格角标的分组标题。"
+  },
+  "calendarBadgeCount": "篇数",
+  "@calendarBadgeCount": {
+    "description": "角标选项：一天两篇及以上时显示篇数。"
+  },
+  "calendarBadgeCapsule": "未解封的时间胶囊",
+  "@calendarBadgeCapsule": {
+    "description": "角标选项：在有未解封时间胶囊的日子显示锁。"
+  },
+  "calendarBadgeWeather": "天气",
+  "@calendarBadgeWeather": {
+    "description": "角标选项：显示当天的天气图标。"
+  },
+  "calendarOptionsLayout": "布局",
+  "@calendarOptionsLayout": {
+    "description": "日历布局选项的分组标题。"
+  },
+  "calendarOptionsWeekStart": "一周起始日",
+  "@calendarOptionsWeekStart": {
+    "description": "一周起始日选项的标题。"
+  },
+  "calendarWeekStartLocale": "跟随语言",
+  "@calendarWeekStartLocale": {
+    "description": "跟随应用语言决定一周起始日（中文周一、英文周日）的选项。"
+  },
+  "calendarWeekStartMonday": "周一",
+  "@calendarWeekStartMonday": {
+    "description": "一周从周一开始的选项。"
+  },
+  "calendarWeekStartSunday": "周日",
+  "@calendarWeekStartSunday": {
+    "description": "一周从周日开始的选项。"
+  },
+  "calendarOptionsDefaultFormat": "打开时显示",
+  "@calendarOptionsDefaultFormat": {
+    "description": "选择打开日历时显示月视图或周视图的选项标题。"
+  },
+  "calendarFormatMonth": "月视图",
+  "@calendarFormatMonth": {
+    "description": "打开时显示月视图的选项。"
+  },
+  "calendarFormatWeek": "周视图",
+  "@calendarFormatWeek": {
+    "description": "打开时显示周视图的选项。"
+  },
+  "calendarFormatRemember": "上次的视图",
+  "@calendarFormatRemember": {
+    "description": "打开时沿用上次所用视图的选项。"
+  },
+  "calendarHighlightWeekends": "周末着色",
+  "@calendarHighlightWeekends": {
+    "description": "用不同颜色显示周六周日的开关。"
+  },
+  "calendarShowWeekNumbers": "显示周数",
+  "@calendarShowWeekNumbers": {
+    "description": "在网格旁显示周数的开关。"
+  },
+  "calendarFixedSixWeeks": "固定显示 6 行",
+  "@calendarFixedSixWeeks": {
+    "description": "月视图固定 6 行、高度不随月份变化的开关。"
+  },
+  "calendarFixedSixWeeksDescription": "翻月时日历高度不再跳动。",
+  "@calendarFixedSixWeeksDescription": {
+    "description": "固定显示 6 行开关的说明。"
+  },
+  "calendarOptionsSections": "区块",
+  "@calendarOptionsSections": {
+    "description": "日历页区块开关的分组标题。"
+  },
+  "calendarShowMonthSummary": "月度概览",
+  "@calendarShowMonthSummary": {
+    "description": "在日历网格下方显示月度概览的开关。"
+  },
+  "calendarShowMonthSummaryDescription": "本月篇数、记录天数、字数、最常见心情与最长连续天数。",
+  "@calendarShowMonthSummaryDescription": {
+    "description": "月度概览显示内容的说明。"
+  },
+  "calendarSummaryEntries": "本月 {count} 篇日记",
+  "@calendarSummaryEntries": {
+    "description": "月度概览提示：本月日记篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryDays": "{elapsed} 天里记录了 {recorded} 天",
+  "@calendarSummaryDays": {
+    "description": "月度概览提示：本月已过去的天数中有记录的天数。",
+    "placeholders": {
+      "recorded": {
+        "type": "int"
+      },
+      "elapsed": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryDaysNoTotal": "记录了 {count} 天",
+  "@calendarSummaryDaysNoTotal": {
+    "description": "未来月份的月度概览提示：有记录的天数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryChars": "本月共 {count} 字",
+  "@calendarSummaryChars": {
+    "description": "月度概览提示：本月总字数（已格式化的数字）。",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarSummaryMood": "最常见的心情：{mood}",
+  "@calendarSummaryMood": {
+    "description": "月度概览提示：本月出现最多的心情。",
+    "placeholders": {
+      "mood": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarSummaryStreak": "最长连续记录 {count} 天",
+  "@calendarSummaryStreak": {
+    "description": "月度概览提示：本月最长的连续记录天数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarSummaryEmpty": "这个月还没有日记",
+  "@calendarSummaryEmpty": {
+    "description": "本月没有日记时月度概览显示的文案。"
+  },
+  "calendarSummaryFuture": "这个月还没开始",
+  "@calendarSummaryFuture": {
+    "description": "未来月份没有日记时月度概览显示的文案。"
+  },
+  "calendarRelativeToday": "今天",
+  "@calendarRelativeToday": {
+    "description": "选中日期旁的相对时间：今天。"
+  },
+  "calendarRelativeYesterday": "昨天",
+  "@calendarRelativeYesterday": {
+    "description": "选中日期旁的相对时间：昨天。"
+  },
+  "calendarRelativeTomorrow": "明天",
+  "@calendarRelativeTomorrow": {
+    "description": "选中日期旁的相对时间：明天。"
+  },
+  "calendarRelativeDaysAgo": "{count} 天前",
+  "@calendarRelativeDaysAgo": {
+    "description": "过去的选中日期旁的相对时间。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarRelativeDaysLater": "{count} 天后",
+  "@calendarRelativeDaysLater": {
+    "description": "未来的选中日期旁的相对时间。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarDayStats": "{entries} 篇 · {chars} 字",
+  "@calendarDayStats": {
+    "description": "选中日的统计：篇数与字数（已格式化的数字）。",
+    "placeholders": {
+      "entries": {
+        "type": "int"
+      },
+      "chars": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarYearViewTooltip": "查看全年",
+  "@calendarYearViewTooltip": {
+    "description": "日历月份标题的提示，点按切换到年视图。"
+  },
+  "calendarYearBasisMood": "心情",
+  "@calendarYearBasisMood": {
+    "description": "年视图着色依据：按当天平均心情着色。"
+  },
+  "calendarYearBasisEntries": "篇数",
+  "@calendarYearBasisEntries": {
+    "description": "年视图着色依据：按当天篇数分档着色。"
+  },
+  "calendarYearBasisWords": "字数",
+  "@calendarYearBasisWords": {
+    "description": "年视图着色依据：按当天字数分档着色。"
+  },
+  "calendarYearLegendLess": "少",
+  "@calendarYearLegendLess": {
+    "description": "年视图图例浅色一端的文字。"
+  },
+  "calendarYearLegendMore": "多",
+  "@calendarYearLegendMore": {
+    "description": "年视图图例深色一端的文字。"
+  },
+  "calendarYearLegendNoMood": "未选心情",
+  "@calendarYearLegendNoMood": {
+    "description": "年视图图例中“写了日记但没选心情”的说明。"
+  },
+  "calendarYearExport": "分享这一年",
+  "@calendarYearExport": {
+    "description": "把年视图导出为图片分享的按钮提示。"
+  },
+  "calendarYearExportFailed": "图片生成失败，请重试",
+  "@calendarYearExportFailed": {
+    "description": "年视图图片导出失败时的提示。"
+  },
+  "calendarOnThisDayTitle": "那年今日",
+  "@calendarOnThisDayTitle": {
+    "description": "其他年份同月同日日记列表的标题。"
+  },
+  "calendarOnThisDayYearsAgo": "{count} 年前",
+  "@calendarOnThisDayYearsAgo": {
+    "description": "那年今日卡片中早于选中日期的年份差。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarOnThisDayYearsLater": "{count} 年后",
+  "@calendarOnThisDayYearsLater": {
+    "description": "那年今日卡片中晚于选中日期的年份差。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarDayActionView": "查看这一天",
+  "@calendarDayActionView": {
+    "description": "长按日期菜单：选中这一天。"
+  },
+  "calendarDayActionWrite": "在这一天写日记",
+  "@calendarDayActionWrite": {
+    "description": "长按日期菜单：以这一天为日期写日记。"
+  },
+  "calendarDayActionCapsule": "写一封时间胶囊",
+  "@calendarDayActionCapsule": {
+    "description": "长按未来日期的菜单：写一封在这一天解封的时间胶囊。"
+  },
+  "calendarDayActionCapsuleDescription": "到这一天才能打开",
+  "@calendarDayActionCapsuleDescription": {
+    "description": "长按菜单中时间胶囊操作的说明。"
+  },
+  "calendarFutureCapsuleAction": "写给这一天的时间胶囊",
+  "@calendarFutureCapsuleAction": {
+    "description": "未来日期空状态中的按钮：写一封在这一天解封的时间胶囊。"
+  },
+  "calendarOptionsDayContent": "当天日记",
+  "@calendarOptionsDayContent": {
+    "description": "选择选中日日记展示方式的选项标题。"
+  },
+  "calendarDayContentTimeline": "时间线",
+  "@calendarDayContentTimeline": {
+    "description": "以时间线展示选中日的日记。"
+  },
+  "calendarDayContentCards": "卡片",
+  "@calendarDayContentCards": {
+    "description": "以日记列表卡片展示选中日的日记。"
+  },
+  "calendarShowOnThisDay": "那年今日",
+  "@calendarShowOnThisDay": {
+    "description": "在当天日记下方显示其他年份同一天日记的开关。"
+  },
+  "calendarShowOnThisDayDescription": "其他年份的这一天写下的日记。",
+  "@calendarShowOnThisDayDescription": {
+    "description": "那年今日开关的说明。"
+  },
+  "calendarPreviousYear": "上一年",
+  "@calendarPreviousYear": {
+    "description": "年视图中切换到上一年的按钮提示。"
+  },
+  "calendarNextYear": "下一年",
+  "@calendarNextYear": {
+    "description": "年视图中切换到下一年的按钮提示。"
   }
 }

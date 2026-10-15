@@ -3,19 +3,77 @@ part of 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 /// 日历页业务控制器。
 ///
 /// 职责边界：
-/// - 处理日历视图状态（月/周、焦点月份、选中日期）；
-/// - 处理从日历创建新日记（含草稿分流）；
-/// - 处理预览页导航；
+/// - 处理日历视图状态（月/周/年、焦点月份、选中日期）；
+/// - 处理长按日期的快捷操作与预览页导航；
+/// - 从日历新建日记（含草稿分流）见 calendar_create_actions.dart，显示选项
+///   与年视图导出分别见 calendar_display_options_actions.dart、
+///   calendar_year_actions.dart；
 /// - 不负责具体 UI 组件构建。
 class _CalendarPageController {
   const _CalendarPageController(this._state);
 
   final _CalendarPageState _state;
 
-  /// 当前焦点月份标题（用于头部显示）。
-  String get focusedMonthTitle => DateFormat.yMMM(
-    _state.context.l10n.localeName,
-  ).format(_state._focusedMonth);
+  /// 头部标题：月/周视图为“2026年10月”，年视图为“2026年”。
+  String get focusedMonthTitle {
+    final locale = _state.context.l10n.localeName;
+    return _state._yearMode
+        ? DateFormat.y(locale).format(_state._focusedMonth)
+        : DateFormat.yMMM(locale).format(_state._focusedMonth);
+  }
+
+  /// 点按头部标题：月/周视图缩放到年视图（与 iOS 日历一致）；年视图下打开
+  /// 日期选择器做远距离跳转。
+  void onTitlePressed() {
+    if (_state._yearMode) {
+      unawaited(pickDateAndJump());
+      return;
+    }
+    _state.applyState(() => _state._yearMode = true);
+  }
+
+  /// 在年视图中点按某个迷你月份：回到该月的月视图。选中日在该月时焦点落在
+  /// 选中日上，否则落在 1 号；选中日本身不变。
+  void openMonthFromYear(DateTime month) {
+    final selected = _state._selectedDay;
+    final focused = selected.year == month.year && selected.month == month.month
+        ? selected
+        : DateTime(month.year, month.month);
+    _state.applyState(() {
+      _state._yearMode = false;
+      _state._calendarFormat = CalendarFormat.month;
+      _state._focusedMonth = focused;
+    });
+  }
+
+  /// 长按日期：系统长按反馈后弹出快捷操作面板，再执行所选操作。
+  ///
+  /// table_calendar 的长按手势不经过 InkWell，Android 不会自动震动；
+  /// `Feedback.forLongPress` 按平台惯例补上（iOS 上为空操作）。
+  Future<void> onDayLongPressed(DateTime day) async {
+    final normalizedDay = DateUtils.dateOnly(day);
+    unawaited(Feedback.forLongPress(_state.context));
+    final action = await showCalendarDayActionsSheet(
+      _state.context,
+      day: normalizedDay,
+      now: DateTime.now(),
+      isSelected: isSameDay(normalizedDay, _state._selectedDay),
+    );
+    if (action == null || !_state.mounted) {
+      return;
+    }
+    switch (action) {
+      case CalendarDayAction.view:
+        onDaySelected(normalizedDay, normalizedDay);
+      case CalendarDayAction.write:
+        await openCreateEditorWithDraftPrompt(day: normalizedDay);
+      case CalendarDayAction.capsule:
+        await openCreateEditorWithDraftPrompt(
+          day: normalizedDay,
+          capsuleUnlockAt: normalizedDay,
+        );
+    }
+  }
 
   /// 日历月/周格式切换回调（支持上下滑手势触发）。
   void onCalendarFormatChanged(CalendarFormat format) {
@@ -48,24 +106,34 @@ class _CalendarPageController {
     _state.applyState(() => _state._focusedMonth = normalizedFocusedDay);
   }
 
-  /// 一键回到今天：重置选中日、焦点月份和格式状态。
+  /// 一键回到今天：重置选中日、焦点月份和格式状态（年视图回到月视图）。
   void jumpToToday() {
     final now = DateTime.now();
     _state.applyState(() {
+      _state._yearMode = false;
       _state._selectedDay = DateUtils.dateOnly(now);
       _state._focusedMonth = DateUtils.dateOnly(now);
       _state._calendarFormat = CalendarFormat.month;
     });
   }
 
-  /// 头部「上个月」快捷动作。
+  /// 头部「上个月」快捷动作；年视图下为上一年。
   void goToPreviousMonth() {
-    _switchMonth(-1);
+    _state._yearMode ? _switchYear(-1) : _switchMonth(-1);
   }
 
-  /// 头部「下个月」快捷动作。
+  /// 头部「下个月」快捷动作；年视图下为下一年。
   void goToNextMonth() {
-    _switchMonth(1);
+    _state._yearMode ? _switchYear(1) : _switchMonth(1);
+  }
+
+  /// 年视图翻年：保留月份，回到月视图时仍落在同一个月。
+  void _switchYear(int offset) {
+    final focused = _state._focusedMonth;
+    _state.applyState(
+      () =>
+          _state._focusedMonth = DateTime(focused.year + offset, focused.month),
+    );
   }
 
   /// 打开日期选择弹窗并跳转到指定日期。
@@ -94,6 +162,7 @@ class _CalendarPageController {
 
     final normalizedDay = DateUtils.dateOnly(pickedDate);
     _state.applyState(() {
+      _state._yearMode = false;
       _state._selectedDay = normalizedDay;
       _state._focusedMonth = normalizedDay;
       _state._calendarFormat = CalendarFormat.month;
@@ -116,57 +185,6 @@ class _CalendarPageController {
       _state._calendarFormat = CalendarFormat.month;
       _state._focusedMonth = targetMonth;
     });
-  }
-
-  /// 月份打点按“本地日期”聚合，供 TableCalendar 的 eventLoader 使用。
-  Map<DateTime, List<DiaryCalendarMarker>> groupMarkersByDay(
-    List<DiaryCalendarMarker> markers,
-  ) {
-    final buckets = <DateTime, List<DiaryCalendarMarker>>{};
-    for (final marker in markers) {
-      final day = DateUtils.dateOnly(marker.createdAt.toLocal());
-      final bucket = buckets.putIfAbsent(day, () => <DiaryCalendarMarker>[]);
-      bucket.add(marker);
-    }
-    return buckets;
-  }
-
-  /// 基于当天所有非空心情计算“平均权重”，并映射到最近的当前配置 emoji。
-  ///
-  /// 规则：
-  /// 1) 兼容默认 10 个 emoji 与用户当前自定义 emoji；
-  /// 2) 计算平均值后四舍五入；
-  /// 3) 按 1~10 映射回当前心情梯度。
-  String? resolveMoodEmoji(
-    List<DiaryCalendarMarker> markers,
-    List<String> moodOptions,
-  ) {
-    var totalWeight = 0;
-    var validCount = 0;
-
-    for (final marker in markers) {
-      final mood = marker.moodEmoji?.trim();
-      if (mood == null || mood.isEmpty) {
-        continue;
-      }
-      final weight = SettingsService.moodWeight(mood, moodOptions);
-      if (weight == null) {
-        continue;
-      }
-      totalWeight += weight;
-      validCount += 1;
-    }
-
-    if (validCount == 0) {
-      return null;
-    }
-
-    final averageWeight = totalWeight / validCount;
-    final roundedWeight = averageWeight.round().clamp(
-      1,
-      SettingsService.moodOptionCount,
-    );
-    return SettingsService.moodForWeight(roundedWeight, moodOptions);
   }
 
   /// 打开日记预览页（与主页列表行为保持一致）。
@@ -271,99 +289,5 @@ class _CalendarPageController {
       rootNavigator: true,
     ).context;
     return HomeHintVisibilityScope.maybeController(rootNavigatorContext);
-  }
-
-  /// 从日历进入新建流程：
-  /// - 先处理草稿分流；
-  /// - 最终进入创建页并附带“选中日期”作为创建日期覆盖值。
-  Future<void> openCreateEditorWithDraftPrompt() async {
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    final existingDraft = _tryDecodeCreateDraft(
-      settingsService.createDiaryDraftRaw,
-    );
-    if (!_state.mounted) {
-      return;
-    }
-
-    var restoreCreateDraft = true;
-    if (existingDraft?.hasContent == true) {
-      final decision = await _showCreateDraftDecisionDialog();
-      if (!_state.mounted || decision == null) {
-        return;
-      }
-      if (decision == _CalendarCreateDraftDecision.newEmpty) {
-        await settingsService.clearCreateDiaryDraft();
-        restoreCreateDraft = false;
-      }
-    }
-
-    if (!_state.mounted) {
-      return;
-    }
-
-    await Navigator.of(_state.context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          return EditDiaryPage(
-            entryMode: EditDiaryEntryMode.create,
-            restoreCreateDraft: restoreCreateDraft,
-            createDateOverride: DateUtils.dateOnly(_state._selectedDay),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<_CalendarCreateDraftDecision?> _showCreateDraftDecisionDialog() {
-    return showDialog<_CalendarCreateDraftDecision>(
-      context: _state.context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        final colorScheme = Theme.of(dialogContext).colorScheme;
-        return AlertDialog(
-          title: Text(_state.context.l10n.autoT0081),
-          content: Text(_state.context.l10n.autoT0209),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(_CalendarCreateDraftDecision.newEmpty);
-              },
-              child: Text(_state.context.l10n.autoT0082),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
-              onPressed: () {
-                Navigator.of(
-                  dialogContext,
-                ).pop(_CalendarCreateDraftDecision.continueEditing);
-              },
-              child: Text(_state.context.l10n.autoT0083),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  NewDiaryDraft? _tryDecodeCreateDraft(String? rawDraft) {
-    if (rawDraft == null || rawDraft.trim().isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(rawDraft);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-      return NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
-    } catch (_) {
-      return null;
-    }
   }
 }

@@ -65,6 +65,9 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         await fixture.settings.setThemeMode(ThemeMode.light);
         await fixture.settings.setTagFilterMemoryEnabled(true);
         await fixture.settings.setRememberedTagFilterIdsRaw('1,3');
+        await fixture.settings.setCalendarDisplayOptionsRaw(
+          '{"cellStyle":"heat"}',
+        );
         final originalStore = SharedPreferencesStorePlatform.instance;
         final before = await originalStore.getAll();
         final store = _FailingPreferences(before, throwError);
@@ -78,6 +81,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['fontScale'] = 1.25;
         settings['tagFilterMemoryEnabled'] = false;
         settings['createDiaryDraftRaw'] = '{"title":"incoming draft"}';
+        settings['calendarDisplayOptionsRaw'] = '{"cellStyle":"photo"}';
         final row =
             ((incoming['database'] as Map)['diaries'] as List).single as Map;
         row['title'] = 'incoming diary';
@@ -101,10 +105,15 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         );
         expect(fixture.settings.isTagFilterMemoryEnabled, isTrue);
         expect(fixture.settings.rememberedTagFilterIdsRaw, '1,3');
+        expect(
+          fixture.settings.calendarDisplayOptionsRaw,
+          '{"cellStyle":"heat"}',
+        );
         expect(await store.getAll(), before);
         final recreated = await SettingsService.create();
         expect(recreated.themeModeNotifier.value, ThemeMode.light);
         expect(recreated.createDiaryDraftRaw, '{"title":"current draft"}');
+        expect(recreated.calendarDisplayOptionsRaw, '{"cellStyle":"heat"}');
       },
     );
   }

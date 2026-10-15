@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/backup_settings.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -197,6 +198,51 @@ void main() {
 
         expect(settings.diaryCardTagLimit, 2);
         expect(prefs.get(key), 2);
+      },
+    );
+  });
+
+  group('SettingsService calendar display options', () {
+    const key = 'app.settings.calendar_display_options';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null', () async {
+      final settings = await SettingsService.create();
+      expect(settings.calendarDisplayOptionsRaw, isNull);
+
+      await settings.setCalendarDisplayOptionsRaw('{"cellStyle":"heat"}');
+      expect(
+        (await SettingsService.create()).calendarDisplayOptionsRaw,
+        '{"cellStyle":"heat"}',
+      );
+
+      await settings.setCalendarDisplayOptionsRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.calendarDisplayOptionsRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test(
+      'backups carry the options and older backups keep local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setCalendarDisplayOptionsRaw('{"cellStyle":"photo"}');
+
+        final captured = BackupSettings.capture(settings);
+        expect(captured['calendarDisplayOptionsRaw'], '{"cellStyle":"photo"}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.calendarDisplayOptionsRaw, '{"cellStyle":"photo"}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'calendarDisplayOptionsRaw': null,
+        });
+        expect(settings.calendarDisplayOptionsRaw, isNull);
       },
     );
   });

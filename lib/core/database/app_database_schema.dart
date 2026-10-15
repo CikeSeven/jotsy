@@ -183,16 +183,61 @@ class ExploreDiaryOverview {
 
 /// 日历月份打点聚合模型（轻量版）。
 ///
-/// 用于日历网格渲染：仅保留“日期 + 心情”最小信息，
-/// 避免把完整日记内容加载到月视图造成额外开销。
+/// 用于日历网格渲染与月度概览：只带日期格各种样式要画的标量字段（心情、
+/// 字数、显式封面、天气、标签色、胶囊解封时间），不带富文本正文，避免把
+/// 完整日记内容加载到月视图造成额外开销。正文首图按需另行查询
+/// （见 `watchDiaryImageCandidatesInRange`）。
 class DiaryCalendarMarker {
   const DiaryCalendarMarker({
     required this.diaryId,
     required this.createdAt,
     this.moodEmoji,
+    this.charCount = 0,
+    this.cover,
+    this.weather,
+    this.weatherIconCode,
+    this.capsuleUnlockAt,
+    this.tagColors = const <int>[],
   });
 
   final String diaryId;
   final DateTime createdAt;
   final String? moodEmoji;
+
+  /// 纯文本字数（`content_text` 去首尾空白后的长度）。
+  final int charCount;
+
+  /// 显式封面（发布页选定）；未设置时为 null，正文首图不在此字段。
+  final String? cover;
+  final String? weather;
+  final String? weatherIconCode;
+
+  /// 时间胶囊解封时间；非胶囊为 null。
+  final DateTime? capsuleUnlockAt;
+
+  /// 所挂标签的颜色（ARGB），按标签 id 升序。
+  final List<int> tagColors;
+
+  /// 在 [now] 时刻是否仍是未解封的时间胶囊：未解封前不得泄露心情、封面、
+  /// 字数等内容信息（与时间线只显示倒计时一致）。
+  bool isLockedCapsuleAt(DateTime now) {
+    final unlockAt = capsuleUnlockAt;
+    return unlockAt != null && now.isBefore(unlockAt);
+  }
+}
+
+/// 日历照片样式的正文首图候选：无显式封面、正文里出现图片嵌入的日记。
+///
+/// 只携带解析首图所需的正文与缓存键（`diaryId + updatedAt`），由 UI 层
+/// 复用日记卡片的取图规则解析，数据库层不依赖 UI 模型。
+class DiaryImageCandidate {
+  const DiaryImageCandidate({
+    required this.diaryId,
+    required this.updatedAt,
+    required this.content,
+  });
+
+  final String diaryId;
+  final DateTime updatedAt;
+  final String content;
 }

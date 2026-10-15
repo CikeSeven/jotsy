@@ -21,6 +21,7 @@ class BackupSettings {
     'diarySortModeRaw': settingsService.diarySortModeRaw,
     'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
     'diaryCardTagLimit': settingsService.diaryCardTagLimit,
+    'calendarDisplayOptionsRaw': settingsService.calendarDisplayOptionsRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -132,6 +133,13 @@ class BackupSettings {
     };
     if (diaryCardTagLimit != null) {
       await settingsService.setDiaryCardTagLimit(diaryCardTagLimit);
+    }
+
+    // 旧版备份没有该键时保留本机选项；有键（含 null）时按备份还原。
+    if (settingsNode.containsKey('calendarDisplayOptionsRaw')) {
+      await settingsService.setCalendarDisplayOptionsRaw(
+        settingsNode['calendarDisplayOptionsRaw']?.toString(),
+      );
     }
 
     final toolbarRaw = settingsNode['diaryToolbarOrderRaw']?.toString();

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -12,10 +10,10 @@ import '../../diaries/models/time_capsule.dart';
 import '../../diaries/sections/diaries_list_section.dart'
     show DiaryOpenCallback;
 import '../../diaries/widgets/energy_battery_indicator.dart';
-import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../../widgets/qweather_icon.dart';
 import 'calendar_day_content_switcher.dart';
+import 'calendar_entry_thumbnail.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
 
@@ -275,9 +273,8 @@ class CalendarTimelineSection extends StatelessWidget {
                         ),
                         if (cover != null) ...<Widget>[
                           const SizedBox(width: 12),
-                          _buildCoverThumbnail(
-                            context,
-                            cover,
+                          CalendarEntryThumbnail(
+                            source: cover,
                             diaryId: diary.diary.diaryId,
                             anchor: coverAnchor,
                           ),
@@ -301,65 +298,6 @@ class CalendarTimelineSection extends StatelessWidget {
     }
     return context.l10n.timeCapsuleCountdownDays(
       state.remainingDays.toString(),
-    );
-  }
-
-  /// 构建时间线条目右侧的小封面缩略图（圆角）。
-  ///
-  /// 缩略图是预览页头图的共享元素来源：点按条目时从这里抓取已绘制的画面，
-  /// 飞入后在预览页展开成完整头图（与日记列表封面一致）。
-  Widget _buildCoverThumbnail(
-    BuildContext context,
-    String source, {
-    required String diaryId,
-    required ImageViewerHeroAnchor anchor,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final dpr = MediaQuery.devicePixelRatioOf(context);
-    // 只限制解码宽度：同时指定 cacheWidth/cacheHeight 会按默认的
-    // ResizeImagePolicy.exact 把非方形原图压成正方形，BoxFit.cover 再裁切时
-    // 画面已被拉伸变形。与探索页 ExploreMediaThumb 的策略保持一致。
-    final cacheWidth = (52 * dpr).round();
-    final uri = Uri.tryParse(source);
-    final isRemote =
-        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-
-    final image = isRemote
-        ? Image.network(
-            source,
-            fit: BoxFit.cover,
-            cacheWidth: cacheWidth,
-            filterQuality: FilterQuality.low,
-            frameBuilder: expressiveImageFrameBuilder,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          )
-        : Image.file(
-            File(source),
-            fit: BoxFit.cover,
-            cacheWidth: cacheWidth,
-            filterQuality: FilterQuality.low,
-            frameBuilder: expressiveImageFrameBuilder,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          );
-
-    const radius = BorderRadius.all(Radius.circular(10));
-    return Builder(
-      builder: (BuildContext thumbContext) {
-        anchor.context = thumbContext;
-        return ImageViewerHeroSource(
-          tag: diaryCoverHeroTag(diaryId),
-          borderRadius: radius,
-          child: ClipRRect(
-            borderRadius: radius,
-            child: Container(
-              width: 52,
-              height: 52,
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              child: image,
-            ),
-          ),
-        );
-      },
     );
   }
 

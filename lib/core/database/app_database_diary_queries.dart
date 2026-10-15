@@ -336,14 +336,8 @@ ORDER BY d.deleted_at DESC, d.updated_at DESC
     ).watch().map(_mapDiaryWithTagsRows);
   }
 
-  /// 监听“某天创建的日记列表”（含归档，不含已删除）。
-  ///
-  /// 日期按本地时区边界切分，使用 `[dayStart, nextDayStart)` 范围查询。
-  Stream<List<DiaryWithTags>> watchDiariesCreatedOnDay(DateTime day) {
-    final dayStart = _dateOnly(day);
-    final nextDayStart = dayStart.add(const Duration(days: 1));
-    return customSelect(
-      '''
+  /// 日历按日期范围查询日记时共用的列与标签聚合（含归档，不含已删除）。
+  static const String _calendarDiaryWithTagsSelect = '''
 SELECT
   d.id,
   d.diary_id,
@@ -373,6 +367,17 @@ FROM diaries d
 LEFT JOIN diary_tags dt ON dt.diary_id = d.id
 LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
+''';
+
+  /// 监听“某天创建的日记列表”（含归档，不含已删除）。
+  ///
+  /// 日期按本地时区边界切分，使用 `[dayStart, nextDayStart)` 范围查询。
+  Stream<List<DiaryWithTags>> watchDiariesCreatedOnDay(DateTime day) {
+    final dayStart = _dateOnly(day);
+    final nextDayStart = dayStart.add(const Duration(days: 1));
+    return customSelect(
+      '''
+$_calendarDiaryWithTagsSelect
   AND d.created_at >= ?
   AND d.created_at < ?
 GROUP BY d.id
@@ -386,42 +391,170 @@ ORDER BY d.created_at ASC, d.updated_at ASC, d.id ASC
     ).watch().map(_mapDiaryWithTagsRows);
   }
 
+  /// 监听落在任一 `[start, end)` 区间内的日记（含归档，不含已删除），按创建
+  /// 时间倒序。
+  ///
+  /// 用于日历“那年今日”：区间由调用方按本地日期逐年算好再传入，而不是在
+  /// SQL 里用 `strftime(..., 'localtime')` 取月日——时区换算交给 Dart 与
+  /// 其他日历查询保持同一口径，也兼容早期以毫秒存储的时间戳。
+  Stream<List<DiaryWithTags>> watchDiariesCreatedInRanges(
+    List<(DateTime, DateTime)> ranges,
+  ) {
+    if (ranges.isEmpty) {
+      return Stream<List<DiaryWithTags>>.value(const <DiaryWithTags>[]);
+    }
+    final conditions = List<String>.filled(
+      ranges.length,
+      '(d.created_at >= ? AND d.created_at < ?)',
+    ).join(' OR ');
+    return customSelect(
+      '''
+$_calendarDiaryWithTagsSelect
+  AND ($conditions)
+GROUP BY d.id
+ORDER BY d.created_at DESC, d.id DESC
+''',
+      variables: <Variable<Object>>[
+        for (final (start, end) in ranges) ...<Variable<Object>>[
+          Variable<DateTime>(start),
+          Variable<DateTime>(end),
+        ],
+      ],
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map(_mapDiaryWithTagsRows);
+  }
+
   /// 监听“某月的日历打点元数据”（含归档，不含已删除）。
   ///
   /// 返回轻量结构 `DiaryCalendarMarker`，只用于月历标记渲染。
   Stream<List<DiaryCalendarMarker>> watchDiaryMarkersByMonth(DateTime month) {
-    final monthStart = DateTime(month.year, month.month);
-    final nextMonthStart = DateTime(month.year, month.month + 1);
+    return watchDiaryMarkersInRange(
+      DateTime(month.year, month.month),
+      DateTime(month.year, month.month + 1),
+    );
+  }
+
+  /// 监听 `[start, end)` 内的日历打点元数据（含归档，不含已删除）。
+  ///
+  /// 标签色用相关子查询拼接而不是 JOIN + GROUP BY：每篇日记仍是一行，且
+  /// 打点不需要标签名。group_concat 本身不保证顺序，内层按标签 id 排序后
+  /// 再拼接，同一天的标签色点不会随查询计划变化而换位。readsFrom 包含标签
+  /// 两表，增删标签或改标签色后日期格会刷新。
+  Stream<List<DiaryCalendarMarker>> watchDiaryMarkersInRange(
+    DateTime start,
+    DateTime end,
+  ) {
+    return customSelect(
+      '''
+SELECT
+  d.diary_id,
+  d.created_at,
+  d.cover,
+  d.capsule_unlock_at,
+  length(trim(d.content_text, ' ' || char(9) || char(10) || char(13))) AS char_count,
+  json_extract(d.metadata, '\$.context.moodEmoji') AS mood_emoji,
+  json_extract(d.metadata, '\$.context.weather') AS weather,
+  json_extract(d.metadata, '\$.context.weatherIconCode') AS weather_icon_code,
+  (
+    SELECT group_concat(color)
+    FROM (
+      SELECT t.color AS color
+      FROM diary_tags dt
+      JOIN tags t ON t.id = dt.tag_id
+      WHERE dt.diary_id = d.id
+      ORDER BY dt.tag_id
+    )
+  ) AS tag_colors
+FROM diaries d
+WHERE d.is_deleted = 0
+  AND d.created_at >= ?
+  AND d.created_at < ?
+ORDER BY d.created_at ASC, d.id ASC
+''',
+      variables: <Variable<Object>>[
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
+      ],
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map((rows) {
+      return rows
+          .map((row) {
+            return DiaryCalendarMarker(
+              diaryId: row.read<String>('diary_id'),
+              createdAt: _readDateTime(row, 'created_at'),
+              moodEmoji: _readTrimmedText(row, 'mood_emoji'),
+              charCount: row.readNullable<int>('char_count') ?? 0,
+              cover: _readTrimmedText(row, 'cover'),
+              weather: _readTrimmedText(row, 'weather'),
+              weatherIconCode: _readTrimmedText(row, 'weather_icon_code'),
+              capsuleUnlockAt: _readNullableDateTime(row, 'capsule_unlock_at'),
+              tagColors: _parseIntList(row.data['tag_colors']),
+            );
+          })
+          .toList(growable: false);
+    });
+  }
+
+  /// 监听 `[start, end)` 内可能带正文图片、且没有显式封面的日记正文。
+  ///
+  /// 只在日历照片样式下订阅：`LIKE '%"image"%'` 先在数据库线程（后台
+  /// isolate）里排除纯文字日记，UI 层只需解析少量候选正文。Quill 的
+  /// `{"insert":{"image":…}}` 与旧版 AppFlowy 的 `"type":"image"` 都含该
+  /// 片段，取图规则与日记卡片一致（见 DiaryCardViewData）。
+  Stream<List<DiaryImageCandidate>> watchDiaryImageCandidatesInRange(
+    DateTime start,
+    DateTime end,
+  ) {
     return customSelect(
       '''
 SELECT
   diary_id,
-  created_at,
-  json_extract(metadata, '\$.context.moodEmoji') AS mood_emoji
+  updated_at,
+  content
 FROM diaries
 WHERE is_deleted = 0
   AND created_at >= ?
   AND created_at < ?
-ORDER BY created_at ASC
+  AND (cover IS NULL OR trim(cover) = '')
+  AND content LIKE '%"image"%'
+ORDER BY created_at ASC, id ASC
 ''',
       variables: <Variable<Object>>[
-        Variable<DateTime>(monthStart),
-        Variable<DateTime>(nextMonthStart),
+        Variable<DateTime>(start),
+        Variable<DateTime>(end),
       ],
       readsFrom: <TableInfo<Table, Object>>{diaries},
     ).watch().map((rows) {
       return rows
           .map((row) {
-            final rawMood = row.readNullable<String>('mood_emoji');
-            final mood = rawMood?.trim();
-            return DiaryCalendarMarker(
+            return DiaryImageCandidate(
               diaryId: row.read<String>('diary_id'),
-              createdAt: _readDateTime(row, 'created_at'),
-              moodEmoji: (mood == null || mood.isEmpty) ? null : mood,
+              updatedAt: _readDateTime(row, 'updated_at'),
+              content: row.read<String>('content'),
             );
           })
           .toList(growable: false);
     });
+  }
+
+  /// 读取可空文本列并去首尾空白；非字符串（如 metadata 里写成数字）按
+  /// toString 处理，空串视为 null。
+  String? _readTrimmedText(QueryRow row, String columnName) {
+    final value = row.data[columnName]?.toString().trim();
+    return value == null || value.isEmpty ? null : value;
+  }
+
+  /// 解析 `group_concat` 拼出的逗号分隔整数；无标签时为 NULL。
+  List<int> _parseIntList(Object? raw) {
+    if (raw == null) {
+      return const <int>[];
+    }
+    return raw
+        .toString()
+        .split(',')
+        .map((String part) => int.tryParse(part.trim()))
+        .whereType<int>()
+        .toList(growable: false);
   }
 
   /// 示例：按 metadata 指定路径和值检索日记。

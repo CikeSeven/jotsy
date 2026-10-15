@@ -1,0 +1,169 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+
+import '../../../app/theme/expressive_motion.dart';
+
+/// 选中日期标题行：`10月15日 周三 [3 天前]` + 右侧当天篇数与字数。
+///
+/// 输入：选中日期、当前时刻与当天已解封日记的篇数/字数；无副作用。
+///
+/// 日期与星期由 intl 按语言区域格式化（中文“10月15日 周三”、英文
+/// “Oct 15 Wed”），不手写中英分支。换日时日期部分与下方内容一起交叉淡入；
+/// 统计数字单独淡入，日记加载完成时只换数字、不让日期闪一下。
+class CalendarDayHeading extends StatelessWidget {
+  const CalendarDayHeading({
+    super.key,
+    required this.day,
+    required this.now,
+    required this.entryCount,
+    required this.charCount,
+  });
+
+  final DateTime day;
+  final DateTime now;
+  final int entryCount;
+  final int charCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final duration = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+    final statsText = entryCount == 0
+        ? ''
+        : l10n.calendarDayStats(
+            entryCount,
+            NumberFormat.decimalPattern(l10n.localeName).format(charCount),
+          );
+    // 日期本身不截断；星期与相对时间在窄屏、大字号下按需省略。统计数字
+    // 很短，按内容宽度放在行尾，其余宽度都给日期一侧。
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: duration,
+            switchInCurve: ExpressiveMotion.effects,
+            switchOutCurve: ExpressiveMotion.exit,
+            layoutBuilder: _startAlignedLayout,
+            child: Row(
+              key: ValueKey<DateTime>(day),
+              children: <Widget>[
+                Text(
+                  DateFormat.MMMd(l10n.localeName).format(day),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    DateFormat.E(l10n.localeName).format(day),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: _RelativeDayPill(day: day, now: now),
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedSwitcher(
+          duration: duration,
+          switchInCurve: ExpressiveMotion.effects,
+          switchOutCurve: ExpressiveMotion.exit,
+          layoutBuilder: _endAlignedLayout,
+          child: Padding(
+            key: ValueKey<String>(statsText),
+            padding: EdgeInsetsDirectional.only(
+              start: statsText.isEmpty ? 0 : 8,
+            ),
+            child: Text(
+              statsText,
+              maxLines: 1,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _startAlignedLayout(
+    Widget? currentChild,
+    List<Widget> previousChildren,
+  ) {
+    return Stack(
+      alignment: AlignmentDirectional.centerStart,
+      children: <Widget>[...previousChildren, ?currentChild],
+    );
+  }
+
+  static Widget _endAlignedLayout(
+    Widget? currentChild,
+    List<Widget> previousChildren,
+  ) {
+    return Stack(
+      alignment: AlignmentDirectional.centerEnd,
+      children: <Widget>[...previousChildren, ?currentChild],
+    );
+  }
+}
+
+/// 相对今天的小标签：今天 / 昨天 / 明天 / N 天前 / N 天后。按日历日期差
+/// 计算（同为本地零点相减再四舍五入），跨夏令时的 23/25 小时日不会算错。
+class _RelativeDayPill extends StatelessWidget {
+  const _RelativeDayPill({required this.day, required this.now});
+
+  final DateTime day;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final today = DateUtils.dateOnly(now);
+    final target = DateUtils.dateOnly(day);
+    final diff = (target.difference(today).inHours / 24).round();
+    final label = switch (diff) {
+      0 => l10n.calendarRelativeToday,
+      -1 => l10n.calendarRelativeYesterday,
+      1 => l10n.calendarRelativeTomorrow,
+      < 0 => l10n.calendarRelativeDaysAgo(-diff),
+      _ => l10n.calendarRelativeDaysLater(diff),
+    };
+    final isToday = diff == 0;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isToday
+            ? colorScheme.tertiaryContainer
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+        child: Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: isToday
+                ? colorScheme.onTertiaryContainer
+                : colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}

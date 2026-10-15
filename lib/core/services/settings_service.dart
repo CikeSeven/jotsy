@@ -100,6 +100,7 @@ class SettingsService {
     required String? diaryToolbarHiddenItemsRaw,
     required String? diaryToolbarCurrentTimeFormatRaw,
     required String? moodOptionsRaw,
+    required String? calendarDisplayOptionsRaw,
   }) : _prefs = prefs,
        themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
@@ -128,7 +129,10 @@ class SettingsService {
        diaryToolbarCurrentTimeFormatRawNotifier = ValueNotifier<String?>(
          diaryToolbarCurrentTimeFormatRaw,
        ),
-       moodOptionsRawNotifier = ValueNotifier<String?>(moodOptionsRaw);
+       moodOptionsRawNotifier = ValueNotifier<String?>(moodOptionsRaw),
+       calendarDisplayOptionsRawNotifier = ValueNotifier<String?>(
+         calendarDisplayOptionsRaw,
+       );
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -147,6 +151,10 @@ class SettingsService {
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
   final ValueNotifier<String?> diaryToolbarCurrentTimeFormatRawNotifier;
   final ValueNotifier<String?> moodOptionsRawNotifier;
+
+  /// 日历页显示选项（单个 JSON 字符串）；解析与默认值由日历模块负责，
+  /// 服务层只保存原文，不依赖 UI 模型。
+  final ValueNotifier<String?> calendarDisplayOptionsRawNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
@@ -169,6 +177,8 @@ class SettingsService {
   static const _keyRememberedTagFilterIds =
       'app.settings.remembered_tag_filter_ids';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
+  static const _keyCalendarDisplayOptions =
+      'app.settings.calendar_display_options';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
@@ -253,6 +263,7 @@ class SettingsService {
           prefs.getString(_keyDiaryToolbarCurrentTimeFormat) ??
           _defaultDiaryToolbarCurrentTimeFormat,
       moodOptionsRaw: prefs.getString(_keyMoodOptions),
+      calendarDisplayOptionsRaw: prefs.getString(_keyCalendarDisplayOptions),
     );
   }
 
@@ -313,6 +324,8 @@ class SettingsService {
   String? get diaryToolbarCurrentTimeFormatRaw =>
       diaryToolbarCurrentTimeFormatRawNotifier.value;
   String? get moodOptionsRaw => moodOptionsRawNotifier.value;
+  String? get calendarDisplayOptionsRaw =>
+      calendarDisplayOptionsRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -375,6 +388,20 @@ class SettingsService {
   Future<void> resetMoodOptions() async {
     moodOptionsRawNotifier.value = null;
     await _prefs.remove(_keyMoodOptions);
+  }
+
+  /// 保存日历显示选项；空值移除该键，回到默认选项。
+  Future<void> setCalendarDisplayOptionsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      calendarDisplayOptionsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyCalendarDisplayOptions));
+      return;
+    }
+    calendarDisplayOptionsRawNotifier.value = normalized;
+    await _writePreference(
+      _prefs.setString(_keyCalendarDisplayOptions, normalized),
+    );
   }
 
   Future<void> setDiaryCardTagLimit(int value) async {

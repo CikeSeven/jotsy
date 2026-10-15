@@ -2098,4 +2098,312 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get calendarDisplayOptionsTooltip => 'Calendar display';
+
+  @override
+  String get calendarOptionsTitle => 'Calendar display';
+
+  @override
+  String get calendarOptionsReset => 'Reset';
+
+  @override
+  String get calendarOptionsCellStyle => 'Day cells';
+
+  @override
+  String get calendarCellStyleDot => 'Dots';
+
+  @override
+  String get calendarCellStyleMood => 'Mood';
+
+  @override
+  String get calendarCellStyleHeat => 'Heat';
+
+  @override
+  String get calendarCellStylePhoto => 'Photos';
+
+  @override
+  String get calendarCellStyleTags => 'Tags';
+
+  @override
+  String get calendarCellStyleDotDescription =>
+      'One dot for each entry, up to three.';
+
+  @override
+  String get calendarCellStyleMoodDescription =>
+      'The mood you picked for the day.';
+
+  @override
+  String get calendarCellStyleHeatDescription =>
+      'The more you wrote, the darker the day.';
+
+  @override
+  String get calendarCellStylePhotoDescription =>
+      'The cover, or the first photo in the entry, fills the day.';
+
+  @override
+  String get calendarCellStyleTagsDescription =>
+      'Colors of up to three tags used that day.';
+
+  @override
+  String get calendarMoodAverage => 'Average';
+
+  @override
+  String get calendarMoodEach => 'Each entry';
+
+  @override
+  String get calendarHeatBasisEntries => 'By entries';
+
+  @override
+  String get calendarHeatBasisWords => 'By length';
+
+  @override
+  String get calendarOptionsBadges => 'Badges';
+
+  @override
+  String get calendarBadgeCount => 'Entry count';
+
+  @override
+  String get calendarBadgeCapsule => 'Sealed time capsules';
+
+  @override
+  String get calendarBadgeWeather => 'Weather';
+
+  @override
+  String get calendarOptionsLayout => 'Layout';
+
+  @override
+  String get calendarOptionsWeekStart => 'Week starts on';
+
+  @override
+  String get calendarWeekStartLocale => 'Language default';
+
+  @override
+  String get calendarWeekStartMonday => 'Monday';
+
+  @override
+  String get calendarWeekStartSunday => 'Sunday';
+
+  @override
+  String get calendarOptionsDefaultFormat => 'Open in';
+
+  @override
+  String get calendarFormatMonth => 'Month';
+
+  @override
+  String get calendarFormatWeek => 'Week';
+
+  @override
+  String get calendarFormatRemember => 'Last used';
+
+  @override
+  String get calendarHighlightWeekends => 'Highlight weekends';
+
+  @override
+  String get calendarShowWeekNumbers => 'Week numbers';
+
+  @override
+  String get calendarFixedSixWeeks => 'Always show 6 weeks';
+
+  @override
+  String get calendarFixedSixWeeksDescription =>
+      'Keeps the calendar height steady between months.';
+
+  @override
+  String get calendarOptionsSections => 'Sections';
+
+  @override
+  String get calendarShowMonthSummary => 'Monthly summary';
+
+  @override
+  String get calendarShowMonthSummaryDescription =>
+      'Entries, days written, length, top mood and longest streak for the month.';
+
+  @override
+  String calendarSummaryEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries this month',
+      one: '1 entry this month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarSummaryDays(int recorded, int elapsed) {
+    return 'Wrote on $recorded of $elapsed days';
+  }
+
+  @override
+  String calendarSummaryDaysNoTotal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Wrote on $count days',
+      one: 'Wrote on 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarSummaryChars(String count) {
+    return '$count characters this month';
+  }
+
+  @override
+  String calendarSummaryMood(String mood) {
+    return 'Most frequent mood: $mood';
+  }
+
+  @override
+  String calendarSummaryStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Longest streak: $count days',
+      one: 'Longest streak: 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarSummaryEmpty => 'No entries this month yet';
+
+  @override
+  String get calendarSummaryFuture => 'This month hasn\'t started yet';
+
+  @override
+  String get calendarRelativeToday => 'Today';
+
+  @override
+  String get calendarRelativeYesterday => 'Yesterday';
+
+  @override
+  String get calendarRelativeTomorrow => 'Tomorrow';
+
+  @override
+  String calendarRelativeDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarRelativeDaysLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'in $count days',
+      one: 'in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarDayStats(int entries, String chars) {
+    String _temp0 = intl.Intl.pluralLogic(
+      entries,
+      locale: localeName,
+      other: '$entries entries',
+      one: '1 entry',
+    );
+    return '$_temp0 · $chars chars';
+  }
+
+  @override
+  String get calendarYearViewTooltip => 'Show the whole year';
+
+  @override
+  String get calendarYearBasisMood => 'Mood';
+
+  @override
+  String get calendarYearBasisEntries => 'Entries';
+
+  @override
+  String get calendarYearBasisWords => 'Length';
+
+  @override
+  String get calendarYearLegendLess => 'Less';
+
+  @override
+  String get calendarYearLegendMore => 'More';
+
+  @override
+  String get calendarYearLegendNoMood => 'No mood';
+
+  @override
+  String get calendarYearExport => 'Share this year';
+
+  @override
+  String get calendarYearExportFailed =>
+      'Couldn\'t create the image. Please try again.';
+
+  @override
+  String get calendarOnThisDayTitle => 'On this day';
+
+  @override
+  String calendarOnThisDayYearsAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years ago',
+      one: '1 year ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarOnThisDayYearsLater(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count years later',
+      one: '1 year later',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarDayActionView => 'Show this day';
+
+  @override
+  String get calendarDayActionWrite => 'Write for this day';
+
+  @override
+  String get calendarDayActionCapsule => 'Write a time capsule';
+
+  @override
+  String get calendarDayActionCapsuleDescription =>
+      'It can only be opened on this day';
+
+  @override
+  String get calendarFutureCapsuleAction => 'Write a capsule for this day';
+
+  @override
+  String get calendarOptionsDayContent => 'Entries of the day';
+
+  @override
+  String get calendarDayContentTimeline => 'Timeline';
+
+  @override
+  String get calendarDayContentCards => 'Cards';
+
+  @override
+  String get calendarShowOnThisDay => 'On this day';
+
+  @override
+  String get calendarShowOnThisDayDescription =>
+      'Entries from the same date in other years.';
+
+  @override
+  String get calendarPreviousYear => 'Previous year';
+
+  @override
+  String get calendarNextYear => 'Next year';
 }

@@ -40,6 +40,9 @@ Future<void> _pumpCalendar(
         calendarDayDiariesProvider.overrideWith(
           (ref, day) => Stream.value(const <DiaryWithTags>[]),
         ),
+        calendarOnThisDayProvider.overrideWith(
+          (ref, day) => Stream.value(const <DiaryWithTags>[]),
+        ),
         moodOptionsProvider.overrideWith(
           (ref) => Stream.value(const <String>[]),
         ),

@@ -14,6 +14,10 @@ class CalendarHeader extends StatelessWidget {
     required this.onPreviousMonth,
     required this.onNextMonth,
     required this.onPickDate,
+    this.onOpenDisplayOptions,
+    this.titleTooltip,
+    this.previousTooltip,
+    this.nextTooltip,
   });
 
   static const double contentHeight = 112;
@@ -26,6 +30,16 @@ class CalendarHeader extends StatelessWidget {
   final VoidCallback onPreviousMonth;
   final VoidCallback onNextMonth;
   final VoidCallback onPickDate;
+
+  /// 打开日历显示选项面板；为 null 时不显示该按钮。
+  final VoidCallback? onOpenDisplayOptions;
+
+  /// 标题按钮的提示（月视图下为“查看全年”，年视图下为“选择日期”）。
+  final String? titleTooltip;
+
+  /// 上一页/下一页按钮的提示；为 null 时为“上个月/下个月”。
+  final String? previousTooltip;
+  final String? nextTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +72,14 @@ class CalendarHeader extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (onOpenDisplayOptions != null) ...[
+                      IconButton(
+                        tooltip: l10n.calendarDisplayOptionsTooltip,
+                        onPressed: onOpenDisplayOptions,
+                        icon: const FaIcon(FontAwesomeIcons.sliders, size: 18),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
                     IconButton.filledTonal(
                       tooltip: l10n.autoT0180,
                       onPressed: onJumpToToday,
@@ -74,18 +96,13 @@ class CalendarHeader extends StatelessWidget {
                 child: Row(
                   children: [
                     IconButton(
-                      tooltip: l10n.autoT0184,
+                      tooltip: previousTooltip ?? l10n.autoT0184,
                       onPressed: onPreviousMonth,
                       icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
                     ),
-                    Expanded(
-                      child: TextButton(
-                        onPressed: onPickDate,
-                        child: _MonthTitle(title: title, month: month),
-                      ),
-                    ),
+                    Expanded(child: _buildTitleButton()),
                     IconButton(
-                      tooltip: l10n.autoT0185,
+                      tooltip: nextTooltip ?? l10n.autoT0185,
                       onPressed: onNextMonth,
                       icon: const FaIcon(FontAwesomeIcons.angleRight, size: 18),
                     ),
@@ -97,6 +114,15 @@ class CalendarHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildTitleButton() {
+    final button = TextButton(
+      onPressed: onPickDate,
+      child: _MonthTitle(title: title, month: month),
+    );
+    final tooltip = titleTooltip;
+    return tooltip == null ? button : Tooltip(message: tooltip, child: button);
   }
 }
 

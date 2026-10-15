@@ -83,6 +83,7 @@
   - 左侧按钮：灰色语义（取消/返回）
   - 右侧按钮：主色语义（确认）
   - 危险动作：右侧按钮使用 `colorScheme.error`
+- 必须：数据导入/恢复入口统一经 `chooseBackupImportMode`（`DataArchiveService.inspectZip` 只读预检 → 选择合并或覆盖），会改写本机已有数据的方式必须经 `showBackupOverwriteWarningDialog` 严重警告确认；禁止新增不经警告直接覆盖本机数据的入口。
 - 必须：用户可感知的耗时等待操作（如启动预热、分页首屏加载、远程请求等待）统一使用 `loading_indicator_m3e` 的加载效果，不再新增 `CircularProgressIndicator` 作为主加载表现；页面首屏 `loading` 分支使用 `DelayedLoadingIndicator`（300ms 内不出现），动作等待遮罩使用 `ActionLoadingOverlay`。
 - 必须：新增展示型图片（`Image.file/network/Image(image:)`）挂 `frameBuilder: expressiveImageFrameBuilder`，首次解码淡入、缓存命中直接显示；仅截图/导出用的静态图片例外。
 - 必须：打开大图统一经 `openImageViewer`（来源图片用 `ImageViewerHeroSource` 包裹并在点按时 `ImageViewerHero.capture`）；状态驱动的颜色变化经 `ExpressiveStateBlend` 补间；新增触觉反馈只用于“动作生效/越过阈值”的瞬间，类型对照 DESIGN.md §4.3。

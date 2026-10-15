@@ -187,6 +187,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率：
   - 左侧按钮：灰色文本按钮（取消/返回）；
   - 右侧按钮：主色加粗文本按钮（确定/保存）；
   - 危险动作：右侧按钮使用 `colorScheme.error`。
+  - 不可撤销的覆盖（导入覆盖本机数据）：严重警告弹窗——error 色警示图标、`errorContainer` 底色的后果说明块（逐项列出将被替换的数据与数量）、先备份的建议；确认键须勾选“我已了解”且 5 秒倒计时结束后才可点。其前一步的导入方式面板默认选中安全的“合并”，危险选项标题常驻 error 色、选中时底色为 `errorContainer`。
 - **耗时等待操作**：
   - 启动预热、首屏分页加载统一使用 `loading_indicator_m3e`（`ExpressiveLoadingIndicator`），不再新增裸 `CircularProgressIndicator`；页面首屏 `loading` 分支用 `DelayedLoadingIndicator` 包装，动作等待遮罩用 `ActionLoadingOverlay`。
 - **全局提示 (SnackBar)**：

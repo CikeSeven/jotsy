@@ -48,7 +48,19 @@ class CalendarMonthSummary extends StatelessWidget {
         ),
       );
     } else {
-      content = Row(children: _buildItems(context, l10n));
+      // 各项按内容宽度排开、均分剩余空间：月视图与年视图的数字长短差很多
+      // （“3” 与 “205/288”），固定等分会截断长的一项。大字号下放不下时
+      // 换行而不是截断。
+      content = SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          alignment: WrapAlignment.spaceEvenly,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: AppSpacing.s,
+          runSpacing: AppSpacing.xs,
+          children: _buildItems(context, l10n),
+        ),
+      );
     }
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -79,7 +91,10 @@ class CalendarMonthSummary extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildItems(BuildContext context, AppLocalizations l10n) {
+  List<_CalendarSummaryItem> _buildItems(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     final compact = NumberFormat.compact(locale: l10n.localeName);
     final decimal = NumberFormat.decimalPattern(l10n.localeName);
     final elapsed = stats.elapsedDays;
@@ -91,8 +106,6 @@ class CalendarMonthSummary extends StatelessWidget {
         tooltip: l10n.calendarSummaryEntries(stats.entryCount),
       ),
       _CalendarSummaryItem(
-        // “已记录/已过去”在年视图下是两个三位数，多分一份宽度。
-        flex: 3,
         icon: FontAwesomeIcons.calendarCheck,
         value: elapsed == null
             ? '${stats.recordedDays}'
@@ -117,25 +130,19 @@ class CalendarMonthSummary extends StatelessWidget {
         tooltip: l10n.calendarSummaryStreak(stats.longestStreak),
       ),
     ];
-    return <Widget>[
-      for (final item in items) Expanded(flex: item.flex, child: item),
-    ];
+    return items;
   }
 }
 
 class _CalendarSummaryItem extends StatelessWidget {
   const _CalendarSummaryItem({
     required this.tooltip,
-    this.flex = 2,
     this.icon,
     this.value,
     this.emoji,
   });
 
   static const double height = 28;
-
-  /// 在概览行里所占的宽度份数。
-  final int flex;
 
   final FaIconData? icon;
   final String? value;
@@ -158,7 +165,7 @@ class _CalendarSummaryItem extends StatelessWidget {
         child: SizedBox(
           height: height,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               if (icon != null)
                 FaIcon(icon, size: 11, color: colorScheme.primary),
@@ -170,17 +177,14 @@ class _CalendarSummaryItem extends StatelessWidget {
                 ),
               if (value != null) ...<Widget>[
                 const SizedBox(width: 5),
-                Flexible(
-                  child: Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontFeatures: const <FontFeature>[
-                        FontFeature.tabularFigures(),
-                      ],
-                    ),
+                Text(
+                  value,
+                  maxLines: 1,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
                   ),
                 ),
               ],

@@ -82,50 +82,54 @@ abstract final class CalendarCellIndicator {
   }
 }
 
-/// 右上角：两篇及以上时的篇数。
+/// 篇数角标：压住日期数字右上角的小胶囊，两篇及以上时显示。
 ///
-/// 固定为 primary 小胶囊并带一圈卡片色描边，热力深色格与照片上也能分辨；
-/// [inverted] 用于选中的填充格（整格已是 primary），改为 onPrimary 底。
+/// 用 primaryContainer 色调而不是实心 primary：满月都有多篇时一排实心小
+/// 胶囊过于抢眼。外圈一道卡片色描边，压在选中/今天的填充色、热力深色格
+/// 与照片上也分得开。
 class CalendarCellCountBadge extends StatelessWidget {
-  const CalendarCellCountBadge({
-    super.key,
-    required this.count,
-    this.inverted = false,
-  });
+  const CalendarCellCountBadge({super.key, required this.count});
 
   final int count;
-  final bool inverted;
 
   /// 按选项与当天篇数决定是否显示；不显示时为 null。
+  ///
+  /// 圆点样式与“逐篇显示”的心情样式里一篇就有一个记号，3 篇以内篇数已经
+  /// 一目了然，不再重复标数字；超过记号上限（3 个）时才显示。
   static Widget? resolve({
     required CalendarDaySummary? summary,
     required CalendarDisplayOptions options,
-    bool inverted = false,
   }) {
     final count = summary?.entryCount ?? 0;
-    if (!options.showCountBadge || count < 2) {
+    if (summary == null || !options.showCountBadge || count < 2) {
       return null;
     }
-    return CalendarCellCountBadge(count: count, inverted: inverted);
+    final oneMarkPerEntry = switch (options.cellStyle) {
+      CalendarCellStyle.dot => true,
+      CalendarCellStyle.mood =>
+        options.moodAggregation == CalendarMoodAggregation.each &&
+            summary.moods.length == count,
+      _ => false,
+    };
+    if (oneMarkPerEntry && count <= CalendarDaySummary.maxMoods) {
+      return null;
+    }
+    return CalendarCellCountBadge(count: count);
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final background = inverted ? colorScheme.onPrimary : colorScheme.primary;
-    final foreground = inverted ? colorScheme.primary : colorScheme.onPrimary;
     return Container(
-      constraints: const BoxConstraints(minWidth: 13),
-      height: 13,
-      padding: const EdgeInsets.symmetric(horizontal: 2.5),
+      constraints: const BoxConstraints(minWidth: 12),
+      height: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(6.5),
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: inverted
-              ? colorScheme.primary
-              : ExpressiveSurfaces.cardColor(colorScheme),
+          color: ExpressiveSurfaces.cardColor(colorScheme),
           width: 1,
         ),
       ),
@@ -133,41 +137,60 @@ class CalendarCellCountBadge extends StatelessWidget {
         count > 9 ? '9+' : '$count',
         textScaler: TextScaler.noScaling,
         style: TextStyle(
-          fontSize: 8,
+          fontSize: 7.5,
           height: 1,
           fontWeight: FontWeight.w700,
-          color: foreground,
+          color: colorScheme.onPrimaryContainer,
         ),
       ),
     );
   }
 }
 
-/// 日期格内部排版：数字居中偏上，指示物贴底，角标在上方两角。
+/// 日期格内部排版：数字居中，指示物贴底；角标挂在数字上而不是格子角上。
+///
+/// 圆点/心情/标签色样式的格子没有可见边框，角标若放在格子四角，会落在
+/// 两个日期数字之间，看不出属于哪一天；压住数字一角（像应用图标上的
+/// 消息角标）归属才明确。角标溢出数字的范围用负偏移表示，不改变数字的
+/// 居中位置。
 class CalendarCellLayout extends StatelessWidget {
   const CalendarCellLayout({
     super.key,
-    required this.badgeInset,
     required this.number,
     this.indicator,
     this.leadingBadge,
     this.trailingBadge,
   });
 
-  /// 角标相对本层边缘的偏移（负值向外）。
-  final double badgeInset;
   final Widget number;
   final Widget? indicator;
+
+  /// 数字左上角：未解封胶囊的锁或天气。
   final Widget? leadingBadge;
+
+  /// 数字右上角：篇数。
   final Widget? trailingBadge;
 
   @override
   Widget build(BuildContext context) {
+    final leadingBadge = this.leadingBadge;
+    final trailingBadge = this.trailingBadge;
     return Stack(
       fit: StackFit.expand,
       clipBehavior: Clip.none,
       children: <Widget>[
-        Center(child: number),
+        Center(
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: <Widget>[
+              number,
+              if (leadingBadge != null)
+                Positioned(top: -6, left: -8, child: leadingBadge),
+              if (trailingBadge != null)
+                Positioned(top: -6, right: -9, child: trailingBadge),
+            ],
+          ),
+        ),
         if (indicator != null)
           Positioned(
             left: 0,
@@ -175,10 +198,6 @@ class CalendarCellLayout extends StatelessWidget {
             bottom: 3,
             child: Center(child: indicator),
           ),
-        if (leadingBadge != null)
-          Positioned(top: badgeInset, left: badgeInset, child: leadingBadge!),
-        if (trailingBadge != null)
-          Positioned(top: badgeInset, right: badgeInset, child: trailingBadge!),
       ],
     );
   }

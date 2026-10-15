@@ -38,12 +38,6 @@ class CalendarDayCell extends StatelessWidget {
   static const double _radius = 14;
   static const double _ringGap = 2;
 
-  /// 角标相对内容区的外移量：内容区比格子外沿缩进描边 2dp（描边形态再加
-  /// 间隙 2dp），角标再外移 1dp 骑在格子角上。窄屏加周数列时格子只有约
-  /// 33dp 宽，角标留在内容区内会压住两位数的日期。
-  static const double _fillBadgeInset = -3;
-  static const double _ringBadgeInset = -3 - _ringGap;
-
   final DateTime day;
   final CalendarDisplayOptions options;
   final bool isToday;
@@ -54,6 +48,18 @@ class CalendarDayCell extends StatelessWidget {
 
   /// 照片样式的代表图（本地路径或 http(s) 地址）。
   final String? image;
+
+  /// 当前格是否按“周末着色”铺灰底（相邻月份的日期不着色）。
+  bool get _weekendShaded =>
+      options.highlightWeekends && isWeekend && !isOutside;
+
+  /// 周末底色：中性灰，与热力的 primary 色阶、今天的 tertiary、选中的
+  /// primary 都不同色相。只换数字颜色时 tertiary 与正文黑字在亮色主题下
+  /// 几乎分不出来，铺一层底色才能一眼看出周末那两列。
+  static Color weekendColor(ColorScheme colorScheme) =>
+      colorScheme.surfaceContainerHighest.withValues(
+        alpha: colorScheme.brightness == Brightness.light ? 0.9 : 0.75,
+      );
 
   bool get _ringMode =>
       options.cellStyle == CalendarCellStyle.heat ||
@@ -81,6 +87,8 @@ class CalendarDayCell extends StatelessWidget {
           ? colorScheme.primary
           : isToday
           ? colorScheme.tertiaryContainer
+          : _weekendShaded
+          ? weekendColor(colorScheme)
           : colorScheme.primary.withValues(alpha: 0);
       ring = Colors.transparent;
     }
@@ -118,14 +126,12 @@ class CalendarDayCell extends StatelessWidget {
       onFill: onFill,
     );
     return CalendarCellLayout(
-      badgeInset: _fillBadgeInset,
       number: _buildNumber(context, colorScheme, onFill: onFill),
       indicator: indicator,
       leadingBadge: _buildLeadingBadge(colorScheme, onFill: onFill),
       trailingBadge: CalendarCellCountBadge.resolve(
         summary: summary,
         options: options,
-        inverted: isSelected,
       ),
     );
   }
@@ -159,7 +165,6 @@ class CalendarDayCell extends StatelessWidget {
                 ),
               ),
               CalendarCellLayout(
-                badgeInset: _ringBadgeInset,
                 number: _buildPhotoNumber(context, colorScheme),
                 leadingBadge: _buildLeadingBadge(colorScheme, onPhoto: true),
                 trailingBadge: CalendarCellCountBadge.resolve(
@@ -174,18 +179,23 @@ class CalendarDayCell extends StatelessWidget {
       // 当天有日记但没有图片：退回圆点，仍能看出这天写过。
       return Padding(
         padding: const EdgeInsets.all(_ringGap),
-        child: CalendarCellLayout(
-          badgeInset: _ringBadgeInset,
-          number: _buildNumber(context, colorScheme),
-          indicator: CalendarCellIndicator.resolve(
-            colorScheme,
-            summary: summary,
-            options: options,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: _weekendShaded ? weekendColor(colorScheme) : null,
+            borderRadius: innerRadius,
           ),
-          leadingBadge: _buildLeadingBadge(colorScheme),
-          trailingBadge: CalendarCellCountBadge.resolve(
-            summary: summary,
-            options: options,
+          child: CalendarCellLayout(
+            number: _buildNumber(context, colorScheme),
+            indicator: CalendarCellIndicator.resolve(
+              colorScheme,
+              summary: summary,
+              options: options,
+            ),
+            leadingBadge: _buildLeadingBadge(colorScheme),
+            trailingBadge: CalendarCellCountBadge.resolve(
+              summary: summary,
+              options: options,
+            ),
           ),
         ),
       );
@@ -205,9 +215,14 @@ class CalendarDayCell extends StatelessWidget {
       child: AnimatedContainer(
         duration: duration,
         curve: ExpressiveMotion.effects,
-        decoration: BoxDecoration(color: heatColor, borderRadius: innerRadius),
+        // 有数据时以热力色为准；没写的周末铺周末底色。
+        decoration: BoxDecoration(
+          color: level == 0 && _weekendShaded
+              ? weekendColor(colorScheme)
+              : heatColor,
+          borderRadius: innerRadius,
+        ),
         child: CalendarCellLayout(
-          badgeInset: _ringBadgeInset,
           number: _buildNumber(context, colorScheme, onFill: foreground),
           leadingBadge: _buildLeadingBadge(colorScheme, onFill: foreground),
           trailingBadge: CalendarCellCountBadge.resolve(
@@ -260,8 +275,6 @@ class CalendarDayCell extends StatelessWidget {
       color = onFill;
     } else if (isOutside) {
       color = colorScheme.onSurfaceVariant.withValues(alpha: 0.45);
-    } else if (options.highlightWeekends && isWeekend) {
-      color = colorScheme.tertiary;
     } else {
       color = colorScheme.onSurface;
     }

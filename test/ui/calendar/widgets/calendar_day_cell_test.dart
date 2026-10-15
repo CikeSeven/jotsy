@@ -6,6 +6,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/calendar/viewmodels/calendar_day_summary.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_day_cell.dart';
+import 'package:node_diary/ui/calendar/widgets/calendar_day_cell_parts.dart';
 
 void main() {
   const moods = SettingsService.defaultMoodOptions;
@@ -34,6 +35,7 @@ void main() {
     CalendarDaySummary? summary,
     bool isSelected = false,
     bool isToday = false,
+    bool isWeekend = false,
     String? image,
     Brightness brightness = Brightness.light,
   }) {
@@ -54,7 +56,7 @@ void main() {
               isToday: isToday,
               isSelected: isSelected,
               isOutside: false,
-              isWeekend: false,
+              isWeekend: isWeekend,
               summary: summary,
               image: image,
             ),
@@ -94,7 +96,7 @@ void main() {
 
     await pumpCell(
       tester,
-      options: const CalendarDisplayOptions(cellStyle: CalendarCellStyle.dot),
+      options: const CalendarDisplayOptions(cellStyle: CalendarCellStyle.tags),
       summary: summary,
     );
     expect(find.text('2'), findsOneWidget);
@@ -102,12 +104,125 @@ void main() {
     await pumpCell(
       tester,
       options: const CalendarDisplayOptions(
-        cellStyle: CalendarCellStyle.dot,
+        cellStyle: CalendarCellStyle.tags,
         showCountBadge: false,
       ),
       summary: summary,
     );
     expect(find.text('2'), findsNothing);
+  });
+
+  testWidgets('one mark per entry makes the count badge redundant', (
+    tester,
+  ) async {
+    const dots = CalendarDisplayOptions(cellStyle: CalendarCellStyle.dot);
+    await pumpCell(
+      tester,
+      options: dots,
+      summary: summaryOf(<DiaryCalendarMarker>[entry(8), entry(9)]),
+    );
+    expect(find.byType(CalendarCellCountBadge), findsNothing);
+
+    // 超过 3 个记号的上限时仍要标出篇数。
+    await pumpCell(
+      tester,
+      options: dots,
+      summary: summaryOf(<DiaryCalendarMarker>[
+        for (var hour = 8; hour < 12; hour++) entry(hour),
+      ]),
+    );
+    expect(find.text('4'), findsOneWidget);
+
+    await pumpCell(
+      tester,
+      options: const CalendarDisplayOptions(
+        moodAggregation: CalendarMoodAggregation.each,
+      ),
+      summary: summaryOf(<DiaryCalendarMarker>[
+        entry(8, mood: moods[1]),
+        entry(9, mood: moods[8]),
+      ]),
+    );
+    expect(find.byType(CalendarCellCountBadge), findsNothing);
+  });
+
+  testWidgets('the count badge hangs on its own day number', (tester) async {
+    await pumpCell(
+      tester,
+      options: const CalendarDisplayOptions(cellStyle: CalendarCellStyle.tags),
+      summary: summaryOf(<DiaryCalendarMarker>[entry(8), entry(9)]),
+    );
+
+    final number = tester.getRect(find.text('12'));
+    final badge = tester.getRect(find.byType(CalendarCellCountBadge));
+    // 压住数字右上角：与数字框重叠，且整体在数字的右上方。
+    expect(badge.overlaps(number), isTrue);
+    expect(badge.center.dx, greaterThan(number.center.dx));
+    expect(badge.center.dy, lessThan(number.center.dy));
+  });
+
+  testWidgets('weekend shading gives weekend cells a neutral tile', (
+    tester,
+  ) async {
+    Color? outerFill() {
+      final outer = tester.widget<AnimatedContainer>(
+        find.byType(AnimatedContainer).first,
+      );
+      return (outer.decoration! as BoxDecoration).color;
+    }
+
+    await pumpCell(
+      tester,
+      options: const CalendarDisplayOptions(highlightWeekends: true),
+      isWeekend: true,
+    );
+    final colorScheme = Theme.of(
+      tester.element(find.byType(CalendarDayCell)),
+    ).colorScheme;
+    expect(outerFill(), CalendarDayCell.weekendColor(colorScheme));
+
+    await pumpCell(
+      tester,
+      options: const CalendarDisplayOptions(),
+      isWeekend: true,
+    );
+    expect(outerFill()!.a, 0);
+
+    // 选中仍以 primary 填充为准。
+    await pumpCell(
+      tester,
+      options: const CalendarDisplayOptions(highlightWeekends: true),
+      isWeekend: true,
+      isSelected: true,
+    );
+    await tester.pumpAndSettle();
+    expect(outerFill(), colorScheme.primary);
+  });
+
+  testWidgets('heat cells keep their data color on weekends', (tester) async {
+    const options = CalendarDisplayOptions(
+      cellStyle: CalendarCellStyle.heat,
+      highlightWeekends: true,
+    );
+    List<Color?> fills() => tester
+        .widgetList<AnimatedContainer>(find.byType(AnimatedContainer))
+        .map((container) => (container.decoration as BoxDecoration?)?.color)
+        .toList();
+
+    await pumpCell(tester, options: options, isWeekend: true);
+    final colorScheme = Theme.of(
+      tester.element(find.byType(CalendarDayCell)),
+    ).colorScheme;
+    expect(fills(), contains(CalendarDayCell.weekendColor(colorScheme)));
+
+    await pumpCell(
+      tester,
+      options: options,
+      isWeekend: true,
+      summary: summaryOf(<DiaryCalendarMarker>[entry(8)]),
+    );
+    expect(fills(), contains(CalendarDayCell.heatColorFor(colorScheme, 1)));
+    expect(fills(), isNot(contains(CalendarDayCell.weekendColor(colorScheme))));
   });
 
   testWidgets('a sealed capsule shows only the lock', (tester) async {

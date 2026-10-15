@@ -124,17 +124,31 @@ class CalendarMonthGrid extends StatelessWidget {
           // 独立窄星期（ccccc）：中文“一…日”、英文“M…S”，
           // 由 intl 语言数据提供，新增语言无需改代码。
           final label = DateFormat('ccccc', l10n.localeName).format(day);
-          final weekend =
-              day.weekday == DateTime.saturday ||
-              day.weekday == DateTime.sunday;
-          return Center(
-            child: Text(
-              label,
-              style: textTheme.bodySmall?.copyWith(
-                color: options.highlightWeekends && weekend
-                    ? colorScheme.tertiary
-                    : colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
+          final shaded =
+              options.highlightWeekends &&
+              (day.weekday == DateTime.saturday ||
+                  day.weekday == DateTime.sunday);
+          // 周末着色时星期栏的“六、日”也铺同样的灰底，与下方日期格连成
+          // 一条竖向色带。
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: shaded
+                    ? CalendarDayCell.weekendColor(colorScheme)
+                    : null,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  label,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: shaded
+                        ? colorScheme.onSurface
+                        : colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           );

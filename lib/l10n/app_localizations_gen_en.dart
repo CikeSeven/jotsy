@@ -2032,4 +2032,70 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get previewExportDiaryFileSuccess =>
       'Diary file exported. Import it from Data Management.';
+
+  @override
+  String get dataMgmtImportJournal => 'Import from other journal apps';
+
+  @override
+  String get dataMgmtImportJournalSubtitle =>
+      'Day One, Journey, Diarium, Daylio and Apple Journal';
+
+  @override
+  String get journalImportSourceTitle => 'Import from which app?';
+
+  @override
+  String get journalImportSourceHint =>
+      'Export your data in that app first, then choose the exported file here.';
+
+  @override
+  String get journalImportAppleJournal => 'Apple Journal';
+
+  @override
+  String get journalImportDayOneHint => 'Export as JSON (.zip)';
+
+  @override
+  String get journalImportJourneyHint => 'Export to ZIP (.zip)';
+
+  @override
+  String get journalImportDiariumHint =>
+      'JSON export (.json) or backup file (.diary)';
+
+  @override
+  String get journalImportDaylioHint =>
+      'Backup file (.daylio) or CSV export (.csv)';
+
+  @override
+  String get journalImportAppleJournalHint =>
+      'On iPhone: Settings › Apps › Journal › Export All Journal Entries (.zip)';
+
+  @override
+  String journalImportPickDialogTitle(String app) {
+    return 'Choose the $app export';
+  }
+
+  @override
+  String journalImportUnrecognized(String app) {
+    return 'This file isn\'t a recognized $app export';
+  }
+
+  @override
+  String get journalImportNoEntries =>
+      'There are no diaries to import in this file';
+
+  @override
+  String backupImportKindJournal(String app) {
+    return '$app export';
+  }
+
+  @override
+  String backupImportMissingMedia(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count media files are missing from the export and will be skipped',
+      one: '1 media file is missing from the export and will be skipped',
+    );
+    return '$_temp0';
+  }
 }

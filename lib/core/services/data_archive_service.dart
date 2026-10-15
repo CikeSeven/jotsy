@@ -15,6 +15,7 @@ import 'backup_merge.dart';
 import 'backup_payload.dart';
 import 'backup_settings.dart';
 import 'diary_media_references.dart';
+import 'journal_import_models.dart';
 import 'settings_service.dart';
 
 /// 数据归档编排：导出完整 ZIP 或单篇日记包；导入前只读预检，再按所选方式
@@ -34,6 +35,11 @@ class DataArchiveService {
     );
     return result;
   }
+
+  /// 其他导入来源（如其他日记应用的导出）写入本机数据时，与备份导入导出
+  /// 共用同一串行队列，避免与恢复事务交错。
+  static Future<T> runSerialized<T>(Future<T> Function() action) =>
+      _run(action);
 
   static Future<File> exportToZip({
     required AppDatabase database,
@@ -168,32 +174,50 @@ class DataArchiveService {
         only: const {backupPayloadFileName, diaryPackagePayloadFileName},
       );
       final (kind, payload) = await _readPayload(working);
-      final diaries = database.diaries;
-      final localIds = {
-        for (final row in await (database.selectOnly(
-          diaries,
-        )..addColumns([diaries.diaryId])).get())
-          row.read(diaries.diaryId)!,
-      };
-      final localTags = countAll();
-      return BackupArchivePreview(
+      return await previewPayload(
+        database: database,
         kind: kind,
-        diaryCount: payload.diaries.length,
-        tagCount: payload.tags.length,
-        existingDiaryCount: payload.diaries
-            .where((diary) => localIds.contains(diary.diaryId))
-            .length,
-        localDiaryCount: localIds.length,
-        localTagCount: (await (database.selectOnly(
-          database.tags,
-        )..addColumns([localTags])).getSingle()).read(localTags)!,
-        soleDiaryTitle: payload.diaries.length == 1
-            ? payload.diaries.single.title
-            : null,
+        payload: payload,
       );
     } finally {
       await _cleanWorkingDirectory(working);
     }
+  }
+
+  /// 统计载荷与本机数据的关系（重复篇数、本机总数），生成导入预检结果。
+  /// 只读查询，不修改本机数据。
+  static Future<BackupArchivePreview> previewPayload({
+    required AppDatabase database,
+    required BackupArchiveKind kind,
+    required BackupPayload payload,
+    JournalImportSource? journalSource,
+    int missingMediaCount = 0,
+  }) async {
+    final diaries = database.diaries;
+    final localIds = {
+      for (final row in await (database.selectOnly(
+        diaries,
+      )..addColumns([diaries.diaryId])).get())
+        row.read(diaries.diaryId)!,
+    };
+    final localTags = countAll();
+    return BackupArchivePreview(
+      kind: kind,
+      diaryCount: payload.diaries.length,
+      tagCount: payload.tags.length,
+      existingDiaryCount: payload.diaries
+          .where((diary) => localIds.contains(diary.diaryId))
+          .length,
+      localDiaryCount: localIds.length,
+      localTagCount: (await (database.selectOnly(
+        database.tags,
+      )..addColumns([localTags])).getSingle()).read(localTags)!,
+      soleDiaryTitle: payload.diaries.length == 1
+          ? payload.diaries.single.title
+          : null,
+      journalSource: journalSource,
+      missingMediaCount: missingMediaCount,
+    );
   }
 
   /// 按 [mode] 导入完整备份或日记包。

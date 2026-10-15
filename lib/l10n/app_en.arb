@@ -2694,5 +2694,85 @@
   "previewExportDiaryFileSuccess": "Diary file exported. Import it from Data Management.",
   "@previewExportDiaryFileSuccess": {
     "description": "SnackBar after a diary file is saved, telling where to import it."
+  },
+  "dataMgmtImportJournal": "Import from other journal apps",
+  "@dataMgmtImportJournal": {
+    "description": "Data management entry for importing exports of other diary apps."
+  },
+  "dataMgmtImportJournalSubtitle": "Day One, Journey, Diarium, Daylio and Apple Journal",
+  "@dataMgmtImportJournalSubtitle": {
+    "description": "Subtitle listing the diary apps whose exports can be imported."
+  },
+  "journalImportSourceTitle": "Import from which app?",
+  "@journalImportSourceTitle": {
+    "description": "Title of the sheet that picks the app the export comes from."
+  },
+  "journalImportSourceHint": "Export your data in that app first, then choose the exported file here.",
+  "@journalImportSourceHint": {
+    "description": "Hint above the list of importable diary apps."
+  },
+  "journalImportAppleJournal": "Apple Journal",
+  "@journalImportAppleJournal": {
+    "description": "Display name of Apple's Journal app."
+  },
+  "journalImportDayOneHint": "Export as JSON (.zip)",
+  "@journalImportDayOneHint": {
+    "description": "How to get an importable Day One export."
+  },
+  "journalImportJourneyHint": "Export to ZIP (.zip)",
+  "@journalImportJourneyHint": {
+    "description": "How to get an importable Journey export."
+  },
+  "journalImportDiariumHint": "JSON export (.json) or backup file (.diary)",
+  "@journalImportDiariumHint": {
+    "description": "Which Diarium files can be imported."
+  },
+  "journalImportDaylioHint": "Backup file (.daylio) or CSV export (.csv)",
+  "@journalImportDaylioHint": {
+    "description": "Which Daylio files can be imported."
+  },
+  "journalImportAppleJournalHint": "On iPhone: Settings › Apps › Journal › Export All Journal Entries (.zip)",
+  "@journalImportAppleJournalHint": {
+    "description": "How to export Apple Journal entries."
+  },
+  "journalImportPickDialogTitle": "Choose the {app} export",
+  "@journalImportPickDialogTitle": {
+    "description": "File picker title when importing another app's export.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "journalImportUnrecognized": "This file isn't a recognized {app} export",
+  "@journalImportUnrecognized": {
+    "description": "Shown when the chosen file doesn't match the selected app's export format.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "journalImportNoEntries": "There are no diaries to import in this file",
+  "@journalImportNoEntries": {
+    "description": "Shown when an export is valid but contains no entries."
+  },
+  "backupImportKindJournal": "{app} export",
+  "@backupImportKindJournal": {
+    "description": "Import summary title for another app's export.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "backupImportMissingMedia": "{count, plural, =1{1 media file is missing from the export and will be skipped} other{{count} media files are missing from the export and will be skipped}}",
+  "@backupImportMissingMedia": {
+    "description": "How many referenced media files are not in the export and will be skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

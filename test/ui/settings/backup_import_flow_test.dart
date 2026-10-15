@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/controllers/backup_import_flow.dart';
 import 'package:node_diary/ui/settings/widgets/backup_overwrite_warning_dialog.dart';
@@ -25,6 +26,17 @@ const _fullBackup = BackupArchivePreview(
   existingDiaryCount: 3,
   localDiaryCount: 12,
   localTagCount: 4,
+);
+
+const _dayOneExport = BackupArchivePreview(
+  kind: BackupArchiveKind.journalExport,
+  journalSource: JournalImportSource.dayOne,
+  diaryCount: 40,
+  tagCount: 5,
+  existingDiaryCount: 2,
+  localDiaryCount: 12,
+  localTagCount: 4,
+  missingMediaCount: 3,
 );
 
 class _FlowResult {
@@ -173,6 +185,26 @@ void main() {
     await _waitForCountdown(tester);
     expect(_button(tester, '确认覆盖').onPressed, isNotNull);
   });
+
+  testWidgets(
+    "another app's export names its source and never replaces everything",
+    (tester) async {
+      final result = await _startFlow(tester, _dayOneExport);
+
+      expect(find.text('Day One 导出'), findsOneWidget);
+      expect(find.text('40 篇日记 · 5 个标签'), findsOneWidget);
+      expect(find.text('其中 2 篇本机已存在'), findsOneWidget);
+      expect(find.text('3 个媒体文件不在导出中，将跳过'), findsOneWidget);
+      expect(find.text('包含应用设置'), findsNothing);
+      // 再次导入同一导出时可以覆盖之前导入的日记，但不能清空本机数据。
+      expect(find.byType(ExpressiveChoiceTile), findsNWidgets(2));
+      expect(find.text('覆盖全部数据'), findsNothing);
+
+      await tester.tap(find.text('导入'));
+      await tester.pumpAndSettle();
+      expect(result.mode, BackupImportMode.merge);
+    },
+  );
 
   testWidgets('cancelling the warning imports nothing', (tester) async {
     final result = await _startFlow(tester, _fullBackup);

@@ -3547,6 +3547,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Diary file exported. Import it from Data Management.'**
   String get previewExportDiaryFileSuccess;
+
+  /// Data management entry for importing exports of other diary apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from other journal apps'**
+  String get dataMgmtImportJournal;
+
+  /// Subtitle listing the diary apps whose exports can be imported.
+  ///
+  /// In en, this message translates to:
+  /// **'Day One, Journey, Diarium, Daylio and Apple Journal'**
+  String get dataMgmtImportJournalSubtitle;
+
+  /// Title of the sheet that picks the app the export comes from.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from which app?'**
+  String get journalImportSourceTitle;
+
+  /// Hint above the list of importable diary apps.
+  ///
+  /// In en, this message translates to:
+  /// **'Export your data in that app first, then choose the exported file here.'**
+  String get journalImportSourceHint;
+
+  /// Display name of Apple's Journal app.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Journal'**
+  String get journalImportAppleJournal;
+
+  /// How to get an importable Day One export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as JSON (.zip)'**
+  String get journalImportDayOneHint;
+
+  /// How to get an importable Journey export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to ZIP (.zip)'**
+  String get journalImportJourneyHint;
+
+  /// Which Diarium files can be imported.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON export (.json) or backup file (.diary)'**
+  String get journalImportDiariumHint;
+
+  /// Which Daylio files can be imported.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup file (.daylio) or CSV export (.csv)'**
+  String get journalImportDaylioHint;
+
+  /// How to export Apple Journal entries.
+  ///
+  /// In en, this message translates to:
+  /// **'On iPhone: Settings › Apps › Journal › Export All Journal Entries (.zip)'**
+  String get journalImportAppleJournalHint;
+
+  /// File picker title when importing another app's export.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the {app} export'**
+  String journalImportPickDialogTitle(String app);
+
+  /// Shown when the chosen file doesn't match the selected app's export format.
+  ///
+  /// In en, this message translates to:
+  /// **'This file isn\'t a recognized {app} export'**
+  String journalImportUnrecognized(String app);
+
+  /// Shown when an export is valid but contains no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no diaries to import in this file'**
+  String get journalImportNoEntries;
+
+  /// Import summary title for another app's export.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} export'**
+  String backupImportKindJournal(String app);
+
+  /// How many referenced media files are not in the export and will be skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 media file is missing from the export and will be skipped} other{{count} media files are missing from the export and will be skipped}}'**
+  String backupImportMissingMedia(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,7 @@ import '../../../core/services/backup_import_models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/expressive_state_blend.dart';
+import 'journal_import_source_sheet.dart';
 
 /// 打开导入方式面板：概述导入文件并返回所选 [BackupImportMode]，取消返回 null。
 ///
@@ -168,7 +169,8 @@ String _modeDescription(
   };
 }
 
-/// 文件概要：类型、单篇时的标题、日记与标签数、是否含设置、与本机重复数。
+/// 文件概要：类型（其他应用的导出注明来源）、单篇时的标题、日记与标签数、
+/// 是否含设置、与本机重复数、将被跳过的缺失媒体数。
 class _ArchiveSummary extends StatelessWidget {
   const _ArchiveSummary({required this.preview});
 
@@ -180,6 +182,20 @@ class _ArchiveSummary extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isFullBackup = preview.kind == BackupArchiveKind.fullBackup;
+    final journalSource = preview.journalSource;
+    final (icon, kindLabel) = switch (preview.kind) {
+      BackupArchiveKind.fullBackup => (
+        FontAwesomeIcons.database,
+        l10n.backupImportKindFull,
+      ),
+      BackupArchiveKind.journalExport when journalSource != null => (
+        FontAwesomeIcons.rightToBracket,
+        l10n.backupImportKindJournal(
+          journalImportSourceName(l10n, journalSource),
+        ),
+      ),
+      _ => (FontAwesomeIcons.fileZipper, l10n.backupImportKindDiary),
+    };
     final soleTitle = preview.soleDiaryTitle?.trim();
     final detailStyle = theme.textTheme.bodySmall?.copyWith(
       color: colorScheme.onSurfaceVariant,
@@ -197,9 +213,7 @@ class _ArchiveSummary extends StatelessWidget {
             shape: BoxShape.circle,
           ),
           child: FaIcon(
-            isFullBackup
-                ? FontAwesomeIcons.database
-                : FontAwesomeIcons.fileZipper,
+            icon,
             size: 16,
             color: colorScheme.onSecondaryContainer,
           ),
@@ -210,9 +224,7 @@ class _ArchiveSummary extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                isFullBackup
-                    ? l10n.backupImportKindFull
-                    : l10n.backupImportKindDiary,
+                kindLabel,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -242,6 +254,11 @@ class _ArchiveSummary extends StatelessWidget {
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
+                ),
+              if (preview.missingMediaCount > 0)
+                Text(
+                  l10n.backupImportMissingMedia(preview.missingMediaCount),
+                  style: detailStyle,
                 ),
             ],
           ),

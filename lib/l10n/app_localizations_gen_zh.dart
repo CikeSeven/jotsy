@@ -1897,4 +1897,59 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get previewExportDiaryFileSuccess => '日记文件已导出，可在「数据管理」中导入';
+
+  @override
+  String get dataMgmtImportJournal => '从其他日记应用导入';
+
+  @override
+  String get dataMgmtImportJournalSubtitle =>
+      '支持 Day One、Journey、Diarium、Daylio 与 Apple 手记';
+
+  @override
+  String get journalImportSourceTitle => '从哪个应用导入？';
+
+  @override
+  String get journalImportSourceHint => '先在原应用中导出数据，再在这里选择导出的文件。';
+
+  @override
+  String get journalImportAppleJournal => 'Apple 手记';
+
+  @override
+  String get journalImportDayOneHint => '导出为 JSON 格式（.zip）';
+
+  @override
+  String get journalImportJourneyHint => '导出为 ZIP（.zip）';
+
+  @override
+  String get journalImportDiariumHint => 'JSON 导出（.json）或备份文件（.diary）';
+
+  @override
+  String get journalImportDaylioHint => '备份文件（.daylio）或导出的 CSV（.csv）';
+
+  @override
+  String get journalImportAppleJournalHint =>
+      '在 iPhone「设置 › App › 手记」中导出所有条目（.zip）';
+
+  @override
+  String journalImportPickDialogTitle(String app) {
+    return '选择 $app 导出文件';
+  }
+
+  @override
+  String journalImportUnrecognized(String app) {
+    return '无法识别为 $app 的导出文件';
+  }
+
+  @override
+  String get journalImportNoEntries => '文件中没有可导入的日记';
+
+  @override
+  String backupImportKindJournal(String app) {
+    return '$app 导出';
+  }
+
+  @override
+  String backupImportMissingMedia(int count) {
+    return '$count 个媒体文件不在导出中，将跳过';
+  }
 }

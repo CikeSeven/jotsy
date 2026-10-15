@@ -51,6 +51,13 @@ dependencies:
   audioplayers: ^6.5.0
   open_filex: ^4.7.0
   video_player: ^2.11.1
+  # 以下均为已有传递依赖的显式声明，用于导入其他日记应用的导出：
+  # html 解析 HTML 正文，markdown 解析 Day One 的行内语法，crypto 生成稳定
+  # 的导入日记 ID，sqlite3 只读打开 Diarium 的 .diary 备份。
+  crypto: ^3.0.7
+  html: ^0.15.6
+  markdown: ^7.3.0
+  sqlite3: ^3.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -62,8 +69,6 @@ dev_dependencies:
   json_serializable: ^6.13.0
   drift_dev: ^2.32.0
   flutter_launcher_icons: ^0.14.4
-  # 迁移测试中直接以原始 sqlite3 搭建旧版库结构（transitive 依赖显式声明）。
-  sqlite3: ^3.2.0
   # 模拟备份恢复时偏好写入返回 false 或异常，验证跨数据库/媒体回滚。
   shared_preferences_platform_interface: ^2.4.1
 

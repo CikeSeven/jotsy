@@ -1,0 +1,80 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/settings/widgets/journal_import_source_sheet.dart';
+
+import '../../support/expressive_test_theme.dart';
+
+/// 点按按钮打开来源面板，返回选中的来源（取消为 null）。
+Future<List<JournalImportSource?>> _open(
+  WidgetTester tester, {
+  Brightness brightness = Brightness.light,
+  Size size = const Size(390, 844),
+}) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  final picked = <JournalImportSource?>[];
+  await tester.pumpWidget(
+    MaterialApp(
+      locale: const Locale('zh'),
+      theme: expressiveTestTheme(brightness),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Builder(
+        builder: (BuildContext context) => Scaffold(
+          body: Center(
+            child: TextButton(
+              onPressed: () async =>
+                  picked.add(await showJournalImportSourceSheet(context)),
+              child: const Text('start'),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.tap(find.text('start'));
+  await tester.pumpAndSettle();
+  return picked;
+}
+
+void main() {
+  testWidgets('lists every supported app with how to export it', (
+    tester,
+  ) async {
+    final picked = await _open(tester);
+
+    expect(find.text('从哪个应用导入？'), findsOneWidget);
+    for (final name in [
+      'Day One',
+      'Journey',
+      'Diarium',
+      'Daylio',
+      'Apple 手记',
+    ]) {
+      expect(find.text(name), findsOneWidget, reason: name);
+    }
+    expect(find.text('备份文件（.daylio）或导出的 CSV（.csv）'), findsOneWidget);
+
+    await tester.tap(find.text('Apple 手记'));
+    await tester.pumpAndSettle();
+    expect(picked, [JournalImportSource.appleJournal]);
+  });
+
+  testWidgets('dismissing the sheet picks nothing', (tester) async {
+    final picked = await _open(tester);
+    await tester.tapAt(const Offset(195, 20));
+    await tester.pumpAndSettle();
+    expect(picked, [null]);
+  });
+
+  for (final brightness in Brightness.values) {
+    testWidgets('fits a 320dp phone in $brightness', (tester) async {
+      await _open(tester, brightness: brightness, size: const Size(320, 640));
+      expect(tester.takeException(), isNull);
+      expect(find.text('Daylio'), findsOneWidget);
+    });
+  }
+}

@@ -1,3 +1,5 @@
+import 'journal_import_models.dart';
+
 /// 备份文件的类型，决定可用的导入方式。
 enum BackupArchiveKind {
   /// 完整备份（`backup_data.json`）：全部日记、标签、媒体与应用设置。
@@ -5,6 +7,9 @@ enum BackupArchiveKind {
 
   /// 日记包（`diary_package.json`）：一篇或几篇日记及其标签、媒体，不含设置。
   diaryPackage,
+
+  /// 其他日记应用的导出（见 [JournalImportSource]），转换后只能合并导入。
+  journalExport,
 }
 
 /// 导入方式。
@@ -37,6 +42,8 @@ class BackupArchivePreview {
     required this.localDiaryCount,
     required this.localTagCount,
     this.soleDiaryTitle,
+    this.journalSource,
+    this.missingMediaCount = 0,
   });
 
   final BackupArchiveKind kind;
@@ -57,8 +64,14 @@ class BackupArchivePreview {
   /// 文件只含一篇日记时它的标题（可能为空串），确认时点名是哪一篇。
   final String? soleDiaryTitle;
 
+  /// [BackupArchiveKind.journalExport] 时导出来自哪个应用。
+  final JournalImportSource? journalSource;
+
+  /// 导出中被引用、但文件不在包内而将被跳过的媒体数。
+  final int missingMediaCount;
+
   /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记
-  /// 时不提供“覆盖已存在”；日记包不能覆盖全部数据。
+  /// 时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部数据。
   List<BackupImportMode> get availableModes => <BackupImportMode>[
     BackupImportMode.merge,
     if (existingDiaryCount > 0) BackupImportMode.mergeOverwrite,

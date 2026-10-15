@@ -11,10 +11,13 @@ import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/delayed_loading_gate.dart';
 import '../controllers/data_management_controller.dart';
+import '../controllers/journal_import_controller.dart';
 
-/// 数据管理页面：完整备份导出、导入（合并或覆盖）与 WebDAV 入口。
+/// 数据管理页面：完整备份导出、导入（合并或覆盖）、从其他日记应用导入与
+/// WebDAV 入口。
 ///
-/// 只负责装配与忙碌/提示出口，导出导入流程见 [DataManagementController]。
+/// 只负责装配与忙碌/提示出口，导出导入流程见 [DataManagementController]，
+/// 其他应用的导入流程见 [JournalImportController]。
 class DataManagementPage extends ConsumerStatefulWidget {
   const DataManagementPage({super.key});
 
@@ -25,6 +28,9 @@ class DataManagementPage extends ConsumerStatefulWidget {
 class _DataManagementPageState extends ConsumerState<DataManagementPage>
     implements DataManagementHost {
   late final DataManagementController _controller = DataManagementController(
+    this,
+  );
+  late final JournalImportController _journalImport = JournalImportController(
     this,
   );
   bool _busy = false;
@@ -117,6 +123,25 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                         size: 14,
                       ),
                       onTap: _controller.importData,
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: const FaIcon(
+                        FontAwesomeIcons.rightToBracket,
+                        size: 16,
+                      ),
+                      title: Text(context.l10n.dataMgmtImportJournal),
+                      subtitle: Text(
+                        context.l10n.dataMgmtImportJournalSubtitle,
+                      ),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: _journalImport.importFromApp,
                     ),
                     ListTile(
                       contentPadding: const EdgeInsets.symmetric(

@@ -8,6 +8,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 /// 兼容策略：
 /// - 旧数据没有 iconCode 时，直接回退到默认 FontAwesome 天气图标；
 /// - 本地图标缺失时，使用默认 FontAwesome 图标兜底。
+///
+/// 图标 SVG 统一以 `fill="currentColor"` 着色；flutter_svg 未指定主题时
+/// currentColor 为黑色，暗色主题下会看不见。这里把 currentColor 设为与
+/// 兜底图标相同的 [fallbackColor]（默认 onSurfaceVariant），两种来源同色、
+/// 明暗主题都可读。
 class QWeatherIcon extends StatelessWidget {
   const QWeatherIcon({
     super.key,
@@ -25,6 +30,8 @@ class QWeatherIcon extends StatelessWidget {
   final String? weatherText;
   final double size;
   final FaIconData fallbackIcon;
+
+  /// 图标颜色：SVG 的 currentColor 与兜底图标共用，默认 onSurfaceVariant。
   final Color? fallbackColor;
   final String semanticLabel;
 
@@ -350,6 +357,7 @@ class QWeatherIcon extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.contain,
+        theme: SvgTheme(currentColor: fallbackIconColor),
         semanticsLabel: semanticLabel,
         placeholderBuilder: (_) => buildFallbackIcon(),
         errorBuilder: (_, __, ___) => buildFallbackIcon(),

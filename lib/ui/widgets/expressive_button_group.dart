@@ -11,12 +11,17 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
     required this.segments,
     required this.selected,
     required this.onSelectionChanged,
+    this.minSegmentWidth = 104,
   }) : assert(segments.length > 0),
        assert(selected.length == 1);
 
   final List<ButtonSegment<T>> segments;
   final Set<T> selected;
   final ValueChanged<Set<T>>? onSelectionChanged;
+
+  /// 每段横排所需的最小宽度，放不下时改为纵向连接。默认按较长的标签估算；
+  /// 标签很短（两三个字）时可调小，避免窄屏下无谓地堆成三行。
+  final double minSegmentWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +30,7 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final stacked =
-            constraints.maxWidth < segments.length * 104 ||
+            constraints.maxWidth < segments.length * minSegmentWidth ||
             MediaQuery.textScalerOf(context).scale(14) > 20;
         final children = <Widget>[];
         for (var index = 0; index < segments.length; index++) {

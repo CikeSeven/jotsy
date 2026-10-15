@@ -49,7 +49,7 @@ class DiaryPageQuery {
   final String keyword;
   final List<int> requiredTagIds;
   final int limit;
-  final DiaryQuerySortMode sortMode;
+  final DiarySortMode sortMode;
 
   @override
   bool operator ==(Object other) {
@@ -213,7 +213,7 @@ final startupDiariesProvider = Provider<AsyncValue<PagedDiariesResult>>((
         keyword: '',
         requiredTagIds: const <int>[],
         limit: diaryFirstPageSize,
-        sortMode: DiaryQuerySortMode.values.byName(sortMode.name),
+        sortMode: sortMode,
       ),
     ),
   );

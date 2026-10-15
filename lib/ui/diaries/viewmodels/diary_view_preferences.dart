@@ -1,3 +1,4 @@
+import '../../../core/database/app_database.dart';
 import '../sections/diary_head_section.dart';
 
 /// 日记列表视图偏好。
@@ -24,17 +25,10 @@ class DiaryViewPreferences {
     );
   }
 
-  /// 排序字符串解析。
+  /// 排序字符串解析：存储值即 [DiarySortMode] 的枚举名（兼容旧版三种取值）；
+  /// 无法识别（如较新版本写入的值、被手改的备份）时回退为“最近更新在前”。
   static DiarySortMode _parseSortMode(String raw) {
-    switch (raw) {
-      case 'updatedAsc':
-        return DiarySortMode.updatedAsc;
-      case 'titleAsc':
-        return DiarySortMode.titleAsc;
-      case 'updatedDesc':
-      default:
-        return DiarySortMode.updatedDesc;
-    }
+    return DiarySortMode.values.asNameMap()[raw] ?? DiarySortMode.updatedDesc;
   }
 
   /// 布局字符串解析。

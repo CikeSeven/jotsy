@@ -1076,15 +1076,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0141 => 'Sort';
 
   @override
-  String get autoT0142 => 'Recently updated';
-
-  @override
-  String get autoT0143 => 'Oldest updated';
-
-  @override
-  String get autoT0144 => 'Title A-Z';
-
-  @override
   String get autoT0145 => 'Layout';
 
   @override
@@ -1832,4 +1823,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get locationUnavailable =>
       'Could not get your location. Try again where the satellite signal is stronger, or enter a place manually.';
+
+  @override
+  String get diarySortFieldUpdated => 'Date updated';
+
+  @override
+  String get diarySortFieldPublished => 'Date published';
+
+  @override
+  String get diarySortFieldTitle => 'Title';
+
+  @override
+  String get diarySortDescending => 'Descending';
+
+  @override
+  String get diarySortAscending => 'Ascending';
+
+  @override
+  String get diarySortHintUpdatedDesc => 'Most recently updated first';
+
+  @override
+  String get diarySortHintUpdatedAsc => 'Least recently updated first';
+
+  @override
+  String get diarySortHintPublishedDesc => 'Newest first';
+
+  @override
+  String get diarySortHintPublishedAsc => 'Oldest first';
+
+  @override
+  String get diarySortHintTitleAsc => 'Titles A → Z, untitled last';
+
+  @override
+  String get diarySortHintTitleDesc => 'Titles Z → A, untitled last';
 }

@@ -14,7 +14,7 @@ class _EmptyDatabase extends AppDatabase {
     List<int> requiredTagIds = const <int>[],
     int? limit,
     int offset = 0,
-    DiaryQuerySortMode sortMode = DiaryQuerySortMode.updatedDesc,
+    DiarySortMode sortMode = DiarySortMode.updatedDesc,
   }) => Stream<List<DiaryWithTags>>.value(const <DiaryWithTags>[]);
 }
 
@@ -46,7 +46,7 @@ void main() {
       keyword: '',
       requiredTagIds: <int>[7],
       limit: 20,
-      sortMode: DiaryQuerySortMode.updatedDesc,
+      sortMode: DiarySortMode.updatedDesc,
     );
     final provider = pagedDiariesProvider(query);
 

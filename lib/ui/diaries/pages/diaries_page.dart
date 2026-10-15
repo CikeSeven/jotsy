@@ -23,6 +23,7 @@ import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
+import '../sections/diary_view_options_sheet.dart';
 import '../widgets/diaries_header_sliver.dart';
 import '../widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -87,16 +88,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   // 筛选过渡状态（由 DiaryListTransitionCoordinator 读写）：
   // - generation：每次筛选变更自增，过渡只为最新一轮淡入；
   // - held：淡出期间冻结的展示列表，防止新旧数据在半透明时互换；
+  // - scrollToTop：本轮过渡释放冻结时让列表回到顶部（切换排序时置位）；
   // - lastDisplayed/currentQuery：build 写入，供冻结与等待首帧数据使用。
   int _filterMutationGeneration = 0;
   Future<void>? _queuedFilterTransition;
   Completer<void>? _filterQueryWaiter;
   List<DiaryWithTags>? _heldDisplayedItems;
+  bool _scrollToTopOnFilterRelease = false;
   List<DiaryWithTags> _lastDisplayedItems = const <DiaryWithTags>[];
   DiaryPageQuery? _currentDiaryPageQuery;
   List<DiaryWithTags> _cachedVisibleItems = const <DiaryWithTags>[];
   List<DiaryWithTags>? _cachedVisibleSourceItemsRef;
-  DiarySortMode? _cachedVisibleSortMode;
   String _cachedHiddenDiaryIdsSignature = '';
   List<DiaryWithTags>? _lastSyncedVisibleItemsRef;
   List<Tag>? _cachedTagFilterSourceTagsRef;
@@ -199,7 +201,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           keyword: filterState.keyword.trim(),
           requiredTagIds: filterState.selectedTagIds.toList()..sort(),
           limit: _visibleDiaryLimit,
-          sortMode: _toQuerySortMode(_sortMode),
+          sortMode: _sortMode,
         );
         final diariesAsync = ref.watch(pagedDiariesProvider(diaryPageQuery));
         final latestPage = diariesAsync.asData?.value;
@@ -362,10 +364,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         ),
                                         onOpenArchived:
                                             _controller.openArchivedPage,
-                                        sortMode: _sortMode,
-                                        layoutMode: _layoutMode,
-                                        onMenuSelected:
-                                            _controller.onMenuSelected,
+                                        onOpenViewOptions:
+                                            _controller.openViewOptions,
                                         onOpenSearchPage:
                                             _controller.openSearchPage,
                                       ),
@@ -581,14 +581,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 解析当前可见日记列表，并在输入不变时复用上次结果。
   ///
   /// 缓存失效条件：
-  /// 1) provider 返回的日记源引用发生变化；
-  /// 2) 排序模式变化；
-  /// 3) 乐观隐藏集合变化（归档/删除过渡）。
+  /// 1) provider 返回的日记源引用发生变化（换排序即换查询，源引用随之变化）；
+  /// 2) 乐观隐藏集合变化（归档/删除过渡）。
   List<DiaryWithTags> _resolveVisibleItems(List<DiaryWithTags> sourceItems) {
     final hiddenSignature = _buildDiaryIdSignature(_optimisticHiddenDiaryIds);
     final canReuseCache =
         identical(sourceItems, _cachedVisibleSourceItemsRef) &&
-        _cachedVisibleSortMode == _sortMode &&
         _cachedHiddenDiaryIdsSignature == hiddenSignature;
     if (canReuseCache) {
       return _cachedVisibleItems;
@@ -596,7 +594,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
     final resolved = _controller.buildVisibleItems(sourceItems);
     _cachedVisibleSourceItemsRef = sourceItems;
-    _cachedVisibleSortMode = _sortMode;
     _cachedHiddenDiaryIdsSignature = hiddenSignature;
     _cachedVisibleItems = resolved;
     return resolved;
@@ -644,14 +641,6 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final normalizedKeyword = filterState.keyword.trim();
     final sortedTagIds = filterState.selectedTagIds.toList()..sort();
     return '$normalizedKeyword|${sortedTagIds.join(",")}|${_sortMode.name}';
-  }
-
-  DiaryQuerySortMode _toQuerySortMode(DiarySortMode sortMode) {
-    return switch (sortMode) {
-      DiarySortMode.updatedAsc => DiaryQuerySortMode.updatedAsc,
-      DiarySortMode.titleAsc => DiaryQuerySortMode.titleAsc,
-      DiarySortMode.updatedDesc => DiaryQuerySortMode.updatedDesc,
-    };
   }
 
   /// 同步分页状态与筛选条件。

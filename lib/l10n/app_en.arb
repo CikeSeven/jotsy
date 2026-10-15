@@ -1471,18 +1471,6 @@
   "@autoT0141": {
     "description": "Auto-generated metadata for autoT0141."
   },
-  "autoT0142": "Recently updated",
-  "@autoT0142": {
-    "description": "Auto-generated metadata for autoT0142."
-  },
-  "autoT0143": "Oldest updated",
-  "@autoT0143": {
-    "description": "Auto-generated metadata for autoT0143."
-  },
-  "autoT0144": "Title A-Z",
-  "@autoT0144": {
-    "description": "Auto-generated metadata for autoT0144."
-  },
   "autoT0145": "Layout",
   "@autoT0145": {
     "description": "Auto-generated metadata for autoT0145."
@@ -2475,5 +2463,49 @@
   "locationUnavailable": "Could not get your location. Try again where the satellite signal is stronger, or enter a place manually.",
   "@locationUnavailable": {
     "description": "Hint after both fused and system location providers fail to return a usable position."
+  },
+  "diarySortFieldUpdated": "Date updated",
+  "@diarySortFieldUpdated": {
+    "description": "Diary list sort option that orders diaries by their last update time."
+  },
+  "diarySortFieldPublished": "Date published",
+  "@diarySortFieldPublished": {
+    "description": "Diary list sort option that orders diaries by the publish time chosen when publishing (the unlock time for time capsules)."
+  },
+  "diarySortFieldTitle": "Title",
+  "@diarySortFieldTitle": {
+    "description": "Diary list sort option that orders diaries by title."
+  },
+  "diarySortDescending": "Descending",
+  "@diarySortDescending": {
+    "description": "Diary list sort direction button for descending order (newest first, or titles Z to A)."
+  },
+  "diarySortAscending": "Ascending",
+  "@diarySortAscending": {
+    "description": "Diary list sort direction button for ascending order (oldest first, or titles A to Z)."
+  },
+  "diarySortHintUpdatedDesc": "Most recently updated first",
+  "@diarySortHintUpdatedDesc": {
+    "description": "Explains the current diary list order: by update time, descending."
+  },
+  "diarySortHintUpdatedAsc": "Least recently updated first",
+  "@diarySortHintUpdatedAsc": {
+    "description": "Explains the current diary list order: by update time, ascending."
+  },
+  "diarySortHintPublishedDesc": "Newest first",
+  "@diarySortHintPublishedDesc": {
+    "description": "Explains the current diary list order: by publish time, descending."
+  },
+  "diarySortHintPublishedAsc": "Oldest first",
+  "@diarySortHintPublishedAsc": {
+    "description": "Explains the current diary list order: by publish time, ascending."
+  },
+  "diarySortHintTitleAsc": "Titles A → Z, untitled last",
+  "@diarySortHintTitleAsc": {
+    "description": "Explains the current diary list order: by title A to Z, with untitled diaries always last."
+  },
+  "diarySortHintTitleDesc": "Titles Z → A, untitled last",
+  "@diarySortHintTitleDesc": {
+    "description": "Explains the current diary list order: by title Z to A, with untitled diaries always last."
   }
 }

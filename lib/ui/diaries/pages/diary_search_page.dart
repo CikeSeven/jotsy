@@ -166,7 +166,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       keyword: query.keyword,
       requiredTagIds: query.requiredTagIds,
       limit: _visibleDiaryLimit,
-      sortMode: DiaryQuerySortMode.updatedDesc,
+      sortMode: DiarySortMode.updatedDesc,
     );
     final diariesAsync = query.hasAnyCondition
         ? ref.watch(searchDiariesProvider(pageQuery))

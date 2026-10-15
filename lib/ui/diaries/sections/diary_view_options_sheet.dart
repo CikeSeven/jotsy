@@ -1,0 +1,305 @@
+import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+
+import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
+import '../../../core/database/app_database.dart';
+import '../../widgets/expressive_button_group.dart';
+import '../../widgets/expressive_icon_swap.dart';
+import '../../widgets/expressive_state_blend.dart';
+import 'diary_head_section.dart';
+
+/// 打开日记列表的视图选项面板：排序依据、正/倒序与布局。
+///
+/// 选项即点即生效且面板保持打开：排序依据与方向常常要连着调，点一项就关闭
+/// 会让用户反复打开面板。生效由页面经回调完成，列表在面板后方淡出、换序、
+/// 淡入；下拉或点遮罩关闭面板。
+Future<void> showDiaryViewOptionsSheet(
+  BuildContext context, {
+  required DiarySortMode sortMode,
+  required DiaryLayoutMode layoutMode,
+  required ValueChanged<DiarySortMode> onSortModeChanged,
+  required ValueChanged<DiaryLayoutMode> onLayoutModeChanged,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    showDragHandle: true,
+    // 内容高度接近默认的 9/16 屏高上限，大字号或矮屏会超出：放开上限按内容
+    // 撑高，仍超出屏幕时由内部滚动兜底。
+    isScrollControlled: true,
+    // 底部面板默认滑入不读取系统“减少动态效果”；该模式下直接出现。
+    sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
+        ? AnimationStyle.noAnimation
+        : null,
+    builder: (BuildContext sheetContext) => DiaryViewOptionsSheet(
+      initialSortMode: sortMode,
+      initialLayoutMode: layoutMode,
+      onSortModeChanged: onSortModeChanged,
+      onLayoutModeChanged: onLayoutModeChanged,
+    ),
+  );
+}
+
+/// 视图选项面板内容。
+///
+/// 选中态由面板自己维护（初值取打开时的页面状态）：面板是独立路由，不随
+/// 页面重建；打开期间排序与布局只能经由面板修改，本地状态不会与页面分叉。
+class DiaryViewOptionsSheet extends StatefulWidget {
+  const DiaryViewOptionsSheet({
+    super.key,
+    required this.initialSortMode,
+    required this.initialLayoutMode,
+    required this.onSortModeChanged,
+    required this.onLayoutModeChanged,
+  });
+
+  final DiarySortMode initialSortMode;
+  final DiaryLayoutMode initialLayoutMode;
+  final ValueChanged<DiarySortMode> onSortModeChanged;
+  final ValueChanged<DiaryLayoutMode> onLayoutModeChanged;
+
+  @override
+  State<DiaryViewOptionsSheet> createState() => _DiaryViewOptionsSheetState();
+}
+
+class _DiaryViewOptionsSheetState extends State<DiaryViewOptionsSheet> {
+  late DiarySortMode _sortMode = widget.initialSortMode;
+  late DiaryLayoutMode _layoutMode = widget.initialLayoutMode;
+
+  void _selectSortMode(DiarySortMode mode) {
+    if (mode == _sortMode) {
+      return;
+    }
+    setState(() => _sortMode = mode);
+    widget.onSortModeChanged(mode);
+  }
+
+  void _selectLayoutMode(DiaryLayoutMode mode) {
+    if (mode == _layoutMode) {
+      return;
+    }
+    setState(() => _layoutMode = mode);
+    widget.onLayoutModeChanged(mode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.l,
+          AppSpacing.s,
+          AppSpacing.l,
+          AppSpacing.l,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            _SectionHeader(icon: FontAwesomeIcons.sort, label: l10n.autoT0141),
+            const SizedBox(height: AppSpacing.xs),
+            for (final field in DiarySortField.values)
+              _OptionTile(
+                label: _sortFieldLabel(l10n, field),
+                selected: _sortMode.field == field,
+                // 换排序依据时保留当前正/倒序。
+                onTap: () => _selectSortMode(_sortMode.withField(field)),
+              ),
+            const SizedBox(height: AppSpacing.s),
+            ExpressiveButtonGroup<DiarySortDirection>(
+              segments: <ButtonSegment<DiarySortDirection>>[
+                ButtonSegment<DiarySortDirection>(
+                  value: DiarySortDirection.descending,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.arrowDownWideShort,
+                    size: 16,
+                  ),
+                  label: Text(l10n.diarySortDescending),
+                ),
+                ButtonSegment<DiarySortDirection>(
+                  value: DiarySortDirection.ascending,
+                  icon: const FaIcon(
+                    FontAwesomeIcons.arrowUpWideShort,
+                    size: 16,
+                  ),
+                  label: Text(l10n.diarySortAscending),
+                ),
+              ],
+              selected: <DiarySortDirection>{_sortMode.direction},
+              onSelectionChanged: (Set<DiarySortDirection> selection) =>
+                  _selectSortMode(_sortMode.withDirection(selection.single)),
+            ),
+            const SizedBox(height: AppSpacing.s),
+            _SortEffectHint(text: _sortEffectHint(l10n, _sortMode)),
+            const SizedBox(height: AppSpacing.l),
+            _SectionHeader(
+              icon: FontAwesomeIcons.tableCellsLarge,
+              label: l10n.autoT0145,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            _OptionTile(
+              label: l10n.autoT0146,
+              selected: _layoutMode == DiaryLayoutMode.list,
+              onTap: () => _selectLayoutMode(DiaryLayoutMode.list),
+            ),
+            _OptionTile(
+              label: l10n.autoT0147,
+              selected: _layoutMode == DiaryLayoutMode.waterfall,
+              onTap: () => _selectLayoutMode(DiaryLayoutMode.waterfall),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _sortFieldLabel(AppLocalizations l10n, DiarySortField field) {
+  return switch (field) {
+    DiarySortField.updatedAt => l10n.diarySortFieldUpdated,
+    DiarySortField.createdAt => l10n.diarySortFieldPublished,
+    DiarySortField.title => l10n.diarySortFieldTitle,
+  };
+}
+
+/// “正序/倒序”对时间字段有歧义，用一句话写明当前组合的实际效果。
+String _sortEffectHint(AppLocalizations l10n, DiarySortMode mode) {
+  return switch (mode) {
+    DiarySortMode.updatedDesc => l10n.diarySortHintUpdatedDesc,
+    DiarySortMode.updatedAsc => l10n.diarySortHintUpdatedAsc,
+    DiarySortMode.createdDesc => l10n.diarySortHintPublishedDesc,
+    DiarySortMode.createdAsc => l10n.diarySortHintPublishedAsc,
+    DiarySortMode.titleAsc => l10n.diarySortHintTitleAsc,
+    DiarySortMode.titleDesc => l10n.diarySortHintTitleDesc,
+  };
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.icon, required this.label});
+
+  final FaIconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      header: true,
+      child: Row(
+        children: <Widget>[
+          FaIcon(icon, size: 16, color: theme.colorScheme.primary),
+          const SizedBox(width: AppSpacing.s),
+          Text(
+            label,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 排序效果说明：随排序依据与方向变化短交叉淡入，不在一帧内换字。
+class _SortEffectHint extends StatelessWidget {
+  const _SortEffectHint({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+      child: AnimatedSwitcher(
+        duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+        switchInCurve: ExpressiveMotion.effects,
+        switchOutCurve: ExpressiveMotion.exit,
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          alignment: AlignmentDirectional.centerStart,
+          children: <Widget>[...previousChildren, ?currentChild],
+        ),
+        child: Text(
+          text,
+          key: ValueKey<String>(text),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 面板中的单选项。
+///
+/// 选中项只换容器色、字重与单选图标颜色，文字保持 onSurface：部分配色下
+/// onSecondaryContainer 偏浅，会让选中项看起来比其他项更弱（与地址层级菜单
+/// 一致）。面板保持打开，选中态变化会被看到：容器色与图标颜色经
+/// [ExpressiveStateBlend] 补间（ListTile 的 tileColor 不做隐式动画），单选图标
+/// 缩放淡入切换。容器色经 ListTile 的 tileColor（Ink 绘制）给出，外层不包
+/// 不透明容器，避免盖住水波纹；`selected` 同时为读屏暴露选中态。
+class _OptionTile extends StatelessWidget {
+  const _OptionTile({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: ExpressiveStateBlend(
+        active: selected,
+        builder: (BuildContext context, double t, Widget? child) {
+          final tileColor = colorScheme.secondaryContainer.withValues(alpha: t);
+          return ListTile(
+            selected: selected,
+            tileColor: tileColor,
+            selectedTileColor: tileColor,
+            dense: true,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            minLeadingWidth: 24,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.l,
+            ),
+            onTap: onTap,
+            leading: ExpressiveIconSwap(
+              switchKey: selected,
+              child: FaIcon(
+                selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
+                size: 16,
+                color: Color.lerp(
+                  colorScheme.onSurfaceVariant,
+                  colorScheme.primary,
+                  t,
+                ),
+              ),
+            ),
+            title: Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

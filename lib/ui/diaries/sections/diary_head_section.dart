@@ -8,26 +8,14 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/expressive_icon_swap.dart';
 
-/// 顶部排序模式。
-enum DiarySortMode { updatedDesc, updatedAsc, titleAsc }
-
 /// 日记列表布局模式。
 enum DiaryLayoutMode { list, waterfall }
-
-/// 顶部菜单动作枚举（排序 + 布局）。
-enum DiaryMenuAction {
-  sortUpdatedDesc,
-  sortUpdatedAsc,
-  sortTitleAsc,
-  layoutList,
-  layoutWaterfall,
-}
 
 /// 日记页顶部头部区块。
 ///
 /// 布局职责：
 /// - 左侧展示页面标题或多选计数；
-/// - 右侧展示操作按钮（取消选择、归档、删除、归档列表入口）。
+/// - 右侧展示操作按钮（取消选择、归档、删除、归档列表入口、视图选项）。
 class DiaryHeadSection extends StatelessWidget {
   // ==================== 头部过渡动画常量 ====================
   static const double _headerContentHeight = 52;
@@ -43,9 +31,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onArchiveSelected,
     required this.onDeleteSelected,
     required this.onOpenArchived,
-    required this.sortMode,
-    required this.layoutMode,
-    required this.onMenuSelected,
+    required this.onOpenViewOptions,
     required this.onOpenSearchPage,
   });
 
@@ -57,9 +43,9 @@ class DiaryHeadSection extends StatelessWidget {
   final VoidCallback onArchiveSelected;
   final VoidCallback onDeleteSelected;
   final VoidCallback onOpenArchived;
-  final DiarySortMode sortMode;
-  final DiaryLayoutMode layoutMode;
-  final ValueChanged<DiaryMenuAction> onMenuSelected;
+
+  /// 打开视图选项面板（排序与布局），面板由页面控制器负责呈现。
+  final VoidCallback onOpenViewOptions;
   final VoidCallback onOpenSearchPage;
 
   @override
@@ -182,116 +168,9 @@ class DiaryHeadSection extends StatelessWidget {
         const SizedBox(width: AppSpacing.s),
         _TrailingActions(
           onOpenArchived: onOpenArchived,
-          onOpenSettings: () => _showSettingsSheet(context),
+          onOpenViewOptions: onOpenViewOptions,
         ),
       ],
-    );
-  }
-
-  /// 打开排序与布局设置底部面板。
-  void _showSettingsSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      // 底部面板默认滑入不读取系统“减少动态效果”；该模式下直接出现。
-      sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
-          ? AnimationStyle.noAnimation
-          : null,
-      builder: (BuildContext sheetContext) {
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.l,
-              AppSpacing.s,
-              AppSpacing.l,
-              AppSpacing.l,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    FaIcon(
-                      FontAwesomeIcons.arrowDownWideShort,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: AppSpacing.s),
-                    Text(
-                      context.l10n.autoT0141,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                _ActionTile(
-                  label: context.l10n.autoT0142,
-                  selected: sortMode == DiarySortMode.updatedDesc,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    onMenuSelected(DiaryMenuAction.sortUpdatedDesc);
-                  },
-                ),
-                _ActionTile(
-                  label: context.l10n.autoT0143,
-                  selected: sortMode == DiarySortMode.updatedAsc,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    onMenuSelected(DiaryMenuAction.sortUpdatedAsc);
-                  },
-                ),
-                _ActionTile(
-                  label: context.l10n.autoT0144,
-                  selected: sortMode == DiarySortMode.titleAsc,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    onMenuSelected(DiaryMenuAction.sortTitleAsc);
-                  },
-                ),
-                const SizedBox(height: AppSpacing.s),
-                Row(
-                  children: [
-                    FaIcon(
-                      FontAwesomeIcons.tableCellsLarge,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: AppSpacing.s),
-                    Text(
-                      context.l10n.autoT0145,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                _ActionTile(
-                  label: context.l10n.autoT0146,
-                  selected: layoutMode == DiaryLayoutMode.list,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    onMenuSelected(DiaryMenuAction.layoutList);
-                  },
-                ),
-                _ActionTile(
-                  label: context.l10n.autoT0147,
-                  selected: layoutMode == DiaryLayoutMode.waterfall,
-                  onTap: () {
-                    Navigator.of(sheetContext).pop();
-                    onMenuSelected(DiaryMenuAction.layoutWaterfall);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
@@ -357,11 +236,11 @@ class _SearchPreview extends StatelessWidget {
 class _TrailingActions extends StatelessWidget {
   const _TrailingActions({
     required this.onOpenArchived,
-    required this.onOpenSettings,
+    required this.onOpenViewOptions,
   });
 
   final VoidCallback onOpenArchived;
-  final VoidCallback onOpenSettings;
+  final VoidCallback onOpenViewOptions;
 
   @override
   Widget build(BuildContext context) {
@@ -375,58 +254,10 @@ class _TrailingActions extends StatelessWidget {
         ),
         IconButton(
           tooltip: context.l10n.autoT0125,
-          onPressed: onOpenSettings,
+          onPressed: onOpenViewOptions,
           icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
         ),
       ],
-    );
-  }
-}
-
-class _ActionTile extends StatelessWidget {
-  const _ActionTile({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    // 选中底色交给 ListTile 的 tileColor（经 Ink 绘制），外层不包不透明
-    // Container，避免水波纹被盖住；selected 同时为读屏暴露选中态。
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: ListTile(
-        selected: selected,
-        tileColor: selected ? colorScheme.secondaryContainer : null,
-        selectedTileColor: colorScheme.secondaryContainer,
-        dense: true,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        minLeadingWidth: 24,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        onTap: onTap,
-        leading: FaIcon(
-          selected ? FontAwesomeIcons.circleDot : FontAwesomeIcons.circle,
-          size: 16,
-          color: selected
-              ? colorScheme.onSecondaryContainer
-              : colorScheme.onSurfaceVariant,
-        ),
-        title: Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected
-                ? colorScheme.onSecondaryContainer
-                : colorScheme.onSurface,
-          ),
-        ),
-      ),
     );
   }
 }

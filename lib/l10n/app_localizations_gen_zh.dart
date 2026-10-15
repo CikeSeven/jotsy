@@ -1039,15 +1039,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0141 => '排序方式';
 
   @override
-  String get autoT0142 => '最近更新';
-
-  @override
-  String get autoT0143 => '最早更新';
-
-  @override
-  String get autoT0144 => '标题 A-Z';
-
-  @override
   String get autoT0145 => '显示布局';
 
   @override
@@ -1754,4 +1745,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get locationUnavailable => '暂时无法获取位置，请到卫星信号较好的位置重试，或手动填写地点。';
+
+  @override
+  String get diarySortFieldUpdated => '更新时间';
+
+  @override
+  String get diarySortFieldPublished => '发表时间';
+
+  @override
+  String get diarySortFieldTitle => '标题';
+
+  @override
+  String get diarySortDescending => '倒序';
+
+  @override
+  String get diarySortAscending => '正序';
+
+  @override
+  String get diarySortHintUpdatedDesc => '最近更新的在前';
+
+  @override
+  String get diarySortHintUpdatedAsc => '最早更新的在前';
+
+  @override
+  String get diarySortHintPublishedDesc => '最新发表的在前';
+
+  @override
+  String get diarySortHintPublishedAsc => '最早发表的在前';
+
+  @override
+  String get diarySortHintTitleAsc => '标题 A → Z，无标题的在最后';
+
+  @override
+  String get diarySortHintTitleDesc => '标题 Z → A，无标题的在最后';
 }

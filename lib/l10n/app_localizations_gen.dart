@@ -1970,24 +1970,6 @@ abstract class AppLocalizations {
   /// **'Sort'**
   String get autoT0141;
 
-  /// Auto-generated metadata for autoT0142.
-  ///
-  /// In en, this message translates to:
-  /// **'Recently updated'**
-  String get autoT0142;
-
-  /// Auto-generated metadata for autoT0143.
-  ///
-  /// In en, this message translates to:
-  /// **'Oldest updated'**
-  String get autoT0143;
-
-  /// Auto-generated metadata for autoT0144.
-  ///
-  /// In en, this message translates to:
-  /// **'Title A-Z'**
-  String get autoT0144;
-
   /// Auto-generated metadata for autoT0145.
   ///
   /// In en, this message translates to:
@@ -3307,6 +3289,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not get your location. Try again where the satellite signal is stronger, or enter a place manually.'**
   String get locationUnavailable;
+
+  /// Diary list sort option that orders diaries by their last update time.
+  ///
+  /// In en, this message translates to:
+  /// **'Date updated'**
+  String get diarySortFieldUpdated;
+
+  /// Diary list sort option that orders diaries by the publish time chosen when publishing (the unlock time for time capsules).
+  ///
+  /// In en, this message translates to:
+  /// **'Date published'**
+  String get diarySortFieldPublished;
+
+  /// Diary list sort option that orders diaries by title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diarySortFieldTitle;
+
+  /// Diary list sort direction button for descending order (newest first, or titles Z to A).
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get diarySortDescending;
+
+  /// Diary list sort direction button for ascending order (oldest first, or titles A to Z).
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get diarySortAscending;
+
+  /// Explains the current diary list order: by update time, descending.
+  ///
+  /// In en, this message translates to:
+  /// **'Most recently updated first'**
+  String get diarySortHintUpdatedDesc;
+
+  /// Explains the current diary list order: by update time, ascending.
+  ///
+  /// In en, this message translates to:
+  /// **'Least recently updated first'**
+  String get diarySortHintUpdatedAsc;
+
+  /// Explains the current diary list order: by publish time, descending.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get diarySortHintPublishedDesc;
+
+  /// Explains the current diary list order: by publish time, ascending.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get diarySortHintPublishedAsc;
+
+  /// Explains the current diary list order: by title A to Z, with untitled diaries always last.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles A → Z, untitled last'**
+  String get diarySortHintTitleAsc;
+
+  /// Explains the current diary list order: by title Z to A, with untitled diaries always last.
+  ///
+  /// In en, this message translates to:
+  /// **'Titles Z → A, untitled last'**
+  String get diarySortHintTitleDesc;
 }
 
 class _AppLocalizationsDelegate

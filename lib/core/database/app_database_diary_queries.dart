@@ -123,7 +123,7 @@ ORDER BY d.updated_at DESC, d.id DESC
     List<int> requiredTagIds = const <int>[],
     int? limit,
     int offset = 0,
-    DiaryQuerySortMode sortMode = DiaryQuerySortMode.updatedDesc,
+    DiarySortMode sortMode = DiarySortMode.updatedDesc,
   }) {
     final normalizedKeyword = keyword.trim();
     final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
@@ -232,14 +232,26 @@ WHERE d.is_deleted = 0
     variables.add(Variable<int>(normalizedTagIds.length));
   }
 
-  String _diaryOrderBySql(DiaryQuerySortMode sortMode) {
-    return switch (sortMode) {
-      DiaryQuerySortMode.updatedAsc =>
-        'ORDER BY d.is_pinned DESC, d.updated_at ASC, d.id ASC',
-      DiaryQuerySortMode.titleAsc =>
-        'ORDER BY d.is_pinned DESC, LOWER(d.title) ASC, d.updated_at DESC, d.id DESC',
-      DiaryQuerySortMode.updatedDesc =>
-        'ORDER BY d.is_pinned DESC, d.updated_at DESC, d.id DESC',
+  /// 生成列表排序子句：置顶在前，再按 [sortMode] 的依据与方向排序。
+  ///
+  /// - 末键总是唯一的 `d.id`，让顺序成为全序：分页窗口扩大（LIMIT 变大）
+  ///   重新查询时，同一时间戳或同名日记的相对次序不变，加载更多不会换位；
+  /// - 标题排序先按“是否无标题”分组：无标题（含纯空格）的日记在卡片上统一
+  ///   显示为“无标题”，按空串排进 A→Z 最前没有意义，所以正/倒序都排在最后；
+  ///   同名时最近更新的在前。
+  String _diaryOrderBySql(DiarySortMode sortMode) {
+    final direction = switch (sortMode.direction) {
+      DiarySortDirection.descending => 'DESC',
+      DiarySortDirection.ascending => 'ASC',
+    };
+    return switch (sortMode.field) {
+      DiarySortField.updatedAt =>
+        'ORDER BY d.is_pinned DESC, d.updated_at $direction, d.id $direction',
+      DiarySortField.createdAt =>
+        'ORDER BY d.is_pinned DESC, d.created_at $direction, d.id $direction',
+      DiarySortField.title =>
+        "ORDER BY d.is_pinned DESC, TRIM(d.title) = '' ASC, "
+            'LOWER(TRIM(d.title)) $direction, d.updated_at DESC, d.id DESC',
     };
   }
 

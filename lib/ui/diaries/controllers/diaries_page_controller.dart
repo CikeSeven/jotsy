@@ -560,32 +560,32 @@ class DiariesPageController {
     );
   }
 
-  /// 处理头部菜单动作（排序/布局切换）。
-  void onMenuSelected(DiaryMenuAction action) {
-    switch (action) {
-      case DiaryMenuAction.sortUpdatedDesc:
-        _changeSortMode(DiarySortMode.updatedDesc);
-      case DiaryMenuAction.sortUpdatedAsc:
-        _changeSortMode(DiarySortMode.updatedAsc);
-      case DiaryMenuAction.sortTitleAsc:
-        _changeSortMode(DiarySortMode.titleAsc);
-      case DiaryMenuAction.layoutList:
-        _changeLayoutMode(DiaryLayoutMode.list);
-      case DiaryMenuAction.layoutWaterfall:
-        _changeLayoutMode(DiaryLayoutMode.waterfall);
-    }
+  /// 打开视图选项面板（排序依据、正/倒序与布局），选项即点即生效。
+  void openViewOptions() {
+    unawaited(
+      showDiaryViewOptionsSheet(
+        _state.context,
+        sortMode: _state._sortMode,
+        layoutMode: _state._layoutMode,
+        onSortModeChanged: _changeSortMode,
+        onLayoutModeChanged: _changeLayoutMode,
+      ),
+    );
   }
 
   /// 切换排序：与标签筛选走同一套过渡——旧列表冻结并淡出，新排序的分页数据
   /// 到齐后再淡入。此前直接 setState，本地缓存先按新规则重排（卡片瞬间换位），
   /// 新窗口数据到达后又变一次。
+  ///
+  /// 新顺序从头展示：分页窗口随排序重置为首屏，停在原滚动位置只会落到新顺序
+  /// 中的任意一段（常常直接贴底又触发加载更多），所以换入新数据时回到顶部。
   void _changeSortMode(DiarySortMode mode) {
     if (_state._sortMode == mode) {
       return;
     }
     transitionCoordinator.queueFilterMutation(() {
       _state.setState(() => _state._sortMode = mode);
-    });
+    }, scrollToTop: true);
     _persistViewPreferences();
   }
 
@@ -629,15 +629,19 @@ class DiariesPageController {
     _state._viewPreferencesLoaded = true;
   }
 
-  /// 生成当前可见日记列表：
-  /// 1. 排除正在归档动画中的项；
-  /// 2. 套用排序规则。
+  /// 生成当前可见日记列表：排除正在归档/删除过渡中的项。
+  ///
+  /// 顺序以 SQL 为准（`watchDiaries` 的排序子句），这里不再二次排序：两处
+  /// 口径稍有出入（同值次序、大小写折叠），分页窗口扩大重新查询时卡片就会
+  /// 换位，而且每次数据回推都要在 UI 线程上重排整个窗口。
   List<DiaryWithTags> buildVisibleItems(List<DiaryWithTags> items) {
-    final visibleItems = items.where((DiaryWithTags item) {
-      return !_state._optimisticHiddenDiaryIds.contains(item.diary.diaryId);
-    }).toList();
-    _sortDiaries(visibleItems);
-    return visibleItems;
+    final hiddenIds = _state._optimisticHiddenDiaryIds;
+    if (hiddenIds.isEmpty) {
+      return items;
+    }
+    return items
+        .where((DiaryWithTags item) => !hiddenIds.contains(item.diary.diaryId))
+        .toList(growable: false);
   }
 
   /// 构建顶部标签筛选可见项。
@@ -661,49 +665,5 @@ class DiariesPageController {
     }
 
     return allTags.where((tag) => visibleTagIds.contains(tag.id)).toList();
-  }
-
-  /// 统一排序逻辑，避免页面层关心具体排序细节。
-  void _sortDiaries(List<DiaryWithTags> items) {
-    int comparePinnedFirst(DiaryWithTags a, DiaryWithTags b) {
-      final aPinned = a.diary.isPinned;
-      final bPinned = b.diary.isPinned;
-      if (aPinned == bPinned) {
-        return 0;
-      }
-      return aPinned ? -1 : 1;
-    }
-
-    switch (_state._sortMode) {
-      case DiarySortMode.updatedDesc:
-        items.sort((a, b) {
-          final pinnedCompare = comparePinnedFirst(a, b);
-          if (pinnedCompare != 0) {
-            return pinnedCompare;
-          }
-          return b.diary.updatedAt.compareTo(a.diary.updatedAt);
-        });
-        break;
-      case DiarySortMode.updatedAsc:
-        items.sort((a, b) {
-          final pinnedCompare = comparePinnedFirst(a, b);
-          if (pinnedCompare != 0) {
-            return pinnedCompare;
-          }
-          return a.diary.updatedAt.compareTo(b.diary.updatedAt);
-        });
-        break;
-      case DiarySortMode.titleAsc:
-        items.sort((a, b) {
-          final pinnedCompare = comparePinnedFirst(a, b);
-          if (pinnedCompare != 0) {
-            return pinnedCompare;
-          }
-          return a.diary.title.toLowerCase().compareTo(
-            b.diary.title.toLowerCase(),
-          );
-        });
-        break;
-    }
   }
 }

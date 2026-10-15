@@ -29,9 +29,15 @@ class DiaryListTransitionCoordinator {
   /// 2) 后台过渡：淡出 -> 等新查询首帧数据 -> 释放冻结 -> 淡入；
   /// 3) 过渡途中再次变更只会递增 generation，循环会继续处理最新一轮，
   ///    且只为最新结果淡入，不会把中间态或旧数据淡入出来。
-  void queueFilterMutation(VoidCallback mutation) {
+  ///
+  /// [scrollToTop] 为 true 时，释放冻结的同一帧让列表回到顶部（见
+  /// [_jumpListToTop]）；标记跨轮保留，期间又有变更也会在最终释放时生效。
+  void queueFilterMutation(VoidCallback mutation, {bool scrollToTop = false}) {
     _state._heldDisplayedItems ??= _state._lastDisplayedItems;
     _state._filterMutationGeneration++;
+    if (scrollToTop) {
+      _state._scrollToTopOnFilterRelease = true;
+    }
     mutation();
     _state._queuedFilterTransition ??= _runFilterTransition();
   }
@@ -55,6 +61,10 @@ class DiaryListTransitionCoordinator {
         if (generation != _state._filterMutationGeneration) {
           // 等待期间又有新筛选：保持淡出与冻结，直接处理最新一轮。
           continue;
+        }
+        if (_state._scrollToTopOnFilterRelease) {
+          _state._scrollToTopOnFilterRelease = false;
+          _jumpListToTop();
         }
         _state.setState(() => _state._heldDisplayedItems = null);
         await WidgetsBinding.instance.endOfFrame;
@@ -98,6 +108,22 @@ class DiaryListTransitionCoordinator {
       if (identical(_state._filterQueryWaiter, waiter)) {
         _state._filterQueryWaiter = null;
       }
+    }
+  }
+
+  /// 让主列表直接跳回顶部（不滚动）。
+  ///
+  /// 只在释放冻结前调用：跳转与换入新数据落在同一帧，列表此时已淡出，看不到
+  /// 跳动；减少动画时没有淡出，两者也合成一次变化，而不是旧列表先跳一下。
+  /// 主列表挂在 Tab 级 PrimaryScrollController 上，可能同时挂着多个位置
+  /// （布局切换交叉期间），逐个处理。
+  void _jumpListToTop() {
+    final controller = PrimaryScrollController.maybeOf(_state.context);
+    if (controller == null || !controller.hasClients) {
+      return;
+    }
+    for (final position in controller.positions.toList(growable: false)) {
+      position.jumpTo(position.minScrollExtent);
     }
   }
 

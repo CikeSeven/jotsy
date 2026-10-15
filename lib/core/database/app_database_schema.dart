@@ -95,11 +95,57 @@ class DiaryTags extends Table {
   Set<Column<Object>> get primaryKey => <Column<Object>>{diaryId, tagId};
 }
 
-/// 日记列表查询排序模式。
+/// 日记列表的排序依据。
+enum DiarySortField {
+  /// 最后更新时间（`updated_at`）。
+  updatedAt,
+
+  /// 发表时间（`created_at`）：发表页选定的时间，时间胶囊为解封时间。
+  createdAt,
+
+  /// 标题：忽略首尾空格与 ASCII 大小写，无标题的日记固定排在最后。
+  title,
+}
+
+/// 排序方向。
+enum DiarySortDirection { descending, ascending }
+
+/// 日记列表排序模式：排序依据 × 方向，置顶日记始终排在最前。
 ///
-/// 放在数据库层是为了让首页/搜索的分页查询能直接在 SQL 中排序，
-/// 避免先加载全量结果再在 UI 层截断造成首屏卡顿。
-enum DiaryQuerySortMode { updatedDesc, updatedAsc, titleAsc }
+/// 放在数据库层是为了让首页/搜索的分页查询直接在 SQL 中排序（见
+/// `watchDiaries`），避免先加载全量结果再在 UI 层截断造成首屏卡顿；UI 不再
+/// 二次排序，排序口径只有 SQL 这一处。
+///
+/// 枚举名即持久化值（设置项与备份中的 `diarySortModeRaw`），沿用旧版的
+/// `updatedDesc` / `updatedAsc` / `titleAsc`；改名会让已保存的选择失效。
+enum DiarySortMode {
+  updatedDesc(DiarySortField.updatedAt, DiarySortDirection.descending),
+  updatedAsc(DiarySortField.updatedAt, DiarySortDirection.ascending),
+  createdDesc(DiarySortField.createdAt, DiarySortDirection.descending),
+  createdAsc(DiarySortField.createdAt, DiarySortDirection.ascending),
+  titleAsc(DiarySortField.title, DiarySortDirection.ascending),
+  titleDesc(DiarySortField.title, DiarySortDirection.descending);
+
+  const DiarySortMode(this.field, this.direction);
+
+  final DiarySortField field;
+  final DiarySortDirection direction;
+
+  /// 由排序依据与方向组合出对应模式（每种组合都有且仅有一个枚举值）。
+  static DiarySortMode of(DiarySortField field, DiarySortDirection direction) {
+    return values.firstWhere(
+      (DiarySortMode mode) =>
+          mode.field == field && mode.direction == direction,
+    );
+  }
+
+  /// 换排序依据并保留方向：正/倒序是独立于排序依据的开关。
+  DiarySortMode withField(DiarySortField field) => of(field, direction);
+
+  /// 换方向并保留排序依据。
+  DiarySortMode withDirection(DiarySortDirection direction) =>
+      of(field, direction);
+}
 
 /// 业务聚合模型：日记 + 其标签列表。
 class DiaryWithTags {

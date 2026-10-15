@@ -2507,5 +2507,21 @@
   "diarySortHintTitleDesc": "Titles Z → A, untitled last",
   "@diarySortHintTitleDesc": {
     "description": "Explains the current diary list order: by title Z to A, with untitled diaries always last."
+  },
+  "diaryToolbarMoreTools": "More tools",
+  "@diaryToolbarMoreTools": {
+    "description": "Tooltip of the editor floating toolbar button that expands the panel holding the tools that do not fit on the toolbar row."
+  },
+  "diaryToolbarHideMoreTools": "Hide more tools",
+  "@diaryToolbarHideMoreTools": {
+    "description": "Tooltip of the editor floating toolbar button while the panel of extra tools is expanded; tapping it collapses the panel."
+  },
+  "diaryToolbarMoreToolsActive": "Formatting in effect",
+  "@diaryToolbarMoreToolsActive": {
+    "description": "Accessibility value of the More tools button when a tool inside the collapsed panel is active at the cursor, e.g. a quote or a list."
+  },
+  "diaryToolbarOverflowDivider": "Tools below go into More",
+  "@diaryToolbarOverflowDivider": {
+    "description": "Divider in the toolbar order settings page. Tools above it stay on the editor toolbar row; tools below it are in the More panel, based on the current screen width."
   }
 }

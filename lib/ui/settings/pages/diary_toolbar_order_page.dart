@@ -11,8 +11,13 @@ import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../widgets/diary_toolbar_overflow_divider.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
+///
+/// 按当前屏宽算出编辑器工具栏一排放得下几个，在列表里画一条分界线：线上方的
+/// 工具常驻在工具栏上，线下方的收进「更多」面板。分界线是列表中的一行（不可
+/// 拖动），拖放下标按含分界线的可见列表计算。
 class DiaryToolbarOrderPage extends StatefulWidget {
   const DiaryToolbarOrderPage({super.key, required this.settingsService});
 
@@ -81,11 +86,37 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     }
   }
 
-  void _handleReorder(int oldIndex, int newIndex) {
+  /// [oldIndex]/[newIndex] 按含分界线（[boundary] 处）的可见列表计，
+  /// [newIndex] 已扣除被移走的那一行。拖过分界线的工具留在放下的那一侧，
+  /// 分界另一侧的相邻工具随之换边，见 [keepDiaryToolbarItemOnSide]。
+  void _handleReorder(
+    int oldIndex,
+    int newIndex, {
+    required int? boundary,
+    required double toolbarWidth,
+  }) {
+    // null 占位代表分界线。
+    final rows = <DiaryToolbarItem?>[..._order];
+    if (boundary != null) {
+      rows.insert(boundary, null);
+    }
+    final moved = rows.removeAt(oldIndex);
+    if (moved == null) {
+      return;
+    }
+    rows.insert(newIndex, moved);
+    final reordered = rows.whereType<DiaryToolbarItem>().toList();
+    final dividerIndex = rows.indexOf(null);
     setState(() {
-      final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
-      final target = _order.removeAt(oldIndex);
-      _order.insert(adjustedNewIndex, target);
+      _order = dividerIndex < 0
+          ? reordered
+          : keepDiaryToolbarItemOnSide(
+              reordered,
+              moved: moved,
+              pinned: rows.indexOf(moved) < dividerIndex,
+              hiddenItems: _hiddenItems,
+              width: toolbarWidth,
+            );
     });
   }
 
@@ -209,6 +240,14 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    // 编辑器悬浮工具栏卡片左右各缩进 kDiaryFloatingToolbarInset。
+    final toolbarWidth =
+        MediaQuery.sizeOf(context).width - 2 * kDiaryFloatingToolbarInset;
+    final boundary = diaryToolbarOverflowBoundary(
+      _order,
+      _hiddenItems,
+      width: toolbarWidth,
+    );
     return PopScope(
       // 有未保存修改或正在保存时拦截系统返回，交给 _attemptExit 处理；
       // 保存成功后的 Navigator.pop 为直接出栈，不受此处限制。
@@ -247,12 +286,25 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               buildDefaultDragHandles: false,
               proxyDecorator: expressiveReorderProxyDecorator,
-              itemCount: _order.length,
+              itemCount: _order.length + (boundary == null ? 0 : 1),
               // 拖拽手柄立即拖动、不经过长按，系统不会反馈；拿起时补一次触觉。
               onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
-              onReorder: _handleReorder,
+              onReorderItem: (oldIndex, newIndex) => _handleReorder(
+                oldIndex,
+                newIndex,
+                boundary: boundary,
+                toolbarWidth: toolbarWidth,
+              ),
               itemBuilder: (BuildContext context, int index) {
-                final item = _order[index];
+                if (index == boundary) {
+                  return const DiaryToolbarOverflowDivider(
+                    key: ValueKey<String>('toolbar-overflow-divider'),
+                  );
+                }
+                final item =
+                    _order[boundary != null && index > boundary
+                        ? index - 1
+                        : index];
                 final enabled = !_hiddenItems.contains(item);
                 return ListTile(
                   key: ValueKey<String>(item.storageKey),

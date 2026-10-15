@@ -1856,4 +1856,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diarySortHintTitleDesc => 'Titles Z → A, untitled last';
+
+  @override
+  String get diaryToolbarMoreTools => 'More tools';
+
+  @override
+  String get diaryToolbarHideMoreTools => 'Hide more tools';
+
+  @override
+  String get diaryToolbarMoreToolsActive => 'Formatting in effect';
+
+  @override
+  String get diaryToolbarOverflowDivider => 'Tools below go into More';
 }

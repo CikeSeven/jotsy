@@ -92,6 +92,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
+  // 用于取光标矩形：「更多」面板展开时把光标滚到面板上方。
+  final GlobalKey<quill.EditorState> _quillEditorKey =
+      GlobalKey<quill.EditorState>();
+  // 悬浮工具栏「更多」面板的目标高度（收起为 0），驱动正文末尾的额外留白。
+  final ValueNotifier<double> _toolbarPanelExtent = ValueNotifier<double>(0);
   final DiaryRecordingController _recordingController =
       DiaryRecordingController();
   final DiaryMediaImportController _mediaImportController =
@@ -200,6 +205,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _contentScrollController.dispose();
     _editorInnerScrollController.dispose();
     _editPanelExpandProgress.dispose();
+    _toolbarPanelExtent.dispose();
     _contentController.dispose();
     _recordingController.dispose();
     _unbindToolbarSettingsService();
@@ -374,6 +380,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       // 新建时不在构建期自动聚焦：键盘会与页面滑入同时弹出并逐帧挤压布局。
       // 改由 [RouteEntranceWaiter] 在转场结束后聚焦（见 initState）。
       config: quill.QuillEditorConfig(
+        editorKey: _quillEditorKey,
         autoFocus: false,
         placeholder: placeholder,
         scrollable: false,
@@ -422,6 +429,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               constraints: BoxConstraints(minHeight: minEditorHeight),
               child: IgnorePointer(ignoring: contentLocked, child: quillEditor),
             ),
+            // 「更多」面板展开时额外让位，自身监听高度，不牵动整列重建。
+            DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
           ],
         );
         // 底部占位随面板拖拽进度连续变化，仅重建滚动容器这一层。
@@ -760,51 +769,60 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 ),
               if (showFloatingToolbar)
                 Positioned(
-                  left: 12,
-                  right: 12,
+                  left: kDiaryFloatingToolbarInset,
+                  right: kDiaryFloatingToolbarInset,
                   // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
                   bottom: 0,
-                  child: ExpressiveEntrance(
-                    child: SafeArea(
-                      top: false,
-                      minimum: const EdgeInsets.only(bottom: 8),
-                      // 录音面板插入/移除时整列高度平滑变化，工具栏随之上移，
-                      // 不再瞬间跳到 300dp 之上。
-                      child: AnimatedSize(
-                        duration: ExpressiveMotion.durationNonZero(
-                          context,
-                          ExpressiveMotion.medium,
-                        ),
-                        curve: ExpressiveMotion.effects,
-                        alignment: Alignment.bottomCenter,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Material(
-                              color: Theme.of(context).colorScheme.surface,
-                              elevation: 8,
-                              borderRadius: BorderRadius.circular(18),
-                              clipBehavior: Clip.antiAlias,
-                              child: MediaQuery(
-                                data: MediaQuery.of(
-                                  context,
-                                ).copyWith(textScaler: TextScaler.noScaling),
-                                child: IconTheme(
-                                  data: const IconThemeData(size: 16),
-                                  child: SizedBox(
-                                    height: 44,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => ExpressiveEntrance(
+                      child: SafeArea(
+                        top: false,
+                        minimum: const EdgeInsets.only(bottom: 8),
+                        // 录音面板插入/移除时整列高度平滑变化，工具栏随之上移，
+                        // 不再瞬间跳到 300dp 之上。
+                        child: AnimatedSize(
+                          duration: ExpressiveMotion.durationNonZero(
+                            context,
+                            ExpressiveMotion.medium,
+                          ),
+                          curve: ExpressiveMotion.effects,
+                          alignment: Alignment.bottomCenter,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Material(
+                                color: Theme.of(context).colorScheme.surface,
+                                elevation: 8,
+                                borderRadius: BorderRadius.circular(18),
+                                clipBehavior: Clip.antiAlias,
+                                child: MediaQuery(
+                                  data: MediaQuery.of(
+                                    context,
+                                  ).copyWith(textScaler: TextScaler.noScaling),
+                                  child: IconTheme(
+                                    data: const IconThemeData(size: 16),
                                     child: _buildFloatingToolbar(
                                       enabledToolbarOrder,
+                                      // 面板最多铺满工具栏上方的整块正文区，
+                                      // 极矮的窗口里改为面板内滚动而不溢出。
+                                      maxPanelExtent:
+                                          constraints.maxHeight -
+                                          MediaQuery.paddingOf(
+                                            context,
+                                          ).bottom.clamp(8.0, double.infinity) -
+                                          kDiaryToolbarBarHeight,
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            if (_recordingPanelOpen) ...[
-                              const SizedBox(height: 8),
-                              ExpressiveEntrance(child: _buildRecordingPanel()),
+                              if (_recordingPanelOpen) ...[
+                                const SizedBox(height: 8),
+                                ExpressiveEntrance(
+                                  child: _buildRecordingPanel(),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -930,8 +948,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     return true;
   }
 
-  Widget _buildFloatingToolbar(List<DiaryToolbarItem> toolbarOrder) {
-    return buildDiaryFloatingToolbar(
+  Widget _buildFloatingToolbar(
+    List<DiaryToolbarItem> toolbarOrder, {
+    required double maxPanelExtent,
+  }) {
+    return DiaryFloatingToolbar(
       controller: _contentController,
       order: toolbarOrder,
       hiddenItems: _toolbarHiddenItems,
@@ -940,7 +961,36 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       recordingOpen: _recordingPanelOpen,
       mediaImportController: _mediaImportController,
       onMediaPressed: (kind) => unawaited(_controller.importMedia(kind)),
+      onPanelExtentChanged: _handleToolbarPanelExtentChanged,
+      maxPanelExtent: maxPanelExtent,
     );
+  }
+
+  /// 「更多」面板展开/收起：正文末尾留白跟着变（见 [DiaryToolbarPanelReserve]）；
+  /// 展开时若光标会被面板挡住，在留白生效的下一帧把它滚到面板上方。
+  /// 编辑标题时光标不在正文里，不滚动。
+  void _handleToolbarPanelExtentChanged(double extent) {
+    if (!mounted) {
+      return;
+    }
+    final grew = extent > _toolbarPanelExtent.value;
+    _toolbarPanelExtent.value = extent;
+    if (!grew || !_contentFocusNode.hasFocus) {
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final selection = _contentController.selection;
+      if (!mounted || !selection.isValid) {
+        return;
+      }
+      revealDiaryCaretAbove(
+        _quillEditorKey,
+        position: selection.extent,
+        // 被遮住的高度 = 工具栏一排及其底部留白（与平时的正文避让一致）+ 面板。
+        coveredHeight: _floatingToolbarReservedSpace + extent,
+        duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      );
+    });
   }
 
   Widget _buildRecordingPanel() {

@@ -3355,6 +3355,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Titles Z → A, untitled last'**
   String get diarySortHintTitleDesc;
+
+  /// Tooltip of the editor floating toolbar button that expands the panel holding the tools that do not fit on the toolbar row.
+  ///
+  /// In en, this message translates to:
+  /// **'More tools'**
+  String get diaryToolbarMoreTools;
+
+  /// Tooltip of the editor floating toolbar button while the panel of extra tools is expanded; tapping it collapses the panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide more tools'**
+  String get diaryToolbarHideMoreTools;
+
+  /// Accessibility value of the More tools button when a tool inside the collapsed panel is active at the cursor, e.g. a quote or a list.
+  ///
+  /// In en, this message translates to:
+  /// **'Formatting in effect'**
+  String get diaryToolbarMoreToolsActive;
+
+  /// Divider in the toolbar order settings page. Tools above it stay on the editor toolbar row; tools below it are in the More panel, based on the current screen width.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools below go into More'**
+  String get diaryToolbarOverflowDivider;
 }
 
 class _AppLocalizationsDelegate

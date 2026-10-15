@@ -39,9 +39,9 @@ void main() {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: SizedBox(
-              height: 44,
-              child: buildDiaryFloatingToolbar(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: DiaryFloatingToolbar(
                 controller: controller,
                 order: const [
                   DiaryToolbarItem.image,
@@ -119,9 +119,9 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: SizedBox(
-            height: 44,
-            child: buildDiaryFloatingToolbar(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: DiaryFloatingToolbar(
               controller: controller,
               order: const <DiaryToolbarItem>[DiaryToolbarItem.recording],
               onRecordingPressed: () => opened = true,
@@ -155,9 +155,9 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: SizedBox(
-            height: 44,
-            child: buildDiaryFloatingToolbar(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: DiaryFloatingToolbar(
               controller: controller,
               order: const <DiaryToolbarItem>[DiaryToolbarItem.currentTime],
             ),
@@ -191,9 +191,9 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: SizedBox(
-            height: 44,
-            child: buildDiaryFloatingToolbar(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: DiaryFloatingToolbar(
               controller: controller,
               order: const <DiaryToolbarItem>[DiaryToolbarItem.currentTime],
               currentTimeFormatPattern: 'yyyy/MM/dd HH:mm',
@@ -240,9 +240,9 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: SizedBox(
-            height: 44,
-            child: buildDiaryFloatingToolbar(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: DiaryFloatingToolbar(
               controller: controller,
               order: const <DiaryToolbarItem>[
                 DiaryToolbarItem.bold,
@@ -273,9 +273,9 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: SizedBox(
-            height: 44,
-            child: buildDiaryFloatingToolbar(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: DiaryFloatingToolbar(
               controller: controller,
               order: const <DiaryToolbarItem>[DiaryToolbarItem.image],
             ),

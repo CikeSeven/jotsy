@@ -4,9 +4,58 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_time_format.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+
+/// 工具按钮的可见尺寸；触控区经 padded tapTargetSize 扩到
+/// [kDiaryToolbarButtonExtent]。「更多」按钮复用同一尺寸。
+const BoxConstraints kDiaryToolbarButtonConstraints = BoxConstraints(
+  minWidth: 32,
+  minHeight: 32,
+  maxWidth: 32,
+  maxHeight: 32,
+);
+
+/// 工具在当前选区上是否“正在生效”（加粗、引用、列表等），供「更多」按钮在
+/// 面板收起时提示：收进面板的工具虽然看不见，选中态不能跟着丢。
+/// 撤销、插入类等没有选中态的工具恒为 false。
+bool isDiaryToolbarItemActive(
+  DiaryToolbarItem item,
+  Map<String, quill.Attribute> attributes,
+) {
+  bool has(quill.Attribute attribute) =>
+      attributes[attribute.key]?.value != null;
+  final list = attributes[quill.Attribute.list.key]?.value;
+  return switch (item) {
+    DiaryToolbarItem.bold => has(quill.Attribute.bold),
+    DiaryToolbarItem.italic => has(quill.Attribute.italic),
+    DiaryToolbarItem.underline => has(quill.Attribute.underline),
+    DiaryToolbarItem.strikeThrough => has(quill.Attribute.strikeThrough),
+    DiaryToolbarItem.inlineCode => has(quill.Attribute.inlineCode),
+    DiaryToolbarItem.textColor => has(quill.Attribute.color),
+    DiaryToolbarItem.backgroundColor => has(quill.Attribute.background),
+    DiaryToolbarItem.headerStyle => has(quill.Attribute.header),
+    DiaryToolbarItem.orderedList => list == quill.Attribute.ol.value,
+    DiaryToolbarItem.bulletList => list == quill.Attribute.ul.value,
+    DiaryToolbarItem.checkList =>
+      list == quill.Attribute.checked.value ||
+          list == quill.Attribute.unchecked.value,
+    DiaryToolbarItem.codeBlock => has(quill.Attribute.codeBlock),
+    DiaryToolbarItem.quote => has(quill.Attribute.blockQuote),
+    DiaryToolbarItem.indent => has(quill.Attribute.indent),
+    DiaryToolbarItem.link => has(quill.Attribute.link),
+    DiaryToolbarItem.undo ||
+    DiaryToolbarItem.redo ||
+    DiaryToolbarItem.clearFormat ||
+    DiaryToolbarItem.image ||
+    DiaryToolbarItem.video ||
+    DiaryToolbarItem.attachment ||
+    DiaryToolbarItem.currentTime ||
+    DiaryToolbarItem.recording => false,
+  };
+}
 
 /// 仅负责 Quill 单项工具配置；文件选择与复制由媒体导入控制器处理。
 quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
@@ -22,6 +71,8 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
 }) {
   final colorScheme = Theme.of(context).colorScheme;
   // 显式固定移动端悬浮工具栏图标尺寸，避免受主题密度或系统缩放影响出现“放大”。
+  // tapTargetSize 同样写死：桌面平台主题默认 shrinkWrap，按钮会缩到 32dp，
+  // 与排布计算用的 kDiaryToolbarButtonExtent（40dp）对不上。
   final compactIconTheme = quill.QuillIconTheme(
     iconButtonUnselectedData: quill.IconButtonData(
       iconSize: 16,
@@ -30,16 +81,12 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
       color: colorScheme.onSurface,
       disabledColor: colorScheme.onSurfaceVariant,
       style: ButtonStyle(
+        tapTargetSize: MaterialTapTargetSize.padded,
         shape: ExpressiveControls.shape,
         foregroundColor: WidgetStatePropertyAll<Color>(colorScheme.onSurface),
         iconColor: WidgetStatePropertyAll<Color>(colorScheme.onSurface),
       ),
-      constraints: BoxConstraints(
-        minWidth: 32,
-        minHeight: 32,
-        maxWidth: 32,
-        maxHeight: 32,
-      ),
+      constraints: kDiaryToolbarButtonConstraints,
     ),
     iconButtonSelectedData: quill.IconButtonData(
       iconSize: 16,
@@ -48,6 +95,7 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
       color: colorScheme.onPrimaryContainer,
       disabledColor: colorScheme.onSurfaceVariant,
       style: ButtonStyle(
+        tapTargetSize: MaterialTapTargetSize.padded,
         shape: WidgetStateProperty.resolveWith(
           (states) => RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
@@ -65,12 +113,7 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
           colorScheme.primaryContainer,
         ),
       ),
-      constraints: BoxConstraints(
-        minWidth: 32,
-        minHeight: 32,
-        maxWidth: 32,
-        maxHeight: 32,
-      ),
+      constraints: kDiaryToolbarButtonConstraints,
     ),
   );
 
@@ -218,6 +261,8 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
   return quill.QuillSimpleToolbarConfig(
     // 使用 Wrap 模式，避免每个工具项内部再生成可横向滚动容器。
     multiRowsDisplay: true,
+    // 「缩进」的增/减两个按钮靠它隔开，排布按同一间距计算缩进的宽度。
+    toolbarSectionSpacing: kDiaryToolbarIndentGap,
     showDividers: false,
     decoration: const BoxDecoration(color: Colors.transparent),
     showFontFamily: false,

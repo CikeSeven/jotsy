@@ -1778,4 +1778,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diarySortHintTitleDesc => '标题 Z → A，无标题的在最后';
+
+  @override
+  String get diaryToolbarMoreTools => '更多工具';
+
+  @override
+  String get diaryToolbarHideMoreTools => '收起更多工具';
+
+  @override
+  String get diaryToolbarMoreToolsActive => '有格式正在生效';
+
+  @override
+  String get diaryToolbarOverflowDivider => '以下收进「更多」';
 }

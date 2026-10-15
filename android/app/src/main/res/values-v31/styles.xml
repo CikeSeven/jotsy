@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Android 12+ launch theme when the OS's Dark Mode setting is off. The system SplashScreen
+         replaces windowBackground as the launch screen: its background and centred brand mark match
+         the first Flutter frame, and MainActivity removes it as soon as that frame is drawn so Flutter
+         continues the same picture (lib/app/app_bootstrap_home.dart). -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowSplashScreenBackground">@color/launch_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/launch_brand_mark_splash</item>
+        <!-- Show the icon for every launch source (the default may be a plain colour, e.g. for
+             am start), so the first Flutter frame always has a mark to continue. -->
+        <item name="android:windowSplashScreenBehavior" tools:targetApi="33">icon_preferred</item>
+    </style>
+</resources>

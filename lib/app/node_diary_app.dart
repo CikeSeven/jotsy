@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
@@ -17,8 +17,6 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
-import 'package:node_diary/ui/widgets/app_loading_page.dart'
-    show AppLoadingContent;
 
 import '../core/services/settings_service.dart';
 import '../l10n/app_localizations.dart';
@@ -28,12 +26,16 @@ import '../l10n/app_localizations.dart';
 /// 负责：
 /// 1. 等待设置服务初始化；
 /// 2. 监听主题模式变化；
-/// 3. 处理启动加载页和最短展示时长；
+/// 3. 处理启动加载页和最短展示时长，就绪后交给 [AppBootstrapHome] 揭幕；
 /// 4. 提供 MaterialApp 壳与首页入口；
 /// 5. 在启用应用锁时，统一处理前台解锁门禁；
 /// 6. 安排启动后的媒体文件回收。
 class NodeDiaryApp extends ConsumerStatefulWidget {
-  const NodeDiaryApp({super.key});
+  const NodeDiaryApp({super.key, this.launchBrandMark = false});
+
+  /// 原生启动页是否在屏幕中央画了品牌图形（见 `launchBrandMarkEntrypointArg`）；
+  /// 是则启动层首帧在同一位置接着画，否则只铺底色。
+  final bool launchBrandMark;
 
   @override
   ConsumerState<NodeDiaryApp> createState() => _NodeDiaryAppState();
@@ -146,13 +148,20 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       );
     }
 
-    final home = _BootstrapHome(
+    final home = AppBootstrapHome(
       phase: bootstrapReady
-          ? _BootstrapPhase.home
-          : (_loaderShown ? _BootstrapPhase.loading : _BootstrapPhase.blank),
-      startupNotice: startupNotice,
-      homeHintVisibleListenable:
-          _homeHintVisibilityController.isHintVisibleNotifier,
+          ? AppBootstrapPhase.home
+          : (_loaderShown
+                ? AppBootstrapPhase.loading
+                : AppBootstrapPhase.blank),
+      showBrandMark: widget.launchBrandMark,
+      // 应用锁遮罩盖着时首页入场无人可见，留到解锁时与遮罩淡出一起上演。
+      holdReveal: _appLocked || _unlockingApp,
+      homeBuilder: (BuildContext context) => HomePage(
+        startupNotice: startupNotice,
+        homeHintVisibleListenable:
+            _homeHintVisibilityController.isHintVisibleNotifier,
+      ),
     );
 
     if (settingsService != null) {
@@ -491,62 +500,6 @@ class _AppMultiplierTextScaler implements TextScaler {
 
   @override
   int get hashCode => Object.hash(baseScaler, factor);
-}
-
-/// 启动阶段：空白底（等待中但尚未到加载页延迟）→ 加载页 → 首页。
-enum _BootstrapPhase { blank, loading, home }
-
-class _BootstrapHome extends StatelessWidget {
-  const _BootstrapHome({
-    required this.phase,
-    required this.startupNotice,
-    required this.homeHintVisibleListenable,
-  });
-
-  final _BootstrapPhase phase;
-  final String? startupNotice;
-  final ValueListenable<bool> homeHintVisibleListenable;
-
-  @override
-  Widget build(BuildContext context) {
-    final background = Theme.of(context).scaffoldBackgroundColor;
-    final child = switch (phase) {
-      // 与页面同色的空白底：快速启动时直接从这里淡入首页，不闪加载动画。
-      _BootstrapPhase.blank => ColoredBox(
-        key: const ValueKey<String>('bootstrap_blank'),
-        color: background,
-      ),
-      _BootstrapPhase.loading => ColoredBox(
-        key: const ValueKey<String>('bootstrap_loading'),
-        color: background,
-        child: const AppLoadingContent(),
-      ),
-      _BootstrapPhase.home => HomePage(
-        key: const ValueKey<String>('bootstrap_home'),
-        startupNotice: startupNotice,
-        homeHintVisibleListenable: homeHintVisibleListenable,
-      ),
-    };
-
-    // 启动等待期间只绘制空白底或加载页，不提前构建 HomePage。
-    // 这样可以减少 Flutter 首帧前后的数据库监听与页面装配工作，避免
-    // Android 原生启动背景结束后又等待一段时间才看到加载动画。
-    //
-    // 默认 layoutBuilder 的 Stack 给子级宽松约束，无子级的空白底会缩成 0×0、
-    // 什么都不画；Flutter 首帧一到原生启动背景就被移除，Android 上透出的是
-    // 黑色 Surface，表现为启动黑屏一闪。这里强制铺满，空白底与原生启动背景
-    // 同色衔接，首页也从同色底而不是黑底上淡入。
-    return AnimatedSwitcher(
-      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-      switchInCurve: ExpressiveMotion.effects,
-      switchOutCurve: ExpressiveMotion.effects,
-      layoutBuilder: (currentChild, previousChildren) => Stack(
-        fit: StackFit.expand,
-        children: <Widget>[...previousChildren, ?currentChild],
-      ),
-      child: child,
-    );
-  }
 }
 
 /// 应用锁遮罩层。

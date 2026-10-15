@@ -19,6 +19,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/bottom_nav.dart';
+import '../../widgets/launch_reveal.dart';
 part '../controllers/home_page_controller.dart';
 
 /// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
@@ -318,10 +319,13 @@ class _HomePageState extends ConsumerState<HomePage> {
           backgroundColor: Theme.of(context).colorScheme.surface,
           resizeToAvoidBottomInset: false,
           body: Stack(children: [_buildPageView(), _buildGlobalCreateFab()]),
-          bottomNavigationBar: BottomNav(
-            items: navItems,
-            selectedIndex: _effectiveIndex,
-            onTap: _controller.onTap,
+          bottomNavigationBar: LaunchReveal(
+            slot: LaunchRevealSlot.navigation,
+            child: BottomNav(
+              items: navItems,
+              selectedIndex: _effectiveIndex,
+              onTap: _controller.onTap,
+            ),
           ),
         ),
       ),
@@ -467,12 +471,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 curve: _fabVisibilityCurve,
                 opacity: shouldShow ? 1 : 0,
-                child: FloatingActionButton.extended(
-                  onPressed: () {
-                    unawaited(_openCreateFromGlobalFab());
-                  },
-                  icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
-                  label: Text(context.l10n.commonNew),
+                child: LaunchReveal(
+                  slot: LaunchRevealSlot.action,
+                  child: FloatingActionButton.extended(
+                    onPressed: () {
+                      unawaited(_openCreateFromGlobalFab());
+                    },
+                    icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
+                    label: Text(context.l10n.commonNew),
+                  ),
                 ),
               ),
             ),

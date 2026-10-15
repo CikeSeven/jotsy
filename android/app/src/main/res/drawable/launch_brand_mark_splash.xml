@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  系统闪屏图标：把品牌矢量包成一个不含动画目标的 animated-vector。
+
+  SystemUI 对非 Animatable 的图标会先按 108dp 栅格化，再放大到 192dp 的图标视图，
+  边缘发虚；Animatable 图标改为逐帧直接绘制矢量，与 Flutter 首帧一样清晰，
+  接力时不会出现“由糊变清”。
+-->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/launch_brand_mark" />

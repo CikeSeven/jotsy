@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  品牌图形（带装订环的笔记本），Android 12+ 系统闪屏的中心图标。
+
+  画布 288dp：系统闪屏在没有图标底板时把前景画成 288dp 并居中，再按 192dp 的
+  图标遮罩裁切（160dp 图标视图 × 1.2 无底板放大，前景外扩 1.5 倍）。图形
+  68×80dp 居中，Flutter 启动首帧在同一位置画同一图形（lib/app/launch_brand_mark.dart），
+  两端几何与颜色必须一致，由 test/app/launch_brand_mark_test.dart 校验。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <!-- 封皮：偶奇填充挖出封面标签。 -->
+    <path
+        android:fillColor="@color/launch_brand_mark"
+        android:fillType="evenOdd"
+        android:pathData="M122,104 H170 A8,8 0 0 1 178,112 V176 A8,8 0 0 1 170,184 H122 A8,8 0 0 1 114,176 V112 A8,8 0 0 1 122,104 Z M132.4,120 H159.6 A6.4,6.4 0 0 1 166,126.4 V129.6 A6.4,6.4 0 0 1 159.6,136 H132.4 A6.4,6.4 0 0 1 126,129.6 V126.4 A6.4,6.4 0 0 1 132.4,120 Z" />
+    <!-- 装订环：圆心压在封皮左缘上，与封皮同色叠成一个轮廓。 -->
+    <path
+        android:fillColor="@color/launch_brand_mark"
+        android:pathData="M110,120 A4,4 0 1 0 118,120 A4,4 0 1 0 110,120 Z M110,136 A4,4 0 1 0 118,136 A4,4 0 1 0 110,136 Z M110,152 A4,4 0 1 0 118,152 A4,4 0 1 0 110,152 Z M110,168 A4,4 0 1 0 118,168 A4,4 0 1 0 110,168 Z" />
+</vector>

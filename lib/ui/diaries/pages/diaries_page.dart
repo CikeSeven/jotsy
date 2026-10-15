@@ -26,6 +26,7 @@ import '../sections/diaries_list_section.dart';
 import '../widgets/diaries_header_sliver.dart';
 import '../widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/launch_reveal.dart';
 
 part '../controllers/diaries_page_feedback.dart';
 part '../controllers/diary_list_transition_coordinator.dart';
@@ -283,8 +284,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         // maximum-height sliver. Content changes and width/text-scale changes then
         // update the pinned extent in the same layout pass, without a delayed
         // size callback or a second independently calculated animation.
+        // 底色留在编排之外：入场期间只有标签内容淡入上浮，不透出下方列表。
         final tagHeader = PinnedHeaderSliver(
-          child: ColoredBox(color: pageBgColor, child: tagHeaderContent),
+          child: ColoredBox(
+            color: pageBgColor,
+            child: LaunchReveal(
+              slot: LaunchRevealSlot.filters,
+              child: tagHeaderContent,
+            ),
+          ),
         );
 
         return Scaffold(
@@ -333,31 +341,34 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: <Widget>[
-                                    DiaryHeadSection(
-                                      isSelectionMode: _isSelectionMode,
-                                      selectedCount: _selectedDiaryIds.length,
-                                      onCancelSelection:
-                                          _controller.clearSelection,
-                                      isPinActionUnpin: shouldUnpinSelected,
-                                      onPinSelected: () => unawaited(
-                                        _controller.pinSelectedDiaries(
-                                          unpin: shouldUnpinSelected,
+                                    LaunchReveal(
+                                      slot: LaunchRevealSlot.masthead,
+                                      child: DiaryHeadSection(
+                                        isSelectionMode: _isSelectionMode,
+                                        selectedCount: _selectedDiaryIds.length,
+                                        onCancelSelection:
+                                            _controller.clearSelection,
+                                        isPinActionUnpin: shouldUnpinSelected,
+                                        onPinSelected: () => unawaited(
+                                          _controller.pinSelectedDiaries(
+                                            unpin: shouldUnpinSelected,
+                                          ),
                                         ),
+                                        onArchiveSelected: () => unawaited(
+                                          _controller.archiveSelectedDiaries(),
+                                        ),
+                                        onDeleteSelected: () => unawaited(
+                                          _controller.deleteSelectedDiaries(),
+                                        ),
+                                        onOpenArchived:
+                                            _controller.openArchivedPage,
+                                        sortMode: _sortMode,
+                                        layoutMode: _layoutMode,
+                                        onMenuSelected:
+                                            _controller.onMenuSelected,
+                                        onOpenSearchPage:
+                                            _controller.openSearchPage,
                                       ),
-                                      onArchiveSelected: () => unawaited(
-                                        _controller.archiveSelectedDiaries(),
-                                      ),
-                                      onDeleteSelected: () => unawaited(
-                                        _controller.deleteSelectedDiaries(),
-                                      ),
-                                      onOpenArchived:
-                                          _controller.openArchivedPage,
-                                      sortMode: _sortMode,
-                                      layoutMode: _layoutMode,
-                                      onMenuSelected:
-                                          _controller.onMenuSelected,
-                                      onOpenSearchPage:
-                                          _controller.openSearchPage,
                                     ),
                                     Container(
                                       height: 1,

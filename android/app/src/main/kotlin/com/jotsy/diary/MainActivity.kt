@@ -31,6 +31,46 @@ class MainActivity : FlutterFragmentActivity() {
   private var pendingBackupSaveResult: MethodChannel.Result? = null
   private var pendingBackupSourcePath: String? = null
   private var galleryVideoPicker: DiaryGalleryVideoPicker? = null
+  // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
+  private val launchBrandMarkArg = "--launch-brand-mark"
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    handOffSplashScreenToFlutter()
+    super.onCreate(savedInstanceState)
+  }
+
+  /**
+   * Android 12+: hands the system splash screen over to the first Flutter frame, which paints the
+   * same background and brand mark in the same place (Flutter's documented approach).
+   *
+   * - Lay the window out edge-to-edge so the Flutter view and the splash screen share the whole
+   *   screen as their frame and centre the mark at the same point; Android 15+ enforces this
+   *   anyway, so 12-14 now match it.
+   * - Without a listener the system plays its own exit (icon fade, radial reveal and a 20dp
+   *   slide-up of the app window), dragging Flutter's copy of the mark while the native one fades,
+   *   which reads as a ghosted double. Removing the splash at once lets Flutter continue the same
+   *   picture in the same frame; Dart then runs the whole reveal.
+   * - SplashScreenView.remove() resets the system bars to their pre-Dart values, so the style
+   *   Dart has set is applied again afterwards.
+   */
+  @SuppressLint("NewApi")
+  private fun handOffSplashScreenToFlutter() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+      return
+    }
+    window.setDecorFitsSystemWindows(false)
+    splashScreen.setOnExitAnimationListener { splashScreenView ->
+      splashScreenView.remove()
+      supportFragmentManager.fragments
+        .filterIsInstance<FlutterFragment>()
+        .firstOrNull()
+        ?.updateSystemUiOverlays()
+    }
+  }
+
+  /** Tells Dart the native launch screen shows the brand mark, so its first frame continues it. */
+  private fun launchEntrypointArgs(): List<String> =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) listOf(launchBrandMarkArg) else emptyList()
 
   override fun createFlutterFragment(): FlutterFragment {
     val backgroundMode = backgroundMode
@@ -88,7 +128,10 @@ class MainActivity : FlutterFragmentActivity() {
         .shouldAutomaticallyHandleOnBackPressed(shouldAutomaticallyHandleOnBackPressed)
 
     dartEntrypointLibraryUri?.let { builder.dartLibraryUri(it) }
-    dartEntrypointArgs?.let { builder.dartEntrypointArgs(it) }
+    val entrypointArgs = dartEntrypointArgs.orEmpty() + launchEntrypointArgs()
+    if (entrypointArgs.isNotEmpty()) {
+      builder.dartEntrypointArgs(entrypointArgs)
+    }
     appBundlePath?.let { builder.appBundlePath(it) }
 
     return builder.build<PredictiveBackFlutterFragment>()

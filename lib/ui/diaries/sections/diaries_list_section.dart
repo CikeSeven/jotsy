@@ -26,6 +26,7 @@ import '../../widgets/expressive_entrance.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../../widgets/launch_reveal.dart';
 import '../../widgets/qweather_icon.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/list_item_presence.dart';
@@ -131,7 +132,10 @@ class DiariesListSection extends StatelessWidget {
             final diary = diaries[index];
             return KeyedSubtree(
               key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
-              child: _buildDiaryItem(context, diary: diary, compact: true),
+              child: LaunchReveal(
+                slot: LaunchRevealSlot.content(index),
+                child: _buildDiaryItem(context, diary: diary, compact: true),
+              ),
             );
           },
         ),
@@ -139,20 +143,25 @@ class DiariesListSection extends StatelessWidget {
     }
 
     // 普通列表同样使用独立圆角表面；间距代替粗分割线，和瀑布流共享视觉层级。
+    // 每项都挂启动编排槽位（结构恒定）；首屏之后的项落在同一槽位，编排结束
+    // 后它们本就是落定态。
     return SliverList(
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final diary = diaries[index];
         final isLast = index == diaries.length - 1;
         return KeyedSubtree(
           key: ValueKey<String>('list_${diary.diary.diaryId}'),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                _buildDiaryItem(context, diary: diary, compact: false),
-                if (!isLast) const SizedBox(height: AppSpacing.s),
-              ],
+          child: LaunchReveal(
+            slot: LaunchRevealSlot.content(index),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  _buildDiaryItem(context, diary: diary, compact: false),
+                  if (!isLast) const SizedBox(height: AppSpacing.s),
+                ],
+              ),
             ),
           ),
         );

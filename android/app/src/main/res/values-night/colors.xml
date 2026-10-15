@@ -2,4 +2,7 @@
 <resources>
     <!-- Matches the default dark Flutter scaffold surface to avoid a bright flash before the first Flutter frame. -->
     <color name="launch_background">#0F1417</color>
+    <!-- Default seed dark primary: the first Flutter frame paints the launch brand mark in this
+         colour before settings load, so the native splash icon must match it. -->
+    <color name="launch_brand_mark">#90CEF4</color>
 </resources>

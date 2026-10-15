@@ -11,6 +11,7 @@ EditDiarySnapshot snapshot(String title) => EditDiarySnapshot(
   cover: null,
   metadataJson: '{}',
   selectedTagIds: {},
+  createdAt: null,
 );
 
 void main() {

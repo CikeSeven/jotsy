@@ -244,6 +244,92 @@ void main() {
     });
   }
 
+  // 发表时间带秒：选择器只到分钟，借此区分“选回同一分钟”与真正的修改。
+  final publishedAt = DateTime(2025, 3, 15, 10, 30, 45);
+  const datedMetadata =
+      '{"generatedAt":"2025-01-01T08:00:00.000",'
+      '"capsule":{"lockedAt":"2025-01-01T08:00:00.000",'
+      '"unlockAt":"2025-03-15T10:30:45.000","precision":"minute"}}';
+
+  Future<void> useDatedDiary(WidgetTester tester) async {
+    diaryId = (await tester.runAsync(
+      () => database.createDiary(
+        title: 'Spring walk',
+        contentDocJson: '[{"insert":"Body\\n"}]',
+        contentText: 'Body',
+        metadataJson: datedMetadata,
+        createdAtOverride: publishedAt,
+      ),
+    ))!;
+  }
+
+  PublishDiaryPanel editPanel(WidgetTester tester) =>
+      tester.widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel));
+
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'publish time changes save automatically in ${brightness.name} theme',
+      (tester) async {
+        await useDatedDiary(tester);
+        await openEditor(tester, brightness: brightness);
+        final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
+        expect(editPanel(tester).showPublishTimeOption, isTrue);
+        expect(
+          editPanel(tester).publishTimeLabel,
+          l10n.formatDateTimeMinute(publishedAt),
+        );
+
+        editPanel(tester).onPickPublishTime!();
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('10'));
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+        // 时间选择器沿用原来的 10:30，只改日期。
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(milliseconds: 600));
+
+        final republishedAt = DateTime(2025, 3, 10, 10, 30);
+        final saved = await storedDiary(tester);
+        expect(saved.diary.createdAt, republishedAt);
+        // 发表时间不在 metadata 里：生成时间、胶囊等字段原样保留。
+        expect(jsonDecode(saved.diary.metadata), jsonDecode(datedMetadata));
+        expect(
+          editPanel(tester).publishTimeLabel,
+          l10n.formatDateTimeMinute(republishedAt),
+        );
+        expect(tester.takeException(), isNull);
+        await unmount(tester);
+      },
+    );
+  }
+
+  for (final cancel in [false, true]) {
+    testWidgets(
+      '${cancel ? 'cancelling the picker' : 'confirming the original minute'} '
+      'leaves the publish and edit times untouched',
+      (tester) async {
+        await useDatedDiary(tester);
+        await openEditor(tester);
+        editPanel(tester).onPickPublishTime!();
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(cancel ? 'Cancel' : 'OK'));
+        await tester.pumpAndSettle();
+        if (!cancel) {
+          await tester.tap(find.text('OK'));
+          await tester.pumpAndSettle();
+        }
+        expect(find.byType(TimePickerDialog), findsNothing);
+        await tester.pump(const Duration(milliseconds: 600));
+
+        final saved = await storedDiary(tester);
+        expect(saved.diary.createdAt, publishedAt);
+        expect(saved.diary.updatedAt, publishedAt);
+        await unmount(tester);
+      },
+    );
+  }
+
   testWidgets('clearing an existing note automatically saves empty content', (
     tester,
   ) async {

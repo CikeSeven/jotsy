@@ -29,6 +29,7 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
       cover: _normalizeOptionalText(_state._draftCover),
       metadataJson: _state._metadataJson.trim(),
       selectedTagIds: _state._selectedTagIds,
+      createdAt: _state._draftPublishAt,
     );
   }
 
@@ -48,6 +49,7 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
           cover: snapshot.cover,
           metadataJson: snapshot.metadataJson,
           tagIds: snapshot.selectedTagIds.toList(),
+          createdAt: snapshot.createdAt,
         );
   }
 

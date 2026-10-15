@@ -8,6 +8,7 @@ class EditDiarySnapshot {
     required this.cover,
     required this.metadataJson,
     required Set<int> selectedTagIds,
+    required this.createdAt,
   }) : selectedTagIds = Set<int>.unmodifiable(selectedTagIds);
 
   final String title;
@@ -16,6 +17,9 @@ class EditDiarySnapshot {
   final String? cover;
   final String metadataJson;
   final Set<int> selectedTagIds;
+
+  /// 发表时间（created_at）；null 表示沿用库中原值。
+  final DateTime? createdAt;
 
   @override
   bool operator ==(Object other) =>
@@ -26,7 +30,8 @@ class EditDiarySnapshot {
       other.cover == cover &&
       other.metadataJson == metadataJson &&
       other.selectedTagIds.length == selectedTagIds.length &&
-      other.selectedTagIds.containsAll(selectedTagIds);
+      other.selectedTagIds.containsAll(selectedTagIds) &&
+      other.createdAt == createdAt;
 
   @override
   int get hashCode => Object.hash(
@@ -36,5 +41,6 @@ class EditDiarySnapshot {
     cover,
     metadataJson,
     Object.hashAll(selectedTagIds.toList()..sort()),
+    createdAt,
   );
 }

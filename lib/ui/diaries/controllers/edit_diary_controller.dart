@@ -38,6 +38,15 @@ class EditDiaryController {
     return path.basename(cover);
   }
 
+  /// 编辑态发表时间文案（精确到分钟）；详情回填前为 null。
+  String? get publishTimeLabelForEdit {
+    final publishAt = _state._draftPublishAt;
+    if (publishAt == null) {
+      return null;
+    }
+    return _state.context.l10n.formatDateTimeMinute(publishAt);
+  }
+
   /// 替换正文控制器时同步管理监听，避免旧控制器泄漏。
   void replaceContentController(quill.QuillController nextController) {
     _state._mediaImportController.cancel();
@@ -416,6 +425,28 @@ class EditDiaryController {
         _state.setState(() => _state._weatherLoading = false);
       }
     }
+  }
+
+  /// 修改已发布日记的发表时间，与其他面板字段一样自动保存。
+  ///
+  /// 发表时间写入 created_at 而不在 metadata 里，所以只排程自动保存、不标记
+  /// 面板脏位：标记会整体重组 metadata（刷新 generatedAt、设备信息等），改
+  /// 时间不该波及这些字段。选回原来那一分钟时选择器原样返回旧值，快照不变，
+  /// 不会写库，也就不会刷新“最后编辑”时间。
+  Future<void> pickPublishAtForEdit() async {
+    final current = _state._draftPublishAt;
+    if (current == null || _state._saving) {
+      return;
+    }
+    final picked = await showPublishTimePicker(
+      _state.context,
+      current: current,
+    );
+    if (picked == null || !_state.mounted) {
+      return;
+    }
+    _state.setState(() => _state._draftPublishAt = picked);
+    scheduleEditAutoSave();
   }
 
   /// 软删除当前日记（仅编辑模式可用）。

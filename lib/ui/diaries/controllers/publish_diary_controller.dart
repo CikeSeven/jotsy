@@ -161,55 +161,16 @@ class PublishDiaryController {
     );
   }
 
-  /// 选择发表时间。
-  ///
-  /// 约束：
-  /// - 日期不能超过今天；
-  /// - 时间使用 24 小时制，精确到分钟。
+  /// 选择发表时间；约束见 [showPublishTimePicker]（与编辑已发布日记共用）。
   Future<void> pickPublishAt() async {
-    final now = DateTime.now();
-    final current = _state._publishAt.toLocal();
-    final firstDate = DateTime(2010, 1, 1);
-    final lastDate = DateUtils.dateOnly(now);
-    final initialDate = DateUtils.dateOnly(current).isAfter(lastDate)
-        ? lastDate
-        : DateUtils.dateOnly(current);
-
-    final pickedDate = await showDatePicker(
-      context: _state.context,
-      initialDate: initialDate,
-      firstDate: firstDate,
-      lastDate: lastDate,
-      helpText: _state.context.l10n.autoT0096,
+    final picked = await showPublishTimePicker(
+      _state.context,
+      current: _state._publishAt,
     );
-    if (pickedDate == null || !_state.mounted) {
+    if (picked == null || !_state.mounted) {
       return;
     }
-
-    final pickedTime = await showTimePicker(
-      context: _state.context,
-      initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
-      helpText: _state.context.l10n.autoT0097,
-      builder: (BuildContext context, Widget? child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-    );
-    if (pickedTime == null || !_state.mounted) {
-      return;
-    }
-
-    _state.setState(() {
-      _state._publishAt = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        pickedTime.hour,
-        pickedTime.minute,
-      );
-    });
+    _state.setState(() => _state._publishAt = picked);
   }
 
   void updateTimeCapsule(TimeCapsuleSchedule picked) {

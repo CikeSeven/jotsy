@@ -50,7 +50,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 更新日记并覆盖标签绑定关系。
   ///
-  /// 事务内先更新主表，再重建关联表数据。
+  /// 事务内先更新主表，再重建关联表数据。[createdAt] 是发表时间，传 null
+  /// 时保持原值：只改正文的路径（如预览页勾选待办）不应触碰发表时间。
   Future<void> updateDiary({
     required String diaryId,
     required String title,
@@ -59,6 +60,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     required String metadataJson,
     String? cover,
     List<int> tagIds = const <int>[],
+    DateTime? createdAt,
   }) async {
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
     final normalizedCover = _normalizeCover(cover);
@@ -81,6 +83,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
           contentText: Value<String>(contentText),
           cover: Value<String?>(normalizedCover),
           metadata: Value<String>(normalizedMetadata),
+          createdAt: Value<DateTime>.absentIfNull(createdAt),
           updatedAt: Value<DateTime>(DateTime.now()),
           isArchived: const Value<bool>(false),
           archivedAt: const Value<DateTime?>(null),

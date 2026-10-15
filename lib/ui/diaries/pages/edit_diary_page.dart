@@ -43,6 +43,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
@@ -122,6 +123,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   double? _draftEnergyLevel = 4;
   DateTime? _draftCapsuleUnlockAt;
   String? _draftCapsulePrecision;
+  // 已发布日记的发表时间（created_at）：详情回填时取库中原值，面板改选后随
+  // 自动保存写回。新建模式不用它，发表时间经 _createDateOverride 交给发布页。
+  DateTime? _draftPublishAt;
   bool _panelMetadataDirty = false;
   // 元数据面板拖拽进度逐帧变化，只用于正文底部占位的连续插值；放进
   // ValueNotifier 让占位局部刷新，页面仅在跨越展开阈值时 setState。
@@ -615,6 +619,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             _metadataJson = detail.diary.metadata;
           }
           _controller.restorePublishContextFromMetadata(detail.diary.metadata);
+          _draftPublishAt = detail.diary.createdAt;
           _selectedTagIds
             ..clear()
             ..addAll(detail.tags.map((Tag t) => t.id));
@@ -729,6 +734,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                       onResolveLocation: _controller.resolveLocationForEdit,
                       onResolveWeather: _controller.resolveWeatherForEdit,
                       onLocationChanged: _controller.updateLocationTextForEdit,
+                      showPublishTimeOption: true,
+                      publishTimeLabel: _controller.publishTimeLabelForEdit,
+                      onPickPublishTime: _controller.pickPublishAtForEdit,
                       onWeatherChanged: (nextWeather) {
                         if (!mounted) {
                           return;

@@ -160,8 +160,12 @@ class EditDiaryController {
         _state._weatherController.text = restoredDraft.weather ?? '';
         _state._draftMoodEmoji = restoredDraft.moodEmoji;
         _state._draftEnergyLevel = restoredDraft.energyLevel;
-        _state._draftCapsuleUnlockAt = restoredDraft.capsuleUnlockAt;
-        _state._draftCapsulePrecision = restoredDraft.capsulePrecision;
+        // 与发表日期覆盖值同一规则：草稿自带胶囊设置时以草稿为准，否则保留
+        // 入口预设的解封日（见 EditDiaryPage.createCapsuleUnlockAt）。
+        if (restoredDraft.capsuleUnlockAt != null) {
+          _state._draftCapsuleUnlockAt = restoredDraft.capsuleUnlockAt;
+          _state._draftCapsulePrecision = restoredDraft.capsulePrecision;
+        }
         _state._selectedTagIds
           ..clear()
           ..addAll(restoredDraft.selectedTagIds);

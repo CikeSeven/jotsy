@@ -26,6 +26,7 @@ import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
@@ -67,12 +68,18 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.entryMode = EditDiaryEntryMode.edit,
     this.restoreCreateDraft = true,
     this.createDateOverride,
+    this.createCapsuleUnlockAt,
   });
 
   final String? diaryId;
   final EditDiaryEntryMode entryMode;
   final bool restoreCreateDraft;
   final DateTime? createDateOverride;
+
+  /// 新建模式下预设的时间胶囊解封日（按“日期”精度）：日历从未来日期进入
+  /// “写给这一天的时间胶囊”时传入，发布页打开即为该日解封的胶囊，用户仍可
+  /// 在发布页修改或取消。恢复的草稿若自带胶囊设置则以草稿为准。
+  final DateTime? createCapsuleUnlockAt;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
@@ -170,6 +177,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _createDateOverride = widget.createDateOverride;
+    final presetCapsule = widget.createCapsuleUnlockAt;
+    if (presetCapsule != null) {
+      _draftCapsuleUnlockAt = TimeCapsuleSchedule.normalizeUnlockAt(
+        presetCapsule,
+        precision: TimeCapsulePrecision.date,
+      );
+      _draftCapsulePrecision = TimeCapsuleSchedule.encodePrecision(
+        TimeCapsulePrecision.date,
+      );
+    }
     _contentController = quill.QuillController(
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),

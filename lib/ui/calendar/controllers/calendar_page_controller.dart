@@ -251,62 +251,30 @@ class _CalendarPageController {
   }
 
   /// 显示“删除成功 + 撤销”提示，并等待用户动作结果。
+  ///
+  /// 统一经 [HomeHintVisibilityScope.showTrackedSnackBar]：它在应用根部
+  /// 注册，任何路由都找得到，并上报提示条高度，Home 的 FAB 随之上移。
   Future<bool> _showDeleteUndoSnackBar() async {
-    final messenger = ScaffoldMessenger.maybeOf(_state.context);
-    if (messenger == null) {
-      return false;
-    }
-    messenger.hideCurrentSnackBar();
-
-    final tracker = _resolveHomeHintTracker();
-    tracker?.onHintShown();
-
-    final controller = messenger.showSnackBar(
-      SnackBar(
-        content: Text(_state.context.l10n.autoT0075),
+    final l10n = _state.context.l10n;
+    final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(
+        content: Text(l10n.autoT0075),
         duration: const Duration(seconds: 4),
-        action: SnackBarAction(
-          label: _state.context.l10n.commonUndo,
-          onPressed: () {},
-        ),
+        action: SnackBarAction(label: l10n.commonUndo, onPressed: () {}),
       ),
     );
-    final reason = await controller.closed;
-    tracker?.onHintClosed();
     return reason == SnackBarClosedReason.action;
   }
 
   /// 统一轻提示出口，避免控制器中散落重复 SnackBar 构造。
   Future<void> _showInfoSnackBar(String message) async {
-    final messenger = ScaffoldMessenger.maybeOf(_state.context);
-    if (messenger == null) {
-      return;
-    }
-    messenger.hideCurrentSnackBar();
-    final tracker = _resolveHomeHintTracker();
-    tracker?.onHintShown();
-
-    final controller = messenger.showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: _state.context,
+      snackBar: SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
     );
-    await controller.closed;
-    tracker?.onHintClosed();
-  }
-
-  /// 解析 Home 提示可见性跟踪器：
-  /// - 优先使用当前页面上下文；
-  /// - 当前上下文取不到时回退到 rootNavigator 上下文。
-  HomeHintVisibilityController? _resolveHomeHintTracker() {
-    final fromPageContext = HomeHintVisibilityScope.maybeController(
-      _state.context,
-    );
-    if (fromPageContext != null) {
-      return fromPageContext;
-    }
-    final rootNavigatorContext = Navigator.of(
-      _state.context,
-      rootNavigator: true,
-    ).context;
-    return HomeHintVisibilityScope.maybeController(rootNavigatorContext);
   }
 }

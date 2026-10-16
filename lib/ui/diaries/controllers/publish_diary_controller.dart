@@ -431,7 +431,7 @@ class PublishDiaryController {
   /// 成功后先通知打开者（[PublishDiaryPage.onPublished]，编辑页借此静默移出
   /// 路由栈），再以新日记 id 作为结果退场；失败时仅提示不退出。
   Future<void> publish() async {
-    if (_state._saving) {
+    if (_state._leaveBlocked) {
       return;
     }
 
@@ -458,6 +458,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
+      _state._published = true;
       if (schedule != null) {
         _state.setState(() => _state._showCapsuleSealOverlay = true);
         // 封存是一次性的仪式动作：与封存卡片同时给出“成功”触觉。
@@ -490,7 +491,13 @@ class PublishDiaryController {
   }
 
   /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
+  ///
+  /// 发布进行中或已发布时不返回：日记已（或即将）写库，带回草稿会让编辑页
+  /// 保留它，用户可重复发布。
   void closeWithDraft() {
+    if (_state._leaveBlocked) {
+      return;
+    }
     final schedule = _state._timeCapsuleSchedule;
     Navigator.of(_state.context).pop(
       _state.widget.initialDraft.copyWith(

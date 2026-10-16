@@ -89,6 +89,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   // ==================== 异步流程状态 ====================
   bool _saving = false;
+  // 写库成功后置位且不再清除：此后日记已存在，页面只剩退场，返回键与
+  // 发布按钮都不能再把草稿带回编辑页或重复发布（见 [_leaveBlocked]）。
+  bool _published = false;
   bool _locating = false;
   bool _weatherLoading = false;
   bool _showCapsuleSealOverlay = false;
@@ -150,6 +153,10 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     );
   }
 
+  /// 发布进行中（写库、胶囊封存停留）或已发布退场中：此时带草稿返回会让
+  /// 已写库的日记留在编辑页草稿里，用户可以再发一次。
+  bool get _leaveBlocked => _saving || _published;
+
   @override
   void dispose() {
     _locationController.dispose();
@@ -181,13 +188,14 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     );
 
     // 返回键策略：
+    // 0) 发布进行中或已发布时忽略；
     // 1) 优先返回面板子页；
     // 2) 其次收起面板；
     // 3) 最后带草稿返回编辑页。
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
+        if (!didPop && !_leaveBlocked) {
           if (_panelController.canPopInnerPage) {
             _panelController.popInnerPage();
             return;
@@ -205,7 +213,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
           title: Text(context.l10n.autoT0138),
           leading: IconButton(
             tooltip: context.l10n.commonBack,
-            onPressed: _controller.closeWithDraft,
+            onPressed: _leaveBlocked ? null : _controller.closeWithDraft,
             icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),
         ),
@@ -283,7 +291,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               bottom: 0,
               child: PublishDiaryPanel(
                 controller: _panelController,
-                saving: _saving,
+                saving: _leaveBlocked,
                 hasCover: _controller.normalizedCover != null,
                 coverLabel: _controller.coverLabel,
                 locating: _locating,

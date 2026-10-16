@@ -31,50 +31,12 @@ void main() {
     final settings = await SettingsService.create();
     final results = <Object?>[];
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          appDatabaseProvider.overrideWithValue(database),
-          settingsServiceProvider.overrideWith((ref) async => settings),
-        ],
-        child: MaterialApp(
-          theme: expressiveTestTheme(Brightness.light),
-          locale: const Locale('en'),
-          localizationsDelegates: const [
-            ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) => Scaffold(
-              body: TextButton(
-                onPressed: () async {
-                  final result = await Navigator.of(context).push<Object?>(
-                    MaterialPageRoute<Object?>(
-                      builder: (_) => const EditDiaryPage(
-                        entryMode: EditDiaryEntryMode.create,
-                        restoreCreateDraft: false,
-                      ),
-                    ),
-                  );
-                  results.add(result);
-                },
-                child: const Text('Open editor'),
-              ),
-            ),
-          ),
-        ),
-      ),
+    await _openPublisherFromEditor(
+      tester,
+      database: database,
+      settings: settings,
+      results: results,
     );
-    await tester.tap(find.text('Open editor'));
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField).first, 'Sunset by the sea');
-    await tester.pump();
-    final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-    await tester.tap(find.byTooltip(l10n.autoT0136));
-    await tester.pumpAndSettle();
-    expect(find.byType(PublishDiaryPage), findsOneWidget);
 
     PublishPanelDriver(tester).triggerPublish();
     // 写库是真实异步：离开假时钟等它完成，直到发布页开始退场、结果回传。
@@ -106,6 +68,72 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
     expect(settings.createDiaryDraftRaw, isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
+  });
+
+  testWidgets('back while publishing keeps the page and publishes once', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(database.close);
+    final settings = await SettingsService.create();
+    final results = <Object?>[];
+    await _openPublisherFromEditor(
+      tester,
+      database: database,
+      settings: settings,
+      results: results,
+    );
+    final l10n = PublishPanelDriver(tester).l10n;
+
+    // 写库尚未完成时按系统返回：不能带着草稿退回编辑页（否则发布页被移除、
+    // onPublished 不再触发，编辑页留着草稿，打开者永远收不到新日记 id）。
+    PublishPanelDriver(tester).triggerPublish();
+    await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(find.byType(PublishDiaryPage), findsOneWidget);
+    // 顶栏返回同样停用。
+    expect(
+      tester
+          .widget<IconButton>(
+            find.ancestor(
+              of: find.descendant(
+                of: find.byType(PublishDiaryPage),
+                matching: find.byTooltip(l10n.commonBack),
+              ),
+              matching: find.byType(IconButton),
+            ),
+          )
+          .onPressed,
+      isNull,
+    );
+
+    for (var i = 0; i < 20 && results.isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
+    expect(results, hasLength(1));
+    expect(results.single, isA<String>());
+    // 退场途中再按返回、再点发布都不会重复发布。
+    await tester.binding.handlePopRoute();
+    PublishPanelDriver(tester).triggerPublish();
+    await tester.pumpAndSettle();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 40)),
+    );
+    expect(find.byType(EditDiaryPage, skipOffstage: false), findsNothing);
+    final diaries = await tester.runAsync(
+      () => database.select(database.diaries).get(),
+    );
+    expect(diaries, hasLength(1));
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(Duration.zero);
@@ -246,4 +274,58 @@ Future<void> _publishFromEditor(
     await tester.pump();
   }
   expect(published(), isTrue);
+}
+
+/// 挂载打开者 → 新建编辑页 → 填标题 → 打开发布页；路由结果追加到 [results]。
+Future<void> _openPublisherFromEditor(
+  WidgetTester tester, {
+  required AppDatabase database,
+  required SettingsService settings,
+  required List<Object?> results,
+  String title = 'Sunset by the sea',
+}) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        appDatabaseProvider.overrideWithValue(database),
+        settingsServiceProvider.overrideWith((ref) async => settings),
+      ],
+      child: MaterialApp(
+        theme: expressiveTestTheme(Brightness.light),
+        locale: const Locale('en'),
+        localizationsDelegates: const [
+          ...AppLocalizations.localizationsDelegates,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () async {
+                final result = await Navigator.of(context).push<Object?>(
+                  MaterialPageRoute<Object?>(
+                    builder: (_) => const EditDiaryPage(
+                      entryMode: EditDiaryEntryMode.create,
+                      restoreCreateDraft: false,
+                    ),
+                  ),
+                );
+                results.add(result);
+              },
+              child: const Text('Open editor'),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.tap(find.text('Open editor'));
+  await tester.pumpAndSettle();
+
+  await tester.enterText(find.byType(TextField).first, title);
+  await tester.pump();
+  final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
+  await tester.tap(find.byTooltip(l10n.autoT0136));
+  await tester.pumpAndSettle();
+  expect(find.byType(PublishDiaryPage), findsOneWidget);
 }

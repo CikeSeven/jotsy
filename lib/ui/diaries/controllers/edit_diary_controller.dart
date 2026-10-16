@@ -15,7 +15,7 @@ class EditDiaryController {
       writeSnapshot: _persistEditSnapshot,
       onError: (error) {
         if (_state.mounted) {
-          unawaited(_showHint(_state.context.l10n.autoT0087(error.toString())));
+          _showHint(_state.context.l10n.autoT0087(error.toString()));
         }
       },
     );
@@ -228,7 +228,7 @@ class EditDiaryController {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      await _showHint(_state.context.l10n.autoT0088);
+      _showHint(_state.context.l10n.autoT0088);
       return;
     }
 
@@ -250,7 +250,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(_state.context.l10n.autoT0089(error.toString()));
+      _showHint(_state.context.l10n.autoT0089(error.toString()));
     } finally {
       await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
@@ -285,7 +285,7 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(_state.context.l10n.autoT0090(error.toString()));
+      _showHint(_state.context.l10n.autoT0090(error.toString()));
     }
   }
 
@@ -361,15 +361,12 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      // 提示的关闭 Future 不属于定位请求，避免错误已经显示后仍禁用按钮。
-      unawaited(
-        _showHint(locationResolveHint(_state.context.l10n, error.type)),
-      );
+      _showHint(locationResolveHint(_state.context.l10n, error.type));
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      unawaited(_showHint(_state.context.l10n.autoT0091(error.toString())));
+      _showHint(_state.context.l10n.autoT0091(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -384,7 +381,7 @@ class EditDiaryController {
     }
     if (_state._draftLocationLatitude == null ||
         _state._draftLocationLongitude == null) {
-      await _showHint(_state.context.l10n.autoT0092);
+      _showHint(_state.context.l10n.autoT0092);
       return;
     }
 
@@ -418,12 +415,12 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(error.userMessage);
+      _showHint(error.userMessage);
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      await _showHint(_state.context.l10n.autoT0093(error.toString()));
+      _showHint(_state.context.l10n.autoT0093(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -703,10 +700,17 @@ class EditDiaryController {
     return _state._weatherService;
   }
 
-  Future<void> _showHint(String message) async {
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: _state.context,
-      snackBar: SnackBar(content: Text(message)),
+  /// 页面内轻提示。不返回 Future，原因同 PublishDiaryController.showHint：
+  /// 等提示条关闭会把 finally 里的 loading 复位拖后约 4 秒。
+  void _showHint(String message) {
+    if (!_state.mounted) {
+      return;
+    }
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: _state.context,
+        snackBar: SnackBar(content: Text(message)),
+      ),
     );
   }
 

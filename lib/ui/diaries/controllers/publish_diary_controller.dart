@@ -60,13 +60,19 @@ class PublishDiaryController {
   }
 
   /// 页面内轻提示封装。
-  Future<void> showHint(String message) async {
+  ///
+  /// 不返回 Future：showTrackedSnackBar 要等提示条关闭（约 4 秒）才完成，
+  /// 在 try/catch 里 await 会把 finally 里的 loading/saving 复位拖到提示
+  /// 消失之后，按钮在这段时间一直转圈或停用。
+  void showHint(String message) {
     if (!_state.mounted) {
       return;
     }
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: _state.context,
-      snackBar: SnackBar(content: Text(message)),
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: _state.context,
+        snackBar: SnackBar(content: Text(message)),
+      ),
     );
   }
 
@@ -268,7 +274,7 @@ class PublishDiaryController {
 
     final selectedPath = result.files.first.path?.trim();
     if (selectedPath == null || selectedPath.isEmpty) {
-      await showHint(_state.context.l10n.autoT0088);
+      showHint(_state.context.l10n.autoT0088);
       return;
     }
 
@@ -286,7 +292,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(_state.context.l10n.autoT0089(error.toString()));
+      showHint(_state.context.l10n.autoT0089(error.toString()));
     } finally {
       await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
@@ -315,7 +321,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(_state.context.l10n.autoT0090(error.toString()));
+      showHint(_state.context.l10n.autoT0090(error.toString()));
     }
   }
 
@@ -358,13 +364,12 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      // 提示的关闭 Future 不属于定位请求，避免错误已经显示后仍禁用按钮。
-      unawaited(showHint(locationResolveHint(_state.context.l10n, error.type)));
+      showHint(locationResolveHint(_state.context.l10n, error.type));
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      unawaited(showHint(_state.context.l10n.autoT0091(error.toString())));
+      showHint(_state.context.l10n.autoT0091(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -378,7 +383,7 @@ class PublishDiaryController {
       return;
     }
     if (_state._locationLatitude == null || _state._locationLongitude == null) {
-      await showHint(_state.context.l10n.autoT0092);
+      showHint(_state.context.l10n.autoT0092);
       return;
     }
 
@@ -410,12 +415,12 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(error.userMessage);
+      showHint(error.userMessage);
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      await showHint(_state.context.l10n.autoT0093(error.toString()));
+      showHint(_state.context.l10n.autoT0093(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -436,7 +441,7 @@ class PublishDiaryController {
     final pendingSchedule = _state._timeCapsuleSchedule;
     if (pendingSchedule != null &&
         !pendingSchedule.isUnlockInFuture(DateTime.now())) {
-      unawaited(showHint(_state.context.l10n.timeCapsuleUnlockPassed));
+      showHint(_state.context.l10n.timeCapsuleUnlockPassed);
       return;
     }
 
@@ -487,7 +492,7 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      await showHint(_state.context.l10n.autoT0098(error.toString()));
+      showHint(_state.context.l10n.autoT0098(error.toString()));
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._saving = false);

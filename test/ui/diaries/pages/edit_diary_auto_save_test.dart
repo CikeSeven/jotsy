@@ -167,6 +167,38 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('panel edits keep the capsule and import blocks', (tester) async {
+    const capsule = {
+      'lockedAt': '2025-01-01T08:00:00.000',
+      'unlockAt': '2025-02-01T00:00:00.000',
+      'precision': 'date',
+    };
+    const imported = {'source': 'dayOne', 'sourceKey': 'entry-42'};
+    diaryId = (await tester.runAsync(
+      () => database.createDiary(
+        title: 'Opened capsule',
+        contentDocJson: '[{"insert":"Body\\n"}]',
+        contentText: 'Body',
+        metadataJson: jsonEncode({
+          'schemaVersion': 1,
+          'capsule': capsule,
+          'import': imported,
+        }),
+      ),
+    ))!;
+    await openEditor(tester);
+    PublishPanelDriver(tester).setMood('🙂');
+    await tester.pump(const Duration(milliseconds: 600));
+
+    final metadata =
+        jsonDecode((await storedDiary(tester)).diary.metadata) as Map;
+    expect((metadata['context'] as Map)['moodEmoji'], '🙂');
+    // 面板只重写自己管的字段：胶囊与导入来源原样保留。
+    expect(metadata['capsule'], capsule);
+    expect(metadata['import'], imported);
+    await unmount(tester);
+  });
+
   testWidgets('address detail changes save and restore when editing again', (
     tester,
   ) async {

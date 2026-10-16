@@ -660,7 +660,18 @@ class EditDiaryController {
       weatherIconCode: _normalizeOptionalText(_state._draftWeatherIconCode),
       moodEmoji: _normalizeOptionalText(_state._draftMoodEmoji),
       energyLevel: _state._draftEnergyLevel,
+      // 编辑页面板不管胶囊与导入来源：沿用原 metadata 里的这些块。
+      preserve: _decodeMetadataObject(_state._metadataJson),
     );
+  }
+
+  Map<String, Object?>? _decodeMetadataObject(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      return decoded is Map<String, Object?> ? decoded : null;
+    } catch (_) {
+      return null;
+    }
   }
 
   Map<String, Object?> _buildDeviceMetadata() {

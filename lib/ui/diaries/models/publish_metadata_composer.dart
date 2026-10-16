@@ -10,12 +10,27 @@ import 'package:node_diary/ui/diaries/models/diary_location.dart';
 class PublishMetadataComposer {
   const PublishMetadataComposer._();
 
+  /// 本组装器每次都会重写的顶层键；`capsule` 只在本次写了胶囊时重写。
+  static const Set<String> _ownedKeys = <String>{
+    'schemaVersion',
+    'generatedAt',
+    'stats',
+    'tagIds',
+    'hasCover',
+    'device',
+    'context',
+  };
+
   /// 组装发布时的 metadata。
   ///
   /// 约定输出结构：
   /// - 顶层基础信息：schemaVersion/generatedAt/stats/tagIds/hasCover/device；
   /// - context：位置、天气、情绪、精力等可选上下文；
   /// - geo：仅在自动定位成功且有经纬度时写入。
+  ///
+  /// [preserve] 是日记原有的 metadata：编辑已发布日记时，面板改动只重写
+  /// 本组装器负责的字段，原有的胶囊（`capsule`）、导入来源（`import`）等
+  /// 别处写入的顶层块原样保留，不随一次改心情被丢掉。
   static String compose({
     required String contentText,
     required Set<int> selectedTagIds,
@@ -35,6 +50,7 @@ class PublishMetadataComposer {
     DateTime? capsuleLockedAt,
     DateTime? capsuleUnlockAt,
     String? capsulePrecision,
+    Map<String, Object?>? preserve,
   }) {
     final normalizedLocation = _normalizeOptionalText(location);
     final normalizedWeather = _normalizeOptionalText(weather);
@@ -87,6 +103,14 @@ class PublishMetadataComposer {
     };
     if (context.isNotEmpty) {
       metadata['context'] = context;
+    }
+
+    if (preserve != null) {
+      for (final entry in preserve.entries) {
+        if (!_ownedKeys.contains(entry.key)) {
+          metadata.putIfAbsent(entry.key, () => entry.value);
+        }
+      }
     }
 
     return jsonEncode(metadata);

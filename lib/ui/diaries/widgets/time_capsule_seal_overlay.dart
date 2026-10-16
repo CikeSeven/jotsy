@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/app/theme/app_effects.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
@@ -47,13 +48,7 @@ class TimeCapsuleSealOverlay extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: colorScheme.shadow.withValues(alpha: 0.18),
-                        blurRadius: 28,
-                        offset: const Offset(0, 14),
-                      ),
-                    ],
+                    boxShadow: AppEffects.softShadow(colorScheme),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

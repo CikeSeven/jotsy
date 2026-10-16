@@ -81,7 +81,7 @@ class PublishCoverTile extends StatelessWidget {
                       tooltip: l10n.autoT0163,
                     ),
                   const SizedBox(width: 6),
-                  const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
+                  const FaIcon(FontAwesomeIcons.angleRight, size: 14),
                 ],
               ),
             ),

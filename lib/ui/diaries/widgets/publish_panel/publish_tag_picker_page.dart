@@ -10,6 +10,8 @@ import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
+import 'publish_panel_tile.dart';
+
 /// 面板的标签子页：顶部“新建”，下面是全部标签的勾选列表。
 ///
 /// 三态：加载中 / 加载失败 / 列表（空时提示先创建）。勾选直接写进草稿。
@@ -28,45 +30,26 @@ class PublishTagPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final colorScheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // 标签页顶部“新建”入口，视觉与标签项保持同体系卡片。
-          SizedBox(
-            width: double.infinity,
-            child: Material(
-              color: colorScheme.surfaceContainerHighest,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          // 标签页顶部“新建”入口，与面板其他行同一表面。
+          PublishPanelTile(
+            onTap: onCreateTag,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                const FaIcon(FontAwesomeIcons.plus, size: 12),
+                const SizedBox(width: 6),
+                Text(
+                  l10n.autoT0157,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
                 ),
-              ),
-              child: InkWell(
-                onTap: onCreateTag,
-                borderRadius: BorderRadius.circular(12),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 40),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const FaIcon(FontAwesomeIcons.plus, size: 12),
-                        const SizedBox(width: 6),
-                        Text(
-                          l10n.autoT0157,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              ],
             ),
           ),
           const SizedBox(height: 8),

@@ -48,7 +48,11 @@ class PublishResolvableField extends StatelessWidget {
               style: theme.textTheme.bodyMedium,
               decoration: InputDecoration(
                 isDense: true,
+                // 行本身已是输入框填充色，不再叠一层主题的 filled 底色。
+                filled: false,
                 border: InputBorder.none,
+                // 前置图标已留出间距，不要主题输入框的 16dp 水平内边距。
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 hintText: hintText,
                 hintStyle: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant.withValues(

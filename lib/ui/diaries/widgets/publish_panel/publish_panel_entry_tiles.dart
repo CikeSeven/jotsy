@@ -6,6 +6,7 @@ import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/viewmodels/publish_panel_labels.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_item_tag_row.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
@@ -48,18 +49,9 @@ class PublishTagTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
                       )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: <Widget>[
-                            for (final tag in selectedTags)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: _TagChip(tag: tag),
-                              ),
-                          ],
-                        ),
-                      ),
+                    // 与日记卡片同一套标签微胶囊（DESIGN.md §5.2），最多三个，
+                    // 其余以 +N 汇总，窄屏时换行而不是横向滚动。
+                    : DiaryItemTagRow(tags: selectedTags, maxVisibleTags: 3),
               ),
               const SizedBox(width: 8),
               const FaIcon(FontAwesomeIcons.angleRight, size: 14),
@@ -67,51 +59,6 @@ class PublishTagTile extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _TagChip extends StatelessWidget {
-  const _TagChip({required this.tag});
-
-  final Tag tag;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final tagColor = Color(tag.color);
-    final isLight = theme.brightness == Brightness.light;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: tagColor.withValues(alpha: isLight ? 0.08 : 0.16),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: tagColor.withValues(alpha: isLight ? 0.22 : 0.32),
-          width: 0.65,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            '#',
-            style: TextStyle(
-              color: tagColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            tag.name,
-            style: theme.textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

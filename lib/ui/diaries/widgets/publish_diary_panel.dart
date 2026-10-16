@@ -14,6 +14,7 @@ import 'package:smooth_sheets/smooth_sheets.dart';
 import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../app/theme/expressive_surfaces.dart';
 import 'publish_panel/publish_capsule_picker_page.dart';
 import 'publish_panel/publish_panel_chrome.dart';
 import 'publish_panel/publish_panel_main_page.dart';
@@ -202,14 +203,9 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final panelBackgroundColor = Color.alphaBlend(
-      colorScheme.primary.withValues(
-        alpha: theme.brightness == Brightness.light ? 0.04 : 0.10,
-      ),
-      colorScheme.surfaceContainerHighest,
-    );
+    final colorScheme = Theme.of(context).colorScheme;
+    // 悬浮模块用卡片主表面（DESIGN.md §2.1）：亮色纯白、暗色温和深灰；面板内
+    // 的行用输入框填充色区分层次。
     final collapsedFactor = _collapsedHeight / _activeExpandedHeight;
     // 1) 不叠加键盘高度：宿主页 Scaffold 默认 resizeToAvoidBottomInset，body
     //    底边已经是键盘顶边，面板以 Positioned(bottom: 0) 挂在 body 内；再加
@@ -259,7 +255,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
               ],
               minFlingSpeed: 580,
             ),
-            // 面板容器：圆角 + 阴影 + 半透明描边。
+            // 面板容器：圆角 + 浮动阴影 + 卡片微边框。
             decoration: SheetDecorationBuilder(
               size: SheetSize.fit,
               builder: (context, child) {
@@ -272,11 +268,9 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
                     borderRadius: BorderRadius.circular(AppRadii.nav),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: panelBackgroundColor,
-                        border: Border.all(
-                          color: colorScheme.outlineVariant.withValues(
-                            alpha: 0.45,
-                          ),
+                        color: ExpressiveSurfaces.cardColor(colorScheme),
+                        border: Border.fromBorderSide(
+                          ExpressiveSurfaces.cardBorderSide(colorScheme),
                         ),
                       ),
                       child: Material(color: Colors.transparent, child: child),

@@ -292,7 +292,8 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      showHint(_state.context.l10n.autoT0089(error.toString()));
+      debugPrint('Cover import failed: $error');
+      showHint(_state.context.l10n.publishCoverImportFailed);
     } finally {
       await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
@@ -321,7 +322,8 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      showHint(_state.context.l10n.autoT0090(error.toString()));
+      debugPrint('Tag creation failed: $error');
+      showHint(_state.context.l10n.publishTagCreateFailed);
     }
   }
 
@@ -369,7 +371,8 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      showHint(_state.context.l10n.autoT0091(error.toString()));
+      debugPrint('Location failed: $error');
+      showHint(_state.context.l10n.locationUnavailable);
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -415,12 +418,14 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      showHint(error.userMessage);
+      debugPrint('Weather fetch failed: ${error.message}');
+      showHint(weatherResolveHint(_state.context.l10n, error.type));
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      showHint(_state.context.l10n.autoT0093(error.toString()));
+      debugPrint('Weather fetch failed: $error');
+      showHint(_state.context.l10n.weatherApiError);
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);
@@ -492,7 +497,8 @@ class PublishDiaryController {
       if (!_state.mounted) {
         return;
       }
-      showHint(_state.context.l10n.autoT0098(error.toString()));
+      debugPrint('Publish failed: $error');
+      showHint(_state.context.l10n.publishFailed);
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._saving = false);

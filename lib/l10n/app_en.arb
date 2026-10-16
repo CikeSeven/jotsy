@@ -1123,45 +1123,9 @@
   "@autoT0088": {
     "description": "Auto-generated metadata for autoT0088."
   },
-  "autoT0089": "Cover import failed: {p0}",
-  "@autoT0089": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0089."
-  },
-  "autoT0090": "Tag creation failed: {p0}",
-  "@autoT0090": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0090."
-  },
-  "autoT0091": "Location failed: {p0}",
-  "@autoT0091": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0091."
-  },
   "autoT0092": "Please get current location first",
   "@autoT0092": {
     "description": "Auto-generated metadata for autoT0092."
-  },
-  "autoT0093": "Weather fetch failed: {p0}",
-  "@autoT0093": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0093."
   },
   "autoT0094": "Delete diary",
   "@autoT0094": {
@@ -1178,15 +1142,6 @@
   "autoT0097": "Select publish time",
   "@autoT0097": {
     "description": "Auto-generated metadata for autoT0097."
-  },
-  "autoT0098": "Publish failed: {p0}",
-  "@autoT0098": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0098."
   },
   "autoT0099": "{p0} selected",
   "@autoT0099": {
@@ -5021,5 +4976,33 @@
   "timeCapsuleUnlockPassed": "The unlock time has passed. Choose a new one before sealing.",
   "@timeCapsuleUnlockPassed": {
     "description": "Publish page: hint shown when the time capsule's unlock time is no longer in the future at publish time."
+  },
+  "weatherInvalidHost": "The weather service host is set up incorrectly. Check qweather.api_host.",
+  "@weatherInvalidHost": {
+    "description": "Weather fetch hint: the configured QWeather API host is invalid."
+  },
+  "weatherNetworkError": "The weather request failed or timed out. Check your connection and try again.",
+  "@weatherNetworkError": {
+    "description": "Weather fetch hint: network failure or timeout."
+  },
+  "weatherApiError": "The weather service is temporarily unavailable. Please try again later.",
+  "@weatherApiError": {
+    "description": "Weather fetch hint: the weather service returned an error, or failed unexpectedly."
+  },
+  "weatherParseError": "No usable weather was returned. Please try again later or enter it manually.",
+  "@weatherParseError": {
+    "description": "Weather fetch hint: the response could not be understood."
+  },
+  "publishCoverImportFailed": "Couldn't import this picture as the cover. Please try another one.",
+  "@publishCoverImportFailed": {
+    "description": "Diary metadata panel hint: copying the picked cover image failed."
+  },
+  "publishTagCreateFailed": "Couldn't create the tag. Please try again.",
+  "@publishTagCreateFailed": {
+    "description": "Diary metadata panel hint: creating a tag inline failed."
+  },
+  "publishFailed": "Couldn't publish the diary. Please try again.",
+  "@publishFailed": {
+    "description": "Publish page hint: writing the new diary failed."
   }
 }

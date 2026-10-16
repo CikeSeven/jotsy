@@ -250,7 +250,8 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      _showHint(_state.context.l10n.autoT0089(error.toString()));
+      debugPrint('Cover import failed: $error');
+      _showHint(_state.context.l10n.publishCoverImportFailed);
     } finally {
       await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
@@ -285,7 +286,8 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      _showHint(_state.context.l10n.autoT0090(error.toString()));
+      debugPrint('Tag creation failed: $error');
+      _showHint(_state.context.l10n.publishTagCreateFailed);
     }
   }
 
@@ -366,7 +368,8 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      _showHint(_state.context.l10n.autoT0091(error.toString()));
+      debugPrint('Location failed: $error');
+      _showHint(_state.context.l10n.locationUnavailable);
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._locating = false);
@@ -415,12 +418,14 @@ class EditDiaryController {
       if (!_state.mounted) {
         return;
       }
-      _showHint(error.userMessage);
+      debugPrint('Weather fetch failed: ${error.message}');
+      _showHint(weatherResolveHint(_state.context.l10n, error.type));
     } catch (error) {
       if (!_state.mounted) {
         return;
       }
-      _showHint(_state.context.l10n.autoT0093(error.toString()));
+      debugPrint('Weather fetch failed: $error');
+      _showHint(_state.context.l10n.weatherApiError);
     } finally {
       if (_state.mounted) {
         _state.setState(() => _state._weatherLoading = false);

@@ -834,27 +834,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0088 => 'No valid cover path found';
 
   @override
-  String autoT0089(String p0) {
-    return 'Cover import failed: $p0';
-  }
-
-  @override
-  String autoT0090(String p0) {
-    return 'Tag creation failed: $p0';
-  }
-
-  @override
-  String autoT0091(String p0) {
-    return 'Location failed: $p0';
-  }
-
-  @override
   String get autoT0092 => 'Please get current location first';
-
-  @override
-  String autoT0093(String p0) {
-    return 'Weather fetch failed: $p0';
-  }
 
   @override
   String get autoT0094 => 'Delete diary';
@@ -867,11 +847,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoT0097 => 'Select publish time';
-
-  @override
-  String autoT0098(String p0) {
-    return 'Publish failed: $p0';
-  }
 
   @override
   String autoT0099(String p0) {
@@ -3880,4 +3855,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get timeCapsuleUnlockPassed =>
       'The unlock time has passed. Choose a new one before sealing.';
+
+  @override
+  String get weatherInvalidHost =>
+      'The weather service host is set up incorrectly. Check qweather.api_host.';
+
+  @override
+  String get weatherNetworkError =>
+      'The weather request failed or timed out. Check your connection and try again.';
+
+  @override
+  String get weatherApiError =>
+      'The weather service is temporarily unavailable. Please try again later.';
+
+  @override
+  String get weatherParseError =>
+      'No usable weather was returned. Please try again later or enter it manually.';
+
+  @override
+  String get publishCoverImportFailed =>
+      'Couldn\'t import this picture as the cover. Please try another one.';
+
+  @override
+  String get publishTagCreateFailed =>
+      'Couldn\'t create the tag. Please try again.';
+
+  @override
+  String get publishFailed => 'Couldn\'t publish the diary. Please try again.';
 }

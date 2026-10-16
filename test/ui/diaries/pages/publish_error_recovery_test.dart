@@ -106,6 +106,8 @@ void main() {
     expect(panel.weatherLoading, isTrue);
     await waitForSnackBar(tester);
     expect(panel.weatherLoading, isFalse);
+    // 服务层的中文诊断不直接出现在界面上。
+    expect(find.text(panel.l10n.autoT0205), findsOneWidget);
     await unmount(tester);
   });
 
@@ -127,6 +129,9 @@ void main() {
     panel.triggerPublish();
     await waitForSnackBar(tester);
     expect(panel.saving, isFalse);
+    // 原始异常（SQL 错误）只写调试日志，界面给可读的本地化提示。
+    expect(find.text(panel.l10n.publishFailed), findsOneWidget);
+    expect(find.textContaining('disk unavailable'), findsNothing);
     expect(find.byType(PublishDiaryPage), findsOneWidget);
     await unmount(tester);
   });

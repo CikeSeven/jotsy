@@ -137,6 +137,8 @@
 - 禁止：擅自回退用户已有改动或执行破坏性 git 操作（如 `git reset --hard`）。
 - 禁止：在未获明确要求时改写历史（如 `commit --amend`）。
 - 例外：用户明确授权回滚/改写时可执行，并先说明影响。
+- 必须：需要新建工作树（如主目录已有其他代理在改动）时，使用代理自带的工作树工具创建（Claude Code 为 `EnterWorktree`，落在已忽略的 `.claude/worktrees/`），默认以远程 `origin/main` 为基准；新工作树需先执行 `flutter pub get`（无网络时加 `--offline`）再分析与测试。
+- 禁止：手动 `git worktree add` 新建工作树；在工作树中工作时读写、暂存或提交主目录的文件（`git stash` 为所有工作树共享，不得使用不带标记的 `git stash` / `git stash pop`）。
 - 提交前检查项：
   - 本次变更是否仅覆盖目标文件
   - 是否满足本规范中的编码、注释、分层、UI 规则

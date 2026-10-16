@@ -12,10 +12,10 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
 
 void main() {
   late AppDatabase database;
@@ -94,12 +94,7 @@ void main() {
         await openEditor(tester, brightness: brightness);
         final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
         expect(find.byTooltip(l10n.commonSave), findsNothing);
-        expect(
-          tester
-              .widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel))
-              .onPublish,
-          isNull,
-        );
+        expect(PublishPanelDriver(tester).hasPublishAction, isFalse);
 
         await tester.enterText(
           find.widgetWithText(TextField, 'Original title'),
@@ -158,13 +153,10 @@ void main() {
   testWidgets('metadata and tag changes automatically save', (tester) async {
     final tagId = await database.createTag(name: 'Life', color: 0xff2196f3);
     await openEditor(tester);
-    final panel = tester.widget<PublishDiaryPanel>(
-      find.byType(PublishDiaryPanel),
-    );
-    panel.onMoodChanged('🙂');
-    panel.onToggleTag(tagId, true);
-    panel.locationController.text = 'Home';
-    panel.onLocationChanged('Home');
+    final panel = PublishPanelDriver(tester);
+    panel.setMood('🙂');
+    panel.toggleTag(tagId, true);
+    panel.typeLocation('Home');
     await tester.pump(const Duration(milliseconds: 600));
 
     final saved = await storedDiary(tester);
@@ -179,11 +171,9 @@ void main() {
     tester,
   ) async {
     await openEditor(tester);
-    var panel = tester.widget<PublishDiaryPanel>(
-      find.byType(PublishDiaryPanel),
-    );
-    expect(panel.locationPrecision, DiaryLocationPrecision.township);
-    panel.onLocationPrecisionChanged!(DiaryLocationPrecision.address);
+    var panel = PublishPanelDriver(tester);
+    expect(panel.precision, DiaryLocationPrecision.township);
+    panel.changePrecision(DiaryLocationPrecision.address);
     await tester.pump(const Duration(milliseconds: 600));
 
     final saved = await storedDiary(tester);
@@ -192,8 +182,8 @@ void main() {
     expect(settings.diaryLocationPrecisionRaw, 'address');
     await unmount(tester);
     await openEditor(tester);
-    panel = tester.widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel));
-    expect(panel.locationPrecision, DiaryLocationPrecision.address);
+    panel = PublishPanelDriver(tester);
+    expect(panel.precision, DiaryLocationPrecision.address);
     await unmount(tester);
   });
 
@@ -229,9 +219,7 @@ void main() {
         ),
       ))!;
       await openEditor(tester);
-      tester
-          .widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel))
-          .onLocationPrecisionChanged!(DiaryLocationPrecision.city);
+      PublishPanelDriver(tester).changePrecision(DiaryLocationPrecision.city);
       await tester.pump(const Duration(milliseconds: 600));
 
       final saved = await storedDiary(tester);
@@ -263,8 +251,8 @@ void main() {
     ))!;
   }
 
-  PublishDiaryPanel editPanel(WidgetTester tester) =>
-      tester.widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel));
+  PublishPanelDriver editPanel(WidgetTester tester) =>
+      PublishPanelDriver(tester);
 
   for (final brightness in Brightness.values) {
     testWidgets(
@@ -273,13 +261,13 @@ void main() {
         await useDatedDiary(tester);
         await openEditor(tester, brightness: brightness);
         final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
-        expect(editPanel(tester).showPublishTimeOption, isTrue);
+        expect(editPanel(tester).showsPublishTime, isTrue);
         expect(
           editPanel(tester).publishTimeLabel,
           l10n.formatDateTimeMinute(publishedAt),
         );
 
-        editPanel(tester).onPickPublishTime!();
+        editPanel(tester).pickPublishTime();
         await tester.pumpAndSettle();
         await tester.tap(find.text('10'));
         await tester.tap(find.text('OK'));
@@ -311,7 +299,7 @@ void main() {
       (tester) async {
         await useDatedDiary(tester);
         await openEditor(tester);
-        editPanel(tester).onPickPublishTime!();
+        editPanel(tester).pickPublishTime();
         await tester.pumpAndSettle();
         await tester.tap(find.text(cancel ? 'Cancel' : 'OK'));
         await tester.pumpAndSettle();

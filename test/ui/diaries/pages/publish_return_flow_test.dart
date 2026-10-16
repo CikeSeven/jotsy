@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -17,6 +16,7 @@ import 'package:node_diary/ui/widgets/list_item_presence.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
 
 void main() {
   testWidgets('publishing returns straight to the opener with the new id', (
@@ -76,20 +76,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PublishDiaryPage), findsOneWidget);
 
-    // 发布按钮在可拖拽面板底部（收起态位于屏幕外），直接触发它的回调。
-    final publishButton = tester.widget<ButtonStyleButton>(
-      find.ancestor(
-        of: find.byWidgetPredicate(
-          (widget) =>
-              widget is FaIcon &&
-              widget.icon?.codePoint == FontAwesomeIcons.paperPlane.codePoint,
-        ),
-        matching: find.byWidgetPredicate(
-          (widget) => widget is ButtonStyleButton,
-        ),
-      ),
-    );
-    publishButton.onPressed!();
+    PublishPanelDriver(tester).triggerPublish();
     // 写库是真实异步：离开假时钟等它完成，直到发布页开始退场、结果回传。
     for (var i = 0; i < 20 && results.isEmpty; i++) {
       await tester.runAsync(
@@ -251,17 +238,7 @@ Future<void> _publishFromEditor(
   final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
   await tester.tap(find.byTooltip(l10n.autoT0136));
   await tester.pumpAndSettle();
-  final publishButton = tester.widget<ButtonStyleButton>(
-    find.ancestor(
-      of: find.byWidgetPredicate(
-        (widget) =>
-            widget is FaIcon &&
-            widget.icon?.codePoint == FontAwesomeIcons.paperPlane.codePoint,
-      ),
-      matching: find.byWidgetPredicate((widget) => widget is ButtonStyleButton),
-    ),
-  );
-  publishButton.onPressed!();
+  PublishPanelDriver(tester).triggerPublish();
   for (var i = 0; i < 20 && !published(); i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),

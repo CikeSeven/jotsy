@@ -1,52 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../support/expressive_test_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/core/database/app_database.dart';
-import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 
-Widget _panelHost() => MaterialApp(
-  theme: expressiveTestTheme(Brightness.light),
-  localizationsDelegates: AppLocalizations.localizationsDelegates,
-  supportedLocales: AppLocalizations.supportedLocales,
-  locale: const Locale('en'),
-  home: Scaffold(
-    body: Stack(
-      children: <Widget>[
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: PublishDiaryPanel(
-            saving: false,
-            hasCover: false,
-            coverLabel: null,
-            locating: false,
-            weatherLoading: false,
-            locationController: TextEditingController(),
-            weatherController: TextEditingController(),
-            weatherIconCode: null,
-            moodEmoji: null,
-            energyLevel: 4,
-            tags: const <Tag>[],
-            tagsLoading: false,
-            tagsError: null,
-            selectedTagIds: const <int>{},
-            onPickCover: () {},
-            onResolveLocation: () {},
-            onResolveWeather: () {},
-            onLocationChanged: (_) {},
-            onWeatherChanged: (_) {},
-            onCreateTag: () {},
-            onToggleTag: (_, _) {},
-            onMoodChanged: (_) {},
-            onEnergyChanged: (_) {},
-            onPublish: () {},
-          ),
-        ),
-      ],
-    ),
-  ),
-);
+import '../../../support/publish_panel_driver.dart';
 
 /// 表头双箭头的纵向缩放：1 = 上指，-1 = 下指。
 double _arrowFlip(WidgetTester tester) => tester
@@ -64,52 +20,13 @@ double _arrowFlip(WidgetTester tester) => tester
 void main() {
   testWidgets('time capsule picker stays inside publish panel', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        theme: expressiveTestTheme(Brightness.light),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Stack(
-            children: <Widget>[
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: PublishDiaryPanel(
-                  saving: false,
-                  hasCover: false,
-                  coverLabel: null,
-                  locating: false,
-                  weatherLoading: false,
-                  locationController: TextEditingController(),
-                  weatherController: TextEditingController(),
-                  weatherIconCode: null,
-                  moodEmoji: null,
-                  energyLevel: 4,
-                  tags: const <Tag>[],
-                  tagsLoading: false,
-                  tagsError: null,
-                  selectedTagIds: const <int>{},
-                  onPickCover: () {},
-                  onResolveLocation: () {},
-                  onResolveWeather: () {},
-                  onLocationChanged: (_) {},
-                  onWeatherChanged: (_) {},
-                  onCreateTag: () {},
-                  onToggleTag: (_, _) {},
-                  onMoodChanged: (_) {},
-                  onEnergyChanged: (_) {},
-                  onPublish: () {},
-                  showTimeCapsuleOption: true,
-                  timeCapsuleLabel: 'Not sealed',
-                  onTimeCapsuleChanged: (_) {},
-                ),
-              ),
-            ],
-          ),
-        ),
+      publishPanelHost(
+        showTimeCapsuleOption: true,
+        onTimeCapsuleChanged: (_) {},
       ),
     );
 
-    await tester.tap(find.text('Swipe up to expand'));
+    await tester.tap(PublishPanelDriver(tester).collapsedHeader);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Time lock'));
@@ -124,48 +41,10 @@ void main() {
   ) async {
     double? updatedEnergy;
 
-    Widget buildPanel({required double? energyLevel}) {
-      return MaterialApp(
-        theme: expressiveTestTheme(Brightness.light),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Stack(
-            children: <Widget>[
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: PublishDiaryPanel(
-                  saving: false,
-                  hasCover: false,
-                  coverLabel: null,
-                  locating: false,
-                  weatherLoading: false,
-                  locationController: TextEditingController(),
-                  weatherController: TextEditingController(),
-                  weatherIconCode: null,
-                  moodEmoji: null,
-                  energyLevel: energyLevel,
-                  tags: const <Tag>[],
-                  tagsLoading: false,
-                  tagsError: null,
-                  selectedTagIds: const <int>{},
-                  onPickCover: () {},
-                  onResolveLocation: () {},
-                  onResolveWeather: () {},
-                  onLocationChanged: (_) {},
-                  onWeatherChanged: (_) {},
-                  onCreateTag: () {},
-                  onToggleTag: (_, _) {},
-                  onMoodChanged: (_) {},
-                  onEnergyChanged: (val) => updatedEnergy = val,
-                  onPublish: () {},
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    Widget buildPanel({required double? energyLevel}) => publishPanelHost(
+      energyLevel: energyLevel,
+      onEnergyChanged: (val) => updatedEnergy = val,
+    );
 
     tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -174,7 +53,7 @@ void main() {
 
     // 1. Initial state with energy enabled (4.0)
     await tester.pumpWidget(buildPanel(energyLevel: 4));
-    await tester.tap(find.text('Swipe up to expand'));
+    await tester.tap(PublishPanelDriver(tester).collapsedHeader);
     await tester.pumpAndSettle();
 
     final energySwitchFinder = find.byType(Switch);
@@ -218,56 +97,14 @@ void main() {
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: expressiveTestTheme(Brightness.light),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          // 与编辑页/发布页一致：Scaffold 默认随键盘缩小 body，面板贴 body 底边。
-          home: Scaffold(
-            body: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 0,
-                  child: PublishDiaryPanel(
-                    saving: false,
-                    hasCover: false,
-                    coverLabel: null,
-                    locating: false,
-                    weatherLoading: false,
-                    locationController: TextEditingController(),
-                    weatherController: TextEditingController(),
-                    weatherIconCode: null,
-                    moodEmoji: null,
-                    energyLevel: 4,
-                    tags: const <Tag>[],
-                    tagsLoading: false,
-                    tagsError: null,
-                    selectedTagIds: const <int>{},
-                    onPickCover: () {},
-                    onResolveLocation: () {},
-                    onResolveWeather: () {},
-                    onLocationChanged: (_) {},
-                    onWeatherChanged: (_) {},
-                    onCreateTag: () {},
-                    onToggleTag: (_, _) {},
-                    onMoodChanged: (_) {},
-                    onEnergyChanged: (_) {},
-                    onPublish: () {},
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      // 与编辑页/发布页一致：Scaffold 默认随键盘缩小 body，面板贴 body 底边。
+      await tester.pumpWidget(publishPanelHost(keyboardLayout: true));
       await tester.pumpAndSettle();
 
       const keyboardTop = 900.0 - 300.0;
-      final handleLabel = tester.getRect(find.text('Swipe up to expand'));
+      final handleLabel = tester.getRect(
+        PublishPanelDriver(tester).collapsedHeader,
+      );
       // 收起态面板高 56dp，底部留白 10 + 18；标签应紧贴键盘上方，
       // 而不是被再抬升一个键盘高度。
       expect(handleLabel.bottom, lessThan(keyboardTop));
@@ -281,16 +118,16 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(_panelHost());
+      await tester.pumpWidget(publishPanelHost());
       expect(_arrowFlip(tester), 1);
-      await tester.tap(find.text('Swipe up to expand'));
+      await tester.tap(PublishPanelDriver(tester).collapsedHeader);
       await tester.pumpAndSettle();
       expect(_arrowFlip(tester), -1);
-      expect(find.text('Swipe down to collapse'), findsOneWidget);
+      expect(PublishPanelDriver(tester).expandedHeader, findsOneWidget);
 
       final contentBefore = tester.widget<Text>(find.text('Cover'));
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('Swipe down to collapse')),
+        tester.getCenter(PublishPanelDriver(tester).expandedHeader),
       );
       await gesture.moveBy(const Offset(0, 40));
       await gesture.moveBy(const Offset(0, 40));
@@ -321,12 +158,12 @@ void main() {
         const FakeAccessibilityFeatures(disableAnimations: true);
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
-    await tester.pumpWidget(_panelHost());
-    await tester.tap(find.text('Swipe up to expand'));
+    await tester.pumpWidget(publishPanelHost());
+    await tester.tap(PublishPanelDriver(tester).collapsedHeader);
     await tester.pumpAndSettle();
 
     final gesture = await tester.startGesture(
-      tester.getCenter(find.text('Swipe down to collapse')),
+      tester.getCenter(PublishPanelDriver(tester).expandedHeader),
     );
     await gesture.moveBy(const Offset(0, 40));
     await gesture.moveBy(const Offset(0, 40));

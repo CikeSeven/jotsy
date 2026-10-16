@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -13,6 +12,7 @@ import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
 
 /// 日历“写给这一天的时间胶囊”：编辑页带着预设解封日打开，发布后即为在
 /// 该日零点解封的胶囊，发表时间同为解封时间。
@@ -81,20 +81,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PublishDiaryPage), findsOneWidget);
 
-    // 发布按钮在可拖拽面板底部（收起态位于屏幕外），直接触发它的回调。
-    final publishButton = tester.widget<ButtonStyleButton>(
-      find.ancestor(
-        of: find.byWidgetPredicate(
-          (widget) =>
-              widget is FaIcon &&
-              widget.icon?.codePoint == FontAwesomeIcons.paperPlane.codePoint,
-        ),
-        matching: find.byWidgetPredicate(
-          (widget) => widget is ButtonStyleButton,
-        ),
-      ),
-    );
-    publishButton.onPressed!();
+    PublishPanelDriver(tester).triggerPublish();
     // 写库是真实异步，胶囊还有封存动画：离开假时钟推进，直到结果回传。
     for (var i = 0; i < 60 && results.isEmpty; i++) {
       await tester.runAsync(

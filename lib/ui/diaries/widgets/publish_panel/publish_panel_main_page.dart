@@ -75,6 +75,7 @@ class PublishPanelMainPage extends StatelessWidget {
           if (publishTime != null) ...<Widget>[
             gap,
             PublishTimeTile(
+              draft: draft,
               label: publishTime.label,
               onPick: publishTime.onPick,
             ),

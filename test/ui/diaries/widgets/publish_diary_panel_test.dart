@@ -5,6 +5,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 
 import '../../../support/publish_panel_driver.dart';
 
@@ -90,6 +91,62 @@ void main() {
       await tester.pumpAndSettle();
       expect(picker(tester).mode, CupertinoDatePickerMode.date);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('publish time row', () {
+    testWidgets('the whole row opens the picker', (tester) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var picks = 0;
+      await tester.pumpWidget(
+        publishPanelHost(
+          publishTime: PublishTimeOption(label: null, onPick: () => picks++),
+        ),
+      );
+      await PublishPanelDriver(tester).expand();
+
+      expect(find.text('Auto use current time'), findsOneWidget);
+      await tester.tap(find.text('Publish time'));
+      await tester.tap(find.text('Auto use current time'));
+      expect(picks, 2);
+    });
+
+    testWidgets('a time lock dates the diary and disables the row', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final draft = DiaryMetaDraftController(
+        DiaryMetaDraft(
+          capsule: TimeCapsuleSchedule(
+            unlockAt: DateTime(2027),
+            precision: TimeCapsulePrecision.date,
+          ),
+        ),
+      );
+      addTearDown(draft.dispose);
+      var picks = 0;
+      await tester.pumpWidget(
+        publishPanelHost(
+          draft: draft,
+          capsuleEnabled: true,
+          publishTime: PublishTimeOption(label: null, onPick: () => picks++),
+        ),
+      );
+      await PublishPanelDriver(tester).expand();
+
+      expect(find.text('Follows the time lock · Jan 1, 2027'), findsOneWidget);
+      await tester.tap(find.text('Publish time'));
+      expect(picks, 0);
+
+      // 移除定时锁后恢复可选。
+      draft.setCapsule(null);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Publish time'));
+      expect(picks, 1);
     });
   });
 

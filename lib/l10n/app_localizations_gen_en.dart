@@ -3882,4 +3882,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get publishFailed => 'Couldn\'t publish the diary. Please try again.';
+
+  @override
+  String publishTimeFollowsCapsule(String time) {
+    return 'Follows the time lock · $time';
+  }
 }

@@ -5004,5 +5004,15 @@
   "publishFailed": "发表失败，请重试",
   "@publishFailed": {
     "description": "发布页提示：写入新日记失败。"
+  },
+  "publishTimeFollowsCapsule": "跟随定时锁 · {time}",
+  "@publishTimeFollowsCapsule": {
+    "description": "发布面板：设置了定时锁时的发表时间行，日记按解封时间发表。",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2027年1月1日"
+      }
+    }
   }
 }

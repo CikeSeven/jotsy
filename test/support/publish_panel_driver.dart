@@ -105,6 +105,7 @@ class PublishPanelDriver {
 Widget publishPanelHost({
   DiaryMetaDraftController? draft,
   bool capsuleEnabled = false,
+  PublishTimeOption? publishTime,
   bool keyboardLayout = false,
   List<Tag> tags = const <Tag>[],
 }) {
@@ -124,6 +125,7 @@ Widget publishPanelHost({
         body: _PanelHost(
           draft: draft,
           capsuleEnabled: capsuleEnabled,
+          publishTime: publishTime,
           keyboardLayout: keyboardLayout,
         ),
       ),
@@ -135,11 +137,13 @@ class _PanelHost extends ConsumerStatefulWidget {
   const _PanelHost({
     required this.draft,
     required this.capsuleEnabled,
+    required this.publishTime,
     required this.keyboardLayout,
   });
 
   final DiaryMetaDraftController? draft;
   final bool capsuleEnabled;
+  final PublishTimeOption? publishTime;
   final bool keyboardLayout;
 
   @override
@@ -175,6 +179,7 @@ class _PanelHostState extends ConsumerState<_PanelHost> {
       draft: _draft,
       actions: _actions,
       capsuleEnabled: widget.capsuleEnabled,
+      publishTime: widget.publishTime,
       onPublish: () {},
     );
     return Stack(

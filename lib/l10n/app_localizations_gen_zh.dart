@@ -3513,4 +3513,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get publishFailed => '发表失败，请重试';
+
+  @override
+  String publishTimeFollowsCapsule(String time) {
+    return '跟随定时锁 · $time';
+  }
 }

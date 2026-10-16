@@ -164,10 +164,20 @@ class _TagChip extends StatelessWidget {
   }
 }
 
-/// 发表时间行。[label] 为 null 时显示“自动获取当前时间”。
+/// 发表时间行：整行点按选择时间。[label] 为 null 时显示“自动获取当前时间”。
+///
+/// 设置了时间胶囊时日记按解封时刻发表（见
+/// TimeCapsuleSchedule.resolveDiaryCreatedAt），这一行改为说明“跟随定时锁”
+/// 并停用，而不是让用户选一个不会生效的时间。
 class PublishTimeTile extends StatelessWidget {
-  const PublishTimeTile({super.key, required this.label, required this.onPick});
+  const PublishTimeTile({
+    super.key,
+    required this.draft,
+    required this.label,
+    required this.onPick,
+  });
 
+  final DiaryMetaDraftController draft;
   final String? label;
   final VoidCallback? onPick;
 
@@ -175,34 +185,46 @@ class PublishTimeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final text = label?.trim();
-    final hasLabel = text != null && text.isNotEmpty;
-    return PublishPanelTile(
-      padding: const EdgeInsets.fromLTRB(12, 4, 8, 4),
-      child: Row(
-        children: <Widget>[
-          Text(l10n.autoT0172, style: PublishPanelTile.titleStyle(context)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              hasLabel ? text : l10n.autoT0173,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: hasLabel
-                    ? null
-                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.75),
+    return ValueListenableSelector<DiaryMetaDraft, TimeCapsuleSchedule?>(
+      valueListenable: draft,
+      selector: (value) => value.capsule,
+      builder: (context, capsule, _) {
+        final text = capsule != null
+            ? l10n.publishTimeFollowsCapsule(capsuleUnlockText(l10n, capsule))
+            : label?.trim();
+        final muted = capsule != null || text == null || text.isEmpty;
+        final enabled = capsule == null && onPick != null;
+        final mutedColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.75);
+        final tile = PublishPanelTile(
+          onTap: enabled ? onPick : null,
+          padding: const EdgeInsets.fromLTRB(12, 4, 14, 4),
+          child: Row(
+            children: <Widget>[
+              Text(l10n.autoT0172, style: PublishPanelTile.titleStyle(context)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  text == null || text.isEmpty ? l10n.autoT0173 : text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: muted ? mutedColor : null,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              FaIcon(
+                capsule != null
+                    ? FontAwesomeIcons.lock
+                    : FontAwesomeIcons.calendarDays,
+                size: 14,
+                color: enabled ? null : mutedColor,
+              ),
+            ],
           ),
-          IconButton(
-            onPressed: onPick,
-            tooltip: l10n.autoT0174,
-            visualDensity: VisualDensity.compact,
-            icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 14),
-          ),
-        ],
-      ),
+        );
+        return enabled ? Tooltip(message: l10n.autoT0174, child: tile) : tile;
+      },
     );
   }
 }

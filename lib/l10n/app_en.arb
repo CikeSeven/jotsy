@@ -5004,5 +5004,15 @@
   "publishFailed": "Couldn't publish the diary. Please try again.",
   "@publishFailed": {
     "description": "Publish page hint: writing the new diary failed."
+  },
+  "publishTimeFollowsCapsule": "Follows the time lock · {time}",
+  "@publishTimeFollowsCapsule": {
+    "description": "Publish panel: the publish time row while a time lock is set; the diary is dated at the unlock time.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "Jan 1, 2027"
+      }
+    }
   }
 }

@@ -6499,6 +6499,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t publish the diary. Please try again.'**
   String get publishFailed;
+
+  /// Publish panel: the publish time row while a time lock is set; the diary is dated at the unlock time.
+  ///
+  /// In en, this message translates to:
+  /// **'Follows the time lock · {time}'**
+  String publishTimeFollowsCapsule(String time);
 }
 
 class _AppLocalizationsDelegate

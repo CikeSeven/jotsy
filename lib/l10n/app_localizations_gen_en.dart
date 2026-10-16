@@ -3876,4 +3876,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String diaryCardStyleValuePercent(String value) {
     return '$value%';
   }
+
+  @override
+  String get timeCapsuleUnlockPassed =>
+      'The unlock time has passed. Choose a new one before sealing.';
 }

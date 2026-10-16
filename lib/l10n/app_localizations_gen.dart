@@ -6481,6 +6481,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value}%'**
   String diaryCardStyleValuePercent(String value);
+
+  /// Publish page: hint shown when the time capsule's unlock time is no longer in the future at publish time.
+  ///
+  /// In en, this message translates to:
+  /// **'The unlock time has passed. Choose a new one before sealing.'**
+  String get timeCapsuleUnlockPassed;
 }
 
 class _AppLocalizationsDelegate

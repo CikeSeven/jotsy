@@ -14,8 +14,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../support/expressive_test_theme.dart';
 import '../../../support/publish_panel_driver.dart';
 
-/// 发布页的发表时间不能冻结在“打开发布页那一刻”：没选过就只带回打开者的
-/// 请求值，发表时再现算；选过才带回、写入所选时间。
+/// 发布页的时间规则：
+/// - 发表时间不能冻结在“打开发布页那一刻”：没选过就只带回打开者的请求值，
+///   发表时再现算；选过才带回、写入所选时间；
+/// - 时间胶囊的解封时间到发布时必须仍在未来。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -32,6 +34,7 @@ void main() {
   Future<void> openPublisher(
     WidgetTester tester, {
     DateTime? createdAtOverride,
+    DateTime? capsuleUnlockAt,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -41,6 +44,8 @@ void main() {
       contentDocJson: '[{"insert":"A walk\\n"}]',
       contentText: 'A walk',
       createdAtOverride: createdAtOverride,
+      capsuleUnlockAt: capsuleUnlockAt,
+      capsulePrecision: capsuleUnlockAt == null ? null : 'date',
     );
     await tester.pumpWidget(
       ProviderScope(
@@ -181,6 +186,35 @@ void main() {
       () => database.getDiaryWithTagsByDiaryId(results.single! as String),
     );
     expect(stored?.diary.createdAt, picked);
+    await tester.pumpAndSettle();
+    await unmount(tester);
+  });
+
+  // 例如“写给某天的胶囊”草稿在那天过后才恢复发布。
+  testWidgets('a capsule whose unlock day has passed is not sealed', (
+    tester,
+  ) async {
+    final yesterday = DateUtils.dateOnly(
+      DateTime.now(),
+    ).subtract(const Duration(days: 1));
+    await openPublisher(tester, capsuleUnlockAt: yesterday);
+    final l10n = PublishPanelDriver(tester).l10n;
+
+    PublishPanelDriver(tester).triggerPublish();
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
+    expect(find.text(l10n.timeCapsuleUnlockPassed), findsOneWidget);
+    expect(find.byType(PublishDiaryPage), findsOneWidget);
+    expect(results, isEmpty);
+    final diaries = await tester.runAsync(
+      () => database.select(database.diaries).get(),
+    );
+    expect(diaries, isEmpty);
+    await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
     await unmount(tester);
   });

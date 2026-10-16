@@ -178,6 +178,12 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   late final PublishPanelCoordinator _panelCoordinator;
   late DateTime _pendingCapsuleUnlockAt;
   late TimeCapsulePrecision _pendingCapsulePrecision;
+  // 打开胶囊页时冻结的“现在”：选择器的上下限按它算，不在每次构建时
+  // 重取，否则滚轮停在下限、过一分钟再重建时初始值会早于新下限而断言。
+  late DateTime _capsulePickerNow;
+  // CupertinoDatePicker 只在创建时读取初始值与模式：快捷预设、打开页面时
+  // 递增它换 key 重建，让滚轮跳到新值（精度变化同样在 key 里）。
+  int _capsulePickerGeneration = 0;
   double _lastEnergyLevel = 4;
 
   /// 展开进度（0=收起，1=展开）的可监听副本。
@@ -266,28 +272,48 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   void _resetPendingCapsuleDraft() {
     final now = DateTime.now();
     final schedule = widget.timeCapsuleSchedule;
+    _capsulePickerNow = now;
     _pendingCapsulePrecision = schedule?.precision ?? TimeCapsulePrecision.date;
-    final fallback = DateTime(
-      now.year,
-      now.month,
-      now.day + 7,
-      now.hour,
-      now.minute,
+    _pendingCapsuleUnlockAt = TimeCapsuleSchedule.initialPendingUnlockAt(
+      schedule,
+      now,
     );
-    final candidate = schedule?.unlockAt ?? fallback;
-    _pendingCapsuleUnlockAt = candidate.isAfter(now)
-        ? candidate
-        : now.add(const Duration(days: 1));
+    _capsulePickerGeneration++;
   }
 
-  void _applyQuickCapsuleDuration(Duration duration) {
-    setState(() => _pendingCapsuleUnlockAt = DateTime.now().add(duration));
+  DateTime _clampPendingUnlockAt(DateTime value, {DateTime? now}) =>
+      TimeCapsuleSchedule.clampUnlockAt(
+        value,
+        precision: _pendingCapsulePrecision,
+        now: now ?? _capsulePickerNow,
+      );
+
+  void _applyCapsulePreset(TimeCapsulePreset preset) {
+    setState(() {
+      _pendingCapsuleUnlockAt = _clampPendingUnlockAt(
+        TimeCapsuleSchedule.presetUnlockAt(preset, DateTime.now()),
+      );
+      _capsulePickerGeneration++;
+    });
+  }
+
+  void _changeCapsulePrecision(TimeCapsulePrecision precision) {
+    setState(() {
+      _pendingCapsulePrecision = precision;
+      // 分钟 → 日期时下限推到明天零点，先夹到范围内再交给新选择器。
+      _pendingCapsuleUnlockAt = _clampPendingUnlockAt(_pendingCapsuleUnlockAt);
+    });
   }
 
   Future<void> _confirmCapsuleSchedule() async {
     widget.onTimeCapsuleChanged?.call(
       TimeCapsuleSchedule(
-        unlockAt: _pendingCapsuleUnlockAt,
+        // 在选择页停留期间下限可能已经过去（滚轮停在最早一分钟/明天）：按
+        // 确认这一刻重新夹一次，用户选的“最早”仍是最早，而不是过去的时刻。
+        unlockAt: _clampPendingUnlockAt(
+          _pendingCapsuleUnlockAt,
+          now: DateTime.now(),
+        ),
         precision: _pendingCapsulePrecision,
       ),
     );
@@ -592,7 +618,7 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
   Widget _buildCapsuleManagePage(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final now = DateTime.now();
+    final precision = _pendingCapsulePrecision;
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
@@ -604,18 +630,15 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
             children: <Widget>[
               ActionChip(
                 label: Text(l10n.timeCapsuleQuickWeek),
-                onPressed: () =>
-                    _applyQuickCapsuleDuration(const Duration(days: 7)),
+                onPressed: () => _applyCapsulePreset(TimeCapsulePreset.week),
               ),
               ActionChip(
                 label: Text(l10n.timeCapsuleQuickMonth),
-                onPressed: () =>
-                    _applyQuickCapsuleDuration(const Duration(days: 30)),
+                onPressed: () => _applyCapsulePreset(TimeCapsulePreset.month),
               ),
               ActionChip(
                 label: Text(l10n.timeCapsuleQuickYear),
-                onPressed: () =>
-                    _applyQuickCapsuleDuration(const Duration(days: 365)),
+                onPressed: () => _applyCapsulePreset(TimeCapsulePreset.year),
               ),
             ],
           ),
@@ -631,21 +654,30 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                 label: Text(l10n.timeCapsulePrecisionMinute),
               ),
             ],
-            selected: <TimeCapsulePrecision>{_pendingCapsulePrecision},
-            onSelectionChanged: (values) {
-              setState(() => _pendingCapsulePrecision = values.single);
-            },
+            selected: <TimeCapsulePrecision>{precision},
+            onSelectionChanged: (values) =>
+                _changeCapsulePrecision(values.single),
           ),
           const SizedBox(height: 8),
           SizedBox(
             height: 184,
             child: CupertinoDatePicker(
-              mode: CupertinoDatePickerMode.dateAndTime,
-              minimumDate: now.add(const Duration(minutes: 1)),
-              maximumDate: DateTime(now.year + 10, now.month, now.day),
-              initialDateTime: _pendingCapsuleUnlockAt.isAfter(now)
-                  ? _pendingCapsuleUnlockAt
-                  : now.add(const Duration(days: 1)),
+              key: ValueKey<(TimeCapsulePrecision, int)>((
+                precision,
+                _capsulePickerGeneration,
+              )),
+              // “只按日期”只给日期滚轮，避免让用户调一个会被丢掉的时分。
+              mode: precision == TimeCapsulePrecision.date
+                  ? CupertinoDatePickerMode.date
+                  : CupertinoDatePickerMode.dateAndTime,
+              minimumDate: TimeCapsuleSchedule.earliestUnlockAt(
+                precision,
+                _capsulePickerNow,
+              ),
+              maximumDate: TimeCapsuleSchedule.latestUnlockAt(
+                _capsulePickerNow,
+              ),
+              initialDateTime: _clampPendingUnlockAt(_pendingCapsuleUnlockAt),
               use24hFormat: true,
               onDateTimeChanged: (value) => _pendingCapsuleUnlockAt = value,
             ),

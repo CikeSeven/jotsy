@@ -3514,4 +3514,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String diaryCardStyleValuePercent(String value) {
     return '$value%';
   }
+
+  @override
+  String get timeCapsuleUnlockPassed => '解封时间已经过去，请重新选择后再封存';
 }

@@ -140,12 +140,17 @@ class PublishDiaryController {
       _state.context.l10n.formatDateTimeMinute(value);
 
   String get timeCapsuleLabel {
+    final l10n = _state.context.l10n;
     final schedule = _state._timeCapsuleSchedule;
     if (schedule == null) {
-      return _state.context.l10n.timeCapsuleUnset;
+      return l10n.timeCapsuleUnset;
     }
-    return _state.context.l10n.timeCapsuleSet(
-      formatPublishTimeLabel(schedule.normalizedUnlockAt),
+    final unlockAt = schedule.normalizedUnlockAt;
+    // “只按日期”的胶囊在当天零点解封，只显示日期，不显示一个用户没选过的 00:00。
+    return l10n.timeCapsuleSet(
+      schedule.precision == TimeCapsulePrecision.date
+          ? l10n.formatFullDate(unlockAt)
+          : formatPublishTimeLabel(unlockAt),
     );
   }
 
@@ -424,6 +429,14 @@ class PublishDiaryController {
   /// 路由栈），再以新日记 id 作为结果退场；失败时仅提示不退出。
   Future<void> publish() async {
     if (_state._leaveBlocked) {
+      return;
+    }
+    // 解封时间必须仍在未来：日期精度选了今天、或恢复的草稿里那天已过，
+    // 写入的就是一个立即解封的胶囊。拦下并提示重新选择，不写库。
+    final pendingSchedule = _state._timeCapsuleSchedule;
+    if (pendingSchedule != null &&
+        !pendingSchedule.isUnlockInFuture(DateTime.now())) {
+      unawaited(showHint(_state.context.l10n.timeCapsuleUnlockPassed));
       return;
     }
 

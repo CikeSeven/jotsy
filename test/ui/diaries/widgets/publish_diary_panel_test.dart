@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 
 import '../../../support/publish_panel_driver.dart';
 
@@ -34,6 +36,72 @@ void main() {
 
     expect(find.byType(BottomSheet), findsNothing);
     expect(find.text('Choose unlock time'), findsOneWidget);
+  });
+
+  group('time capsule picker', () {
+    Future<void> openCapsulePage(
+      WidgetTester tester, {
+      ValueChanged<TimeCapsuleSchedule>? onChanged,
+    }) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        publishPanelHost(
+          showTimeCapsuleOption: true,
+          onTimeCapsuleChanged: onChanged ?? (_) {},
+        ),
+      );
+      await PublishPanelDriver(tester).expand();
+      await tester.tap(find.text('Time lock'));
+      await tester.pumpAndSettle();
+    }
+
+    CupertinoDatePicker picker(WidgetTester tester) =>
+        tester.widget<CupertinoDatePicker>(find.byType(CupertinoDatePicker));
+
+    testWidgets('a quick preset moves the wheel and is what gets confirmed', (
+      tester,
+    ) async {
+      TimeCapsuleSchedule? confirmed;
+      await openCapsulePage(tester, onChanged: (value) => confirmed = value);
+      final before = picker(tester);
+
+      await tester.tap(find.text('One month'));
+      await tester.pumpAndSettle();
+      // 选择器只在创建时读初始值：预设必须让它以新值重建，滚轮才会跟着动。
+      final after = picker(tester);
+      final expectedDay = DateUtils.dateOnly(
+        DateTime.now().add(const Duration(days: 30)),
+      );
+      expect(after.key, isNot(before.key));
+      expect(DateUtils.dateOnly(after.initialDateTime), expectedDay);
+
+      await tester.tap(find.text('Confirm'));
+      await tester.pumpAndSettle();
+      expect(confirmed?.precision, TimeCapsulePrecision.date);
+      expect(confirmed?.normalizedUnlockAt, expectedDay);
+    });
+
+    testWidgets('date only shows a date wheel that starts tomorrow', (
+      tester,
+    ) async {
+      await openCapsulePage(tester);
+      final tomorrow = DateUtils.dateOnly(
+        DateTime.now(),
+      ).add(const Duration(days: 1));
+      expect(picker(tester).mode, CupertinoDatePickerMode.date);
+      expect(picker(tester).minimumDate, tomorrow);
+
+      await tester.tap(find.text('Exact time'));
+      await tester.pumpAndSettle();
+      expect(picker(tester).mode, CupertinoDatePickerMode.dateAndTime);
+
+      await tester.tap(find.text('Date only'));
+      await tester.pumpAndSettle();
+      expect(picker(tester).mode, CupertinoDatePickerMode.date);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   testWidgets('energy switch toggles between enabled and disabled states', (

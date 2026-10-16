@@ -5017,5 +5017,9 @@
         "type": "String"
       }
     }
+  },
+  "timeCapsuleUnlockPassed": "解封时间已经过去，请重新选择后再封存",
+  "@timeCapsuleUnlockPassed": {
+    "description": "发布页：发布时时间胶囊的解封时间已不在未来时的提示。"
   }
 }

@@ -3890,4 +3890,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get publishCoverChange => 'Tap to change';
+
+  @override
+  String get publishPanelSummaryEmpty => 'Add tags, mood, place…';
+
+  @override
+  String get publishPanelPublishShort => 'Publish';
+
+  @override
+  String get publishPanelSealShort => 'Seal';
 }

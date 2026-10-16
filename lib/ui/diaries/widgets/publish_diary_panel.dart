@@ -18,6 +18,7 @@ import '../../../app/theme/expressive_surfaces.dart';
 import 'publish_panel/publish_capsule_picker_page.dart';
 import 'publish_panel/publish_panel_chrome.dart';
 import 'publish_panel/publish_panel_main_page.dart';
+import 'publish_panel/publish_panel_summary_bar.dart';
 import 'publish_panel/publish_tag_picker_page.dart';
 
 export 'publish_panel/publish_panel_main_page.dart' show PublishTimeOption;
@@ -107,7 +108,11 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
   static const double _collapsedHeight = 56;
   static const double _mainExpandedHeight = 470;
   static const double _subPageExpandedHeight = 540;
-  static const double _collapsedHorizontalInset = 40;
+  // 收起态两侧内缩：宽屏最多 40，收起栏宽度上限约 320；窄屏收到 8，给
+  // 摘要和发表按钮留出空间。
+  static const double _collapsedMaxInset = 40;
+  static const double _collapsedMinInset = 8;
+  static const double _collapsedTargetWidth = 320;
   static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
   static const double _collapsedBottomGap = 10;
@@ -213,80 +218,93 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
     // 2) 用普通 Padding 而非 AnimatedPadding：内缩量由拖拽进度逐帧给出，
     //    AnimatedPadding 每帧被重新定向，会让面板宽度滞后于手指。
     // 3) 只有这层 Padding 随进度重建，面板本体作为缓存的 child 传入。
-    return ValueListenableBuilder<double>(
-      valueListenable: _progress,
-      builder: (BuildContext context, double progress, Widget? child) {
-        // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
-        final horizontalInset = lerpDouble(
-          _collapsedHorizontalInset,
-          _expandedHorizontalInset,
-          progress,
-        )!;
-        final extraLift = lerpDouble(_collapsedExtraLift, 0, progress)!;
-        return Padding(
-          padding: EdgeInsets.only(
-            left: horizontalInset,
-            right: horizontalInset,
-            bottom: _collapsedBottomGap + extraLift,
-          ),
-          child: child,
-        );
-      },
-      child: SizedBox(
-        // SheetViewport 需要有限高度约束，否则会触发布局断言。
-        height: _activeExpandedHeight,
-        child: SheetViewport(
-          child: Sheet(
-            controller: _panelCoordinator.sheetController,
-            initialOffset: SheetOffset(collapsedFactor),
-            physics: const BouncingSheetPhysics(
-              spring: SpringDescription(
-                mass: 0.62,
-                stiffness: 190,
-                damping: 19,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final collapsedInset = constraints.hasBoundedWidth
+            ? ((constraints.maxWidth - _collapsedTargetWidth) / 2).clamp(
+                _collapsedMinInset,
+                _collapsedMaxInset,
+              )
+            : _collapsedMaxInset;
+        return ValueListenableBuilder<double>(
+          valueListenable: _progress,
+          builder: (BuildContext context, double progress, Widget? child) {
+            // 面板展开时变宽，收起时变窄，形成“悬浮卡片展开”感。
+            final horizontalInset = lerpDouble(
+              collapsedInset,
+              _expandedHorizontalInset,
+              progress,
+            )!;
+            final extraLift = lerpDouble(_collapsedExtraLift, 0, progress)!;
+            return Padding(
+              padding: EdgeInsets.only(
+                left: horizontalInset,
+                right: horizontalInset,
+                bottom: _collapsedBottomGap + extraLift,
               ),
-              bounceExtent: 92,
-              resistance: 7.2,
-            ),
-            snapGrid: MultiSnapGrid(
-              snaps: <SheetOffset>[
-                SheetOffset(collapsedFactor),
-                const SheetOffset(1),
-              ],
-              minFlingSpeed: 580,
-            ),
-            // 面板容器：圆角 + 浮动阴影 + 卡片微边框。
-            decoration: SheetDecorationBuilder(
-              size: SheetSize.fit,
-              builder: (context, child) {
-                return Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppRadii.nav),
-                    boxShadow: AppEffects.softShadow(colorScheme),
+              child: child,
+            );
+          },
+          child: SizedBox(
+            // SheetViewport 需要有限高度约束，否则会触发布局断言。
+            height: _activeExpandedHeight,
+            child: SheetViewport(
+              child: Sheet(
+                controller: _panelCoordinator.sheetController,
+                initialOffset: SheetOffset(collapsedFactor),
+                physics: const BouncingSheetPhysics(
+                  spring: SpringDescription(
+                    mass: 0.62,
+                    stiffness: 190,
+                    damping: 19,
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadii.nav),
-                    child: DecoratedBox(
+                  bounceExtent: 92,
+                  resistance: 7.2,
+                ),
+                snapGrid: MultiSnapGrid(
+                  snaps: <SheetOffset>[
+                    SheetOffset(collapsedFactor),
+                    const SheetOffset(1),
+                  ],
+                  minFlingSpeed: 580,
+                ),
+                // 面板容器：圆角 + 浮动阴影 + 卡片微边框。
+                decoration: SheetDecorationBuilder(
+                  size: SheetSize.fit,
+                  builder: (context, child) {
+                    return Container(
                       decoration: BoxDecoration(
-                        color: ExpressiveSurfaces.cardColor(colorScheme),
-                        border: Border.fromBorderSide(
-                          ExpressiveSurfaces.cardBorderSide(colorScheme),
+                        borderRadius: BorderRadius.circular(AppRadii.nav),
+                        boxShadow: AppEffects.softShadow(colorScheme),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadii.nav),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: ExpressiveSurfaces.cardColor(colorScheme),
+                            border: Border.fromBorderSide(
+                              ExpressiveSurfaces.cardBorderSide(colorScheme),
+                            ),
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: child,
+                          ),
                         ),
                       ),
-                      child: Material(color: Colors.transparent, child: child),
-                    ),
-                  ),
-                );
-              },
-            ),
-            child: SizedBox(
-              width: double.infinity,
-              height: _activeExpandedHeight,
-              child: _buildContent(context),
+                    );
+                  },
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: _activeExpandedHeight,
+                  child: _buildContent(context),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -322,6 +340,12 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             height: _collapsedHeight,
             onExpand: _panelCoordinator.expandToMax,
             onCollapse: _panelCoordinator.collapseToMin,
+            collapsedContent: PublishPanelSummaryBar(
+              draft: widget.draft,
+              tags: tags.asData?.value ?? const [],
+              busy: widget.busy,
+              onPublish: widget.onPublish,
+            ),
           ),
           content: PublishPanelMainPage(
             draft: widget.draft,

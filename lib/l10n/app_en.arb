@@ -5018,5 +5018,17 @@
   "publishCoverChange": "Tap to change",
   "@publishCoverChange": {
     "description": "Diary metadata panel: hint next to the cover thumbnail once a cover is set."
+  },
+  "publishPanelSummaryEmpty": "Add tags, mood, place…",
+  "@publishPanelSummaryEmpty": {
+    "description": "Publish panel collapsed bar: shown when no metadata has been chosen yet."
+  },
+  "publishPanelPublishShort": "Publish",
+  "@publishPanelPublishShort": {
+    "description": "Publish panel collapsed bar: short label of the publish button."
+  },
+  "publishPanelSealShort": "Seal",
+  "@publishPanelSealShort": {
+    "description": "Publish panel collapsed bar: short label of the publish button when a time lock is set."
   }
 }

@@ -270,7 +270,8 @@ Future<void> _publishFromEditor(
   final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
   await tester.tap(find.byTooltip(l10n.autoT0136));
   await tester.pumpAndSettle();
-  PublishPanelDriver(tester).triggerPublish();
+  // 收起栏上的发表按钮：不展开面板就能发表。
+  await tester.tap(PublishPanelDriver(tester).collapsedPublishButton);
   for (var i = 0; i < 20 && !published(); i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),

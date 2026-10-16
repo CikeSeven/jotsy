@@ -3521,4 +3521,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get publishCoverChange => '点击更换';
+
+  @override
+  String get publishPanelSummaryEmpty => '添加标签、心情、地点…';
+
+  @override
+  String get publishPanelPublishShort => '发表';
+
+  @override
+  String get publishPanelSealShort => '封存';
 }

@@ -6511,6 +6511,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to change'**
   String get publishCoverChange;
+
+  /// Publish panel collapsed bar: shown when no metadata has been chosen yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tags, mood, place…'**
+  String get publishPanelSummaryEmpty;
+
+  /// Publish panel collapsed bar: short label of the publish button.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get publishPanelPublishShort;
+
+  /// Publish panel collapsed bar: short label of the publish button when a time lock is set.
+  ///
+  /// In en, this message translates to:
+  /// **'Seal'**
+  String get publishPanelSealShort;
 }
 
 class _AppLocalizationsDelegate

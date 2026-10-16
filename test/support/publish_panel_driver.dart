@@ -10,6 +10,7 @@ import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_summary_bar.dart';
 
 import 'expressive_test_theme.dart';
 
@@ -34,8 +35,12 @@ class PublishPanelDriver {
 
   AppLocalizations get l10n => _context.l10n;
 
-  /// 收起态表头（点按展开、也是拖拽起点）。
-  Finder get collapsedHeader => find.text(l10n.autoT0158);
+  /// 收起态摘要栏（点按展开、也是拖拽起点）。
+  Finder get collapsedHeader => find.byKey(PublishPanelSummaryBar.summaryKey);
+
+  /// 收起栏上的发表按钮（编辑页没有）。
+  Finder get collapsedPublishButton =>
+      find.byKey(PublishPanelSummaryBar.actionKey);
 
   /// 展开态表头。
   Finder get expandedHeader => find.text(l10n.autoT0159);
@@ -110,6 +115,11 @@ Widget publishPanelHost({
   PublishTimeOption? publishTime,
   bool keyboardLayout = false,
   List<Tag> tags = const <Tag>[],
+  bool publishAction = true,
+  VoidCallback? onPublish,
+  Brightness brightness = Brightness.light,
+  String locale = 'en',
+  double textScale = 1,
 }) {
   return ProviderScope(
     overrides: [
@@ -119,16 +129,22 @@ Widget publishPanelHost({
       ),
     ],
     child: MaterialApp(
-      theme: expressiveTestTheme(Brightness.light),
+      theme: expressiveTestTheme(brightness),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('en'),
+      locale: Locale(locale),
+      builder: (context, child) => MediaQuery.withClampedTextScaling(
+        minScaleFactor: textScale,
+        maxScaleFactor: textScale,
+        child: child!,
+      ),
       home: Scaffold(
         body: _PanelHost(
           draft: draft,
           capsuleEnabled: capsuleEnabled,
           publishTime: publishTime,
           keyboardLayout: keyboardLayout,
+          onPublish: publishAction ? (onPublish ?? () {}) : null,
         ),
       ),
     ),
@@ -141,12 +157,14 @@ class _PanelHost extends ConsumerStatefulWidget {
     required this.capsuleEnabled,
     required this.publishTime,
     required this.keyboardLayout,
+    required this.onPublish,
   });
 
   final DiaryMetaDraftController? draft;
   final bool capsuleEnabled;
   final PublishTimeOption? publishTime;
   final bool keyboardLayout;
+  final VoidCallback? onPublish;
 
   @override
   ConsumerState<_PanelHost> createState() => _PanelHostState();
@@ -182,7 +200,7 @@ class _PanelHostState extends ConsumerState<_PanelHost> {
       actions: _actions,
       capsuleEnabled: widget.capsuleEnabled,
       publishTime: widget.publishTime,
-      onPublish: () {},
+      onPublish: widget.onPublish,
     );
     return Stack(
       fit: widget.keyboardLayout ? StackFit.expand : StackFit.loose,

@@ -65,11 +65,14 @@ class PublishPanelPageScaffold extends StatelessWidget {
   }
 }
 
-/// 主页表头：双箭头 + “上划展开 / 下滑收起”，点按切换展开状态。
+/// 主页表头，点按切换展开状态。
 ///
-/// 箭头随拖拽进度连续翻转：纵向缩放 1 → -1，上指的双箭头先压扁成一道横线
-/// 再翻成下指，跟手且不会在越过阈值的那一帧突然掉头；文案仍按阈值切换，
-/// 用短交叉淡入衔接。减少动态效果时朝向按阈值直接切换。
+/// - 收起态：左侧双箭头 + [collapsedContent]（摘要栏，可带发表按钮）；
+/// - 展开态：居中的双箭头 + “下滑收起”。
+/// 越过阈值时两种布局短交叉淡入。箭头随拖拽进度连续翻转：纵向缩放 1 → -1，
+/// 上指的双箭头先压扁成一道横线再翻成下指，跟手且不会在越过阈值的那一帧
+/// 突然掉头。减少动态效果时朝向按阈值直接切换。拖拽中只有这层随进度重建，
+/// [collapsedContent] 作为缓存 child 传入。
 class PublishPanelMainHeader extends StatelessWidget {
   const PublishPanelMainHeader({
     super.key,
@@ -77,15 +80,17 @@ class PublishPanelMainHeader extends StatelessWidget {
     required this.height,
     required this.onExpand,
     required this.onCollapse,
+    required this.collapsedContent,
   });
 
-  /// 低于该进度按“收起”呈现（箭头朝上、文案“上划展开”）。
+  /// 低于该进度按“收起”呈现。
   static const double collapsedVisualThreshold = 0.56;
 
   final ValueListenable<double> progress;
   final double height;
   final VoidCallback onExpand;
   final VoidCallback onCollapse;
+  final Widget collapsedContent;
 
   @override
   Widget build(BuildContext context) {
@@ -98,49 +103,62 @@ class PublishPanelMainHeader extends StatelessWidget {
       height: height,
       child: ValueListenableBuilder<double>(
         valueListenable: progress,
-        builder: (BuildContext context, double value, Widget? _) {
+        child: collapsedContent,
+        builder: (BuildContext context, double value, Widget? collapsed) {
           final collapsedVisual = value < collapsedVisualThreshold;
           final flip = reduceMotion
               ? (collapsedVisual ? 1.0 : -1.0)
               : 1 - 2 * value;
+          final arrow = Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.diagonal3Values(1, flip, 1),
+            child: const FaIcon(FontAwesomeIcons.anglesUp, size: 14),
+          );
           return Material(
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
               onTap: collapsedVisual ? onExpand : onCollapse,
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Transform(
-                      alignment: Alignment.center,
-                      transform: Matrix4.diagonal3Values(1, flip, 1),
-                      child: const FaIcon(FontAwesomeIcons.anglesUp, size: 14),
-                    ),
-                    const SizedBox(width: 10),
-                    // 中英文案长短不一：宽度随文案平滑过渡，箭头不会跳位。
-                    AnimatedSize(
-                      duration: ExpressiveMotion.durationNonZero(
-                        context,
-                        ExpressiveMotion.fast,
-                      ),
-                      curve: ExpressiveMotion.effects,
-                      child: AnimatedSwitcher(
-                        duration: ExpressiveMotion.duration(
-                          context,
-                          ExpressiveMotion.fast,
-                        ),
-                        switchInCurve: ExpressiveMotion.effects,
-                        switchOutCurve: ExpressiveMotion.exit,
-                        child: Text(
-                          collapsedVisual ? l10n.autoT0158 : l10n.autoT0159,
-                          key: ValueKey<bool>(collapsedVisual),
-                          style: titleStyle,
-                        ),
-                      ),
-                    ),
-                  ],
+              child: AnimatedSwitcher(
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.fast,
                 ),
+                switchInCurve: ExpressiveMotion.effects,
+                switchOutCurve: ExpressiveMotion.exit,
+                child: collapsedVisual
+                    ? Semantics(
+                        key: const ValueKey<bool>(true),
+                        hint: l10n.autoT0158,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 10, 0),
+                          child: Row(
+                            children: <Widget>[
+                              arrow,
+                              const SizedBox(width: 12),
+                              Expanded(child: collapsed!),
+                            ],
+                          ),
+                        ),
+                      )
+                    : Center(
+                        key: const ValueKey<bool>(false),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            arrow,
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                l10n.autoT0159,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: titleStyle,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
             ),
           );

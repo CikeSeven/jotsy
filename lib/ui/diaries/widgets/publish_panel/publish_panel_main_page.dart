@@ -22,7 +22,8 @@ class PublishTimeOption {
 }
 
 /// 面板主页内容，自上而下：封面 → 标签 → 此时此地 → 发表时间 → 时间胶囊 →
-/// 心情 → 精力 → 发表按钮。
+/// 心情 → 精力；发表按钮固定在底部，不随内容滚动，展开后不用滚到底就能
+/// 发表。
 ///
 /// 各区块各自监听草稿里自己的字段（见 ValueListenableSelector），拖动精力、
 /// 打字、选心情只重建对应区块。
@@ -59,7 +60,7 @@ class PublishPanelMainPage extends StatelessWidget {
     final publishTime = this.publishTime;
     final onPublish = this.onPublish;
     const gap = SizedBox(height: 14);
-    return SingleChildScrollView(
+    final content = SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,20 +90,28 @@ class PublishPanelMainPage extends StatelessWidget {
           PublishMoodSection(draft: draft, moodOptions: moodOptions),
           gap,
           PublishEnergySection(draft: draft),
-          if (onPublish != null) ...<Widget>[
-            gap,
-            ValueListenableSelector<DiaryMetaDraft, bool>(
-              valueListenable: draft,
-              selector: (value) => value.capsule != null,
-              builder: (context, sealing, _) => PublishPanelActionButton(
-                busy: busy,
-                sealing: sealing,
-                onPressed: onPublish,
-              ),
-            ),
-          ],
         ],
       ),
+    );
+    if (onPublish == null) {
+      return content;
+    }
+    return Column(
+      children: <Widget>[
+        Expanded(child: content),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          child: ValueListenableSelector<DiaryMetaDraft, bool>(
+            valueListenable: draft,
+            selector: (value) => value.capsule != null,
+            builder: (context, sealing, _) => PublishPanelActionButton(
+              busy: busy,
+              sealing: sealing,
+              onPressed: onPublish,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

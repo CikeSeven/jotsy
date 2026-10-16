@@ -5018,5 +5018,17 @@
   "publishCoverChange": "点击更换",
   "@publishCoverChange": {
     "description": "日记元数据面板：已设置封面时缩略图旁的提示。"
+  },
+  "publishPanelSummaryEmpty": "添加标签、心情、地点…",
+  "@publishPanelSummaryEmpty": {
+    "description": "发布面板收起栏：还没选择任何元数据时的提示。"
+  },
+  "publishPanelPublishShort": "发表",
+  "@publishPanelPublishShort": {
+    "description": "发布面板收起栏：发表按钮的短文案。"
+  },
+  "publishPanelSealShort": "封存",
+  "@publishPanelSealShort": {
+    "description": "发布面板收起栏：设置了定时锁时发表按钮的短文案。"
   }
 }

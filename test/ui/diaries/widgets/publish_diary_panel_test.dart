@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
@@ -95,6 +96,127 @@ void main() {
       expect(picker(tester).mode, CupertinoDatePickerMode.date);
       expect(tester.takeException(), isNull);
     });
+  });
+
+  group('collapsed summary bar', () {
+    testWidgets(
+      'shows what will be published and publishes without expanding',
+      (tester) async {
+        tester.view.physicalSize = const Size(400, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final draft = DiaryMetaDraftController(
+          const DiaryMetaDraft(tagIds: {1, 2}, location: '北京市 · 望京街道'),
+        );
+        addTearDown(draft.dispose);
+        var published = 0;
+        await tester.pumpWidget(
+          publishPanelHost(
+            draft: draft,
+            tags: const [
+              Tag(id: 1, name: 'Life', color: 0xff2196f3),
+              Tag(id: 2, name: 'Travel', color: 0xffe91e63),
+            ],
+            onPublish: () => published++,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final panel = PublishPanelDriver(tester);
+
+        // 第一个 RichText 是摘要本身（图标也是 RichText，排在它里面）。
+        final summary = tester.widget<RichText>(
+          find
+              .descendant(
+                of: panel.collapsedHeader,
+                matching: find.byType(RichText),
+              )
+              .first,
+        );
+        final text = summary.text.toPlainText();
+        expect(text, contains('Life'));
+        expect(text, contains('+1'));
+        expect(text, contains('望京街道'));
+
+        await tester.tap(panel.collapsedPublishButton);
+        expect(published, 1);
+        // 摘要区点按展开面板。
+        await panel.expand();
+        expect(panel.expandedHeader, findsOneWidget);
+      },
+    );
+
+    testWidgets('the edit page bar has no publish button', (tester) async {
+      await tester.pumpWidget(publishPanelHost(publishAction: false));
+      await tester.pumpAndSettle();
+      final panel = PublishPanelDriver(tester);
+      expect(panel.collapsedPublishButton, findsNothing);
+      expect(find.text('Add tags, mood, place…'), findsOneWidget);
+    });
+
+    testWidgets('the expanded publish button is visible without scrolling', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(publishPanelHost());
+      await PublishPanelDriver(tester).expand();
+
+      final button = find.widgetWithText(FilledButton, 'Publish diary');
+      expect(button, findsOneWidget);
+      final buttonRect = tester.getRect(button);
+      final panelRect = tester.getRect(find.byType(PublishDiaryPanel));
+      expect(buttonRect.bottom, lessThanOrEqualTo(panelRect.bottom));
+      expect(buttonRect.top, greaterThan(panelRect.top));
+      expect(tester.takeException(), isNull);
+    });
+
+    for (final brightness in Brightness.values) {
+      for (final locale in ['en', 'zh']) {
+        testWidgets('fits 320dp at 1.3x text in $locale, ${brightness.name}', (
+          tester,
+        ) async {
+          tester.view.physicalSize = const Size(320, 700);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          final draft = DiaryMetaDraftController(
+            DiaryMetaDraft(
+              tagIds: const {1},
+              location: 'A very long hand written place name',
+              weather: 'Sunny 24℃',
+              moodEmoji: '🙂',
+              capsule: TimeCapsuleSchedule(
+                unlockAt: DateTime(2030),
+                precision: TimeCapsulePrecision.date,
+              ),
+            ),
+          );
+          addTearDown(draft.dispose);
+          await tester.pumpWidget(
+            publishPanelHost(
+              draft: draft,
+              capsuleEnabled: true,
+              keyboardLayout: true,
+              brightness: brightness,
+              locale: locale,
+              textScale: 1.3,
+              tags: const [
+                Tag(id: 1, name: 'A long tag name', color: 0xff2196f3),
+              ],
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+          expect(
+            PublishPanelDriver(tester).collapsedPublishButton,
+            findsOneWidget,
+          );
+
+          await PublishPanelDriver(tester).expand();
+          expect(tester.takeException(), isNull);
+        });
+      }
+    }
   });
 
   group('cover row', () {

@@ -2905,4 +2905,91 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get anniversarySaveFailed => 'Couldn\'t save. Try again.';
+
+  @override
+  String get anniversaryListTitle => 'Anniversaries';
+
+  @override
+  String get anniversaryEmpty =>
+      'No anniversaries yet. Long-press a day in the calendar, or tap + to add one.';
+
+  @override
+  String get anniversaryPinnedBadge => 'Pinned';
+
+  @override
+  String anniversaryDaysToGo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days to go',
+      one: 'day to go',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String anniversaryDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'days ago',
+      one: 'day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get anniversaryDetailNext => 'Next';
+
+  @override
+  String get anniversaryDetailStart => 'Started';
+
+  @override
+  String get anniversaryMoreActions => 'More actions';
+
+  @override
+  String get anniversaryUnpin => 'Unpin';
+
+  @override
+  String get anniversaryFieldLink => 'Linked diary';
+
+  @override
+  String get anniversaryLinkNone => 'None';
+
+  @override
+  String get anniversaryLinkPick => 'Link a diary';
+
+  @override
+  String get anniversaryLinkMissing => 'The linked diary was deleted';
+
+  @override
+  String get anniversaryUnlink => 'Unlink';
+
+  @override
+  String get anniversaryLinkedDiaryTitle => 'Linked diary';
+
+  @override
+  String get anniversaryOpenLinkedDiary => 'Open the linked diary';
+
+  @override
+  String get anniversaryPickerHint =>
+      'Diaries written within 7 days of the date';
+
+  @override
+  String get anniversaryPickerEmpty => 'No diaries within a week of this date';
+
+  @override
+  String get anniversaryPastDiariesTitle => 'On this day over the years';
+
+  @override
+  String get anniversaryBaseDayDiariesTitle => 'Diaries from this day';
+
+  @override
+  String get anniversaryPastDiariesEmpty => 'No diaries on these days yet';
+
+  @override
+  String get anniversaryView => 'View';
+
+  @override
+  String get previewSetAsAnniversary => 'Make it an anniversary';
 }

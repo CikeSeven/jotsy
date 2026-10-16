@@ -29,6 +29,8 @@ import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/backup_password_dialog.dart';
 import '../../widgets/qweather_icon.dart';
+import '../../anniversaries/controllers/anniversary_navigation.dart';
+import '../../anniversaries/models/anniversary_draft.dart';
 import '../controllers/diary_file_export_controller.dart';
 import '../providers/diary_detail_provider.dart';
 import '../utils/diary_markdown_exporter.dart';
@@ -777,59 +779,74 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
         final colorScheme = Theme.of(sheetContext).colorScheme;
         return SafeArea(
           top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-                title: Text(context.l10n.autoT0114),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _shareAsLongImage();
-                },
-              ),
-              ListTile(
-                leading: const FaIcon(FontAwesomeIcons.fileLines, size: 16),
-                title: Text(context.l10n.previewExportMarkdown),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _exportMarkdown(detail);
-                },
-              ),
-              ListTile(
-                leading: const FaIcon(FontAwesomeIcons.filePdf, size: 16),
-                title: Text(context.l10n.previewExportPdf),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _exportPdf(detail);
-                },
-              ),
-              ListTile(
-                leading: const FaIcon(FontAwesomeIcons.fileZipper, size: 16),
-                title: Text(context.l10n.previewExportDiaryFile),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _exportDiaryFile(detail);
-                },
-              ),
-              ListTile(
-                leading: FaIcon(
-                  FontAwesomeIcons.trashCan,
-                  size: 16,
-                  color: colorScheme.error,
+          // 面板高度上限约 9/16 屏高，矮屏或横屏放不下全部操作时可滚动。
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                  leading: const FaIcon(FontAwesomeIcons.image, size: 16),
+                  title: Text(context.l10n.autoT0114),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _shareAsLongImage();
+                  },
                 ),
-                title: Text(
-                  context.l10n.commonDelete,
-                  style: Theme.of(
-                    sheetContext,
-                  ).textTheme.bodyLarge?.copyWith(color: colorScheme.error),
+                ListTile(
+                  leading: const FaIcon(FontAwesomeIcons.fileLines, size: 16),
+                  title: Text(context.l10n.previewExportMarkdown),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _exportMarkdown(detail);
+                  },
                 ),
-                onTap: () async {
-                  Navigator.of(sheetContext).pop();
-                  await _deleteDiary();
-                },
-              ),
-            ],
+                ListTile(
+                  leading: const FaIcon(FontAwesomeIcons.filePdf, size: 16),
+                  title: Text(context.l10n.previewExportPdf),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _exportPdf(detail);
+                  },
+                ),
+                ListTile(
+                  leading: const FaIcon(FontAwesomeIcons.fileZipper, size: 16),
+                  title: Text(context.l10n.previewExportDiaryFile),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _exportDiaryFile(detail);
+                  },
+                ),
+                ListTile(
+                  leading: const FaIcon(FontAwesomeIcons.heart, size: 16),
+                  title: Text(context.l10n.previewSetAsAnniversary),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await openAnniversaryEditor(
+                      context,
+                      database: ref.read(appDatabaseProvider),
+                      draft: AnniversaryDraft.fromDiary(detail.diary),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: FaIcon(
+                    FontAwesomeIcons.trashCan,
+                    size: 16,
+                    color: colorScheme.error,
+                  ),
+                  title: Text(
+                    context.l10n.commonDelete,
+                    style: Theme.of(
+                      sheetContext,
+                    ).textTheme.bodyLarge?.copyWith(color: colorScheme.error),
+                  ),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _deleteDiary();
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

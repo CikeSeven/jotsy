@@ -47,6 +47,19 @@ extension _CalendarPageAnniversaries on _CalendarPageState {
                     today: DateUtils.dateOnly(now),
                     onOpen: (AnniversaryDayMark mark) =>
                         unawaited(_controller.openAnniversary(mark)),
+                    trailingBuilder: (AnniversaryDayMark mark) {
+                      final diaryId = mark.row.linkedDiaryId;
+                      return diaryId == null
+                          ? null
+                          : AnniversaryLinkedDiaryButton(
+                              diaryId: diaryId,
+                              onOpen: (DiaryWithTags diary) =>
+                                  _controller.openPreview(
+                                    diary.diary.diaryId,
+                                    initialDetail: diary,
+                                  ),
+                            );
+                    },
                   ),
                 ),
         ),

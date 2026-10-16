@@ -4783,6 +4783,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t save. Try again.'**
   String get anniversarySaveFailed;
+
+  /// Title of the anniversary list page and tooltip of the calendar header button.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get anniversaryListTitle;
+
+  /// Shown when the anniversary list is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No anniversaries yet. Long-press a day in the calendar, or tap + to add one.'**
+  String get anniversaryEmpty;
+
+  /// Pinned capsule on an anniversary list card.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get anniversaryPinnedBadge;
+
+  /// Caption under the big number on a list card: days until the next time.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{day to go} other{days to go}}'**
+  String anniversaryDaysToGo(int count);
+
+  /// Caption under the big number on a list card: days since a one-off day passed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{day ago} other{days ago}}'**
+  String anniversaryDaysAgo(int count);
+
+  /// Anniversary details: date of the next time.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get anniversaryDetailNext;
+
+  /// Anniversary details: date of the first time.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get anniversaryDetailStart;
+
+  /// Tooltip of the More button on the anniversary details page.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get anniversaryMoreActions;
+
+  /// Anniversary details More sheet: unpin.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get anniversaryUnpin;
+
+  /// Linked diary row in the editor and title of the picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked diary'**
+  String get anniversaryFieldLink;
+
+  /// Diary picker: link no diary.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get anniversaryLinkNone;
+
+  /// Anniversary details: button when nothing is linked.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a diary'**
+  String get anniversaryLinkPick;
+
+  /// Anniversary details: the linked diary is in the recycle bin or gone.
+  ///
+  /// In en, this message translates to:
+  /// **'The linked diary was deleted'**
+  String get anniversaryLinkMissing;
+
+  /// Anniversary details: remove the link to a deleted diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get anniversaryUnlink;
+
+  /// Anniversary details: linked diary section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked diary'**
+  String get anniversaryLinkedDiaryTitle;
+
+  /// Tooltip of the button at the end of a calendar anniversary row.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the linked diary'**
+  String get anniversaryOpenLinkedDiary;
+
+  /// Description in the diary picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries written within 7 days of the date'**
+  String get anniversaryPickerHint;
+
+  /// Diary picker sheet without candidates.
+  ///
+  /// In en, this message translates to:
+  /// **'No diaries within a week of this date'**
+  String get anniversaryPickerEmpty;
+
+  /// Anniversary details: diaries written on each past occurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'On this day over the years'**
+  String get anniversaryPastDiariesTitle;
+
+  /// Anniversary details for a one-off day: diaries written that day.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries from this day'**
+  String get anniversaryBaseDayDiariesTitle;
+
+  /// Anniversary details: no diaries on past occurrences.
+  ///
+  /// In en, this message translates to:
+  /// **'No diaries on these days yet'**
+  String get anniversaryPastDiariesEmpty;
+
+  /// View action on the snack bar after making a diary an anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get anniversaryView;
+
+  /// Diary preview More sheet: create an anniversary from this diary.
+  ///
+  /// In en, this message translates to:
+  /// **'Make it an anniversary'**
+  String get previewSetAsAnniversary;
 }
 
 class _AppLocalizationsDelegate

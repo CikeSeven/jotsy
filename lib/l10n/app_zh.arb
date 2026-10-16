@@ -3752,5 +3752,107 @@
   "anniversarySaveFailed": "保存失败，请重试",
   "@anniversarySaveFailed": {
     "description": "保存纪念日失败的提示。"
+  },
+  "anniversaryListTitle": "纪念日",
+  "@anniversaryListTitle": {
+    "description": "纪念日列表页标题，也是日历页头纪念日按钮的提示。"
+  },
+  "anniversaryEmpty": "还没有纪念日。长按日历上的某一天，或点右上角的“+”添加。",
+  "@anniversaryEmpty": {
+    "description": "纪念日列表为空时的提示。"
+  },
+  "anniversaryPinnedBadge": "置顶",
+  "@anniversaryPinnedBadge": {
+    "description": "纪念日列表卡片上的置顶小胶囊。"
+  },
+  "anniversaryDaysToGo": "天后",
+  "@anniversaryDaysToGo": {
+    "description": "列表卡片大数字下方的说明：距下一次还有多少天。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDaysAgo": "天前",
+  "@anniversaryDaysAgo": {
+    "description": "列表卡片大数字下方的说明：不重复的日子已过去多少天。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDetailNext": "下一次",
+  "@anniversaryDetailNext": {
+    "description": "纪念日详情：下一次的日期。"
+  },
+  "anniversaryDetailStart": "开始于",
+  "@anniversaryDetailStart": {
+    "description": "纪念日详情：首次的日期。"
+  },
+  "anniversaryMoreActions": "更多操作",
+  "@anniversaryMoreActions": {
+    "description": "纪念日详情页顶栏“更多”按钮的提示。"
+  },
+  "anniversaryUnpin": "取消置顶",
+  "@anniversaryUnpin": {
+    "description": "纪念日详情“更多”面板：取消置顶。"
+  },
+  "anniversaryFieldLink": "关联日记",
+  "@anniversaryFieldLink": {
+    "description": "编辑页的关联日记一行与选择面板标题。"
+  },
+  "anniversaryLinkNone": "不关联",
+  "@anniversaryLinkNone": {
+    "description": "选择关联日记面板：不关联任何日记。"
+  },
+  "anniversaryLinkPick": "关联一篇日记",
+  "@anniversaryLinkPick": {
+    "description": "纪念日详情：尚未关联时的按钮。"
+  },
+  "anniversaryLinkMissing": "关联的日记已删除",
+  "@anniversaryLinkMissing": {
+    "description": "纪念日详情：关联的日记已进回收站或被删除。"
+  },
+  "anniversaryUnlink": "取消关联",
+  "@anniversaryUnlink": {
+    "description": "纪念日详情：解除与已删除日记的关联。"
+  },
+  "anniversaryLinkedDiaryTitle": "关联的日记",
+  "@anniversaryLinkedDiaryTitle": {
+    "description": "纪念日详情：关联日记区块标题。"
+  },
+  "anniversaryOpenLinkedDiary": "打开关联的日记",
+  "@anniversaryOpenLinkedDiary": {
+    "description": "日历纪念日卡片行尾按钮的提示。"
+  },
+  "anniversaryPickerHint": "所选日期前后 7 天写下的日记",
+  "@anniversaryPickerHint": {
+    "description": "选择关联日记面板的说明。"
+  },
+  "anniversaryPickerEmpty": "这一天前后一周没有日记",
+  "@anniversaryPickerEmpty": {
+    "description": "选择关联日记面板没有候选时的提示。"
+  },
+  "anniversaryPastDiariesTitle": "历年这一天",
+  "@anniversaryPastDiariesTitle": {
+    "description": "纪念日详情：每年那天写下的日记。"
+  },
+  "anniversaryBaseDayDiariesTitle": "这一天的日记",
+  "@anniversaryBaseDayDiariesTitle": {
+    "description": "纪念日详情（不重复）：那天写下的日记。"
+  },
+  "anniversaryPastDiariesEmpty": "这些日子还没有写过日记",
+  "@anniversaryPastDiariesEmpty": {
+    "description": "纪念日详情：历年这一天没有日记时的提示。"
+  },
+  "anniversaryView": "查看",
+  "@anniversaryView": {
+    "description": "从日记设为纪念日后提示条上的“查看”按钮。"
+  },
+  "previewSetAsAnniversary": "设为纪念日",
+  "@previewSetAsAnniversary": {
+    "description": "日记预览页“更多”面板：以这篇日记新建纪念日。"
   }
 }

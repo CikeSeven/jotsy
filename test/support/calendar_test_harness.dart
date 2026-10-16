@@ -32,6 +32,7 @@ Future<SettingsService> pumpCalendarPage(
   List<DiaryWithTags> onThisDay = const <DiaryWithTags>[],
   List<Tag> tags = const <Tag>[],
   List<Anniversary> anniversaries = const <Anniversary>[],
+  Map<String, DiaryWithTags> linkedDiaries = const <String, DiaryWithTags>{},
   List<Override> extraOverrides = const <Override>[],
 }) async {
   tester.view.physicalSize = Size(width, 900);
@@ -69,6 +70,9 @@ Future<SettingsService> pumpCalendarPage(
         tagListProvider.overrideWith((ref) => Stream.value(tags)),
         anniversaryListProvider.overrideWith(
           (ref) => Stream.value(anniversaries),
+        ),
+        anniversaryLinkedDiaryProvider.overrideWith(
+          (ref, diaryId) => Stream.value(linkedDiaries[diaryId]),
         ),
         ...extraOverrides,
       ],

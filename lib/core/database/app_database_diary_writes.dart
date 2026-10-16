@@ -249,7 +249,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 彻底删除日记（物理删除，不可恢复）。
   ///
-  /// 显式清理 diary_tags，兼容没有开启外键级联的历史连接。
+  /// 显式清理 diary_tags，兼容没有开启外键级联的历史连接；关联这篇日记的
+  /// 纪念日同时解除关联（纪念日只存日记业务 id、没有外键）。软删除不动关联，
+  /// 从回收站恢复后关联仍在。
   /// 只删除数据库记录：正文媒体可能被其他日记或草稿复用（复制粘贴图片），
   /// 文件由 DiaryMediaCleanupService 确认无人引用后再回收。
   Future<void> hardDeleteDiary(String diaryId) async {
@@ -268,6 +270,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
       await (delete(
         diaries,
       )..where((Diaries t) => t.diaryId.equals(diaryId))).go();
+      await (update(anniversaries)
+            ..where((t) => t.linkedDiaryId.equals(diaryId)))
+          .write(const AnniversariesCompanion(linkedDiaryId: Value(null)));
     });
   }
 

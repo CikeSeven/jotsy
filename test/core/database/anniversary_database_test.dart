@@ -83,6 +83,38 @@ void main() {
       },
     );
 
+    test(
+      'a diary deleted for good unlinks, the recycle bin does not',
+      () async {
+        final diaryId = await db.createDiary(
+          title: 'linked',
+          contentDocJson: '[{"insert":"x\\n"}]',
+          contentText: 'x',
+          metadataJson: '{}',
+        );
+        final id = await db.createAnniversary(
+          title: '关联',
+          baseDate: DateTime(2026),
+          recurrence: AnniversaryRecurrence.solarYearly,
+          linkedDiaryId: diaryId,
+        );
+        Future<String?> link() async =>
+            (await db.watchAnniversary(id).first)?.linkedDiaryId;
+
+        await db.softDeleteDiary(diaryId);
+        expect(await link(), diaryId);
+        expect(await db.watchActiveDiaryWithTags(diaryId).first, isNull);
+        await db.restoreDiary(diaryId);
+        expect(
+          (await db.watchActiveDiaryWithTags(diaryId).first)?.diary.title,
+          'linked',
+        );
+
+        await db.hardDeleteDiary(diaryId);
+        expect(await link(), isNull);
+      },
+    );
+
     test('a blank name is rejected', () async {
       await expectLater(
         db.createAnniversary(

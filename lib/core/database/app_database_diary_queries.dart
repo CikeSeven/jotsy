@@ -391,6 +391,24 @@ ORDER BY d.created_at ASC, d.updated_at ASC, d.id ASC
     ).watch().map(_mapDiaryWithTagsRows);
   }
 
+  /// 监听单篇日记及其标签（含归档，不含回收站中的）；不存在或已删除时推送
+  /// null。用于纪念日关联的日记：日记进回收站后关联显示为“已删除”，从回收站
+  /// 恢复后自动回来。
+  Stream<DiaryWithTags?> watchActiveDiaryWithTags(String diaryId) {
+    return customSelect(
+      '''
+$_calendarDiaryWithTagsSelect
+  AND d.diary_id = ?
+GROUP BY d.id
+''',
+      variables: <Variable<Object>>[Variable<String>(diaryId)],
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags, tags},
+    ).watch().map((List<QueryRow> rows) {
+      final mapped = _mapDiaryWithTagsRows(rows);
+      return mapped.isEmpty ? null : mapped.first;
+    });
+  }
+
   /// 监听落在任一 `[start, end)` 区间内的日记（含归档，不含已删除），按创建
   /// 时间倒序。
   ///

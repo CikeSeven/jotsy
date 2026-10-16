@@ -16,6 +16,7 @@ class CalendarHeader extends StatelessWidget {
     required this.onPickDate,
     this.onOpenDisplayOptions,
     this.onOpenFilter,
+    this.onOpenAnniversaries,
     this.filterActive = false,
     this.titleTooltip,
     this.previousTooltip,
@@ -38,6 +39,9 @@ class CalendarHeader extends StatelessWidget {
 
   /// 打开筛选面板；为 null 时不显示该按钮。
   final VoidCallback? onOpenFilter;
+
+  /// 打开纪念日列表；为 null 时不显示该按钮。
+  final VoidCallback? onOpenAnniversaries;
 
   /// 筛选生效中：按钮切换为选中态并带一个小圆点，离开卡片也能看出网格
   /// 是筛选后的结果。
@@ -81,6 +85,12 @@ class CalendarHeader extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (onOpenAnniversaries != null)
+                      IconButton(
+                        tooltip: l10n.anniversaryListTitle,
+                        onPressed: onOpenAnniversaries,
+                        icon: const FaIcon(FontAwesomeIcons.heart, size: 17),
+                      ),
                     if (onOpenFilter != null)
                       IconButton(
                         tooltip: l10n.calendarFilterTooltip,

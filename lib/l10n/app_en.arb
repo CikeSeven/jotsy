@@ -3752,5 +3752,107 @@
   "anniversarySaveFailed": "Couldn't save. Try again.",
   "@anniversarySaveFailed": {
     "description": "Message when saving an anniversary fails."
+  },
+  "anniversaryListTitle": "Anniversaries",
+  "@anniversaryListTitle": {
+    "description": "Title of the anniversary list page and tooltip of the calendar header button."
+  },
+  "anniversaryEmpty": "No anniversaries yet. Long-press a day in the calendar, or tap + to add one.",
+  "@anniversaryEmpty": {
+    "description": "Shown when the anniversary list is empty."
+  },
+  "anniversaryPinnedBadge": "Pinned",
+  "@anniversaryPinnedBadge": {
+    "description": "Pinned capsule on an anniversary list card."
+  },
+  "anniversaryDaysToGo": "{count, plural, =1{day to go} other{days to go}}",
+  "@anniversaryDaysToGo": {
+    "description": "Caption under the big number on a list card: days until the next time.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDaysAgo": "{count, plural, =1{day ago} other{days ago}}",
+  "@anniversaryDaysAgo": {
+    "description": "Caption under the big number on a list card: days since a one-off day passed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDetailNext": "Next",
+  "@anniversaryDetailNext": {
+    "description": "Anniversary details: date of the next time."
+  },
+  "anniversaryDetailStart": "Started",
+  "@anniversaryDetailStart": {
+    "description": "Anniversary details: date of the first time."
+  },
+  "anniversaryMoreActions": "More actions",
+  "@anniversaryMoreActions": {
+    "description": "Tooltip of the More button on the anniversary details page."
+  },
+  "anniversaryUnpin": "Unpin",
+  "@anniversaryUnpin": {
+    "description": "Anniversary details More sheet: unpin."
+  },
+  "anniversaryFieldLink": "Linked diary",
+  "@anniversaryFieldLink": {
+    "description": "Linked diary row in the editor and title of the picker sheet."
+  },
+  "anniversaryLinkNone": "None",
+  "@anniversaryLinkNone": {
+    "description": "Diary picker: link no diary."
+  },
+  "anniversaryLinkPick": "Link a diary",
+  "@anniversaryLinkPick": {
+    "description": "Anniversary details: button when nothing is linked."
+  },
+  "anniversaryLinkMissing": "The linked diary was deleted",
+  "@anniversaryLinkMissing": {
+    "description": "Anniversary details: the linked diary is in the recycle bin or gone."
+  },
+  "anniversaryUnlink": "Unlink",
+  "@anniversaryUnlink": {
+    "description": "Anniversary details: remove the link to a deleted diary."
+  },
+  "anniversaryLinkedDiaryTitle": "Linked diary",
+  "@anniversaryLinkedDiaryTitle": {
+    "description": "Anniversary details: linked diary section title."
+  },
+  "anniversaryOpenLinkedDiary": "Open the linked diary",
+  "@anniversaryOpenLinkedDiary": {
+    "description": "Tooltip of the button at the end of a calendar anniversary row."
+  },
+  "anniversaryPickerHint": "Diaries written within 7 days of the date",
+  "@anniversaryPickerHint": {
+    "description": "Description in the diary picker sheet."
+  },
+  "anniversaryPickerEmpty": "No diaries within a week of this date",
+  "@anniversaryPickerEmpty": {
+    "description": "Diary picker sheet without candidates."
+  },
+  "anniversaryPastDiariesTitle": "On this day over the years",
+  "@anniversaryPastDiariesTitle": {
+    "description": "Anniversary details: diaries written on each past occurrence."
+  },
+  "anniversaryBaseDayDiariesTitle": "Diaries from this day",
+  "@anniversaryBaseDayDiariesTitle": {
+    "description": "Anniversary details for a one-off day: diaries written that day."
+  },
+  "anniversaryPastDiariesEmpty": "No diaries on these days yet",
+  "@anniversaryPastDiariesEmpty": {
+    "description": "Anniversary details: no diaries on past occurrences."
+  },
+  "anniversaryView": "View",
+  "@anniversaryView": {
+    "description": "View action on the snack bar after making a diary an anniversary."
+  },
+  "previewSetAsAnniversary": "Make it an anniversary",
+  "@previewSetAsAnniversary": {
+    "description": "Diary preview More sheet: create an anniversary from this diary."
   }
 }

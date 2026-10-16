@@ -23,6 +23,7 @@ import '../../../core/services/settings_service.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../../anniversaries/providers/anniversary_providers.dart';
+import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/time_capsule.dart';
@@ -304,6 +305,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             onOpenDisplayOptions: () =>
                 unawaited(_controller.openDisplayOptions()),
             onOpenFilter: () => unawaited(_controller.openFilter()),
+            onOpenAnniversaries: () => unawaited(openAnniversaryList(context)),
             filterActive: _filter.isActive,
             titleTooltip: _yearMode
                 ? l10n.autoT0177

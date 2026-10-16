@@ -4,19 +4,48 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../diaries/models/time_capsule.dart';
+import '../../diaries/pages/diary_preview_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
+import '../../widgets/image_viewer_hero.dart';
 import '../models/anniversary_draft.dart';
+import '../pages/anniversary_detail_page.dart';
 import '../pages/anniversary_edit_page.dart';
+import '../pages/anniversary_list_page.dart';
 import 'anniversary_edit_controller.dart';
 
 /// 撤销提示的停留时间（非动画计时）；无障碍下也到时关闭。
 const Duration _undoDuration = Duration(seconds: 5);
 
-/// 打开纪念日编辑页（新建或编辑），关闭后在 [context] 所在页面给出提示：
-/// 新建 → “已添加”；删除 → 可撤销的“已删除”。返回编辑页带回的结果。
+/// 纪念日相关页面的导航入口（日历、列表、详情、日记预览页共用）。
 ///
-/// 提示用打开方的 context：编辑页已出栈，它的 ScaffoldMessenger 位置不再
-/// 可见。[database] 用于撤销删除。
+/// 提示一律用打开方的 context 经 [HomeHintVisibilityScope.showTrackedSnackBar]
+/// 弹出：被关闭的页面已出栈，它所在的位置不再可见。[AppDatabase] 由调用方
+/// 传入，用于撤销删除。
+
+Future<void> openAnniversaryList(BuildContext context) {
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) => const AnniversaryListPage(),
+    ),
+  );
+}
+
+Future<void> openAnniversaryDetail(
+  BuildContext context, {
+  required String anniversaryId,
+  Anniversary? initial,
+}) {
+  return Navigator.of(context).push<void>(
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) =>
+          AnniversaryDetailPage(anniversaryId: anniversaryId, initial: initial),
+    ),
+  );
+}
+
+/// 打开纪念日编辑页（新建或编辑），关闭后给出提示：新建 → “已添加”（带
+/// “查看”进入详情）；删除 → 可撤销的“已删除”。返回编辑页带回的结果。
 Future<AnniversaryEditResult?> openAnniversaryEditor(
   BuildContext context, {
   required AppDatabase database,
@@ -33,11 +62,26 @@ Future<AnniversaryEditResult?> openAnniversaryEditor(
     return result;
   }
   switch (result) {
-    case AnniversaryCreated():
+    case AnniversaryCreated(:final anniversaryId):
       unawaited(
         HomeHintVisibilityScope.showTrackedSnackBar(
           context: context,
-          snackBar: SnackBar(content: Text(context.l10n.anniversaryCreated)),
+          snackBar: SnackBar(
+            content: Text(context.l10n.anniversaryCreated),
+            action: SnackBarAction(
+              label: context.l10n.anniversaryView,
+              onPressed: () {
+                if (context.mounted) {
+                  unawaited(
+                    openAnniversaryDetail(
+                      context,
+                      anniversaryId: anniversaryId,
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
         ),
       );
     case AnniversaryDeleted(:final row):
@@ -69,5 +113,49 @@ Future<void> showAnniversaryDeletedUndo(
   );
   if (undo || reason == SnackBarClosedReason.action) {
     await database.restoreAnniversary(row);
+  }
+}
+
+/// 未解封的时间胶囊不从纪念日打开：入口只显示可看的日记，避免绕过锁。
+bool isOpenableDiary(DiaryWithTags diary, {DateTime? now}) {
+  return !TimeCapsuleState.fromFields(
+    lockedAt: diary.diary.capsuleLockedAt,
+    unlockAt: diary.diary.capsuleUnlockAt,
+    now: now ?? DateTime.now(),
+  ).isLocked;
+}
+
+/// 从纪念日打开日记预览（首帧用已有的 [diary]，缩略图作共享元素）。预览页
+/// 里删除日记后给出可撤销的提示，撤销即从回收站恢复。
+Future<void> openDiaryFromAnniversary(
+  BuildContext context, {
+  required AppDatabase database,
+  required DiaryWithTags diary,
+  ImageViewerHero? coverHero,
+}) async {
+  final diaryId = diary.diary.diaryId;
+  final result = await Navigator.of(context).push<DiaryPreviewResult?>(
+    MaterialPageRoute<DiaryPreviewResult?>(
+      builder: (BuildContext context) => DiaryPreviewPage(
+        diaryId: diaryId,
+        initialDetail: diary,
+        coverHero: coverHero,
+      ),
+    ),
+  );
+  if (result != DiaryPreviewResult.deleted || !context.mounted) {
+    return;
+  }
+  final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
+    context: context,
+    snackBar: SnackBar(
+      content: Text(context.l10n.autoT0075),
+      duration: _undoDuration,
+      action: SnackBarAction(label: context.l10n.commonUndo, onPressed: () {}),
+    ),
+    forceCloseAfter: _undoDuration,
+  );
+  if (reason == SnackBarClosedReason.action) {
+    await database.restoreDiary(diaryId, touchUpdatedAt: false);
   }
 }

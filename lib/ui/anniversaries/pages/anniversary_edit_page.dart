@@ -20,6 +20,7 @@ import '../controllers/anniversary_edit_controller.dart';
 import '../models/anniversary_draft.dart';
 import '../viewmodels/anniversary_rule.dart';
 import '../widgets/anniversary_date_field.dart';
+import '../widgets/anniversary_link_field.dart';
 
 /// 纪念日编辑页（新建 / 编辑）。
 ///
@@ -247,6 +248,14 @@ class _AnniversaryEditPageState extends ConsumerState<AnniversaryEditPage> {
               curve: ExpressiveMotion.effects,
               alignment: Alignment.topCenter,
               child: CalendarOptionsFadingText(text: _repeatDescription(l10n)),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            CalendarOptionsFieldLabel(text: l10n.anniversaryFieldLink),
+            AnniversaryLinkField(
+              date: _draft.date,
+              diaryId: _draft.linkedDiaryId,
+              onChanged: (String? diaryId) =>
+                  _update(_draft.copyWith(linkedDiaryId: () => diaryId)),
             ),
             const SizedBox(height: AppSpacing.xl),
             CalendarOptionsFieldLabel(text: l10n.anniversaryFieldNote),

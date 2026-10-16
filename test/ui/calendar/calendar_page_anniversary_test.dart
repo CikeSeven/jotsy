@@ -1,8 +1,12 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/anniversaries/pages/anniversary_detail_page.dart';
 import 'package:node_diary/ui/anniversaries/pages/anniversary_edit_page.dart';
+import 'package:node_diary/ui/anniversaries/providers/anniversary_providers.dart';
+import 'package:node_diary/ui/anniversaries/widgets/anniversary_linked_diary_button.dart';
 import 'package:node_diary/ui/calendar/models/calendar_display_options.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_anniversary_section.dart';
@@ -97,5 +101,49 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(AnniversaryEditPage), findsOneWidget);
     expect(find.text(l10n.anniversaryNewTitle), findsOneWidget);
+  });
+
+  testWidgets('the card opens the details; a linked diary gets a shortcut', (
+    tester,
+  ) async {
+    final linked = together.copyWith(linkedDiaryId: const Value('diary-1'));
+    await pumpCalendarPage(
+      tester,
+      anniversaries: <Anniversary>[linked],
+      linkedDiaries: <String, DiaryWithTags>{
+        'diary-1': calendarTestDiary('diary-1', today, title: '那天'),
+      },
+      extraOverrides: [
+        anniversaryProvider.overrideWith((ref, id) => Stream.value(linked)),
+        anniversaryPastDiariesProvider.overrideWith(
+          (ref, rule) => Stream.value(const <DiaryWithTags>[]),
+        ),
+      ],
+    );
+    final section = find.byType(CalendarAnniversarySection);
+    final shortcut = find.descendant(
+      of: section,
+      matching: find.byType(AnniversaryLinkedDiaryButton),
+    );
+    expect(
+      find.descendant(of: shortcut, matching: find.byType(IconButton)),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.descendant(of: section, matching: find.text('在一起')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AnniversaryDetailPage), findsOneWidget);
+  });
+
+  testWidgets('no shortcut when the linked diary is gone', (tester) async {
+    final linked = together.copyWith(linkedDiaryId: const Value('gone'));
+    await pumpCalendarPage(tester, anniversaries: <Anniversary>[linked]);
+    expect(
+      find.descendant(
+        of: find.byType(AnniversaryLinkedDiaryButton),
+        matching: find.byType(IconButton),
+      ),
+      findsNothing,
+    );
   });
 }

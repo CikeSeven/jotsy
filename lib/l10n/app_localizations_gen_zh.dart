@@ -2606,4 +2606,77 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get anniversarySaveFailed => '保存失败，请重试';
+
+  @override
+  String get anniversaryListTitle => '纪念日';
+
+  @override
+  String get anniversaryEmpty => '还没有纪念日。长按日历上的某一天，或点右上角的“+”添加。';
+
+  @override
+  String get anniversaryPinnedBadge => '置顶';
+
+  @override
+  String anniversaryDaysToGo(int count) {
+    return '天后';
+  }
+
+  @override
+  String anniversaryDaysAgo(int count) {
+    return '天前';
+  }
+
+  @override
+  String get anniversaryDetailNext => '下一次';
+
+  @override
+  String get anniversaryDetailStart => '开始于';
+
+  @override
+  String get anniversaryMoreActions => '更多操作';
+
+  @override
+  String get anniversaryUnpin => '取消置顶';
+
+  @override
+  String get anniversaryFieldLink => '关联日记';
+
+  @override
+  String get anniversaryLinkNone => '不关联';
+
+  @override
+  String get anniversaryLinkPick => '关联一篇日记';
+
+  @override
+  String get anniversaryLinkMissing => '关联的日记已删除';
+
+  @override
+  String get anniversaryUnlink => '取消关联';
+
+  @override
+  String get anniversaryLinkedDiaryTitle => '关联的日记';
+
+  @override
+  String get anniversaryOpenLinkedDiary => '打开关联的日记';
+
+  @override
+  String get anniversaryPickerHint => '所选日期前后 7 天写下的日记';
+
+  @override
+  String get anniversaryPickerEmpty => '这一天前后一周没有日记';
+
+  @override
+  String get anniversaryPastDiariesTitle => '历年这一天';
+
+  @override
+  String get anniversaryBaseDayDiariesTitle => '这一天的日记';
+
+  @override
+  String get anniversaryPastDiariesEmpty => '这些日子还没有写过日记';
+
+  @override
+  String get anniversaryView => '查看';
+
+  @override
+  String get previewSetAsAnniversary => '设为纪念日';
 }

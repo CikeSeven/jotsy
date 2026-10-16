@@ -62,4 +62,41 @@ void main() {
     );
     expect(offset, lessThan(0));
   });
+
+  testWidgets('the anniversary button fits a 320dp English header', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    var opened = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Stack(
+            children: <Widget>[
+              CalendarHeader(
+                title: 'October 2026',
+                month: DateTime(2026, 10),
+                onJumpToToday: () {},
+                onPreviousMonth: () {},
+                onNextMonth: () {},
+                onPickDate: () {},
+                onOpenDisplayOptions: () {},
+                onOpenFilter: () {},
+                onOpenAnniversaries: () => opened++,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    final l10n = tester.element(find.byType(CalendarHeader)).l10n;
+    await tester.tap(find.byTooltip(l10n.anniversaryListTitle));
+    expect(opened, 1);
+    expect(tester.takeException(), isNull);
+  });
 }

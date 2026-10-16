@@ -3,15 +3,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
-import '../../../app/theme/app_effects.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/sections/diaries_list_section.dart'
     show DiaryOpenCallback;
-import '../../diaries/viewmodels/diary_card_view_data.dart';
-import '../../widgets/image_viewer_hero.dart';
-import 'calendar_entry_thumbnail.dart';
+import 'calendar_diary_mini_card.dart';
 
 /// 选中日下方的“那年今日”：其他年份同月同日写下的日记，横向小卡片。
 ///
@@ -81,130 +77,25 @@ class CalendarOnThisDayStrip extends StatelessWidget {
             ),
             itemCount: diaries.length,
             separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
-            itemBuilder: (BuildContext context, int index) => _OnThisDayCard(
-              diary: diaries[index],
-              selectedDay: selectedDay,
-              width: _cardWidth,
-              onOpenDiary: onOpenDiary,
-            ),
+            itemBuilder: (BuildContext context, int index) {
+              final diary = diaries[index];
+              final createdAt = diary.diary.createdAt.toLocal();
+              final yearDiff = selectedDay.year - createdAt.year;
+              final relative = yearDiff > 0
+                  ? l10n.calendarOnThisDayYearsAgo(yearDiff)
+                  : l10n.calendarOnThisDayYearsLater(-yearDiff);
+              return CalendarDiaryMiniCard(
+                diary: diary,
+                eyebrow:
+                    '$relative · '
+                    '${DateFormat.y(l10n.localeName).format(createdAt)}',
+                width: _cardWidth,
+                onOpenDiary: onOpenDiary,
+              );
+            },
           ),
         ),
       ],
-    );
-  }
-}
-
-class _OnThisDayCard extends StatelessWidget {
-  const _OnThisDayCard({
-    required this.diary,
-    required this.selectedDay,
-    required this.width,
-    required this.onOpenDiary,
-  });
-
-  final DiaryWithTags diary;
-  final DateTime selectedDay;
-  final double width;
-  final DiaryOpenCallback onOpenDiary;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final viewData = DiaryCardViewData.of(diary.diary);
-    final createdAt = diary.diary.createdAt.toLocal();
-    final yearDiff = selectedDay.year - createdAt.year;
-    final relative = yearDiff > 0
-        ? l10n.calendarOnThisDayYearsAgo(yearDiff)
-        : l10n.calendarOnThisDayYearsLater(-yearDiff);
-    final title = diary.diary.title.trim();
-    final summary = viewData.previewText.isNotEmpty
-        ? viewData.previewText
-        : l10n.autoT0186;
-    final cover = viewData.previewCover;
-    final anchor = ImageViewerHeroAnchor();
-    final radius = BorderRadius.circular(20);
-    return Container(
-      width: width,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        border: Border.all(
-          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-          width: 0.8,
-        ),
-        boxShadow: AppEffects.restingCardShadow(colorScheme),
-      ),
-      child: Material(
-        color: ExpressiveSurfaces.cardColor(colorScheme),
-        borderRadius: radius,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () => onOpenDiary(
-            diary,
-            anchor.capture(tag: diaryCoverHeroTag(diary.diary.diaryId)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.m),
-            child: Row(
-              children: <Widget>[
-                if (cover != null) ...<Widget>[
-                  CalendarEntryThumbnail(
-                    source: cover,
-                    diaryId: diary.diary.diaryId,
-                    anchor: anchor,
-                    size: 56,
-                    radius: 12,
-                  ),
-                  const SizedBox(width: AppSpacing.m),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        '$relative · '
-                        '${DateFormat.y(l10n.localeName).format(createdAt)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        title.isEmpty ? summary : title,
-                        maxLines: title.isEmpty ? 2 : 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          fontWeight: title.isEmpty
-                              ? FontWeight.w400
-                              : FontWeight.w700,
-                          color: title.isEmpty
-                              ? colorScheme.onSurfaceVariant
-                              : colorScheme.onSurface,
-                          height: 1.35,
-                        ),
-                      ),
-                      if (title.isNotEmpty)
-                        Text(
-                          summary,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

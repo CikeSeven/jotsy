@@ -8,7 +8,9 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_location_precision_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -31,7 +33,7 @@ void main() {
   });
   tearDown(() => database.close());
 
-  Future<void> openPublisher(WidgetTester tester) async {
+  Future<void> openRoute(WidgetTester tester, WidgetBuilder builder) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -54,17 +56,9 @@ void main() {
           home: Builder(
             builder: (context) => Scaffold(
               body: TextButton(
-                onPressed: () => Navigator.of(context).push<Object?>(
-                  MaterialPageRoute(
-                    builder: (_) => const PublishDiaryPage(
-                      initialDraft: NewDiaryDraft(
-                        title: 'A walk',
-                        contentDocJson: '[{"insert":"A walk\\n"}]',
-                        contentText: 'A walk',
-                      ),
-                    ),
-                  ),
-                ),
+                onPressed: () => Navigator.of(
+                  context,
+                ).push<Object?>(MaterialPageRoute(builder: builder)),
                 child: const Text('Open route'),
               ),
             ),
@@ -75,6 +69,17 @@ void main() {
     await tester.tap(find.text('Open route'));
     await tester.pumpAndSettle();
   }
+
+  Future<void> openPublisher(WidgetTester tester) => openRoute(
+    tester,
+    (_) => const PublishDiaryPage(
+      initialDraft: NewDiaryDraft(
+        title: 'A walk',
+        contentDocJson: '[{"insert":"A walk\\n"}]',
+        contentText: 'A walk',
+      ),
+    ),
+  );
 
   Future<void> settle(WidgetTester tester) async {
     for (var i = 0; i < 5; i++) {
@@ -90,7 +95,8 @@ void main() {
     await tester.pump(Duration.zero);
   }
 
-  testWidgets('locating then fetching weather fills both fields', (
+  // 发布新日记时“此时此地”就是现在：定位成功后顺带取一次天气。
+  testWidgets('locating on the publish page also fills the weather', (
     tester,
   ) async {
     await openPublisher(tester);
@@ -100,12 +106,59 @@ void main() {
     await settle(tester);
     expect(location.calls, 1);
     expect(panel.locationText, '北京市 · 望京街道');
-
-    panel.resolveWeather();
-    await settle(tester);
     expect(weather.requests, [(39.98941, 116.480881)]);
     expect(panel.weatherText, 'Sunny 24℃');
     expect(panel.weatherLoading, isFalse);
+
+    // 已有天气时再定位不覆盖；手动按钮照常重新获取。
+    panel.resolveLocation();
+    await settle(tester);
+    expect(weather.requests, hasLength(1));
+    panel.resolveWeather();
+    await settle(tester);
+    expect(weather.requests, hasLength(2));
+    await unmount(tester);
+  });
+
+  // 编辑旧日记时重新定位不能把今天的天气写进去。
+  testWidgets('locating on the edit page leaves the weather alone', (
+    tester,
+  ) async {
+    final diaryId = await tester.runAsync(
+      () => database.createDiary(
+        title: 'Old walk',
+        contentDocJson: '[{"insert":"Old walk\\n"}]',
+        contentText: 'Old walk',
+        metadataJson: '{}',
+      ),
+    );
+    await openRoute(tester, (_) => EditDiaryPage(diaryId: diaryId));
+    final panel = PublishPanelDriver(tester);
+
+    panel.resolveLocation();
+    await settle(tester);
+    expect(panel.locationText, '北京市 · 望京街道');
+    expect(weather.requests, isEmpty);
+    expect(panel.weatherText, isEmpty);
+    await tester.pump(const Duration(milliseconds: 600));
+    await unmount(tester);
+  });
+
+  testWidgets('the address level appears once there is a place', (
+    tester,
+  ) async {
+    await openPublisher(tester);
+    final panel = PublishPanelDriver(tester);
+    await panel.expand();
+    expect(find.byType(PublishLocationPrecisionPicker), findsNothing);
+
+    panel.typeLocation('Park');
+    await tester.pumpAndSettle();
+    expect(find.byType(PublishLocationPrecisionPicker), findsOneWidget);
+
+    panel.typeLocation('');
+    await tester.pumpAndSettle();
+    expect(find.byType(PublishLocationPrecisionPicker), findsNothing);
     await unmount(tester);
   });
 

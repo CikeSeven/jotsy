@@ -75,6 +75,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _metaActions = DiaryMetaActions(
       ref,
       draft: _meta,
+      // 发布新日记时“此时此地”就是现在：定位成功且没填天气时顺带取一次。
+      autoWeatherAfterLocate: true,
       isBusy: () => _leaveBlocked,
     );
   }

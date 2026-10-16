@@ -1,163 +1,120 @@
-// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+import 'package:flutter/foundation.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
+import 'package:node_diary/ui/diaries/models/publish_time.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 
-part of 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
-
-/// 发布页业务控制器。
+/// 发布流程的阶段。
 ///
-/// 职责边界：
-/// - 发表时间、胶囊文案与发布提交流程；
-/// - 组装元数据并回传草稿；
-/// - 封面、标签、定位、天气等面板动作在 DiaryMetaActions（与编辑页共用）；
-/// - 不参与页面结构渲染。
+/// - idle：可编辑、可返回编辑页；
+/// - saving：正在写库；
+/// - sealing：已写库的胶囊，封存卡片一直展示到页面退场；
+/// - done：已写库的普通日记，页面正在退场。
+///
+/// 除 idle 外都不允许带草稿返回或再次发布：日记已经（或即将）存在，带回
+/// 草稿会让编辑页留着它，用户可以重复发布。
+enum PublishPhase { idle, saving, sealing, done }
+
+/// 发布前校验结果。
+enum PublishValidation { ok, capsuleUnlockPassed }
+
+/// 发布页的发布流程（不含 UI）。
+///
+/// 输入：打开者带来的 [initialDraft]（标题、正文、请求的发表时间）与面板
+/// 草稿 [meta]；[clock] 供测试注入时间。
+/// 输出：[phase]、[explicitPublishAt] 两个可监听状态，[submit] 返回新日记
+/// id，[returnDraft] 给出返回编辑页时带回的草稿。
+/// 副作用：只有 [submit] 写数据库。提示、触觉、封存动画、路由由页面负责。
 class PublishDiaryController {
-  const PublishDiaryController(this._state);
+  PublishDiaryController({
+    required this.initialDraft,
+    required this.meta,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
 
-  /// 时间胶囊封存卡片的入场（缩放回弹）时长，页面动画与返回前等待共用。
-  static const Duration capsuleSealAnimationDuration = ExpressiveMotion.long;
+  final NewDiaryDraft initialDraft;
+  final DiaryMetaDraftController meta;
+  final DateTime Function() _clock;
 
-  /// 封存提示入场完成后的停留时间，供用户读到“封存中”再返回。
-  static const Duration _capsuleSealHoldDuration = Duration(milliseconds: 260);
+  final ValueNotifier<PublishPhase> phase = ValueNotifier<PublishPhase>(
+    PublishPhase.idle,
+  );
 
-  /// 发布页状态引用，控制器通过它访问输入值、临时状态与路由上下文。
-  final _PublishDiaryPageState _state;
+  /// 用户在本页亲自选的发表时间；没选过为 null，发表时间在提交时现算。
+  final ValueNotifier<DateTime?> explicitPublishAt = ValueNotifier<DateTime?>(
+    null,
+  );
 
-  /// 预览页展示标题：空标题回退为默认文案。
-  String get title {
-    final normalized = _state.widget.initialDraft.title.trim();
-    return normalized.isEmpty ? _state.context.l10n.autoT0095 : normalized;
+  bool _disposed = false;
+
+  /// 是否仍可带草稿返回编辑页、可再次发布。
+  bool get canLeave => phase.value == PublishPhase.idle;
+
+  /// 实际发表时间：用户选过就用所选（晚于现在时回退到现在），否则按打开
+  /// 者带来的请求值现算（见 [resolvePublishAt]）。每次读取都重新计算，
+  /// 发布时取的是提交那一刻，而不是打开发布页的那一刻。
+  DateTime get effectivePublishAt {
+    final now = _clock();
+    final explicit = explicitPublishAt.value;
+    if (explicit != null) {
+      return explicit.isAfter(now) ? now : explicit;
+    }
+    return resolvePublishAt(initialDraft.createdAtOverride, now: now);
   }
 
-  /// 封面展示文案：
-  /// - 网络图显示完整 URL；
-  /// - 本地图显示文件名，避免路径过长污染 UI。
-  String? get coverLabel {
-    final cover = _state._meta.value.cover;
-    if (cover == null) {
-      return null;
-    }
-    final uri = Uri.tryParse(cover);
-    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-      return cover;
-    }
-    return path.basename(cover);
+  /// 是否有确定的发表时间可显示；既没选过、打开者也没指定时面板显示
+  /// “自动获取当前时间”。
+  bool get hasFixedPublishTime =>
+      explicitPublishAt.value != null || initialDraft.createdAtOverride != null;
+
+  /// 记录选择器返回的发表时间。原样确认（选回 [shown] 那一分钟时选择器
+  /// 返回 shown 本身）不算选择，发表时间继续跟随提交时刻。
+  void applyPickedPublishAt(DateTime picked, {required DateTime shown}) {
+    if (picked == shown) return;
+    explicitPublishAt.value = picked;
   }
 
-  /// 页面内轻提示封装。
-  ///
-  /// 不返回 Future：showTrackedSnackBar 要等提示条关闭（约 4 秒）才完成，
-  /// 在 try/catch 里 await 会把 finally 里的 loading/saving 复位拖到提示
-  /// 消失之后，按钮在这段时间一直转圈或停用。
-  void showHint(String message) {
-    if (!_state.mounted) {
-      return;
+  /// 发布前校验：解封时间必须仍在未来。日期精度选了今天、或恢复的草稿里
+  /// 那天已过，写入的就是一个立即解封的胶囊。
+  PublishValidation validate() {
+    final capsule = meta.value.capsule;
+    if (capsule != null && !capsule.isUnlockInFuture(_clock())) {
+      return PublishValidation.capsuleUnlockPassed;
     }
-    unawaited(
-      HomeHintVisibilityScope.showTrackedSnackBar(
-        context: _state.context,
-        snackBar: SnackBar(content: Text(message)),
-      ),
-    );
+    return PublishValidation.ok;
   }
 
-  /// 组装最终 metadata JSON；[generatedAt] 同时作为胶囊的封存时刻。
+  /// 组装 metadata；[generatedAt] 同时作为胶囊的封存时刻。
   String buildMetadataJson({DateTime? generatedAt}) {
-    final lockedAt = generatedAt ?? DateTime.now();
+    final lockedAt = generatedAt ?? _clock();
     return PublishMetadataComposer.composeDraft(
-      draft: _state._meta.value,
-      contentText: _state.widget.initialDraft.contentText,
+      draft: meta.value,
+      contentText: initialDraft.contentText,
       generatedAt: lockedAt,
       capsuleLockedAt: lockedAt,
     );
   }
 
-  /// 实际发表时间：用户在本页选过就用所选（晚于现在时回退到现在），否则
-  /// 按打开者带来的请求值现算（见 [resolvePublishAt]）。每次读取都重新计算，
-  /// 发布时取的是提交那一刻。
-  DateTime get effectivePublishAt {
-    final now = DateTime.now();
-    final explicit = _state._explicitPublishAt;
-    if (explicit != null) {
-      return explicit.isAfter(now) ? now : explicit;
-    }
-    return resolvePublishAt(
-      _state.widget.initialDraft.createdAtOverride,
-      now: now,
-    );
-  }
-
-  /// 面板上的发表时间文案；既没选过、打开者也没指定时为 null，面板显示
-  /// “自动获取当前时间”。
-  String? get publishTimeLabel {
-    if (_state._explicitPublishAt == null &&
-        _state.widget.initialDraft.createdAtOverride == null) {
-      return null;
-    }
-    return formatPublishTimeLabel(effectivePublishAt);
-  }
-
-  /// 发表时间展示文案（固定到分钟）。
-  String formatPublishTimeLabel(DateTime value) =>
-      _state.context.l10n.formatDateTimeMinute(value);
-
-  String get timeCapsuleLabel {
-    final l10n = _state.context.l10n;
-    final schedule = _state._meta.value.capsule;
-    if (schedule == null) {
-      return l10n.timeCapsuleUnset;
-    }
-    final unlockAt = schedule.normalizedUnlockAt;
-    // “只按日期”的胶囊在当天零点解封，只显示日期，不显示一个用户没选过的 00:00。
-    return l10n.timeCapsuleSet(
-      schedule.precision == TimeCapsulePrecision.date
-          ? l10n.formatFullDate(unlockAt)
-          : formatPublishTimeLabel(unlockAt),
-    );
-  }
-
-  /// 选择发表时间；约束见 [showPublishTimePicker]（与编辑已发布日记共用）。
+  /// 写库并返回新日记 id。
   ///
-  /// 原样确认（选回当前那一分钟，选择器返回 current 本身）不算选择，发表
-  /// 时间继续跟随提交时刻。
-  Future<void> pickPublishAt() async {
-    final current = effectivePublishAt;
-    final picked = await showPublishTimePicker(
-      _state.context,
-      current: current,
-    );
-    if (picked == null || picked == current || !_state.mounted) {
-      return;
+  /// 只在 idle 时可调用。成功后进入 sealing（有胶囊，页面播放封存卡片）或
+  /// done，不再回到 idle；失败回到 idle 并把异常抛给页面提示。日记的创建
+  /// 时间：有胶囊时是解封时刻，否则是 [effectivePublishAt]。
+  Future<String> submit(AppDatabase database) async {
+    if (!canLeave) {
+      throw StateError('Publishing is already in progress.');
     }
-    _state.setState(() => _state._explicitPublishAt = picked);
-  }
-
-  /// 执行发布写库。
-  ///
-  /// 成功后先通知打开者（[PublishDiaryPage.onPublished]，编辑页借此静默移出
-  /// 路由栈），再以新日记 id 作为结果退场；失败时仅提示不退出。
-  Future<void> publish() async {
-    if (_state._leaveBlocked) {
-      return;
-    }
-    // 解封时间必须仍在未来：日期精度选了今天、或恢复的草稿里那天已过，
-    // 写入的就是一个立即解封的胶囊。拦下并提示重新选择，不写库。
-    final draft = _state._meta.value;
-    final pendingSchedule = draft.capsule;
-    if (pendingSchedule != null &&
-        !pendingSchedule.isUnlockInFuture(DateTime.now())) {
-      showHint(_state.context.l10n.timeCapsuleUnlockPassed);
-      return;
-    }
-
-    _state.setState(() => _state._saving = true);
-
+    final draft = meta.value;
+    final schedule = draft.capsule;
+    _setPhase(PublishPhase.saving);
     try {
-      final db = _state.ref.read(appDatabaseProvider);
-      final schedule = draft.capsule;
-      final lockedAt = schedule == null ? null : DateTime.now();
-      final diaryId = await db.createDiary(
-        title: _state.widget.initialDraft.title,
-        contentDocJson: _state.widget.initialDraft.contentDocJson,
-        contentText: _state.widget.initialDraft.contentText,
+      final lockedAt = schedule == null ? null : _clock();
+      final diaryId = await database.createDiary(
+        title: initialDraft.title,
+        contentDocJson: initialDraft.contentDocJson,
+        contentText: initialDraft.contentText,
         cover: draft.cover,
         metadataJson: buildMetadataJson(generatedAt: lockedAt),
         tagIds: draft.tagIds.toList(),
@@ -168,62 +125,33 @@ class PublishDiaryController {
         capsuleUnlockAt: schedule?.normalizedUnlockAt,
         capsuleLockedAt: lockedAt,
       );
-      if (!_state.mounted) {
-        return;
-      }
-      _state._published = true;
-      if (schedule != null) {
-        _state.setState(() => _state._showCapsuleSealOverlay = true);
-        // 封存是一次性的仪式动作：与封存卡片同时给出“成功”触觉。
-        unawaited(HapticFeedback.successNotification());
-        // 等封存卡片入场动画播完，再停留片刻让用户读到提示后返回；
-        // 减少动画时入场时长为 0，只保留停留时间。
-        await Future<void>.delayed(
-          ExpressiveMotion.duration(
-                _state.context,
-                capsuleSealAnimationDuration,
-              ) +
-              _capsuleSealHoldDuration,
-        );
-        if (!_state.mounted) {
-          return;
-        }
-      }
-      _state.widget.onPublished?.call(diaryId);
-      Navigator.of(_state.context).pop(diaryId);
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      debugPrint('Publish failed: $error');
-      showHint(_state.context.l10n.publishFailed);
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._saving = false);
-      }
+      _setPhase(schedule == null ? PublishPhase.done : PublishPhase.sealing);
+      return diaryId;
+    } catch (_) {
+      _setPhase(PublishPhase.idle);
+      rethrow;
     }
   }
 
-  /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
-  ///
-  /// 发布进行中或已发布时不返回：日记已（或即将）写库，带回草稿会让编辑页
-  /// 保留它，用户可重复发布。
-  void closeWithDraft() {
-    if (_state._leaveBlocked) {
-      return;
-    }
-    Navigator.of(_state.context).pop(
-      _state._meta.value.applyTo(
-        _state.widget.initialDraft.copyWith(
-          // 只带回用户亲自选的时间；没选过就原样带回打开者的请求值（如日历
-          // 的按日新建），下次打开或发表时再现算，不把“打开发布页那一刻”
-          // 冻结进草稿。
-          createdAtOverride:
-              _state._explicitPublishAt ??
-              _state.widget.initialDraft.createdAtOverride,
-          metadataJson: buildMetadataJson(),
-        ),
-      ),
-    );
+  /// 返回编辑页时带回的草稿：面板字段 + 用户亲自选的发表时间。没选过就
+  /// 原样带回打开者的请求值（如日历的按日新建），下次打开或发表时再现算，
+  /// 不把“打开发布页那一刻”冻结进草稿。
+  NewDiaryDraft returnDraft() => meta.value.applyTo(
+    initialDraft.copyWith(
+      createdAtOverride:
+          explicitPublishAt.value ?? initialDraft.createdAtOverride,
+      metadataJson: buildMetadataJson(),
+    ),
+  );
+
+  /// 页面销毁后写库才返回时，不再写已释放的通知器。
+  void _setPhase(PublishPhase next) {
+    if (!_disposed) phase.value = next;
+  }
+
+  void dispose() {
+    _disposed = true;
+    phase.dispose();
+    explicitPublishAt.dispose();
   }
 }

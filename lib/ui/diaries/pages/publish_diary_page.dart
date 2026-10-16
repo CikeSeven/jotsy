@@ -3,26 +3,23 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_diary_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
-import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
-import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/diaries/widgets/time_capsule_seal_overlay.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 /// 日记发布页（预览优先）。
 ///
@@ -51,7 +48,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   // ==================== 面板与预览 ====================
   final PublishDiaryPanelController _panelController =
       PublishDiaryPanelController();
-  late final quill.QuillController _previewController;
   // 面板展开进度只驱动正文底部占位：用 ValueNotifier 局部刷新占位条，
   // 避免拖拽时每帧 setState 重建整页（含只读 QuillEditor 预览）。
   final ValueNotifier<double> _panelExpandProgress = ValueNotifier<double>(0);
@@ -81,21 +77,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       draft: _meta,
       isBusy: () => _leaveBlocked,
     );
-
-    // 预览正文优先走 Delta JSON；失败时降级纯文本，确保页面总能打开。
-    quill.Document previewDoc;
-    try {
-      previewDoc = decodeDiaryContentToDocument(
-        widget.initialDraft.contentDocJson,
-      );
-    } catch (_) {
-      previewDoc = documentFromPlainText(widget.initialDraft.contentText);
-    }
-    _previewController = quill.QuillController(
-      document: previewDoc,
-      selection: const TextSelection.collapsed(offset: 0),
-      readOnly: true,
-    );
   }
 
   @override
@@ -104,7 +85,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _publisher.dispose();
     _metaActions.dispose();
     _meta.dispose();
-    _previewController.dispose();
     _panelExpandProgress.dispose();
     super.dispose();
   }
@@ -116,11 +96,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   /// 发布进行中、封存中或已发布退场中：此时带草稿返回会让已写库的日记
   /// 留在编辑页草稿里，用户可以再发一次。
   bool get _leaveBlocked => !_publisher.canLeave;
-
-  String get _title {
-    final title = widget.initialDraft.title.trim();
-    return title.isEmpty ? context.l10n.autoT0095 : title;
-  }
 
   /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
   void _closeWithDraft() {
@@ -180,9 +155,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 发布预览与编辑页、预览页同一套正文排版，所见即发布后的样子。
-    final textAppearance = ref.watch(diaryTextAppearanceProvider);
-
     // 返回键策略：
     // 0) 发布进行中、封存中或已发布时忽略；
     // 1) 优先返回面板子页；
@@ -218,58 +190,15 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
             CustomScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: <Widget>[
-                ValueListenableBuilder<DiaryMetaDraft>(
+                // 只随封面重建：面板上打字、选心情不触碰封面头图。
+                ValueListenableSelector<DiaryMetaDraft, String?>(
                   valueListenable: _meta,
-                  builder: (context, draft, _) =>
-                      AnimatedPublishDiaryCoverSliver(cover: draft.cover),
+                  selector: (draft) => draft.cover,
+                  builder: (context, cover, _) =>
+                      AnimatedPublishDiaryCoverSliver(cover: cover),
                 ),
                 SliverToBoxAdapter(
-                  // 标题与正文预览区域。
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          _title,
-                          style: textAppearance.titleStyle(
-                            Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // 不能只看纯文本镜像（contentText），纯图片正文在镜像里会为空。
-                        // 统一按 Quill 文档可见内容判断，图片/嵌入也算正文内容。
-                        if (!diaryDocumentHasVisibleContent(
-                          _previewController.document,
-                        ))
-                          Text(
-                            context.l10n.autoT0139,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          )
-                        else
-                          DiaryQuillStylesBuilder(
-                            appearance: textAppearance,
-                            builder:
-                                (
-                                  BuildContext context,
-                                  quill.DefaultStyles styles,
-                                ) => quill.QuillEditor.basic(
-                                  controller: _previewController,
-                                  config: quill.QuillEditorConfig(
-                                    autoFocus: false,
-                                    scrollable: false,
-                                    padding: EdgeInsets.zero,
-                                    showCursor: false,
-                                    customStyles: styles,
-                                    embedBuilders:
-                                        buildDiaryQuillEmbedBuilders(),
-                                  ),
-                                ),
-                          ),
-                      ],
-                    ),
-                  ),
+                  child: PublishDiaryPreview(draft: widget.initialDraft),
                 ),
                 // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
                 SliverToBoxAdapter(

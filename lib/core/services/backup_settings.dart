@@ -11,10 +11,7 @@ class BackupSettings {
     'themeMode': settingsService.themeModeNotifier.value.name,
     'themeSeedColorValue': settingsService.themeSeedColorValue,
     'homeTabSwitchCurveType': settingsService.homeTabSwitchCurveTypeValue,
-    'editorBodyFontSizePreset':
-        settingsService.editorBodyFontSizePresetStorageValue,
-    'editorBodyLineHeightPreset':
-        settingsService.editorBodyLineHeightPresetStorageValue,
+    'diaryTypography': settingsService.diaryTypography.toJson(),
     'fontScale': settingsService.fontScaleValue,
     'appLocaleCode': settingsService.appLocaleCode,
     'appLockEnabled': settingsService.isAppLockEnabled,
@@ -67,30 +64,9 @@ class BackupSettings {
       );
     }
 
-    final editorBodyFontSizeRaw = settingsNode['editorBodyFontSizePreset']
-        ?.toString();
-    if (editorBodyFontSizeRaw != null && editorBodyFontSizeRaw.isNotEmpty) {
-      await settingsService.setEditorBodyFontSizePreset(
-        switch (editorBodyFontSizeRaw) {
-          'small' => EditorBodyFontSizePreset.small,
-          'large' => EditorBodyFontSizePreset.large,
-          'medium' => EditorBodyFontSizePreset.medium,
-          _ => SettingsService.defaultEditorBodyFontSizePreset,
-        },
-      );
-    }
-
-    final editorBodyLineHeightRaw = settingsNode['editorBodyLineHeightPreset']
-        ?.toString();
-    if (editorBodyLineHeightRaw != null && editorBodyLineHeightRaw.isNotEmpty) {
-      await settingsService.setEditorBodyLineHeightPreset(
-        switch (editorBodyLineHeightRaw) {
-          'compact' => EditorBodyLineHeightPreset.compact,
-          'relaxed' => EditorBodyLineHeightPreset.relaxed,
-          'normal' => EditorBodyLineHeightPreset.normal,
-          _ => SettingsService.defaultEditorBodyLineHeightPreset,
-        },
-      );
+    final diaryTypography = _parseDiaryTypography(settingsNode);
+    if (diaryTypography != null) {
+      await settingsService.setDiaryTypography(diaryTypography);
     }
 
     final fontScaleRaw = settingsNode['fontScale'];
@@ -211,6 +187,25 @@ class BackupSettings {
     if (releaseMirrorStartIndex != null) {
       await settingsService.setReleaseMirrorStartIndex(releaseMirrorStartIndex);
     }
+  }
+
+  /// 新备份带 `diaryTypography` 对象；旧备份只有编辑器字号 / 行距三档预设，
+  /// 按本机迁移同一规则换算。两者都没有时返回 null，保留本机排版。
+  /// 导入字体只记 id 不含字体文件：目标设备没有该字体时正文按内置字体显示。
+  static DiaryTypography? _parseDiaryTypography(Map<String, dynamic> node) {
+    final typographyRaw = node['diaryTypography'];
+    if (typographyRaw is Map) {
+      return DiaryTypography.fromJson(typographyRaw.cast<String, Object?>());
+    }
+    final legacyFontSize = node['editorBodyFontSizePreset']?.toString();
+    final legacyLineHeight = node['editorBodyLineHeightPreset']?.toString();
+    if (legacyFontSize == null && legacyLineHeight == null) {
+      return null;
+    }
+    return DiaryTypography.fromLegacyPresets(
+      fontSizePreset: legacyFontSize,
+      lineHeightPreset: legacyLineHeight,
+    );
   }
 
   static ThemeMode _parseThemeMode(String value) {

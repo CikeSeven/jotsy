@@ -15,6 +15,7 @@ import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
+import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 
@@ -76,6 +77,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     _loaderShowTimer = Timer(_loaderShowDelay, _handleLoaderShowDelayElapsed);
     // 编辑期不删除媒体文件，冷启动后延迟回收无人引用的文件与选择器缓存。
     ref.read(diaryMediaCleanupServiceProvider).scheduleStartupSweep();
+    // 常驻监听正文外观：设置就绪后即开始注册所选的导入字体，打开第一篇日记
+    // 时通常已就绪，正文不会先按内置字体排一遍再换字体。
+    ref.listenManual(diaryTextAppearanceProvider, (_, _) {});
   }
 
   /// 延迟到点仍未就绪时才显示加载页，并开始计算最短展示时长。

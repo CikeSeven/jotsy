@@ -220,38 +220,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsEditorToolsGroup => 'Toolbar & mood';
 
   @override
-  String get settingsEditorBodyFontSize => 'Editor font size';
-
-  @override
-  String get settingsEditorBodyFontSizeSubtitle =>
-      'Only affects editor body text';
-
-  @override
-  String get settingsEditorBodyFontSizeSmall => 'Small';
-
-  @override
-  String get settingsEditorBodyFontSizeMedium => 'Medium';
-
-  @override
-  String get settingsEditorBodyFontSizeLarge => 'Large';
-
-  @override
-  String get settingsEditorLineHeight => 'Body line height';
-
-  @override
-  String get settingsEditorLineHeightSubtitle =>
-      'Only affects editor body layout';
-
-  @override
-  String get settingsEditorLineHeightCompact => 'Compact';
-
-  @override
-  String get settingsEditorLineHeightNormal => 'Normal';
-
-  @override
-  String get settingsEditorLineHeightRelaxed => 'Relaxed';
-
-  @override
   String get settingsMoodOptionsTitle => 'Mood emojis';
 
   @override
@@ -2992,4 +2960,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get previewSetAsAnniversary => 'Make it an anniversary';
+
+  @override
+  String get diaryTypographyTitle => 'Body font & layout';
+
+  @override
+  String diaryTypographySummary(String font, String size, String lineHeight) {
+    return '$font · Size $size · Line spacing $lineHeight';
+  }
+
+  @override
+  String get diaryTypographyQuickTooltip => 'Font & layout';
+
+  @override
+  String get diaryTypographyFontSection => 'Font';
+
+  @override
+  String get diaryTypographyFontBundled => 'HarmonyOS Sans';
+
+  @override
+  String get diaryTypographyFontSystem => 'System font';
+
+  @override
+  String get diaryTypographyFontSystemHint =>
+      'Follows the font your device uses';
+
+  @override
+  String get diaryTypographyFontMissing =>
+      'The selected font file is no longer on this device, so HarmonyOS Sans is used for now. Import it again or pick another font.';
+
+  @override
+  String get diaryTypographyImportFont => 'Import font file';
+
+  @override
+  String get diaryTypographyImportFontHint =>
+      'TTF, OTF or TTC; it becomes the body font once imported';
+
+  @override
+  String get diaryTypographyImporting => 'Importing font…';
+
+  @override
+  String diaryTypographyImported(String name) {
+    return 'Imported and applied “$name”';
+  }
+
+  @override
+  String get diaryTypographyImportUnsupported =>
+      'This isn\'t a usable font file. Choose a TTF, OTF or TTC file.';
+
+  @override
+  String get diaryTypographyImportUnreadable =>
+      'Couldn\'t read the selected file';
+
+  @override
+  String get diaryTypographyImportFailed =>
+      'Couldn\'t import the font. Check your storage space and try again.';
+
+  @override
+  String get diaryTypographyDeleteFont => 'Delete font';
+
+  @override
+  String diaryTypographyDeleteFontTitle(String name) {
+    return 'Delete “$name”?';
+  }
+
+  @override
+  String get diaryTypographyDeleteFontMessage =>
+      'The font file will be removed from this device. If it\'s in use, diaries switch back to HarmonyOS Sans.';
+
+  @override
+  String get diaryTypographyLayoutSection => 'Layout';
+
+  @override
+  String get diaryTypographyFontSize => 'Font size';
+
+  @override
+  String get diaryTypographyLineHeight => 'Line spacing';
+
+  @override
+  String get diaryTypographyLetterSpacing => 'Letter spacing';
+
+  @override
+  String get diaryTypographyParagraphSpacing => 'Paragraph spacing';
+
+  @override
+  String diaryTypographyDecrease(String label) {
+    return '$label: decrease';
+  }
+
+  @override
+  String diaryTypographyIncrease(String label) {
+    return '$label: increase';
+  }
+
+  @override
+  String get diaryTypographyReset => 'Reset layout';
+
+  @override
+  String get diaryTypographyScopeHint =>
+      'Applies when writing, reading and publishing diaries; the font is also used for titles.';
+
+  @override
+  String get diaryTypographyMoreSettings => 'More settings';
+
+  @override
+  String get diaryTypographySampleTitle => 'An evening after the rain';
+
+  @override
+  String get diaryTypographySampleBody =>
+      'The rain stopped just before dusk, and the osmanthus downstairs smelled sweeter than ever.\nOn the way home I bought a bag of roasted chestnuts and peeled them as I walked; my hands stayed warm the whole time.\nNothing big happened today, but every moment felt steady, so I wanted to write it down.';
 }

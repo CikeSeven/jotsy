@@ -26,6 +26,8 @@ import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
+import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
@@ -165,6 +167,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
       data: (options) => options,
       orElse: () => SettingsService.defaultMoodOptions,
     );
+    // 发布预览与编辑页、预览页同一套正文排版，所见即发布后的样子。
+    final textAppearance = ref.watch(diaryTextAppearanceProvider);
 
     // 标签数据状态拆分为三元组，便于直接透传给悬浮面板组件。
     var tags = const <Tag>[];
@@ -223,8 +227,10 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                       children: <Widget>[
                         Text(
                           _controller.title,
-                          style: Theme.of(context).textTheme.headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.w800),
+                          style: textAppearance.titleStyle(
+                            Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         // 不能只看纯文本镜像（contentText），纯图片正文在镜像里会为空。
@@ -237,15 +243,24 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                             style: Theme.of(context).textTheme.bodyMedium,
                           )
                         else
-                          quill.QuillEditor.basic(
-                            controller: _previewController,
-                            config: quill.QuillEditorConfig(
-                              autoFocus: false,
-                              scrollable: false,
-                              padding: EdgeInsets.zero,
-                              showCursor: false,
-                              embedBuilders: buildDiaryQuillEmbedBuilders(),
-                            ),
+                          DiaryQuillStylesBuilder(
+                            appearance: textAppearance,
+                            builder:
+                                (
+                                  BuildContext context,
+                                  quill.DefaultStyles styles,
+                                ) => quill.QuillEditor.basic(
+                                  controller: _previewController,
+                                  config: quill.QuillEditorConfig(
+                                    autoFocus: false,
+                                    scrollable: false,
+                                    padding: EdgeInsets.zero,
+                                    showCursor: false,
+                                    customStyles: styles,
+                                    embedBuilders:
+                                        buildDiaryQuillEmbedBuilders(),
+                                  ),
+                                ),
                           ),
                       ],
                     ),

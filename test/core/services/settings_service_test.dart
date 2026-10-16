@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/backup_settings.dart';
 import 'package:node_diary/core/services/settings_service.dart';
@@ -245,5 +247,119 @@ void main() {
         expect(settings.calendarDisplayOptionsRaw, isNull);
       },
     );
+  });
+
+  group('SettingsService diary typography', () {
+    const key = 'app.settings.diary_typography';
+    const legacyFontSizeKey = 'app.settings.editor_body_font_size_preset';
+    const legacyLineHeightKey = 'app.settings.editor_body_line_height_preset';
+
+    test('a fresh install uses the default typography', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+
+      final settings = await SettingsService.create();
+
+      expect(settings.diaryTypography, const DiaryTypography());
+    });
+
+    test(
+      'migrates the old editor presets once and removes the old keys',
+      () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          legacyFontSizeKey: 'small',
+          legacyLineHeightKey: 'relaxed',
+        });
+
+        final settings = await SettingsService.create();
+        final prefs = await SharedPreferences.getInstance();
+
+        expect(settings.diaryTypography.fontSize, 14);
+        expect(settings.diaryTypography.lineHeight, 1.75);
+        expect(prefs.containsKey(legacyFontSizeKey), isFalse);
+        expect(prefs.containsKey(legacyLineHeightKey), isFalse);
+        expect(
+          DiaryTypography.fromRaw(prefs.getString(key)),
+          settings.diaryTypography,
+        );
+      },
+    );
+
+    test('persists changes and notifies listeners', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final settings = await SettingsService.create();
+      var notified = 0;
+      settings.diaryTypographyNotifier.addListener(() => notified += 1);
+      final next = const DiaryTypography().copyWith(
+        fontId: DiaryTypography.systemFontId,
+        fontSize: 22,
+        paragraphSpacing: 10,
+      );
+
+      await settings.setDiaryTypography(next);
+
+      expect(notified, 1);
+      expect((await SettingsService.create()).diaryTypography, next);
+    });
+
+    test('a corrupt stored value falls back to the defaults', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        key: '{oops',
+        legacyFontSizeKey: 'large',
+      });
+
+      final settings = await SettingsService.create();
+
+      // 新键存在时不再读取旧键，损坏的新键回到默认值。
+      expect(settings.diaryTypography, const DiaryTypography());
+    });
+
+    test('backups round-trip the typography and restore old presets', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final settings = await SettingsService.create();
+      final custom = const DiaryTypography().copyWith(
+        fontId: 'fimported',
+        fontSize: 20,
+        lineHeight: 2,
+        letterSpacing: 0.5,
+        paragraphSpacing: 8,
+      );
+      await settings.setDiaryTypography(custom);
+      // 备份经 JSON 落盘，嵌套对象读回来是 Map<String, dynamic>。
+      final captured =
+          jsonDecode(jsonEncode(BackupSettings.capture(settings)))
+              as Map<String, dynamic>;
+
+      await settings.setDiaryTypography(const DiaryTypography());
+      await BackupSettings.restore(settings, captured);
+      expect(settings.diaryTypography, custom);
+
+      await BackupSettings.restore(settings, <String, dynamic>{
+        'themeMode': 'light',
+      });
+      expect(settings.diaryTypography, custom);
+
+      await BackupSettings.restore(settings, <String, dynamic>{
+        'editorBodyFontSizePreset': 'large',
+        'editorBodyLineHeightPreset': 'compact',
+      });
+      expect(settings.diaryTypography.fontSize, 18);
+      expect(settings.diaryTypography.lineHeight, 1.35);
+    });
+
+    test('a failed backup import rolls the typography back', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final settings = await SettingsService.create();
+      final before = const DiaryTypography().copyWith(fontSize: 12);
+      await settings.setDiaryTypography(before);
+      final snapshot = settings.captureBackupSnapshot();
+
+      await settings.setDiaryTypography(
+        const DiaryTypography().copyWith(fontSize: 30),
+      );
+      await snapshot.restore();
+
+      expect(settings.diaryTypography, before);
+      expect((await SettingsService.create()).diaryTypography, before);
+    });
   });
 }

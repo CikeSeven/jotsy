@@ -274,46 +274,6 @@
   "@settingsEditorToolsGroup": {
     "description": "设置项分组标题：编辑器工具栏排序与心情选项。"
   },
-  "settingsEditorBodyFontSize": "编辑字体大小",
-  "@settingsEditorBodyFontSize": {
-    "description": "设置项：编辑页正文的字体大小。"
-  },
-  "settingsEditorBodyFontSizeSubtitle": "仅影响编辑页正文显示",
-  "@settingsEditorBodyFontSizeSubtitle": {
-    "description": "设置项副标题：编辑页字体大小仅影响正文。"
-  },
-  "settingsEditorBodyFontSizeSmall": "小",
-  "@settingsEditorBodyFontSizeSmall": {
-    "description": "编辑器正文小字号选项。"
-  },
-  "settingsEditorBodyFontSizeMedium": "中",
-  "@settingsEditorBodyFontSizeMedium": {
-    "description": "编辑器正文中字号选项。"
-  },
-  "settingsEditorBodyFontSizeLarge": "大",
-  "@settingsEditorBodyFontSizeLarge": {
-    "description": "编辑器正文大字号选项。"
-  },
-  "settingsEditorLineHeight": "正文行距",
-  "@settingsEditorLineHeight": {
-    "description": "设置项：编辑页正文的行距。"
-  },
-  "settingsEditorLineHeightSubtitle": "仅影响编辑页正文排版",
-  "@settingsEditorLineHeightSubtitle": {
-    "description": "设置项副标题：编辑页行距仅影响正文。"
-  },
-  "settingsEditorLineHeightCompact": "紧凑",
-  "@settingsEditorLineHeightCompact": {
-    "description": "编辑器正文紧凑行距选项。"
-  },
-  "settingsEditorLineHeightNormal": "标准",
-  "@settingsEditorLineHeightNormal": {
-    "description": "编辑器正文标准行距选项。"
-  },
-  "settingsEditorLineHeightRelaxed": "宽松",
-  "@settingsEditorLineHeightRelaxed": {
-    "description": "编辑器正文宽松行距选项。"
-  },
   "settingsMoodOptionsTitle": "心情符号",
   "@settingsMoodOptionsTitle": {
     "description": "设置项：自定义发布/编辑面板中固定 10 个心情符号。"
@@ -3854,5 +3814,142 @@
   "previewSetAsAnniversary": "设为纪念日",
   "@previewSetAsAnniversary": {
     "description": "日记预览页“更多”面板：以这篇日记新建纪念日。"
+  },
+  "diaryTypographyTitle": "正文字体与排版",
+  "@diaryTypographyTitle": {
+    "description": "设置：日记正文字体与排版的入口与页面标题。"
+  },
+  "diaryTypographySummary": "{font} · 字号 {size} · 行距 {lineHeight}",
+  "@diaryTypographySummary": {
+    "description": "设置：正文字体与排版入口的副标题，概括当前字体、字号与行距。",
+    "placeholders": {
+      "font": {"type": "String"},
+      "size": {"type": "String"},
+      "lineHeight": {"type": "String"}
+    }
+  },
+  "diaryTypographyQuickTooltip": "字体与排版",
+  "@diaryTypographyQuickTooltip": {
+    "description": "日记预览页：打开字体与排版快捷面板的按钮提示，也是面板标题。"
+  },
+  "diaryTypographyFontSection": "字体",
+  "@diaryTypographyFontSection": {
+    "description": "正文字体与排版：字体分组标题。"
+  },
+  "diaryTypographyFontBundled": "HarmonyOS Sans",
+  "@diaryTypographyFontBundled": {
+    "description": "正文字体选项：应用内置的 HarmonyOS Sans 字体。"
+  },
+  "diaryTypographyFontSystem": "系统字体",
+  "@diaryTypographyFontSystem": {
+    "description": "正文字体选项：使用手机系统字体。"
+  },
+  "diaryTypographyFontSystemHint": "跟随手机当前使用的字体",
+  "@diaryTypographyFontSystemHint": {
+    "description": "正文字体选项“系统字体”的说明。"
+  },
+  "diaryTypographyFontMissing": "所选字体的文件已不在本机，正文暂按 HarmonyOS Sans 显示；可重新导入或改选其他字体。",
+  "@diaryTypographyFontMissing": {
+    "description": "正文字体与排版：所选导入字体文件缺失时的提示。"
+  },
+  "diaryTypographyImportFont": "导入字体文件",
+  "@diaryTypographyImportFont": {
+    "description": "正文字体与排版：导入字体文件的入口，也是文件选择器标题。"
+  },
+  "diaryTypographyImportFontHint": "支持 TTF、OTF、TTC 格式，导入后即设为正文字体",
+  "@diaryTypographyImportFontHint": {
+    "description": "正文字体与排版：导入字体入口的说明。"
+  },
+  "diaryTypographyImporting": "正在导入字体…",
+  "@diaryTypographyImporting": {
+    "description": "正文字体与排版：导入字体时的等待提示。"
+  },
+  "diaryTypographyImported": "已导入并使用“{name}”",
+  "@diaryTypographyImported": {
+    "description": "正文字体与排版：导入字体成功的提示。",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "diaryTypographyImportUnsupported": "这不是可用的字体文件，请选择 TTF、OTF 或 TTC 格式",
+  "@diaryTypographyImportUnsupported": {
+    "description": "正文字体与排版：所选文件不是受支持的字体。"
+  },
+  "diaryTypographyImportUnreadable": "无法读取所选文件",
+  "@diaryTypographyImportUnreadable": {
+    "description": "正文字体与排版：所选文件无法读取。"
+  },
+  "diaryTypographyImportFailed": "字体导入失败，请检查存储空间后重试",
+  "@diaryTypographyImportFailed": {
+    "description": "正文字体与排版：保存字体文件失败。"
+  },
+  "diaryTypographyDeleteFont": "删除字体",
+  "@diaryTypographyDeleteFont": {
+    "description": "正文字体与排版：导入字体行尾删除按钮的提示。"
+  },
+  "diaryTypographyDeleteFontTitle": "删除字体“{name}”？",
+  "@diaryTypographyDeleteFontTitle": {
+    "description": "删除导入字体确认框标题。",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "diaryTypographyDeleteFontMessage": "字体文件会从本机移除。正在使用这款字体时，正文改回 HarmonyOS Sans。",
+  "@diaryTypographyDeleteFontMessage": {
+    "description": "删除导入字体确认框正文。"
+  },
+  "diaryTypographyLayoutSection": "排版",
+  "@diaryTypographyLayoutSection": {
+    "description": "正文字体与排版：排版数值分组标题。"
+  },
+  "diaryTypographyFontSize": "字号",
+  "@diaryTypographyFontSize": {
+    "description": "正文排版：字号滑块标题。"
+  },
+  "diaryTypographyLineHeight": "行距",
+  "@diaryTypographyLineHeight": {
+    "description": "正文排版：行距滑块标题。"
+  },
+  "diaryTypographyLetterSpacing": "字间距",
+  "@diaryTypographyLetterSpacing": {
+    "description": "正文排版：字间距滑块标题。"
+  },
+  "diaryTypographyParagraphSpacing": "段间距",
+  "@diaryTypographyParagraphSpacing": {
+    "description": "正文排版：段间距滑块标题。"
+  },
+  "diaryTypographyDecrease": "减小{label}",
+  "@diaryTypographyDecrease": {
+    "description": "正文排版：数值减小按钮的提示，label 为数值名称。",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "diaryTypographyIncrease": "增大{label}",
+  "@diaryTypographyIncrease": {
+    "description": "正文排版：数值增大按钮的提示，label 为数值名称。",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "diaryTypographyReset": "恢复默认排版",
+  "@diaryTypographyReset": {
+    "description": "正文排版：把字号、行距、字间距、段间距恢复默认（保留字体）。"
+  },
+  "diaryTypographyScopeHint": "作用于日记的编辑、阅读与发布页面；字体也用于日记标题。",
+  "@diaryTypographyScopeHint": {
+    "description": "正文字体与排版：排版分组底部的作用范围说明。"
+  },
+  "diaryTypographyMoreSettings": "更多设置",
+  "@diaryTypographyMoreSettings": {
+    "description": "字体与排版快捷面板：打开完整设置页的按钮。"
+  },
+  "diaryTypographySampleTitle": "雨后的傍晚",
+  "@diaryTypographySampleTitle": {
+    "description": "正文排版预览：示例标题。"
+  },
+  "diaryTypographySampleBody": "傍晚雨停了，楼下的桂花被洗得格外香。\n回家路上买了一袋糖炒栗子，边走边剥，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。",
+  "@diaryTypographySampleBody": {
+    "description": "正文排版预览：示例正文，用换行分段以展示段间距。"
   }
 }

@@ -33,7 +33,10 @@ import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../controllers/diary_file_export_controller.dart';
 import '../providers/diary_detail_provider.dart';
+import '../providers/diary_typography_provider.dart';
+import '../sections/diary_typography_sheet.dart';
 import '../utils/diary_markdown_exporter.dart';
+import '../viewmodels/diary_quill_styles.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
@@ -126,6 +129,11 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                 : Brightness.light,
           ),
       actions: <Widget>[
+        IconButton(
+          tooltip: context.l10n.diaryTypographyQuickTooltip,
+          onPressed: () => showDiaryTypographySheet(context),
+          icon: const FaIcon(FontAwesomeIcons.font, size: 16),
+        ),
         IconButton(
           tooltip: context.l10n.commonEdit,
           onPressed: _openEditor,
@@ -1293,20 +1301,26 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
     );
     final previewImages = _resolvePreviewImages(diary);
     final contentBody = hasVisibleContent
-        ? quill.QuillEditor.basic(
-            controller: controller,
-            config: quill.QuillEditorConfig(
-              autoFocus: false,
-              scrollable: false,
-              padding: EdgeInsets.zero,
-              showCursor: false,
-              checkBoxReadOnly: false,
-              embedBuilders: buildDiaryQuillEmbedBuilders(
-                onImageOpen: (imageSource, hero) {
-                  _openImageViewer(previewImages, imageSource, hero: hero);
-                },
-              ),
-            ),
+        ? DiaryQuillStylesBuilder(
+            appearance: ref.watch(diaryTextAppearanceProvider),
+            builder: (BuildContext context, quill.DefaultStyles styles) {
+              return quill.QuillEditor.basic(
+                controller: controller,
+                config: quill.QuillEditorConfig(
+                  autoFocus: false,
+                  scrollable: false,
+                  padding: EdgeInsets.zero,
+                  showCursor: false,
+                  checkBoxReadOnly: false,
+                  customStyles: styles,
+                  embedBuilders: buildDiaryQuillEmbedBuilders(
+                    onImageOpen: (imageSource, hero) {
+                      _openImageViewer(previewImages, imageSource, hero: hero);
+                    },
+                  ),
+                ),
+              );
+            },
           )
         : Text(
             context.l10n.autoT0119,
@@ -1462,8 +1476,12 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
                       padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                       child: Text(
                         title,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: ref
+                            .watch(diaryTextAppearanceProvider)
+                            .titleStyle(
+                              Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
                       ),
                     ),
                   ),

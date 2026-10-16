@@ -204,36 +204,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsEditorToolsGroup => '工具栏与心情';
 
   @override
-  String get settingsEditorBodyFontSize => '编辑字体大小';
-
-  @override
-  String get settingsEditorBodyFontSizeSubtitle => '仅影响编辑页正文显示';
-
-  @override
-  String get settingsEditorBodyFontSizeSmall => '小';
-
-  @override
-  String get settingsEditorBodyFontSizeMedium => '中';
-
-  @override
-  String get settingsEditorBodyFontSizeLarge => '大';
-
-  @override
-  String get settingsEditorLineHeight => '正文行距';
-
-  @override
-  String get settingsEditorLineHeightSubtitle => '仅影响编辑页正文排版';
-
-  @override
-  String get settingsEditorLineHeightCompact => '紧凑';
-
-  @override
-  String get settingsEditorLineHeightNormal => '标准';
-
-  @override
-  String get settingsEditorLineHeightRelaxed => '宽松';
-
-  @override
   String get settingsMoodOptionsTitle => '心情符号';
 
   @override
@@ -2679,4 +2649,108 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get previewSetAsAnniversary => '设为纪念日';
+
+  @override
+  String get diaryTypographyTitle => '正文字体与排版';
+
+  @override
+  String diaryTypographySummary(String font, String size, String lineHeight) {
+    return '$font · 字号 $size · 行距 $lineHeight';
+  }
+
+  @override
+  String get diaryTypographyQuickTooltip => '字体与排版';
+
+  @override
+  String get diaryTypographyFontSection => '字体';
+
+  @override
+  String get diaryTypographyFontBundled => 'HarmonyOS Sans';
+
+  @override
+  String get diaryTypographyFontSystem => '系统字体';
+
+  @override
+  String get diaryTypographyFontSystemHint => '跟随手机当前使用的字体';
+
+  @override
+  String get diaryTypographyFontMissing =>
+      '所选字体的文件已不在本机，正文暂按 HarmonyOS Sans 显示；可重新导入或改选其他字体。';
+
+  @override
+  String get diaryTypographyImportFont => '导入字体文件';
+
+  @override
+  String get diaryTypographyImportFontHint => '支持 TTF、OTF、TTC 格式，导入后即设为正文字体';
+
+  @override
+  String get diaryTypographyImporting => '正在导入字体…';
+
+  @override
+  String diaryTypographyImported(String name) {
+    return '已导入并使用“$name”';
+  }
+
+  @override
+  String get diaryTypographyImportUnsupported =>
+      '这不是可用的字体文件，请选择 TTF、OTF 或 TTC 格式';
+
+  @override
+  String get diaryTypographyImportUnreadable => '无法读取所选文件';
+
+  @override
+  String get diaryTypographyImportFailed => '字体导入失败，请检查存储空间后重试';
+
+  @override
+  String get diaryTypographyDeleteFont => '删除字体';
+
+  @override
+  String diaryTypographyDeleteFontTitle(String name) {
+    return '删除字体“$name”？';
+  }
+
+  @override
+  String get diaryTypographyDeleteFontMessage =>
+      '字体文件会从本机移除。正在使用这款字体时，正文改回 HarmonyOS Sans。';
+
+  @override
+  String get diaryTypographyLayoutSection => '排版';
+
+  @override
+  String get diaryTypographyFontSize => '字号';
+
+  @override
+  String get diaryTypographyLineHeight => '行距';
+
+  @override
+  String get diaryTypographyLetterSpacing => '字间距';
+
+  @override
+  String get diaryTypographyParagraphSpacing => '段间距';
+
+  @override
+  String diaryTypographyDecrease(String label) {
+    return '减小$label';
+  }
+
+  @override
+  String diaryTypographyIncrease(String label) {
+    return '增大$label';
+  }
+
+  @override
+  String get diaryTypographyReset => '恢复默认排版';
+
+  @override
+  String get diaryTypographyScopeHint => '作用于日记的编辑、阅读与发布页面；字体也用于日记标题。';
+
+  @override
+  String get diaryTypographyMoreSettings => '更多设置';
+
+  @override
+  String get diaryTypographySampleTitle => '雨后的傍晚';
+
+  @override
+  String get diaryTypographySampleBody =>
+      '傍晚雨停了，楼下的桂花被洗得格外香。\n回家路上买了一袋糖炒栗子，边走边剥，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。';
 }

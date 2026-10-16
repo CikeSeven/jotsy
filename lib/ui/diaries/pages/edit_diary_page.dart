@@ -39,6 +39,9 @@ import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
+import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
@@ -296,9 +299,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   /// 标题输入框。
   ///
-  /// 使用下划线风格，焦点态颜色高亮以提供明确输入反馈。
-  Widget _buildTitleInput(BuildContext context, {required bool contentLocked}) {
+  /// 使用下划线风格，焦点态颜色高亮以提供明确输入反馈；字体跟随正文排版设置。
+  Widget _buildTitleInput(
+    BuildContext context, {
+    required bool contentLocked,
+    required DiaryTextAppearance appearance,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final titleStyle = appearance.titleStyle(
+      Theme.of(context).textTheme.headlineSmall,
+    );
     return TextField(
       controller: _titleController,
       focusNode: _titleFocusNode,
@@ -312,7 +322,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             required bool isFocused,
             int? maxLength,
           }) => null,
-      style: Theme.of(context).textTheme.headlineSmall,
+      style: titleStyle,
       maxLength: 200,
       decoration: InputDecoration(
         // 标题属于文档画布，不使用普通表单的填充表面。
@@ -320,9 +330,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         isDense: true,
         contentPadding: const EdgeInsets.fromLTRB(0, 6, 0, 6),
         hintText: context.l10n.autoT0106,
-        hintStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+        hintStyle: titleStyle?.copyWith(color: colorScheme.onSurfaceVariant),
         border: UnderlineInputBorder(
           borderSide: BorderSide(color: colorScheme.outlineVariant),
         ),
@@ -336,105 +344,64 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
   }
 
-  /// 主编辑区域：
-  /// - 标题与正文放在同一个滚动容器内，保证滚动体验连续；
-  /// - 键盘弹起时保持焦点，不因轻微滚动自动收起键盘。
-  quill.DefaultStyles _buildEditorCustomStyles({
-    required BuildContext context,
-    required double bodyFontSize,
-    required double bodyLineHeight,
-  }) {
-    final defaults = quill.DefaultStyles.getInstance(context);
-    quill.DefaultTextBlockStyle? applyTextBlock(
-      quill.DefaultTextBlockStyle? style,
-    ) {
-      return style?.copyWith(
-        style: style.style.copyWith(
-          fontSize: bodyFontSize,
-          height: bodyLineHeight,
-        ),
-      );
-    }
-
-    quill.DefaultListBlockStyle? applyListBlock(
-      quill.DefaultListBlockStyle? style,
-    ) {
-      return style?.copyWith(
-        style: style.style.copyWith(
-          fontSize: bodyFontSize,
-          height: bodyLineHeight,
-        ),
-      );
-    }
-
-    return quill.DefaultStyles(
-      paragraph: applyTextBlock(defaults.paragraph),
-      placeHolder: applyTextBlock(defaults.placeHolder),
-      lists: applyListBlock(defaults.lists),
-      quote: applyTextBlock(defaults.quote),
-      code: applyTextBlock(defaults.code),
-    );
-  }
-
   Widget _buildQuillEditor(
     BuildContext context, {
-    required double bodyFontSize,
-    required double bodyLineHeight,
+    required DiaryTextAppearance appearance,
   }) {
     final placeholder = context.l10n.autoT0133;
-    // QuillController 未覆写 ==，按实例比较；ThemeData 为值比较。
+    // QuillController 未覆写 ==，按实例比较；ThemeData 与正文外观为值比较。
     final inputs = (
       _contentController,
       placeholder,
       Theme.of(context),
-      bodyFontSize,
-      bodyLineHeight,
+      appearance,
     );
     final cached = _cachedQuillEditor;
     if (cached != null && _cachedQuillEditorInputs == inputs) {
       return cached;
     }
-    final editor = quill.QuillEditor.basic(
-      controller: _contentController,
-      focusNode: _contentFocusNode,
-      scrollController: _editorInnerScrollController,
-      // 新建时不在构建期自动聚焦：键盘会与页面滑入同时弹出并逐帧挤压布局。
-      // 改由 [RouteEntranceWaiter] 在转场结束后聚焦（见 initState）。
-      config: quill.QuillEditorConfig(
-        editorKey: _quillEditorKey,
-        autoFocus: false,
-        placeholder: placeholder,
-        scrollable: false,
-        onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-          _contentController,
-          getPosition(details.globalPosition),
-        ),
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-        customStyles: _buildEditorCustomStyles(
-          context: context,
-          bodyFontSize: bodyFontSize,
-          bodyLineHeight: bodyLineHeight,
-        ),
-        embedBuilders: buildDiaryQuillEmbedBuilders(),
-      ),
+    // 样式在编辑器位置（Scaffold 之下）生成，见 [DiaryQuillStylesBuilder]。
+    final editor = DiaryQuillStylesBuilder(
+      appearance: appearance,
+      builder: (BuildContext context, quill.DefaultStyles styles) {
+        return quill.QuillEditor.basic(
+          controller: _contentController,
+          focusNode: _contentFocusNode,
+          scrollController: _editorInnerScrollController,
+          // 新建时不在构建期自动聚焦：键盘会与页面滑入同时弹出并逐帧挤压布局。
+          // 改由 [RouteEntranceWaiter] 在转场结束后聚焦（见 initState）。
+          config: quill.QuillEditorConfig(
+            editorKey: _quillEditorKey,
+            autoFocus: false,
+            placeholder: placeholder,
+            scrollable: false,
+            onTapUp: (details, getPosition) => isDiaryPlaybackTap(
+              _contentController,
+              getPosition(details.globalPosition),
+            ),
+            padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+            customStyles: styles,
+            embedBuilders: buildDiaryQuillEmbedBuilders(),
+          ),
+        );
+      },
     );
     _cachedQuillEditor = editor;
     _cachedQuillEditorInputs = inputs;
     return editor;
   }
 
+  /// 主编辑区域：
+  /// - 标题与正文放在同一个滚动容器内，保证滚动体验连续；
+  /// - 键盘弹起时保持焦点，不因轻微滚动自动收起键盘；
+  /// - 标题字体与正文排版跟随“正文字体与排版”设置，修改后即时生效。
   Widget _buildEditor(
     BuildContext context, {
     required double Function(double panelProgress) resolveBottomSpacer,
     required bool contentLocked,
-    required double bodyFontSize,
-    required double bodyLineHeight,
+    required DiaryTextAppearance appearance,
   }) {
-    final quillEditor = _buildQuillEditor(
-      context,
-      bodyFontSize: bodyFontSize,
-      bodyLineHeight: bodyLineHeight,
-    );
+    final quillEditor = _buildQuillEditor(context, appearance: appearance);
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final minEditorHeight = constraints.maxHeight > 420
@@ -443,7 +410,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         final content = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _buildTitleInput(context, contentLocked: contentLocked),
+            _buildTitleInput(
+              context,
+              contentLocked: contentLocked,
+              appearance: appearance,
+            ),
             const SizedBox(height: 12),
             ConstrainedBox(
               // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
@@ -474,62 +445,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           },
         );
       },
-    );
-  }
-
-  Widget _buildEditorWithLiveTextSettings(
-    BuildContext context, {
-    required AsyncValue<SettingsService> settingsAsync,
-    required double Function(double panelProgress) resolveBottomSpacer,
-    required bool contentLocked,
-  }) {
-    return settingsAsync.when(
-      data: (settingsService) {
-        return ValueListenableBuilder<EditorBodyFontSizePreset>(
-          valueListenable: settingsService.editorBodyFontSizePresetNotifier,
-          builder:
-              (
-                BuildContext context,
-                EditorBodyFontSizePreset fontSizePreset,
-                Widget? child,
-              ) {
-                return ValueListenableBuilder<EditorBodyLineHeightPreset>(
-                  valueListenable:
-                      settingsService.editorBodyLineHeightPresetNotifier,
-                  builder:
-                      (
-                        BuildContext context,
-                        EditorBodyLineHeightPreset lineHeightPreset,
-                        Widget? child,
-                      ) {
-                        return _buildEditor(
-                          context,
-                          resolveBottomSpacer: resolveBottomSpacer,
-                          contentLocked: contentLocked,
-                          bodyFontSize: fontSizePreset.fontSize,
-                          bodyLineHeight: lineHeightPreset.lineHeight,
-                        );
-                      },
-                );
-              },
-        );
-      },
-      loading: () => _buildEditor(
-        context,
-        resolveBottomSpacer: resolveBottomSpacer,
-        contentLocked: contentLocked,
-        bodyFontSize: SettingsService.defaultEditorBodyFontSizePreset.fontSize,
-        bodyLineHeight:
-            SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
-      ),
-      error: (_, __) => _buildEditor(
-        context,
-        resolveBottomSpacer: resolveBottomSpacer,
-        contentLocked: contentLocked,
-        bodyFontSize: SettingsService.defaultEditorBodyFontSizePreset.fontSize,
-        bodyLineHeight:
-            SettingsService.defaultEditorBodyLineHeightPreset.lineHeight,
-      ),
     );
   }
 
@@ -689,11 +604,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           body: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              _buildEditorWithLiveTextSettings(
+              _buildEditor(
                 context,
-                settingsAsync: settingsAsync,
                 resolveBottomSpacer: resolveEditorBottomSpacer,
                 contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
+                appearance: ref.watch(diaryTextAppearanceProvider),
               ),
               if (showEditMetaPanel &&
                   (!showFloatingToolbar || _isEditPanelExpanded))

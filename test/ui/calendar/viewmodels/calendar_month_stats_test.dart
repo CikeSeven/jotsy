@@ -30,7 +30,7 @@ void main() {
       diaryId: id,
       createdAt: createdAt,
       moodEmoji: mood,
-      charCount: chars,
+      wordCount: chars,
     );
   }
 
@@ -50,7 +50,7 @@ void main() {
 
     expect(stats.entryCount, 6);
     expect(stats.recordedDays, 5);
-    expect(stats.charCount, 175);
+    expect(stats.wordCount, 175);
     expect(stats.longestStreak, 3);
     // 过去的月份：分母为整月天数。
     expect(stats.elapsedDays, 31);

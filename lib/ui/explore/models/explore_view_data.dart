@@ -49,12 +49,12 @@ class ExploreStats {
   const ExploreStats({
     required this.totalRecords,
     required this.streakDays,
-    required this.currentMonthChars,
+    required this.currentMonthWords,
   });
 
   final int totalRecords;
   final int streakDays;
-  final int currentMonthChars;
+  final int currentMonthWords;
 }
 
 /// 标签云展示项。

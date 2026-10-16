@@ -3094,8 +3094,8 @@
       }
     }
   },
-  "calendarSummaryChars": "共 {count} 字",
-  "@calendarSummaryChars": {
+  "calendarSummaryWords": "共 {count} 字",
+  "@calendarSummaryWords": {
     "description": "概览提示：当月、当年或所选范围内的总字数（已格式化的数字）。",
     "placeholders": {
       "count": {
@@ -3159,14 +3159,14 @@
       }
     }
   },
-  "calendarDayStats": "{entries} 篇 · {chars} 字",
+  "calendarDayStats": "{entries} 篇 · {words} 字",
   "@calendarDayStats": {
     "description": "选中日的统计：篇数与字数（已格式化的数字）。",
     "placeholders": {
       "entries": {
         "type": "int"
       },
-      "chars": {
+      "words": {
         "type": "String"
       }
     }
@@ -3994,8 +3994,8 @@
       }
     }
   },
-  "diaryCardCharCount": "{count} 字",
-  "@diaryCardCharCount": {
+  "diaryCardWordCount": "{count} 字",
+  "@diaryCardWordCount": {
     "description": "日记卡片底栏：正文字数（已格式化的数字）。",
     "placeholders": {
       "count": {
@@ -5017,5 +5017,87 @@
         "type": "String"
       }
     }
+  },
+  "diaryPreviewWordCount": "{formatted} 字",
+  "@diaryPreviewWordCount": {
+    "description": "预览页信息栏：正文字数；count 用于复数，formatted 为格式化后的数字。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "formatted": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviewReadingTime": "约 {minutes} 分钟",
+  "@diaryPreviewReadingTime": {
+    "description": "预览页信息栏：预计阅读分钟数。",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryWordCountOpen": "查看字数统计",
+  "@diaryWordCountOpen": {
+    "description": "预览页信息栏字数的读屏提示：点按查看明细。"
+  },
+  "diaryWordCountTitle": "字数统计",
+  "@diaryWordCountTitle": {
+    "description": "字数统计明细面板的标题。"
+  },
+  "diaryWordCountUnit": "字",
+  "@diaryWordCountUnit": {
+    "description": "字数大号数字后面的单位。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryWordCountCjk": "中文字符",
+  "@diaryWordCountCjk": {
+    "description": "字数统计：中文字符数（含全角标点）。"
+  },
+  "diaryWordCountLatin": "非中文单词",
+  "@diaryWordCountLatin": {
+    "description": "字数统计：英文、数字等非中文单词数。"
+  },
+  "diaryWordCountCharacters": "字符数（不计空格）",
+  "@diaryWordCountCharacters": {
+    "description": "字数统计：不计空格的字符数。"
+  },
+  "diaryWordCountCharactersWithSpaces": "字符数（计空格）",
+  "@diaryWordCountCharactersWithSpaces": {
+    "description": "字数统计：计空格的字符数。"
+  },
+  "diaryWordCountParagraphs": "段落",
+  "@diaryWordCountParagraphs": {
+    "description": "字数统计：有文字的段落数。"
+  },
+  "diaryWordCountImages": "图片",
+  "@diaryWordCountImages": {
+    "description": "字数统计：正文图片数。"
+  },
+  "diaryWordCountRecordings": "录音",
+  "@diaryWordCountRecordings": {
+    "description": "字数统计：录音数。"
+  },
+  "diaryWordCountVideos": "视频",
+  "@diaryWordCountVideos": {
+    "description": "字数统计：视频数。"
+  },
+  "diaryWordCountAttachments": "附件",
+  "@diaryWordCountAttachments": {
+    "description": "字数统计：附件数。"
+  },
+  "diaryWordCountReading": "预计阅读",
+  "@diaryWordCountReading": {
+    "description": "字数统计：预计阅读时长。"
+  },
+  "diaryWordCountRule": "每个汉字与全角标点算 1 字，英文和数字按单词计，空格与换行不计。",
+  "@diaryWordCountRule": {
+    "description": "字数统计面板底部的口径说明。"
   }
 }

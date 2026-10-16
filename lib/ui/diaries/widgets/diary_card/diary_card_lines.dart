@@ -194,7 +194,7 @@ class DiaryCardLines {
             color: appearance.footerColor,
             location: viewData.location,
             energyLevel: viewData.energyLevel,
-            charCount: viewData.charCount,
+            wordCount: viewData.wordCount,
             media: meta.showMedia ? viewData.media : null,
             scale: resolved.metaScale,
           )

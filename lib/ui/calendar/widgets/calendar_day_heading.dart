@@ -22,7 +22,7 @@ class CalendarDayHeading extends StatelessWidget {
     required this.day,
     required this.now,
     required this.entryCount,
-    required this.charCount,
+    required this.wordCount,
     this.lunar,
     this.holiday,
   });
@@ -30,7 +30,7 @@ class CalendarDayHeading extends StatelessWidget {
   final DateTime day;
   final DateTime now;
   final int entryCount;
-  final int charCount;
+  final int wordCount;
   final CalendarLunarDay? lunar;
   final CalendarHolidayDay? holiday;
 
@@ -44,7 +44,7 @@ class CalendarDayHeading extends StatelessWidget {
         ? ''
         : l10n.calendarDayStats(
             entryCount,
-            NumberFormat.decimalPattern(l10n.localeName).format(charCount),
+            NumberFormat.decimalPattern(l10n.localeName).format(wordCount),
           );
     // 日期本身不截断；星期与相对时间在窄屏、大字号下按需省略。统计数字
     // 很短，按内容宽度放在行尾，其余宽度都给日期一侧。

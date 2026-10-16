@@ -16,7 +16,7 @@ class CalendarMonthStats {
     required this.entryCount,
     required this.recordedDays,
     required this.elapsedDays,
-    required this.charCount,
+    required this.wordCount,
     required this.dominantMood,
     required this.longestStreak,
   });
@@ -49,7 +49,7 @@ class CalendarMonthStats {
     final today = DateUtils.dateOnly(now);
 
     var entryCount = 0;
-    var charCount = 0;
+    var wordCount = 0;
     var recordedDays = 0;
     var longestStreak = 0;
     var currentStreak = 0;
@@ -71,7 +71,7 @@ class CalendarMonthStats {
         continue;
       }
       entryCount += summary.entryCount;
-      charCount += summary.charCount;
+      wordCount += summary.wordCount;
       recordedDays += 1;
       currentStreak += 1;
       if (currentStreak > longestStreak) {
@@ -114,7 +114,7 @@ class CalendarMonthStats {
       entryCount: entryCount,
       recordedDays: recordedDays,
       elapsedDays: elapsedDays,
-      charCount: charCount,
+      wordCount: wordCount,
       dominantMood: dominantWeight == null
           ? null
           : SettingsService.moodForWeight(dominantWeight, moodOptions),
@@ -128,7 +128,7 @@ class CalendarMonthStats {
   /// 区间内已经过去的天数（含今天）：包含今天的区间数到今天，过去的区间为
   /// 总天数，未来的区间为 null（不显示“已记录/已过去”的分母）。
   final int? elapsedDays;
-  final int charCount;
+  final int wordCount;
   final String? dominantMood;
 
   /// 本月内最长的连续记录天数。
@@ -142,7 +142,7 @@ class CalendarMonthStats {
         other.entryCount == entryCount &&
         other.recordedDays == recordedDays &&
         other.elapsedDays == elapsedDays &&
-        other.charCount == charCount &&
+        other.wordCount == wordCount &&
         other.dominantMood == dominantMood &&
         other.longestStreak == longestStreak;
   }
@@ -152,7 +152,7 @@ class CalendarMonthStats {
     entryCount,
     recordedDays,
     elapsedDays,
-    charCount,
+    wordCount,
     dominantMood,
     longestStreak,
   );

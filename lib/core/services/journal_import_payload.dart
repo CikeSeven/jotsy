@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 
+import '../../utils/text_stats.dart';
 import '../database/app_database.dart';
 import 'backup_payload.dart';
 import 'journal_import_models.dart';
@@ -128,12 +129,14 @@ String _metadata(
       'weather': weather,
     'moodEmoji': ?moodEmoji,
   };
+  // 与界面上的“字数”同一口径（见 TextStats）。
+  final stats = TextStats.of(text);
   return jsonEncode(<String, Object?>{
     'schemaVersion': 1,
     'generatedAt': entry.createdAt.toIso8601String(),
     'stats': <String, Object?>{
-      'wordCount': text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length,
-      'charCount': text.length,
+      'wordCount': stats.words,
+      'charCount': stats.characters,
     },
     'hasCover': false,
     if (context.isNotEmpty) 'context': context,

@@ -454,6 +454,10 @@ ORDER BY d.created_at DESC, d.id DESC
 
   /// 监听 `[start, end)` 内的日历打点元数据（含归档，不含已删除）。
   ///
+  /// 字数要按 `TextStats` 的口径（汉字与全角标点各算 1、非中文按词）计算，
+  /// SQL 做不到，所以读出纯文本在映射时计数，并按 (diaryId, updatedAt) 缓存，
+  /// 数据库流再次推送时未改动的日记不再重新扫描。
+  ///
   /// 标签色与标签 id（日历按标签筛选用）各用一个相关子查询拼接，而不是
   /// JOIN + GROUP BY：每篇日记仍是一行，且打点不需要标签名。group_concat
   /// 本身不保证顺序，内层按标签 id 排序后再拼接，同一天的标签色点不会随
@@ -470,7 +474,8 @@ SELECT
   d.created_at,
   d.cover,
   d.capsule_unlock_at,
-  length(trim(d.content_text, ' ' || char(9) || char(10) || char(13))) AS char_count,
+  d.updated_at,
+  d.content_text,
   json_extract(d.metadata, '\$.context.moodEmoji') AS mood_emoji,
   json_extract(d.metadata, '\$.context.weather') AS weather,
   json_extract(d.metadata, '\$.context.weatherIconCode') AS weather_icon_code,
@@ -507,11 +512,16 @@ ORDER BY d.created_at ASC, d.id ASC
     ).watch().map((rows) {
       return rows
           .map((row) {
+            final diaryId = row.read<String>('diary_id');
             return DiaryCalendarMarker(
-              diaryId: row.read<String>('diary_id'),
+              diaryId: diaryId,
               createdAt: _readDateTime(row, 'created_at'),
               moodEmoji: _readTrimmedText(row, 'mood_emoji'),
-              charCount: row.readNullable<int>('char_count') ?? 0,
+              wordCount: DiaryWordCounts.of(
+                diaryId: diaryId,
+                updatedAt: _readDateTime(row, 'updated_at'),
+                text: row.readNullable<String>('content_text') ?? '',
+              ),
               cover: _readTrimmedText(row, 'cover'),
               weather: _readTrimmedText(row, 'weather'),
               weatherIconCode: _readTrimmedText(row, 'weather_icon_code'),

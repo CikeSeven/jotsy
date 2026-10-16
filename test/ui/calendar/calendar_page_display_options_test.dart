@@ -123,11 +123,11 @@ void main() {
     await pumpCalendarPage(
       tester,
       markers: <DiaryCalendarMarker>[
-        DiaryCalendarMarker(diaryId: 'a', createdAt: firstDay, charCount: 40),
+        DiaryCalendarMarker(diaryId: 'a', createdAt: firstDay, wordCount: 40),
         DiaryCalendarMarker(
           diaryId: 'b',
           createdAt: firstDay.add(const Duration(hours: 2)),
-          charCount: 2,
+          wordCount: 2,
         ),
       ],
     );

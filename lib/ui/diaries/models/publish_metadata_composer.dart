@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
+import '../../../utils/text_stats.dart';
 
 /// 发布页 metadata 组装器。
 ///
@@ -41,12 +42,14 @@ class PublishMetadataComposer {
     final normalizedWeatherIconCode = _normalizeOptionalText(weatherIconCode);
     final normalizedMoodEmoji = _normalizeOptionalText(moodEmoji);
 
+    // 与界面上的“字数”同一口径（见 TextStats）。
+    final stats = TextStats.of(contentText);
     final metadata = <String, Object?>{
       'schemaVersion': 1,
       'generatedAt': generatedAt.toIso8601String(),
       'stats': <String, Object?>{
-        'wordCount': _wordCount(contentText),
-        'charCount': contentText.trim().length,
+        'wordCount': stats.words,
+        'charCount': stats.characters,
       },
       'tagIds': selectedTagIds.toList()..sort(),
       'hasCover': hasCover,
@@ -96,15 +99,6 @@ class PublishMetadataComposer {
   static String pretty(String jsonRaw) {
     final decoded = jsonDecode(jsonRaw);
     return const JsonEncoder.withIndent('  ').convert(decoded);
-  }
-
-  /// 基于空白分词估算词数，作为发布统计字段。
-  static int _wordCount(String text) {
-    final normalized = text.trim();
-    if (normalized.isEmpty) {
-      return 0;
-    }
-    return normalized.split(RegExp(r'\s+')).length;
   }
 
   /// 可选文本字段标准化：空字符串转 null。

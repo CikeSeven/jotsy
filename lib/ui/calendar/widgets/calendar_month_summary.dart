@@ -135,8 +135,8 @@ class CalendarMonthSummary extends StatelessWidget {
       ),
       _CalendarSummaryItem(
         icon: FontAwesomeIcons.penNib,
-        value: compact.format(stats.charCount),
-        tooltip: l10n.calendarSummaryChars(decimal.format(stats.charCount)),
+        value: compact.format(stats.wordCount),
+        tooltip: l10n.calendarSummaryWords(decimal.format(stats.wordCount)),
       ),
       if (mood != null)
         _CalendarSummaryItem(

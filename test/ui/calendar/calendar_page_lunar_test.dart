@@ -136,7 +136,7 @@ void main() {
               diaryId: 'busy-$index',
               createdAt: today.add(Duration(minutes: index)),
               moodEmoji: '😀',
-              charCount: 900,
+              wordCount: 900,
               cover: '/does/not/exist.jpg',
               weather: '晴',
               weatherIconCode: '100',

@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../utils/text_stats.dart';
+import 'diary_card_media_summary.dart';
 
-/// 预览页的派生展示数据：metadata.context 里的心情、精力、地点与天气，以及
-/// 看图页的图片来源。
+/// 预览页的派生展示数据：metadata.context 里的心情、精力、地点与天气，看图页
+/// 的图片来源，以及字数统计与媒体数量（惰性计算）。
 ///
 /// 图片来源的顺序：显式封面在前，其后是正文中的全部图片（不去重，看图页
 /// 打开时再去重）。预览页封面与正文图片共用这一组来源，点按任一张都能进入
@@ -17,8 +19,9 @@ import '../../../core/database/app_database.dart';
 /// 任务；加载遮罩等局部重建也不再重新解析。无副作用。
 @immutable
 class DiaryPreviewViewData {
-  const DiaryPreviewViewData._(
+  DiaryPreviewViewData._(
     this._content,
+    this._contentText,
     this._cover,
     this._metadata, {
     required this.images,
@@ -36,6 +39,7 @@ class DiaryPreviewViewData {
   }) {
     if (previous != null &&
         previous._content == diary.content &&
+        previous._contentText == diary.contentText &&
         previous._cover == diary.cover &&
         previous._metadata == diary.metadata) {
       return previous;
@@ -44,6 +48,7 @@ class DiaryPreviewViewData {
     final energyRaw = context?['energyLevel'];
     return DiaryPreviewViewData._(
       diary.content,
+      diary.contentText,
       diary.cover,
       diary.metadata,
       images: List<String>.unmodifiable(<String>[
@@ -63,8 +68,15 @@ class DiaryPreviewViewData {
   }
 
   final String _content;
+  final String _contentText;
   final String? _cover;
   final String _metadata;
+
+  /// 正文字数统计（口径见 [TextStats]）；只在显示字数或打开明细时计算。
+  late final TextStats textStats = TextStats.of(_contentText);
+
+  /// 正文媒体数量（字数明细面板用）。
+  late final DiaryCardMediaSummary media = DiaryCardMediaSummary.scan(_content);
 
   /// 看图页的图片来源（显式封面在前，其后是正文图片）。
   final List<String> images;

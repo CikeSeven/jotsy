@@ -8,6 +8,7 @@ import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../utils/text_stats.dart';
 import 'content_codec.dart';
 
 part 'app_database.g.dart';

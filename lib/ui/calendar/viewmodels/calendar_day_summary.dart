@@ -16,7 +16,7 @@ class CalendarDaySummary {
   const CalendarDaySummary({
     required this.day,
     required this.entryCount,
-    required this.charCount,
+    required this.wordCount,
     required this.hasLockedCapsule,
     required this.moods,
     required this.averageMood,
@@ -36,7 +36,7 @@ class CalendarDaySummary {
 
   /// 已解封/普通日记的篇数。
   final int entryCount;
-  final int charCount;
+  final int wordCount;
   final bool hasLockedCapsule;
 
   /// 逐篇心情（按时间顺序，跳过未填心情的日记）；日期格只画前 [maxMoods]
@@ -86,7 +86,7 @@ class CalendarDaySummary {
     }
     return switch (basis) {
       CalendarHeatBasis.entries => entryCount.clamp(1, 4),
-      CalendarHeatBasis.words => switch (charCount) {
+      CalendarHeatBasis.words => switch (wordCount) {
         < 200 => 1,
         < 600 => 2,
         < 1500 => 3,
@@ -129,7 +129,7 @@ class CalendarDaySummary {
     required List<String> moodOptions,
   }) {
     var entryCount = 0;
-    var charCount = 0;
+    var wordCount = 0;
     var hasLockedCapsule = false;
     var weightTotal = 0;
     var weightCount = 0;
@@ -146,7 +146,7 @@ class CalendarDaySummary {
         continue;
       }
       entryCount += 1;
-      charCount += marker.charCount;
+      wordCount += marker.wordCount;
       diaryIds.add(marker.diaryId);
       final mood = marker.moodEmoji;
       if (mood != null) {
@@ -181,7 +181,7 @@ class CalendarDaySummary {
     return CalendarDaySummary(
       day: day,
       entryCount: entryCount,
-      charCount: charCount,
+      wordCount: wordCount,
       hasLockedCapsule: hasLockedCapsule,
       moods: List<String>.unmodifiable(moods),
       averageMood: averageMood,

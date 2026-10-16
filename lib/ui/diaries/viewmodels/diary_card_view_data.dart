@@ -2,12 +2,13 @@ import 'dart:collection';
 import 'dart:convert';
 
 import '../../../core/database/app_database.dart';
+import '../../../utils/text_stats.dart';
 import 'diary_card_media_summary.dart';
 
 /// 日记卡片 / 日历时间线条目共用的派生展示数据。
 ///
 /// 输入：[Diary] 实体；输出：metadata.context 中的心情、天气、地点、精力，
-/// 单行化并截断的摘要文本、正文字数，预览封面（显式封面优先，否则取正文
+/// 单行化并截断的摘要文本、正文字数（惰性计算），预览封面（显式封面优先，否则取正文
 /// 第一张图），以及按需惰性扫描的媒体概况（拼贴图片与媒体角标）。
 ///
 /// 为什么缓存：列表滚动、日历选日/翻月、筛选过渡都会高频重建卡片，若每次
@@ -17,14 +18,14 @@ import 'diary_card_media_summary.dart';
 class DiaryCardViewData {
   DiaryCardViewData._(
     this._explicitCover,
-    this._contentJson, {
+    this._contentJson,
+    this._contentText, {
     required this.moodEmoji,
     required this.weather,
     required this.weatherIconCode,
     required this.location,
     required this.energyLevel,
     required this.previewText,
-    required this.charCount,
   });
 
   /// 解析（或从缓存取回）指定日记的展示数据。
@@ -49,6 +50,7 @@ class DiaryCardViewData {
     return DiaryCardViewData._(
       diary.cover,
       diary.content,
+      diary.contentText,
       moodEmoji: _nonEmptyString(context['moodEmoji']),
       weather: _nonEmptyString(context['weather']),
       weatherIconCode: _nonEmptyString(context['weatherIconCode']),
@@ -59,8 +61,6 @@ class DiaryCardViewData {
         _ => null,
       },
       previewText: _buildPreviewText(diary.contentText),
-      // 与日历、探索页的“字数”口径一致：去首尾空白后的字符数。
-      charCount: diary.contentText.trim().length,
     );
   }
 
@@ -82,11 +82,13 @@ class DiaryCardViewData {
   /// 单行化、去首尾空白并截断后的正文摘要；可能为空字符串。
   final String previewText;
 
-  /// 正文字数（去首尾空白后的字符数）。
-  final int charCount;
-
   final String? _explicitCover;
   final String _contentJson;
+  final String _contentText;
+
+  /// 正文字数（口径见 [TextStats]）。懒计算：只有显示字数角标的样式才会
+  /// 扫描整段纯文本。
+  late final int wordCount = TextStats.countWords(_contentText);
 
   /// 预览封面：显式封面字段优先，否则取正文 Delta 中第一张图片。
   /// 懒计算：未解封胶囊等不展示封面的场景不必解析整段正文。

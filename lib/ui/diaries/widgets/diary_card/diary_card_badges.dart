@@ -154,7 +154,7 @@ List<Widget> buildDiaryCardFooterExtras(
   required Color color,
   required String? location,
   required double? energyLevel,
-  required int charCount,
+  required int wordCount,
   required DiaryCardMediaSummary? media,
   double scale = 1,
 }) {
@@ -208,11 +208,11 @@ List<Widget> buildDiaryCardFooterExtras(
       ),
     );
   }
-  if (meta.showWordCount && charCount > 0) {
+  if (meta.showWordCount && wordCount > 0) {
     final count = NumberFormat.decimalPattern(
       l10n.localeName,
-    ).format(charCount);
-    final text = l10n.diaryCardCharCount(count);
+    ).format(wordCount);
+    final text = l10n.diaryCardWordCount(count);
     items.add(item(FontAwesomeIcons.penNib, text, text));
   }
   if (meta.showMedia && media != null && !media.isEmpty) {

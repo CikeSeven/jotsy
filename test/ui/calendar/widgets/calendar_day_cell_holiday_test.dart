@@ -191,7 +191,7 @@ void main() {
         DiaryCalendarMarker(
           diaryId: 'heat',
           createdAt: DateTime(2026, 10, 1, 8),
-          charCount: 2000,
+          wordCount: 2000,
         ),
       ),
     );

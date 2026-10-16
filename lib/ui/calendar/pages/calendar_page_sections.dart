@@ -7,7 +7,7 @@ class _CalendarDayContent {
     required this.diaries,
     required this.day,
     required this.entryCount,
-    required this.charCount,
+    required this.wordCount,
     required this.loading,
     required this.errorMessage,
   });
@@ -15,7 +15,7 @@ class _CalendarDayContent {
   final List<DiaryWithTags> diaries;
   final DateTime day;
   final int entryCount;
-  final int charCount;
+  final int wordCount;
   final bool loading;
   final String? errorMessage;
 }
@@ -42,10 +42,10 @@ extension _CalendarPageSections on _CalendarPageState {
       _cachedDayDiariesSelectedDay = _selectedDay;
     }
     var entryCount = fallbackSummary?.entryCount ?? 0;
-    var charCount = fallbackSummary?.charCount ?? 0;
+    var wordCount = fallbackSummary?.wordCount ?? 0;
     if (latest != null) {
       entryCount = 0;
-      charCount = 0;
+      wordCount = 0;
       for (final item in latest) {
         final locked = TimeCapsuleState.fromFields(
           lockedAt: item.diary.capsuleLockedAt,
@@ -54,7 +54,11 @@ extension _CalendarPageSections on _CalendarPageState {
         ).isLocked;
         if (!locked) {
           entryCount += 1;
-          charCount += item.diary.contentText.trim().length;
+          wordCount += DiaryWordCounts.of(
+            diaryId: item.diary.diaryId,
+            updatedAt: item.diary.updatedAt,
+            text: item.diary.contentText,
+          );
         }
       }
     }
@@ -64,7 +68,7 @@ extension _CalendarPageSections on _CalendarPageState {
           ? _cachedDayDiariesSelectedDay ?? _selectedDay
           : _selectedDay,
       entryCount: entryCount,
-      charCount: charCount,
+      wordCount: wordCount,
       loading: dayDiariesAsync.isLoading,
       errorMessage: dayDiariesAsync.asError?.error.toString(),
     );

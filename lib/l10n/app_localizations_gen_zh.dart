@@ -2176,7 +2176,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String calendarSummaryChars(String count) {
+  String calendarSummaryWords(String count) {
     return '共 $count 字';
   }
 
@@ -2216,8 +2216,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String calendarDayStats(int entries, String chars) {
-    return '$entries 篇 · $chars 字';
+  String calendarDayStats(int entries, String words) {
+    return '$entries 篇 · $words 字';
   }
 
   @override
@@ -2775,7 +2775,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String diaryCardCharCount(String count) {
+  String diaryCardWordCount(String count) {
     return '$count 字';
   }
 
@@ -3514,4 +3514,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String diaryCardStyleValuePercent(String value) {
     return '$value%';
   }
+
+  @override
+  String diaryPreviewWordCount(int count, String formatted) {
+    return '$formatted 字';
+  }
+
+  @override
+  String diaryPreviewReadingTime(int minutes) {
+    return '约 $minutes 分钟';
+  }
+
+  @override
+  String get diaryWordCountOpen => '查看字数统计';
+
+  @override
+  String get diaryWordCountTitle => '字数统计';
+
+  @override
+  String diaryWordCountUnit(int count) {
+    return '字';
+  }
+
+  @override
+  String get diaryWordCountCjk => '中文字符';
+
+  @override
+  String get diaryWordCountLatin => '非中文单词';
+
+  @override
+  String get diaryWordCountCharacters => '字符数（不计空格）';
+
+  @override
+  String get diaryWordCountCharactersWithSpaces => '字符数（计空格）';
+
+  @override
+  String get diaryWordCountParagraphs => '段落';
+
+  @override
+  String get diaryWordCountImages => '图片';
+
+  @override
+  String get diaryWordCountRecordings => '录音';
+
+  @override
+  String get diaryWordCountVideos => '视频';
+
+  @override
+  String get diaryWordCountAttachments => '附件';
+
+  @override
+  String get diaryWordCountReading => '预计阅读';
+
+  @override
+  String get diaryWordCountRule => '每个汉字与全角标点算 1 字，英文和数字按单词计，空格与换行不计。';
 }

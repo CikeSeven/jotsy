@@ -17,19 +17,19 @@ void main() {
       DiaryCalendarMarker(
         diaryId: 'a',
         createdAt: DateTime(2026, 3, 3, 0, 5),
-        charCount: 120,
+        wordCount: 120,
       ),
       DiaryCalendarMarker(
         diaryId: 'b',
         createdAt: DateTime(2026, 3, 3, 23, 50),
-        charCount: 30,
+        wordCount: 30,
       ),
       DiaryCalendarMarker(diaryId: 'c', createdAt: DateTime(2026, 3, 4, 9)),
     ]);
 
     final third = summaries[DateTime(2026, 3, 3)]!;
     expect(third.entryCount, 2);
-    expect(third.charCount, 150);
+    expect(third.wordCount, 150);
     expect(third.diaryIds, <String>['a', 'b']);
     expect(summaries[DateTime(2026, 3, 4)]!.entryCount, 1);
   });
@@ -41,7 +41,7 @@ void main() {
         diaryId: 'capsule',
         createdAt: day,
         moodEmoji: '😭',
-        charCount: 999,
+        wordCount: 999,
         cover: '/secret.jpg',
         capsuleUnlockAt: day,
         tagColors: const <int>[0xFFFF0000],
@@ -50,7 +50,7 @@ void main() {
 
     expect(summary.hasLockedCapsule, isTrue);
     expect(summary.hasEntries, isFalse);
-    expect(summary.charCount, 0);
+    expect(summary.wordCount, 0);
     expect(summary.moods, isEmpty);
     expect(summary.explicitCover, isNull);
     expect(summary.tagColors, isEmpty);
@@ -129,7 +129,7 @@ void main() {
           DiaryCalendarMarker(
             diaryId: 'd$index',
             createdAt: DateTime(2026, 3, 8, 8 + index),
-            charCount: index == 0 ? chars : 0,
+            wordCount: index == 0 ? chars : 0,
           ),
       ])[DateTime(2026, 3, 8)]!;
     }

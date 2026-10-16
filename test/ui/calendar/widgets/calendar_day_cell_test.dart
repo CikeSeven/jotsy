@@ -25,7 +25,7 @@ void main() {
       diaryId: 'd$hour',
       createdAt: DateTime(2026, 3, 12, hour),
       moodEmoji: mood,
-      charCount: chars,
+      wordCount: chars,
     );
   }
 

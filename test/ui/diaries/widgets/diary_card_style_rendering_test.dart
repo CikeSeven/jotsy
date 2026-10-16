@@ -384,7 +384,8 @@ void main() {
         tester,
         diaries: <DiaryWithTags>[
           _diary(
-            text: '一二三四五',
+            // 新口径：汉字与全角标点各 1 字、英文按词，共 6 字（字符数是 14）。
+            text: '一二三，Hello world',
             images: const <String>['/a.png', '/b.png'],
             metadata:
                 '{"context":{"location":"西湖","energyLevel":3,"moodEmoji":"😊"}}',
@@ -401,7 +402,7 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       expect(find.text('西湖'), findsOneWidget);
-      expect(find.text('5 字'), findsOneWidget);
+      expect(find.text('6 字'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
       expect(_icon(FontAwesomeIcons.locationDot), findsOneWidget);
     });

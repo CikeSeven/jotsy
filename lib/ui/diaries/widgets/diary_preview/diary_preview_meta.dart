@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -8,9 +9,10 @@ import '../../../widgets/qweather_icon.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import '../energy_battery_indicator.dart';
 import 'diary_preview_chips.dart';
+import 'diary_word_count_sheet.dart';
 
-/// 预览页信息栏：发表时间一行，地点与天气一行，心情、精力与标签胶囊折行
-/// 排列。
+/// 预览页信息栏：发表时间与字数一行，地点与天气一行，心情、精力与标签胶囊
+/// 折行排列。
 class DiaryPreviewMeta extends StatelessWidget {
   const DiaryPreviewMeta({
     super.key,
@@ -86,14 +88,27 @@ class DiaryPreviewMeta extends StatelessWidget {
         ),
     ];
 
+    final timeItem = DiaryPreviewInlineMeta(
+      icon: FontAwesomeIcons.clock,
+      label: '${l10n.autoT0117} $relativeCreated',
+      color: colorScheme.onSurfaceVariant,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        DiaryPreviewInlineMeta(
-          icon: FontAwesomeIcons.clock,
-          label: '${l10n.autoT0117} $relativeCreated',
-          color: colorScheme.onSurfaceVariant,
-        ),
+        if (viewData.textStats.words > 0)
+          Wrap(
+            spacing: 12,
+            runSpacing: 6,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              timeItem,
+              DiaryPreviewWordCountMeta(viewData: viewData),
+            ],
+          )
+        else
+          timeItem,
         if (locationWeatherItems.isNotEmpty) ...<Widget>[
           const SizedBox(height: 6),
           SingleChildScrollView(
@@ -175,6 +190,42 @@ class DiaryPreviewInlineMeta extends StatelessWidget {
           style: textStyle,
         ),
       ],
+    );
+  }
+}
+
+/// 信息栏里的字数：“1,234 字 · 约 4 分钟”，点按打开字数统计明细。
+class DiaryPreviewWordCountMeta extends StatelessWidget {
+  const DiaryPreviewWordCountMeta({super.key, required this.viewData});
+
+  final DiaryPreviewViewData viewData;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final stats = viewData.textStats;
+    final words = l10n.diaryPreviewWordCount(
+      stats.words,
+      NumberFormat.decimalPattern(l10n.localeName).format(stats.words),
+    );
+    final label =
+        '$words · ${l10n.diaryPreviewReadingTime(stats.readingMinutes)}';
+    return Semantics(
+      button: true,
+      hint: l10n.diaryWordCountOpen,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        onTap: () => showDiaryWordCountSheet(
+          context,
+          stats: stats,
+          media: viewData.media,
+        ),
+        child: DiaryPreviewInlineMeta(
+          icon: FontAwesomeIcons.penNib,
+          label: label,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 }

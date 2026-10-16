@@ -185,14 +185,15 @@ class ExploreDiaryOverview {
 ///
 /// 用于日历网格渲染与月度概览：只带日期格各种样式要画的标量字段（心情、
 /// 字数、显式封面、天气、标签色与 id、胶囊解封时间），不带富文本正文，避免把
-/// 完整日记内容加载到月视图造成额外开销。正文首图按需另行查询
+/// 完整日记内容加载到月视图造成额外开销。字数由查询读出的纯文本在映射时
+/// 算好（纯文本不保留在打点里）。正文首图按需另行查询
 /// （见 `watchDiaryImageCandidatesInRange`）。
 class DiaryCalendarMarker {
   const DiaryCalendarMarker({
     required this.diaryId,
     required this.createdAt,
     this.moodEmoji,
-    this.charCount = 0,
+    this.wordCount = 0,
     this.cover,
     this.weather,
     this.weatherIconCode,
@@ -205,8 +206,8 @@ class DiaryCalendarMarker {
   final DateTime createdAt;
   final String? moodEmoji;
 
-  /// 纯文本字数（`content_text` 去首尾空白后的长度）。
-  final int charCount;
+  /// 正文字数（口径见 `TextStats`）。
+  final int wordCount;
 
   /// 显式封面（发布页选定）；未设置时为 null，正文首图不在此字段。
   final String? cover;

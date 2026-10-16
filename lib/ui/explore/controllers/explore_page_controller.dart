@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import 'explore_content_extractor.dart';
 import '../models/explore_view_data.dart';
+import '../../../utils/text_stats.dart';
 
 /// 探索页控制器。
 ///
@@ -64,13 +65,22 @@ class ExplorePageController {
     required DateTime now,
   }) {
     final monthStart = DateTime(now.year, now.month);
-    final monthChars = diaries
+    final monthWords = diaries
         .where(
           (item) => item.createdAt.isAfter(
             monthStart.subtract(const Duration(seconds: 1)),
           ),
         )
-        .fold<int>(0, (sum, item) => sum + item.contentText.trim().length);
+        .fold<int>(
+          0,
+          (sum, item) =>
+              sum +
+              DiaryWordCounts.of(
+                diaryId: item.diaryId,
+                updatedAt: item.updatedAt,
+                text: item.contentText,
+              ),
+        );
 
     final daySet = diaries
         .map((item) => DateUtils.dateOnly(item.createdAt.toLocal()))
@@ -85,7 +95,7 @@ class ExplorePageController {
     return ExploreStats(
       totalRecords: diaries.length,
       streakDays: streak,
-      currentMonthChars: monthChars,
+      currentMonthWords: monthWords,
     );
   }
 

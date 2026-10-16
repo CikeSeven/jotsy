@@ -1019,7 +1019,7 @@
   "@autoT0067": {
     "description": "Auto-generated metadata for autoT0067."
   },
-  "autoT0068": "This month chars",
+  "autoT0068": "Words this month",
   "@autoT0068": {
     "description": "Auto-generated metadata for autoT0068."
   },
@@ -2980,7 +2980,7 @@
   "@calendarHeatBasisEntries": {
     "description": "Heatmap option: shade days by the number of entries."
   },
-  "calendarHeatBasisWords": "By length",
+  "calendarHeatBasisWords": "By words",
   "@calendarHeatBasisWords": {
     "description": "Heatmap option: shade days by how much text was written."
   },
@@ -3060,7 +3060,7 @@
   "@calendarShowMonthSummary": {
     "description": "Switch that shows the monthly summary under the calendar grid."
   },
-  "calendarShowMonthSummaryDescription": "Entries, days written, length, top mood and longest streak for the month.",
+  "calendarShowMonthSummaryDescription": "Entries, days written, words, top mood and longest streak for the month.",
   "@calendarShowMonthSummaryDescription": {
     "description": "Explains what the monthly summary shows."
   },
@@ -3094,9 +3094,9 @@
       }
     }
   },
-  "calendarSummaryChars": "{count} characters",
-  "@calendarSummaryChars": {
-    "description": "Summary tooltip: total characters written in the month, year or selected range (formatted number).",
+  "calendarSummaryWords": "{count} words",
+  "@calendarSummaryWords": {
+    "description": "Summary tooltip: total words written in the month, year or selected range (formatted number).",
     "placeholders": {
       "count": {
         "type": "String"
@@ -3159,14 +3159,14 @@
       }
     }
   },
-  "calendarDayStats": "{entries, plural, =1{1 entry} other{{entries} entries}} · {chars} chars",
+  "calendarDayStats": "{entries, plural, =1{1 entry} other{{entries} entries}} · {words} words",
   "@calendarDayStats": {
-    "description": "Selected day stats: number of entries and characters (formatted number).",
+    "description": "Selected day stats: number of entries and words (formatted number).",
     "placeholders": {
       "entries": {
         "type": "int"
       },
-      "chars": {
+      "words": {
         "type": "String"
       }
     }
@@ -3183,7 +3183,7 @@
   "@calendarYearBasisEntries": {
     "description": "Year view coloring option: shade each day by its number of entries."
   },
-  "calendarYearBasisWords": "Length",
+  "calendarYearBasisWords": "Words",
   "@calendarYearBasisWords": {
     "description": "Year view coloring option: shade each day by how much was written."
   },
@@ -3994,9 +3994,9 @@
       }
     }
   },
-  "diaryCardCharCount": "{count} chars",
-  "@diaryCardCharCount": {
-    "description": "Diary card footer: character count of the entry (formatted number).",
+  "diaryCardWordCount": "{count} words",
+  "@diaryCardWordCount": {
+    "description": "Diary card footer: word count of the entry (each Chinese character counts as one word; formatted number).",
     "placeholders": {
       "count": {
         "type": "String"
@@ -4607,9 +4607,9 @@
   "@diaryCardStyleShowEnergy": {
     "description": "Diary card style settings: shows the energy level in the footer."
   },
-  "diaryCardStyleShowWordCount": "Character count",
+  "diaryCardStyleShowWordCount": "Word count",
   "@diaryCardStyleShowWordCount": {
-    "description": "Diary card style settings: shows the character count in the footer."
+    "description": "Diary card style settings: shows the word count in the footer."
   },
   "diaryCardStyleShowMedia": "Photo and attachment badges",
   "@diaryCardStyleShowMedia": {
@@ -5017,5 +5017,87 @@
         "type": "String"
       }
     }
+  },
+  "diaryPreviewWordCount": "{count, plural, =1{{formatted} word} other{{formatted} words}}",
+  "@diaryPreviewWordCount": {
+    "description": "Preview page meta: word count of the entry; count selects the plural, formatted is the formatted number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "formatted": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviewReadingTime": "{minutes, plural, =1{1 min read} other{{minutes} min read}}",
+  "@diaryPreviewReadingTime": {
+    "description": "Preview page meta: estimated reading time in minutes.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryWordCountOpen": "Show word count details",
+  "@diaryWordCountOpen": {
+    "description": "Screen reader hint for the word count in the preview meta line."
+  },
+  "diaryWordCountTitle": "Word count",
+  "@diaryWordCountTitle": {
+    "description": "Title of the word count detail sheet."
+  },
+  "diaryWordCountUnit": "{count, plural, =1{word} other{words}}",
+  "@diaryWordCountUnit": {
+    "description": "Unit shown after the big word count number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryWordCountCjk": "Chinese characters",
+  "@diaryWordCountCjk": {
+    "description": "Word count sheet row: Chinese characters, including full-width punctuation."
+  },
+  "diaryWordCountLatin": "Non-Chinese words",
+  "@diaryWordCountLatin": {
+    "description": "Word count sheet row: words in other scripts and numbers."
+  },
+  "diaryWordCountCharacters": "Characters (no spaces)",
+  "@diaryWordCountCharacters": {
+    "description": "Word count sheet row: characters without spaces."
+  },
+  "diaryWordCountCharactersWithSpaces": "Characters (with spaces)",
+  "@diaryWordCountCharactersWithSpaces": {
+    "description": "Word count sheet row: characters including spaces."
+  },
+  "diaryWordCountParagraphs": "Paragraphs",
+  "@diaryWordCountParagraphs": {
+    "description": "Word count sheet row: paragraphs with text."
+  },
+  "diaryWordCountImages": "Photos",
+  "@diaryWordCountImages": {
+    "description": "Word count sheet row: number of photos in the entry."
+  },
+  "diaryWordCountRecordings": "Recordings",
+  "@diaryWordCountRecordings": {
+    "description": "Word count sheet row: number of voice recordings."
+  },
+  "diaryWordCountVideos": "Videos",
+  "@diaryWordCountVideos": {
+    "description": "Word count sheet row: number of videos."
+  },
+  "diaryWordCountAttachments": "Attachments",
+  "@diaryWordCountAttachments": {
+    "description": "Word count sheet row: number of file attachments."
+  },
+  "diaryWordCountReading": "Reading time",
+  "@diaryWordCountReading": {
+    "description": "Word count sheet row: estimated reading time."
+  },
+  "diaryWordCountRule": "Each Chinese character or full-width punctuation mark counts as one word, other text counts by words, and spaces and line breaks are not counted.",
+  "@diaryWordCountRule": {
+    "description": "Footnote of the word count sheet explaining the counting rule."
   }
 }

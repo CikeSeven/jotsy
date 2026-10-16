@@ -35,7 +35,7 @@ void main() {
       DiaryCalendarMarker(
         diaryId: id,
         createdAt: DateTime(now.year, now.month, day, 9),
-        charCount: chars,
+        wordCount: chars,
       );
   final markers = <DiaryCalendarMarker>[
     entry('a', 5),

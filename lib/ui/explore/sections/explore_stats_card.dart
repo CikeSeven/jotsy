@@ -41,7 +41,7 @@ class ExploreStatsCard extends StatelessWidget {
               child: ExploreStatTile(
                 icon: FontAwesomeIcons.penNib,
                 label: l10n.autoT0068,
-                value: stats.currentMonthChars,
+                value: stats.currentMonthWords,
               ),
             ),
           ],

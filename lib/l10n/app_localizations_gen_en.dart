@@ -763,7 +763,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0067 => 'Streak';
 
   @override
-  String get autoT0068 => 'This month chars';
+  String get autoT0068 => 'Words this month';
 
   @override
   String get autoT0069 => 'Tag cloud';
@@ -2257,7 +2257,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarHeatBasisEntries => 'By entries';
 
   @override
-  String get calendarHeatBasisWords => 'By length';
+  String get calendarHeatBasisWords => 'By words';
 
   @override
   String get calendarOptionsBadges => 'Badges';
@@ -2319,7 +2319,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarShowMonthSummaryDescription =>
-      'Entries, days written, length, top mood and longest streak for the month.';
+      'Entries, days written, words, top mood and longest streak for the month.';
 
   @override
   String calendarSummaryEntries(int count) {
@@ -2349,8 +2349,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String calendarSummaryChars(String count) {
-    return '$count characters';
+  String calendarSummaryWords(String count) {
+    return '$count words';
   }
 
   @override
@@ -2407,14 +2407,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String calendarDayStats(int entries, String chars) {
+  String calendarDayStats(int entries, String words) {
     String _temp0 = intl.Intl.pluralLogic(
       entries,
       locale: localeName,
       other: '$entries entries',
       one: '1 entry',
     );
-    return '$_temp0 · $chars chars';
+    return '$_temp0 · $words words';
   }
 
   @override
@@ -2427,7 +2427,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarYearBasisEntries => 'Entries';
 
   @override
-  String get calendarYearBasisWords => 'Length';
+  String get calendarYearBasisWords => 'Words';
 
   @override
   String get calendarYearLegendLess => 'Less';
@@ -3091,8 +3091,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryCardCharCount(String count) {
-    return '$count chars';
+  String diaryCardWordCount(String count) {
+    return '$count words';
   }
 
   @override
@@ -3560,7 +3560,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleShowEnergy => 'Energy';
 
   @override
-  String get diaryCardStyleShowWordCount => 'Character count';
+  String get diaryCardStyleShowWordCount => 'Word count';
 
   @override
   String get diaryCardStyleShowMedia => 'Photo and attachment badges';
@@ -3875,4 +3875,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String diaryCardStyleValuePercent(String value) {
     return '$value%';
   }
+
+  @override
+  String diaryPreviewWordCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$formatted words',
+      one: '$formatted word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryPreviewReadingTime(int minutes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      minutes,
+      locale: localeName,
+      other: '$minutes min read',
+      one: '1 min read',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryWordCountOpen => 'Show word count details';
+
+  @override
+  String get diaryWordCountTitle => 'Word count';
+
+  @override
+  String diaryWordCountUnit(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'words',
+      one: 'word',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryWordCountCjk => 'Chinese characters';
+
+  @override
+  String get diaryWordCountLatin => 'Non-Chinese words';
+
+  @override
+  String get diaryWordCountCharacters => 'Characters (no spaces)';
+
+  @override
+  String get diaryWordCountCharactersWithSpaces => 'Characters (with spaces)';
+
+  @override
+  String get diaryWordCountParagraphs => 'Paragraphs';
+
+  @override
+  String get diaryWordCountImages => 'Photos';
+
+  @override
+  String get diaryWordCountRecordings => 'Recordings';
+
+  @override
+  String get diaryWordCountVideos => 'Videos';
+
+  @override
+  String get diaryWordCountAttachments => 'Attachments';
+
+  @override
+  String get diaryWordCountReading => 'Reading time';
+
+  @override
+  String get diaryWordCountRule =>
+      'Each Chinese character or full-width punctuation mark counts as one word, other text counts by words, and spaces and line breaks are not counted.';
 }

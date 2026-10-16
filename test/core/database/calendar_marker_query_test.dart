@@ -63,7 +63,11 @@ void main() {
     final blue = await db.createTag(name: 'blue', color: 0xFF0000FF);
     await tag(rowId, blue);
     await tag(rowId, red);
-    await insert('plain', createdAt: DateTime(2026, 3, 6, 9));
+    await insert(
+      'plain',
+      createdAt: DateTime(2026, 3, 6, 9),
+      contentText: '今天很好，去了海边。',
+    );
     await insert('deleted', createdAt: DateTime(2026, 3, 7), deleted: true);
     await insert('next-month', createdAt: DateTime(2026, 4, 1));
 
@@ -74,7 +78,8 @@ void main() {
     expect(markers.map((m) => m.diaryId), <String>['a', 'plain']);
     final first = markers.first;
     expect(first.moodEmoji, '😊');
-    expect(first.charCount, 'hello world'.length);
+    // 字数按 TextStats 口径：英文按词计。
+    expect(first.wordCount, 2);
     expect(first.cover, '/covers/a.jpg');
     expect(first.weather, '晴');
     expect(first.weatherIconCode, '100');
@@ -82,6 +87,8 @@ void main() {
     expect(first.tagColors, <int>[0xFFFF0000, 0xFF0000FF]);
     expect(first.tagIds, <int>[red, blue]..sort());
     final plain = markers.last;
+    // 汉字与全角标点各算 1 字。
+    expect(plain.wordCount, 10);
     expect(plain.moodEmoji, isNull);
     expect(plain.cover, isNull);
     expect(plain.tagColors, isEmpty);

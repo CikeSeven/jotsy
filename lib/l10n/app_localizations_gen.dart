@@ -1415,7 +1415,7 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for autoT0068.
   ///
   /// In en, this message translates to:
-  /// **'This month chars'**
+  /// **'Words this month'**
   String get autoT0068;
 
   /// Auto-generated metadata for autoT0069.
@@ -3899,7 +3899,7 @@ abstract class AppLocalizations {
   /// Heatmap option: shade days by how much text was written.
   ///
   /// In en, this message translates to:
-  /// **'By length'**
+  /// **'By words'**
   String get calendarHeatBasisWords;
 
   /// Section header for the small badges drawn on day cells.
@@ -4019,7 +4019,7 @@ abstract class AppLocalizations {
   /// Explains what the monthly summary shows.
   ///
   /// In en, this message translates to:
-  /// **'Entries, days written, length, top mood and longest streak for the month.'**
+  /// **'Entries, days written, words, top mood and longest streak for the month.'**
   String get calendarShowMonthSummaryDescription;
 
   /// Summary tooltip: number of entries in the month, year or selected range.
@@ -4040,11 +4040,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Wrote on 1 day} other{Wrote on {count} days}}'**
   String calendarSummaryDaysNoTotal(int count);
 
-  /// Summary tooltip: total characters written in the month, year or selected range (formatted number).
+  /// Summary tooltip: total words written in the month, year or selected range (formatted number).
   ///
   /// In en, this message translates to:
-  /// **'{count} characters'**
-  String calendarSummaryChars(String count);
+  /// **'{count} words'**
+  String calendarSummaryWords(String count);
 
   /// Monthly summary tooltip: the mood picked most often in the month.
   ///
@@ -4100,11 +4100,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{in 1 day} other{in {count} days}}'**
   String calendarRelativeDaysLater(int count);
 
-  /// Selected day stats: number of entries and characters (formatted number).
+  /// Selected day stats: number of entries and words (formatted number).
   ///
   /// In en, this message translates to:
-  /// **'{entries, plural, =1{1 entry} other{{entries} entries}} · {chars} chars'**
-  String calendarDayStats(int entries, String chars);
+  /// **'{entries, plural, =1{1 entry} other{{entries} entries}} · {words} words'**
+  String calendarDayStats(int entries, String words);
 
   /// Tooltip of the calendar month title, which zooms out to the year view.
   ///
@@ -4127,7 +4127,7 @@ abstract class AppLocalizations {
   /// Year view coloring option: shade each day by how much was written.
   ///
   /// In en, this message translates to:
-  /// **'Length'**
+  /// **'Words'**
   String get calendarYearBasisWords;
 
   /// Year view legend label at the light end of the scale.
@@ -5066,11 +5066,11 @@ abstract class AppLocalizations {
   /// **'Written {time}'**
   String diaryCardFooterCreated(String time);
 
-  /// Diary card footer: character count of the entry (formatted number).
+  /// Diary card footer: word count of the entry (each Chinese character counts as one word; formatted number).
   ///
   /// In en, this message translates to:
-  /// **'{count} chars'**
-  String diaryCardCharCount(String count);
+  /// **'{count} words'**
+  String diaryCardWordCount(String count);
 
   /// Screen-reader label of the diary card media badge: number of photos in the entry.
   ///
@@ -5888,10 +5888,10 @@ abstract class AppLocalizations {
   /// **'Energy'**
   String get diaryCardStyleShowEnergy;
 
-  /// Diary card style settings: shows the character count in the footer.
+  /// Diary card style settings: shows the word count in the footer.
   ///
   /// In en, this message translates to:
-  /// **'Character count'**
+  /// **'Word count'**
   String get diaryCardStyleShowWordCount;
 
   /// Diary card style settings: shows photo count and recording, video and attachment badges in the footer.
@@ -6481,6 +6481,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value}%'**
   String diaryCardStyleValuePercent(String value);
+
+  /// Preview page meta: word count of the entry; count selects the plural, formatted is the formatted number.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{formatted} word} other{{formatted} words}}'**
+  String diaryPreviewWordCount(int count, String formatted);
+
+  /// Preview page meta: estimated reading time in minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes, plural, =1{1 min read} other{{minutes} min read}}'**
+  String diaryPreviewReadingTime(int minutes);
+
+  /// Screen reader hint for the word count in the preview meta line.
+  ///
+  /// In en, this message translates to:
+  /// **'Show word count details'**
+  String get diaryWordCountOpen;
+
+  /// Title of the word count detail sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Word count'**
+  String get diaryWordCountTitle;
+
+  /// Unit shown after the big word count number.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{word} other{words}}'**
+  String diaryWordCountUnit(int count);
+
+  /// Word count sheet row: Chinese characters, including full-width punctuation.
+  ///
+  /// In en, this message translates to:
+  /// **'Chinese characters'**
+  String get diaryWordCountCjk;
+
+  /// Word count sheet row: words in other scripts and numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Non-Chinese words'**
+  String get diaryWordCountLatin;
+
+  /// Word count sheet row: characters without spaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters (no spaces)'**
+  String get diaryWordCountCharacters;
+
+  /// Word count sheet row: characters including spaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters (with spaces)'**
+  String get diaryWordCountCharactersWithSpaces;
+
+  /// Word count sheet row: paragraphs with text.
+  ///
+  /// In en, this message translates to:
+  /// **'Paragraphs'**
+  String get diaryWordCountParagraphs;
+
+  /// Word count sheet row: number of photos in the entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get diaryWordCountImages;
+
+  /// Word count sheet row: number of voice recordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings'**
+  String get diaryWordCountRecordings;
+
+  /// Word count sheet row: number of videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get diaryWordCountVideos;
+
+  /// Word count sheet row: number of file attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments'**
+  String get diaryWordCountAttachments;
+
+  /// Word count sheet row: estimated reading time.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading time'**
+  String get diaryWordCountReading;
+
+  /// Footnote of the word count sheet explaining the counting rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Each Chinese character or full-width punctuation mark counts as one word, other text counts by words, and spaces and line breaks are not counted.'**
+  String get diaryWordCountRule;
 }
 
 class _AppLocalizationsDelegate

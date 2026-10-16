@@ -3377,6 +3377,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleShowTitle => 'Show title';
 
   @override
+  String get diaryCardStyleShowUntitled =>
+      'Show “Untitled” when there is no title';
+
+  @override
+  String get diaryCardStyleShowUntitledSubtitle =>
+      'When off, the title line is left out';
+
+  @override
   String get diaryCardStyleShowPreview => 'Show excerpt';
 
   @override
@@ -3750,6 +3758,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryCardStyleSampleBody3 =>
       'Reworked this week\'s to-dos and jotted down a few ideas. Early night tonight.';
+
+  @override
+  String get diaryCardStyleSampleBody4 =>
+      'Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.';
 
   @override
   String get diaryCardStyleSampleCapsuleTitle => 'A letter to myself next year';

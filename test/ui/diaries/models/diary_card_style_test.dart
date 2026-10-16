@@ -61,6 +61,7 @@ const _everyField = DiaryCardStyle(
       DiaryCardBlock.tags,
     ],
     showTitle: false,
+    showUntitled: false,
     showPreview: false,
     tagStyle: DiaryCardTagStyle.dot,
     pinnedBadge: DiaryCardPinnedBadge.hidden,
@@ -139,6 +140,7 @@ void main() {
       expect(style.typography.bodyColor.isThemed, isTrue);
       expect(style.content.blocks, DiaryCardBlock.values);
       expect(style.content.showTitle, isTrue);
+      expect(style.content.showUntitled, isTrue);
       expect(style.content.showPreview, isTrue);
       expect(style.content.tagStyle, DiaryCardTagStyle.chip);
       expect(style.content.pinnedBadge, DiaryCardPinnedBadge.standard);

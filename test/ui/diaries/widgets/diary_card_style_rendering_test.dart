@@ -315,6 +315,68 @@ void main() {
       expect(_icon(FontAwesomeIcons.solidCircleCheck), findsOneWidget);
     });
 
+    testWidgets('untitled entries show the placeholder by default', (
+      tester,
+    ) async {
+      await _pump(tester, diaries: <DiaryWithTags>[_diary(title: '  ')]);
+      expect(find.text('无标题'), findsOneWidget);
+    });
+
+    testWidgets('without the placeholder only untitled entries lose the line', (
+      tester,
+    ) async {
+      final untitled = _diary(title: '');
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[untitled, _diary()],
+        style: DiaryCardStyle.defaults.copyWith(
+          content: const DiaryCardContentStyle(showUntitled: false),
+        ),
+        selected: <String>{untitled.diary.diaryId},
+        selectionMode: true,
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.text('无标题'), findsNothing);
+      expect(find.text('卡片标题'), findsOneWidget);
+      // 没有标题行的那篇把选择标记挂到日期行，且只有一个（不再叠加浮层）。
+      final mark = tester.getCenter(_icon(FontAwesomeIcons.solidCircleCheck));
+      final date = tester.getRect(find.text('3月2日 · 周一').first);
+      expect((mark.dy - date.center.dy).abs(), lessThan(6));
+    });
+
+    testWidgets(
+      'an untitled entry without a date line keeps the overlay mark',
+      (tester) async {
+        final diary = _diary(title: '', metadata: '{}');
+        await _pump(
+          tester,
+          diaries: <DiaryWithTags>[diary],
+          style: DiaryCardStyle.defaults.copyWith(
+            content: const DiaryCardContentStyle(showUntitled: false),
+            meta: const DiaryCardMetaStyle(showDate: false),
+          ),
+          selected: <String>{diary.diary.diaryId},
+          selectionMode: true,
+        );
+        expect(tester.takeException(), isNull);
+        expect(find.text('无标题'), findsNothing);
+        expect(_icon(FontAwesomeIcons.solidCircleCheck), findsOneWidget);
+      },
+    );
+
+    testWidgets('locked capsules keep the untitled placeholder', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        diaries: <DiaryWithTags>[_diary(title: '', locked: true)],
+        style: DiaryCardStyle.defaults.copyWith(
+          content: const DiaryCardContentStyle(showUntitled: false),
+        ),
+      );
+      expect(find.text('无标题'), findsOneWidget);
+    });
+
     testWidgets('footer extras show location, word count and media', (
       tester,
     ) async {

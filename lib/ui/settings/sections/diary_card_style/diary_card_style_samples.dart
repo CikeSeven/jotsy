@@ -7,7 +7,8 @@ import '../../../diaries/widgets/diary_card/diary_card_cover.dart';
 /// 设置页预览用的示例日记（文案来自 ARB，封面为内置示例图）。
 ///
 /// 覆盖样式能影响到的各种情况：置顶 + 封面 + 地点精力、多图 + 录音（拼贴与
-/// 媒体角标）、无封面的长标题（占位块）与未解封的时间胶囊。id 以
+/// 媒体角标）、无封面的长标题（占位块）、没写标题的随手记（“无标题”占位）
+/// 与未解封的时间胶囊。id 以
 /// `__card_style_sample_` 开头，不会与真实日记冲突；时间相对 [now] 生成，
 /// 预览里的相对时间读起来自然。
 List<DiaryWithTags> buildDiaryCardStyleSamples(
@@ -131,6 +132,20 @@ List<DiaryWithTags> buildDiaryCardStyleSamples(
     DiaryWithTags(
       diary: diary(
         index: 4,
+        title: '',
+        text: l10n.diaryCardStyleSampleBody4,
+        createdAt: now.subtract(const Duration(days: 4, hours: 2)),
+        extraEmbeds: const <Object>[],
+        context: const <String, Object>{
+          'moodEmoji': '😄',
+          'weatherIconCode': '100',
+        },
+      ),
+      tags: <Tag>[life],
+    ),
+    DiaryWithTags(
+      diary: diary(
+        index: 5,
         title: l10n.diaryCardStyleSampleCapsuleTitle,
         text: l10n.diaryCardStyleSampleBody3,
         createdAt: now.subtract(const Duration(days: 5)),

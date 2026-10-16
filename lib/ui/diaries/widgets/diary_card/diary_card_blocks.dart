@@ -16,8 +16,9 @@ import 'diary_card_selection_mark.dart';
 /// 底栏前用略大的 `footerGap`；没有内容的区块（隐藏、没有标签或摘要为空）
 /// 连同它前面的间距一起省略。默认样式下产出的部件结构与改版前逐项相同。
 ///
-/// 选择标记挂在标题行末尾；标题隐藏时挂到眉线行，两者都没有时由卡片以
-/// 浮层显示（见 [selectionMarkHost]）。
+/// 选择标记挂在标题行末尾；这篇不显示标题行时（样式隐藏标题，或没写标题
+/// 且关闭了“无标题”占位）挂到眉线行，两者都没有时由卡片以浮层显示（见
+/// [selectionMarkHost]）。
 class DiaryCardBlocks extends StatelessWidget {
   const DiaryCardBlocks({
     super.key,
@@ -35,7 +36,9 @@ class DiaryCardBlocks extends StatelessWidget {
 
   final DiaryWithTags diary;
   final DiaryCardViewData viewData;
-  final String title;
+
+  /// 标题行文字；null 表示这篇不显示标题行（见 [titleLine]）。
+  final String? title;
   final DiaryCardResolvedStyle resolved;
   final DiaryCardAppearance appearance;
   final bool selected;
@@ -46,12 +49,28 @@ class DiaryCardBlocks extends StatelessWidget {
   final DiaryCardMetaPosition metaPosition;
   final Duration selectionMarkDuration;
 
-  /// 选择标记所在的区块；null 表示两者都不显示，由卡片以浮层显示。
-  static DiaryCardBlock? selectionMarkHost(
-    DiaryCardStyle style, {
+  /// 标题行要显示的文字：样式隐藏标题时为 null；日记没写标题时按
+  /// “无标题”占位开关取 [untitled] 或 null（不显示标题行）。
+  static String? titleLine(
+    DiaryCardContentStyle content, {
+    required String title,
+    required String untitled,
+  }) {
+    if (!content.showTitle) {
+      return null;
+    }
+    if (title.trim().isNotEmpty) {
+      return title;
+    }
+    return content.showUntitled ? untitled : null;
+  }
+
+  /// 选择标记所在的区块；null 表示标题行与眉线都不显示，由卡片以浮层显示。
+  static DiaryCardBlock? selectionMarkHost({
+    required bool hasTitle,
     required bool hasEyebrow,
   }) {
-    if (style.content.showTitle) {
+    if (hasTitle) {
       return DiaryCardBlock.title;
     }
     return hasEyebrow ? DiaryCardBlock.eyebrow : null;
@@ -82,7 +101,11 @@ class DiaryCardBlocks extends StatelessWidget {
       hasIndicators: hasIndicators,
       metaPosition: metaPosition,
     );
-    final markHost = selectionMarkHost(style, hasEyebrow: hasEyebrow);
+    final title = this.title;
+    final markHost = selectionMarkHost(
+      hasTitle: title != null,
+      hasEyebrow: hasEyebrow,
+    );
     final lines = DiaryCardLines(
       diary: diary,
       viewData: viewData,
@@ -111,7 +134,7 @@ class DiaryCardBlocks extends StatelessWidget {
                   mark: markHost == DiaryCardBlock.eyebrow ? mark : null,
                 )
               : null,
-        DiaryCardBlock.title => style.content.showTitle ? _title(mark) : null,
+        DiaryCardBlock.title => title == null ? null : _title(title, mark),
         DiaryCardBlock.tags => _tags(),
         DiaryCardBlock.preview => _preview(),
         DiaryCardBlock.footer => lines.footer(
@@ -164,7 +187,7 @@ class DiaryCardBlocks extends StatelessWidget {
     );
   }
 
-  Widget _title(Widget mark) {
+  Widget _title(String title, Widget mark) {
     final m = resolved.modeStyle;
     return Row(
       crossAxisAlignment: resolved.compact

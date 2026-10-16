@@ -141,6 +141,42 @@ void main() {
     expect(find.text(l10n.diaryCardStyleSampleBody1), findsNothing);
   });
 
+  testWidgets('the untitled switch updates the preview and follows the title', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    // 预览里第 4 篇示例没写标题：滚到它，默认显示“无标题”。
+    await tester.scrollUntilVisible(
+      find.text(l10n.diaryCardStyleSampleBody4),
+      120,
+      scrollable: find
+          .ancestor(
+            of: find.byType(DiariesListSection),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.text(l10n.autoT0033), findsOneWidget);
+
+    await _openTab(tester, l10n.diaryCardStyleTabContent);
+    final untitledSwitch = find.widgetWithText(
+      SwitchListTile,
+      l10n.diaryCardStyleShowUntitled,
+    );
+    await _tapVisible(tester, untitledSwitch);
+    expect(_stored(settings).current.content.showUntitled, isFalse);
+    expect(find.text(l10n.diaryCardStyleSampleBody4), findsOneWidget);
+    expect(find.text(l10n.autoT0033), findsNothing);
+
+    // 标题整体关闭后这个开关没有意义，随之收起。
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryCardStyleShowTitle),
+    );
+    expect(_stored(settings).current.content.showTitle, isFalse);
+    expect(untitledSwitch, findsNothing);
+  });
+
   testWidgets('date choices center their radio dots beside the examples', (
     tester,
   ) async {

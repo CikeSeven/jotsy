@@ -125,6 +125,11 @@ List<DiaryWithTags> _diaries() {
       diary: diary('plain', title: '没有封面的日记，标题也很长很长很长很长很长'),
       tags: tags,
     ),
+    // 没写标题：关闭“无标题”占位时选择标记挤进眉线。
+    DiaryWithTags(
+      diary: diary('untitled', title: ''),
+      tags: tags,
+    ),
     DiaryWithTags(
       diary: diary('locked', title: '时间胶囊', locked: true, pinned: true),
       tags: tags,
@@ -139,6 +144,9 @@ void main() {
     for (final id in DiaryCardPresetId.values)
       id.name: DiaryCardPresets.styleOf(id),
     'extreme': _extreme,
+    'extreme-untitled-off': _extreme.copyWith(
+      content: _extreme.content.copyWith(showUntitled: false),
+    ),
   };
   const sizes = <(Size, double)>[(Size(360, 800), 1.0), (Size(320, 640), 1.3)];
 

@@ -4377,6 +4377,14 @@
   "@diaryCardStyleShowTitle": {
     "description": "Diary card style settings: whether to show the entry title."
   },
+  "diaryCardStyleShowUntitled": "Show “Untitled” when there is no title",
+  "@diaryCardStyleShowUntitled": {
+    "description": "Diary card style settings: whether entries without a title show the “Untitled” placeholder."
+  },
+  "diaryCardStyleShowUntitledSubtitle": "When off, the title line is left out",
+  "@diaryCardStyleShowUntitledSubtitle": {
+    "description": "Diary card style settings: explanation of the “Untitled” placeholder switch."
+  },
   "diaryCardStyleShowPreview": "Show excerpt",
   "@diaryCardStyleShowPreview": {
     "description": "Diary card style settings: whether to show the text excerpt."
@@ -4854,6 +4862,10 @@
   "diaryCardStyleSampleBody3": "Reworked this week's to-dos and jotted down a few ideas. Early night tonight.",
   "@diaryCardStyleSampleBody3": {
     "description": "Diary card style settings: text of preview sample entry 3."
+  },
+  "diaryCardStyleSampleBody4": "Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.",
+  "@diaryCardStyleSampleBody4": {
+    "description": "Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder)."
   },
   "diaryCardStyleSampleCapsuleTitle": "A letter to myself next year",
   "@diaryCardStyleSampleCapsuleTitle": {

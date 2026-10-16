@@ -88,7 +88,6 @@ class DiaryCard extends StatelessWidget {
       moodEmoji: viewData.moodEmoji,
       tags: diary.tags,
     );
-    final title = entry.title.trim().isEmpty ? l10n.autoT0033 : entry.title;
     // 封面所在的 context：点按卡片时从这里抓取已绘制的封面画面。未解封胶囊
     // 的模糊封面不参与共享元素。
     final coverAnchor = enableCoverHero ? ImageViewerHeroAnchor() : null;
@@ -100,7 +99,8 @@ class DiaryCard extends StatelessWidget {
     if (isLockedCapsule) {
       content = DiaryCardLockedContent(
         diary: diary,
-        title: title,
+        // 未解封胶囊不套用内容类选项：没写标题时始终显示“无标题”。
+        title: entry.title.trim().isEmpty ? l10n.autoT0033 : entry.title,
         previewCover: viewData.previewCover,
         capsuleState: capsuleState,
         resolved: resolved,
@@ -111,10 +111,15 @@ class DiaryCard extends StatelessWidget {
           viewData.previewCover != null &&
           resolved.modeStyle.coverPosition != DiaryCardCoverPosition.hidden;
       final metaPosition = resolved.metaPositionFor(hasCover: hasCover);
+      final titleLine = DiaryCardBlocks.titleLine(
+        style.content,
+        title: entry.title,
+        untitled: l10n.autoT0033,
+      );
       final blocks = DiaryCardBlocks(
         diary: diary,
         viewData: viewData,
-        title: title,
+        title: titleLine,
         resolved: resolved,
         appearance: appearance,
         selected: selected,
@@ -138,7 +143,7 @@ class DiaryCard extends StatelessWidget {
       );
       markOverlay =
           DiaryCardBlocks.selectionMarkHost(
-            style,
+            hasTitle: titleLine != null,
             hasEyebrow: DiaryCardBlocks.hasEyebrowContent(
               style: style,
               pinned: entry.isPinned,
@@ -177,7 +182,7 @@ class DiaryCard extends StatelessWidget {
                 height: style.surface.accentWidth,
                 child: ColoredBox(color: accentBarColor),
               ),
-            // 标题与眉线都隐藏时，选择标记以浮层贴在右上角。
+            // 标题行与眉线都不显示时，选择标记以浮层贴在右上角。
             if (markOverlay)
               PositionedDirectional(
                 top: resolved.paddingV + resolved.accentTopInset,

@@ -4377,6 +4377,14 @@
   "@diaryCardStyleShowTitle": {
     "description": "日记卡片样式设置页：是否显示日记标题。"
   },
+  "diaryCardStyleShowUntitled": "没有标题时显示“无标题”",
+  "@diaryCardStyleShowUntitled": {
+    "description": "日记卡片样式设置页：日记没写标题时是否用“无标题”占位。"
+  },
+  "diaryCardStyleShowUntitledSubtitle": "关闭后直接省略标题行",
+  "@diaryCardStyleShowUntitledSubtitle": {
+    "description": "日记卡片样式设置页：“无标题”占位开关的说明。"
+  },
   "diaryCardStyleShowPreview": "显示摘要",
   "@diaryCardStyleShowPreview": {
     "description": "日记卡片样式设置页：是否显示正文摘要。"
@@ -4854,6 +4862,10 @@
   "diaryCardStyleSampleBody3": "把这周要做的事重新排了一遍，顺手记下几个想法。晚上早点休息。",
   "@diaryCardStyleSampleBody3": {
     "description": "日记卡片样式设置页：预览示例日记 3 的正文。"
+  },
+  "diaryCardStyleSampleBody4": "下班路上看见一只橘猫趴在台阶上晒太阳，眯着眼睛的样子让人也跟着放松下来。",
+  "@diaryCardStyleSampleBody4": {
+    "description": "日记卡片样式设置页：预览示例日记 4 的正文（这篇没有标题，用来展示“无标题”占位）。"
   },
   "diaryCardStyleSampleCapsuleTitle": "写给一年后的自己",
   "@diaryCardStyleSampleCapsuleTitle": {

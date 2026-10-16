@@ -10,8 +10,9 @@ import '../../widgets/settings_option_tiles.dart';
 import '../settings_diary_card_section.dart';
 import 'diary_card_style_common.dart';
 
-/// “内容”标签页：标题/摘要显隐与行数、标签（数量沿用独立的旧设置）、置顶
-/// 标记、心情天气与底栏附加信息。
+/// “内容”标签页：标题/摘要显隐与行数、“无标题”占位、标签（数量沿用独立的
+/// 旧设置）、置顶标记、心情天气与底栏附加信息。“无标题”占位只在显示标题时
+/// 才有意义，标题关闭时随之收起。
 class DiaryCardStyleContentTab extends StatelessWidget {
   const DiaryCardStyleContentTab({super.key, required this.controller});
 
@@ -61,6 +62,14 @@ class DiaryCardStyleContentTab extends StatelessWidget {
               onChanged: (bool v) =>
                   commitContent(content.copyWith(showTitle: v)),
             ),
+            if (content.showTitle)
+              SettingsSwitchTile(
+                title: l10n.diaryCardStyleShowUntitled,
+                subtitle: l10n.diaryCardStyleShowUntitledSubtitle,
+                value: content.showUntitled,
+                onChanged: (bool v) =>
+                    commitContent(content.copyWith(showUntitled: v)),
+              ),
             SettingsSwitchTile(
               title: l10n.diaryCardStyleShowPreview,
               value: content.showPreview,

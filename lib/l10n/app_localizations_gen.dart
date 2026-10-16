@@ -5576,6 +5576,18 @@ abstract class AppLocalizations {
   /// **'Show title'**
   String get diaryCardStyleShowTitle;
 
+  /// Diary card style settings: whether entries without a title show the “Untitled” placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Show “Untitled” when there is no title'**
+  String get diaryCardStyleShowUntitled;
+
+  /// Diary card style settings: explanation of the “Untitled” placeholder switch.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, the title line is left out'**
+  String get diaryCardStyleShowUntitledSubtitle;
+
   /// Diary card style settings: whether to show the text excerpt.
   ///
   /// In en, this message translates to:
@@ -6277,6 +6289,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reworked this week\'s to-dos and jotted down a few ideas. Early night tonight.'**
   String get diaryCardStyleSampleBody3;
+
+  /// Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder).
+  ///
+  /// In en, this message translates to:
+  /// **'Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.'**
+  String get diaryCardStyleSampleBody4;
 
   /// Diary card style settings: title of the preview sample time capsule.
   ///

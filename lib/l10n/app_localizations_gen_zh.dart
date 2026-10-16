@@ -3040,6 +3040,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStyleShowTitle => '显示标题';
 
   @override
+  String get diaryCardStyleShowUntitled => '没有标题时显示“无标题”';
+
+  @override
+  String get diaryCardStyleShowUntitledSubtitle => '关闭后直接省略标题行';
+
+  @override
   String get diaryCardStyleShowPreview => '显示摘要';
 
   @override
@@ -3393,6 +3399,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryCardStyleSampleBody3 => '把这周要做的事重新排了一遍，顺手记下几个想法。晚上早点休息。';
+
+  @override
+  String get diaryCardStyleSampleBody4 =>
+      '下班路上看见一只橘猫趴在台阶上晒太阳，眯着眼睛的样子让人也跟着放松下来。';
 
   @override
   String get diaryCardStyleSampleCapsuleTitle => '写给一年后的自己';

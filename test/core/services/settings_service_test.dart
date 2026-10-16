@@ -246,4 +246,66 @@ void main() {
       },
     );
   });
+
+  group('SettingsService diary card style', () {
+    const key = 'app.settings.diary_card_style';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryCardStyleRaw, isNull);
+
+      await settings.setDiaryCardStyleRaw('  {"v":1,"current":{}}  ');
+      expect(settings.diaryCardStyleRaw, '{"v":1,"current":{}}');
+      expect(
+        (await SettingsService.create()).diaryCardStyleRaw,
+        '{"v":1,"current":{}}',
+      );
+
+      await settings.setDiaryCardStyleRaw('   ');
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.diaryCardStyleRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+
+      await settings.setDiaryCardStyleRaw('{"v":1}');
+      await settings.setDiaryCardStyleRaw(null);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 42});
+      final settings = await SettingsService.create();
+      expect(settings.diaryCardStyleRaw, isNull);
+    });
+
+    test(
+      'backups carry the style and older backups keep the local one',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryCardStyleRaw('{"v":1,"current":{"a":1}}');
+
+        final captured = BackupSettings.capture(settings);
+        expect(captured['diaryCardStyleRaw'], '{"v":1,"current":{"a":1}}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryCardStyleRaw, '{"v":1,"current":{"a":1}}');
+
+        // 手工编辑过的备份把样式写成了对象：按 JSON 重新编码后保存。
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCardStyleRaw': <String, dynamic>{'v': 1},
+        });
+        expect(settings.diaryCardStyleRaw, '{"v":1}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCardStyleRaw': null,
+        });
+        expect(settings.diaryCardStyleRaw, isNull);
+      },
+    );
+  });
 }

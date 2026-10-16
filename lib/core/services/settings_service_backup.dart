@@ -18,6 +18,7 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyDiaryToolbarCurrentTimeFormat,
       SettingsService._keyDiaryCardTagLimit,
       SettingsService._keyCalendarDisplayOptions,
+      SettingsService._keyDiaryCardStyle,
       SettingsService._keyTagOrder,
       SettingsService._keyTagFilterMemoryEnabled,
       SettingsService._keyRememberedTagFilterIds,
@@ -45,6 +46,7 @@ extension SettingsServiceBackup on SettingsService {
         _notifierRollback(diaryToolbarHiddenItemsRawNotifier),
         _notifierRollback(diaryToolbarCurrentTimeFormatRawNotifier),
         _notifierRollback(calendarDisplayOptionsRawNotifier),
+        _notifierRollback(diaryCardStyleRawNotifier),
       ],
     );
   }

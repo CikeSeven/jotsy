@@ -26,6 +26,7 @@ import '../../anniversaries/providers/anniversary_providers.dart';
 import '../../anniversaries/widgets/anniversary_linked_diary_button.dart';
 import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/models/new_diary_draft.dart';
+import '../../diaries/providers/diary_card_style_provider.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';

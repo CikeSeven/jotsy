@@ -4921,6 +4921,1404 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Make it an anniversary'**
   String get previewSetAsAnniversary;
+
+  /// Diary card eyebrow: a date followed by its weekday (custom date formats).
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · {weekday}'**
+  String diaryCardDateWithWeekday(String date, String weekday);
+
+  /// Diary card eyebrow: a date followed by the time of day (HH:mm).
+  ///
+  /// In en, this message translates to:
+  /// **'{date} {time}'**
+  String diaryCardDateWithTime(String date, String time);
+
+  /// Diary card footer: exact time of the last update.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {time}'**
+  String diaryCardFooterUpdated(String time);
+
+  /// Diary card footer: when the diary was written.
+  ///
+  /// In en, this message translates to:
+  /// **'Written {time}'**
+  String diaryCardFooterCreated(String time);
+
+  /// Diary card footer: character count of the entry (formatted number).
+  ///
+  /// In en, this message translates to:
+  /// **'{count} chars'**
+  String diaryCardCharCount(String count);
+
+  /// Screen-reader label of the diary card media badge: number of photos in the entry.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo} other{{count} photos}}'**
+  String diaryCardMediaImages(int count);
+
+  /// Screen-reader label of the diary card media badge: the entry has a voice recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Has a recording'**
+  String get diaryCardMediaAudio;
+
+  /// Screen-reader label of the diary card media badge: the entry has a video.
+  ///
+  /// In en, this message translates to:
+  /// **'Has a video'**
+  String get diaryCardMediaVideo;
+
+  /// Screen-reader label of the diary card media badge: the entry has an attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Has an attachment'**
+  String get diaryCardMediaAttachment;
+
+  /// Screen-reader label of the location on the diary card footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Location: {location}'**
+  String diaryCardLocation(String location);
+
+  /// Title of the diary card style page and its entry in Appearance settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary card style'**
+  String get diaryCardStyleTitle;
+
+  /// Subtitle of the card style entry in Appearance settings: the current style name.
+  ///
+  /// In en, this message translates to:
+  /// **'Current: {name}'**
+  String diaryCardStyleEntrySubtitle(String name);
+
+  /// Name shown when the current card style matches no preset or saved style.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get diaryCardStyleCustom;
+
+  /// Diary card style settings: message after Reset (can be undone).
+  ///
+  /// In en, this message translates to:
+  /// **'Restored the default style'**
+  String get diaryCardStyleResetDone;
+
+  /// Diary card style settings: tooltip of the button that previews the light theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Light preview'**
+  String get diaryCardStylePreviewLight;
+
+  /// Diary card style settings: tooltip of the button that previews the dark theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark preview'**
+  String get diaryCardStylePreviewDark;
+
+  /// Diary card style settings: group title for options that apply to both list and waterfall layouts.
+  ///
+  /// In en, this message translates to:
+  /// **'All layouts'**
+  String get diaryCardStyleSharedGroup;
+
+  /// Diary card style settings: group title for options that only apply to the list layout.
+  ///
+  /// In en, this message translates to:
+  /// **'List layout only'**
+  String get diaryCardStyleListGroup;
+
+  /// Diary card style settings: group title for options that only apply to the waterfall layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Waterfall layout only'**
+  String get diaryCardStyleWaterfallGroup;
+
+  /// Diary card style settings: note below the layout-only groups.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch between list and waterfall above the preview to adjust the other layout'**
+  String get diaryCardStyleModeFootnote;
+
+  /// Diary card style settings: the “Presets” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Presets'**
+  String get diaryCardStyleTabPresets;
+
+  /// Diary card style settings: the “Layout” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get diaryCardStyleTabLayout;
+
+  /// Diary card style settings: the “Cover” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get diaryCardStyleTabCover;
+
+  /// Diary card style settings: the “Content” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get diaryCardStyleTabContent;
+
+  /// Diary card style settings: the “Date” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get diaryCardStyleTabDate;
+
+  /// Diary card style settings: the “Order” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get diaryCardStyleTabOrder;
+
+  /// Diary card style settings: the “Text” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get diaryCardStyleTabText;
+
+  /// Diary card style settings: the “Color” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get diaryCardStyleTabColor;
+
+  /// Diary card style settings: the “Finish” tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get diaryCardStyleTabTexture;
+
+  /// Diary card style settings: group title of the built-in presets.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in styles'**
+  String get diaryCardStylePresetsTitle;
+
+  /// Diary card style settings: name of the “Classic” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get diaryCardStylePresetClassic;
+
+  /// Diary card style settings: one-line description of the “Classic” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'The default: a square cover on the left and a two-line excerpt'**
+  String get diaryCardStylePresetClassicDesc;
+
+  /// Diary card style settings: name of the “Compact” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get diaryCardStylePresetCompact;
+
+  /// Diary card style settings: one-line description of the “Compact” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Small covers and one-line excerpts to fit more on screen'**
+  String get diaryCardStylePresetCompactDesc;
+
+  /// Diary card style settings: name of the “Magazine” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Magazine'**
+  String get diaryCardStylePresetMagazine;
+
+  /// Diary card style settings: one-line description of the “Magazine” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-width photos, larger titles and airy lines'**
+  String get diaryCardStylePresetMagazineDesc;
+
+  /// Diary card style settings: name of the “Minimal” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get diaryCardStylePresetMinimal;
+
+  /// Diary card style settings: one-line description of the “Minimal” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Just the words: no covers, borders or shadows'**
+  String get diaryCardStylePresetMinimalDesc;
+
+  /// Diary card style settings: name of the “Gallery” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get diaryCardStylePresetGallery;
+
+  /// Diary card style settings: one-line description of the “Gallery” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos first, with collages and cover backgrounds'**
+  String get diaryCardStylePresetGalleryDesc;
+
+  /// Diary card style settings: name of the “Sticky note” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticky note'**
+  String get diaryCardStylePresetSticky;
+
+  /// Diary card style settings: one-line description of the “Sticky note” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm paper, a colored top strip and small corners'**
+  String get diaryCardStylePresetStickyDesc;
+
+  /// Diary card style settings: name of the “Journal” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal'**
+  String get diaryCardStylePresetJournal;
+
+  /// Diary card style settings: one-line description of the “Journal” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'A side strip, and a date block when there is no cover'**
+  String get diaryCardStylePresetJournalDesc;
+
+  /// Diary card style settings: name of the “Mood colors” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood colors'**
+  String get diaryCardStylePresetMood;
+
+  /// Diary card style settings: one-line description of the “Mood colors” preset.
+  ///
+  /// In en, this message translates to:
+  /// **'Card colors follow the mood of each entry'**
+  String get diaryCardStylePresetMoodDesc;
+
+  /// Diary card style settings: message after applying a preset or saved style (can be undone).
+  ///
+  /// In en, this message translates to:
+  /// **'Applied “{name}”'**
+  String diaryCardStyleApplied(String name);
+
+  /// Diary card style settings: group title of the styles the user saved.
+  ///
+  /// In en, this message translates to:
+  /// **'My styles'**
+  String get diaryCardStyleSavedTitle;
+
+  /// Diary card style settings: hint shown before any style is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Save a style you like to switch back in one tap'**
+  String get diaryCardStyleSavedEmpty;
+
+  /// Diary card style settings: button that saves the current style to My styles.
+  ///
+  /// In en, this message translates to:
+  /// **'Save current style'**
+  String get diaryCardStyleSaveCurrent;
+
+  /// Diary card style settings: note shown when My styles is full.
+  ///
+  /// In en, this message translates to:
+  /// **'You can save up to {count} styles'**
+  String diaryCardStyleSaveLimit(int count);
+
+  /// Diary card style settings: title of the save style dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save style'**
+  String get diaryCardStyleSaveDialogTitle;
+
+  /// Diary card style settings: title of the rename style dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename style'**
+  String get diaryCardStyleRenameDialogTitle;
+
+  /// Diary card style settings: label of the style name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Style name'**
+  String get diaryCardStyleNameLabel;
+
+  /// Diary card style settings: prefilled name when saving a style; count is its number.
+  ///
+  /// In en, this message translates to:
+  /// **'My style {count}'**
+  String diaryCardStyleDefaultName(int count);
+
+  /// Diary card style settings: Rename item in the saved style menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get diaryCardStyleRename;
+
+  /// Diary card style settings: message after saving a style.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved “{name}”'**
+  String diaryCardStyleSavedDone(String name);
+
+  /// Diary card style settings: message after deleting a saved style (can be undone).
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted “{name}”'**
+  String diaryCardStyleDeletedDone(String name);
+
+  /// Diary card style settings: tooltip of the menu button on a saved style.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions for “{name}”'**
+  String diaryCardStyleSavedActions(String name);
+
+  /// Diary card style settings: group title for sharing and importing style codes.
+  ///
+  /// In en, this message translates to:
+  /// **'Share and import'**
+  String get diaryCardStyleShareTitle;
+
+  /// Diary card style settings: copies the current style as a style code.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy style code'**
+  String get diaryCardStyleCopyCode;
+
+  /// Diary card style settings: description of Copy style code.
+  ///
+  /// In en, this message translates to:
+  /// **'Send it to a friend or keep it as a backup'**
+  String get diaryCardStyleCopyCodeSubtitle;
+
+  /// Diary card style settings: imports a style code from the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from clipboard'**
+  String get diaryCardStyleImportCode;
+
+  /// Diary card style settings: description of Import from clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply a style code someone shared'**
+  String get diaryCardStyleImportCodeSubtitle;
+
+  /// Diary card style settings: message after copying the style code.
+  ///
+  /// In en, this message translates to:
+  /// **'Style code copied'**
+  String get diaryCardStyleCodeCopied;
+
+  /// Diary card style settings: message when the clipboard is empty on import.
+  ///
+  /// In en, this message translates to:
+  /// **'The clipboard is empty'**
+  String get diaryCardStyleImportEmpty;
+
+  /// Diary card style settings: message when the clipboard has no valid style code.
+  ///
+  /// In en, this message translates to:
+  /// **'No valid style code in the clipboard'**
+  String get diaryCardStyleImportInvalid;
+
+  /// Diary card style settings: message after importing a code from a newer app version (can be undone).
+  ///
+  /// In en, this message translates to:
+  /// **'Imported. Some settings from a newer version may not apply'**
+  String get diaryCardStyleImportNewer;
+
+  /// Diary card style settings: message after importing a style code (can be undone).
+  ///
+  /// In en, this message translates to:
+  /// **'Style imported'**
+  String get diaryCardStyleImported;
+
+  /// Diary card style settings: message after importing a named style code (can be undone).
+  ///
+  /// In en, this message translates to:
+  /// **'Imported “{name}”'**
+  String diaryCardStyleImportedNamed(String name);
+
+  /// Diary card style settings: card corner radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Card corners'**
+  String get diaryCardStyleCornerRadius;
+
+  /// Diary card style settings: alignment of the card text.
+  ///
+  /// In en, this message translates to:
+  /// **'Text alignment'**
+  String get diaryCardStyleTextAlign;
+
+  /// Diary card style settings: text aligned to the start edge.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get diaryCardStyleAlignStart;
+
+  /// Diary card style settings: centered text.
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get diaryCardStyleAlignCenter;
+
+  /// Diary card style settings: horizontal padding inside the card.
+  ///
+  /// In en, this message translates to:
+  /// **'Side padding'**
+  String get diaryCardStylePaddingH;
+
+  /// Diary card style settings: vertical padding inside the card.
+  ///
+  /// In en, this message translates to:
+  /// **'Top and bottom padding'**
+  String get diaryCardStylePaddingV;
+
+  /// Diary card style settings: spacing between the date, title, excerpt and other parts.
+  ///
+  /// In en, this message translates to:
+  /// **'Content spacing'**
+  String get diaryCardStyleElementGap;
+
+  /// Diary card style settings: spacing between neighboring cards.
+  ///
+  /// In en, this message translates to:
+  /// **'Card spacing'**
+  String get diaryCardStyleCardGap;
+
+  /// Diary card style settings: distance between the cards and the screen edges.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen margin'**
+  String get diaryCardStyleSideMargin;
+
+  /// Diary card style settings: number of waterfall columns.
+  ///
+  /// In en, this message translates to:
+  /// **'Columns'**
+  String get diaryCardStyleColumns;
+
+  /// Diary card style settings: waterfall column count option.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} columns'**
+  String diaryCardStyleColumnsValue(int count);
+
+  /// Diary card style settings: note about the waterfall column count.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer columns are used on narrow screens or with large text'**
+  String get diaryCardStyleColumnsFootnote;
+
+  /// Diary card style settings: where the cover sits on the card.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover position'**
+  String get diaryCardStyleCoverPosition;
+
+  /// Diary card style settings: cover on the left.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get diaryCardStyleCoverStart;
+
+  /// Diary card style settings: cover on the right.
+  ///
+  /// In en, this message translates to:
+  /// **'Right'**
+  String get diaryCardStyleCoverEnd;
+
+  /// Diary card style settings: cover on top.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get diaryCardStyleCoverTop;
+
+  /// Diary card style settings: cover as the card background.
+  ///
+  /// In en, this message translates to:
+  /// **'Background'**
+  String get diaryCardStyleCoverBackground;
+
+  /// Diary card style settings: no cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get diaryCardStyleCoverHidden;
+
+  /// Diary card style settings: size of a side cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover size'**
+  String get diaryCardStyleCoverSize;
+
+  /// Diary card style settings: note about the cover size.
+  ///
+  /// In en, this message translates to:
+  /// **'On narrow screens the cover shrinks to leave room for text'**
+  String get diaryCardStyleCoverSizeFootnote;
+
+  /// Diary card style settings: shape of a side cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover shape'**
+  String get diaryCardStyleCoverShape;
+
+  /// Diary card style settings: square cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Square'**
+  String get diaryCardStyleShapeSquare;
+
+  /// Diary card style settings: landscape (4:3) cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get diaryCardStyleShapeLandscape;
+
+  /// Diary card style settings: portrait (3:4) cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get diaryCardStyleShapePortrait;
+
+  /// Diary card style settings: circular cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Circle'**
+  String get diaryCardStyleShapeCircle;
+
+  /// Diary card style settings: cover corner radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover corners'**
+  String get diaryCardStyleCoverRadius;
+
+  /// Diary card style settings: height of a top cover, or the minimum height of a background-cover card.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover height'**
+  String get diaryCardStyleCoverHeight;
+
+  /// Diary card style settings: keeps a top cover inside the padding.
+  ///
+  /// In en, this message translates to:
+  /// **'Inset cover'**
+  String get diaryCardStyleCoverInset;
+
+  /// Diary card style settings: description of Inset cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep a margin and rounded corners instead of running edge to edge'**
+  String get diaryCardStyleCoverInsetSubtitle;
+
+  /// Diary card style settings: thin line between a full-width top cover and the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Divider below the cover'**
+  String get diaryCardStyleCoverDivider;
+
+  /// Diary card style settings: spacing between the cover and the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Gap between cover and text'**
+  String get diaryCardStyleCoverGap;
+
+  /// Diary card style settings: opacity of the text panel over a background cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Text panel strength'**
+  String get diaryCardStyleScrim;
+
+  /// Diary card style settings: combines several photos in a top cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo collage'**
+  String get diaryCardStyleCollage;
+
+  /// Diary card style settings: description of Photo collage.
+  ///
+  /// In en, this message translates to:
+  /// **'Top covers combine up to three photos from the entry'**
+  String get diaryCardStyleCollageSubtitle;
+
+  /// Diary card style settings: what fills the cover spot when an entry has no photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Without a cover'**
+  String get diaryCardStyleCoverFallback;
+
+  /// Diary card style settings: no placeholder without a cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing'**
+  String get diaryCardStyleFallbackNone;
+
+  /// Diary card style settings: a large date without a cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Date block'**
+  String get diaryCardStyleFallbackDate;
+
+  /// Diary card style settings: the mood without a cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood tile'**
+  String get diaryCardStyleFallbackMood;
+
+  /// Diary card style settings: whether to show the entry title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show title'**
+  String get diaryCardStyleShowTitle;
+
+  /// Diary card style settings: whether to show the text excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Show excerpt'**
+  String get diaryCardStyleShowPreview;
+
+  /// Diary card style settings: maximum lines for the title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title lines'**
+  String get diaryCardStyleTitleLines;
+
+  /// Diary card style settings: maximum lines for the excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Excerpt lines'**
+  String get diaryCardStylePreviewLines;
+
+  /// Diary card style settings: number of lines.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line} other{{count} lines}}'**
+  String diaryCardStyleLinesValue(int count);
+
+  /// Diary card style settings: style of tags on the card.
+  ///
+  /// In en, this message translates to:
+  /// **'Tag style'**
+  String get diaryCardStyleTagStyle;
+
+  /// Diary card style settings: tags as tinted chips.
+  ///
+  /// In en, this message translates to:
+  /// **'Chips'**
+  String get diaryCardStyleTagChip;
+
+  /// Diary card style settings: tags as plain text.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get diaryCardStyleTagPlain;
+
+  /// Diary card style settings: tags with colored dots.
+  ///
+  /// In en, this message translates to:
+  /// **'Dots'**
+  String get diaryCardStyleTagDot;
+
+  /// Diary card style settings: badge style for pinned entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned badge'**
+  String get diaryCardStylePinnedBadge;
+
+  /// Diary card style settings: pinned badge with the pin icon and label.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon and label'**
+  String get diaryCardStylePinnedStandard;
+
+  /// Diary card style settings: pinned badge with the pin icon only.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon only'**
+  String get diaryCardStylePinnedIcon;
+
+  /// Diary card style settings: no pinned badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get diaryCardStylePinnedHidden;
+
+  /// Diary card style settings: gives pinned cards a light theme tint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tint pinned cards'**
+  String get diaryCardStylePinnedTint;
+
+  /// Diary card style settings: description of Tint pinned cards.
+  ///
+  /// In en, this message translates to:
+  /// **'A light theme-colored fill and border'**
+  String get diaryCardStylePinnedTintSubtitle;
+
+  /// Diary card style settings: whether to show the mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Show mood'**
+  String get diaryCardStyleShowMood;
+
+  /// Diary card style settings: whether to show the weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Show weather'**
+  String get diaryCardStyleShowWeather;
+
+  /// Diary card style settings: group title and style option for mood and weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood and weather'**
+  String get diaryCardStyleIndicatorStyle;
+
+  /// Diary card style settings: mood and weather in a tinted stamp.
+  ///
+  /// In en, this message translates to:
+  /// **'Stamp'**
+  String get diaryCardStyleIndicatorStamp;
+
+  /// Diary card style settings: mood and weather as icons only.
+  ///
+  /// In en, this message translates to:
+  /// **'Icons only'**
+  String get diaryCardStyleIndicatorPlain;
+
+  /// Diary card style settings: where mood and weather appear on the card.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood and weather position'**
+  String get diaryCardStyleMetaPosition;
+
+  /// Diary card style settings: mood and weather on the date line.
+  ///
+  /// In en, this message translates to:
+  /// **'Date line'**
+  String get diaryCardStyleMetaEyebrow;
+
+  /// Diary card style settings: mood and weather in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Footer'**
+  String get diaryCardStyleMetaFooter;
+
+  /// Diary card style settings: mood and weather on the cover.
+  ///
+  /// In en, this message translates to:
+  /// **'On cover'**
+  String get diaryCardStyleMetaCover;
+
+  /// Diary card style settings: group title for extra details in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Footer details'**
+  String get diaryCardStyleExtras;
+
+  /// Diary card style settings: shows the location in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get diaryCardStyleShowLocation;
+
+  /// Diary card style settings: shows the energy level in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get diaryCardStyleShowEnergy;
+
+  /// Diary card style settings: shows the character count in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Character count'**
+  String get diaryCardStyleShowWordCount;
+
+  /// Diary card style settings: shows photo count and recording, video and attachment badges in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo and attachment badges'**
+  String get diaryCardStyleShowMedia;
+
+  /// Diary card style settings: whether to show the date on the date line.
+  ///
+  /// In en, this message translates to:
+  /// **'Show date'**
+  String get diaryCardStyleShowDate;
+
+  /// Diary card style settings: how the date is written.
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get diaryCardStyleDateFormat;
+
+  /// Diary card style settings: date format: month and day (year added for other years).
+  ///
+  /// In en, this message translates to:
+  /// **'Month and day'**
+  String get diaryCardStyleDateEyebrow;
+
+  /// Diary card style settings: date format: full date with the year.
+  ///
+  /// In en, this message translates to:
+  /// **'Full date'**
+  String get diaryCardStyleDateFull;
+
+  /// Diary card style settings: date format: numbers only.
+  ///
+  /// In en, this message translates to:
+  /// **'Numeric'**
+  String get diaryCardStyleDateNumeric;
+
+  /// Diary card style settings: date format: how long ago.
+  ///
+  /// In en, this message translates to:
+  /// **'Relative'**
+  String get diaryCardStyleDateRelative;
+
+  /// Diary card style settings: adds the weekday after the date.
+  ///
+  /// In en, this message translates to:
+  /// **'Show weekday'**
+  String get diaryCardStyleShowWeekday;
+
+  /// Diary card style settings: adds the time after the date.
+  ///
+  /// In en, this message translates to:
+  /// **'Show time'**
+  String get diaryCardStyleShowTime;
+
+  /// Diary card style settings: note on the weekday and time switches when the date is relative.
+  ///
+  /// In en, this message translates to:
+  /// **'Relative dates don\'t include the weekday or time'**
+  String get diaryCardStyleRelativeNote;
+
+  /// Diary card style settings: which time the date line shows.
+  ///
+  /// In en, this message translates to:
+  /// **'Date shown'**
+  String get diaryCardStyleDateSource;
+
+  /// Diary card style settings: date shown: when the entry was written.
+  ///
+  /// In en, this message translates to:
+  /// **'When written'**
+  String get diaryCardStyleDateCreated;
+
+  /// Diary card style settings: date shown: when the entry was last edited.
+  ///
+  /// In en, this message translates to:
+  /// **'Last edited'**
+  String get diaryCardStyleDateUpdated;
+
+  /// Diary card style settings: the time shown in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Footer time'**
+  String get diaryCardStyleFooterTime;
+
+  /// Diary card style settings: footer time: how long since the last update.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated … ago'**
+  String get diaryCardStyleFooterRelative;
+
+  /// Diary card style settings: footer time: exact time of the last update.
+  ///
+  /// In en, this message translates to:
+  /// **'Update time'**
+  String get diaryCardStyleFooterUpdated;
+
+  /// Diary card style settings: footer time: exact time the entry was written.
+  ///
+  /// In en, this message translates to:
+  /// **'Written time'**
+  String get diaryCardStyleFooterCreated;
+
+  /// Diary card style settings: no time in the footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get diaryCardStyleFooterHidden;
+
+  /// Diary card style settings: hint on the Order tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the handles to change the order of a card\'s parts'**
+  String get diaryCardStyleOrderHint;
+
+  /// Diary card style settings: card part: the line with the date and pinned badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Date line'**
+  String get diaryCardStyleBlockEyebrow;
+
+  /// Diary card style settings: card part: title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diaryCardStyleBlockTitle;
+
+  /// Diary card style settings: card part: tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryCardStyleBlockTags;
+
+  /// Diary card style settings: card part: excerpt.
+  ///
+  /// In en, this message translates to:
+  /// **'Excerpt'**
+  String get diaryCardStyleBlockPreview;
+
+  /// Diary card style settings: card part: footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Footer'**
+  String get diaryCardStyleBlockFooter;
+
+  /// Diary card style settings: button that restores the default order of card parts.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore default order'**
+  String get diaryCardStyleOrderReset;
+
+  /// Diary card style settings: screen-reader label of a card part drag handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move “{name}”'**
+  String diaryCardStyleDragHandle(String name);
+
+  /// Diary card style settings: title size scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Title size'**
+  String get diaryCardStyleTitleSize;
+
+  /// Diary card style settings: title font weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Title weight'**
+  String get diaryCardStyleTitleWeight;
+
+  /// Diary card style settings: regular weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get diaryCardStyleWeightRegular;
+
+  /// Diary card style settings: medium weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get diaryCardStyleWeightMedium;
+
+  /// Diary card style settings: bold weight.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get diaryCardStyleWeightBold;
+
+  /// Diary card style settings: excerpt size scale.
+  ///
+  /// In en, this message translates to:
+  /// **'Excerpt size'**
+  String get diaryCardStylePreviewSize;
+
+  /// Diary card style settings: excerpt line spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Excerpt line spacing'**
+  String get diaryCardStyleLineHeight;
+
+  /// Diary card style settings: compact line spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Compact'**
+  String get diaryCardStyleLineCompact;
+
+  /// Diary card style settings: standard line spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get diaryCardStyleLineStandard;
+
+  /// Diary card style settings: relaxed line spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'Relaxed'**
+  String get diaryCardStyleLineRelaxed;
+
+  /// Diary card style settings: scale of small text such as the date, tags and footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Detail text size'**
+  String get diaryCardStyleMetaSize;
+
+  /// Diary card style settings: title text color.
+  ///
+  /// In en, this message translates to:
+  /// **'Title color'**
+  String get diaryCardStyleTitleColor;
+
+  /// Diary card style settings: text color of the excerpt, date and footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Text color'**
+  String get diaryCardStyleBodyColor;
+
+  /// Diary card style settings: replaces text colors that are too faint.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep text readable'**
+  String get diaryCardStyleEnsureContrast;
+
+  /// Diary card style settings: description of Keep text readable.
+  ///
+  /// In en, this message translates to:
+  /// **'When a text color blends into the card, use a clearer one'**
+  String get diaryCardStyleEnsureContrastSubtitle;
+
+  /// Diary card style settings: card background color.
+  ///
+  /// In en, this message translates to:
+  /// **'Card color'**
+  String get diaryCardStyleBackground;
+
+  /// Diary card style settings: opacity of the card surface.
+  ///
+  /// In en, this message translates to:
+  /// **'Card opacity'**
+  String get diaryCardStyleOpacity;
+
+  /// Diary card style settings: gradient card background.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient'**
+  String get diaryCardStyleGradient;
+
+  /// Diary card style settings: description of Gradient.
+  ///
+  /// In en, this message translates to:
+  /// **'Blend from the card color into a second color'**
+  String get diaryCardStyleGradientSubtitle;
+
+  /// Diary card style settings: end color of the gradient.
+  ///
+  /// In en, this message translates to:
+  /// **'Second gradient color'**
+  String get diaryCardStyleGradientEnd;
+
+  /// Diary card style settings: gradient direction.
+  ///
+  /// In en, this message translates to:
+  /// **'Gradient direction'**
+  String get diaryCardStyleGradientDirection;
+
+  /// Diary card style settings: top-to-bottom gradient.
+  ///
+  /// In en, this message translates to:
+  /// **'Vertical'**
+  String get diaryCardStyleDirectionVertical;
+
+  /// Diary card style settings: side-to-side gradient.
+  ///
+  /// In en, this message translates to:
+  /// **'Horizontal'**
+  String get diaryCardStyleDirectionHorizontal;
+
+  /// Diary card style settings: diagonal gradient.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagonal'**
+  String get diaryCardStyleDirectionDiagonal;
+
+  /// Diary card style settings: card border width.
+  ///
+  /// In en, this message translates to:
+  /// **'Border width'**
+  String get diaryCardStyleBorderWidth;
+
+  /// Diary card style settings: card border color.
+  ///
+  /// In en, this message translates to:
+  /// **'Border color'**
+  String get diaryCardStyleBorderColor;
+
+  /// Diary card style settings: colored strip on the card edge.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent strip'**
+  String get diaryCardStyleAccentBar;
+
+  /// Diary card style settings: no strip.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get diaryCardStyleAccentNone;
+
+  /// Diary card style settings: strip on the start edge.
+  ///
+  /// In en, this message translates to:
+  /// **'Side'**
+  String get diaryCardStyleAccentStart;
+
+  /// Diary card style settings: strip on the top edge.
+  ///
+  /// In en, this message translates to:
+  /// **'Top'**
+  String get diaryCardStyleAccentTop;
+
+  /// Diary card style settings: strip width.
+  ///
+  /// In en, this message translates to:
+  /// **'Strip width'**
+  String get diaryCardStyleAccentWidth;
+
+  /// Diary card style settings: strip color.
+  ///
+  /// In en, this message translates to:
+  /// **'Strip color'**
+  String get diaryCardStyleAccentColor;
+
+  /// Diary card style settings: card shadow style.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow'**
+  String get diaryCardStyleShadow;
+
+  /// Diary card style settings: default shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get diaryCardStyleShadowThemed;
+
+  /// Diary card style settings: no shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get diaryCardStyleShadowNone;
+
+  /// Diary card style settings: soft shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft'**
+  String get diaryCardStyleShadowSoft;
+
+  /// Diary card style settings: deep floating shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Floating'**
+  String get diaryCardStyleShadowFloating;
+
+  /// Diary card style settings: custom shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get diaryCardStyleShadowCustom;
+
+  /// Diary card style settings: depth of a custom shadow.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow depth'**
+  String get diaryCardStyleShadowElevation;
+
+  /// Diary card style settings: shadow color.
+  ///
+  /// In en, this message translates to:
+  /// **'Shadow color'**
+  String get diaryCardStyleShadowColor;
+
+  /// Diary card style settings: color source: keep the default look.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get diaryCardStyleSourceTheme;
+
+  /// Diary card style settings: color source: theme primary color.
+  ///
+  /// In en, this message translates to:
+  /// **'Primary'**
+  String get diaryCardStyleSourcePrimary;
+
+  /// Diary card style settings: color source: theme secondary color.
+  ///
+  /// In en, this message translates to:
+  /// **'Secondary'**
+  String get diaryCardStyleSourceSecondary;
+
+  /// Diary card style settings: color source: theme tertiary color.
+  ///
+  /// In en, this message translates to:
+  /// **'Tertiary'**
+  String get diaryCardStyleSourceTertiary;
+
+  /// Diary card style settings: color source: based on the mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryCardStyleSourceMood;
+
+  /// Diary card style settings: color source: the first tag's color.
+  ///
+  /// In en, this message translates to:
+  /// **'First tag'**
+  String get diaryCardStyleSourceTag;
+
+  /// Diary card style settings: color source: a custom color.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get diaryCardStyleSourceCustom;
+
+  /// Diary card style settings: note on the mood color source.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses each entry\'s mood, or the default color when there is none'**
+  String get diaryCardStyleSourceMoodHint;
+
+  /// Diary card style settings: note on the first-tag color source.
+  ///
+  /// In en, this message translates to:
+  /// **'Uses the color of each entry\'s first tag'**
+  String get diaryCardStyleSourceTagHint;
+
+  /// Diary card style settings: color intensity (opacity).
+  ///
+  /// In en, this message translates to:
+  /// **'Intensity'**
+  String get diaryCardStyleStrength;
+
+  /// Diary card style settings: picks the custom color again.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit color'**
+  String get diaryCardStyleEditColor;
+
+  /// Diary card style settings: color dialog: derive the dark-mode color automatically.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the dark color automatically'**
+  String get diaryCardStyleColorDarkAuto;
+
+  /// Diary card style settings: description of the automatic dark color.
+  ///
+  /// In en, this message translates to:
+  /// **'Derive a readable dark-mode color from the light one'**
+  String get diaryCardStyleColorDarkAutoSubtitle;
+
+  /// Diary card style settings: label of the hex color field.
+  ///
+  /// In en, this message translates to:
+  /// **'Hex color'**
+  String get diaryCardStyleHexLabel;
+
+  /// Diary card style settings: error for an invalid hex color.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a 6-digit hex color, such as FFB300'**
+  String get diaryCardStyleHexInvalid;
+
+  /// Diary view options sheet: card style section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Card style'**
+  String get diaryCardStyleSheetSection;
+
+  /// Diary view options sheet: opens the card style settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize card style'**
+  String get diaryCardStyleSheetEntry;
+
+  /// Diary view options sheet: description of the card style entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Covers, text, colors and layout'**
+  String get diaryCardStyleSheetEntrySubtitle;
+
+  /// Diary card style settings: title of preview sample entry 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunset by the sea'**
+  String get diaryCardStyleSampleTitle1;
+
+  /// Diary card style settings: text of preview sample entry 1.
+  ///
+  /// In en, this message translates to:
+  /// **'Walked along the shore until dusk. The waves kept rolling in while the sky slid from orange to lilac.'**
+  String get diaryCardStyleSampleBody1;
+
+  /// Diary card style settings: title of preview sample entry 2.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend hike'**
+  String get diaryCardStyleSampleTitle2;
+
+  /// Diary card style settings: text of preview sample entry 2.
+  ///
+  /// In en, this message translates to:
+  /// **'It was windy at the top. I took lots of photos and recorded the wind. My legs were shaking on the way down.'**
+  String get diaryCardStyleSampleBody2;
+
+  /// Diary card style settings: title of preview sample entry 3 (long, to show title truncation).
+  ///
+  /// In en, this message translates to:
+  /// **'A rainy workday spent reworking this week’s plan at the cafe'**
+  String get diaryCardStyleSampleTitle3;
+
+  /// Diary card style settings: text of preview sample entry 3.
+  ///
+  /// In en, this message translates to:
+  /// **'Reworked this week\'s to-dos and jotted down a few ideas. Early night tonight.'**
+  String get diaryCardStyleSampleBody3;
+
+  /// Diary card style settings: title of the preview sample time capsule.
+  ///
+  /// In en, this message translates to:
+  /// **'A letter to myself next year'**
+  String get diaryCardStyleSampleCapsuleTitle;
+
+  /// Diary card style settings: preview sample tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get diaryCardStyleSampleTag1;
+
+  /// Diary card style settings: preview sample tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Life'**
+  String get diaryCardStyleSampleTag2;
+
+  /// Diary card style settings: preview sample tag.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get diaryCardStyleSampleTag3;
+
+  /// Diary card style settings: location of a preview sample entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Seaside boardwalk'**
+  String get diaryCardStyleSampleLocation;
+
+  /// Diary card style settings: a value in dp.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}dp'**
+  String diaryCardStyleValueDp(String value);
+
+  /// Diary card style settings: a percentage value.
+  ///
+  /// In en, this message translates to:
+  /// **'{value}%'**
+  String diaryCardStyleValuePercent(String value);
 }
 
 class _AppLocalizationsDelegate

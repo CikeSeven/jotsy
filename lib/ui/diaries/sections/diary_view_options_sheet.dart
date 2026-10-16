@@ -9,17 +9,19 @@ import '../../widgets/expressive_button_group.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import 'diary_head_section.dart';
 
-/// 打开日记列表的视图选项面板：排序依据、正/倒序与布局。
+/// 打开日记列表的视图选项面板：排序依据、正/倒序与布局，以及（传入
+/// [onOpenCardStyle] 时）进入卡片样式页的入口。
 ///
 /// 选项即点即生效且面板保持打开：排序依据与方向常常要连着调，点一项就关闭
 /// 会让用户反复打开面板。生效由页面经回调完成，列表在面板后方淡出、换序、
-/// 淡入；下拉或点遮罩关闭面板。
+/// 淡入；下拉或点遮罩关闭面板。点卡片样式入口时先关闭面板再跳转。
 Future<void> showDiaryViewOptionsSheet(
   BuildContext context, {
   required DiarySortMode sortMode,
   required DiaryLayoutMode layoutMode,
   required ValueChanged<DiarySortMode> onSortModeChanged,
   required ValueChanged<DiaryLayoutMode> onLayoutModeChanged,
+  VoidCallback? onOpenCardStyle,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -37,6 +39,7 @@ Future<void> showDiaryViewOptionsSheet(
       initialLayoutMode: layoutMode,
       onSortModeChanged: onSortModeChanged,
       onLayoutModeChanged: onLayoutModeChanged,
+      onOpenCardStyle: onOpenCardStyle,
     ),
   );
 }
@@ -52,12 +55,16 @@ class DiaryViewOptionsSheet extends StatefulWidget {
     required this.initialLayoutMode,
     required this.onSortModeChanged,
     required this.onLayoutModeChanged,
+    this.onOpenCardStyle,
   });
 
   final DiarySortMode initialSortMode;
   final DiaryLayoutMode initialLayoutMode;
   final ValueChanged<DiarySortMode> onSortModeChanged;
   final ValueChanged<DiaryLayoutMode> onLayoutModeChanged;
+
+  /// 进入卡片样式页；null 时不显示该入口。
+  final VoidCallback? onOpenCardStyle;
 
   @override
   State<DiaryViewOptionsSheet> createState() => _DiaryViewOptionsSheetState();
@@ -150,6 +157,27 @@ class _DiaryViewOptionsSheetState extends State<DiaryViewOptionsSheet> {
               selected: _layoutMode == DiaryLayoutMode.waterfall,
               onTap: () => _selectLayoutMode(DiaryLayoutMode.waterfall),
             ),
+            if (widget.onOpenCardStyle case final openCardStyle?) ...<Widget>[
+              const SizedBox(height: AppSpacing.l),
+              _SectionHeader(
+                icon: FontAwesomeIcons.palette,
+                label: l10n.diaryCardStyleSheetSection,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              ListTile(
+                dense: true,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: Text(l10n.diaryCardStyleSheetEntry),
+                subtitle: Text(l10n.diaryCardStyleSheetEntrySubtitle),
+                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  openCardStyle();
+                },
+              ),
+            ],
           ],
         ),
       ),

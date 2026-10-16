@@ -13,6 +13,7 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
@@ -245,6 +246,10 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                             selectedDiaryIds: const <String>{},
                             isSelectionMode: false,
                             maxVisibleTags: diaryCardTagLimit,
+                            cardStyle: ref.watch(diaryCardStyleProvider),
+                            moodOptions: ref.watch(
+                              diaryCardMoodOptionsProvider,
+                            ),
                             onCreate: () {},
                             onOpenEditor: _openPreview,
                             onToggleSelection: (_, __) {},

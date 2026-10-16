@@ -6,6 +6,7 @@ import 'package:node_diary/core/services/journal_import_apple_journal.dart';
 import 'package:node_diary/core/services/journal_import_day_one.dart';
 import 'package:node_diary/core/services/journal_import_daylio.dart';
 import 'package:node_diary/core/services/journal_import_diarium.dart';
+import 'package:node_diary/core/services/journal_import_diaro.dart';
 import 'package:node_diary/core/services/journal_import_journey.dart';
 import 'package:node_diary/core/services/journal_import_media.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
@@ -420,6 +421,138 @@ void main() {
           media,
         ),
         throwsA(isA<JournalImportFormatException>()),
+      );
+    });
+  });
+
+  group('Diaro', () {
+    // 据 Diaro 2025 年真实备份精简：可选表按名称查找，tags 首尾带逗号，
+    // date 为 UTC 毫秒、tz_offset 为写日记时所在时区。
+    const backup = '''<data version="2">
+<table name="diaro_folders">
+<r>
+   <uid>f1</uid>
+   <title>Vacations</title>
+   <color>#FF9800</color>
+   <pattern></pattern>
+</r>
+</table>
+<table name="diaro_tags">
+<r>
+   <uid>t1</uid>
+   <title>Idea</title>
+</r>
+<r>
+   <uid>t2</uid>
+   <title>Dream</title>
+</r>
+</table>
+<table name="diaro_moods">
+<r>
+   <uid>2</uid>
+   <title>Happy</title>
+   <weight>4</weight>
+</r>
+</table>
+<table name="diaro_locations">
+<r>
+   <uid>l1</uid>
+   <title></title>
+   <address>Male, Maldives</address>
+   <lat>3.91786</lat>
+   <lng>73.4676353</lng>
+</r>
+</table>
+<table name="diaro_entries">
+<r>
+   <uid>e1</uid>
+   <date>1754923517768</date>
+   <tz_offset>-04:00</tz_offset>
+   <title>Some note</title>
+   <text>- With metadata
+- 16:46</text>
+   <folder_uid>f1</folder_uid>
+   <location_uid>l1</location_uid>
+   <tags>,t1,t2,</tags>
+   <weather_temperature>20</weather_temperature>
+   <weather_icon>day-sunny</weather_icon>
+   <weather_description>clear sky</weather_description>
+   <mood>2</mood>
+</r>
+<r>
+   <uid>e2</uid>
+   <date>1755787474567</date>
+   <tz_offset>+02:00</tz_offset>
+   <title></title>
+   <text>Only text &amp; -&gt; arrow</text>
+   <folder_uid>missing</folder_uid>
+   <tags></tags>
+   <weather_temperature>null</weather_temperature>
+   <weather_icon></weather_icon>
+   <weather_description></weather_description>
+   <mood>5</mood>
+</r>
+</table>
+<table name="diaro_attachments">
+<r>
+   <uid>a2</uid>
+   <entry_uid>e1</entry_uid>
+   <type>photo</type>
+   <filename>second.jpg</filename>
+   <position>2</position>
+</r>
+<r>
+   <uid>a1</uid>
+   <entry_uid>e1</entry_uid>
+   <type>photo</type>
+   <filename>first.jpg</filename>
+   <position>1</position>
+</r>
+</table>
+</data>''';
+
+    test('maps entries with tags, folder, mood, place, weather and photos', () {
+      write('DiaroBackup.xml', backup);
+      write('media/photo/first.jpg', _jpeg);
+
+      final result = parseDiaroExport(extracted(), media);
+
+      final [entry, plain] = result.entries;
+      expect(entry.sourceKey, 'e1');
+      expect(entry.title, 'Some note');
+      // 2025-08-11T14:45:17.768Z 在 -04:00 是 10:45:17。
+      expect(entry.createdAt, DateTime(2025, 8, 11, 10, 45, 17, 768));
+      expect(entry.contentText, '\n- With metadata\n- 16:46');
+      expect(entry.tags, ['Idea', 'Dream', 'Vacations']);
+      expect(entry.moodLevel, 4);
+      expect(entry.weather, 'clear sky 20℃');
+      expect(entry.location, 'Male, Maldives');
+      expect((entry.latitude, entry.longitude), (3.91786, 73.4676353));
+      final image = embedOf(entry, 0)['image'] as String;
+      expect(p.basename(image), 'first.jpg');
+      // second.jpg 在备份里缺失。
+      expect(result.missingMediaCount, 1);
+
+      expect(plain.title, isEmpty);
+      expect(plain.contentText, 'Only text & -> arrow');
+      expect(plain.tags, isEmpty);
+      expect(plain.weather, isNull);
+      // 没有心情表的旧刻度：1 最好、5 最差。
+      expect(plain.moodLevel, 1);
+    });
+
+    test('explains that encrypted backups cannot be imported', () {
+      write('DiaroBackup.denc', 'U2FsdGVk');
+      write('media/photo/a.jpg', _jpeg);
+      expect(
+        () => parseDiaroExport(extracted(), media),
+        throwsA(
+          isA<JournalImportFormatException>().having(
+            (error) => error.encrypted,
+            'encrypted',
+            isTrue,
+          ),
+        ),
       );
     });
   });

@@ -2038,7 +2038,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataMgmtImportJournalSubtitle =>
-      'Day One, Journey, Diarium, Daylio and Apple Journal';
+      'Day One, Evernote, Google Keep, Obsidian, Xiaomi Notes and 13 more';
 
   @override
   String get journalImportSourceTitle => 'Import from which app?';
@@ -2081,6 +2081,73 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get journalImportNoEntries =>
       'There are no diaries to import in this file';
+
+  @override
+  String get journalImportGroupJournals => 'Journaling apps';
+
+  @override
+  String get journalImportGroupNotes => 'Note apps';
+
+  @override
+  String get journalImportGroupPhoneNotes => 'Phone & WPS cloud notes';
+
+  @override
+  String get journalImportPhoneNotesHint =>
+      'These apps can\'t export by themselves. On a computer, sign in with the open-source tool Note Bridge (笔记互迁), export as HTML, Markdown or TXT and pack it as .zip, then choose that file.';
+
+  @override
+  String get journalImportDiaroHint => 'Backup file (.zip, unencrypted)';
+
+  @override
+  String get journalImportEvernote => 'Evernote';
+
+  @override
+  String get journalImportEvernoteHint =>
+      'Export notebooks as ENEX (.enex, or several in a .zip)';
+
+  @override
+  String get journalImportGoogleKeepHint =>
+      'Export Keep with Google Takeout (.zip)';
+
+  @override
+  String get journalImportJoplinHint => 'Export as JEX (.jex)';
+
+  @override
+  String get journalImportMemosHint =>
+      'Settings › Export & Import, v0.31 or later (.zip)';
+
+  @override
+  String get journalImportMarkdown => 'Markdown / plain text';
+
+  @override
+  String get journalImportMarkdownHint =>
+      '.md / .txt files from Obsidian, Bear, Notion and more, or a .zip of them';
+
+  @override
+  String get journalImportXiaomiNotes => 'Xiaomi Notes';
+
+  @override
+  String get journalImportHuaweiNotepad => 'Huawei Notepad';
+
+  @override
+  String get journalImportOppoNotes => 'OPPO Notes';
+
+  @override
+  String get journalImportVivoNotes => 'vivo Notes';
+
+  @override
+  String get journalImportHonorNotes => 'HONOR Notes';
+
+  @override
+  String get journalImportMeizuNotes => 'Meizu Notes';
+
+  @override
+  String get journalImportWpsNotes => 'WPS Notes';
+
+  @override
+  String journalImportEncrypted(String app) {
+    return 'Encrypted $app backups can\'t be imported. Create an unencrypted backup in $app';
+  }
 
   @override
   String backupImportKindJournal(String app) {

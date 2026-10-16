@@ -6,6 +6,7 @@ import '../../../core/services/journal_import_models.dart';
 import '../../../core/services/journal_import_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/color_palette_families.dart';
+import '../widgets/journal_import_source_labels.dart';
 import '../widgets/journal_import_source_sheet.dart';
 import 'backup_import_flow.dart';
 import 'data_management_controller.dart';
@@ -17,7 +18,8 @@ import 'data_management_controller.dart';
 /// 日记（覆盖须经严重警告）→ 合并导入 → 提示新增/跳过/覆盖的篇数。
 ///
 /// 每一步取消都不写入数据；不论成功、失败或取消，最后都删除导入暂存区与
-/// 文件选择器留在缓存里的副本。格式不符、文件里没有日记时给出具体提示。
+/// 文件选择器留在缓存里的副本。格式不符、文件里没有日记、加密备份时给出
+/// 具体提示。
 class JournalImportController {
   JournalImportController(this._host);
 
@@ -103,6 +105,7 @@ class JournalImportController {
     Object error,
   ) {
     if (error is JournalImportFormatException) {
+      if (error.encrypted) return l10n.journalImportEncrypted(sourceName);
       return error.noEntries
           ? l10n.journalImportNoEntries
           : l10n.journalImportUnrecognized(sourceName);

@@ -3557,7 +3557,7 @@ abstract class AppLocalizations {
   /// Subtitle listing the diary apps whose exports can be imported.
   ///
   /// In en, this message translates to:
-  /// **'Day One, Journey, Diarium, Daylio and Apple Journal'**
+  /// **'Day One, Evernote, Google Keep, Obsidian, Xiaomi Notes and 13 more'**
   String get dataMgmtImportJournalSubtitle;
 
   /// Title of the sheet that picks the app the export comes from.
@@ -3625,6 +3625,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There are no diaries to import in this file'**
   String get journalImportNoEntries;
+
+  /// Section title for journaling apps in the import source sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Journaling apps'**
+  String get journalImportGroupJournals;
+
+  /// Section title for note-taking apps in the import source sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Note apps'**
+  String get journalImportGroupNotes;
+
+  /// Section title for phone-maker and WPS cloud notes exported with Note Bridge.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone & WPS cloud notes'**
+  String get journalImportGroupPhoneNotes;
+
+  /// Explains that phone-maker and WPS notes must first be exported with Note Bridge.
+  ///
+  /// In en, this message translates to:
+  /// **'These apps can\'t export by themselves. On a computer, sign in with the open-source tool Note Bridge (笔记互迁), export as HTML, Markdown or TXT and pack it as .zip, then choose that file.'**
+  String get journalImportPhoneNotesHint;
+
+  /// Which Diaro files can be imported.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup file (.zip, unencrypted)'**
+  String get journalImportDiaroHint;
+
+  /// Display name of Evernote.
+  ///
+  /// In en, this message translates to:
+  /// **'Evernote'**
+  String get journalImportEvernote;
+
+  /// How to get an importable Evernote export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export notebooks as ENEX (.enex, or several in a .zip)'**
+  String get journalImportEvernoteHint;
+
+  /// How to get an importable Google Keep export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Keep with Google Takeout (.zip)'**
+  String get journalImportGoogleKeepHint;
+
+  /// How to get an importable Joplin export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as JEX (.jex)'**
+  String get journalImportJoplinHint;
+
+  /// How to get an importable Memos export.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings › Export & Import, v0.31 or later (.zip)'**
+  String get journalImportMemosHint;
+
+  /// Display name of the Markdown / plain-text import source.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown / plain text'**
+  String get journalImportMarkdown;
+
+  /// Which Markdown and plain-text files can be imported.
+  ///
+  /// In en, this message translates to:
+  /// **'.md / .txt files from Obsidian, Bear, Notion and more, or a .zip of them'**
+  String get journalImportMarkdownHint;
+
+  /// Display name of Xiaomi Notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Xiaomi Notes'**
+  String get journalImportXiaomiNotes;
+
+  /// Display name of Huawei Notepad.
+  ///
+  /// In en, this message translates to:
+  /// **'Huawei Notepad'**
+  String get journalImportHuaweiNotepad;
+
+  /// Display name of OPPO Notes.
+  ///
+  /// In en, this message translates to:
+  /// **'OPPO Notes'**
+  String get journalImportOppoNotes;
+
+  /// Display name of vivo Notes.
+  ///
+  /// In en, this message translates to:
+  /// **'vivo Notes'**
+  String get journalImportVivoNotes;
+
+  /// Display name of HONOR Notes.
+  ///
+  /// In en, this message translates to:
+  /// **'HONOR Notes'**
+  String get journalImportHonorNotes;
+
+  /// Display name of Meizu Notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Meizu Notes'**
+  String get journalImportMeizuNotes;
+
+  /// Display name of WPS Notes.
+  ///
+  /// In en, this message translates to:
+  /// **'WPS Notes'**
+  String get journalImportWpsNotes;
+
+  /// Shown when the chosen file is an encrypted backup that can't be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Encrypted {app} backups can\'t be imported. Create an unencrypted backup in {app}'**
+  String journalImportEncrypted(String app);
 
   /// Import summary title for another app's export.
   ///

@@ -13,10 +13,17 @@ import 'data_archive_service.dart';
 import 'journal_import_apple_journal.dart';
 import 'journal_import_day_one.dart';
 import 'journal_import_daylio.dart';
+import 'journal_import_diaro.dart';
 import 'journal_import_diarium.dart';
+import 'journal_import_evernote.dart';
+import 'journal_import_google_keep.dart';
+import 'journal_import_joplin.dart';
 import 'journal_import_journey.dart';
+import 'journal_import_markdown_files.dart';
 import 'journal_import_media.dart';
+import 'journal_import_memos.dart';
 import 'journal_import_models.dart';
+import 'journal_import_note_bridge.dart';
 import 'journal_import_payload.dart';
 import 'journal_import_support.dart';
 import 'settings_service.dart';
@@ -60,7 +67,11 @@ class JournalImportService {
       String? extracted;
       if (await _isZip(filePath)) {
         final directory = Directory(p.join(staging.path, 'source'));
-        await BackupArchiveIO.extract(filePath, directory);
+        await BackupArchiveIO.extract(
+          filePath,
+          directory,
+          keepModifiedTimes: true,
+        );
         extracted = directory.path;
       }
       final parsed = await _parseInBackground(
@@ -186,5 +197,18 @@ JournalImportParseResult parseJournalExport(
     JournalImportSource.diarium => parseDiariumExport(input, media),
     JournalImportSource.daylio => parseDaylioExport(input, media),
     JournalImportSource.appleJournal => parseAppleJournalExport(input, media),
+    JournalImportSource.diaro => parseDiaroExport(input, media),
+    JournalImportSource.evernote => parseEvernoteExport(input, media),
+    JournalImportSource.googleKeep => parseGoogleKeepExport(input, media),
+    JournalImportSource.joplin => parseJoplinExport(input, media),
+    JournalImportSource.memos => parseMemosExport(input, media),
+    JournalImportSource.markdown => parseMarkdownFilesExport(input, media),
+    JournalImportSource.xiaomiNotes ||
+    JournalImportSource.huaweiNotepad ||
+    JournalImportSource.oppoNotes ||
+    JournalImportSource.vivoNotes ||
+    JournalImportSource.honorNotes ||
+    JournalImportSource.meizuNotes ||
+    JournalImportSource.wpsNotes => parseNoteBridgeExport(source, input, media),
   };
 }

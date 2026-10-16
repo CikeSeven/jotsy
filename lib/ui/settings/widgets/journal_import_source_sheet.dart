@@ -5,40 +5,37 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
+import 'journal_import_source_labels.dart';
 
-/// 来源应用的展示名称：应用名是专有名词不翻译，Apple 手记按系统中文名。
-String journalImportSourceName(
-  AppLocalizations l10n,
-  JournalImportSource source,
-) {
-  return switch (source) {
-    JournalImportSource.dayOne => 'Day One',
-    JournalImportSource.journey => 'Journey',
-    JournalImportSource.diarium => 'Diarium',
-    JournalImportSource.daylio => 'Daylio',
-    JournalImportSource.appleJournal => l10n.journalImportAppleJournal,
-  };
-}
+/// 面板分组（顺序即展示顺序）：日记应用、笔记应用逐项列出导出方式；手机与
+/// WPS 云笔记的导出方式相同（都经「笔记互迁」），说明放在分组标题下，
+/// 各项以两列紧凑按钮排列，避免七条相同的说明把面板拉得过长。
+const List<JournalImportSource> _journalApps = [
+  JournalImportSource.dayOne,
+  JournalImportSource.journey,
+  JournalImportSource.diarium,
+  JournalImportSource.daylio,
+  JournalImportSource.appleJournal,
+  JournalImportSource.diaro,
+];
 
-String _sourceHint(AppLocalizations l10n, JournalImportSource source) {
-  return switch (source) {
-    JournalImportSource.dayOne => l10n.journalImportDayOneHint,
-    JournalImportSource.journey => l10n.journalImportJourneyHint,
-    JournalImportSource.diarium => l10n.journalImportDiariumHint,
-    JournalImportSource.daylio => l10n.journalImportDaylioHint,
-    JournalImportSource.appleJournal => l10n.journalImportAppleJournalHint,
-  };
-}
+const List<JournalImportSource> _noteApps = [
+  JournalImportSource.evernote,
+  JournalImportSource.googleKeep,
+  JournalImportSource.joplin,
+  JournalImportSource.memos,
+  JournalImportSource.markdown,
+];
 
-FaIconData _sourceIcon(JournalImportSource source) {
-  return switch (source) {
-    JournalImportSource.dayOne => FontAwesomeIcons.bookOpen,
-    JournalImportSource.journey => FontAwesomeIcons.route,
-    JournalImportSource.diarium => FontAwesomeIcons.calendarDays,
-    JournalImportSource.daylio => FontAwesomeIcons.faceSmile,
-    JournalImportSource.appleJournal => FontAwesomeIcons.apple,
-  };
-}
+const List<JournalImportSource> _phoneNotes = [
+  JournalImportSource.xiaomiNotes,
+  JournalImportSource.huaweiNotepad,
+  JournalImportSource.oppoNotes,
+  JournalImportSource.vivoNotes,
+  JournalImportSource.honorNotes,
+  JournalImportSource.meizuNotes,
+  JournalImportSource.wpsNotes,
+];
 
 /// 打开来源应用面板，返回所选应用；取消返回 null。
 ///
@@ -51,9 +48,14 @@ Future<JournalImportSource?> showJournalImportSourceSheet(
     context: context,
     useSafeArea: true,
     showDragHandle: true,
-    // 五个带说明的选项在矮屏或大字号下会超出默认高度上限，按内容撑高并在
-    // 内部滚动兜底。
+    // 来源较多，按内容撑高并在内部滚动；最高占屏幕 88%，上方始终留出可点按
+    // 关闭的遮罩，不让面板看起来像一个新页面。宽度沿用 Material 3 默认的
+    // 640 上限（传入 constraints 会替换默认值）。
     isScrollControlled: true,
+    constraints: BoxConstraints(
+      maxWidth: 640,
+      maxHeight: MediaQuery.sizeOf(context).height * 0.88,
+    ),
     sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
         ? AnimationStyle.noAnimation
         : null,
@@ -69,6 +71,13 @@ class JournalImportSourceSheet extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    void pick(JournalImportSource source) => Navigator.of(context).pop(source);
+    Widget tile(JournalImportSource source) => _SourceTile(
+      icon: journalImportSourceIcon(source),
+      name: journalImportSourceName(l10n, source),
+      hint: journalImportSourceHint(l10n, source) ?? '',
+      onTap: () => pick(source),
+    );
     return SafeArea(
       top: false,
       child: SingleChildScrollView(
@@ -105,14 +114,77 @@ class JournalImportSourceSheet extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppSpacing.m),
-            for (final source in JournalImportSource.values)
-              _SourceTile(
-                icon: _sourceIcon(source),
-                name: journalImportSourceName(l10n, source),
-                hint: _sourceHint(l10n, source),
-                onTap: () => Navigator.of(context).pop(source),
+            _SectionHeader(
+              icon: FontAwesomeIcons.book,
+              label: l10n.journalImportGroupJournals,
+            ),
+            for (final source in _journalApps) tile(source),
+            _SectionHeader(
+              icon: FontAwesomeIcons.noteSticky,
+              label: l10n.journalImportGroupNotes,
+            ),
+            for (final source in _noteApps) tile(source),
+            _SectionHeader(
+              icon: FontAwesomeIcons.mobileScreenButton,
+              label: l10n.journalImportGroupPhoneNotes,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xs,
+                0,
+                AppSpacing.xs,
+                AppSpacing.m,
               ),
+              child: Text(
+                l10n.journalImportPhoneNotesHint,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.35,
+                ),
+              ),
+            ),
+            _CompactSourceGrid(
+              sources: _phoneNotes,
+              nameOf: (source) => journalImportSourceName(l10n, source),
+              onPick: pick,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.icon, required this.label});
+
+  final FaIconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.xs,
+        AppSpacing.xl,
+        AppSpacing.xs,
+        AppSpacing.s,
+      ),
+      child: Semantics(
+        header: true,
+        child: Row(
+          children: <Widget>[
+            FaIcon(icon, size: 16, color: theme.colorScheme.primary),
+            const SizedBox(width: AppSpacing.s),
+            Expanded(
+              child: Text(
+                label,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -183,6 +255,68 @@ class _SourceTile extends StatelessWidget {
           color: colorScheme.onSurfaceVariant,
         ),
       ),
+    );
+  }
+}
+
+/// 两列等宽的紧凑来源按钮（`secondaryContainer` 底色，16dp 圆角，只有名称：
+/// 分组标题已有图标），奇数项时最后一个占半宽靠左；名称过长时缩小字号而
+/// 不折行。
+class _CompactSourceGrid extends StatelessWidget {
+  const _CompactSourceGrid({
+    required this.sources,
+    required this.nameOf,
+    required this.onPick,
+  });
+
+  final List<JournalImportSource> sources;
+  final String Function(JournalImportSource source) nameOf;
+  final ValueChanged<JournalImportSource> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final width = (constraints.maxWidth - AppSpacing.s) / 2;
+        return Wrap(
+          spacing: AppSpacing.s,
+          runSpacing: AppSpacing.s,
+          children: <Widget>[
+            for (final source in sources)
+              SizedBox(
+                width: width,
+                child: Material(
+                  color: colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(16),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () => onPick(source),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.m,
+                        vertical: AppSpacing.m,
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          nameOf(source),
+                          maxLines: 1,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

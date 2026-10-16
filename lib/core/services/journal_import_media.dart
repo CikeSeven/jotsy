@@ -39,14 +39,25 @@ class JournalMediaStager {
     Duration? duration,
   }) {
     final source = File(sourcePath);
+    final normalized = p.normalize(source.absolute.path);
+    // 解压出的文件暂存时被直接移走，再次引用同一文件只能从缓存取，所以先查
+    // 缓存再判断文件是否存在。
+    final cached = _staged[normalized];
+    if (cached != null) {
+      return _embed(
+        kind ?? journalMediaKindOf(_extensionOf(cached)),
+        cached,
+        name: name,
+        duration: duration,
+      );
+    }
     if (!source.existsSync()) {
       missingCount++;
       return null;
     }
-    final normalized = p.normalize(source.absolute.path);
     final extension = _extensionOf(normalized) ?? _sniffExtension(source);
     final resolvedKind = kind ?? journalMediaKindOf(extension);
-    final staged = _staged[normalized] ??= _stage(
+    final staged = _staged[normalized] = _stage(
       source,
       resolvedKind,
       _fileName(name ?? p.basename(normalized), extension),

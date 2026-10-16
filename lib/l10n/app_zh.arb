@@ -2699,7 +2699,7 @@
   "@dataMgmtImportJournal": {
     "description": "数据管理中导入其他日记应用导出文件的入口。"
   },
-  "dataMgmtImportJournalSubtitle": "支持 Day One、Journey、Diarium、Daylio 与 Apple 手记",
+  "dataMgmtImportJournalSubtitle": "支持 Day One、Evernote、Google Keep、Obsidian、小米笔记、华为备忘录等 18 种来源",
   "@dataMgmtImportJournalSubtitle": {
     "description": "列出可导入导出文件的日记应用。"
   },
@@ -2756,6 +2756,91 @@
   "journalImportNoEntries": "文件中没有可导入的日记",
   "@journalImportNoEntries": {
     "description": "导出文件格式正确但没有任何日记时的提示。"
+  },
+  "journalImportGroupJournals": "日记应用",
+  "@journalImportGroupJournals": {
+    "description": "导入来源面板中日记类应用的分组标题。"
+  },
+  "journalImportGroupNotes": "笔记应用",
+  "@journalImportGroupNotes": {
+    "description": "导入来源面板中笔记类应用的分组标题。"
+  },
+  "journalImportGroupPhoneNotes": "手机与 WPS 云笔记",
+  "@journalImportGroupPhoneNotes": {
+    "description": "导入来源面板中经「笔记互迁」导出的手机厂商与 WPS 云笔记的分组标题。"
+  },
+  "journalImportPhoneNotesHint": "这些笔记没有自带的导出：先在电脑上用开源工具「笔记互迁」登录云端，导出为 HTML、Markdown 或 TXT 并打包成 .zip，再选择该文件。",
+  "@journalImportPhoneNotesHint": {
+    "description": "说明手机厂商与 WPS 云笔记需要先用「笔记互迁」导出。"
+  },
+  "journalImportDiaroHint": "备份文件（.zip，不能加密）",
+  "@journalImportDiaroHint": {
+    "description": "可导入的 Diaro 文件类型。"
+  },
+  "journalImportEvernote": "印象笔记 / Evernote",
+  "@journalImportEvernote": {
+    "description": "Evernote（国内版为印象笔记）的名称。"
+  },
+  "journalImportEvernoteHint": "导出笔记本为 ENEX（.enex，多个可打包成 .zip）",
+  "@journalImportEvernoteHint": {
+    "description": "如何得到可导入的印象笔记 / Evernote 导出文件。"
+  },
+  "journalImportGoogleKeepHint": "在 Google Takeout 中导出 Keep（.zip）",
+  "@journalImportGoogleKeepHint": {
+    "description": "如何得到可导入的 Google Keep 导出文件。"
+  },
+  "journalImportJoplinHint": "导出为 JEX（.jex）",
+  "@journalImportJoplinHint": {
+    "description": "如何得到可导入的 Joplin 导出文件。"
+  },
+  "journalImportMemosHint": "v0.31 起在「设置 › 导出与导入」中导出（.zip）",
+  "@journalImportMemosHint": {
+    "description": "如何得到可导入的 Memos 导出文件。"
+  },
+  "journalImportMarkdown": "Markdown / 纯文本",
+  "@journalImportMarkdown": {
+    "description": "导入来源中 Markdown 与纯文本文件的名称。"
+  },
+  "journalImportMarkdownHint": "Obsidian、Bear、Notion 等导出的 .md / .txt，或它们的 .zip",
+  "@journalImportMarkdownHint": {
+    "description": "可导入的 Markdown 与纯文本文件。"
+  },
+  "journalImportXiaomiNotes": "小米笔记",
+  "@journalImportXiaomiNotes": {
+    "description": "小米笔记应用名称。"
+  },
+  "journalImportHuaweiNotepad": "华为备忘录",
+  "@journalImportHuaweiNotepad": {
+    "description": "华为备忘录应用名称。"
+  },
+  "journalImportOppoNotes": "OPPO 笔记",
+  "@journalImportOppoNotes": {
+    "description": "OPPO 笔记应用名称。"
+  },
+  "journalImportVivoNotes": "vivo 笔记",
+  "@journalImportVivoNotes": {
+    "description": "vivo 笔记应用名称。"
+  },
+  "journalImportHonorNotes": "荣耀笔记",
+  "@journalImportHonorNotes": {
+    "description": "荣耀笔记应用名称。"
+  },
+  "journalImportMeizuNotes": "魅族笔记",
+  "@journalImportMeizuNotes": {
+    "description": "魅族笔记应用名称。"
+  },
+  "journalImportWpsNotes": "WPS 便签",
+  "@journalImportWpsNotes": {
+    "description": "WPS 便签应用名称。"
+  },
+  "journalImportEncrypted": "{app} 的加密备份无法导入，请在原应用中创建未加密的备份",
+  "@journalImportEncrypted": {
+    "description": "所选文件是密钥不公开的加密备份时的提示。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
   },
   "backupImportKindJournal": "{app} 导出",
   "@backupImportKindJournal": {

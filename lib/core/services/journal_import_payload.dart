@@ -49,7 +49,7 @@ BackupPayload buildJournalImportPayload(
         updatedAt: entry.updatedAt.isBefore(entry.createdAt)
             ? entry.createdAt
             : entry.updatedAt,
-        isArchived: false,
+        isArchived: entry.archived,
         isPinned: entry.pinned,
         isDeleted: false,
       ),

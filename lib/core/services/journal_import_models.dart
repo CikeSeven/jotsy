@@ -19,7 +19,63 @@ enum JournalImportSource {
 
   /// Apple 手记（Journal）：「导出所有手记条目」得到的 HTML 文件夹 ZIP。
   appleJournal,
+
+  /// Diaro：备份 ZIP（`DiaroBackup.xml` + `media/photo/`）；加密备份不支持。
+  diaro,
+
+  /// Evernote / 印象笔记：每个笔记本一个 `.enex`（可多个打包成 ZIP）。
+  evernote,
+
+  /// Google Keep：Google Takeout 导出的 ZIP（`Takeout/Keep/*.json` + 附件）。
+  googleKeep,
+
+  /// Joplin：JEX 导出（tar），或打包成 ZIP 的 RAW 导出目录。
+  joplin,
+
+  /// Memos：v0.31 起的导出 ZIP（Memos Export Format 1.0），或 v0.19 ~ v0.22
+  /// 的平铺 Markdown 导出。
+  memos,
+
+  /// Markdown / 纯文本笔记：单个 `.md`/`.txt`，或 Obsidian、Bear、Notion
+  /// 等导出的 ZIP，每个文件一篇。
+  markdown,
+
+  // 以下七个是手机厂商与 WPS 的云端笔记：没有自带的导出，经桌面工具
+  // 「笔记互迁」从云端导出为 HTML/Markdown/TXT（常打包成 ZIP），共用
+  // `journal_import_note_bridge.dart` 解析。
+
+  /// 小米笔记。
+  xiaomiNotes,
+
+  /// 华为备忘录。
+  huaweiNotepad,
+
+  /// OPPO 笔记。
+  oppoNotes,
+
+  /// vivo 笔记。
+  vivoNotes,
+
+  /// 荣耀笔记。
+  honorNotes,
+
+  /// 魅族笔记（Flyme）。
+  meizuNotes,
+
+  /// WPS 便签。
+  wpsNotes,
 }
+
+/// 经「笔记互迁」导出的云端笔记来源。
+const Set<JournalImportSource> noteBridgeJournalSources = {
+  JournalImportSource.xiaomiNotes,
+  JournalImportSource.huaweiNotepad,
+  JournalImportSource.oppoNotes,
+  JournalImportSource.vivoNotes,
+  JournalImportSource.honorNotes,
+  JournalImportSource.meizuNotes,
+  JournalImportSource.wpsNotes,
+};
 
 /// 第三方导出中识别出的一篇日记，正文已转换为本应用的 Delta JSON。
 ///
@@ -40,6 +96,7 @@ class JournalImportEntry {
     this.latitude,
     this.longitude,
     this.pinned = false,
+    this.archived = false,
   }) : updatedAt = updatedAt ?? createdAt;
 
   /// 来源应用内稳定的条目标识，同一导出文件再次导入时不变，用于生成
@@ -64,6 +121,9 @@ class JournalImportEntry {
   final double? latitude;
   final double? longitude;
   final bool pinned;
+
+  /// 来源里已归档（如 Google Keep 的归档笔记），导入后同样归档。
+  final bool archived;
 }
 
 /// 解析结果：日记与缺失的媒体数（导出里有引用、但文件不在包内）。
@@ -78,15 +138,22 @@ class JournalImportParseResult {
 }
 
 /// 所选文件不是对应来源的导出格式，或格式正确但没有可导入的日记
-/// （[noEntries]）。界面据此给出具体提示，而不是展示底层解析异常。
+/// （[noEntries]），或是密钥不公开的加密备份（[encrypted]，如 Diaro）。
+/// 界面据此给出具体提示，而不是展示底层解析异常。
 class JournalImportFormatException implements Exception {
-  const JournalImportFormatException(this.source, {this.noEntries = false});
+  const JournalImportFormatException(
+    this.source, {
+    this.noEntries = false,
+    this.encrypted = false,
+  });
 
   final JournalImportSource source;
   final bool noEntries;
+  final bool encrypted;
 
   @override
   String toString() =>
       'JournalImportFormatException(${source.name}'
-      '${noEntries ? ', no entries' : ''})';
+      '${noEntries ? ', no entries' : ''}'
+      '${encrypted ? ', encrypted' : ''})';
 }

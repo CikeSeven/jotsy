@@ -231,4 +231,109 @@ void main() {
       ),
     );
   });
+
+  /// 「笔记互迁」的打包导出：同一组笔记分别导出为 HTML 与 Markdown。
+  Future<File> noteBridgeZip(String format) {
+    const stamp =
+        '创建时间：2024-11-03 08:30:05+08:00\n修改时间：2024-11-04 10:00:00+08:00';
+    final body = switch (format) {
+      'html' =>
+        '<html><head><title>小米笔记 · 笔记互迁</title></head><body>'
+            '<script id="note-data" type="application/json">${jsonEncode([
+              {'html': '<h2>周末计划</h2><div class="meta">${stamp.replaceAll('\n', '<br>')}</div><p>跑步</p><figure><img src="resources/0123456789abcdef-a.jpg"></figure>'},
+              {'html': '<h2>买菜</h2><div class="meta">创建时间：2024-11-05 09:00:00+08:00<br>修改时间：未知</div><p>鸡蛋</p>'},
+            ])}</script></body></html>',
+      _ =>
+        '# 周末计划\n\n$stamp\n\n跑步\n\n'
+            '![a.jpg](resources/0123456789abcdef-a.jpg)\n\n---\n\n'
+            '# 买菜\n\n创建时间：2024-11-05 09:00:00+08:00\n修改时间：未知\n\n鸡蛋\n',
+    };
+    final bytes = utf8.encode(body);
+    final photo = [0xFF, 0xD8, 0xFF, 0xE0];
+    final archive = Archive()
+      ..addFile(ArchiveFile('小米笔记.$format', bytes.length, bytes))
+      ..addFile(
+        ArchiveFile('resources/0123456789abcdef-a.jpg', photo.length, photo),
+      );
+    final file = File(
+      p.join(fixture.temporary.path, '小米笔记-20261016-030104-$format.zip'),
+    );
+    return file.writeAsBytes(ZipEncoder().encode(archive)!);
+  }
+
+  test(
+    'imports a Note Bridge export and recognises the same notes in another format',
+    () async {
+      final html = await JournalImportService.prepare(
+        database: fixture.database,
+        source: JournalImportSource.xiaomiNotes,
+        filePath: (await noteBridgeZip('html')).path,
+      );
+      expect(html.preview.journalSource, JournalImportSource.xiaomiNotes);
+      expect(html.preview.diaryCount, 2);
+      await html.apply(
+        database: fixture.database,
+        mode: BackupImportMode.merge,
+      );
+      await html.dispose();
+
+      final diaries = await fixture.database
+          .select(fixture.database.diaries)
+          .get();
+      final plan = diaries.firstWhere((diary) => diary.title == '周末计划');
+      expect(plan.createdAt, DateTime.utc(2024, 11, 3, 0, 30, 5).toLocal());
+      expect(plan.content, contains('diary_images'));
+      expect(
+        (jsonDecode(plan.metadata) as Map)['import']['source'],
+        'xiaomiNotes',
+      );
+
+      final markdown = await JournalImportService.prepare(
+        database: fixture.database,
+        source: JournalImportSource.xiaomiNotes,
+        filePath: (await noteBridgeZip('md')).path,
+      );
+      expect(markdown.preview.existingDiaryCount, 2);
+      await markdown.dispose();
+      expect(stagingDirectories(), isEmpty);
+
+      // 文件标注的是小米笔记，选成华为备忘录时提示格式不符。
+      await expectLater(
+        JournalImportService.prepare(
+          database: fixture.database,
+          source: JournalImportSource.huaweiNotepad,
+          filePath: (await noteBridgeZip('md')).path,
+        ),
+        throwsA(isA<JournalImportFormatException>()),
+      );
+    },
+  );
+
+  test('dates undated Markdown notes by their time inside the ZIP', () async {
+    final bytes = utf8.encode('Walked by the river.');
+    final archive = Archive()
+      ..addFile(
+        ArchiveFile('Notes/River walk.md', bytes.length, bytes)
+          ..lastModTime =
+              DateTime(2023, 6, 1, 7, 30).millisecondsSinceEpoch ~/ 1000,
+      );
+    final zip = File(p.join(fixture.temporary.path, 'vault.zip'))
+      ..writeAsBytesSync(ZipEncoder().encode(archive)!);
+
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.markdown,
+      filePath: zip.path,
+    );
+    await session.apply(
+      database: fixture.database,
+      mode: BackupImportMode.merge,
+    );
+    await session.dispose();
+
+    final diary =
+        (await fixture.database.select(fixture.database.diaries).get()).single;
+    expect(diary.title, 'River walk');
+    expect(diary.createdAt, DateTime(2023, 6, 1, 7, 30));
+  });
 }

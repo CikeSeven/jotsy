@@ -1903,7 +1903,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dataMgmtImportJournalSubtitle =>
-      '支持 Day One、Journey、Diarium、Daylio 与 Apple 手记';
+      '支持 Day One、Evernote、Google Keep、Obsidian、小米笔记、华为备忘录等 18 种来源';
 
   @override
   String get journalImportSourceTitle => '从哪个应用导入？';
@@ -1942,6 +1942,70 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get journalImportNoEntries => '文件中没有可导入的日记';
+
+  @override
+  String get journalImportGroupJournals => '日记应用';
+
+  @override
+  String get journalImportGroupNotes => '笔记应用';
+
+  @override
+  String get journalImportGroupPhoneNotes => '手机与 WPS 云笔记';
+
+  @override
+  String get journalImportPhoneNotesHint =>
+      '这些笔记没有自带的导出：先在电脑上用开源工具「笔记互迁」登录云端，导出为 HTML、Markdown 或 TXT 并打包成 .zip，再选择该文件。';
+
+  @override
+  String get journalImportDiaroHint => '备份文件（.zip，不能加密）';
+
+  @override
+  String get journalImportEvernote => '印象笔记 / Evernote';
+
+  @override
+  String get journalImportEvernoteHint => '导出笔记本为 ENEX（.enex，多个可打包成 .zip）';
+
+  @override
+  String get journalImportGoogleKeepHint => '在 Google Takeout 中导出 Keep（.zip）';
+
+  @override
+  String get journalImportJoplinHint => '导出为 JEX（.jex）';
+
+  @override
+  String get journalImportMemosHint => 'v0.31 起在「设置 › 导出与导入」中导出（.zip）';
+
+  @override
+  String get journalImportMarkdown => 'Markdown / 纯文本';
+
+  @override
+  String get journalImportMarkdownHint =>
+      'Obsidian、Bear、Notion 等导出的 .md / .txt，或它们的 .zip';
+
+  @override
+  String get journalImportXiaomiNotes => '小米笔记';
+
+  @override
+  String get journalImportHuaweiNotepad => '华为备忘录';
+
+  @override
+  String get journalImportOppoNotes => 'OPPO 笔记';
+
+  @override
+  String get journalImportVivoNotes => 'vivo 笔记';
+
+  @override
+  String get journalImportHonorNotes => '荣耀笔记';
+
+  @override
+  String get journalImportMeizuNotes => '魅族笔记';
+
+  @override
+  String get journalImportWpsNotes => 'WPS 便签';
+
+  @override
+  String journalImportEncrypted(String app) {
+    return '$app 的加密备份无法导入，请在原应用中创建未加密的备份';
+  }
 
   @override
   String backupImportKindJournal(String app) {

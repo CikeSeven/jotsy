@@ -41,26 +41,56 @@ Future<List<JournalImportSource?>> _open(
 }
 
 void main() {
-  testWidgets('lists every supported app with how to export it', (
+  testWidgets('lists every supported app, grouped, with how to export it', (
     tester,
   ) async {
     final picked = await _open(tester);
 
     expect(find.text('从哪个应用导入？'), findsOneWidget);
+    for (final title in ['日记应用', '笔记应用', '手机与 WPS 云笔记']) {
+      expect(find.text(title), findsOneWidget, reason: title);
+    }
     for (final name in [
       'Day One',
       'Journey',
       'Diarium',
       'Daylio',
       'Apple 手记',
+      'Diaro',
+      '印象笔记 / Evernote',
+      'Google Keep',
+      'Joplin',
+      'Memos',
+      'Markdown / 纯文本',
+      '小米笔记',
+      '华为备忘录',
+      'OPPO 笔记',
+      'vivo 笔记',
+      '荣耀笔记',
+      '魅族笔记',
+      'WPS 便签',
     ]) {
       expect(find.text(name), findsOneWidget, reason: name);
     }
     expect(find.text('备份文件（.daylio）或导出的 CSV（.csv）'), findsOneWidget);
+    expect(find.textContaining('「笔记互迁」'), findsOneWidget);
 
     await tester.tap(find.text('Apple 手记'));
     await tester.pumpAndSettle();
     expect(picked, [JournalImportSource.appleJournal]);
+  });
+
+  testWidgets('picks a phone cloud note source from the compact grid', (
+    tester,
+  ) async {
+    final picked = await _open(tester);
+
+    await tester.ensureVisible(find.text('华为备忘录'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('华为备忘录'));
+    await tester.pumpAndSettle();
+
+    expect(picked, [JournalImportSource.huaweiNotepad]);
   });
 
   testWidgets('dismissing the sheet picks nothing', (tester) async {
@@ -75,6 +105,9 @@ void main() {
       await _open(tester, brightness: brightness, size: const Size(320, 640));
       expect(tester.takeException(), isNull);
       expect(find.text('Daylio'), findsOneWidget);
+      await tester.ensureVisible(find.text('WPS 便签'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
     });
   }
 }

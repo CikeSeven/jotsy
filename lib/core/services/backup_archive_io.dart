@@ -30,12 +30,14 @@ class BackupArchiveIO {
     Directory directory, {
     String? password,
     Set<String>? only,
+    bool keepModifiedTimes = false,
   }) => Isolate.run<void>(
     () => BackupZipReader.extract(
       zipPath,
       directory.path,
       password: password,
       only: only,
+      keepModifiedTimes: keepModifiedTimes,
     ),
   );
 

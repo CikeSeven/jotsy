@@ -2699,7 +2699,7 @@
   "@dataMgmtImportJournal": {
     "description": "Data management entry for importing exports of other diary apps."
   },
-  "dataMgmtImportJournalSubtitle": "Day One, Journey, Diarium, Daylio and Apple Journal",
+  "dataMgmtImportJournalSubtitle": "Day One, Evernote, Google Keep, Obsidian, Xiaomi Notes and 13 more",
   "@dataMgmtImportJournalSubtitle": {
     "description": "Subtitle listing the diary apps whose exports can be imported."
   },
@@ -2756,6 +2756,91 @@
   "journalImportNoEntries": "There are no diaries to import in this file",
   "@journalImportNoEntries": {
     "description": "Shown when an export is valid but contains no entries."
+  },
+  "journalImportGroupJournals": "Journaling apps",
+  "@journalImportGroupJournals": {
+    "description": "Section title for journaling apps in the import source sheet."
+  },
+  "journalImportGroupNotes": "Note apps",
+  "@journalImportGroupNotes": {
+    "description": "Section title for note-taking apps in the import source sheet."
+  },
+  "journalImportGroupPhoneNotes": "Phone & WPS cloud notes",
+  "@journalImportGroupPhoneNotes": {
+    "description": "Section title for phone-maker and WPS cloud notes exported with Note Bridge."
+  },
+  "journalImportPhoneNotesHint": "These apps can't export by themselves. On a computer, sign in with the open-source tool Note Bridge (笔记互迁), export as HTML, Markdown or TXT and pack it as .zip, then choose that file.",
+  "@journalImportPhoneNotesHint": {
+    "description": "Explains that phone-maker and WPS notes must first be exported with Note Bridge."
+  },
+  "journalImportDiaroHint": "Backup file (.zip, unencrypted)",
+  "@journalImportDiaroHint": {
+    "description": "Which Diaro files can be imported."
+  },
+  "journalImportEvernote": "Evernote",
+  "@journalImportEvernote": {
+    "description": "Display name of Evernote."
+  },
+  "journalImportEvernoteHint": "Export notebooks as ENEX (.enex, or several in a .zip)",
+  "@journalImportEvernoteHint": {
+    "description": "How to get an importable Evernote export."
+  },
+  "journalImportGoogleKeepHint": "Export Keep with Google Takeout (.zip)",
+  "@journalImportGoogleKeepHint": {
+    "description": "How to get an importable Google Keep export."
+  },
+  "journalImportJoplinHint": "Export as JEX (.jex)",
+  "@journalImportJoplinHint": {
+    "description": "How to get an importable Joplin export."
+  },
+  "journalImportMemosHint": "Settings › Export & Import, v0.31 or later (.zip)",
+  "@journalImportMemosHint": {
+    "description": "How to get an importable Memos export."
+  },
+  "journalImportMarkdown": "Markdown / plain text",
+  "@journalImportMarkdown": {
+    "description": "Display name of the Markdown / plain-text import source."
+  },
+  "journalImportMarkdownHint": ".md / .txt files from Obsidian, Bear, Notion and more, or a .zip of them",
+  "@journalImportMarkdownHint": {
+    "description": "Which Markdown and plain-text files can be imported."
+  },
+  "journalImportXiaomiNotes": "Xiaomi Notes",
+  "@journalImportXiaomiNotes": {
+    "description": "Display name of Xiaomi Notes."
+  },
+  "journalImportHuaweiNotepad": "Huawei Notepad",
+  "@journalImportHuaweiNotepad": {
+    "description": "Display name of Huawei Notepad."
+  },
+  "journalImportOppoNotes": "OPPO Notes",
+  "@journalImportOppoNotes": {
+    "description": "Display name of OPPO Notes."
+  },
+  "journalImportVivoNotes": "vivo Notes",
+  "@journalImportVivoNotes": {
+    "description": "Display name of vivo Notes."
+  },
+  "journalImportHonorNotes": "HONOR Notes",
+  "@journalImportHonorNotes": {
+    "description": "Display name of HONOR Notes."
+  },
+  "journalImportMeizuNotes": "Meizu Notes",
+  "@journalImportMeizuNotes": {
+    "description": "Display name of Meizu Notes."
+  },
+  "journalImportWpsNotes": "WPS Notes",
+  "@journalImportWpsNotes": {
+    "description": "Display name of WPS Notes."
+  },
+  "journalImportEncrypted": "Encrypted {app} backups can't be imported. Create an unencrypted backup in {app}",
+  "@journalImportEncrypted": {
+    "description": "Shown when the chosen file is an encrypted backup that can't be read.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
   },
   "backupImportKindJournal": "{app} export",
   "@backupImportKindJournal": {

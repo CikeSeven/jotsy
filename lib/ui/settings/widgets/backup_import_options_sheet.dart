@@ -7,7 +7,7 @@ import '../../../core/services/backup_import_models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/expressive_state_blend.dart';
-import 'journal_import_source_sheet.dart';
+import 'journal_import_source_labels.dart';
 
 /// 打开导入方式面板：概述导入文件并返回所选 [BackupImportMode]，取消返回 null。
 ///

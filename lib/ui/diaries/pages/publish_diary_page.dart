@@ -18,7 +18,9 @@ import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/diaries/widgets/time_capsule_seal_overlay.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 /// 日记发布页（预览优先）。
@@ -218,32 +220,44 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               right: 16,
               bottom: 0,
               // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
-              child: ValueListenableBuilder<DateTime?>(
-                valueListenable: _publisher.explicitPublishAt,
-                builder: (context, _, _) => PublishDiaryPanel(
-                  controller: _panelController,
-                  draft: _meta,
-                  actions: _metaActions,
-                  busy: _leaveBlocked,
-                  publishTime: PublishTimeOption(
-                    // 既没选过、打开者也没指定时传 null，显示“自动获取当前时间”。
-                    label: _publisher.hasFixedPublishTime
-                        ? context.l10n.formatDateTimeMinute(
-                            _publisher.effectivePublishAt,
-                          )
-                        : null,
-                    onPick: _pickPublishTime,
+              // 发布与封存期间锁住面板：写库后的改动不会再保存，不该看起来可改。
+              child: AbsorbPointer(
+                absorbing: _leaveBlocked,
+                child: ValueListenableBuilder<DateTime?>(
+                  valueListenable: _publisher.explicitPublishAt,
+                  builder: (context, _, _) => PublishDiaryPanel(
+                    controller: _panelController,
+                    draft: _meta,
+                    actions: _metaActions,
+                    busy: _leaveBlocked,
+                    publishTime: PublishTimeOption(
+                      // 既没选过、打开者也没指定时传 null，显示“自动获取当前时间”。
+                      label: _publisher.hasFixedPublishTime
+                          ? context.l10n.formatDateTimeMinute(
+                              _publisher.effectivePublishAt,
+                            )
+                          : null,
+                      onPick: _pickPublishTime,
+                    ),
+                    capsuleEnabled: true,
+                    onPublish: _publish,
+                    // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                    // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
+                    onProgressChanged: (progress) {
+                      if (mounted) {
+                        _panelExpandProgress.value = progress;
+                      }
+                    },
                   ),
-                  capsuleEnabled: true,
-                  onPublish: _publish,
-                  // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-                  // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
-                  onProgressChanged: (progress) {
-                    if (mounted) {
-                      _panelExpandProgress.value = progress;
-                    }
-                  },
                 ),
+              ),
+            ),
+            // 写库通常几十毫秒完成：遮罩立即拦截点击，超过 300ms 才淡入显示。
+            Positioned.fill(
+              child: ActionLoadingOverlay(
+                visible: _publisher.phase.value == PublishPhase.saving,
+                label: context.l10n.autoT0176,
+                revealDelay: DelayedLoadingGate.defaultDelay,
               ),
             ),
             if (_publisher.phase.value == PublishPhase.sealing)

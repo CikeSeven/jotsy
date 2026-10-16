@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -106,6 +107,16 @@ Future<void> _publishPresetCapsule(
         !pressedBack &&
         find.text(l10n.timeCapsuleSealing).evaluate().isNotEmpty) {
       pressedBack = true;
+      // 封存中日记已写库：面板锁定，改动不会再保存。
+      final lock = tester.widget<AbsorbPointer>(
+        find
+            .ancestor(
+              of: find.byType(PublishDiaryPanel),
+              matching: find.byType(AbsorbPointer),
+            )
+            .first,
+      );
+      expect(lock.absorbing, isTrue);
       await tester.binding.handlePopRoute();
     }
   }

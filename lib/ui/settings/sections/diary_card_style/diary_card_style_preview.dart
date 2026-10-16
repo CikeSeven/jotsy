@@ -12,9 +12,10 @@ import '../../../diaries/sections/diary_head_section.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
 
-/// 卡片样式的实时预览：顶部切换列表/瀑布流（同时决定“专属”分组编辑哪种
-/// 布局）与预览明暗，下方用真实的 [DiariesListSection] 渲染示例日记，与日记
-/// 列表看到的完全一致。
+/// 卡片样式的实时预览：顶部工具条（[DiaryCardStylePreviewToolbar]）切换列表/
+/// 瀑布流与预览明暗，下方用真实的 [DiariesListSection] 渲染示例日记，与日记
+/// 列表看到的完全一致。窄屏时工具条由页面单独放在顶部（[showToolbar] 为
+/// false），预览区随下方选项面板的拖动伸缩。
 ///
 /// 预览可滚动；点按或长按示例卡片切换选中，便于查看选中态的描边与高亮。
 /// 共享元素关闭（`enableCoverHero: false`），避免与真实列表的同名 Hero 冲突。
@@ -26,11 +27,20 @@ class DiaryCardStylePreview extends StatefulWidget {
     required this.controller,
     required this.samples,
     required this.moodOptions,
+    this.showToolbar = true,
+    this.bottomPadding = 0,
   });
 
   final DiaryCardStyleEditorController controller;
   final List<DiaryWithTags> samples;
   final List<String> moodOptions;
+
+  /// 是否在预览上方显示工具条。
+  final bool showToolbar;
+
+  /// 列表末尾额外留白：预览底部被面板圆角压住的部分，最后一张示例仍能完整
+  /// 滚到可见处。
+  final double bottomPadding;
 
   @override
   State<DiaryCardStylePreview> createState() => _DiaryCardStylePreviewState();
@@ -77,7 +87,6 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final controller = widget.controller;
     final appTheme = Theme.of(context);
     final brightness = controller.previewBrightness ?? appTheme.brightness;
@@ -86,50 +95,11 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
       brightness,
       reduceMotion: MediaQuery.disableAnimationsOf(context),
     );
-    final isLight = brightness == Brightness.light;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: ExpressiveButtonGroup<DiaryCardMode>(
-                  minSegmentWidth: 96,
-                  segments: <ButtonSegment<DiaryCardMode>>[
-                    // 只放文字：预览顶栏与明暗按钮同行，窄屏大字号下带图标
-                    // 的“Waterfall”会折行。
-                    ButtonSegment<DiaryCardMode>(
-                      value: DiaryCardMode.list,
-                      label: Text(l10n.autoT0146),
-                    ),
-                    ButtonSegment<DiaryCardMode>(
-                      value: DiaryCardMode.waterfall,
-                      label: Text(l10n.autoT0147),
-                    ),
-                  ],
-                  selected: <DiaryCardMode>{controller.mode},
-                  onSelectionChanged: (Set<DiaryCardMode> selection) =>
-                      controller.mode = selection.single,
-                ),
-              ),
-              const SizedBox(width: 8),
-              IconButton.filledTonal(
-                tooltip: isLight
-                    ? l10n.diaryCardStylePreviewDark
-                    : l10n.diaryCardStylePreviewLight,
-                onPressed: () => controller.previewBrightness = isLight
-                    ? Brightness.dark
-                    : Brightness.light,
-                icon: FaIcon(
-                  isLight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
-                  size: 16,
-                ),
-              ),
-            ],
-          ),
-        ),
+        if (widget.showToolbar)
+          DiaryCardStylePreviewToolbar(controller: controller),
         Expanded(
           child: Theme(
             data: previewTheme,
@@ -160,7 +130,9 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
                           enableCoverHero: false,
                           opensLockedCapsulePage: false,
                         ),
-                        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: 12 + widget.bottomPadding),
+                        ),
                       ],
                     ),
                   ),
@@ -170,6 +142,61 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 预览工具条：列表/瀑布流（同时决定“专属”分组编辑哪种布局）与预览明暗。
+class DiaryCardStylePreviewToolbar extends StatelessWidget {
+  const DiaryCardStylePreviewToolbar({super.key, required this.controller});
+
+  final DiaryCardStyleEditorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final brightness =
+        controller.previewBrightness ?? Theme.of(context).brightness;
+    final isLight = brightness == Brightness.light;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: ExpressiveButtonGroup<DiaryCardMode>(
+              minSegmentWidth: 96,
+              segments: <ButtonSegment<DiaryCardMode>>[
+                // 只放文字：预览顶栏与明暗按钮同行，窄屏大字号下带图标
+                // 的“Waterfall”会折行。
+                ButtonSegment<DiaryCardMode>(
+                  value: DiaryCardMode.list,
+                  label: Text(l10n.autoT0146),
+                ),
+                ButtonSegment<DiaryCardMode>(
+                  value: DiaryCardMode.waterfall,
+                  label: Text(l10n.autoT0147),
+                ),
+              ],
+              selected: <DiaryCardMode>{controller.mode},
+              onSelectionChanged: (Set<DiaryCardMode> selection) =>
+                  controller.mode = selection.single,
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton.filledTonal(
+            tooltip: isLight
+                ? l10n.diaryCardStylePreviewDark
+                : l10n.diaryCardStylePreviewLight,
+            onPressed: () => controller.previewBrightness = isLight
+                ? Brightness.dark
+                : Brightness.light,
+            icon: FaIcon(
+              isLight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
+              size: 16,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

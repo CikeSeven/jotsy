@@ -12,7 +12,10 @@ import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_card_view_data.dart';
 import 'package:node_diary/ui/settings/pages/diary_card_style_page.dart';
+import 'package:node_diary/ui/settings/sections/diary_card_style/diary_card_style_preview.dart';
 import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
+import 'package:node_diary/ui/widgets/snap_panel.dart';
+import 'package:node_diary/ui/widgets/triple_bar_drag_handle.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -198,6 +201,97 @@ void main() {
     }
   });
 
+  testWidgets('the options panel drags between three stops', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final (_, l10n) = await _pumpPage(tester);
+    String stop() => tester
+        .getSemantics(find.bySemanticsLabel(l10n.diaryCardStylePanelHandle))
+        .value;
+    double tabBarTop() => tester.getTopLeft(find.byType(TabBar)).dy;
+    expect(stop(), l10n.diaryCardStylePanelHalf);
+    final halfTop = tabBarTop();
+
+    await tester.fling(find.byType(TabBar), const Offset(0, -80), 1500);
+    await tester.pumpAndSettle();
+    expect(stop(), l10n.diaryCardStylePanelExpanded);
+    // 上档盖住预览，只留列表/瀑布流与明暗工具条。
+    expect(tabBarTop(), lessThan(halfTop));
+    expect(
+      tabBarTop() - SnapPanel.handleExtent,
+      closeTo(
+        tester.getBottomLeft(find.byType(DiaryCardStylePreviewToolbar)).dy,
+        0.01,
+      ),
+    );
+
+    for (var i = 0; i < 2; i++) {
+      await tester.fling(find.byType(TabBar), const Offset(0, 80), 1500);
+      await tester.pumpAndSettle();
+    }
+    expect(stop(), l10n.diaryCardStylePanelCollapsed);
+    // 下档只露出拖动条与标签栏，预览占满其余空间。
+    expect(tester.getBottomLeft(find.byType(TabBar)).dy, closeTo(860, 0.01));
+
+    // 收起时点标签：切到这一页，面板回到中档。
+    final contentTab = find.widgetWithText(Tab, l10n.diaryCardStyleTabContent);
+    await tester.ensureVisible(contentTab);
+    await tester.pumpAndSettle();
+    expect(stop(), l10n.diaryCardStylePanelCollapsed);
+    await tester.tap(contentTab);
+    await tester.pumpAndSettle();
+    expect(stop(), l10n.diaryCardStylePanelHalf);
+    expect(tabBarTop(), closeTo(halfTop, 0.01));
+    expect(
+      find.widgetWithText(SwitchListTile, l10n.diaryCardStyleShowTitle),
+      findsOneWidget,
+    );
+    semantics.dispose();
+  });
+
+  testWidgets('reordering blocks inside the panel leaves the panel still', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryCardStyleTabOrder);
+    final tabBarTop = tester.getTopLeft(find.byType(TabBar)).dy;
+    // 拖动“标题”行（第二行）的手柄（拿起即拖动，不经过长按）到“标签”下方。
+    final handle = find.byType(TripleBarDragHandle).at(1);
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    await tester.pump();
+    for (var i = 0; i < 6; i++) {
+      await gesture.moveBy(const Offset(0, 15));
+      await tester.pump();
+    }
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(_stored(settings).current.content.blocks, <DiaryCardBlock>[
+      DiaryCardBlock.eyebrow,
+      DiaryCardBlock.tags,
+      DiaryCardBlock.title,
+      DiaryCardBlock.preview,
+      DiaryCardBlock.footer,
+    ]);
+    expect(tester.getTopLeft(find.byType(TabBar)).dy, tabBarTop);
+    expect(
+      tester
+          .getSemantics(find.bySemanticsLabel(l10n.diaryCardStylePanelHandle))
+          .value,
+      l10n.diaryCardStylePanelHalf,
+    );
+    semantics.dispose();
+  });
+
+  testWidgets('wide screens keep preview and options side by side', (
+    tester,
+  ) async {
+    await _pumpPage(tester, size: const Size(900, 700));
+    expect(find.byType(SnapPanel), findsNothing);
+    expect(find.byType(DiaryCardStylePreviewToolbar), findsOneWidget);
+    expect(find.byType(TabBarView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('sliders preview while dragging and persist on release', (
     tester,
   ) async {
@@ -367,6 +461,27 @@ void main() {
   });
 
   for (final brightness in Brightness.values) {
+    testWidgets('the panel stops fit a 320dp screen in $brightness', (
+      tester,
+    ) async {
+      final (_, l10n) = await _pumpPage(
+        tester,
+        brightness: brightness,
+        size: const Size(320, 640),
+      );
+      await _openTab(tester, l10n.diaryCardStyleTabContent);
+      for (final offset in <Offset>[
+        const Offset(0, -80),
+        const Offset(0, 80),
+        const Offset(0, 80),
+      ]) {
+        await tester.fling(find.byType(TabBar), offset, 1500);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+      expect(tester.getBottomLeft(find.byType(TabBar)).dy, closeTo(640, 0.01));
+    });
+
     testWidgets('every tab fits a 320dp screen in $brightness', (tester) async {
       final (_, l10n) = await _pumpPage(
         tester,

@@ -3965,6 +3965,22 @@
   "@diaryCardStylePreviewDark": {
     "description": "日记卡片样式设置页：预览切换为深色主题的按钮提示。"
   },
+  "diaryCardStylePanelHandle": "选项面板",
+  "@diaryCardStylePanelHandle": {
+    "description": "日记卡片样式设置页：选项面板拖动条的读屏名称（拖动或点按可调整面板高度）。"
+  },
+  "diaryCardStylePanelCollapsed": "已收起",
+  "@diaryCardStylePanelCollapsed": {
+    "description": "日记卡片样式设置页：选项面板收到底部、只露出标签栏时的读屏状态。"
+  },
+  "diaryCardStylePanelHalf": "半展开",
+  "@diaryCardStylePanelHalf": {
+    "description": "日记卡片样式设置页：选项面板停在中间、与预览各占一部分时的读屏状态。"
+  },
+  "diaryCardStylePanelExpanded": "已展开",
+  "@diaryCardStylePanelExpanded": {
+    "description": "日记卡片样式设置页：选项面板展开到顶部、盖住预览时的读屏状态。"
+  },
   "diaryCardStyleSharedGroup": "所有布局",
   "@diaryCardStyleSharedGroup": {
     "description": "日记卡片样式设置页：对列表和瀑布流都生效的选项分组标题。"

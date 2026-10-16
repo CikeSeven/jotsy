@@ -2745,6 +2745,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStylePreviewDark => '深色预览';
 
   @override
+  String get diaryCardStylePanelHandle => '选项面板';
+
+  @override
+  String get diaryCardStylePanelCollapsed => '已收起';
+
+  @override
+  String get diaryCardStylePanelHalf => '半展开';
+
+  @override
+  String get diaryCardStylePanelExpanded => '已展开';
+
+  @override
   String get diaryCardStyleSharedGroup => '所有布局';
 
   @override

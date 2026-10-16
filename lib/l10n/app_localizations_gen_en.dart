@@ -3064,6 +3064,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStylePreviewDark => 'Dark preview';
 
   @override
+  String get diaryCardStylePanelHandle => 'Options panel';
+
+  @override
+  String get diaryCardStylePanelCollapsed => 'Collapsed';
+
+  @override
+  String get diaryCardStylePanelHalf => 'Half open';
+
+  @override
+  String get diaryCardStylePanelExpanded => 'Expanded';
+
+  @override
   String get diaryCardStyleSharedGroup => 'All layouts';
 
   @override

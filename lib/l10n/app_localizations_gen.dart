@@ -5018,6 +5018,30 @@ abstract class AppLocalizations {
   /// **'Dark preview'**
   String get diaryCardStylePreviewDark;
 
+  /// Diary card style settings: screen reader name of the options panel's drag handle (drag or tap to resize the panel).
+  ///
+  /// In en, this message translates to:
+  /// **'Options panel'**
+  String get diaryCardStylePanelHandle;
+
+  /// Diary card style settings: screen reader state when the options panel is collapsed to its tab bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapsed'**
+  String get diaryCardStylePanelCollapsed;
+
+  /// Diary card style settings: screen reader state when the options panel shares the screen with the preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Half open'**
+  String get diaryCardStylePanelHalf;
+
+  /// Diary card style settings: screen reader state when the options panel is expanded over the preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Expanded'**
+  String get diaryCardStylePanelExpanded;
+
   /// Diary card style settings: group title for options that apply to both list and waterfall layouts.
   ///
   /// In en, this message translates to:

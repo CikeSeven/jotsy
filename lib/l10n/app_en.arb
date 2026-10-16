@@ -3965,6 +3965,22 @@
   "@diaryCardStylePreviewDark": {
     "description": "Diary card style settings: tooltip of the button that previews the dark theme."
   },
+  "diaryCardStylePanelHandle": "Options panel",
+  "@diaryCardStylePanelHandle": {
+    "description": "Diary card style settings: screen reader name of the options panel's drag handle (drag or tap to resize the panel)."
+  },
+  "diaryCardStylePanelCollapsed": "Collapsed",
+  "@diaryCardStylePanelCollapsed": {
+    "description": "Diary card style settings: screen reader state when the options panel is collapsed to its tab bar."
+  },
+  "diaryCardStylePanelHalf": "Half open",
+  "@diaryCardStylePanelHalf": {
+    "description": "Diary card style settings: screen reader state when the options panel shares the screen with the preview."
+  },
+  "diaryCardStylePanelExpanded": "Expanded",
+  "@diaryCardStylePanelExpanded": {
+    "description": "Diary card style settings: screen reader state when the options panel is expanded over the preview."
+  },
   "diaryCardStyleSharedGroup": "All layouts",
   "@diaryCardStyleSharedGroup": {
     "description": "Diary card style settings: group title for options that apply to both list and waterfall layouts."

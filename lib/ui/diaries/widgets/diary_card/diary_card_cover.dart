@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../widgets/expressive_image_frame.dart';
 import '../../../widgets/image_viewer_hero.dart';
+import '../diary_image_source.dart';
 
 /// 卡片封面图（自动区分网络图、本地文件与内置示例资源）。
 ///
@@ -27,7 +26,7 @@ class DiaryCardCoverImage extends StatelessWidget {
     this.lowResolution = false,
   });
 
-  static const String assetScheme = 'asset:';
+  static const String assetScheme = diaryAssetImageScheme;
 
   /// 未解封胶囊封面的解码宽度（逻辑像素，不乘 dpr）：模糊后无需细节。
   static const double sealedDecodeWidth = 48;
@@ -72,10 +71,6 @@ class DiaryCardCoverImage extends StatelessWidget {
     final filterQuality = lowResolution
         ? FilterQuality.medium
         : FilterQuality.low;
-    final trimmed = source.trim();
-    final uri = Uri.tryParse(trimmed);
-    final isNetwork =
-        uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
     Widget errorBuilder(
       BuildContext context,
       Object error,
@@ -84,38 +79,17 @@ class DiaryCardCoverImage extends StatelessWidget {
 
     // 封面解码完成才出画面：用统一淡入替代“啪”地冒出，缓存命中（滚回已显示过
     // 的卡片）则直接显示，不会重复闪烁。
-    final Widget imageWidget;
-    if (trimmed.startsWith(assetScheme)) {
-      imageWidget = Image.asset(
-        trimmed.substring(assetScheme.length),
-        fit: BoxFit.cover,
-        cacheWidth: cacheWidth,
-        cacheHeight: cacheHeight,
-        filterQuality: filterQuality,
-        frameBuilder: expressiveImageFrameBuilder,
-        errorBuilder: errorBuilder,
-      );
-    } else if (isNetwork) {
-      imageWidget = Image.network(
-        trimmed,
-        fit: BoxFit.cover,
-        cacheWidth: cacheWidth,
-        cacheHeight: cacheHeight,
-        filterQuality: filterQuality,
-        frameBuilder: expressiveImageFrameBuilder,
-        errorBuilder: errorBuilder,
-      );
-    } else {
-      imageWidget = Image.file(
-        File(trimmed),
-        fit: BoxFit.cover,
-        cacheWidth: cacheWidth,
-        cacheHeight: cacheHeight,
-        filterQuality: filterQuality,
-        frameBuilder: expressiveImageFrameBuilder,
-        errorBuilder: errorBuilder,
-      );
-    }
+    final imageWidget = Image(
+      image: ResizeImage.resizeIfNeeded(
+        cacheWidth,
+        cacheHeight,
+        diaryImageProvider(source),
+      ),
+      fit: BoxFit.cover,
+      filterQuality: filterQuality,
+      frameBuilder: expressiveImageFrameBuilder,
+      errorBuilder: errorBuilder,
+    );
 
     final sized = SizedBox(width: width, height: height, child: imageWidget);
     if (radius <= 0) {

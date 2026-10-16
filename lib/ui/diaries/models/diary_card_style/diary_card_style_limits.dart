@@ -4,21 +4,10 @@
 /// 边界）、设置页滑块的 min/max/divisions、渲染层的二次夹紧。
 library;
 
-/// 一个数值字段的闭区间与步进。
-class DiaryCardRange {
-  const DiaryCardRange(this.min, this.max, this.step);
+import '../style_library/style_json.dart';
 
-  final double min;
-  final double max;
-  final double step;
-
-  double clamp(double value) => value.clamp(min, max).toDouble();
-
-  int clampInt(int value) => value.clamp(min.round(), max.round()).toInt();
-
-  /// 滑块分段数；步进不能整除区间时向最近整数取整。
-  int get divisions => ((max - min) / step).round();
-}
+/// 一个数值字段的闭区间与步进（与预览页样式共用 [StyleRange]）。
+typedef DiaryCardRange = StyleRange;
 
 abstract final class DiaryCardStyleLimits {
   // 表面。

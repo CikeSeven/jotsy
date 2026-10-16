@@ -5099,5 +5099,566 @@
   "diaryWordCountRule": "Each Chinese character or full-width punctuation mark counts as one word, other text counts by words, and spaces and line breaks are not counted.",
   "@diaryWordCountRule": {
     "description": "Footnote of the word count sheet explaining the counting rule."
+  },
+  "diaryPreviewUpdatedPrefix": "Updated",
+  "@diaryPreviewUpdatedPrefix": {
+    "description": "Preview page meta: prefix before the date when the date shown is the last update time."
+  },
+  "diaryPreviewBackToTop": "Back to top",
+  "@diaryPreviewBackToTop": {
+    "description": "Tooltip of the preview page button that scrolls back to the top."
+  },
+  "diaryPreviewStyleTitle": "Diary preview page",
+  "@diaryPreviewStyleTitle": {
+    "description": "Diary preview style settings: page title and settings entry."
+  },
+  "diaryPreviewStyleEntrySubtitle": "Current: {name}",
+  "@diaryPreviewStyleEntrySubtitle": {
+    "description": "Diary preview style settings: entry subtitle with the current preset or saved style name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviewStyleMoreEntry": "Page style",
+  "@diaryPreviewStyleMoreEntry": {
+    "description": "Diary preview style settings: item in the preview page More sheet that opens these settings."
+  },
+  "diaryPreviewStyleTabPresets": "Presets",
+  "@diaryPreviewStyleTabPresets": {
+    "description": "Diary preview style settings: tab."
+  },
+  "diaryPreviewStyleTabPage": "Page",
+  "@diaryPreviewStyleTabPage": {
+    "description": "Diary preview style settings: tab."
+  },
+  "diaryPreviewStyleTabCover": "Cover",
+  "@diaryPreviewStyleTabCover": {
+    "description": "Diary preview style settings: tab."
+  },
+  "diaryPreviewStyleTabTitle": "Title",
+  "@diaryPreviewStyleTabTitle": {
+    "description": "Diary preview style settings: tab."
+  },
+  "diaryPreviewStyleTabMeta": "Details",
+  "@diaryPreviewStyleTabMeta": {
+    "description": "Diary preview style settings: tab."
+  },
+  "diaryPreviewStyleTabBody": "Text",
+  "@diaryPreviewStyleTabBody": {
+    "description": "Diary preview style settings: tab."
+  },
+  "diaryPreviewStylePresetClassic": "Classic",
+  "@diaryPreviewStylePresetClassic": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetClassicDesc": "The original look",
+  "@diaryPreviewStylePresetClassicDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetPaper": "Paper book",
+  "@diaryPreviewStylePresetPaper": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetPaperDesc": "Warm paper, centered title, inset cover",
+  "@diaryPreviewStylePresetPaperDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetMagazine": "Magazine",
+  "@diaryPreviewStylePresetMagazine": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetMagazineDesc": "Tall cover, large title, date on top",
+  "@diaryPreviewStylePresetMagazineDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetMinimal": "Minimal",
+  "@diaryPreviewStylePresetMinimal": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetMinimalDesc": "No cover, only the essentials",
+  "@diaryPreviewStylePresetMinimalDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetNight": "Night",
+  "@diaryPreviewStylePresetNight": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetNightDesc": "Ink paper with a progress line",
+  "@diaryPreviewStylePresetNightDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetJournal": "Journal",
+  "@diaryPreviewStylePresetJournal": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetJournalDesc": "Tinted by mood, details in a card",
+  "@diaryPreviewStylePresetJournalDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetMood": "Mood color",
+  "@diaryPreviewStylePresetMood": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetMoodDesc": "The page takes the entry’s mood color",
+  "@diaryPreviewStylePresetMoodDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStylePresetImmersive": "Immersive",
+  "@diaryPreviewStylePresetImmersive": {
+    "description": "Diary preview style settings: preset name."
+  },
+  "diaryPreviewStylePresetImmersiveDesc": "Full cover, progress and back-to-top",
+  "@diaryPreviewStylePresetImmersiveDesc": {
+    "description": "Diary preview style settings: preset description."
+  },
+  "diaryPreviewStyleColorGroup": "Colors",
+  "@diaryPreviewStyleColorGroup": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStyleColorSeed": "Color basis",
+  "@diaryPreviewStyleColorSeed": {
+    "description": "Diary preview style settings: setting title: which color the page is themed from."
+  },
+  "diaryPreviewStyleSeedApp": "App theme",
+  "@diaryPreviewStyleSeedApp": {
+    "description": "Diary preview style settings: color basis option."
+  },
+  "diaryPreviewStyleSeedMood": "Mood",
+  "@diaryPreviewStyleSeedMood": {
+    "description": "Diary preview style settings: color basis option."
+  },
+  "diaryPreviewStyleSeedTag": "First tag",
+  "@diaryPreviewStyleSeedTag": {
+    "description": "Diary preview style settings: color basis option."
+  },
+  "diaryPreviewStyleSeedCustom": "Custom",
+  "@diaryPreviewStyleSeedCustom": {
+    "description": "Diary preview style settings: color basis option."
+  },
+  "diaryPreviewStyleSeedHint": "Entries without a mood or tag use the app color.",
+  "@diaryPreviewStyleSeedHint": {
+    "description": "Diary preview style settings: note under the color basis."
+  },
+  "diaryPreviewStyleSeedColor": "Basis color",
+  "@diaryPreviewStyleSeedColor": {
+    "description": "Diary preview style settings: custom color basis picker."
+  },
+  "diaryPreviewStylePaper": "Paper",
+  "@diaryPreviewStylePaper": {
+    "description": "Diary preview style settings: setting title: page background."
+  },
+  "diaryPreviewStylePaperTheme": "Theme",
+  "@diaryPreviewStylePaperTheme": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperWarm": "Warm",
+  "@diaryPreviewStylePaperWarm": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperSepia": "Sepia",
+  "@diaryPreviewStylePaperSepia": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperMint": "Mint",
+  "@diaryPreviewStylePaperMint": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperGray": "Gray",
+  "@diaryPreviewStylePaperGray": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperInk": "Ink",
+  "@diaryPreviewStylePaperInk": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperCustom": "Custom",
+  "@diaryPreviewStylePaperCustom": {
+    "description": "Diary preview style settings: paper option."
+  },
+  "diaryPreviewStylePaperColor": "Paper color",
+  "@diaryPreviewStylePaperColor": {
+    "description": "Diary preview style settings: custom paper color picker."
+  },
+  "diaryPreviewStylePaperHint": "On paper darker or lighter than the theme, the whole page switches to match so text stays readable.",
+  "@diaryPreviewStylePaperHint": {
+    "description": "Diary preview style settings: note under the paper choice."
+  },
+  "diaryPreviewStyleTextColor": "Custom text color",
+  "@diaryPreviewStyleTextColor": {
+    "description": "Diary preview style settings: switch for a custom body text color."
+  },
+  "diaryPreviewStyleTextColorHint": "Falls back to the default color when contrast with the paper is too low.",
+  "@diaryPreviewStyleTextColorHint": {
+    "description": "Diary preview style settings: note for custom text and title colors."
+  },
+  "diaryPreviewStyleLayoutGroup": "Layout",
+  "@diaryPreviewStyleLayoutGroup": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStylePadding": "Side margins",
+  "@diaryPreviewStylePadding": {
+    "description": "Diary preview style settings: slider title."
+  },
+  "diaryPreviewStyleLimitWidth": "Limit text width",
+  "@diaryPreviewStyleLimitWidth": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleLimitWidthSubtitle": "Centers the text on tablets and in landscape",
+  "@diaryPreviewStyleLimitWidthSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleContentWidth": "Maximum text width",
+  "@diaryPreviewStyleContentWidth": {
+    "description": "Diary preview style settings: slider title."
+  },
+  "diaryPreviewStyleTopBarGroup": "Top bar",
+  "@diaryPreviewStyleTopBarGroup": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStyleTopBarFloating": "Hide on scroll",
+  "@diaryPreviewStyleTopBarFloating": {
+    "description": "Diary preview style settings: top bar option: hides when scrolling down."
+  },
+  "diaryPreviewStyleTopBarPinned": "Always shown",
+  "@diaryPreviewStyleTopBarPinned": {
+    "description": "Diary preview style settings: top bar option: always visible."
+  },
+  "diaryPreviewStyleTopBarTitle": "Title",
+  "@diaryPreviewStyleTopBarTitle": {
+    "description": "Diary preview style settings: setting title: what the top bar shows."
+  },
+  "diaryPreviewStyleTopBarTitleDate": "Date",
+  "@diaryPreviewStyleTopBarTitleDate": {
+    "description": "Diary preview style settings: top bar title option: the entry date."
+  },
+  "diaryPreviewStyleTopBarTitleNone": "None",
+  "@diaryPreviewStyleTopBarTitleNone": {
+    "description": "Diary preview style settings: top bar title option: no title."
+  },
+  "diaryPreviewStyleShowTypographyButton": "Font and layout button",
+  "@diaryPreviewStyleShowTypographyButton": {
+    "description": "Diary preview style settings: switch for a top bar button."
+  },
+  "diaryPreviewStyleShowEditButton": "Edit button",
+  "@diaryPreviewStyleShowEditButton": {
+    "description": "Diary preview style settings: switch for a top bar button."
+  },
+  "diaryPreviewStyleShowShareButton": "Share image button",
+  "@diaryPreviewStyleShowShareButton": {
+    "description": "Diary preview style settings: switch for a top bar button."
+  },
+  "diaryPreviewStyleReadingGroup": "Reading aids",
+  "@diaryPreviewStyleReadingGroup": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStyleProgress": "Reading progress line",
+  "@diaryPreviewStyleProgress": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleProgressSubtitle": "A thin line at the top grows as you read",
+  "@diaryPreviewStyleProgressSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleBackToTop": "Back-to-top button",
+  "@diaryPreviewStyleBackToTop": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleBackToTopSubtitle": "Shows up after a screen and a half",
+  "@diaryPreviewStyleBackToTopSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleCoverMode": "Style",
+  "@diaryPreviewStyleCoverMode": {
+    "description": "Diary preview style settings: cover display setting title."
+  },
+  "diaryPreviewStyleCoverBanner": "Full width",
+  "@diaryPreviewStyleCoverBanner": {
+    "description": "Diary preview style settings: cover option."
+  },
+  "diaryPreviewStyleCoverInset": "Inset",
+  "@diaryPreviewStyleCoverInset": {
+    "description": "Diary preview style settings: cover option."
+  },
+  "diaryPreviewStyleCoverHidden": "Hidden",
+  "@diaryPreviewStyleCoverHidden": {
+    "description": "Diary preview style settings: cover option."
+  },
+  "diaryPreviewStyleCoverFit": "Fit",
+  "@diaryPreviewStyleCoverFit": {
+    "description": "Diary preview style settings: cover fit setting title."
+  },
+  "diaryPreviewStyleCoverContain": "Whole photo",
+  "@diaryPreviewStyleCoverContain": {
+    "description": "Diary preview style settings: cover fit option."
+  },
+  "diaryPreviewStyleCoverFill": "Fill and crop",
+  "@diaryPreviewStyleCoverFill": {
+    "description": "Diary preview style settings: cover fit option."
+  },
+  "diaryPreviewStyleCoverHeight": "Cover height",
+  "@diaryPreviewStyleCoverHeight": {
+    "description": "Diary preview style settings: slider title."
+  },
+  "diaryPreviewStyleCoverHeightHint": "The cover never takes more than 70% of the screen height.",
+  "@diaryPreviewStyleCoverHeightHint": {
+    "description": "Diary preview style settings: footer of the cover group."
+  },
+  "diaryPreviewStyleCoverRadius": "Corner radius",
+  "@diaryPreviewStyleCoverRadius": {
+    "description": "Diary preview style settings: slider title for the inset cover."
+  },
+  "diaryPreviewStyleCoverFade": "Fade on scroll",
+  "@diaryPreviewStyleCoverFade": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleCoverFadeSubtitle": "The cover fades and shrinks a little as you scroll up",
+  "@diaryPreviewStyleCoverFadeSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleCoverFirstImage": "Use the first photo without a cover",
+  "@diaryPreviewStyleCoverFirstImage": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleTitleVisible": "Show title",
+  "@diaryPreviewStyleTitleVisible": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleTitleUntitled": "Show “Untitled” when there is no title",
+  "@diaryPreviewStyleTitleUntitled": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleTitleUntitledSubtitle": "When off, the title line is left out",
+  "@diaryPreviewStyleTitleUntitledSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleTitleScale": "Title size",
+  "@diaryPreviewStyleTitleScale": {
+    "description": "Diary preview style settings: slider title."
+  },
+  "diaryPreviewStyleTitleWeight": "Weight",
+  "@diaryPreviewStyleTitleWeight": {
+    "description": "Diary preview style settings: setting title."
+  },
+  "diaryPreviewStyleWeightRegular": "Regular",
+  "@diaryPreviewStyleWeightRegular": {
+    "description": "Diary preview style settings: title weight option."
+  },
+  "diaryPreviewStyleWeightMedium": "Medium",
+  "@diaryPreviewStyleWeightMedium": {
+    "description": "Diary preview style settings: title weight option."
+  },
+  "diaryPreviewStyleWeightBold": "Bold",
+  "@diaryPreviewStyleWeightBold": {
+    "description": "Diary preview style settings: title weight option."
+  },
+  "diaryPreviewStyleWeightHeavy": "Heavy",
+  "@diaryPreviewStyleWeightHeavy": {
+    "description": "Diary preview style settings: title weight option."
+  },
+  "diaryPreviewStyleTitleAlign": "Alignment",
+  "@diaryPreviewStyleTitleAlign": {
+    "description": "Diary preview style settings: setting title."
+  },
+  "diaryPreviewStyleAlignStart": "Start",
+  "@diaryPreviewStyleAlignStart": {
+    "description": "Diary preview style settings: alignment option."
+  },
+  "diaryPreviewStyleAlignCenter": "Center",
+  "@diaryPreviewStyleAlignCenter": {
+    "description": "Diary preview style settings: alignment option."
+  },
+  "diaryPreviewStyleTitleColor": "Custom title color",
+  "@diaryPreviewStyleTitleColor": {
+    "description": "Diary preview style settings: switch for a custom title color."
+  },
+  "diaryPreviewStyleMetaPosition": "Position",
+  "@diaryPreviewStyleMetaPosition": {
+    "description": "Diary preview style settings: setting title."
+  },
+  "diaryPreviewStyleMetaAbove": "Above title",
+  "@diaryPreviewStyleMetaAbove": {
+    "description": "Diary preview style settings: details position option."
+  },
+  "diaryPreviewStyleMetaBelow": "Below title",
+  "@diaryPreviewStyleMetaBelow": {
+    "description": "Diary preview style settings: details position option."
+  },
+  "diaryPreviewStyleMetaEnd": "After text",
+  "@diaryPreviewStyleMetaEnd": {
+    "description": "Diary preview style settings: details position option."
+  },
+  "diaryPreviewStyleMetaLayout": "Layout",
+  "@diaryPreviewStyleMetaLayout": {
+    "description": "Diary preview style settings: setting title."
+  },
+  "diaryPreviewStyleMetaStacked": "Stacked",
+  "@diaryPreviewStyleMetaStacked": {
+    "description": "Diary preview style settings: details layout option."
+  },
+  "diaryPreviewStyleMetaInline": "Inline",
+  "@diaryPreviewStyleMetaInline": {
+    "description": "Diary preview style settings: details layout option."
+  },
+  "diaryPreviewStyleMetaCard": "Card",
+  "@diaryPreviewStyleMetaCard": {
+    "description": "Diary preview style settings: details layout option."
+  },
+  "diaryPreviewStyleMetaItems": "Shown details",
+  "@diaryPreviewStyleMetaItems": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStyleShowDate": "Date",
+  "@diaryPreviewStyleShowDate": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowWordCount": "Word count",
+  "@diaryPreviewStyleShowWordCount": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowReadingTime": "Reading time",
+  "@diaryPreviewStyleShowReadingTime": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowLocation": "Location",
+  "@diaryPreviewStyleShowLocation": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowWeather": "Weather",
+  "@diaryPreviewStyleShowWeather": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowMood": "Mood",
+  "@diaryPreviewStyleShowMood": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowEnergy": "Energy",
+  "@diaryPreviewStyleShowEnergy": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleShowTags": "Tags",
+  "@diaryPreviewStyleShowTags": {
+    "description": "Diary preview style settings: details switch."
+  },
+  "diaryPreviewStyleDatePrefix": "“Published / Updated” before the date",
+  "@diaryPreviewStyleDatePrefix": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleChipsGroup": "Chips",
+  "@diaryPreviewStyleChipsGroup": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStyleTagStyle": "Tags",
+  "@diaryPreviewStyleTagStyle": {
+    "description": "Diary preview style settings: setting title: tag look."
+  },
+  "diaryPreviewStyleChipStyle": "Mood and energy",
+  "@diaryPreviewStyleChipStyle": {
+    "description": "Diary preview style settings: setting title: mood and energy look."
+  },
+  "diaryPreviewStyleChipChip": "Chip",
+  "@diaryPreviewStyleChipChip": {
+    "description": "Diary preview style settings: mood and energy look option."
+  },
+  "diaryPreviewStyleChipPlain": "Text",
+  "@diaryPreviewStyleChipPlain": {
+    "description": "Diary preview style settings: mood and energy look option."
+  },
+  "diaryPreviewStyleTypographyEntry": "Font and layout",
+  "@diaryPreviewStyleTypographyEntry": {
+    "description": "Diary preview style settings: entry to the body typography settings."
+  },
+  "diaryPreviewStyleTypographyEntrySubtitle": "Shared with the editor",
+  "@diaryPreviewStyleTypographyEntrySubtitle": {
+    "description": "Diary preview style settings: entry subtitle."
+  },
+  "diaryPreviewStyleEmptyHint": "Hint when there is no text",
+  "@diaryPreviewStyleEmptyHint": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleLastEdited": "Show “Last edited”",
+  "@diaryPreviewStyleLastEdited": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleEditedFormat": "Time format",
+  "@diaryPreviewStyleEditedFormat": {
+    "description": "Diary preview style settings: setting title."
+  },
+  "diaryPreviewStyleEditedPrecise": "Precise",
+  "@diaryPreviewStyleEditedPrecise": {
+    "description": "Diary preview style settings: edited time option."
+  },
+  "diaryPreviewStyleEditedRelative": "Relative",
+  "@diaryPreviewStyleEditedRelative": {
+    "description": "Diary preview style settings: edited time option."
+  },
+  "diaryPreviewStyleEditedFull": "Full",
+  "@diaryPreviewStyleEditedFull": {
+    "description": "Diary preview style settings: edited time option."
+  },
+  "diaryPreviewStyleCapsuleInsight": "Unlocked capsule note",
+  "@diaryPreviewStyleCapsuleInsight": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleBehaviorGroup": "Reading behavior",
+  "@diaryPreviewStyleBehaviorGroup": {
+    "description": "Diary preview style settings: group title."
+  },
+  "diaryPreviewStyleBehaviorFootnote": "Presets and style codes don’t change these.",
+  "@diaryPreviewStyleBehaviorFootnote": {
+    "description": "Diary preview style settings: footer of the behavior group."
+  },
+  "diaryPreviewStyleTodoToggle": "Tick to-dos while reading",
+  "@diaryPreviewStyleTodoToggle": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleTodoToggleSubtitle": "Ticks are saved automatically",
+  "@diaryPreviewStyleTodoToggleSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleTextSelection": "Select text by long-press",
+  "@diaryPreviewStyleTextSelection": {
+    "description": "Diary preview style settings: switch title."
+  },
+  "diaryPreviewStyleTextSelectionSubtitle": "Select and copy parts of the entry",
+  "@diaryPreviewStyleTextSelectionSubtitle": {
+    "description": "Diary preview style settings: switch subtitle."
+  },
+  "diaryPreviewStyleSampleOf": "Sample {index} of {count}",
+  "@diaryPreviewStyleSampleOf": {
+    "description": "Diary preview style settings: screen reader label of the sample indicator.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewStyleSampleHeading": "Small things today",
+  "@diaryPreviewStyleSampleHeading": {
+    "description": "Diary preview style settings: sample entry heading."
+  },
+  "diaryPreviewStyleSampleQuote": "Slow down, it’s faster.",
+  "@diaryPreviewStyleSampleQuote": {
+    "description": "Diary preview style settings: sample entry quote."
+  },
+  "diaryPreviewStyleSampleTodo1": "Buy some flowers",
+  "@diaryPreviewStyleSampleTodo1": {
+    "description": "Diary preview style settings: sample entry to-do."
+  },
+  "diaryPreviewStyleSampleTodo2": "Call home",
+  "@diaryPreviewStyleSampleTodo2": {
+    "description": "Diary preview style settings: sample entry to-do."
+  },
+  "diaryPreviewStyleSampleLong": "After the rain stopped the street went quiet. I sat by the window and wrote down three things I was grateful for, while leaves drifted past like the pages of an old book.",
+  "@diaryPreviewStyleSampleLong": {
+    "description": "Diary preview style settings: long paragraph of a sample entry."
+  },
+  "diaryPreviewStyleSampleWeather": "Sunny",
+  "@diaryPreviewStyleSampleWeather": {
+    "description": "Diary preview style settings: weather of a sample entry."
   }
 }

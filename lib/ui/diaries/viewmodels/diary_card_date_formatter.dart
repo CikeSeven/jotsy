@@ -17,38 +17,58 @@ abstract final class DiaryCardDateFormatter {
     required DateTime updatedAt,
     required DateTime now,
   }) {
-    final date =
-        (meta.dateSource == DiaryCardDateSource.created ? createdAt : updatedAt)
-            .toLocal();
+    return format(
+      l10n: l10n,
+      format: meta.dateFormat,
+      showWeekday: meta.showWeekday,
+      showTime: meta.showTime,
+      date: meta.dateSource == DiaryCardDateSource.created
+          ? createdAt
+          : updatedAt,
+      now: now,
+    );
+  }
+
+  /// 按格式、星期与时刻开关格式化一个日期（卡片眉线与预览页信息栏共用）。
+  static String format({
+    required AppLocalizations l10n,
+    required DiaryCardDateFormat format,
+    required bool showWeekday,
+    required bool showTime,
+    required DateTime date,
+    required DateTime now,
+  }) {
+    final local = date.toLocal();
     final localNow = now.toLocal();
-    if (meta.dateFormat == DiaryCardDateFormat.relative) {
+    if (format == DiaryCardDateFormat.relative) {
       // 相对时间本身已表达远近，不再附星期与时刻。
       return RelativeTimeFormatter.formatUpdatedAt(
-        updatedAt: date,
+        updatedAt: local,
         now: localNow,
         l10n: l10n,
       );
     }
-    var text = switch (meta.dateFormat) {
-      DiaryCardDateFormat.eyebrow when meta.showWeekday =>
-        l10n.formatEyebrowDate(date),
+    var text = switch (format) {
+      DiaryCardDateFormat.eyebrow when showWeekday => l10n.formatEyebrowDate(
+        local,
+      ),
       DiaryCardDateFormat.eyebrow =>
-        date.year == localNow.year
-            ? l10n.formatMonthDay(date)
-            : l10n.formatFullDate(date),
-      DiaryCardDateFormat.full => l10n.formatFullDate(date),
-      _ => DateFormat.yMd(l10n.localeName).format(date),
+        local.year == localNow.year
+            ? l10n.formatMonthDay(local)
+            : l10n.formatFullDate(local),
+      DiaryCardDateFormat.full => l10n.formatFullDate(local),
+      _ => DateFormat.yMd(l10n.localeName).format(local),
     };
-    if (meta.showWeekday && meta.dateFormat != DiaryCardDateFormat.eyebrow) {
+    if (showWeekday && format != DiaryCardDateFormat.eyebrow) {
       text = l10n.diaryCardDateWithWeekday(
         text,
-        DateFormat.E(l10n.localeName).format(date),
+        DateFormat.E(l10n.localeName).format(local),
       );
     }
-    if (meta.showTime) {
+    if (showTime) {
       text = l10n.diaryCardDateWithTime(
         text,
-        DateFormat.Hm(l10n.localeName).format(date),
+        DateFormat.Hm(l10n.localeName).format(local),
       );
     }
     return text;

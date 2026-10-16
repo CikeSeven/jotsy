@@ -3568,4 +3568,420 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryWordCountRule => '每个汉字与全角标点算 1 字，英文和数字按单词计，空格与换行不计。';
+
+  @override
+  String get diaryPreviewUpdatedPrefix => '更新于';
+
+  @override
+  String get diaryPreviewBackToTop => '回到顶部';
+
+  @override
+  String get diaryPreviewStyleTitle => '日记预览页';
+
+  @override
+  String diaryPreviewStyleEntrySubtitle(String name) {
+    return '当前：$name';
+  }
+
+  @override
+  String get diaryPreviewStyleMoreEntry => '页面样式';
+
+  @override
+  String get diaryPreviewStyleTabPresets => '预设';
+
+  @override
+  String get diaryPreviewStyleTabPage => '页面';
+
+  @override
+  String get diaryPreviewStyleTabCover => '头图';
+
+  @override
+  String get diaryPreviewStyleTabTitle => '标题';
+
+  @override
+  String get diaryPreviewStyleTabMeta => '信息';
+
+  @override
+  String get diaryPreviewStyleTabBody => '正文';
+
+  @override
+  String get diaryPreviewStylePresetClassic => '经典';
+
+  @override
+  String get diaryPreviewStylePresetClassicDesc => '改版前的样子';
+
+  @override
+  String get diaryPreviewStylePresetPaper => '纸书';
+
+  @override
+  String get diaryPreviewStylePresetPaperDesc => '暖白纸、居中标题与内嵌头图';
+
+  @override
+  String get diaryPreviewStylePresetMagazine => '杂志';
+
+  @override
+  String get diaryPreviewStylePresetMagazineDesc => '高大的头图、放大的标题，日期在上';
+
+  @override
+  String get diaryPreviewStylePresetMinimal => '极简';
+
+  @override
+  String get diaryPreviewStylePresetMinimalDesc => '不要头图，只留必要的信息';
+
+  @override
+  String get diaryPreviewStylePresetNight => '夜读';
+
+  @override
+  String get diaryPreviewStylePresetNightDesc => '墨色纸张与阅读进度线';
+
+  @override
+  String get diaryPreviewStylePresetJournal => '手账';
+
+  @override
+  String get diaryPreviewStylePresetJournalDesc => '按心情着色，信息收进卡片';
+
+  @override
+  String get diaryPreviewStylePresetMood => '心情色';
+
+  @override
+  String get diaryPreviewStylePresetMoodDesc => '整页跟着这篇的心情换颜色';
+
+  @override
+  String get diaryPreviewStylePresetImmersive => '沉浸';
+
+  @override
+  String get diaryPreviewStylePresetImmersiveDesc => '铺满的头图、进度线与回到顶部';
+
+  @override
+  String get diaryPreviewStyleColorGroup => '配色';
+
+  @override
+  String get diaryPreviewStyleColorSeed => '配色基调';
+
+  @override
+  String get diaryPreviewStyleSeedApp => '跟随应用';
+
+  @override
+  String get diaryPreviewStyleSeedMood => '心情';
+
+  @override
+  String get diaryPreviewStyleSeedTag => '首个标签';
+
+  @override
+  String get diaryPreviewStyleSeedCustom => '自定义';
+
+  @override
+  String get diaryPreviewStyleSeedHint => '没有心情或标签的日记沿用应用主题色。';
+
+  @override
+  String get diaryPreviewStyleSeedColor => '基调颜色';
+
+  @override
+  String get diaryPreviewStylePaper => '纸张';
+
+  @override
+  String get diaryPreviewStylePaperTheme => '主题';
+
+  @override
+  String get diaryPreviewStylePaperWarm => '暖白';
+
+  @override
+  String get diaryPreviewStylePaperSepia => '米黄';
+
+  @override
+  String get diaryPreviewStylePaperMint => '护眼绿';
+
+  @override
+  String get diaryPreviewStylePaperGray => '浅灰';
+
+  @override
+  String get diaryPreviewStylePaperInk => '墨色';
+
+  @override
+  String get diaryPreviewStylePaperCustom => '自定义';
+
+  @override
+  String get diaryPreviewStylePaperColor => '纸张颜色';
+
+  @override
+  String get diaryPreviewStylePaperHint => '纸色与主题深浅相反时，整页换成相应的明暗，文字始终清楚。';
+
+  @override
+  String get diaryPreviewStyleTextColor => '自定义正文颜色';
+
+  @override
+  String get diaryPreviewStyleTextColorHint => '和纸张对比度不足时自动改用默认颜色。';
+
+  @override
+  String get diaryPreviewStyleLayoutGroup => '版式';
+
+  @override
+  String get diaryPreviewStylePadding => '左右边距';
+
+  @override
+  String get diaryPreviewStyleLimitWidth => '限制正文宽度';
+
+  @override
+  String get diaryPreviewStyleLimitWidthSubtitle => '平板和横屏时居中排版';
+
+  @override
+  String get diaryPreviewStyleContentWidth => '正文最大宽度';
+
+  @override
+  String get diaryPreviewStyleTopBarGroup => '顶栏';
+
+  @override
+  String get diaryPreviewStyleTopBarFloating => '随滚动隐藏';
+
+  @override
+  String get diaryPreviewStyleTopBarPinned => '固定';
+
+  @override
+  String get diaryPreviewStyleTopBarTitle => '标题';
+
+  @override
+  String get diaryPreviewStyleTopBarTitleDate => '日期';
+
+  @override
+  String get diaryPreviewStyleTopBarTitleNone => '不显示';
+
+  @override
+  String get diaryPreviewStyleShowTypographyButton => '字体与排版按钮';
+
+  @override
+  String get diaryPreviewStyleShowEditButton => '编辑按钮';
+
+  @override
+  String get diaryPreviewStyleShowShareButton => '分享图片按钮';
+
+  @override
+  String get diaryPreviewStyleReadingGroup => '阅读辅助';
+
+  @override
+  String get diaryPreviewStyleProgress => '阅读进度线';
+
+  @override
+  String get diaryPreviewStyleProgressSubtitle => '页面顶端的细线随阅读增长';
+
+  @override
+  String get diaryPreviewStyleBackToTop => '回到顶部按钮';
+
+  @override
+  String get diaryPreviewStyleBackToTopSubtitle => '滚过一屏半后出现';
+
+  @override
+  String get diaryPreviewStyleCoverMode => '显示方式';
+
+  @override
+  String get diaryPreviewStyleCoverBanner => '通栏';
+
+  @override
+  String get diaryPreviewStyleCoverInset => '内嵌';
+
+  @override
+  String get diaryPreviewStyleCoverHidden => '不显示';
+
+  @override
+  String get diaryPreviewStyleCoverFit => '适配';
+
+  @override
+  String get diaryPreviewStyleCoverContain => '完整显示';
+
+  @override
+  String get diaryPreviewStyleCoverFill => '填满裁切';
+
+  @override
+  String get diaryPreviewStyleCoverHeight => '头图高度';
+
+  @override
+  String get diaryPreviewStyleCoverHeightHint => '头图最高为屏幕高度的七成。';
+
+  @override
+  String get diaryPreviewStyleCoverRadius => '圆角';
+
+  @override
+  String get diaryPreviewStyleCoverFade => '滚动时淡出';
+
+  @override
+  String get diaryPreviewStyleCoverFadeSubtitle => '上滑时头图逐渐变淡并轻微缩小';
+
+  @override
+  String get diaryPreviewStyleCoverFirstImage => '没有封面时用正文第一张图';
+
+  @override
+  String get diaryPreviewStyleTitleVisible => '显示标题';
+
+  @override
+  String get diaryPreviewStyleTitleUntitled => '没有标题时显示“无标题”';
+
+  @override
+  String get diaryPreviewStyleTitleUntitledSubtitle => '关闭后直接省略标题行';
+
+  @override
+  String get diaryPreviewStyleTitleScale => '标题大小';
+
+  @override
+  String get diaryPreviewStyleTitleWeight => '字重';
+
+  @override
+  String get diaryPreviewStyleWeightRegular => '常规';
+
+  @override
+  String get diaryPreviewStyleWeightMedium => '中等';
+
+  @override
+  String get diaryPreviewStyleWeightBold => '粗';
+
+  @override
+  String get diaryPreviewStyleWeightHeavy => '特粗';
+
+  @override
+  String get diaryPreviewStyleTitleAlign => '对齐';
+
+  @override
+  String get diaryPreviewStyleAlignStart => '靠左';
+
+  @override
+  String get diaryPreviewStyleAlignCenter => '居中';
+
+  @override
+  String get diaryPreviewStyleTitleColor => '自定义标题颜色';
+
+  @override
+  String get diaryPreviewStyleMetaPosition => '位置';
+
+  @override
+  String get diaryPreviewStyleMetaAbove => '标题上方';
+
+  @override
+  String get diaryPreviewStyleMetaBelow => '标题下方';
+
+  @override
+  String get diaryPreviewStyleMetaEnd => '正文之后';
+
+  @override
+  String get diaryPreviewStyleMetaLayout => '版式';
+
+  @override
+  String get diaryPreviewStyleMetaStacked => '分行';
+
+  @override
+  String get diaryPreviewStyleMetaInline => '单行';
+
+  @override
+  String get diaryPreviewStyleMetaCard => '信息卡';
+
+  @override
+  String get diaryPreviewStyleMetaItems => '显示的信息';
+
+  @override
+  String get diaryPreviewStyleShowDate => '时间';
+
+  @override
+  String get diaryPreviewStyleShowWordCount => '字数';
+
+  @override
+  String get diaryPreviewStyleShowReadingTime => '阅读时长';
+
+  @override
+  String get diaryPreviewStyleShowLocation => '地点';
+
+  @override
+  String get diaryPreviewStyleShowWeather => '天气';
+
+  @override
+  String get diaryPreviewStyleShowMood => '心情';
+
+  @override
+  String get diaryPreviewStyleShowEnergy => '精力';
+
+  @override
+  String get diaryPreviewStyleShowTags => '标签';
+
+  @override
+  String get diaryPreviewStyleDatePrefix => '日期前加“发表于 / 更新于”';
+
+  @override
+  String get diaryPreviewStyleChipsGroup => '胶囊';
+
+  @override
+  String get diaryPreviewStyleTagStyle => '标签';
+
+  @override
+  String get diaryPreviewStyleChipStyle => '心情与精力';
+
+  @override
+  String get diaryPreviewStyleChipChip => '胶囊';
+
+  @override
+  String get diaryPreviewStyleChipPlain => '纯文字';
+
+  @override
+  String get diaryPreviewStyleTypographyEntry => '字体与排版';
+
+  @override
+  String get diaryPreviewStyleTypographyEntrySubtitle => '与编辑页共用';
+
+  @override
+  String get diaryPreviewStyleEmptyHint => '没有正文时显示提示';
+
+  @override
+  String get diaryPreviewStyleLastEdited => '显示“最后编辑于”';
+
+  @override
+  String get diaryPreviewStyleEditedFormat => '时间格式';
+
+  @override
+  String get diaryPreviewStyleEditedPrecise => '精确';
+
+  @override
+  String get diaryPreviewStyleEditedRelative => '相对';
+
+  @override
+  String get diaryPreviewStyleEditedFull => '完整';
+
+  @override
+  String get diaryPreviewStyleCapsuleInsight => '时间胶囊解封提示';
+
+  @override
+  String get diaryPreviewStyleBehaviorGroup => '阅读行为';
+
+  @override
+  String get diaryPreviewStyleBehaviorFootnote => '预设与样式码不会改变这些设置。';
+
+  @override
+  String get diaryPreviewStyleTodoToggle => '允许勾选待办';
+
+  @override
+  String get diaryPreviewStyleTodoToggleSubtitle => '勾选后自动保存';
+
+  @override
+  String get diaryPreviewStyleTextSelection => '允许长按选择文字';
+
+  @override
+  String get diaryPreviewStyleTextSelectionSubtitle => '选择后可以复制';
+
+  @override
+  String diaryPreviewStyleSampleOf(int index, int count) {
+    return '示例 $index/$count';
+  }
+
+  @override
+  String get diaryPreviewStyleSampleHeading => '今天的小事';
+
+  @override
+  String get diaryPreviewStyleSampleQuote => '慢慢来，比较快。';
+
+  @override
+  String get diaryPreviewStyleSampleTodo1 => '买一束花';
+
+  @override
+  String get diaryPreviewStyleSampleTodo2 => '给家里打个电话';
+
+  @override
+  String get diaryPreviewStyleSampleLong =>
+      '雨停以后，街道安静下来。I sat by the window and wrote down three things I was grateful for. 窗外的梧桐叶一片一片落下，像在翻一本很旧的书。';
+
+  @override
+  String get diaryPreviewStyleSampleWeather => '晴';
 }

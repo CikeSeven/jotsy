@@ -1,76 +1,24 @@
 part of 'diary_card_style.dart';
 
-// DiaryCardStyle 的 JSON 读写工具。
-//
-// 解码逐字段容错：缺失、类型不符、未知枚举名、NaN/无穷或越界的数值，只让
-// 该字段回退到默认值（数值越界夹到边界），不连累同一对象里的其他字段。
-// 编码是稀疏的：只写与该字段默认值不同的项（见 [DiaryCardStyle] 的说明）。
+// DiaryCardStyle 的 JSON 读写工具：通用部分委托给 [StyleJson]（与预览页
+// 样式共用），这里只保留简短的库内别名与卡片专有的区块顺序解析。
 
-T _enumByName<T extends Enum>(List<T> values, Object? raw, T fallback) {
-  if (raw is! String) {
-    return fallback;
-  }
-  for (final value in values) {
-    if (value.name == raw) {
-      return value;
-    }
-  }
-  return fallback;
-}
+T _enumByName<T extends Enum>(List<T> values, Object? raw, T fallback) =>
+    StyleJson.enumByName(values, raw, fallback);
 
-bool _bool(Object? raw, bool fallback) => raw is bool ? raw : fallback;
+bool _bool(Object? raw, bool fallback) => StyleJson.boolean(raw, fallback);
 
-double _double(Object? raw, double fallback, DiaryCardRange range) {
-  if (raw is! num || !raw.isFinite) {
-    return fallback;
-  }
-  return range.clamp(raw.toDouble());
-}
+double _double(Object? raw, double fallback, DiaryCardRange range) =>
+    StyleJson.number(raw, fallback, range);
 
-int _int(Object? raw, int fallback, DiaryCardRange range) {
-  if (raw is! num || !raw.isFinite) {
-    return fallback;
-  }
-  return range.clampInt(raw.round());
-}
+int _int(Object? raw, int fallback, DiaryCardRange range) =>
+    StyleJson.integer(raw, fallback, range);
 
-/// 解析自定义颜色：接受 `#RRGGBB`、`#AARRGGBB`（不带 # 亦可）或 ARGB 整数。
-/// 一律强制为不透明——透明度由各颜色位的强度字段单独表达。
-int? _argb(Object? raw) {
-  int? value;
-  if (raw is int) {
-    value = raw;
-  } else if (raw is String) {
-    var hex = raw.trim();
-    if (hex.startsWith('#')) {
-      hex = hex.substring(1);
-    }
-    if ((hex.length == 6 || hex.length == 8) &&
-        RegExp(r'^[0-9a-fA-F]+$').hasMatch(hex)) {
-      value = int.tryParse(hex, radix: 16);
-    }
-  }
-  if (value == null || value < 0 || value > 0xFFFFFFFF) {
-    return null;
-  }
-  return 0xFF000000 | (value & 0x00FFFFFF);
-}
+int? _argb(Object? raw) => StyleJson.argb(raw);
 
-String _hex(int argb) =>
-    '#${(argb & 0x00FFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
+String _hex(int argb) => StyleJson.hex(argb);
 
-Map<String, dynamic>? _map(Object? raw) {
-  if (raw is Map<String, dynamic>) {
-    return raw;
-  }
-  if (raw is Map) {
-    return <String, dynamic>{
-      for (final entry in raw.entries)
-        if (entry.key is String) entry.key as String: entry.value,
-    };
-  }
-  return null;
-}
+Map<String, dynamic>? _map(Object? raw) => StyleJson.map(raw);
 
 /// 区块顺序：丢弃未知名与重复项，再把缺失的区块按默认顺序补在末尾，保证
 /// 每个区块恰好出现一次（新版本新增区块时旧配置也能完整渲染）。
@@ -94,26 +42,22 @@ List<DiaryCardBlock> _blocks(Object? raw, List<DiaryCardBlock> fallback) {
   return List<DiaryCardBlock>.unmodifiable(result);
 }
 
-/// 稀疏写入：值与默认值相同则不写。
-void _put(Map<String, Object> json, String key, Object value, Object fallback) {
-  if (value != fallback) {
-    json[key] = value;
-  }
-}
+void _put(
+  Map<String, Object> json,
+  String key,
+  Object value,
+  Object fallback,
+) => StyleJson.put(json, key, value, fallback);
 
-void _putEnum(Map<String, Object> json, String key, Enum value, Enum fallback) {
-  if (value != fallback) {
-    json[key] = value.name;
-  }
-}
+void _putEnum(
+  Map<String, Object> json,
+  String key,
+  Enum value,
+  Enum fallback,
+) => StyleJson.putEnum(json, key, value, fallback);
 
-/// 子对象稀疏写入：与默认值完全相同时整个键都不写。
 void _putObject(
   Map<String, Object> json,
   String key,
   Map<String, Object> encoded,
-) {
-  if (encoded.isNotEmpty) {
-    json[key] = encoded;
-  }
-}
+) => StyleJson.putObject(json, key, encoded);

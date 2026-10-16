@@ -14,6 +14,7 @@ import '../../../anniversaries/models/anniversary_draft.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/app_top_bar.dart';
+import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_preview_export_controller.dart';
@@ -22,12 +23,16 @@ import '../../models/diary_preview_result.dart';
 import '../../models/time_capsule.dart';
 import '../../pages/edit_diary_page.dart';
 import '../../pages/locked_diary_page.dart';
+import '../../providers/diary_card_style_provider.dart';
 import '../../providers/diary_detail_provider.dart';
+import '../../providers/diary_preview_style_provider.dart';
 import '../../sections/diary_typography_sheet.dart';
+import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
+import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
 
 /// 一篇日记的预览（阅读优先）：数据、只读正文与动作。
@@ -186,10 +191,14 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     Navigator.of(context).pop(DiaryPreviewResult.deleted);
   }
 
-  Future<void> _showActions(DiaryWithTags detail) {
+  Future<void> _showActions(
+    DiaryWithTags detail,
+    DiaryPreviewResolvedStyle resolved,
+  ) {
     return showDiaryPreviewActionsSheet(
       context,
-      onShareImage: () => _export.shareLongImage(context),
+      onShareImage: () =>
+          _export.shareLongImage(context, background: resolved.background),
       onExportMarkdown: () async {
         final controller = _controller;
         if (controller == null) {
@@ -223,6 +232,23 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
         draft: AnniversaryDraft.fromDiary(detail.diary),
       ),
       onDelete: _deleteDiary,
+      onOpenStyle: () => _openStyleSettings(detail),
+    );
+  }
+
+  /// “更多 → 页面样式”：打开预览页样式设置，第一篇示例就是这篇日记。
+  Future<void> _openStyleSettings(DiaryWithTags detail) async {
+    final settings = ref.read(settingsServiceProvider).asData?.value;
+    if (settings == null) {
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => DiaryPreviewStylePage(
+          settingsService: settings,
+          previewDiary: detail,
+        ),
+      ),
     );
   }
 
@@ -298,35 +324,48 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     );
     _viewData = viewData;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        top: false,
-        child: Stack(
-          children: <Widget>[
-            WidgetShotPlus(
-              key: _shareCaptureKey,
-              child: DiaryPreviewContent(
-                detail: detail,
-                viewData: viewData,
-                controller: _controller,
-                scrollController: _scrollController,
-                coverPlaceholder: widget.coverHero?.placeholder,
-                staticCover: _export.staticCover,
-                onOpenImage: _openImageViewer,
-                onOpenTypography: () => showDiaryTypographySheet(context),
-                onEdit: _openEditor,
-                onMore: () => _showActions(detail),
-              ),
+    final style = ref.watch(diaryPreviewStyleProvider);
+    final behavior = ref.watch(diaryPreviewBehaviorProvider);
+    final resolved = DiaryPreviewResolvedStyle.resolve(
+      style: style,
+      appTheme: Theme.of(context),
+      appSeed: ref.watch(appThemeSeedColorProvider),
+      screenSize: MediaQuery.sizeOf(context),
+      reduceMotion: MediaQuery.disableAnimationsOf(context),
+      moodOptions: ref.watch(diaryCardMoodOptionsProvider),
+      moodEmoji: viewData.moodEmoji,
+      firstTagColor: detail.tags.isEmpty ? null : detail.tags.first.color,
+    );
+    return DiaryPreviewSurface(
+      resolved: resolved,
+      scrollController: _scrollController,
+      content: WidgetShotPlus(
+        key: _shareCaptureKey,
+        child: DiaryPreviewContent(
+          detail: detail,
+          viewData: viewData,
+          controller: _controller,
+          scrollController: _scrollController,
+          resolved: resolved,
+          behavior: behavior,
+          coverHeroTag: diaryCoverHeroTag(widget.diaryId),
+          coverPlaceholder: widget.coverHero?.placeholder,
+          staticCover: _export.staticCover,
+          onOpenImage: _openImageViewer,
+          actions: DiaryPreviewActions(
+            onOpenTypography: () => showDiaryTypographySheet(context),
+            onEdit: _openEditor,
+            onShare: () => _export.shareLongImage(
+              context,
+              background: resolved.background,
             ),
-            Positioned.fill(
-              child: ActionLoadingOverlay(
-                visible: _export.showLoading,
-                label: _export.loadingLabel,
-              ),
-            ),
-          ],
+            onMore: () => _showActions(detail, resolved),
+          ),
         ),
+      ),
+      overlay: ActionLoadingOverlay(
+        visible: _export.showLoading,
+        label: _export.loadingLabel,
       ),
     );
   }

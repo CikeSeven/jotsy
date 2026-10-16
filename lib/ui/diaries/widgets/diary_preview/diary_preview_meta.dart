@@ -1,32 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../utils/relative_time_formatter.dart';
 import '../../../widgets/qweather_icon.dart';
+import '../../models/diary_preview_style/diary_preview_style.dart';
+import '../../viewmodels/diary_card_date_formatter.dart';
 import '../../viewmodels/diary_preview_view_data.dart';
 import '../energy_battery_indicator.dart';
 import 'diary_preview_chips.dart';
-import 'diary_word_count_sheet.dart';
+import 'diary_preview_meta_items.dart';
 
-/// 预览页信息栏：发表时间与字数一行，地点与天气一行，心情、精力与标签胶囊
-/// 折行排列。
+export 'diary_preview_meta_items.dart';
+
+/// 预览页信息栏：时间、字数、地点、天气与心情、精力、标签胶囊。
+///
+/// 版式（[DiaryPreviewMetaStyle.layout]）：
+/// - stacked：时间与字数一行、地点与天气一行、胶囊折行一组（改版前的样子）；
+/// - inline：所有项目排成一段，按宽度自动折行；
+/// - card：stacked 的内容收进一张圆角信息卡。
+///
+/// 每一项都可以单独关闭；没有数据的项（没填天气、没有标签……）不占位。所有
+/// 行都用 [Wrap] 排布并限制单项宽度，过长的地名省略而不是横向滚动——页内
+/// 不放横向滚动条，左右滑动始终留给翻页。
 class DiaryPreviewMeta extends StatelessWidget {
   const DiaryPreviewMeta({
     super.key,
     required this.detail,
     required this.viewData,
+    required this.style,
   });
 
   final DiaryWithTags detail;
   final DiaryPreviewViewData viewData;
+  final DiaryPreviewMetaStyle style;
+
+  /// 这一篇在当前样式下是否有任何信息可显示。
+  static bool hasContent(
+    DiaryWithTags detail,
+    DiaryPreviewViewData viewData,
+    DiaryPreviewMetaStyle style,
+  ) {
+    return style.showDate ||
+        (style.showWordCount && viewData.textStats.words > 0) ||
+        (style.showLocation && viewData.location != null) ||
+        (style.showWeather && viewData.weather != null) ||
+        (style.showMood && viewData.moodEmoji != null) ||
+        (style.showEnergy && viewData.energyLevel != null) ||
+        (style.showTags && detail.tags.isNotEmpty);
+  }
 
   List<DiaryPreviewChipItem> _chipItems(AppLocalizations l10n) {
     final items = <DiaryPreviewChipItem>[];
     final mood = viewData.moodEmoji;
-    if (mood != null) {
+    if (style.showMood && mood != null) {
       items.add(
         DiaryPreviewChipItem(
           kind: DiaryPreviewChipKind.mood,
@@ -35,7 +62,7 @@ class DiaryPreviewMeta extends StatelessWidget {
       );
     }
     final energy = viewData.energyLevel;
-    if (energy != null) {
+    if (style.showEnergy && energy != null) {
       final normalized = EnergyBatteryIndicator.normalizeValue(energy);
       items.add(
         DiaryPreviewChipItem(
@@ -45,38 +72,64 @@ class DiaryPreviewMeta extends StatelessWidget {
         ),
       );
     }
-    for (final tag in detail.tags) {
-      items.add(
-        DiaryPreviewChipItem(
-          kind: DiaryPreviewChipKind.tag,
-          label: tag.name,
-          tagColor: tag.color,
-        ),
-      );
+    if (style.showTags) {
+      for (final tag in detail.tags) {
+        items.add(
+          DiaryPreviewChipItem(
+            kind: DiaryPreviewChipKind.tag,
+            label: tag.name,
+            tagColor: tag.color,
+          ),
+        );
+      }
     }
     return items;
+  }
+
+  String _dateLabel(AppLocalizations l10n) {
+    final created = style.dateSource == DiaryCardDateSource.created;
+    final date = DiaryCardDateFormatter.format(
+      l10n: l10n,
+      format: style.dateFormat,
+      showWeekday: style.showWeekday,
+      showTime: style.showTime,
+      date: created ? detail.diary.createdAt : detail.diary.updatedAt,
+      now: DateTime.now(),
+    );
+    if (!style.datePrefix) {
+      return date;
+    }
+    return '${created ? l10n.autoT0117 : l10n.diaryPreviewUpdatedPrefix} $date';
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
-    final chips = _chipItems(l10n);
-    final relativeCreated = RelativeTimeFormatter.formatUpdatedAt(
-      updatedAt: detail.diary.createdAt,
-      now: DateTime.now(),
-      l10n: l10n,
-    );
+    final muted = colorScheme.onSurfaceVariant;
+    final timeItems = <Widget>[
+      if (style.showDate)
+        DiaryPreviewInlineMeta(
+          icon: FontAwesomeIcons.clock,
+          label: _dateLabel(l10n),
+          color: muted,
+        ),
+      if (style.showWordCount && viewData.textStats.words > 0)
+        DiaryPreviewWordCountMeta(
+          viewData: viewData,
+          showReadingTime: style.showReadingTime,
+        ),
+    ];
     final location = viewData.location;
     final weather = viewData.weather;
-    final locationWeatherItems = <Widget>[
-      if (location != null)
+    final placeItems = <Widget>[
+      if (style.showLocation && location != null)
         DiaryPreviewInlineMeta(
           icon: FontAwesomeIcons.locationDot,
           label: location,
-          color: colorScheme.onSurfaceVariant,
+          color: muted,
         ),
-      if (weather != null)
+      if (style.showWeather && weather != null)
         DiaryPreviewInlineMeta(
           leading: QWeatherIcon(
             iconCode: viewData.weatherIconCode,
@@ -84,148 +137,82 @@ class DiaryPreviewMeta extends StatelessWidget {
             size: 12,
           ),
           label: weather,
-          color: colorScheme.onSurfaceVariant,
+          color: muted,
+        ),
+    ];
+    final chips = <Widget>[
+      for (final item in _chipItems(l10n))
+        DiaryPreviewChip(
+          item: item,
+          tagStyle: style.tagStyle,
+          plain: style.chipStyle == DiaryPreviewChipStyle.plain,
         ),
     ];
 
-    final timeItem = DiaryPreviewInlineMeta(
-      icon: FontAwesomeIcons.clock,
-      label: '${l10n.autoT0117} $relativeCreated',
-      color: colorScheme.onSurfaceVariant,
-    );
+    if (style.layout == DiaryPreviewMetaLayout.inline) {
+      return Wrap(
+        spacing: 12,
+        runSpacing: 8,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: <Widget>[...timeItems, ...placeItems, ...chips],
+      );
+    }
 
-    return Column(
+    // 分行：时间行、地点天气行、胶囊组之间分别留 6 与 8（改版前的间距）。
+    final rows = <(double, Widget)>[
+      if (timeItems.length == 1)
+        (0, timeItems.single)
+      else if (timeItems.isNotEmpty)
+        (0, _row(timeItems, spacing: 12, runSpacing: 6)),
+      if (placeItems.isNotEmpty)
+        (6, _row(placeItems, spacing: 12, runSpacing: 6)),
+      // 胶囊高度略有不同（标签的 # 比文字大），沿用改版前的顶端对齐。
+      if (chips.isNotEmpty)
+        (8, Wrap(spacing: 8, runSpacing: 8, children: chips)),
+    ];
+    final column = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        if (viewData.textStats.words > 0)
-          Wrap(
-            spacing: 12,
-            runSpacing: 6,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: <Widget>[
-              timeItem,
-              DiaryPreviewWordCountMeta(viewData: viewData),
-            ],
-          )
-        else
-          timeItem,
-        if (locationWeatherItems.isNotEmpty) ...<Widget>[
-          const SizedBox(height: 6),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: <Widget>[
-                for (
-                  int index = 0;
-                  index < locationWeatherItems.length;
-                  index++
-                ) ...<Widget>[
-                  if (index > 0) const SizedBox(width: 12),
-                  locationWeatherItems[index],
-                ],
-              ],
-            ),
-          ),
-        ],
-        if (chips.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: chips
-                .map((item) => DiaryPreviewChip(item: item))
-                .toList(growable: false),
-          ),
+        for (var i = 0; i < rows.length; i++) ...<Widget>[
+          if (i > 0) SizedBox(height: rows[i].$1),
+          rows[i].$2,
         ],
       ],
     );
-  }
-}
-
-/// 信息栏里的一项：图标（或自定义前导，如天气图标）+ 单行文字。
-class DiaryPreviewInlineMeta extends StatelessWidget {
-  const DiaryPreviewInlineMeta({
-    super.key,
-    this.icon,
-    this.leading,
-    required this.label,
-    required this.color,
-  }) : assert(icon != null || leading != null);
-
-  final FaIconData? icon;
-  final Widget? leading;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final textStyle = Theme.of(
-      context,
-    ).textTheme.bodyMedium?.copyWith(color: color, height: 1);
-    final iconSlotSize = textStyle?.fontSize ?? 14;
-    final leadingWidget = leading ?? FaIcon(icon!, size: 12, color: color);
-
-    // Row 的居中只能对齐组件布局盒，不能对齐图标和文字的可见轮廓：
-    // FontAwesome 字形与天气 SVG 都会占满自己的方形盒，而正文文字底部仍受
-    // 字体 ascent/descent 影响。这里把图标槽位收窄到正文字号，并轻微上移，
-    // 让时钟、地址、天气图标按视觉中心与文案对齐。
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        SizedBox.square(
-          dimension: iconSlotSize,
-          child: Center(
-            child: Transform.translate(
-              offset: const Offset(0, -1),
-              child: leadingWidget,
-            ),
+    if (style.layout != DiaryPreviewMetaLayout.card) {
+      return column;
+    }
+    final isLight = colorScheme.brightness == Brightness.light;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(
+          alpha: isLight ? 0.45 : 0.6,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(
+            alpha: isLight ? 0.4 : 0.3,
           ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: textStyle,
-        ),
-      ],
-    );
-  }
-}
-
-/// 信息栏里的字数：“1,234 字 · 约 4 分钟”，点按打开字数统计明细。
-class DiaryPreviewWordCountMeta extends StatelessWidget {
-  const DiaryPreviewWordCountMeta({super.key, required this.viewData});
-
-  final DiaryPreviewViewData viewData;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final stats = viewData.textStats;
-    final words = l10n.diaryPreviewWordCount(
-      stats.words,
-      NumberFormat.decimalPattern(l10n.localeName).format(stats.words),
-    );
-    final label =
-        '$words · ${l10n.diaryPreviewReadingTime(stats.readingMinutes)}';
-    return Semantics(
-      button: true,
-      hint: l10n.diaryWordCountOpen,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(6),
-        onTap: () => showDiaryWordCountSheet(
-          context,
-          stats: stats,
-          media: viewData.media,
-        ),
-        child: DiaryPreviewInlineMeta(
-          icon: FontAwesomeIcons.penNib,
-          label: label,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+          width: 0.8,
         ),
       ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: SizedBox(width: double.infinity, child: column),
+      ),
+    );
+  }
+
+  static Widget _row(
+    List<Widget> children, {
+    required double spacing,
+    required double runSpacing,
+  }) {
+    return Wrap(
+      spacing: spacing,
+      runSpacing: runSpacing,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: children,
     );
   }
 }

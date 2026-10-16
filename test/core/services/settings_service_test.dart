@@ -424,4 +424,61 @@ void main() {
       },
     );
   });
+
+  group('SettingsService diary preview style', () {
+    const key = 'app.settings.diary_preview_style';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryPreviewStyleRaw, isNull);
+
+      await settings.setDiaryPreviewStyleRaw('  {"v":1,"current":{}}  ');
+      expect(settings.diaryPreviewStyleRaw, '{"v":1,"current":{}}');
+      expect(
+        (await SettingsService.create()).diaryPreviewStyleRaw,
+        '{"v":1,"current":{}}',
+      );
+
+      await settings.setDiaryPreviewStyleRaw('   ');
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.diaryPreviewStyleRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: true});
+      final settings = await SettingsService.create();
+      expect(settings.diaryPreviewStyleRaw, isNull);
+    });
+
+    test(
+      'backups carry the settings and older backups keep the local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryPreviewStyleRaw('{"v":1,"behavior":{"a":1}}');
+
+        final captured = BackupSettings.capture(settings);
+        expect(captured['diaryPreviewStyleRaw'], '{"v":1,"behavior":{"a":1}}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryPreviewStyleRaw, '{"v":1,"behavior":{"a":1}}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryPreviewStyleRaw': <String, dynamic>{'v': 1},
+        });
+        expect(settings.diaryPreviewStyleRaw, '{"v":1}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryPreviewStyleRaw': null,
+        });
+        expect(settings.diaryPreviewStyleRaw, isNull);
+      },
+    );
+  });
 }

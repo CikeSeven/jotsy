@@ -3948,4 +3948,443 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryWordCountRule =>
       'Each Chinese character or full-width punctuation mark counts as one word, other text counts by words, and spaces and line breaks are not counted.';
+
+  @override
+  String get diaryPreviewUpdatedPrefix => 'Updated';
+
+  @override
+  String get diaryPreviewBackToTop => 'Back to top';
+
+  @override
+  String get diaryPreviewStyleTitle => 'Diary preview page';
+
+  @override
+  String diaryPreviewStyleEntrySubtitle(String name) {
+    return 'Current: $name';
+  }
+
+  @override
+  String get diaryPreviewStyleMoreEntry => 'Page style';
+
+  @override
+  String get diaryPreviewStyleTabPresets => 'Presets';
+
+  @override
+  String get diaryPreviewStyleTabPage => 'Page';
+
+  @override
+  String get diaryPreviewStyleTabCover => 'Cover';
+
+  @override
+  String get diaryPreviewStyleTabTitle => 'Title';
+
+  @override
+  String get diaryPreviewStyleTabMeta => 'Details';
+
+  @override
+  String get diaryPreviewStyleTabBody => 'Text';
+
+  @override
+  String get diaryPreviewStylePresetClassic => 'Classic';
+
+  @override
+  String get diaryPreviewStylePresetClassicDesc => 'The original look';
+
+  @override
+  String get diaryPreviewStylePresetPaper => 'Paper book';
+
+  @override
+  String get diaryPreviewStylePresetPaperDesc =>
+      'Warm paper, centered title, inset cover';
+
+  @override
+  String get diaryPreviewStylePresetMagazine => 'Magazine';
+
+  @override
+  String get diaryPreviewStylePresetMagazineDesc =>
+      'Tall cover, large title, date on top';
+
+  @override
+  String get diaryPreviewStylePresetMinimal => 'Minimal';
+
+  @override
+  String get diaryPreviewStylePresetMinimalDesc =>
+      'No cover, only the essentials';
+
+  @override
+  String get diaryPreviewStylePresetNight => 'Night';
+
+  @override
+  String get diaryPreviewStylePresetNightDesc =>
+      'Ink paper with a progress line';
+
+  @override
+  String get diaryPreviewStylePresetJournal => 'Journal';
+
+  @override
+  String get diaryPreviewStylePresetJournalDesc =>
+      'Tinted by mood, details in a card';
+
+  @override
+  String get diaryPreviewStylePresetMood => 'Mood color';
+
+  @override
+  String get diaryPreviewStylePresetMoodDesc =>
+      'The page takes the entry’s mood color';
+
+  @override
+  String get diaryPreviewStylePresetImmersive => 'Immersive';
+
+  @override
+  String get diaryPreviewStylePresetImmersiveDesc =>
+      'Full cover, progress and back-to-top';
+
+  @override
+  String get diaryPreviewStyleColorGroup => 'Colors';
+
+  @override
+  String get diaryPreviewStyleColorSeed => 'Color basis';
+
+  @override
+  String get diaryPreviewStyleSeedApp => 'App theme';
+
+  @override
+  String get diaryPreviewStyleSeedMood => 'Mood';
+
+  @override
+  String get diaryPreviewStyleSeedTag => 'First tag';
+
+  @override
+  String get diaryPreviewStyleSeedCustom => 'Custom';
+
+  @override
+  String get diaryPreviewStyleSeedHint =>
+      'Entries without a mood or tag use the app color.';
+
+  @override
+  String get diaryPreviewStyleSeedColor => 'Basis color';
+
+  @override
+  String get diaryPreviewStylePaper => 'Paper';
+
+  @override
+  String get diaryPreviewStylePaperTheme => 'Theme';
+
+  @override
+  String get diaryPreviewStylePaperWarm => 'Warm';
+
+  @override
+  String get diaryPreviewStylePaperSepia => 'Sepia';
+
+  @override
+  String get diaryPreviewStylePaperMint => 'Mint';
+
+  @override
+  String get diaryPreviewStylePaperGray => 'Gray';
+
+  @override
+  String get diaryPreviewStylePaperInk => 'Ink';
+
+  @override
+  String get diaryPreviewStylePaperCustom => 'Custom';
+
+  @override
+  String get diaryPreviewStylePaperColor => 'Paper color';
+
+  @override
+  String get diaryPreviewStylePaperHint =>
+      'On paper darker or lighter than the theme, the whole page switches to match so text stays readable.';
+
+  @override
+  String get diaryPreviewStyleTextColor => 'Custom text color';
+
+  @override
+  String get diaryPreviewStyleTextColorHint =>
+      'Falls back to the default color when contrast with the paper is too low.';
+
+  @override
+  String get diaryPreviewStyleLayoutGroup => 'Layout';
+
+  @override
+  String get diaryPreviewStylePadding => 'Side margins';
+
+  @override
+  String get diaryPreviewStyleLimitWidth => 'Limit text width';
+
+  @override
+  String get diaryPreviewStyleLimitWidthSubtitle =>
+      'Centers the text on tablets and in landscape';
+
+  @override
+  String get diaryPreviewStyleContentWidth => 'Maximum text width';
+
+  @override
+  String get diaryPreviewStyleTopBarGroup => 'Top bar';
+
+  @override
+  String get diaryPreviewStyleTopBarFloating => 'Hide on scroll';
+
+  @override
+  String get diaryPreviewStyleTopBarPinned => 'Always shown';
+
+  @override
+  String get diaryPreviewStyleTopBarTitle => 'Title';
+
+  @override
+  String get diaryPreviewStyleTopBarTitleDate => 'Date';
+
+  @override
+  String get diaryPreviewStyleTopBarTitleNone => 'None';
+
+  @override
+  String get diaryPreviewStyleShowTypographyButton => 'Font and layout button';
+
+  @override
+  String get diaryPreviewStyleShowEditButton => 'Edit button';
+
+  @override
+  String get diaryPreviewStyleShowShareButton => 'Share image button';
+
+  @override
+  String get diaryPreviewStyleReadingGroup => 'Reading aids';
+
+  @override
+  String get diaryPreviewStyleProgress => 'Reading progress line';
+
+  @override
+  String get diaryPreviewStyleProgressSubtitle =>
+      'A thin line at the top grows as you read';
+
+  @override
+  String get diaryPreviewStyleBackToTop => 'Back-to-top button';
+
+  @override
+  String get diaryPreviewStyleBackToTopSubtitle =>
+      'Shows up after a screen and a half';
+
+  @override
+  String get diaryPreviewStyleCoverMode => 'Style';
+
+  @override
+  String get diaryPreviewStyleCoverBanner => 'Full width';
+
+  @override
+  String get diaryPreviewStyleCoverInset => 'Inset';
+
+  @override
+  String get diaryPreviewStyleCoverHidden => 'Hidden';
+
+  @override
+  String get diaryPreviewStyleCoverFit => 'Fit';
+
+  @override
+  String get diaryPreviewStyleCoverContain => 'Whole photo';
+
+  @override
+  String get diaryPreviewStyleCoverFill => 'Fill and crop';
+
+  @override
+  String get diaryPreviewStyleCoverHeight => 'Cover height';
+
+  @override
+  String get diaryPreviewStyleCoverHeightHint =>
+      'The cover never takes more than 70% of the screen height.';
+
+  @override
+  String get diaryPreviewStyleCoverRadius => 'Corner radius';
+
+  @override
+  String get diaryPreviewStyleCoverFade => 'Fade on scroll';
+
+  @override
+  String get diaryPreviewStyleCoverFadeSubtitle =>
+      'The cover fades and shrinks a little as you scroll up';
+
+  @override
+  String get diaryPreviewStyleCoverFirstImage =>
+      'Use the first photo without a cover';
+
+  @override
+  String get diaryPreviewStyleTitleVisible => 'Show title';
+
+  @override
+  String get diaryPreviewStyleTitleUntitled =>
+      'Show “Untitled” when there is no title';
+
+  @override
+  String get diaryPreviewStyleTitleUntitledSubtitle =>
+      'When off, the title line is left out';
+
+  @override
+  String get diaryPreviewStyleTitleScale => 'Title size';
+
+  @override
+  String get diaryPreviewStyleTitleWeight => 'Weight';
+
+  @override
+  String get diaryPreviewStyleWeightRegular => 'Regular';
+
+  @override
+  String get diaryPreviewStyleWeightMedium => 'Medium';
+
+  @override
+  String get diaryPreviewStyleWeightBold => 'Bold';
+
+  @override
+  String get diaryPreviewStyleWeightHeavy => 'Heavy';
+
+  @override
+  String get diaryPreviewStyleTitleAlign => 'Alignment';
+
+  @override
+  String get diaryPreviewStyleAlignStart => 'Start';
+
+  @override
+  String get diaryPreviewStyleAlignCenter => 'Center';
+
+  @override
+  String get diaryPreviewStyleTitleColor => 'Custom title color';
+
+  @override
+  String get diaryPreviewStyleMetaPosition => 'Position';
+
+  @override
+  String get diaryPreviewStyleMetaAbove => 'Above title';
+
+  @override
+  String get diaryPreviewStyleMetaBelow => 'Below title';
+
+  @override
+  String get diaryPreviewStyleMetaEnd => 'After text';
+
+  @override
+  String get diaryPreviewStyleMetaLayout => 'Layout';
+
+  @override
+  String get diaryPreviewStyleMetaStacked => 'Stacked';
+
+  @override
+  String get diaryPreviewStyleMetaInline => 'Inline';
+
+  @override
+  String get diaryPreviewStyleMetaCard => 'Card';
+
+  @override
+  String get diaryPreviewStyleMetaItems => 'Shown details';
+
+  @override
+  String get diaryPreviewStyleShowDate => 'Date';
+
+  @override
+  String get diaryPreviewStyleShowWordCount => 'Word count';
+
+  @override
+  String get diaryPreviewStyleShowReadingTime => 'Reading time';
+
+  @override
+  String get diaryPreviewStyleShowLocation => 'Location';
+
+  @override
+  String get diaryPreviewStyleShowWeather => 'Weather';
+
+  @override
+  String get diaryPreviewStyleShowMood => 'Mood';
+
+  @override
+  String get diaryPreviewStyleShowEnergy => 'Energy';
+
+  @override
+  String get diaryPreviewStyleShowTags => 'Tags';
+
+  @override
+  String get diaryPreviewStyleDatePrefix =>
+      '“Published / Updated” before the date';
+
+  @override
+  String get diaryPreviewStyleChipsGroup => 'Chips';
+
+  @override
+  String get diaryPreviewStyleTagStyle => 'Tags';
+
+  @override
+  String get diaryPreviewStyleChipStyle => 'Mood and energy';
+
+  @override
+  String get diaryPreviewStyleChipChip => 'Chip';
+
+  @override
+  String get diaryPreviewStyleChipPlain => 'Text';
+
+  @override
+  String get diaryPreviewStyleTypographyEntry => 'Font and layout';
+
+  @override
+  String get diaryPreviewStyleTypographyEntrySubtitle =>
+      'Shared with the editor';
+
+  @override
+  String get diaryPreviewStyleEmptyHint => 'Hint when there is no text';
+
+  @override
+  String get diaryPreviewStyleLastEdited => 'Show “Last edited”';
+
+  @override
+  String get diaryPreviewStyleEditedFormat => 'Time format';
+
+  @override
+  String get diaryPreviewStyleEditedPrecise => 'Precise';
+
+  @override
+  String get diaryPreviewStyleEditedRelative => 'Relative';
+
+  @override
+  String get diaryPreviewStyleEditedFull => 'Full';
+
+  @override
+  String get diaryPreviewStyleCapsuleInsight => 'Unlocked capsule note';
+
+  @override
+  String get diaryPreviewStyleBehaviorGroup => 'Reading behavior';
+
+  @override
+  String get diaryPreviewStyleBehaviorFootnote =>
+      'Presets and style codes don’t change these.';
+
+  @override
+  String get diaryPreviewStyleTodoToggle => 'Tick to-dos while reading';
+
+  @override
+  String get diaryPreviewStyleTodoToggleSubtitle =>
+      'Ticks are saved automatically';
+
+  @override
+  String get diaryPreviewStyleTextSelection => 'Select text by long-press';
+
+  @override
+  String get diaryPreviewStyleTextSelectionSubtitle =>
+      'Select and copy parts of the entry';
+
+  @override
+  String diaryPreviewStyleSampleOf(int index, int count) {
+    return 'Sample $index of $count';
+  }
+
+  @override
+  String get diaryPreviewStyleSampleHeading => 'Small things today';
+
+  @override
+  String get diaryPreviewStyleSampleQuote => 'Slow down, it’s faster.';
+
+  @override
+  String get diaryPreviewStyleSampleTodo1 => 'Buy some flowers';
+
+  @override
+  String get diaryPreviewStyleSampleTodo2 => 'Call home';
+
+  @override
+  String get diaryPreviewStyleSampleLong =>
+      'After the rain stopped the street went quiet. I sat by the window and wrote down three things I was grateful for, while leaves drifted past like the pages of an old book.';
+
+  @override
+  String get diaryPreviewStyleSampleWeather => 'Sunny';
 }

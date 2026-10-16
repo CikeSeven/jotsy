@@ -6577,6 +6577,828 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Each Chinese character or full-width punctuation mark counts as one word, other text counts by words, and spaces and line breaks are not counted.'**
   String get diaryWordCountRule;
+
+  /// Preview page meta: prefix before the date when the date shown is the last update time.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get diaryPreviewUpdatedPrefix;
+
+  /// Tooltip of the preview page button that scrolls back to the top.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to top'**
+  String get diaryPreviewBackToTop;
+
+  /// Diary preview style settings: page title and settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary preview page'**
+  String get diaryPreviewStyleTitle;
+
+  /// Diary preview style settings: entry subtitle with the current preset or saved style name.
+  ///
+  /// In en, this message translates to:
+  /// **'Current: {name}'**
+  String diaryPreviewStyleEntrySubtitle(String name);
+
+  /// Diary preview style settings: item in the preview page More sheet that opens these settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Page style'**
+  String get diaryPreviewStyleMoreEntry;
+
+  /// Diary preview style settings: tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Presets'**
+  String get diaryPreviewStyleTabPresets;
+
+  /// Diary preview style settings: tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Page'**
+  String get diaryPreviewStyleTabPage;
+
+  /// Diary preview style settings: tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get diaryPreviewStyleTabCover;
+
+  /// Diary preview style settings: tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diaryPreviewStyleTabTitle;
+
+  /// Diary preview style settings: tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get diaryPreviewStyleTabMeta;
+
+  /// Diary preview style settings: tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get diaryPreviewStyleTabBody;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get diaryPreviewStylePresetClassic;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'The original look'**
+  String get diaryPreviewStylePresetClassicDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper book'**
+  String get diaryPreviewStylePresetPaper;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm paper, centered title, inset cover'**
+  String get diaryPreviewStylePresetPaperDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Magazine'**
+  String get diaryPreviewStylePresetMagazine;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Tall cover, large title, date on top'**
+  String get diaryPreviewStylePresetMagazineDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimal'**
+  String get diaryPreviewStylePresetMinimal;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'No cover, only the essentials'**
+  String get diaryPreviewStylePresetMinimalDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get diaryPreviewStylePresetNight;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Ink paper with a progress line'**
+  String get diaryPreviewStylePresetNightDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Journal'**
+  String get diaryPreviewStylePresetJournal;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Tinted by mood, details in a card'**
+  String get diaryPreviewStylePresetJournalDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood color'**
+  String get diaryPreviewStylePresetMood;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'The page takes the entry’s mood color'**
+  String get diaryPreviewStylePresetMoodDesc;
+
+  /// Diary preview style settings: preset name.
+  ///
+  /// In en, this message translates to:
+  /// **'Immersive'**
+  String get diaryPreviewStylePresetImmersive;
+
+  /// Diary preview style settings: preset description.
+  ///
+  /// In en, this message translates to:
+  /// **'Full cover, progress and back-to-top'**
+  String get diaryPreviewStylePresetImmersiveDesc;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors'**
+  String get diaryPreviewStyleColorGroup;
+
+  /// Diary preview style settings: setting title: which color the page is themed from.
+  ///
+  /// In en, this message translates to:
+  /// **'Color basis'**
+  String get diaryPreviewStyleColorSeed;
+
+  /// Diary preview style settings: color basis option.
+  ///
+  /// In en, this message translates to:
+  /// **'App theme'**
+  String get diaryPreviewStyleSeedApp;
+
+  /// Diary preview style settings: color basis option.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryPreviewStyleSeedMood;
+
+  /// Diary preview style settings: color basis option.
+  ///
+  /// In en, this message translates to:
+  /// **'First tag'**
+  String get diaryPreviewStyleSeedTag;
+
+  /// Diary preview style settings: color basis option.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get diaryPreviewStyleSeedCustom;
+
+  /// Diary preview style settings: note under the color basis.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries without a mood or tag use the app color.'**
+  String get diaryPreviewStyleSeedHint;
+
+  /// Diary preview style settings: custom color basis picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Basis color'**
+  String get diaryPreviewStyleSeedColor;
+
+  /// Diary preview style settings: setting title: page background.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper'**
+  String get diaryPreviewStylePaper;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get diaryPreviewStylePaperTheme;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm'**
+  String get diaryPreviewStylePaperWarm;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Sepia'**
+  String get diaryPreviewStylePaperSepia;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Mint'**
+  String get diaryPreviewStylePaperMint;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Gray'**
+  String get diaryPreviewStylePaperGray;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Ink'**
+  String get diaryPreviewStylePaperInk;
+
+  /// Diary preview style settings: paper option.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get diaryPreviewStylePaperCustom;
+
+  /// Diary preview style settings: custom paper color picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper color'**
+  String get diaryPreviewStylePaperColor;
+
+  /// Diary preview style settings: note under the paper choice.
+  ///
+  /// In en, this message translates to:
+  /// **'On paper darker or lighter than the theme, the whole page switches to match so text stays readable.'**
+  String get diaryPreviewStylePaperHint;
+
+  /// Diary preview style settings: switch for a custom body text color.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom text color'**
+  String get diaryPreviewStyleTextColor;
+
+  /// Diary preview style settings: note for custom text and title colors.
+  ///
+  /// In en, this message translates to:
+  /// **'Falls back to the default color when contrast with the paper is too low.'**
+  String get diaryPreviewStyleTextColorHint;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get diaryPreviewStyleLayoutGroup;
+
+  /// Diary preview style settings: slider title.
+  ///
+  /// In en, this message translates to:
+  /// **'Side margins'**
+  String get diaryPreviewStylePadding;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit text width'**
+  String get diaryPreviewStyleLimitWidth;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Centers the text on tablets and in landscape'**
+  String get diaryPreviewStyleLimitWidthSubtitle;
+
+  /// Diary preview style settings: slider title.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum text width'**
+  String get diaryPreviewStyleContentWidth;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Top bar'**
+  String get diaryPreviewStyleTopBarGroup;
+
+  /// Diary preview style settings: top bar option: hides when scrolling down.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide on scroll'**
+  String get diaryPreviewStyleTopBarFloating;
+
+  /// Diary preview style settings: top bar option: always visible.
+  ///
+  /// In en, this message translates to:
+  /// **'Always shown'**
+  String get diaryPreviewStyleTopBarPinned;
+
+  /// Diary preview style settings: setting title: what the top bar shows.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diaryPreviewStyleTopBarTitle;
+
+  /// Diary preview style settings: top bar title option: the entry date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get diaryPreviewStyleTopBarTitleDate;
+
+  /// Diary preview style settings: top bar title option: no title.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get diaryPreviewStyleTopBarTitleNone;
+
+  /// Diary preview style settings: switch for a top bar button.
+  ///
+  /// In en, this message translates to:
+  /// **'Font and layout button'**
+  String get diaryPreviewStyleShowTypographyButton;
+
+  /// Diary preview style settings: switch for a top bar button.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit button'**
+  String get diaryPreviewStyleShowEditButton;
+
+  /// Diary preview style settings: switch for a top bar button.
+  ///
+  /// In en, this message translates to:
+  /// **'Share image button'**
+  String get diaryPreviewStyleShowShareButton;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading aids'**
+  String get diaryPreviewStyleReadingGroup;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading progress line'**
+  String get diaryPreviewStyleProgress;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A thin line at the top grows as you read'**
+  String get diaryPreviewStyleProgressSubtitle;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Back-to-top button'**
+  String get diaryPreviewStyleBackToTop;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows up after a screen and a half'**
+  String get diaryPreviewStyleBackToTopSubtitle;
+
+  /// Diary preview style settings: cover display setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Style'**
+  String get diaryPreviewStyleCoverMode;
+
+  /// Diary preview style settings: cover option.
+  ///
+  /// In en, this message translates to:
+  /// **'Full width'**
+  String get diaryPreviewStyleCoverBanner;
+
+  /// Diary preview style settings: cover option.
+  ///
+  /// In en, this message translates to:
+  /// **'Inset'**
+  String get diaryPreviewStyleCoverInset;
+
+  /// Diary preview style settings: cover option.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get diaryPreviewStyleCoverHidden;
+
+  /// Diary preview style settings: cover fit setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Fit'**
+  String get diaryPreviewStyleCoverFit;
+
+  /// Diary preview style settings: cover fit option.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole photo'**
+  String get diaryPreviewStyleCoverContain;
+
+  /// Diary preview style settings: cover fit option.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill and crop'**
+  String get diaryPreviewStyleCoverFill;
+
+  /// Diary preview style settings: slider title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover height'**
+  String get diaryPreviewStyleCoverHeight;
+
+  /// Diary preview style settings: footer of the cover group.
+  ///
+  /// In en, this message translates to:
+  /// **'The cover never takes more than 70% of the screen height.'**
+  String get diaryPreviewStyleCoverHeightHint;
+
+  /// Diary preview style settings: slider title for the inset cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner radius'**
+  String get diaryPreviewStyleCoverRadius;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Fade on scroll'**
+  String get diaryPreviewStyleCoverFade;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The cover fades and shrinks a little as you scroll up'**
+  String get diaryPreviewStyleCoverFadeSubtitle;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the first photo without a cover'**
+  String get diaryPreviewStyleCoverFirstImage;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show title'**
+  String get diaryPreviewStyleTitleVisible;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show “Untitled” when there is no title'**
+  String get diaryPreviewStyleTitleUntitled;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When off, the title line is left out'**
+  String get diaryPreviewStyleTitleUntitledSubtitle;
+
+  /// Diary preview style settings: slider title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title size'**
+  String get diaryPreviewStyleTitleScale;
+
+  /// Diary preview style settings: setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get diaryPreviewStyleTitleWeight;
+
+  /// Diary preview style settings: title weight option.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get diaryPreviewStyleWeightRegular;
+
+  /// Diary preview style settings: title weight option.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get diaryPreviewStyleWeightMedium;
+
+  /// Diary preview style settings: title weight option.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get diaryPreviewStyleWeightBold;
+
+  /// Diary preview style settings: title weight option.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy'**
+  String get diaryPreviewStyleWeightHeavy;
+
+  /// Diary preview style settings: setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Alignment'**
+  String get diaryPreviewStyleTitleAlign;
+
+  /// Diary preview style settings: alignment option.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get diaryPreviewStyleAlignStart;
+
+  /// Diary preview style settings: alignment option.
+  ///
+  /// In en, this message translates to:
+  /// **'Center'**
+  String get diaryPreviewStyleAlignCenter;
+
+  /// Diary preview style settings: switch for a custom title color.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom title color'**
+  String get diaryPreviewStyleTitleColor;
+
+  /// Diary preview style settings: setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get diaryPreviewStyleMetaPosition;
+
+  /// Diary preview style settings: details position option.
+  ///
+  /// In en, this message translates to:
+  /// **'Above title'**
+  String get diaryPreviewStyleMetaAbove;
+
+  /// Diary preview style settings: details position option.
+  ///
+  /// In en, this message translates to:
+  /// **'Below title'**
+  String get diaryPreviewStyleMetaBelow;
+
+  /// Diary preview style settings: details position option.
+  ///
+  /// In en, this message translates to:
+  /// **'After text'**
+  String get diaryPreviewStyleMetaEnd;
+
+  /// Diary preview style settings: setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get diaryPreviewStyleMetaLayout;
+
+  /// Diary preview style settings: details layout option.
+  ///
+  /// In en, this message translates to:
+  /// **'Stacked'**
+  String get diaryPreviewStyleMetaStacked;
+
+  /// Diary preview style settings: details layout option.
+  ///
+  /// In en, this message translates to:
+  /// **'Inline'**
+  String get diaryPreviewStyleMetaInline;
+
+  /// Diary preview style settings: details layout option.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get diaryPreviewStyleMetaCard;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown details'**
+  String get diaryPreviewStyleMetaItems;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get diaryPreviewStyleShowDate;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Word count'**
+  String get diaryPreviewStyleShowWordCount;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading time'**
+  String get diaryPreviewStyleShowReadingTime;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get diaryPreviewStyleShowLocation;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get diaryPreviewStyleShowWeather;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryPreviewStyleShowMood;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get diaryPreviewStyleShowEnergy;
+
+  /// Diary preview style settings: details switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryPreviewStyleShowTags;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'“Published / Updated” before the date'**
+  String get diaryPreviewStyleDatePrefix;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Chips'**
+  String get diaryPreviewStyleChipsGroup;
+
+  /// Diary preview style settings: setting title: tag look.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryPreviewStyleTagStyle;
+
+  /// Diary preview style settings: setting title: mood and energy look.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood and energy'**
+  String get diaryPreviewStyleChipStyle;
+
+  /// Diary preview style settings: mood and energy look option.
+  ///
+  /// In en, this message translates to:
+  /// **'Chip'**
+  String get diaryPreviewStyleChipChip;
+
+  /// Diary preview style settings: mood and energy look option.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get diaryPreviewStyleChipPlain;
+
+  /// Diary preview style settings: entry to the body typography settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Font and layout'**
+  String get diaryPreviewStyleTypographyEntry;
+
+  /// Diary preview style settings: entry subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shared with the editor'**
+  String get diaryPreviewStyleTypographyEntrySubtitle;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hint when there is no text'**
+  String get diaryPreviewStyleEmptyHint;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Show “Last edited”'**
+  String get diaryPreviewStyleLastEdited;
+
+  /// Diary preview style settings: setting title.
+  ///
+  /// In en, this message translates to:
+  /// **'Time format'**
+  String get diaryPreviewStyleEditedFormat;
+
+  /// Diary preview style settings: edited time option.
+  ///
+  /// In en, this message translates to:
+  /// **'Precise'**
+  String get diaryPreviewStyleEditedPrecise;
+
+  /// Diary preview style settings: edited time option.
+  ///
+  /// In en, this message translates to:
+  /// **'Relative'**
+  String get diaryPreviewStyleEditedRelative;
+
+  /// Diary preview style settings: edited time option.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get diaryPreviewStyleEditedFull;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked capsule note'**
+  String get diaryPreviewStyleCapsuleInsight;
+
+  /// Diary preview style settings: group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading behavior'**
+  String get diaryPreviewStyleBehaviorGroup;
+
+  /// Diary preview style settings: footer of the behavior group.
+  ///
+  /// In en, this message translates to:
+  /// **'Presets and style codes don’t change these.'**
+  String get diaryPreviewStyleBehaviorFootnote;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Tick to-dos while reading'**
+  String get diaryPreviewStyleTodoToggle;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticks are saved automatically'**
+  String get diaryPreviewStyleTodoToggleSubtitle;
+
+  /// Diary preview style settings: switch title.
+  ///
+  /// In en, this message translates to:
+  /// **'Select text by long-press'**
+  String get diaryPreviewStyleTextSelection;
+
+  /// Diary preview style settings: switch subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select and copy parts of the entry'**
+  String get diaryPreviewStyleTextSelectionSubtitle;
+
+  /// Diary preview style settings: screen reader label of the sample indicator.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample {index} of {count}'**
+  String diaryPreviewStyleSampleOf(int index, int count);
+
+  /// Diary preview style settings: sample entry heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Small things today'**
+  String get diaryPreviewStyleSampleHeading;
+
+  /// Diary preview style settings: sample entry quote.
+  ///
+  /// In en, this message translates to:
+  /// **'Slow down, it’s faster.'**
+  String get diaryPreviewStyleSampleQuote;
+
+  /// Diary preview style settings: sample entry to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Buy some flowers'**
+  String get diaryPreviewStyleSampleTodo1;
+
+  /// Diary preview style settings: sample entry to-do.
+  ///
+  /// In en, this message translates to:
+  /// **'Call home'**
+  String get diaryPreviewStyleSampleTodo2;
+
+  /// Diary preview style settings: long paragraph of a sample entry.
+  ///
+  /// In en, this message translates to:
+  /// **'After the rain stopped the street went quiet. I sat by the window and wrote down three things I was grateful for, while leaves drifted past like the pages of an old book.'**
+  String get diaryPreviewStyleSampleLong;
+
+  /// Diary preview style settings: weather of a sample entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunny'**
+  String get diaryPreviewStyleSampleWeather;
 }
 
 class _AppLocalizationsDelegate

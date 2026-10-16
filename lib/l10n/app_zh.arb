@@ -5099,5 +5099,566 @@
   "diaryWordCountRule": "每个汉字与全角标点算 1 字，英文和数字按单词计，空格与换行不计。",
   "@diaryWordCountRule": {
     "description": "字数统计面板底部的口径说明。"
+  },
+  "diaryPreviewUpdatedPrefix": "更新于",
+  "@diaryPreviewUpdatedPrefix": {
+    "description": "预览页信息栏：按更新时间显示日期时的前缀。"
+  },
+  "diaryPreviewBackToTop": "回到顶部",
+  "@diaryPreviewBackToTop": {
+    "description": "预览页“回到顶部”按钮的提示。"
+  },
+  "diaryPreviewStyleTitle": "日记预览页",
+  "@diaryPreviewStyleTitle": {
+    "description": "预览页样式设置：页面标题与设置入口。"
+  },
+  "diaryPreviewStyleEntrySubtitle": "当前：{name}",
+  "@diaryPreviewStyleEntrySubtitle": {
+    "description": "预览页样式设置：入口副标题，显示当前预设或我的样式名。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviewStyleMoreEntry": "页面样式",
+  "@diaryPreviewStyleMoreEntry": {
+    "description": "预览页样式设置：预览页“更多”面板里打开本设置页的项。"
+  },
+  "diaryPreviewStyleTabPresets": "预设",
+  "@diaryPreviewStyleTabPresets": {
+    "description": "预览页样式设置：标签页。"
+  },
+  "diaryPreviewStyleTabPage": "页面",
+  "@diaryPreviewStyleTabPage": {
+    "description": "预览页样式设置：标签页。"
+  },
+  "diaryPreviewStyleTabCover": "头图",
+  "@diaryPreviewStyleTabCover": {
+    "description": "预览页样式设置：标签页。"
+  },
+  "diaryPreviewStyleTabTitle": "标题",
+  "@diaryPreviewStyleTabTitle": {
+    "description": "预览页样式设置：标签页。"
+  },
+  "diaryPreviewStyleTabMeta": "信息",
+  "@diaryPreviewStyleTabMeta": {
+    "description": "预览页样式设置：标签页。"
+  },
+  "diaryPreviewStyleTabBody": "正文",
+  "@diaryPreviewStyleTabBody": {
+    "description": "预览页样式设置：标签页。"
+  },
+  "diaryPreviewStylePresetClassic": "经典",
+  "@diaryPreviewStylePresetClassic": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetClassicDesc": "改版前的样子",
+  "@diaryPreviewStylePresetClassicDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetPaper": "纸书",
+  "@diaryPreviewStylePresetPaper": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetPaperDesc": "暖白纸、居中标题与内嵌头图",
+  "@diaryPreviewStylePresetPaperDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetMagazine": "杂志",
+  "@diaryPreviewStylePresetMagazine": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetMagazineDesc": "高大的头图、放大的标题，日期在上",
+  "@diaryPreviewStylePresetMagazineDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetMinimal": "极简",
+  "@diaryPreviewStylePresetMinimal": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetMinimalDesc": "不要头图，只留必要的信息",
+  "@diaryPreviewStylePresetMinimalDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetNight": "夜读",
+  "@diaryPreviewStylePresetNight": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetNightDesc": "墨色纸张与阅读进度线",
+  "@diaryPreviewStylePresetNightDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetJournal": "手账",
+  "@diaryPreviewStylePresetJournal": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetJournalDesc": "按心情着色，信息收进卡片",
+  "@diaryPreviewStylePresetJournalDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetMood": "心情色",
+  "@diaryPreviewStylePresetMood": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetMoodDesc": "整页跟着这篇的心情换颜色",
+  "@diaryPreviewStylePresetMoodDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStylePresetImmersive": "沉浸",
+  "@diaryPreviewStylePresetImmersive": {
+    "description": "预览页样式设置：预设名。"
+  },
+  "diaryPreviewStylePresetImmersiveDesc": "铺满的头图、进度线与回到顶部",
+  "@diaryPreviewStylePresetImmersiveDesc": {
+    "description": "预览页样式设置：预设说明。"
+  },
+  "diaryPreviewStyleColorGroup": "配色",
+  "@diaryPreviewStyleColorGroup": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStyleColorSeed": "配色基调",
+  "@diaryPreviewStyleColorSeed": {
+    "description": "预览页样式设置：设置项：整页按哪种颜色着色。"
+  },
+  "diaryPreviewStyleSeedApp": "跟随应用",
+  "@diaryPreviewStyleSeedApp": {
+    "description": "预览页样式设置：配色基调选项。"
+  },
+  "diaryPreviewStyleSeedMood": "心情",
+  "@diaryPreviewStyleSeedMood": {
+    "description": "预览页样式设置：配色基调选项。"
+  },
+  "diaryPreviewStyleSeedTag": "首个标签",
+  "@diaryPreviewStyleSeedTag": {
+    "description": "预览页样式设置：配色基调选项。"
+  },
+  "diaryPreviewStyleSeedCustom": "自定义",
+  "@diaryPreviewStyleSeedCustom": {
+    "description": "预览页样式设置：配色基调选项。"
+  },
+  "diaryPreviewStyleSeedHint": "没有心情或标签的日记沿用应用主题色。",
+  "@diaryPreviewStyleSeedHint": {
+    "description": "预览页样式设置：配色基调下方的说明。"
+  },
+  "diaryPreviewStyleSeedColor": "基调颜色",
+  "@diaryPreviewStyleSeedColor": {
+    "description": "预览页样式设置：自定义基调颜色。"
+  },
+  "diaryPreviewStylePaper": "纸张",
+  "@diaryPreviewStylePaper": {
+    "description": "预览页样式设置：设置项：页面底色。"
+  },
+  "diaryPreviewStylePaperTheme": "主题",
+  "@diaryPreviewStylePaperTheme": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperWarm": "暖白",
+  "@diaryPreviewStylePaperWarm": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperSepia": "米黄",
+  "@diaryPreviewStylePaperSepia": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperMint": "护眼绿",
+  "@diaryPreviewStylePaperMint": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperGray": "浅灰",
+  "@diaryPreviewStylePaperGray": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperInk": "墨色",
+  "@diaryPreviewStylePaperInk": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperCustom": "自定义",
+  "@diaryPreviewStylePaperCustom": {
+    "description": "预览页样式设置：纸张选项。"
+  },
+  "diaryPreviewStylePaperColor": "纸张颜色",
+  "@diaryPreviewStylePaperColor": {
+    "description": "预览页样式设置：自定义纸张颜色。"
+  },
+  "diaryPreviewStylePaperHint": "纸色与主题深浅相反时，整页换成相应的明暗，文字始终清楚。",
+  "@diaryPreviewStylePaperHint": {
+    "description": "预览页样式设置：纸张选项下方的说明。"
+  },
+  "diaryPreviewStyleTextColor": "自定义正文颜色",
+  "@diaryPreviewStyleTextColor": {
+    "description": "预览页样式设置：开关：自定义正文颜色。"
+  },
+  "diaryPreviewStyleTextColorHint": "和纸张对比度不足时自动改用默认颜色。",
+  "@diaryPreviewStyleTextColorHint": {
+    "description": "预览页样式设置：自定义正文与标题颜色的说明。"
+  },
+  "diaryPreviewStyleLayoutGroup": "版式",
+  "@diaryPreviewStyleLayoutGroup": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStylePadding": "左右边距",
+  "@diaryPreviewStylePadding": {
+    "description": "预览页样式设置：滑块标题。"
+  },
+  "diaryPreviewStyleLimitWidth": "限制正文宽度",
+  "@diaryPreviewStyleLimitWidth": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleLimitWidthSubtitle": "平板和横屏时居中排版",
+  "@diaryPreviewStyleLimitWidthSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleContentWidth": "正文最大宽度",
+  "@diaryPreviewStyleContentWidth": {
+    "description": "预览页样式设置：滑块标题。"
+  },
+  "diaryPreviewStyleTopBarGroup": "顶栏",
+  "@diaryPreviewStyleTopBarGroup": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStyleTopBarFloating": "随滚动隐藏",
+  "@diaryPreviewStyleTopBarFloating": {
+    "description": "预览页样式设置：顶栏选项：往下滚时隐藏。"
+  },
+  "diaryPreviewStyleTopBarPinned": "固定",
+  "@diaryPreviewStyleTopBarPinned": {
+    "description": "预览页样式设置：顶栏选项：常驻。"
+  },
+  "diaryPreviewStyleTopBarTitle": "标题",
+  "@diaryPreviewStyleTopBarTitle": {
+    "description": "预览页样式设置：设置项：顶栏显示的标题。"
+  },
+  "diaryPreviewStyleTopBarTitleDate": "日期",
+  "@diaryPreviewStyleTopBarTitleDate": {
+    "description": "预览页样式设置：顶栏标题选项：日记日期。"
+  },
+  "diaryPreviewStyleTopBarTitleNone": "不显示",
+  "@diaryPreviewStyleTopBarTitleNone": {
+    "description": "预览页样式设置：顶栏标题选项：不显示。"
+  },
+  "diaryPreviewStyleShowTypographyButton": "字体与排版按钮",
+  "@diaryPreviewStyleShowTypographyButton": {
+    "description": "预览页样式设置：开关：顶栏按钮。"
+  },
+  "diaryPreviewStyleShowEditButton": "编辑按钮",
+  "@diaryPreviewStyleShowEditButton": {
+    "description": "预览页样式设置：开关：顶栏按钮。"
+  },
+  "diaryPreviewStyleShowShareButton": "分享图片按钮",
+  "@diaryPreviewStyleShowShareButton": {
+    "description": "预览页样式设置：开关：顶栏按钮。"
+  },
+  "diaryPreviewStyleReadingGroup": "阅读辅助",
+  "@diaryPreviewStyleReadingGroup": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStyleProgress": "阅读进度线",
+  "@diaryPreviewStyleProgress": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleProgressSubtitle": "页面顶端的细线随阅读增长",
+  "@diaryPreviewStyleProgressSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleBackToTop": "回到顶部按钮",
+  "@diaryPreviewStyleBackToTop": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleBackToTopSubtitle": "滚过一屏半后出现",
+  "@diaryPreviewStyleBackToTopSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleCoverMode": "显示方式",
+  "@diaryPreviewStyleCoverMode": {
+    "description": "预览页样式设置：头图显示方式。"
+  },
+  "diaryPreviewStyleCoverBanner": "通栏",
+  "@diaryPreviewStyleCoverBanner": {
+    "description": "预览页样式设置：头图选项。"
+  },
+  "diaryPreviewStyleCoverInset": "内嵌",
+  "@diaryPreviewStyleCoverInset": {
+    "description": "预览页样式设置：头图选项。"
+  },
+  "diaryPreviewStyleCoverHidden": "不显示",
+  "@diaryPreviewStyleCoverHidden": {
+    "description": "预览页样式设置：头图选项。"
+  },
+  "diaryPreviewStyleCoverFit": "适配",
+  "@diaryPreviewStyleCoverFit": {
+    "description": "预览页样式设置：头图适配。"
+  },
+  "diaryPreviewStyleCoverContain": "完整显示",
+  "@diaryPreviewStyleCoverContain": {
+    "description": "预览页样式设置：头图适配选项。"
+  },
+  "diaryPreviewStyleCoverFill": "填满裁切",
+  "@diaryPreviewStyleCoverFill": {
+    "description": "预览页样式设置：头图适配选项。"
+  },
+  "diaryPreviewStyleCoverHeight": "头图高度",
+  "@diaryPreviewStyleCoverHeight": {
+    "description": "预览页样式设置：滑块标题。"
+  },
+  "diaryPreviewStyleCoverHeightHint": "头图最高为屏幕高度的七成。",
+  "@diaryPreviewStyleCoverHeightHint": {
+    "description": "预览页样式设置：头图分组说明。"
+  },
+  "diaryPreviewStyleCoverRadius": "圆角",
+  "@diaryPreviewStyleCoverRadius": {
+    "description": "预览页样式设置：内嵌头图的圆角滑块。"
+  },
+  "diaryPreviewStyleCoverFade": "滚动时淡出",
+  "@diaryPreviewStyleCoverFade": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleCoverFadeSubtitle": "上滑时头图逐渐变淡并轻微缩小",
+  "@diaryPreviewStyleCoverFadeSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleCoverFirstImage": "没有封面时用正文第一张图",
+  "@diaryPreviewStyleCoverFirstImage": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleTitleVisible": "显示标题",
+  "@diaryPreviewStyleTitleVisible": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleTitleUntitled": "没有标题时显示“无标题”",
+  "@diaryPreviewStyleTitleUntitled": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleTitleUntitledSubtitle": "关闭后直接省略标题行",
+  "@diaryPreviewStyleTitleUntitledSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleTitleScale": "标题大小",
+  "@diaryPreviewStyleTitleScale": {
+    "description": "预览页样式设置：滑块标题。"
+  },
+  "diaryPreviewStyleTitleWeight": "字重",
+  "@diaryPreviewStyleTitleWeight": {
+    "description": "预览页样式设置：设置项标题。"
+  },
+  "diaryPreviewStyleWeightRegular": "常规",
+  "@diaryPreviewStyleWeightRegular": {
+    "description": "预览页样式设置：字重选项。"
+  },
+  "diaryPreviewStyleWeightMedium": "中等",
+  "@diaryPreviewStyleWeightMedium": {
+    "description": "预览页样式设置：字重选项。"
+  },
+  "diaryPreviewStyleWeightBold": "粗",
+  "@diaryPreviewStyleWeightBold": {
+    "description": "预览页样式设置：字重选项。"
+  },
+  "diaryPreviewStyleWeightHeavy": "特粗",
+  "@diaryPreviewStyleWeightHeavy": {
+    "description": "预览页样式设置：字重选项。"
+  },
+  "diaryPreviewStyleTitleAlign": "对齐",
+  "@diaryPreviewStyleTitleAlign": {
+    "description": "预览页样式设置：设置项标题。"
+  },
+  "diaryPreviewStyleAlignStart": "靠左",
+  "@diaryPreviewStyleAlignStart": {
+    "description": "预览页样式设置：对齐选项。"
+  },
+  "diaryPreviewStyleAlignCenter": "居中",
+  "@diaryPreviewStyleAlignCenter": {
+    "description": "预览页样式设置：对齐选项。"
+  },
+  "diaryPreviewStyleTitleColor": "自定义标题颜色",
+  "@diaryPreviewStyleTitleColor": {
+    "description": "预览页样式设置：开关：自定义标题颜色。"
+  },
+  "diaryPreviewStyleMetaPosition": "位置",
+  "@diaryPreviewStyleMetaPosition": {
+    "description": "预览页样式设置：设置项标题。"
+  },
+  "diaryPreviewStyleMetaAbove": "标题上方",
+  "@diaryPreviewStyleMetaAbove": {
+    "description": "预览页样式设置：信息栏位置选项。"
+  },
+  "diaryPreviewStyleMetaBelow": "标题下方",
+  "@diaryPreviewStyleMetaBelow": {
+    "description": "预览页样式设置：信息栏位置选项。"
+  },
+  "diaryPreviewStyleMetaEnd": "正文之后",
+  "@diaryPreviewStyleMetaEnd": {
+    "description": "预览页样式设置：信息栏位置选项。"
+  },
+  "diaryPreviewStyleMetaLayout": "版式",
+  "@diaryPreviewStyleMetaLayout": {
+    "description": "预览页样式设置：设置项标题。"
+  },
+  "diaryPreviewStyleMetaStacked": "分行",
+  "@diaryPreviewStyleMetaStacked": {
+    "description": "预览页样式设置：信息栏版式选项。"
+  },
+  "diaryPreviewStyleMetaInline": "单行",
+  "@diaryPreviewStyleMetaInline": {
+    "description": "预览页样式设置：信息栏版式选项。"
+  },
+  "diaryPreviewStyleMetaCard": "信息卡",
+  "@diaryPreviewStyleMetaCard": {
+    "description": "预览页样式设置：信息栏版式选项。"
+  },
+  "diaryPreviewStyleMetaItems": "显示的信息",
+  "@diaryPreviewStyleMetaItems": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStyleShowDate": "时间",
+  "@diaryPreviewStyleShowDate": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowWordCount": "字数",
+  "@diaryPreviewStyleShowWordCount": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowReadingTime": "阅读时长",
+  "@diaryPreviewStyleShowReadingTime": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowLocation": "地点",
+  "@diaryPreviewStyleShowLocation": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowWeather": "天气",
+  "@diaryPreviewStyleShowWeather": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowMood": "心情",
+  "@diaryPreviewStyleShowMood": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowEnergy": "精力",
+  "@diaryPreviewStyleShowEnergy": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleShowTags": "标签",
+  "@diaryPreviewStyleShowTags": {
+    "description": "预览页样式设置：信息开关。"
+  },
+  "diaryPreviewStyleDatePrefix": "日期前加“发表于 / 更新于”",
+  "@diaryPreviewStyleDatePrefix": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleChipsGroup": "胶囊",
+  "@diaryPreviewStyleChipsGroup": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStyleTagStyle": "标签",
+  "@diaryPreviewStyleTagStyle": {
+    "description": "预览页样式设置：设置项：标签样式。"
+  },
+  "diaryPreviewStyleChipStyle": "心情与精力",
+  "@diaryPreviewStyleChipStyle": {
+    "description": "预览页样式设置：设置项：心情与精力的样式。"
+  },
+  "diaryPreviewStyleChipChip": "胶囊",
+  "@diaryPreviewStyleChipChip": {
+    "description": "预览页样式设置：心情与精力样式选项。"
+  },
+  "diaryPreviewStyleChipPlain": "纯文字",
+  "@diaryPreviewStyleChipPlain": {
+    "description": "预览页样式设置：心情与精力样式选项。"
+  },
+  "diaryPreviewStyleTypographyEntry": "字体与排版",
+  "@diaryPreviewStyleTypographyEntry": {
+    "description": "预览页样式设置：正文字体与排版设置入口。"
+  },
+  "diaryPreviewStyleTypographyEntrySubtitle": "与编辑页共用",
+  "@diaryPreviewStyleTypographyEntrySubtitle": {
+    "description": "预览页样式设置：入口说明。"
+  },
+  "diaryPreviewStyleEmptyHint": "没有正文时显示提示",
+  "@diaryPreviewStyleEmptyHint": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleLastEdited": "显示“最后编辑于”",
+  "@diaryPreviewStyleLastEdited": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleEditedFormat": "时间格式",
+  "@diaryPreviewStyleEditedFormat": {
+    "description": "预览页样式设置：设置项标题。"
+  },
+  "diaryPreviewStyleEditedPrecise": "精确",
+  "@diaryPreviewStyleEditedPrecise": {
+    "description": "预览页样式设置：编辑时间选项。"
+  },
+  "diaryPreviewStyleEditedRelative": "相对",
+  "@diaryPreviewStyleEditedRelative": {
+    "description": "预览页样式设置：编辑时间选项。"
+  },
+  "diaryPreviewStyleEditedFull": "完整",
+  "@diaryPreviewStyleEditedFull": {
+    "description": "预览页样式设置：编辑时间选项。"
+  },
+  "diaryPreviewStyleCapsuleInsight": "时间胶囊解封提示",
+  "@diaryPreviewStyleCapsuleInsight": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleBehaviorGroup": "阅读行为",
+  "@diaryPreviewStyleBehaviorGroup": {
+    "description": "预览页样式设置：分组标题。"
+  },
+  "diaryPreviewStyleBehaviorFootnote": "预设与样式码不会改变这些设置。",
+  "@diaryPreviewStyleBehaviorFootnote": {
+    "description": "预览页样式设置：阅读行为分组说明。"
+  },
+  "diaryPreviewStyleTodoToggle": "允许勾选待办",
+  "@diaryPreviewStyleTodoToggle": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleTodoToggleSubtitle": "勾选后自动保存",
+  "@diaryPreviewStyleTodoToggleSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleTextSelection": "允许长按选择文字",
+  "@diaryPreviewStyleTextSelection": {
+    "description": "预览页样式设置：开关标题。"
+  },
+  "diaryPreviewStyleTextSelectionSubtitle": "选择后可以复制",
+  "@diaryPreviewStyleTextSelectionSubtitle": {
+    "description": "预览页样式设置：开关说明。"
+  },
+  "diaryPreviewStyleSampleOf": "示例 {index}/{count}",
+  "@diaryPreviewStyleSampleOf": {
+    "description": "预览页样式设置：示例页码的读屏文字。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewStyleSampleHeading": "今天的小事",
+  "@diaryPreviewStyleSampleHeading": {
+    "description": "预览页样式设置：示例日记的小标题。"
+  },
+  "diaryPreviewStyleSampleQuote": "慢慢来，比较快。",
+  "@diaryPreviewStyleSampleQuote": {
+    "description": "预览页样式设置：示例日记的引用。"
+  },
+  "diaryPreviewStyleSampleTodo1": "买一束花",
+  "@diaryPreviewStyleSampleTodo1": {
+    "description": "预览页样式设置：示例日记的待办。"
+  },
+  "diaryPreviewStyleSampleTodo2": "给家里打个电话",
+  "@diaryPreviewStyleSampleTodo2": {
+    "description": "预览页样式设置：示例日记的待办。"
+  },
+  "diaryPreviewStyleSampleLong": "雨停以后，街道安静下来。I sat by the window and wrote down three things I was grateful for. 窗外的梧桐叶一片一片落下，像在翻一本很旧的书。",
+  "@diaryPreviewStyleSampleLong": {
+    "description": "预览页样式设置：示例日记的长段落（中英混排）。"
+  },
+  "diaryPreviewStyleSampleWeather": "晴",
+  "@diaryPreviewStyleSampleWeather": {
+    "description": "预览页样式设置：示例日记的天气。"
   }
 }

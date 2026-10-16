@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../../../app/theme/expressive_controls.dart';
+import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../app/theme/expressive_surfaces.dart';
-import '../../../../app/theme/theme.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/models/diary_card_style/diary_card_style.dart';
@@ -48,7 +47,6 @@ class DiaryCardStylePreview extends StatefulWidget {
 
 class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
   final Set<String> _selected = <String>{};
-  (Color, Brightness, bool, ThemeData)? _cachedTheme;
 
   void _toggle(String diaryId) {
     setState(() {
@@ -67,22 +65,13 @@ class _DiaryCardStylePreviewState extends State<DiaryCardStylePreview> {
       return appTheme;
     }
     // 应用主题由种子色装配，主色就是种子色派生的；用设置里的种子色重建
-    // 另一种明暗，与切换主题模式后看到的一致。按参数缓存同一实例：卡片
-    // 样式的解析结果以主题实例为键复用。
-    final seed = Color(widget.controller.settingsService.themeSeedColorValue);
-    final cached = _cachedTheme;
-    if (cached != null &&
-        cached.$1 == seed &&
-        cached.$2 == brightness &&
-        cached.$3 == reduceMotion) {
-      return cached.$4;
-    }
-    var theme = buildSeededAppTheme(seed, brightness);
-    if (reduceMotion) {
-      theme = ExpressiveControls.withoutMotion(theme);
-    }
-    _cachedTheme = (seed, brightness, reduceMotion, theme);
-    return theme;
+    // 另一种明暗，与切换主题模式后看到的一致。缓存返回同一实例：卡片样式
+    // 的解析结果以主题实例为键复用。
+    return SeededThemeCache.of(
+      Color(widget.controller.settingsService.themeSeedColorValue),
+      brightness,
+      reduceMotion: reduceMotion,
+    );
   }
 
   @override

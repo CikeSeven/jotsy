@@ -67,8 +67,9 @@ class DiaryPreviewExportController extends ChangeNotifier {
     }
   }
 
-  /// 分享整页长图。
-  Future<void> shareLongImage(BuildContext context) async {
+  /// 分享整页长图；[background] 为长图底色（页面的纸色），默认取主题
+  /// surface。
+  Future<void> shareLongImage(BuildContext context, {Color? background}) async {
     if (_sharingImage || _showLoading) {
       return;
     }
@@ -77,7 +78,8 @@ class DiaryPreviewExportController extends ChangeNotifier {
       label: context.l10n.autoT0114,
       action: () async {
         final l10n = context.l10n;
-        final surfaceColor = Theme.of(context).colorScheme.surface;
+        final surfaceColor =
+            background ?? Theme.of(context).colorScheme.surface;
         final pixelRatio = MediaQuery.of(
           context,
         ).devicePixelRatio.clamp(1.0, 2.2);

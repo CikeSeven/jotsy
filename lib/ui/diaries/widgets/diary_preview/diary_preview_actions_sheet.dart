@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 
-/// 预览页“更多”面板：分享长图、三种导出、设为纪念日与删除。
+/// 预览页“更多”面板：分享长图、三种导出、设为纪念日、页面样式与删除。
 ///
 /// 每一项先关闭面板，再执行对应动作（长图截图要等面板完全退场，见
 /// `DiaryPreviewExportController.shareLongImage`）。
@@ -16,6 +16,7 @@ Future<void> showDiaryPreviewActionsSheet(
   required Future<void> Function() onExportDiaryFile,
   required Future<void> Function() onSetAsAnniversary,
   required Future<void> Function() onDelete,
+  Future<void> Function()? onOpenStyle,
 }) {
   final l10n = context.l10n;
   return showModalBottomSheet<void>(
@@ -75,6 +76,12 @@ Future<void> showDiaryPreviewActionsSheet(
                 title: Text(l10n.previewSetAsAnniversary),
                 action: onSetAsAnniversary,
               ),
+              if (onOpenStyle != null)
+                item(
+                  icon: const FaIcon(FontAwesomeIcons.swatchbook, size: 16),
+                  title: Text(l10n.diaryPreviewStyleMoreEntry),
+                  action: onOpenStyle,
+                ),
               item(
                 icon: FaIcon(
                   FontAwesomeIcons.trashCan,

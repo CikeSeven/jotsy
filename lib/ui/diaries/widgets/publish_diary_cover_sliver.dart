@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui' as ui show Image;
 
 import 'package:flutter/material.dart';
@@ -6,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/image_viewer_hero.dart';
+import 'diary_image_source.dart';
 
 /// 发布页头图 Sliver。
 ///
@@ -23,6 +23,9 @@ class PublishDiaryCoverSliver extends StatelessWidget {
     this.placeholder,
     this.onTap,
     this.reveal = 1,
+    this.background,
+    this.fillFrame = false,
+    this.collapseEffect = true,
   });
 
   final String cover;
@@ -46,6 +49,15 @@ class PublishDiaryCoverSliver extends StatelessWidget {
   /// 动画时为 null。
   final ValueChanged<ImageViewerHero?>? onTap;
 
+  /// 头图框底色（原图比例与框不同时露出的部分）；默认为主题 surface。
+  final Color? background;
+
+  /// 铺满头图框并裁掉超出部分；默认完整显示原图（框内按原图比例居中）。
+  final bool fillFrame;
+
+  /// 上滑收起时淡出并轻微缩小；关闭后头图随页面平移、保持不透明。
+  final bool collapseEffect;
+
   @override
   Widget build(BuildContext context) {
     return SliverPersistentHeader(
@@ -59,6 +71,9 @@ class PublishDiaryCoverSliver extends StatelessWidget {
         placeholder: placeholder,
         onTap: onTap,
         reveal: reveal,
+        background: background,
+        fillFrame: fillFrame,
+        collapseEffect: collapseEffect,
       ),
     );
   }
@@ -74,6 +89,9 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.placeholder,
     required this.onTap,
     required this.reveal,
+    required this.background,
+    required this.fillFrame,
+    required this.collapseEffect,
   });
   final String cover;
   final double maxExtentHeight;
@@ -83,6 +101,9 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
   final ui.Image? placeholder;
   final ValueChanged<ImageViewerHero?>? onTap;
   final double reveal;
+  final Color? background;
+  final bool fillFrame;
+  final bool collapseEffect;
 
   @override
   double get minExtent => 0;
@@ -98,11 +119,11 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
   ) {
     // 计算 0~1 收起进度，用于统一驱动透明度与缩放。
     final extentDelta = (maxExtent - minExtent).abs();
-    final collapseProgress =
-        (extentDelta <= 0
-                ? 0.0
-                : (1 - (shrinkOffset / extentDelta)).clamp(0.0, 1.0))
-            .toDouble();
+    final collapseProgress = !collapseEffect
+        ? 1.0
+        : extentDelta <= 0
+        ? 0.0
+        : (1 - (shrinkOffset / extentDelta)).clamp(0.0, 1.0).toDouble();
 
     // 透明度直接作用在图片绘制上，而不是外包 Opacity：滚动收起期间不透明度
     // 逐帧为小数，Opacity 会每帧为整块封面 saveLayer。底色与页面同为
@@ -111,9 +132,12 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
       onTap: onTap,
       heroTag: heroTag,
       child: DecoratedBox(
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
+        decoration: BoxDecoration(
+          color: background ?? Theme.of(context).colorScheme.surface,
+        ),
         child: _CoverImage(
           cover: cover,
+          fillFrame: fillFrame,
           opacity: collapseProgress * reveal,
           decodeHeight: maxExtentHeight,
           heroTag: heroTag,
@@ -144,7 +168,10 @@ class _PublishDiaryCoverHeaderDelegate extends SliverPersistentHeaderDelegate {
         oldDelegate.borderRadius != borderRadius ||
         oldDelegate.heroTag != heroTag ||
         oldDelegate.placeholder != placeholder ||
-        oldDelegate.onTap != onTap;
+        oldDelegate.onTap != onTap ||
+        oldDelegate.background != background ||
+        oldDelegate.fillFrame != fillFrame ||
+        oldDelegate.collapseEffect != collapseEffect;
   }
 }
 
@@ -180,6 +207,7 @@ class _CoverTapTarget extends StatelessWidget {
 class _CoverImage extends StatefulWidget {
   const _CoverImage({
     required this.cover,
+    required this.fillFrame,
     required this.opacity,
     required this.decodeHeight,
     required this.heroTag,
@@ -188,6 +216,7 @@ class _CoverImage extends StatefulWidget {
   });
 
   final String cover;
+  final bool fillFrame;
   final double opacity;
 
   /// 解码高度上界：取头部最大高度而非当前约束。收起过程中约束高度逐帧
@@ -221,14 +250,6 @@ class _CoverImageState extends State<_CoverImage> {
   /// 构建期间解析图片流：缓存命中时监听器会在 addListener 内同步回调，此时
   /// 直接写入比例供本次构建使用，不能 setState。
   bool _resolvingInBuild = false;
-
-  bool get _isNetworkImage {
-    final uri = Uri.tryParse(widget.cover);
-    if (uri == null) {
-      return false;
-    }
-    return uri.scheme == 'http' || uri.scheme == 'https';
-  }
 
   void _listenTo(ImageProvider provider) {
     if (provider == _listenedProvider) {
@@ -269,9 +290,7 @@ class _CoverImageState extends State<_CoverImage> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final dpr = MediaQuery.devicePixelRatioOf(context);
-        final ImageProvider source = _isNetworkImage
-            ? NetworkImage(widget.cover)
-            : FileImage(File(widget.cover));
+        final source = diaryImageProvider(widget.cover);
         final provider = constraints.hasBoundedWidth
             ? ResizeImage(
                 source,
@@ -299,31 +318,30 @@ class _CoverImageState extends State<_CoverImage> {
                 ? constraints.maxWidth / constraints.maxHeight
                 : 1.0);
         final placeholder = widget.placeholder;
-        return Center(
-          child: AspectRatio(
-            aspectRatio: boxRatio,
-            child: ImageViewerHeroSource(
-              tag: widget.heroTag,
-              borderRadius: widget.borderRadius,
-              // 入口画面垫底：原图解码完成后淡入覆盖它（同一缓存键的原图已在
-              // 缓存时直接显示），飞入落地后不会先空白。
-              child: placeholder == null
-                  ? image
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        RawImage(
-                          image: placeholder,
-                          fit: BoxFit.cover,
-                          opacity: AlwaysStoppedAnimation<double>(
-                            widget.opacity,
-                          ),
-                        ),
-                        image,
-                      ],
+        final framed = ImageViewerHeroSource(
+          tag: widget.heroTag,
+          borderRadius: widget.borderRadius,
+          // 入口画面垫底：原图解码完成后淡入覆盖它（同一缓存键的原图已在
+          // 缓存时直接显示），飞入落地后不会先空白。
+          child: placeholder == null
+              ? image
+              : Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[
+                    RawImage(
+                      image: placeholder,
+                      fit: BoxFit.cover,
+                      opacity: AlwaysStoppedAnimation<double>(widget.opacity),
                     ),
-            ),
-          ),
+                    image,
+                  ],
+                ),
+        );
+        if (widget.fillFrame) {
+          return framed;
+        }
+        return Center(
+          child: AspectRatio(aspectRatio: boxRatio, child: framed),
         );
       },
     );

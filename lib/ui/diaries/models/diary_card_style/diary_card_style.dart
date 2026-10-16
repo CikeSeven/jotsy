@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import '../style_library/style_json.dart';
 import 'diary_card_style_enums.dart';
 import 'diary_card_style_limits.dart';
 

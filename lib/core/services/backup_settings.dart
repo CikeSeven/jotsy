@@ -22,6 +22,7 @@ class BackupSettings {
     'diaryCardTagLimit': settingsService.diaryCardTagLimit,
     'calendarDisplayOptionsRaw': settingsService.calendarDisplayOptionsRaw,
     'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
+    'diaryPreviewStyleRaw': settingsService.diaryPreviewStyleRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -126,6 +127,17 @@ class BackupSettings {
     if (settingsNode.containsKey('diaryCardStyleRaw')) {
       final cardStyleRaw = settingsNode['diaryCardStyleRaw'];
       await settingsService.setDiaryCardStyleRaw(switch (cardStyleRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 预览页设置同上：旧版备份没有时保留本机设置，显式 null 时恢复默认。
+    if (settingsNode.containsKey('diaryPreviewStyleRaw')) {
+      final previewStyleRaw = settingsNode['diaryPreviewStyleRaw'];
+      await settingsService.setDiaryPreviewStyleRaw(switch (previewStyleRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

@@ -1954,7 +1954,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get journalImportPhoneNotesHint =>
-      '这些笔记没有自带的导出：先在电脑上用开源工具「笔记互迁」登录云端，导出为 HTML、Markdown 或 TXT 并打包成 .zip，再选择该文件。';
+      '在应用内登录官方云服务，直接读取云端笔记、分组与图片附件；登录状态只用于本次导入，结束后即清除。';
 
   @override
   String get journalImportDiaroHint => '备份文件（.zip，不能加密）';
@@ -2005,6 +2005,64 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String journalImportEncrypted(String app) {
     return '$app 的加密备份无法导入，请在原应用中创建未加密的备份';
+  }
+
+  @override
+  String cloudLoginTitle(String app) {
+    return '登录$app';
+  }
+
+  @override
+  String get cloudLoginHint => '在上方官方网页中登录并进入笔记页面，再点「读取笔记」。登录状态只用于本次导入，结束后即清除。';
+
+  @override
+  String get cloudLoginRead => '读取笔记';
+
+  @override
+  String get cloudLoginReload => '刷新页面';
+
+  @override
+  String get cloudLoginChecking => '正在核对登录状态';
+
+  @override
+  String get cloudLoginNotSignedIn => '还没有登录，请先在页面中完成登录';
+
+  @override
+  String cloudBusyReading(int count) {
+    return '正在读取云端笔记（$count 篇）';
+  }
+
+  @override
+  String cloudBusyProgress(int done, int total) {
+    return '正在读取云端笔记（$done/$total）';
+  }
+
+  @override
+  String get cloudErrorSession => '登录已失效或需要二次验证，请重新登录';
+
+  @override
+  String get cloudErrorForbidden => '平台拒绝访问（HTTP 403），请核对账号权限或官网提示';
+
+  @override
+  String get cloudErrorRateLimited => '请求过于频繁，请稍后再试';
+
+  @override
+  String get cloudErrorServer => '平台服务暂时不可用，请稍后再试';
+
+  @override
+  String get cloudErrorRejected => '平台拒绝了请求，请检查账号权限后重试';
+
+  @override
+  String get cloudErrorNetwork => '网络请求失败，请检查网络连接后重试';
+
+  @override
+  String cloudErrorProtocol(String app) {
+    return '$app 返回了无法识别的内容，已停止读取以免遗漏笔记';
+  }
+
+  @override
+  String cloudErrorUnsupportedAccount(String app) {
+    return '此 $app 账号的笔记已加密或暂不支持读取';
   }
 
   @override

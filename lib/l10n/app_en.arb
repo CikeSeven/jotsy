@@ -2767,11 +2767,11 @@
   },
   "journalImportGroupPhoneNotes": "Phone & WPS cloud notes",
   "@journalImportGroupPhoneNotes": {
-    "description": "Section title for phone-maker and WPS cloud notes exported with Note Bridge."
+    "description": "Section title for phone-maker and WPS notes read from their cloud after signing in."
   },
-  "journalImportPhoneNotesHint": "These apps can't export by themselves. On a computer, sign in with the open-source tool Note Bridge (笔记互迁), export as HTML, Markdown or TXT and pack it as .zip, then choose that file.",
+  "journalImportPhoneNotesHint": "Sign in to the official cloud service inside the app to read notes, folders and image attachments directly. The sign-in is used only for this import and cleared afterwards.",
   "@journalImportPhoneNotesHint": {
-    "description": "Explains that phone-maker and WPS notes must first be exported with Note Bridge."
+    "description": "Explains that phone-maker and WPS notes are imported by signing in to the official cloud service in the app."
   },
   "journalImportDiaroHint": "Backup file (.zip, unencrypted)",
   "@journalImportDiaroHint": {
@@ -2836,6 +2836,98 @@
   "journalImportEncrypted": "Encrypted {app} backups can't be imported. Create an unencrypted backup in {app}",
   "@journalImportEncrypted": {
     "description": "Shown when the chosen file is an encrypted backup that can't be read.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLoginTitle": "Sign in to {app}",
+  "@cloudLoginTitle": {
+    "description": "Title of the cloud notes sign-in page.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLoginHint": "Sign in on the official page above and open your notes, then tap Read notes. The sign-in is used only for this import and cleared afterwards.",
+  "@cloudLoginHint": {
+    "description": "Hint at the bottom of the cloud notes sign-in page."
+  },
+  "cloudLoginRead": "Read notes",
+  "@cloudLoginRead": {
+    "description": "Button that starts reading cloud notes after signing in."
+  },
+  "cloudLoginReload": "Reload page",
+  "@cloudLoginReload": {
+    "description": "Tooltip of the button that reloads the sign-in page."
+  },
+  "cloudLoginChecking": "Checking sign-in",
+  "@cloudLoginChecking": {
+    "description": "Accessibility label while the cloud sign-in is checked."
+  },
+  "cloudLoginNotSignedIn": "You're not signed in yet. Finish signing in on the page first",
+  "@cloudLoginNotSignedIn": {
+    "description": "Shown when Read notes is tapped before signing in."
+  },
+  "cloudBusyReading": "Reading cloud notes ({count})",
+  "@cloudBusyReading": {
+    "description": "Progress while the cloud note list is read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudBusyProgress": "Reading cloud notes ({done}/{total})",
+  "@cloudBusyProgress": {
+    "description": "Progress while cloud note details and attachments are read.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudErrorSession": "The sign-in has expired or needs verification. Please sign in again",
+  "@cloudErrorSession": {
+    "description": "Shown when the cloud session expired during reading."
+  },
+  "cloudErrorForbidden": "The service denied access (HTTP 403). Check your account or the website",
+  "@cloudErrorForbidden": {
+    "description": "Shown when a cloud request is forbidden."
+  },
+  "cloudErrorRateLimited": "Too many requests. Please try again later",
+  "@cloudErrorRateLimited": {
+    "description": "Shown when cloud requests are rate limited."
+  },
+  "cloudErrorServer": "The service is temporarily unavailable. Please try again later",
+  "@cloudErrorServer": {
+    "description": "Shown when the cloud service returns server errors."
+  },
+  "cloudErrorRejected": "The service rejected the request. Check your account and try again",
+  "@cloudErrorRejected": {
+    "description": "Shown when the cloud service rejects a request."
+  },
+  "cloudErrorNetwork": "Network request failed. Check your connection and try again",
+  "@cloudErrorNetwork": {
+    "description": "Shown when a cloud request fails on the network."
+  },
+  "cloudErrorProtocol": "{app} returned data in an unknown format. Reading stopped so no note is missed",
+  "@cloudErrorProtocol": {
+    "description": "Shown when the cloud API response format is not recognized.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudErrorUnsupportedAccount": "Notes in this {app} account are encrypted or can't be read yet",
+  "@cloudErrorUnsupportedAccount": {
+    "description": "Shown when the cloud account state doesn't allow reading.",
     "placeholders": {
       "app": {
         "type": "String"

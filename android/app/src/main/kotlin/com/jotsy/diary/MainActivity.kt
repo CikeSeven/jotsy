@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.webkit.CookieManager
 import android.window.BackEvent
 import android.window.OnBackAnimationCallback
 import android.window.OnBackInvokedCallback
@@ -25,6 +26,7 @@ import java.io.IOException
 class MainActivity : FlutterFragmentActivity() {
   private val configChannelName = "com.jotsy.diary/config"
   private val backupFileSaverChannelName = "com.jotsy.diary/backup_file_saver"
+  private val webCookiesChannelName = "com.jotsy.diary/web_cookies"
   private val backupFileSaverRequestCode = 7621
   private var predictiveBackCallback: OnBackInvokedCallback? = null
   private var predictiveBackCallbackRegistered = false
@@ -205,6 +207,26 @@ class MainActivity : FlutterFragmentActivity() {
           "getQWeatherApiHost" -> {
             val value = BuildConfig.QWEATHER_API_HOST.trim()
             result.success(if (value.isEmpty()) null else value)
+          }
+          else -> result.notImplemented()
+        }
+      }
+    // 云端笔记导入：读取网页视图中登录后的 Cookie（含 HttpOnly），只返回给
+    // 调用方请求的那个地址。webview_flutter 只提供设置与清除，没有读取接口。
+    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, webCookiesChannelName)
+      .setMethodCallHandler { call, result ->
+        when (call.method) {
+          "getCookies" -> {
+            val url = call.argument<String>("url")
+            if (url.isNullOrBlank() || !url.startsWith("https://")) {
+              result.error("invalid_url", "Only https URLs are supported.", null)
+            } else {
+              result.success(CookieManager.getInstance().getCookie(url))
+            }
+          }
+          "flush" -> {
+            CookieManager.getInstance().flush()
+            result.success(null)
           }
           else -> result.notImplemented()
         }

@@ -2093,7 +2093,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get journalImportPhoneNotesHint =>
-      'These apps can\'t export by themselves. On a computer, sign in with the open-source tool Note Bridge (笔记互迁), export as HTML, Markdown or TXT and pack it as .zip, then choose that file.';
+      'Sign in to the official cloud service inside the app to read notes, folders and image attachments directly. The sign-in is used only for this import and cleared afterwards.';
 
   @override
   String get journalImportDiaroHint => 'Backup file (.zip, unencrypted)';
@@ -2147,6 +2147,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String journalImportEncrypted(String app) {
     return 'Encrypted $app backups can\'t be imported. Create an unencrypted backup in $app';
+  }
+
+  @override
+  String cloudLoginTitle(String app) {
+    return 'Sign in to $app';
+  }
+
+  @override
+  String get cloudLoginHint =>
+      'Sign in on the official page above and open your notes, then tap Read notes. The sign-in is used only for this import and cleared afterwards.';
+
+  @override
+  String get cloudLoginRead => 'Read notes';
+
+  @override
+  String get cloudLoginReload => 'Reload page';
+
+  @override
+  String get cloudLoginChecking => 'Checking sign-in';
+
+  @override
+  String get cloudLoginNotSignedIn =>
+      'You\'re not signed in yet. Finish signing in on the page first';
+
+  @override
+  String cloudBusyReading(int count) {
+    return 'Reading cloud notes ($count)';
+  }
+
+  @override
+  String cloudBusyProgress(int done, int total) {
+    return 'Reading cloud notes ($done/$total)';
+  }
+
+  @override
+  String get cloudErrorSession =>
+      'The sign-in has expired or needs verification. Please sign in again';
+
+  @override
+  String get cloudErrorForbidden =>
+      'The service denied access (HTTP 403). Check your account or the website';
+
+  @override
+  String get cloudErrorRateLimited =>
+      'Too many requests. Please try again later';
+
+  @override
+  String get cloudErrorServer =>
+      'The service is temporarily unavailable. Please try again later';
+
+  @override
+  String get cloudErrorRejected =>
+      'The service rejected the request. Check your account and try again';
+
+  @override
+  String get cloudErrorNetwork =>
+      'Network request failed. Check your connection and try again';
+
+  @override
+  String cloudErrorProtocol(String app) {
+    return '$app returned data in an unknown format. Reading stopped so no note is missed';
+  }
+
+  @override
+  String cloudErrorUnsupportedAccount(String app) {
+    return 'Notes in this $app account are encrypted or can\'t be read yet';
   }
 
   @override

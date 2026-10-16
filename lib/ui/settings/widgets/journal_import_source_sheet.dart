@@ -3,12 +3,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../../../core/services/journal_import_cloud_cookies.dart';
 import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
 import 'journal_import_source_labels.dart';
 
 /// 面板分组（顺序即展示顺序）：日记应用、笔记应用逐项列出导出方式；手机与
-/// WPS 云笔记的导出方式相同（都经「笔记互迁」），说明放在分组标题下，
+/// WPS 云笔记都是在应用内登录官方云服务后直接读取，说明放在分组标题下，
 /// 各项以两列紧凑按钮排列，避免七条相同的说明把面板拉得过长。
 const List<JournalImportSource> _journalApps = [
   JournalImportSource.dayOne,
@@ -124,30 +125,33 @@ class JournalImportSourceSheet extends StatelessWidget {
               label: l10n.journalImportGroupNotes,
             ),
             for (final source in _noteApps) tile(source),
-            _SectionHeader(
-              icon: FontAwesomeIcons.mobileScreenButton,
-              label: l10n.journalImportGroupPhoneNotes,
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xs,
-                0,
-                AppSpacing.xs,
-                AppSpacing.m,
+            // 云端笔记需要网页视图登录，只在 Android 与 iOS 上提供。
+            if (CloudLoginCookies.supported) ...<Widget>[
+              _SectionHeader(
+                icon: FontAwesomeIcons.mobileScreenButton,
+                label: l10n.journalImportGroupPhoneNotes,
               ),
-              child: Text(
-                l10n.journalImportPhoneNotesHint,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.35,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xs,
+                  0,
+                  AppSpacing.xs,
+                  AppSpacing.m,
+                ),
+                child: Text(
+                  l10n.journalImportPhoneNotesHint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.35,
+                  ),
                 ),
               ),
-            ),
-            _CompactSourceGrid(
-              sources: _phoneNotes,
-              nameOf: (source) => journalImportSourceName(l10n, source),
-              onPick: pick,
-            ),
+              _CompactSourceGrid(
+                sources: _phoneNotes,
+                nameOf: (source) => journalImportSourceName(l10n, source),
+                onPick: pick,
+              ),
+            ],
           ],
         ),
       ),

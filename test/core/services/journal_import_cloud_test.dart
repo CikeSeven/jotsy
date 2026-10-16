@@ -1,0 +1,337 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/services/journal_import_cloud.dart';
+import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
+import 'package:node_diary/core/services/journal_import_cloud_cookie_jar.dart';
+import 'package:node_diary/core/services/journal_import_cloud_http.dart';
+import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_media.dart';
+import 'package:path/path.dart' as p;
+
+import '../../support/fake_cloud_http.dart';
+
+/// 云端读取的公共层：传输层的重试与状态映射、Cookie 罐、读取流水线与
+/// 富文本块写入。
+void main() {
+  group('CloudNoteTransport', () {
+    late FakeCloudHttp http;
+    late List<Duration> waits;
+    late CloudNoteTransport transport;
+
+    setUp(() {
+      http = FakeCloudHttp();
+      waits = <Duration>[];
+      transport = CloudNoteTransport(
+        'https://api.example.com',
+        http,
+        headers: const {'X-Extra': '1'},
+        wait: (delay) async => waits.add(delay),
+      );
+    });
+
+    test('sends the desktop UA, Referer and JSON bodies', () async {
+      http.json('POST', 'api.example.com/notes', {'ok': true});
+
+      final result = await transport.json(
+        'POST',
+        '/notes',
+        query: const {'page': '2'},
+        jsonBody: const {'limit': 10},
+      );
+
+      expect(result, {'ok': true});
+      final request = http.requests.single;
+      expect(request.url.queryParameters, {'page': '2'});
+      expect(request.headers['User-Agent'], cloudNoteUserAgent);
+      expect(request.headers['Referer'], 'https://api.example.com/');
+      expect(request.headers['X-Extra'], '1');
+      expect(request.headers['Content-Type'], startsWith('application/json'));
+      expect(request.json, {'limit': 10});
+    });
+
+    test('retries 5xx and network errors before giving up', () async {
+      var calls = 0;
+      http.on('GET', 'api.example.com/flaky', (_) {
+        calls++;
+        if (calls == 1) throw const FakeNetworkError();
+        if (calls == 2) return jsonResponse({}, status: 502);
+        return jsonResponse({'done': true});
+      });
+
+      expect(await transport.json('GET', '/flaky'), {'done': true});
+      expect(waits, [const Duration(seconds: 1), const Duration(seconds: 2)]);
+
+      http.on(
+        'GET',
+        'api.example.com/down',
+        (_) => jsonResponse({}, status: 503),
+      );
+      await expectLater(
+        transport.json('GET', '/down'),
+        throwsA(_failure(CloudNoteFailure.serverError)),
+      );
+    });
+
+    test('maps redirects, 401, 403, 429 and other 4xx', () async {
+      http.on(
+        'GET',
+        'api.example.com/redirect',
+        (_) => jsonResponse({}, status: 302),
+      );
+      http.on(
+        'GET',
+        'api.example.com/auth',
+        (_) => jsonResponse({}, status: 401),
+      );
+      http.on(
+        'GET',
+        'api.example.com/deny',
+        (_) => jsonResponse({}, status: 403),
+      );
+      http.on(
+        'GET',
+        'api.example.com/busy',
+        (_) => jsonResponse({}, status: 429),
+      );
+      http.on(
+        'GET',
+        'api.example.com/bad',
+        (_) => jsonResponse({}, status: 400),
+      );
+      http.on(
+        'GET',
+        'api.example.com/html',
+        (_) => bytesResponse(utf8.encode('<html>')),
+      );
+
+      for (final (path, failure) in [
+        ('/redirect', CloudNoteFailure.sessionExpired),
+        ('/auth', CloudNoteFailure.sessionExpired),
+        ('/deny', CloudNoteFailure.forbidden),
+        ('/busy', CloudNoteFailure.rateLimited),
+        ('/bad', CloudNoteFailure.rejected),
+        ('/html', CloudNoteFailure.protocolChanged),
+      ]) {
+        await expectLater(
+          transport.json('GET', path),
+          throwsA(_failure(failure)),
+          reason: path,
+        );
+      }
+      final redirect = await transport.request(
+        'GET',
+        '/redirect',
+        returnRedirects: true,
+      );
+      expect(redirect.statusCode, 302);
+    });
+
+    test('rejects paths that leave the origin', () {
+      expect(
+        () => transport.request('GET', '//evil.com/x'),
+        throwsArgumentError,
+      );
+    });
+  });
+
+  group('CloudCookieJar', () {
+    test('sends cookies to matching hosts and absorbs rotations', () {
+      final jar = CloudCookieJar()
+        ..addHeader('i.mi.com', 'serviceToken=a; userId=7')
+        ..add('passToken', 'p', '.account.xiaomi.com');
+
+      expect(
+        jar.header(Uri.parse('https://i.mi.com/note')),
+        'serviceToken=a; userId=7',
+      );
+      expect(jar.header(Uri.parse('https://x.i.mi.com/')), isNull);
+      expect(
+        jar.header(Uri.parse('https://sub.account.xiaomi.com/')),
+        'passToken=p',
+      );
+
+      jar.absorb(Uri.parse('https://i.mi.com/status'), [
+        'serviceToken=b; Path=/; HttpOnly',
+        'userId=; Max-Age=0',
+      ]);
+      expect(jar.value('serviceToken'), 'b');
+      expect(jar.value('userId'), isNull);
+      expect(jar.header(Uri.parse('https://i.mi.com/')), 'serviceToken=b');
+    });
+  });
+
+  group('fetchCloudJournal', () {
+    late Directory temp;
+    setUp(() async => temp = await Directory.systemTemp.createTemp('cloud_'));
+    tearDown(() => temp.delete(recursive: true));
+
+    test(
+      'downloads media, appends unreferenced ones, counts failures',
+      () async {
+        final provider = _FakeProvider([
+          CloudNote(
+            id: 'n1',
+            title: ' Trip ',
+            folder: 'Travel',
+            createdAt: DateTime(2024, 5, 1, 8),
+            updatedAt: DateTime(2024, 5, 2),
+            attachments: const [
+              CloudAttachment(id: 'a', name: 'a.jpg'),
+              CloudAttachment(id: 'b', name: 'b.jpg'),
+              CloudAttachment(id: 'gone', name: 'gone.jpg'),
+            ],
+            writeBody: (writer, resolve) => writeCloudBlocks(writer, const [
+              CloudBlock.paragraph([
+                CloudSpan('Day '),
+                CloudSpan('one', bold: true),
+              ]),
+              CloudBlock(CloudBlockKind.attachment, attachmentId: 'b'),
+              CloudBlock(CloudBlockKind.attachment, attachmentId: 'gone'),
+            ], resolve),
+          ),
+        ]);
+        final progress = <(int, int?)>[];
+
+        final result = await fetchCloudJournal(
+          provider,
+          JournalMediaStager(temp.path),
+          onProgress: (done, total) => progress.add((done, total)),
+        );
+
+        final entry = result.entries.single;
+        expect(entry.sourceKey, 'n1');
+        expect(entry.title, 'Trip');
+        expect(entry.tags, ['Travel']);
+        expect(entry.updatedAt, DateTime(2024, 5, 2));
+        final images = [
+          for (final op in jsonDecode(entry.contentJson) as List)
+            if ((op as Map)['insert'] case {'image': final String path})
+              p.basename(path),
+        ];
+        // b 在正文中引用，a 未引用追加在末尾；gone 下载失败。
+        expect(images, ['b.jpg', 'a.jpg']);
+        expect(entry.contentJson, contains('"bold":true'));
+        expect(result.missingMediaCount, 1);
+        expect(progress.last, (1, 1));
+      },
+    );
+
+    test('a lost session stops the whole read', () async {
+      final provider = _FakeProvider([
+        CloudNote(
+          id: 'n1',
+          title: '',
+          createdAt: DateTime(2024),
+          attachments: const [CloudAttachment(id: 'expired', name: 'x.jpg')],
+          writeBody: (writer, resolve) {},
+        ),
+      ]);
+      await expectLater(
+        fetchCloudJournal(provider, JournalMediaStager(temp.path)),
+        throwsA(_failure(CloudNoteFailure.sessionExpired)),
+      );
+    });
+  });
+
+  test('writeCloudBlocks maps every block kind', () {
+    final writer = JournalDeltaWriterProbe();
+    writeCloudBlocks(writer.writer, const [
+      CloudBlock(CloudBlockKind.heading, level: 5, spans: [CloudSpan('H')]),
+      CloudBlock(CloudBlockKind.list, level: 2, spans: [CloudSpan('item')]),
+      CloudBlock(CloudBlockKind.list, ordered: true, spans: [CloudSpan('one')]),
+      CloudBlock(
+        CloudBlockKind.todo,
+        checked: true,
+        spans: [CloudSpan('done')],
+      ),
+      CloudBlock(CloudBlockKind.quote, spans: [CloudSpan('a\nb')]),
+      CloudBlock(CloudBlockKind.code, spans: [CloudSpan('x = 1')]),
+      CloudBlock(CloudBlockKind.divider),
+      CloudBlock(
+        CloudBlockKind.table,
+        rows: [
+          ['名称', '数量'],
+          ['苹果', '3'],
+        ],
+      ),
+      CloudBlock.paragraph([
+        CloudSpan('link', link: 'https://a.b'),
+        CloudSpan(' js', link: 'javascript:alert(1)', highlight: true),
+      ]),
+    ], (_) => null);
+
+    expect(writer.lines, [
+      'H | {"header":3}',
+      'item | {"list":"bullet","indent":1}',
+      'one | {"list":"ordered"}',
+      'done | {"list":"checked"}',
+      'a | {"blockquote":true}',
+      'b | {"blockquote":true}',
+      'x = 1 | {"code-block":true}',
+      '名称 数量 | {}',
+      '苹果 3 | {}',
+      'link js | {}',
+    ]);
+    expect(writer.json, contains('"link":"https://a.b"'));
+    expect(writer.json, isNot(contains('javascript')));
+  });
+}
+
+Matcher _failure(CloudNoteFailure failure) => isA<CloudNoteException>().having(
+  (error) => error.failure,
+  'failure',
+  failure,
+);
+
+class _FakeProvider implements CloudNoteProvider {
+  _FakeProvider(this.notes);
+
+  final List<CloudNote> notes;
+
+  @override
+  Future<String> probe() async => 'account';
+
+  @override
+  Future<List<CloudNote>> fetchNotes(CloudProgress onProgress) async => notes;
+
+  @override
+  Future<List<int>> download(CloudAttachment attachment) async {
+    if (attachment.id == 'gone') {
+      throw const CloudNoteException(CloudNoteFailure.rejected);
+    }
+    if (attachment.id == 'expired') {
+      throw const CloudNoteException(CloudNoteFailure.sessionExpired);
+    }
+    return fakeJpeg;
+  }
+}
+
+/// 把写好的正文按行拆成（文字，块格式），便于断言。
+class JournalDeltaWriterProbe {
+  final JournalDeltaWriter writer = JournalDeltaWriter();
+
+  String get json => writer.build().contentJson;
+
+  /// 每行为 `文字 | 块格式 JSON`。
+  List<String> get lines {
+    final result = <String>[];
+    var text = StringBuffer();
+    for (final op in jsonDecode(json) as List) {
+      final insert = (op as Map)['insert'];
+      if (insert is! String) continue;
+      final attributes =
+          (op['attributes'] as Map?)?.cast<String, Object?>() ?? const {};
+      final parts = insert.split('\n');
+      for (var i = 0; i < parts.length; i++) {
+        text.write(parts[i]);
+        if (i < parts.length - 1) {
+          result.add('$text | ${jsonEncode(attributes)}');
+          text = StringBuffer();
+        }
+      }
+    }
+    return result;
+  }
+}

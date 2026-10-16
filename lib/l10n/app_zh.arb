@@ -2767,11 +2767,11 @@
   },
   "journalImportGroupPhoneNotes": "手机与 WPS 云笔记",
   "@journalImportGroupPhoneNotes": {
-    "description": "导入来源面板中经「笔记互迁」导出的手机厂商与 WPS 云笔记的分组标题。"
+    "description": "导入来源面板中从云端登录读取的手机厂商与 WPS 笔记的分组标题。"
   },
-  "journalImportPhoneNotesHint": "这些笔记没有自带的导出：先在电脑上用开源工具「笔记互迁」登录云端，导出为 HTML、Markdown 或 TXT 并打包成 .zip，再选择该文件。",
+  "journalImportPhoneNotesHint": "在应用内登录官方云服务，直接读取云端笔记、分组与图片附件；登录状态只用于本次导入，结束后即清除。",
   "@journalImportPhoneNotesHint": {
-    "description": "说明手机厂商与 WPS 云笔记需要先用「笔记互迁」导出。"
+    "description": "说明手机厂商与 WPS 云笔记通过在应用内登录官方云服务导入。"
   },
   "journalImportDiaroHint": "备份文件（.zip，不能加密）",
   "@journalImportDiaroHint": {
@@ -2836,6 +2836,98 @@
   "journalImportEncrypted": "{app} 的加密备份无法导入，请在原应用中创建未加密的备份",
   "@journalImportEncrypted": {
     "description": "所选文件是密钥不公开的加密备份时的提示。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLoginTitle": "登录{app}",
+  "@cloudLoginTitle": {
+    "description": "云端笔记登录页标题。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudLoginHint": "在上方官方网页中登录并进入笔记页面，再点「读取笔记」。登录状态只用于本次导入，结束后即清除。",
+  "@cloudLoginHint": {
+    "description": "云端笔记登录页底部的说明。"
+  },
+  "cloudLoginRead": "读取笔记",
+  "@cloudLoginRead": {
+    "description": "登录后开始读取云端笔记的按钮。"
+  },
+  "cloudLoginReload": "刷新页面",
+  "@cloudLoginReload": {
+    "description": "重新加载登录网页的按钮提示。"
+  },
+  "cloudLoginChecking": "正在核对登录状态",
+  "@cloudLoginChecking": {
+    "description": "核对云端登录状态时加载指示器的无障碍说明。"
+  },
+  "cloudLoginNotSignedIn": "还没有登录，请先在页面中完成登录",
+  "@cloudLoginNotSignedIn": {
+    "description": "点读取笔记时尚未登录的提示。"
+  },
+  "cloudBusyReading": "正在读取云端笔记（{count} 篇）",
+  "@cloudBusyReading": {
+    "description": "读取云端笔记列表时的进度。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudBusyProgress": "正在读取云端笔记（{done}/{total}）",
+  "@cloudBusyProgress": {
+    "description": "读取云端笔记详情与附件时的进度。",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudErrorSession": "登录已失效或需要二次验证，请重新登录",
+  "@cloudErrorSession": {
+    "description": "云端读取时登录失效的提示。"
+  },
+  "cloudErrorForbidden": "平台拒绝访问（HTTP 403），请核对账号权限或官网提示",
+  "@cloudErrorForbidden": {
+    "description": "云端请求被拒绝访问的提示。"
+  },
+  "cloudErrorRateLimited": "请求过于频繁，请稍后再试",
+  "@cloudErrorRateLimited": {
+    "description": "云端请求被限流的提示。"
+  },
+  "cloudErrorServer": "平台服务暂时不可用，请稍后再试",
+  "@cloudErrorServer": {
+    "description": "云端服务出错的提示。"
+  },
+  "cloudErrorRejected": "平台拒绝了请求，请检查账号权限后重试",
+  "@cloudErrorRejected": {
+    "description": "云端请求被拒绝的提示。"
+  },
+  "cloudErrorNetwork": "网络请求失败，请检查网络连接后重试",
+  "@cloudErrorNetwork": {
+    "description": "云端读取网络失败的提示。"
+  },
+  "cloudErrorProtocol": "{app} 返回了无法识别的内容，已停止读取以免遗漏笔记",
+  "@cloudErrorProtocol": {
+    "description": "云端接口格式变化的提示。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudErrorUnsupportedAccount": "此 {app} 账号的笔记已加密或暂不支持读取",
+  "@cloudErrorUnsupportedAccount": {
+    "description": "云端账号状态不支持读取的提示。",
     "placeholders": {
       "app": {
         "type": "String"

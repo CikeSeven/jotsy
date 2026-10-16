@@ -59,6 +59,12 @@ dependencies:
   markdown: ^7.3.0
   sqlite3: ^3.2.0
   tyme: ^1.5.0
+  # 从手机厂商与 WPS 云端导入笔记：在官方网页中登录，登录状态（Cookie）只用
+  # 于本次读取笔记。
+  webview_flutter: ^4.14.1
+  # OPPO、vivo 网页版的请求信封：随机 AES 会话密钥经厂商公开的 RSA 公钥
+  # 包装（PKCS#1 v1.5），正文 AES-CBC 加密。
+  pointycastle: ^4.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

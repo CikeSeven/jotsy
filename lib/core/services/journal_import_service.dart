@@ -11,6 +11,7 @@ import 'backup_merge.dart';
 import 'backup_payload.dart';
 import 'data_archive_service.dart';
 import 'journal_import_apple_journal.dart';
+import 'journal_import_cloud.dart';
 import 'journal_import_day_one.dart';
 import 'journal_import_daylio.dart';
 import 'journal_import_diaro.dart';
@@ -23,17 +24,17 @@ import 'journal_import_markdown_files.dart';
 import 'journal_import_media.dart';
 import 'journal_import_memos.dart';
 import 'journal_import_models.dart';
-import 'journal_import_note_bridge.dart';
 import 'journal_import_payload.dart';
 import 'journal_import_support.dart';
 import 'settings_service.dart';
 
-/// 导入其他日记应用的导出：解析 → 预检 → 按所选方式合并。
+/// 导入其他日记应用的导出或云端笔记：解析 → 预检 → 按所选方式合并。
 ///
 /// 流程与备份导入一致，分两步，任何一步取消都不写入本机数据：
 /// 1. [prepare]：在应用文档目录下建立隔离暂存区，解压所选文件（是 ZIP
 ///    时），在后台 isolate 中按来源解析，把媒体放进暂存区，生成与备份相同
 ///    的载荷，并只读统计与本机重复的篇数，得到 [JournalImportSession.preview]；
+///    [prepareCloud] 改为从云端读取笔记、下载附件，其余相同；
 /// 2. [JournalImportSession.apply]：在备份服务的串行队列中经 BackupMerge
 ///    合并导入（事务写表、媒体搬进新批次目录、失败整体回滚）。
 ///
@@ -58,27 +59,70 @@ class JournalImportService {
     if (!await File(filePath).exists()) {
       throw FileSystemException('导入文件不存在', filePath);
     }
+    return _prepare(
+      database: database,
+      source: source,
+      moodOptions: moodOptions,
+      tagColors: tagColors,
+      parse: (staging) async {
+        String? extracted;
+        if (await _isZip(filePath)) {
+          final directory = Directory(p.join(staging.path, 'source'));
+          await BackupArchiveIO.extract(
+            filePath,
+            directory,
+            keepModifiedTimes: true,
+          );
+          extracted = directory.path;
+        }
+        return _parseInBackground(
+          source,
+          JournalImportInput(filePath: filePath, extractedPath: extracted),
+          staging.path,
+        );
+      },
+    );
+  }
+
+  /// 从手机厂商或 WPS 云端读取笔记（[provider] 已带登录状态并通过核验），
+  /// 附件下载进暂存区，之后与文件导入相同：只读预检，经会话合并写入。
+  static Future<JournalImportSession> prepareCloud({
+    required AppDatabase database,
+    required JournalImportSource source,
+    required CloudNoteProvider provider,
+    CloudProgress? onProgress,
+    List<String> moodOptions = SettingsService.defaultMoodOptions,
+    List<int> tagColors = const <int>[],
+  }) {
+    return _prepare(
+      database: database,
+      source: source,
+      moodOptions: moodOptions,
+      tagColors: tagColors,
+      parse: (staging) => fetchCloudJournal(
+        provider,
+        JournalMediaStager(staging.path),
+        onProgress: onProgress,
+      ),
+    );
+  }
+
+  /// 建立暂存区 → [parse] 得到条目与暂存媒体 → 生成载荷并只读预检。任何
+  /// 一步失败都删除暂存区并原样抛出。
+  static Future<JournalImportSession> _prepare({
+    required AppDatabase database,
+    required JournalImportSource source,
+    required List<String> moodOptions,
+    required List<int> tagColors,
+    required Future<JournalImportParseResult> Function(Directory staging) parse,
+  }) async {
     final documents = await getApplicationDocumentsDirectory();
     await documents.create(recursive: true);
     await _removeStaleStaging(documents);
     final staging = await documents.createTemp(_stagingPrefix);
     _liveStaging.add(staging.path);
     try {
-      String? extracted;
-      if (await _isZip(filePath)) {
-        final directory = Directory(p.join(staging.path, 'source'));
-        await BackupArchiveIO.extract(
-          filePath,
-          directory,
-          keepModifiedTimes: true,
-        );
-        extracted = directory.path;
-      }
-      final parsed = await _parseInBackground(
-        source,
-        JournalImportInput(filePath: filePath, extractedPath: extracted),
-        staging.path,
-      );
+      final parsed = await parse(staging);
       if (parsed.entries.isEmpty) {
         throw JournalImportFormatException(source, noEntries: true);
       }
@@ -209,6 +253,10 @@ JournalImportParseResult parseJournalExport(
     JournalImportSource.vivoNotes ||
     JournalImportSource.honorNotes ||
     JournalImportSource.meizuNotes ||
-    JournalImportSource.wpsNotes => parseNoteBridgeExport(source, input, media),
+    JournalImportSource.wpsNotes => throw ArgumentError.value(
+      source,
+      'source',
+      '云端来源经 prepareCloud 读取，没有导出文件',
+    ),
   };
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
@@ -73,7 +74,7 @@ void main() {
       expect(find.text(name), findsOneWidget, reason: name);
     }
     expect(find.text('备份文件（.daylio）或导出的 CSV（.csv）'), findsOneWidget);
-    expect(find.textContaining('「笔记互迁」'), findsOneWidget);
+    expect(find.textContaining('在应用内登录官方云服务'), findsOneWidget);
 
     await tester.tap(find.text('Apple 手记'));
     await tester.pumpAndSettle();
@@ -91,6 +92,20 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(picked, [JournalImportSource.huaweiNotepad]);
+  });
+
+  testWidgets('hides phone cloud notes where sign-in is unavailable', (
+    tester,
+  ) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.linux;
+    try {
+      await _open(tester);
+      expect(find.text('手机与 WPS 云笔记'), findsNothing);
+      expect(find.text('小米笔记'), findsNothing);
+      expect(find.text('Day One'), findsOneWidget);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
   });
 
   testWidgets('dismissing the sheet picks nothing', (tester) async {

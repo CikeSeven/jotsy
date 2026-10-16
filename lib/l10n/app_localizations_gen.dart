@@ -3638,16 +3638,16 @@ abstract class AppLocalizations {
   /// **'Note apps'**
   String get journalImportGroupNotes;
 
-  /// Section title for phone-maker and WPS cloud notes exported with Note Bridge.
+  /// Section title for phone-maker and WPS notes read from their cloud after signing in.
   ///
   /// In en, this message translates to:
   /// **'Phone & WPS cloud notes'**
   String get journalImportGroupPhoneNotes;
 
-  /// Explains that phone-maker and WPS notes must first be exported with Note Bridge.
+  /// Explains that phone-maker and WPS notes are imported by signing in to the official cloud service in the app.
   ///
   /// In en, this message translates to:
-  /// **'These apps can\'t export by themselves. On a computer, sign in with the open-source tool Note Bridge (笔记互迁), export as HTML, Markdown or TXT and pack it as .zip, then choose that file.'**
+  /// **'Sign in to the official cloud service inside the app to read notes, folders and image attachments directly. The sign-in is used only for this import and cleared afterwards.'**
   String get journalImportPhoneNotesHint;
 
   /// Which Diaro files can be imported.
@@ -3745,6 +3745,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Encrypted {app} backups can\'t be imported. Create an unencrypted backup in {app}'**
   String journalImportEncrypted(String app);
+
+  /// Title of the cloud notes sign-in page.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to {app}'**
+  String cloudLoginTitle(String app);
+
+  /// Hint at the bottom of the cloud notes sign-in page.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in on the official page above and open your notes, then tap Read notes. The sign-in is used only for this import and cleared afterwards.'**
+  String get cloudLoginHint;
+
+  /// Button that starts reading cloud notes after signing in.
+  ///
+  /// In en, this message translates to:
+  /// **'Read notes'**
+  String get cloudLoginRead;
+
+  /// Tooltip of the button that reloads the sign-in page.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload page'**
+  String get cloudLoginReload;
+
+  /// Accessibility label while the cloud sign-in is checked.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking sign-in'**
+  String get cloudLoginChecking;
+
+  /// Shown when Read notes is tapped before signing in.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not signed in yet. Finish signing in on the page first'**
+  String get cloudLoginNotSignedIn;
+
+  /// Progress while the cloud note list is read.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading cloud notes ({count})'**
+  String cloudBusyReading(int count);
+
+  /// Progress while cloud note details and attachments are read.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading cloud notes ({done}/{total})'**
+  String cloudBusyProgress(int done, int total);
+
+  /// Shown when the cloud session expired during reading.
+  ///
+  /// In en, this message translates to:
+  /// **'The sign-in has expired or needs verification. Please sign in again'**
+  String get cloudErrorSession;
+
+  /// Shown when a cloud request is forbidden.
+  ///
+  /// In en, this message translates to:
+  /// **'The service denied access (HTTP 403). Check your account or the website'**
+  String get cloudErrorForbidden;
+
+  /// Shown when cloud requests are rate limited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please try again later'**
+  String get cloudErrorRateLimited;
+
+  /// Shown when the cloud service returns server errors.
+  ///
+  /// In en, this message translates to:
+  /// **'The service is temporarily unavailable. Please try again later'**
+  String get cloudErrorServer;
+
+  /// Shown when the cloud service rejects a request.
+  ///
+  /// In en, this message translates to:
+  /// **'The service rejected the request. Check your account and try again'**
+  String get cloudErrorRejected;
+
+  /// Shown when a cloud request fails on the network.
+  ///
+  /// In en, this message translates to:
+  /// **'Network request failed. Check your connection and try again'**
+  String get cloudErrorNetwork;
+
+  /// Shown when the cloud API response format is not recognized.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} returned data in an unknown format. Reading stopped so no note is missed'**
+  String cloudErrorProtocol(String app);
+
+  /// Shown when the cloud account state doesn't allow reading.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes in this {app} account are encrypted or can\'t be read yet'**
+  String cloudErrorUnsupportedAccount(String app);
 
   /// Import summary title for another app's export.
   ///

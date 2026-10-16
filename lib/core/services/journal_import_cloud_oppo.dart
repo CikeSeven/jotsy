@@ -1,0 +1,239 @@
+import 'package:meta/meta.dart';
+import 'package:pointycastle/export.dart' show RSAPublicKey;
+
+import 'journal_import_cloud.dart';
+import 'journal_import_cloud_envelope.dart';
+import 'journal_import_cloud_html.dart';
+import 'journal_import_cloud_http.dart';
+
+/// OPPO 笔记（云服务网页版 Connect v2）的只读客户端，协议依据参考实现
+/// （笔记互迁 `providers/oppo.py`、`oppo_files.py`、`oppo_wire.py`）：
+///
+/// - 接口源 `https://owork-api-cn.oppo.com`，请求带登录后的 Cookie 与
+///   `Referer: https://cloud.oppo.com/`；
+/// - 账号 `GET /owork-server/web/account/v1/userInfo`（明文，`data.ssoId`）；
+/// - 笔记接口都是 `POST /owork-server/web/note/v2/<名称>`，请求体与响应的
+///   `data` 都套 [OppoEnvelope]（每个请求一把新的 AES 会话密钥）：
+///   分组 `group-list-new`、列表 `list`（每页 50，`hasMore` 翻页，条数须与
+///   `totalCount` 一致）、详情 `info`（`version` 为空串取完整正文）；
+/// - 正文 `rawText` 是 tiptap 风格 HTML：待办为
+///   `ul[data-type=taskList] > li[data-checked]`，图片为
+///   `<img src attachid>`，对应 `attachments` 中 `type == 0` 的项，文件经
+///   `GET …/file-download/<文件 ID>` 下载（不套信封）；
+/// - 手写笔记是专有格式，不读取。
+class OppoCloudProvider implements CloudNoteProvider {
+  OppoCloudProvider(
+    this.http, {
+    Future<void> Function(Duration)? wait,
+    this.envelopeKey,
+  }) : _api = CloudNoteTransport(
+         origin,
+         http,
+         headers: const {'Referer': 'https://cloud.oppo.com/'},
+         wait: wait,
+       );
+
+  static const String origin = 'https://owork-api-cn.oppo.com';
+  static const String _prefix = '/owork-server';
+
+  final CloudNoteHttp http;
+  final CloudNoteTransport _api;
+
+  /// 只供测试替换厂商公钥（测试持有对应私钥以模拟服务端）。
+  @visibleForTesting
+  final RSAPublicKey? envelopeKey;
+
+  static Object? _data(Object? payload) {
+    if (payload is! Map ||
+        (payload['code'] != 0 && payload['code'] != '0') ||
+        !payload.containsKey('data')) {
+      throw const CloudNoteException(CloudNoteFailure.rejected, 'oppo code');
+    }
+    return payload['data'];
+  }
+
+  Future<Object?> _encrypted(
+    String path,
+    Object? data, {
+    Map<String, String> query = const {},
+  }) async {
+    final envelope = OppoEnvelope(
+      data ?? const <String, Object?>{},
+      publicKey: envelopeKey,
+    );
+    final payload = await _api.json(
+      'POST',
+      '$_prefix$path',
+      query: query,
+      jsonBody: envelope.payload,
+    );
+    return _data(envelope.decrypt(_data(payload)));
+  }
+
+  @override
+  Future<String> probe() async {
+    final user = _data(
+      await _api.json('GET', '$_prefix/web/account/v1/userInfo'),
+    );
+    final id = user is Map ? user['ssoId'] : null;
+    if ((id is! String && id is! int) || '$id'.isEmpty) {
+      throw const CloudNoteException(CloudNoteFailure.sessionExpired);
+    }
+    await _encrypted('/web/note/v2/group-list-new', null);
+    return 'oppo:$id';
+  }
+
+  @override
+  Future<List<CloudNote>> fetchNotes(CloudProgress onProgress) async {
+    final groups = await _encrypted('/web/note/v2/group-list-new', null);
+    if (groups is! List) {
+      throw const CloudNoteException(
+        CloudNoteFailure.protocolChanged,
+        'oppo groups',
+      );
+    }
+    // “全部笔记”视图的分组 GUID 为空串，不是真实分组。
+    final folders = <String, String>{
+      for (final group in groups)
+        if (group is Map &&
+            group['groupGuid'] is String &&
+            (group['groupGuid'] as String).isNotEmpty)
+          group['groupGuid'] as String: '${group['groupName'] ?? ''}',
+    };
+
+    final rows = <Map<String, Object?>>[];
+    final seen = <String>{};
+    int? total;
+    for (var page = 1; ; page++) {
+      if (page > 10000) {
+        throw const CloudNoteException(CloudNoteFailure.protocolChanged);
+      }
+      final listing = await _encrypted('/web/note/v2/list', {
+        'status': 0,
+        'queryFields': <Object?>[],
+        'pageNo': page,
+        'pageSize': 50,
+        'recordType': 'hypertext_item_info',
+        'sortFieldList': [
+          {'field': 'topTime', 'sortType': 'desc'},
+          {'field': 'updateTime', 'sortType': 'desc'},
+        ],
+      });
+      if (listing is! Map ||
+          listing['records'] is! List ||
+          listing['totalCount'] is! int ||
+          listing['hasMore'] is! bool) {
+        throw const CloudNoteException(
+          CloudNoteFailure.protocolChanged,
+          'oppo list',
+        );
+      }
+      total ??= listing['totalCount'] as int;
+      for (final row in listing['records'] as List) {
+        final id = row is Map ? row['recordId'] : null;
+        if (id is! String || id.isEmpty || !seen.add(id)) {
+          throw const CloudNoteException(
+            CloudNoteFailure.protocolChanged,
+            'oppo duplicate',
+          );
+        }
+        rows.add((row as Map).cast<String, Object?>());
+      }
+      onProgress(rows.length, total);
+      if (listing['hasMore'] != true) break;
+      if ((listing['records'] as List).isEmpty) {
+        throw const CloudNoteException(
+          CloudNoteFailure.protocolChanged,
+          'oppo stalled',
+        );
+      }
+    }
+    if (rows.length != total) {
+      throw const CloudNoteException(
+        CloudNoteFailure.protocolChanged,
+        'oppo count',
+      );
+    }
+
+    final notes = <CloudNote>[];
+    for (final (index, row) in rows.indexed) {
+      final id = row['recordId'] as String;
+      final detail = await _encrypted(
+        '/web/note/v2/info',
+        {'recordId': id, 'status': 0, 'version': ''},
+        query: {'recordId': id, 'version': ''},
+      );
+      if (detail is Map && detail['recordId'] == id) {
+        final note = _parseDetail(detail.cast<String, Object?>(), folders);
+        if (note != null) notes.add(note);
+      }
+      onProgress(index + 1, rows.length);
+    }
+    return notes;
+  }
+
+  static CloudNote? _parseDetail(
+    Map<String, Object?> detail,
+    Map<String, String> folders,
+  ) {
+    final html = detail['rawText'];
+    if (html is! String || detail['status'] != 0) return null;
+    final attachments = <CloudAttachment>[
+      for (final item in (detail['attachments'] as List?) ?? const [])
+        if (item is Map &&
+            item['id'] != null &&
+            item['type'] == 0 &&
+            item['url'] is String &&
+            RegExp(r'^/?[A-Za-z0-9_-]{1,150}$').hasMatch(item['url'] as String))
+          CloudAttachment(
+            id: '${item['id']}',
+            name: (item['url'] as String).replaceFirst('/', ''),
+            reference: (item['url'] as String).replaceFirst('/', ''),
+          ),
+    ];
+    final ids = {for (final item in attachments) item.id};
+    final created = _time(detail['createTime']);
+    if (created == null) return null;
+    return CloudNote(
+      id: detail['recordId'] as String,
+      title: detail['rawTitle'] is String ? detail['rawTitle'] as String : '',
+      createdAt: created,
+      updatedAt: _time(detail['updateTime']),
+      folder: folders[detail['groupGuid']],
+      attachments: attachments,
+      writeBody: (writer, resolve) => writeCloudHtml(
+        writer,
+        html.isEmpty ? '<p></p>' : html,
+        resolve,
+        imageId: (image) {
+          final attachId = image.attributes['attachid'];
+          if (ids.contains(attachId)) return attachId;
+          final src = image.attributes['src'];
+          return ids.contains(src) ? src : null;
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<List<int>> download(CloudAttachment attachment) async {
+    final response = await _api.request(
+      'GET',
+      '$_prefix/web/note/v2/file-download/${attachment.reference}',
+    );
+    final type = response.headers['content-type'] ?? '';
+    if (type.startsWith('text/html') ||
+        type.startsWith('application/json') ||
+        response.bytes.isEmpty) {
+      throw const CloudNoteException(
+        CloudNoteFailure.rejected,
+        'oppo file body',
+      );
+    }
+    return response.bytes;
+  }
+
+  static DateTime? _time(Object? value) => value is num && value > 0
+      ? DateTime.fromMillisecondsSinceEpoch(value.round())
+      : null;
+}

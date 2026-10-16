@@ -12,7 +12,7 @@ import 'journal_import_delta_writer.dart';
 /// （粗体、斜体、删除线、行内代码、链接、图片、转义字符）交给 markdown
 /// 包解析，图片经 [resolveEmbed] 转为本应用的媒体嵌入。
 ///
-/// [inlineHtml] 为 true 时识别行内 HTML 标签：Joplin、Obsidian、笔记互迁等
+/// [inlineHtml] 为 true 时识别行内 HTML 标签：Joplin、Obsidian、Bear 等
 /// 用 `<u>`、`<strong>`、`<img src>`、`<audio src>` 表达 Markdown 写不出的
 /// 格式与媒体，这些来源的阅读器会渲染 HTML，未知标签因此直接丢弃；Day One
 /// 等纯文本来源保持关闭，`<` 开头的文字原样保留。[resolveLink] 把指向本地

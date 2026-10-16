@@ -40,9 +40,9 @@ enum JournalImportSource {
   /// 等导出的 ZIP，每个文件一篇。
   markdown,
 
-  // 以下七个是手机厂商与 WPS 的云端笔记：没有自带的导出，经桌面工具
-  // 「笔记互迁」从云端导出为 HTML/Markdown/TXT（常打包成 ZIP），共用
-  // `journal_import_note_bridge.dart` 解析。
+  // 以下七个是手机厂商与 WPS 的云端笔记：没有自带的导出，在应用内登录官方
+  // 云服务后直接读取（`journal_import_cloud_<平台>.dart`，协议依据开源项目
+  // 「笔记互迁」note-bridge-desktop），不经过文件解析。
 
   /// 小米笔记。
   xiaomiNotes,
@@ -66,8 +66,8 @@ enum JournalImportSource {
   wpsNotes,
 }
 
-/// 经「笔记互迁」导出的云端笔记来源。
-const Set<JournalImportSource> noteBridgeJournalSources = {
+/// 在应用内登录后从云端读取的来源。
+const Set<JournalImportSource> cloudJournalSources = {
   JournalImportSource.xiaomiNotes,
   JournalImportSource.huaweiNotepad,
   JournalImportSource.oppoNotes,

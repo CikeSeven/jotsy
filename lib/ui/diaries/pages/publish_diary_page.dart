@@ -25,6 +25,7 @@ import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
+import 'package:node_diary/ui/diaries/models/publish_time.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
@@ -81,7 +82,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   bool _locationFromAuto = false;
   String? _weatherIconCode;
   double? _energyLevel = 4;
-  late DateTime _publishAt;
+  // 用户在本页亲自选的发表时间；没选过为 null，发表时间在提交那一刻现算
+  // （见 PublishDiaryController.effectivePublishAt）。
+  DateTime? _explicitPublishAt;
   TimeCapsuleSchedule? _timeCapsuleSchedule;
   // 面板展开进度只驱动正文底部占位：用 ValueNotifier 局部刷新占位条，
   // 避免拖拽时每帧 setState 重建整页（含只读 QuillEditor 预览）。
@@ -116,9 +119,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _weatherController.text = widget.initialDraft.weather ?? '';
     _weatherIconCode = widget.initialDraft.weatherIconCode;
     _moodEmoji = widget.initialDraft.moodEmoji;
-    _publishAt = _controller.resolveInitialPublishAt(
-      widget.initialDraft.createdAtOverride,
-    );
     final initialCapsuleUnlockAt = widget.initialDraft.capsuleUnlockAt;
     if (initialCapsuleUnlockAt != null) {
       _timeCapsuleSchedule = TimeCapsuleSchedule(
@@ -334,9 +334,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                   });
                 },
                 showPublishTimeOption: true,
-                publishTimeLabel: _controller.formatPublishTimeLabel(
-                  _publishAt,
-                ),
+                publishTimeLabel: _controller.publishTimeLabel,
                 onPickPublishTime: _controller.pickPublishAt,
                 showTimeCapsuleOption: true,
                 timeCapsuleLabel: _controller.timeCapsuleLabel,

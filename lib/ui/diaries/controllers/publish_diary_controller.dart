@@ -110,41 +110,29 @@ class PublishDiaryController {
     );
   }
 
-  /// 解析发布页初始发表时间。
-  ///
-  /// 规则：
-  /// - 无历史值时取当前时间；
-  /// - 仅包含“日期”的历史值（00:00:00）补齐当前时分秒；
-  /// - 超出当前时间的值回退到当前时间，防止产生未来发表时间。
-  DateTime resolveInitialPublishAt(DateTime? raw) {
+  /// 实际发表时间：用户在本页选过就用所选（晚于现在时回退到现在），否则
+  /// 按打开者带来的请求值现算（见 [resolvePublishAt]）。每次读取都重新计算，
+  /// 发布时取的是提交那一刻。
+  DateTime get effectivePublishAt {
     final now = DateTime.now();
-    if (raw == null) {
-      return now;
+    final explicit = _state._explicitPublishAt;
+    if (explicit != null) {
+      return explicit.isAfter(now) ? now : explicit;
     }
+    return resolvePublishAt(
+      _state.widget.initialDraft.createdAtOverride,
+      now: now,
+    );
+  }
 
-    final local = raw.toLocal();
-    final isDateOnly =
-        local.hour == 0 &&
-        local.minute == 0 &&
-        local.second == 0 &&
-        local.millisecond == 0 &&
-        local.microsecond == 0;
-    final normalized = isDateOnly
-        ? DateTime(
-            local.year,
-            local.month,
-            local.day,
-            now.hour,
-            now.minute,
-            now.second,
-            now.millisecond,
-            now.microsecond,
-          )
-        : local;
-    if (normalized.isAfter(now)) {
-      return now;
+  /// 面板上的发表时间文案；既没选过、打开者也没指定时为 null，面板显示
+  /// “自动获取当前时间”。
+  String? get publishTimeLabel {
+    if (_state._explicitPublishAt == null &&
+        _state.widget.initialDraft.createdAtOverride == null) {
+      return null;
     }
-    return normalized;
+    return formatPublishTimeLabel(effectivePublishAt);
   }
 
   /// 发表时间展示文案（固定到分钟）。
@@ -162,15 +150,19 @@ class PublishDiaryController {
   }
 
   /// 选择发表时间；约束见 [showPublishTimePicker]（与编辑已发布日记共用）。
+  ///
+  /// 原样确认（选回当前那一分钟，选择器返回 current 本身）不算选择，发表
+  /// 时间继续跟随提交时刻。
   Future<void> pickPublishAt() async {
+    final current = effectivePublishAt;
     final picked = await showPublishTimePicker(
       _state.context,
-      current: _state._publishAt,
+      current: current,
     );
-    if (picked == null || !_state.mounted) {
+    if (picked == null || picked == current || !_state.mounted) {
       return;
     }
-    _state.setState(() => _state._publishAt = picked);
+    _state.setState(() => _state._explicitPublishAt = picked);
   }
 
   void updateTimeCapsule(TimeCapsuleSchedule picked) {
@@ -450,7 +442,7 @@ class PublishDiaryController {
         tagIds: _state._selectedTagIds.toList(),
         createdAtOverride: TimeCapsuleSchedule.resolveDiaryCreatedAt(
           schedule: schedule,
-          fallbackPublishAt: _state._publishAt,
+          fallbackPublishAt: effectivePublishAt,
         ),
         capsuleUnlockAt: schedule?.normalizedUnlockAt,
         capsuleLockedAt: lockedAt,
@@ -502,7 +494,12 @@ class PublishDiaryController {
     Navigator.of(_state.context).pop(
       _state.widget.initialDraft.copyWith(
         cover: normalizedCover,
-        createdAtOverride: _state._publishAt,
+        // 只带回用户亲自选的时间；没选过就原样带回打开者的请求值（如日历
+        // 的按日新建），下次打开或发表时再现算，不把“打开发布页那一刻”
+        // 冻结进草稿。
+        createdAtOverride:
+            _state._explicitPublishAt ??
+            _state.widget.initialDraft.createdAtOverride,
         metadataJson: buildMetadataJson(),
         selectedTagIds: <int>{..._state._selectedTagIds},
         location: normalizeOptionalText(_state._locationController.text),

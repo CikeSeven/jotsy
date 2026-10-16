@@ -66,19 +66,46 @@ void main() {
 
         await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
         await tester.pumpAndSettle();
-        final show = find.text(l10n.calendarLunarAlways);
+        // “农历与节假日”分组里农历在前、节假日在后，两组用同一套文案。
+        final show = find.text(l10n.calendarLunarAlways).first;
         await tester.ensureVisible(show);
         await tester.pumpAndSettle();
         await tester.tap(show);
         await tester.pumpAndSettle();
 
         expect(_cells(tester).every((cell) => cell.lunar != null), isTrue);
-        expect(
-          CalendarDisplayOptions.decode(
-            settings.calendarDisplayOptionsRaw,
-          ).lunarMode,
-          CalendarLunarMode.always,
+        final saved = CalendarDisplayOptions.decode(
+          settings.calendarDisplayOptionsRaw,
         );
+        expect(saved.lunarMode, CalendarLunarMode.always);
+        expect(saved.holidayMode, CalendarLunarMode.locale);
+      });
+
+      testWidgets('the sheet turns holidays on in English and persists', (
+        tester,
+      ) async {
+        final settings = await pumpCalendarPage(
+          tester,
+          brightness: brightness,
+          locale: const Locale('en'),
+        );
+        final l10n = tester.element(find.byType(CalendarPage)).l10n;
+
+        await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
+        await tester.pumpAndSettle();
+        expect(find.text(l10n.calendarOptionsHolidays), findsOneWidget);
+        final show = find.text(l10n.calendarLunarAlways).last;
+        await tester.ensureVisible(show);
+        await tester.pumpAndSettle();
+        await tester.tap(show);
+        await tester.pumpAndSettle();
+
+        final saved = CalendarDisplayOptions.decode(
+          settings.calendarDisplayOptionsRaw,
+        );
+        expect(saved.holidayMode, CalendarLunarMode.always);
+        expect(saved.lunarMode, CalendarLunarMode.locale);
+        expect(_cells(tester).every((cell) => cell.lunar == null), isTrue);
       });
 
       testWidgets('"hide" removes lunar dates in Chinese', (tester) async {

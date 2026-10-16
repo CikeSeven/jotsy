@@ -4447,6 +4447,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Filtered'**
   String get calendarFilterActive;
+
+  /// Title of the lunar calendar and public holiday group in the calendar display options sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar & holidays'**
+  String get calendarOptionsAlmanac;
+
+  /// Title of the public holiday (day off / make-up workday) option.
+  ///
+  /// In en, this message translates to:
+  /// **'Public holidays (China)'**
+  String get calendarOptionsHolidays;
+
+  /// Description of the public holiday option; year is the last year covered by the built-in holiday data.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks days off and make-up workdays in mainland China beside the date; weekend shading follows them. Data covers up to {year}.'**
+  String calendarOptionsHolidaysDescription(int year);
+
+  /// Description of the public holiday option when the built-in data does not cover the current year.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks days off and make-up workdays in mainland China beside the date; weekend shading follows them. This version doesn\'t include this year\'s schedule yet.'**
+  String get calendarOptionsHolidaysDescriptionOutdated;
+
+  /// Day-off mark beside the date number in a calendar cell; must be very short.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get calendarHolidayRestMark;
+
+  /// Make-up workday mark beside the date number in a calendar cell; must be very short.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get calendarHolidayWorkMark;
+
+  /// Day-off note at the end of the lunar line under the selected date heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Day off'**
+  String get calendarHolidayDayOff;
+
+  /// Make-up workday note at the end of the lunar line under the selected date heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Make-up workday'**
+  String get calendarHolidayMakeUpWorkday;
 }
 
 class _AppLocalizationsDelegate

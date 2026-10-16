@@ -6,6 +6,8 @@ import 'calendar_display_enums.dart';
 
 export 'calendar_display_enums.dart';
 
+part 'calendar_display_options_json.dart';
+
 /// 日历页的显示选项。
 ///
 /// 输入：设置服务中保存的 JSON 字符串；输出：不可变的选项对象。无副作用。
@@ -34,6 +36,7 @@ class CalendarDisplayOptions {
     this.showOnThisDay = true,
     this.yearBasis = CalendarYearBasis.mood,
     this.lunarMode = CalendarLunarMode.locale,
+    this.holidayMode = CalendarLunarMode.locale,
   });
 
   /// 解析持久化的 JSON；null、空串或损坏时返回默认选项。
@@ -52,76 +55,8 @@ class CalendarDisplayOptions {
     return const CalendarDisplayOptions();
   }
 
-  factory CalendarDisplayOptions.fromJson(Map<String, dynamic> json) {
-    const defaults = CalendarDisplayOptions();
-    return CalendarDisplayOptions(
-      cellStyle: _enumByName(
-        CalendarCellStyle.values,
-        json['cellStyle'],
-        defaults.cellStyle,
-      ),
-      heatBasis: _enumByName(
-        CalendarHeatBasis.values,
-        json['heatBasis'],
-        defaults.heatBasis,
-      ),
-      moodAggregation: _enumByName(
-        CalendarMoodAggregation.values,
-        json['moodAggregation'],
-        defaults.moodAggregation,
-      ),
-      showCountBadge: _bool(json['showCountBadge'], defaults.showCountBadge),
-      showCapsuleBadge: _bool(
-        json['showCapsuleBadge'],
-        defaults.showCapsuleBadge,
-      ),
-      showWeatherBadge: _bool(
-        json['showWeatherBadge'],
-        defaults.showWeatherBadge,
-      ),
-      weekStart: _enumByName(
-        CalendarWeekStart.values,
-        json['weekStart'],
-        defaults.weekStart,
-      ),
-      highlightWeekends: _bool(
-        json['highlightWeekends'],
-        defaults.highlightWeekends,
-      ),
-      showWeekNumbers: _bool(json['showWeekNumbers'], defaults.showWeekNumbers),
-      fixedSixWeeks: _bool(json['fixedSixWeeks'], defaults.fixedSixWeeks),
-      defaultFormat: _enumByName(
-        CalendarDefaultFormat.values,
-        json['defaultFormat'],
-        defaults.defaultFormat,
-      ),
-      rememberedFormat: _enumByName(
-        CalendarGridFormat.values,
-        json['rememberedFormat'],
-        defaults.rememberedFormat,
-      ),
-      showMonthSummary: _bool(
-        json['showMonthSummary'],
-        defaults.showMonthSummary,
-      ),
-      dayContentStyle: _enumByName(
-        CalendarDayContentStyle.values,
-        json['dayContentStyle'],
-        defaults.dayContentStyle,
-      ),
-      showOnThisDay: _bool(json['showOnThisDay'], defaults.showOnThisDay),
-      yearBasis: _enumByName(
-        CalendarYearBasis.values,
-        json['yearBasis'],
-        defaults.yearBasis,
-      ),
-      lunarMode: _enumByName(
-        CalendarLunarMode.values,
-        json['lunarMode'],
-        defaults.lunarMode,
-      ),
-    );
-  }
+  factory CalendarDisplayOptions.fromJson(Map<String, dynamic> json) =>
+      _optionsFromJson(json);
 
   final CalendarCellStyle cellStyle;
   final CalendarHeatBasis heatBasis;
@@ -159,6 +94,10 @@ class CalendarDisplayOptions {
   /// 日期数字下方是否显示农历、节气与节日。
   final CalendarLunarMode lunarMode;
 
+  /// 日期格是否标出法定节假日与调休上班日（休/班）。与农历同样跟随语言
+  /// 区域：数据是中国大陆的放假安排，英文界面默认不显示。
+  final CalendarLunarMode holidayMode;
+
   /// 打开日历页时应使用的网格格式。
   CalendarGridFormat get initialFormat => switch (defaultFormat) {
     CalendarDefaultFormat.month => CalendarGridFormat.month,
@@ -166,25 +105,7 @@ class CalendarDisplayOptions {
     CalendarDefaultFormat.remember => rememberedFormat,
   };
 
-  Map<String, Object> toJson() => <String, Object>{
-    'cellStyle': cellStyle.name,
-    'heatBasis': heatBasis.name,
-    'moodAggregation': moodAggregation.name,
-    'showCountBadge': showCountBadge,
-    'showCapsuleBadge': showCapsuleBadge,
-    'showWeatherBadge': showWeatherBadge,
-    'weekStart': weekStart.name,
-    'highlightWeekends': highlightWeekends,
-    'showWeekNumbers': showWeekNumbers,
-    'fixedSixWeeks': fixedSixWeeks,
-    'defaultFormat': defaultFormat.name,
-    'rememberedFormat': rememberedFormat.name,
-    'showMonthSummary': showMonthSummary,
-    'dayContentStyle': dayContentStyle.name,
-    'showOnThisDay': showOnThisDay,
-    'yearBasis': yearBasis.name,
-    'lunarMode': lunarMode.name,
-  };
+  Map<String, Object> toJson() => _optionsToJson(this);
 
   String encode() => jsonEncode(toJson());
 
@@ -206,6 +127,7 @@ class CalendarDisplayOptions {
     bool? showOnThisDay,
     CalendarYearBasis? yearBasis,
     CalendarLunarMode? lunarMode,
+    CalendarLunarMode? holidayMode,
   }) {
     return CalendarDisplayOptions(
       cellStyle: cellStyle ?? this.cellStyle,
@@ -225,6 +147,7 @@ class CalendarDisplayOptions {
       showOnThisDay: showOnThisDay ?? this.showOnThisDay,
       yearBasis: yearBasis ?? this.yearBasis,
       lunarMode: lunarMode ?? this.lunarMode,
+      holidayMode: holidayMode ?? this.holidayMode,
     );
   }
 
@@ -247,7 +170,8 @@ class CalendarDisplayOptions {
         other.dayContentStyle == dayContentStyle &&
         other.showOnThisDay == showOnThisDay &&
         other.yearBasis == yearBasis &&
-        other.lunarMode == lunarMode;
+        other.lunarMode == lunarMode &&
+        other.holidayMode == holidayMode;
   }
 
   @override
@@ -269,23 +193,6 @@ class CalendarDisplayOptions {
     showOnThisDay,
     yearBasis,
     lunarMode,
+    holidayMode,
   );
-
-  static T _enumByName<T extends Enum>(
-    List<T> values,
-    Object? raw,
-    T fallback,
-  ) {
-    if (raw is! String) {
-      return fallback;
-    }
-    for (final value in values) {
-      if (value.name == raw) {
-        return value;
-      }
-    }
-    return fallback;
-  }
-
-  static bool _bool(Object? raw, bool fallback) => raw is bool ? raw : fallback;
 }

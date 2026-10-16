@@ -3429,5 +3429,42 @@
   "calendarFilterActive": "已筛选",
   "@calendarFilterActive": {
     "description": "日历卡片里筛选条的读屏标签前缀。"
+  },
+  "calendarOptionsAlmanac": "农历与节假日",
+  "@calendarOptionsAlmanac": {
+    "description": "显示选项面板中农历与法定节假日分组的标题。"
+  },
+  "calendarOptionsHolidays": "法定节假日",
+  "@calendarOptionsHolidays": {
+    "description": "显示选项面板中法定节假日（休/班）选项的标题。"
+  },
+  "calendarOptionsHolidaysDescription": "在日期左上标出放假（休）与调休上班（班），周末着色随之调整。数据收录到 {year} 年。",
+  "@calendarOptionsHolidaysDescription": {
+    "description": "法定节假日选项的说明，year 为放假安排数据收录到的最后一年。",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarOptionsHolidaysDescriptionOutdated": "在日期左上标出放假（休）与调休上班（班），周末着色随之调整。当前版本还没有收录今年的放假安排。",
+  "@calendarOptionsHolidaysDescriptionOutdated": {
+    "description": "法定节假日选项的说明：内置数据未覆盖今年时显示。"
+  },
+  "calendarHolidayRestMark": "休",
+  "@calendarHolidayRestMark": {
+    "description": "日期格左上角的放假标记，须为极短的单字。"
+  },
+  "calendarHolidayWorkMark": "班",
+  "@calendarHolidayWorkMark": {
+    "description": "日期格左上角的调休上班标记，须为极短的单字。"
+  },
+  "calendarHolidayDayOff": "休",
+  "@calendarHolidayDayOff": {
+    "description": "选中日标题下农历行末尾的放假标记（如“国庆节 · 休”）。"
+  },
+  "calendarHolidayMakeUpWorkday": "调休上班",
+  "@calendarHolidayMakeUpWorkday": {
+    "description": "选中日标题下农历行末尾的调休上班说明。"
   }
 }

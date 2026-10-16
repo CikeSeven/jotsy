@@ -36,7 +36,7 @@ class CalendarCellLayout extends StatelessWidget {
   final Widget number;
   final Widget? indicator;
 
-  /// 数字左上方：未解封胶囊的锁或天气。
+  /// 数字左上方：未解封胶囊的锁、休/班或天气（见 CalendarCellLeadingBadge）。
   final Widget? leadingBadge;
 
   /// 数字右上方：篇数上标。

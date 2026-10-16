@@ -3429,5 +3429,42 @@
   "calendarFilterActive": "Filtered",
   "@calendarFilterActive": {
     "description": "Screen reader prefix of the filter bar in the calendar card."
+  },
+  "calendarOptionsAlmanac": "Lunar & holidays",
+  "@calendarOptionsAlmanac": {
+    "description": "Title of the lunar calendar and public holiday group in the calendar display options sheet."
+  },
+  "calendarOptionsHolidays": "Public holidays (China)",
+  "@calendarOptionsHolidays": {
+    "description": "Title of the public holiday (day off / make-up workday) option."
+  },
+  "calendarOptionsHolidaysDescription": "Marks days off and make-up workdays in mainland China beside the date; weekend shading follows them. Data covers up to {year}.",
+  "@calendarOptionsHolidaysDescription": {
+    "description": "Description of the public holiday option; year is the last year covered by the built-in holiday data.",
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarOptionsHolidaysDescriptionOutdated": "Marks days off and make-up workdays in mainland China beside the date; weekend shading follows them. This version doesn't include this year's schedule yet.",
+  "@calendarOptionsHolidaysDescriptionOutdated": {
+    "description": "Description of the public holiday option when the built-in data does not cover the current year."
+  },
+  "calendarHolidayRestMark": "Off",
+  "@calendarHolidayRestMark": {
+    "description": "Day-off mark beside the date number in a calendar cell; must be very short."
+  },
+  "calendarHolidayWorkMark": "Work",
+  "@calendarHolidayWorkMark": {
+    "description": "Make-up workday mark beside the date number in a calendar cell; must be very short."
+  },
+  "calendarHolidayDayOff": "Day off",
+  "@calendarHolidayDayOff": {
+    "description": "Day-off note at the end of the lunar line under the selected date heading."
+  },
+  "calendarHolidayMakeUpWorkday": "Make-up workday",
+  "@calendarHolidayMakeUpWorkday": {
+    "description": "Make-up workday note at the end of the lunar line under the selected date heading."
   }
 }

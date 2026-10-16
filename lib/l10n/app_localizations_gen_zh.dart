@@ -2401,4 +2401,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get calendarFilterActive => '已筛选';
+
+  @override
+  String get calendarOptionsAlmanac => '农历与节假日';
+
+  @override
+  String get calendarOptionsHolidays => '法定节假日';
+
+  @override
+  String calendarOptionsHolidaysDescription(int year) {
+    return '在日期左上标出放假（休）与调休上班（班），周末着色随之调整。数据收录到 $year 年。';
+  }
+
+  @override
+  String get calendarOptionsHolidaysDescriptionOutdated =>
+      '在日期左上标出放假（休）与调休上班（班），周末着色随之调整。当前版本还没有收录今年的放假安排。';
+
+  @override
+  String get calendarHolidayRestMark => '休';
+
+  @override
+  String get calendarHolidayWorkMark => '班';
+
+  @override
+  String get calendarHolidayDayOff => '休';
+
+  @override
+  String get calendarHolidayMakeUpWorkday => '调休上班';
 }

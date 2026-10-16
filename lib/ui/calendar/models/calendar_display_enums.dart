@@ -42,6 +42,7 @@ enum CalendarDayContentStyle { timeline, cards }
 /// 年视图每个日期小格的着色依据。
 enum CalendarYearBasis { mood, entries, words }
 
-/// 日期格农历小字（农历日、节气与传统节日）；[locale] 跟随应用语言区域
-/// （中文显示、英文不显示）。模型层不知道语言区域，解析在 UI 层。
+/// 中国历法相关内容的显示方式，用于农历小字（农历日、节气与传统节日）
+/// 与法定节假日（休/班）两项选项；[locale] 跟随应用语言区域（中文显示、
+/// 英文不显示）。模型层不知道语言区域，解析在 UI 层。
 enum CalendarLunarMode { locale, always, never }

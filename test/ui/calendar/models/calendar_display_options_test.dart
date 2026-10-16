@@ -12,6 +12,7 @@ void main() {
     expect(defaults.weekStart, CalendarWeekStart.locale);
     expect(defaults.showMonthSummary, isTrue);
     expect(defaults.lunarMode, CalendarLunarMode.locale);
+    expect(defaults.holidayMode, CalendarLunarMode.locale);
   });
 
   test('every field survives an encode/decode round trip', () {
@@ -33,6 +34,7 @@ void main() {
       showOnThisDay: false,
       yearBasis: CalendarYearBasis.words,
       lunarMode: CalendarLunarMode.always,
+      holidayMode: CalendarLunarMode.never,
     );
 
     expect(CalendarDisplayOptions.decode(options.encode()), options);
@@ -41,7 +43,7 @@ void main() {
   test('a bad field falls back alone and keeps the other choices', () {
     final options = CalendarDisplayOptions.decode(
       '{"cellStyle":"hologram","heatBasis":"words","showCountBadge":"yes",'
-      '"weekStart":"monday","lunarMode":"sometimes"}',
+      '"weekStart":"monday","lunarMode":"sometimes","holidayMode":"always"}',
     );
 
     expect(options.cellStyle, CalendarCellStyle.mood);
@@ -49,6 +51,13 @@ void main() {
     expect(options.showCountBadge, isTrue);
     expect(options.weekStart, CalendarWeekStart.monday);
     expect(options.lunarMode, CalendarLunarMode.locale);
+    expect(options.holidayMode, CalendarLunarMode.always);
+  });
+
+  test('options saved before holidays existed keep holidays on locale', () {
+    final options = CalendarDisplayOptions.decode('{"lunarMode":"never"}');
+    expect(options.lunarMode, CalendarLunarMode.never);
+    expect(options.holidayMode, CalendarLunarMode.locale);
   });
 
   test('initial format follows the default format choice', () {

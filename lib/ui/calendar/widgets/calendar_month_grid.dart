@@ -8,6 +8,7 @@ import '../../../core/database/app_database.dart';
 import '../models/calendar_display_options.dart';
 import '../models/calendar_range_selection.dart';
 import '../viewmodels/calendar_day_summary.dart';
+import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
 import 'calendar_day_cell.dart';
 
@@ -74,6 +75,7 @@ class CalendarMonthGrid extends StatefulWidget {
     final today = DateUtils.dateOnly(DateTime.now());
     final photoStyle = options.cellStyle == CalendarCellStyle.photo;
     final lunar = showsLunar(options.lunarMode, l10n.localeName);
+    final holidays = showsHolidays(options.holidayMode, l10n.localeName);
 
     return TableCalendar<DiaryCalendarMarker>(
       locale: l10n.localeName,
@@ -141,6 +143,7 @@ class CalendarMonthGrid extends StatefulWidget {
                     ? summary?.representativeImage(inlineImages)
                     : null,
                 lunar: lunar ? CalendarLunarDay.of(day) : null,
+                holiday: holidays ? CalendarHolidayDay.of(day) : null,
               );
             },
         dowBuilder: (BuildContext context, DateTime day) {
@@ -189,6 +192,11 @@ class CalendarMonthGrid extends StatefulWidget {
       CalendarLunarMode.locale => localeName.startsWith('zh'),
     };
   }
+
+  /// 是否标出法定节假日：与农历同一套规则。放假安排只适用于中国大陆，
+  /// 假日名也只有中文，跟随语言时英文界面不显示。
+  static bool showsHolidays(CalendarLunarMode mode, String localeName) =>
+      showsLunar(mode, localeName);
 
   /// 每周第一天对应的 [DateTime.weekday]（年视图与月视图保持同一起始日）。
   static int firstWeekdayOf(

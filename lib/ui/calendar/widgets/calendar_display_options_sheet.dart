@@ -7,6 +7,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../models/calendar_display_options.dart';
 import 'calendar_cell_style_picker.dart';
+import 'calendar_options_almanac_section.dart';
 import 'calendar_options_controls.dart';
 
 /// 打开日历显示选项面板。
@@ -165,6 +166,8 @@ class _CalendarDisplayOptionsSheetState
                   _update(options.copyWith(showWeatherBadge: value)),
             ),
             const SizedBox(height: AppSpacing.l),
+            CalendarOptionsAlmanacSection(options: options, onChanged: _update),
+            const SizedBox(height: AppSpacing.l),
             CalendarOptionsSectionHeader(
               icon: FontAwesomeIcons.calendarWeek,
               label: l10n.calendarOptionsLayout,
@@ -189,31 +192,6 @@ class _CalendarDisplayOptionsSheetState
               selected: <CalendarWeekStart>{options.weekStart},
               onSelectionChanged: (Set<CalendarWeekStart> selection) =>
                   _update(options.copyWith(weekStart: selection.single)),
-            ),
-            const SizedBox(height: AppSpacing.m),
-            CalendarOptionsFieldLabel(text: l10n.calendarOptionsLunar),
-            ExpressiveButtonGroup<CalendarLunarMode>(
-              segments: <ButtonSegment<CalendarLunarMode>>[
-                ButtonSegment<CalendarLunarMode>(
-                  value: CalendarLunarMode.locale,
-                  label: Text(l10n.calendarLunarLocale),
-                ),
-                ButtonSegment<CalendarLunarMode>(
-                  value: CalendarLunarMode.always,
-                  label: Text(l10n.calendarLunarAlways),
-                ),
-                ButtonSegment<CalendarLunarMode>(
-                  value: CalendarLunarMode.never,
-                  label: Text(l10n.calendarLunarNever),
-                ),
-              ],
-              selected: <CalendarLunarMode>{options.lunarMode},
-              onSelectionChanged: (Set<CalendarLunarMode> selection) =>
-                  _update(options.copyWith(lunarMode: selection.single)),
-            ),
-            const SizedBox(height: AppSpacing.s),
-            CalendarOptionsFadingText(
-              text: l10n.calendarOptionsLunarDescription,
             ),
             const SizedBox(height: AppSpacing.m),
             CalendarOptionsFieldLabel(text: l10n.calendarOptionsDefaultFormat),

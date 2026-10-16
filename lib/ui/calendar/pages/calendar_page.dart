@@ -31,6 +31,7 @@ import '../models/calendar_range_selection.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../providers/calendar_display_options_provider.dart';
 import '../viewmodels/calendar_day_summary.dart';
+import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
 import '../viewmodels/calendar_month_stats.dart';
 import '../widgets/calendar_day_actions_sheet.dart';
@@ -259,6 +260,13 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                             l10n.localeName,
                           )
                           ? CalendarLunarDay.of(_selectedDay)
+                          : null,
+                      holiday:
+                          CalendarMonthGrid.showsHolidays(
+                            options.holidayMode,
+                            l10n.localeName,
+                          )
+                          ? CalendarHolidayDay.of(_selectedDay)
                           : null,
                       entryCount: day.entryCount,
                       charCount: day.charCount,

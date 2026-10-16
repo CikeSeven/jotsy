@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
-import '../../widgets/qweather_icon.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
+import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
 import 'calendar_cell_layout.dart';
+import 'calendar_cell_marks.dart';
 import 'calendar_day_cell_parts.dart';
 
 /// 日历网格中的一个日期格。
 ///
 /// 输入：日期状态（今天/选中/月外/周末）、当天汇总 [summary]、显示选项、
-/// 照片样式的代表图与农历信息 [lunar]；输出整格画面。无副作用，点按由
-/// TableCalendar 处理。
+/// 照片样式的代表图、农历信息 [lunar] 与放假安排 [holiday]；输出整格画面。
+/// 无副作用，点按由 TableCalendar 处理。
 ///
 /// 两种高亮形态：
 /// - 填充（圆点/心情/标签色）：选中整格填 primary、今天填 tertiaryContainer，
@@ -44,6 +44,7 @@ class CalendarDayCell extends StatelessWidget {
     this.summary,
     this.image,
     this.lunar,
+    this.holiday,
   });
 
   static const double _radius = 14;
@@ -66,6 +67,9 @@ class CalendarDayCell extends StatelessWidget {
   /// 农历信息；不显示农历时为 null。
   final CalendarLunarDay? lunar;
 
+  /// 法定节假日安排；普通日子或不显示节假日时为 null。
+  final CalendarHolidayDay? holiday;
+
   /// 三层排版下为底部指示物预留的高度（见 [CalendarCellLayout]）；热力格
   /// 没有指示物，数字组在整格居中。
   double get _indicatorReserve =>
@@ -73,9 +77,17 @@ class CalendarDayCell extends StatelessWidget {
       ? 0
       : CalendarCellLayout.indicatorBand;
 
-  /// 当前格是否按“周末着色”铺灰底（相邻月份的日期不着色）。
+  /// 是否休息日：有放假安排时以安排为准——工作日放假算休息日，调休上班
+  /// 的周末不算；否则就是周末。
+  bool get _restDay {
+    final holiday = this.holiday;
+    return holiday == null ? isWeekend : !holiday.isWork;
+  }
+
+  /// 当前格是否按“周末着色”铺灰底（相邻月份的日期不着色）。开启节假日
+  /// 时色带标的是休息日：国庆的工作日连成一片，调休上班的周六不着色。
   bool get _weekendShaded =>
-      options.highlightWeekends && isWeekend && !isOutside;
+      options.highlightWeekends && _restDay && !isOutside;
 
   /// 周末底色：中性灰，与热力的 primary 色阶、今天的 tertiary、选中的
   /// primary 都不同色相。只换数字颜色时 tertiary 与正文黑字在亮色主题下
@@ -160,7 +172,7 @@ class CalendarDayCell extends StatelessWidget {
     return CalendarCellLayout(
       number: _buildNumber(context, colorScheme, onFill: onFill),
       indicator: indicator,
-      leadingBadge: _buildLeadingBadge(colorScheme, onFill: onFill),
+      leadingBadge: _leadingBadge(colorScheme, onFill: onFill),
       trailingBadge: CalendarCellCountMark.resolve(
         summary: summary,
         options: options,
@@ -213,7 +225,7 @@ class CalendarDayCell extends StatelessWidget {
                     onFill: isSelected ? colorScheme.onPrimary : null,
                   ),
                 ),
-                leadingBadge: _buildLeadingBadge(colorScheme, onPhoto: true),
+                leadingBadge: _leadingBadge(colorScheme, onPhoto: true),
                 bottomReserve: _indicatorReserve,
               ),
             ],
@@ -235,7 +247,7 @@ class CalendarDayCell extends StatelessWidget {
               summary: summary,
               options: options,
             ),
-            leadingBadge: _buildLeadingBadge(colorScheme),
+            leadingBadge: _leadingBadge(colorScheme),
             trailingBadge: CalendarCellCountMark.resolve(
               summary: summary,
               options: options,
@@ -272,7 +284,7 @@ class CalendarDayCell extends StatelessWidget {
         ),
         child: CalendarCellLayout(
           number: _buildNumber(context, colorScheme, onFill: foreground),
-          leadingBadge: _buildLeadingBadge(colorScheme, onFill: foreground),
+          leadingBadge: _leadingBadge(colorScheme, onFill: foreground),
           trailingBadge: CalendarCellCountMark.resolve(
             summary: summary,
             options: options,
@@ -356,39 +368,20 @@ class CalendarDayCell extends StatelessWidget {
     );
   }
 
-  /// 左上角：未解封胶囊的锁优先；否则在开启时显示天气图标。
-  Widget? _buildLeadingBadge(
+  /// 数字左上方的角标（锁 > 休/班 > 天气），见 [CalendarCellLeadingBadge]。
+  Widget? _leadingBadge(
     ColorScheme colorScheme, {
     Color? onFill,
     bool onPhoto = false,
   }) {
-    final summary = this.summary;
-    if (summary == null) {
-      return null;
-    }
-    if (options.showCapsuleBadge && summary.hasLockedCapsule) {
-      return CalendarCellBadgeBackdrop(
-        enabled: onPhoto,
-        child: FaIcon(
-          FontAwesomeIcons.lock,
-          size: 7.5,
-          color: onFill ?? colorScheme.tertiary,
-        ),
-      );
-    }
-    final weather = summary.weather;
-    if (options.showWeatherBadge && weather != null) {
-      return CalendarCellBadgeBackdrop(
-        enabled: onPhoto,
-        child: QWeatherIcon(
-          iconCode: summary.weatherIconCode,
-          weatherText: weather,
-          size: 9,
-          fallbackColor: onFill ?? colorScheme.onSurfaceVariant,
-          semanticLabel: weather,
-        ),
-      );
-    }
-    return null;
+    return CalendarCellLeadingBadge.resolve(
+      colorScheme,
+      options: options,
+      summary: summary,
+      holiday: holiday,
+      isOutside: isOutside,
+      onFill: onFill,
+      onPhoto: onPhoto,
+    );
   }
 }

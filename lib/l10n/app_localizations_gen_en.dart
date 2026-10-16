@@ -2623,4 +2623,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarFilterActive => 'Filtered';
+
+  @override
+  String get calendarOptionsAlmanac => 'Lunar & holidays';
+
+  @override
+  String get calendarOptionsHolidays => 'Public holidays (China)';
+
+  @override
+  String calendarOptionsHolidaysDescription(int year) {
+    return 'Marks days off and make-up workdays in mainland China beside the date; weekend shading follows them. Data covers up to $year.';
+  }
+
+  @override
+  String get calendarOptionsHolidaysDescriptionOutdated =>
+      'Marks days off and make-up workdays in mainland China beside the date; weekend shading follows them. This version doesn\'t include this year\'s schedule yet.';
+
+  @override
+  String get calendarHolidayRestMark => 'Off';
+
+  @override
+  String get calendarHolidayWorkMark => 'Work';
+
+  @override
+  String get calendarHolidayDayOff => 'Day off';
+
+  @override
+  String get calendarHolidayMakeUpWorkday => 'Make-up workday';
 }

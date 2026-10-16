@@ -26,10 +26,13 @@ class CalendarOptionsSectionHeader extends StatelessWidget {
         children: <Widget>[
           FaIcon(icon, size: 16, color: theme.colorScheme.primary),
           const SizedBox(width: AppSpacing.s),
-          Text(
-            label,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
+          // 窄屏与大字号下标题换行，不溢出（DESIGN.md §6）。
+          Flexible(
+            child: Text(
+              label,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

@@ -39,6 +39,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
+import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';

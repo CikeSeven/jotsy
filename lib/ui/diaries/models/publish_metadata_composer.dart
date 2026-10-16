@@ -1,12 +1,18 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
+import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
+import 'package:node_diary/ui/diaries/models/json_object_map.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
+import 'package:node_diary/utils/optional_text.dart';
 
-/// 发布页 metadata 组装器。
+/// 日记 metadata 的组装与解析。
 ///
 /// 约束：
 /// - 最终输出必须是 JSON 对象字符串；
-/// - 交互输入为空时不写入对应字段，减少噪音数据。
+/// - 交互输入为空时不写入对应字段，减少噪音数据；
+/// - [composeDraft] 与 [parse] 互为逆运算（面板管的字段写进去、原样读回来）。
 class PublishMetadataComposer {
   const PublishMetadataComposer._();
 
@@ -52,10 +58,10 @@ class PublishMetadataComposer {
     String? capsulePrecision,
     Map<String, Object?>? preserve,
   }) {
-    final normalizedLocation = _normalizeOptionalText(location);
-    final normalizedWeather = _normalizeOptionalText(weather);
-    final normalizedWeatherIconCode = _normalizeOptionalText(weatherIconCode);
-    final normalizedMoodEmoji = _normalizeOptionalText(moodEmoji);
+    final normalizedLocation = normalizeOptionalText(location);
+    final normalizedWeather = normalizeOptionalText(weather);
+    final normalizedWeatherIconCode = normalizeOptionalText(weatherIconCode);
+    final normalizedMoodEmoji = normalizeOptionalText(moodEmoji);
 
     final metadata = <String, Object?>{
       'schemaVersion': 1,
@@ -73,7 +79,7 @@ class PublishMetadataComposer {
       metadata['capsule'] = <String, Object?>{
         'lockedAt': capsuleLockedAt.toIso8601String(),
         'unlockAt': capsuleUnlockAt.toIso8601String(),
-        'precision': _normalizeOptionalText(capsulePrecision) ?? 'date',
+        'precision': normalizeOptionalText(capsulePrecision) ?? 'date',
       };
     }
 
@@ -116,10 +122,97 @@ class PublishMetadataComposer {
     return jsonEncode(metadata);
   }
 
-  /// 以缩进格式输出 JSON，便于调试查看。
-  static String pretty(String jsonRaw) {
-    final decoded = jsonDecode(jsonRaw);
-    return const JsonEncoder.withIndent('  ').convert(decoded);
+  /// 由面板草稿组装 metadata。
+  ///
+  /// [capsuleLockedAt] 非空且草稿带胶囊时写入 capsule 块（发布时 = 封存时刻）；
+  /// [preserve] 见 [compose]。
+  static String composeDraft({
+    required DiaryMetaDraft draft,
+    required String contentText,
+    required DateTime generatedAt,
+    Map<String, Object?>? deviceInfo,
+    DateTime? capsuleLockedAt,
+    Map<String, Object?>? preserve,
+  }) {
+    final schedule = draft.capsule;
+    return compose(
+      contentText: contentText,
+      selectedTagIds: draft.tagIds,
+      hasCover: normalizeOptionalText(draft.cover) != null,
+      deviceInfo: deviceInfo ?? currentDeviceInfo(),
+      generatedAt: generatedAt,
+      location: draft.location,
+      locationAddressComponent: draft.locationAddressComponent,
+      locationLatitude: draft.locationLatitude,
+      locationLongitude: draft.locationLongitude,
+      locationFromAuto: draft.locationFromAuto,
+      locationPrecision: draft.locationPrecision,
+      weather: draft.weather,
+      weatherIconCode: draft.weatherIconCode,
+      moodEmoji: draft.moodEmoji,
+      energyLevel: draft.energyLevel,
+      capsuleLockedAt: schedule == null ? null : capsuleLockedAt,
+      capsuleUnlockAt: schedule?.normalizedUnlockAt,
+      capsulePrecision: schedule == null
+          ? null
+          : TimeCapsuleSchedule.encodePrecision(schedule.precision),
+      preserve: preserve,
+    );
+  }
+
+  /// 从已存 metadata 读回面板管的上下文字段（context 与 geo）。
+  ///
+  /// 封面、标签是日记表的列，胶囊由数据库列驱动，都不从这里读。结构不合法
+  /// 或缺少 context 时返回空草稿，不阻断编辑。旧版本把精力存成字符串，同样
+  /// 兼容；越界值限制到 1~5。
+  static DiaryMetaDraft parse(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      final context = decoded is Map ? decoded['context'] : null;
+      if (context is! Map) {
+        return const DiaryMetaDraft();
+      }
+      final energy = switch (context['energyLevel']) {
+        final num value => value.toDouble(),
+        final String value => double.tryParse(value),
+        _ => null,
+      };
+      final geo = context['geo'];
+      return DiaryMetaDraft(
+        location: normalizeOptionalText(context['location']?.toString()),
+        locationPrecision: DiaryLocationPrecision.parse(
+          context['locationPrecision'],
+        ),
+        weather: normalizeOptionalText(context['weather']?.toString()),
+        weatherIconCode: normalizeOptionalText(
+          context['weatherIconCode']?.toString(),
+        ),
+        moodEmoji: normalizeOptionalText(context['moodEmoji']?.toString()),
+        energyLevel: energy?.clamp(1, 5).toDouble(),
+        locationLatitude: geo is Map
+            ? (geo['latitude'] as num?)?.toDouble()
+            : null,
+        locationLongitude: geo is Map
+            ? (geo['longitude'] as num?)?.toDouble()
+            : null,
+        locationFromAuto: geo is Map,
+        locationAddressComponent: geo is Map
+            ? parseJsonObjectMap(geo['addressComponent'])
+            : null,
+      );
+    } catch (_) {
+      return const DiaryMetaDraft();
+    }
+  }
+
+  /// 写入 metadata.device 的设备上下文。
+  static Map<String, Object?> currentDeviceInfo() {
+    final dispatcher = PlatformDispatcher.instance;
+    return <String, Object?>{
+      'platform': defaultTargetPlatform.name,
+      'locale': dispatcher.locale.toLanguageTag(),
+      'brightness': dispatcher.platformBrightness.name,
+    };
   }
 
   /// 基于空白分词估算词数，作为发布统计字段。
@@ -129,15 +222,6 @@ class PublishMetadataComposer {
       return 0;
     }
     return normalized.split(RegExp(r'\s+')).length;
-  }
-
-  /// 可选文本字段标准化：空字符串转 null。
-  static String? _normalizeOptionalText(String? value) {
-    final normalized = value?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
   }
 
   /// 过滤掉 map 中无意义的空值键，减少 metadata 噪音。

@@ -50,15 +50,6 @@ class PublishDiaryController {
     return path.basename(cover);
   }
 
-  /// 通用可选文本标准化，统一去掉空白输入。
-  String? normalizeOptionalText(String? raw) {
-    final normalized = raw?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-
   /// 页面内轻提示封装。
   ///
   /// 不返回 Future：showTrackedSnackBar 要等提示条关闭（约 4 秒）才完成，
@@ -76,16 +67,6 @@ class PublishDiaryController {
     );
   }
 
-  /// 组装设备上下文信息，写入 metadata.device。
-  Map<String, Object?> buildDeviceMetadata() {
-    final dispatcher = PlatformDispatcher.instance;
-    return <String, Object?>{
-      'platform': defaultTargetPlatform.name,
-      'locale': dispatcher.locale.toLanguageTag(),
-      'brightness': dispatcher.platformBrightness.name,
-    };
-  }
-
   /// 组装最终 metadata JSON。
   ///
   /// 合并当前页面可编辑字段与自动采集字段，输出结构化字符串。
@@ -96,7 +77,7 @@ class PublishDiaryController {
       contentText: _state.widget.initialDraft.contentText,
       selectedTagIds: _state._selectedTagIds,
       hasCover: normalizedCover != null,
-      deviceInfo: buildDeviceMetadata(),
+      deviceInfo: PublishMetadataComposer.currentDeviceInfo(),
       generatedAt: lockedAt,
       location: normalizeOptionalText(_state._locationController.text),
       locationAddressComponent: _state._locationAddressComponent,

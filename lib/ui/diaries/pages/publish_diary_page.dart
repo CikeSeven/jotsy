@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -37,6 +36,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/utils/optional_text.dart';
 import '../../../app/theme/expressive_motion.dart';
 
 part '../controllers/publish_diary_controller.dart';
@@ -110,7 +110,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     super.initState();
     _controller = PublishDiaryController(this);
     _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
-    _draftCover = _controller.normalizeOptionalText(widget.initialDraft.cover);
+    _draftCover = normalizeOptionalText(widget.initialDraft.cover);
     _locationPrecision = widget.initialDraft.locationPrecision;
     _locationAddressComponent = widget.initialDraft.locationAddressComponent;
     _locationLatitude = widget.initialDraft.locationLatitude;

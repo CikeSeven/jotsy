@@ -27,7 +27,7 @@ class EditDiaryController {
 
   /// 编辑态封面标签文案：网络图展示 URL，本地图展示文件名。
   String? get coverLabelForEdit {
-    final cover = _normalizeOptionalText(_state._draftCover);
+    final cover = normalizeOptionalText(_state._draftCover);
     if (cover == null) {
       return null;
     }
@@ -319,7 +319,7 @@ class EditDiaryController {
   /// 与发布页一致：手改地点保留坐标，清空地点则停止保存 geo。
   void updateLocationTextForEdit(String value) {
     _state.setState(() {
-      _state._draftLocation = _normalizeOptionalText(value);
+      _state._draftLocation = normalizeOptionalText(value);
       if (_state._draftLocation == null) {
         _state._draftLocationFromAuto = false;
       }
@@ -593,72 +593,39 @@ class EditDiaryController {
   /// 从已存 metadata 中恢复发布上下文字段，供编辑页底部面板展示。
   ///
   /// 仅在进入编辑页首次加载详情时调用；不触发 setState，避免 build 期重入。
+  /// 结构不合法时 [PublishMetadataComposer.parse] 返回空草稿，保持默认空态。
   void restorePublishContextFromMetadata(String metadataRaw) {
-    try {
-      final decoded = jsonDecode(metadataRaw);
-      if (decoded is! Map<String, dynamic>) {
-        return;
-      }
-      final context = decoded['context'];
-      if (context is! Map<String, dynamic>) {
-        return;
-      }
-      _state._draftLocationPrecision = DiaryLocationPrecision.parse(
-        context['locationPrecision'],
-      );
-      _state._draftLocation = _normalizeOptionalText(
-        context['location']?.toString(),
-      );
-      _state._draftWeather = _normalizeOptionalText(
-        context['weather']?.toString(),
-      );
-      _state._draftWeatherIconCode = _normalizeOptionalText(
-        context['weatherIconCode']?.toString(),
-      );
-      _state._draftMoodEmoji = _normalizeOptionalText(
-        context['moodEmoji']?.toString(),
-      );
-      _state._locationController.text = _state._draftLocation ?? '';
-      _state._weatherController.text = _state._draftWeather ?? '';
-
-      final energyRaw = context['energyLevel'];
-      final parsedEnergy = switch (energyRaw) {
-        num value => value.toDouble(),
-        String value => double.tryParse(value),
-        _ => null,
-      };
-      _state._draftEnergyLevel = parsedEnergy?.clamp(1, 5).toDouble();
-
-      final geo = context['geo'];
-      if (geo is Map<String, dynamic>) {
-        _state._draftLocationLatitude = (geo['latitude'] as num?)?.toDouble();
-        _state._draftLocationLongitude = (geo['longitude'] as num?)?.toDouble();
-        _state._draftLocationFromAuto = true;
-        _state._draftLocationAddressComponent = _parseObjectMap(
-          geo['addressComponent'],
-        );
-      }
-    } catch (_) {
-      // metadata 非标准结构时不阻断编辑流程，保持默认空态。
-    }
+    final parsed = PublishMetadataComposer.parse(metadataRaw);
+    _state._draftLocationPrecision = parsed.locationPrecision;
+    _state._draftLocation = parsed.location;
+    _state._draftWeather = parsed.weather;
+    _state._draftWeatherIconCode = parsed.weatherIconCode;
+    _state._draftMoodEmoji = parsed.moodEmoji;
+    _state._locationController.text = parsed.location ?? '';
+    _state._weatherController.text = parsed.weather ?? '';
+    _state._draftEnergyLevel = parsed.energyLevel;
+    _state._draftLocationLatitude = parsed.locationLatitude;
+    _state._draftLocationLongitude = parsed.locationLongitude;
+    _state._draftLocationFromAuto = parsed.locationFromAuto;
+    _state._draftLocationAddressComponent = parsed.locationAddressComponent;
   }
 
   String _buildMetadataJsonForEdit({DateTime? generatedAt}) {
     return PublishMetadataComposer.compose(
       contentText: _state._currentContentText,
       selectedTagIds: _state._selectedTagIds,
-      hasCover: _normalizeOptionalText(_state._draftCover) != null,
-      deviceInfo: _buildDeviceMetadata(),
+      hasCover: normalizeOptionalText(_state._draftCover) != null,
+      deviceInfo: PublishMetadataComposer.currentDeviceInfo(),
       generatedAt: generatedAt ?? DateTime.now(),
-      location: _normalizeOptionalText(_state._locationController.text),
+      location: normalizeOptionalText(_state._locationController.text),
       locationAddressComponent: _state._draftLocationAddressComponent,
       locationLatitude: _state._draftLocationLatitude,
       locationLongitude: _state._draftLocationLongitude,
       locationFromAuto: _state._draftLocationFromAuto,
       locationPrecision: _state._draftLocationPrecision,
-      weather: _normalizeOptionalText(_state._weatherController.text),
-      weatherIconCode: _normalizeOptionalText(_state._draftWeatherIconCode),
-      moodEmoji: _normalizeOptionalText(_state._draftMoodEmoji),
+      weather: normalizeOptionalText(_state._weatherController.text),
+      weatherIconCode: normalizeOptionalText(_state._draftWeatherIconCode),
+      moodEmoji: normalizeOptionalText(_state._draftMoodEmoji),
       energyLevel: _state._draftEnergyLevel,
       // 编辑页面板不管胶囊与导入来源：沿用原 metadata 里的这些块。
       preserve: _decodeMetadataObject(_state._metadataJson),
@@ -672,15 +639,6 @@ class EditDiaryController {
     } catch (_) {
       return null;
     }
-  }
-
-  Map<String, Object?> _buildDeviceMetadata() {
-    final dispatcher = PlatformDispatcher.instance;
-    return <String, Object?>{
-      'platform': defaultTargetPlatform.name,
-      'locale': dispatcher.locale.toLanguageTag(),
-      'brightness': dispatcher.platformBrightness.name,
-    };
   }
 
   Future<LocationResolverService?> _ensureLocationResolverService() async {
@@ -728,49 +686,5 @@ class EditDiaryController {
         snackBar: SnackBar(content: Text(message)),
       ),
     );
-  }
-
-  String? _normalizeOptionalText(String? raw) {
-    final normalized = raw?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-
-  Map<String, Object?>? _parseObjectMap(Object? raw) {
-    if (raw is! Map) {
-      return null;
-    }
-    final normalized = <String, Object?>{};
-    for (final entry in raw.entries) {
-      final key = entry.key?.toString();
-      if (key == null || key.isEmpty) {
-        continue;
-      }
-      normalized[key] = _normalizeJsonValue(entry.value);
-    }
-    return normalized;
-  }
-
-  Object? _normalizeJsonValue(Object? value) {
-    if (value == null || value is num || value is bool || value is String) {
-      return value;
-    }
-    if (value is Map) {
-      final nested = <String, Object?>{};
-      for (final entry in value.entries) {
-        final key = entry.key?.toString();
-        if (key == null || key.isEmpty) {
-          continue;
-        }
-        nested[key] = _normalizeJsonValue(entry.value);
-      }
-      return nested;
-    }
-    if (value is List) {
-      return value.map(_normalizeJsonValue).toList(growable: false);
-    }
-    return value.toString();
   }
 }

@@ -1,0 +1,283 @@
+import 'dart:io';
+
+import 'package:archive/archive_io.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show TextDirection;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../../../core/database/app_database.dart';
+import '../../../core/services/backup_file_save_service.dart';
+import '../../../core/services/data_archive_service.dart';
+import '../export/diary_export_docx.dart';
+import '../export/diary_export_entry.dart';
+import '../export/diary_export_format.dart';
+import '../export/diary_export_html.dart';
+import '../export/diary_export_markdown.dart';
+import '../export/diary_export_media.dart';
+import '../export/diary_export_naming.dart';
+import '../export/diary_export_pdf.dart';
+import '../export/diary_export_text.dart';
+
+typedef DiaryExportFileSaver =
+    Future<String?> Function({
+      required File file,
+      required String fileName,
+      required String dialogTitle,
+      required String mimeType,
+      required String extension,
+    });
+
+typedef DiaryExportFileSharer =
+    Future<void> Function(File file, {required String mimeType});
+
+/// 生成好、等待保存或分享的导出文件。
+@immutable
+class DiaryExportArtifact {
+  const DiaryExportArtifact({
+    required this.file,
+    required this.mimeType,
+    required this.exportedCount,
+    required this.skippedCapsules,
+  });
+
+  /// 暂存目录里已按最终文件名命名的文件。
+  final File file;
+  final String mimeType;
+  final int exportedCount;
+
+  /// 因尚未解封而没有导出的时间胶囊篇数。
+  final int skippedCapsules;
+
+  String get fileName => p.basename(file.path);
+  String get extension => p.extension(file.path).replaceFirst('.', '');
+}
+
+/// 选中的日记全是未解封的时间胶囊（或本来就没有日记）时抛出。
+class DiaryExportEmptyException implements Exception {
+  const DiaryExportEmptyException(this.skippedCapsules);
+
+  final int skippedCapsules;
+}
+
+/// 日记导出的执行链路：筛选 → 排序 → 按格式写出 → 落盘 → 保存或分享。
+///
+/// - 未解封的时间胶囊一律不导出（连同 Jotsy 日记文件）：导出文件会离开
+///   应用、在别处被打开，胶囊内容不能借此提前看到；完整备份不受影响。
+/// - 产物写在缓存 `diary_export/<时间戳>/` 下，以最终文件名命名，保存
+///   对话框与分享面板都直接显示这个名字。每次生成前清空上一次的暂存：
+///   分享出去的文件由目标应用在被拉起时读取，那时上一次早已结束；保存
+///   完成（含取消、失败）后立即删除本次暂存。
+/// - 多文件的产物（带媒体的 Markdown、多篇带图的网页、Word 文档本身）
+///   打包成 zip 容器，媒体经 [ZipFileEncoder] 流式写入，照片与视频不整段
+///   读进内存。
+class DiaryExportController {
+  DiaryExportController({
+    required this._database,
+    DiaryExportMediaLibrary Function()? createMediaLibrary,
+    this._loadFonts = DiaryPdfFonts.load,
+    this._cacheDirectory = getTemporaryDirectory,
+    this._now = DateTime.now,
+    this._saveFile = BackupFileSaveService.saveFile,
+    DiaryExportFileSharer? shareFile,
+  }) : _createMediaLibrary = createMediaLibrary ?? DiaryExportMediaLibrary.new,
+       _shareFile = shareFile ?? _shareWithSystemSheet;
+
+  static const String stagingDirectoryName = 'diary_export';
+
+  final AppDatabase _database;
+  final DiaryExportMediaLibrary Function() _createMediaLibrary;
+  final Future<DiaryPdfFonts> Function() _loadFonts;
+  final Future<Directory> Function() _cacheDirectory;
+  final DateTime Function() _now;
+  final DiaryExportFileSaver _saveFile;
+  final DiaryExportFileSharer _shareFile;
+
+  /// 字体约 16MB，同一个控制器内只解析一次。
+  Future<DiaryPdfFonts>? _fonts;
+
+  Future<DiaryExportArtifact> build(
+    List<DiaryWithTags> diaries, {
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required String languageTag,
+    TextDirection textDirection = TextDirection.ltr,
+    String? password,
+  }) async {
+    final now = _now();
+    final exportable = diaries.where((DiaryWithTags detail) {
+      final unlockAt = detail.diary.capsuleUnlockAt;
+      return unlockAt == null || !now.isBefore(unlockAt);
+    }).toList();
+    final skipped = diaries.length - exportable.length;
+    if (exportable.isEmpty) {
+      throw DiaryExportEmptyException(skipped);
+    }
+    exportable.sort((DiaryWithTags a, DiaryWithTags b) {
+      final order = a.diary.createdAt.compareTo(b.diary.createdAt);
+      return options.order == DiaryExportOrder.oldestFirst ? order : -order;
+    });
+    final entries = exportable.map(DiaryExportEntry.fromDetail).toList();
+    final stem = DiaryExportNaming.exportStem(entries);
+    final documentTitle = entries.length == 1
+        ? labels.titleOf(entries.single)
+        : stem;
+
+    final directory = await _prepareStaging();
+    final format = options.format;
+    File file;
+    var mimeType = format.mimeType;
+    if (format == DiaryExportFormat.diaryFile) {
+      final zip = await DataArchiveService.exportDiariesToZip(
+        database: _database,
+        diaryIds: exportable.map((DiaryWithTags d) => d.diary.diaryId),
+        zipPassword: password,
+      );
+      file = await _move(zip, p.join(directory.path, '$stem.zip'));
+    } else {
+      final media = _createMediaLibrary();
+      final output = switch (format) {
+        DiaryExportFormat.pdf => await DiaryPdfWriter.write(
+          entries,
+          options: options,
+          labels: labels,
+          media: media,
+          fonts: await (_fonts ??= _loadFonts()),
+          documentTitle: documentTitle,
+          textDirection: textDirection,
+        ),
+        DiaryExportFormat.word => await DiaryDocxWriter.write(
+          entries,
+          options: options,
+          labels: labels,
+          media: media,
+          documentTitle: documentTitle,
+          languageTag: languageTag,
+          now: now,
+        ),
+        DiaryExportFormat.markdown => await DiaryMarkdownWriter.write(
+          entries,
+          options: options,
+          labels: labels,
+          media: media,
+        ),
+        DiaryExportFormat.html => await DiaryHtmlWriter.write(
+          entries,
+          options: options,
+          labels: labels,
+          media: media,
+          documentTitle: documentTitle,
+          languageTag: languageTag,
+        ),
+        DiaryExportFormat.text => DiaryTextWriter.write(
+          entries,
+          options: options,
+          labels: labels,
+        ),
+        DiaryExportFormat.csv => DiaryCsvWriter.write(entries, labels: labels),
+        DiaryExportFormat.diaryFile => throw StateError('handled above'),
+      };
+      if (output.isBundle) {
+        mimeType = output.containerMimeType!;
+        file = await _zip(
+          output.files!,
+          p.join(directory.path, '$stem.${output.containerExtension}'),
+        );
+      } else {
+        file = File(p.join(directory.path, '$stem.${format.extension}'));
+        await file.writeAsBytes(output.bytes!, flush: true);
+      }
+    }
+    return DiaryExportArtifact(
+      file: file,
+      mimeType: mimeType,
+      exportedCount: entries.length,
+      skippedCapsules: skipped,
+    );
+  }
+
+  /// 交给系统保存；返回是否已保存（取消为 false）。暂存无论结果都删除。
+  Future<bool> save(
+    DiaryExportArtifact artifact, {
+    required String dialogTitle,
+  }) async {
+    try {
+      final savePath = await _saveFile(
+        file: artifact.file,
+        fileName: artifact.fileName,
+        dialogTitle: dialogTitle,
+        mimeType: artifact.mimeType,
+        extension: artifact.extension,
+      );
+      return savePath != null && savePath.trim().isNotEmpty;
+    } finally {
+      await _deleteQuietly(artifact.file.parent);
+    }
+  }
+
+  /// 交给系统分享面板；暂存留到下次导出时清理（见类注释）。
+  Future<void> share(DiaryExportArtifact artifact) =>
+      _shareFile(artifact.file, mimeType: artifact.mimeType);
+
+  Future<Directory> _prepareStaging() async {
+    final root = Directory(
+      p.join((await _cacheDirectory()).path, stagingDirectoryName),
+    );
+    await _deleteQuietly(root);
+    final directory = Directory(
+      p.join(root.path, '${_now().microsecondsSinceEpoch}'),
+    );
+    await directory.create(recursive: true);
+    return directory;
+  }
+
+  static Future<File> _move(File source, String target) async {
+    try {
+      return await source.rename(target);
+    } on FileSystemException {
+      // 跨文件系统时 rename 失败，退回复制后删除。
+      final copy = await source.copy(target);
+      await _deleteQuietly(source);
+      return copy;
+    }
+  }
+
+  static Future<File> _zip(
+    List<DiaryExportBundleFile> files,
+    String target,
+  ) async {
+    final encoder = ZipFileEncoder()..create(target);
+    try {
+      for (final entry in files) {
+        if (entry.file != null) {
+          await encoder.addFile(entry.file!, entry.path);
+        } else {
+          encoder.addArchiveFile(
+            ArchiveFile(entry.path, entry.bytes!.length, entry.bytes!),
+          );
+        }
+      }
+    } finally {
+      await encoder.close();
+    }
+    return File(target);
+  }
+
+  static Future<void> _deleteQuietly(FileSystemEntity entity) async {
+    try {
+      if (await entity.exists()) {
+        await entity.delete(recursive: true);
+      }
+    } on FileSystemException {
+      // 系统会回收缓存目录；清理失败不应把已完成的导出报告为失败。
+    }
+  }
+
+  static Future<void> _shareWithSystemSheet(
+    File file, {
+    required String mimeType,
+  }) async {
+    await Share.shareXFiles(<XFile>[XFile(file.path, mimeType: mimeType)]);
+  }
+}

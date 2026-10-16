@@ -1,9 +1,10 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/content_codec.dart';
+import '../export/diary_export_blocks.dart';
+import '../export/diary_export_plain_text.dart';
+import 'diary_context_info.dart';
 import 'diary_share_options.dart';
 import 'diary_share_target.dart';
 
@@ -64,7 +65,7 @@ class DiaryShareContent {
     for (final source in body.images) {
       addImage(source);
     }
-    final context = _decodeContext(metadata);
+    final context = DiaryContextInfo.parse(metadata);
     return DiaryShareContent(
       title: title.trim(),
       body: body.text,
@@ -75,9 +76,9 @@ class DiaryShareContent {
             .where((String name) => name.isNotEmpty),
       ),
       createdAt: createdAt,
-      moodEmoji: _nonEmpty(context['moodEmoji']),
-      weather: _nonEmpty(context['weather']),
-      location: _nonEmpty(context['location']),
+      moodEmoji: context.moodEmoji,
+      weather: context.weather,
+      location: context.location,
     );
   }
 
@@ -125,130 +126,24 @@ class DiaryShareContent {
     }
     return sections.join('\n\n');
   }
-
-  static Map<String, Object?> _decodeContext(String raw) {
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map && decoded['context'] is Map) {
-        return (decoded['context'] as Map).cast<String, Object?>();
-      }
-    } catch (_) {
-      // metadata 损坏时按“无上下文”分享，不影响标题与正文。
-    }
-    return const <String, Object?>{};
-  }
-
-  static String? _nonEmpty(Object? raw) {
-    final value = raw?.toString().trim();
-    return value == null || value.isEmpty ? null : value;
-  }
 }
 
-/// 正文 Delta → 适合贴进社交应用的纯文本。
+/// 正文 Delta → 适合贴进社交应用的纯文本与图片列表。
 ///
-/// 社交应用的发布框不渲染 Markdown，`**粗体**` 之类的标记会原样露出来，
-/// 所以只保留读得懂的结构：列表用 `•` / `1.` / `☐` / `☑` 前缀、引用用
-/// `> `、缩进两格一级；链接文字与地址不同时在后面附上地址。图片收集到
-/// [DiaryShareBody.images]，录音、视频、附件这类发不出去的嵌入直接略过，
-/// 只含嵌入的行整行去掉，避免正文里出现大段空行。
+/// 解析经 [ExportBlockParser]、文字经 [ExportPlainText]（与 TXT 导出同一套
+/// 规则）；录音、视频、附件这类发不出去的嵌入直接略过。
 class DiaryShareBodyFormatter {
   const DiaryShareBodyFormatter._();
 
   static DiaryShareBody format(List<dynamic> rawOps) {
-    final lines = <String>[];
-    final images = <String>[];
-    final line = StringBuffer();
-    var lineHasEmbed = false;
-    final orderedCounters = <int, int>{};
-
-    void flushLine(Map<String, dynamic> attrs) {
-      final text = line.toString();
-      line.clear();
-      final embedOnly = lineHasEmbed && text.trim().isEmpty;
-      lineHasEmbed = false;
-      if (embedOnly) {
-        return;
-      }
-      final listType = attrs['list']?.toString();
-      final indent = attrs['indent'] is num
-          ? (attrs['indent'] as num).toInt().clamp(0, 8)
-          : 0;
-      if (listType != 'ordered') {
-        orderedCounters.clear();
-      } else {
-        // 回到上一级时，更深层级的编号重新开始。
-        orderedCounters.removeWhere((int level, _) => level > indent);
-      }
-      final prefix = switch (listType) {
-        'bullet' => '• ',
-        'ordered' =>
-          '${orderedCounters[indent] = (orderedCounters[indent] ?? 0) + 1}. ',
-        'checked' => '☑ ',
-        'unchecked' => '☐ ',
-        _ => attrs['blockquote'] == true ? '> ' : '',
-      };
-      lines.add(
-        text.isEmpty && prefix.isEmpty ? '' : '${'  ' * indent}$prefix$text',
-      );
-    }
-
-    for (final rawOp in rawOps) {
-      if (rawOp is! Map) {
-        continue;
-      }
-      final attrs = rawOp['attributes'] is Map
-          ? (rawOp['attributes'] as Map).cast<String, dynamic>()
-          : const <String, dynamic>{};
-      final insert = rawOp['insert'];
-      if (insert is String) {
-        final parts = insert.split('\n');
-        for (var i = 0; i < parts.length; i++) {
-          if (parts[i].isNotEmpty) {
-            line.write(_inlineText(parts[i], attrs));
-          }
-          if (i < parts.length - 1) {
-            flushLine(attrs);
-          }
-        }
-      } else if (insert is Map) {
-        lineHasEmbed = true;
-        final image = insert['image'];
-        if (image is String && image.trim().isNotEmpty) {
-          images.add(image.trim());
-        }
-      }
-    }
-    if (line.isNotEmpty) {
-      flushLine(const <String, dynamic>{});
-    }
-    return DiaryShareBody(text: _collapseBlankLines(lines), images: images);
-  }
-
-  static String _inlineText(String text, Map<String, dynamic> attrs) {
-    final link = attrs['link'];
-    if (link is String) {
-      final url = link.trim();
-      if (url.isNotEmpty && url != text.trim()) {
-        return '$text ($url)';
-      }
-    }
-    return text;
-  }
-
-  /// 连续空行压成一行，并去掉首尾空行与每行行尾空白。
-  static String _collapseBlankLines(List<String> lines) {
-    final out = <String>[];
-    for (final raw in lines) {
-      final line = raw.trimRight();
-      if (line.isEmpty && (out.isEmpty || out.last.isEmpty)) {
-        continue;
-      }
-      out.add(line);
-    }
-    while (out.isNotEmpty && out.last.isEmpty) {
-      out.removeLast();
-    }
-    return out.join('\n');
+    final blocks = ExportBlockParser.parse(rawOps);
+    return DiaryShareBody(
+      text: ExportPlainText.render(blocks),
+      images: <String>[
+        for (final block in blocks)
+          if (block.kind == ExportBlockKind.image) block.source!,
+      ],
+    );
   }
 }
 

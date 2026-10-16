@@ -1271,21 +1271,9 @@
   "@autoT0115": {
     "description": "Auto-generated metadata for autoT0115."
   },
-  "previewExportMarkdown": "导出为 Markdown",
-  "@previewExportMarkdown": {
-    "description": "预览页导出 Markdown 菜单文案。"
-  },
-  "previewExportPdf": "导出为 PDF",
-  "@previewExportPdf": {
-    "description": "预览页导出 PDF 菜单文案。"
-  },
   "previewExportSaveDialogTitle": "保存导出文件",
   "@previewExportSaveDialogTitle": {
     "description": "预览页导出文件保存对话框标题。"
-  },
-  "previewExportSuccess": "导出成功",
-  "@previewExportSuccess": {
-    "description": "预览页导出成功提示。"
   },
   "previewExportCanceled": "已取消导出",
   "@previewExportCanceled": {
@@ -2642,10 +2630,6 @@
         "type": "int"
       }
     }
-  },
-  "previewExportDiaryFile": "导出为日记文件",
-  "@previewExportDiaryFile": {
-    "description": "将日记导出为可再次导入的日记文件（含标签与媒体的 ZIP）的菜单文案。"
   },
   "previewExportDiaryFileConfirm": "导出",
   "@previewExportDiaryFileConfirm": {
@@ -5198,6 +5182,295 @@
     "placeholders": {
       "error": {
         "type": "String"
+      }
+    }
+  },
+  "previewExport": "导出",
+  "@previewExport": {
+    "description": "预览页“更多”面板：打开导出面板。"
+  },
+  "diaryExportSelected": "导出",
+  "@diaryExportSelected": {
+    "description": "日记列表多选栏：导出选中日记的按钮提示。"
+  },
+  "dataMgmtExportDiaries": "导出日记",
+  "@dataMgmtExportDiaries": {
+    "description": "数据管理页：按范围导出日记的入口。"
+  },
+  "dataMgmtExportDiariesSubtitle": "按日期或标签导出为 PDF、Word、Markdown、网页等格式",
+  "@dataMgmtExportDiariesSubtitle": {
+    "description": "数据管理页：导出日记入口的说明。"
+  },
+  "diaryExportSheetTitle": "导出日记",
+  "@diaryExportSheetTitle": {
+    "description": "导出面板标题。"
+  },
+  "diaryExportSheetCount": "共 {count} 篇",
+  "@diaryExportSheetCount": {
+    "description": "导出面板：本次导出的日记篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportFormatSection": "格式",
+  "@diaryExportFormatSection": {
+    "description": "导出面板：格式分组标题。"
+  },
+  "diaryExportOptionsSection": "选项",
+  "@diaryExportOptionsSection": {
+    "description": "导出面板：选项分组标题。"
+  },
+  "diaryExportFormatPdf": "PDF",
+  "@diaryExportFormatPdf": {
+    "description": "导出格式名称：PDF。"
+  },
+  "diaryExportFormatPdfDescription": "版式固定，适合阅读与打印",
+  "@diaryExportFormatPdfDescription": {
+    "description": "导出格式说明：PDF。"
+  },
+  "diaryExportFormatWord": "Word 文档",
+  "@diaryExportFormatWord": {
+    "description": "导出格式名称：Word 文档。"
+  },
+  "diaryExportFormatWordDescription": ".docx，可以继续编辑与排版",
+  "@diaryExportFormatWordDescription": {
+    "description": "导出格式说明：Word 文档。"
+  },
+  "diaryExportFormatMarkdown": "Markdown",
+  "@diaryExportFormatMarkdown": {
+    "description": "导出格式名称：Markdown。"
+  },
+  "diaryExportFormatMarkdownDescription": "带 front matter，可导入 Obsidian 等笔记软件，也能导回 Jotsy",
+  "@diaryExportFormatMarkdownDescription": {
+    "description": "导出格式说明：Markdown。"
+  },
+  "diaryExportFormatHtml": "网页",
+  "@diaryExportFormatHtml": {
+    "description": "导出格式名称：网页。"
+  },
+  "diaryExportFormatHtmlDescription": "浏览器直接打开；多篇带图时打包为网页加图片文件夹",
+  "@diaryExportFormatHtmlDescription": {
+    "description": "导出格式说明：网页。"
+  },
+  "diaryExportFormatText": "纯文本",
+  "@diaryExportFormatText": {
+    "description": "导出格式名称：纯文本。"
+  },
+  "diaryExportFormatTextDescription": ".txt，任何设备都能打开",
+  "@diaryExportFormatTextDescription": {
+    "description": "导出格式说明：纯文本。"
+  },
+  "diaryExportFormatCsv": "表格（CSV）",
+  "@diaryExportFormatCsv": {
+    "description": "导出格式名称：表格（CSV）。"
+  },
+  "diaryExportFormatCsvDescription": "每篇一行，含心情、天气等，可用 Excel 统计",
+  "@diaryExportFormatCsvDescription": {
+    "description": "导出格式说明：表格（CSV）。"
+  },
+  "diaryExportFormatDiaryFile": "Jotsy 日记文件",
+  "@diaryExportFormatDiaryFile": {
+    "description": "导出格式名称：Jotsy 日记文件。"
+  },
+  "diaryExportFormatDiaryFileDescription": "完整保留日记与媒体，可设密码，导回 Jotsy 不丢信息",
+  "@diaryExportFormatDiaryFileDescription": {
+    "description": "导出格式说明：Jotsy 日记文件。"
+  },
+  "diaryExportIncludeImages": "包含图片",
+  "@diaryExportIncludeImages": {
+    "description": "导出选项：包含图片。"
+  },
+  "diaryExportIncludeMedia": "包含图片、录音、视频与附件",
+  "@diaryExportIncludeMedia": {
+    "description": "导出选项（Markdown）：打包全部媒体。"
+  },
+  "diaryExportIncludeMeta": "包含心情、天气、地点与标签",
+  "@diaryExportIncludeMeta": {
+    "description": "导出选项：包含上下文信息。"
+  },
+  "diaryExportOrderOldest": "从旧到新",
+  "@diaryExportOrderOldest": {
+    "description": "导出选项：按时间正序。"
+  },
+  "diaryExportOrderNewest": "从新到旧",
+  "@diaryExportOrderNewest": {
+    "description": "导出选项：按时间倒序。"
+  },
+  "diaryExportSave": "保存到文件",
+  "@diaryExportSave": {
+    "description": "导出面板：保存按钮。"
+  },
+  "diaryExportInProgress": "正在导出",
+  "@diaryExportInProgress": {
+    "description": "导出执行期间的等待遮罩文案。"
+  },
+  "diaryExportSaved": "已导出 {count} 篇日记",
+  "@diaryExportSaved": {
+    "description": "导出保存成功的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportSkippedCapsules": "{count} 篇未解封的时间胶囊没有导出",
+  "@diaryExportSkippedCapsules": {
+    "description": "导出时跳过未解封胶囊的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportOnlyCapsules": "选中的都是未解封的时间胶囊，没有可导出的日记",
+  "@diaryExportOnlyCapsules": {
+    "description": "只选了未解封胶囊时的提示。"
+  },
+  "diaryExportNothing": "没有符合条件的日记",
+  "@diaryExportNothing": {
+    "description": "导出范围内没有日记时的提示。"
+  },
+  "diaryExportPageTitle": "导出日记",
+  "@diaryExportPageTitle": {
+    "description": "导出日记页标题。"
+  },
+  "diaryExportRangeSection": "日期范围",
+  "@diaryExportRangeSection": {
+    "description": "导出日记页：日期范围分组。"
+  },
+  "diaryExportRangeAll": "全部日记",
+  "@diaryExportRangeAll": {
+    "description": "导出日记页：全部日记。"
+  },
+  "diaryExportRangeThisYear": "今年",
+  "@diaryExportRangeThisYear": {
+    "description": "导出日记页：今年。"
+  },
+  "diaryExportRangeLast30Days": "最近 30 天",
+  "@diaryExportRangeLast30Days": {
+    "description": "导出日记页：最近 30 天。"
+  },
+  "diaryExportRangeCustom": "自定义日期",
+  "@diaryExportRangeCustom": {
+    "description": "导出日记页：自定义日期范围。"
+  },
+  "diaryExportRangeCustomValue": "{start} 至 {end}，点按修改",
+  "@diaryExportRangeCustomValue": {
+    "description": "导出日记页：已选的自定义范围。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryExportTagsSection": "标签",
+  "@diaryExportTagsSection": {
+    "description": "导出日记页：标签筛选分组。"
+  },
+  "diaryExportTagsHint": "不选则不限标签；选多个时带有任一标签即可",
+  "@diaryExportTagsHint": {
+    "description": "导出日记页：标签筛选说明。"
+  },
+  "diaryExportIncludeArchived": "包含已归档的日记",
+  "@diaryExportIncludeArchived": {
+    "description": "导出日记页：是否包含归档日记。"
+  },
+  "diaryExportMatchCount": "将导出 {count} 篇日记",
+  "@diaryExportMatchCount": {
+    "description": "导出日记页：符合条件的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportCapsuleNote": "未解封的时间胶囊不会导出",
+  "@diaryExportCapsuleNote": {
+    "description": "导出日记页：胶囊说明。"
+  },
+  "diaryExportNext": "选择格式并导出",
+  "@diaryExportNext": {
+    "description": "导出日记页：下一步按钮。"
+  },
+  "diaryExportLabelUntitled": "无标题",
+  "@diaryExportLabelUntitled": {
+    "description": "导出文件内的文案：无标题。"
+  },
+  "diaryExportLabelMood": "心情",
+  "@diaryExportLabelMood": {
+    "description": "导出文件内的文案：心情。"
+  },
+  "diaryExportLabelEnergy": "精力",
+  "@diaryExportLabelEnergy": {
+    "description": "导出文件内的文案：精力。"
+  },
+  "diaryExportLabelWeather": "天气",
+  "@diaryExportLabelWeather": {
+    "description": "导出文件内的文案：天气。"
+  },
+  "diaryExportLabelLocation": "地点",
+  "@diaryExportLabelLocation": {
+    "description": "导出文件内的文案：地点。"
+  },
+  "diaryExportLabelTags": "标签",
+  "@diaryExportLabelTags": {
+    "description": "导出文件内的文案：标签。"
+  },
+  "diaryExportLabelDate": "日期",
+  "@diaryExportLabelDate": {
+    "description": "导出文件内的文案：日期。"
+  },
+  "diaryExportLabelTime": "时间",
+  "@diaryExportLabelTime": {
+    "description": "导出文件内的文案：时间。"
+  },
+  "diaryExportLabelTitle": "标题",
+  "@diaryExportLabelTitle": {
+    "description": "导出文件内的文案：标题。"
+  },
+  "diaryExportLabelContent": "正文",
+  "@diaryExportLabelContent": {
+    "description": "导出文件内的文案：正文。"
+  },
+  "diaryExportLabelWordCount": "字数",
+  "@diaryExportLabelWordCount": {
+    "description": "导出文件内的文案：字数。"
+  },
+  "diaryExportLabelUpdated": "最后编辑",
+  "@diaryExportLabelUpdated": {
+    "description": "导出文件内的文案：最后编辑。"
+  },
+  "diaryExportLabelImage": "图片",
+  "@diaryExportLabelImage": {
+    "description": "导出文件内的文案：图片。"
+  },
+  "diaryExportLabelAudio": "录音",
+  "@diaryExportLabelAudio": {
+    "description": "导出文件内的文案：录音。"
+  },
+  "diaryExportLabelVideo": "视频",
+  "@diaryExportLabelVideo": {
+    "description": "导出文件内的文案：视频。"
+  },
+  "diaryExportLabelAttachment": "附件",
+  "@diaryExportLabelAttachment": {
+    "description": "导出文件内的文案：附件。"
+  },
+  "diaryExportLabelExportedBy": "由 Jotsy 导出",
+  "@diaryExportLabelExportedBy": {
+    "description": "导出文件内的文案：由 Jotsy 导出。"
+  },
+  "diaryExportTooLarge": "图片太多（约 {size} MB），PDF 无法一次生成。请缩小日期范围，或关闭“包含图片”后再试",
+  "@diaryExportTooLarge": {
+    "description": "PDF 导出图片总量过大时的提示。",
+    "placeholders": {
+      "size": {
+        "type": "int"
       }
     }
   }

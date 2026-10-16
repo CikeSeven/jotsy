@@ -482,4 +482,46 @@ void main() {
       },
     );
   });
+
+  group('SettingsService diary export options', () {
+    const key = 'app.settings.diary_export_options';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json, clears it and ignores wrong types', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryExportOptionsRaw, isNull);
+      await settings.setDiaryExportOptionsRaw(' {"format":"word"} ');
+      expect(
+        (await SettingsService.create()).diaryExportOptionsRaw,
+        '{"format":"word"}',
+      );
+      await settings.setDiaryExportOptionsRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(key), isFalse);
+
+      SharedPreferences.setMockInitialValues(<String, Object>{key: true});
+      expect((await SettingsService.create()).diaryExportOptionsRaw, isNull);
+    });
+
+    test(
+      'backups carry the options and older backups keep local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryExportOptionsRaw('{"format":"csv"}');
+        expect(
+          BackupSettings.capture(settings)['diaryExportOptionsRaw'],
+          '{"format":"csv"}',
+        );
+        await BackupSettings.restore(settings, <String, dynamic>{});
+        expect(settings.diaryExportOptionsRaw, '{"format":"csv"}');
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryExportOptionsRaw': <String, dynamic>{'format': 'html'},
+        });
+        expect(settings.diaryExportOptionsRaw, '{"format":"html"}');
+      },
+    );
+  });
 }

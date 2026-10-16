@@ -23,6 +23,7 @@ class BackupSettings {
     'calendarDisplayOptionsRaw': settingsService.calendarDisplayOptionsRaw,
     'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
     'diaryShareOptionsRaw': settingsService.diaryShareOptionsRaw,
+    'diaryExportOptionsRaw': settingsService.diaryExportOptionsRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -138,6 +139,17 @@ class BackupSettings {
     if (settingsNode.containsKey('diaryShareOptionsRaw')) {
       final shareOptionsRaw = settingsNode['diaryShareOptionsRaw'];
       await settingsService.setDiaryShareOptionsRaw(switch (shareOptionsRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 同上：旧版备份没有导出选项时保留本机选项。
+    if (settingsNode.containsKey('diaryExportOptionsRaw')) {
+      final exportOptionsRaw = settingsNode['diaryExportOptionsRaw'];
+      await settingsService.setDiaryExportOptionsRaw(switch (exportOptionsRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

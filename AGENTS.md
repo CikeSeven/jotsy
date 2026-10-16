@@ -23,6 +23,7 @@
 │  │  │  ├─ controllers/             # 业务编排（搜索/筛选/撤销/发布链路等）
 │  │  │  ├─ providers/               # 状态与筛选条件
 │  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态（models/diary_card_style/：卡片样式模型、预设与样式码）
+│  │  │  ├─ export/                  # 导出写出器（正文块模型、PDF / Word / Markdown / 网页 / 纯文本 / CSV、媒体与命名）
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片）
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ home|calendar|explore|settings/
@@ -95,6 +96,7 @@
 - 必须：日记卡片外观统一收在 `DiaryCardStyleSettings`（单个 JSON 设置键 `diaryCardStyleRaw`：当前样式 + 最多 12 份“我的样式”，逐字段容错解析，随备份导出与失败回滚），渲染统一经 `DiaryCard` + `DiaryCardResolvedStyle`；禁止各页另拼日记卡片或另加零散的卡片外观设置键（标签显示数量 `diaryCardTagLimit` 为既有独立键）。`DiaryCardStyle.defaults` 必须逐项等于 DESIGN.md §5.1 的默认规格；未解封胶囊只套用表面样式，心情色与标签色回退主题色。编辑入口为设置 → 外观与语言 → 日记卡片样式（日记页视图选项面板有快捷入口）。
 - 必须：日历的法定节假日（休/班）只取自 tyme 的 `LegalHoliday`，经 `CalendarHolidayDay` 读取，开关为 `CalendarDisplayOptions.holidayMode`；数字左上角标统一经 `CalendarCellLeadingBadge` 按优先级取一个，禁止在日期格另加角标位置。
 - 必须：日记分享统一经预览页的分享面板 `showDiaryShareSheet`（只负责挑选）→ `DiaryShareController`（执行）；分享文字只经 `DiaryShareContent.composeText` 组装为纯文本（社交应用不渲染 Markdown），内容开关只存于 `DiaryShareOptions`（单个 JSON 设置键 `app.settings.diary_share_options`，逐字段容错并随备份导出），地点默认不带。分享到指定应用只经 `DiaryShareChannel`（Android 原生按包名发 Intent），图片先暂存到缓存 `diary_share/`（`DiaryShareFileProvider` 只暴露该目录，禁止直接交出日记原图路径），带图时文字经剪贴板传递；新增目标应用在 `DiaryShareTarget` 登记，并同步 `AndroidManifest.xml` 的 `<queries>` 包名。视觉规范见 DESIGN.md §5.8。
+- 必须：日记导出统一经 `runDiaryExportFlow`（预览页“更多 → 导出”、日记列表多选、设置 → 数据管理 → 导出日记三个入口共用）：导出面板 `showDiaryExportSheet` 只负责挑选，生成、保存与分享由 `DiaryExportController` 执行；导出选项只存于 `DiaryExportOptions`（单个 JSON 设置键 `app.settings.diary_export_options`，逐字段容错并随备份导出）。正文一律先经 `ExportBlockParser` 解析为块再交给 `lib/ui/diaries/export/` 下的写出器（PDF 例外，仍经 flutter_quill_to_pdf 渲染，但图片只经虚拟地址交付、缺失图片与媒体嵌入先改写）；新增格式只加写出器并在 `DiaryExportFormat` 登记，禁止在页面里另写导出逻辑。未解封的时间胶囊在任何导出格式中都不导出（完整备份除外）；导出文件不得写出设备私有路径，媒体以包内相对路径或内嵌方式交付；批量导出的媒体一律按文件流式打包（`DiaryExportBundleFile.file`），禁止把全部照片读进内存，PDF 这类只能整份持有图片的格式须设总量上限并提示。视觉规范见 DESIGN.md §5.9。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。

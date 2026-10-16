@@ -10,6 +10,7 @@ import '../models/diary_share_options.dart';
 import '../models/diary_share_target.dart';
 import '../viewmodels/diary_share_messages.dart';
 import '../widgets/diary_share_widgets.dart';
+import '../widgets/diary_sheet_controls.dart';
 
 /// 打开分享面板，返回用户选定的分享动作；关闭面板返回 null。
 ///
@@ -148,7 +149,7 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
             const SizedBox(height: AppSpacing.m),
             DiaryShareTextPreview(text: previewText),
             const SizedBox(height: AppSpacing.l),
-            _SectionHeader(
+            DiarySheetSectionHeader(
               icon: FontAwesomeIcons.sliders,
               label: l10n.diaryShareContentSection,
             ),
@@ -173,7 +174,7 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
                   : const SizedBox(width: double.infinity),
             ),
             const SizedBox(height: AppSpacing.xl),
-            _SectionHeader(
+            DiarySheetSectionHeader(
               icon: FontAwesomeIcons.shareNodes,
               label: l10n.diaryShareTargetsSection,
             ),
@@ -188,7 +189,7 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
               ),
             ),
             const SizedBox(height: AppSpacing.l),
-            _SectionHeader(
+            DiarySheetSectionHeader(
               icon: FontAwesomeIcons.ellipsis,
               label: l10n.diaryShareMoreSection,
             ),
@@ -366,34 +367,4 @@ FaIconData? _targetIcon(DiaryShareTarget target) {
     // 图标库没有小红书的图形，按钮里直接写名称。
     DiaryShareTarget.xiaohongshu => null,
   };
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.icon, required this.label});
-
-  final FaIconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      header: true,
-      child: Row(
-        children: <Widget>[
-          FaIcon(icon, size: 16, color: theme.colorScheme.primary),
-          const SizedBox(width: AppSpacing.s),
-          // 窄屏与大字号下标题换行，不溢出（DESIGN.md §6）。
-          Flexible(
-            child: Text(
-              label,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

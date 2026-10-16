@@ -15,6 +15,7 @@ Widget _host({required bool selection, int count = 3}) => MaterialApp(
       isPinActionUnpin: false,
       onPinSelected: () {},
       onArchiveSelected: () {},
+      onExportSelected: () {},
       onDeleteSelected: () {},
       onOpenArchived: () {},
       onOpenViewOptions: () {},

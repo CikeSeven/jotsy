@@ -79,6 +79,8 @@ class PublishPanelDriver {
 
   void setMood(String? mood) => _panel.onMoodChanged(mood);
 
+  void setEnergy(double? level) => _panel.onEnergyChanged(level);
+
   void toggleTag(int tagId, bool selected) =>
       _panel.onToggleTag(tagId, selected);
 

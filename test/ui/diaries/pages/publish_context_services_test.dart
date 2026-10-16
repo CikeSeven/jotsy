@@ -108,4 +108,23 @@ void main() {
     expect(panel.weatherLoading, isFalse);
     await unmount(tester);
   });
+
+  // 面板字段由 DiaryMetaDraftController 局部通知：拖动精力、打字、选心情
+  // 都不该重建整页（含只读正文预览）。
+  testWidgets('panel input does not rebuild the body preview', (tester) async {
+    await openPublisher(tester);
+    final panel = PublishPanelDriver(tester);
+    final previewBefore = tester.widget(find.byType(quill.QuillEditor));
+
+    panel.setEnergy(3);
+    panel.setMood('🙂');
+    panel.typeLocation('Park');
+    await tester.pump();
+
+    expect(
+      identical(tester.widget(find.byType(quill.QuillEditor)), previewBefore),
+      isTrue,
+    );
+    await unmount(tester);
+  });
 }

@@ -5,8 +5,9 @@ part of 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 /// 发布页业务控制器。
 ///
 /// 职责边界：
-/// - 处理封面、位置、天气、标签与发布提交流程；
+/// - 发表时间、胶囊文案与发布提交流程；
 /// - 组装元数据并回传草稿；
+/// - 封面、标签、定位、天气等面板动作在 DiaryMetaActions（与编辑页共用）；
 /// - 不参与页面结构渲染。
 class PublishDiaryController {
   const PublishDiaryController(this._state);
@@ -26,20 +27,11 @@ class PublishDiaryController {
     return normalized.isEmpty ? _state.context.l10n.autoT0095 : normalized;
   }
 
-  /// 规范化封面路径，空字符串按“无封面”处理。
-  String? get normalizedCover {
-    final normalized = _state._draftCover?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-
   /// 封面展示文案：
   /// - 网络图显示完整 URL；
   /// - 本地图显示文件名，避免路径过长污染 UI。
   String? get coverLabel {
-    final cover = normalizedCover;
+    final cover = _state._meta.value.cover;
     if (cover == null) {
       return null;
     }
@@ -67,33 +59,14 @@ class PublishDiaryController {
     );
   }
 
-  /// 组装最终 metadata JSON。
-  ///
-  /// 合并当前页面可编辑字段与自动采集字段，输出结构化字符串。
+  /// 组装最终 metadata JSON；[generatedAt] 同时作为胶囊的封存时刻。
   String buildMetadataJson({DateTime? generatedAt}) {
-    final schedule = _state._timeCapsuleSchedule;
     final lockedAt = generatedAt ?? DateTime.now();
-    return PublishMetadataComposer.compose(
+    return PublishMetadataComposer.composeDraft(
+      draft: _state._meta.value,
       contentText: _state.widget.initialDraft.contentText,
-      selectedTagIds: _state._selectedTagIds,
-      hasCover: normalizedCover != null,
-      deviceInfo: PublishMetadataComposer.currentDeviceInfo(),
       generatedAt: lockedAt,
-      location: normalizeOptionalText(_state._locationController.text),
-      locationAddressComponent: _state._locationAddressComponent,
-      locationLatitude: _state._locationLatitude,
-      locationLongitude: _state._locationLongitude,
-      locationFromAuto: _state._locationFromAuto,
-      locationPrecision: _state._locationPrecision,
-      weather: normalizeOptionalText(_state._weatherController.text),
-      weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
-      moodEmoji: normalizeOptionalText(_state._moodEmoji),
-      energyLevel: _state._energyLevel,
-      capsuleLockedAt: schedule == null ? null : lockedAt,
-      capsuleUnlockAt: schedule?.normalizedUnlockAt,
-      capsulePrecision: schedule == null
-          ? null
-          : TimeCapsuleSchedule.encodePrecision(schedule.precision),
+      capsuleLockedAt: lockedAt,
     );
   }
 
@@ -128,7 +101,7 @@ class PublishDiaryController {
 
   String get timeCapsuleLabel {
     final l10n = _state.context.l10n;
-    final schedule = _state._timeCapsuleSchedule;
+    final schedule = _state._meta.value.capsule;
     if (schedule == null) {
       return l10n.timeCapsuleUnset;
     }
@@ -157,228 +130,6 @@ class PublishDiaryController {
     _state.setState(() => _state._explicitPublishAt = picked);
   }
 
-  void updateTimeCapsule(TimeCapsuleSchedule picked) {
-    _state.setState(() {
-      _state._timeCapsuleSchedule = TimeCapsuleSchedule(
-        unlockAt: picked.normalizedUnlockAt,
-        precision: picked.precision,
-      );
-    });
-  }
-
-  void clearTimeCapsule() {
-    _state.setState(() => _state._timeCapsuleSchedule = null);
-  }
-
-  /// 只重组已解析的地址，不触发定位或网络请求。仅当前文案仍是自动文案时
-  /// 才按新层级改写；手动输入原样保留，避免用户调整下次定位的层级时丢失
-  /// 自己写的地点名称。选择同时记为新建日记的默认层级。
-  void updateLocationPrecision(DiaryLocationPrecision precision) {
-    if (_state._locating || _state._saving) return;
-    unawaited(DiaryLocationPreference.remember(_state.ref, precision));
-    final components = _state._locationAddressComponent;
-    final followsPrecision =
-        _state._locationFromAuto &&
-        DiaryLocationLabel.isAutoLabel(
-          _state._locationController.text,
-          components,
-          _state._locationPrecision,
-        );
-    _state.setState(() {
-      _state._locationPrecision = precision;
-      if (followsPrecision) {
-        _state._locationController.text =
-            DiaryLocationLabel.format(components, precision) ?? '';
-      }
-    });
-  }
-
-  /// 手动修改地点不影响坐标：自动定位后补几个字仍记录在哪里写的日记。
-  /// 清空地点则视为不记录位置，停止保存 geo，避免 metadata 残留用户看不到
-  /// 的经纬度；内存中的坐标保留给天气查询，重新定位后恢复保存。
-  void updateLocationText(String value) {
-    if (normalizeOptionalText(value) != null || !_state._locationFromAuto) {
-      return;
-    }
-    _state.setState(() => _state._locationFromAuto = false);
-  }
-
-  /// 选择封面并拷贝到应用私有目录。
-  ///
-  /// 被替换的旧封面不在这里删除：它可能已写入持久化草稿，进程在草稿更新前
-  /// 被杀会留下坏封面；无人引用后由 DiaryMediaCleanupService 回收。
-  Future<void> pickCover() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-    if (result == null || !_state.mounted) {
-      return;
-    }
-
-    final selectedPath = result.files.first.path?.trim();
-    if (selectedPath == null || selectedPath.isEmpty) {
-      showHint(_state.context.l10n.autoT0088);
-      return;
-    }
-
-    try {
-      final importedPath = await DiaryCoverStorageService.importCover(
-        selectedPath,
-      );
-      if (!_state.mounted) {
-        await DiaryCoverStorageService.deleteManagedCover(importedPath);
-        return;
-      }
-
-      _state.setState(() => _state._draftCover = importedPath);
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      debugPrint('Cover import failed: $error');
-      showHint(_state.context.l10n.publishCoverImportFailed);
-    } finally {
-      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
-    }
-  }
-
-  /// 清除封面；文件同样交给 DiaryMediaCleanupService 按引用回收。
-  Future<void> clearCover() async {
-    _state.setState(() => _state._draftCover = null);
-  }
-
-  /// 发布页内联创建标签，成功后自动加入当前选中集合。
-  Future<void> createTagInline() async {
-    final draft = await showCreateTagDialog(_state.context);
-    if (draft == null) {
-      return;
-    }
-
-    try {
-      final db = _state.ref.read(appDatabaseProvider);
-      final tagId = await db.createTag(name: draft.name, color: draft.color);
-      if (!_state.mounted) {
-        return;
-      }
-      _state.setState(() => _state._selectedTagIds.add(tagId));
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      debugPrint('Tag creation failed: $error');
-      showHint(_state.context.l10n.publishTagCreateFailed);
-    }
-  }
-
-  /// 自动定位并逆地理解析：
-  /// - 按选择的层级组装展示文案；
-  /// - 保存 addressComponent + 经纬度用于 metadata 组装。
-  Future<void> resolveLocation() async {
-    if (_state._locating) {
-      return;
-    }
-
-    _state.setState(() => _state._locating = true);
-
-    try {
-      final service = await _state.ref.read(
-        locationResolverServiceProvider.future,
-      );
-      if (service == null) {
-        throw LocationResolveException(
-          type: LocationResolveErrorType.missingApiKey,
-          message: _state.context.l10n.autoT0204,
-        );
-      }
-
-      final result = await service.resolveCurrentLocation();
-      if (!_state.mounted) {
-        return;
-      }
-
-      final autoLocationLabel = DiaryLocationLabel.format(
-        result.addressComponent,
-        _state._locationPrecision,
-      );
-      _state.setState(() {
-        _state._locationController.text = autoLocationLabel ?? '';
-        _state._locationAddressComponent = result.addressComponent;
-        _state._locationLatitude = result.latitude;
-        _state._locationLongitude = result.longitude;
-        _state._locationFromAuto = true;
-      });
-    } on LocationResolveException catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      showHint(locationResolveHint(_state.context.l10n, error.type));
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      debugPrint('Location failed: $error');
-      showHint(_state.context.l10n.locationUnavailable);
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._locating = false);
-      }
-    }
-  }
-
-  /// 依据当前位置坐标请求天气并回填环境信息字段。
-  Future<void> resolveWeather() async {
-    if (_state._weatherLoading) {
-      return;
-    }
-    if (_state._locationLatitude == null || _state._locationLongitude == null) {
-      showHint(_state.context.l10n.autoT0092);
-      return;
-    }
-
-    _state.setState(() => _state._weatherLoading = true);
-    try {
-      final service = await _state.ref.read(weatherServiceProvider.future);
-      if (service == null) {
-        throw QWeatherException(
-          type: QWeatherErrorType.missingConfig,
-          message: _state.context.l10n.autoT0205,
-        );
-      }
-
-      final weatherNow = await service.fetchNow(
-        latitude: _state._locationLatitude!,
-        longitude: _state._locationLongitude!,
-        languageCode: (await _state.ref.read(
-          settingsServiceProvider.future,
-        )).appLocaleCode,
-      );
-      if (!_state.mounted) {
-        return;
-      }
-      _state.setState(() {
-        _state._weatherController.text = weatherNow.displayText;
-        _state._weatherIconCode = weatherNow.iconCode;
-      });
-    } on QWeatherException catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      debugPrint('Weather fetch failed: ${error.message}');
-      showHint(weatherResolveHint(_state.context.l10n, error.type));
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      debugPrint('Weather fetch failed: $error');
-      showHint(_state.context.l10n.weatherApiError);
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._weatherLoading = false);
-      }
-    }
-  }
-
   /// 执行发布写库。
   ///
   /// 成功后先通知打开者（[PublishDiaryPage.onPublished]，编辑页借此静默移出
@@ -389,7 +140,8 @@ class PublishDiaryController {
     }
     // 解封时间必须仍在未来：日期精度选了今天、或恢复的草稿里那天已过，
     // 写入的就是一个立即解封的胶囊。拦下并提示重新选择，不写库。
-    final pendingSchedule = _state._timeCapsuleSchedule;
+    final draft = _state._meta.value;
+    final pendingSchedule = draft.capsule;
     if (pendingSchedule != null &&
         !pendingSchedule.isUnlockInFuture(DateTime.now())) {
       showHint(_state.context.l10n.timeCapsuleUnlockPassed);
@@ -400,15 +152,15 @@ class PublishDiaryController {
 
     try {
       final db = _state.ref.read(appDatabaseProvider);
-      final schedule = _state._timeCapsuleSchedule;
+      final schedule = draft.capsule;
       final lockedAt = schedule == null ? null : DateTime.now();
       final diaryId = await db.createDiary(
         title: _state.widget.initialDraft.title,
         contentDocJson: _state.widget.initialDraft.contentDocJson,
         contentText: _state.widget.initialDraft.contentText,
-        cover: normalizedCover,
+        cover: draft.cover,
         metadataJson: buildMetadataJson(generatedAt: lockedAt),
-        tagIds: _state._selectedTagIds.toList(),
+        tagIds: draft.tagIds.toList(),
         createdAtOverride: TimeCapsuleSchedule.resolveDiaryCreatedAt(
           schedule: schedule,
           fallbackPublishAt: effectivePublishAt,
@@ -460,32 +212,17 @@ class PublishDiaryController {
     if (_state._leaveBlocked) {
       return;
     }
-    final schedule = _state._timeCapsuleSchedule;
     Navigator.of(_state.context).pop(
-      _state.widget.initialDraft.copyWith(
-        cover: normalizedCover,
-        // 只带回用户亲自选的时间；没选过就原样带回打开者的请求值（如日历
-        // 的按日新建），下次打开或发表时再现算，不把“打开发布页那一刻”
-        // 冻结进草稿。
-        createdAtOverride:
-            _state._explicitPublishAt ??
-            _state.widget.initialDraft.createdAtOverride,
-        metadataJson: buildMetadataJson(),
-        selectedTagIds: <int>{..._state._selectedTagIds},
-        location: normalizeOptionalText(_state._locationController.text),
-        locationAddressComponent: _state._locationAddressComponent,
-        locationLatitude: _state._locationLatitude,
-        locationLongitude: _state._locationLongitude,
-        locationFromAuto: _state._locationFromAuto,
-        locationPrecision: _state._locationPrecision,
-        weather: normalizeOptionalText(_state._weatherController.text),
-        weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
-        moodEmoji: normalizeOptionalText(_state._moodEmoji),
-        energyLevel: _state._energyLevel,
-        capsuleUnlockAt: schedule?.normalizedUnlockAt,
-        capsulePrecision: schedule == null
-            ? null
-            : TimeCapsuleSchedule.encodePrecision(schedule.precision),
+      _state._meta.value.applyTo(
+        _state.widget.initialDraft.copyWith(
+          // 只带回用户亲自选的时间；没选过就原样带回打开者的请求值（如日历
+          // 的按日新建），下次打开或发表时再现算，不把“打开发布页那一刻”
+          // 冻结进草稿。
+          createdAtOverride:
+              _state._explicitPublishAt ??
+              _state.widget.initialDraft.createdAtOverride,
+          metadataJson: buildMetadataJson(),
+        ),
       ),
     );
   }

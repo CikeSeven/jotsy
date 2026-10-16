@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -12,30 +11,23 @@ import 'package:path/path.dart' as path;
 
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
-import 'package:node_diary/core/services/diary_cover_storage_service.dart';
-import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
-import 'package:node_diary/core/services/location_resolver_service.dart';
-import 'package:node_diary/core/services/qweather_weather_service.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
-import 'package:node_diary/ui/diaries/models/diary_location.dart';
-import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
-import 'package:node_diary/ui/diaries/models/weather_resolve_hint.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
+import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/publish_time.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
-import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
-import 'package:node_diary/utils/optional_text.dart';
 import '../../../app/theme/expressive_motion.dart';
 
 part '../controllers/publish_diary_controller.dart';
@@ -64,39 +56,28 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
-  // ==================== 输入控制器与面板控制器 ====================
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _weatherController = TextEditingController();
+  // ==================== 面板与预览 ====================
   final PublishDiaryPanelController _panelController =
       PublishDiaryPanelController();
   late final quill.QuillController _previewController;
-  late final Set<int> _selectedTagIds;
-
-  // ==================== 页面草稿态字段 ====================
-  String? _draftCover;
-  String? _moodEmoji;
-  late DiaryLocationPrecision _locationPrecision;
-  Map<String, Object?>? _locationAddressComponent;
-  double? _locationLatitude;
-  double? _locationLongitude;
-  bool _locationFromAuto = false;
-  String? _weatherIconCode;
-  double? _energyLevel;
-  // 用户在本页亲自选的发表时间；没选过为 null，发表时间在提交那一刻现算
-  // （见 PublishDiaryController.effectivePublishAt）。
-  DateTime? _explicitPublishAt;
-  TimeCapsuleSchedule? _timeCapsuleSchedule;
   // 面板展开进度只驱动正文底部占位：用 ValueNotifier 局部刷新占位条，
   // 避免拖拽时每帧 setState 重建整页（含只读 QuillEditor 预览）。
   final ValueNotifier<double> _panelExpandProgress = ValueNotifier<double>(0);
 
-  // ==================== 异步流程状态 ====================
+  // ==================== 元数据草稿 ====================
+  // 面板字段的唯一来源；输入变化只通知监听它的局部（面板、封面），页面
+  // 不再为每次打字、拖动精力滑块 setState。
+  late final DiaryMetaDraftController _meta;
+  late final DiaryMetaActions _metaActions;
+  // 用户在本页亲自选的发表时间；没选过为 null，发表时间在提交那一刻现算
+  // （见 PublishDiaryController.effectivePublishAt）。
+  DateTime? _explicitPublishAt;
+
+  // ==================== 发布流程状态 ====================
   bool _saving = false;
   // 写库成功后置位且不再清除：此后日记已存在，页面只剩退场，返回键与
   // 发布按钮都不能再把草稿带回编辑页或重复发布（见 [_leaveBlocked]）。
   bool _published = false;
-  bool _locating = false;
-  bool _weatherLoading = false;
   bool _showCapsuleSealOverlay = false;
 
   // ==================== 业务控制器 ====================
@@ -106,34 +87,14 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   void initState() {
     super.initState();
     _controller = PublishDiaryController(this);
-    _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
-    _draftCover = normalizeOptionalText(widget.initialDraft.cover);
-    _locationPrecision = widget.initialDraft.locationPrecision;
-    _locationAddressComponent = widget.initialDraft.locationAddressComponent;
-    _locationLatitude = widget.initialDraft.locationLatitude;
-    _locationLongitude = widget.initialDraft.locationLongitude;
-    _locationFromAuto = widget.initialDraft.locationFromAuto;
-    _locationController.text = widget.initialDraft.location ?? '';
-    _weatherController.text = widget.initialDraft.weather ?? '';
-    _weatherIconCode = widget.initialDraft.weatherIconCode;
-    _moodEmoji = widget.initialDraft.moodEmoji;
-    final initialCapsuleUnlockAt = widget.initialDraft.capsuleUnlockAt;
-    if (initialCapsuleUnlockAt != null) {
-      _timeCapsuleSchedule = TimeCapsuleSchedule(
-        unlockAt: initialCapsuleUnlockAt,
-        precision: TimeCapsuleSchedule.parsePrecision(
-          widget.initialDraft.capsulePrecision,
-        ),
-      );
-    }
-
-    // 精力值：未设置时保留为 null；存在时限制在 1~5，避免历史数据越界导致 UI 异常。
-    final rawEnergy = widget.initialDraft.energyLevel?.toDouble();
-    if (rawEnergy != null) {
-      _energyLevel = rawEnergy.clamp(1, 5).toDouble();
-    } else {
-      _energyLevel = null;
-    }
+    _meta = DiaryMetaDraftController(
+      DiaryMetaDraft.fromNewDiaryDraft(widget.initialDraft),
+    );
+    _metaActions = DiaryMetaActions(
+      ref,
+      draft: _meta,
+      isBusy: () => _leaveBlocked,
+    );
 
     // 预览正文优先走 Delta JSON；失败时降级纯文本，确保页面总能打开。
     quill.Document previewDoc;
@@ -157,8 +118,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   void dispose() {
-    _locationController.dispose();
-    _weatherController.dispose();
+    _metaActions.dispose();
+    _meta.dispose();
     _previewController.dispose();
     _panelExpandProgress.dispose();
     super.dispose();
@@ -221,8 +182,10 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
             CustomScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: <Widget>[
-                AnimatedPublishDiaryCoverSliver(
-                  cover: _controller.normalizedCover,
+                ValueListenableBuilder<DiaryMetaDraft>(
+                  valueListenable: _meta,
+                  builder: (context, draft, _) =>
+                      AnimatedPublishDiaryCoverSliver(cover: draft.cover),
                 ),
                 SliverToBoxAdapter(
                   // 标题与正文预览区域。
@@ -287,88 +250,86 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               left: 16,
               right: 16,
               bottom: 0,
-              child: PublishDiaryPanel(
-                controller: _panelController,
-                saving: _leaveBlocked,
-                hasCover: _controller.normalizedCover != null,
-                coverLabel: _controller.coverLabel,
-                locating: _locating,
-                weatherLoading: _weatherLoading,
-                locationController: _locationController,
-                locationPrecision: _locationPrecision,
-                locationAddressComponent: _locationFromAuto
-                    ? _locationAddressComponent
-                    : null,
-                onLocationPrecisionChanged: _controller.updateLocationPrecision,
-                weatherController: _weatherController,
-                weatherIconCode: _weatherIconCode,
-                moodEmoji: _moodEmoji,
-                moodOptions: moodOptions,
-                energyLevel: _energyLevel,
-                tags: tags,
-                tagsLoading: tagsLoading,
-                tagsError: tagsError,
-                selectedTagIds: _selectedTagIds,
-                // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-                // 非构建/布局阶段回调（见 _handleSheetMetricsChanged），此处可
-                // 直接写入 ValueNotifier。
-                onProgressChanged: (progress) {
-                  if (mounted) {
-                    _panelExpandProgress.value = progress;
-                  }
-                },
-                onPickCover: _controller.pickCover,
-                onClearCover: _controller.normalizedCover == null
-                    ? null
-                    : _controller.clearCover,
-                onCreateTag: _controller.createTagInline,
-                onResolveLocation: _controller.resolveLocation,
-                onResolveWeather: _controller.resolveWeather,
-                onLocationChanged: _controller.updateLocationText,
-                onWeatherChanged: (nextWeather) {
-                  setState(() {
-                    // 手动修改天气文本后，旧天气 code 可能与文案不一致，清空后走文案兜底图标。
-                    _weatherIconCode = null;
-                  });
-                },
-                showPublishTimeOption: true,
-                publishTimeLabel: _controller.publishTimeLabel,
-                onPickPublishTime: _controller.pickPublishAt,
-                showTimeCapsuleOption: true,
-                timeCapsuleLabel: _controller.timeCapsuleLabel,
-                timeCapsuleActive: _timeCapsuleSchedule != null,
-                timeCapsuleSchedule: _timeCapsuleSchedule,
-                onTimeCapsuleChanged: _controller.updateTimeCapsule,
-                onClearTimeCapsule: _timeCapsuleSchedule == null
-                    ? null
-                    : _controller.clearTimeCapsule,
-                onToggleTag: (tagId, selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedTagIds.add(tagId);
-                    } else {
-                      _selectedTagIds.remove(tagId);
-                    }
-                  });
-                },
-                onMoodChanged: (nextMood) {
-                  setState(() => _moodEmoji = nextMood);
-                },
-                onEnergyChanged: (nextValue) {
-                  setState(
-                    () => _energyLevel = nextValue?.clamp(1, 5).toDouble(),
-                  );
-                },
-                onPublish: _controller.publish,
-                actionLabel: _timeCapsuleSchedule == null
-                    ? ''
-                    : context.l10n.timeCapsuleSealAction,
+              child: ListenableBuilder(
+                listenable: Listenable.merge(<Listenable>[
+                  _meta,
+                  _metaActions.activity,
+                ]),
+                builder: (context, _) => _buildPanel(
+                  context,
+                  tags: tags,
+                  tagsLoading: tagsLoading,
+                  tagsError: tagsError,
+                  moodOptions: moodOptions,
+                ),
               ),
             ),
             if (_showCapsuleSealOverlay) _buildCapsuleSealOverlay(context),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPanel(
+    BuildContext context, {
+    required List<Tag> tags,
+    required bool tagsLoading,
+    required String? tagsError,
+    required List<String> moodOptions,
+  }) {
+    final draft = _meta.value;
+    final capsule = draft.capsule;
+    return PublishDiaryPanel(
+      controller: _panelController,
+      saving: _leaveBlocked,
+      hasCover: draft.cover != null,
+      coverLabel: _controller.coverLabel,
+      locating: _metaActions.locating.value,
+      weatherLoading: _metaActions.weatherLoading.value,
+      locationController: _meta.locationText,
+      locationPrecision: draft.locationPrecision,
+      locationAddressComponent: draft.autoAddressComponent,
+      onLocationPrecisionChanged: _metaActions.changePrecision,
+      weatherController: _meta.weatherText,
+      weatherIconCode: draft.weatherIconCode,
+      moodEmoji: draft.moodEmoji,
+      moodOptions: moodOptions,
+      energyLevel: draft.energyLevel,
+      tags: tags,
+      tagsLoading: tagsLoading,
+      tagsError: tagsError,
+      selectedTagIds: draft.tagIds,
+      // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+      // 非构建/布局阶段回调（见 _handleSheetMetricsChanged），此处可
+      // 直接写入 ValueNotifier。
+      onProgressChanged: (progress) {
+        if (mounted) {
+          _panelExpandProgress.value = progress;
+        }
+      },
+      onPickCover: () => _metaActions.pickCover(context),
+      onClearCover: draft.cover == null ? null : _metaActions.clearCover,
+      onCreateTag: () => _metaActions.createTag(context),
+      onResolveLocation: () => _metaActions.resolveLocation(context),
+      onResolveWeather: () => _metaActions.resolveWeather(context),
+      // 输入框文本经 DiaryMetaDraftController 的监听同步进草稿。
+      onLocationChanged: (_) {},
+      onWeatherChanged: (_) {},
+      showPublishTimeOption: true,
+      publishTimeLabel: _controller.publishTimeLabel,
+      onPickPublishTime: _controller.pickPublishAt,
+      showTimeCapsuleOption: true,
+      timeCapsuleLabel: _controller.timeCapsuleLabel,
+      timeCapsuleActive: capsule != null,
+      timeCapsuleSchedule: capsule,
+      onTimeCapsuleChanged: _meta.setCapsule,
+      onClearTimeCapsule: capsule == null ? null : () => _meta.setCapsule(null),
+      onToggleTag: _meta.setTagSelected,
+      onMoodChanged: _meta.setMood,
+      onEnergyChanged: _meta.setEnergy,
+      onPublish: _controller.publish,
+      actionLabel: capsule == null ? '' : context.l10n.timeCapsuleSealAction,
     );
   }
 

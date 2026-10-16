@@ -6,6 +6,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/journal_import_cloud_cookies.dart';
 import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
+import 'choice_sheet_parts.dart';
 import 'journal_import_source_labels.dart';
 
 /// 面板分组（顺序即展示顺序）：日记应用、笔记应用逐项列出导出方式；手机与
@@ -115,80 +116,29 @@ class JournalImportSourceSheet extends StatelessWidget {
                 ),
               ),
             ),
-            _SectionHeader(
+            ChoiceSheetSectionHeader(
               icon: FontAwesomeIcons.book,
               label: l10n.journalImportGroupJournals,
             ),
             for (final source in _journalApps) tile(source),
-            _SectionHeader(
+            ChoiceSheetSectionHeader(
               icon: FontAwesomeIcons.noteSticky,
               label: l10n.journalImportGroupNotes,
             ),
             for (final source in _noteApps) tile(source),
             // 云端笔记需要网页视图登录，只在 Android 与 iOS 上提供。
             if (CloudLoginCookies.supported) ...<Widget>[
-              _SectionHeader(
+              ChoiceSheetSectionHeader(
                 icon: FontAwesomeIcons.mobileScreenButton,
                 label: l10n.journalImportGroupPhoneNotes,
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xs,
-                  0,
-                  AppSpacing.xs,
-                  AppSpacing.m,
-                ),
-                child: Text(
-                  l10n.journalImportPhoneNotesHint,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.35,
-                  ),
-                ),
-              ),
-              _CompactSourceGrid(
-                sources: _phoneNotes,
+              ChoiceSheetSectionHint(l10n.journalImportPhoneNotesHint),
+              ChoiceSheetCompactGrid<JournalImportSource>(
+                items: _phoneNotes,
                 nameOf: (source) => journalImportSourceName(l10n, source),
                 onPick: pick,
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.icon, required this.label});
-
-  final FaIconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xs,
-        AppSpacing.xl,
-        AppSpacing.xs,
-        AppSpacing.s,
-      ),
-      child: Semantics(
-        header: true,
-        child: Row(
-          children: <Widget>[
-            FaIcon(icon, size: 16, color: theme.colorScheme.primary),
-            const SizedBox(width: AppSpacing.s),
-            Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -259,68 +209,6 @@ class _SourceTile extends StatelessWidget {
           color: colorScheme.onSurfaceVariant,
         ),
       ),
-    );
-  }
-}
-
-/// 两列等宽的紧凑来源按钮（`secondaryContainer` 底色，16dp 圆角，只有名称：
-/// 分组标题已有图标），奇数项时最后一个占半宽靠左；名称过长时缩小字号而
-/// 不折行。
-class _CompactSourceGrid extends StatelessWidget {
-  const _CompactSourceGrid({
-    required this.sources,
-    required this.nameOf,
-    required this.onPick,
-  });
-
-  final List<JournalImportSource> sources;
-  final String Function(JournalImportSource source) nameOf;
-  final ValueChanged<JournalImportSource> onPick;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final width = (constraints.maxWidth - AppSpacing.s) / 2;
-        return Wrap(
-          spacing: AppSpacing.s,
-          runSpacing: AppSpacing.s,
-          children: <Widget>[
-            for (final source in sources)
-              SizedBox(
-                width: width,
-                child: Material(
-                  color: colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(16),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () => onPick(source),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.m,
-                        vertical: AppSpacing.m,
-                      ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          nameOf(source),
-                          maxLines: 1,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSecondaryContainer,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
     );
   }
 }

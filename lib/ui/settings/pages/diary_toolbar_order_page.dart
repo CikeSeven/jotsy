@@ -9,6 +9,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import '../../widgets/expressive_reorder_proxy.dart';
+import '../../widgets/triple_bar_drag_handle.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../widgets/diary_toolbar_overflow_divider.dart';
@@ -368,7 +369,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
                           height: 40,
                           child: ColoredBox(
                             color: Colors.transparent,
-                            child: Center(child: _TripleBarDragHandle()),
+                            child: Center(child: TripleBarDragHandle()),
                           ),
                         ),
                       ),
@@ -501,38 +502,5 @@ class _CurrentTimeFormatDialogState extends State<_CurrentTimeFormatDialog> {
     } catch (_) {
       return l10n.diaryToolbarTimeFormatInvalid;
     }
-  }
-}
-
-/// 三竖线拖拽手柄（替代默认双竖线图标）。
-class _TripleBarDragHandle extends StatelessWidget {
-  const _TripleBarDragHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SizedBox(
-      width: 16,
-      height: 18,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          _buildBar(color),
-          _buildBar(color),
-          _buildBar(color),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBar(Color color) {
-    return Container(
-      width: 2,
-      height: 16,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(1.2),
-      ),
-    );
   }
 }

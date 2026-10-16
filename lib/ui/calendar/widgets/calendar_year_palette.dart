@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/services/settings_service.dart';
+import '../../widgets/mood_band_palette.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
 
@@ -17,7 +18,7 @@ abstract final class CalendarYearPalette {
   static const List<double> _heatAlphas = <double>[0, 0.3, 0.5, 0.72, 1];
 
   /// 心情五段的代表档位（1~10 中每段的上沿），图例用它取对应 emoji。
-  static const List<int> moodBandWeights = <int>[2, 4, 6, 8, 10];
+  static const List<int> moodBandWeights = MoodBandPalette.bandWeights;
 
   static Color emptyColor(ColorScheme colorScheme) =>
       colorScheme.surfaceContainerHighest.withValues(
@@ -31,16 +32,9 @@ abstract final class CalendarYearPalette {
       ? emptyColor(colorScheme)
       : colorScheme.primary.withValues(alpha: _heatAlphas[level.clamp(1, 4)]);
 
-  /// 心情第 [band] 段（0~4，由低到高）的颜色。
-  static Color moodBandColor(ColorScheme colorScheme, int band) {
-    return switch (band) {
-      0 => colorScheme.error.withValues(alpha: 0.85),
-      1 => colorScheme.tertiary.withValues(alpha: 0.75),
-      2 => colorScheme.outline.withValues(alpha: 0.7),
-      3 => colorScheme.primary.withValues(alpha: 0.55),
-      _ => colorScheme.primary,
-    };
-  }
+  /// 心情第 [band] 段（0~4，由低到高）的颜色；与日记卡片的心情色同源。
+  static Color moodBandColor(ColorScheme colorScheme, int band) =>
+      MoodBandPalette.color(colorScheme, band);
 
   static Color pixelColor(
     ColorScheme colorScheme,
@@ -61,7 +55,10 @@ abstract final class CalendarYearPalette {
       ),
       CalendarYearBasis.mood => switch (summary.averageMoodWeight) {
         null => noMoodColor(colorScheme),
-        final weight => moodBandColor(colorScheme, (weight - 1) ~/ 2),
+        final weight => moodBandColor(
+          colorScheme,
+          MoodBandPalette.bandForWeight(weight),
+        ),
       },
     };
   }

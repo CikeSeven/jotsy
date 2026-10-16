@@ -5,7 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_button_group.dart';
-import '../../widgets/expressive_state_blend.dart';
+import '../../widgets/expressive_icon_choice_row.dart';
 import '../models/calendar_display_options.dart';
 
 // 日历显示选项面板中的“日期格”分组：样式图标选择器、样式说明文案与只属于
@@ -45,8 +45,7 @@ FaIconData _cellStyleIcon(CalendarCellStyle style) {
 }
 
 /// 五种日期格样式并排的图标选择器：一行放下，比五个带说明的单选项省出
-/// 大半屏高度，网格在面板上方仍看得见。选中项换 secondaryContainer 底并
-/// 经 [ExpressiveStateBlend] 补间。
+/// 大半屏高度，网格在面板上方仍看得见。
 class CalendarCellStylePicker extends StatelessWidget {
   const CalendarCellStylePicker({
     super.key,
@@ -60,93 +59,17 @@ class CalendarCellStylePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return Row(
-      children: <Widget>[
-        for (final style in CalendarCellStyle.values) ...<Widget>[
-          if (style != CalendarCellStyle.values.first)
-            const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: _CellStyleSwatch(
-              icon: _cellStyleIcon(style),
-              label: _cellStyleLabel(l10n, style),
-              selected: style == selected,
-              onTap: () => onSelected(style),
-            ),
+    return ExpressiveIconChoiceRow<CalendarCellStyle>(
+      choices: <ExpressiveIconChoice<CalendarCellStyle>>[
+        for (final style in CalendarCellStyle.values)
+          ExpressiveIconChoice<CalendarCellStyle>(
+            value: style,
+            icon: _cellStyleIcon(style),
+            label: _cellStyleLabel(l10n, style),
           ),
-        ],
       ],
-    );
-  }
-}
-
-class _CellStyleSwatch extends StatelessWidget {
-  const _CellStyleSwatch({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final FaIconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Semantics(
       selected: selected,
-      inMutuallyExclusiveGroup: true,
-      button: true,
-      child: ExpressiveStateBlend(
-        active: selected,
-        builder: (BuildContext context, double t, Widget? child) {
-          final background = Color.lerp(
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
-            colorScheme.secondaryContainer,
-            t,
-          );
-          final foreground = Color.lerp(
-            colorScheme.onSurfaceVariant,
-            colorScheme.onSecondaryContainer,
-            t,
-          );
-          return Material(
-            color: background,
-            borderRadius: BorderRadius.circular(16),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: onTap,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSpacing.m,
-                  horizontal: AppSpacing.xs,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    FaIcon(icon, size: 18, color: foreground),
-                    const SizedBox(height: 6),
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: foreground,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+      onSelected: onSelected,
     );
   }
 }

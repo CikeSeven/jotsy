@@ -14,7 +14,6 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
-import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/location_resolver_service.dart';
@@ -152,8 +151,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   Object? _cachedQuillEditorInputs;
   bool _locating = false;
   bool _weatherLoading = false;
-  LocationResolverService? _locationResolverService;
-  QWeatherWeatherService? _weatherService;
   late List<DiaryToolbarItem> _toolbarOrder;
   Set<DiaryToolbarItem> _toolbarHiddenItems = <DiaryToolbarItem>{};
   String? _toolbarCurrentTimeFormatPattern;

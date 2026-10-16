@@ -334,7 +334,9 @@ class EditDiaryController {
     }
     _state.setState(() => _state._locating = true);
     try {
-      final service = await _ensureLocationResolverService();
+      final service = await _state.ref.read(
+        locationResolverServiceProvider.future,
+      );
       if (service == null) {
         throw LocationResolveException(
           type: LocationResolveErrorType.missingApiKey,
@@ -390,7 +392,7 @@ class EditDiaryController {
 
     _state.setState(() => _state._weatherLoading = true);
     try {
-      final service = await _ensureWeatherService();
+      final service = await _state.ref.read(weatherServiceProvider.future);
       if (service == null) {
         throw QWeatherException(
           type: QWeatherErrorType.missingConfig,
@@ -639,39 +641,6 @@ class EditDiaryController {
     } catch (_) {
       return null;
     }
-  }
-
-  Future<LocationResolverService?> _ensureLocationResolverService() async {
-    if (_state._locationResolverService != null) {
-      return _state._locationResolverService;
-    }
-    final apiKey = await AMapConfigChannel.getAmapWebApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      return null;
-    }
-    _state._locationResolverService = LocationResolverService(
-      webApiKey: apiKey,
-    );
-    return _state._locationResolverService;
-  }
-
-  Future<QWeatherWeatherService?> _ensureWeatherService() async {
-    if (_state._weatherService != null) {
-      return _state._weatherService;
-    }
-    final apiKey = await AMapConfigChannel.getQWeatherApiKey();
-    final credentialId = await AMapConfigChannel.getQWeatherCredentialId();
-    final apiHost = await AMapConfigChannel.getQWeatherApiHost();
-    if (apiKey == null || apiKey.trim().isEmpty) {
-      return null;
-    }
-    final config = QWeatherConfig(
-      apiKey: apiKey,
-      credentialId: credentialId,
-      apiHost: apiHost,
-    );
-    _state._weatherService = QWeatherWeatherService(config: config);
-    return _state._weatherService;
   }
 
   /// 页面内轻提示。不返回 Future，原因同 PublishDiaryController.showHint：

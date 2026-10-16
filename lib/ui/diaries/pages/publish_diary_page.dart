@@ -12,7 +12,6 @@ import 'package:path/path.dart' as path;
 
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
-import 'package:node_diary/core/services/amap_config_channel.dart';
 import 'package:node_diary/core/services/diary_cover_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -99,8 +98,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   bool _locating = false;
   bool _weatherLoading = false;
   bool _showCapsuleSealOverlay = false;
-  LocationResolverService? _locationResolverService;
-  QWeatherWeatherService? _weatherService;
 
   // ==================== 业务控制器 ====================
   late final PublishDiaryController _controller;

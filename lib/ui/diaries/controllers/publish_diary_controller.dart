@@ -203,43 +203,6 @@ class PublishDiaryController {
     _state.setState(() => _state._locationFromAuto = false);
   }
 
-  /// 获取定位服务实例（按需懒加载，避免页面初始化即做网络准备）。
-  Future<LocationResolverService?> ensureLocationResolverService() async {
-    if (_state._locationResolverService != null) {
-      return _state._locationResolverService;
-    }
-    final apiKey = await AMapConfigChannel.getAmapWebApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      return null;
-    }
-    _state._locationResolverService = LocationResolverService(
-      webApiKey: apiKey,
-    );
-    return _state._locationResolverService;
-  }
-
-  /// 获取天气服务实例（按需懒加载）。
-  Future<QWeatherWeatherService?> ensureWeatherService() async {
-    if (_state._weatherService != null) {
-      return _state._weatherService;
-    }
-
-    final apiKey = await AMapConfigChannel.getQWeatherApiKey();
-    final credentialId = await AMapConfigChannel.getQWeatherCredentialId();
-    final apiHost = await AMapConfigChannel.getQWeatherApiHost();
-    if (apiKey == null || apiKey.trim().isEmpty) {
-      return null;
-    }
-
-    final config = QWeatherConfig(
-      apiKey: apiKey,
-      credentialId: credentialId,
-      apiHost: apiHost,
-    );
-    _state._weatherService = QWeatherWeatherService(config: config);
-    return _state._weatherService;
-  }
-
   /// 选择封面并拷贝到应用私有目录。
   ///
   /// 被替换的旧封面不在这里删除：它可能已写入持久化草稿，进程在草稿更新前
@@ -319,7 +282,9 @@ class PublishDiaryController {
     _state.setState(() => _state._locating = true);
 
     try {
-      final service = await ensureLocationResolverService();
+      final service = await _state.ref.read(
+        locationResolverServiceProvider.future,
+      );
       if (service == null) {
         throw LocationResolveException(
           type: LocationResolveErrorType.missingApiKey,
@@ -373,7 +338,7 @@ class PublishDiaryController {
 
     _state.setState(() => _state._weatherLoading = true);
     try {
-      final service = await ensureWeatherService();
+      final service = await _state.ref.read(weatherServiceProvider.future);
       if (service == null) {
         throw QWeatherException(
           type: QWeatherErrorType.missingConfig,

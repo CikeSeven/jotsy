@@ -57,15 +57,16 @@ class _HomePageState extends ConsumerState<HomePage> {
   int _tabSwitchGeneration = 0;
   bool _isTabSwitching = false;
   String? _shownStartupNotice;
-  final Map<int, Future<void> Function()> _createActionByTab =
-      <int, Future<void> Function()>{};
-  final Map<int, bool> _fabVisibleByTab = <int, bool>{0: true, 1: true};
+
+  /// “新建”FAB 只属于日记页：日历页的日期长按菜单已能在任意一天写日记或
+  /// 时间胶囊，再叠一个 FAB 会挡住当天日记列表的末尾。
+  static const int _createTabIndex = 0;
+
+  Future<void> Function()? _diariesCreateAction;
+  bool _diariesFabVisibleByScroll = true;
   late final ValueNotifier<int> _tabPageConfigRevision;
   late final ValueChanged<Future<void> Function()?> _diariesCreateActionChanged;
-  late final ValueChanged<Future<void> Function()?>
-  _calendarCreateActionChanged;
   late final ValueChanged<bool> _diariesFabVisibilityChanged;
-  late final ValueChanged<bool> _calendarFabVisibilityChanged;
   late final List<Widget> _pages;
   late final _HomePageController _controller;
 
@@ -85,18 +86,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     _tabPageConfigRevision = ValueNotifier<int>(0);
-    _diariesCreateActionChanged = (action) {
-      _handleCreateActionChanged(tabIndex: 0, action: action);
-    };
-    _calendarCreateActionChanged = (action) {
-      _handleCreateActionChanged(tabIndex: 1, action: action);
-    };
-    _diariesFabVisibilityChanged = (visible) {
-      _handleFabVisibilityChanged(tabIndex: 0, visible: visible);
-    };
-    _calendarFabVisibilityChanged = (visible) {
-      _handleFabVisibilityChanged(tabIndex: 1, visible: visible);
-    };
+    _diariesCreateActionChanged = (action) => _diariesCreateAction = action;
+    _diariesFabVisibilityChanged = _handleFabVisibilityChanged;
     _pages = _buildStablePages();
     _controller = _HomePageController(this);
     _controller.init();
@@ -196,8 +187,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         (context) => CalendarPage(
           key: const PageStorageKey<String>('tab_calendar'),
           pageBackgroundColor: Theme.of(context).colorScheme.surface,
-          onCreateActionChanged: _calendarCreateActionChanged,
-          onFabVisibilityChanged: _calendarFabVisibilityChanged,
         ),
       ),
       _buildTabPage(
@@ -374,44 +363,21 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
   }
 
-  void _handleCreateActionChanged({
-    required int tabIndex,
-    required Future<void> Function()? action,
-  }) {
-    if (action == null) {
-      _createActionByTab.remove(tabIndex);
+  /// 日记页随滚动显隐 FAB（下滑收起、上滑或回到顶部时出现）。
+  void _handleFabVisibilityChanged(bool visible) {
+    if (_diariesFabVisibleByScroll == visible) {
       return;
     }
-    _createActionByTab[tabIndex] = action;
-  }
-
-  void _handleFabVisibilityChanged({
-    required int tabIndex,
-    required bool visible,
-  }) {
-    final previous = _fabVisibleByTab[tabIndex];
-    if (previous == visible) {
-      return;
-    }
-    setState(() {
-      _fabVisibleByTab[tabIndex] = visible;
-    });
+    setState(() => _diariesFabVisibleByScroll = visible);
   }
 
   Future<void> _openCreateFromGlobalFab() async {
-    if (!_canUseGlobalCreateFab) {
+    if (!_canUseGlobalCreateFab || _effectiveIndex != _createTabIndex) {
       return;
     }
-    final effectiveIndex = _effectiveIndex;
-    if (effectiveIndex != 0 && effectiveIndex != 1) {
-      return;
-    }
-    final action = _createActionByTab[effectiveIndex];
+    final action = _diariesCreateAction;
     if (action != null) {
       await action();
-      return;
-    }
-    if (effectiveIndex != 0) {
       return;
     }
 
@@ -425,10 +391,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildGlobalCreateFab() {
-    final effectiveIndex = _effectiveIndex;
-    final isCreateTab = effectiveIndex == 0 || effectiveIndex == 1;
-    final followScrollVisibility = _fabVisibleByTab[effectiveIndex] ?? true;
-    final shouldShow = isCreateTab && followScrollVisibility;
+    final shouldShow =
+        _effectiveIndex == _createTabIndex && _diariesFabVisibleByScroll;
     final fabBaseBottomOffset = _fabBottomGapAboveNav;
 
     final hintExtent = HomeHintVisibilityScope.maybeController(

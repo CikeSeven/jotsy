@@ -274,7 +274,7 @@ extension _CalendarPageSections on _CalendarPageState {
                         capsuleUnlockAt: _selectedDay,
                       ),
                     )
-                  : _openCreateFromHomeFab,
+                  : _openCreateForSelectedDay,
               message: isFutureDay ? l10n.autoT0211 : l10n.autoT0182,
               actionLabel: isFutureDay
                   ? l10n.calendarFutureCapsuleAction
@@ -320,7 +320,7 @@ extension _CalendarPageSections on _CalendarPageState {
               ref.watch(diaryCardTagLimitProvider).asData?.value ??
               SettingsService.defaultDiaryCardTagLimit,
           onOpenDiary: openDiary,
-          onCreate: () => unawaited(_openCreateFromHomeFab()),
+          onCreate: () => unawaited(_openCreateForSelectedDay()),
         ),
       ];
     }

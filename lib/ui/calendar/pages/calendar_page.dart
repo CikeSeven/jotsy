@@ -68,28 +68,20 @@ part '../controllers/calendar_filter_actions.dart';
 /// - 组合页头、日历卡片（月/周网格或年视图 + 概览）、选中日标题、当天日记
 ///   （时间线或卡片）与那年今日；区块构建见 calendar_page_sections.dart；
 /// - 监听打点/当日日记/心情配置/显示选项，翻月期间保留上一份数据；
-/// - 注册 Home 层全局 FAB 的“按选中日期新建”动作。
+/// - 不注册 Home 的“新建”FAB：在某天写日记走长按日期菜单或当天的空状态。
 ///
 /// 日期格样式、月度统计等计算在 viewmodels/，网格与日期格绘制在 widgets/，
 /// 选日/翻月/新建/显示选项保存/年视图导出等流程在 controllers/。
 class CalendarPage extends ConsumerStatefulWidget {
-  const CalendarPage({
-    super.key,
-    this.pageBackgroundColor,
-    this.onCreateActionChanged,
-    this.onFabVisibilityChanged,
-  });
+  const CalendarPage({super.key, this.pageBackgroundColor});
 
   final Color? pageBackgroundColor;
-  final ValueChanged<Future<void> Function()?>? onCreateActionChanged;
-  final ValueChanged<bool>? onFabVisibilityChanged;
 
   @override
   ConsumerState<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends ConsumerState<CalendarPage> {
-  static const double _fabToggleScrollThreshold = 26;
   static const double _calendarCardHorizontalPadding = AppSpacing.m;
   static const double _calendarCardTopPadding = AppSpacing.m;
   static const double _calendarBottomGap = AppSpacing.m;
@@ -129,8 +121,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   /// 年视图（点月份标题进入）；与月/周格式相互独立，退出后回到月视图。
   bool _yearMode = false;
   bool _exportingYear = false;
-  bool _fabVisibleByScroll = true;
-  double _fabScrollDeltaAccumulator = 0;
 
   @override
   void initState() {
@@ -147,26 +137,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     if (settings == null) {
       _applyInitialFormatWhenOptionsLoad();
     }
-    widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
-    widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
-  }
-
-  @override
-  void didUpdateWidget(covariant CalendarPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.onCreateActionChanged != widget.onCreateActionChanged) {
-      oldWidget.onCreateActionChanged?.call(null);
-      widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
-    }
-    if (oldWidget.onFabVisibilityChanged != widget.onFabVisibilityChanged) {
-      widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.onCreateActionChanged?.call(null);
-    super.dispose();
   }
 
   /// 设置服务尚未就绪（冷启动直接落在日历页等极端时序）时，等显示选项
@@ -250,60 +220,57 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         children: <Widget>[
           SafeArea(
             top: false,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: _handlePrimaryScrollNotification,
-              child: CustomScrollView(
-                slivers: <Widget>[
-                  SliverToBoxAdapter(child: SizedBox(height: headerHeight)),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        _calendarCardHorizontalPadding,
-                        _calendarCardTopPadding,
-                        _calendarCardHorizontalPadding,
-                        _calendarBottomGap,
-                      ),
-                      child: _buildCalendarPanel(
-                        options: options,
-                        filter: filter,
-                        filterTags: filterTags ?? const <Tag>[],
-                        summaries: summaries,
-                        markersAsync: markersAsync,
-                        moodOptions: moodOptions,
-                        now: now,
-                      ),
+            child: CustomScrollView(
+              slivers: <Widget>[
+                SliverToBoxAdapter(child: SizedBox(height: headerHeight)),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      _calendarCardHorizontalPadding,
+                      _calendarCardTopPadding,
+                      _calendarCardHorizontalPadding,
+                      _calendarBottomGap,
+                    ),
+                    child: _buildCalendarPanel(
+                      options: options,
+                      filter: filter,
+                      filterTags: filterTags ?? const <Tag>[],
+                      summaries: summaries,
+                      markersAsync: markersAsync,
+                      moodOptions: moodOptions,
+                      now: now,
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.m,
-                        0,
-                        AppSpacing.m,
-                        AppSpacing.s,
-                      ),
-                      child: CalendarDayHeading(
-                        day: _selectedDay,
-                        now: now,
-                        lunar:
-                            CalendarMonthGrid.showsLunar(
-                              options.lunarMode,
-                              l10n.localeName,
-                            )
-                            ? CalendarLunarDay.of(_selectedDay)
-                            : null,
-                        entryCount: day.entryCount,
-                        charCount: day.charCount,
-                      ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.m,
+                      0,
+                      AppSpacing.m,
+                      AppSpacing.s,
+                    ),
+                    child: CalendarDayHeading(
+                      day: _selectedDay,
+                      now: now,
+                      lunar:
+                          CalendarMonthGrid.showsLunar(
+                            options.lunarMode,
+                            l10n.localeName,
+                          )
+                          ? CalendarLunarDay.of(_selectedDay)
+                          : null,
+                      entryCount: day.entryCount,
+                      charCount: day.charCount,
                     ),
                   ),
-                  ..._buildDayDiaryContentSlivers(day, options),
-                  if (options.showOnThisDay) _buildOnThisDaySliver(now),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: _listBottomExtraSpace),
-                  ),
-                ],
-              ),
+                ),
+                ..._buildDayDiaryContentSlivers(day, options),
+                if (options.showOnThisDay) _buildOnThisDaySliver(now),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: _listBottomExtraSpace),
+                ),
+              ],
             ),
           ),
           CalendarHeader(
@@ -370,54 +337,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     return _cachedDaySummaries;
   }
 
-  Future<void> _openCreateFromHomeFab() async {
+  /// 在选中日写日记（空状态与时间线里的“写日记”入口）。
+  Future<void> _openCreateForSelectedDay() async {
     await _controller.openCreateEditorWithDraftPrompt();
-  }
-
-  bool _handlePrimaryScrollNotification(ScrollNotification notification) {
-    if (notification.depth != 0 || notification.metrics.axis != Axis.vertical) {
-      return false;
-    }
-
-    if (notification is ScrollEndNotification) {
-      _fabScrollDeltaAccumulator = 0;
-      return false;
-    }
-
-    if (notification is! ScrollUpdateNotification) {
-      return false;
-    }
-    final delta = notification.scrollDelta;
-    if (delta == null || delta.abs() < 0.5) {
-      return false;
-    }
-
-    if (notification.metrics.pixels <= 0) {
-      _fabScrollDeltaAccumulator = 0;
-      _updateFabVisibilityByScroll(true);
-      return false;
-    }
-
-    _fabScrollDeltaAccumulator += delta;
-    if (_fabScrollDeltaAccumulator >= _fabToggleScrollThreshold) {
-      _fabScrollDeltaAccumulator = 0;
-      _updateFabVisibilityByScroll(false);
-      return false;
-    }
-    if (_fabScrollDeltaAccumulator <= -_fabToggleScrollThreshold) {
-      _fabScrollDeltaAccumulator = 0;
-      _updateFabVisibilityByScroll(true);
-      return false;
-    }
-    return false;
-  }
-
-  void _updateFabVisibilityByScroll(bool visible) {
-    if (_fabVisibleByScroll == visible) {
-      return;
-    }
-    _fabVisibleByScroll = visible;
-    widget.onFabVisibilityChanged?.call(visible);
   }
 
   /// 统一的状态提交入口：网格格式在任何路径下（手势、回到今天、翻月、

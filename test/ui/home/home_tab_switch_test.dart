@@ -72,7 +72,37 @@ Future<void> _unmount(WidgetTester tester) async {
   await tester.pump(Duration.zero);
 }
 
+/// 全局“新建”FAB 是否可见且可点（显隐由外层 AnimatedOpacity 与
+/// IgnorePointer 决定，FAB 本身一直挂在树上）。
+bool _createFabShown(WidgetTester tester) {
+  final fab = find.byType(FloatingActionButton);
+  final opacity = tester.widget<AnimatedOpacity>(
+    find.ancestor(of: fab, matching: find.byType(AnimatedOpacity)).first,
+  );
+  final pointer = tester.widget<IgnorePointer>(
+    find.ancestor(of: fab, matching: find.byType(IgnorePointer)).first,
+  );
+  return opacity.opacity == 1 && !pointer.ignoring;
+}
+
 void main() {
+  testWidgets('the create FAB belongs to the diaries tab only', (tester) async {
+    await _pumpHome(tester);
+    final l10n = tester.element(find.byType(HomePage)).l10n;
+    expect(_createFabShown(tester), isTrue);
+
+    // 日历页在长按日期的菜单里新建，不再显示全局 FAB。
+    await tester.tap(find.text(l10n.navCalendar));
+    await tester.pumpAndSettle();
+    expect(_homePage(tester), 1);
+    expect(_createFabShown(tester), isFalse);
+
+    await tester.tap(find.text(l10n.navDiaries));
+    await tester.pumpAndSettle();
+    expect(_createFabShown(tester), isTrue);
+    await _unmount(tester);
+  });
+
   testWidgets('jumping across tabs only animates the final page', (
     tester,
   ) async {

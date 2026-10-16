@@ -23,6 +23,7 @@ class ExpressiveChoiceTile extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.description,
+    this.centerIndicator = false,
     this.destructive = false,
   });
 
@@ -32,6 +33,10 @@ class ExpressiveChoiceTile extends StatelessWidget {
 
   /// 选项后果的简短说明，显示在标题下方。
   final String? description;
+
+  /// 单选圆点相对整个选项垂直居中。说明只是一行示例（如日期格式的实时
+  /// 预览）时使用；默认说明可能折成多行，圆点对齐标题行。
+  final bool centerIndicator;
   final bool destructive;
 
   @override
@@ -61,8 +66,11 @@ class ExpressiveChoiceTile extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.l,
             ),
-            // 说明可能折成多行，圆点对齐标题行而不是整块的垂直中线。
-            titleAlignment: description == null
+            // 说明可能折成多行，圆点对齐标题行而不是整块的垂直中线；说明
+            // 只有一行示例时由调用方要求居中，与没有说明的选项一致。
+            titleAlignment: centerIndicator
+                ? ListTileTitleAlignment.center
+                : description == null
                 ? null
                 : ListTileTitleAlignment.top,
             onTap: onTap,

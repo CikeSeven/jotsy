@@ -16,6 +16,7 @@ import 'package:node_diary/ui/widgets/empty_hint.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
+import '../providers/diary_card_style_provider.dart';
 import '../sections/diary_head_section.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -206,6 +207,8 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                           selectedDiaryIds: _selectedDiaryIds,
                           isSelectionMode: _isSelectionMode,
                           maxVisibleTags: diaryCardTagLimit,
+                          cardStyle: ref.watch(diaryCardStyleProvider),
+                          moodOptions: ref.watch(diaryCardMoodOptionsProvider),
                           onCreate: _controller.noopCreate,
                           onOpenEditor: (diary, coverHero) =>
                               _controller.openPreview(

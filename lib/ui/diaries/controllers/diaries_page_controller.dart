@@ -569,6 +569,28 @@ class DiariesPageController {
         layoutMode: _state._layoutMode,
         onSortModeChanged: _changeSortMode,
         onLayoutModeChanged: _changeLayoutMode,
+        onOpenCardStyle: openCardStyleEditor,
+      ),
+    );
+  }
+
+  /// 从视图选项面板进入卡片样式页，预览并编辑当前所用的布局。
+  void openCardStyleEditor() {
+    final settingsService = _state.ref
+        .read(settingsServiceProvider)
+        .asData
+        ?.value;
+    if (settingsService == null) {
+      return;
+    }
+    Navigator.of(_state.context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => DiaryCardStylePage(
+          settingsService: settingsService,
+          initialMode: _state._layoutMode == DiaryLayoutMode.waterfall
+              ? DiaryCardMode.waterfall
+              : DiaryCardMode.list,
+        ),
       ),
     );
   }

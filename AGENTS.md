@@ -22,8 +22,8 @@
 │  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
 │  │  │  ├─ controllers/             # 业务编排（搜索/筛选/撤销/发布链路等）
 │  │  │  ├─ providers/               # 状态与筛选条件
-│  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态
-│  │  │  └─ sections|widgets/        # 可复用 UI 区块
+│  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态（models/diary_card_style/：卡片样式模型、预设与样式码）
+│  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片）
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ home|calendar|explore|settings/
 │  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载等）
@@ -92,13 +92,16 @@
 - 必须：日记正文排版（字体、字号、行距、字间距、段间距）只存于 `DiaryTypography`（单个 JSON 设置键 `app.settings.diary_typography`，逐字段容错并随备份导出）；编辑页、预览页、发布页与设置预览的 Quill 样式一律经 `DiaryQuillStylesBuilder(appearance: ref.watch(diaryTextAppearanceProvider), …)` 在正文位置生成（禁止用页面 State 的 context 直接调用 `buildDiaryQuillStyles`：那里在 Scaffold 之上，只有 MaterialApp 的红色兜底样式），标题字体经 `DiaryTextAppearance.titleStyle`，禁止页面自行设置正文字号/行距或另加排版设置键。导入字体只经 `DiaryFontStorageService`（应用支持目录 `diary_fonts/`，字体文件不进备份，备份只带字体 id，缺失时回落内置字体）；修改经 `DiaryTypographyController`，滑块拖动只改草稿、松手才提交。规范见 DESIGN.md §3.2。
 - 必须：日历页的显示偏好统一加在 `CalendarDisplayOptions`（单个 JSON 设置键 `calendarDisplayOptionsRaw`，逐字段容错解析并随备份导出），禁止为日历另加零散设置键；新增日期格样式经 `CalendarDayCell` 的填充/描边两种高亮形态实现，视觉规范见 DESIGN.md §5.7。
 - 必须：纪念日存 Drift `anniversaries` 表（业务 id `anniversaryId`；`linkedDiaryId` 存日记业务 id、不建外键），随完整备份导出、覆盖恢复与合并（按 `anniversaryId` 去重），日记包不含纪念日；某天落在哪、下一次是哪天一律经 `AnniversaryCalendar` 推算，禁止页面自行换算公历/农历；纪念日页面与提示统一经 `anniversary_navigation.dart` 打开，关联的日记只经 `watchActiveDiaryWithTags`（排除回收站）读取，彻底删除日记时解除关联。不做提醒通知。
+- 必须：日记卡片外观统一收在 `DiaryCardStyleSettings`（单个 JSON 设置键 `diaryCardStyleRaw`：当前样式 + 最多 12 份“我的样式”，逐字段容错解析，随备份导出与失败回滚），渲染统一经 `DiaryCard` + `DiaryCardResolvedStyle`；禁止各页另拼日记卡片或另加零散的卡片外观设置键（标签显示数量 `diaryCardTagLimit` 为既有独立键）。`DiaryCardStyle.defaults` 必须逐项等于 DESIGN.md §5.1 的默认规格；未解封胶囊只套用表面样式，心情色与标签色回退主题色。编辑入口为设置 → 外观与语言 → 日记卡片样式（日记页视图选项面板有快捷入口）。
 - 必须：日历的法定节假日（休/班）只取自 tyme 的 `LegalHoliday`，经 `CalendarHolidayDay` 读取，开关为 `CalendarDisplayOptions.holidayMode`；数字左上角标统一经 `CalendarCellLeadingBadge` 按优先级取一个，禁止在日期格另加角标位置。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。
 - 必须：亮色/暗色主题都保证文字和图标可读性，不允许出现暗色模式全黑图标等失配。
 - 必须：涉及颜色的 UI 改动必须同步适配暗色主题，禁止硬编码 `Colors.white/Colors.black` 作为固定背景或前景色；优先使用 `colorScheme` 语义色并在明暗主题分别验证。
-- 禁止：使用任何渐变（`LinearGradient`、`RadialGradient`、`SweepGradient`）。
+- 例外：用户自定义的卡片颜色（任意 HEX，只存在于 `DiaryCardStyle`）不算硬编码，但必须有暗色值或经 `DiaryCardColors.deriveDark` 推导，文字经对比度兜底。
+- 禁止：应用界面与默认样式使用任何渐变（`LinearGradient`、`RadialGradient`、`SweepGradient`）。
+- 例外：用户在日记卡片样式中主动开启的两色卡片渐变（默认关闭），只经 `DiaryCardSurfaceSpec` 由 `DiarySelectionSurface` 绘制。
 - 禁止：同一区域叠加多层重模糊导致性能劣化。
 - 例外：可访问性修复或平台组件约束导致偏离时，需在代码注释说明原因。
 

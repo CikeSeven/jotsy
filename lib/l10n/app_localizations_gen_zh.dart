@@ -2753,4 +2753,765 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get diaryTypographySampleBody =>
       '傍晚雨停了，楼下的桂花被洗得格外香。\n回家路上买了一袋糖炒栗子，边走边剥，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。';
+
+  @override
+  String diaryCardDateWithWeekday(String date, String weekday) {
+    return '$date · $weekday';
+  }
+
+  @override
+  String diaryCardDateWithTime(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String diaryCardFooterUpdated(String time) {
+    return '更新于 $time';
+  }
+
+  @override
+  String diaryCardFooterCreated(String time) {
+    return '写于 $time';
+  }
+
+  @override
+  String diaryCardCharCount(String count) {
+    return '$count 字';
+  }
+
+  @override
+  String diaryCardMediaImages(int count) {
+    return '$count 张图片';
+  }
+
+  @override
+  String get diaryCardMediaAudio => '含录音';
+
+  @override
+  String get diaryCardMediaVideo => '含视频';
+
+  @override
+  String get diaryCardMediaAttachment => '含附件';
+
+  @override
+  String diaryCardLocation(String location) {
+    return '地点：$location';
+  }
+
+  @override
+  String get diaryCardStyleTitle => '日记卡片样式';
+
+  @override
+  String diaryCardStyleEntrySubtitle(String name) {
+    return '当前：$name';
+  }
+
+  @override
+  String get diaryCardStyleCustom => '自定义';
+
+  @override
+  String get diaryCardStyleResetDone => '已恢复默认样式';
+
+  @override
+  String get diaryCardStylePreviewLight => '浅色预览';
+
+  @override
+  String get diaryCardStylePreviewDark => '深色预览';
+
+  @override
+  String get diaryCardStylePanelHandle => '选项面板';
+
+  @override
+  String get diaryCardStylePanelCollapsed => '已收起';
+
+  @override
+  String get diaryCardStylePanelHalf => '半展开';
+
+  @override
+  String get diaryCardStylePanelExpanded => '已展开';
+
+  @override
+  String get diaryCardStyleSharedGroup => '所有布局';
+
+  @override
+  String get diaryCardStyleListGroup => '列表专属';
+
+  @override
+  String get diaryCardStyleWaterfallGroup => '瀑布流专属';
+
+  @override
+  String get diaryCardStyleModeFootnote => '在预览上方切换列表或瀑布流，即可调整另一种布局';
+
+  @override
+  String get diaryCardStyleTabPresets => '预设';
+
+  @override
+  String get diaryCardStyleTabLayout => '布局';
+
+  @override
+  String get diaryCardStyleTabCover => '封面';
+
+  @override
+  String get diaryCardStyleTabContent => '内容';
+
+  @override
+  String get diaryCardStyleTabDate => '日期';
+
+  @override
+  String get diaryCardStyleTabOrder => '排序';
+
+  @override
+  String get diaryCardStyleTabText => '字体';
+
+  @override
+  String get diaryCardStyleTabColor => '色彩';
+
+  @override
+  String get diaryCardStyleTabTexture => '质感';
+
+  @override
+  String get diaryCardStylePresetsTitle => '内置风格';
+
+  @override
+  String get diaryCardStylePresetClassic => '经典';
+
+  @override
+  String get diaryCardStylePresetClassicDesc => '默认样式：左侧方图、两行摘要';
+
+  @override
+  String get diaryCardStylePresetCompact => '紧凑';
+
+  @override
+  String get diaryCardStylePresetCompactDesc => '小封面、单行摘要，一屏看到更多';
+
+  @override
+  String get diaryCardStylePresetMagazine => '杂志';
+
+  @override
+  String get diaryCardStylePresetMagazineDesc => '通栏大图、大标题与宽松行距';
+
+  @override
+  String get diaryCardStylePresetMinimal => '极简';
+
+  @override
+  String get diaryCardStylePresetMinimalDesc => '只留文字，没有封面、描边与阴影';
+
+  @override
+  String get diaryCardStylePresetGallery => '画廊';
+
+  @override
+  String get diaryCardStylePresetGalleryDesc => '照片优先：多图拼贴与封面背景';
+
+  @override
+  String get diaryCardStylePresetSticky => '便签';
+
+  @override
+  String get diaryCardStylePresetStickyDesc => '暖黄纸面、顶部色条与小圆角';
+
+  @override
+  String get diaryCardStylePresetJournal => '手账';
+
+  @override
+  String get diaryCardStylePresetJournalDesc => '侧边色条，没有封面时显示日期块';
+
+  @override
+  String get diaryCardStylePresetMood => '心情色';
+
+  @override
+  String get diaryCardStylePresetMoodDesc => '卡片底色与描边随当天心情变化';
+
+  @override
+  String diaryCardStyleApplied(String name) {
+    return '已套用「$name」';
+  }
+
+  @override
+  String get diaryCardStyleSavedTitle => '我的样式';
+
+  @override
+  String get diaryCardStyleSavedEmpty => '把调好的样式保存下来，随时一键切换';
+
+  @override
+  String get diaryCardStyleSaveCurrent => '保存当前样式';
+
+  @override
+  String diaryCardStyleSaveLimit(int count) {
+    return '最多保存 $count 个样式';
+  }
+
+  @override
+  String get diaryCardStyleSaveDialogTitle => '保存样式';
+
+  @override
+  String get diaryCardStyleRenameDialogTitle => '重命名样式';
+
+  @override
+  String get diaryCardStyleNameLabel => '样式名称';
+
+  @override
+  String diaryCardStyleDefaultName(int count) {
+    return '我的样式 $count';
+  }
+
+  @override
+  String get diaryCardStyleRename => '重命名';
+
+  @override
+  String diaryCardStyleSavedDone(String name) {
+    return '已保存「$name」';
+  }
+
+  @override
+  String diaryCardStyleDeletedDone(String name) {
+    return '已删除「$name」';
+  }
+
+  @override
+  String diaryCardStyleSavedActions(String name) {
+    return '「$name」的更多操作';
+  }
+
+  @override
+  String get diaryCardStyleShareTitle => '分享与导入';
+
+  @override
+  String get diaryCardStyleCopyCode => '复制样式码';
+
+  @override
+  String get diaryCardStyleCopyCodeSubtitle => '发给朋友，或留作这套样式的备份';
+
+  @override
+  String get diaryCardStyleImportCode => '从剪贴板导入';
+
+  @override
+  String get diaryCardStyleImportCodeSubtitle => '套用别人分享的样式码';
+
+  @override
+  String get diaryCardStyleCodeCopied => '样式码已复制';
+
+  @override
+  String get diaryCardStyleImportEmpty => '剪贴板是空的';
+
+  @override
+  String get diaryCardStyleImportInvalid => '剪贴板里没有可用的样式码';
+
+  @override
+  String get diaryCardStyleImportNewer => '已导入，部分来自新版本的设置可能未生效';
+
+  @override
+  String get diaryCardStyleImported => '已导入样式';
+
+  @override
+  String diaryCardStyleImportedNamed(String name) {
+    return '已导入「$name」';
+  }
+
+  @override
+  String get diaryCardStyleCornerRadius => '卡片圆角';
+
+  @override
+  String get diaryCardStyleTextAlign => '文字对齐';
+
+  @override
+  String get diaryCardStyleAlignStart => '居左';
+
+  @override
+  String get diaryCardStyleAlignCenter => '居中';
+
+  @override
+  String get diaryCardStylePaddingH => '左右内边距';
+
+  @override
+  String get diaryCardStylePaddingV => '上下内边距';
+
+  @override
+  String get diaryCardStyleElementGap => '内容间距';
+
+  @override
+  String get diaryCardStyleCardGap => '卡片间距';
+
+  @override
+  String get diaryCardStyleSideMargin => '屏幕边距';
+
+  @override
+  String get diaryCardStyleColumns => '列数';
+
+  @override
+  String diaryCardStyleColumnsValue(int count) {
+    return '$count 列';
+  }
+
+  @override
+  String get diaryCardStyleColumnsFootnote => '屏幕较窄或字号较大时会自动减少列数';
+
+  @override
+  String get diaryCardStyleCoverPosition => '封面位置';
+
+  @override
+  String get diaryCardStyleCoverStart => '左侧';
+
+  @override
+  String get diaryCardStyleCoverEnd => '右侧';
+
+  @override
+  String get diaryCardStyleCoverTop => '顶部';
+
+  @override
+  String get diaryCardStyleCoverBackground => '背景';
+
+  @override
+  String get diaryCardStyleCoverHidden => '隐藏';
+
+  @override
+  String get diaryCardStyleCoverSize => '封面大小';
+
+  @override
+  String get diaryCardStyleCoverSizeFootnote => '窄屏上封面会自动缩小，给文字留出空间';
+
+  @override
+  String get diaryCardStyleCoverShape => '封面形状';
+
+  @override
+  String get diaryCardStyleShapeSquare => '方形';
+
+  @override
+  String get diaryCardStyleShapeLandscape => '横向';
+
+  @override
+  String get diaryCardStyleShapePortrait => '竖向';
+
+  @override
+  String get diaryCardStyleShapeCircle => '圆形';
+
+  @override
+  String get diaryCardStyleCoverRadius => '封面圆角';
+
+  @override
+  String get diaryCardStyleCoverHeight => '封面高度';
+
+  @override
+  String get diaryCardStyleCoverInset => '内缩封面';
+
+  @override
+  String get diaryCardStyleCoverInsetSubtitle => '封面留出边距并带圆角，而不是贴边通栏';
+
+  @override
+  String get diaryCardStyleCoverDivider => '封面下的分隔线';
+
+  @override
+  String get diaryCardStyleCoverGap => '封面与文字的间距';
+
+  @override
+  String get diaryCardStyleScrim => '文字底板浓度';
+
+  @override
+  String get diaryCardStyleCollage => '多图拼贴';
+
+  @override
+  String get diaryCardStyleCollageSubtitle => '顶部封面最多拼入三张正文图片';
+
+  @override
+  String get diaryCardStyleCoverFallback => '没有封面时';
+
+  @override
+  String get diaryCardStyleFallbackNone => '留空';
+
+  @override
+  String get diaryCardStyleFallbackDate => '日期块';
+
+  @override
+  String get diaryCardStyleFallbackMood => '心情块';
+
+  @override
+  String get diaryCardStyleShowTitle => '显示标题';
+
+  @override
+  String get diaryCardStyleShowUntitled => '没有标题时显示“无标题”';
+
+  @override
+  String get diaryCardStyleShowUntitledSubtitle => '关闭后直接省略标题行';
+
+  @override
+  String get diaryCardStyleShowPreview => '显示摘要';
+
+  @override
+  String get diaryCardStyleTitleLines => '标题最多行数';
+
+  @override
+  String get diaryCardStylePreviewLines => '摘要最多行数';
+
+  @override
+  String diaryCardStyleLinesValue(int count) {
+    return '$count 行';
+  }
+
+  @override
+  String get diaryCardStyleTagStyle => '标签样式';
+
+  @override
+  String get diaryCardStyleTagChip => '胶囊';
+
+  @override
+  String get diaryCardStyleTagPlain => '文字';
+
+  @override
+  String get diaryCardStyleTagDot => '圆点';
+
+  @override
+  String get diaryCardStylePinnedBadge => '置顶标记';
+
+  @override
+  String get diaryCardStylePinnedStandard => '图标和文字';
+
+  @override
+  String get diaryCardStylePinnedIcon => '仅图标';
+
+  @override
+  String get diaryCardStylePinnedHidden => '不显示';
+
+  @override
+  String get diaryCardStylePinnedTint => '置顶卡片着色';
+
+  @override
+  String get diaryCardStylePinnedTintSubtitle => '淡淡的主题色底色与描边';
+
+  @override
+  String get diaryCardStyleShowMood => '显示心情';
+
+  @override
+  String get diaryCardStyleShowWeather => '显示天气';
+
+  @override
+  String get diaryCardStyleIndicatorStyle => '心情与天气';
+
+  @override
+  String get diaryCardStyleIndicatorStamp => '印章';
+
+  @override
+  String get diaryCardStyleIndicatorPlain => '仅图标';
+
+  @override
+  String get diaryCardStyleMetaPosition => '心情与天气位置';
+
+  @override
+  String get diaryCardStyleMetaEyebrow => '日期行';
+
+  @override
+  String get diaryCardStyleMetaFooter => '底栏';
+
+  @override
+  String get diaryCardStyleMetaCover => '封面上';
+
+  @override
+  String get diaryCardStyleExtras => '底栏附加信息';
+
+  @override
+  String get diaryCardStyleShowLocation => '地点';
+
+  @override
+  String get diaryCardStyleShowEnergy => '精力';
+
+  @override
+  String get diaryCardStyleShowWordCount => '字数';
+
+  @override
+  String get diaryCardStyleShowMedia => '图片与附件标记';
+
+  @override
+  String get diaryCardStyleShowDate => '显示日期';
+
+  @override
+  String get diaryCardStyleDateFormat => '日期格式';
+
+  @override
+  String get diaryCardStyleDateEyebrow => '月日';
+
+  @override
+  String get diaryCardStyleDateFull => '完整日期';
+
+  @override
+  String get diaryCardStyleDateNumeric => '数字日期';
+
+  @override
+  String get diaryCardStyleDateRelative => '相对时间';
+
+  @override
+  String get diaryCardStyleShowWeekday => '显示星期';
+
+  @override
+  String get diaryCardStyleShowTime => '显示时刻';
+
+  @override
+  String get diaryCardStyleRelativeNote => '相对时间不附带星期与时刻';
+
+  @override
+  String get diaryCardStyleDateSource => '日期依据';
+
+  @override
+  String get diaryCardStyleDateCreated => '写下的时间';
+
+  @override
+  String get diaryCardStyleDateUpdated => '最后修改';
+
+  @override
+  String get diaryCardStyleFooterTime => '底栏时间';
+
+  @override
+  String get diaryCardStyleFooterRelative => '多久前更新';
+
+  @override
+  String get diaryCardStyleFooterUpdated => '更新时间';
+
+  @override
+  String get diaryCardStyleFooterCreated => '写下时间';
+
+  @override
+  String get diaryCardStyleFooterHidden => '不显示';
+
+  @override
+  String get diaryCardStyleOrderHint => '拖动右侧手柄，调整卡片里各部分的上下顺序';
+
+  @override
+  String get diaryCardStyleBlockEyebrow => '日期行';
+
+  @override
+  String get diaryCardStyleBlockTitle => '标题';
+
+  @override
+  String get diaryCardStyleBlockTags => '标签';
+
+  @override
+  String get diaryCardStyleBlockPreview => '摘要';
+
+  @override
+  String get diaryCardStyleBlockFooter => '底栏';
+
+  @override
+  String get diaryCardStyleOrderReset => '恢复默认顺序';
+
+  @override
+  String diaryCardStyleDragHandle(String name) {
+    return '拖动调整「$name」的位置';
+  }
+
+  @override
+  String get diaryCardStyleTitleSize => '标题字号';
+
+  @override
+  String get diaryCardStyleTitleWeight => '标题字重';
+
+  @override
+  String get diaryCardStyleWeightRegular => '常规';
+
+  @override
+  String get diaryCardStyleWeightMedium => '中等';
+
+  @override
+  String get diaryCardStyleWeightBold => '粗体';
+
+  @override
+  String get diaryCardStylePreviewSize => '摘要字号';
+
+  @override
+  String get diaryCardStyleLineHeight => '摘要行距';
+
+  @override
+  String get diaryCardStyleLineCompact => '紧凑';
+
+  @override
+  String get diaryCardStyleLineStandard => '标准';
+
+  @override
+  String get diaryCardStyleLineRelaxed => '宽松';
+
+  @override
+  String get diaryCardStyleMetaSize => '辅助文字大小';
+
+  @override
+  String get diaryCardStyleTitleColor => '标题颜色';
+
+  @override
+  String get diaryCardStyleBodyColor => '正文颜色';
+
+  @override
+  String get diaryCardStyleEnsureContrast => '自动保证可读';
+
+  @override
+  String get diaryCardStyleEnsureContrastSubtitle => '文字颜色与卡片底色太接近时，自动换成清晰的颜色';
+
+  @override
+  String get diaryCardStyleBackground => '卡片底色';
+
+  @override
+  String get diaryCardStyleOpacity => '卡片不透明度';
+
+  @override
+  String get diaryCardStyleGradient => '渐变底色';
+
+  @override
+  String get diaryCardStyleGradientSubtitle => '从卡片底色过渡到第二种颜色';
+
+  @override
+  String get diaryCardStyleGradientEnd => '渐变的第二种颜色';
+
+  @override
+  String get diaryCardStyleGradientDirection => '渐变方向';
+
+  @override
+  String get diaryCardStyleDirectionVertical => '竖向';
+
+  @override
+  String get diaryCardStyleDirectionHorizontal => '横向';
+
+  @override
+  String get diaryCardStyleDirectionDiagonal => '斜向';
+
+  @override
+  String get diaryCardStyleBorderWidth => '描边粗细';
+
+  @override
+  String get diaryCardStyleBorderColor => '描边颜色';
+
+  @override
+  String get diaryCardStyleAccentBar => '强调色条';
+
+  @override
+  String get diaryCardStyleAccentNone => '无';
+
+  @override
+  String get diaryCardStyleAccentStart => '侧边';
+
+  @override
+  String get diaryCardStyleAccentTop => '顶部';
+
+  @override
+  String get diaryCardStyleAccentWidth => '色条宽度';
+
+  @override
+  String get diaryCardStyleAccentColor => '色条颜色';
+
+  @override
+  String get diaryCardStyleShadow => '阴影';
+
+  @override
+  String get diaryCardStyleShadowThemed => '默认';
+
+  @override
+  String get diaryCardStyleShadowNone => '无';
+
+  @override
+  String get diaryCardStyleShadowSoft => '柔和';
+
+  @override
+  String get diaryCardStyleShadowFloating => '悬浮';
+
+  @override
+  String get diaryCardStyleShadowCustom => '自定义';
+
+  @override
+  String get diaryCardStyleShadowElevation => '阴影高度';
+
+  @override
+  String get diaryCardStyleShadowColor => '阴影颜色';
+
+  @override
+  String get diaryCardStyleSourceTheme => '默认';
+
+  @override
+  String get diaryCardStyleSourcePrimary => '主色';
+
+  @override
+  String get diaryCardStyleSourceSecondary => '次色';
+
+  @override
+  String get diaryCardStyleSourceTertiary => '第三色';
+
+  @override
+  String get diaryCardStyleSourceMood => '心情';
+
+  @override
+  String get diaryCardStyleSourceTag => '首个标签';
+
+  @override
+  String get diaryCardStyleSourceCustom => '自定义';
+
+  @override
+  String get diaryCardStyleSourceMoodHint => '按每篇日记的心情取色；没有心情时用默认颜色';
+
+  @override
+  String get diaryCardStyleSourceTagHint => '取每篇日记第一个标签的颜色';
+
+  @override
+  String get diaryCardStyleStrength => '浓度';
+
+  @override
+  String get diaryCardStyleEditColor => '编辑颜色';
+
+  @override
+  String get diaryCardStyleColorDarkAuto => '深色模式自动配色';
+
+  @override
+  String get diaryCardStyleColorDarkAutoSubtitle => '按浅色值推导出暗色下易读的颜色';
+
+  @override
+  String get diaryCardStyleHexLabel => 'HEX 颜色';
+
+  @override
+  String get diaryCardStyleHexInvalid => '请输入 6 位十六进制颜色，如 FFB300';
+
+  @override
+  String get diaryCardStyleSheetSection => '卡片样式';
+
+  @override
+  String get diaryCardStyleSheetEntry => '自定义卡片样式';
+
+  @override
+  String get diaryCardStyleSheetEntrySubtitle => '封面、文字、颜色与排版';
+
+  @override
+  String get diaryCardStyleSampleTitle1 => '海边的黄昏';
+
+  @override
+  String get diaryCardStyleSampleBody1 => '傍晚沿着海岸走了很久，浪声一阵一阵，天色从橙色慢慢变成淡紫。';
+
+  @override
+  String get diaryCardStyleSampleTitle2 => '周末去爬山';
+
+  @override
+  String get diaryCardStyleSampleBody2 => '山顶风很大，拍了好多照片，还录下了一段风声。下山时腿已经开始发软。';
+
+  @override
+  String get diaryCardStyleSampleTitle3 => '一个下雨的工作日，在咖啡馆里重新整理了这周的计划';
+
+  @override
+  String get diaryCardStyleSampleBody3 => '把这周要做的事重新排了一遍，顺手记下几个想法。晚上早点休息。';
+
+  @override
+  String get diaryCardStyleSampleBody4 =>
+      '下班路上看见一只橘猫趴在台阶上晒太阳，眯着眼睛的样子让人也跟着放松下来。';
+
+  @override
+  String get diaryCardStyleSampleCapsuleTitle => '写给一年后的自己';
+
+  @override
+  String get diaryCardStyleSampleTag1 => '旅行';
+
+  @override
+  String get diaryCardStyleSampleTag2 => '生活';
+
+  @override
+  String get diaryCardStyleSampleTag3 => '读书';
+
+  @override
+  String get diaryCardStyleSampleLocation => '海边栈道';
+
+  @override
+  String diaryCardStyleValueDp(String value) {
+    return '${value}dp';
+  }
+
+  @override
+  String diaryCardStyleValuePercent(String value) {
+    return '$value%';
+  }
 }

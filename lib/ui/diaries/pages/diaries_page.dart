@@ -21,6 +21,9 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
+import '../../settings/pages/diary_card_style_page.dart';
+import '../models/diary_card_style/diary_card_style.dart';
+import '../providers/diary_card_style_provider.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_view_options_sheet.dart';
@@ -417,6 +420,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       isSelectionMode: _isSelectionMode,
                                       selectedDiaryIds: _selectedDiaryIds,
                                       maxVisibleTags: diaryCardTagLimit,
+                                      cardStyle: ref.watch(
+                                        diaryCardStyleProvider,
+                                      ),
+                                      moodOptions: ref.watch(
+                                        diaryCardMoodOptionsProvider,
+                                      ),
                                       pendingHideDiaryIds: _pendingHideDiaryIds,
                                       appearingDiaryIds: _appearingDiaryIds,
                                       onCreate: () => unawaited(

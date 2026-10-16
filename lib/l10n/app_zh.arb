@@ -3951,5 +3951,1071 @@
   "diaryTypographySampleBody": "傍晚雨停了，楼下的桂花被洗得格外香。\n回家路上买了一袋糖炒栗子，边走边剥，手心一直是暖的。\n今天没有什么大事，但每一刻都很踏实，想把它记下来。",
   "@diaryTypographySampleBody": {
     "description": "正文排版预览：示例正文，用换行分段以展示段间距。"
+  },
+  "diaryCardDateWithWeekday": "{date} · {weekday}",
+  "@diaryCardDateWithWeekday": {
+    "description": "日记卡片眉线：日期后附星期（自定义日期格式时使用）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardDateWithTime": "{date} {time}",
+  "@diaryCardDateWithTime": {
+    "description": "日记卡片眉线：日期后附时刻（HH:mm）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardFooterUpdated": "更新于 {time}",
+  "@diaryCardFooterUpdated": {
+    "description": "日记卡片底栏：最后更新的具体时间。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardFooterCreated": "写于 {time}",
+  "@diaryCardFooterCreated": {
+    "description": "日记卡片底栏：日记的发布时间。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardCharCount": "{count} 字",
+  "@diaryCardCharCount": {
+    "description": "日记卡片底栏：正文字数（已格式化的数字）。",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardMediaImages": "{count} 张图片",
+  "@diaryCardMediaImages": {
+    "description": "日记卡片媒体角标的读屏文字：正文里的图片数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardMediaAudio": "含录音",
+  "@diaryCardMediaAudio": {
+    "description": "日记卡片媒体角标的读屏文字：正文里有录音。"
+  },
+  "diaryCardMediaVideo": "含视频",
+  "@diaryCardMediaVideo": {
+    "description": "日记卡片媒体角标的读屏文字：正文里有视频。"
+  },
+  "diaryCardMediaAttachment": "含附件",
+  "@diaryCardMediaAttachment": {
+    "description": "日记卡片媒体角标的读屏文字：正文里有附件。"
+  },
+  "diaryCardLocation": "地点：{location}",
+  "@diaryCardLocation": {
+    "description": "日记卡片底栏地点的读屏文字。",
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleTitle": "日记卡片样式",
+  "@diaryCardStyleTitle": {
+    "description": "日记卡片样式设置页的标题，也是外观设置里的入口名称。"
+  },
+  "diaryCardStyleEntrySubtitle": "当前：{name}",
+  "@diaryCardStyleEntrySubtitle": {
+    "description": "外观设置里卡片样式入口的副标题：当前样式名。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleCustom": "自定义",
+  "@diaryCardStyleCustom": {
+    "description": "当前卡片样式不是任何预设或已保存样式时的名称。"
+  },
+  "diaryCardStyleResetDone": "已恢复默认样式",
+  "@diaryCardStyleResetDone": {
+    "description": "日记卡片样式设置页：点“重置”后的提示（可撤销）。"
+  },
+  "diaryCardStylePreviewLight": "浅色预览",
+  "@diaryCardStylePreviewLight": {
+    "description": "日记卡片样式设置页：预览切换为浅色主题的按钮提示。"
+  },
+  "diaryCardStylePreviewDark": "深色预览",
+  "@diaryCardStylePreviewDark": {
+    "description": "日记卡片样式设置页：预览切换为深色主题的按钮提示。"
+  },
+  "diaryCardStylePanelHandle": "选项面板",
+  "@diaryCardStylePanelHandle": {
+    "description": "日记卡片样式设置页：选项面板拖动条的读屏名称（拖动或点按可调整面板高度）。"
+  },
+  "diaryCardStylePanelCollapsed": "已收起",
+  "@diaryCardStylePanelCollapsed": {
+    "description": "日记卡片样式设置页：选项面板收到底部、只露出标签栏时的读屏状态。"
+  },
+  "diaryCardStylePanelHalf": "半展开",
+  "@diaryCardStylePanelHalf": {
+    "description": "日记卡片样式设置页：选项面板停在中间、与预览各占一部分时的读屏状态。"
+  },
+  "diaryCardStylePanelExpanded": "已展开",
+  "@diaryCardStylePanelExpanded": {
+    "description": "日记卡片样式设置页：选项面板展开到顶部、盖住预览时的读屏状态。"
+  },
+  "diaryCardStyleSharedGroup": "所有布局",
+  "@diaryCardStyleSharedGroup": {
+    "description": "日记卡片样式设置页：对列表和瀑布流都生效的选项分组标题。"
+  },
+  "diaryCardStyleListGroup": "列表专属",
+  "@diaryCardStyleListGroup": {
+    "description": "日记卡片样式设置页：只对列表布局生效的选项分组标题。"
+  },
+  "diaryCardStyleWaterfallGroup": "瀑布流专属",
+  "@diaryCardStyleWaterfallGroup": {
+    "description": "日记卡片样式设置页：只对瀑布流布局生效的选项分组标题。"
+  },
+  "diaryCardStyleModeFootnote": "在预览上方切换列表或瀑布流，即可调整另一种布局",
+  "@diaryCardStyleModeFootnote": {
+    "description": "日记卡片样式设置页：布局专属分组下方的说明。"
+  },
+  "diaryCardStyleTabPresets": "预设",
+  "@diaryCardStyleTabPresets": {
+    "description": "日记卡片样式设置页：标签页“预设”。"
+  },
+  "diaryCardStyleTabLayout": "布局",
+  "@diaryCardStyleTabLayout": {
+    "description": "日记卡片样式设置页：标签页“布局”。"
+  },
+  "diaryCardStyleTabCover": "封面",
+  "@diaryCardStyleTabCover": {
+    "description": "日记卡片样式设置页：标签页“封面”。"
+  },
+  "diaryCardStyleTabContent": "内容",
+  "@diaryCardStyleTabContent": {
+    "description": "日记卡片样式设置页：标签页“内容”。"
+  },
+  "diaryCardStyleTabDate": "日期",
+  "@diaryCardStyleTabDate": {
+    "description": "日记卡片样式设置页：标签页“日期”。"
+  },
+  "diaryCardStyleTabOrder": "排序",
+  "@diaryCardStyleTabOrder": {
+    "description": "日记卡片样式设置页：标签页“排序”。"
+  },
+  "diaryCardStyleTabText": "字体",
+  "@diaryCardStyleTabText": {
+    "description": "日记卡片样式设置页：标签页“字体”。"
+  },
+  "diaryCardStyleTabColor": "色彩",
+  "@diaryCardStyleTabColor": {
+    "description": "日记卡片样式设置页：标签页“色彩”。"
+  },
+  "diaryCardStyleTabTexture": "质感",
+  "@diaryCardStyleTabTexture": {
+    "description": "日记卡片样式设置页：标签页“质感”。"
+  },
+  "diaryCardStylePresetsTitle": "内置风格",
+  "@diaryCardStylePresetsTitle": {
+    "description": "日记卡片样式设置页：内置预设分组标题。"
+  },
+  "diaryCardStylePresetClassic": "经典",
+  "@diaryCardStylePresetClassic": {
+    "description": "日记卡片样式设置页：内置预设“经典”的名称。"
+  },
+  "diaryCardStylePresetClassicDesc": "默认样式：左侧方图、两行摘要",
+  "@diaryCardStylePresetClassicDesc": {
+    "description": "日记卡片样式设置页：内置预设“经典”的一句话说明。"
+  },
+  "diaryCardStylePresetCompact": "紧凑",
+  "@diaryCardStylePresetCompact": {
+    "description": "日记卡片样式设置页：内置预设“紧凑”的名称。"
+  },
+  "diaryCardStylePresetCompactDesc": "小封面、单行摘要，一屏看到更多",
+  "@diaryCardStylePresetCompactDesc": {
+    "description": "日记卡片样式设置页：内置预设“紧凑”的一句话说明。"
+  },
+  "diaryCardStylePresetMagazine": "杂志",
+  "@diaryCardStylePresetMagazine": {
+    "description": "日记卡片样式设置页：内置预设“杂志”的名称。"
+  },
+  "diaryCardStylePresetMagazineDesc": "通栏大图、大标题与宽松行距",
+  "@diaryCardStylePresetMagazineDesc": {
+    "description": "日记卡片样式设置页：内置预设“杂志”的一句话说明。"
+  },
+  "diaryCardStylePresetMinimal": "极简",
+  "@diaryCardStylePresetMinimal": {
+    "description": "日记卡片样式设置页：内置预设“极简”的名称。"
+  },
+  "diaryCardStylePresetMinimalDesc": "只留文字，没有封面、描边与阴影",
+  "@diaryCardStylePresetMinimalDesc": {
+    "description": "日记卡片样式设置页：内置预设“极简”的一句话说明。"
+  },
+  "diaryCardStylePresetGallery": "画廊",
+  "@diaryCardStylePresetGallery": {
+    "description": "日记卡片样式设置页：内置预设“画廊”的名称。"
+  },
+  "diaryCardStylePresetGalleryDesc": "照片优先：多图拼贴与封面背景",
+  "@diaryCardStylePresetGalleryDesc": {
+    "description": "日记卡片样式设置页：内置预设“画廊”的一句话说明。"
+  },
+  "diaryCardStylePresetSticky": "便签",
+  "@diaryCardStylePresetSticky": {
+    "description": "日记卡片样式设置页：内置预设“便签”的名称。"
+  },
+  "diaryCardStylePresetStickyDesc": "暖黄纸面、顶部色条与小圆角",
+  "@diaryCardStylePresetStickyDesc": {
+    "description": "日记卡片样式设置页：内置预设“便签”的一句话说明。"
+  },
+  "diaryCardStylePresetJournal": "手账",
+  "@diaryCardStylePresetJournal": {
+    "description": "日记卡片样式设置页：内置预设“手账”的名称。"
+  },
+  "diaryCardStylePresetJournalDesc": "侧边色条，没有封面时显示日期块",
+  "@diaryCardStylePresetJournalDesc": {
+    "description": "日记卡片样式设置页：内置预设“手账”的一句话说明。"
+  },
+  "diaryCardStylePresetMood": "心情色",
+  "@diaryCardStylePresetMood": {
+    "description": "日记卡片样式设置页：内置预设“心情色”的名称。"
+  },
+  "diaryCardStylePresetMoodDesc": "卡片底色与描边随当天心情变化",
+  "@diaryCardStylePresetMoodDesc": {
+    "description": "日记卡片样式设置页：内置预设“心情色”的一句话说明。"
+  },
+  "diaryCardStyleApplied": "已套用「{name}」",
+  "@diaryCardStyleApplied": {
+    "description": "日记卡片样式设置页：套用预设或我的样式后的提示（可撤销）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleSavedTitle": "我的样式",
+  "@diaryCardStyleSavedTitle": {
+    "description": "日记卡片样式设置页：用户保存的样式分组标题。"
+  },
+  "diaryCardStyleSavedEmpty": "把调好的样式保存下来，随时一键切换",
+  "@diaryCardStyleSavedEmpty": {
+    "description": "日记卡片样式设置页：还没有保存样式时的提示。"
+  },
+  "diaryCardStyleSaveCurrent": "保存当前样式",
+  "@diaryCardStyleSaveCurrent": {
+    "description": "日记卡片样式设置页：把当前样式保存为我的样式的按钮。"
+  },
+  "diaryCardStyleSaveLimit": "最多保存 {count} 个样式",
+  "@diaryCardStyleSaveLimit": {
+    "description": "日记卡片样式设置页：我的样式已达上限时的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleSaveDialogTitle": "保存样式",
+  "@diaryCardStyleSaveDialogTitle": {
+    "description": "日记卡片样式设置页：保存样式对话框的标题。"
+  },
+  "diaryCardStyleRenameDialogTitle": "重命名样式",
+  "@diaryCardStyleRenameDialogTitle": {
+    "description": "日记卡片样式设置页：重命名样式对话框的标题。"
+  },
+  "diaryCardStyleNameLabel": "样式名称",
+  "@diaryCardStyleNameLabel": {
+    "description": "日记卡片样式设置页：样式名称输入框的标签。"
+  },
+  "diaryCardStyleDefaultName": "我的样式 {count}",
+  "@diaryCardStyleDefaultName": {
+    "description": "日记卡片样式设置页：保存样式时预填的名称，count 为序号。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleRename": "重命名",
+  "@diaryCardStyleRename": {
+    "description": "日记卡片样式设置页：我的样式菜单中的重命名。"
+  },
+  "diaryCardStyleSavedDone": "已保存「{name}」",
+  "@diaryCardStyleSavedDone": {
+    "description": "日记卡片样式设置页：保存样式后的提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleDeletedDone": "已删除「{name}」",
+  "@diaryCardStyleDeletedDone": {
+    "description": "日记卡片样式设置页：删除我的样式后的提示（可撤销）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleSavedActions": "「{name}」的更多操作",
+  "@diaryCardStyleSavedActions": {
+    "description": "日记卡片样式设置页：我的样式条目菜单按钮的提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleShareTitle": "分享与导入",
+  "@diaryCardStyleShareTitle": {
+    "description": "日记卡片样式设置页：样式码分享与导入分组标题。"
+  },
+  "diaryCardStyleCopyCode": "复制样式码",
+  "@diaryCardStyleCopyCode": {
+    "description": "日记卡片样式设置页：把当前样式复制为样式码。"
+  },
+  "diaryCardStyleCopyCodeSubtitle": "发给朋友，或留作这套样式的备份",
+  "@diaryCardStyleCopyCodeSubtitle": {
+    "description": "日记卡片样式设置页：复制样式码的说明。"
+  },
+  "diaryCardStyleImportCode": "从剪贴板导入",
+  "@diaryCardStyleImportCode": {
+    "description": "日记卡片样式设置页：从剪贴板导入样式码。"
+  },
+  "diaryCardStyleImportCodeSubtitle": "套用别人分享的样式码",
+  "@diaryCardStyleImportCodeSubtitle": {
+    "description": "日记卡片样式设置页：导入样式码的说明。"
+  },
+  "diaryCardStyleCodeCopied": "样式码已复制",
+  "@diaryCardStyleCodeCopied": {
+    "description": "日记卡片样式设置页：复制样式码后的提示。"
+  },
+  "diaryCardStyleImportEmpty": "剪贴板是空的",
+  "@diaryCardStyleImportEmpty": {
+    "description": "日记卡片样式设置页：导入时剪贴板没有内容的提示。"
+  },
+  "diaryCardStyleImportInvalid": "剪贴板里没有可用的样式码",
+  "@diaryCardStyleImportInvalid": {
+    "description": "日记卡片样式设置页：导入时剪贴板里没有有效样式码的提示。"
+  },
+  "diaryCardStyleImportNewer": "已导入，部分来自新版本的设置可能未生效",
+  "@diaryCardStyleImportNewer": {
+    "description": "日记卡片样式设置页：导入新版本应用导出的样式码后的提示（可撤销）。"
+  },
+  "diaryCardStyleImported": "已导入样式",
+  "@diaryCardStyleImported": {
+    "description": "日记卡片样式设置页：导入样式码后的提示（可撤销）。"
+  },
+  "diaryCardStyleImportedNamed": "已导入「{name}」",
+  "@diaryCardStyleImportedNamed": {
+    "description": "日记卡片样式设置页：导入带名称的样式码后的提示（可撤销）。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleCornerRadius": "卡片圆角",
+  "@diaryCardStyleCornerRadius": {
+    "description": "日记卡片样式设置页：卡片圆角大小。"
+  },
+  "diaryCardStyleTextAlign": "文字对齐",
+  "@diaryCardStyleTextAlign": {
+    "description": "日记卡片样式设置页：卡片文字的对齐方式。"
+  },
+  "diaryCardStyleAlignStart": "居左",
+  "@diaryCardStyleAlignStart": {
+    "description": "日记卡片样式设置页：文字靠起始边对齐。"
+  },
+  "diaryCardStyleAlignCenter": "居中",
+  "@diaryCardStyleAlignCenter": {
+    "description": "日记卡片样式设置页：文字居中对齐。"
+  },
+  "diaryCardStylePaddingH": "左右内边距",
+  "@diaryCardStylePaddingH": {
+    "description": "日记卡片样式设置页：卡片内容的左右内边距。"
+  },
+  "diaryCardStylePaddingV": "上下内边距",
+  "@diaryCardStylePaddingV": {
+    "description": "日记卡片样式设置页：卡片内容的上下内边距。"
+  },
+  "diaryCardStyleElementGap": "内容间距",
+  "@diaryCardStyleElementGap": {
+    "description": "日记卡片样式设置页：卡片内日期、标题、摘要等之间的间距。"
+  },
+  "diaryCardStyleCardGap": "卡片间距",
+  "@diaryCardStyleCardGap": {
+    "description": "日记卡片样式设置页：相邻卡片之间的间距。"
+  },
+  "diaryCardStyleSideMargin": "屏幕边距",
+  "@diaryCardStyleSideMargin": {
+    "description": "日记卡片样式设置页：卡片与屏幕左右边缘的距离。"
+  },
+  "diaryCardStyleColumns": "列数",
+  "@diaryCardStyleColumns": {
+    "description": "日记卡片样式设置页：瀑布流的列数。"
+  },
+  "diaryCardStyleColumnsValue": "{count} 列",
+  "@diaryCardStyleColumnsValue": {
+    "description": "日记卡片样式设置页：瀑布流列数选项。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleColumnsFootnote": "屏幕较窄或字号较大时会自动减少列数",
+  "@diaryCardStyleColumnsFootnote": {
+    "description": "日记卡片样式设置页：瀑布流列数的说明。"
+  },
+  "diaryCardStyleCoverPosition": "封面位置",
+  "@diaryCardStyleCoverPosition": {
+    "description": "日记卡片样式设置页：封面放在卡片的什么位置。"
+  },
+  "diaryCardStyleCoverStart": "左侧",
+  "@diaryCardStyleCoverStart": {
+    "description": "日记卡片样式设置页：封面在左侧。"
+  },
+  "diaryCardStyleCoverEnd": "右侧",
+  "@diaryCardStyleCoverEnd": {
+    "description": "日记卡片样式设置页：封面在右侧。"
+  },
+  "diaryCardStyleCoverTop": "顶部",
+  "@diaryCardStyleCoverTop": {
+    "description": "日记卡片样式设置页：封面在顶部。"
+  },
+  "diaryCardStyleCoverBackground": "背景",
+  "@diaryCardStyleCoverBackground": {
+    "description": "日记卡片样式设置页：封面作为卡片背景。"
+  },
+  "diaryCardStyleCoverHidden": "隐藏",
+  "@diaryCardStyleCoverHidden": {
+    "description": "日记卡片样式设置页：不显示封面。"
+  },
+  "diaryCardStyleCoverSize": "封面大小",
+  "@diaryCardStyleCoverSize": {
+    "description": "日记卡片样式设置页：侧边封面的边长。"
+  },
+  "diaryCardStyleCoverSizeFootnote": "窄屏上封面会自动缩小，给文字留出空间",
+  "@diaryCardStyleCoverSizeFootnote": {
+    "description": "日记卡片样式设置页：封面大小的说明。"
+  },
+  "diaryCardStyleCoverShape": "封面形状",
+  "@diaryCardStyleCoverShape": {
+    "description": "日记卡片样式设置页：侧边封面的形状。"
+  },
+  "diaryCardStyleShapeSquare": "方形",
+  "@diaryCardStyleShapeSquare": {
+    "description": "日记卡片样式设置页：方形封面。"
+  },
+  "diaryCardStyleShapeLandscape": "横向",
+  "@diaryCardStyleShapeLandscape": {
+    "description": "日记卡片样式设置页：横向（4:3）封面。"
+  },
+  "diaryCardStyleShapePortrait": "竖向",
+  "@diaryCardStyleShapePortrait": {
+    "description": "日记卡片样式设置页：竖向（3:4）封面。"
+  },
+  "diaryCardStyleShapeCircle": "圆形",
+  "@diaryCardStyleShapeCircle": {
+    "description": "日记卡片样式设置页：圆形封面。"
+  },
+  "diaryCardStyleCoverRadius": "封面圆角",
+  "@diaryCardStyleCoverRadius": {
+    "description": "日记卡片样式设置页：封面圆角大小。"
+  },
+  "diaryCardStyleCoverHeight": "封面高度",
+  "@diaryCardStyleCoverHeight": {
+    "description": "日记卡片样式设置页：顶部封面的高度，或背景封面卡片的最小高度。"
+  },
+  "diaryCardStyleCoverInset": "内缩封面",
+  "@diaryCardStyleCoverInset": {
+    "description": "日记卡片样式设置页：顶部封面内缩到内边距里。"
+  },
+  "diaryCardStyleCoverInsetSubtitle": "封面留出边距并带圆角，而不是贴边通栏",
+  "@diaryCardStyleCoverInsetSubtitle": {
+    "description": "日记卡片样式设置页：内缩封面的说明。"
+  },
+  "diaryCardStyleCoverDivider": "封面下的分隔线",
+  "@diaryCardStyleCoverDivider": {
+    "description": "日记卡片样式设置页：通栏顶部封面与文字之间的细线。"
+  },
+  "diaryCardStyleCoverGap": "封面与文字的间距",
+  "@diaryCardStyleCoverGap": {
+    "description": "日记卡片样式设置页：封面与文字之间的间距。"
+  },
+  "diaryCardStyleScrim": "文字底板浓度",
+  "@diaryCardStyleScrim": {
+    "description": "日记卡片样式设置页：背景封面上文字底板的不透明度。"
+  },
+  "diaryCardStyleCollage": "多图拼贴",
+  "@diaryCardStyleCollage": {
+    "description": "日记卡片样式设置页：顶部封面拼贴多张图片。"
+  },
+  "diaryCardStyleCollageSubtitle": "顶部封面最多拼入三张正文图片",
+  "@diaryCardStyleCollageSubtitle": {
+    "description": "日记卡片样式设置页：多图拼贴的说明。"
+  },
+  "diaryCardStyleCoverFallback": "没有封面时",
+  "@diaryCardStyleCoverFallback": {
+    "description": "日记卡片样式设置页：日记没有图片时封面位置显示什么。"
+  },
+  "diaryCardStyleFallbackNone": "留空",
+  "@diaryCardStyleFallbackNone": {
+    "description": "日记卡片样式设置页：没有封面时不显示占位。"
+  },
+  "diaryCardStyleFallbackDate": "日期块",
+  "@diaryCardStyleFallbackDate": {
+    "description": "日记卡片样式设置页：没有封面时显示大号日期。"
+  },
+  "diaryCardStyleFallbackMood": "心情块",
+  "@diaryCardStyleFallbackMood": {
+    "description": "日记卡片样式设置页：没有封面时显示心情。"
+  },
+  "diaryCardStyleShowTitle": "显示标题",
+  "@diaryCardStyleShowTitle": {
+    "description": "日记卡片样式设置页：是否显示日记标题。"
+  },
+  "diaryCardStyleShowUntitled": "没有标题时显示“无标题”",
+  "@diaryCardStyleShowUntitled": {
+    "description": "日记卡片样式设置页：日记没写标题时是否用“无标题”占位。"
+  },
+  "diaryCardStyleShowUntitledSubtitle": "关闭后直接省略标题行",
+  "@diaryCardStyleShowUntitledSubtitle": {
+    "description": "日记卡片样式设置页：“无标题”占位开关的说明。"
+  },
+  "diaryCardStyleShowPreview": "显示摘要",
+  "@diaryCardStyleShowPreview": {
+    "description": "日记卡片样式设置页：是否显示正文摘要。"
+  },
+  "diaryCardStyleTitleLines": "标题最多行数",
+  "@diaryCardStyleTitleLines": {
+    "description": "日记卡片样式设置页：标题最多显示几行。"
+  },
+  "diaryCardStylePreviewLines": "摘要最多行数",
+  "@diaryCardStylePreviewLines": {
+    "description": "日记卡片样式设置页：摘要最多显示几行。"
+  },
+  "diaryCardStyleLinesValue": "{count} 行",
+  "@diaryCardStyleLinesValue": {
+    "description": "日记卡片样式设置页：行数数值。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleTagStyle": "标签样式",
+  "@diaryCardStyleTagStyle": {
+    "description": "日记卡片样式设置页：卡片上标签的样式。"
+  },
+  "diaryCardStyleTagChip": "胶囊",
+  "@diaryCardStyleTagChip": {
+    "description": "日记卡片样式设置页：标签显示为带底色的胶囊。"
+  },
+  "diaryCardStyleTagPlain": "文字",
+  "@diaryCardStyleTagPlain": {
+    "description": "日记卡片样式设置页：标签只显示文字。"
+  },
+  "diaryCardStyleTagDot": "圆点",
+  "@diaryCardStyleTagDot": {
+    "description": "日记卡片样式设置页：标签前用彩色圆点。"
+  },
+  "diaryCardStylePinnedBadge": "置顶标记",
+  "@diaryCardStylePinnedBadge": {
+    "description": "日记卡片样式设置页：置顶日记的标记样式。"
+  },
+  "diaryCardStylePinnedStandard": "图标和文字",
+  "@diaryCardStylePinnedStandard": {
+    "description": "日记卡片样式设置页：置顶标记显示图钉与文字。"
+  },
+  "diaryCardStylePinnedIcon": "仅图标",
+  "@diaryCardStylePinnedIcon": {
+    "description": "日记卡片样式设置页：置顶标记只显示图钉。"
+  },
+  "diaryCardStylePinnedHidden": "不显示",
+  "@diaryCardStylePinnedHidden": {
+    "description": "日记卡片样式设置页：不显示置顶标记。"
+  },
+  "diaryCardStylePinnedTint": "置顶卡片着色",
+  "@diaryCardStylePinnedTint": {
+    "description": "日记卡片样式设置页：置顶卡片使用淡主题色。"
+  },
+  "diaryCardStylePinnedTintSubtitle": "淡淡的主题色底色与描边",
+  "@diaryCardStylePinnedTintSubtitle": {
+    "description": "日记卡片样式设置页：置顶卡片着色的说明。"
+  },
+  "diaryCardStyleShowMood": "显示心情",
+  "@diaryCardStyleShowMood": {
+    "description": "日记卡片样式设置页：是否显示心情。"
+  },
+  "diaryCardStyleShowWeather": "显示天气",
+  "@diaryCardStyleShowWeather": {
+    "description": "日记卡片样式设置页：是否显示天气。"
+  },
+  "diaryCardStyleIndicatorStyle": "心情与天气",
+  "@diaryCardStyleIndicatorStyle": {
+    "description": "日记卡片样式设置页：心情天气分组标题与样式选项名。"
+  },
+  "diaryCardStyleIndicatorStamp": "印章",
+  "@diaryCardStyleIndicatorStamp": {
+    "description": "日记卡片样式设置页：心情天气显示为带底色的印章。"
+  },
+  "diaryCardStyleIndicatorPlain": "仅图标",
+  "@diaryCardStyleIndicatorPlain": {
+    "description": "日记卡片样式设置页：心情天气只显示图标。"
+  },
+  "diaryCardStyleMetaPosition": "心情与天气位置",
+  "@diaryCardStyleMetaPosition": {
+    "description": "日记卡片样式设置页：心情天气放在卡片的什么位置。"
+  },
+  "diaryCardStyleMetaEyebrow": "日期行",
+  "@diaryCardStyleMetaEyebrow": {
+    "description": "日记卡片样式设置页：心情天气放在日期行。"
+  },
+  "diaryCardStyleMetaFooter": "底栏",
+  "@diaryCardStyleMetaFooter": {
+    "description": "日记卡片样式设置页：心情天气放在底栏。"
+  },
+  "diaryCardStyleMetaCover": "封面上",
+  "@diaryCardStyleMetaCover": {
+    "description": "日记卡片样式设置页：心情天气叠在封面上。"
+  },
+  "diaryCardStyleExtras": "底栏附加信息",
+  "@diaryCardStyleExtras": {
+    "description": "日记卡片样式设置页：底栏额外显示的信息分组标题。"
+  },
+  "diaryCardStyleShowLocation": "地点",
+  "@diaryCardStyleShowLocation": {
+    "description": "日记卡片样式设置页：底栏显示地点。"
+  },
+  "diaryCardStyleShowEnergy": "精力",
+  "@diaryCardStyleShowEnergy": {
+    "description": "日记卡片样式设置页：底栏显示精力。"
+  },
+  "diaryCardStyleShowWordCount": "字数",
+  "@diaryCardStyleShowWordCount": {
+    "description": "日记卡片样式设置页：底栏显示字数。"
+  },
+  "diaryCardStyleShowMedia": "图片与附件标记",
+  "@diaryCardStyleShowMedia": {
+    "description": "日记卡片样式设置页：底栏显示图片数、录音、视频与附件标记。"
+  },
+  "diaryCardStyleShowDate": "显示日期",
+  "@diaryCardStyleShowDate": {
+    "description": "日记卡片样式设置页：是否在日期行显示日期。"
+  },
+  "diaryCardStyleDateFormat": "日期格式",
+  "@diaryCardStyleDateFormat": {
+    "description": "日记卡片样式设置页：日期的显示格式。"
+  },
+  "diaryCardStyleDateEyebrow": "月日",
+  "@diaryCardStyleDateEyebrow": {
+    "description": "日记卡片样式设置页：日期格式：月日（跨年加年份）。"
+  },
+  "diaryCardStyleDateFull": "完整日期",
+  "@diaryCardStyleDateFull": {
+    "description": "日记卡片样式设置页：日期格式：含年份的完整日期。"
+  },
+  "diaryCardStyleDateNumeric": "数字日期",
+  "@diaryCardStyleDateNumeric": {
+    "description": "日记卡片样式设置页：日期格式：数字形式。"
+  },
+  "diaryCardStyleDateRelative": "相对时间",
+  "@diaryCardStyleDateRelative": {
+    "description": "日记卡片样式设置页：日期格式：多久之前。"
+  },
+  "diaryCardStyleShowWeekday": "显示星期",
+  "@diaryCardStyleShowWeekday": {
+    "description": "日记卡片样式设置页：日期后显示星期。"
+  },
+  "diaryCardStyleShowTime": "显示时刻",
+  "@diaryCardStyleShowTime": {
+    "description": "日记卡片样式设置页：日期后显示时刻。"
+  },
+  "diaryCardStyleRelativeNote": "相对时间不附带星期与时刻",
+  "@diaryCardStyleRelativeNote": {
+    "description": "日记卡片样式设置页：选择相对时间时星期与时刻开关的说明。"
+  },
+  "diaryCardStyleDateSource": "日期依据",
+  "@diaryCardStyleDateSource": {
+    "description": "日记卡片样式设置页：日期行显示哪个时间。"
+  },
+  "diaryCardStyleDateCreated": "写下的时间",
+  "@diaryCardStyleDateCreated": {
+    "description": "日记卡片样式设置页：日期依据：写下日记的时间。"
+  },
+  "diaryCardStyleDateUpdated": "最后修改",
+  "@diaryCardStyleDateUpdated": {
+    "description": "日记卡片样式设置页：日期依据：最后修改的时间。"
+  },
+  "diaryCardStyleFooterTime": "底栏时间",
+  "@diaryCardStyleFooterTime": {
+    "description": "日记卡片样式设置页：底栏显示的时间。"
+  },
+  "diaryCardStyleFooterRelative": "多久前更新",
+  "@diaryCardStyleFooterRelative": {
+    "description": "日记卡片样式设置页：底栏时间：距最后更新多久。"
+  },
+  "diaryCardStyleFooterUpdated": "更新时间",
+  "@diaryCardStyleFooterUpdated": {
+    "description": "日记卡片样式设置页：底栏时间：最后更新的具体时间。"
+  },
+  "diaryCardStyleFooterCreated": "写下时间",
+  "@diaryCardStyleFooterCreated": {
+    "description": "日记卡片样式设置页：底栏时间：写下的具体时间。"
+  },
+  "diaryCardStyleFooterHidden": "不显示",
+  "@diaryCardStyleFooterHidden": {
+    "description": "日记卡片样式设置页：底栏不显示时间。"
+  },
+  "diaryCardStyleOrderHint": "拖动右侧手柄，调整卡片里各部分的上下顺序",
+  "@diaryCardStyleOrderHint": {
+    "description": "日记卡片样式设置页：排序页的说明。"
+  },
+  "diaryCardStyleBlockEyebrow": "日期行",
+  "@diaryCardStyleBlockEyebrow": {
+    "description": "日记卡片样式设置页：卡片区块：日期与置顶标记所在的一行。"
+  },
+  "diaryCardStyleBlockTitle": "标题",
+  "@diaryCardStyleBlockTitle": {
+    "description": "日记卡片样式设置页：卡片区块：标题。"
+  },
+  "diaryCardStyleBlockTags": "标签",
+  "@diaryCardStyleBlockTags": {
+    "description": "日记卡片样式设置页：卡片区块：标签。"
+  },
+  "diaryCardStyleBlockPreview": "摘要",
+  "@diaryCardStyleBlockPreview": {
+    "description": "日记卡片样式设置页：卡片区块：摘要。"
+  },
+  "diaryCardStyleBlockFooter": "底栏",
+  "@diaryCardStyleBlockFooter": {
+    "description": "日记卡片样式设置页：卡片区块：底栏。"
+  },
+  "diaryCardStyleOrderReset": "恢复默认顺序",
+  "@diaryCardStyleOrderReset": {
+    "description": "日记卡片样式设置页：恢复区块默认顺序的按钮。"
+  },
+  "diaryCardStyleDragHandle": "拖动调整「{name}」的位置",
+  "@diaryCardStyleDragHandle": {
+    "description": "日记卡片样式设置页：区块拖动手柄的读屏文字。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleTitleSize": "标题字号",
+  "@diaryCardStyleTitleSize": {
+    "description": "日记卡片样式设置页：标题字号缩放。"
+  },
+  "diaryCardStyleTitleWeight": "标题字重",
+  "@diaryCardStyleTitleWeight": {
+    "description": "日记卡片样式设置页：标题笔画粗细。"
+  },
+  "diaryCardStyleWeightRegular": "常规",
+  "@diaryCardStyleWeightRegular": {
+    "description": "日记卡片样式设置页：常规字重。"
+  },
+  "diaryCardStyleWeightMedium": "中等",
+  "@diaryCardStyleWeightMedium": {
+    "description": "日记卡片样式设置页：中等字重。"
+  },
+  "diaryCardStyleWeightBold": "粗体",
+  "@diaryCardStyleWeightBold": {
+    "description": "日记卡片样式设置页：粗体字重。"
+  },
+  "diaryCardStylePreviewSize": "摘要字号",
+  "@diaryCardStylePreviewSize": {
+    "description": "日记卡片样式设置页：摘要字号缩放。"
+  },
+  "diaryCardStyleLineHeight": "摘要行距",
+  "@diaryCardStyleLineHeight": {
+    "description": "日记卡片样式设置页：摘要行距。"
+  },
+  "diaryCardStyleLineCompact": "紧凑",
+  "@diaryCardStyleLineCompact": {
+    "description": "日记卡片样式设置页：紧凑行距。"
+  },
+  "diaryCardStyleLineStandard": "标准",
+  "@diaryCardStyleLineStandard": {
+    "description": "日记卡片样式设置页：标准行距。"
+  },
+  "diaryCardStyleLineRelaxed": "宽松",
+  "@diaryCardStyleLineRelaxed": {
+    "description": "日记卡片样式设置页：宽松行距。"
+  },
+  "diaryCardStyleMetaSize": "辅助文字大小",
+  "@diaryCardStyleMetaSize": {
+    "description": "日记卡片样式设置页：日期、标签、底栏等小字的缩放。"
+  },
+  "diaryCardStyleTitleColor": "标题颜色",
+  "@diaryCardStyleTitleColor": {
+    "description": "日记卡片样式设置页：标题文字颜色。"
+  },
+  "diaryCardStyleBodyColor": "正文颜色",
+  "@diaryCardStyleBodyColor": {
+    "description": "日记卡片样式设置页：摘要、日期与底栏的文字颜色。"
+  },
+  "diaryCardStyleEnsureContrast": "自动保证可读",
+  "@diaryCardStyleEnsureContrast": {
+    "description": "日记卡片样式设置页：文字颜色对比不足时自动替换。"
+  },
+  "diaryCardStyleEnsureContrastSubtitle": "文字颜色与卡片底色太接近时，自动换成清晰的颜色",
+  "@diaryCardStyleEnsureContrastSubtitle": {
+    "description": "日记卡片样式设置页：自动保证可读的说明。"
+  },
+  "diaryCardStyleBackground": "卡片底色",
+  "@diaryCardStyleBackground": {
+    "description": "日记卡片样式设置页：卡片底色。"
+  },
+  "diaryCardStyleOpacity": "卡片不透明度",
+  "@diaryCardStyleOpacity": {
+    "description": "日记卡片样式设置页：卡片表面的不透明度。"
+  },
+  "diaryCardStyleGradient": "渐变底色",
+  "@diaryCardStyleGradient": {
+    "description": "日记卡片样式设置页：卡片底色渐变。"
+  },
+  "diaryCardStyleGradientSubtitle": "从卡片底色过渡到第二种颜色",
+  "@diaryCardStyleGradientSubtitle": {
+    "description": "日记卡片样式设置页：渐变底色的说明。"
+  },
+  "diaryCardStyleGradientEnd": "渐变的第二种颜色",
+  "@diaryCardStyleGradientEnd": {
+    "description": "日记卡片样式设置页：渐变终点颜色。"
+  },
+  "diaryCardStyleGradientDirection": "渐变方向",
+  "@diaryCardStyleGradientDirection": {
+    "description": "日记卡片样式设置页：渐变方向。"
+  },
+  "diaryCardStyleDirectionVertical": "竖向",
+  "@diaryCardStyleDirectionVertical": {
+    "description": "日记卡片样式设置页：从上到下的渐变。"
+  },
+  "diaryCardStyleDirectionHorizontal": "横向",
+  "@diaryCardStyleDirectionHorizontal": {
+    "description": "日记卡片样式设置页：从左到右的渐变。"
+  },
+  "diaryCardStyleDirectionDiagonal": "斜向",
+  "@diaryCardStyleDirectionDiagonal": {
+    "description": "日记卡片样式设置页：对角线方向的渐变。"
+  },
+  "diaryCardStyleBorderWidth": "描边粗细",
+  "@diaryCardStyleBorderWidth": {
+    "description": "日记卡片样式设置页：卡片描边粗细。"
+  },
+  "diaryCardStyleBorderColor": "描边颜色",
+  "@diaryCardStyleBorderColor": {
+    "description": "日记卡片样式设置页：卡片描边颜色。"
+  },
+  "diaryCardStyleAccentBar": "强调色条",
+  "@diaryCardStyleAccentBar": {
+    "description": "日记卡片样式设置页：卡片边上的色条。"
+  },
+  "diaryCardStyleAccentNone": "无",
+  "@diaryCardStyleAccentNone": {
+    "description": "日记卡片样式设置页：不显示色条。"
+  },
+  "diaryCardStyleAccentStart": "侧边",
+  "@diaryCardStyleAccentStart": {
+    "description": "日记卡片样式设置页：色条在起始边。"
+  },
+  "diaryCardStyleAccentTop": "顶部",
+  "@diaryCardStyleAccentTop": {
+    "description": "日记卡片样式设置页：色条在顶边。"
+  },
+  "diaryCardStyleAccentWidth": "色条宽度",
+  "@diaryCardStyleAccentWidth": {
+    "description": "日记卡片样式设置页：色条宽度。"
+  },
+  "diaryCardStyleAccentColor": "色条颜色",
+  "@diaryCardStyleAccentColor": {
+    "description": "日记卡片样式设置页：色条颜色。"
+  },
+  "diaryCardStyleShadow": "阴影",
+  "@diaryCardStyleShadow": {
+    "description": "日记卡片样式设置页：卡片阴影样式。"
+  },
+  "diaryCardStyleShadowThemed": "默认",
+  "@diaryCardStyleShadowThemed": {
+    "description": "日记卡片样式设置页：默认阴影。"
+  },
+  "diaryCardStyleShadowNone": "无",
+  "@diaryCardStyleShadowNone": {
+    "description": "日记卡片样式设置页：没有阴影。"
+  },
+  "diaryCardStyleShadowSoft": "柔和",
+  "@diaryCardStyleShadowSoft": {
+    "description": "日记卡片样式设置页：柔和阴影。"
+  },
+  "diaryCardStyleShadowFloating": "悬浮",
+  "@diaryCardStyleShadowFloating": {
+    "description": "日记卡片样式设置页：悬浮感的深阴影。"
+  },
+  "diaryCardStyleShadowCustom": "自定义",
+  "@diaryCardStyleShadowCustom": {
+    "description": "日记卡片样式设置页：自定义阴影。"
+  },
+  "diaryCardStyleShadowElevation": "阴影高度",
+  "@diaryCardStyleShadowElevation": {
+    "description": "日记卡片样式设置页：自定义阴影的高度。"
+  },
+  "diaryCardStyleShadowColor": "阴影颜色",
+  "@diaryCardStyleShadowColor": {
+    "description": "日记卡片样式设置页：阴影颜色。"
+  },
+  "diaryCardStyleSourceTheme": "默认",
+  "@diaryCardStyleSourceTheme": {
+    "description": "日记卡片样式设置页：颜色来源：沿用默认外观。"
+  },
+  "diaryCardStyleSourcePrimary": "主色",
+  "@diaryCardStyleSourcePrimary": {
+    "description": "日记卡片样式设置页：颜色来源：主题主色。"
+  },
+  "diaryCardStyleSourceSecondary": "次色",
+  "@diaryCardStyleSourceSecondary": {
+    "description": "日记卡片样式设置页：颜色来源：主题次色。"
+  },
+  "diaryCardStyleSourceTertiary": "第三色",
+  "@diaryCardStyleSourceTertiary": {
+    "description": "日记卡片样式设置页：颜色来源：主题第三色。"
+  },
+  "diaryCardStyleSourceMood": "心情",
+  "@diaryCardStyleSourceMood": {
+    "description": "日记卡片样式设置页：颜色来源：按心情取色。"
+  },
+  "diaryCardStyleSourceTag": "首个标签",
+  "@diaryCardStyleSourceTag": {
+    "description": "日记卡片样式设置页：颜色来源：第一个标签的颜色。"
+  },
+  "diaryCardStyleSourceCustom": "自定义",
+  "@diaryCardStyleSourceCustom": {
+    "description": "日记卡片样式设置页：颜色来源：自定义颜色。"
+  },
+  "diaryCardStyleSourceMoodHint": "按每篇日记的心情取色；没有心情时用默认颜色",
+  "@diaryCardStyleSourceMoodHint": {
+    "description": "日记卡片样式设置页：心情颜色来源的说明。"
+  },
+  "diaryCardStyleSourceTagHint": "取每篇日记第一个标签的颜色",
+  "@diaryCardStyleSourceTagHint": {
+    "description": "日记卡片样式设置页：首个标签颜色来源的说明。"
+  },
+  "diaryCardStyleStrength": "浓度",
+  "@diaryCardStyleStrength": {
+    "description": "日记卡片样式设置页：颜色浓度（不透明度）。"
+  },
+  "diaryCardStyleEditColor": "编辑颜色",
+  "@diaryCardStyleEditColor": {
+    "description": "日记卡片样式设置页：重新选择自定义颜色。"
+  },
+  "diaryCardStyleColorDarkAuto": "深色模式自动配色",
+  "@diaryCardStyleColorDarkAuto": {
+    "description": "日记卡片样式设置页：取色对话框：深色模式下的颜色自动推导。"
+  },
+  "diaryCardStyleColorDarkAutoSubtitle": "按浅色值推导出暗色下易读的颜色",
+  "@diaryCardStyleColorDarkAutoSubtitle": {
+    "description": "日记卡片样式设置页：深色模式自动配色的说明。"
+  },
+  "diaryCardStyleHexLabel": "HEX 颜色",
+  "@diaryCardStyleHexLabel": {
+    "description": "日记卡片样式设置页：十六进制颜色输入框的标签。"
+  },
+  "diaryCardStyleHexInvalid": "请输入 6 位十六进制颜色，如 FFB300",
+  "@diaryCardStyleHexInvalid": {
+    "description": "日记卡片样式设置页：十六进制颜色输入有误的提示。"
+  },
+  "diaryCardStyleSheetSection": "卡片样式",
+  "@diaryCardStyleSheetSection": {
+    "description": "日记页视图选项面板：卡片样式分组标题。"
+  },
+  "diaryCardStyleSheetEntry": "自定义卡片样式",
+  "@diaryCardStyleSheetEntry": {
+    "description": "日记页视图选项面板：进入卡片样式设置。"
+  },
+  "diaryCardStyleSheetEntrySubtitle": "封面、文字、颜色与排版",
+  "@diaryCardStyleSheetEntrySubtitle": {
+    "description": "日记页视图选项面板：卡片样式入口的说明。"
+  },
+  "diaryCardStyleSampleTitle1": "海边的黄昏",
+  "@diaryCardStyleSampleTitle1": {
+    "description": "日记卡片样式设置页：预览示例日记 1 的标题。"
+  },
+  "diaryCardStyleSampleBody1": "傍晚沿着海岸走了很久，浪声一阵一阵，天色从橙色慢慢变成淡紫。",
+  "@diaryCardStyleSampleBody1": {
+    "description": "日记卡片样式设置页：预览示例日记 1 的正文。"
+  },
+  "diaryCardStyleSampleTitle2": "周末去爬山",
+  "@diaryCardStyleSampleTitle2": {
+    "description": "日记卡片样式设置页：预览示例日记 2 的标题。"
+  },
+  "diaryCardStyleSampleBody2": "山顶风很大，拍了好多照片，还录下了一段风声。下山时腿已经开始发软。",
+  "@diaryCardStyleSampleBody2": {
+    "description": "日记卡片样式设置页：预览示例日记 2 的正文。"
+  },
+  "diaryCardStyleSampleTitle3": "一个下雨的工作日，在咖啡馆里重新整理了这周的计划",
+  "@diaryCardStyleSampleTitle3": {
+    "description": "日记卡片样式设置页：预览示例日记 3 的标题（较长，用来展示标题截断）。"
+  },
+  "diaryCardStyleSampleBody3": "把这周要做的事重新排了一遍，顺手记下几个想法。晚上早点休息。",
+  "@diaryCardStyleSampleBody3": {
+    "description": "日记卡片样式设置页：预览示例日记 3 的正文。"
+  },
+  "diaryCardStyleSampleBody4": "下班路上看见一只橘猫趴在台阶上晒太阳，眯着眼睛的样子让人也跟着放松下来。",
+  "@diaryCardStyleSampleBody4": {
+    "description": "日记卡片样式设置页：预览示例日记 4 的正文（这篇没有标题，用来展示“无标题”占位）。"
+  },
+  "diaryCardStyleSampleCapsuleTitle": "写给一年后的自己",
+  "@diaryCardStyleSampleCapsuleTitle": {
+    "description": "日记卡片样式设置页：预览示例时间胶囊的标题。"
+  },
+  "diaryCardStyleSampleTag1": "旅行",
+  "@diaryCardStyleSampleTag1": {
+    "description": "日记卡片样式设置页：预览示例标签。"
+  },
+  "diaryCardStyleSampleTag2": "生活",
+  "@diaryCardStyleSampleTag2": {
+    "description": "日记卡片样式设置页：预览示例标签。"
+  },
+  "diaryCardStyleSampleTag3": "读书",
+  "@diaryCardStyleSampleTag3": {
+    "description": "日记卡片样式设置页：预览示例标签。"
+  },
+  "diaryCardStyleSampleLocation": "海边栈道",
+  "@diaryCardStyleSampleLocation": {
+    "description": "日记卡片样式设置页：预览示例日记的地点。"
+  },
+  "diaryCardStyleValueDp": "{value}dp",
+  "@diaryCardStyleValueDp": {
+    "description": "日记卡片样式设置页：以 dp 为单位的数值。",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleValuePercent": "{value}%",
+  "@diaryCardStyleValuePercent": {
+    "description": "日记卡片样式设置页：百分比数值。",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   }
 }

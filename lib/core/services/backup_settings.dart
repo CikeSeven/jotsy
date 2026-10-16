@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import 'settings_service.dart';
@@ -19,6 +21,7 @@ class BackupSettings {
     'diaryLayoutModeRaw': settingsService.diaryLayoutModeRaw,
     'diaryCardTagLimit': settingsService.diaryCardTagLimit,
     'calendarDisplayOptionsRaw': settingsService.calendarDisplayOptionsRaw,
+    'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -116,6 +119,18 @@ class BackupSettings {
       await settingsService.setCalendarDisplayOptionsRaw(
         settingsNode['calendarDisplayOptionsRaw']?.toString(),
       );
+    }
+
+    // 同上：旧版备份没有卡片样式时保留本机样式。值是 JSON 字符串；手工
+    // 编辑过的备份若写成了对象，按 JSON 重新编码后交给日记模块容错解析。
+    if (settingsNode.containsKey('diaryCardStyleRaw')) {
+      final cardStyleRaw = settingsNode['diaryCardStyleRaw'];
+      await settingsService.setDiaryCardStyleRaw(switch (cardStyleRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
     }
 
     final toolbarRaw = settingsNode['diaryToolbarOrderRaw']?.toString();

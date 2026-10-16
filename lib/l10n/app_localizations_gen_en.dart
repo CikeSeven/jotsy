@@ -3069,4 +3069,811 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryTypographySampleBody =>
       'The rain stopped just before dusk, and the osmanthus downstairs smelled sweeter than ever.\nOn the way home I bought a bag of roasted chestnuts and peeled them as I walked; my hands stayed warm the whole time.\nNothing big happened today, but every moment felt steady, so I wanted to write it down.';
+
+  @override
+  String diaryCardDateWithWeekday(String date, String weekday) {
+    return '$date · $weekday';
+  }
+
+  @override
+  String diaryCardDateWithTime(String date, String time) {
+    return '$date $time';
+  }
+
+  @override
+  String diaryCardFooterUpdated(String time) {
+    return 'Updated $time';
+  }
+
+  @override
+  String diaryCardFooterCreated(String time) {
+    return 'Written $time';
+  }
+
+  @override
+  String diaryCardCharCount(String count) {
+    return '$count chars';
+  }
+
+  @override
+  String diaryCardMediaImages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryCardMediaAudio => 'Has a recording';
+
+  @override
+  String get diaryCardMediaVideo => 'Has a video';
+
+  @override
+  String get diaryCardMediaAttachment => 'Has an attachment';
+
+  @override
+  String diaryCardLocation(String location) {
+    return 'Location: $location';
+  }
+
+  @override
+  String get diaryCardStyleTitle => 'Diary card style';
+
+  @override
+  String diaryCardStyleEntrySubtitle(String name) {
+    return 'Current: $name';
+  }
+
+  @override
+  String get diaryCardStyleCustom => 'Custom';
+
+  @override
+  String get diaryCardStyleResetDone => 'Restored the default style';
+
+  @override
+  String get diaryCardStylePreviewLight => 'Light preview';
+
+  @override
+  String get diaryCardStylePreviewDark => 'Dark preview';
+
+  @override
+  String get diaryCardStylePanelHandle => 'Options panel';
+
+  @override
+  String get diaryCardStylePanelCollapsed => 'Collapsed';
+
+  @override
+  String get diaryCardStylePanelHalf => 'Half open';
+
+  @override
+  String get diaryCardStylePanelExpanded => 'Expanded';
+
+  @override
+  String get diaryCardStyleSharedGroup => 'All layouts';
+
+  @override
+  String get diaryCardStyleListGroup => 'List layout only';
+
+  @override
+  String get diaryCardStyleWaterfallGroup => 'Waterfall layout only';
+
+  @override
+  String get diaryCardStyleModeFootnote =>
+      'Switch between list and waterfall above the preview to adjust the other layout';
+
+  @override
+  String get diaryCardStyleTabPresets => 'Presets';
+
+  @override
+  String get diaryCardStyleTabLayout => 'Layout';
+
+  @override
+  String get diaryCardStyleTabCover => 'Cover';
+
+  @override
+  String get diaryCardStyleTabContent => 'Content';
+
+  @override
+  String get diaryCardStyleTabDate => 'Date';
+
+  @override
+  String get diaryCardStyleTabOrder => 'Order';
+
+  @override
+  String get diaryCardStyleTabText => 'Text';
+
+  @override
+  String get diaryCardStyleTabColor => 'Color';
+
+  @override
+  String get diaryCardStyleTabTexture => 'Finish';
+
+  @override
+  String get diaryCardStylePresetsTitle => 'Built-in styles';
+
+  @override
+  String get diaryCardStylePresetClassic => 'Classic';
+
+  @override
+  String get diaryCardStylePresetClassicDesc =>
+      'The default: a square cover on the left and a two-line excerpt';
+
+  @override
+  String get diaryCardStylePresetCompact => 'Compact';
+
+  @override
+  String get diaryCardStylePresetCompactDesc =>
+      'Small covers and one-line excerpts to fit more on screen';
+
+  @override
+  String get diaryCardStylePresetMagazine => 'Magazine';
+
+  @override
+  String get diaryCardStylePresetMagazineDesc =>
+      'Full-width photos, larger titles and airy lines';
+
+  @override
+  String get diaryCardStylePresetMinimal => 'Minimal';
+
+  @override
+  String get diaryCardStylePresetMinimalDesc =>
+      'Just the words: no covers, borders or shadows';
+
+  @override
+  String get diaryCardStylePresetGallery => 'Gallery';
+
+  @override
+  String get diaryCardStylePresetGalleryDesc =>
+      'Photos first, with collages and cover backgrounds';
+
+  @override
+  String get diaryCardStylePresetSticky => 'Sticky note';
+
+  @override
+  String get diaryCardStylePresetStickyDesc =>
+      'Warm paper, a colored top strip and small corners';
+
+  @override
+  String get diaryCardStylePresetJournal => 'Journal';
+
+  @override
+  String get diaryCardStylePresetJournalDesc =>
+      'A side strip, and a date block when there is no cover';
+
+  @override
+  String get diaryCardStylePresetMood => 'Mood colors';
+
+  @override
+  String get diaryCardStylePresetMoodDesc =>
+      'Card colors follow the mood of each entry';
+
+  @override
+  String diaryCardStyleApplied(String name) {
+    return 'Applied “$name”';
+  }
+
+  @override
+  String get diaryCardStyleSavedTitle => 'My styles';
+
+  @override
+  String get diaryCardStyleSavedEmpty =>
+      'Save a style you like to switch back in one tap';
+
+  @override
+  String get diaryCardStyleSaveCurrent => 'Save current style';
+
+  @override
+  String diaryCardStyleSaveLimit(int count) {
+    return 'You can save up to $count styles';
+  }
+
+  @override
+  String get diaryCardStyleSaveDialogTitle => 'Save style';
+
+  @override
+  String get diaryCardStyleRenameDialogTitle => 'Rename style';
+
+  @override
+  String get diaryCardStyleNameLabel => 'Style name';
+
+  @override
+  String diaryCardStyleDefaultName(int count) {
+    return 'My style $count';
+  }
+
+  @override
+  String get diaryCardStyleRename => 'Rename';
+
+  @override
+  String diaryCardStyleSavedDone(String name) {
+    return 'Saved “$name”';
+  }
+
+  @override
+  String diaryCardStyleDeletedDone(String name) {
+    return 'Deleted “$name”';
+  }
+
+  @override
+  String diaryCardStyleSavedActions(String name) {
+    return 'More actions for “$name”';
+  }
+
+  @override
+  String get diaryCardStyleShareTitle => 'Share and import';
+
+  @override
+  String get diaryCardStyleCopyCode => 'Copy style code';
+
+  @override
+  String get diaryCardStyleCopyCodeSubtitle =>
+      'Send it to a friend or keep it as a backup';
+
+  @override
+  String get diaryCardStyleImportCode => 'Import from clipboard';
+
+  @override
+  String get diaryCardStyleImportCodeSubtitle =>
+      'Apply a style code someone shared';
+
+  @override
+  String get diaryCardStyleCodeCopied => 'Style code copied';
+
+  @override
+  String get diaryCardStyleImportEmpty => 'The clipboard is empty';
+
+  @override
+  String get diaryCardStyleImportInvalid =>
+      'No valid style code in the clipboard';
+
+  @override
+  String get diaryCardStyleImportNewer =>
+      'Imported. Some settings from a newer version may not apply';
+
+  @override
+  String get diaryCardStyleImported => 'Style imported';
+
+  @override
+  String diaryCardStyleImportedNamed(String name) {
+    return 'Imported “$name”';
+  }
+
+  @override
+  String get diaryCardStyleCornerRadius => 'Card corners';
+
+  @override
+  String get diaryCardStyleTextAlign => 'Text alignment';
+
+  @override
+  String get diaryCardStyleAlignStart => 'Start';
+
+  @override
+  String get diaryCardStyleAlignCenter => 'Center';
+
+  @override
+  String get diaryCardStylePaddingH => 'Side padding';
+
+  @override
+  String get diaryCardStylePaddingV => 'Top and bottom padding';
+
+  @override
+  String get diaryCardStyleElementGap => 'Content spacing';
+
+  @override
+  String get diaryCardStyleCardGap => 'Card spacing';
+
+  @override
+  String get diaryCardStyleSideMargin => 'Screen margin';
+
+  @override
+  String get diaryCardStyleColumns => 'Columns';
+
+  @override
+  String diaryCardStyleColumnsValue(int count) {
+    return '$count columns';
+  }
+
+  @override
+  String get diaryCardStyleColumnsFootnote =>
+      'Fewer columns are used on narrow screens or with large text';
+
+  @override
+  String get diaryCardStyleCoverPosition => 'Cover position';
+
+  @override
+  String get diaryCardStyleCoverStart => 'Left';
+
+  @override
+  String get diaryCardStyleCoverEnd => 'Right';
+
+  @override
+  String get diaryCardStyleCoverTop => 'Top';
+
+  @override
+  String get diaryCardStyleCoverBackground => 'Background';
+
+  @override
+  String get diaryCardStyleCoverHidden => 'Hidden';
+
+  @override
+  String get diaryCardStyleCoverSize => 'Cover size';
+
+  @override
+  String get diaryCardStyleCoverSizeFootnote =>
+      'On narrow screens the cover shrinks to leave room for text';
+
+  @override
+  String get diaryCardStyleCoverShape => 'Cover shape';
+
+  @override
+  String get diaryCardStyleShapeSquare => 'Square';
+
+  @override
+  String get diaryCardStyleShapeLandscape => 'Landscape';
+
+  @override
+  String get diaryCardStyleShapePortrait => 'Portrait';
+
+  @override
+  String get diaryCardStyleShapeCircle => 'Circle';
+
+  @override
+  String get diaryCardStyleCoverRadius => 'Cover corners';
+
+  @override
+  String get diaryCardStyleCoverHeight => 'Cover height';
+
+  @override
+  String get diaryCardStyleCoverInset => 'Inset cover';
+
+  @override
+  String get diaryCardStyleCoverInsetSubtitle =>
+      'Keep a margin and rounded corners instead of running edge to edge';
+
+  @override
+  String get diaryCardStyleCoverDivider => 'Divider below the cover';
+
+  @override
+  String get diaryCardStyleCoverGap => 'Gap between cover and text';
+
+  @override
+  String get diaryCardStyleScrim => 'Text panel strength';
+
+  @override
+  String get diaryCardStyleCollage => 'Photo collage';
+
+  @override
+  String get diaryCardStyleCollageSubtitle =>
+      'Top covers combine up to three photos from the entry';
+
+  @override
+  String get diaryCardStyleCoverFallback => 'Without a cover';
+
+  @override
+  String get diaryCardStyleFallbackNone => 'Nothing';
+
+  @override
+  String get diaryCardStyleFallbackDate => 'Date block';
+
+  @override
+  String get diaryCardStyleFallbackMood => 'Mood tile';
+
+  @override
+  String get diaryCardStyleShowTitle => 'Show title';
+
+  @override
+  String get diaryCardStyleShowUntitled =>
+      'Show “Untitled” when there is no title';
+
+  @override
+  String get diaryCardStyleShowUntitledSubtitle =>
+      'When off, the title line is left out';
+
+  @override
+  String get diaryCardStyleShowPreview => 'Show excerpt';
+
+  @override
+  String get diaryCardStyleTitleLines => 'Title lines';
+
+  @override
+  String get diaryCardStylePreviewLines => 'Excerpt lines';
+
+  @override
+  String diaryCardStyleLinesValue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines',
+      one: '1 line',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryCardStyleTagStyle => 'Tag style';
+
+  @override
+  String get diaryCardStyleTagChip => 'Chips';
+
+  @override
+  String get diaryCardStyleTagPlain => 'Text';
+
+  @override
+  String get diaryCardStyleTagDot => 'Dots';
+
+  @override
+  String get diaryCardStylePinnedBadge => 'Pinned badge';
+
+  @override
+  String get diaryCardStylePinnedStandard => 'Icon and label';
+
+  @override
+  String get diaryCardStylePinnedIcon => 'Icon only';
+
+  @override
+  String get diaryCardStylePinnedHidden => 'Hidden';
+
+  @override
+  String get diaryCardStylePinnedTint => 'Tint pinned cards';
+
+  @override
+  String get diaryCardStylePinnedTintSubtitle =>
+      'A light theme-colored fill and border';
+
+  @override
+  String get diaryCardStyleShowMood => 'Show mood';
+
+  @override
+  String get diaryCardStyleShowWeather => 'Show weather';
+
+  @override
+  String get diaryCardStyleIndicatorStyle => 'Mood and weather';
+
+  @override
+  String get diaryCardStyleIndicatorStamp => 'Stamp';
+
+  @override
+  String get diaryCardStyleIndicatorPlain => 'Icons only';
+
+  @override
+  String get diaryCardStyleMetaPosition => 'Mood and weather position';
+
+  @override
+  String get diaryCardStyleMetaEyebrow => 'Date line';
+
+  @override
+  String get diaryCardStyleMetaFooter => 'Footer';
+
+  @override
+  String get diaryCardStyleMetaCover => 'On cover';
+
+  @override
+  String get diaryCardStyleExtras => 'Footer details';
+
+  @override
+  String get diaryCardStyleShowLocation => 'Location';
+
+  @override
+  String get diaryCardStyleShowEnergy => 'Energy';
+
+  @override
+  String get diaryCardStyleShowWordCount => 'Character count';
+
+  @override
+  String get diaryCardStyleShowMedia => 'Photo and attachment badges';
+
+  @override
+  String get diaryCardStyleShowDate => 'Show date';
+
+  @override
+  String get diaryCardStyleDateFormat => 'Date format';
+
+  @override
+  String get diaryCardStyleDateEyebrow => 'Month and day';
+
+  @override
+  String get diaryCardStyleDateFull => 'Full date';
+
+  @override
+  String get diaryCardStyleDateNumeric => 'Numeric';
+
+  @override
+  String get diaryCardStyleDateRelative => 'Relative';
+
+  @override
+  String get diaryCardStyleShowWeekday => 'Show weekday';
+
+  @override
+  String get diaryCardStyleShowTime => 'Show time';
+
+  @override
+  String get diaryCardStyleRelativeNote =>
+      'Relative dates don\'t include the weekday or time';
+
+  @override
+  String get diaryCardStyleDateSource => 'Date shown';
+
+  @override
+  String get diaryCardStyleDateCreated => 'When written';
+
+  @override
+  String get diaryCardStyleDateUpdated => 'Last edited';
+
+  @override
+  String get diaryCardStyleFooterTime => 'Footer time';
+
+  @override
+  String get diaryCardStyleFooterRelative => 'Updated … ago';
+
+  @override
+  String get diaryCardStyleFooterUpdated => 'Update time';
+
+  @override
+  String get diaryCardStyleFooterCreated => 'Written time';
+
+  @override
+  String get diaryCardStyleFooterHidden => 'Hidden';
+
+  @override
+  String get diaryCardStyleOrderHint =>
+      'Drag the handles to change the order of a card\'s parts';
+
+  @override
+  String get diaryCardStyleBlockEyebrow => 'Date line';
+
+  @override
+  String get diaryCardStyleBlockTitle => 'Title';
+
+  @override
+  String get diaryCardStyleBlockTags => 'Tags';
+
+  @override
+  String get diaryCardStyleBlockPreview => 'Excerpt';
+
+  @override
+  String get diaryCardStyleBlockFooter => 'Footer';
+
+  @override
+  String get diaryCardStyleOrderReset => 'Restore default order';
+
+  @override
+  String diaryCardStyleDragHandle(String name) {
+    return 'Drag to move “$name”';
+  }
+
+  @override
+  String get diaryCardStyleTitleSize => 'Title size';
+
+  @override
+  String get diaryCardStyleTitleWeight => 'Title weight';
+
+  @override
+  String get diaryCardStyleWeightRegular => 'Regular';
+
+  @override
+  String get diaryCardStyleWeightMedium => 'Medium';
+
+  @override
+  String get diaryCardStyleWeightBold => 'Bold';
+
+  @override
+  String get diaryCardStylePreviewSize => 'Excerpt size';
+
+  @override
+  String get diaryCardStyleLineHeight => 'Excerpt line spacing';
+
+  @override
+  String get diaryCardStyleLineCompact => 'Compact';
+
+  @override
+  String get diaryCardStyleLineStandard => 'Standard';
+
+  @override
+  String get diaryCardStyleLineRelaxed => 'Relaxed';
+
+  @override
+  String get diaryCardStyleMetaSize => 'Detail text size';
+
+  @override
+  String get diaryCardStyleTitleColor => 'Title color';
+
+  @override
+  String get diaryCardStyleBodyColor => 'Text color';
+
+  @override
+  String get diaryCardStyleEnsureContrast => 'Keep text readable';
+
+  @override
+  String get diaryCardStyleEnsureContrastSubtitle =>
+      'When a text color blends into the card, use a clearer one';
+
+  @override
+  String get diaryCardStyleBackground => 'Card color';
+
+  @override
+  String get diaryCardStyleOpacity => 'Card opacity';
+
+  @override
+  String get diaryCardStyleGradient => 'Gradient';
+
+  @override
+  String get diaryCardStyleGradientSubtitle =>
+      'Blend from the card color into a second color';
+
+  @override
+  String get diaryCardStyleGradientEnd => 'Second gradient color';
+
+  @override
+  String get diaryCardStyleGradientDirection => 'Gradient direction';
+
+  @override
+  String get diaryCardStyleDirectionVertical => 'Vertical';
+
+  @override
+  String get diaryCardStyleDirectionHorizontal => 'Horizontal';
+
+  @override
+  String get diaryCardStyleDirectionDiagonal => 'Diagonal';
+
+  @override
+  String get diaryCardStyleBorderWidth => 'Border width';
+
+  @override
+  String get diaryCardStyleBorderColor => 'Border color';
+
+  @override
+  String get diaryCardStyleAccentBar => 'Accent strip';
+
+  @override
+  String get diaryCardStyleAccentNone => 'None';
+
+  @override
+  String get diaryCardStyleAccentStart => 'Side';
+
+  @override
+  String get diaryCardStyleAccentTop => 'Top';
+
+  @override
+  String get diaryCardStyleAccentWidth => 'Strip width';
+
+  @override
+  String get diaryCardStyleAccentColor => 'Strip color';
+
+  @override
+  String get diaryCardStyleShadow => 'Shadow';
+
+  @override
+  String get diaryCardStyleShadowThemed => 'Default';
+
+  @override
+  String get diaryCardStyleShadowNone => 'None';
+
+  @override
+  String get diaryCardStyleShadowSoft => 'Soft';
+
+  @override
+  String get diaryCardStyleShadowFloating => 'Floating';
+
+  @override
+  String get diaryCardStyleShadowCustom => 'Custom';
+
+  @override
+  String get diaryCardStyleShadowElevation => 'Shadow depth';
+
+  @override
+  String get diaryCardStyleShadowColor => 'Shadow color';
+
+  @override
+  String get diaryCardStyleSourceTheme => 'Default';
+
+  @override
+  String get diaryCardStyleSourcePrimary => 'Primary';
+
+  @override
+  String get diaryCardStyleSourceSecondary => 'Secondary';
+
+  @override
+  String get diaryCardStyleSourceTertiary => 'Tertiary';
+
+  @override
+  String get diaryCardStyleSourceMood => 'Mood';
+
+  @override
+  String get diaryCardStyleSourceTag => 'First tag';
+
+  @override
+  String get diaryCardStyleSourceCustom => 'Custom';
+
+  @override
+  String get diaryCardStyleSourceMoodHint =>
+      'Uses each entry\'s mood, or the default color when there is none';
+
+  @override
+  String get diaryCardStyleSourceTagHint =>
+      'Uses the color of each entry\'s first tag';
+
+  @override
+  String get diaryCardStyleStrength => 'Intensity';
+
+  @override
+  String get diaryCardStyleEditColor => 'Edit color';
+
+  @override
+  String get diaryCardStyleColorDarkAuto => 'Pick the dark color automatically';
+
+  @override
+  String get diaryCardStyleColorDarkAutoSubtitle =>
+      'Derive a readable dark-mode color from the light one';
+
+  @override
+  String get diaryCardStyleHexLabel => 'Hex color';
+
+  @override
+  String get diaryCardStyleHexInvalid =>
+      'Enter a 6-digit hex color, such as FFB300';
+
+  @override
+  String get diaryCardStyleSheetSection => 'Card style';
+
+  @override
+  String get diaryCardStyleSheetEntry => 'Customize card style';
+
+  @override
+  String get diaryCardStyleSheetEntrySubtitle =>
+      'Covers, text, colors and layout';
+
+  @override
+  String get diaryCardStyleSampleTitle1 => 'Sunset by the sea';
+
+  @override
+  String get diaryCardStyleSampleBody1 =>
+      'Walked along the shore until dusk. The waves kept rolling in while the sky slid from orange to lilac.';
+
+  @override
+  String get diaryCardStyleSampleTitle2 => 'Weekend hike';
+
+  @override
+  String get diaryCardStyleSampleBody2 =>
+      'It was windy at the top. I took lots of photos and recorded the wind. My legs were shaking on the way down.';
+
+  @override
+  String get diaryCardStyleSampleTitle3 =>
+      'A rainy workday spent reworking this week’s plan at the cafe';
+
+  @override
+  String get diaryCardStyleSampleBody3 =>
+      'Reworked this week\'s to-dos and jotted down a few ideas. Early night tonight.';
+
+  @override
+  String get diaryCardStyleSampleBody4 =>
+      'Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.';
+
+  @override
+  String get diaryCardStyleSampleCapsuleTitle => 'A letter to myself next year';
+
+  @override
+  String get diaryCardStyleSampleTag1 => 'Travel';
+
+  @override
+  String get diaryCardStyleSampleTag2 => 'Life';
+
+  @override
+  String get diaryCardStyleSampleTag3 => 'Reading';
+
+  @override
+  String get diaryCardStyleSampleLocation => 'Seaside boardwalk';
+
+  @override
+  String diaryCardStyleValueDp(String value) {
+    return '${value}dp';
+  }
+
+  @override
+  String diaryCardStyleValuePercent(String value) {
+    return '$value%';
+  }
 }

@@ -14,6 +14,7 @@ Future<_Calls> _openSheet(
   WidgetTester tester, {
   DiarySortMode sortMode = DiarySortMode.updatedDesc,
   double textScale = 1,
+  VoidCallback? onOpenCardStyle,
 }) async {
   final calls = (sorts: <DiarySortMode>[], layouts: <DiaryLayoutMode>[]);
   await tester.pumpWidget(
@@ -38,6 +39,7 @@ Future<_Calls> _openSheet(
                 layoutMode: DiaryLayoutMode.list,
                 onSortModeChanged: calls.sorts.add,
                 onLayoutModeChanged: calls.layouts.add,
+                onOpenCardStyle: onOpenCardStyle,
               ),
               child: const Text('open'),
             ),
@@ -135,5 +137,44 @@ void main() {
     await tester.tap(lastOption);
     await tester.pumpAndSettle();
     expect(calls.layouts, <DiaryLayoutMode>[DiaryLayoutMode.waterfall]);
+  });
+
+  testWidgets('the card style shortcut shows only when provided', (
+    tester,
+  ) async {
+    await _openSheet(tester);
+    expect(find.text('自定义卡片样式'), findsNothing);
+  });
+
+  testWidgets('the card style shortcut closes the sheet before opening', (
+    tester,
+  ) async {
+    var sheetOpenWhenCalled = true;
+    var opened = 0;
+    await _openSheet(
+      tester,
+      onOpenCardStyle: () {
+        opened++;
+        sheetOpenWhenCalled = find
+            .byType(DiaryViewOptionsSheet)
+            .evaluate()
+            .isNotEmpty;
+      },
+    );
+    final entry = find.text('自定义卡片样式');
+    await tester.scrollUntilVisible(
+      entry,
+      120,
+      scrollable: find.descendant(
+        of: find.byType(DiaryViewOptionsSheet),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(entry);
+    await tester.pumpAndSettle();
+    expect(opened, 1);
+    // 先发起关闭（路由已出栈），面板随后退场。
+    expect(find.byType(DiaryViewOptionsSheet), findsNothing);
+    expect(sheetOpenWhenCalled, isTrue);
   });
 }

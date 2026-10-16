@@ -51,8 +51,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   static const Duration _loaderShowDelay = Duration(milliseconds: 250);
   static const Duration _loaderMinVisible = Duration(milliseconds: 500);
 
-  late final MaterialTheme _lightMaterialTheme;
-  late final MaterialTheme _darkMaterialTheme;
   Color? _cachedThemeSeedColor;
   (ThemeData, ThemeData)? _cachedThemes;
   late final HomeHintVisibilityController _homeHintVisibilityController;
@@ -71,8 +69,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   @override
   void initState() {
     super.initState();
-    _lightMaterialTheme = MaterialTheme(Typography.material2021().black);
-    _darkMaterialTheme = MaterialTheme(Typography.material2021().white);
     _homeHintVisibilityController = HomeHintVisibilityController();
     _loaderShowTimer = Timer(_loaderShowDelay, _handleLoaderShowDelayElapsed);
     // 编辑期不删除媒体文件，冷启动后延迟回收无人引用的文件与选择器缓存。
@@ -220,19 +216,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     if (cached != null && _cachedThemeSeedColor == seedColor) {
       return cached;
     }
-    ThemeData build(MaterialTheme materialTheme, Brightness brightness) {
-      return materialTheme.theme(
-        ColorScheme.fromSeed(
-          seedColor: seedColor,
-          brightness: brightness,
-          dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
-        ),
-      );
-    }
-
     final themes = (
-      build(_lightMaterialTheme, Brightness.light),
-      build(_darkMaterialTheme, Brightness.dark),
+      buildSeededAppTheme(seedColor, Brightness.light),
+      buildSeededAppTheme(seedColor, Brightness.dark),
     );
     _cachedThemeSeedColor = seedColor;
     _cachedThemes = themes;

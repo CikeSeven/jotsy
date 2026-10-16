@@ -3951,5 +3951,1071 @@
   "diaryTypographySampleBody": "The rain stopped just before dusk, and the osmanthus downstairs smelled sweeter than ever.\nOn the way home I bought a bag of roasted chestnuts and peeled them as I walked; my hands stayed warm the whole time.\nNothing big happened today, but every moment felt steady, so I wanted to write it down.",
   "@diaryTypographySampleBody": {
     "description": "Body layout preview: sample body; newlines separate paragraphs to show paragraph spacing."
+  },
+  "diaryCardDateWithWeekday": "{date} · {weekday}",
+  "@diaryCardDateWithWeekday": {
+    "description": "Diary card eyebrow: a date followed by its weekday (custom date formats).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardDateWithTime": "{date} {time}",
+  "@diaryCardDateWithTime": {
+    "description": "Diary card eyebrow: a date followed by the time of day (HH:mm).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardFooterUpdated": "Updated {time}",
+  "@diaryCardFooterUpdated": {
+    "description": "Diary card footer: exact time of the last update.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardFooterCreated": "Written {time}",
+  "@diaryCardFooterCreated": {
+    "description": "Diary card footer: when the diary was written.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardCharCount": "{count} chars",
+  "@diaryCardCharCount": {
+    "description": "Diary card footer: character count of the entry (formatted number).",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardMediaImages": "{count, plural, =1{1 photo} other{{count} photos}}",
+  "@diaryCardMediaImages": {
+    "description": "Screen-reader label of the diary card media badge: number of photos in the entry.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardMediaAudio": "Has a recording",
+  "@diaryCardMediaAudio": {
+    "description": "Screen-reader label of the diary card media badge: the entry has a voice recording."
+  },
+  "diaryCardMediaVideo": "Has a video",
+  "@diaryCardMediaVideo": {
+    "description": "Screen-reader label of the diary card media badge: the entry has a video."
+  },
+  "diaryCardMediaAttachment": "Has an attachment",
+  "@diaryCardMediaAttachment": {
+    "description": "Screen-reader label of the diary card media badge: the entry has an attachment."
+  },
+  "diaryCardLocation": "Location: {location}",
+  "@diaryCardLocation": {
+    "description": "Screen-reader label of the location on the diary card footer.",
+    "placeholders": {
+      "location": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleTitle": "Diary card style",
+  "@diaryCardStyleTitle": {
+    "description": "Title of the diary card style page and its entry in Appearance settings."
+  },
+  "diaryCardStyleEntrySubtitle": "Current: {name}",
+  "@diaryCardStyleEntrySubtitle": {
+    "description": "Subtitle of the card style entry in Appearance settings: the current style name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleCustom": "Custom",
+  "@diaryCardStyleCustom": {
+    "description": "Name shown when the current card style matches no preset or saved style."
+  },
+  "diaryCardStyleResetDone": "Restored the default style",
+  "@diaryCardStyleResetDone": {
+    "description": "Diary card style settings: message after Reset (can be undone)."
+  },
+  "diaryCardStylePreviewLight": "Light preview",
+  "@diaryCardStylePreviewLight": {
+    "description": "Diary card style settings: tooltip of the button that previews the light theme."
+  },
+  "diaryCardStylePreviewDark": "Dark preview",
+  "@diaryCardStylePreviewDark": {
+    "description": "Diary card style settings: tooltip of the button that previews the dark theme."
+  },
+  "diaryCardStylePanelHandle": "Options panel",
+  "@diaryCardStylePanelHandle": {
+    "description": "Diary card style settings: screen reader name of the options panel's drag handle (drag or tap to resize the panel)."
+  },
+  "diaryCardStylePanelCollapsed": "Collapsed",
+  "@diaryCardStylePanelCollapsed": {
+    "description": "Diary card style settings: screen reader state when the options panel is collapsed to its tab bar."
+  },
+  "diaryCardStylePanelHalf": "Half open",
+  "@diaryCardStylePanelHalf": {
+    "description": "Diary card style settings: screen reader state when the options panel shares the screen with the preview."
+  },
+  "diaryCardStylePanelExpanded": "Expanded",
+  "@diaryCardStylePanelExpanded": {
+    "description": "Diary card style settings: screen reader state when the options panel is expanded over the preview."
+  },
+  "diaryCardStyleSharedGroup": "All layouts",
+  "@diaryCardStyleSharedGroup": {
+    "description": "Diary card style settings: group title for options that apply to both list and waterfall layouts."
+  },
+  "diaryCardStyleListGroup": "List layout only",
+  "@diaryCardStyleListGroup": {
+    "description": "Diary card style settings: group title for options that only apply to the list layout."
+  },
+  "diaryCardStyleWaterfallGroup": "Waterfall layout only",
+  "@diaryCardStyleWaterfallGroup": {
+    "description": "Diary card style settings: group title for options that only apply to the waterfall layout."
+  },
+  "diaryCardStyleModeFootnote": "Switch between list and waterfall above the preview to adjust the other layout",
+  "@diaryCardStyleModeFootnote": {
+    "description": "Diary card style settings: note below the layout-only groups."
+  },
+  "diaryCardStyleTabPresets": "Presets",
+  "@diaryCardStyleTabPresets": {
+    "description": "Diary card style settings: the “Presets” tab."
+  },
+  "diaryCardStyleTabLayout": "Layout",
+  "@diaryCardStyleTabLayout": {
+    "description": "Diary card style settings: the “Layout” tab."
+  },
+  "diaryCardStyleTabCover": "Cover",
+  "@diaryCardStyleTabCover": {
+    "description": "Diary card style settings: the “Cover” tab."
+  },
+  "diaryCardStyleTabContent": "Content",
+  "@diaryCardStyleTabContent": {
+    "description": "Diary card style settings: the “Content” tab."
+  },
+  "diaryCardStyleTabDate": "Date",
+  "@diaryCardStyleTabDate": {
+    "description": "Diary card style settings: the “Date” tab."
+  },
+  "diaryCardStyleTabOrder": "Order",
+  "@diaryCardStyleTabOrder": {
+    "description": "Diary card style settings: the “Order” tab."
+  },
+  "diaryCardStyleTabText": "Text",
+  "@diaryCardStyleTabText": {
+    "description": "Diary card style settings: the “Text” tab."
+  },
+  "diaryCardStyleTabColor": "Color",
+  "@diaryCardStyleTabColor": {
+    "description": "Diary card style settings: the “Color” tab."
+  },
+  "diaryCardStyleTabTexture": "Finish",
+  "@diaryCardStyleTabTexture": {
+    "description": "Diary card style settings: the “Finish” tab."
+  },
+  "diaryCardStylePresetsTitle": "Built-in styles",
+  "@diaryCardStylePresetsTitle": {
+    "description": "Diary card style settings: group title of the built-in presets."
+  },
+  "diaryCardStylePresetClassic": "Classic",
+  "@diaryCardStylePresetClassic": {
+    "description": "Diary card style settings: name of the “Classic” preset."
+  },
+  "diaryCardStylePresetClassicDesc": "The default: a square cover on the left and a two-line excerpt",
+  "@diaryCardStylePresetClassicDesc": {
+    "description": "Diary card style settings: one-line description of the “Classic” preset."
+  },
+  "diaryCardStylePresetCompact": "Compact",
+  "@diaryCardStylePresetCompact": {
+    "description": "Diary card style settings: name of the “Compact” preset."
+  },
+  "diaryCardStylePresetCompactDesc": "Small covers and one-line excerpts to fit more on screen",
+  "@diaryCardStylePresetCompactDesc": {
+    "description": "Diary card style settings: one-line description of the “Compact” preset."
+  },
+  "diaryCardStylePresetMagazine": "Magazine",
+  "@diaryCardStylePresetMagazine": {
+    "description": "Diary card style settings: name of the “Magazine” preset."
+  },
+  "diaryCardStylePresetMagazineDesc": "Full-width photos, larger titles and airy lines",
+  "@diaryCardStylePresetMagazineDesc": {
+    "description": "Diary card style settings: one-line description of the “Magazine” preset."
+  },
+  "diaryCardStylePresetMinimal": "Minimal",
+  "@diaryCardStylePresetMinimal": {
+    "description": "Diary card style settings: name of the “Minimal” preset."
+  },
+  "diaryCardStylePresetMinimalDesc": "Just the words: no covers, borders or shadows",
+  "@diaryCardStylePresetMinimalDesc": {
+    "description": "Diary card style settings: one-line description of the “Minimal” preset."
+  },
+  "diaryCardStylePresetGallery": "Gallery",
+  "@diaryCardStylePresetGallery": {
+    "description": "Diary card style settings: name of the “Gallery” preset."
+  },
+  "diaryCardStylePresetGalleryDesc": "Photos first, with collages and cover backgrounds",
+  "@diaryCardStylePresetGalleryDesc": {
+    "description": "Diary card style settings: one-line description of the “Gallery” preset."
+  },
+  "diaryCardStylePresetSticky": "Sticky note",
+  "@diaryCardStylePresetSticky": {
+    "description": "Diary card style settings: name of the “Sticky note” preset."
+  },
+  "diaryCardStylePresetStickyDesc": "Warm paper, a colored top strip and small corners",
+  "@diaryCardStylePresetStickyDesc": {
+    "description": "Diary card style settings: one-line description of the “Sticky note” preset."
+  },
+  "diaryCardStylePresetJournal": "Journal",
+  "@diaryCardStylePresetJournal": {
+    "description": "Diary card style settings: name of the “Journal” preset."
+  },
+  "diaryCardStylePresetJournalDesc": "A side strip, and a date block when there is no cover",
+  "@diaryCardStylePresetJournalDesc": {
+    "description": "Diary card style settings: one-line description of the “Journal” preset."
+  },
+  "diaryCardStylePresetMood": "Mood colors",
+  "@diaryCardStylePresetMood": {
+    "description": "Diary card style settings: name of the “Mood colors” preset."
+  },
+  "diaryCardStylePresetMoodDesc": "Card colors follow the mood of each entry",
+  "@diaryCardStylePresetMoodDesc": {
+    "description": "Diary card style settings: one-line description of the “Mood colors” preset."
+  },
+  "diaryCardStyleApplied": "Applied “{name}”",
+  "@diaryCardStyleApplied": {
+    "description": "Diary card style settings: message after applying a preset or saved style (can be undone).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleSavedTitle": "My styles",
+  "@diaryCardStyleSavedTitle": {
+    "description": "Diary card style settings: group title of the styles the user saved."
+  },
+  "diaryCardStyleSavedEmpty": "Save a style you like to switch back in one tap",
+  "@diaryCardStyleSavedEmpty": {
+    "description": "Diary card style settings: hint shown before any style is saved."
+  },
+  "diaryCardStyleSaveCurrent": "Save current style",
+  "@diaryCardStyleSaveCurrent": {
+    "description": "Diary card style settings: button that saves the current style to My styles."
+  },
+  "diaryCardStyleSaveLimit": "You can save up to {count} styles",
+  "@diaryCardStyleSaveLimit": {
+    "description": "Diary card style settings: note shown when My styles is full.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleSaveDialogTitle": "Save style",
+  "@diaryCardStyleSaveDialogTitle": {
+    "description": "Diary card style settings: title of the save style dialog."
+  },
+  "diaryCardStyleRenameDialogTitle": "Rename style",
+  "@diaryCardStyleRenameDialogTitle": {
+    "description": "Diary card style settings: title of the rename style dialog."
+  },
+  "diaryCardStyleNameLabel": "Style name",
+  "@diaryCardStyleNameLabel": {
+    "description": "Diary card style settings: label of the style name field."
+  },
+  "diaryCardStyleDefaultName": "My style {count}",
+  "@diaryCardStyleDefaultName": {
+    "description": "Diary card style settings: prefilled name when saving a style; count is its number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleRename": "Rename",
+  "@diaryCardStyleRename": {
+    "description": "Diary card style settings: Rename item in the saved style menu."
+  },
+  "diaryCardStyleSavedDone": "Saved “{name}”",
+  "@diaryCardStyleSavedDone": {
+    "description": "Diary card style settings: message after saving a style.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleDeletedDone": "Deleted “{name}”",
+  "@diaryCardStyleDeletedDone": {
+    "description": "Diary card style settings: message after deleting a saved style (can be undone).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleSavedActions": "More actions for “{name}”",
+  "@diaryCardStyleSavedActions": {
+    "description": "Diary card style settings: tooltip of the menu button on a saved style.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleShareTitle": "Share and import",
+  "@diaryCardStyleShareTitle": {
+    "description": "Diary card style settings: group title for sharing and importing style codes."
+  },
+  "diaryCardStyleCopyCode": "Copy style code",
+  "@diaryCardStyleCopyCode": {
+    "description": "Diary card style settings: copies the current style as a style code."
+  },
+  "diaryCardStyleCopyCodeSubtitle": "Send it to a friend or keep it as a backup",
+  "@diaryCardStyleCopyCodeSubtitle": {
+    "description": "Diary card style settings: description of Copy style code."
+  },
+  "diaryCardStyleImportCode": "Import from clipboard",
+  "@diaryCardStyleImportCode": {
+    "description": "Diary card style settings: imports a style code from the clipboard."
+  },
+  "diaryCardStyleImportCodeSubtitle": "Apply a style code someone shared",
+  "@diaryCardStyleImportCodeSubtitle": {
+    "description": "Diary card style settings: description of Import from clipboard."
+  },
+  "diaryCardStyleCodeCopied": "Style code copied",
+  "@diaryCardStyleCodeCopied": {
+    "description": "Diary card style settings: message after copying the style code."
+  },
+  "diaryCardStyleImportEmpty": "The clipboard is empty",
+  "@diaryCardStyleImportEmpty": {
+    "description": "Diary card style settings: message when the clipboard is empty on import."
+  },
+  "diaryCardStyleImportInvalid": "No valid style code in the clipboard",
+  "@diaryCardStyleImportInvalid": {
+    "description": "Diary card style settings: message when the clipboard has no valid style code."
+  },
+  "diaryCardStyleImportNewer": "Imported. Some settings from a newer version may not apply",
+  "@diaryCardStyleImportNewer": {
+    "description": "Diary card style settings: message after importing a code from a newer app version (can be undone)."
+  },
+  "diaryCardStyleImported": "Style imported",
+  "@diaryCardStyleImported": {
+    "description": "Diary card style settings: message after importing a style code (can be undone)."
+  },
+  "diaryCardStyleImportedNamed": "Imported “{name}”",
+  "@diaryCardStyleImportedNamed": {
+    "description": "Diary card style settings: message after importing a named style code (can be undone).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleCornerRadius": "Card corners",
+  "@diaryCardStyleCornerRadius": {
+    "description": "Diary card style settings: card corner radius."
+  },
+  "diaryCardStyleTextAlign": "Text alignment",
+  "@diaryCardStyleTextAlign": {
+    "description": "Diary card style settings: alignment of the card text."
+  },
+  "diaryCardStyleAlignStart": "Start",
+  "@diaryCardStyleAlignStart": {
+    "description": "Diary card style settings: text aligned to the start edge."
+  },
+  "diaryCardStyleAlignCenter": "Center",
+  "@diaryCardStyleAlignCenter": {
+    "description": "Diary card style settings: centered text."
+  },
+  "diaryCardStylePaddingH": "Side padding",
+  "@diaryCardStylePaddingH": {
+    "description": "Diary card style settings: horizontal padding inside the card."
+  },
+  "diaryCardStylePaddingV": "Top and bottom padding",
+  "@diaryCardStylePaddingV": {
+    "description": "Diary card style settings: vertical padding inside the card."
+  },
+  "diaryCardStyleElementGap": "Content spacing",
+  "@diaryCardStyleElementGap": {
+    "description": "Diary card style settings: spacing between the date, title, excerpt and other parts."
+  },
+  "diaryCardStyleCardGap": "Card spacing",
+  "@diaryCardStyleCardGap": {
+    "description": "Diary card style settings: spacing between neighboring cards."
+  },
+  "diaryCardStyleSideMargin": "Screen margin",
+  "@diaryCardStyleSideMargin": {
+    "description": "Diary card style settings: distance between the cards and the screen edges."
+  },
+  "diaryCardStyleColumns": "Columns",
+  "@diaryCardStyleColumns": {
+    "description": "Diary card style settings: number of waterfall columns."
+  },
+  "diaryCardStyleColumnsValue": "{count} columns",
+  "@diaryCardStyleColumnsValue": {
+    "description": "Diary card style settings: waterfall column count option.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleColumnsFootnote": "Fewer columns are used on narrow screens or with large text",
+  "@diaryCardStyleColumnsFootnote": {
+    "description": "Diary card style settings: note about the waterfall column count."
+  },
+  "diaryCardStyleCoverPosition": "Cover position",
+  "@diaryCardStyleCoverPosition": {
+    "description": "Diary card style settings: where the cover sits on the card."
+  },
+  "diaryCardStyleCoverStart": "Left",
+  "@diaryCardStyleCoverStart": {
+    "description": "Diary card style settings: cover on the left."
+  },
+  "diaryCardStyleCoverEnd": "Right",
+  "@diaryCardStyleCoverEnd": {
+    "description": "Diary card style settings: cover on the right."
+  },
+  "diaryCardStyleCoverTop": "Top",
+  "@diaryCardStyleCoverTop": {
+    "description": "Diary card style settings: cover on top."
+  },
+  "diaryCardStyleCoverBackground": "Background",
+  "@diaryCardStyleCoverBackground": {
+    "description": "Diary card style settings: cover as the card background."
+  },
+  "diaryCardStyleCoverHidden": "Hidden",
+  "@diaryCardStyleCoverHidden": {
+    "description": "Diary card style settings: no cover."
+  },
+  "diaryCardStyleCoverSize": "Cover size",
+  "@diaryCardStyleCoverSize": {
+    "description": "Diary card style settings: size of a side cover."
+  },
+  "diaryCardStyleCoverSizeFootnote": "On narrow screens the cover shrinks to leave room for text",
+  "@diaryCardStyleCoverSizeFootnote": {
+    "description": "Diary card style settings: note about the cover size."
+  },
+  "diaryCardStyleCoverShape": "Cover shape",
+  "@diaryCardStyleCoverShape": {
+    "description": "Diary card style settings: shape of a side cover."
+  },
+  "diaryCardStyleShapeSquare": "Square",
+  "@diaryCardStyleShapeSquare": {
+    "description": "Diary card style settings: square cover."
+  },
+  "diaryCardStyleShapeLandscape": "Landscape",
+  "@diaryCardStyleShapeLandscape": {
+    "description": "Diary card style settings: landscape (4:3) cover."
+  },
+  "diaryCardStyleShapePortrait": "Portrait",
+  "@diaryCardStyleShapePortrait": {
+    "description": "Diary card style settings: portrait (3:4) cover."
+  },
+  "diaryCardStyleShapeCircle": "Circle",
+  "@diaryCardStyleShapeCircle": {
+    "description": "Diary card style settings: circular cover."
+  },
+  "diaryCardStyleCoverRadius": "Cover corners",
+  "@diaryCardStyleCoverRadius": {
+    "description": "Diary card style settings: cover corner radius."
+  },
+  "diaryCardStyleCoverHeight": "Cover height",
+  "@diaryCardStyleCoverHeight": {
+    "description": "Diary card style settings: height of a top cover, or the minimum height of a background-cover card."
+  },
+  "diaryCardStyleCoverInset": "Inset cover",
+  "@diaryCardStyleCoverInset": {
+    "description": "Diary card style settings: keeps a top cover inside the padding."
+  },
+  "diaryCardStyleCoverInsetSubtitle": "Keep a margin and rounded corners instead of running edge to edge",
+  "@diaryCardStyleCoverInsetSubtitle": {
+    "description": "Diary card style settings: description of Inset cover."
+  },
+  "diaryCardStyleCoverDivider": "Divider below the cover",
+  "@diaryCardStyleCoverDivider": {
+    "description": "Diary card style settings: thin line between a full-width top cover and the text."
+  },
+  "diaryCardStyleCoverGap": "Gap between cover and text",
+  "@diaryCardStyleCoverGap": {
+    "description": "Diary card style settings: spacing between the cover and the text."
+  },
+  "diaryCardStyleScrim": "Text panel strength",
+  "@diaryCardStyleScrim": {
+    "description": "Diary card style settings: opacity of the text panel over a background cover."
+  },
+  "diaryCardStyleCollage": "Photo collage",
+  "@diaryCardStyleCollage": {
+    "description": "Diary card style settings: combines several photos in a top cover."
+  },
+  "diaryCardStyleCollageSubtitle": "Top covers combine up to three photos from the entry",
+  "@diaryCardStyleCollageSubtitle": {
+    "description": "Diary card style settings: description of Photo collage."
+  },
+  "diaryCardStyleCoverFallback": "Without a cover",
+  "@diaryCardStyleCoverFallback": {
+    "description": "Diary card style settings: what fills the cover spot when an entry has no photo."
+  },
+  "diaryCardStyleFallbackNone": "Nothing",
+  "@diaryCardStyleFallbackNone": {
+    "description": "Diary card style settings: no placeholder without a cover."
+  },
+  "diaryCardStyleFallbackDate": "Date block",
+  "@diaryCardStyleFallbackDate": {
+    "description": "Diary card style settings: a large date without a cover."
+  },
+  "diaryCardStyleFallbackMood": "Mood tile",
+  "@diaryCardStyleFallbackMood": {
+    "description": "Diary card style settings: the mood without a cover."
+  },
+  "diaryCardStyleShowTitle": "Show title",
+  "@diaryCardStyleShowTitle": {
+    "description": "Diary card style settings: whether to show the entry title."
+  },
+  "diaryCardStyleShowUntitled": "Show “Untitled” when there is no title",
+  "@diaryCardStyleShowUntitled": {
+    "description": "Diary card style settings: whether entries without a title show the “Untitled” placeholder."
+  },
+  "diaryCardStyleShowUntitledSubtitle": "When off, the title line is left out",
+  "@diaryCardStyleShowUntitledSubtitle": {
+    "description": "Diary card style settings: explanation of the “Untitled” placeholder switch."
+  },
+  "diaryCardStyleShowPreview": "Show excerpt",
+  "@diaryCardStyleShowPreview": {
+    "description": "Diary card style settings: whether to show the text excerpt."
+  },
+  "diaryCardStyleTitleLines": "Title lines",
+  "@diaryCardStyleTitleLines": {
+    "description": "Diary card style settings: maximum lines for the title."
+  },
+  "diaryCardStylePreviewLines": "Excerpt lines",
+  "@diaryCardStylePreviewLines": {
+    "description": "Diary card style settings: maximum lines for the excerpt."
+  },
+  "diaryCardStyleLinesValue": "{count, plural, =1{1 line} other{{count} lines}}",
+  "@diaryCardStyleLinesValue": {
+    "description": "Diary card style settings: number of lines.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCardStyleTagStyle": "Tag style",
+  "@diaryCardStyleTagStyle": {
+    "description": "Diary card style settings: style of tags on the card."
+  },
+  "diaryCardStyleTagChip": "Chips",
+  "@diaryCardStyleTagChip": {
+    "description": "Diary card style settings: tags as tinted chips."
+  },
+  "diaryCardStyleTagPlain": "Text",
+  "@diaryCardStyleTagPlain": {
+    "description": "Diary card style settings: tags as plain text."
+  },
+  "diaryCardStyleTagDot": "Dots",
+  "@diaryCardStyleTagDot": {
+    "description": "Diary card style settings: tags with colored dots."
+  },
+  "diaryCardStylePinnedBadge": "Pinned badge",
+  "@diaryCardStylePinnedBadge": {
+    "description": "Diary card style settings: badge style for pinned entries."
+  },
+  "diaryCardStylePinnedStandard": "Icon and label",
+  "@diaryCardStylePinnedStandard": {
+    "description": "Diary card style settings: pinned badge with the pin icon and label."
+  },
+  "diaryCardStylePinnedIcon": "Icon only",
+  "@diaryCardStylePinnedIcon": {
+    "description": "Diary card style settings: pinned badge with the pin icon only."
+  },
+  "diaryCardStylePinnedHidden": "Hidden",
+  "@diaryCardStylePinnedHidden": {
+    "description": "Diary card style settings: no pinned badge."
+  },
+  "diaryCardStylePinnedTint": "Tint pinned cards",
+  "@diaryCardStylePinnedTint": {
+    "description": "Diary card style settings: gives pinned cards a light theme tint."
+  },
+  "diaryCardStylePinnedTintSubtitle": "A light theme-colored fill and border",
+  "@diaryCardStylePinnedTintSubtitle": {
+    "description": "Diary card style settings: description of Tint pinned cards."
+  },
+  "diaryCardStyleShowMood": "Show mood",
+  "@diaryCardStyleShowMood": {
+    "description": "Diary card style settings: whether to show the mood."
+  },
+  "diaryCardStyleShowWeather": "Show weather",
+  "@diaryCardStyleShowWeather": {
+    "description": "Diary card style settings: whether to show the weather."
+  },
+  "diaryCardStyleIndicatorStyle": "Mood and weather",
+  "@diaryCardStyleIndicatorStyle": {
+    "description": "Diary card style settings: group title and style option for mood and weather."
+  },
+  "diaryCardStyleIndicatorStamp": "Stamp",
+  "@diaryCardStyleIndicatorStamp": {
+    "description": "Diary card style settings: mood and weather in a tinted stamp."
+  },
+  "diaryCardStyleIndicatorPlain": "Icons only",
+  "@diaryCardStyleIndicatorPlain": {
+    "description": "Diary card style settings: mood and weather as icons only."
+  },
+  "diaryCardStyleMetaPosition": "Mood and weather position",
+  "@diaryCardStyleMetaPosition": {
+    "description": "Diary card style settings: where mood and weather appear on the card."
+  },
+  "diaryCardStyleMetaEyebrow": "Date line",
+  "@diaryCardStyleMetaEyebrow": {
+    "description": "Diary card style settings: mood and weather on the date line."
+  },
+  "diaryCardStyleMetaFooter": "Footer",
+  "@diaryCardStyleMetaFooter": {
+    "description": "Diary card style settings: mood and weather in the footer."
+  },
+  "diaryCardStyleMetaCover": "On cover",
+  "@diaryCardStyleMetaCover": {
+    "description": "Diary card style settings: mood and weather on the cover."
+  },
+  "diaryCardStyleExtras": "Footer details",
+  "@diaryCardStyleExtras": {
+    "description": "Diary card style settings: group title for extra details in the footer."
+  },
+  "diaryCardStyleShowLocation": "Location",
+  "@diaryCardStyleShowLocation": {
+    "description": "Diary card style settings: shows the location in the footer."
+  },
+  "diaryCardStyleShowEnergy": "Energy",
+  "@diaryCardStyleShowEnergy": {
+    "description": "Diary card style settings: shows the energy level in the footer."
+  },
+  "diaryCardStyleShowWordCount": "Character count",
+  "@diaryCardStyleShowWordCount": {
+    "description": "Diary card style settings: shows the character count in the footer."
+  },
+  "diaryCardStyleShowMedia": "Photo and attachment badges",
+  "@diaryCardStyleShowMedia": {
+    "description": "Diary card style settings: shows photo count and recording, video and attachment badges in the footer."
+  },
+  "diaryCardStyleShowDate": "Show date",
+  "@diaryCardStyleShowDate": {
+    "description": "Diary card style settings: whether to show the date on the date line."
+  },
+  "diaryCardStyleDateFormat": "Date format",
+  "@diaryCardStyleDateFormat": {
+    "description": "Diary card style settings: how the date is written."
+  },
+  "diaryCardStyleDateEyebrow": "Month and day",
+  "@diaryCardStyleDateEyebrow": {
+    "description": "Diary card style settings: date format: month and day (year added for other years)."
+  },
+  "diaryCardStyleDateFull": "Full date",
+  "@diaryCardStyleDateFull": {
+    "description": "Diary card style settings: date format: full date with the year."
+  },
+  "diaryCardStyleDateNumeric": "Numeric",
+  "@diaryCardStyleDateNumeric": {
+    "description": "Diary card style settings: date format: numbers only."
+  },
+  "diaryCardStyleDateRelative": "Relative",
+  "@diaryCardStyleDateRelative": {
+    "description": "Diary card style settings: date format: how long ago."
+  },
+  "diaryCardStyleShowWeekday": "Show weekday",
+  "@diaryCardStyleShowWeekday": {
+    "description": "Diary card style settings: adds the weekday after the date."
+  },
+  "diaryCardStyleShowTime": "Show time",
+  "@diaryCardStyleShowTime": {
+    "description": "Diary card style settings: adds the time after the date."
+  },
+  "diaryCardStyleRelativeNote": "Relative dates don't include the weekday or time",
+  "@diaryCardStyleRelativeNote": {
+    "description": "Diary card style settings: note on the weekday and time switches when the date is relative."
+  },
+  "diaryCardStyleDateSource": "Date shown",
+  "@diaryCardStyleDateSource": {
+    "description": "Diary card style settings: which time the date line shows."
+  },
+  "diaryCardStyleDateCreated": "When written",
+  "@diaryCardStyleDateCreated": {
+    "description": "Diary card style settings: date shown: when the entry was written."
+  },
+  "diaryCardStyleDateUpdated": "Last edited",
+  "@diaryCardStyleDateUpdated": {
+    "description": "Diary card style settings: date shown: when the entry was last edited."
+  },
+  "diaryCardStyleFooterTime": "Footer time",
+  "@diaryCardStyleFooterTime": {
+    "description": "Diary card style settings: the time shown in the footer."
+  },
+  "diaryCardStyleFooterRelative": "Updated … ago",
+  "@diaryCardStyleFooterRelative": {
+    "description": "Diary card style settings: footer time: how long since the last update."
+  },
+  "diaryCardStyleFooterUpdated": "Update time",
+  "@diaryCardStyleFooterUpdated": {
+    "description": "Diary card style settings: footer time: exact time of the last update."
+  },
+  "diaryCardStyleFooterCreated": "Written time",
+  "@diaryCardStyleFooterCreated": {
+    "description": "Diary card style settings: footer time: exact time the entry was written."
+  },
+  "diaryCardStyleFooterHidden": "Hidden",
+  "@diaryCardStyleFooterHidden": {
+    "description": "Diary card style settings: no time in the footer."
+  },
+  "diaryCardStyleOrderHint": "Drag the handles to change the order of a card's parts",
+  "@diaryCardStyleOrderHint": {
+    "description": "Diary card style settings: hint on the Order tab."
+  },
+  "diaryCardStyleBlockEyebrow": "Date line",
+  "@diaryCardStyleBlockEyebrow": {
+    "description": "Diary card style settings: card part: the line with the date and pinned badge."
+  },
+  "diaryCardStyleBlockTitle": "Title",
+  "@diaryCardStyleBlockTitle": {
+    "description": "Diary card style settings: card part: title."
+  },
+  "diaryCardStyleBlockTags": "Tags",
+  "@diaryCardStyleBlockTags": {
+    "description": "Diary card style settings: card part: tags."
+  },
+  "diaryCardStyleBlockPreview": "Excerpt",
+  "@diaryCardStyleBlockPreview": {
+    "description": "Diary card style settings: card part: excerpt."
+  },
+  "diaryCardStyleBlockFooter": "Footer",
+  "@diaryCardStyleBlockFooter": {
+    "description": "Diary card style settings: card part: footer."
+  },
+  "diaryCardStyleOrderReset": "Restore default order",
+  "@diaryCardStyleOrderReset": {
+    "description": "Diary card style settings: button that restores the default order of card parts."
+  },
+  "diaryCardStyleDragHandle": "Drag to move “{name}”",
+  "@diaryCardStyleDragHandle": {
+    "description": "Diary card style settings: screen-reader label of a card part drag handle.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleTitleSize": "Title size",
+  "@diaryCardStyleTitleSize": {
+    "description": "Diary card style settings: title size scale."
+  },
+  "diaryCardStyleTitleWeight": "Title weight",
+  "@diaryCardStyleTitleWeight": {
+    "description": "Diary card style settings: title font weight."
+  },
+  "diaryCardStyleWeightRegular": "Regular",
+  "@diaryCardStyleWeightRegular": {
+    "description": "Diary card style settings: regular weight."
+  },
+  "diaryCardStyleWeightMedium": "Medium",
+  "@diaryCardStyleWeightMedium": {
+    "description": "Diary card style settings: medium weight."
+  },
+  "diaryCardStyleWeightBold": "Bold",
+  "@diaryCardStyleWeightBold": {
+    "description": "Diary card style settings: bold weight."
+  },
+  "diaryCardStylePreviewSize": "Excerpt size",
+  "@diaryCardStylePreviewSize": {
+    "description": "Diary card style settings: excerpt size scale."
+  },
+  "diaryCardStyleLineHeight": "Excerpt line spacing",
+  "@diaryCardStyleLineHeight": {
+    "description": "Diary card style settings: excerpt line spacing."
+  },
+  "diaryCardStyleLineCompact": "Compact",
+  "@diaryCardStyleLineCompact": {
+    "description": "Diary card style settings: compact line spacing."
+  },
+  "diaryCardStyleLineStandard": "Standard",
+  "@diaryCardStyleLineStandard": {
+    "description": "Diary card style settings: standard line spacing."
+  },
+  "diaryCardStyleLineRelaxed": "Relaxed",
+  "@diaryCardStyleLineRelaxed": {
+    "description": "Diary card style settings: relaxed line spacing."
+  },
+  "diaryCardStyleMetaSize": "Detail text size",
+  "@diaryCardStyleMetaSize": {
+    "description": "Diary card style settings: scale of small text such as the date, tags and footer."
+  },
+  "diaryCardStyleTitleColor": "Title color",
+  "@diaryCardStyleTitleColor": {
+    "description": "Diary card style settings: title text color."
+  },
+  "diaryCardStyleBodyColor": "Text color",
+  "@diaryCardStyleBodyColor": {
+    "description": "Diary card style settings: text color of the excerpt, date and footer."
+  },
+  "diaryCardStyleEnsureContrast": "Keep text readable",
+  "@diaryCardStyleEnsureContrast": {
+    "description": "Diary card style settings: replaces text colors that are too faint."
+  },
+  "diaryCardStyleEnsureContrastSubtitle": "When a text color blends into the card, use a clearer one",
+  "@diaryCardStyleEnsureContrastSubtitle": {
+    "description": "Diary card style settings: description of Keep text readable."
+  },
+  "diaryCardStyleBackground": "Card color",
+  "@diaryCardStyleBackground": {
+    "description": "Diary card style settings: card background color."
+  },
+  "diaryCardStyleOpacity": "Card opacity",
+  "@diaryCardStyleOpacity": {
+    "description": "Diary card style settings: opacity of the card surface."
+  },
+  "diaryCardStyleGradient": "Gradient",
+  "@diaryCardStyleGradient": {
+    "description": "Diary card style settings: gradient card background."
+  },
+  "diaryCardStyleGradientSubtitle": "Blend from the card color into a second color",
+  "@diaryCardStyleGradientSubtitle": {
+    "description": "Diary card style settings: description of Gradient."
+  },
+  "diaryCardStyleGradientEnd": "Second gradient color",
+  "@diaryCardStyleGradientEnd": {
+    "description": "Diary card style settings: end color of the gradient."
+  },
+  "diaryCardStyleGradientDirection": "Gradient direction",
+  "@diaryCardStyleGradientDirection": {
+    "description": "Diary card style settings: gradient direction."
+  },
+  "diaryCardStyleDirectionVertical": "Vertical",
+  "@diaryCardStyleDirectionVertical": {
+    "description": "Diary card style settings: top-to-bottom gradient."
+  },
+  "diaryCardStyleDirectionHorizontal": "Horizontal",
+  "@diaryCardStyleDirectionHorizontal": {
+    "description": "Diary card style settings: side-to-side gradient."
+  },
+  "diaryCardStyleDirectionDiagonal": "Diagonal",
+  "@diaryCardStyleDirectionDiagonal": {
+    "description": "Diary card style settings: diagonal gradient."
+  },
+  "diaryCardStyleBorderWidth": "Border width",
+  "@diaryCardStyleBorderWidth": {
+    "description": "Diary card style settings: card border width."
+  },
+  "diaryCardStyleBorderColor": "Border color",
+  "@diaryCardStyleBorderColor": {
+    "description": "Diary card style settings: card border color."
+  },
+  "diaryCardStyleAccentBar": "Accent strip",
+  "@diaryCardStyleAccentBar": {
+    "description": "Diary card style settings: colored strip on the card edge."
+  },
+  "diaryCardStyleAccentNone": "None",
+  "@diaryCardStyleAccentNone": {
+    "description": "Diary card style settings: no strip."
+  },
+  "diaryCardStyleAccentStart": "Side",
+  "@diaryCardStyleAccentStart": {
+    "description": "Diary card style settings: strip on the start edge."
+  },
+  "diaryCardStyleAccentTop": "Top",
+  "@diaryCardStyleAccentTop": {
+    "description": "Diary card style settings: strip on the top edge."
+  },
+  "diaryCardStyleAccentWidth": "Strip width",
+  "@diaryCardStyleAccentWidth": {
+    "description": "Diary card style settings: strip width."
+  },
+  "diaryCardStyleAccentColor": "Strip color",
+  "@diaryCardStyleAccentColor": {
+    "description": "Diary card style settings: strip color."
+  },
+  "diaryCardStyleShadow": "Shadow",
+  "@diaryCardStyleShadow": {
+    "description": "Diary card style settings: card shadow style."
+  },
+  "diaryCardStyleShadowThemed": "Default",
+  "@diaryCardStyleShadowThemed": {
+    "description": "Diary card style settings: default shadow."
+  },
+  "diaryCardStyleShadowNone": "None",
+  "@diaryCardStyleShadowNone": {
+    "description": "Diary card style settings: no shadow."
+  },
+  "diaryCardStyleShadowSoft": "Soft",
+  "@diaryCardStyleShadowSoft": {
+    "description": "Diary card style settings: soft shadow."
+  },
+  "diaryCardStyleShadowFloating": "Floating",
+  "@diaryCardStyleShadowFloating": {
+    "description": "Diary card style settings: deep floating shadow."
+  },
+  "diaryCardStyleShadowCustom": "Custom",
+  "@diaryCardStyleShadowCustom": {
+    "description": "Diary card style settings: custom shadow."
+  },
+  "diaryCardStyleShadowElevation": "Shadow depth",
+  "@diaryCardStyleShadowElevation": {
+    "description": "Diary card style settings: depth of a custom shadow."
+  },
+  "diaryCardStyleShadowColor": "Shadow color",
+  "@diaryCardStyleShadowColor": {
+    "description": "Diary card style settings: shadow color."
+  },
+  "diaryCardStyleSourceTheme": "Default",
+  "@diaryCardStyleSourceTheme": {
+    "description": "Diary card style settings: color source: keep the default look."
+  },
+  "diaryCardStyleSourcePrimary": "Primary",
+  "@diaryCardStyleSourcePrimary": {
+    "description": "Diary card style settings: color source: theme primary color."
+  },
+  "diaryCardStyleSourceSecondary": "Secondary",
+  "@diaryCardStyleSourceSecondary": {
+    "description": "Diary card style settings: color source: theme secondary color."
+  },
+  "diaryCardStyleSourceTertiary": "Tertiary",
+  "@diaryCardStyleSourceTertiary": {
+    "description": "Diary card style settings: color source: theme tertiary color."
+  },
+  "diaryCardStyleSourceMood": "Mood",
+  "@diaryCardStyleSourceMood": {
+    "description": "Diary card style settings: color source: based on the mood."
+  },
+  "diaryCardStyleSourceTag": "First tag",
+  "@diaryCardStyleSourceTag": {
+    "description": "Diary card style settings: color source: the first tag's color."
+  },
+  "diaryCardStyleSourceCustom": "Custom",
+  "@diaryCardStyleSourceCustom": {
+    "description": "Diary card style settings: color source: a custom color."
+  },
+  "diaryCardStyleSourceMoodHint": "Uses each entry's mood, or the default color when there is none",
+  "@diaryCardStyleSourceMoodHint": {
+    "description": "Diary card style settings: note on the mood color source."
+  },
+  "diaryCardStyleSourceTagHint": "Uses the color of each entry's first tag",
+  "@diaryCardStyleSourceTagHint": {
+    "description": "Diary card style settings: note on the first-tag color source."
+  },
+  "diaryCardStyleStrength": "Intensity",
+  "@diaryCardStyleStrength": {
+    "description": "Diary card style settings: color intensity (opacity)."
+  },
+  "diaryCardStyleEditColor": "Edit color",
+  "@diaryCardStyleEditColor": {
+    "description": "Diary card style settings: picks the custom color again."
+  },
+  "diaryCardStyleColorDarkAuto": "Pick the dark color automatically",
+  "@diaryCardStyleColorDarkAuto": {
+    "description": "Diary card style settings: color dialog: derive the dark-mode color automatically."
+  },
+  "diaryCardStyleColorDarkAutoSubtitle": "Derive a readable dark-mode color from the light one",
+  "@diaryCardStyleColorDarkAutoSubtitle": {
+    "description": "Diary card style settings: description of the automatic dark color."
+  },
+  "diaryCardStyleHexLabel": "Hex color",
+  "@diaryCardStyleHexLabel": {
+    "description": "Diary card style settings: label of the hex color field."
+  },
+  "diaryCardStyleHexInvalid": "Enter a 6-digit hex color, such as FFB300",
+  "@diaryCardStyleHexInvalid": {
+    "description": "Diary card style settings: error for an invalid hex color."
+  },
+  "diaryCardStyleSheetSection": "Card style",
+  "@diaryCardStyleSheetSection": {
+    "description": "Diary view options sheet: card style section title."
+  },
+  "diaryCardStyleSheetEntry": "Customize card style",
+  "@diaryCardStyleSheetEntry": {
+    "description": "Diary view options sheet: opens the card style settings."
+  },
+  "diaryCardStyleSheetEntrySubtitle": "Covers, text, colors and layout",
+  "@diaryCardStyleSheetEntrySubtitle": {
+    "description": "Diary view options sheet: description of the card style entry."
+  },
+  "diaryCardStyleSampleTitle1": "Sunset by the sea",
+  "@diaryCardStyleSampleTitle1": {
+    "description": "Diary card style settings: title of preview sample entry 1."
+  },
+  "diaryCardStyleSampleBody1": "Walked along the shore until dusk. The waves kept rolling in while the sky slid from orange to lilac.",
+  "@diaryCardStyleSampleBody1": {
+    "description": "Diary card style settings: text of preview sample entry 1."
+  },
+  "diaryCardStyleSampleTitle2": "Weekend hike",
+  "@diaryCardStyleSampleTitle2": {
+    "description": "Diary card style settings: title of preview sample entry 2."
+  },
+  "diaryCardStyleSampleBody2": "It was windy at the top. I took lots of photos and recorded the wind. My legs were shaking on the way down.",
+  "@diaryCardStyleSampleBody2": {
+    "description": "Diary card style settings: text of preview sample entry 2."
+  },
+  "diaryCardStyleSampleTitle3": "A rainy workday spent reworking this week’s plan at the cafe",
+  "@diaryCardStyleSampleTitle3": {
+    "description": "Diary card style settings: title of preview sample entry 3 (long, to show title truncation)."
+  },
+  "diaryCardStyleSampleBody3": "Reworked this week's to-dos and jotted down a few ideas. Early night tonight.",
+  "@diaryCardStyleSampleBody3": {
+    "description": "Diary card style settings: text of preview sample entry 3."
+  },
+  "diaryCardStyleSampleBody4": "Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.",
+  "@diaryCardStyleSampleBody4": {
+    "description": "Diary card style settings: text of preview sample entry 4 (it has no title, to show the “Untitled” placeholder)."
+  },
+  "diaryCardStyleSampleCapsuleTitle": "A letter to myself next year",
+  "@diaryCardStyleSampleCapsuleTitle": {
+    "description": "Diary card style settings: title of the preview sample time capsule."
+  },
+  "diaryCardStyleSampleTag1": "Travel",
+  "@diaryCardStyleSampleTag1": {
+    "description": "Diary card style settings: preview sample tag."
+  },
+  "diaryCardStyleSampleTag2": "Life",
+  "@diaryCardStyleSampleTag2": {
+    "description": "Diary card style settings: preview sample tag."
+  },
+  "diaryCardStyleSampleTag3": "Reading",
+  "@diaryCardStyleSampleTag3": {
+    "description": "Diary card style settings: preview sample tag."
+  },
+  "diaryCardStyleSampleLocation": "Seaside boardwalk",
+  "@diaryCardStyleSampleLocation": {
+    "description": "Diary card style settings: location of a preview sample entry."
+  },
+  "diaryCardStyleValueDp": "{value}dp",
+  "@diaryCardStyleValueDp": {
+    "description": "Diary card style settings: a value in dp.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCardStyleValuePercent": "{value}%",
+  "@diaryCardStyleValuePercent": {
+    "description": "Diary card style settings: a percentage value.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
   }
 }

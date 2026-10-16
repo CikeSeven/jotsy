@@ -323,6 +323,8 @@ extension _CalendarPageSections on _CalendarPageState {
           maxVisibleTags:
               ref.watch(diaryCardTagLimitProvider).asData?.value ??
               SettingsService.defaultDiaryCardTagLimit,
+          cardStyle: ref.watch(diaryCardStyleProvider),
+          moodOptions: ref.watch(diaryCardMoodOptionsProvider),
           onOpenDiary: openDiary,
           onCreate: () => unawaited(_openCreateForSelectedDay()),
         ),

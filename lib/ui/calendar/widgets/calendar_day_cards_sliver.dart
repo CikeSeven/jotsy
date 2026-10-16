@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../diaries/sections/diary_head_section.dart' show DiaryLayoutMode;
+import '../../../core/services/settings_service.dart';
+import '../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../diaries/sections/diaries_list_section.dart';
 
 /// 选中日日记的“卡片”展示：直接复用日记列表的单列卡片（封面、标签、置顶
 /// 徽章、未解封胶囊的封存态都与列表一致）。
 ///
-/// 输入：选中日期、当天日记、卡片标签上限与打开回调；无副作用。
+/// 输入：选中日期、当天日记、卡片标签上限、卡片样式与打开回调；无副作用。
 ///
 /// 列表卡片是 sliver，无法放进时间线所用的盒子级交叉淡入容器；换日时改为
 /// 整段 sliver 从 0 淡入（`medium + effects`，减少动画时直接显示），旧内容
@@ -22,6 +24,8 @@ class CalendarDayCardsSliver extends StatefulWidget {
     required this.maxVisibleTags,
     required this.onOpenDiary,
     required this.onCreate,
+    this.cardStyle = DiaryCardStyle.defaults,
+    this.moodOptions = SettingsService.defaultMoodOptions,
   });
 
   final DateTime day;
@@ -29,6 +33,10 @@ class CalendarDayCardsSliver extends StatefulWidget {
   final int maxVisibleTags;
   final DiaryOpenCallback onOpenDiary;
   final VoidCallback onCreate;
+
+  /// 与日记列表相同的用户卡片样式。
+  final DiaryCardStyle cardStyle;
+  final List<String> moodOptions;
 
   @override
   State<CalendarDayCardsSliver> createState() => _CalendarDayCardsSliverState();
@@ -84,6 +92,8 @@ class _CalendarDayCardsSliverState extends State<CalendarDayCardsSliver>
         onCreate: widget.onCreate,
         onOpenEditor: widget.onOpenDiary,
         onToggleSelection: (_, __) {},
+        cardStyle: widget.cardStyle,
+        moodOptions: widget.moodOptions,
       ),
     );
   }

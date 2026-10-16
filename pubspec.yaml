@@ -85,6 +85,8 @@ flutter:
   assets:
     - assets/app_icon/mingcute_icon.png
     - assets/weather_icons/qweather/
+    # 设置页“日记卡片样式”预览用的示例封面，不出现在用户数据里。
+    - assets/img/diary_card_samples/
   fonts:
     - family: HarmonyOSSansSC
       fonts:

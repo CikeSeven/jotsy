@@ -2,11 +2,13 @@ import 'dart:collection';
 import 'dart:convert';
 
 import '../../../core/database/app_database.dart';
+import 'diary_card_media_summary.dart';
 
 /// 日记卡片 / 日历时间线条目共用的派生展示数据。
 ///
 /// 输入：[Diary] 实体；输出：metadata.context 中的心情、天气、地点、精力，
-/// 单行化并截断的摘要文本，以及预览封面（显式封面优先，否则取正文第一张图）。
+/// 单行化并截断的摘要文本、正文字数，预览封面（显式封面优先，否则取正文
+/// 第一张图），以及按需惰性扫描的媒体概况（拼贴图片与媒体角标）。
 ///
 /// 为什么缓存：列表滚动、日历选日/翻月、筛选过渡都会高频重建卡片，若每次
 /// build 都 `jsonDecode` metadata、并在无封面时解析整段 Quill Delta，开销会
@@ -22,6 +24,7 @@ class DiaryCardViewData {
     required this.location,
     required this.energyLevel,
     required this.previewText,
+    required this.charCount,
   });
 
   /// 解析（或从缓存取回）指定日记的展示数据。
@@ -56,6 +59,8 @@ class DiaryCardViewData {
         _ => null,
       },
       previewText: _buildPreviewText(diary.contentText),
+      // 与日历、探索页的“字数”口径一致：去首尾空白后的字符数。
+      charCount: diary.contentText.trim().length,
     );
   }
 
@@ -77,12 +82,41 @@ class DiaryCardViewData {
   /// 单行化、去首尾空白并截断后的正文摘要；可能为空字符串。
   final String previewText;
 
+  /// 正文字数（去首尾空白后的字符数）。
+  final int charCount;
+
   final String? _explicitCover;
   final String _contentJson;
 
   /// 预览封面：显式封面字段优先，否则取正文 Delta 中第一张图片。
   /// 懒计算：未解封胶囊等不展示封面的场景不必解析整段正文。
   late final String? previewCover = _resolvePreviewCover();
+
+  /// 正文媒体概况（图片、录音、视频、附件）。懒计算：只有开启多图拼贴或
+  /// 媒体角标的样式才会扫描整段正文。
+  late final DiaryCardMediaSummary media = DiaryCardMediaSummary.scan(
+    _contentJson,
+  );
+
+  /// 多图拼贴使用的图片：预览封面在前，再接正文中其余的图片，最多三张。
+  late final List<String> collageImages = _resolveCollageImages();
+
+  List<String> _resolveCollageImages() {
+    final cover = previewCover;
+    if (cover == null) {
+      return const <String>[];
+    }
+    final images = <String>[cover];
+    for (final image in media.images) {
+      if (images.length >= 3) {
+        break;
+      }
+      if (!images.contains(image)) {
+        images.add(image);
+      }
+    }
+    return List<String>.unmodifiable(images);
+  }
 
   String? _resolvePreviewCover() {
     final explicit = _explicitCover?.trim();

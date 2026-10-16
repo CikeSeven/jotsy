@@ -5,6 +5,24 @@ import 'expressive_surfaces.dart';
 
 part 'theme_color_schemes.dart';
 
+/// 由种子色装配应用的亮/暗主题：tonalSpot 动态配色 + Material 2021 字阶。
+///
+/// 应用外壳与设置页里的明暗预览共用同一装配，预览看到的就是切换主题后的
+/// 真实效果。
+ThemeData buildSeededAppTheme(Color seedColor, Brightness brightness) {
+  return MaterialTheme(
+    brightness == Brightness.light
+        ? Typography.material2021().black
+        : Typography.material2021().white,
+  ).theme(
+    ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: brightness,
+      dynamicSchemeVariant: DynamicSchemeVariant.tonalSpot,
+    ),
+  );
+}
+
 /// 应用 Material 3 Expressive 主题装配器。
 ///
 /// 职责：

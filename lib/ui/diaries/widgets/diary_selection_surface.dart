@@ -3,22 +3,21 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/expressive_motion.dart';
-import '../../../app/theme/expressive_surfaces.dart';
+import '../viewmodels/diary_card_surface_spec.dart';
 
 /// 日记卡片的统一选中表面。
 ///
-/// 输入为页面层已经确定的选中状态和卡片底色；输出只包含视觉与语义反馈，
-/// 不持有或修改业务选择状态。短促缩放仅发生在状态切换过程中，避免改变卡片
-/// 的最终尺寸或瀑布流布局。
+/// 输入为页面层已经确定的选中状态和解析好的表面参数 [spec]（底色、渐变、
+/// 描边、阴影，均已按主题、置顶与卡片样式算好）；输出只包含视觉与语义
+/// 反馈，不持有或修改业务选择状态。短促缩放仅发生在状态切换过程中，避免
+/// 改变卡片的最终尺寸或瀑布流布局。
 class DiarySelectionSurface extends StatelessWidget {
   const DiarySelectionSurface({
     super.key,
     required this.diaryId,
     required this.selected,
     required this.compact,
-    required this.backgroundColor,
-    required this.borderRadius,
-    this.isPinned = false,
+    required this.spec,
     required this.child,
   });
 
@@ -27,9 +26,7 @@ class DiarySelectionSurface extends StatelessWidget {
   final String diaryId;
   final bool selected;
   final bool compact;
-  final Color backgroundColor;
-  final double borderRadius;
-  final bool isPinned;
+  final DiaryCardSurfaceSpec spec;
   final Widget child;
 
   @override
@@ -37,9 +34,7 @@ class DiarySelectionSurface extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
     final highlightAlpha = isLight ? 0.14 : 0.22;
-    final defaultBorderColor = isPinned
-        ? colorScheme.primary.withValues(alpha: isLight ? 0.35 : 0.45)
-        : ExpressiveSurfaces.cardBorderColor(colorScheme);
+    final borderRadius = BorderRadius.circular(spec.radius);
 
     return Semantics(
       container: true,
@@ -49,52 +44,36 @@ class DiarySelectionSurface extends StatelessWidget {
         duration: ExpressiveMotion.duration(context, transitionDuration),
         curve: ExpressiveMotion.effects,
         builder: (BuildContext context, double progress, Widget? child) {
-          final highlightColor = Color.alphaBlend(
+          Color highlight(Color base) => Color.alphaBlend(
             colorScheme.primary.withValues(alpha: highlightAlpha * progress),
-            backgroundColor,
+            base,
           );
+          // 渐变表面上 BoxDecoration.color 不生效，选中高亮逐个混入色标。
+          final gradientColors = spec.gradientColors;
+          final gradient = gradientColors == null
+              ? null
+              : LinearGradient(
+                  begin: spec.gradientBegin,
+                  end: spec.gradientEnd,
+                  colors: <Color>[for (final c in gradientColors) highlight(c)],
+                );
           final effectiveBorderColor = Color.lerp(
-            defaultBorderColor,
+            spec.borderColor,
             colorScheme.primary.withValues(alpha: 0.82),
             progress,
           )!;
-          final effectiveBorderWidth = 0.8 + 1.2 * progress;
-          // 圆角表面使用完整描边，避免单侧边框与圆角裁切不一致。
-          final accentBorder = Border.all(
-            color: effectiveBorderColor,
-            width: effectiveBorderWidth,
-          );
+          final effectiveBorderWidth = spec.borderWidth + 1.2 * progress;
+          // 圆角表面使用完整描边，避免单侧边框与圆角裁切不一致；静止态宽度为
+          // 0 时不画（宽 0 的 BorderSide 会被绘制成一像素细线）。
+          final accentBorder = effectiveBorderWidth > 0
+              ? Border.all(
+                  color: effectiveBorderColor,
+                  width: effectiveBorderWidth,
+                )
+              : null;
           final pulseDepth = compact ? 0.016 : 0.008;
           final scale = 1 - math.sin(math.pi * progress) * pulseDepth;
 
-          final baseShadows = isLight
-              ? <BoxShadow>[
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.03),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1.5),
-                  ),
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(
-                      alpha: isPinned ? 0.055 : 0.04,
-                    ),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                  if (isPinned)
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.06),
-                      blurRadius: 14,
-                      offset: const Offset(0, 3.5),
-                    ),
-                ]
-              : <BoxShadow>[
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.32),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ];
           final selectionShadows = compact && progress > 0
               ? <BoxShadow>[
                   BoxShadow(
@@ -114,13 +93,14 @@ class DiarySelectionSurface extends StatelessWidget {
             child: Container(
               key: ValueKey<String>('diary_selection_surface_$diaryId'),
               decoration: BoxDecoration(
-                color: highlightColor,
-                borderRadius: BorderRadius.circular(borderRadius),
-                boxShadow: <BoxShadow>[...baseShadows, ...selectionShadows],
+                color: gradient == null ? highlight(spec.color) : null,
+                gradient: gradient,
+                borderRadius: borderRadius,
+                boxShadow: <BoxShadow>[...spec.shadows, ...selectionShadows],
               ),
               foregroundDecoration: BoxDecoration(
                 border: accentBorder,
-                borderRadius: BorderRadius.circular(borderRadius),
+                borderRadius: borderRadius,
               ),
               child: child,
             ),

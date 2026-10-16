@@ -68,6 +68,7 @@ class SettingsService {
     required String? diaryToolbarCurrentTimeFormatRaw,
     required String? moodOptionsRaw,
     required String? calendarDisplayOptionsRaw,
+    required String? diaryCardStyleRaw,
   }) : _prefs = prefs,
        themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
@@ -96,7 +97,8 @@ class SettingsService {
        moodOptionsRawNotifier = ValueNotifier<String?>(moodOptionsRaw),
        calendarDisplayOptionsRawNotifier = ValueNotifier<String?>(
          calendarDisplayOptionsRaw,
-       );
+       ),
+       diaryCardStyleRawNotifier = ValueNotifier<String?>(diaryCardStyleRaw);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -118,6 +120,10 @@ class SettingsService {
   /// 日历页显示选项（单个 JSON 字符串）；解析与默认值由日历模块负责，
   /// 服务层只保存原文，不依赖 UI 模型。
   final ValueNotifier<String?> calendarDisplayOptionsRawNotifier;
+
+  /// 日记卡片样式设置（单个 JSON 字符串：当前样式 + 已保存的样式）；解析与
+  /// 默认值由日记模块负责，服务层只保存原文。
+  final ValueNotifier<String?> diaryCardStyleRawNotifier;
 
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
@@ -144,6 +150,7 @@ class SettingsService {
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
   static const _keyCalendarDisplayOptions =
       'app.settings.calendar_display_options';
+  static const _keyDiaryCardStyle = 'app.settings.diary_card_style';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
@@ -193,6 +200,9 @@ class SettingsService {
         storedDiaryCardTagLimit != diaryCardTagLimit) {
       await prefs.setInt(_keyDiaryCardTagLimit, diaryCardTagLimit);
     }
+    // getString 遇到类型不符的旧值会抛异常；卡片样式只是外观偏好，读不出来
+    // 就按默认样式展示，不能让它阻断启动。
+    final storedDiaryCardStyle = prefs.get(_keyDiaryCardStyle);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -211,6 +221,9 @@ class SettingsService {
           _defaultDiaryToolbarCurrentTimeFormat,
       moodOptionsRaw: prefs.getString(_keyMoodOptions),
       calendarDisplayOptionsRaw: prefs.getString(_keyCalendarDisplayOptions),
+      diaryCardStyleRaw: storedDiaryCardStyle is String
+          ? storedDiaryCardStyle
+          : null,
     );
   }
 
@@ -264,6 +277,7 @@ class SettingsService {
   String? get moodOptionsRaw => moodOptionsRawNotifier.value;
   String? get calendarDisplayOptionsRaw =>
       calendarDisplayOptionsRawNotifier.value;
+  String? get diaryCardStyleRaw => diaryCardStyleRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -340,6 +354,18 @@ class SettingsService {
     await _writePreference(
       _prefs.setString(_keyCalendarDisplayOptions, normalized),
     );
+  }
+
+  /// 保存日记卡片样式设置；空值移除该键，回到默认样式。
+  Future<void> setDiaryCardStyleRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      diaryCardStyleRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyDiaryCardStyle));
+      return;
+    }
+    diaryCardStyleRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyDiaryCardStyle, normalized));
   }
 
   Future<void> setDiaryCardTagLimit(int value) async {

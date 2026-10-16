@@ -11,7 +11,8 @@ import '../../widgets/settings_option_tiles.dart';
 import 'diary_card_style_common.dart';
 
 /// “日期”标签页：眉线日期的显隐、格式（每项附当前时间的实时示例）、
-/// 星期/时刻与日期依据，以及底栏时间。两种布局共用。
+/// 星期/时刻与日期依据，以及底栏时间。两种布局共用。示例只有一行，
+/// 单选圆点在选项里垂直居中。
 class DiaryCardStyleDateTab extends StatelessWidget {
   const DiaryCardStyleDateTab({super.key, required this.controller});
 
@@ -87,6 +88,7 @@ class DiaryCardStyleDateTab extends StatelessWidget {
                       ExpressiveChoiceTile(
                         label: label,
                         description: eyebrowExample(format),
+                        centerIndicator: true,
                         selected: meta.dateFormat == format,
                         onTap: () =>
                             commitMeta(meta.copyWith(dateFormat: format)),
@@ -143,6 +145,7 @@ class DiaryCardStyleDateTab extends StatelessWidget {
                     ExpressiveChoiceTile(
                       label: label,
                       description: footerExample(mode),
+                      centerIndicator: true,
                       selected: meta.footerTime == mode,
                       onTap: () => commitMeta(meta.copyWith(footerTime: mode)),
                     ),

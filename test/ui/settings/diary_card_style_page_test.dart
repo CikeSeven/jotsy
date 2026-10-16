@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style.dart';
@@ -138,6 +139,27 @@ void main() {
     );
     expect(_stored(settings).current.content.showPreview, isFalse);
     expect(find.text(l10n.diaryCardStyleSampleBody1), findsNothing);
+  });
+
+  testWidgets('date choices center their radio dots beside the examples', (
+    tester,
+  ) async {
+    final (_, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryCardStyleTabDate);
+    for (final label in <String>[
+      l10n.diaryCardStyleDateFull,
+      l10n.diaryCardStyleFooterRelative,
+    ]) {
+      final text = find.text(label);
+      await _tapVisible(tester, text);
+      final tile = find.ancestor(of: text, matching: find.byType(ListTile));
+      final dot = find.descendant(of: tile, matching: find.byType(FaIcon));
+      expect(
+        (tester.getCenter(dot).dy - tester.getCenter(tile).dy).abs(),
+        lessThan(0.5),
+        reason: label,
+      );
+    }
   });
 
   testWidgets('sliders preview while dragging and persist on release', (

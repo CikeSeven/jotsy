@@ -2927,9 +2927,9 @@
   "@calendarShowMonthSummaryDescription": {
     "description": "Explains what the monthly summary shows."
   },
-  "calendarSummaryEntries": "{count, plural, =1{1 entry this month} other{{count} entries this month}}",
+  "calendarSummaryEntries": "{count, plural, =1{1 entry} other{{count} entries}}",
   "@calendarSummaryEntries": {
-    "description": "Monthly summary tooltip: number of entries in the month.",
+    "description": "Summary tooltip: number of entries in the month, year or selected range.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -2957,9 +2957,9 @@
       }
     }
   },
-  "calendarSummaryChars": "{count} characters this month",
+  "calendarSummaryChars": "{count} characters",
   "@calendarSummaryChars": {
-    "description": "Monthly summary tooltip: total characters written in the month (formatted number).",
+    "description": "Summary tooltip: total characters written in the month, year or selected range (formatted number).",
     "placeholders": {
       "count": {
         "type": "String"
@@ -3139,5 +3139,118 @@
   "calendarNextYear": "Next year",
   "@calendarNextYear": {
     "description": "Tooltip of the year view button that goes to the next year."
+  },
+  "calendarOptionsLunar": "Lunar calendar",
+  "@calendarOptionsLunar": {
+    "description": "Title of the lunar calendar option in the calendar display options sheet."
+  },
+  "calendarOptionsLunarDescription": "Shows Chinese lunar dates, solar terms and festivals under each date.",
+  "@calendarOptionsLunarDescription": {
+    "description": "Explains the lunar calendar option."
+  },
+  "calendarLunarLocale": "Language default",
+  "@calendarLunarLocale": {
+    "description": "Lunar calendar option that follows the app language (shown in Chinese, hidden in English)."
+  },
+  "calendarLunarAlways": "Show",
+  "@calendarLunarAlways": {
+    "description": "Lunar calendar option: always show."
+  },
+  "calendarLunarNever": "Hide",
+  "@calendarLunarNever": {
+    "description": "Lunar calendar option: never show."
+  },
+  "calendarLunarDate": "Lunar {date}",
+  "@calendarLunarDate": {
+    "description": "Lunar date under the selected day heading; date is the Chinese lunar month and day (e.g. 九月廿四).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarSummaryEmptyYear": "No entries this year yet",
+  "@calendarSummaryEmptyYear": {
+    "description": "Year view summary text when the year has no entries."
+  },
+  "calendarSummaryFutureYear": "This year hasn't started yet",
+  "@calendarSummaryFutureYear": {
+    "description": "Year view summary text for a future year without entries."
+  },
+  "calendarSummaryEmptyRange": "No entries in this range",
+  "@calendarSummaryEmptyRange": {
+    "description": "Range summary text when the selected dates have no entries."
+  },
+  "calendarSummaryFutureRange": "This range hasn't started yet",
+  "@calendarSummaryFutureRange": {
+    "description": "Range summary text when every selected date is in the future."
+  },
+  "calendarDayActionRange": "Select a range from here",
+  "@calendarDayActionRange": {
+    "description": "Long-press day menu: start selecting a date range from this day."
+  },
+  "calendarDayActionRangeDescription": "Tap another date to see stats for the days in between",
+  "@calendarDayActionRangeDescription": {
+    "description": "Explains the select-a-range action."
+  },
+  "calendarRangeTitle": "{start} – {end} · {days, plural, =1{1 day} other{{days} days}}",
+  "@calendarRangeTitle": {
+    "description": "Range summary title: start and end dates and the number of days including both ends.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarRangePickEnd": "From {start} · tap an end date",
+  "@calendarRangePickEnd": {
+    "description": "Range summary title while only the start date is chosen.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarRangeExit": "Exit range selection",
+  "@calendarRangeExit": {
+    "description": "Tooltip of the close button on the range summary."
+  },
+  "calendarFilterTooltip": "Filter",
+  "@calendarFilterTooltip": {
+    "description": "Tooltip of the filter button in the calendar header."
+  },
+  "calendarFilterTitle": "Filter calendar",
+  "@calendarFilterTitle": {
+    "description": "Title of the calendar filter sheet."
+  },
+  "calendarFilterClear": "Clear filter",
+  "@calendarFilterClear": {
+    "description": "Button that clears the calendar filter."
+  },
+  "calendarFilterDescription": "Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.",
+  "@calendarFilterDescription": {
+    "description": "Explains the calendar filter."
+  },
+  "calendarFilterMoods": "Mood",
+  "@calendarFilterMoods": {
+    "description": "Mood group title in the calendar filter sheet."
+  },
+  "calendarFilterTags": "Tags",
+  "@calendarFilterTags": {
+    "description": "Tag group title in the calendar filter sheet."
+  },
+  "calendarFilterNoTags": "No tags yet",
+  "@calendarFilterNoTags": {
+    "description": "Shown in the filter sheet when there are no tags."
+  },
+  "calendarFilterActive": "Filtered",
+  "@calendarFilterActive": {
+    "description": "Screen reader prefix of the filter bar in the calendar card."
   }
 }

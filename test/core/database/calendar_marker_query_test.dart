@@ -80,10 +80,12 @@ void main() {
     expect(first.weatherIconCode, '100');
     // diary_tags 主键顺序：标签 id 升序，与挂标签的先后无关。
     expect(first.tagColors, <int>[0xFFFF0000, 0xFF0000FF]);
+    expect(first.tagIds, <int>[red, blue]..sort());
     final plain = markers.last;
     expect(plain.moodEmoji, isNull);
     expect(plain.cover, isNull);
     expect(plain.tagColors, isEmpty);
+    expect(plain.tagIds, isEmpty);
   });
 
   test('locked capsules are reported until they unlock', () async {

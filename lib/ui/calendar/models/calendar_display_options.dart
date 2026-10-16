@@ -2,46 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
-/// 日期格样式：决定月/周网格里每一天画什么。
-enum CalendarCellStyle {
-  /// 有几篇画几个圆点（最多 3 个）。
-  dot,
+import 'calendar_display_enums.dart';
 
-  /// 心情 emoji（默认，延续旧版日历）。
-  mood,
-
-  /// 按篇数或字数分档的主色填充。
-  heat,
-
-  /// 当天代表图铺满格子。
-  photo,
-
-  /// 当天前 3 个标签的颜色点。
-  tags,
-}
-
-/// 热力样式的取值依据。
-enum CalendarHeatBasis { entries, words }
-
-/// 心情样式下一天有多篇日记时的显示方式：取平均会抹平一天里的情绪起伏，
-/// 逐篇则按时间顺序并排显示（最多 3 个）。
-enum CalendarMoodAggregation { average, each }
-
-/// 一周起始日；[locale] 跟随应用语言区域（中文周一、英文周日）。应用只
-/// 支持中英文，两种语言区域都不以周六起始，不提供该选项。
-enum CalendarWeekStart { locale, monday, sunday }
-
-/// 打开日历页时的网格格式；[remember] 沿用上次切换到的月/周格式。
-enum CalendarDefaultFormat { month, week, remember }
-
-/// 月/周两种网格格式（持久化用，避免模型层依赖 table_calendar）。
-enum CalendarGridFormat { month, week }
-
-/// 选中日日记的展示方式：时间线（默认，轻量）或与日记列表相同的卡片。
-enum CalendarDayContentStyle { timeline, cards }
-
-/// 年视图每个日期小格的着色依据。
-enum CalendarYearBasis { mood, entries, words }
+export 'calendar_display_enums.dart';
 
 /// 日历页的显示选项。
 ///
@@ -70,6 +33,7 @@ class CalendarDisplayOptions {
     this.dayContentStyle = CalendarDayContentStyle.timeline,
     this.showOnThisDay = true,
     this.yearBasis = CalendarYearBasis.mood,
+    this.lunarMode = CalendarLunarMode.locale,
   });
 
   /// 解析持久化的 JSON；null、空串或损坏时返回默认选项。
@@ -151,6 +115,11 @@ class CalendarDisplayOptions {
         json['yearBasis'],
         defaults.yearBasis,
       ),
+      lunarMode: _enumByName(
+        CalendarLunarMode.values,
+        json['lunarMode'],
+        defaults.lunarMode,
+      ),
     );
   }
 
@@ -187,6 +156,9 @@ class CalendarDisplayOptions {
   /// 年视图的着色依据，在年视图内切换。
   final CalendarYearBasis yearBasis;
 
+  /// 日期数字下方是否显示农历、节气与节日。
+  final CalendarLunarMode lunarMode;
+
   /// 打开日历页时应使用的网格格式。
   CalendarGridFormat get initialFormat => switch (defaultFormat) {
     CalendarDefaultFormat.month => CalendarGridFormat.month,
@@ -211,6 +183,7 @@ class CalendarDisplayOptions {
     'dayContentStyle': dayContentStyle.name,
     'showOnThisDay': showOnThisDay,
     'yearBasis': yearBasis.name,
+    'lunarMode': lunarMode.name,
   };
 
   String encode() => jsonEncode(toJson());
@@ -232,6 +205,7 @@ class CalendarDisplayOptions {
     CalendarDayContentStyle? dayContentStyle,
     bool? showOnThisDay,
     CalendarYearBasis? yearBasis,
+    CalendarLunarMode? lunarMode,
   }) {
     return CalendarDisplayOptions(
       cellStyle: cellStyle ?? this.cellStyle,
@@ -250,6 +224,7 @@ class CalendarDisplayOptions {
       dayContentStyle: dayContentStyle ?? this.dayContentStyle,
       showOnThisDay: showOnThisDay ?? this.showOnThisDay,
       yearBasis: yearBasis ?? this.yearBasis,
+      lunarMode: lunarMode ?? this.lunarMode,
     );
   }
 
@@ -271,7 +246,8 @@ class CalendarDisplayOptions {
         other.showMonthSummary == showMonthSummary &&
         other.dayContentStyle == dayContentStyle &&
         other.showOnThisDay == showOnThisDay &&
-        other.yearBasis == yearBasis;
+        other.yearBasis == yearBasis &&
+        other.lunarMode == lunarMode;
   }
 
   @override
@@ -292,6 +268,7 @@ class CalendarDisplayOptions {
     dayContentStyle,
     showOnThisDay,
     yearBasis,
+    lunarMode,
   );
 
   static T _enumByName<T extends Enum>(

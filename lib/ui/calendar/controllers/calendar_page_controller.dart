@@ -5,6 +5,7 @@ part of 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 /// 职责边界：
 /// - 处理日历视图状态（月/周/年、焦点月份、选中日期）；
 /// - 处理长按日期的快捷操作与预览页导航；
+/// - 选一段日期做统计见 calendar_range_actions.dart；
 /// - 从日历新建日记（含草稿分流）见 calendar_create_actions.dart，显示选项
 ///   与年视图导出分别见 calendar_display_options_actions.dart、
 ///   calendar_year_actions.dart；
@@ -29,7 +30,10 @@ class _CalendarPageController {
       unawaited(pickDateAndJump());
       return;
     }
-    _state.applyState(() => _state._yearMode = true);
+    _state.applyState(() {
+      _state._yearMode = true;
+      _state._range = null;
+    });
   }
 
   /// 在年视图中点按某个迷你月份：回到该月的月视图。选中日在该月时焦点落在
@@ -64,7 +68,10 @@ class _CalendarPageController {
     }
     switch (action) {
       case CalendarDayAction.view:
+        exitRange();
         onDaySelected(normalizedDay, normalizedDay);
+      case CalendarDayAction.range:
+        startRange(normalizedDay);
       case CalendarDayAction.write:
         await openCreateEditorWithDraftPrompt(day: normalizedDay);
       case CalendarDayAction.capsule:
@@ -83,8 +90,11 @@ class _CalendarPageController {
     _state.applyState(() => _state._calendarFormat = format);
   }
 
-  /// 日期选中回调：联动“选中日列表”和“焦点月份”。
+  /// 日期选中回调：联动“选中日列表”和“焦点月份”；范围选择中改为定首尾。
   void onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    if (tapInRange(selectedDay, focusedDay)) {
+      return;
+    }
     final normalizedSelectedDay = DateUtils.dateOnly(selectedDay);
     final normalizedFocusedDay = DateUtils.dateOnly(focusedDay);
     if (isSameDay(_state._selectedDay, normalizedSelectedDay) &&
@@ -111,6 +121,7 @@ class _CalendarPageController {
     final now = DateTime.now();
     _state.applyState(() {
       _state._yearMode = false;
+      _state._range = null;
       _state._selectedDay = DateUtils.dateOnly(now);
       _state._focusedMonth = DateUtils.dateOnly(now);
       _state._calendarFormat = CalendarFormat.month;

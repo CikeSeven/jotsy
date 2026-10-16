@@ -3,10 +3,13 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/expressive_motion.dart';
+import '../viewmodels/calendar_lunar_day.dart';
 
-/// 选中日期标题行：`10月15日 周三 [3 天前]` + 右侧当天篇数与字数。
+/// 选中日期标题行：`10月15日 周三 [3 天前]` + 右侧当天篇数与字数；显示
+/// 农历时下方再加一行“农历九月廿四 · 寒露”。
 ///
-/// 输入：选中日期、当前时刻与当天已解封日记的篇数/字数；无副作用。
+/// 输入：选中日期、当前时刻、当天已解封日记的篇数/字数与农历信息
+/// [lunar]（不显示农历时为 null）；无副作用。
 ///
 /// 日期与星期由 intl 按语言区域格式化（中文“10月15日 周三”、英文
 /// “Oct 15 Wed”），不手写中英分支。换日时日期部分与下方内容一起交叉淡入；
@@ -18,12 +21,14 @@ class CalendarDayHeading extends StatelessWidget {
     required this.now,
     required this.entryCount,
     required this.charCount,
+    this.lunar,
   });
 
   final DateTime day;
   final DateTime now;
   final int entryCount;
   final int charCount;
+  final CalendarLunarDay? lunar;
 
   @override
   Widget build(BuildContext context) {
@@ -47,30 +52,37 @@ class CalendarDayHeading extends StatelessWidget {
             switchInCurve: ExpressiveMotion.effects,
             switchOutCurve: ExpressiveMotion.exit,
             layoutBuilder: _startAlignedLayout,
-            child: Row(
+            child: Column(
               key: ValueKey<DateTime>(day),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(
-                  DateFormat.MMMd(l10n.localeName).format(day),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    DateFormat.E(l10n.localeName).format(day),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                Row(
+                  children: <Widget>[
+                    Text(
+                      DateFormat.MMMd(l10n.localeName).format(day),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        DateFormat.E(l10n.localeName).format(day),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: _RelativeDayPill(day: day, now: now),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: _RelativeDayPill(day: day, now: now),
-                ),
+                ?_buildLunarLine(context),
               ],
             ),
           ),
@@ -95,6 +107,48 @@ class CalendarDayHeading extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// 农历行：节日 tertiary、节气 primary，与日期格小字同一套颜色语义；
+  /// 窄屏下按需省略，不换行。
+  Widget? _buildLunarLine(BuildContext context) {
+    final lunar = this.lunar;
+    if (lunar == null) {
+      return null;
+    }
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const emphasis = TextStyle(fontWeight: FontWeight.w600);
+    final term = lunar.term;
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Text.rich(
+        TextSpan(
+          text: context.l10n.calendarLunarDate(lunar.date),
+          children: <InlineSpan>[
+            for (final festival in lunar.festivals) ...<InlineSpan>[
+              const TextSpan(text: ' · '),
+              TextSpan(
+                text: festival,
+                style: emphasis.copyWith(color: colorScheme.tertiary),
+              ),
+            ],
+            if (term != null) ...<InlineSpan>[
+              const TextSpan(text: ' · '),
+              TextSpan(
+                text: term,
+                style: emphasis.copyWith(color: colorScheme.primary),
+              ),
+            ],
+          ],
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
     );
   }
 

@@ -436,10 +436,11 @@ ORDER BY d.created_at DESC, d.id DESC
 
   /// 监听 `[start, end)` 内的日历打点元数据（含归档，不含已删除）。
   ///
-  /// 标签色用相关子查询拼接而不是 JOIN + GROUP BY：每篇日记仍是一行，且
-  /// 打点不需要标签名。group_concat 本身不保证顺序，内层按标签 id 排序后
-  /// 再拼接，同一天的标签色点不会随查询计划变化而换位。readsFrom 包含标签
-  /// 两表，增删标签或改标签色后日期格会刷新。
+  /// 标签色与标签 id（日历按标签筛选用）各用一个相关子查询拼接，而不是
+  /// JOIN + GROUP BY：每篇日记仍是一行，且打点不需要标签名。group_concat
+  /// 本身不保证顺序，内层按标签 id 排序后再拼接，同一天的标签色点不会随
+  /// 查询计划变化而换位。readsFrom 包含标签两表，增删标签或改标签色后日期
+  /// 格会刷新。
   Stream<List<DiaryCalendarMarker>> watchDiaryMarkersInRange(
     DateTime start,
     DateTime end,
@@ -464,7 +465,16 @@ SELECT
       WHERE dt.diary_id = d.id
       ORDER BY dt.tag_id
     )
-  ) AS tag_colors
+  ) AS tag_colors,
+  (
+    SELECT group_concat(tag_id)
+    FROM (
+      SELECT dt.tag_id AS tag_id
+      FROM diary_tags dt
+      WHERE dt.diary_id = d.id
+      ORDER BY dt.tag_id
+    )
+  ) AS tag_ids
 FROM diaries d
 WHERE d.is_deleted = 0
   AND d.created_at >= ?
@@ -489,6 +499,7 @@ ORDER BY d.created_at ASC, d.id ASC
               weatherIconCode: _readTrimmedText(row, 'weather_icon_code'),
               capsuleUnlockAt: _readNullableDateTime(row, 'capsule_unlock_at'),
               tagColors: _parseIntList(row.data['tag_colors']),
+              tagIds: _parseIntList(row.data['tag_ids']),
             );
           })
           .toList(growable: false);

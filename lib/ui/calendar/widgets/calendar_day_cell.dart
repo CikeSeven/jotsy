@@ -6,12 +6,15 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/qweather_icon.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
+import '../viewmodels/calendar_lunar_day.dart';
+import 'calendar_cell_layout.dart';
 import 'calendar_day_cell_parts.dart';
 
 /// 日历网格中的一个日期格。
 ///
-/// 输入：日期状态（今天/选中/月外/周末）、当天汇总 [summary]、显示选项与
-/// 照片样式的代表图；输出整格画面。无副作用，点按由 TableCalendar 处理。
+/// 输入：日期状态（今天/选中/月外/周末）、当天汇总 [summary]、显示选项、
+/// 照片样式的代表图与农历信息 [lunar]；输出整格画面。无副作用，点按由
+/// TableCalendar 处理。
 ///
 /// 两种高亮形态：
 /// - 填充（圆点/心情/标签色）：选中整格填 primary、今天填 tertiaryContainer，
@@ -19,6 +22,12 @@ import 'calendar_day_cell_parts.dart';
 /// - 描边（热力/照片）：格子底色本身承载数据（热力色阶、照片），整格填色会
 ///   盖掉它，改为外圈描边——选中 2dp primary、今天 tertiary。描边与内容之间
 ///   留 2dp 间隙，深色热力格外的 primary 描边依然可辨。
+///
+/// 范围选择时首尾两天按“选中”绘制，中间的日子（[inRange]）铺一层浅
+/// primary 底（描边形态为半透明 primary 描边）。浅底而不是 primaryContainer：
+/// 后者在部分种子色下与 primary 相近，首尾和中间分不开，整段深色也太重；
+/// 浅底上的文字沿用普通格的配色。优先级：选中 > 今天 > 范围内 > 周末，
+/// 范围跨过今天时仍能认出今天。
 ///
 /// 三种状态间的颜色经 AnimatedContainer 以 `fast` 补间；形状始终是同一
 /// 圆角矩形，补间中途不会换形（见 calendar_page 中的旧注释）。
@@ -31,8 +40,10 @@ class CalendarDayCell extends StatelessWidget {
     required this.isSelected,
     required this.isOutside,
     required this.isWeekend,
+    this.inRange = false,
     this.summary,
     this.image,
+    this.lunar,
   });
 
   static const double _radius = 14;
@@ -44,10 +55,23 @@ class CalendarDayCell extends StatelessWidget {
   final bool isSelected;
   final bool isOutside;
   final bool isWeekend;
+
+  /// 位于所选日期范围之内（不含首尾两天，首尾按 [isSelected] 绘制）。
+  final bool inRange;
   final CalendarDaySummary? summary;
 
   /// 照片样式的代表图（本地路径或 http(s) 地址）。
   final String? image;
+
+  /// 农历信息；不显示农历时为 null。
+  final CalendarLunarDay? lunar;
+
+  /// 三层排版下为底部指示物预留的高度（见 [CalendarCellLayout]）；热力格
+  /// 没有指示物，数字组在整格居中。
+  double get _indicatorReserve =>
+      lunar == null || options.cellStyle == CalendarCellStyle.heat
+      ? 0
+      : CalendarCellLayout.indicatorBand;
 
   /// 当前格是否按“周末着色”铺灰底（相邻月份的日期不着色）。
   bool get _weekendShaded =>
@@ -60,6 +84,10 @@ class CalendarDayCell extends StatelessWidget {
       colorScheme.surfaceContainerHighest.withValues(
         alpha: colorScheme.brightness == Brightness.light ? 0.9 : 0.75,
       );
+
+  /// 范围内日期的浅底。
+  static Color rangeColor(ColorScheme colorScheme) =>
+      colorScheme.primary.withValues(alpha: 0.2);
 
   bool get _ringMode =>
       options.cellStyle == CalendarCellStyle.heat ||
@@ -81,12 +109,16 @@ class CalendarDayCell extends StatelessWidget {
           ? colorScheme.primary
           : isToday
           ? colorScheme.tertiary
+          : inRange
+          ? colorScheme.primary.withValues(alpha: 0.4)
           : colorScheme.primary.withValues(alpha: 0);
     } else {
       fill = isSelected
           ? colorScheme.primary
           : isToday
           ? colorScheme.tertiaryContainer
+          : inRange
+          ? rangeColor(colorScheme)
           : _weekendShaded
           ? weekendColor(colorScheme)
           : colorScheme.primary.withValues(alpha: 0);
@@ -134,6 +166,8 @@ class CalendarDayCell extends StatelessWidget {
         options: options,
         color: onFill ?? colorScheme.primary,
       ),
+      subtitle: _buildLunarLabel(colorScheme, onFill: onFill),
+      bottomReserve: _indicatorReserve,
     );
   }
 
@@ -152,7 +186,7 @@ class CalendarDayCell extends StatelessWidget {
       final image = this.image;
       if (image != null) {
         // 排版层放在裁切之外，挂在日期小底块外侧的锁/天气不被裁掉；篇数
-        // 直接写进日期小底块，照片上的裸字看不清。
+        // 与农历直接写进日期小底块，照片上的裸字看不清。
         return Padding(
           padding: const EdgeInsets.all(_ringGap),
           child: Stack(
@@ -167,15 +201,20 @@ class CalendarDayCell extends StatelessWidget {
                 ),
               ),
               CalendarCellLayout(
-                number: _buildPhotoNumber(
-                  context,
-                  colorScheme,
+                number: CalendarCellPhotoNumber(
+                  day: day.day,
+                  selected: isSelected,
                   count: CalendarCellCountMark.countFor(
                     summary: summary,
                     options: options,
                   ),
+                  lunar: _buildLunarLabel(
+                    colorScheme,
+                    onFill: isSelected ? colorScheme.onPrimary : null,
+                  ),
                 ),
                 leadingBadge: _buildLeadingBadge(colorScheme, onPhoto: true),
+                bottomReserve: _indicatorReserve,
               ),
             ],
           ),
@@ -203,6 +242,8 @@ class CalendarDayCell extends StatelessWidget {
               color: colorScheme.primary,
               dotsShown: true,
             ),
+            subtitle: _buildLunarLabel(colorScheme),
+            bottomReserve: _indicatorReserve,
           ),
         ),
       );
@@ -237,6 +278,7 @@ class CalendarDayCell extends StatelessWidget {
             options: options,
             color: foreground ?? colorScheme.primary,
           ),
+          subtitle: _buildLunarLabel(colorScheme, onFill: foreground),
         ),
       ),
     );
@@ -296,51 +338,20 @@ class CalendarDayCell extends StatelessWidget {
     );
   }
 
-  /// 照片上的日期数字放在半透明小底块上，任何照片上都读得清；有篇数时
-  /// 以上标写在同一个底块里。
-  Widget _buildPhotoNumber(
-    BuildContext context,
-    ColorScheme colorScheme, {
-    int? count,
-  }) {
-    final textTheme = Theme.of(context).textTheme;
-    final selected = isSelected;
-    final foreground = selected ? colorScheme.onPrimary : colorScheme.onSurface;
-    // 窄屏加周数列、或大字号时格子放不下“日期 + 上标”，整体等比缩小而不是
-    // 溢出。
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: selected
-              ? colorScheme.primary
-              : colorScheme.surface.withValues(alpha: 0.78),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                '${day.day}',
-                style: textTheme.labelMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.w700,
-                  height: 1.1,
-                ),
-              ),
-              if (count != null) ...<Widget>[
-                const SizedBox(width: 1.5),
-                CalendarCellCountMark(
-                  count: count,
-                  color: selected ? colorScheme.onPrimary : colorScheme.primary,
-                ),
-              ],
-            ],
-          ),
-        ),
+  /// 数字下方的农历小字；不显示农历时为 null。
+  Widget? _buildLunarLabel(ColorScheme colorScheme, {Color? onFill}) {
+    final lunar = this.lunar;
+    if (lunar == null) {
+      return null;
+    }
+    return CalendarCellLunarLabel(
+      text: lunar.cellLabel,
+      emphasized: CalendarCellLunarLabel.isEmphasized(lunar.kind),
+      color: CalendarCellLunarLabel.colorFor(
+        colorScheme,
+        lunar.kind,
+        onFill: onFill,
+        isOutside: isOutside,
       ),
     );
   }

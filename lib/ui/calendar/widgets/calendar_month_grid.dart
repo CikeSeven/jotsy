@@ -6,7 +6,9 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../models/calendar_display_options.dart';
+import '../models/calendar_range_selection.dart';
 import '../viewmodels/calendar_day_summary.dart';
+import '../viewmodels/calendar_lunar_day.dart';
 import 'calendar_day_cell.dart';
 
 /// 日历网格（月/周）：TableCalendar 的配置与日期格装配。
@@ -31,10 +33,16 @@ class CalendarMonthGrid extends StatefulWidget {
     required this.onPageChanged,
     required this.onFormatChanged,
     this.onDayLongPressed,
+    this.range,
   });
 
   static final DateTime firstDay = DateTime(2010, 1, 1);
   static final DateTime lastDay = DateTime(2100, 12, 31);
+
+  /// 行高：table_calendar 默认 52；显示农历时数字下方多一行小字，加高到
+  /// 60，数字、农历与底部指示物三层互不挤压。
+  static const double rowHeight = 52;
+  static const double lunarRowHeight = 60;
 
   final DateTime focusedDay;
   final DateTime selectedDay;
@@ -50,6 +58,11 @@ class CalendarMonthGrid extends StatefulWidget {
   /// 系统长按反馈，由回调方负责。
   final ValueChanged<DateTime>? onDayLongPressed;
 
+  /// 正在选择的日期范围；不为 null 时日期格只按范围首尾高亮，选中日不再
+  /// 单独高亮（点按总是落在首尾之一）。范围点按逻辑由控制器处理，不使用
+  /// table_calendar 的 rangeSelectionMode：整格由 [CalendarDayCell] 绘制。
+  final CalendarRangeSelection? range;
+
   @override
   State<CalendarMonthGrid> createState() => _CalendarMonthGridState();
 
@@ -60,6 +73,7 @@ class CalendarMonthGrid extends StatefulWidget {
     final textTheme = theme.textTheme;
     final today = DateUtils.dateOnly(DateTime.now());
     final photoStyle = options.cellStyle == CalendarCellStyle.photo;
+    final lunar = showsLunar(options.lunarMode, l10n.localeName);
 
     return TableCalendar<DiaryCalendarMarker>(
       locale: l10n.localeName,
@@ -73,6 +87,7 @@ class CalendarMonthGrid extends StatefulWidget {
         MaterialLocalizations.of(context),
       ),
       sixWeekMonthsEnforced: options.fixedSixWeeks,
+      rowHeight: lunar ? lunarRowHeight : rowHeight,
       weekNumbersVisible: options.showWeekNumbers,
       selectedDayPredicate: (DateTime day) => isSameDay(day, selectedDay),
       headerVisible: false,
@@ -107,11 +122,16 @@ class CalendarMonthGrid extends StatefulWidget {
             (BuildContext context, DateTime day, DateTime focusedDay) {
               final dayKey = DateUtils.dateOnly(day);
               final summary = summaries[dayKey];
+              final range = this.range;
+              final rangeRole = range?.roleOf(day) ?? CalendarRangeRole.none;
               return CalendarDayCell(
                 day: day,
                 options: options,
                 isToday: dayKey == today,
-                isSelected: isSameDay(day, selectedDay),
+                isSelected: range == null
+                    ? isSameDay(day, selectedDay)
+                    : rangeRole == CalendarRangeRole.endpoint,
+                inRange: rangeRole == CalendarRangeRole.inside,
                 isOutside: day.month != focusedDay.month,
                 isWeekend:
                     day.weekday == DateTime.saturday ||
@@ -120,6 +140,7 @@ class CalendarMonthGrid extends StatefulWidget {
                 image: photoStyle
                     ? summary?.representativeImage(inlineImages)
                     : null,
+                lunar: lunar ? CalendarLunarDay.of(day) : null,
               );
             },
         dowBuilder: (BuildContext context, DateTime day) {
@@ -157,6 +178,16 @@ class CalendarMonthGrid extends StatefulWidget {
         },
       ),
     );
+  }
+
+  /// 是否显示农历：跟随语言时只在中文下显示。农历、节气名称来自换算库，
+  /// 只有中文；英文界面需要时可在面板里手动打开。
+  static bool showsLunar(CalendarLunarMode mode, String localeName) {
+    return switch (mode) {
+      CalendarLunarMode.always => true,
+      CalendarLunarMode.never => false,
+      CalendarLunarMode.locale => localeName.startsWith('zh'),
+    };
   }
 
   /// 每周第一天对应的 [DateTime.weekday]（年视图与月视图保持同一起始日）。

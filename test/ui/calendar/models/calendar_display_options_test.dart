@@ -11,6 +11,7 @@ void main() {
     expect(defaults.cellStyle, CalendarCellStyle.mood);
     expect(defaults.weekStart, CalendarWeekStart.locale);
     expect(defaults.showMonthSummary, isTrue);
+    expect(defaults.lunarMode, CalendarLunarMode.locale);
   });
 
   test('every field survives an encode/decode round trip', () {
@@ -31,6 +32,7 @@ void main() {
       dayContentStyle: CalendarDayContentStyle.cards,
       showOnThisDay: false,
       yearBasis: CalendarYearBasis.words,
+      lunarMode: CalendarLunarMode.always,
     );
 
     expect(CalendarDisplayOptions.decode(options.encode()), options);
@@ -39,13 +41,14 @@ void main() {
   test('a bad field falls back alone and keeps the other choices', () {
     final options = CalendarDisplayOptions.decode(
       '{"cellStyle":"hologram","heatBasis":"words","showCountBadge":"yes",'
-      '"weekStart":"monday"}',
+      '"weekStart":"monday","lunarMode":"sometimes"}',
     );
 
     expect(options.cellStyle, CalendarCellStyle.mood);
     expect(options.heatBasis, CalendarHeatBasis.words);
     expect(options.showCountBadge, isTrue);
     expect(options.weekStart, CalendarWeekStart.monday);
+    expect(options.lunarMode, CalendarLunarMode.locale);
   });
 
   test('initial format follows the default format choice', () {

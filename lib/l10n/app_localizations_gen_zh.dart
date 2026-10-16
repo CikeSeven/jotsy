@@ -2070,7 +2070,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String calendarSummaryEntries(int count) {
-    return '本月 $count 篇日记';
+    return '共 $count 篇日记';
   }
 
   @override
@@ -2085,7 +2085,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String calendarSummaryChars(String count) {
-    return '本月共 $count 字';
+    return '共 $count 字';
   }
 
   @override
@@ -2203,4 +2203,80 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get calendarNextYear => '下一年';
+
+  @override
+  String get calendarOptionsLunar => '农历与节气';
+
+  @override
+  String get calendarOptionsLunarDescription => '在日期下方显示农历、节气与传统节日。';
+
+  @override
+  String get calendarLunarLocale => '跟随语言';
+
+  @override
+  String get calendarLunarAlways => '显示';
+
+  @override
+  String get calendarLunarNever => '隐藏';
+
+  @override
+  String calendarLunarDate(String date) {
+    return '农历$date';
+  }
+
+  @override
+  String get calendarSummaryEmptyYear => '这一年还没有日记';
+
+  @override
+  String get calendarSummaryFutureYear => '这一年还没开始';
+
+  @override
+  String get calendarSummaryEmptyRange => '这段时间没有日记';
+
+  @override
+  String get calendarSummaryFutureRange => '这段时间还没到';
+
+  @override
+  String get calendarDayActionRange => '从这天开始选择范围';
+
+  @override
+  String get calendarDayActionRangeDescription => '再点一个日期作为终点，统计这段时间';
+
+  @override
+  String calendarRangeTitle(String start, String end, int days) {
+    return '$start – $end · $days 天';
+  }
+
+  @override
+  String calendarRangePickEnd(String start) {
+    return '$start 起 · 点按另一天作为终点';
+  }
+
+  @override
+  String get calendarRangeExit => '退出范围选择';
+
+  @override
+  String get calendarFilterTooltip => '筛选';
+
+  @override
+  String get calendarFilterTitle => '筛选日历';
+
+  @override
+  String get calendarFilterClear => '清除筛选';
+
+  @override
+  String get calendarFilterDescription =>
+      '日期格与统计只算符合条件的日记。同一类里任选其一即可，心情和标签都选时需同时满足。';
+
+  @override
+  String get calendarFilterMoods => '心情';
+
+  @override
+  String get calendarFilterTags => '标签';
+
+  @override
+  String get calendarFilterNoTags => '还没有标签';
+
+  @override
+  String get calendarFilterActive => '已筛选';
 }

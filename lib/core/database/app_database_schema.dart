@@ -184,7 +184,7 @@ class ExploreDiaryOverview {
 /// 日历月份打点聚合模型（轻量版）。
 ///
 /// 用于日历网格渲染与月度概览：只带日期格各种样式要画的标量字段（心情、
-/// 字数、显式封面、天气、标签色、胶囊解封时间），不带富文本正文，避免把
+/// 字数、显式封面、天气、标签色与 id、胶囊解封时间），不带富文本正文，避免把
 /// 完整日记内容加载到月视图造成额外开销。正文首图按需另行查询
 /// （见 `watchDiaryImageCandidatesInRange`）。
 class DiaryCalendarMarker {
@@ -198,6 +198,7 @@ class DiaryCalendarMarker {
     this.weatherIconCode,
     this.capsuleUnlockAt,
     this.tagColors = const <int>[],
+    this.tagIds = const <int>[],
   });
 
   final String diaryId;
@@ -217,6 +218,9 @@ class DiaryCalendarMarker {
 
   /// 所挂标签的颜色（ARGB），按标签 id 升序。
   final List<int> tagColors;
+
+  /// 所挂标签的 id，升序（日历按标签筛选用）。
+  final List<int> tagIds;
 
   /// 在 [now] 时刻是否仍是未解封的时间胶囊：未解封前不得泄露心情、封面、
   /// 字数等内容信息（与时间线只显示倒计时一致）。

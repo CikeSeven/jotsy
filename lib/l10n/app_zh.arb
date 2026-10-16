@@ -2927,9 +2927,9 @@
   "@calendarShowMonthSummaryDescription": {
     "description": "月度概览显示内容的说明。"
   },
-  "calendarSummaryEntries": "本月 {count} 篇日记",
+  "calendarSummaryEntries": "共 {count} 篇日记",
   "@calendarSummaryEntries": {
-    "description": "月度概览提示：本月日记篇数。",
+    "description": "概览提示：当月、当年或所选范围内的日记篇数。",
     "placeholders": {
       "count": {
         "type": "int"
@@ -2957,9 +2957,9 @@
       }
     }
   },
-  "calendarSummaryChars": "本月共 {count} 字",
+  "calendarSummaryChars": "共 {count} 字",
   "@calendarSummaryChars": {
-    "description": "月度概览提示：本月总字数（已格式化的数字）。",
+    "description": "概览提示：当月、当年或所选范围内的总字数（已格式化的数字）。",
     "placeholders": {
       "count": {
         "type": "String"
@@ -3139,5 +3139,118 @@
   "calendarNextYear": "下一年",
   "@calendarNextYear": {
     "description": "年视图中切换到下一年的按钮提示。"
+  },
+  "calendarOptionsLunar": "农历与节气",
+  "@calendarOptionsLunar": {
+    "description": "显示选项面板中农历开关的标题。"
+  },
+  "calendarOptionsLunarDescription": "在日期下方显示农历、节气与传统节日。",
+  "@calendarOptionsLunarDescription": {
+    "description": "农历开关的说明。"
+  },
+  "calendarLunarLocale": "跟随语言",
+  "@calendarLunarLocale": {
+    "description": "农历选项：跟随应用语言（中文显示、英文不显示）。"
+  },
+  "calendarLunarAlways": "显示",
+  "@calendarLunarAlways": {
+    "description": "农历选项：始终显示。"
+  },
+  "calendarLunarNever": "隐藏",
+  "@calendarLunarNever": {
+    "description": "农历选项：不显示。"
+  },
+  "calendarLunarDate": "农历{date}",
+  "@calendarLunarDate": {
+    "description": "选中日标题下的农历日期，date 为农历月日（如“九月廿四”）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarSummaryEmptyYear": "这一年还没有日记",
+  "@calendarSummaryEmptyYear": {
+    "description": "年视图概览：当年没有日记时的文案。"
+  },
+  "calendarSummaryFutureYear": "这一年还没开始",
+  "@calendarSummaryFutureYear": {
+    "description": "年视图概览：未来年份没有日记时的文案。"
+  },
+  "calendarSummaryEmptyRange": "这段时间没有日记",
+  "@calendarSummaryEmptyRange": {
+    "description": "范围统计：所选日期范围内没有日记时的文案。"
+  },
+  "calendarSummaryFutureRange": "这段时间还没到",
+  "@calendarSummaryFutureRange": {
+    "description": "范围统计：所选日期范围全部在未来时的文案。"
+  },
+  "calendarDayActionRange": "从这天开始选择范围",
+  "@calendarDayActionRange": {
+    "description": "长按日期菜单：以这一天为起点选择日期范围。"
+  },
+  "calendarDayActionRangeDescription": "再点一个日期作为终点，统计这段时间",
+  "@calendarDayActionRangeDescription": {
+    "description": "“选择范围”操作的说明。"
+  },
+  "calendarRangeTitle": "{start} – {end} · {days} 天",
+  "@calendarRangeTitle": {
+    "description": "范围统计标题：起止日期与包含首尾的天数。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarRangePickEnd": "{start} 起 · 点按另一天作为终点",
+  "@calendarRangePickEnd": {
+    "description": "范围统计标题：已选起点、尚未选终点时的提示。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "calendarRangeExit": "退出范围选择",
+  "@calendarRangeExit": {
+    "description": "范围统计标题右侧关闭按钮的提示。"
+  },
+  "calendarFilterTooltip": "筛选",
+  "@calendarFilterTooltip": {
+    "description": "日历页头筛选按钮的提示。"
+  },
+  "calendarFilterTitle": "筛选日历",
+  "@calendarFilterTitle": {
+    "description": "日历筛选面板标题。"
+  },
+  "calendarFilterClear": "清除筛选",
+  "@calendarFilterClear": {
+    "description": "清除日历筛选条件的按钮。"
+  },
+  "calendarFilterDescription": "日期格与统计只算符合条件的日记。同一类里任选其一即可，心情和标签都选时需同时满足。",
+  "@calendarFilterDescription": {
+    "description": "日历筛选面板的说明。"
+  },
+  "calendarFilterMoods": "心情",
+  "@calendarFilterMoods": {
+    "description": "日历筛选面板的心情分组标题。"
+  },
+  "calendarFilterTags": "标签",
+  "@calendarFilterTags": {
+    "description": "日历筛选面板的标签分组标题。"
+  },
+  "calendarFilterNoTags": "还没有标签",
+  "@calendarFilterNoTags": {
+    "description": "没有任何标签时筛选面板的提示。"
+  },
+  "calendarFilterActive": "已筛选",
+  "@calendarFilterActive": {
+    "description": "日历卡片里筛选条的读屏标签前缀。"
   }
 }

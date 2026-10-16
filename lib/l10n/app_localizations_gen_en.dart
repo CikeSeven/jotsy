@@ -2225,8 +2225,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count entries this month',
-      one: '1 entry this month',
+      other: '$count entries',
+      one: '1 entry',
     );
     return '$_temp0';
   }
@@ -2249,7 +2249,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String calendarSummaryChars(String count) {
-    return '$count characters this month';
+    return '$count characters';
   }
 
   @override
@@ -2406,4 +2406,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarNextYear => 'Next year';
+
+  @override
+  String get calendarOptionsLunar => 'Lunar calendar';
+
+  @override
+  String get calendarOptionsLunarDescription =>
+      'Shows Chinese lunar dates, solar terms and festivals under each date.';
+
+  @override
+  String get calendarLunarLocale => 'Language default';
+
+  @override
+  String get calendarLunarAlways => 'Show';
+
+  @override
+  String get calendarLunarNever => 'Hide';
+
+  @override
+  String calendarLunarDate(String date) {
+    return 'Lunar $date';
+  }
+
+  @override
+  String get calendarSummaryEmptyYear => 'No entries this year yet';
+
+  @override
+  String get calendarSummaryFutureYear => 'This year hasn\'t started yet';
+
+  @override
+  String get calendarSummaryEmptyRange => 'No entries in this range';
+
+  @override
+  String get calendarSummaryFutureRange => 'This range hasn\'t started yet';
+
+  @override
+  String get calendarDayActionRange => 'Select a range from here';
+
+  @override
+  String get calendarDayActionRangeDescription =>
+      'Tap another date to see stats for the days in between';
+
+  @override
+  String calendarRangeTitle(String start, String end, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$start – $end · $_temp0';
+  }
+
+  @override
+  String calendarRangePickEnd(String start) {
+    return 'From $start · tap an end date';
+  }
+
+  @override
+  String get calendarRangeExit => 'Exit range selection';
+
+  @override
+  String get calendarFilterTooltip => 'Filter';
+
+  @override
+  String get calendarFilterTitle => 'Filter calendar';
+
+  @override
+  String get calendarFilterClear => 'Clear filter';
+
+  @override
+  String get calendarFilterDescription =>
+      'Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.';
+
+  @override
+  String get calendarFilterMoods => 'Mood';
+
+  @override
+  String get calendarFilterTags => 'Tags';
+
+  @override
+  String get calendarFilterNoTags => 'No tags yet';
+
+  @override
+  String get calendarFilterActive => 'Filtered';
 }

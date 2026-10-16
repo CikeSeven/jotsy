@@ -191,6 +191,31 @@ class _CalendarDisplayOptionsSheetState
                   _update(options.copyWith(weekStart: selection.single)),
             ),
             const SizedBox(height: AppSpacing.m),
+            CalendarOptionsFieldLabel(text: l10n.calendarOptionsLunar),
+            ExpressiveButtonGroup<CalendarLunarMode>(
+              segments: <ButtonSegment<CalendarLunarMode>>[
+                ButtonSegment<CalendarLunarMode>(
+                  value: CalendarLunarMode.locale,
+                  label: Text(l10n.calendarLunarLocale),
+                ),
+                ButtonSegment<CalendarLunarMode>(
+                  value: CalendarLunarMode.always,
+                  label: Text(l10n.calendarLunarAlways),
+                ),
+                ButtonSegment<CalendarLunarMode>(
+                  value: CalendarLunarMode.never,
+                  label: Text(l10n.calendarLunarNever),
+                ),
+              ],
+              selected: <CalendarLunarMode>{options.lunarMode},
+              onSelectionChanged: (Set<CalendarLunarMode> selection) =>
+                  _update(options.copyWith(lunarMode: selection.single)),
+            ),
+            const SizedBox(height: AppSpacing.s),
+            CalendarOptionsFadingText(
+              text: l10n.calendarOptionsLunarDescription,
+            ),
+            const SizedBox(height: AppSpacing.m),
             CalendarOptionsFieldLabel(text: l10n.calendarOptionsDefaultFormat),
             ExpressiveButtonGroup<CalendarDefaultFormat>(
               segments: <ButtonSegment<CalendarDefaultFormat>>[

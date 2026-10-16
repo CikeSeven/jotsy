@@ -7,10 +7,13 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../viewmodels/calendar_month_stats.dart';
 
-/// 日历卡片底部的月度概览条。
+/// 概览统计的时间段：决定无记录时的文案。
+enum CalendarSummaryPeriod { month, year, range }
+
+/// 日历卡片底部的概览条（月度、年度或所选日期范围）。
 ///
-/// 输入：当前翻到的月份的 [CalendarMonthStats]；输出一行图标 + 数字。无
-/// 副作用。
+/// 输入：该时间段的 [CalendarMonthStats] 与可选的标题行 [header]（范围统计
+/// 的起止日期与关闭按钮）；输出一行图标 + 数字。无副作用。
 ///
 /// 只放数字不放单位：中英文单位长度差很多，320dp 宽的卡片里英文
 /// “12 entries · 9/15 days · …”放不下。完整含义经 Tooltip（长按）与读屏
@@ -19,11 +22,17 @@ class CalendarMonthSummary extends StatelessWidget {
   const CalendarMonthSummary({
     super.key,
     required this.stats,
-    required this.isFutureMonth,
+    required this.isFuture,
+    this.period = CalendarSummaryPeriod.month,
+    this.header,
   });
 
   final CalendarMonthStats stats;
-  final bool isFutureMonth;
+
+  /// 整个时间段都在今天之后（显示“还没开始”而不是“没有日记”）。
+  final bool isFuture;
+  final CalendarSummaryPeriod period;
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -36,9 +45,18 @@ class CalendarMonthSummary extends StatelessWidget {
         height: _CalendarSummaryItem.height,
         child: Center(
           child: Text(
-            isFutureMonth
-                ? l10n.calendarSummaryFuture
-                : l10n.calendarSummaryEmpty,
+            switch ((period, isFuture)) {
+              (CalendarSummaryPeriod.month, false) => l10n.calendarSummaryEmpty,
+              (CalendarSummaryPeriod.month, true) => l10n.calendarSummaryFuture,
+              (CalendarSummaryPeriod.year, false) =>
+                l10n.calendarSummaryEmptyYear,
+              (CalendarSummaryPeriod.year, true) =>
+                l10n.calendarSummaryFutureYear,
+              (CalendarSummaryPeriod.range, false) =>
+                l10n.calendarSummaryEmptyRange,
+              (CalendarSummaryPeriod.range, true) =>
+                l10n.calendarSummaryFutureRange,
+            },
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
@@ -80,6 +98,7 @@ class CalendarMonthSummary extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.s),
+          ?header,
           AnimatedSwitcher(
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
             switchInCurve: ExpressiveMotion.effects,

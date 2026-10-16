@@ -3866,10 +3866,10 @@ abstract class AppLocalizations {
   /// **'Entries, days written, length, top mood and longest streak for the month.'**
   String get calendarShowMonthSummaryDescription;
 
-  /// Monthly summary tooltip: number of entries in the month.
+  /// Summary tooltip: number of entries in the month, year or selected range.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 entry this month} other{{count} entries this month}}'**
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
   String calendarSummaryEntries(int count);
 
   /// Monthly summary tooltip: days with entries out of days elapsed in the month.
@@ -3884,10 +3884,10 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Wrote on 1 day} other{Wrote on {count} days}}'**
   String calendarSummaryDaysNoTotal(int count);
 
-  /// Monthly summary tooltip: total characters written in the month (formatted number).
+  /// Summary tooltip: total characters written in the month, year or selected range (formatted number).
   ///
   /// In en, this message translates to:
-  /// **'{count} characters this month'**
+  /// **'{count} characters'**
   String calendarSummaryChars(String count);
 
   /// Monthly summary tooltip: the mood picked most often in the month.
@@ -4093,6 +4093,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next year'**
   String get calendarNextYear;
+
+  /// Title of the lunar calendar option in the calendar display options sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar calendar'**
+  String get calendarOptionsLunar;
+
+  /// Explains the lunar calendar option.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows Chinese lunar dates, solar terms and festivals under each date.'**
+  String get calendarOptionsLunarDescription;
+
+  /// Lunar calendar option that follows the app language (shown in Chinese, hidden in English).
+  ///
+  /// In en, this message translates to:
+  /// **'Language default'**
+  String get calendarLunarLocale;
+
+  /// Lunar calendar option: always show.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get calendarLunarAlways;
+
+  /// Lunar calendar option: never show.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get calendarLunarNever;
+
+  /// Lunar date under the selected day heading; date is the Chinese lunar month and day (e.g. 九月廿四).
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar {date}'**
+  String calendarLunarDate(String date);
+
+  /// Year view summary text when the year has no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries this year yet'**
+  String get calendarSummaryEmptyYear;
+
+  /// Year view summary text for a future year without entries.
+  ///
+  /// In en, this message translates to:
+  /// **'This year hasn\'t started yet'**
+  String get calendarSummaryFutureYear;
+
+  /// Range summary text when the selected dates have no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries in this range'**
+  String get calendarSummaryEmptyRange;
+
+  /// Range summary text when every selected date is in the future.
+  ///
+  /// In en, this message translates to:
+  /// **'This range hasn\'t started yet'**
+  String get calendarSummaryFutureRange;
+
+  /// Long-press day menu: start selecting a date range from this day.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a range from here'**
+  String get calendarDayActionRange;
+
+  /// Explains the select-a-range action.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap another date to see stats for the days in between'**
+  String get calendarDayActionRangeDescription;
+
+  /// Range summary title: start and end dates and the number of days including both ends.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end} · {days, plural, =1{1 day} other{{days} days}}'**
+  String calendarRangeTitle(String start, String end, int days);
+
+  /// Range summary title while only the start date is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'From {start} · tap an end date'**
+  String calendarRangePickEnd(String start);
+
+  /// Tooltip of the close button on the range summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit range selection'**
+  String get calendarRangeExit;
+
+  /// Tooltip of the filter button in the calendar header.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get calendarFilterTooltip;
+
+  /// Title of the calendar filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter calendar'**
+  String get calendarFilterTitle;
+
+  /// Button that clears the calendar filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get calendarFilterClear;
+
+  /// Explains the calendar filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.'**
+  String get calendarFilterDescription;
+
+  /// Mood group title in the calendar filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get calendarFilterMoods;
+
+  /// Tag group title in the calendar filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get calendarFilterTags;
+
+  /// Shown in the filter sheet when there are no tags.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags yet'**
+  String get calendarFilterNoTags;
+
+  /// Screen reader prefix of the filter bar in the calendar card.
+  ///
+  /// In en, this message translates to:
+  /// **'Filtered'**
+  String get calendarFilterActive;
 }
 
 class _AppLocalizationsDelegate

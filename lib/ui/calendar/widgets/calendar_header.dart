@@ -15,6 +15,8 @@ class CalendarHeader extends StatelessWidget {
     required this.onNextMonth,
     required this.onPickDate,
     this.onOpenDisplayOptions,
+    this.onOpenFilter,
+    this.filterActive = false,
     this.titleTooltip,
     this.previousTooltip,
     this.nextTooltip,
@@ -33,6 +35,13 @@ class CalendarHeader extends StatelessWidget {
 
   /// 打开日历显示选项面板；为 null 时不显示该按钮。
   final VoidCallback? onOpenDisplayOptions;
+
+  /// 打开筛选面板；为 null 时不显示该按钮。
+  final VoidCallback? onOpenFilter;
+
+  /// 筛选生效中：按钮切换为选中态并带一个小圆点，离开卡片也能看出网格
+  /// 是筛选后的结果。
+  final bool filterActive;
 
   /// 标题按钮的提示（月视图下为“查看全年”，年视图下为“选择日期”）。
   final String? titleTooltip;
@@ -72,6 +81,22 @@ class CalendarHeader extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                    if (onOpenFilter != null)
+                      IconButton(
+                        tooltip: l10n.calendarFilterTooltip,
+                        isSelected: filterActive,
+                        onPressed: onOpenFilter,
+                        icon: Badge(
+                          isLabelVisible: filterActive,
+                          smallSize: 7,
+                          // 选中态图标已是 primary，圆点用 tertiary 才分得开。
+                          backgroundColor: theme.colorScheme.tertiary,
+                          child: const FaIcon(
+                            FontAwesomeIcons.filter,
+                            size: 17,
+                          ),
+                        ),
+                      ),
                     if (onOpenDisplayOptions != null) ...[
                       IconButton(
                         tooltip: l10n.calendarDisplayOptionsTooltip,

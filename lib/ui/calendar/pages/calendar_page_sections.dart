@@ -72,6 +72,8 @@ extension _CalendarPageSections on _CalendarPageState {
 
   Widget _buildCalendarPanel({
     required CalendarDisplayOptions options,
+    required CalendarMarkerFilter filter,
+    required List<Tag> filterTags,
     required Map<DateTime, CalendarDaySummary> summaries,
     required AsyncValue<List<DiaryCalendarMarker>> markersAsync,
     required List<String> moodOptions,
@@ -81,7 +83,9 @@ extension _CalendarPageSections on _CalendarPageState {
     final today = DateUtils.dateOnly(now);
     final focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month);
     final year = _focusedMonth.year;
-    final stats = !options.showMonthSummary
+    final range = _yearMode ? null : _range;
+    // 范围选择是用户主动进入的模式，即使关掉了月度概览也显示范围统计。
+    final stats = range != null || !options.showMonthSummary
         ? null
         : _yearMode
         ? CalendarMonthStats.computeRange(
@@ -125,12 +129,32 @@ extension _CalendarPageSections on _CalendarPageState {
                 summaries: summaries,
                 moodOptions: moodOptions,
               ),
-              if (stats != null)
+              if (filter.isActive)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.s),
+                  child: CalendarFilterBar(
+                    filter: filter,
+                    tags: filterTags,
+                    onTap: () => unawaited(_controller.openFilter()),
+                    onClear: _controller.clearFilter,
+                  ),
+                ),
+              if (range != null)
+                _buildRangeSummary(
+                  range,
+                  filter: filter,
+                  moodOptions: moodOptions,
+                  now: now,
+                )
+              else if (stats != null)
                 CalendarMonthSummary(
                   stats: stats,
-                  isFutureMonth: _yearMode
+                  isFuture: _yearMode
                       ? year > today.year
                       : focusedMonth.isAfter(today),
+                  period: _yearMode
+                      ? CalendarSummaryPeriod.year
+                      : CalendarSummaryPeriod.month,
                 ),
             ],
           ),
@@ -189,6 +213,7 @@ extension _CalendarPageSections on _CalendarPageState {
         onFormatChanged: _controller.onCalendarFormatChanged,
         onDayLongPressed: (DateTime day) =>
             unawaited(_controller.onDayLongPressed(day)),
+        range: _range,
       );
     }
     return AnimatedSize(

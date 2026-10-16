@@ -30,6 +30,16 @@ final calendarYearMarkersProvider =
       return db.watchDiaryMarkersInRange(DateTime(year), DateTime(year + 1));
     });
 
+/// 日期范围 `[start, end)` 的打点流（选一段日期做统计用，可跨月、跨年）。
+///
+/// 与按月/按年的打点不同，范围随每次点按变化，键很难复用；autoDispose 让
+/// 退出范围选择或改选之后的旧区间不再保持数据库订阅。
+final calendarRangeMarkersProvider = StreamProvider.autoDispose
+    .family<List<DiaryCalendarMarker>, (DateTime, DateTime)>((ref, range) {
+      final db = ref.watch(appDatabaseProvider);
+      return db.watchDiaryMarkersInRange(range.$1, range.$2);
+    });
+
 /// 选中日期在其他年份的同月同日写下的日记（“那年今日”），按年份倒序。
 ///
 /// 只回看 [calendarOnThisDayYearSpan] 年，向后只到今年（之后的年份只可能有

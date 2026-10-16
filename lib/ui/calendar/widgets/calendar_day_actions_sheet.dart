@@ -16,6 +16,9 @@ enum CalendarDayAction {
 
   /// 写一封在这一天解封的时间胶囊（仅未来日期）。
   capsule,
+
+  /// 以这一天为起点选择日期范围，统计这段时间。
+  range,
 }
 
 /// 长按日期弹出的快捷操作面板：标题为日期，下方为可执行的操作；返回所选
@@ -105,6 +108,12 @@ Future<CalendarDayAction?> showCalendarDayActionsSheet(
                   l10n.calendarDayActionCapsule,
                   description: l10n.calendarDayActionCapsuleDescription,
                 ),
+              action(
+                CalendarDayAction.range,
+                FontAwesomeIcons.arrowsLeftRight,
+                l10n.calendarDayActionRange,
+                description: l10n.calendarDayActionRangeDescription,
+              ),
             ],
           ),
         ),

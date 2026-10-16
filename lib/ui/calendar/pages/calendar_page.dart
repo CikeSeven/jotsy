@@ -26,9 +26,12 @@ import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/edit_diary_page.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../models/calendar_display_options.dart';
+import '../models/calendar_marker_filter.dart';
+import '../models/calendar_range_selection.dart';
 import '../providers/calendar_diary_providers.dart';
 import '../providers/calendar_display_options_provider.dart';
 import '../viewmodels/calendar_day_summary.dart';
+import '../viewmodels/calendar_lunar_day.dart';
 import '../viewmodels/calendar_month_stats.dart';
 import '../widgets/calendar_day_actions_sheet.dart';
 import '../widgets/calendar_day_cards_sliver.dart';
@@ -36,10 +39,13 @@ import '../widgets/calendar_day_content_switcher.dart';
 import '../widgets/calendar_day_empty_state.dart';
 import '../widgets/calendar_day_heading.dart';
 import '../widgets/calendar_display_options_sheet.dart';
+import '../widgets/calendar_filter_bar.dart';
+import '../widgets/calendar_filter_sheet.dart';
 import '../widgets/calendar_header.dart';
 import '../widgets/calendar_month_grid.dart';
 import '../widgets/calendar_month_summary.dart';
 import '../widgets/calendar_on_this_day_strip.dart';
+import '../widgets/calendar_range_header.dart';
 import '../widgets/calendar_refresh_capsule.dart';
 import '../widgets/calendar_year_view.dart';
 import '../../widgets/action_loading_overlay.dart';
@@ -48,10 +54,13 @@ import '../widgets/calendar_timeline_section.dart';
 import '../../../app/theme/app_effects.dart';
 
 part 'calendar_page_sections.dart';
+part 'calendar_page_range.dart';
 part '../controllers/calendar_page_controller.dart';
 part '../controllers/calendar_create_actions.dart';
 part '../controllers/calendar_display_options_actions.dart';
 part '../controllers/calendar_year_actions.dart';
+part '../controllers/calendar_range_actions.dart';
+part '../controllers/calendar_filter_actions.dart';
 
 /// 日历页（上历下表）。
 ///
@@ -89,10 +98,12 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       const <DateTime, CalendarDaySummary>{};
   List<DiaryCalendarMarker>? _summarizedMarkersSource;
   List<String>? _summarizedMoodOptions;
+  CalendarMarkerFilter? _summarizedFilter;
   Map<String, String> _cachedInlineImages = const <String, String>{};
   List<DiaryWithTags> _cachedDayDiaries = const <DiaryWithTags>[];
   DateTime? _cachedDayDiariesSelectedDay;
   List<DiaryWithTags> _cachedOnThisDay = const <DiaryWithTags>[];
+  List<DiaryCalendarMarker> _cachedRangeMarkers = const <DiaryCalendarMarker>[];
 
   /// 年视图“年份 + 网格 + 图例”截图区，导出图片只截这一块。
   final GlobalKey _yearCaptureKey = GlobalKey();
@@ -106,6 +117,14 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   /// 再跳变。
   late CalendarDisplayOptions _fallbackOptions;
   CalendarFormat _calendarFormat = CalendarFormat.month;
+
+  /// 正在选择的日期范围（选一段日期做统计）；null 为普通选日，见
+  /// calendar_range_actions.dart。
+  CalendarRangeSelection? _range;
+
+  /// 按标签或心情筛选打点（临时状态，不写入设置），见
+  /// calendar_filter_actions.dart。
+  CalendarMarkerFilter _filter = const CalendarMarkerFilter();
 
   /// 年视图（点月份标题进入）；与月/周格式相互独立，退出后回到月视图。
   bool _yearMode = false;
@@ -193,9 +212,18 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final moodOptions =
         ref.watch(moodOptionsProvider).asData?.value ??
         SettingsService.defaultMoodOptions;
+    // 筛选里的标签可能已被删除：只按仍存在的标签过滤，筛选条也只列出
+    // 它们，不残留看不见的条件。
+    final filterTags = _filter.tagIds.isEmpty
+        ? null
+        : ref.watch(tagListProvider).asData?.value;
+    final filter = filterTags == null
+        ? _filter
+        : _filter.retainTags(filterTags.map((Tag tag) => tag.id));
     final summaries = _resolveDaySummaries(
       markersAsync.asData?.value,
       moodOptions: moodOptions,
+      filter: filter,
       now: now,
     );
     // 照片样式才订阅正文首图；翻月加载期间沿用上一份，照片不会先消失再出现。
@@ -237,6 +265,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                       ),
                       child: _buildCalendarPanel(
                         options: options,
+                        filter: filter,
+                        filterTags: filterTags ?? const <Tag>[],
                         summaries: summaries,
                         markersAsync: markersAsync,
                         moodOptions: moodOptions,
@@ -255,6 +285,13 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                       child: CalendarDayHeading(
                         day: _selectedDay,
                         now: now,
+                        lunar:
+                            CalendarMonthGrid.showsLunar(
+                              options.lunarMode,
+                              l10n.localeName,
+                            )
+                            ? CalendarLunarDay.of(_selectedDay)
+                            : null,
                         entryCount: day.entryCount,
                         charCount: day.charCount,
                       ),
@@ -278,6 +315,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             onPickDate: _controller.onTitlePressed,
             onOpenDisplayOptions: () =>
                 unawaited(_controller.openDisplayOptions()),
+            onOpenFilter: () => unawaited(_controller.openFilter()),
+            filterActive: _filter.isActive,
             titleTooltip: _yearMode
                 ? l10n.autoT0177
                 : l10n.calendarYearViewTooltip,
@@ -299,8 +338,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     );
   }
 
-  /// 打点按日聚合。选日、切换月/周格式等 setState 都会重建页面；打点列表与
-  /// 心情配置引用未变时复用上次结果，只在 provider 推送新值时重新聚合。
+  /// 打点按日聚合。选日、切换月/周格式等 setState 都会重建页面；打点列表、
+  /// 心情配置与筛选都未变时复用上次结果，只在 provider 推送新值或改筛选时
+  /// 重新聚合。筛选在聚合前作用于打点，日期格与各类统计口径一致。
   ///
   /// Riverpod emits loading/error while switching month streams. Keep the last
   /// successful summaries visible so month navigation does not read as data
@@ -308,19 +348,22 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   Map<DateTime, CalendarDaySummary> _resolveDaySummaries(
     List<DiaryCalendarMarker>? markers, {
     required List<String> moodOptions,
+    required CalendarMarkerFilter filter,
     required DateTime now,
   }) {
     if (markers == null) {
       return _cachedDaySummaries;
     }
     if (identical(markers, _summarizedMarkersSource) &&
-        identical(moodOptions, _summarizedMoodOptions)) {
+        identical(moodOptions, _summarizedMoodOptions) &&
+        filter == _summarizedFilter) {
       return _cachedDaySummaries;
     }
     _summarizedMarkersSource = markers;
     _summarizedMoodOptions = moodOptions;
+    _summarizedFilter = filter;
     _cachedDaySummaries = CalendarDaySummary.groupByDay(
-      markers,
+      filter.apply(markers, now: now),
       now: now,
       moodOptions: moodOptions,
     );

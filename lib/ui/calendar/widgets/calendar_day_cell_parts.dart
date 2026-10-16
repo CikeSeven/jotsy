@@ -6,7 +6,8 @@ import '../../widgets/expressive_image_frame.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
 
-// 日期格（CalendarDayCell）的组成部件：内部排版、底部指示物、角标与照片。
+// 日期格（CalendarDayCell）的组成部件：底部指示物、角标与照片（内部排版
+// 见 calendar_cell_layout.dart）。
 // 只负责绘制，无副作用。
 
 /// 日期格底部的指示物：圆点、心情 emoji 或标签色点；当天无日记时为 null。
@@ -156,82 +157,6 @@ class CalendarCellCountMark extends StatelessWidget {
   }
 }
 
-/// 日期格内部排版：数字居中，指示物贴底；角标挂在数字两侧而不是格子角上。
-///
-/// 圆点/心情/标签色样式的格子没有可见边框，角标若放在格子四角，会落在
-/// 两个日期数字之间，看不出属于哪一天；紧贴数字左上、右上（各留 1.5dp
-/// 间隙，不与数字重叠）归属才明确，也不遮挡日期。角标以固定宽度的槽位
-/// 挂在数字框外侧，不改变数字的居中位置。
-class CalendarCellLayout extends StatelessWidget {
-  const CalendarCellLayout({
-    super.key,
-    required this.number,
-    this.indicator,
-    this.leadingBadge,
-    this.trailingBadge,
-  });
-
-  /// 角标槽位宽度：放得下“9+”上标与带底的照片角标（13dp）。
-  static const double _slot = 13;
-  static const double _gap = 1.5;
-
-  final Widget number;
-  final Widget? indicator;
-
-  /// 数字左上方：未解封胶囊的锁或天气。
-  final Widget? leadingBadge;
-
-  /// 数字右上方：篇数上标。
-  final Widget? trailingBadge;
-
-  @override
-  Widget build(BuildContext context) {
-    final leadingBadge = this.leadingBadge;
-    final trailingBadge = this.trailingBadge;
-    return Stack(
-      fit: StackFit.expand,
-      clipBehavior: Clip.none,
-      children: <Widget>[
-        Center(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              number,
-              if (leadingBadge != null)
-                Positioned(
-                  top: -5,
-                  left: -(_slot + _gap),
-                  width: _slot,
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: leadingBadge,
-                  ),
-                ),
-              if (trailingBadge != null)
-                Positioned(
-                  top: -2,
-                  right: -(_slot + _gap),
-                  width: _slot,
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: trailingBadge,
-                  ),
-                ),
-            ],
-          ),
-        ),
-        if (indicator != null)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 3,
-            child: Center(child: indicator),
-          ),
-      ],
-    );
-  }
-}
-
 class CalendarCellDots extends StatelessWidget {
   const CalendarCellDots({super.key, required this.count, required this.color});
 
@@ -251,6 +176,76 @@ class CalendarCellDots extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
       ],
+    );
+  }
+}
+
+/// 照片上的日期数字：放在半透明小底块上，任何照片上都读得清；有篇数时
+/// 以上标写在同一个底块里，农历小字（[lunar]）写在数字下方的第二行。
+class CalendarCellPhotoNumber extends StatelessWidget {
+  const CalendarCellPhotoNumber({
+    super.key,
+    required this.day,
+    required this.selected,
+    this.count,
+    this.lunar,
+  });
+
+  final int day;
+  final bool selected;
+  final int? count;
+  final Widget? lunar;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final count = this.count;
+    final foreground = selected ? colorScheme.onPrimary : colorScheme.onSurface;
+    // 窄屏加周数列、或大字号时格子放不下“日期 + 上标”，整体等比缩小而不是
+    // 溢出。
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: selected
+              ? colorScheme.primary
+              : colorScheme.surface.withValues(alpha: 0.78),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    '$day',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w700,
+                      height: 1.1,
+                    ),
+                  ),
+                  if (count != null) ...<Widget>[
+                    const SizedBox(width: 1.5),
+                    CalendarCellCountMark(
+                      count: count,
+                      color: selected
+                          ? colorScheme.onPrimary
+                          : colorScheme.primary,
+                    ),
+                  ],
+                ],
+              ),
+              ?lunar,
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

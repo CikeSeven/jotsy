@@ -3887,4 +3887,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String publishTimeFollowsCapsule(String time) {
     return 'Follows the time lock · $time';
   }
+
+  @override
+  String get publishCoverChange => 'Tap to change';
 }

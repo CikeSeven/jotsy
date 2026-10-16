@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
@@ -11,53 +10,6 @@ import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 import 'publish_panel_tile.dart';
-
-/// 封面行：点按选图，已有封面时可清除。只随草稿的封面重建。
-class PublishCoverTile extends StatelessWidget {
-  const PublishCoverTile({
-    super.key,
-    required this.draft,
-    required this.actions,
-  });
-
-  final DiaryMetaDraftController draft;
-  final DiaryMetaActions actions;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return ValueListenableSelector<DiaryMetaDraft, String?>(
-      valueListenable: draft,
-      selector: (value) => value.cover,
-      builder: (context, cover, _) => PublishPanelTile(
-        onTap: () => actions.pickCover(context),
-        child: Row(
-          children: <Widget>[
-            Text(l10n.autoT0162, style: PublishPanelTile.titleStyle(context)),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                diaryCoverLabel(cover) ?? l10n.autoT0161,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-            if (cover != null)
-              IconButton(
-                onPressed: actions.clearCover,
-                icon: const FaIcon(FontAwesomeIcons.xmark, size: 12),
-                visualDensity: VisualDensity.compact,
-                tooltip: l10n.autoT0163,
-              ),
-            const SizedBox(width: 6),
-            const FaIcon(FontAwesomeIcons.chevronRight, size: 12),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// 标签行：只展示已选标签摘要，点按进入标签子页。
 class PublishTagTile extends StatelessWidget {

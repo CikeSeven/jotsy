@@ -5014,5 +5014,9 @@
         "example": "2027年1月1日"
       }
     }
+  },
+  "publishCoverChange": "点击更换",
+  "@publishCoverChange": {
+    "description": "日记元数据面板：已设置封面时缩略图旁的提示。"
   }
 }

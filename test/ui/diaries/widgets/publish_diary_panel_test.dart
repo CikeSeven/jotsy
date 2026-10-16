@@ -6,6 +6,9 @@ import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_cover_tile.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_tile.dart';
+import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 
 import '../../../support/publish_panel_driver.dart';
 
@@ -91,6 +94,78 @@ void main() {
       await tester.pumpAndSettle();
       expect(picker(tester).mode, CupertinoDatePickerMode.date);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('cover row', () {
+    Future<DiaryMetaDraftController> pumpWithCover(
+      WidgetTester tester,
+      String? cover,
+    ) async {
+      tester.view.physicalSize = const Size(400, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final draft = DiaryMetaDraftController(DiaryMetaDraft(cover: cover));
+      addTearDown(draft.dispose);
+      await tester.pumpWidget(publishPanelHost(draft: draft));
+      await PublishPanelDriver(tester).expand();
+      return draft;
+    }
+
+    Finder thumbnail() => find.descendant(
+      of: find.byType(PublishCoverTile),
+      matching: find.byType(Image),
+    );
+
+    testWidgets('a cover shows a downsized thumbnail instead of a file name', (
+      tester,
+    ) async {
+      final draft = await pumpWithCover(tester, '/covers/cover_1700000.jpg');
+      expect(find.textContaining('cover_1700000'), findsNothing);
+      expect(find.text('Tap to change'), findsOneWidget);
+      final image = tester.widget<Image>(thumbnail());
+      expect(image.image, isA<ResizeImage>());
+      expect(image.frameBuilder, isNotNull);
+
+      await tester.tap(find.byTooltip('Clear cover'));
+      await tester.pumpAndSettle();
+      expect(draft.value.cover, isNull);
+      expect(thumbnail(), findsNothing);
+      expect(find.text('Tap to choose a cover (optional)'), findsOneWidget);
+    });
+
+    testWidgets('importing a cover shows progress and blocks another pick', (
+      tester,
+    ) async {
+      await pumpWithCover(tester, null);
+      final actions = PublishPanelDriver(tester).actions;
+      actions.importingCover.value = true;
+      await tester.pump();
+      // 300ms 内完成的导入不闪加载指示。
+      expect(
+        find.descendant(
+          of: find.byType(PublishCoverTile),
+          matching: find.byType(ExpressiveLoadingIndicator),
+        ),
+        findsNothing,
+      );
+      await tester.pump(const Duration(milliseconds: 350));
+      expect(
+        find.descendant(
+          of: find.byType(PublishCoverTile),
+          matching: find.byType(ExpressiveLoadingIndicator),
+        ),
+        findsOneWidget,
+      );
+      final tile = tester.widget<PublishPanelTile>(
+        find.descendant(
+          of: find.byType(PublishCoverTile),
+          matching: find.byType(PublishPanelTile),
+        ),
+      );
+      expect(tile.onTap, isNull);
+      actions.importingCover.value = false;
+      await tester.pumpAndSettle();
     });
   });
 

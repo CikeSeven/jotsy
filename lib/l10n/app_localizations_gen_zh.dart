@@ -3518,4 +3518,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String publishTimeFollowsCapsule(String time) {
     return '跟随定时锁 · $time';
   }
+
+  @override
+  String get publishCoverChange => '点击更换';
 }

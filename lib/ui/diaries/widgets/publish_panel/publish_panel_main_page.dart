@@ -7,6 +7,7 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dar
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 import 'publish_context_fields.dart';
+import 'publish_cover_tile.dart';
 import 'publish_mood_energy_sections.dart';
 import 'publish_panel_chrome.dart';
 import 'publish_panel_entry_tiles.dart';

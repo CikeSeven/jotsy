@@ -30,6 +30,8 @@ class PublishPanelDriver {
 
   DiaryMetaDraftController get draft => _panel.draft;
 
+  DiaryMetaActions get actions => _panel.actions;
+
   AppLocalizations get l10n => _context.l10n;
 
   /// 收起态表头（点按展开、也是拖拽起点）。

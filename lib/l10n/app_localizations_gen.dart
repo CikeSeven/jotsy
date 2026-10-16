@@ -6505,6 +6505,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Follows the time lock · {time}'**
   String publishTimeFollowsCapsule(String time);
+
+  /// Diary metadata panel: hint next to the cover thumbnail once a cover is set.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to change'**
+  String get publishCoverChange;
 }
 
 class _AppLocalizationsDelegate

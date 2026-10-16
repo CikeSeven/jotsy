@@ -100,7 +100,9 @@ class DiaryCardStyleSettings
   DiaryCardSavedStyle? savedById(String id) => SavedStyles.byId(saved, id);
 
   DiaryCardStyleSettings _withSaved(List<DiaryCardSavedStyle>? next) =>
-      next == null ? this : DiaryCardStyleSettings(current: current, saved: next);
+      next == null
+      ? this
+      : DiaryCardStyleSettings(current: current, saved: next);
 
   @override
   bool operator ==(Object other) {

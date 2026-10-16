@@ -38,7 +38,9 @@ class StyleCodeFormat<S> {
     required this.version,
     required this.fromJson,
     required this.toJson,
-  }) : _pattern = RegExp('${RegExp.escape(scheme)}:v(\\d{1,4}):([A-Za-z0-9_-]+)');
+  }) : _pattern = RegExp(
+         '${RegExp.escape(scheme)}:v(\\d{1,4}):([A-Za-z0-9_-]+)',
+       );
 
   static const int maxLength = 16 * 1024;
 

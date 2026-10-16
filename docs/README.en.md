@@ -31,7 +31,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 | ✍️ **Easy to write** | Rich text with images, videos, attachments and voice recordings |
 | 🌤️ **Full of context** | Record mood, energy, weather and location with every entry |
 | 📅 **Easy to look back** | Lunar calendar, yearly heatmap, On this day, time capsules |
-| 📦 **No lock-in** | ZIP backups, WebDAV sync, single-entry export to image / Markdown / PDF, import from 18 apps |
+| 📦 **No lock-in** | ZIP backups, cloud backup (WebDAV / object storage / major cloud drives), single-entry export to image / Markdown / PDF, import from 18 apps |
 | 🎨 **Beautiful** | Material 3 Expressive design, light and dark themes, 80 theme colors |
 
 ## 📱 Features
@@ -110,7 +110,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 - **App lock**: unlock with your device's biometrics or screen lock.
 - **Full backups**: one ZIP with entries, tags, settings and every image, recording, video and attachment. Add a password for AES-256 encryption.
 - **Merge or overwrite**: choose how a backup is restored. Overwriting local data asks for a clear second confirmation.
-- **WebDAV**: back up to a NAS or your own cloud drive and restore from it directly.
+- **Cloud backup**: back up to WebDAV (Nextcloud, NAS, Alist…), S3-compatible object storage (R2, B2, OSS…) or Google Drive / OneDrive / Dropbox / Baidu Netdisk / Alipan, and restore from them directly. See [cloud_backup.md](cloud_backup.md).
 - **Share one entry**: as a long image, Markdown, PDF, or a diary file that can be merged on another device.
 - **Make it yours**: 80 theme colors in 10 families, adjustable UI font size, body text size and line height, in English or Chinese.
 
@@ -146,7 +146,7 @@ Jotsy only goes online in these cases, and only when you ask it to:
 | When | Talks to | What is sent |
 | :-- | :-- | :-- |
 | Fetching location and weather | AMap, QWeather | Your current coordinates (or type them in yourself) |
-| WebDAV backup / restore | The server you configure | Your backup file |
+| Cloud backup / restore | The server or drive you set up | Your backup file |
 | Checking for updates (manual) | GitHub Releases and mirrors | No diary data |
 | Importing cloud notes | The vendor's official website | The sign-in you complete there |
 
@@ -157,7 +157,7 @@ Permissions: internet, microphone (voice recordings), location (optional, for au
 <details>
 <summary><b>How do I move my diary to a new phone?</b></summary>
 
-On the old phone, go to **Data Management › Export Data** to create a backup ZIP. Copy it to the new phone and restore it with **Import Data**. You can also use WebDAV to pass it between devices.
+On the old phone, go to **Data Management › Export Data** to create a backup ZIP. Copy it to the new phone and restore it with **Import Data**. You can also use cloud backup to pass it between devices.
 
 </details>
 
@@ -171,7 +171,7 @@ Make sure location permission is granted and you are online. Either way, you can
 <details>
 <summary><b>Will uninstalling the app delete my data?</b></summary>
 
-Yes. Your data only lives on the device, so uninstalling the app or clearing its data removes it. Export backups regularly, or set up WebDAV backups.
+Yes. Your data only lives on the device, so uninstalling the app or clearing its data removes it. Export backups regularly, or set up cloud backups.
 
 </details>
 

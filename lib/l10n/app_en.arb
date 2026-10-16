@@ -1846,22 +1846,6 @@
   "@timeCapsuleUnlockedInsightNoMood": {
     "description": "Time capsule text for timeCapsuleUnlockedInsightNoMood."
   },
-  "dataMgmtWebDav": "WebDAV Sync",
-  "@dataMgmtWebDav": {
-    "description": "Data management WebDAV sync entry title."
-  },
-  "dataMgmtWebDavSubtitle": "Back up to NAS / private WebDAV and restore from remote backups",
-  "@dataMgmtWebDavSubtitle": {
-    "description": "Data management WebDAV sync entry subtitle."
-  },
-  "webDavTitle": "WebDAV Sync",
-  "@webDavTitle": {
-    "description": "WebDAV sync page title."
-  },
-  "webDavConfigSection": "Connection",
-  "@webDavConfigSection": {
-    "description": "WebDAV connection section title."
-  },
   "webDavServerUrl": "Server URL",
   "@webDavServerUrl": {
     "description": "WebDAV server URL field label."
@@ -1886,173 +1870,9 @@
   "@webDavRemoteDirectoryHint": {
     "description": "WebDAV remote directory field hint."
   },
-  "webDavSaveConfig": "Save Config",
-  "@webDavSaveConfig": {
-    "description": "Save WebDAV config button."
-  },
-  "webDavTestConnection": "Test Connection",
-  "@webDavTestConnection": {
-    "description": "Test WebDAV connection button."
-  },
-  "webDavUploadBackup": "Upload Current Backup",
-  "@webDavUploadBackup": {
-    "description": "Upload current backup to WebDAV button."
-  },
-  "webDavRefreshBackups": "Refresh List",
-  "@webDavRefreshBackups": {
-    "description": "Refresh WebDAV remote backup list button."
-  },
-  "webDavBackupList": "Remote Backups",
-  "@webDavBackupList": {
-    "description": "WebDAV remote backup list title."
-  },
-  "webDavNoBackups": "No remote backups yet",
-  "@webDavNoBackups": {
-    "description": "WebDAV remote backup empty state."
-  },
-  "webDavConfigSaved": "WebDAV config saved",
-  "@webDavConfigSaved": {
-    "description": "WebDAV config saved hint."
-  },
-  "webDavConnectionOk": "WebDAV connection succeeded",
-  "@webDavConnectionOk": {
-    "description": "WebDAV connection test success hint."
-  },
-  "webDavUploadSuccess": "Backup uploaded to WebDAV",
-  "@webDavUploadSuccess": {
-    "description": "WebDAV upload success hint."
-  },
-  "webDavRestoreSuccess": "Data restored from WebDAV backup",
-  "@webDavRestoreSuccess": {
-    "description": "WebDAV restore success hint."
-  },
-  "webDavDeleteSuccess": "Remote backup deleted",
-  "@webDavDeleteSuccess": {
-    "description": "WebDAV remote backup delete success hint."
-  },
-  "webDavOperationFailed": "Operation failed: {error}",
-  "@webDavOperationFailed": {
-    "description": "WebDAV operation failed hint.",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavBusySave": "Saving config...",
-  "@webDavBusySave": {
-    "description": "WebDAV save config busy text."
-  },
-  "webDavBusyTest": "Testing connection...",
-  "@webDavBusyTest": {
-    "description": "WebDAV test connection busy text."
-  },
-  "webDavBusyUpload": "Uploading backup...",
-  "@webDavBusyUpload": {
-    "description": "WebDAV upload backup busy text."
-  },
-  "webDavBusyRefresh": "Reading remote backups...",
-  "@webDavBusyRefresh": {
-    "description": "WebDAV refresh list busy text."
-  },
-  "webDavBusyRestore": "Restoring backup...",
-  "@webDavBusyRestore": {
-    "description": "WebDAV restore backup busy text."
-  },
-  "webDavBusyDelete": "Deleting remote backup...",
-  "@webDavBusyDelete": {
-    "description": "WebDAV delete remote backup busy text."
-  },
-  "webDavBusyLabel": "Processing WebDAV operation",
-  "@webDavBusyLabel": {
-    "description": "WebDAV loading indicator semantic label."
-  },
   "webDavHint": "Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.",
   "@webDavHint": {
     "description": "WebDAV safety and behavior hint."
-  },
-  "webDavDeleteConfirmTitle": "Delete Remote Backup",
-  "@webDavDeleteConfirmTitle": {
-    "description": "WebDAV delete confirm dialog title."
-  },
-  "webDavDeleteConfirmContent": "Delete {fileName} from the WebDAV server? This cannot be undone.",
-  "@webDavDeleteConfirmContent": {
-    "description": "WebDAV delete confirm dialog content.",
-    "placeholders": {
-      "fileName": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavRestoreAction": "Restore",
-  "@webDavRestoreAction": {
-    "description": "WebDAV restore action button."
-  },
-  "webDavDeleteAction": "Delete",
-  "@webDavDeleteAction": {
-    "description": "WebDAV delete action button."
-  },
-  "webDavBackupSize": "Size: {size}",
-  "@webDavBackupSize": {
-    "description": "WebDAV backup size label.",
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavBackupTime": "Time: {time}",
-  "@webDavBackupTime": {
-    "description": "WebDAV backup time label.",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavPasswordDialogTitle": "Backup Password",
-  "@webDavPasswordDialogTitle": {
-    "description": "WebDAV backup password dialog title."
-  },
-  "webDavPasswordDialogHint": "Leave empty for no encryption; enter the original password for encrypted restore",
-  "@webDavPasswordDialogHint": {
-    "description": "WebDAV backup password field hint."
-  },
-  "webDavPasswordWarning": "Keep this password safe. Encrypted backups cannot be restored if you forget it.",
-  "@webDavPasswordWarning": {
-    "description": "WebDAV backup password warning."
-  },
-  "webDavContinueWithoutPassword": "Continue",
-  "@webDavContinueWithoutPassword": {
-    "description": "WebDAV backup password continue button."
-  },
-  "webDavConfigRequired": "Fill and save WebDAV config first",
-  "@webDavConfigRequired": {
-    "description": "WebDAV missing config hint."
-  },
-  "webDavErrorConfig": "Check the WebDAV URL, account, password/token, and remote directory",
-  "@webDavErrorConfig": {
-    "description": "Localized WebDAV config error detail."
-  },
-  "webDavErrorAuth": "Authentication failed. Check the username and password/token",
-  "@webDavErrorAuth": {
-    "description": "Localized WebDAV authentication error detail."
-  },
-  "webDavErrorNotFound": "Remote path not found. Check the NAS WebDAV directory",
-  "@webDavErrorNotFound": {
-    "description": "Localized WebDAV not found error detail."
-  },
-  "webDavErrorStorageFull": "The WebDAV server does not have enough storage space",
-  "@webDavErrorStorageFull": {
-    "description": "Localized WebDAV insufficient storage error detail."
-  },
-  "webDavErrorNetwork": "Network request failed. Check the server URL, certificate, and network status",
-  "@webDavErrorNetwork": {
-    "description": "Localized WebDAV network error detail."
-  },
-  "webDavErrorUnknown": "Unknown error. Please try again later",
-  "@webDavErrorUnknown": {
-    "description": "Localized WebDAV unknown error detail."
   },
   "imageViewerSaveToGallery": "Save to gallery",
   "@imageViewerSaveToGallery": {
@@ -5017,5 +4837,602 @@
         "type": "String"
       }
     }
+  },
+  "dataMgmtCloudBackup": "Cloud backup",
+  "@dataMgmtCloudBackup": {
+    "description": "Data management: cloud backup entry title."
+  },
+  "dataMgmtCloudBackupSubtitle": "Back up to cloud drives, WebDAV or object storage and restore from them",
+  "@dataMgmtCloudBackupSubtitle": {
+    "description": "Data management: cloud backup entry subtitle."
+  },
+  "cloudBackupTitle": "Cloud backup",
+  "@cloudBackupTitle": {
+    "description": "Cloud backup page title."
+  },
+  "cloudBackupEmpty": "No backup locations yet. Add a cloud drive, WebDAV server or object storage to upload full backups and restore them on a new device.",
+  "@cloudBackupEmpty": {
+    "description": "Cloud backup page empty state."
+  },
+  "cloudBackupAdd": "Add backup location",
+  "@cloudBackupAdd": {
+    "description": "Cloud backup page: add location button."
+  },
+  "cloudBackupHint": "Addresses, passwords and drive authorizations stay on this device and are never written into backups. Uploads are full backup ZIPs, optionally encrypted.",
+  "@cloudBackupHint": {
+    "description": "Cloud backup page footer note."
+  },
+  "cloudBackupSheetTitle": "Choose a backup location",
+  "@cloudBackupSheetTitle": {
+    "description": "Add-location sheet title."
+  },
+  "cloudBackupSheetHint": "Before restoring, the backup is checked and you choose whether to merge with or overwrite local data.",
+  "@cloudBackupSheetHint": {
+    "description": "Add-location sheet description."
+  },
+  "cloudBackupGroupDrives": "Cloud drives (sign in)",
+  "@cloudBackupGroupDrives": {
+    "description": "Sheet group: cloud drives that use sign-in."
+  },
+  "cloudBackupGroupDrivesHint": "Authorize on the drive's official page; the app can only access its own backup folder.",
+  "@cloudBackupGroupDrivesHint": {
+    "description": "Cloud drives group description."
+  },
+  "cloudBackupGroupWebDav": "WebDAV",
+  "@cloudBackupGroupWebDav": {
+    "description": "Sheet group: WebDAV."
+  },
+  "cloudBackupGroupWebDavHint": "Nutstore, NAS, Nextcloud, and any drive mounted through Alist / OpenList.",
+  "@cloudBackupGroupWebDavHint": {
+    "description": "WebDAV group description."
+  },
+  "cloudBackupGroupS3": "Object storage (S3-compatible)",
+  "@cloudBackupGroupS3": {
+    "description": "Sheet group: S3-compatible object storage."
+  },
+  "cloudBackupGroupS3Hint": "Enter access keys; backups are stored in the bucket you choose.",
+  "@cloudBackupGroupS3Hint": {
+    "description": "S3 group description."
+  },
+  "cloudBackupCustomWebDav": "Other WebDAV",
+  "@cloudBackupCustomWebDav": {
+    "description": "Custom WebDAV option name."
+  },
+  "cloudBackupCustomS3": "Other S3-compatible",
+  "@cloudBackupCustomS3": {
+    "description": "Custom S3 option name."
+  },
+  "cloudBackupBaiduPan": "Baidu Netdisk",
+  "@cloudBackupBaiduPan": {
+    "description": "Baidu Netdisk name."
+  },
+  "cloudBackupAliyunDrive": "Alipan (Aliyun Drive)",
+  "@cloudBackupAliyunDrive": {
+    "description": "Alipan name."
+  },
+  "cloudBackupJianguoyun": "Nutstore (Jianguoyun)",
+  "@cloudBackupJianguoyun": {
+    "description": "Nutstore name."
+  },
+  "cloudBackup123pan": "123pan",
+  "@cloudBackup123pan": {
+    "description": "123pan name."
+  },
+  "cloudBackupSynology": "Synology NAS",
+  "@cloudBackupSynology": {
+    "description": "Synology NAS name."
+  },
+  "cloudBackupQnap": "QNAP NAS",
+  "@cloudBackupQnap": {
+    "description": "QNAP NAS name."
+  },
+  "cloudBackupAliyunOss": "Alibaba Cloud OSS",
+  "@cloudBackupAliyunOss": {
+    "description": "Alibaba Cloud OSS name."
+  },
+  "cloudBackupTencentCos": "Tencent Cloud COS",
+  "@cloudBackupTencentCos": {
+    "description": "Tencent Cloud COS name."
+  },
+  "cloudBackupQiniuKodo": "Qiniu Kodo",
+  "@cloudBackupQiniuKodo": {
+    "description": "Qiniu Kodo name."
+  },
+  "cloudBackupHuaweiObs": "Huawei Cloud OBS",
+  "@cloudBackupHuaweiObs": {
+    "description": "Huawei Cloud OBS name."
+  },
+  "cloudBackupVolcengineTos": "Volcengine TOS",
+  "@cloudBackupVolcengineTos": {
+    "description": "Volcengine TOS name."
+  },
+  "cloudBackupBaiduBos": "Baidu AI Cloud BOS",
+  "@cloudBackupBaiduBos": {
+    "description": "Baidu AI Cloud BOS name."
+  },
+  "cloudBackupJdcloudOss": "JD Cloud OSS",
+  "@cloudBackupJdcloudOss": {
+    "description": "JD Cloud OSS name."
+  },
+  "cloudBackupAwsChina": "Amazon S3 (China)",
+  "@cloudBackupAwsChina": {
+    "description": "AWS China regions name."
+  },
+  "cloudBackupHintJianguoyun": "Use your Nutstore account as the username and an app password from Account Info → Security → Third-party apps. Free accounts allow 600 requests per 30 minutes.",
+  "@cloudBackupHintJianguoyun": {
+    "description": "Nutstore setup note."
+  },
+  "cloudBackupHint123pan": "Copy the address and password shown under Tools → Third-party mount in 123pan (the password is shown only once).",
+  "@cloudBackupHint123pan": {
+    "description": "123pan setup note."
+  },
+  "cloudBackupHintOpenList": "Enter the Alist / OpenList address (default port 5244, path /dav/) and grant the user WebDAV read and manage permissions. Any drive mounted there can hold backups.",
+  "@cloudBackupHintOpenList": {
+    "description": "Alist / OpenList setup note."
+  },
+  "cloudBackupHintCloudDrive2": "Enter the CloudDrive2 address (default port 19798, path /dav) and your CloudDrive2 account.",
+  "@cloudBackupHintCloudDrive2": {
+    "description": "CloudDrive2 setup note."
+  },
+  "cloudBackupHintNextcloud": "Copy the address from Files settings → WebDAV in the web app; prefer an app password from Personal settings → Security.",
+  "@cloudBackupHintNextcloud": {
+    "description": "Nextcloud setup note."
+  },
+  "cloudBackupHintOwncloud": "Prefer an app token as the password; on oCIS the administrator must enable app tokens.",
+  "@cloudBackupHintOwncloud": {
+    "description": "ownCloud setup note."
+  },
+  "cloudBackupHintSeafile": "SeafDAV must be enabled on the server; single sign-on accounts need a separate WebDAV password set on the web.",
+  "@cloudBackupHintSeafile": {
+    "description": "Seafile setup note."
+  },
+  "cloudBackupHintSynology": "Install and enable WebDAV Server in DSM (HTTPS port 5006 by default) and sign in with a DSM account; the first level of the remote folder must be a shared folder.",
+  "@cloudBackupHintSynology": {
+    "description": "Synology setup note."
+  },
+  "cloudBackupHintQnap": "Enable WebDAV in the Control Panel and end the address with the shared folder name.",
+  "@cloudBackupHintQnap": {
+    "description": "QNAP setup note."
+  },
+  "cloudBackupHintKoofr": "You must use an app password from Koofr Settings → Passwords; repeated failed logins are temporarily blocked.",
+  "@cloudBackupHintKoofr": {
+    "description": "Koofr setup note."
+  },
+  "cloudBackupHintPcloud": "Sign in with your pCloud email and password; choose pCloud (EU) for European accounts.",
+  "@cloudBackupHintPcloud": {
+    "description": "pCloud setup note."
+  },
+  "cloudBackupHintInfinicloud": "Copy the address and the Apps Connection password from your InfiniCLOUD My Page.",
+  "@cloudBackupHintInfinicloud": {
+    "description": "InfiniCLOUD setup note."
+  },
+  "cloudBackupHintHetzner": "Enable WebDAV and external access for the Storage Box in Hetzner Console.",
+  "@cloudBackupHintHetzner": {
+    "description": "Hetzner setup note."
+  },
+  "cloudBackupHintKdrive": "The Drive ID is in the kDrive web address; use an app password if two-factor authentication is on.",
+  "@cloudBackupHintKdrive": {
+    "description": "kDrive setup note."
+  },
+  "cloudBackupHintYandex": "Requires a paid Yandex 360 plan and an app password of type WebDAV.",
+  "@cloudBackupHintYandex": {
+    "description": "Yandex Disk setup note."
+  },
+  "cloudBackupHintMailru": "Use an app password created in your Mail.ru account settings.",
+  "@cloudBackupHintMailru": {
+    "description": "Mail.ru setup note."
+  },
+  "cloudBackupS3Hint": "The endpoint and region must match the bucket's location. Use a dedicated bucket and keys that can access only that bucket.",
+  "@cloudBackupS3Hint": {
+    "description": "Generic S3 setup note."
+  },
+  "cloudBackupHintAliyunOss": "Use a RAM user AccessKey; the endpoint region must match the bucket. Accounts opened after March 2025 may be unable to use the default public endpoint in mainland China.",
+  "@cloudBackupHintAliyunOss": {
+    "description": "Alibaba Cloud OSS setup note."
+  },
+  "cloudBackupHintTencentCos": "The bucket name must include the APPID suffix (e.g. backup-1250000000); create keys under CAM → API keys.",
+  "@cloudBackupHintTencentCos": {
+    "description": "Tencent Cloud COS setup note."
+  },
+  "cloudBackupHintQiniuKodo": "The S3 bucket name may differ from the Kodo space name; use the one shown in the console.",
+  "@cloudBackupHintQiniuKodo": {
+    "description": "Qiniu Kodo setup note."
+  },
+  "cloudBackupHintR2": "Replace ACCOUNT_ID with your Cloudflare account ID, create a token under R2 → Manage API tokens and use its S3 credentials; keep the region as auto.",
+  "@cloudBackupHintR2": {
+    "description": "Cloudflare R2 setup note."
+  },
+  "cloudBackupHintB2": "Use the endpoint shown on the bucket page and its region part (e.g. us-west-004) as the region; use an Application Key.",
+  "@cloudBackupHintB2": {
+    "description": "Backblaze B2 setup note."
+  },
+  "cloudBackupHintDigitalOcean": "Put the Spaces datacenter (e.g. nyc3) in the endpoint and keep the signing region as us-east-1.",
+  "@cloudBackupHintDigitalOcean": {
+    "description": "DigitalOcean Spaces setup note."
+  },
+  "cloudBackupHintMinio": "Enter the MinIO API address (default port 9000) and keep path-style access on.",
+  "@cloudBackupHintMinio": {
+    "description": "MinIO setup note."
+  },
+  "cloudBackupHintGcs": "Create HMAC keys under Cloud Storage → Settings → Interoperability.",
+  "@cloudBackupHintGcs": {
+    "description": "Google Cloud Storage setup note."
+  },
+  "cloudBackupHintOracle": "Find NAMESPACE and REGION in the OCI console and use a Customer Secret Key.",
+  "@cloudBackupHintOracle": {
+    "description": "Oracle Cloud setup note."
+  },
+  "cloudBackupFolderGoogleDrive": "Backups are stored in the \"Jotsy\" folder of Google Drive; the app can only access files it created. Deleted backups skip the trash.",
+  "@cloudBackupFolderGoogleDrive": {
+    "description": "Google Drive storage note."
+  },
+  "cloudBackupFolderOneDrive": "Backups are stored in this app's folder under Apps in OneDrive; the app can only access that folder. Deleted backups go to the OneDrive recycle bin.",
+  "@cloudBackupFolderOneDrive": {
+    "description": "OneDrive storage note."
+  },
+  "cloudBackupFolderDropbox": "Backups are stored in this app's folder under Apps in Dropbox; the app can only access that folder.",
+  "@cloudBackupFolderDropbox": {
+    "description": "Dropbox storage note."
+  },
+  "cloudBackupFolderBaidu": "Backups are stored in this app's folder under My App Data in Baidu Netdisk.",
+  "@cloudBackupFolderBaidu": {
+    "description": "Baidu Netdisk storage note."
+  },
+  "cloudBackupFolderAliyun": "Backups are stored in the folder chosen during authorization (or \"Jotsy\" at the root). Deleted backups go to the trash. Re-authorize when Alipan ends the authorization.",
+  "@cloudBackupFolderAliyun": {
+    "description": "Alipan storage note."
+  },
+  "cloudBackupConfigSection": "Connection",
+  "@cloudBackupConfigSection": {
+    "description": "Location config section title."
+  },
+  "cloudBackupSaveConfig": "Save",
+  "@cloudBackupSaveConfig": {
+    "description": "Save location config button."
+  },
+  "cloudBackupTestConnection": "Test connection",
+  "@cloudBackupTestConnection": {
+    "description": "Test connection button."
+  },
+  "cloudBackupUploadBackup": "Upload backup",
+  "@cloudBackupUploadBackup": {
+    "description": "Upload current backup button."
+  },
+  "cloudBackupRefreshBackups": "Refresh",
+  "@cloudBackupRefreshBackups": {
+    "description": "Refresh remote list button."
+  },
+  "cloudBackupBackupList": "Remote backups",
+  "@cloudBackupBackupList": {
+    "description": "Remote backup list title."
+  },
+  "cloudBackupNoBackups": "No remote backups yet",
+  "@cloudBackupNoBackups": {
+    "description": "Remote backup list empty state."
+  },
+  "cloudBackupBackupTime": "Time: {time}",
+  "@cloudBackupBackupTime": {
+    "description": "Remote backup time.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupBackupSize": "Size: {size}",
+  "@cloudBackupBackupSize": {
+    "description": "Remote backup size.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupRestoreAction": "Restore",
+  "@cloudBackupRestoreAction": {
+    "description": "Restore remote backup action."
+  },
+  "cloudBackupDeleteAction": "Delete",
+  "@cloudBackupDeleteAction": {
+    "description": "Delete remote backup action."
+  },
+  "cloudBackupDeleteConfirmTitle": "Delete remote backup?",
+  "@cloudBackupDeleteConfirmTitle": {
+    "description": "Delete remote backup dialog title."
+  },
+  "cloudBackupDeleteConfirmContent": "Delete {fileName} from this backup location? This cannot be undone.",
+  "@cloudBackupDeleteConfirmContent": {
+    "description": "Delete remote backup dialog body.",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupRemoveTarget": "Remove this location",
+  "@cloudBackupRemoveTarget": {
+    "description": "Remove location button tooltip."
+  },
+  "cloudBackupRemoveTargetTitle": "Remove backup location?",
+  "@cloudBackupRemoveTargetTitle": {
+    "description": "Remove location dialog title."
+  },
+  "cloudBackupRemoveTargetContent": "Only the connection details and authorization saved on this device are removed. Backups already stored there are kept, and you can add the location again later.",
+  "@cloudBackupRemoveTargetContent": {
+    "description": "Remove location dialog body."
+  },
+  "cloudBackupRemoveTargetAction": "Remove",
+  "@cloudBackupRemoveTargetAction": {
+    "description": "Remove location confirm button."
+  },
+  "cloudBackupRemoved": "Backup location removed",
+  "@cloudBackupRemoved": {
+    "description": "Location removed message."
+  },
+  "cloudBackupConfigSaved": "Settings saved",
+  "@cloudBackupConfigSaved": {
+    "description": "Config saved message."
+  },
+  "cloudBackupConnectionOk": "Connection successful",
+  "@cloudBackupConnectionOk": {
+    "description": "Connection test success message."
+  },
+  "cloudBackupUploadSuccess": "Backup uploaded",
+  "@cloudBackupUploadSuccess": {
+    "description": "Upload success message."
+  },
+  "cloudBackupRestoreSuccess": "Data restored from the remote backup",
+  "@cloudBackupRestoreSuccess": {
+    "description": "Restore success message."
+  },
+  "cloudBackupDeleteSuccess": "Remote backup deleted",
+  "@cloudBackupDeleteSuccess": {
+    "description": "Delete success message."
+  },
+  "cloudBackupAccountAuthorized": "Authorized",
+  "@cloudBackupAccountAuthorized": {
+    "description": "Authorized drive without an account name."
+  },
+  "cloudBackupAccountConnected": "Signed in as {account}",
+  "@cloudBackupAccountConnected": {
+    "description": "Authorized drive account.",
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupReauthorize": "Re-authorize",
+  "@cloudBackupReauthorize": {
+    "description": "Re-authorize button."
+  },
+  "cloudBackupAuthorized": "Connected to {name}",
+  "@cloudBackupAuthorized": {
+    "description": "Authorization success message.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupAuthorizeTitle": "Authorize {name}",
+  "@cloudBackupAuthorizeTitle": {
+    "description": "Authorization dialog title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupDeviceCodeHint": "Open the authorization page, sign in and enter the code below. This continues automatically once you approve.",
+  "@cloudBackupDeviceCodeHint": {
+    "description": "Device code authorization instructions."
+  },
+  "cloudBackupDeviceCodeLabel": "Authorization code",
+  "@cloudBackupDeviceCodeLabel": {
+    "description": "Accessibility label of the device code."
+  },
+  "cloudBackupCopyCode": "Copy code",
+  "@cloudBackupCopyCode": {
+    "description": "Copy device code button."
+  },
+  "cloudBackupDeviceCodeCopied": "Copied",
+  "@cloudBackupDeviceCodeCopied": {
+    "description": "Device code copied."
+  },
+  "cloudBackupOpenAuthorizePage": "Open authorization page",
+  "@cloudBackupOpenAuthorizePage": {
+    "description": "Open authorization page button."
+  },
+  "cloudBackupWaitingAuthorization": "Waiting for authorization…",
+  "@cloudBackupWaitingAuthorization": {
+    "description": "Waiting for device authorization."
+  },
+  "cloudBackupCodePasteHint": "After you authorize in the browser, the page shows an authorization code. Copy it and paste it here.",
+  "@cloudBackupCodePasteHint": {
+    "description": "Paste authorization code instructions."
+  },
+  "cloudBackupCodeLabel": "Authorization code",
+  "@cloudBackupCodeLabel": {
+    "description": "Authorization code field label."
+  },
+  "cloudBackupCodeConfirm": "Finish",
+  "@cloudBackupCodeConfirm": {
+    "description": "Submit authorization code button."
+  },
+  "cloudBackupBusyLabel": "Cloud backup in progress",
+  "@cloudBackupBusyLabel": {
+    "description": "Cloud backup busy overlay accessibility label."
+  },
+  "cloudBackupBusySave": "Saving…",
+  "@cloudBackupBusySave": {
+    "description": "Saving config."
+  },
+  "cloudBackupBusyTest": "Testing connection…",
+  "@cloudBackupBusyTest": {
+    "description": "Testing connection."
+  },
+  "cloudBackupBusyUpload": "Creating backup…",
+  "@cloudBackupBusyUpload": {
+    "description": "Creating backup."
+  },
+  "cloudBackupBusyUploadProgress": "Uploading {percent}%",
+  "@cloudBackupBusyUploadProgress": {
+    "description": "Upload progress.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudBackupBusyDownload": "Downloading backup…",
+  "@cloudBackupBusyDownload": {
+    "description": "Downloading backup."
+  },
+  "cloudBackupBusyDownloadProgress": "Downloading {percent}%",
+  "@cloudBackupBusyDownloadProgress": {
+    "description": "Download progress.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudBackupBusyRestore": "Restoring data…",
+  "@cloudBackupBusyRestore": {
+    "description": "Restoring data."
+  },
+  "cloudBackupBusyRefresh": "Loading remote backups…",
+  "@cloudBackupBusyRefresh": {
+    "description": "Loading remote list."
+  },
+  "cloudBackupBusyDelete": "Deleting remote backup…",
+  "@cloudBackupBusyDelete": {
+    "description": "Deleting remote backup."
+  },
+  "cloudBackupBusyAuthorize": "Verifying authorization…",
+  "@cloudBackupBusyAuthorize": {
+    "description": "Verifying authorization."
+  },
+  "cloudBackupOperationFailed": "Operation failed: {detail}",
+  "@cloudBackupOperationFailed": {
+    "description": "Cloud backup failure message.",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupErrorConfig": "Check that the address, bucket and folder settings are complete and correct",
+  "@cloudBackupErrorConfig": {
+    "description": "Config error."
+  },
+  "cloudBackupErrorAppKeyMissing": "This build has no app key for this drive, so it is unavailable",
+  "@cloudBackupErrorAppKeyMissing": {
+    "description": "Missing app key."
+  },
+  "cloudBackupErrorAuth": "Authentication failed or access denied; check the account, password or keys",
+  "@cloudBackupErrorAuth": {
+    "description": "Authentication failed."
+  },
+  "cloudBackupErrorSessionExpired": "The authorization has expired; please re-authorize",
+  "@cloudBackupErrorSessionExpired": {
+    "description": "Authorization expired."
+  },
+  "cloudBackupErrorAuthorizationDenied": "Authorization was declined",
+  "@cloudBackupErrorAuthorizationDenied": {
+    "description": "Authorization declined."
+  },
+  "cloudBackupErrorAuthorizationExpired": "The code is invalid or expired; please get a new one",
+  "@cloudBackupErrorAuthorizationExpired": {
+    "description": "Authorization code expired."
+  },
+  "cloudBackupErrorNotFound": "The remote file or folder does not exist",
+  "@cloudBackupErrorNotFound": {
+    "description": "Remote not found."
+  },
+  "cloudBackupErrorStorageFull": "The backup location is out of space",
+  "@cloudBackupErrorStorageFull": {
+    "description": "Out of space."
+  },
+  "cloudBackupErrorFileTooLarge": "The backup exceeds the file size limit of this location",
+  "@cloudBackupErrorFileTooLarge": {
+    "description": "File too large."
+  },
+  "cloudBackupErrorRateLimited": "Too many requests; please try again later",
+  "@cloudBackupErrorRateLimited": {
+    "description": "Rate limited."
+  },
+  "cloudBackupErrorNetwork": "Network request failed; check the network, address and certificate",
+  "@cloudBackupErrorNetwork": {
+    "description": "Network error."
+  },
+  "cloudBackupErrorProtocol": "The backup location returned an unexpected response",
+  "@cloudBackupErrorProtocol": {
+    "description": "Unexpected response."
+  },
+  "cloudBackupErrorPassword": "Incorrect backup password",
+  "@cloudBackupErrorPassword": {
+    "description": "Wrong backup password."
+  },
+  "cloudBackupErrorArchive": "The backup is damaged or not a Jotsy backup",
+  "@cloudBackupErrorArchive": {
+    "description": "Damaged backup."
+  },
+  "cloudBackupErrorLocalFile": "Failed to read or write a local temporary file; check free storage",
+  "@cloudBackupErrorLocalFile": {
+    "description": "Local file error."
+  },
+  "cloudBackupErrorUnknown": "An unknown error occurred; please try again later",
+  "@cloudBackupErrorUnknown": {
+    "description": "Unknown error."
+  },
+  "s3Endpoint": "Endpoint",
+  "@s3Endpoint": {
+    "description": "S3 endpoint field label."
+  },
+  "s3EndpointHint": "e.g. https://s3.us-east-1.amazonaws.com",
+  "@s3EndpointHint": {
+    "description": "S3 endpoint field hint."
+  },
+  "s3Region": "Region",
+  "@s3Region": {
+    "description": "S3 region field label."
+  },
+  "s3RegionHint": "Defaults to us-east-1",
+  "@s3RegionHint": {
+    "description": "S3 region field hint."
+  },
+  "s3Bucket": "Bucket",
+  "@s3Bucket": {
+    "description": "S3 bucket field label."
+  },
+  "s3AccessKeyId": "Access Key ID",
+  "@s3AccessKeyId": {
+    "description": "S3 access key ID field label."
+  },
+  "s3SecretAccessKey": "Secret Access Key",
+  "@s3SecretAccessKey": {
+    "description": "S3 secret key field label."
+  },
+  "s3Prefix": "Backup folder (key prefix)",
+  "@s3Prefix": {
+    "description": "S3 key prefix field label."
+  },
+  "s3PrefixHint": "e.g. jotsy/; leave empty for the bucket root",
+  "@s3PrefixHint": {
+    "description": "S3 key prefix field hint."
+  },
+  "s3PathStyle": "Path-style access",
+  "@s3PathStyle": {
+    "description": "S3 path-style switch."
+  },
+  "s3PathStyleSubtitle": "Usually required by self-hosted services such as MinIO",
+  "@s3PathStyleSubtitle": {
+    "description": "S3 path-style switch description."
+  },
+  "s3PathStyleLocked": "This service only supports virtual-hosted-style access",
+  "@s3PathStyleLocked": {
+    "description": "S3 path-style unavailable note."
   }
 }

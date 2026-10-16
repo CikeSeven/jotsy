@@ -2420,30 +2420,6 @@ abstract class AppLocalizations {
   /// **'This was sealed for your future self. How do you feel today?'**
   String get timeCapsuleUnlockedInsightNoMood;
 
-  /// Data management WebDAV sync entry title.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV Sync'**
-  String get dataMgmtWebDav;
-
-  /// Data management WebDAV sync entry subtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Back up to NAS / private WebDAV and restore from remote backups'**
-  String get dataMgmtWebDavSubtitle;
-
-  /// WebDAV sync page title.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV Sync'**
-  String get webDavTitle;
-
-  /// WebDAV connection section title.
-  ///
-  /// In en, this message translates to:
-  /// **'Connection'**
-  String get webDavConfigSection;
-
   /// WebDAV server URL field label.
   ///
   /// In en, this message translates to:
@@ -2480,227 +2456,11 @@ abstract class AppLocalizations {
   /// **'e.g. /jotsy/'**
   String get webDavRemoteDirectoryHint;
 
-  /// Save WebDAV config button.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Config'**
-  String get webDavSaveConfig;
-
-  /// Test WebDAV connection button.
-  ///
-  /// In en, this message translates to:
-  /// **'Test Connection'**
-  String get webDavTestConnection;
-
-  /// Upload current backup to WebDAV button.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload Current Backup'**
-  String get webDavUploadBackup;
-
-  /// Refresh WebDAV remote backup list button.
-  ///
-  /// In en, this message translates to:
-  /// **'Refresh List'**
-  String get webDavRefreshBackups;
-
-  /// WebDAV remote backup list title.
-  ///
-  /// In en, this message translates to:
-  /// **'Remote Backups'**
-  String get webDavBackupList;
-
-  /// WebDAV remote backup empty state.
-  ///
-  /// In en, this message translates to:
-  /// **'No remote backups yet'**
-  String get webDavNoBackups;
-
-  /// WebDAV config saved hint.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV config saved'**
-  String get webDavConfigSaved;
-
-  /// WebDAV connection test success hint.
-  ///
-  /// In en, this message translates to:
-  /// **'WebDAV connection succeeded'**
-  String get webDavConnectionOk;
-
-  /// WebDAV upload success hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup uploaded to WebDAV'**
-  String get webDavUploadSuccess;
-
-  /// WebDAV restore success hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Data restored from WebDAV backup'**
-  String get webDavRestoreSuccess;
-
-  /// WebDAV remote backup delete success hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Remote backup deleted'**
-  String get webDavDeleteSuccess;
-
-  /// WebDAV operation failed hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Operation failed: {error}'**
-  String webDavOperationFailed(String error);
-
-  /// WebDAV save config busy text.
-  ///
-  /// In en, this message translates to:
-  /// **'Saving config...'**
-  String get webDavBusySave;
-
-  /// WebDAV test connection busy text.
-  ///
-  /// In en, this message translates to:
-  /// **'Testing connection...'**
-  String get webDavBusyTest;
-
-  /// WebDAV upload backup busy text.
-  ///
-  /// In en, this message translates to:
-  /// **'Uploading backup...'**
-  String get webDavBusyUpload;
-
-  /// WebDAV refresh list busy text.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading remote backups...'**
-  String get webDavBusyRefresh;
-
-  /// WebDAV restore backup busy text.
-  ///
-  /// In en, this message translates to:
-  /// **'Restoring backup...'**
-  String get webDavBusyRestore;
-
-  /// WebDAV delete remote backup busy text.
-  ///
-  /// In en, this message translates to:
-  /// **'Deleting remote backup...'**
-  String get webDavBusyDelete;
-
-  /// WebDAV loading indicator semantic label.
-  ///
-  /// In en, this message translates to:
-  /// **'Processing WebDAV operation'**
-  String get webDavBusyLabel;
-
   /// WebDAV safety and behavior hint.
   ///
   /// In en, this message translates to:
   /// **'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.'**
   String get webDavHint;
-
-  /// WebDAV delete confirm dialog title.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete Remote Backup'**
-  String get webDavDeleteConfirmTitle;
-
-  /// WebDAV delete confirm dialog content.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete {fileName} from the WebDAV server? This cannot be undone.'**
-  String webDavDeleteConfirmContent(String fileName);
-
-  /// WebDAV restore action button.
-  ///
-  /// In en, this message translates to:
-  /// **'Restore'**
-  String get webDavRestoreAction;
-
-  /// WebDAV delete action button.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get webDavDeleteAction;
-
-  /// WebDAV backup size label.
-  ///
-  /// In en, this message translates to:
-  /// **'Size: {size}'**
-  String webDavBackupSize(String size);
-
-  /// WebDAV backup time label.
-  ///
-  /// In en, this message translates to:
-  /// **'Time: {time}'**
-  String webDavBackupTime(String time);
-
-  /// WebDAV backup password dialog title.
-  ///
-  /// In en, this message translates to:
-  /// **'Backup Password'**
-  String get webDavPasswordDialogTitle;
-
-  /// WebDAV backup password field hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Leave empty for no encryption; enter the original password for encrypted restore'**
-  String get webDavPasswordDialogHint;
-
-  /// WebDAV backup password warning.
-  ///
-  /// In en, this message translates to:
-  /// **'Keep this password safe. Encrypted backups cannot be restored if you forget it.'**
-  String get webDavPasswordWarning;
-
-  /// WebDAV backup password continue button.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue'**
-  String get webDavContinueWithoutPassword;
-
-  /// WebDAV missing config hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Fill and save WebDAV config first'**
-  String get webDavConfigRequired;
-
-  /// Localized WebDAV config error detail.
-  ///
-  /// In en, this message translates to:
-  /// **'Check the WebDAV URL, account, password/token, and remote directory'**
-  String get webDavErrorConfig;
-
-  /// Localized WebDAV authentication error detail.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication failed. Check the username and password/token'**
-  String get webDavErrorAuth;
-
-  /// Localized WebDAV not found error detail.
-  ///
-  /// In en, this message translates to:
-  /// **'Remote path not found. Check the NAS WebDAV directory'**
-  String get webDavErrorNotFound;
-
-  /// Localized WebDAV insufficient storage error detail.
-  ///
-  /// In en, this message translates to:
-  /// **'The WebDAV server does not have enough storage space'**
-  String get webDavErrorStorageFull;
-
-  /// Localized WebDAV network error detail.
-  ///
-  /// In en, this message translates to:
-  /// **'Network request failed. Check the server URL, certificate, and network status'**
-  String get webDavErrorNetwork;
-
-  /// Localized WebDAV unknown error detail.
-  ///
-  /// In en, this message translates to:
-  /// **'Unknown error. Please try again later'**
-  String get webDavErrorUnknown;
 
   /// Semantic label for the save-to-gallery action in the image viewer top bar.
   ///
@@ -6481,6 +6241,834 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{value}%'**
   String diaryCardStyleValuePercent(String value);
+
+  /// Data management: cloud backup entry title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud backup'**
+  String get dataMgmtCloudBackup;
+
+  /// Data management: cloud backup entry subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Back up to cloud drives, WebDAV or object storage and restore from them'**
+  String get dataMgmtCloudBackupSubtitle;
+
+  /// Cloud backup page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud backup'**
+  String get cloudBackupTitle;
+
+  /// Cloud backup page empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No backup locations yet. Add a cloud drive, WebDAV server or object storage to upload full backups and restore them on a new device.'**
+  String get cloudBackupEmpty;
+
+  /// Cloud backup page: add location button.
+  ///
+  /// In en, this message translates to:
+  /// **'Add backup location'**
+  String get cloudBackupAdd;
+
+  /// Cloud backup page footer note.
+  ///
+  /// In en, this message translates to:
+  /// **'Addresses, passwords and drive authorizations stay on this device and are never written into backups. Uploads are full backup ZIPs, optionally encrypted.'**
+  String get cloudBackupHint;
+
+  /// Add-location sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a backup location'**
+  String get cloudBackupSheetTitle;
+
+  /// Add-location sheet description.
+  ///
+  /// In en, this message translates to:
+  /// **'Before restoring, the backup is checked and you choose whether to merge with or overwrite local data.'**
+  String get cloudBackupSheetHint;
+
+  /// Sheet group: cloud drives that use sign-in.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud drives (sign in)'**
+  String get cloudBackupGroupDrives;
+
+  /// Cloud drives group description.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorize on the drive\'s official page; the app can only access its own backup folder.'**
+  String get cloudBackupGroupDrivesHint;
+
+  /// Sheet group: WebDAV.
+  ///
+  /// In en, this message translates to:
+  /// **'WebDAV'**
+  String get cloudBackupGroupWebDav;
+
+  /// WebDAV group description.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutstore, NAS, Nextcloud, and any drive mounted through Alist / OpenList.'**
+  String get cloudBackupGroupWebDavHint;
+
+  /// Sheet group: S3-compatible object storage.
+  ///
+  /// In en, this message translates to:
+  /// **'Object storage (S3-compatible)'**
+  String get cloudBackupGroupS3;
+
+  /// S3 group description.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter access keys; backups are stored in the bucket you choose.'**
+  String get cloudBackupGroupS3Hint;
+
+  /// Custom WebDAV option name.
+  ///
+  /// In en, this message translates to:
+  /// **'Other WebDAV'**
+  String get cloudBackupCustomWebDav;
+
+  /// Custom S3 option name.
+  ///
+  /// In en, this message translates to:
+  /// **'Other S3-compatible'**
+  String get cloudBackupCustomS3;
+
+  /// Baidu Netdisk name.
+  ///
+  /// In en, this message translates to:
+  /// **'Baidu Netdisk'**
+  String get cloudBackupBaiduPan;
+
+  /// Alipan name.
+  ///
+  /// In en, this message translates to:
+  /// **'Alipan (Aliyun Drive)'**
+  String get cloudBackupAliyunDrive;
+
+  /// Nutstore name.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutstore (Jianguoyun)'**
+  String get cloudBackupJianguoyun;
+
+  /// 123pan name.
+  ///
+  /// In en, this message translates to:
+  /// **'123pan'**
+  String get cloudBackup123pan;
+
+  /// Synology NAS name.
+  ///
+  /// In en, this message translates to:
+  /// **'Synology NAS'**
+  String get cloudBackupSynology;
+
+  /// QNAP NAS name.
+  ///
+  /// In en, this message translates to:
+  /// **'QNAP NAS'**
+  String get cloudBackupQnap;
+
+  /// Alibaba Cloud OSS name.
+  ///
+  /// In en, this message translates to:
+  /// **'Alibaba Cloud OSS'**
+  String get cloudBackupAliyunOss;
+
+  /// Tencent Cloud COS name.
+  ///
+  /// In en, this message translates to:
+  /// **'Tencent Cloud COS'**
+  String get cloudBackupTencentCos;
+
+  /// Qiniu Kodo name.
+  ///
+  /// In en, this message translates to:
+  /// **'Qiniu Kodo'**
+  String get cloudBackupQiniuKodo;
+
+  /// Huawei Cloud OBS name.
+  ///
+  /// In en, this message translates to:
+  /// **'Huawei Cloud OBS'**
+  String get cloudBackupHuaweiObs;
+
+  /// Volcengine TOS name.
+  ///
+  /// In en, this message translates to:
+  /// **'Volcengine TOS'**
+  String get cloudBackupVolcengineTos;
+
+  /// Baidu AI Cloud BOS name.
+  ///
+  /// In en, this message translates to:
+  /// **'Baidu AI Cloud BOS'**
+  String get cloudBackupBaiduBos;
+
+  /// JD Cloud OSS name.
+  ///
+  /// In en, this message translates to:
+  /// **'JD Cloud OSS'**
+  String get cloudBackupJdcloudOss;
+
+  /// AWS China regions name.
+  ///
+  /// In en, this message translates to:
+  /// **'Amazon S3 (China)'**
+  String get cloudBackupAwsChina;
+
+  /// Nutstore setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Use your Nutstore account as the username and an app password from Account Info → Security → Third-party apps. Free accounts allow 600 requests per 30 minutes.'**
+  String get cloudBackupHintJianguoyun;
+
+  /// 123pan setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the address and password shown under Tools → Third-party mount in 123pan (the password is shown only once).'**
+  String get cloudBackupHint123pan;
+
+  /// Alist / OpenList setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the Alist / OpenList address (default port 5244, path /dav/) and grant the user WebDAV read and manage permissions. Any drive mounted there can hold backups.'**
+  String get cloudBackupHintOpenList;
+
+  /// CloudDrive2 setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the CloudDrive2 address (default port 19798, path /dav) and your CloudDrive2 account.'**
+  String get cloudBackupHintCloudDrive2;
+
+  /// Nextcloud setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the address from Files settings → WebDAV in the web app; prefer an app password from Personal settings → Security.'**
+  String get cloudBackupHintNextcloud;
+
+  /// ownCloud setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer an app token as the password; on oCIS the administrator must enable app tokens.'**
+  String get cloudBackupHintOwncloud;
+
+  /// Seafile setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'SeafDAV must be enabled on the server; single sign-on accounts need a separate WebDAV password set on the web.'**
+  String get cloudBackupHintSeafile;
+
+  /// Synology setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Install and enable WebDAV Server in DSM (HTTPS port 5006 by default) and sign in with a DSM account; the first level of the remote folder must be a shared folder.'**
+  String get cloudBackupHintSynology;
+
+  /// QNAP setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable WebDAV in the Control Panel and end the address with the shared folder name.'**
+  String get cloudBackupHintQnap;
+
+  /// Koofr setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'You must use an app password from Koofr Settings → Passwords; repeated failed logins are temporarily blocked.'**
+  String get cloudBackupHintKoofr;
+
+  /// pCloud setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with your pCloud email and password; choose pCloud (EU) for European accounts.'**
+  String get cloudBackupHintPcloud;
+
+  /// InfiniCLOUD setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the address and the Apps Connection password from your InfiniCLOUD My Page.'**
+  String get cloudBackupHintInfinicloud;
+
+  /// Hetzner setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable WebDAV and external access for the Storage Box in Hetzner Console.'**
+  String get cloudBackupHintHetzner;
+
+  /// kDrive setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'The Drive ID is in the kDrive web address; use an app password if two-factor authentication is on.'**
+  String get cloudBackupHintKdrive;
+
+  /// Yandex Disk setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Requires a paid Yandex 360 plan and an app password of type WebDAV.'**
+  String get cloudBackupHintYandex;
+
+  /// Mail.ru setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Use an app password created in your Mail.ru account settings.'**
+  String get cloudBackupHintMailru;
+
+  /// Generic S3 setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'The endpoint and region must match the bucket\'s location. Use a dedicated bucket and keys that can access only that bucket.'**
+  String get cloudBackupS3Hint;
+
+  /// Alibaba Cloud OSS setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a RAM user AccessKey; the endpoint region must match the bucket. Accounts opened after March 2025 may be unable to use the default public endpoint in mainland China.'**
+  String get cloudBackupHintAliyunOss;
+
+  /// Tencent Cloud COS setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'The bucket name must include the APPID suffix (e.g. backup-1250000000); create keys under CAM → API keys.'**
+  String get cloudBackupHintTencentCos;
+
+  /// Qiniu Kodo setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'The S3 bucket name may differ from the Kodo space name; use the one shown in the console.'**
+  String get cloudBackupHintQiniuKodo;
+
+  /// Cloudflare R2 setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace ACCOUNT_ID with your Cloudflare account ID, create a token under R2 → Manage API tokens and use its S3 credentials; keep the region as auto.'**
+  String get cloudBackupHintR2;
+
+  /// Backblaze B2 setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the endpoint shown on the bucket page and its region part (e.g. us-west-004) as the region; use an Application Key.'**
+  String get cloudBackupHintB2;
+
+  /// DigitalOcean Spaces setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Put the Spaces datacenter (e.g. nyc3) in the endpoint and keep the signing region as us-east-1.'**
+  String get cloudBackupHintDigitalOcean;
+
+  /// MinIO setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the MinIO API address (default port 9000) and keep path-style access on.'**
+  String get cloudBackupHintMinio;
+
+  /// Google Cloud Storage setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Create HMAC keys under Cloud Storage → Settings → Interoperability.'**
+  String get cloudBackupHintGcs;
+
+  /// Oracle Cloud setup note.
+  ///
+  /// In en, this message translates to:
+  /// **'Find NAMESPACE and REGION in the OCI console and use a Customer Secret Key.'**
+  String get cloudBackupHintOracle;
+
+  /// Google Drive storage note.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups are stored in the \"Jotsy\" folder of Google Drive; the app can only access files it created. Deleted backups skip the trash.'**
+  String get cloudBackupFolderGoogleDrive;
+
+  /// OneDrive storage note.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups are stored in this app\'s folder under Apps in OneDrive; the app can only access that folder. Deleted backups go to the OneDrive recycle bin.'**
+  String get cloudBackupFolderOneDrive;
+
+  /// Dropbox storage note.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups are stored in this app\'s folder under Apps in Dropbox; the app can only access that folder.'**
+  String get cloudBackupFolderDropbox;
+
+  /// Baidu Netdisk storage note.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups are stored in this app\'s folder under My App Data in Baidu Netdisk.'**
+  String get cloudBackupFolderBaidu;
+
+  /// Alipan storage note.
+  ///
+  /// In en, this message translates to:
+  /// **'Backups are stored in the folder chosen during authorization (or \"Jotsy\" at the root). Deleted backups go to the trash. Re-authorize when Alipan ends the authorization.'**
+  String get cloudBackupFolderAliyun;
+
+  /// Location config section title.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get cloudBackupConfigSection;
+
+  /// Save location config button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get cloudBackupSaveConfig;
+
+  /// Test connection button.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get cloudBackupTestConnection;
+
+  /// Upload current backup button.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload backup'**
+  String get cloudBackupUploadBackup;
+
+  /// Refresh remote list button.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get cloudBackupRefreshBackups;
+
+  /// Remote backup list title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote backups'**
+  String get cloudBackupBackupList;
+
+  /// Remote backup list empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No remote backups yet'**
+  String get cloudBackupNoBackups;
+
+  /// Remote backup time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time: {time}'**
+  String cloudBackupBackupTime(String time);
+
+  /// Remote backup size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size: {size}'**
+  String cloudBackupBackupSize(String size);
+
+  /// Restore remote backup action.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get cloudBackupRestoreAction;
+
+  /// Delete remote backup action.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get cloudBackupDeleteAction;
+
+  /// Delete remote backup dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete remote backup?'**
+  String get cloudBackupDeleteConfirmTitle;
+
+  /// Delete remote backup dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {fileName} from this backup location? This cannot be undone.'**
+  String cloudBackupDeleteConfirmContent(String fileName);
+
+  /// Remove location button tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this location'**
+  String get cloudBackupRemoveTarget;
+
+  /// Remove location dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove backup location?'**
+  String get cloudBackupRemoveTargetTitle;
+
+  /// Remove location dialog body.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the connection details and authorization saved on this device are removed. Backups already stored there are kept, and you can add the location again later.'**
+  String get cloudBackupRemoveTargetContent;
+
+  /// Remove location confirm button.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cloudBackupRemoveTargetAction;
+
+  /// Location removed message.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup location removed'**
+  String get cloudBackupRemoved;
+
+  /// Config saved message.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved'**
+  String get cloudBackupConfigSaved;
+
+  /// Connection test success message.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection successful'**
+  String get cloudBackupConnectionOk;
+
+  /// Upload success message.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup uploaded'**
+  String get cloudBackupUploadSuccess;
+
+  /// Restore success message.
+  ///
+  /// In en, this message translates to:
+  /// **'Data restored from the remote backup'**
+  String get cloudBackupRestoreSuccess;
+
+  /// Delete success message.
+  ///
+  /// In en, this message translates to:
+  /// **'Remote backup deleted'**
+  String get cloudBackupDeleteSuccess;
+
+  /// Authorized drive without an account name.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorized'**
+  String get cloudBackupAccountAuthorized;
+
+  /// Authorized drive account.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as {account}'**
+  String cloudBackupAccountConnected(String account);
+
+  /// Re-authorize button.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-authorize'**
+  String get cloudBackupReauthorize;
+
+  /// Authorization success message.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {name}'**
+  String cloudBackupAuthorized(String name);
+
+  /// Authorization dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorize {name}'**
+  String cloudBackupAuthorizeTitle(String name);
+
+  /// Device code authorization instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the authorization page, sign in and enter the code below. This continues automatically once you approve.'**
+  String get cloudBackupDeviceCodeHint;
+
+  /// Accessibility label of the device code.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization code'**
+  String get cloudBackupDeviceCodeLabel;
+
+  /// Copy device code button.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get cloudBackupCopyCode;
+
+  /// Device code copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get cloudBackupDeviceCodeCopied;
+
+  /// Open authorization page button.
+  ///
+  /// In en, this message translates to:
+  /// **'Open authorization page'**
+  String get cloudBackupOpenAuthorizePage;
+
+  /// Waiting for device authorization.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for authorization…'**
+  String get cloudBackupWaitingAuthorization;
+
+  /// Paste authorization code instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'After you authorize in the browser, the page shows an authorization code. Copy it and paste it here.'**
+  String get cloudBackupCodePasteHint;
+
+  /// Authorization code field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization code'**
+  String get cloudBackupCodeLabel;
+
+  /// Submit authorization code button.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get cloudBackupCodeConfirm;
+
+  /// Cloud backup busy overlay accessibility label.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud backup in progress'**
+  String get cloudBackupBusyLabel;
+
+  /// Saving config.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get cloudBackupBusySave;
+
+  /// Testing connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Testing connection…'**
+  String get cloudBackupBusyTest;
+
+  /// Creating backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating backup…'**
+  String get cloudBackupBusyUpload;
+
+  /// Upload progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading {percent}%'**
+  String cloudBackupBusyUploadProgress(int percent);
+
+  /// Downloading backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading backup…'**
+  String get cloudBackupBusyDownload;
+
+  /// Download progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {percent}%'**
+  String cloudBackupBusyDownloadProgress(int percent);
+
+  /// Restoring data.
+  ///
+  /// In en, this message translates to:
+  /// **'Restoring data…'**
+  String get cloudBackupBusyRestore;
+
+  /// Loading remote list.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading remote backups…'**
+  String get cloudBackupBusyRefresh;
+
+  /// Deleting remote backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting remote backup…'**
+  String get cloudBackupBusyDelete;
+
+  /// Verifying authorization.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying authorization…'**
+  String get cloudBackupBusyAuthorize;
+
+  /// Cloud backup failure message.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed: {detail}'**
+  String cloudBackupOperationFailed(String detail);
+
+  /// Config error.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that the address, bucket and folder settings are complete and correct'**
+  String get cloudBackupErrorConfig;
+
+  /// Missing app key.
+  ///
+  /// In en, this message translates to:
+  /// **'This build has no app key for this drive, so it is unavailable'**
+  String get cloudBackupErrorAppKeyMissing;
+
+  /// Authentication failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed or access denied; check the account, password or keys'**
+  String get cloudBackupErrorAuth;
+
+  /// Authorization expired.
+  ///
+  /// In en, this message translates to:
+  /// **'The authorization has expired; please re-authorize'**
+  String get cloudBackupErrorSessionExpired;
+
+  /// Authorization declined.
+  ///
+  /// In en, this message translates to:
+  /// **'Authorization was declined'**
+  String get cloudBackupErrorAuthorizationDenied;
+
+  /// Authorization code expired.
+  ///
+  /// In en, this message translates to:
+  /// **'The code is invalid or expired; please get a new one'**
+  String get cloudBackupErrorAuthorizationExpired;
+
+  /// Remote not found.
+  ///
+  /// In en, this message translates to:
+  /// **'The remote file or folder does not exist'**
+  String get cloudBackupErrorNotFound;
+
+  /// Out of space.
+  ///
+  /// In en, this message translates to:
+  /// **'The backup location is out of space'**
+  String get cloudBackupErrorStorageFull;
+
+  /// File too large.
+  ///
+  /// In en, this message translates to:
+  /// **'The backup exceeds the file size limit of this location'**
+  String get cloudBackupErrorFileTooLarge;
+
+  /// Rate limited.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests; please try again later'**
+  String get cloudBackupErrorRateLimited;
+
+  /// Network error.
+  ///
+  /// In en, this message translates to:
+  /// **'Network request failed; check the network, address and certificate'**
+  String get cloudBackupErrorNetwork;
+
+  /// Unexpected response.
+  ///
+  /// In en, this message translates to:
+  /// **'The backup location returned an unexpected response'**
+  String get cloudBackupErrorProtocol;
+
+  /// Wrong backup password.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect backup password'**
+  String get cloudBackupErrorPassword;
+
+  /// Damaged backup.
+  ///
+  /// In en, this message translates to:
+  /// **'The backup is damaged or not a Jotsy backup'**
+  String get cloudBackupErrorArchive;
+
+  /// Local file error.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to read or write a local temporary file; check free storage'**
+  String get cloudBackupErrorLocalFile;
+
+  /// Unknown error.
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred; please try again later'**
+  String get cloudBackupErrorUnknown;
+
+  /// S3 endpoint field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Endpoint'**
+  String get s3Endpoint;
+
+  /// S3 endpoint field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://s3.us-east-1.amazonaws.com'**
+  String get s3EndpointHint;
+
+  /// S3 region field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get s3Region;
+
+  /// S3 region field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Defaults to us-east-1'**
+  String get s3RegionHint;
+
+  /// S3 bucket field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Bucket'**
+  String get s3Bucket;
+
+  /// S3 access key ID field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Access Key ID'**
+  String get s3AccessKeyId;
+
+  /// S3 secret key field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Secret Access Key'**
+  String get s3SecretAccessKey;
+
+  /// S3 key prefix field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup folder (key prefix)'**
+  String get s3Prefix;
+
+  /// S3 key prefix field hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. jotsy/; leave empty for the bucket root'**
+  String get s3PrefixHint;
+
+  /// S3 path-style switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Path-style access'**
+  String get s3PathStyle;
+
+  /// S3 path-style switch description.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually required by self-hosted services such as MinIO'**
+  String get s3PathStyleSubtitle;
+
+  /// S3 path-style unavailable note.
+  ///
+  /// In en, this message translates to:
+  /// **'This service only supports virtual-hosted-style access'**
+  String get s3PathStyleLocked;
 }
 
 class _AppLocalizationsDelegate

@@ -214,40 +214,43 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 ),
               ],
             ),
-            Positioned(
-              // 底部悬浮交互面板。
+            // 底部悬浮交互面板：铺满 body、贴底对齐，面板据此拿到可用高度
+            // （键盘弹出时展开高度随之收缩）。
+            Positioned.fill(
               left: 16,
               right: 16,
-              bottom: 0,
-              // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
-              // 发布与封存期间锁住面板：写库后的改动不会再保存，不该看起来可改。
-              child: AbsorbPointer(
-                absorbing: _leaveBlocked,
-                child: ValueListenableBuilder<DateTime?>(
-                  valueListenable: _publisher.explicitPublishAt,
-                  builder: (context, _, _) => PublishDiaryPanel(
-                    controller: _panelController,
-                    draft: _meta,
-                    actions: _metaActions,
-                    busy: _leaveBlocked,
-                    publishTime: PublishTimeOption(
-                      // 既没选过、打开者也没指定时传 null，显示“自动获取当前时间”。
-                      label: _publisher.hasFixedPublishTime
-                          ? context.l10n.formatDateTimeMinute(
-                              _publisher.effectivePublishAt,
-                            )
-                          : null,
-                      onPick: _pickPublishTime,
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
+                // 发布与封存期间锁住面板：写库后的改动不会再保存，不该看起来可改。
+                child: AbsorbPointer(
+                  absorbing: _leaveBlocked,
+                  child: ValueListenableBuilder<DateTime?>(
+                    valueListenable: _publisher.explicitPublishAt,
+                    builder: (context, _, _) => PublishDiaryPanel(
+                      controller: _panelController,
+                      draft: _meta,
+                      actions: _metaActions,
+                      busy: _leaveBlocked,
+                      publishTime: PublishTimeOption(
+                        // 既没选过、打开者也没指定时传 null，显示“自动获取当前时间”。
+                        label: _publisher.hasFixedPublishTime
+                            ? context.l10n.formatDateTimeMinute(
+                                _publisher.effectivePublishAt,
+                              )
+                            : null,
+                        onPick: _pickPublishTime,
+                      ),
+                      capsuleEnabled: true,
+                      onPublish: _publish,
+                      // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                      // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
+                      onProgressChanged: (progress) {
+                        if (mounted) {
+                          _panelExpandProgress.value = progress;
+                        }
+                      },
                     ),
-                    capsuleEnabled: true,
-                    onPublish: _publish,
-                    // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-                    // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
-                    onProgressChanged: (progress) {
-                      if (mounted) {
-                        _panelExpandProgress.value = progress;
-                      }
-                    },
                   ),
                 ),
               ),

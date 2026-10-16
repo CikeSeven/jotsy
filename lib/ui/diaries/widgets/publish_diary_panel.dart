@@ -116,6 +116,8 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
   static const double _expandedHorizontalInset = 2;
   static const double _collapsedExtraLift = 18;
   static const double _collapsedBottomGap = 10;
+  // 展开时与宿主可用区域顶边至少留出的距离，表头不贴着顶栏、不被挤出。
+  static const double _expandedTopGap = 24;
 
   // ==================== 交互状态机协调器 ====================
   late final PublishPanelCoordinator _panelCoordinator;
@@ -211,7 +213,6 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
     final colorScheme = Theme.of(context).colorScheme;
     // 悬浮模块用卡片主表面（DESIGN.md §2.1）：亮色纯白、暗色温和深灰；面板内
     // 的行用输入框填充色区分层次。
-    final collapsedFactor = _collapsedHeight / _activeExpandedHeight;
     // 1) 不叠加键盘高度：宿主页 Scaffold 默认 resizeToAvoidBottomInset，body
     //    底边已经是键盘顶边，面板以 Positioned(bottom: 0) 挂在 body 内；再加
     //    viewInsets 会抬升两倍键盘高度（收起态会悬在键盘上方 300+dp）。
@@ -220,6 +221,12 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
     // 3) 只有这层 Padding 随进度重建，面板本体作为缓存的 child 传入。
     return LayoutBuilder(
       builder: (context, constraints) {
+        // 宿主（Positioned.fill + Align）给出有界高度时，展开高度随可用高度
+        // 收缩：键盘弹出、矮屏或横屏时表头不会被挤出可视区域。
+        _panelCoordinator.maxExpandedHeight = constraints.hasBoundedHeight
+            ? constraints.maxHeight - _collapsedBottomGap - _expandedTopGap
+            : null;
+        final collapsedFactor = _collapsedHeight / _activeExpandedHeight;
         final collapsedInset = constraints.hasBoundedWidth
             ? ((constraints.maxWidth - _collapsedTargetWidth) / 2).clamp(
                 _collapsedMinInset,

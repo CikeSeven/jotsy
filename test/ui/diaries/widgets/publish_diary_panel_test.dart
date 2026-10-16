@@ -445,6 +445,60 @@ void main() {
     expect(tester.widget<Slider>(find.byType(Slider)).value, 2);
   });
 
+  // 键盘弹出后 body 只剩 340dp：展开高度随可用高度收缩，主页、标签页、胶囊
+  // 页的表头都留在可视区域里，而不是被固定的 470/540 挤出顶边。
+  testWidgets('the expanded panel shrinks to fit above the keyboard', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 640);
+    tester.view.devicePixelRatio = 1;
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      publishPanelHost(keyboardLayout: true, capsuleEnabled: true),
+    );
+    final panel = PublishPanelDriver(tester);
+    await panel.expand();
+    const bodyHeight = 640.0 - 300.0;
+
+    expect(tester.getRect(panel.expandedHeader).top, greaterThanOrEqualTo(0));
+    expect(
+      tester.getSize(find.byType(PublishDiaryPanel)).height,
+      lessThanOrEqualTo(bodyHeight),
+    );
+    expect(find.widgetWithText(FilledButton, 'Publish diary'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Tags'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Choose tags')).top,
+      greaterThanOrEqualTo(0),
+    );
+
+    await tester.tap(find.byTooltip('Back').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Time lock'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Time lock'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getRect(find.text('Choose unlock time')).top,
+      greaterThanOrEqualTo(0),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a tall screen keeps the designed panel height', (tester) async {
+    tester.view.physicalSize = const Size(400, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(publishPanelHost(keyboardLayout: true));
+    await PublishPanelDriver(tester).expand();
+    // 设计高度 470 + 底部留白 10。
+    expect(tester.getSize(find.byType(PublishDiaryPanel)).height, 480);
+  });
+
   testWidgets(
     'collapsed panel sits just above the keyboard, not lifted twice',
     (tester) async {

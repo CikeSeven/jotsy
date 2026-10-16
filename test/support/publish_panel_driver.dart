@@ -107,8 +107,8 @@ class PublishPanelDriver {
 /// 心情为默认候选，不触碰数据库与设置。
 ///
 /// [draft] 不传时宿主自建一个（精力 4）。[keyboardLayout] 为 true 时按
-/// 发布/编辑页的真实摆放（`Positioned` 左右 16、贴 body 底边），用于验证
-/// 键盘弹出时的位置。
+/// 发布/编辑页的真实摆放（铺满 body、左右 16、贴底对齐），用于验证键盘
+/// 弹出时的位置与展开高度。
 Widget publishPanelHost({
   DiaryMetaDraftController? draft,
   bool capsuleEnabled = false,
@@ -206,7 +206,11 @@ class _PanelHostState extends ConsumerState<_PanelHost> {
       fit: widget.keyboardLayout ? StackFit.expand : StackFit.loose,
       children: <Widget>[
         if (widget.keyboardLayout)
-          Positioned(left: 16, right: 16, bottom: 0, child: panel)
+          Positioned.fill(
+            left: 16,
+            right: 16,
+            child: Align(alignment: Alignment.bottomCenter, child: panel),
+          )
         else
           Align(alignment: Alignment.bottomCenter, child: panel),
       ],

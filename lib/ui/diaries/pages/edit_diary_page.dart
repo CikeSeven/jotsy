@@ -612,12 +612,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               ),
               if (showEditMetaPanel &&
                   (!showFloatingToolbar || _isEditPanelExpanded))
-                Positioned(
+                // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
+                Positioned.fill(
                   left: 16,
                   right: 16,
-                  bottom: 0,
-                  // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
-                  child: ExpressiveEntrance(child: _buildMetaPanel()),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
+                    child: ExpressiveEntrance(child: _buildMetaPanel()),
+                  ),
                 ),
               if (showFloatingToolbar)
                 Positioned(

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
@@ -43,6 +45,13 @@ class PublishPanelCoordinator {
   /// 时间胶囊子页展开高度，承载日期滚轮与快捷选项。
   final double capsuleExpandedHeight;
 
+  /// 展开高度不得低于收起高度 + 这段详情区，否则面板展开了也看不到内容。
+  static const double minDetailHeight = 120;
+
+  /// 可用高度给出的展开高度上限（键盘弹出、矮屏、横屏时），由面板在布局时
+  /// 写入；null 表示不限，按各页的设计高度展开。
+  double? maxExpandedHeight;
+
   /// smooth_sheets 控制器：负责面板展开/收起吸附动画。
   final SheetController sheetController = SheetController();
 
@@ -55,12 +64,22 @@ class PublishPanelCoordinator {
   /// 当前内页索引（0=主页面，1=标签页，2=时间胶囊页）。
   int contentPageIndex = 0;
 
+  /// 当前页的展开高度：设计高度，但不超过可用高度上限，也不低于收起高度
+  /// 加最小详情区。
   double get activeExpandedHeight {
-    return switch (contentPageIndex) {
+    final designed = switch (contentPageIndex) {
       1 => tagExpandedHeight,
       2 => capsuleExpandedHeight,
       _ => mainExpandedHeight,
     };
+    final limit = maxExpandedHeight;
+    if (limit == null) {
+      return designed;
+    }
+    return math.max(
+      collapsedHeight + minDetailHeight,
+      math.min(designed, limit),
+    );
   }
 
   double get collapsedFactor => collapsedHeight / activeExpandedHeight;

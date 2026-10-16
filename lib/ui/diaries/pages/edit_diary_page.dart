@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,19 +10,12 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:path/path.dart' as path;
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/core/services/diary_cover_storage_service.dart';
-import 'package:node_diary/core/services/location_resolver_service.dart';
-import 'package:node_diary/core/services/qweather_weather_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
-import 'package:node_diary/ui/diaries/models/diary_location.dart';
-import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
-import 'package:node_diary/ui/diaries/models/weather_resolve_hint.dart';
 import 'package:node_diary/ui/diaries/models/diary_recording_state.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
@@ -32,6 +24,10 @@ import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
 import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
+import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/diaries/viewmodels/publish_panel_labels.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
@@ -43,7 +39,6 @@ import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
-import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
@@ -96,9 +91,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
-  final _locationController = TextEditingController();
-  final _weatherController = TextEditingController();
-  String? _draftCover;
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
@@ -118,23 +110,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   DateTime? _createDateOverride;
 
   // ==================== 发布上下文草稿字段 ====================
-  final Set<int> _selectedTagIds = <int>{};
   late quill.QuillController _contentController;
   String _metadataJson = '{}';
-  String? _draftLocation;
-  Map<String, Object?>? _draftLocationAddressComponent;
-  double? _draftLocationLatitude;
-  double? _draftLocationLongitude;
-  bool _draftLocationFromAuto = false;
-  DiaryLocationPrecision _draftLocationPrecision =
-      DiaryLocationPrecision.township;
-  String? _draftWeather;
-  String? _draftWeatherIconCode;
-  String? _draftMoodEmoji;
-  // 新日记默认不记录精力：用户没打开开关的值不写进 metadata。
-  double? _draftEnergyLevel;
-  DateTime? _draftCapsuleUnlockAt;
-  String? _draftCapsulePrecision;
+  // 封面、标签、此时此地、天气、心情、精力与（新建时预设的）胶囊：与发布页
+  // 共用同一草稿模型与动作。编辑模式下草稿变化经 [_onMetaChanged] 自动保存；
+  // 新建模式只随草稿带进发布页。新日记默认不记录精力。
+  late final DiaryMetaDraftController _meta;
+  late final DiaryMetaActions _metaActions;
   // 已发布日记的发表时间（created_at）：详情回填时取库中原值，面板改选后随
   // 自动保存写回。新建模式不用它，发表时间经 _createDateOverride 交给发布页。
   DateTime? _draftPublishAt;
@@ -149,8 +131,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 更新，避免 QuillRawEditor 对整篇文档逐行重建子树。输入变化时才重建。
   Widget? _cachedQuillEditor;
   Object? _cachedQuillEditorInputs;
-  bool _locating = false;
-  bool _weatherLoading = false;
   late List<DiaryToolbarItem> _toolbarOrder;
   Set<DiaryToolbarItem> _toolbarHiddenItems = <DiaryToolbarItem>{};
   String? _toolbarCurrentTimeFormatPattern;
@@ -181,15 +161,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     WidgetsBinding.instance.addObserver(this);
     _createDateOverride = widget.createDateOverride;
     final presetCapsule = widget.createCapsuleUnlockAt;
-    if (presetCapsule != null) {
-      _draftCapsuleUnlockAt = TimeCapsuleSchedule.normalizeUnlockAt(
-        presetCapsule,
-        precision: TimeCapsulePrecision.date,
-      );
-      _draftCapsulePrecision = TimeCapsuleSchedule.encodePrecision(
-        TimeCapsulePrecision.date,
-      );
-    }
+    _meta = DiaryMetaDraftController(
+      DiaryMetaDraft(
+        capsule: presetCapsule == null
+            ? null
+            : TimeCapsuleSchedule(
+                unlockAt: TimeCapsuleSchedule.normalizeUnlockAt(
+                  presetCapsule,
+                  precision: TimeCapsulePrecision.date,
+                ),
+                precision: TimeCapsulePrecision.date,
+              ),
+      ),
+    );
+    _meta.addListener(_onMetaChanged);
+    _metaActions = DiaryMetaActions(ref, draft: _meta, isBusy: () => _saving);
     _contentController = quill.QuillController(
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
@@ -222,8 +208,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _mediaImportController.removeListener(_onMediaImportChanged);
     _mediaImportController.dispose();
     _titleController.dispose();
-    _locationController.dispose();
-    _weatherController.dispose();
+    _meta.removeListener(_onMetaChanged);
+    _metaActions.dispose();
+    _meta.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
     _contentScrollController.dispose();
@@ -272,28 +259,86 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _controller.scheduleEditAutoSave();
   }
 
+  /// 编辑模式下面板草稿每次真实变化都排程自动保存。详情回填（未初始化）
+  /// 时的整体恢复不算修改；新建模式的草稿只随发布页往返，不走这里。
+  void _onMetaChanged() {
+    if (_isEditEntry && _initialized) {
+      _markEditPanelDirty();
+    }
+  }
+
   /// 汇总当前编辑态数据，形成可持久化的新建草稿对象。
-  NewDiaryDraft get _currentCreateDraft {
-    return NewDiaryDraft(
+  NewDiaryDraft get _currentCreateDraft => _meta.value.applyTo(
+    NewDiaryDraft(
       title: _titleController.text,
       contentDocJson: _currentContentDocJson,
       contentText: _currentContentText,
       createdAtOverride: _createDateOverride,
-      cover: _draftCover,
       metadataJson: _metadataJson,
-      selectedTagIds: <int>{..._selectedTagIds},
-      location: _draftLocation,
-      locationAddressComponent: _draftLocationAddressComponent,
-      locationLatitude: _draftLocationLatitude,
-      locationLongitude: _draftLocationLongitude,
-      locationFromAuto: _draftLocationFromAuto,
-      locationPrecision: _draftLocationPrecision,
-      weather: _draftWeather,
-      weatherIconCode: _draftWeatherIconCode,
-      moodEmoji: _draftMoodEmoji,
-      energyLevel: _draftEnergyLevel,
-      capsuleUnlockAt: _draftCapsuleUnlockAt,
-      capsulePrecision: _draftCapsulePrecision,
+    ),
+  );
+
+  /// 编辑模式底部元数据面板（与发布页同一组件）；草稿变化经 [_onMetaChanged]
+  /// 自动保存，这里只做装配。
+  Widget _buildMetaPanel(
+    BuildContext context, {
+    required List<Tag> tags,
+    required bool tagsLoading,
+    required String? tagsError,
+    required List<String> moodOptions,
+  }) {
+    final draft = _meta.value;
+    return PublishDiaryPanel(
+      controller: _editPanelController,
+      saving: _saving,
+      hasCover: draft.cover != null,
+      coverLabel: diaryCoverLabel(draft.cover),
+      locating: _metaActions.locating.value,
+      weatherLoading: _metaActions.weatherLoading.value,
+      locationController: _meta.locationText,
+      locationPrecision: draft.locationPrecision,
+      locationAddressComponent: draft.autoAddressComponent,
+      onLocationPrecisionChanged: _metaActions.changePrecision,
+      weatherController: _meta.weatherText,
+      weatherIconCode: draft.weatherIconCode,
+      moodEmoji: draft.moodEmoji,
+      moodOptions: moodOptions,
+      energyLevel: draft.energyLevel,
+      tags: tags,
+      tagsLoading: tagsLoading,
+      tagsError: tagsError,
+      selectedTagIds: draft.tagIds,
+      onProgressChanged: (progress) {
+        if (!mounted) {
+          return;
+        }
+        final wasExpanded = _isEditPanelExpanded;
+        // 连续进度只通知底部占位；页面层仅在越过展开阈值时
+        // setState（切换正文锁定、悬浮工具栏等离散状态）。
+        _editPanelExpandProgress.value = progress;
+        final nextExpanded = _isEditPanelExpanded;
+        if (wasExpanded == nextExpanded) {
+          return;
+        }
+        if (nextExpanded) {
+          FocusManager.instance.primaryFocus?.unfocus();
+        }
+        setState(() {});
+      },
+      onPickCover: () => _metaActions.pickCover(context),
+      onClearCover: draft.cover == null ? null : _metaActions.clearCover,
+      onCreateTag: () => _metaActions.createTag(context),
+      onResolveLocation: () => _metaActions.resolveLocation(context),
+      onResolveWeather: () => _metaActions.resolveWeather(context),
+      // 输入框文本经 DiaryMetaDraftController 的监听同步进草稿。
+      onLocationChanged: (_) {},
+      onWeatherChanged: (_) {},
+      showPublishTimeOption: true,
+      publishTimeLabel: _controller.publishTimeLabelForEdit,
+      onPickPublishTime: _controller.pickPublishAtForEdit,
+      onToggleTag: _meta.setTagSelected,
+      onMoodChanged: _meta.setMood,
+      onEnergyChanged: _meta.setEnergy,
     );
   }
 
@@ -538,7 +583,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         // 首次拿到详情时回填编辑器与草稿上下文，后续重建不重复执行。
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
-          _draftCover = detail.diary.cover;
           _controller.replaceContentController(
             quill.QuillController(
               document: decodeDiaryContentToDocument(detail.diary.content),
@@ -550,11 +594,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           } catch (_) {
             _metadataJson = detail.diary.metadata;
           }
-          _controller.restorePublishContextFromMetadata(detail.diary.metadata);
+          // 面板字段从 metadata 读回；封面与标签以日记表的列为准。
+          _meta.restore(
+            PublishMetadataComposer.parse(detail.diary.metadata).copyWith(
+              cover: normalizeOptionalText(detail.diary.cover),
+              tagIds: Set<int>.unmodifiable(
+                detail.tags.map((Tag tag) => tag.id),
+              ),
+            ),
+          );
           _draftPublishAt = detail.diary.createdAt;
-          _selectedTagIds
-            ..clear()
-            ..addAll(detail.tags.map((Tag t) => t.id));
           _panelMetadataDirty = false;
           _controller.initializeEditAutoSave();
           _initialized = true;
@@ -618,92 +667,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   bottom: 0,
                   // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
                   child: ExpressiveEntrance(
-                    child: PublishDiaryPanel(
-                      controller: _editPanelController,
-                      saving: _saving,
-                      hasCover: _draftCover?.trim().isNotEmpty == true,
-                      coverLabel: _controller.coverLabelForEdit,
-                      locating: _locating,
-                      weatherLoading: _weatherLoading,
-                      locationController: _locationController,
-                      locationPrecision: _draftLocationPrecision,
-                      locationAddressComponent: _draftLocationFromAuto
-                          ? _draftLocationAddressComponent
-                          : null,
-                      onLocationPrecisionChanged:
-                          _controller.updateLocationPrecisionForEdit,
-                      weatherController: _weatherController,
-                      weatherIconCode: _draftWeatherIconCode,
-                      moodEmoji: _draftMoodEmoji,
-                      moodOptions: moodOptions,
-                      energyLevel: _draftEnergyLevel,
-                      tags: tags,
-                      tagsLoading: tagsLoading,
-                      tagsError: tagsError,
-                      selectedTagIds: _selectedTagIds,
-                      onProgressChanged: (progress) {
-                        if (!mounted) {
-                          return;
-                        }
-                        final wasExpanded = _isEditPanelExpanded;
-                        // 连续进度只通知底部占位；页面层仅在越过展开阈值时
-                        // setState（切换正文锁定、悬浮工具栏等离散状态）。
-                        _editPanelExpandProgress.value = progress;
-                        final nextExpanded = _isEditPanelExpanded;
-                        if (wasExpanded == nextExpanded) {
-                          return;
-                        }
-                        if (nextExpanded) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        }
-                        setState(() {});
-                      },
-                      onPickCover: _controller.pickCoverForEdit,
-                      onClearCover: _draftCover?.trim().isNotEmpty == true
-                          ? _controller.clearCoverForEdit
-                          : null,
-                      onCreateTag: _controller.createTagInlineForEdit,
-                      onResolveLocation: _controller.resolveLocationForEdit,
-                      onResolveWeather: _controller.resolveWeatherForEdit,
-                      onLocationChanged: _controller.updateLocationTextForEdit,
-                      showPublishTimeOption: true,
-                      publishTimeLabel: _controller.publishTimeLabelForEdit,
-                      onPickPublishTime: _controller.pickPublishAtForEdit,
-                      onWeatherChanged: (nextWeather) {
-                        if (!mounted) {
-                          return;
-                        }
-                        setState(() {
-                          _draftWeather = nextWeather.trim().isEmpty
-                              ? null
-                              : nextWeather.trim();
-                          // 用户手动改天气文案后，旧 code 可能已不匹配，需要清空。
-                          _draftWeatherIconCode = null;
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onToggleTag: (tagId, selected) {
-                        setState(() {
-                          if (selected) {
-                            _selectedTagIds.add(tagId);
-                          } else {
-                            _selectedTagIds.remove(tagId);
-                          }
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onMoodChanged: (nextMood) {
-                        setState(() {
-                          _draftMoodEmoji = nextMood;
-                          _markEditPanelDirty();
-                        });
-                      },
-                      onEnergyChanged: (nextValue) {
-                        setState(() {
-                          _draftEnergyLevel = nextValue?.clamp(1, 5).toDouble();
-                          _markEditPanelDirty();
-                        });
-                      },
+                    child: ListenableBuilder(
+                      listenable: Listenable.merge(<Listenable>[
+                        _meta,
+                        _metaActions.activity,
+                      ]),
+                      builder: (context, _) => _buildMetaPanel(
+                        context,
+                        tags: tags,
+                        tagsLoading: tagsLoading,
+                        tagsError: tagsError,
+                        moodOptions: moodOptions,
+                      ),
                     ),
                   ),
                 ),

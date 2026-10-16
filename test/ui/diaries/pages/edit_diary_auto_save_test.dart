@@ -167,6 +167,31 @@ void main() {
     await unmount(tester);
   });
 
+  // 地点/天气输入框与草稿双向同步：只移动光标不是修改，不能刷新
+  // generatedAt、写库并改动“最后编辑”时间。
+  testWidgets('tapping into the place field does not save', (tester) async {
+    diaryId = (await tester.runAsync(
+      () => database.createDiary(
+        title: 'Located',
+        contentDocJson: '[{"insert":"Located\\n"}]',
+        contentText: 'Located',
+        metadataJson: '{"context":{"location":"Park"}}',
+      ),
+    ))!;
+    final before = await storedDiary(tester);
+    await openEditor(tester);
+    final panel = PublishPanelDriver(tester);
+    await panel.expand();
+    await tester.ensureVisible(panel.locationField);
+    await tester.tap(panel.locationField);
+    await tester.pump(const Duration(milliseconds: 600));
+
+    final after = await storedDiary(tester);
+    expect(after.diary.metadata, before.diary.metadata);
+    expect(after.diary.updatedAt, before.diary.updatedAt);
+    await unmount(tester);
+  });
+
   testWidgets('panel edits keep the capsule and import blocks', (tester) async {
     const capsule = {
       'lockedAt': '2025-01-01T08:00:00.000',

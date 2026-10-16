@@ -8,8 +8,8 @@ import '../../controllers/diary_card_style_editor_controller.dart';
 import '../../widgets/diary_card_color_tile.dart';
 import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
-import 'diary_card_style_common.dart';
 import 'diary_card_style_labels.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “字体”标签页：标题/摘要/辅助文字的字号缩放、标题字重、摘要行距，以及
 /// 标题与正文颜色和“自动保证可读”。两种布局共用。
@@ -46,7 +46,7 @@ class DiaryCardStyleTextTab extends StatelessWidget {
       );
     }
 
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.diaryCardStyleSharedGroup,

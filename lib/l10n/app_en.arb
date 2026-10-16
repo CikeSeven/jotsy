@@ -4046,36 +4046,36 @@
       }
     }
   },
-  "diaryCardStyleCustom": "Custom",
-  "@diaryCardStyleCustom": {
+  "styleEditorCustom": "Custom",
+  "@styleEditorCustom": {
     "description": "Name shown when the current card style matches no preset or saved style."
   },
-  "diaryCardStyleResetDone": "Restored the default style",
-  "@diaryCardStyleResetDone": {
+  "styleEditorResetDone": "Restored the default style",
+  "@styleEditorResetDone": {
     "description": "Diary card style settings: message after Reset (can be undone)."
   },
-  "diaryCardStylePreviewLight": "Light preview",
-  "@diaryCardStylePreviewLight": {
+  "styleEditorPreviewLight": "Light preview",
+  "@styleEditorPreviewLight": {
     "description": "Diary card style settings: tooltip of the button that previews the light theme."
   },
-  "diaryCardStylePreviewDark": "Dark preview",
-  "@diaryCardStylePreviewDark": {
+  "styleEditorPreviewDark": "Dark preview",
+  "@styleEditorPreviewDark": {
     "description": "Diary card style settings: tooltip of the button that previews the dark theme."
   },
-  "diaryCardStylePanelHandle": "Options panel",
-  "@diaryCardStylePanelHandle": {
+  "styleEditorPanelHandle": "Options panel",
+  "@styleEditorPanelHandle": {
     "description": "Diary card style settings: screen reader name of the options panel's drag handle (drag or tap to resize the panel)."
   },
-  "diaryCardStylePanelCollapsed": "Collapsed",
-  "@diaryCardStylePanelCollapsed": {
+  "styleEditorPanelCollapsed": "Collapsed",
+  "@styleEditorPanelCollapsed": {
     "description": "Diary card style settings: screen reader state when the options panel is collapsed to its tab bar."
   },
-  "diaryCardStylePanelHalf": "Half open",
-  "@diaryCardStylePanelHalf": {
+  "styleEditorPanelHalf": "Half open",
+  "@styleEditorPanelHalf": {
     "description": "Diary card style settings: screen reader state when the options panel shares the screen with the preview."
   },
-  "diaryCardStylePanelExpanded": "Expanded",
-  "@diaryCardStylePanelExpanded": {
+  "styleEditorPanelExpanded": "Expanded",
+  "@styleEditorPanelExpanded": {
     "description": "Diary card style settings: screen reader state when the options panel is expanded over the preview."
   },
   "diaryCardStyleSharedGroup": "All layouts",
@@ -4130,8 +4130,8 @@
   "@diaryCardStyleTabTexture": {
     "description": "Diary card style settings: the “Finish” tab."
   },
-  "diaryCardStylePresetsTitle": "Built-in styles",
-  "@diaryCardStylePresetsTitle": {
+  "styleEditorPresetsTitle": "Built-in styles",
+  "@styleEditorPresetsTitle": {
     "description": "Diary card style settings: group title of the built-in presets."
   },
   "diaryCardStylePresetClassic": "Classic",
@@ -4198,8 +4198,8 @@
   "@diaryCardStylePresetMoodDesc": {
     "description": "Diary card style settings: one-line description of the “Mood colors” preset."
   },
-  "diaryCardStyleApplied": "Applied “{name}”",
-  "@diaryCardStyleApplied": {
+  "styleEditorApplied": "Applied “{name}”",
+  "@styleEditorApplied": {
     "description": "Diary card style settings: message after applying a preset or saved style (can be undone).",
     "placeholders": {
       "name": {
@@ -4207,20 +4207,20 @@
       }
     }
   },
-  "diaryCardStyleSavedTitle": "My styles",
-  "@diaryCardStyleSavedTitle": {
+  "styleEditorSavedTitle": "My styles",
+  "@styleEditorSavedTitle": {
     "description": "Diary card style settings: group title of the styles the user saved."
   },
-  "diaryCardStyleSavedEmpty": "Save a style you like to switch back in one tap",
-  "@diaryCardStyleSavedEmpty": {
+  "styleEditorSavedEmpty": "Save a style you like to switch back in one tap",
+  "@styleEditorSavedEmpty": {
     "description": "Diary card style settings: hint shown before any style is saved."
   },
-  "diaryCardStyleSaveCurrent": "Save current style",
-  "@diaryCardStyleSaveCurrent": {
+  "styleEditorSaveCurrent": "Save current style",
+  "@styleEditorSaveCurrent": {
     "description": "Diary card style settings: button that saves the current style to My styles."
   },
-  "diaryCardStyleSaveLimit": "You can save up to {count} styles",
-  "@diaryCardStyleSaveLimit": {
+  "styleEditorSaveLimit": "You can save up to {count} styles",
+  "@styleEditorSaveLimit": {
     "description": "Diary card style settings: note shown when My styles is full.",
     "placeholders": {
       "count": {
@@ -4228,20 +4228,20 @@
       }
     }
   },
-  "diaryCardStyleSaveDialogTitle": "Save style",
-  "@diaryCardStyleSaveDialogTitle": {
+  "styleEditorSaveDialogTitle": "Save style",
+  "@styleEditorSaveDialogTitle": {
     "description": "Diary card style settings: title of the save style dialog."
   },
-  "diaryCardStyleRenameDialogTitle": "Rename style",
-  "@diaryCardStyleRenameDialogTitle": {
+  "styleEditorRenameDialogTitle": "Rename style",
+  "@styleEditorRenameDialogTitle": {
     "description": "Diary card style settings: title of the rename style dialog."
   },
-  "diaryCardStyleNameLabel": "Style name",
-  "@diaryCardStyleNameLabel": {
+  "styleEditorNameLabel": "Style name",
+  "@styleEditorNameLabel": {
     "description": "Diary card style settings: label of the style name field."
   },
-  "diaryCardStyleDefaultName": "My style {count}",
-  "@diaryCardStyleDefaultName": {
+  "styleEditorDefaultName": "My style {count}",
+  "@styleEditorDefaultName": {
     "description": "Diary card style settings: prefilled name when saving a style; count is its number.",
     "placeholders": {
       "count": {
@@ -4249,12 +4249,12 @@
       }
     }
   },
-  "diaryCardStyleRename": "Rename",
-  "@diaryCardStyleRename": {
+  "styleEditorRename": "Rename",
+  "@styleEditorRename": {
     "description": "Diary card style settings: Rename item in the saved style menu."
   },
-  "diaryCardStyleSavedDone": "Saved “{name}”",
-  "@diaryCardStyleSavedDone": {
+  "styleEditorSavedDone": "Saved “{name}”",
+  "@styleEditorSavedDone": {
     "description": "Diary card style settings: message after saving a style.",
     "placeholders": {
       "name": {
@@ -4262,8 +4262,8 @@
       }
     }
   },
-  "diaryCardStyleDeletedDone": "Deleted “{name}”",
-  "@diaryCardStyleDeletedDone": {
+  "styleEditorDeletedDone": "Deleted “{name}”",
+  "@styleEditorDeletedDone": {
     "description": "Diary card style settings: message after deleting a saved style (can be undone).",
     "placeholders": {
       "name": {
@@ -4271,8 +4271,8 @@
       }
     }
   },
-  "diaryCardStyleSavedActions": "More actions for “{name}”",
-  "@diaryCardStyleSavedActions": {
+  "styleEditorSavedActions": "More actions for “{name}”",
+  "@styleEditorSavedActions": {
     "description": "Diary card style settings: tooltip of the menu button on a saved style.",
     "placeholders": {
       "name": {
@@ -4280,48 +4280,48 @@
       }
     }
   },
-  "diaryCardStyleShareTitle": "Share and import",
-  "@diaryCardStyleShareTitle": {
+  "styleEditorShareTitle": "Share and import",
+  "@styleEditorShareTitle": {
     "description": "Diary card style settings: group title for sharing and importing style codes."
   },
-  "diaryCardStyleCopyCode": "Copy style code",
-  "@diaryCardStyleCopyCode": {
+  "styleEditorCopyCode": "Copy style code",
+  "@styleEditorCopyCode": {
     "description": "Diary card style settings: copies the current style as a style code."
   },
-  "diaryCardStyleCopyCodeSubtitle": "Send it to a friend or keep it as a backup",
-  "@diaryCardStyleCopyCodeSubtitle": {
+  "styleEditorCopyCodeSubtitle": "Send it to a friend or keep it as a backup",
+  "@styleEditorCopyCodeSubtitle": {
     "description": "Diary card style settings: description of Copy style code."
   },
-  "diaryCardStyleImportCode": "Import from clipboard",
-  "@diaryCardStyleImportCode": {
+  "styleEditorImportCode": "Import from clipboard",
+  "@styleEditorImportCode": {
     "description": "Diary card style settings: imports a style code from the clipboard."
   },
-  "diaryCardStyleImportCodeSubtitle": "Apply a style code someone shared",
-  "@diaryCardStyleImportCodeSubtitle": {
+  "styleEditorImportCodeSubtitle": "Apply a style code someone shared",
+  "@styleEditorImportCodeSubtitle": {
     "description": "Diary card style settings: description of Import from clipboard."
   },
-  "diaryCardStyleCodeCopied": "Style code copied",
-  "@diaryCardStyleCodeCopied": {
+  "styleEditorCodeCopied": "Style code copied",
+  "@styleEditorCodeCopied": {
     "description": "Diary card style settings: message after copying the style code."
   },
-  "diaryCardStyleImportEmpty": "The clipboard is empty",
-  "@diaryCardStyleImportEmpty": {
+  "styleEditorImportEmpty": "The clipboard is empty",
+  "@styleEditorImportEmpty": {
     "description": "Diary card style settings: message when the clipboard is empty on import."
   },
-  "diaryCardStyleImportInvalid": "No valid style code in the clipboard",
-  "@diaryCardStyleImportInvalid": {
+  "styleEditorImportInvalid": "No valid style code in the clipboard",
+  "@styleEditorImportInvalid": {
     "description": "Diary card style settings: message when the clipboard has no valid style code."
   },
-  "diaryCardStyleImportNewer": "Imported. Some settings from a newer version may not apply",
-  "@diaryCardStyleImportNewer": {
+  "styleEditorImportNewer": "Imported. Some settings from a newer version may not apply",
+  "@styleEditorImportNewer": {
     "description": "Diary card style settings: message after importing a code from a newer app version (can be undone)."
   },
-  "diaryCardStyleImported": "Style imported",
-  "@diaryCardStyleImported": {
+  "styleEditorImported": "Style imported",
+  "@styleEditorImported": {
     "description": "Diary card style settings: message after importing a style code (can be undone)."
   },
-  "diaryCardStyleImportedNamed": "Imported “{name}”",
-  "@diaryCardStyleImportedNamed": {
+  "styleEditorImportedNamed": "Imported “{name}”",
+  "@styleEditorImportedNamed": {
     "description": "Diary card style settings: message after importing a named style code (can be undone).",
     "placeholders": {
       "name": {
@@ -4920,24 +4920,24 @@
   "@diaryCardStyleStrength": {
     "description": "Diary card style settings: color intensity (opacity)."
   },
-  "diaryCardStyleEditColor": "Edit color",
-  "@diaryCardStyleEditColor": {
+  "styleEditorEditColor": "Edit color",
+  "@styleEditorEditColor": {
     "description": "Diary card style settings: picks the custom color again."
   },
-  "diaryCardStyleColorDarkAuto": "Pick the dark color automatically",
-  "@diaryCardStyleColorDarkAuto": {
+  "styleEditorColorDarkAuto": "Pick the dark color automatically",
+  "@styleEditorColorDarkAuto": {
     "description": "Diary card style settings: color dialog: derive the dark-mode color automatically."
   },
-  "diaryCardStyleColorDarkAutoSubtitle": "Derive a readable dark-mode color from the light one",
-  "@diaryCardStyleColorDarkAutoSubtitle": {
+  "styleEditorColorDarkAutoSubtitle": "Derive a readable dark-mode color from the light one",
+  "@styleEditorColorDarkAutoSubtitle": {
     "description": "Diary card style settings: description of the automatic dark color."
   },
-  "diaryCardStyleHexLabel": "Hex color",
-  "@diaryCardStyleHexLabel": {
+  "styleEditorHexLabel": "Hex color",
+  "@styleEditorHexLabel": {
     "description": "Diary card style settings: label of the hex color field."
   },
-  "diaryCardStyleHexInvalid": "Enter a 6-digit hex color, such as FFB300",
-  "@diaryCardStyleHexInvalid": {
+  "styleEditorHexInvalid": "Enter a 6-digit hex color, such as FFB300",
+  "@styleEditorHexInvalid": {
     "description": "Diary card style settings: error for an invalid hex color."
   },
   "diaryCardStyleSheetSection": "Card style",

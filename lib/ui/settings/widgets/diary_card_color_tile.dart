@@ -5,7 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../diaries/models/diary_card_style/diary_card_style.dart';
 import '../../diaries/viewmodels/diary_card_colors.dart';
 import '../sections/diary_card_style/diary_card_style_labels.dart';
-import 'diary_card_color_dialog.dart';
+import 'style_editor/style_color_dialog.dart';
 import 'settings_option_tiles.dart';
 
 /// 卡片样式里一个颜色位的设置行：来源选择（默认 / 主题三色 / 心情 / 首个
@@ -65,7 +65,7 @@ class DiaryCardColorTile extends StatelessWidget {
 
   Future<void> _editCustom(BuildContext context) async {
     final scheme = Theme.of(context).colorScheme;
-    final result = await showDiaryCardColorDialog(
+    final result = await showStyleColorDialog(
       context,
       title: title,
       light:
@@ -176,7 +176,7 @@ class DiaryCardColorTile extends StatelessWidget {
                     child: TextButton.icon(
                       onPressed: () => _editCustom(context),
                       icon: const FaIcon(FontAwesomeIcons.palette, size: 14),
-                      label: Text(l10n.diaryCardStyleEditColor),
+                      label: Text(l10n.styleEditorEditColor),
                     ),
                   ),
                 ),

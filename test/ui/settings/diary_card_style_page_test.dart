@@ -205,15 +205,15 @@ void main() {
     final semantics = tester.ensureSemantics();
     final (_, l10n) = await _pumpPage(tester);
     String stop() => tester
-        .getSemantics(find.bySemanticsLabel(l10n.diaryCardStylePanelHandle))
+        .getSemantics(find.bySemanticsLabel(l10n.styleEditorPanelHandle))
         .value;
     double tabBarTop() => tester.getTopLeft(find.byType(TabBar)).dy;
-    expect(stop(), l10n.diaryCardStylePanelHalf);
+    expect(stop(), l10n.styleEditorPanelHalf);
     final halfTop = tabBarTop();
 
     await tester.fling(find.byType(TabBar), const Offset(0, -80), 1500);
     await tester.pumpAndSettle();
-    expect(stop(), l10n.diaryCardStylePanelExpanded);
+    expect(stop(), l10n.styleEditorPanelExpanded);
     // 上档盖住预览，只留列表/瀑布流与明暗工具条。
     expect(tabBarTop(), lessThan(halfTop));
     expect(
@@ -228,7 +228,7 @@ void main() {
       await tester.fling(find.byType(TabBar), const Offset(0, 80), 1500);
       await tester.pumpAndSettle();
     }
-    expect(stop(), l10n.diaryCardStylePanelCollapsed);
+    expect(stop(), l10n.styleEditorPanelCollapsed);
     // 下档只露出拖动条与标签栏，预览占满其余空间。
     expect(tester.getBottomLeft(find.byType(TabBar)).dy, closeTo(860, 0.01));
 
@@ -236,10 +236,10 @@ void main() {
     final contentTab = find.widgetWithText(Tab, l10n.diaryCardStyleTabContent);
     await tester.ensureVisible(contentTab);
     await tester.pumpAndSettle();
-    expect(stop(), l10n.diaryCardStylePanelCollapsed);
+    expect(stop(), l10n.styleEditorPanelCollapsed);
     await tester.tap(contentTab);
     await tester.pumpAndSettle();
-    expect(stop(), l10n.diaryCardStylePanelHalf);
+    expect(stop(), l10n.styleEditorPanelHalf);
     expect(tabBarTop(), closeTo(halfTop, 0.01));
     expect(
       find.widgetWithText(SwitchListTile, l10n.diaryCardStyleShowTitle),
@@ -275,9 +275,9 @@ void main() {
     expect(tester.getTopLeft(find.byType(TabBar)).dy, tabBarTop);
     expect(
       tester
-          .getSemantics(find.bySemanticsLabel(l10n.diaryCardStylePanelHandle))
+          .getSemantics(find.bySemanticsLabel(l10n.styleEditorPanelHandle))
           .value,
-      l10n.diaryCardStylePanelHalf,
+      l10n.styleEditorPanelHalf,
     );
     semantics.dispose();
   });
@@ -322,7 +322,7 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, l10n.commonReset));
     await tester.pumpAndSettle();
     expect(settings.diaryCardStyleRaw, isNull);
-    expect(find.text(l10n.diaryCardStyleResetDone), findsOneWidget);
+    expect(find.text(l10n.styleEditorResetDone), findsOneWidget);
 
     await tester.tap(find.text(l10n.commonUndo));
     await tester.pumpAndSettle();
@@ -337,7 +337,7 @@ void main() {
       DiaryCardPresets.styleOf(DiaryCardPresetId.minimal),
     );
     expect(
-      find.text(l10n.diaryCardStyleApplied(l10n.diaryCardStylePresetMinimal)),
+      find.text(l10n.styleEditorApplied(l10n.diaryCardStylePresetMinimal)),
       findsOneWidget,
     );
     await tester.tap(find.text(l10n.commonUndo));
@@ -352,7 +352,7 @@ void main() {
     await _tapVisible(tester, find.text(l10n.diaryCardStylePresetCompact));
     await _dismissSnackBars(tester);
 
-    await _tapVisible(tester, find.text(l10n.diaryCardStyleSaveCurrent));
+    await _tapVisible(tester, find.text(l10n.styleEditorSaveCurrent));
     await tester.enterText(find.byType(TextField), 'Dense');
     await tester.tap(find.text(l10n.commonConfirm));
     await tester.pumpAndSettle();
@@ -365,9 +365,9 @@ void main() {
 
     await _tapVisible(
       tester,
-      find.byTooltip(l10n.diaryCardStyleSavedActions('Dense')),
+      find.byTooltip(l10n.styleEditorSavedActions('Dense')),
     );
-    await tester.tap(find.text(l10n.diaryCardStyleRename));
+    await tester.tap(find.text(l10n.styleEditorRename));
     await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'Tight');
     await tester.tap(find.text(l10n.commonConfirm));
@@ -376,7 +376,7 @@ void main() {
 
     await _tapVisible(
       tester,
-      find.byTooltip(l10n.diaryCardStyleSavedActions('Tight')),
+      find.byTooltip(l10n.styleEditorSavedActions('Tight')),
     );
     await tester.tap(find.text(l10n.commonDelete));
     await tester.pumpAndSettle();
@@ -394,7 +394,7 @@ void main() {
     await _tapVisible(tester, find.text(l10n.diaryCardStylePresetJournal));
     await _dismissSnackBars(tester);
 
-    await _tapVisible(tester, find.text(l10n.diaryCardStyleCopyCode));
+    await _tapVisible(tester, find.text(l10n.styleEditorCopyCode));
     expect(_clipboard, startsWith('${DiaryCardStyleCode.scheme}:v1:'));
     await _dismissSnackBars(tester);
 
@@ -405,22 +405,22 @@ void main() {
     expect(settings.diaryCardStyleRaw, isNull);
 
     _clipboard = 'Try this one: $code';
-    await _tapVisible(tester, find.text(l10n.diaryCardStyleImportCode));
+    await _tapVisible(tester, find.text(l10n.styleEditorImportCode));
     expect(
       _stored(settings).current,
       DiaryCardPresets.styleOf(DiaryCardPresetId.journal),
     );
     expect(
       find.text(
-        l10n.diaryCardStyleImportedNamed(l10n.diaryCardStylePresetJournal),
+        l10n.styleEditorImportedNamed(l10n.diaryCardStylePresetJournal),
       ),
       findsOneWidget,
     );
     await _dismissSnackBars(tester);
 
     _clipboard = 'definitely not a style';
-    await _tapVisible(tester, find.text(l10n.diaryCardStyleImportCode));
-    expect(find.text(l10n.diaryCardStyleImportInvalid), findsOneWidget);
+    await _tapVisible(tester, find.text(l10n.styleEditorImportCode));
+    expect(find.text(l10n.styleEditorImportInvalid), findsOneWidget);
     expect(
       _stored(settings).current,
       DiaryCardPresets.styleOf(DiaryCardPresetId.journal),
@@ -454,7 +454,7 @@ void main() {
     Brightness previewBrightness() =>
         Theme.of(tester.element(find.byType(DiariesListSection))).brightness;
     expect(previewBrightness(), Brightness.light);
-    await tester.tap(find.byTooltip(l10n.diaryCardStylePreviewDark));
+    await tester.tap(find.byTooltip(l10n.styleEditorPreviewDark));
     await tester.pumpAndSettle();
     expect(previewBrightness(), Brightness.dark);
     expect(tester.takeException(), isNull);

@@ -5118,49 +5118,49 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Custom'**
-  String get diaryCardStyleCustom;
+  String get styleEditorCustom;
 
   /// Diary card style settings: message after Reset (can be undone).
   ///
   /// In en, this message translates to:
   /// **'Restored the default style'**
-  String get diaryCardStyleResetDone;
+  String get styleEditorResetDone;
 
   /// Diary card style settings: tooltip of the button that previews the light theme.
   ///
   /// In en, this message translates to:
   /// **'Light preview'**
-  String get diaryCardStylePreviewLight;
+  String get styleEditorPreviewLight;
 
   /// Diary card style settings: tooltip of the button that previews the dark theme.
   ///
   /// In en, this message translates to:
   /// **'Dark preview'**
-  String get diaryCardStylePreviewDark;
+  String get styleEditorPreviewDark;
 
   /// Diary card style settings: screen reader name of the options panel's drag handle (drag or tap to resize the panel).
   ///
   /// In en, this message translates to:
   /// **'Options panel'**
-  String get diaryCardStylePanelHandle;
+  String get styleEditorPanelHandle;
 
   /// Diary card style settings: screen reader state when the options panel is collapsed to its tab bar.
   ///
   /// In en, this message translates to:
   /// **'Collapsed'**
-  String get diaryCardStylePanelCollapsed;
+  String get styleEditorPanelCollapsed;
 
   /// Diary card style settings: screen reader state when the options panel shares the screen with the preview.
   ///
   /// In en, this message translates to:
   /// **'Half open'**
-  String get diaryCardStylePanelHalf;
+  String get styleEditorPanelHalf;
 
   /// Diary card style settings: screen reader state when the options panel is expanded over the preview.
   ///
   /// In en, this message translates to:
   /// **'Expanded'**
-  String get diaryCardStylePanelExpanded;
+  String get styleEditorPanelExpanded;
 
   /// Diary card style settings: group title for options that apply to both list and waterfall layouts.
   ///
@@ -5244,7 +5244,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Built-in styles'**
-  String get diaryCardStylePresetsTitle;
+  String get styleEditorPresetsTitle;
 
   /// Diary card style settings: name of the “Classic” preset.
   ///
@@ -5346,145 +5346,145 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Applied “{name}”'**
-  String diaryCardStyleApplied(String name);
+  String styleEditorApplied(String name);
 
   /// Diary card style settings: group title of the styles the user saved.
   ///
   /// In en, this message translates to:
   /// **'My styles'**
-  String get diaryCardStyleSavedTitle;
+  String get styleEditorSavedTitle;
 
   /// Diary card style settings: hint shown before any style is saved.
   ///
   /// In en, this message translates to:
   /// **'Save a style you like to switch back in one tap'**
-  String get diaryCardStyleSavedEmpty;
+  String get styleEditorSavedEmpty;
 
   /// Diary card style settings: button that saves the current style to My styles.
   ///
   /// In en, this message translates to:
   /// **'Save current style'**
-  String get diaryCardStyleSaveCurrent;
+  String get styleEditorSaveCurrent;
 
   /// Diary card style settings: note shown when My styles is full.
   ///
   /// In en, this message translates to:
   /// **'You can save up to {count} styles'**
-  String diaryCardStyleSaveLimit(int count);
+  String styleEditorSaveLimit(int count);
 
   /// Diary card style settings: title of the save style dialog.
   ///
   /// In en, this message translates to:
   /// **'Save style'**
-  String get diaryCardStyleSaveDialogTitle;
+  String get styleEditorSaveDialogTitle;
 
   /// Diary card style settings: title of the rename style dialog.
   ///
   /// In en, this message translates to:
   /// **'Rename style'**
-  String get diaryCardStyleRenameDialogTitle;
+  String get styleEditorRenameDialogTitle;
 
   /// Diary card style settings: label of the style name field.
   ///
   /// In en, this message translates to:
   /// **'Style name'**
-  String get diaryCardStyleNameLabel;
+  String get styleEditorNameLabel;
 
   /// Diary card style settings: prefilled name when saving a style; count is its number.
   ///
   /// In en, this message translates to:
   /// **'My style {count}'**
-  String diaryCardStyleDefaultName(int count);
+  String styleEditorDefaultName(int count);
 
   /// Diary card style settings: Rename item in the saved style menu.
   ///
   /// In en, this message translates to:
   /// **'Rename'**
-  String get diaryCardStyleRename;
+  String get styleEditorRename;
 
   /// Diary card style settings: message after saving a style.
   ///
   /// In en, this message translates to:
   /// **'Saved “{name}”'**
-  String diaryCardStyleSavedDone(String name);
+  String styleEditorSavedDone(String name);
 
   /// Diary card style settings: message after deleting a saved style (can be undone).
   ///
   /// In en, this message translates to:
   /// **'Deleted “{name}”'**
-  String diaryCardStyleDeletedDone(String name);
+  String styleEditorDeletedDone(String name);
 
   /// Diary card style settings: tooltip of the menu button on a saved style.
   ///
   /// In en, this message translates to:
   /// **'More actions for “{name}”'**
-  String diaryCardStyleSavedActions(String name);
+  String styleEditorSavedActions(String name);
 
   /// Diary card style settings: group title for sharing and importing style codes.
   ///
   /// In en, this message translates to:
   /// **'Share and import'**
-  String get diaryCardStyleShareTitle;
+  String get styleEditorShareTitle;
 
   /// Diary card style settings: copies the current style as a style code.
   ///
   /// In en, this message translates to:
   /// **'Copy style code'**
-  String get diaryCardStyleCopyCode;
+  String get styleEditorCopyCode;
 
   /// Diary card style settings: description of Copy style code.
   ///
   /// In en, this message translates to:
   /// **'Send it to a friend or keep it as a backup'**
-  String get diaryCardStyleCopyCodeSubtitle;
+  String get styleEditorCopyCodeSubtitle;
 
   /// Diary card style settings: imports a style code from the clipboard.
   ///
   /// In en, this message translates to:
   /// **'Import from clipboard'**
-  String get diaryCardStyleImportCode;
+  String get styleEditorImportCode;
 
   /// Diary card style settings: description of Import from clipboard.
   ///
   /// In en, this message translates to:
   /// **'Apply a style code someone shared'**
-  String get diaryCardStyleImportCodeSubtitle;
+  String get styleEditorImportCodeSubtitle;
 
   /// Diary card style settings: message after copying the style code.
   ///
   /// In en, this message translates to:
   /// **'Style code copied'**
-  String get diaryCardStyleCodeCopied;
+  String get styleEditorCodeCopied;
 
   /// Diary card style settings: message when the clipboard is empty on import.
   ///
   /// In en, this message translates to:
   /// **'The clipboard is empty'**
-  String get diaryCardStyleImportEmpty;
+  String get styleEditorImportEmpty;
 
   /// Diary card style settings: message when the clipboard has no valid style code.
   ///
   /// In en, this message translates to:
   /// **'No valid style code in the clipboard'**
-  String get diaryCardStyleImportInvalid;
+  String get styleEditorImportInvalid;
 
   /// Diary card style settings: message after importing a code from a newer app version (can be undone).
   ///
   /// In en, this message translates to:
   /// **'Imported. Some settings from a newer version may not apply'**
-  String get diaryCardStyleImportNewer;
+  String get styleEditorImportNewer;
 
   /// Diary card style settings: message after importing a style code (can be undone).
   ///
   /// In en, this message translates to:
   /// **'Style imported'**
-  String get diaryCardStyleImported;
+  String get styleEditorImported;
 
   /// Diary card style settings: message after importing a named style code (can be undone).
   ///
   /// In en, this message translates to:
   /// **'Imported “{name}”'**
-  String diaryCardStyleImportedNamed(String name);
+  String styleEditorImportedNamed(String name);
 
   /// Diary card style settings: card corner radius.
   ///
@@ -6354,31 +6354,31 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Edit color'**
-  String get diaryCardStyleEditColor;
+  String get styleEditorEditColor;
 
   /// Diary card style settings: color dialog: derive the dark-mode color automatically.
   ///
   /// In en, this message translates to:
   /// **'Pick the dark color automatically'**
-  String get diaryCardStyleColorDarkAuto;
+  String get styleEditorColorDarkAuto;
 
   /// Diary card style settings: description of the automatic dark color.
   ///
   /// In en, this message translates to:
   /// **'Derive a readable dark-mode color from the light one'**
-  String get diaryCardStyleColorDarkAutoSubtitle;
+  String get styleEditorColorDarkAutoSubtitle;
 
   /// Diary card style settings: label of the hex color field.
   ///
   /// In en, this message translates to:
   /// **'Hex color'**
-  String get diaryCardStyleHexLabel;
+  String get styleEditorHexLabel;
 
   /// Diary card style settings: error for an invalid hex color.
   ///
   /// In en, this message translates to:
   /// **'Enter a 6-digit hex color, such as FFB300'**
-  String get diaryCardStyleHexInvalid;
+  String get styleEditorHexInvalid;
 
   /// Diary view options sheet: card style section title.
   ///

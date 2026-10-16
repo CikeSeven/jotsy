@@ -22,7 +22,7 @@
 │  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
 │  │  │  ├─ controllers/             # 业务编排（搜索/筛选/撤销/发布链路等）
 │  │  │  ├─ providers/               # 状态与筛选条件
-│  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态（models/diary_card_style/：卡片样式模型、预设与样式码）
+│  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态（models/diary_card_style/：卡片样式模型、预设与样式码；models/style_library/：各样式编辑页共用的“我的样式”与样式码）
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片；widgets/diary_preview/：预览页的单篇视图、整页内容与各区块）
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ home|calendar|explore|settings/

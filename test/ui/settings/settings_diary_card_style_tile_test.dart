@@ -61,7 +61,7 @@ void main() {
     );
     await tester.pump();
     expect(
-      find.text(l10n.diaryCardStyleEntrySubtitle(l10n.diaryCardStyleCustom)),
+      find.text(l10n.diaryCardStyleEntrySubtitle(l10n.styleEditorCustom)),
       findsOneWidget,
     );
 

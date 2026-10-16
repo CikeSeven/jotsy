@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../l10n/app_localizations.dart';
-import '../../diaries/viewmodels/diary_card_colors.dart';
-import '../../widgets/color_palette_families.dart';
-import '../../widgets/color_swatch_button.dart';
-import '../../widgets/expressive_button_group.dart';
-import '../../widgets/palette_color_picker.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../diaries/viewmodels/diary_card_colors.dart';
+import '../../../widgets/color_palette_families.dart';
+import '../../../widgets/color_swatch_button.dart';
+import '../../../widgets/expressive_button_group.dart';
+import '../../../widgets/palette_color_picker.dart';
 
 /// 自定义颜色对话框的结果：浅色值与可选的深色值（null 表示自动推导）。
-class DiaryCardCustomColor {
-  const DiaryCardCustomColor({required this.light, this.dark});
+class StyleCustomColor {
+  const StyleCustomColor({required this.light, this.dark});
 
   final int light;
   final int? dark;
@@ -20,16 +20,16 @@ class DiaryCardCustomColor {
 ///
 /// 深色默认“自动配色”：按 [DiaryCardColors.deriveDark] 由浅色值推导，关闭后
 /// 可单独指定。颜色来自调色板或 6 位 HEX 输入；取消返回 null。
-Future<DiaryCardCustomColor?> showDiaryCardColorDialog(
+Future<StyleCustomColor?> showStyleColorDialog(
   BuildContext context, {
   required String title,
   required int light,
   required int? dark,
   required DiaryCardColorRole role,
 }) {
-  return showDialog<DiaryCardCustomColor>(
+  return showDialog<StyleCustomColor>(
     context: context,
-    builder: (BuildContext context) => _DiaryCardColorDialog(
+    builder: (BuildContext context) => _StyleColorDialog(
       title: title,
       initialLight: light,
       initialDark: dark,
@@ -38,8 +38,8 @@ Future<DiaryCardCustomColor?> showDiaryCardColorDialog(
   );
 }
 
-class _DiaryCardColorDialog extends StatefulWidget {
-  const _DiaryCardColorDialog({
+class _StyleColorDialog extends StatefulWidget {
+  const _StyleColorDialog({
     required this.title,
     required this.initialLight,
     required this.initialDark,
@@ -52,10 +52,10 @@ class _DiaryCardColorDialog extends StatefulWidget {
   final DiaryCardColorRole role;
 
   @override
-  State<_DiaryCardColorDialog> createState() => _DiaryCardColorDialogState();
+  State<_StyleColorDialog> createState() => _StyleColorDialogState();
 }
 
-class _DiaryCardColorDialogState extends State<_DiaryCardColorDialog> {
+class _StyleColorDialogState extends State<_StyleColorDialog> {
   static final RegExp _hexPattern = RegExp(r'^#?[0-9a-fA-F]{6}$');
 
   late int _light = widget.initialLight;
@@ -164,8 +164,8 @@ class _DiaryCardColorDialogState extends State<_DiaryCardColorDialog> {
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 value: _darkAuto,
-                title: Text(l10n.diaryCardStyleColorDarkAuto),
-                subtitle: Text(l10n.diaryCardStyleColorDarkAutoSubtitle),
+                title: Text(l10n.styleEditorColorDarkAuto),
+                subtitle: Text(l10n.styleEditorColorDarkAutoSubtitle),
                 onChanged: (bool auto) {
                   setState(() {
                     _dark = auto ? null : _derivedDark;
@@ -225,11 +225,11 @@ class _DiaryCardColorDialogState extends State<_DiaryCardColorDialog> {
               TextField(
                 controller: _hexController,
                 decoration: InputDecoration(
-                  labelText: l10n.diaryCardStyleHexLabel,
+                  labelText: l10n.styleEditorHexLabel,
                   prefixText: '#',
                   // 长度上限只用来拦截粘贴的长文本，不显示计数。
                   counterText: '',
-                  errorText: _hexInvalid ? l10n.diaryCardStyleHexInvalid : null,
+                  errorText: _hexInvalid ? l10n.styleEditorHexInvalid : null,
                 ),
                 maxLength: 7,
                 inputFormatters: <TextInputFormatter>[
@@ -253,7 +253,7 @@ class _DiaryCardColorDialogState extends State<_DiaryCardColorDialog> {
           style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
           onPressed: () => Navigator.of(
             context,
-          ).pop(DiaryCardCustomColor(light: _light, dark: _dark)),
+          ).pop(StyleCustomColor(light: _light, dark: _dark)),
           child: Text(l10n.commonConfirm),
         ),
       ],

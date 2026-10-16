@@ -9,6 +9,7 @@ import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
 import 'diary_card_style_common.dart';
 import 'diary_card_style_labels.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “布局”标签页：圆角与对齐（共用），内边距、间距、边距与瀑布流列数
 /// （当前布局专属）。
@@ -42,7 +43,7 @@ class DiaryCardStyleLayoutTab extends StatelessWidget {
       );
     }
 
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.diaryCardStyleSharedGroup,

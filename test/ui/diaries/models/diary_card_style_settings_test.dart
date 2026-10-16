@@ -125,7 +125,7 @@ void main() {
       expect(code, startsWith('jotsy-card:v1:'));
       expect(code, isNot(contains('=')));
       final result = DiaryCardStyleCode.decode(code);
-      expect(result.status, DiaryCardStyleCodeStatus.ok);
+      expect(result.status, StyleCodeStatus.ok);
       expect(result.style, _rounded);
       expect(result.name, '圆角');
     });
@@ -133,34 +133,31 @@ void main() {
     test('finds a code embedded in surrounding text', () {
       final code = DiaryCardStyleCode.encode(_rounded);
       final result = DiaryCardStyleCode.decode('试试我的样式：\n$code\n好看吗？');
-      expect(result.status, DiaryCardStyleCodeStatus.ok);
+      expect(result.status, StyleCodeStatus.ok);
       expect(result.style, _rounded);
       expect(result.name, isNull);
     });
 
     test('rejects empty, foreign, corrupt and oversized input', () {
-      expect(
-        DiaryCardStyleCode.decode('  ').status,
-        DiaryCardStyleCodeStatus.empty,
-      );
+      expect(DiaryCardStyleCode.decode('  ').status, StyleCodeStatus.empty);
       expect(
         DiaryCardStyleCode.decode('hello').status,
-        DiaryCardStyleCodeStatus.invalid,
+        StyleCodeStatus.invalid,
       );
       expect(
         DiaryCardStyleCode.decode('jotsy-card:v1:!!!').status,
-        DiaryCardStyleCodeStatus.invalid,
+        StyleCodeStatus.invalid,
       );
       expect(
         DiaryCardStyleCode.decode('jotsy-card:v1:aGVsbG8').status,
-        DiaryCardStyleCodeStatus.invalid,
+        StyleCodeStatus.invalid,
       );
       final code = DiaryCardStyleCode.encode(_rounded);
       expect(
         DiaryCardStyleCode.decode(
           code + ' ' * DiaryCardStyleCode.maxLength,
         ).status,
-        DiaryCardStyleCodeStatus.invalid,
+        StyleCodeStatus.invalid,
       );
     });
 
@@ -178,7 +175,7 @@ void main() {
           )
           .replaceAll('=', '');
       final result = DiaryCardStyleCode.decode('jotsy-card:v9:$payload');
-      expect(result.status, DiaryCardStyleCodeStatus.newerVersion);
+      expect(result.status, StyleCodeStatus.newerVersion);
       expect(result.style, _rounded);
     });
   });

@@ -61,7 +61,7 @@ String diaryCardStyleDisplayName(
       return item.name;
     }
   }
-  return l10n.diaryCardStyleCustom;
+  return l10n.styleEditorCustom;
 }
 
 List<ExpressiveIconChoice<DiaryCardCoverPosition>>

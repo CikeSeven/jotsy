@@ -92,12 +92,12 @@ void main() {
       await controller.reset();
 
       final (result, previous) = await controller.importCode('看看 $code');
-      expect(result.status, DiaryCardStyleCodeStatus.ok);
+      expect(result.status, StyleCodeStatus.ok);
       expect(previous, DiaryCardStyle.defaults);
       expect(stored(), _rounded);
 
       final (invalid, untouched) = await controller.importCode('nope');
-      expect(invalid.status, DiaryCardStyleCodeStatus.invalid);
+      expect(invalid.status, StyleCodeStatus.invalid);
       expect(untouched, isNull);
       expect(stored(), _rounded);
     },

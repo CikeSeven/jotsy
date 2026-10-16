@@ -8,7 +8,7 @@ import '../../../widgets/expressive_choice_tile.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
 import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
-import 'diary_card_style_common.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “日期”标签页：眉线日期的显隐、格式（每项附当前时间的实时示例）、
 /// 星期/时刻与日期依据，以及底栏时间。两种布局共用。示例只有一行，
@@ -68,7 +68,7 @@ class DiaryCardStyleDateTab extends StatelessWidget {
       (DiaryCardFooterTime.hidden, l10n.diaryCardStyleFooterHidden),
     ];
 
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.diaryCardStyleBlockEyebrow,

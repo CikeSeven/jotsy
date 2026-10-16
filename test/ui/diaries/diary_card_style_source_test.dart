@@ -11,6 +11,8 @@ void main() {
       'lib/ui/diaries/models/diary_card_style',
       'lib/ui/diaries/widgets/diary_card',
       'lib/ui/settings/sections/diary_card_style',
+      'lib/ui/diaries/models/style_library',
+      'lib/ui/settings/widgets/style_editor',
     ])
       ...Directory(dir).listSync(recursive: true).whereType<File>(),
     for (final path in <String>[
@@ -24,7 +26,7 @@ void main() {
       'lib/ui/diaries/sections/diaries_list_section.dart',
       'lib/ui/settings/pages/diary_card_style_page.dart',
       'lib/ui/settings/controllers/diary_card_style_editor_controller.dart',
-      'lib/ui/settings/widgets/diary_card_color_dialog.dart',
+      'lib/ui/settings/controllers/style_editor_controller.dart',
       'lib/ui/settings/widgets/diary_card_color_tile.dart',
       'lib/ui/settings/widgets/settings_option_tiles.dart',
       'lib/ui/settings/sections/settings_diary_card_style_tile.dart',

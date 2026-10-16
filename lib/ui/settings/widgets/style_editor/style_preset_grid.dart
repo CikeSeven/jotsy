@@ -2,28 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/app_spacing.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../diaries/models/diary_card_style/diary_card_style_presets.dart';
 import '../../../widgets/expressive_state_blend.dart';
-import 'diary_card_style_labels.dart';
 
-/// 内置风格的两列网格；每行两格等高（IntrinsicHeight，只有四行，开销可忽略）。
-class DiaryCardPresetGrid extends StatelessWidget {
-  const DiaryCardPresetGrid({
+/// 一套内置预设在网格里的展示：图标、名称与一句说明。
+@immutable
+class StylePresetOption<T> {
+  const StylePresetOption({
+    required this.id,
+    required this.icon,
+    required this.name,
+    required this.description,
+  });
+
+  final T id;
+  final FaIconData icon;
+  final String name;
+  final String description;
+}
+
+/// 内置预设的两列网格；每行两格等高（IntrinsicHeight，只有几行，开销可
+/// 忽略）。选中格经 [ExpressiveStateBlend] 过渡到 `secondaryContainer`。
+class StylePresetGrid<T> extends StatelessWidget {
+  const StylePresetGrid({
     super.key,
+    required this.options,
     required this.selected,
     required this.onSelected,
   });
 
-  final DiaryCardPresetId? selected;
-  final ValueChanged<DiaryCardPresetId> onSelected;
+  final List<StylePresetOption<T>> options;
+  final T? selected;
+  final ValueChanged<T> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    const ids = DiaryCardPresetId.values;
     return Column(
       children: <Widget>[
-        for (var row = 0; row < ids.length; row += 2) ...<Widget>[
+        for (var row = 0; row < options.length; row += 2) ...<Widget>[
           if (row > 0) const SizedBox(height: AppSpacing.s),
           IntrinsicHeight(
             child: Row(
@@ -32,11 +47,11 @@ class DiaryCardPresetGrid extends StatelessWidget {
                 for (var col = 0; col < 2; col++) ...<Widget>[
                   if (col > 0) const SizedBox(width: AppSpacing.s),
                   Expanded(
-                    child: row + col < ids.length
-                        ? _PresetTile(
-                            id: ids[row + col],
-                            selected: selected == ids[row + col],
-                            onTap: () => onSelected(ids[row + col]),
+                    child: row + col < options.length
+                        ? _PresetTile<T>(
+                            option: options[row + col],
+                            selected: selected == options[row + col].id,
+                            onTap: () => onSelected(options[row + col].id),
                           )
                         : const SizedBox.shrink(),
                   ),
@@ -50,20 +65,19 @@ class DiaryCardPresetGrid extends StatelessWidget {
   }
 }
 
-class _PresetTile extends StatelessWidget {
+class _PresetTile<T> extends StatelessWidget {
   const _PresetTile({
-    required this.id,
+    required this.option,
     required this.selected,
     required this.onTap,
   });
 
-  final DiaryCardPresetId id;
+  final StylePresetOption<T> option;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Semantics(
@@ -96,11 +110,7 @@ class _PresetTile extends StatelessWidget {
                   children: <Widget>[
                     Row(
                       children: <Widget>[
-                        FaIcon(
-                          diaryCardPresetIcon(id),
-                          size: 16,
-                          color: foreground,
-                        ),
+                        FaIcon(option.icon, size: 16, color: foreground),
                         const Spacer(),
                         if (selected)
                           FaIcon(
@@ -112,7 +122,7 @@ class _PresetTile extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.s),
                     Text(
-                      diaryCardPresetName(l10n, id),
+                      option.name,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: scheme.onSurface,
@@ -120,7 +130,7 @@ class _PresetTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      diaryCardPresetDescription(l10n, id),
+                      option.description,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: foreground,
                         height: 1.3,

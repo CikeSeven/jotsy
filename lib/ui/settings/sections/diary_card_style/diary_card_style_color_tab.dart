@@ -8,8 +8,8 @@ import '../../controllers/diary_card_style_editor_controller.dart';
 import '../../widgets/diary_card_color_tile.dart';
 import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
-import 'diary_card_style_common.dart';
 import 'diary_card_style_labels.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “色彩”标签页：卡片底色（来源与浓度）、两色渐变与卡片不透明度。两种
 /// 布局共用；文字颜色在“字体”页，描边、色条与阴影在“质感”页。
@@ -27,7 +27,7 @@ class DiaryCardStyleColorTab extends StatelessWidget {
     DiaryCardStyle withSurface(DiaryCardSurfaceStyle next) =>
         style.copyWith(surface: next);
 
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.diaryCardStyleSharedGroup,

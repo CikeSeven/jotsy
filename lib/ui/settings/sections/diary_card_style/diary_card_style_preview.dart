@@ -185,8 +185,8 @@ class DiaryCardStylePreviewToolbar extends StatelessWidget {
           const SizedBox(width: 8),
           IconButton.filledTonal(
             tooltip: isLight
-                ? l10n.diaryCardStylePreviewDark
-                : l10n.diaryCardStylePreviewLight,
+                ? l10n.styleEditorPreviewDark
+                : l10n.styleEditorPreviewLight,
             onPressed: () => controller.previewBrightness = isLight
                 ? Brightness.dark
                 : Brightness.light,

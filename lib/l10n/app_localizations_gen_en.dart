@@ -3129,28 +3129,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryCardStyleCustom => 'Custom';
+  String get styleEditorCustom => 'Custom';
 
   @override
-  String get diaryCardStyleResetDone => 'Restored the default style';
+  String get styleEditorResetDone => 'Restored the default style';
 
   @override
-  String get diaryCardStylePreviewLight => 'Light preview';
+  String get styleEditorPreviewLight => 'Light preview';
 
   @override
-  String get diaryCardStylePreviewDark => 'Dark preview';
+  String get styleEditorPreviewDark => 'Dark preview';
 
   @override
-  String get diaryCardStylePanelHandle => 'Options panel';
+  String get styleEditorPanelHandle => 'Options panel';
 
   @override
-  String get diaryCardStylePanelCollapsed => 'Collapsed';
+  String get styleEditorPanelCollapsed => 'Collapsed';
 
   @override
-  String get diaryCardStylePanelHalf => 'Half open';
+  String get styleEditorPanelHalf => 'Half open';
 
   @override
-  String get diaryCardStylePanelExpanded => 'Expanded';
+  String get styleEditorPanelExpanded => 'Expanded';
 
   @override
   String get diaryCardStyleSharedGroup => 'All layouts';
@@ -3193,7 +3193,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleTabTexture => 'Finish';
 
   @override
-  String get diaryCardStylePresetsTitle => 'Built-in styles';
+  String get styleEditorPresetsTitle => 'Built-in styles';
 
   @override
   String get diaryCardStylePresetClassic => 'Classic';
@@ -3252,93 +3252,92 @@ class AppLocalizationsEn extends AppLocalizations {
       'Card colors follow the mood of each entry';
 
   @override
-  String diaryCardStyleApplied(String name) {
+  String styleEditorApplied(String name) {
     return 'Applied “$name”';
   }
 
   @override
-  String get diaryCardStyleSavedTitle => 'My styles';
+  String get styleEditorSavedTitle => 'My styles';
 
   @override
-  String get diaryCardStyleSavedEmpty =>
+  String get styleEditorSavedEmpty =>
       'Save a style you like to switch back in one tap';
 
   @override
-  String get diaryCardStyleSaveCurrent => 'Save current style';
+  String get styleEditorSaveCurrent => 'Save current style';
 
   @override
-  String diaryCardStyleSaveLimit(int count) {
+  String styleEditorSaveLimit(int count) {
     return 'You can save up to $count styles';
   }
 
   @override
-  String get diaryCardStyleSaveDialogTitle => 'Save style';
+  String get styleEditorSaveDialogTitle => 'Save style';
 
   @override
-  String get diaryCardStyleRenameDialogTitle => 'Rename style';
+  String get styleEditorRenameDialogTitle => 'Rename style';
 
   @override
-  String get diaryCardStyleNameLabel => 'Style name';
+  String get styleEditorNameLabel => 'Style name';
 
   @override
-  String diaryCardStyleDefaultName(int count) {
+  String styleEditorDefaultName(int count) {
     return 'My style $count';
   }
 
   @override
-  String get diaryCardStyleRename => 'Rename';
+  String get styleEditorRename => 'Rename';
 
   @override
-  String diaryCardStyleSavedDone(String name) {
+  String styleEditorSavedDone(String name) {
     return 'Saved “$name”';
   }
 
   @override
-  String diaryCardStyleDeletedDone(String name) {
+  String styleEditorDeletedDone(String name) {
     return 'Deleted “$name”';
   }
 
   @override
-  String diaryCardStyleSavedActions(String name) {
+  String styleEditorSavedActions(String name) {
     return 'More actions for “$name”';
   }
 
   @override
-  String get diaryCardStyleShareTitle => 'Share and import';
+  String get styleEditorShareTitle => 'Share and import';
 
   @override
-  String get diaryCardStyleCopyCode => 'Copy style code';
+  String get styleEditorCopyCode => 'Copy style code';
 
   @override
-  String get diaryCardStyleCopyCodeSubtitle =>
+  String get styleEditorCopyCodeSubtitle =>
       'Send it to a friend or keep it as a backup';
 
   @override
-  String get diaryCardStyleImportCode => 'Import from clipboard';
+  String get styleEditorImportCode => 'Import from clipboard';
 
   @override
-  String get diaryCardStyleImportCodeSubtitle =>
+  String get styleEditorImportCodeSubtitle =>
       'Apply a style code someone shared';
 
   @override
-  String get diaryCardStyleCodeCopied => 'Style code copied';
+  String get styleEditorCodeCopied => 'Style code copied';
 
   @override
-  String get diaryCardStyleImportEmpty => 'The clipboard is empty';
+  String get styleEditorImportEmpty => 'The clipboard is empty';
 
   @override
-  String get diaryCardStyleImportInvalid =>
-      'No valid style code in the clipboard';
+  String get styleEditorImportInvalid => 'No valid style code in the clipboard';
 
   @override
-  String get diaryCardStyleImportNewer =>
+  String get styleEditorImportNewer =>
       'Imported. Some settings from a newer version may not apply';
 
   @override
-  String get diaryCardStyleImported => 'Style imported';
+  String get styleEditorImported => 'Style imported';
 
   @override
-  String diaryCardStyleImportedNamed(String name) {
+  String styleEditorImportedNamed(String name) {
     return 'Imported “$name”';
   }
 
@@ -3800,20 +3799,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryCardStyleStrength => 'Intensity';
 
   @override
-  String get diaryCardStyleEditColor => 'Edit color';
+  String get styleEditorEditColor => 'Edit color';
 
   @override
-  String get diaryCardStyleColorDarkAuto => 'Pick the dark color automatically';
+  String get styleEditorColorDarkAuto => 'Pick the dark color automatically';
 
   @override
-  String get diaryCardStyleColorDarkAutoSubtitle =>
+  String get styleEditorColorDarkAutoSubtitle =>
       'Derive a readable dark-mode color from the light one';
 
   @override
-  String get diaryCardStyleHexLabel => 'Hex color';
+  String get styleEditorHexLabel => 'Hex color';
 
   @override
-  String get diaryCardStyleHexInvalid =>
+  String get styleEditorHexInvalid =>
       'Enter a 6-digit hex color, such as FFB300';
 
   @override

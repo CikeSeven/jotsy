@@ -13,7 +13,6 @@ import '../../widgets/app_top_bar.dart';
 import '../../widgets/snap_panel.dart';
 import '../controllers/diary_card_style_editor_controller.dart';
 import '../sections/diary_card_style/diary_card_style_color_tab.dart';
-import '../sections/diary_card_style/diary_card_style_common.dart';
 import '../sections/diary_card_style/diary_card_style_content_tab.dart';
 import '../sections/diary_card_style/diary_card_style_cover_tab.dart';
 import '../sections/diary_card_style/diary_card_style_date_tab.dart';
@@ -24,6 +23,7 @@ import '../sections/diary_card_style/diary_card_style_preview.dart';
 import '../sections/diary_card_style/diary_card_style_samples.dart';
 import '../sections/diary_card_style/diary_card_style_text_tab.dart';
 import '../sections/diary_card_style/diary_card_style_texture_tab.dart';
+import '../widgets/style_editor/style_editor_common.dart';
 
 /// 设置 → 外观与语言 → 日记卡片样式。
 ///
@@ -96,13 +96,13 @@ class _DiaryCardStylePageState extends State<DiaryCardStylePage>
   }
 
   Future<void> _reset() async {
-    final message = context.l10n.diaryCardStyleResetDone;
+    final message = context.l10n.styleEditorResetDone;
     final previous = await _controller.reset();
     if (!mounted) {
       return;
     }
     unawaited(
-      showDiaryCardStyleUndoSnackBar(
+      showStyleEditorUndoSnackBar(
         context,
         message: message,
         onUndo: () => _controller.applyStyle(previous),
@@ -139,9 +139,9 @@ class _DiaryCardStylePageState extends State<DiaryCardStylePage>
 
   String _panelStopLabel(AppLocalizations l10n, SnapPanelStop stop) {
     return switch (stop) {
-      SnapPanelStop.collapsed => l10n.diaryCardStylePanelCollapsed,
-      SnapPanelStop.half => l10n.diaryCardStylePanelHalf,
-      SnapPanelStop.expanded => l10n.diaryCardStylePanelExpanded,
+      SnapPanelStop.collapsed => l10n.styleEditorPanelCollapsed,
+      SnapPanelStop.half => l10n.styleEditorPanelHalf,
+      SnapPanelStop.expanded => l10n.styleEditorPanelExpanded,
     };
   }
 
@@ -252,7 +252,7 @@ class _DiaryCardStylePageState extends State<DiaryCardStylePage>
                             ),
                         ],
                       ),
-                      handleLabel: l10n.diaryCardStylePanelHandle,
+                      handleLabel: l10n.styleEditorPanelHandle,
                       stopLabel: (SnapPanelStop stop) =>
                           _panelStopLabel(l10n, stop),
                     ),

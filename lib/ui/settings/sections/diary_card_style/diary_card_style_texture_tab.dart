@@ -9,8 +9,8 @@ import '../../controllers/diary_card_style_editor_controller.dart';
 import '../../widgets/diary_card_color_tile.dart';
 import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
-import 'diary_card_style_common.dart';
 import 'diary_card_style_labels.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “质感”标签页：描边、强调色条与阴影。两种布局共用；只在对应样式开启时
 /// 列出它的细项（色条宽度与颜色、自定义阴影高度与颜色）。
@@ -50,7 +50,7 @@ class DiaryCardStyleTextureTab extends StatelessWidget {
     final shadowColored =
         surface.shadow != DiaryCardShadowStyle.themed &&
         surface.shadow != DiaryCardShadowStyle.none;
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.diaryCardStyleSharedGroup,

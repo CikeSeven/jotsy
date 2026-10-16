@@ -9,6 +9,7 @@ import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
 import '../settings_diary_card_section.dart';
 import 'diary_card_style_common.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “内容”标签页：标题/摘要显隐与行数、“无标题”占位、标签（数量沿用独立的
 /// 旧设置）、置顶标记、心情天气与底栏附加信息。“无标题”占位只在显示标题时
@@ -51,7 +52,7 @@ class DiaryCardStyleContentTab extends StatelessWidget {
       );
     }
 
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         SettingsCardGroup(
           title: l10n.diaryCardStyleSharedGroup,

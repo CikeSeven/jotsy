@@ -9,6 +9,7 @@ import '../../widgets/settings_card_group.dart';
 import '../../widgets/settings_option_tiles.dart';
 import 'diary_card_style_common.dart';
 import 'diary_card_style_labels.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “封面”标签页：封面位置与该位置下的尺寸、形状、圆角等（当前布局专属），
 /// 以及多图拼贴与无封面占位（共用）。只列出当前位置用得上的选项。
@@ -142,7 +143,7 @@ class DiaryCardStyleCoverTab extends StatelessWidget {
       ],
     ];
 
-    return DiaryCardStyleTabList(
+    return StyleEditorTabList(
       children: <Widget>[
         diaryCardModeGroup(
           context,

@@ -2807,28 +2807,28 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryCardStyleCustom => '自定义';
+  String get styleEditorCustom => '自定义';
 
   @override
-  String get diaryCardStyleResetDone => '已恢复默认样式';
+  String get styleEditorResetDone => '已恢复默认样式';
 
   @override
-  String get diaryCardStylePreviewLight => '浅色预览';
+  String get styleEditorPreviewLight => '浅色预览';
 
   @override
-  String get diaryCardStylePreviewDark => '深色预览';
+  String get styleEditorPreviewDark => '深色预览';
 
   @override
-  String get diaryCardStylePanelHandle => '选项面板';
+  String get styleEditorPanelHandle => '选项面板';
 
   @override
-  String get diaryCardStylePanelCollapsed => '已收起';
+  String get styleEditorPanelCollapsed => '已收起';
 
   @override
-  String get diaryCardStylePanelHalf => '半展开';
+  String get styleEditorPanelHalf => '半展开';
 
   @override
-  String get diaryCardStylePanelExpanded => '已展开';
+  String get styleEditorPanelExpanded => '已展开';
 
   @override
   String get diaryCardStyleSharedGroup => '所有布局';
@@ -2870,7 +2870,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStyleTabTexture => '质感';
 
   @override
-  String get diaryCardStylePresetsTitle => '内置风格';
+  String get styleEditorPresetsTitle => '内置风格';
 
   @override
   String get diaryCardStylePresetClassic => '经典';
@@ -2921,88 +2921,88 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStylePresetMoodDesc => '卡片底色与描边随当天心情变化';
 
   @override
-  String diaryCardStyleApplied(String name) {
+  String styleEditorApplied(String name) {
     return '已套用「$name」';
   }
 
   @override
-  String get diaryCardStyleSavedTitle => '我的样式';
+  String get styleEditorSavedTitle => '我的样式';
 
   @override
-  String get diaryCardStyleSavedEmpty => '把调好的样式保存下来，随时一键切换';
+  String get styleEditorSavedEmpty => '把调好的样式保存下来，随时一键切换';
 
   @override
-  String get diaryCardStyleSaveCurrent => '保存当前样式';
+  String get styleEditorSaveCurrent => '保存当前样式';
 
   @override
-  String diaryCardStyleSaveLimit(int count) {
+  String styleEditorSaveLimit(int count) {
     return '最多保存 $count 个样式';
   }
 
   @override
-  String get diaryCardStyleSaveDialogTitle => '保存样式';
+  String get styleEditorSaveDialogTitle => '保存样式';
 
   @override
-  String get diaryCardStyleRenameDialogTitle => '重命名样式';
+  String get styleEditorRenameDialogTitle => '重命名样式';
 
   @override
-  String get diaryCardStyleNameLabel => '样式名称';
+  String get styleEditorNameLabel => '样式名称';
 
   @override
-  String diaryCardStyleDefaultName(int count) {
+  String styleEditorDefaultName(int count) {
     return '我的样式 $count';
   }
 
   @override
-  String get diaryCardStyleRename => '重命名';
+  String get styleEditorRename => '重命名';
 
   @override
-  String diaryCardStyleSavedDone(String name) {
+  String styleEditorSavedDone(String name) {
     return '已保存「$name」';
   }
 
   @override
-  String diaryCardStyleDeletedDone(String name) {
+  String styleEditorDeletedDone(String name) {
     return '已删除「$name」';
   }
 
   @override
-  String diaryCardStyleSavedActions(String name) {
+  String styleEditorSavedActions(String name) {
     return '「$name」的更多操作';
   }
 
   @override
-  String get diaryCardStyleShareTitle => '分享与导入';
+  String get styleEditorShareTitle => '分享与导入';
 
   @override
-  String get diaryCardStyleCopyCode => '复制样式码';
+  String get styleEditorCopyCode => '复制样式码';
 
   @override
-  String get diaryCardStyleCopyCodeSubtitle => '发给朋友，或留作这套样式的备份';
+  String get styleEditorCopyCodeSubtitle => '发给朋友，或留作这套样式的备份';
 
   @override
-  String get diaryCardStyleImportCode => '从剪贴板导入';
+  String get styleEditorImportCode => '从剪贴板导入';
 
   @override
-  String get diaryCardStyleImportCodeSubtitle => '套用别人分享的样式码';
+  String get styleEditorImportCodeSubtitle => '套用别人分享的样式码';
 
   @override
-  String get diaryCardStyleCodeCopied => '样式码已复制';
+  String get styleEditorCodeCopied => '样式码已复制';
 
   @override
-  String get diaryCardStyleImportEmpty => '剪贴板是空的';
+  String get styleEditorImportEmpty => '剪贴板是空的';
 
   @override
-  String get diaryCardStyleImportInvalid => '剪贴板里没有可用的样式码';
+  String get styleEditorImportInvalid => '剪贴板里没有可用的样式码';
 
   @override
-  String get diaryCardStyleImportNewer => '已导入，部分来自新版本的设置可能未生效';
+  String get styleEditorImportNewer => '已导入，部分来自新版本的设置可能未生效';
 
   @override
-  String get diaryCardStyleImported => '已导入样式';
+  String get styleEditorImported => '已导入样式';
 
   @override
-  String diaryCardStyleImportedNamed(String name) {
+  String styleEditorImportedNamed(String name) {
     return '已导入「$name」';
   }
 
@@ -3445,19 +3445,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryCardStyleStrength => '浓度';
 
   @override
-  String get diaryCardStyleEditColor => '编辑颜色';
+  String get styleEditorEditColor => '编辑颜色';
 
   @override
-  String get diaryCardStyleColorDarkAuto => '深色模式自动配色';
+  String get styleEditorColorDarkAuto => '深色模式自动配色';
 
   @override
-  String get diaryCardStyleColorDarkAutoSubtitle => '按浅色值推导出暗色下易读的颜色';
+  String get styleEditorColorDarkAutoSubtitle => '按浅色值推导出暗色下易读的颜色';
 
   @override
-  String get diaryCardStyleHexLabel => 'HEX 颜色';
+  String get styleEditorHexLabel => 'HEX 颜色';
 
   @override
-  String get diaryCardStyleHexInvalid => '请输入 6 位十六进制颜色，如 FFB300';
+  String get styleEditorHexInvalid => '请输入 6 位十六进制颜色，如 FFB300';
 
   @override
   String get diaryCardStyleSheetSection => '卡片样式';

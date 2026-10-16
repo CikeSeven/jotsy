@@ -4046,36 +4046,36 @@
       }
     }
   },
-  "diaryCardStyleCustom": "自定义",
-  "@diaryCardStyleCustom": {
+  "styleEditorCustom": "自定义",
+  "@styleEditorCustom": {
     "description": "当前卡片样式不是任何预设或已保存样式时的名称。"
   },
-  "diaryCardStyleResetDone": "已恢复默认样式",
-  "@diaryCardStyleResetDone": {
+  "styleEditorResetDone": "已恢复默认样式",
+  "@styleEditorResetDone": {
     "description": "日记卡片样式设置页：点“重置”后的提示（可撤销）。"
   },
-  "diaryCardStylePreviewLight": "浅色预览",
-  "@diaryCardStylePreviewLight": {
+  "styleEditorPreviewLight": "浅色预览",
+  "@styleEditorPreviewLight": {
     "description": "日记卡片样式设置页：预览切换为浅色主题的按钮提示。"
   },
-  "diaryCardStylePreviewDark": "深色预览",
-  "@diaryCardStylePreviewDark": {
+  "styleEditorPreviewDark": "深色预览",
+  "@styleEditorPreviewDark": {
     "description": "日记卡片样式设置页：预览切换为深色主题的按钮提示。"
   },
-  "diaryCardStylePanelHandle": "选项面板",
-  "@diaryCardStylePanelHandle": {
+  "styleEditorPanelHandle": "选项面板",
+  "@styleEditorPanelHandle": {
     "description": "日记卡片样式设置页：选项面板拖动条的读屏名称（拖动或点按可调整面板高度）。"
   },
-  "diaryCardStylePanelCollapsed": "已收起",
-  "@diaryCardStylePanelCollapsed": {
+  "styleEditorPanelCollapsed": "已收起",
+  "@styleEditorPanelCollapsed": {
     "description": "日记卡片样式设置页：选项面板收到底部、只露出标签栏时的读屏状态。"
   },
-  "diaryCardStylePanelHalf": "半展开",
-  "@diaryCardStylePanelHalf": {
+  "styleEditorPanelHalf": "半展开",
+  "@styleEditorPanelHalf": {
     "description": "日记卡片样式设置页：选项面板停在中间、与预览各占一部分时的读屏状态。"
   },
-  "diaryCardStylePanelExpanded": "已展开",
-  "@diaryCardStylePanelExpanded": {
+  "styleEditorPanelExpanded": "已展开",
+  "@styleEditorPanelExpanded": {
     "description": "日记卡片样式设置页：选项面板展开到顶部、盖住预览时的读屏状态。"
   },
   "diaryCardStyleSharedGroup": "所有布局",
@@ -4130,8 +4130,8 @@
   "@diaryCardStyleTabTexture": {
     "description": "日记卡片样式设置页：标签页“质感”。"
   },
-  "diaryCardStylePresetsTitle": "内置风格",
-  "@diaryCardStylePresetsTitle": {
+  "styleEditorPresetsTitle": "内置风格",
+  "@styleEditorPresetsTitle": {
     "description": "日记卡片样式设置页：内置预设分组标题。"
   },
   "diaryCardStylePresetClassic": "经典",
@@ -4198,8 +4198,8 @@
   "@diaryCardStylePresetMoodDesc": {
     "description": "日记卡片样式设置页：内置预设“心情色”的一句话说明。"
   },
-  "diaryCardStyleApplied": "已套用「{name}」",
-  "@diaryCardStyleApplied": {
+  "styleEditorApplied": "已套用「{name}」",
+  "@styleEditorApplied": {
     "description": "日记卡片样式设置页：套用预设或我的样式后的提示（可撤销）。",
     "placeholders": {
       "name": {
@@ -4207,20 +4207,20 @@
       }
     }
   },
-  "diaryCardStyleSavedTitle": "我的样式",
-  "@diaryCardStyleSavedTitle": {
+  "styleEditorSavedTitle": "我的样式",
+  "@styleEditorSavedTitle": {
     "description": "日记卡片样式设置页：用户保存的样式分组标题。"
   },
-  "diaryCardStyleSavedEmpty": "把调好的样式保存下来，随时一键切换",
-  "@diaryCardStyleSavedEmpty": {
+  "styleEditorSavedEmpty": "把调好的样式保存下来，随时一键切换",
+  "@styleEditorSavedEmpty": {
     "description": "日记卡片样式设置页：还没有保存样式时的提示。"
   },
-  "diaryCardStyleSaveCurrent": "保存当前样式",
-  "@diaryCardStyleSaveCurrent": {
+  "styleEditorSaveCurrent": "保存当前样式",
+  "@styleEditorSaveCurrent": {
     "description": "日记卡片样式设置页：把当前样式保存为我的样式的按钮。"
   },
-  "diaryCardStyleSaveLimit": "最多保存 {count} 个样式",
-  "@diaryCardStyleSaveLimit": {
+  "styleEditorSaveLimit": "最多保存 {count} 个样式",
+  "@styleEditorSaveLimit": {
     "description": "日记卡片样式设置页：我的样式已达上限时的说明。",
     "placeholders": {
       "count": {
@@ -4228,20 +4228,20 @@
       }
     }
   },
-  "diaryCardStyleSaveDialogTitle": "保存样式",
-  "@diaryCardStyleSaveDialogTitle": {
+  "styleEditorSaveDialogTitle": "保存样式",
+  "@styleEditorSaveDialogTitle": {
     "description": "日记卡片样式设置页：保存样式对话框的标题。"
   },
-  "diaryCardStyleRenameDialogTitle": "重命名样式",
-  "@diaryCardStyleRenameDialogTitle": {
+  "styleEditorRenameDialogTitle": "重命名样式",
+  "@styleEditorRenameDialogTitle": {
     "description": "日记卡片样式设置页：重命名样式对话框的标题。"
   },
-  "diaryCardStyleNameLabel": "样式名称",
-  "@diaryCardStyleNameLabel": {
+  "styleEditorNameLabel": "样式名称",
+  "@styleEditorNameLabel": {
     "description": "日记卡片样式设置页：样式名称输入框的标签。"
   },
-  "diaryCardStyleDefaultName": "我的样式 {count}",
-  "@diaryCardStyleDefaultName": {
+  "styleEditorDefaultName": "我的样式 {count}",
+  "@styleEditorDefaultName": {
     "description": "日记卡片样式设置页：保存样式时预填的名称，count 为序号。",
     "placeholders": {
       "count": {
@@ -4249,12 +4249,12 @@
       }
     }
   },
-  "diaryCardStyleRename": "重命名",
-  "@diaryCardStyleRename": {
+  "styleEditorRename": "重命名",
+  "@styleEditorRename": {
     "description": "日记卡片样式设置页：我的样式菜单中的重命名。"
   },
-  "diaryCardStyleSavedDone": "已保存「{name}」",
-  "@diaryCardStyleSavedDone": {
+  "styleEditorSavedDone": "已保存「{name}」",
+  "@styleEditorSavedDone": {
     "description": "日记卡片样式设置页：保存样式后的提示。",
     "placeholders": {
       "name": {
@@ -4262,8 +4262,8 @@
       }
     }
   },
-  "diaryCardStyleDeletedDone": "已删除「{name}」",
-  "@diaryCardStyleDeletedDone": {
+  "styleEditorDeletedDone": "已删除「{name}」",
+  "@styleEditorDeletedDone": {
     "description": "日记卡片样式设置页：删除我的样式后的提示（可撤销）。",
     "placeholders": {
       "name": {
@@ -4271,8 +4271,8 @@
       }
     }
   },
-  "diaryCardStyleSavedActions": "「{name}」的更多操作",
-  "@diaryCardStyleSavedActions": {
+  "styleEditorSavedActions": "「{name}」的更多操作",
+  "@styleEditorSavedActions": {
     "description": "日记卡片样式设置页：我的样式条目菜单按钮的提示。",
     "placeholders": {
       "name": {
@@ -4280,48 +4280,48 @@
       }
     }
   },
-  "diaryCardStyleShareTitle": "分享与导入",
-  "@diaryCardStyleShareTitle": {
+  "styleEditorShareTitle": "分享与导入",
+  "@styleEditorShareTitle": {
     "description": "日记卡片样式设置页：样式码分享与导入分组标题。"
   },
-  "diaryCardStyleCopyCode": "复制样式码",
-  "@diaryCardStyleCopyCode": {
+  "styleEditorCopyCode": "复制样式码",
+  "@styleEditorCopyCode": {
     "description": "日记卡片样式设置页：把当前样式复制为样式码。"
   },
-  "diaryCardStyleCopyCodeSubtitle": "发给朋友，或留作这套样式的备份",
-  "@diaryCardStyleCopyCodeSubtitle": {
+  "styleEditorCopyCodeSubtitle": "发给朋友，或留作这套样式的备份",
+  "@styleEditorCopyCodeSubtitle": {
     "description": "日记卡片样式设置页：复制样式码的说明。"
   },
-  "diaryCardStyleImportCode": "从剪贴板导入",
-  "@diaryCardStyleImportCode": {
+  "styleEditorImportCode": "从剪贴板导入",
+  "@styleEditorImportCode": {
     "description": "日记卡片样式设置页：从剪贴板导入样式码。"
   },
-  "diaryCardStyleImportCodeSubtitle": "套用别人分享的样式码",
-  "@diaryCardStyleImportCodeSubtitle": {
+  "styleEditorImportCodeSubtitle": "套用别人分享的样式码",
+  "@styleEditorImportCodeSubtitle": {
     "description": "日记卡片样式设置页：导入样式码的说明。"
   },
-  "diaryCardStyleCodeCopied": "样式码已复制",
-  "@diaryCardStyleCodeCopied": {
+  "styleEditorCodeCopied": "样式码已复制",
+  "@styleEditorCodeCopied": {
     "description": "日记卡片样式设置页：复制样式码后的提示。"
   },
-  "diaryCardStyleImportEmpty": "剪贴板是空的",
-  "@diaryCardStyleImportEmpty": {
+  "styleEditorImportEmpty": "剪贴板是空的",
+  "@styleEditorImportEmpty": {
     "description": "日记卡片样式设置页：导入时剪贴板没有内容的提示。"
   },
-  "diaryCardStyleImportInvalid": "剪贴板里没有可用的样式码",
-  "@diaryCardStyleImportInvalid": {
+  "styleEditorImportInvalid": "剪贴板里没有可用的样式码",
+  "@styleEditorImportInvalid": {
     "description": "日记卡片样式设置页：导入时剪贴板里没有有效样式码的提示。"
   },
-  "diaryCardStyleImportNewer": "已导入，部分来自新版本的设置可能未生效",
-  "@diaryCardStyleImportNewer": {
+  "styleEditorImportNewer": "已导入，部分来自新版本的设置可能未生效",
+  "@styleEditorImportNewer": {
     "description": "日记卡片样式设置页：导入新版本应用导出的样式码后的提示（可撤销）。"
   },
-  "diaryCardStyleImported": "已导入样式",
-  "@diaryCardStyleImported": {
+  "styleEditorImported": "已导入样式",
+  "@styleEditorImported": {
     "description": "日记卡片样式设置页：导入样式码后的提示（可撤销）。"
   },
-  "diaryCardStyleImportedNamed": "已导入「{name}」",
-  "@diaryCardStyleImportedNamed": {
+  "styleEditorImportedNamed": "已导入「{name}」",
+  "@styleEditorImportedNamed": {
     "description": "日记卡片样式设置页：导入带名称的样式码后的提示（可撤销）。",
     "placeholders": {
       "name": {
@@ -4920,24 +4920,24 @@
   "@diaryCardStyleStrength": {
     "description": "日记卡片样式设置页：颜色浓度（不透明度）。"
   },
-  "diaryCardStyleEditColor": "编辑颜色",
-  "@diaryCardStyleEditColor": {
+  "styleEditorEditColor": "编辑颜色",
+  "@styleEditorEditColor": {
     "description": "日记卡片样式设置页：重新选择自定义颜色。"
   },
-  "diaryCardStyleColorDarkAuto": "深色模式自动配色",
-  "@diaryCardStyleColorDarkAuto": {
+  "styleEditorColorDarkAuto": "深色模式自动配色",
+  "@styleEditorColorDarkAuto": {
     "description": "日记卡片样式设置页：取色对话框：深色模式下的颜色自动推导。"
   },
-  "diaryCardStyleColorDarkAutoSubtitle": "按浅色值推导出暗色下易读的颜色",
-  "@diaryCardStyleColorDarkAutoSubtitle": {
+  "styleEditorColorDarkAutoSubtitle": "按浅色值推导出暗色下易读的颜色",
+  "@styleEditorColorDarkAutoSubtitle": {
     "description": "日记卡片样式设置页：深色模式自动配色的说明。"
   },
-  "diaryCardStyleHexLabel": "HEX 颜色",
-  "@diaryCardStyleHexLabel": {
+  "styleEditorHexLabel": "HEX 颜色",
+  "@styleEditorHexLabel": {
     "description": "日记卡片样式设置页：十六进制颜色输入框的标签。"
   },
-  "diaryCardStyleHexInvalid": "请输入 6 位十六进制颜色，如 FFB300",
-  "@diaryCardStyleHexInvalid": {
+  "styleEditorHexInvalid": "请输入 6 位十六进制颜色，如 FFB300",
+  "@styleEditorHexInvalid": {
     "description": "日记卡片样式设置页：十六进制颜色输入有误的提示。"
   },
   "diaryCardStyleSheetSection": "卡片样式",

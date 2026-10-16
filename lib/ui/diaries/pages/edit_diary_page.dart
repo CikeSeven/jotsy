@@ -27,7 +27,6 @@ import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
-import 'package:node_diary/ui/diaries/viewmodels/publish_panel_labels.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
@@ -278,36 +277,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     ),
   );
 
-  /// 编辑模式底部元数据面板（与发布页同一组件）；草稿变化经 [_onMetaChanged]
-  /// 自动保存，这里只做装配。
-  Widget _buildMetaPanel(
-    BuildContext context, {
-    required List<Tag> tags,
-    required bool tagsLoading,
-    required String? tagsError,
-    required List<String> moodOptions,
-  }) {
-    final draft = _meta.value;
+  /// 编辑模式底部元数据面板（与发布页同一组件）；区块直接写共享草稿，
+  /// 变化经 [_onMetaChanged] 自动保存，这里只做装配。
+  Widget _buildMetaPanel() {
     return PublishDiaryPanel(
       controller: _editPanelController,
-      saving: _saving,
-      hasCover: draft.cover != null,
-      coverLabel: diaryCoverLabel(draft.cover),
-      locating: _metaActions.locating.value,
-      weatherLoading: _metaActions.weatherLoading.value,
-      locationController: _meta.locationText,
-      locationPrecision: draft.locationPrecision,
-      locationAddressComponent: draft.autoAddressComponent,
-      onLocationPrecisionChanged: _metaActions.changePrecision,
-      weatherController: _meta.weatherText,
-      weatherIconCode: draft.weatherIconCode,
-      moodEmoji: draft.moodEmoji,
-      moodOptions: moodOptions,
-      energyLevel: draft.energyLevel,
-      tags: tags,
-      tagsLoading: tagsLoading,
-      tagsError: tagsError,
-      selectedTagIds: draft.tagIds,
+      draft: _meta,
+      actions: _metaActions,
+      busy: _saving,
+      publishTime: PublishTimeOption(
+        label: _controller.publishTimeLabelForEdit,
+        onPick: _controller.pickPublishAtForEdit,
+      ),
       onProgressChanged: (progress) {
         if (!mounted) {
           return;
@@ -325,20 +306,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         }
         setState(() {});
       },
-      onPickCover: () => _metaActions.pickCover(context),
-      onClearCover: draft.cover == null ? null : _metaActions.clearCover,
-      onCreateTag: () => _metaActions.createTag(context),
-      onResolveLocation: () => _metaActions.resolveLocation(context),
-      onResolveWeather: () => _metaActions.resolveWeather(context),
-      // 输入框文本经 DiaryMetaDraftController 的监听同步进草稿。
-      onLocationChanged: (_) {},
-      onWeatherChanged: (_) {},
-      showPublishTimeOption: true,
-      publishTimeLabel: _controller.publishTimeLabelForEdit,
-      onPickPublishTime: _controller.pickPublishAtForEdit,
-      onToggleTag: _meta.setTagSelected,
-      onMoodChanged: _meta.setMood,
-      onEnergyChanged: _meta.setEnergy,
     );
   }
 
@@ -504,11 +471,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     final showEditMetaPanel = _isEditEntry;
     final settingsAsync = ref.watch(settingsServiceProvider);
     settingsAsync.whenData(_bindToolbarSettingsService);
-    final moodOptionsAsync = ref.watch(moodOptionsProvider);
-    final moodOptions = moodOptionsAsync.maybeWhen(
-      data: (options) => options,
-      orElse: () => SettingsService.defaultMoodOptions,
-    );
     final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
       _toolbarOrder,
       _toolbarHiddenItems,
@@ -530,17 +492,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       }
       return (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
     }
-
-    final tagsAsync = ref.watch(tagListProvider);
-
-    var tags = const <Tag>[];
-    var tagsLoading = false;
-    String? tagsError;
-    tagsAsync.when(
-      data: (data) => tags = data,
-      loading: () => tagsLoading = true,
-      error: (error, stackTrace) => tagsError = '$error',
-    );
 
     final detailAsync = widget.diaryId == null
         ? const AsyncData<DiaryWithTags?>(null)
@@ -666,21 +617,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   right: 16,
                   bottom: 0,
                   // 键盘收起后面板与悬浮工具栏互换时淡入上移，而非硬切。
-                  child: ExpressiveEntrance(
-                    child: ListenableBuilder(
-                      listenable: Listenable.merge(<Listenable>[
-                        _meta,
-                        _metaActions.activity,
-                      ]),
-                      builder: (context, _) => _buildMetaPanel(
-                        context,
-                        tags: tags,
-                        tagsLoading: tagsLoading,
-                        tagsError: tagsError,
-                        moodOptions: moodOptions,
-                      ),
-                    ),
-                  ),
+                  child: ExpressiveEntrance(child: _buildMetaPanel()),
                 ),
               if (showFloatingToolbar)
                 Positioned(

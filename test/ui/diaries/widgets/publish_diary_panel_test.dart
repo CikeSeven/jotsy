@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/time_capsule.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 
 import '../../../support/publish_panel_driver.dart';
 
@@ -21,12 +23,7 @@ double _arrowFlip(WidgetTester tester) => tester
 
 void main() {
   testWidgets('time capsule picker stays inside publish panel', (tester) async {
-    await tester.pumpWidget(
-      publishPanelHost(
-        showTimeCapsuleOption: true,
-        onTimeCapsuleChanged: (_) {},
-      ),
-    );
+    await tester.pumpWidget(publishPanelHost(capsuleEnabled: true));
 
     await tester.tap(PublishPanelDriver(tester).collapsedHeader);
     await tester.pumpAndSettle();
@@ -39,19 +36,11 @@ void main() {
   });
 
   group('time capsule picker', () {
-    Future<void> openCapsulePage(
-      WidgetTester tester, {
-      ValueChanged<TimeCapsuleSchedule>? onChanged,
-    }) async {
+    Future<void> openCapsulePage(WidgetTester tester) async {
       tester.view.physicalSize = const Size(400, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(
-        publishPanelHost(
-          showTimeCapsuleOption: true,
-          onTimeCapsuleChanged: onChanged ?? (_) {},
-        ),
-      );
+      await tester.pumpWidget(publishPanelHost(capsuleEnabled: true));
       await PublishPanelDriver(tester).expand();
       await tester.tap(find.text('Time lock'));
       await tester.pumpAndSettle();
@@ -63,8 +52,7 @@ void main() {
     testWidgets('a quick preset moves the wheel and is what gets confirmed', (
       tester,
     ) async {
-      TimeCapsuleSchedule? confirmed;
-      await openCapsulePage(tester, onChanged: (value) => confirmed = value);
+      await openCapsulePage(tester);
       final before = picker(tester);
 
       await tester.tap(find.text('One month'));
@@ -79,6 +67,7 @@ void main() {
 
       await tester.tap(find.text('Confirm'));
       await tester.pumpAndSettle();
+      final confirmed = PublishPanelDriver(tester).draft.value.capsule;
       expect(confirmed?.precision, TimeCapsulePrecision.date);
       expect(confirmed?.normalizedUnlockAt, expectedDay);
     });
@@ -107,12 +96,10 @@ void main() {
   testWidgets('energy switch toggles between enabled and disabled states', (
     tester,
   ) async {
-    double? updatedEnergy;
-
-    Widget buildPanel({required double? energyLevel}) => publishPanelHost(
-      energyLevel: energyLevel,
-      onEnergyChanged: (val) => updatedEnergy = val,
+    final draft = DiaryMetaDraftController(
+      const DiaryMetaDraft(energyLevel: 4),
     );
+    addTearDown(draft.dispose);
 
     tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -120,7 +107,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     // 1. Initial state with energy enabled (4.0)
-    await tester.pumpWidget(buildPanel(energyLevel: 4));
+    await tester.pumpWidget(publishPanelHost(draft: draft));
     await tester.tap(PublishPanelDriver(tester).collapsedHeader);
     await tester.pumpAndSettle();
 
@@ -139,11 +126,9 @@ void main() {
     // Toggle switch off
     await tester.tap(energySwitchFinder);
     await tester.pumpAndSettle();
-    expect(updatedEnergy, isNull);
+    expect(draft.value.energyLevel, isNull);
 
-    // 2. Re-pump with energyLevel: null (disabled state)
-    await tester.pumpWidget(buildPanel(energyLevel: null));
-    await tester.pumpAndSettle();
+    // 2. Disabled state
 
     final switchWidgetOff = tester.widget<Switch>(energySwitchFinder);
     expect(switchWidgetOff.value, isFalse);
@@ -156,19 +141,54 @@ void main() {
     await tester.ensureVisible(energySwitchFinder);
     await tester.tap(energySwitchFinder);
     await tester.pumpAndSettle();
-    expect(updatedEnergy, 4.0);
+    expect(draft.value.energyLevel, 4.0);
   });
 
   testWidgets('a legacy fractional energy value still shows', (tester) async {
     tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(publishPanelHost(energyLevel: 3.37));
+    final draft = DiaryMetaDraftController(
+      const DiaryMetaDraft(energyLevel: 3.37),
+    );
+    addTearDown(draft.dispose);
+    await tester.pumpWidget(publishPanelHost(draft: draft));
     await PublishPanelDriver(tester).expand();
 
     expect(tester.widget<Slider>(find.byType(Slider)).value, 3.37);
     expect(find.text('So-so'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  // 区块各自监听草稿里自己的字段：拖动精力滑块的每一格不该重建心情网格
+  // 和封面行。
+  testWidgets('an energy change rebuilds only the energy section', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final draft = DiaryMetaDraftController(
+      const DiaryMetaDraft(energyLevel: 4),
+    );
+    addTearDown(draft.dispose);
+    await tester.pumpWidget(publishPanelHost(draft: draft));
+    await PublishPanelDriver(tester).expand();
+    final moodChipBefore = tester.widget(find.byType(ChoiceChip).first);
+    final sliderBefore = tester.widget(find.byType(Slider));
+
+    draft.setEnergy(2);
+    await tester.pump();
+
+    expect(
+      identical(tester.widget(find.byType(ChoiceChip).first), moodChipBefore),
+      isTrue,
+    );
+    expect(
+      identical(tester.widget(find.byType(Slider)), sliderBefore),
+      isFalse,
+    );
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 2);
   });
 
   testWidgets(

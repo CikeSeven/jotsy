@@ -6,10 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_diary_controller.dart';
@@ -18,7 +16,6 @@ import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
-import 'package:node_diary/ui/diaries/viewmodels/publish_panel_labels.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
@@ -183,24 +180,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final tagsAsync = ref.watch(tagListProvider);
-    final moodOptionsAsync = ref.watch(moodOptionsProvider);
-    final moodOptions = moodOptionsAsync.maybeWhen(
-      data: (options) => options,
-      orElse: () => SettingsService.defaultMoodOptions,
-    );
     // 发布预览与编辑页、预览页同一套正文排版，所见即发布后的样子。
     final textAppearance = ref.watch(diaryTextAppearanceProvider);
-
-    // 标签数据状态拆分为三元组，便于直接透传给悬浮面板组件。
-    var tags = const <Tag>[];
-    var tagsLoading = false;
-    String? tagsError;
-    tagsAsync.when(
-      data: (data) => tags = data,
-      loading: () => tagsLoading = true,
-      error: (error, stackTrace) => tagsError = '$error',
-    );
 
     // 返回键策略：
     // 0) 发布进行中、封存中或已发布时忽略；
@@ -305,18 +286,32 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
               left: 16,
               right: 16,
               bottom: 0,
-              child: ListenableBuilder(
-                listenable: Listenable.merge(<Listenable>[
-                  _meta,
-                  _metaActions.activity,
-                  _publisher.explicitPublishAt,
-                ]),
-                builder: (context, _) => _buildPanel(
-                  context,
-                  tags: tags,
-                  tagsLoading: tagsLoading,
-                  tagsError: tagsError,
-                  moodOptions: moodOptions,
+              // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
+              child: ValueListenableBuilder<DateTime?>(
+                valueListenable: _publisher.explicitPublishAt,
+                builder: (context, _, _) => PublishDiaryPanel(
+                  controller: _panelController,
+                  draft: _meta,
+                  actions: _metaActions,
+                  busy: _leaveBlocked,
+                  publishTime: PublishTimeOption(
+                    // 既没选过、打开者也没指定时传 null，显示“自动获取当前时间”。
+                    label: _publisher.hasFixedPublishTime
+                        ? context.l10n.formatDateTimeMinute(
+                            _publisher.effectivePublishAt,
+                          )
+                        : null,
+                    onPick: _pickPublishTime,
+                  ),
+                  capsuleEnabled: true,
+                  onPublish: _publish,
+                  // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                  // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
+                  onProgressChanged: (progress) {
+                    if (mounted) {
+                      _panelExpandProgress.value = progress;
+                    }
+                  },
                 ),
               ),
             ),
@@ -325,72 +320,6 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildPanel(
-    BuildContext context, {
-    required List<Tag> tags,
-    required bool tagsLoading,
-    required String? tagsError,
-    required List<String> moodOptions,
-  }) {
-    final l10n = context.l10n;
-    final draft = _meta.value;
-    final capsule = draft.capsule;
-    return PublishDiaryPanel(
-      controller: _panelController,
-      saving: _leaveBlocked,
-      hasCover: draft.cover != null,
-      coverLabel: diaryCoverLabel(draft.cover),
-      locating: _metaActions.locating.value,
-      weatherLoading: _metaActions.weatherLoading.value,
-      locationController: _meta.locationText,
-      locationPrecision: draft.locationPrecision,
-      locationAddressComponent: draft.autoAddressComponent,
-      onLocationPrecisionChanged: _metaActions.changePrecision,
-      weatherController: _meta.weatherText,
-      weatherIconCode: draft.weatherIconCode,
-      moodEmoji: draft.moodEmoji,
-      moodOptions: moodOptions,
-      energyLevel: draft.energyLevel,
-      tags: tags,
-      tagsLoading: tagsLoading,
-      tagsError: tagsError,
-      selectedTagIds: draft.tagIds,
-      // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-      // 非构建/布局阶段回调（见 _handleSheetMetricsChanged），此处可
-      // 直接写入 ValueNotifier。
-      onProgressChanged: (progress) {
-        if (mounted) {
-          _panelExpandProgress.value = progress;
-        }
-      },
-      onPickCover: () => _metaActions.pickCover(context),
-      onClearCover: draft.cover == null ? null : _metaActions.clearCover,
-      onCreateTag: () => _metaActions.createTag(context),
-      onResolveLocation: () => _metaActions.resolveLocation(context),
-      onResolveWeather: () => _metaActions.resolveWeather(context),
-      // 输入框文本经 DiaryMetaDraftController 的监听同步进草稿。
-      onLocationChanged: (_) {},
-      onWeatherChanged: (_) {},
-      showPublishTimeOption: true,
-      // 既没选过、打开者也没指定时传 null，面板显示“自动获取当前时间”。
-      publishTimeLabel: _publisher.hasFixedPublishTime
-          ? l10n.formatDateTimeMinute(_publisher.effectivePublishAt)
-          : null,
-      onPickPublishTime: _pickPublishTime,
-      showTimeCapsuleOption: true,
-      timeCapsuleLabel: timeCapsuleLabel(l10n, capsule),
-      timeCapsuleActive: capsule != null,
-      timeCapsuleSchedule: capsule,
-      onTimeCapsuleChanged: _meta.setCapsule,
-      onClearTimeCapsule: capsule == null ? null : () => _meta.setCapsule(null),
-      onToggleTag: _meta.setTagSelected,
-      onMoodChanged: _meta.setMood,
-      onEnergyChanged: _meta.setEnergy,
-      onPublish: _publish,
-      actionLabel: capsule == null ? '' : l10n.timeCapsuleSealAction,
     );
   }
 }

@@ -274,46 +274,6 @@
   "@settingsEditorToolsGroup": {
     "description": "Settings group title for editor toolbar and mood options."
   },
-  "settingsEditorBodyFontSize": "Editor font size",
-  "@settingsEditorBodyFontSize": {
-    "description": "Setting title for editor body font size."
-  },
-  "settingsEditorBodyFontSizeSubtitle": "Only affects editor body text",
-  "@settingsEditorBodyFontSizeSubtitle": {
-    "description": "Subtitle for editor body font size setting."
-  },
-  "settingsEditorBodyFontSizeSmall": "Small",
-  "@settingsEditorBodyFontSizeSmall": {
-    "description": "Small option for editor body font size."
-  },
-  "settingsEditorBodyFontSizeMedium": "Medium",
-  "@settingsEditorBodyFontSizeMedium": {
-    "description": "Medium option for editor body font size."
-  },
-  "settingsEditorBodyFontSizeLarge": "Large",
-  "@settingsEditorBodyFontSizeLarge": {
-    "description": "Large option for editor body font size."
-  },
-  "settingsEditorLineHeight": "Body line height",
-  "@settingsEditorLineHeight": {
-    "description": "Setting title for editor body line height."
-  },
-  "settingsEditorLineHeightSubtitle": "Only affects editor body layout",
-  "@settingsEditorLineHeightSubtitle": {
-    "description": "Subtitle for editor body line height setting."
-  },
-  "settingsEditorLineHeightCompact": "Compact",
-  "@settingsEditorLineHeightCompact": {
-    "description": "Compact option for editor body line height."
-  },
-  "settingsEditorLineHeightNormal": "Normal",
-  "@settingsEditorLineHeightNormal": {
-    "description": "Normal option for editor body line height."
-  },
-  "settingsEditorLineHeightRelaxed": "Relaxed",
-  "@settingsEditorLineHeightRelaxed": {
-    "description": "Relaxed option for editor body line height."
-  },
   "settingsMoodOptionsTitle": "Mood emojis",
   "@settingsMoodOptionsTitle": {
     "description": "Setting title for customizing the fixed 10 mood emojis."
@@ -3854,6 +3814,143 @@
   "previewSetAsAnniversary": "Make it an anniversary",
   "@previewSetAsAnniversary": {
     "description": "Diary preview More sheet: create an anniversary from this diary."
+  },
+  "diaryTypographyTitle": "Body font & layout",
+  "@diaryTypographyTitle": {
+    "description": "Settings: entry and page title for diary body font and layout."
+  },
+  "diaryTypographySummary": "{font} · Size {size} · Line spacing {lineHeight}",
+  "@diaryTypographySummary": {
+    "description": "Settings: subtitle summarizing the current body font, size and line spacing.",
+    "placeholders": {
+      "font": {"type": "String"},
+      "size": {"type": "String"},
+      "lineHeight": {"type": "String"}
+    }
+  },
+  "diaryTypographyQuickTooltip": "Font & layout",
+  "@diaryTypographyQuickTooltip": {
+    "description": "Diary preview: tooltip of the font & layout button and title of its quick panel."
+  },
+  "diaryTypographyFontSection": "Font",
+  "@diaryTypographyFontSection": {
+    "description": "Body font & layout: font group title."
+  },
+  "diaryTypographyFontBundled": "HarmonyOS Sans",
+  "@diaryTypographyFontBundled": {
+    "description": "Body font option: the bundled HarmonyOS Sans font."
+  },
+  "diaryTypographyFontSystem": "System font",
+  "@diaryTypographyFontSystem": {
+    "description": "Body font option: use the device system font."
+  },
+  "diaryTypographyFontSystemHint": "Follows the font your device uses",
+  "@diaryTypographyFontSystemHint": {
+    "description": "Description of the system font option."
+  },
+  "diaryTypographyFontMissing": "The selected font file is no longer on this device, so HarmonyOS Sans is used for now. Import it again or pick another font.",
+  "@diaryTypographyFontMissing": {
+    "description": "Body font & layout: notice shown when the selected imported font file is missing."
+  },
+  "diaryTypographyImportFont": "Import font file",
+  "@diaryTypographyImportFont": {
+    "description": "Body font & layout: import font file entry and file picker title."
+  },
+  "diaryTypographyImportFontHint": "TTF, OTF or TTC; it becomes the body font once imported",
+  "@diaryTypographyImportFontHint": {
+    "description": "Body font & layout: description of the import entry."
+  },
+  "diaryTypographyImporting": "Importing font…",
+  "@diaryTypographyImporting": {
+    "description": "Body font & layout: busy label while importing a font."
+  },
+  "diaryTypographyImported": "Imported and applied “{name}”",
+  "@diaryTypographyImported": {
+    "description": "Body font & layout: font imported successfully.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "diaryTypographyImportUnsupported": "This isn't a usable font file. Choose a TTF, OTF or TTC file.",
+  "@diaryTypographyImportUnsupported": {
+    "description": "Body font & layout: the picked file is not a supported font."
+  },
+  "diaryTypographyImportUnreadable": "Couldn't read the selected file",
+  "@diaryTypographyImportUnreadable": {
+    "description": "Body font & layout: the picked file could not be read."
+  },
+  "diaryTypographyImportFailed": "Couldn't import the font. Check your storage space and try again.",
+  "@diaryTypographyImportFailed": {
+    "description": "Body font & layout: saving the font file failed."
+  },
+  "diaryTypographyDeleteFont": "Delete font",
+  "@diaryTypographyDeleteFont": {
+    "description": "Body font & layout: tooltip of the delete button on an imported font."
+  },
+  "diaryTypographyDeleteFontTitle": "Delete “{name}”?",
+  "@diaryTypographyDeleteFontTitle": {
+    "description": "Title of the delete imported font confirmation.",
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "diaryTypographyDeleteFontMessage": "The font file will be removed from this device. If it's in use, diaries switch back to HarmonyOS Sans.",
+  "@diaryTypographyDeleteFontMessage": {
+    "description": "Body of the delete imported font confirmation."
+  },
+  "diaryTypographyLayoutSection": "Layout",
+  "@diaryTypographyLayoutSection": {
+    "description": "Body font & layout: layout values group title."
+  },
+  "diaryTypographyFontSize": "Font size",
+  "@diaryTypographyFontSize": {
+    "description": "Body layout: font size slider label."
+  },
+  "diaryTypographyLineHeight": "Line spacing",
+  "@diaryTypographyLineHeight": {
+    "description": "Body layout: line spacing slider label."
+  },
+  "diaryTypographyLetterSpacing": "Letter spacing",
+  "@diaryTypographyLetterSpacing": {
+    "description": "Body layout: letter spacing slider label."
+  },
+  "diaryTypographyParagraphSpacing": "Paragraph spacing",
+  "@diaryTypographyParagraphSpacing": {
+    "description": "Body layout: paragraph spacing slider label."
+  },
+  "diaryTypographyDecrease": "{label}: decrease",
+  "@diaryTypographyDecrease": {
+    "description": "Body layout: tooltip of the decrease button; label is the value name.",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "diaryTypographyIncrease": "{label}: increase",
+  "@diaryTypographyIncrease": {
+    "description": "Body layout: tooltip of the increase button; label is the value name.",
+    "placeholders": {
+      "label": {"type": "String"}
+    }
+  },
+  "diaryTypographyReset": "Reset layout",
+  "@diaryTypographyReset": {
+    "description": "Body layout: reset size and spacing values to defaults (keeps the font)."
+  },
+  "diaryTypographyScopeHint": "Applies when writing, reading and publishing diaries; the font is also used for titles.",
+  "@diaryTypographyScopeHint": {
+    "description": "Body font & layout: footer explaining where the settings apply."
+  },
+  "diaryTypographyMoreSettings": "More settings",
+  "@diaryTypographyMoreSettings": {
+    "description": "Font & layout quick panel: button opening the full settings page."
+  },
+  "diaryTypographySampleTitle": "An evening after the rain",
+  "@diaryTypographySampleTitle": {
+    "description": "Body layout preview: sample title."
+  },
+  "diaryTypographySampleBody": "The rain stopped just before dusk, and the osmanthus downstairs smelled sweeter than ever.\nOn the way home I bought a bag of roasted chestnuts and peeled them as I walked; my hands stayed warm the whole time.\nNothing big happened today, but every moment felt steady, so I wanted to write it down.",
+  "@diaryTypographySampleBody": {
+    "description": "Body layout preview: sample body; newlines separate paragraphs to show paragraph spacing."
   },
   "diaryCardDateWithWeekday": "{date} · {weekday}",
   "@diaryCardDateWithWeekday": {

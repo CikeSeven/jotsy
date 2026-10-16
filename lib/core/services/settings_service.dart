@@ -3,6 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'diary_typography.dart';
+
+export 'diary_typography.dart';
+
 part 'settings_service_backup.dart';
 
 const String _defaultDiaryToolbarCurrentTimeFormat = 'M月d日 HH:mm';
@@ -23,46 +27,10 @@ extension HomeTabSwitchCurveTypeX on HomeTabSwitchCurveType {
   };
 }
 
-enum EditorBodyFontSizePreset { small, medium, large }
-
-extension EditorBodyFontSizePresetX on EditorBodyFontSizePreset {
-  String get storageValue => switch (this) {
-    EditorBodyFontSizePreset.small => 'small',
-    EditorBodyFontSizePreset.medium => 'medium',
-    EditorBodyFontSizePreset.large => 'large',
-  };
-
-  double get fontSize => switch (this) {
-    EditorBodyFontSizePreset.small => 14,
-    EditorBodyFontSizePreset.medium => 16,
-    EditorBodyFontSizePreset.large => 18,
-  };
-}
-
-enum EditorBodyLineHeightPreset { compact, normal, relaxed }
-
-extension EditorBodyLineHeightPresetX on EditorBodyLineHeightPreset {
-  String get storageValue => switch (this) {
-    EditorBodyLineHeightPreset.compact => 'compact',
-    EditorBodyLineHeightPreset.normal => 'normal',
-    EditorBodyLineHeightPreset.relaxed => 'relaxed',
-  };
-
-  double get lineHeight => switch (this) {
-    EditorBodyLineHeightPreset.compact => 1.35,
-    EditorBodyLineHeightPreset.normal => 1.55,
-    EditorBodyLineHeightPreset.relaxed => 1.75,
-  };
-}
-
 class SettingsService {
   static const int defaultThemeSeedColorValue = 0xFF1E6586;
   static const HomeTabSwitchCurveType defaultHomeTabSwitchCurveType =
       HomeTabSwitchCurveType.easeOutCirc;
-  static const EditorBodyFontSizePreset defaultEditorBodyFontSizePreset =
-      EditorBodyFontSizePreset.medium;
-  static const EditorBodyLineHeightPreset defaultEditorBodyLineHeightPreset =
-      EditorBodyLineHeightPreset.normal;
   static const double defaultFontScale = 1.0;
   static const double minFontScale = 0.85;
   static const double maxFontScale = 1.25;
@@ -89,8 +57,7 @@ class SettingsService {
     required ThemeMode mode,
     required Color themeSeedColor,
     required HomeTabSwitchCurveType homeTabSwitchCurveType,
-    required EditorBodyFontSizePreset editorBodyFontSizePreset,
-    required EditorBodyLineHeightPreset editorBodyLineHeightPreset,
+    required DiaryTypography diaryTypography,
     required double fontScale,
     required Locale locale,
     required bool appLockEnabled,
@@ -108,12 +75,9 @@ class SettingsService {
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
          homeTabSwitchCurveType,
        ),
-       editorBodyFontSizePresetNotifier =
-           ValueNotifier<EditorBodyFontSizePreset>(editorBodyFontSizePreset),
-       editorBodyLineHeightPresetNotifier =
-           ValueNotifier<EditorBodyLineHeightPreset>(
-             editorBodyLineHeightPreset,
-           ),
+       diaryTypographyNotifier = ValueNotifier<DiaryTypography>(
+         diaryTypography,
+       ),
        fontScaleNotifier = ValueNotifier<double>(fontScale),
        localeNotifier = ValueNotifier<Locale>(locale),
        appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled),
@@ -140,10 +104,9 @@ class SettingsService {
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<Color> themeSeedColorNotifier;
   final ValueNotifier<HomeTabSwitchCurveType> homeTabSwitchCurveNotifier;
-  final ValueNotifier<EditorBodyFontSizePreset>
-  editorBodyFontSizePresetNotifier;
-  final ValueNotifier<EditorBodyLineHeightPreset>
-  editorBodyLineHeightPresetNotifier;
+
+  /// 日记正文排版（编辑 / 预览 / 发布三处共用）。
+  final ValueNotifier<DiaryTypography> diaryTypographyNotifier;
   final ValueNotifier<double> fontScaleNotifier;
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
@@ -165,9 +128,11 @@ class SettingsService {
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
-  static const _keyEditorBodyFontSizePreset =
+  static const _keyDiaryTypography = 'app.settings.diary_typography';
+  // 旧版三档预设，只在启动迁移时读取一次，迁移后删除。
+  static const _keyLegacyEditorBodyFontSizePreset =
       'app.settings.editor_body_font_size_preset';
-  static const _keyEditorBodyLineHeightPreset =
+  static const _keyLegacyEditorBodyLineHeightPreset =
       'app.settings.editor_body_line_height_preset';
   static const _keyFontScale = 'app.settings.font_scale';
   static const _keyDiarySortMode = 'app.settings.diary_sort_mode';
@@ -204,24 +169,7 @@ class SettingsService {
     final homeTabSwitchCurveType = _parseHomeTabSwitchCurveType(
       prefs.getString(_keyHomeTabSwitchCurve),
     );
-    final editorBodyFontSizePreset = _parseEditorBodyFontSizePreset(
-      prefs.getString(_keyEditorBodyFontSizePreset),
-    );
-    if (!prefs.containsKey(_keyEditorBodyFontSizePreset)) {
-      await prefs.setString(
-        _keyEditorBodyFontSizePreset,
-        editorBodyFontSizePreset.storageValue,
-      );
-    }
-    final editorBodyLineHeightPreset = _parseEditorBodyLineHeightPreset(
-      prefs.getString(_keyEditorBodyLineHeightPreset),
-    );
-    if (!prefs.containsKey(_keyEditorBodyLineHeightPreset)) {
-      await prefs.setString(
-        _keyEditorBodyLineHeightPreset,
-        editorBodyLineHeightPreset.storageValue,
-      );
-    }
+    final diaryTypography = await _loadDiaryTypography(prefs);
     final fontScale = _normalizeFontScale(
       prefs.getDouble(_keyFontScale) ?? defaultFontScale,
     );
@@ -260,8 +208,7 @@ class SettingsService {
       mode: mode,
       themeSeedColor: Color(themeSeedColorValue),
       homeTabSwitchCurveType: homeTabSwitchCurveType,
-      editorBodyFontSizePreset: editorBodyFontSizePreset,
-      editorBodyLineHeightPreset: editorBodyLineHeightPreset,
+      diaryTypography: diaryTypography,
       fontScale: fontScale,
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
@@ -301,21 +248,12 @@ class SettingsService {
     );
   }
 
-  Future<void> setEditorBodyFontSizePreset(
-    EditorBodyFontSizePreset preset,
-  ) async {
-    editorBodyFontSizePresetNotifier.value = preset;
+  Future<void> setDiaryTypography(DiaryTypography typography) async {
+    // 经 copyWith 归一化：调用方直接构造的越界值不会落盘。
+    final normalized = typography.copyWith();
+    diaryTypographyNotifier.value = normalized;
     await _writePreference(
-      _prefs.setString(_keyEditorBodyFontSizePreset, preset.storageValue),
-    );
-  }
-
-  Future<void> setEditorBodyLineHeightPreset(
-    EditorBodyLineHeightPreset preset,
-  ) async {
-    editorBodyLineHeightPresetNotifier.value = preset;
-    await _writePreference(
-      _prefs.setString(_keyEditorBodyLineHeightPreset, preset.storageValue),
+      _prefs.setString(_keyDiaryTypography, normalized.toRaw()),
     );
   }
 
@@ -487,14 +425,7 @@ class SettingsService {
   int get themeSeedColorValue => themeSeedColorNotifier.value.toARGB32();
   String get homeTabSwitchCurveTypeValue =>
       homeTabSwitchCurveNotifier.value.storageValue;
-  EditorBodyFontSizePreset get editorBodyFontSizePresetValue =>
-      editorBodyFontSizePresetNotifier.value;
-  String get editorBodyFontSizePresetStorageValue =>
-      editorBodyFontSizePresetNotifier.value.storageValue;
-  EditorBodyLineHeightPreset get editorBodyLineHeightPresetValue =>
-      editorBodyLineHeightPresetNotifier.value;
-  String get editorBodyLineHeightPresetStorageValue =>
-      editorBodyLineHeightPresetNotifier.value.storageValue;
+  DiaryTypography get diaryTypography => diaryTypographyNotifier.value;
   double get fontScaleValue => fontScaleNotifier.value;
 
   Future<void> setAppLocale(Locale locale) async {
@@ -573,24 +504,29 @@ class SettingsService {
     };
   }
 
-  static EditorBodyFontSizePreset _parseEditorBodyFontSizePreset(String? raw) {
-    return switch (raw) {
-      'small' => EditorBodyFontSizePreset.small,
-      'large' => EditorBodyFontSizePreset.large,
-      'medium' => EditorBodyFontSizePreset.medium,
-      _ => defaultEditorBodyFontSizePreset,
-    };
-  }
-
-  static EditorBodyLineHeightPreset _parseEditorBodyLineHeightPreset(
-    String? raw,
-  ) {
-    return switch (raw) {
-      'compact' => EditorBodyLineHeightPreset.compact,
-      'relaxed' => EditorBodyLineHeightPreset.relaxed,
-      'normal' => EditorBodyLineHeightPreset.normal,
-      _ => defaultEditorBodyLineHeightPreset,
-    };
+  /// 读取正文排版；没有新键但存在旧版三档预设时迁移一次：写入新键后删除
+  /// 旧键，之后旧键不再参与读取，避免两处来源互相覆盖。
+  static Future<DiaryTypography> _loadDiaryTypography(
+    SharedPreferences prefs,
+  ) async {
+    if (prefs.containsKey(_keyDiaryTypography)) {
+      return DiaryTypography.fromRaw(prefs.getString(_keyDiaryTypography));
+    }
+    final legacyFontSize = prefs.getString(_keyLegacyEditorBodyFontSizePreset);
+    final legacyLineHeight = prefs.getString(
+      _keyLegacyEditorBodyLineHeightPreset,
+    );
+    if (legacyFontSize == null && legacyLineHeight == null) {
+      return const DiaryTypography();
+    }
+    final migrated = DiaryTypography.fromLegacyPresets(
+      fontSizePreset: legacyFontSize,
+      lineHeightPreset: legacyLineHeight,
+    );
+    await prefs.setString(_keyDiaryTypography, migrated.toRaw());
+    await prefs.remove(_keyLegacyEditorBodyFontSizePreset);
+    await prefs.remove(_keyLegacyEditorBodyLineHeightPreset);
+    return migrated;
   }
 
   static List<String> decodeMoodOptions(String? raw) {

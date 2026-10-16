@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
 import 'app_update_service.dart';
+import 'diary_font_storage_service.dart';
 import 'diary_media_cleanup_service.dart';
 import 'settings_service.dart';
 import 'tag_order_codec.dart';
@@ -30,6 +31,11 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
 ) async {
   return SettingsService.create();
 });
+
+/// 导入的正文字体存储服务；单例保证导入与删除串行写清单。
+final diaryFontStorageServiceProvider = Provider<DiaryFontStorageService>(
+  (Ref ref) => DiaryFontStorageService(),
+);
 
 /// 日记媒体回收服务；随容器销毁取消尚未触发的启动回收。
 final diaryMediaCleanupServiceProvider = Provider<DiaryMediaCleanupService>((

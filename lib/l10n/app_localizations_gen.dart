@@ -464,66 +464,6 @@ abstract class AppLocalizations {
   /// **'Toolbar & mood'**
   String get settingsEditorToolsGroup;
 
-  /// Setting title for editor body font size.
-  ///
-  /// In en, this message translates to:
-  /// **'Editor font size'**
-  String get settingsEditorBodyFontSize;
-
-  /// Subtitle for editor body font size setting.
-  ///
-  /// In en, this message translates to:
-  /// **'Only affects editor body text'**
-  String get settingsEditorBodyFontSizeSubtitle;
-
-  /// Small option for editor body font size.
-  ///
-  /// In en, this message translates to:
-  /// **'Small'**
-  String get settingsEditorBodyFontSizeSmall;
-
-  /// Medium option for editor body font size.
-  ///
-  /// In en, this message translates to:
-  /// **'Medium'**
-  String get settingsEditorBodyFontSizeMedium;
-
-  /// Large option for editor body font size.
-  ///
-  /// In en, this message translates to:
-  /// **'Large'**
-  String get settingsEditorBodyFontSizeLarge;
-
-  /// Setting title for editor body line height.
-  ///
-  /// In en, this message translates to:
-  /// **'Body line height'**
-  String get settingsEditorLineHeight;
-
-  /// Subtitle for editor body line height setting.
-  ///
-  /// In en, this message translates to:
-  /// **'Only affects editor body layout'**
-  String get settingsEditorLineHeightSubtitle;
-
-  /// Compact option for editor body line height.
-  ///
-  /// In en, this message translates to:
-  /// **'Compact'**
-  String get settingsEditorLineHeightCompact;
-
-  /// Normal option for editor body line height.
-  ///
-  /// In en, this message translates to:
-  /// **'Normal'**
-  String get settingsEditorLineHeightNormal;
-
-  /// Relaxed option for editor body line height.
-  ///
-  /// In en, this message translates to:
-  /// **'Relaxed'**
-  String get settingsEditorLineHeightRelaxed;
-
   /// Setting title for customizing the fixed 10 mood emojis.
   ///
   /// In en, this message translates to:
@@ -4921,6 +4861,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Make it an anniversary'**
   String get previewSetAsAnniversary;
+
+  /// Settings: entry and page title for diary body font and layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Body font & layout'**
+  String get diaryTypographyTitle;
+
+  /// Settings: subtitle summarizing the current body font, size and line spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'{font} · Size {size} · Line spacing {lineHeight}'**
+  String diaryTypographySummary(String font, String size, String lineHeight);
+
+  /// Diary preview: tooltip of the font & layout button and title of its quick panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Font & layout'**
+  String get diaryTypographyQuickTooltip;
+
+  /// Body font & layout: font group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get diaryTypographyFontSection;
+
+  /// Body font option: the bundled HarmonyOS Sans font.
+  ///
+  /// In en, this message translates to:
+  /// **'HarmonyOS Sans'**
+  String get diaryTypographyFontBundled;
+
+  /// Body font option: use the device system font.
+  ///
+  /// In en, this message translates to:
+  /// **'System font'**
+  String get diaryTypographyFontSystem;
+
+  /// Description of the system font option.
+  ///
+  /// In en, this message translates to:
+  /// **'Follows the font your device uses'**
+  String get diaryTypographyFontSystemHint;
+
+  /// Body font & layout: notice shown when the selected imported font file is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected font file is no longer on this device, so HarmonyOS Sans is used for now. Import it again or pick another font.'**
+  String get diaryTypographyFontMissing;
+
+  /// Body font & layout: import font file entry and file picker title.
+  ///
+  /// In en, this message translates to:
+  /// **'Import font file'**
+  String get diaryTypographyImportFont;
+
+  /// Body font & layout: description of the import entry.
+  ///
+  /// In en, this message translates to:
+  /// **'TTF, OTF or TTC; it becomes the body font once imported'**
+  String get diaryTypographyImportFontHint;
+
+  /// Body font & layout: busy label while importing a font.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing font…'**
+  String get diaryTypographyImporting;
+
+  /// Body font & layout: font imported successfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported and applied “{name}”'**
+  String diaryTypographyImported(String name);
+
+  /// Body font & layout: the picked file is not a supported font.
+  ///
+  /// In en, this message translates to:
+  /// **'This isn\'t a usable font file. Choose a TTF, OTF or TTC file.'**
+  String get diaryTypographyImportUnsupported;
+
+  /// Body font & layout: the picked file could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read the selected file'**
+  String get diaryTypographyImportUnreadable;
+
+  /// Body font & layout: saving the font file failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t import the font. Check your storage space and try again.'**
+  String get diaryTypographyImportFailed;
+
+  /// Body font & layout: tooltip of the delete button on an imported font.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete font'**
+  String get diaryTypographyDeleteFont;
+
+  /// Title of the delete imported font confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete “{name}”?'**
+  String diaryTypographyDeleteFontTitle(String name);
+
+  /// Body of the delete imported font confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'The font file will be removed from this device. If it\'s in use, diaries switch back to HarmonyOS Sans.'**
+  String get diaryTypographyDeleteFontMessage;
+
+  /// Body font & layout: layout values group title.
+  ///
+  /// In en, this message translates to:
+  /// **'Layout'**
+  String get diaryTypographyLayoutSection;
+
+  /// Body layout: font size slider label.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get diaryTypographyFontSize;
+
+  /// Body layout: line spacing slider label.
+  ///
+  /// In en, this message translates to:
+  /// **'Line spacing'**
+  String get diaryTypographyLineHeight;
+
+  /// Body layout: letter spacing slider label.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter spacing'**
+  String get diaryTypographyLetterSpacing;
+
+  /// Body layout: paragraph spacing slider label.
+  ///
+  /// In en, this message translates to:
+  /// **'Paragraph spacing'**
+  String get diaryTypographyParagraphSpacing;
+
+  /// Body layout: tooltip of the decrease button; label is the value name.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: decrease'**
+  String diaryTypographyDecrease(String label);
+
+  /// Body layout: tooltip of the increase button; label is the value name.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: increase'**
+  String diaryTypographyIncrease(String label);
+
+  /// Body layout: reset size and spacing values to defaults (keeps the font).
+  ///
+  /// In en, this message translates to:
+  /// **'Reset layout'**
+  String get diaryTypographyReset;
+
+  /// Body font & layout: footer explaining where the settings apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies when writing, reading and publishing diaries; the font is also used for titles.'**
+  String get diaryTypographyScopeHint;
+
+  /// Font & layout quick panel: button opening the full settings page.
+  ///
+  /// In en, this message translates to:
+  /// **'More settings'**
+  String get diaryTypographyMoreSettings;
+
+  /// Body layout preview: sample title.
+  ///
+  /// In en, this message translates to:
+  /// **'An evening after the rain'**
+  String get diaryTypographySampleTitle;
+
+  /// Body layout preview: sample body; newlines separate paragraphs to show paragraph spacing.
+  ///
+  /// In en, this message translates to:
+  /// **'The rain stopped just before dusk, and the osmanthus downstairs smelled sweeter than ever.\nOn the way home I bought a bag of roasted chestnuts and peeled them as I walked; my hands stayed warm the whole time.\nNothing big happened today, but every moment felt steady, so I wanted to write it down.'**
+  String get diaryTypographySampleBody;
 
   /// Diary card eyebrow: a date followed by its weekday (custom date formats).
   ///

@@ -13,6 +13,13 @@ abstract final class CloudBackupAppKeys {
     'JOTSY_GOOGLE_CLIENT_SECRET',
   );
 
+  /// 同一 Google Cloud 项目里“Web 应用”类型客户端的 ID（不需要其密钥）。
+  /// Android 上经 Google Play 服务选择账号时必须作为 serverClientId；另需
+  /// 在同一项目登记包名 + 签名 SHA-1 的 Android 客户端（无需写进这里）。
+  static const googleWebClientId = String.fromEnvironment(
+    'JOTSY_GOOGLE_WEB_CLIENT_ID',
+  );
+
   /// Microsoft Entra 应用注册的“应用程序(客户端) ID”，需开启“允许公共
   /// 客户端流”。
   static const microsoftClientId = String.fromEnvironment(

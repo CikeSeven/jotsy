@@ -63,6 +63,10 @@ enum CloudBackupFailure {
   /// 此安装包没有配置该网盘的应用密钥，无法发起授权。
   appKeyMissing,
 
+  /// 本机无法使用该网盘要求的系统授权（如没有 Google Play 服务），且没有
+  /// 可用的备用授权方式。
+  platformUnavailable,
+
   /// 账号、密码或密钥被拒绝，或无权访问目标位置。
   unauthorized,
 

@@ -7069,6 +7069,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This service only supports virtual-hosted-style access'**
   String get s3PathStyleLocked;
+
+  /// System authorization unavailable and no fallback configured.
+  ///
+  /// In en, this message translates to:
+  /// **'System account authorization is unavailable on this device (Google Play services required), and this build has no fallback'**
+  String get cloudBackupErrorPlatformUnavailable;
 }
 
 class _AppLocalizationsDelegate

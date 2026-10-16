@@ -29,6 +29,7 @@ flutter build apk --release --split-per-abi --dart-define-from-file=cloud_backup
 {
   "JOTSY_GOOGLE_CLIENT_ID": "xxxx.apps.googleusercontent.com",
   "JOTSY_GOOGLE_CLIENT_SECRET": "xxxx",
+  "JOTSY_GOOGLE_WEB_CLIENT_ID": "yyyy.apps.googleusercontent.com",
   "JOTSY_MICROSOFT_CLIENT_ID": "00000000-0000-0000-0000-000000000000",
   "JOTSY_MICROSOFT_TENANT": "common",
   "JOTSY_DROPBOX_APP_KEY": "xxxx",
@@ -42,7 +43,9 @@ flutter build apk --release --split-per-abi --dart-define-from-file=cloud_backup
 
 各平台注册要点：
 
-- **Google Drive**：Google Cloud 控制台启用 Drive API，OAuth 客户端类型选“电视和受限输入设备”。权限只用 `drive.file`（非敏感，只需基础验证）。同意屏幕处于“测试”状态时刷新令牌 7 天过期，正式发布前需切到“正式版”。授权走设备码，不需要回调地址。
+- **Google Drive**：Google Cloud 控制台启用 Drive API，权限只用 `drive.file`（非敏感，只需基础验证）。同意屏幕处于“测试”状态时只有测试用户能授权、且授权 7 天过期，正式发布前需切到“正式版”。同一项目里建三个 OAuth 客户端：
+  - **Android**（包名 `com.jotsy.diary` + 正式签名 SHA-1；不用写进密钥文件）与 **Web 应用**（只取客户端 ID 填 `JOTSY_GOOGLE_WEB_CLIENT_ID`，不填重定向 URI）：装有 Google Play 服务的 Android 手机经系统账号选择器授权，令牌由 Play 服务续期，应用不保存刷新令牌；
+  - **电视和受限输入设备**（`JOTSY_GOOGLE_CLIENT_ID` / `JOTSY_GOOGLE_CLIENT_SECRET`）：没有 Play 服务的手机、iOS 与桌面走设备码授权，也是系统授权不可用时的自动回落。
 - **OneDrive**：Microsoft Entra 应用注册，支持的账户类型包含个人 Microsoft 账户，在“身份验证 → 高级设置”中开启“允许公共客户端流”。委托权限 `Files.ReadWrite.AppFolder`、`User.Read`、`offline_access`。备份位于“应用/<应用名>”文件夹。工作/学校账号能否使用 AppFolder 取决于租户策略，未实测。
 - **Dropbox**：App Console 新建应用，权限类型选 **App folder**，在 Permissions 中勾选 `files.content.write`、`files.content.read`、`files.metadata.read`、`account_info.read`。用 PKCE，不需要 App secret，也不需要配置回调地址（授权码显示给用户后粘贴回应用）。
 - **百度网盘**：百度网盘开放平台创建应用（个人开发者限 1 个），取得 AppKey / SecretKey；`JOTSY_BAIDU_APP_DIR` 必须与登记的应用名称一致（文件位于“我的应用数据/<应用名>”）。未通过上线审核的应用最多 10 个用户且接口频控很严，正式使用前需提交审核。百度没有公开客户端模式，SecretKey 会随安装包分发。

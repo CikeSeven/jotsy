@@ -2,17 +2,22 @@ import 'dart:io';
 
 import 'cloud_backup_app_keys.dart';
 import 'cloud_backup_drive.dart';
+import 'cloud_backup_google_native.dart';
 import 'cloud_backup_http.dart';
 import 'cloud_backup_models.dart';
 import 'cloud_backup_oauth.dart';
 
-/// Google Drive：设备码授权（“电视和受限输入设备”客户端）+ Drive v3。
+/// Google Drive：授权 + Drive v3。
 ///
+/// - 授权两条路径：装有 Google Play 服务的 Android 手机经系统账号选择器
+///   授权（[GoogleDriveNativeAuth]，需 Android + Web 客户端），否则用设备码
+///   （“电视和受限输入设备”客户端）；两者都配置时先试系统授权，不可用时
+///   界面自动回落到设备码；
 /// - 权限只申请 `drive.file`：应用只能看到自己创建的文件与文件夹，不读取
 ///   用户网盘里的其他内容（非敏感权限，只需基础的应用验证）；
 /// - 备份放在网盘根目录的 `Jotsy` 文件夹，首次使用时创建；
 /// - 上传用可续传会话：先创建会话拿 `Location`，再一次 PUT 整个文件；
-/// - Google 不允许在内嵌网页中登录，所以用设备码而不是网页视图。
+/// - Google 不允许在内嵌网页中登录，所以不用网页视图。
 /// 注意：OAuth 同意屏幕处于“测试”状态时刷新令牌 7 天过期，正式发布前需
 /// 切到“正式版”。
 class GoogleDriveProvider extends CloudDriveProvider {
@@ -22,7 +27,9 @@ class GoogleDriveProvider extends CloudDriveProvider {
     Uri? oauthBase,
     Uri? apiBase,
     Uri? uploadBase,
-  }) : _clientId = clientId ?? CloudBackupAppKeys.googleClientId,
+    GoogleDriveNativeAuth? nativeAuth,
+  }) : _nativeAuth = nativeAuth ?? PlayServicesGoogleDriveAuth(),
+       _clientId = clientId ?? CloudBackupAppKeys.googleClientId,
        _clientSecret = clientSecret ?? CloudBackupAppKeys.googleClientSecret,
        _oauthBase = oauthBase ?? Uri.parse('https://oauth2.googleapis.com/'),
        _apiBase = apiBase ?? Uri.parse('https://www.googleapis.com/drive/v3/'),
@@ -32,6 +39,7 @@ class GoogleDriveProvider extends CloudDriveProvider {
 
   static const scope = 'https://www.googleapis.com/auth/drive.file';
 
+  final GoogleDriveNativeAuth _nativeAuth;
   final String _clientId;
   final String _clientSecret;
   final Uri _oauthBase;
@@ -42,10 +50,22 @@ class GoogleDriveProvider extends CloudDriveProvider {
   CloudBackupKind get kind => CloudBackupKind.googleDrive;
 
   @override
-  bool get isAvailable => _clientId.isNotEmpty && _clientSecret.isNotEmpty;
+  bool get isAvailable => _deviceCodeConfigured || _nativeAuth.isSupported;
+
+  bool get _deviceCodeConfigured =>
+      _clientId.isNotEmpty && _clientSecret.isNotEmpty;
 
   @override
   CloudDriveAuthorization beginAuthorization(CloudBackupHttp http) {
+    final deviceCode = _deviceCodeConfigured ? _deviceCode(http) : null;
+    if (!_nativeAuth.isSupported) return deviceCode!;
+    return CloudNativeAuthorization(
+      authorize: () => _nativeAuth.authorize(const [scope]),
+      fallback: deviceCode,
+    );
+  }
+
+  CloudDeviceCodeAuthorization _deviceCode(CloudBackupHttp http) {
     return CloudDeviceCodeAuthorization(
       start: () async {
         final response = await http.sendForm(
@@ -69,6 +89,10 @@ class GoogleDriveProvider extends CloudDriveProvider {
 
   @override
   Future<CloudOAuthToken> refresh(CloudBackupHttp http, CloudOAuthToken token) {
+    // 系统授权的令牌没有刷新令牌，向 Play 服务静默续期。
+    if (token.platformManaged) {
+      return _nativeAuth.refresh(token, const [scope]);
+    }
     return refreshWithForm(http, _oauthBase.resolve('token'), token, {
       'client_id': _clientId,
       'client_secret': _clientSecret,

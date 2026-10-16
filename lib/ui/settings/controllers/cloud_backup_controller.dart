@@ -217,21 +217,7 @@ class CloudBackupController {
       return null;
     }
     try {
-      final CloudOAuthToken? token;
-      switch (session.method) {
-        case final CloudDeviceCodeAuthorization method:
-          token = await showCloudDeviceAuthorizationDialog(
-            context,
-            method: method,
-            providerName: name,
-          );
-        case final CloudCodePasteAuthorization method:
-          token = await showCloudCodePasteDialog(
-            context,
-            method: method,
-            providerName: name,
-          );
-      }
+      final token = await _obtainToken(context, session.method, name);
       if (token == null || !context.mounted) return null;
       final granted = token;
       return await _runResult(l10n.cloudBackupBusyAuthorize, () async {
@@ -250,6 +236,48 @@ class CloudBackupController {
       return null;
     } finally {
       session.close();
+    }
+  }
+
+  /// 按授权方式取得令牌，用户取消返回 null。
+  ///
+  /// 系统授权（Play 服务账号选择器）不可用时改走 [CloudNativeAuthorization.fallback]
+  /// （设备码）；没有备用方式时以 [CloudBackupFailure.platformUnavailable]
+  /// 提示。系统授权自带界面，不盖忙碌遮罩。
+  Future<CloudOAuthToken?> _obtainToken(
+    BuildContext context,
+    CloudDriveAuthorization method,
+    String name,
+  ) async {
+    switch (method) {
+      case final CloudDeviceCodeAuthorization method:
+        return showCloudDeviceAuthorizationDialog(
+          context,
+          method: method,
+          providerName: name,
+        );
+      case final CloudCodePasteAuthorization method:
+        return showCloudCodePasteDialog(
+          context,
+          method: method,
+          providerName: name,
+        );
+      case final CloudNativeAuthorization method:
+        try {
+          return await method.authorize();
+        } on CloudNativeAuthUnavailable catch (error) {
+          final fallback = method.fallback;
+          if (fallback == null) {
+            throw CloudAuthorizationFailed(
+              CloudBackupException(
+                CloudBackupFailure.platformUnavailable,
+                error.detail,
+              ),
+            );
+          }
+          if (!context.mounted) return null;
+          return _obtainToken(context, fallback, name);
+        }
     }
   }
 

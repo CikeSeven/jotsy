@@ -55,6 +55,27 @@ final class CloudCodePasteAuthorization extends CloudDriveAuthorization {
   final Future<CloudOAuthToken> Function(String code) exchange;
 }
 
+/// 系统授权：由平台账号服务弹出账号选择与授权（Android 上的 Google Play
+/// 服务）。[authorize] 用户取消返回 null；本机无法使用系统授权时抛出
+/// [CloudNativeAuthUnavailable]，界面改用 [fallback]（为 null 时提示不可用）。
+final class CloudNativeAuthorization extends CloudDriveAuthorization {
+  const CloudNativeAuthorization({required this.authorize, this.fallback});
+
+  final Future<CloudOAuthToken?> Function() authorize;
+  final CloudDriveAuthorization? fallback;
+}
+
+/// 本机无法使用系统授权（没有 Google Play 服务、没有可用账号、客户端配置
+/// 不匹配等），由调用方回落到其他授权方式。
+class CloudNativeAuthUnavailable implements Exception {
+  const CloudNativeAuthUnavailable([this.detail]);
+
+  final String? detail;
+
+  @override
+  String toString() => 'CloudNativeAuthUnavailable($detail)';
+}
+
 /// 刷新令牌的通用表单请求：成功返回新令牌（沿用旧刷新令牌兜底），失败按
 /// [throwTokenError] 归类。
 Future<CloudOAuthToken> refreshWithForm(

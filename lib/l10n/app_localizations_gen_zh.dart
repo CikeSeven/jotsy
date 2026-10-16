@@ -3842,4 +3842,8 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get s3PathStyleLocked => '该服务只支持虚拟主机风格访问';
+
+  @override
+  String get cloudBackupErrorPlatformUnavailable =>
+      '本机无法使用系统账号授权（需要 Google Play 服务），此版本也没有配置备用的授权方式';
 }

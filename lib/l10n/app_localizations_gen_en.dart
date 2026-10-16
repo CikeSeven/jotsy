@@ -4231,4 +4231,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get s3PathStyleLocked =>
       'This service only supports virtual-hosted-style access';
+
+  @override
+  String get cloudBackupErrorPlatformUnavailable =>
+      'System account authorization is unavailable on this device (Google Play services required), and this build has no fallback';
 }

@@ -13,6 +13,8 @@ String describeCloudBackupError(AppLocalizations l10n, Object error) {
     CloudBackupException(:final failure) => switch (failure) {
       CloudBackupFailure.config => l10n.cloudBackupErrorConfig,
       CloudBackupFailure.appKeyMissing => l10n.cloudBackupErrorAppKeyMissing,
+      CloudBackupFailure.platformUnavailable =>
+        l10n.cloudBackupErrorPlatformUnavailable,
       CloudBackupFailure.unauthorized => l10n.cloudBackupErrorAuth,
       CloudBackupFailure.sessionExpired => l10n.cloudBackupErrorSessionExpired,
       CloudBackupFailure.authorizationDenied =>

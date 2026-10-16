@@ -5434,5 +5434,9 @@
   "s3PathStyleLocked": "This service only supports virtual-hosted-style access",
   "@s3PathStyleLocked": {
     "description": "S3 path-style unavailable note."
+  },
+  "cloudBackupErrorPlatformUnavailable": "System account authorization is unavailable on this device (Google Play services required), and this build has no fallback",
+  "@cloudBackupErrorPlatformUnavailable": {
+    "description": "System authorization unavailable and no fallback configured."
   }
 }

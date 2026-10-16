@@ -22,6 +22,7 @@ class CloudOAuthToken {
     required this.accessToken,
     this.refreshToken,
     this.expiresAt,
+    this.platformManaged = false,
   });
 
   /// 解析令牌端点的标准响应。刷新响应可能不带新的刷新令牌（Google），
@@ -56,12 +57,17 @@ class CloudOAuthToken {
       accessToken: accessToken,
       refreshToken: jsonString(raw['refreshToken']),
       expiresAt: jsonDateTime(raw['expiresAt']),
+      platformManaged: raw['platformManaged'] == true,
     );
   }
 
   final String accessToken;
   final String? refreshToken;
   final DateTime? expiresAt;
+
+  /// 由系统账号服务续期（Android 上经 Google Play 服务授权的 Google Drive）：
+  /// 没有刷新令牌，到期时向系统静默换取新的访问令牌。
+  final bool platformManaged;
 
   /// 提前两分钟刷新，避免请求发出途中令牌过期。
   bool needsRefresh(DateTime now) =>
@@ -72,6 +78,7 @@ class CloudOAuthToken {
     'accessToken': accessToken,
     if (refreshToken != null) 'refreshToken': refreshToken,
     if (expiresAt != null) 'expiresAt': expiresAt!.toUtc().toIso8601String(),
+    if (platformManaged) 'platformManaged': true,
   };
 }
 
@@ -338,7 +345,7 @@ class CloudOAuthSession {
   Future<CloudOAuthToken> _refreshOnce() {
     return _refreshing ??= () async {
       try {
-        if (_token.refreshToken == null) {
+        if (_token.refreshToken == null && !_token.platformManaged) {
           throw const CloudBackupException(CloudBackupFailure.sessionExpired);
         }
         final next = await _refresh(_token);

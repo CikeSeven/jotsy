@@ -151,6 +151,7 @@ class SettingsService {
   static const _keyCalendarDisplayOptions =
       'app.settings.calendar_display_options';
   static const _keyDiaryCardStyle = 'app.settings.diary_card_style';
+  static const _keyDiaryShareOptions = 'app.settings.diary_share_options';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
@@ -292,6 +293,14 @@ class SettingsService {
   /// 未知值回退由日记模块负责，服务层不依赖 UI 模型。
   String? get diaryLocationPrecisionRaw =>
       _prefs.getString(_keyDiaryLocationPrecision);
+
+  /// 分享面板的内容开关（单个 JSON 字符串）；解析与默认值由日记模块负责。
+  /// 只在打开分享面板时读取，不需要通知。类型不符的旧值按未设置处理。
+  String? get diaryShareOptionsRaw {
+    final value = _prefs.get(_keyDiaryShareOptions);
+    return value is String ? value : null;
+  }
+
   int get releaseMirrorStartIndexRaw =>
       _prefs.getInt(_keyReleaseMirrorStartIndex) ?? 0;
   Future<void> setDiarySortModeRaw(String value) async {
@@ -354,6 +363,16 @@ class SettingsService {
     await _writePreference(
       _prefs.setString(_keyCalendarDisplayOptions, normalized),
     );
+  }
+
+  /// 保存分享面板的内容开关；空值移除该键，回到默认开关。
+  Future<void> setDiaryShareOptionsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      await _writePreference(_prefs.remove(_keyDiaryShareOptions));
+      return;
+    }
+    await _writePreference(_prefs.setString(_keyDiaryShareOptions, normalized));
   }
 
   /// 保存日记卡片样式设置；空值移除该键，回到默认样式。

@@ -18,6 +18,7 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyDiaryCardTagLimit,
       SettingsService._keyCalendarDisplayOptions,
       SettingsService._keyDiaryCardStyle,
+      SettingsService._keyDiaryShareOptions,
       SettingsService._keyTagOrder,
       SettingsService._keyTagFilterMemoryEnabled,
       SettingsService._keyRememberedTagFilterIds,

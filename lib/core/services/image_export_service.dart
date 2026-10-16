@@ -158,6 +158,10 @@ class ImageExportService {
     }
   }
 
+  /// 把网络图片下载到应用临时目录并返回本地文件（短时间内复用同一份缓存），
+  /// 供需要本地文件的分享流程使用；失败抛 [ImageExportErrorType.downloadFailed]。
+  Future<File> downloadRemoteImage(String url) => _downloadToTempFile(url);
+
   /// 确认相册写入权限；未授权时主动申请，仍被拒则抛出权限异常。
   Future<void> _ensureGalleryAccess() async {
     try {

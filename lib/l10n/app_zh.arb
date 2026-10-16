@@ -5017,5 +5017,188 @@
         "type": "String"
       }
     }
+  },
+  "previewShare": "分享",
+  "@previewShare": {
+    "description": "预览页“更多”面板：打开分享面板的入口。"
+  },
+  "diaryShareSheetTitle": "分享日记",
+  "@diaryShareSheetTitle": {
+    "description": "分享面板标题。"
+  },
+  "diaryShareContentSection": "分享内容",
+  "@diaryShareContentSection": {
+    "description": "分享面板：内容开关分组标题。"
+  },
+  "diaryShareOptionTitle": "标题",
+  "@diaryShareOptionTitle": {
+    "description": "分享面板内容开关：标题。"
+  },
+  "diaryShareOptionBody": "正文",
+  "@diaryShareOptionBody": {
+    "description": "分享面板内容开关：正文。"
+  },
+  "diaryShareOptionDate": "日期",
+  "@diaryShareOptionDate": {
+    "description": "分享面板内容开关：发表日期。"
+  },
+  "diaryShareOptionMoodWeather": "心情与天气",
+  "@diaryShareOptionMoodWeather": {
+    "description": "分享面板内容开关：心情与天气。"
+  },
+  "diaryShareOptionLocation": "地点",
+  "@diaryShareOptionLocation": {
+    "description": "分享面板内容开关：地点（默认关闭）。"
+  },
+  "diaryShareOptionTags": "标签",
+  "@diaryShareOptionTags": {
+    "description": "分享面板内容开关：标签。"
+  },
+  "diaryShareOptionImages": "图片",
+  "@diaryShareOptionImages": {
+    "description": "分享面板内容开关：附带图片。"
+  },
+  "diaryShareTextEmpty": "未选择文字内容，将只分享图片",
+  "@diaryShareTextEmpty": {
+    "description": "分享面板：文字预览为空时的占位。"
+  },
+  "diaryShareImagesSelected": "已选 {selected}/{total} 张，微博等应用单次最多 9 张",
+  "@diaryShareImagesSelected": {
+    "description": "分享面板：图片勾选计数。",
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareImageLabel": "第 {index} 张图片",
+  "@diaryShareImageLabel": {
+    "description": "分享面板：图片勾选项的无障碍标签。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareTargetsSection": "分享到",
+  "@diaryShareTargetsSection": {
+    "description": "分享面板：分享目标分组标题，也用作应用内多入口时的系统选择面板标题。"
+  },
+  "diaryShareTargetWeibo": "微博",
+  "@diaryShareTargetWeibo": {
+    "description": "分享目标：微博。"
+  },
+  "diaryShareTargetXiaohongshu": "小红书",
+  "@diaryShareTargetXiaohongshu": {
+    "description": "分享目标：小红书。"
+  },
+  "diaryShareTargetWechat": "微信",
+  "@diaryShareTargetWechat": {
+    "description": "分享目标：微信。"
+  },
+  "diaryShareTargetQq": "QQ",
+  "@diaryShareTargetQq": {
+    "description": "分享目标：QQ。"
+  },
+  "diaryShareTargetSystem": "更多应用",
+  "@diaryShareTargetSystem": {
+    "description": "分享目标：系统分享面板。"
+  },
+  "diaryShareCopyText": "复制文字",
+  "@diaryShareCopyText": {
+    "description": "分享面板：只复制文字。"
+  },
+  "diaryShareClipboardHint": "带图分享时文字会自动复制，在发布页粘贴即可。",
+  "@diaryShareClipboardHint": {
+    "description": "分享面板：说明带图分享时文字经剪贴板传递。"
+  },
+  "diaryShareMoreSection": "其他方式",
+  "@diaryShareMoreSection": {
+    "description": "分享面板：其他分享方式分组标题。"
+  },
+  "diaryShareLongImage": "分享为长图",
+  "@diaryShareLongImage": {
+    "description": "分享面板：把整篇日记生成长图分享。"
+  },
+  "diaryShareLongImageSubtitle": "按预览页的样子生成一整张图片",
+  "@diaryShareLongImageSubtitle": {
+    "description": "分享面板：长图分享的说明。"
+  },
+  "diaryShareRequiresImage": "{app}需要至少一张图片",
+  "@diaryShareRequiresImage": {
+    "description": "分享面板：目标应用必须带图时的提示。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareNothingSelected": "先选择要分享的内容",
+  "@diaryShareNothingSelected": {
+    "description": "分享面板：文字与图片都未选择时的提示。"
+  },
+  "diaryShareInProgress": "正在准备分享",
+  "@diaryShareInProgress": {
+    "description": "分享执行期间的等待遮罩文案。"
+  },
+  "diaryShareTextCopiedForApp": "文字已复制，在{app}里粘贴即可",
+  "@diaryShareTextCopiedForApp": {
+    "description": "带图分享到指定应用后的提示。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareTextCopied": "文字已复制，可在目标应用中粘贴",
+  "@diaryShareTextCopied": {
+    "description": "带图分享到系统分享面板后的提示。"
+  },
+  "diaryShareCopied": "已复制到剪贴板",
+  "@diaryShareCopied": {
+    "description": "复制文字后的提示。"
+  },
+  "diaryShareImagesTrimmed": "单次最多分享 {count} 张图片，已取前 {count} 张",
+  "@diaryShareImagesTrimmed": {
+    "description": "分享时图片超出目标上限的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareImagesMissing": "{count} 张图片读取失败，未一并分享",
+  "@diaryShareImagesMissing": {
+    "description": "分享时部分图片读取失败的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareAppUnavailable": "无法打开{app}，请确认已安装并更新到最新版本",
+  "@diaryShareAppUnavailable": {
+    "description": "目标应用无法接收分享时的提示。",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareNothingToShare": "没有可分享的内容",
+  "@diaryShareNothingToShare": {
+    "description": "分享时没有可发送内容的提示。"
+  },
+  "diaryShareFailed": "分享失败：{error}",
+  "@diaryShareFailed": {
+    "description": "分享失败提示。",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

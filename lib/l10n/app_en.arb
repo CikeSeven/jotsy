@@ -5017,5 +5017,188 @@
         "type": "String"
       }
     }
+  },
+  "previewShare": "Share",
+  "@previewShare": {
+    "description": "Preview page action sheet entry that opens the share sheet."
+  },
+  "diaryShareSheetTitle": "Share diary",
+  "@diaryShareSheetTitle": {
+    "description": "Title of the diary share sheet."
+  },
+  "diaryShareContentSection": "Content",
+  "@diaryShareContentSection": {
+    "description": "Share sheet section header for the content toggles."
+  },
+  "diaryShareOptionTitle": "Title",
+  "@diaryShareOptionTitle": {
+    "description": "Share sheet toggle: include the title."
+  },
+  "diaryShareOptionBody": "Body",
+  "@diaryShareOptionBody": {
+    "description": "Share sheet toggle: include the body text."
+  },
+  "diaryShareOptionDate": "Date",
+  "@diaryShareOptionDate": {
+    "description": "Share sheet toggle: include the date."
+  },
+  "diaryShareOptionMoodWeather": "Mood & weather",
+  "@diaryShareOptionMoodWeather": {
+    "description": "Share sheet toggle: include mood and weather."
+  },
+  "diaryShareOptionLocation": "Location",
+  "@diaryShareOptionLocation": {
+    "description": "Share sheet toggle: include the location (off by default)."
+  },
+  "diaryShareOptionTags": "Tags",
+  "@diaryShareOptionTags": {
+    "description": "Share sheet toggle: include tags."
+  },
+  "diaryShareOptionImages": "Images",
+  "@diaryShareOptionImages": {
+    "description": "Share sheet toggle: attach images."
+  },
+  "diaryShareTextEmpty": "No text selected — only images will be shared",
+  "@diaryShareTextEmpty": {
+    "description": "Share sheet placeholder when the composed text is empty."
+  },
+  "diaryShareImagesSelected": "{selected} of {total} selected · Weibo and similar apps take up to 9",
+  "@diaryShareImagesSelected": {
+    "description": "Share sheet: number of selected images.",
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareImageLabel": "Image {index}",
+  "@diaryShareImageLabel": {
+    "description": "Share sheet: accessibility label of an image choice.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareTargetsSection": "Share to",
+  "@diaryShareTargetsSection": {
+    "description": "Share sheet section header for share targets; also the chooser title."
+  },
+  "diaryShareTargetWeibo": "Weibo",
+  "@diaryShareTargetWeibo": {
+    "description": "Share target: Weibo."
+  },
+  "diaryShareTargetXiaohongshu": "Xiaohongshu",
+  "@diaryShareTargetXiaohongshu": {
+    "description": "Share target: Xiaohongshu (RED)."
+  },
+  "diaryShareTargetWechat": "WeChat",
+  "@diaryShareTargetWechat": {
+    "description": "Share target: WeChat."
+  },
+  "diaryShareTargetQq": "QQ",
+  "@diaryShareTargetQq": {
+    "description": "Share target: QQ."
+  },
+  "diaryShareTargetSystem": "More apps",
+  "@diaryShareTargetSystem": {
+    "description": "Share target: the system share sheet."
+  },
+  "diaryShareCopyText": "Copy text",
+  "@diaryShareCopyText": {
+    "description": "Share sheet action: copy the text only."
+  },
+  "diaryShareClipboardHint": "When images are attached, the text is copied for you — just paste it into the post.",
+  "@diaryShareClipboardHint": {
+    "description": "Share sheet note: text goes through the clipboard when images are attached."
+  },
+  "diaryShareMoreSection": "Other formats",
+  "@diaryShareMoreSection": {
+    "description": "Share sheet section header for other formats."
+  },
+  "diaryShareLongImage": "Share as long image",
+  "@diaryShareLongImage": {
+    "description": "Share sheet action: share the whole diary as one long image."
+  },
+  "diaryShareLongImageSubtitle": "Renders the diary as it looks in the preview",
+  "@diaryShareLongImageSubtitle": {
+    "description": "Share sheet: subtitle of the long-image action."
+  },
+  "diaryShareRequiresImage": "{app} needs at least one image",
+  "@diaryShareRequiresImage": {
+    "description": "Share sheet hint when the target app needs an image.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareNothingSelected": "Choose something to share first",
+  "@diaryShareNothingSelected": {
+    "description": "Share sheet hint when neither text nor images are selected."
+  },
+  "diaryShareInProgress": "Preparing to share",
+  "@diaryShareInProgress": {
+    "description": "Loading overlay label while a share is prepared."
+  },
+  "diaryShareTextCopiedForApp": "Text copied — paste it in {app}",
+  "@diaryShareTextCopiedForApp": {
+    "description": "Hint after sharing images to an app: the text is on the clipboard.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareTextCopied": "Text copied — paste it in the app you shared to",
+  "@diaryShareTextCopied": {
+    "description": "Hint after sharing images via the system sheet: the text is on the clipboard."
+  },
+  "diaryShareCopied": "Copied to clipboard",
+  "@diaryShareCopied": {
+    "description": "Hint after copying the text."
+  },
+  "diaryShareImagesTrimmed": "Up to {count} images per share — the first {count} were sent",
+  "@diaryShareImagesTrimmed": {
+    "description": "Hint when more images were selected than the target accepts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareImagesMissing": "{count} image(s) could not be read and were left out",
+  "@diaryShareImagesMissing": {
+    "description": "Hint when some images could not be read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareAppUnavailable": "Couldn't open {app}. Make sure it is installed and up to date",
+  "@diaryShareAppUnavailable": {
+    "description": "Hint when the target app cannot receive the share.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareNothingToShare": "Nothing to share",
+  "@diaryShareNothingToShare": {
+    "description": "Hint when there is nothing to share."
+  },
+  "diaryShareFailed": "Share failed: {error}",
+  "@diaryShareFailed": {
+    "description": "Hint when sharing fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
   }
 }

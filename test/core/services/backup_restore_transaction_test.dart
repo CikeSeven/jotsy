@@ -69,6 +69,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"cellStyle":"heat"}',
         );
         await fixture.settings.setDiaryCardStyleRaw('{"v":1,"current":{}}');
+        await fixture.settings.setDiaryShareOptionsRaw('{"title":false}');
         final originalStore = SharedPreferencesStorePlatform.instance;
         final before = await originalStore.getAll();
         final store = _FailingPreferences(before, throwError);
@@ -84,6 +85,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['createDiaryDraftRaw'] = '{"title":"incoming draft"}';
         settings['calendarDisplayOptionsRaw'] = '{"cellStyle":"photo"}';
         settings['diaryCardStyleRaw'] = '{"v":1,"saved":[]}';
+        settings['diaryShareOptionsRaw'] = '{"title":true}';
         final row =
             ((incoming['database'] as Map)['diaries'] as List).single as Map;
         row['title'] = 'incoming diary';
@@ -112,6 +114,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"cellStyle":"heat"}',
         );
         expect(fixture.settings.diaryCardStyleRaw, '{"v":1,"current":{}}');
+        expect(fixture.settings.diaryShareOptionsRaw, '{"title":false}');
         expect(await store.getAll(), before);
         final recreated = await SettingsService.create();
         expect(recreated.themeModeNotifier.value, ThemeMode.light);

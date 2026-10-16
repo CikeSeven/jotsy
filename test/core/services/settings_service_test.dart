@@ -424,4 +424,62 @@ void main() {
       },
     );
   });
+
+  group('SettingsService diary share options', () {
+    const key = 'app.settings.diary_share_options';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryShareOptionsRaw, isNull);
+
+      await settings.setDiaryShareOptionsRaw(' {"location":true} ');
+      expect(settings.diaryShareOptionsRaw, '{"location":true}');
+      expect(
+        (await SettingsService.create()).diaryShareOptionsRaw,
+        '{"location":true}',
+      );
+
+      await settings.setDiaryShareOptionsRaw('  ');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 7});
+      final settings = await SettingsService.create();
+      expect(settings.diaryShareOptionsRaw, isNull);
+    });
+
+    test(
+      'backups carry the options and older backups keep the local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryShareOptionsRaw('{"title":false}');
+
+        expect(
+          BackupSettings.capture(settings)['diaryShareOptionsRaw'],
+          '{"title":false}',
+        );
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryShareOptionsRaw, '{"title":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryShareOptionsRaw': <String, dynamic>{'tags': false},
+        });
+        expect(settings.diaryShareOptionsRaw, '{"tags":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryShareOptionsRaw': null,
+        });
+        expect(settings.diaryShareOptionsRaw, isNull);
+      },
+    );
+  });
 }

@@ -3514,4 +3514,125 @@ class AppLocalizationsZh extends AppLocalizations {
   String diaryCardStyleValuePercent(String value) {
     return '$value%';
   }
+
+  @override
+  String get previewShare => '分享';
+
+  @override
+  String get diaryShareSheetTitle => '分享日记';
+
+  @override
+  String get diaryShareContentSection => '分享内容';
+
+  @override
+  String get diaryShareOptionTitle => '标题';
+
+  @override
+  String get diaryShareOptionBody => '正文';
+
+  @override
+  String get diaryShareOptionDate => '日期';
+
+  @override
+  String get diaryShareOptionMoodWeather => '心情与天气';
+
+  @override
+  String get diaryShareOptionLocation => '地点';
+
+  @override
+  String get diaryShareOptionTags => '标签';
+
+  @override
+  String get diaryShareOptionImages => '图片';
+
+  @override
+  String get diaryShareTextEmpty => '未选择文字内容，将只分享图片';
+
+  @override
+  String diaryShareImagesSelected(int selected, int total) {
+    return '已选 $selected/$total 张，微博等应用单次最多 9 张';
+  }
+
+  @override
+  String diaryShareImageLabel(int index) {
+    return '第 $index 张图片';
+  }
+
+  @override
+  String get diaryShareTargetsSection => '分享到';
+
+  @override
+  String get diaryShareTargetWeibo => '微博';
+
+  @override
+  String get diaryShareTargetXiaohongshu => '小红书';
+
+  @override
+  String get diaryShareTargetWechat => '微信';
+
+  @override
+  String get diaryShareTargetQq => 'QQ';
+
+  @override
+  String get diaryShareTargetSystem => '更多应用';
+
+  @override
+  String get diaryShareCopyText => '复制文字';
+
+  @override
+  String get diaryShareClipboardHint => '带图分享时文字会自动复制，在发布页粘贴即可。';
+
+  @override
+  String get diaryShareMoreSection => '其他方式';
+
+  @override
+  String get diaryShareLongImage => '分享为长图';
+
+  @override
+  String get diaryShareLongImageSubtitle => '按预览页的样子生成一整张图片';
+
+  @override
+  String diaryShareRequiresImage(String app) {
+    return '$app需要至少一张图片';
+  }
+
+  @override
+  String get diaryShareNothingSelected => '先选择要分享的内容';
+
+  @override
+  String get diaryShareInProgress => '正在准备分享';
+
+  @override
+  String diaryShareTextCopiedForApp(String app) {
+    return '文字已复制，在$app里粘贴即可';
+  }
+
+  @override
+  String get diaryShareTextCopied => '文字已复制，可在目标应用中粘贴';
+
+  @override
+  String get diaryShareCopied => '已复制到剪贴板';
+
+  @override
+  String diaryShareImagesTrimmed(int count) {
+    return '单次最多分享 $count 张图片，已取前 $count 张';
+  }
+
+  @override
+  String diaryShareImagesMissing(int count) {
+    return '$count 张图片读取失败，未一并分享';
+  }
+
+  @override
+  String diaryShareAppUnavailable(String app) {
+    return '无法打开$app，请确认已安装并更新到最新版本';
+  }
+
+  @override
+  String get diaryShareNothingToShare => '没有可分享的内容';
+
+  @override
+  String diaryShareFailed(String error) {
+    return '分享失败：$error';
+  }
 }

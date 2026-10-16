@@ -16,7 +16,7 @@
 │  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
 │  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops 拆分）
-│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份、其他日记应用与云端笔记导入等）
+│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份、其他日记应用与云端笔记导入、分享到其他应用等）
 │  ├─ ui/
 │  │  ├─ diaries/                    # 日记主业务模块（已分层）
 │  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
@@ -94,6 +94,7 @@
 - 必须：纪念日存 Drift `anniversaries` 表（业务 id `anniversaryId`；`linkedDiaryId` 存日记业务 id、不建外键），随完整备份导出、覆盖恢复与合并（按 `anniversaryId` 去重），日记包不含纪念日；某天落在哪、下一次是哪天一律经 `AnniversaryCalendar` 推算，禁止页面自行换算公历/农历；纪念日页面与提示统一经 `anniversary_navigation.dart` 打开，关联的日记只经 `watchActiveDiaryWithTags`（排除回收站）读取，彻底删除日记时解除关联。不做提醒通知。
 - 必须：日记卡片外观统一收在 `DiaryCardStyleSettings`（单个 JSON 设置键 `diaryCardStyleRaw`：当前样式 + 最多 12 份“我的样式”，逐字段容错解析，随备份导出与失败回滚），渲染统一经 `DiaryCard` + `DiaryCardResolvedStyle`；禁止各页另拼日记卡片或另加零散的卡片外观设置键（标签显示数量 `diaryCardTagLimit` 为既有独立键）。`DiaryCardStyle.defaults` 必须逐项等于 DESIGN.md §5.1 的默认规格；未解封胶囊只套用表面样式，心情色与标签色回退主题色。编辑入口为设置 → 外观与语言 → 日记卡片样式（日记页视图选项面板有快捷入口）。
 - 必须：日历的法定节假日（休/班）只取自 tyme 的 `LegalHoliday`，经 `CalendarHolidayDay` 读取，开关为 `CalendarDisplayOptions.holidayMode`；数字左上角标统一经 `CalendarCellLeadingBadge` 按优先级取一个，禁止在日期格另加角标位置。
+- 必须：日记分享统一经预览页的分享面板 `showDiaryShareSheet`（只负责挑选）→ `DiaryShareController`（执行）；分享文字只经 `DiaryShareContent.composeText` 组装为纯文本（社交应用不渲染 Markdown），内容开关只存于 `DiaryShareOptions`（单个 JSON 设置键 `app.settings.diary_share_options`，逐字段容错并随备份导出），地点默认不带。分享到指定应用只经 `DiaryShareChannel`（Android 原生按包名发 Intent），图片先暂存到缓存 `diary_share/`（`DiaryShareFileProvider` 只暴露该目录，禁止直接交出日记原图路径），带图时文字经剪贴板传递；新增目标应用在 `DiaryShareTarget` 登记，并同步 `AndroidManifest.xml` 的 `<queries>` 包名。视觉规范见 DESIGN.md §5.8。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。

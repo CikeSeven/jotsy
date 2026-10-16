@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只暴露分享暂存目录：Dart 侧把待分享的图片复制到 cacheDir/diary_share/ 后
+     再交给目标应用，日记原图所在的私有目录不对外开放。 -->
+<paths>
+    <cache-path name="diary_share" path="diary_share/" />
+</paths>

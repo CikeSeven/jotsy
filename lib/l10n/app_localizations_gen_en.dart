@@ -3876,4 +3876,129 @@ class AppLocalizationsEn extends AppLocalizations {
   String diaryCardStyleValuePercent(String value) {
     return '$value%';
   }
+
+  @override
+  String get previewShare => 'Share';
+
+  @override
+  String get diaryShareSheetTitle => 'Share diary';
+
+  @override
+  String get diaryShareContentSection => 'Content';
+
+  @override
+  String get diaryShareOptionTitle => 'Title';
+
+  @override
+  String get diaryShareOptionBody => 'Body';
+
+  @override
+  String get diaryShareOptionDate => 'Date';
+
+  @override
+  String get diaryShareOptionMoodWeather => 'Mood & weather';
+
+  @override
+  String get diaryShareOptionLocation => 'Location';
+
+  @override
+  String get diaryShareOptionTags => 'Tags';
+
+  @override
+  String get diaryShareOptionImages => 'Images';
+
+  @override
+  String get diaryShareTextEmpty =>
+      'No text selected — only images will be shared';
+
+  @override
+  String diaryShareImagesSelected(int selected, int total) {
+    return '$selected of $total selected · Weibo and similar apps take up to 9';
+  }
+
+  @override
+  String diaryShareImageLabel(int index) {
+    return 'Image $index';
+  }
+
+  @override
+  String get diaryShareTargetsSection => 'Share to';
+
+  @override
+  String get diaryShareTargetWeibo => 'Weibo';
+
+  @override
+  String get diaryShareTargetXiaohongshu => 'Xiaohongshu';
+
+  @override
+  String get diaryShareTargetWechat => 'WeChat';
+
+  @override
+  String get diaryShareTargetQq => 'QQ';
+
+  @override
+  String get diaryShareTargetSystem => 'More apps';
+
+  @override
+  String get diaryShareCopyText => 'Copy text';
+
+  @override
+  String get diaryShareClipboardHint =>
+      'When images are attached, the text is copied for you — just paste it into the post.';
+
+  @override
+  String get diaryShareMoreSection => 'Other formats';
+
+  @override
+  String get diaryShareLongImage => 'Share as long image';
+
+  @override
+  String get diaryShareLongImageSubtitle =>
+      'Renders the diary as it looks in the preview';
+
+  @override
+  String diaryShareRequiresImage(String app) {
+    return '$app needs at least one image';
+  }
+
+  @override
+  String get diaryShareNothingSelected => 'Choose something to share first';
+
+  @override
+  String get diaryShareInProgress => 'Preparing to share';
+
+  @override
+  String diaryShareTextCopiedForApp(String app) {
+    return 'Text copied — paste it in $app';
+  }
+
+  @override
+  String get diaryShareTextCopied =>
+      'Text copied — paste it in the app you shared to';
+
+  @override
+  String get diaryShareCopied => 'Copied to clipboard';
+
+  @override
+  String diaryShareImagesTrimmed(int count) {
+    return 'Up to $count images per share — the first $count were sent';
+  }
+
+  @override
+  String diaryShareImagesMissing(int count) {
+    return '$count image(s) could not be read and were left out';
+  }
+
+  @override
+  String diaryShareAppUnavailable(String app) {
+    return 'Couldn\'t open $app. Make sure it is installed and up to date';
+  }
+
+  @override
+  String get diaryShareNothingToShare => 'Nothing to share';
+
+  @override
+  String diaryShareFailed(String error) {
+    return 'Share failed: $error';
+  }
 }

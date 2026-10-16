@@ -32,11 +32,14 @@ import '../../widgets/qweather_icon.dart';
 import '../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../anniversaries/models/anniversary_draft.dart';
 import '../controllers/diary_file_export_controller.dart';
+import '../controllers/diary_share_controller.dart';
 import '../providers/diary_detail_provider.dart';
 import '../providers/diary_typography_provider.dart';
+import '../sections/diary_share_sheet.dart';
 import '../sections/diary_typography_sheet.dart';
 import '../utils/diary_markdown_exporter.dart';
 import '../viewmodels/diary_quill_styles.dart';
+import '../viewmodels/diary_share_messages.dart';
 import '../widgets/diary_mobile_toolbar.dart';
 import '../widgets/energy_battery_indicator.dart';
 import '../widgets/publish_diary_cover_sliver.dart';
@@ -46,6 +49,9 @@ import 'edit_diary_page.dart';
 import 'locked_diary_page.dart';
 import '../models/time_capsule.dart';
 import '../models/diary_export_document.dart';
+import '../models/diary_share_content.dart';
+import '../models/diary_share_options.dart';
+import '../models/diary_share_target.dart';
 
 /// 预览页返回结果。
 enum DiaryPreviewResult { deleted }
@@ -95,6 +101,7 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
   Future<pw.Font>? _pdfUnifiedFontLoading;
   bool _showActionLoading = false;
   String _actionLoadingLabel = '';
+  final DiaryShareController _shareController = DiaryShareController();
 
   Widget _buildBackLeading() {
     return IconButton(
@@ -329,6 +336,61 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               _isSharingImage = false;
               _shareCaptureStaticCover = false;
             });
+          }
+        }
+      },
+    );
+  }
+
+  /// 打开分享面板，按用户的选择分享到指定应用、系统分享或复制文字。
+  ///
+  /// 已安装应用的检测与面板打开并行：检测完成前面板先显示系统分享与复制，
+  /// 不让原生查询拖慢面板出现。内容开关在面板内每次改动即保存。
+  Future<void> _openShareSheet(DiaryWithTags detail) async {
+    final settings = await ref.read(settingsServiceProvider.future);
+    if (!mounted) {
+      return;
+    }
+    final request = await showDiaryShareSheet(
+      context,
+      content: DiaryShareContent.fromDetail(detail),
+      initialOptions: DiaryShareOptions.fromRaw(settings.diaryShareOptionsRaw),
+      // 开关只是下次打开时的默认值，写入失败不打断本次分享。
+      onOptionsChanged: (DiaryShareOptions options) => unawaited(
+        settings
+            .setDiaryShareOptionsRaw(options.toRaw())
+            .catchError((Object _) {}),
+      ),
+      availableTargets: _shareController.availableTargets(),
+    );
+    if (!mounted || request == null) {
+      return;
+    }
+    if (request.action == DiaryShareAction.longImage) {
+      await _shareAsLongImage();
+      return;
+    }
+    final l10n = context.l10n;
+    await _runPreviewActionWithLoading(
+      label: l10n.diaryShareInProgress,
+      action: () async {
+        try {
+          final target = request.target;
+          final result = target == null
+              ? await _shareController.copyText(request.text)
+              : await _shareController.share(
+                  target,
+                  text: request.text,
+                  images: request.images,
+                  chooserTitle: l10n.diaryShareTargetsSection,
+                );
+          final message = diaryShareResultMessage(l10n, result, target: target);
+          if (mounted && message != null) {
+            _showHint(message);
+          }
+        } catch (error) {
+          if (mounted) {
+            _showHint(l10n.diaryShareFailed(error.toString()));
           }
         }
       },
@@ -793,11 +855,11 @@ class _DiaryPreviewPageState extends ConsumerState<DiaryPreviewPage> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 ListTile(
-                  leading: const FaIcon(FontAwesomeIcons.image, size: 16),
-                  title: Text(context.l10n.autoT0114),
+                  leading: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
+                  title: Text(context.l10n.previewShare),
                   onTap: () async {
                     Navigator.of(sheetContext).pop();
-                    await _shareAsLongImage();
+                    await _openShareSheet(detail);
                   },
                 ),
                 ListTile(

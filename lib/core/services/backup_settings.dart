@@ -22,6 +22,7 @@ class BackupSettings {
     'diaryCardTagLimit': settingsService.diaryCardTagLimit,
     'calendarDisplayOptionsRaw': settingsService.calendarDisplayOptionsRaw,
     'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
+    'diaryShareOptionsRaw': settingsService.diaryShareOptionsRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -126,6 +127,17 @@ class BackupSettings {
     if (settingsNode.containsKey('diaryCardStyleRaw')) {
       final cardStyleRaw = settingsNode['diaryCardStyleRaw'];
       await settingsService.setDiaryCardStyleRaw(switch (cardStyleRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 旧版备份没有分享开关时保留本机选项；值同样按 JSON 字符串交给日记模块。
+    if (settingsNode.containsKey('diaryShareOptionsRaw')) {
+      final shareOptionsRaw = settingsNode['diaryShareOptionsRaw'];
+      await settingsService.setDiaryShareOptionsRaw(switch (shareOptionsRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

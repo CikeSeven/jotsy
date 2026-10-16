@@ -20,6 +20,10 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../anniversaries/controllers/anniversary_navigation.dart';
+import '../../anniversaries/models/anniversary_draft.dart';
+import '../../anniversaries/providers/anniversary_providers.dart';
+import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/pages/diary_preview_page.dart';
@@ -34,6 +38,7 @@ import '../viewmodels/calendar_day_summary.dart';
 import '../viewmodels/calendar_holiday_day.dart';
 import '../viewmodels/calendar_lunar_day.dart';
 import '../viewmodels/calendar_month_stats.dart';
+import '../widgets/calendar_anniversary_section.dart';
 import '../widgets/calendar_day_actions_sheet.dart';
 import '../widgets/calendar_day_cards_sliver.dart';
 import '../widgets/calendar_day_content_switcher.dart';
@@ -56,6 +61,8 @@ import '../../../app/theme/app_effects.dart';
 
 part 'calendar_page_sections.dart';
 part 'calendar_page_range.dart';
+part 'calendar_page_anniversaries.dart';
+part '../controllers/calendar_anniversary_actions.dart';
 part '../controllers/calendar_page_controller.dart';
 part '../controllers/calendar_create_actions.dart';
 part '../controllers/calendar_display_options_actions.dart';
@@ -207,6 +214,10 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
         _cachedInlineImages = images;
       }
     }
+    // 纪念日索引随列表整体重建；关闭显示时不订阅，网格与卡片都不画。
+    final anniversaryIndex = options.showAnniversaries
+        ? ref.watch(anniversaryCalendarIndexProvider)
+        : AnniversaryCalendarIndex.empty;
     final day = _resolveDayContent(
       ref.watch(calendarDayDiariesProvider(_selectedDay)),
       fallbackSummary: summaries[_selectedDay],
@@ -239,6 +250,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                       summaries: summaries,
                       markersAsync: markersAsync,
                       moodOptions: moodOptions,
+                      anniversaryIndex: anniversaryIndex,
                       now: now,
                     ),
                   ),
@@ -273,6 +285,7 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                     ),
                   ),
                 ),
+                _buildAnniversarySliver(anniversaryIndex, now),
                 ..._buildDayDiaryContentSlivers(day, options),
                 if (options.showOnThisDay) _buildOnThisDaySliver(now),
                 const SliverToBoxAdapter(

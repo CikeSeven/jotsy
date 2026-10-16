@@ -15,12 +15,16 @@ class BackupPayload {
     required this.diaries,
     required this.tags,
     required this.diaryTags,
+    this.anniversaries = const <Anniversary>[],
     this.settings,
   });
 
   final List<Diary> diaries;
   final List<Tag> tags;
   final List<DiaryTag> diaryTags;
+
+  /// 纪念日（schema v9 起）。旧备份与日记包没有这张表，解析为空列表。
+  final List<Anniversary> anniversaries;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -60,6 +64,18 @@ class BackupPayload {
           database,
           'diaryTags',
         ).map(DiaryTag.fromJson).toList(growable: false),
+        anniversaries: _optionalRows(database, 'anniversaries')
+            .map((row) {
+              return Anniversary.fromJson({
+                // 可省略的列按数据库默认值补齐，必填列缺失照常报错。
+                'recurrence': AnniversaryRecurrence.solarYearly.name,
+                'note': '',
+                'isPinned': false,
+                'metadata': '{}',
+                ...row,
+              });
+            })
+            .toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -81,12 +97,36 @@ class BackupPayload {
     return rows.cast<Map<String, dynamic>>();
   }
 
+  /// 后来新增的表：旧版本导出的备份没有这个键，按空表处理；键存在时与
+  /// [_rows] 同样严格，错误类型或坏行不能当作空表。
+  static List<Map<String, dynamic>> _optionalRows(
+    Map<String, dynamic> database,
+    String name,
+  ) {
+    if (!database.containsKey(name)) {
+      return const <Map<String, dynamic>>[];
+    }
+    return _rows(database, name);
+  }
+
   void _validateKeys() {
     _unique(diaries.map((row) => row.id));
     _unique(tags.map((row) => row.id));
     _unique(diaries.map((row) => row.diaryId));
     _unique(tags.map((row) => row.name));
     _unique(diaryTags.map((row) => (row.diaryId, row.tagId)));
+    _unique(anniversaries.map((row) => row.id));
+    _unique(anniversaries.map((row) => row.anniversaryId));
+    // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
+    // 才在页面上算不出日子。
+    for (final row in anniversaries) {
+      final title = row.title.trim();
+      if (parseAnniversaryDate(row.baseDate) == null ||
+          title.isEmpty ||
+          title.length > 100) {
+        throw const FormatException('备份中的纪念日数据无效');
+      }
+    }
   }
 
   BackupPayload _withRestorableTagRelations() {
@@ -105,6 +145,7 @@ class BackupPayload {
                 diaryIds.contains(row.diaryId) && tagIds.contains(row.tagId),
           )
           .toList(growable: false),
+      anniversaries: anniversaries,
       settings: settings,
     );
   }
@@ -123,7 +164,7 @@ class BackupPayload {
     required AppDatabase database,
     required SettingsService settingsService,
   }) async {
-    // 三张表读取同一个事务快照，避免日记与标签在导出时不同步。
+    // 所有表读取同一个事务快照，避免日记与标签在导出时不同步。
     final tables = await database.transaction(
       () async => <String, Object?>{
         'diaries': (await database.select(database.diaries).get())
@@ -133,6 +174,9 @@ class BackupPayload {
             .map((row) => row.toJson())
             .toList(),
         'diaryTags': (await database.select(database.diaryTags).get())
+            .map((row) => row.toJson())
+            .toList(),
+        'anniversaries': (await database.select(database.anniversaries).get())
             .map((row) => row.toJson())
             .toList(),
       },
@@ -146,6 +190,9 @@ class BackupPayload {
   }
 
   /// 日记包载荷：指定日记及其标签与关联，不含应用设置。
+  ///
+  /// 也不含纪念日：日记包是“分享这几篇日记”，纪念日属于整本日记，只随完整
+  /// 备份走；关联了这些日记的纪念日留在本机。
   ///
   /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
   /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行，导出
@@ -235,6 +282,7 @@ class BackupPayload {
       diaries: restored,
       tags: tags,
       diaryTags: diaryTags,
+      anniversaries: anniversaries,
       settings: restoredSettings,
     );
   }
@@ -244,6 +292,7 @@ class BackupPayload {
     await database.delete(database.diaryTags).go();
     await database.delete(database.diaries).go();
     await database.delete(database.tags).go();
+    await database.delete(database.anniversaries).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -256,6 +305,11 @@ class BackupPayload {
       batch.insertAll(
         database.diaryTags,
         diaryTags.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 纪念日只按业务 id 引用日记、没有外键，写入顺序无关。
+      batch.insertAll(
+        database.anniversaries,
+        anniversaries.map((row) => row.toCompanion(false)).toList(),
       );
     });
   }

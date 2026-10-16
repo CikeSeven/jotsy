@@ -2428,4 +2428,182 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get calendarHolidayMakeUpWorkday => '调休上班';
+
+  @override
+  String backupImportAnniversaryCount(int count) {
+    return '纪念日 $count 个';
+  }
+
+  @override
+  String backupImportExistingAnniversaryCount(int count) {
+    return '其中 $count 个纪念日本机已存在';
+  }
+
+  @override
+  String backupImportModeOverwriteAnniversariesOnly(int count) {
+    return '添加新内容，并用文件中的版本替换本机已存在的 $count 个纪念日';
+  }
+
+  @override
+  String backupImportModeOverwriteAnniversariesExtra(int count) {
+    return '同时替换本机已存在的 $count 个纪念日';
+  }
+
+  @override
+  String backupOverwriteAllAnniversaries(int count) {
+    return '$count 个纪念日';
+  }
+
+  @override
+  String backupOverwriteExistingAnniversariesBody(int count) {
+    return '本机已存在的 $count 个纪念日将被文件中的版本替换，本机上的修改会永久丢失。';
+  }
+
+  @override
+  String backupImportAnniversaryMergeResult(int added) {
+    return '纪念日：新增 $added 个';
+  }
+
+  @override
+  String backupImportAnniversaryMergeSkippedResult(int added, int skipped) {
+    return '纪念日：新增 $added 个，跳过 $skipped 个本机已存在的';
+  }
+
+  @override
+  String backupImportAnniversaryOverwriteResult(int added, int replaced) {
+    return '纪念日：新增 $added 个，覆盖 $replaced 个';
+  }
+
+  @override
+  String get calendarShowAnniversaries => '纪念日';
+
+  @override
+  String get calendarShowAnniversariesDescription => '在日期上标出纪念日，选中那天时显示纪念日卡片。';
+
+  @override
+  String get calendarDayActionAnniversary => '添加纪念日';
+
+  @override
+  String get calendarDayActionAnniversaryDescription => '记下这一天，以后每年日历上都会标出它';
+
+  @override
+  String get calendarDayActionCountdownDescription => '倒数到这一天';
+
+  @override
+  String get anniversarySectionTitle => '纪念日';
+
+  @override
+  String anniversaryOrdinal(int count) {
+    return '第 $count 周年';
+  }
+
+  @override
+  String anniversaryTodayOrdinal(int count) {
+    return '今天是第 $count 周年';
+  }
+
+  @override
+  String anniversaryDaysLeft(int count) {
+    return '还有 $count 天';
+  }
+
+  @override
+  String anniversaryDaysSince(int count) {
+    return '已经 $count 天';
+  }
+
+  @override
+  String get anniversaryBaseDay => '开始的那一天';
+
+  @override
+  String get anniversaryCountdownLabel => '倒数日';
+
+  @override
+  String get anniversaryIsToday => '就是今天';
+
+  @override
+  String get anniversaryAdjustedNote => '今年没有这一天，顺延到相近的日子';
+
+  @override
+  String get anniversaryNewTitle => '新建纪念日';
+
+  @override
+  String get anniversaryEditTitle => '编辑纪念日';
+
+  @override
+  String get anniversaryFieldName => '名称';
+
+  @override
+  String get anniversaryNameHint => '如：在一起、妈妈生日、考研';
+
+  @override
+  String get anniversaryNameRequired => '请输入名称';
+
+  @override
+  String get anniversaryFieldDate => '日期';
+
+  @override
+  String get anniversaryFieldRepeat => '重复';
+
+  @override
+  String get anniversaryRepeatSolar => '每年';
+
+  @override
+  String get anniversaryRepeatLunar => '农历每年';
+
+  @override
+  String get anniversaryRepeatOnce => '不重复';
+
+  @override
+  String anniversaryRepeatSolarDescription(String date) {
+    return '每年的 $date 都会标出这一天';
+  }
+
+  @override
+  String get anniversaryRepeatLeapDayDescription => '每年的 2月29日，平年顺延到 2月28日';
+
+  @override
+  String anniversaryRepeatLunarDescription(String date) {
+    return '每年农历$date，按农历换算到当年的日子';
+  }
+
+  @override
+  String get anniversaryRepeatOnceDescription => '只记这一天：之前倒数还有几天，之后记已经几天';
+
+  @override
+  String anniversaryLunarYearDate(String year, String date) {
+    return '农历$year年$date';
+  }
+
+  @override
+  String get anniversaryFieldNote => '备注';
+
+  @override
+  String get anniversaryNoteHint => '写点什么（可选）';
+
+  @override
+  String get anniversaryPin => '置顶';
+
+  @override
+  String get anniversaryPinDescription => '在纪念日列表里排在最前';
+
+  @override
+  String get anniversaryDelete => '删除纪念日';
+
+  @override
+  String get anniversaryDeleteConfirmTitle => '删除纪念日？';
+
+  @override
+  String anniversaryDeleteConfirmBody(String title) {
+    return '“$title”将从日历中移除，关联的日记不受影响。';
+  }
+
+  @override
+  String get anniversaryDeleted => '已删除纪念日';
+
+  @override
+  String get anniversaryCreated => '已添加纪念日';
+
+  @override
+  String get anniversarySaveFailed => '保存失败，请重试';
 }

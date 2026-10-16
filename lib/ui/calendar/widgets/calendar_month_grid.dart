@@ -5,6 +5,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../models/calendar_display_options.dart';
 import '../models/calendar_range_selection.dart';
 import '../viewmodels/calendar_day_summary.dart';
@@ -35,6 +36,7 @@ class CalendarMonthGrid extends StatefulWidget {
     required this.onFormatChanged,
     this.onDayLongPressed,
     this.range,
+    this.anniversaryIndex,
   });
 
   static final DateTime firstDay = DateTime(2010, 1, 1);
@@ -63,6 +65,10 @@ class CalendarMonthGrid extends StatefulWidget {
   /// 单独高亮（点按总是落在首尾之一）。范围点按逻辑由控制器处理，不使用
   /// table_calendar 的 rangeSelectionMode：整格由 [CalendarDayCell] 绘制。
   final CalendarRangeSelection? range;
+
+  /// 纪念日按日索引；不显示纪念日时为 null。心情/标签筛选与范围选择都不
+  /// 影响纪念日——它们是日期本身的属性，不是日记。
+  final AnniversaryCalendarIndex? anniversaryIndex;
 
   @override
   State<CalendarMonthGrid> createState() => _CalendarMonthGridState();
@@ -144,6 +150,7 @@ class CalendarMonthGrid extends StatefulWidget {
                     : null,
                 lunar: lunar ? CalendarLunarDay.of(day) : null,
                 holiday: holidays ? CalendarHolidayDay.of(day) : null,
+                anniversary: anniversaryIndex?.titleOn(day),
               );
             },
         dowBuilder: (BuildContext context, DateTime day) {

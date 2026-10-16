@@ -19,6 +19,9 @@ enum CalendarDayAction {
 
   /// 以这一天为起点选择日期范围，统计这段时间。
   range,
+
+  /// 以这一天新建纪念日（未来日期为倒数日）。
+  anniversary,
 }
 
 /// 长按日期弹出的快捷操作面板：标题为日期，下方为可执行的操作；返回所选
@@ -108,6 +111,14 @@ Future<CalendarDayAction?> showCalendarDayActionsSheet(
                   l10n.calendarDayActionCapsule,
                   description: l10n.calendarDayActionCapsuleDescription,
                 ),
+              action(
+                CalendarDayAction.anniversary,
+                FontAwesomeIcons.heart,
+                l10n.calendarDayActionAnniversary,
+                description: isFuture
+                    ? l10n.calendarDayActionCountdownDescription
+                    : l10n.calendarDayActionAnniversaryDescription,
+              ),
               action(
                 CalendarDayAction.range,
                 FontAwesomeIcons.arrowsLeftRight,

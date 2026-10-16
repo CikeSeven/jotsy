@@ -4495,6 +4495,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Make-up workday'**
   String get calendarHolidayMakeUpWorkday;
+
+  /// Import sheet file summary: number of anniversaries in the file.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 anniversary} other{{count} anniversaries}}'**
+  String backupImportAnniversaryCount(int count);
+
+  /// Import sheet file summary: anniversaries in the file that already exist on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 anniversary is already on this device} other{{count} anniversaries are already on this device}}'**
+  String backupImportExistingAnniversaryCount(int count);
+
+  /// Description of the merge-and-overwrite mode when only anniversaries overlap.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Adds new items and replaces the existing anniversary with the version in the file} other{Adds new items and replaces the {count} existing anniversaries with the versions in the file}}'**
+  String backupImportModeOverwriteAnniversariesOnly(int count);
+
+  /// Extra line of the merge-and-overwrite mode description when anniversaries overlap as well as diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Also replaces 1 existing anniversary} other{Also replaces {count} existing anniversaries}}'**
+  String backupImportModeOverwriteAnniversariesExtra(int count);
+
+  /// Bullet in the replace-everything warning: anniversaries that will be deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 anniversary} other{{count} anniversaries}}'**
+  String backupOverwriteAllAnniversaries(int count);
+
+  /// Merge-and-overwrite warning: anniversaries that will be replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The anniversary already on this device will be replaced by the version in the file; local edits will be lost for good.} other{The {count} anniversaries already on this device will be replaced by the versions in the file; local edits will be lost for good.}}'**
+  String backupOverwriteExistingAnniversariesBody(int count);
+
+  /// Second line of the merge import result: anniversaries added.
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =0{Anniversaries: none added} =1{Anniversaries: 1 added} other{Anniversaries: {added} added}}'**
+  String backupImportAnniversaryMergeResult(int added);
+
+  /// Second line of the merge import result: anniversaries added and skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries: {added} added, {skipped} skipped (already on this device)'**
+  String backupImportAnniversaryMergeSkippedResult(int added, int skipped);
+
+  /// Second line of the merge-and-overwrite import result: anniversaries added and overwritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries: {added} added, {replaced} overwritten'**
+  String backupImportAnniversaryOverwriteResult(int added, int replaced);
+
+  /// Switch for anniversaries in the Sections group of the calendar display options.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get calendarShowAnniversaries;
+
+  /// Description of the anniversaries switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Marks anniversaries on the dates and shows their cards for the selected day.'**
+  String get calendarShowAnniversariesDescription;
+
+  /// Date long-press menu: create an anniversary on this day.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an anniversary'**
+  String get calendarDayActionAnniversary;
+
+  /// Description of Add an anniversary for today or past dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember this day; the calendar marks it every year'**
+  String get calendarDayActionAnniversaryDescription;
+
+  /// Description of Add an anniversary for future dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Count down to this day'**
+  String get calendarDayActionCountdownDescription;
+
+  /// Screen-reader title of the anniversary card under the selected day.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get anniversarySectionTitle;
+
+  /// Which anniversary this is, in years.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-year anniversary} other{{count}-year anniversary}}'**
+  String anniversaryOrdinal(int count);
+
+  /// Anniversary count when it is today.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-year anniversary today} other{{count}-year anniversary today}}'**
+  String anniversaryTodayOrdinal(int count);
+
+  /// Days until the next anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day left} other{{count} days left}}'**
+  String anniversaryDaysLeft(int count);
+
+  /// Days since the first date.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day since} other{{count} days since}}'**
+  String anniversaryDaysSince(int count);
+
+  /// The first time of an anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'The day it began'**
+  String get anniversaryBaseDay;
+
+  /// Label of a one-off anniversary that has not come yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Countdown'**
+  String get anniversaryCountdownLabel;
+
+  /// The anniversary is today.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s today'**
+  String get anniversaryIsToday;
+
+  /// Note when the date does not exist this year (Feb 29, a missing leap month, the 30th of a short lunar month).
+  ///
+  /// In en, this message translates to:
+  /// **'This year has no such date, so it moves to the nearest day'**
+  String get anniversaryAdjustedNote;
+
+  /// Anniversary editor title when creating.
+  ///
+  /// In en, this message translates to:
+  /// **'New anniversary'**
+  String get anniversaryNewTitle;
+
+  /// Anniversary editor title when editing.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit anniversary'**
+  String get anniversaryEditTitle;
+
+  /// Anniversary editor: name field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get anniversaryFieldName;
+
+  /// Hint of the anniversary name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Together, Mom\'s birthday, Exam day'**
+  String get anniversaryNameHint;
+
+  /// Error when the anniversary name is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name'**
+  String get anniversaryNameRequired;
+
+  /// Anniversary editor: date field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get anniversaryFieldDate;
+
+  /// Anniversary editor: repeat rule label.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get anniversaryFieldRepeat;
+
+  /// Repeat rule: every year by the Gregorian calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get anniversaryRepeatSolar;
+
+  /// Repeat rule: every year by the Chinese lunar calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar yearly'**
+  String get anniversaryRepeatLunar;
+
+  /// Repeat rule: does not repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Once'**
+  String get anniversaryRepeatOnce;
+
+  /// Description of yearly repetition; date is the month and day (e.g. Nov 20).
+  ///
+  /// In en, this message translates to:
+  /// **'Marked every year on {date}'**
+  String anniversaryRepeatSolarDescription(String date);
+
+  /// Description of yearly repetition for Feb 29.
+  ///
+  /// In en, this message translates to:
+  /// **'Every year on Feb 29; Feb 28 in common years'**
+  String get anniversaryRepeatLeapDayDescription;
+
+  /// Description of lunar yearly repetition; date is the lunar month and day.
+  ///
+  /// In en, this message translates to:
+  /// **'Every year on lunar {date}, converted to that year\'s date'**
+  String anniversaryRepeatLunarDescription(String date);
+
+  /// Description of the one-off rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Just this day: counts down before it and counts up after'**
+  String get anniversaryRepeatOnceDescription;
+
+  /// Lunar date under the date field; year is the sexagenary year name, date the lunar month and day.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar {year} year, {date}'**
+  String anniversaryLunarYearDate(String year, String date);
+
+  /// Anniversary editor: note field label.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get anniversaryFieldNote;
+
+  /// Hint of the anniversary note field.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get anniversaryNoteHint;
+
+  /// Anniversary editor pin switch; pin action on the list and detail pages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get anniversaryPin;
+
+  /// Description of the anniversary pin switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep it at the top of the anniversary list'**
+  String get anniversaryPinDescription;
+
+  /// Delete button at the bottom of the anniversary editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete anniversary'**
+  String get anniversaryDelete;
+
+  /// Title of the delete anniversary confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this anniversary?'**
+  String get anniversaryDeleteConfirmTitle;
+
+  /// Body of the delete anniversary confirmation; title is the anniversary name.
+  ///
+  /// In en, this message translates to:
+  /// **'“{title}” will be removed from the calendar. Linked diaries are not affected.'**
+  String anniversaryDeleteConfirmBody(String title);
+
+  /// Message after deleting an anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversary deleted'**
+  String get anniversaryDeleted;
+
+  /// Message after creating an anniversary.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversary added'**
+  String get anniversaryCreated;
+
+  /// Message when saving an anniversary fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Try again.'**
+  String get anniversarySaveFailed;
 }
 
 class _AppLocalizationsDelegate

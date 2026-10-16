@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/anniversaries/providers/anniversary_providers.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/calendar/providers/calendar_diary_providers.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
@@ -45,6 +46,9 @@ Future<void> _pumpCalendar(
         ),
         moodOptionsProvider.overrideWith(
           (ref) => Stream.value(const <String>[]),
+        ),
+        anniversaryListProvider.overrideWith(
+          (ref) => Stream.value(const <Anniversary>[]),
         ),
       ],
       child: MaterialApp(

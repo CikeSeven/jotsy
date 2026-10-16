@@ -77,6 +77,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required Map<DateTime, CalendarDaySummary> summaries,
     required AsyncValue<List<DiaryCalendarMarker>> markersAsync,
     required List<String> moodOptions,
+    required AnniversaryCalendarIndex anniversaryIndex,
     required DateTime now,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -128,6 +129,7 @@ extension _CalendarPageSections on _CalendarPageState {
                 options: options,
                 summaries: summaries,
                 moodOptions: moodOptions,
+                anniversaryIndex: anniversaryIndex,
               ),
               if (filter.isActive)
                 Padding(
@@ -178,6 +180,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required CalendarDisplayOptions options,
     required Map<DateTime, CalendarDaySummary> summaries,
     required List<String> moodOptions,
+    required AnniversaryCalendarIndex anniversaryIndex,
   }) {
     final Widget body;
     if (_yearMode) {
@@ -214,6 +217,7 @@ extension _CalendarPageSections on _CalendarPageState {
         onDayLongPressed: (DateTime day) =>
             unawaited(_controller.onDayLongPressed(day)),
         range: _range,
+        anniversaryIndex: anniversaryIndex.isEmpty ? null : anniversaryIndex,
       );
     }
     return AnimatedSize(

@@ -13,6 +13,7 @@ void main() {
     expect(defaults.showMonthSummary, isTrue);
     expect(defaults.lunarMode, CalendarLunarMode.locale);
     expect(defaults.holidayMode, CalendarLunarMode.locale);
+    expect(defaults.showAnniversaries, isTrue);
   });
 
   test('every field survives an encode/decode round trip', () {
@@ -35,6 +36,7 @@ void main() {
       yearBasis: CalendarYearBasis.words,
       lunarMode: CalendarLunarMode.always,
       holidayMode: CalendarLunarMode.never,
+      showAnniversaries: false,
     );
 
     expect(CalendarDisplayOptions.decode(options.encode()), options);

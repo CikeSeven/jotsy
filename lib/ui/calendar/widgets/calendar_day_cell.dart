@@ -45,6 +45,7 @@ class CalendarDayCell extends StatelessWidget {
     this.image,
     this.lunar,
     this.holiday,
+    this.anniversary,
   });
 
   static const double _radius = 14;
@@ -69,6 +70,10 @@ class CalendarDayCell extends StatelessWidget {
 
   /// 法定节假日安排；普通日子或不显示节假日时为 null。
   final CalendarHolidayDay? holiday;
+
+  /// 当天第一条纪念日的名称；没有或不显示纪念日时为 null。显示农历时写在
+  /// 小字行，否则在数字左上画心形。
+  final String? anniversary;
 
   /// 三层排版下为底部指示物预留的高度（见 [CalendarCellLayout]）；热力格
   /// 没有指示物，数字组在整格居中。
@@ -350,25 +355,19 @@ class CalendarDayCell extends StatelessWidget {
     );
   }
 
-  /// 数字下方的农历小字；不显示农历时为 null。
+  /// 数字下方的小字（纪念日名称或农历）；不显示农历时为 null。
   Widget? _buildLunarLabel(ColorScheme colorScheme, {Color? onFill}) {
-    final lunar = this.lunar;
-    if (lunar == null) {
-      return null;
-    }
-    return CalendarCellLunarLabel(
-      text: lunar.cellLabel,
-      emphasized: CalendarCellLunarLabel.isEmphasized(lunar.kind),
-      color: CalendarCellLunarLabel.colorFor(
-        colorScheme,
-        lunar.kind,
-        onFill: onFill,
-        isOutside: isOutside,
-      ),
+    return CalendarCellSubtitle.resolve(
+      colorScheme,
+      lunar: lunar,
+      anniversary: anniversary,
+      onFill: onFill,
+      isOutside: isOutside,
     );
   }
 
-  /// 数字左上方的角标（锁 > 休/班 > 天气），见 [CalendarCellLeadingBadge]。
+  /// 数字左上方的角标（锁 > 休/班 > 心形 > 天气），见
+  /// [CalendarCellLeadingBadge]。
   Widget? _leadingBadge(
     ColorScheme colorScheme, {
     Color? onFill,
@@ -380,6 +379,7 @@ class CalendarDayCell extends StatelessWidget {
       summary: summary,
       holiday: holiday,
       isOutside: isOutside,
+      anniversaryHeart: lunar == null && anniversary != null,
       onFill: onFill,
       onPhoto: onPhoto,
     );

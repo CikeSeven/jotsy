@@ -126,17 +126,31 @@ class _BackupOverwriteWarningDialogState
                         l10n.backupOverwriteAllTags(
                           widget.preview.localTagCount,
                         ),
+                        // 不含纪念日的旧备份会把本机纪念日清空，必须写出来。
+                        if (widget.preview.localAnniversaryCount > 0)
+                          l10n.backupOverwriteAllAnniversaries(
+                            widget.preview.localAnniversaryCount,
+                          ),
                         l10n.backupOverwriteAllMedia,
                         l10n.backupOverwriteAllSettings,
                       ])
                         _Bullet(text: item, style: bodyStyle),
-                    ] else
-                      Text(
-                        l10n.backupOverwriteExistingBody(
-                          widget.preview.existingDiaryCount,
+                    ] else ...<Widget>[
+                      if (widget.preview.existingDiaryCount > 0)
+                        Text(
+                          l10n.backupOverwriteExistingBody(
+                            widget.preview.existingDiaryCount,
+                          ),
+                          style: bodyStyle,
                         ),
-                        style: bodyStyle,
-                      ),
+                      if (widget.preview.existingAnniversaryCount > 0)
+                        Text(
+                          l10n.backupOverwriteExistingAnniversariesBody(
+                            widget.preview.existingAnniversaryCount,
+                          ),
+                          style: bodyStyle,
+                        ),
+                    ],
                   ],
                 ),
               ),

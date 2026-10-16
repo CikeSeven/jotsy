@@ -161,6 +161,14 @@ String _modeDescription(
 ) {
   return switch (mode) {
     BackupImportMode.merge => l10n.backupImportModeMergeDescription,
+    // 只有纪念日重复时单独一句；日记与纪念日都有重复时在日记说明后补一行。
+    BackupImportMode.mergeOverwrite when preview.existingDiaryCount == 0 =>
+      l10n.backupImportModeOverwriteAnniversariesOnly(
+        preview.existingAnniversaryCount,
+      ),
+    BackupImportMode.mergeOverwrite when preview.existingAnniversaryCount > 0 =>
+      '${l10n.backupImportModeOverwriteExistingDescription(preview.existingDiaryCount)}\n'
+          '${l10n.backupImportModeOverwriteAnniversariesExtra(preview.existingAnniversaryCount)}',
     BackupImportMode.mergeOverwrite =>
       l10n.backupImportModeOverwriteExistingDescription(
         preview.existingDiaryCount,
@@ -250,6 +258,21 @@ class _ArchiveSummary extends StatelessWidget {
               if (preview.existingDiaryCount > 0)
                 Text(
                   l10n.backupImportExistingCount(preview.existingDiaryCount),
+                  style: detailStyle?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              if (preview.anniversaryCount > 0)
+                Text(
+                  l10n.backupImportAnniversaryCount(preview.anniversaryCount),
+                  style: detailStyle,
+                ),
+              if (preview.existingAnniversaryCount > 0)
+                Text(
+                  l10n.backupImportExistingAnniversaryCount(
+                    preview.existingAnniversaryCount,
+                  ),
                   style: detailStyle?.copyWith(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,

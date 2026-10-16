@@ -77,6 +77,13 @@ class BackupTestFixture {
       metadataJson: '{"keep":"metadata"}',
     );
     await settings.setCreateDiaryDraftRaw('{"title":"current draft"}');
+    await database.createAnniversary(
+      title: 'current anniversary',
+      baseDate: DateTime(2020, 5, 23),
+      recurrence: AnniversaryRecurrence.lunarYearly,
+      lunar: (year: 2020, month: -4, day: 1),
+      linkedDiaryId: diaryId,
+    );
     return diaryId;
   }
 
@@ -100,6 +107,7 @@ class BackupTestFixture {
     }
   }
 
+  /// 不含纪念日表：与 schema v9 之前的旧备份同形，现有测试顺带覆盖旧格式。
   Map<String, Object?> emptyPayload() => {
     'formatVersion': 1,
     'database': {'diaries': [], 'tags': [], 'diaryTags': []},
@@ -147,6 +155,10 @@ class BackupTestFixture {
       'current diary',
     );
     expect(settings.createDiaryDraftRaw, '{"title":"current draft"}');
+    expect(
+      (await database.select(database.anniversaries).getSingle()).title,
+      'current anniversary',
+    );
     for (final entry in originalMedia.entries) {
       expect(await File(entry.key).readAsBytes(), entry.value);
     }

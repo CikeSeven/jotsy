@@ -37,6 +37,7 @@ class CalendarDisplayOptions {
     this.yearBasis = CalendarYearBasis.mood,
     this.lunarMode = CalendarLunarMode.locale,
     this.holidayMode = CalendarLunarMode.locale,
+    this.showAnniversaries = true,
   });
 
   /// 解析持久化的 JSON；null、空串或损坏时返回默认选项。
@@ -98,6 +99,9 @@ class CalendarDisplayOptions {
   /// 区域：数据是中国大陆的放假安排，英文界面默认不显示。
   final CalendarLunarMode holidayMode;
 
+  /// 在日期格上标出纪念日，并在选中那天时显示纪念日卡片。
+  final bool showAnniversaries;
+
   /// 打开日历页时应使用的网格格式。
   CalendarGridFormat get initialFormat => switch (defaultFormat) {
     CalendarDefaultFormat.month => CalendarGridFormat.month,
@@ -128,6 +132,7 @@ class CalendarDisplayOptions {
     CalendarYearBasis? yearBasis,
     CalendarLunarMode? lunarMode,
     CalendarLunarMode? holidayMode,
+    bool? showAnniversaries,
   }) {
     return CalendarDisplayOptions(
       cellStyle: cellStyle ?? this.cellStyle,
@@ -148,6 +153,7 @@ class CalendarDisplayOptions {
       yearBasis: yearBasis ?? this.yearBasis,
       lunarMode: lunarMode ?? this.lunarMode,
       holidayMode: holidayMode ?? this.holidayMode,
+      showAnniversaries: showAnniversaries ?? this.showAnniversaries,
     );
   }
 
@@ -171,7 +177,8 @@ class CalendarDisplayOptions {
         other.showOnThisDay == showOnThisDay &&
         other.yearBasis == yearBasis &&
         other.lunarMode == lunarMode &&
-        other.holidayMode == holidayMode;
+        other.holidayMode == holidayMode &&
+        other.showAnniversaries == showAnniversaries;
   }
 
   @override
@@ -194,5 +201,6 @@ class CalendarDisplayOptions {
     yearBasis,
     lunarMode,
     holidayMode,
+    showAnniversaries,
   );
 }

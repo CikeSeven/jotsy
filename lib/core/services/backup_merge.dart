@@ -17,6 +17,8 @@ import 'backup_payload.dart';
 ///   整行连同标签绑定替换为文件中的版本；
 /// - 标签按名称匹配：同名复用本机标签且颜色保持本机，缺少的新增；只补进实际
 ///   写入的日记用到的标签，跳过的日记不会把本机已改名或删除的标签带回来；
+/// - 纪念日按 anniversaryId 匹配：本机没有的新增，本机已有的按导入方式保留
+///   或替换；关联的日记存业务 id，日记换了本地 id 也不影响；
 /// - 媒体：只搬运实际写入的日记引用到的文件，统一放进各托管目录下的新批次
 ///   子目录（`<托管目录>/import_…/<原相对路径>`），不覆盖、不移动本机已有
 ///   文件；
@@ -137,12 +139,59 @@ class BackupMerge {
       );
     });
 
+    final anniversaries = await _mergeAnniversaries(
+      db,
+      payload.anniversaries,
+      mode,
+    );
+
     return BackupImportResult(
       mode: mode,
       addedDiaries: inserts.length,
       replacedDiaries: replacements.length,
       skippedDiaries: skipped,
+      addedAnniversaries: anniversaries.added,
+      replacedAnniversaries: anniversaries.replaced,
+      skippedAnniversaries: anniversaries.skipped,
     );
+  }
+
+  /// 纪念日并入本机：本机已有的按 [mode] 跳过或整行替换（保留本机 id），
+  /// 新的去掉文件里的本地 id 后插入。
+  Future<({int added, int replaced, int skipped})> _mergeAnniversaries(
+    AppDatabase db,
+    List<Anniversary> incoming,
+    BackupImportMode mode,
+  ) async {
+    if (incoming.isEmpty) return (added: 0, replaced: 0, skipped: 0);
+    final table = db.anniversaries;
+    final localIds = <String, int>{
+      for (final row in await (db.selectOnly(
+        table,
+      )..addColumns([table.id, table.anniversaryId])).get())
+        row.read(table.anniversaryId)!: row.read(table.id)!,
+    };
+    var added = 0;
+    var replaced = 0;
+    var skipped = 0;
+    for (final row in incoming) {
+      final companion = row
+          .toCompanion(false)
+          .copyWith(id: const Value.absent());
+      final localId = localIds[row.anniversaryId];
+      if (localId == null) {
+        await db.into(table).insert(companion);
+        added++;
+      } else if (mode == BackupImportMode.mergeOverwrite) {
+        await (db.update(
+          table,
+        )..where((t) => t.id.equals(localId))).write(companion);
+        replaced++;
+      } else {
+        skipped++;
+      }
+    }
+    return (added: added, replaced: replaced, skipped: skipped);
   }
 
   /// 返回文件标签 id → 本机标签 id，只处理 [usedTagIds] 中的标签。

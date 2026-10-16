@@ -201,6 +201,13 @@ class DataArchiveService {
         row.read(diaries.diaryId)!,
     };
     final localTags = countAll();
+    final anniversaries = database.anniversaries;
+    final localAnniversaryIds = {
+      for (final row in await (database.selectOnly(
+        anniversaries,
+      )..addColumns([anniversaries.anniversaryId])).get())
+        row.read(anniversaries.anniversaryId)!,
+    };
     return BackupArchivePreview(
       kind: kind,
       diaryCount: payload.diaries.length,
@@ -217,6 +224,11 @@ class DataArchiveService {
           : null,
       journalSource: journalSource,
       missingMediaCount: missingMediaCount,
+      anniversaryCount: payload.anniversaries.length,
+      existingAnniversaryCount: payload.anniversaries
+          .where((row) => localAnniversaryIds.contains(row.anniversaryId))
+          .length,
+      localAnniversaryCount: localAnniversaryIds.length,
     );
   }
 
@@ -311,6 +323,7 @@ class DataArchiveService {
         addedDiaries: restored.diaries.length,
         replacedDiaries: 0,
         skippedDiaries: 0,
+        addedAnniversaries: restored.anniversaries.length,
       );
     } finally {
       if (cleanup) await _cleanWorkingDirectory(working);

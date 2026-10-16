@@ -5,7 +5,8 @@ part of 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 /// 职责边界：
 /// - 处理日历视图状态（月/周/年、焦点月份、选中日期）；
 /// - 处理长按日期的快捷操作与预览页导航；
-/// - 选一段日期做统计见 calendar_range_actions.dart；
+/// - 选一段日期做统计见 calendar_range_actions.dart，纪念日入口见
+///   calendar_anniversary_actions.dart；
 /// - 从日历新建日记（含草稿分流）见 calendar_create_actions.dart，显示选项
 ///   与年视图导出分别见 calendar_display_options_actions.dart、
 ///   calendar_year_actions.dart；
@@ -79,6 +80,8 @@ class _CalendarPageController {
           day: normalizedDay,
           capsuleUnlockAt: normalizedDay,
         );
+      case CalendarDayAction.anniversary:
+        await addAnniversary(normalizedDay);
     }
   }
 

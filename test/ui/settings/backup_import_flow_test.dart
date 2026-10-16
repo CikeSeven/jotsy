@@ -278,4 +278,37 @@ void main() {
     );
     expect(describe(BackupImportMode.replaceAll, 30, 0, 0), 'restored');
   });
+
+  test('adds an anniversary line when the file had anniversaries', () async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+    String describe(BackupImportMode mode, int added, int replaced, int skip) =>
+        describeBackupImportResult(
+          l10n,
+          BackupImportResult(
+            mode: mode,
+            addedDiaries: 1,
+            replacedDiaries: 0,
+            skippedDiaries: 0,
+            addedAnniversaries: added,
+            replacedAnniversaries: replaced,
+            skippedAnniversaries: skip,
+          ),
+          replaceAllMessage: 'restored',
+        );
+
+    expect(
+      describe(BackupImportMode.merge, 2, 0, 0),
+      '导入完成：新增 1 篇日记\n纪念日：新增 2 个',
+    );
+    expect(
+      describe(BackupImportMode.merge, 0, 0, 3),
+      '导入完成：新增 1 篇日记\n纪念日：新增 0 个，跳过 3 个本机已存在的',
+    );
+    expect(
+      describe(BackupImportMode.mergeOverwrite, 1, 2, 0),
+      '导入完成：新增 1 篇，覆盖 0 篇日记\n纪念日：新增 1 个，覆盖 2 个',
+    );
+    expect(describe(BackupImportMode.merge, 0, 0, 0), '导入完成：新增 1 篇日记');
+    expect(describe(BackupImportMode.replaceAll, 5, 0, 0), 'restored');
+  });
 }

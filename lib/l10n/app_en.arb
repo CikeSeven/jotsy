@@ -3466,5 +3466,291 @@
   "calendarHolidayMakeUpWorkday": "Make-up workday",
   "@calendarHolidayMakeUpWorkday": {
     "description": "Make-up workday note at the end of the lunar line under the selected date heading."
+  },
+  "backupImportAnniversaryCount": "{count, plural, =1{1 anniversary} other{{count} anniversaries}}",
+  "@backupImportAnniversaryCount": {
+    "description": "Import sheet file summary: number of anniversaries in the file.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportExistingAnniversaryCount": "{count, plural, =1{1 anniversary is already on this device} other{{count} anniversaries are already on this device}}",
+  "@backupImportExistingAnniversaryCount": {
+    "description": "Import sheet file summary: anniversaries in the file that already exist on this device.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteAnniversariesOnly": "{count, plural, =1{Adds new items and replaces the existing anniversary with the version in the file} other{Adds new items and replaces the {count} existing anniversaries with the versions in the file}}",
+  "@backupImportModeOverwriteAnniversariesOnly": {
+    "description": "Description of the merge-and-overwrite mode when only anniversaries overlap.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteAnniversariesExtra": "{count, plural, =1{Also replaces 1 existing anniversary} other{Also replaces {count} existing anniversaries}}",
+  "@backupImportModeOverwriteAnniversariesExtra": {
+    "description": "Extra line of the merge-and-overwrite mode description when anniversaries overlap as well as diaries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteAllAnniversaries": "{count, plural, =1{1 anniversary} other{{count} anniversaries}}",
+  "@backupOverwriteAllAnniversaries": {
+    "description": "Bullet in the replace-everything warning: anniversaries that will be deleted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteExistingAnniversariesBody": "{count, plural, =1{The anniversary already on this device will be replaced by the version in the file; local edits will be lost for good.} other{The {count} anniversaries already on this device will be replaced by the versions in the file; local edits will be lost for good.}}",
+  "@backupOverwriteExistingAnniversariesBody": {
+    "description": "Merge-and-overwrite warning: anniversaries that will be replaced.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportAnniversaryMergeResult": "{added, plural, =0{Anniversaries: none added} =1{Anniversaries: 1 added} other{Anniversaries: {added} added}}",
+  "@backupImportAnniversaryMergeResult": {
+    "description": "Second line of the merge import result: anniversaries added.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportAnniversaryMergeSkippedResult": "Anniversaries: {added} added, {skipped} skipped (already on this device)",
+  "@backupImportAnniversaryMergeSkippedResult": {
+    "description": "Second line of the merge import result: anniversaries added and skipped.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportAnniversaryOverwriteResult": "Anniversaries: {added} added, {replaced} overwritten",
+  "@backupImportAnniversaryOverwriteResult": {
+    "description": "Second line of the merge-and-overwrite import result: anniversaries added and overwritten.",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "replaced": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarShowAnniversaries": "Anniversaries",
+  "@calendarShowAnniversaries": {
+    "description": "Switch for anniversaries in the Sections group of the calendar display options."
+  },
+  "calendarShowAnniversariesDescription": "Marks anniversaries on the dates and shows their cards for the selected day.",
+  "@calendarShowAnniversariesDescription": {
+    "description": "Description of the anniversaries switch."
+  },
+  "calendarDayActionAnniversary": "Add an anniversary",
+  "@calendarDayActionAnniversary": {
+    "description": "Date long-press menu: create an anniversary on this day."
+  },
+  "calendarDayActionAnniversaryDescription": "Remember this day; the calendar marks it every year",
+  "@calendarDayActionAnniversaryDescription": {
+    "description": "Description of Add an anniversary for today or past dates."
+  },
+  "calendarDayActionCountdownDescription": "Count down to this day",
+  "@calendarDayActionCountdownDescription": {
+    "description": "Description of Add an anniversary for future dates."
+  },
+  "anniversarySectionTitle": "Anniversaries",
+  "@anniversarySectionTitle": {
+    "description": "Screen-reader title of the anniversary card under the selected day."
+  },
+  "anniversaryOrdinal": "{count, plural, =1{1-year anniversary} other{{count}-year anniversary}}",
+  "@anniversaryOrdinal": {
+    "description": "Which anniversary this is, in years.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryTodayOrdinal": "{count, plural, =1{1-year anniversary today} other{{count}-year anniversary today}}",
+  "@anniversaryTodayOrdinal": {
+    "description": "Anniversary count when it is today.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDaysLeft": "{count, plural, =1{1 day left} other{{count} days left}}",
+  "@anniversaryDaysLeft": {
+    "description": "Days until the next anniversary.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDaysSince": "{count, plural, =1{1 day since} other{{count} days since}}",
+  "@anniversaryDaysSince": {
+    "description": "Days since the first date.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryBaseDay": "The day it began",
+  "@anniversaryBaseDay": {
+    "description": "The first time of an anniversary."
+  },
+  "anniversaryCountdownLabel": "Countdown",
+  "@anniversaryCountdownLabel": {
+    "description": "Label of a one-off anniversary that has not come yet."
+  },
+  "anniversaryIsToday": "It's today",
+  "@anniversaryIsToday": {
+    "description": "The anniversary is today."
+  },
+  "anniversaryAdjustedNote": "This year has no such date, so it moves to the nearest day",
+  "@anniversaryAdjustedNote": {
+    "description": "Note when the date does not exist this year (Feb 29, a missing leap month, the 30th of a short lunar month)."
+  },
+  "anniversaryNewTitle": "New anniversary",
+  "@anniversaryNewTitle": {
+    "description": "Anniversary editor title when creating."
+  },
+  "anniversaryEditTitle": "Edit anniversary",
+  "@anniversaryEditTitle": {
+    "description": "Anniversary editor title when editing."
+  },
+  "anniversaryFieldName": "Name",
+  "@anniversaryFieldName": {
+    "description": "Anniversary editor: name field label."
+  },
+  "anniversaryNameHint": "e.g. Together, Mom's birthday, Exam day",
+  "@anniversaryNameHint": {
+    "description": "Hint of the anniversary name field."
+  },
+  "anniversaryNameRequired": "Enter a name",
+  "@anniversaryNameRequired": {
+    "description": "Error when the anniversary name is empty."
+  },
+  "anniversaryFieldDate": "Date",
+  "@anniversaryFieldDate": {
+    "description": "Anniversary editor: date field label."
+  },
+  "anniversaryFieldRepeat": "Repeat",
+  "@anniversaryFieldRepeat": {
+    "description": "Anniversary editor: repeat rule label."
+  },
+  "anniversaryRepeatSolar": "Yearly",
+  "@anniversaryRepeatSolar": {
+    "description": "Repeat rule: every year by the Gregorian calendar."
+  },
+  "anniversaryRepeatLunar": "Lunar yearly",
+  "@anniversaryRepeatLunar": {
+    "description": "Repeat rule: every year by the Chinese lunar calendar."
+  },
+  "anniversaryRepeatOnce": "Once",
+  "@anniversaryRepeatOnce": {
+    "description": "Repeat rule: does not repeat."
+  },
+  "anniversaryRepeatSolarDescription": "Marked every year on {date}",
+  "@anniversaryRepeatSolarDescription": {
+    "description": "Description of yearly repetition; date is the month and day (e.g. Nov 20).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryRepeatLeapDayDescription": "Every year on Feb 29; Feb 28 in common years",
+  "@anniversaryRepeatLeapDayDescription": {
+    "description": "Description of yearly repetition for Feb 29."
+  },
+  "anniversaryRepeatLunarDescription": "Every year on lunar {date}, converted to that year's date",
+  "@anniversaryRepeatLunarDescription": {
+    "description": "Description of lunar yearly repetition; date is the lunar month and day.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryRepeatOnceDescription": "Just this day: counts down before it and counts up after",
+  "@anniversaryRepeatOnceDescription": {
+    "description": "Description of the one-off rule."
+  },
+  "anniversaryLunarYearDate": "Lunar {year} year, {date}",
+  "@anniversaryLunarYearDate": {
+    "description": "Lunar date under the date field; year is the sexagenary year name, date the lunar month and day.",
+    "placeholders": {
+      "year": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryFieldNote": "Note",
+  "@anniversaryFieldNote": {
+    "description": "Anniversary editor: note field label."
+  },
+  "anniversaryNoteHint": "Optional",
+  "@anniversaryNoteHint": {
+    "description": "Hint of the anniversary note field."
+  },
+  "anniversaryPin": "Pin",
+  "@anniversaryPin": {
+    "description": "Anniversary editor pin switch; pin action on the list and detail pages."
+  },
+  "anniversaryPinDescription": "Keep it at the top of the anniversary list",
+  "@anniversaryPinDescription": {
+    "description": "Description of the anniversary pin switch."
+  },
+  "anniversaryDelete": "Delete anniversary",
+  "@anniversaryDelete": {
+    "description": "Delete button at the bottom of the anniversary editor."
+  },
+  "anniversaryDeleteConfirmTitle": "Delete this anniversary?",
+  "@anniversaryDeleteConfirmTitle": {
+    "description": "Title of the delete anniversary confirmation."
+  },
+  "anniversaryDeleteConfirmBody": "“{title}” will be removed from the calendar. Linked diaries are not affected.",
+  "@anniversaryDeleteConfirmBody": {
+    "description": "Body of the delete anniversary confirmation; title is the anniversary name.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryDeleted": "Anniversary deleted",
+  "@anniversaryDeleted": {
+    "description": "Message after deleting an anniversary."
+  },
+  "anniversaryCreated": "Anniversary added",
+  "@anniversaryCreated": {
+    "description": "Message after creating an anniversary."
+  },
+  "anniversarySaveFailed": "Couldn't save. Try again.",
+  "@anniversarySaveFailed": {
+    "description": "Message when saving an anniversary fails."
   }
 }

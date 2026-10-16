@@ -21,7 +21,8 @@ enum BackupImportMode {
   merge,
 
   /// 合并并覆盖：在 [merge] 的基础上，把本机已有的同一篇日记整篇替换为文件
-  /// 中的版本（正文、标签、归档/置顶/回收站状态一并替换）。
+  /// 中的版本（正文、标签、归档/置顶/回收站状态一并替换）；同一条纪念日同样
+  /// 替换为文件中的版本。
   mergeOverwrite,
 
   /// 覆盖全部：清空本机日记、标签、媒体与设置后换入备份内容，仅限完整备份。
@@ -44,6 +45,9 @@ class BackupArchivePreview {
     this.soleDiaryTitle,
     this.journalSource,
     this.missingMediaCount = 0,
+    this.anniversaryCount = 0,
+    this.existingAnniversaryCount = 0,
+    this.localAnniversaryCount = 0,
   });
 
   final BackupArchiveKind kind;
@@ -70,11 +74,22 @@ class BackupArchivePreview {
   /// 导出中被引用、但文件不在包内而将被跳过的媒体数。
   final int missingMediaCount;
 
+  /// 文件内的纪念日数（只有完整备份带纪念日）。
+  final int anniversaryCount;
+
+  /// 文件内本机已有（按 anniversaryId）的纪念日数。
+  final int existingAnniversaryCount;
+
+  /// 本机当前纪念日总数，即 [BackupImportMode.replaceAll] 会删除的条数——
+  /// 不含纪念日的旧备份覆盖导入后，本机纪念日会被清空，警告里要列出来。
+  final int localAnniversaryCount;
+
   /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记
-  /// 时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部数据。
+  /// 或纪念日时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部数据。
   List<BackupImportMode> get availableModes => <BackupImportMode>[
     BackupImportMode.merge,
-    if (existingDiaryCount > 0) BackupImportMode.mergeOverwrite,
+    if (existingDiaryCount > 0 || existingAnniversaryCount > 0)
+      BackupImportMode.mergeOverwrite,
     if (kind == BackupArchiveKind.fullBackup) BackupImportMode.replaceAll,
   ];
 }
@@ -86,6 +101,9 @@ class BackupImportResult {
     required this.addedDiaries,
     required this.replacedDiaries,
     required this.skippedDiaries,
+    this.addedAnniversaries = 0,
+    this.replacedAnniversaries = 0,
+    this.skippedAnniversaries = 0,
   });
 
   final BackupImportMode mode;
@@ -98,4 +116,13 @@ class BackupImportResult {
 
   /// 本机已有、按 [BackupImportMode.merge] 保留本机版本而跳过的日记数。
   final int skippedDiaries;
+
+  /// 纪念日的同口径统计；[BackupImportMode.replaceAll] 时新增数为换入的
+  /// 全部纪念日数。
+  final int addedAnniversaries;
+  final int replacedAnniversaries;
+  final int skippedAnniversaries;
+
+  bool get touchedAnniversaries =>
+      addedAnniversaries + replacedAnniversaries + skippedAnniversaries > 0;
 }

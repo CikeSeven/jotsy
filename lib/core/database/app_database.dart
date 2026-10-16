@@ -16,13 +16,16 @@ part 'app_database_tag_ops.dart';
 part 'app_database_diary_writes.dart';
 part 'app_database_diary_queries.dart';
 part 'app_database_migrations.dart';
+part 'app_database_anniversary_schema.dart';
+part 'app_database_anniversary_ops.dart';
 
-@DriftDatabase(tables: <Type>[Diaries, Tags, DiaryTags])
+@DriftDatabase(tables: <Type>[Diaries, Tags, DiaryTags, Anniversaries])
 class AppDatabase extends _$AppDatabase
     with
         _AppDatabaseTagOps,
         _AppDatabaseDiaryQueries,
         _AppDatabaseDiaryWrites,
+        _AppDatabaseAnniversaryOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -32,7 +35,7 @@ class AppDatabase extends _$AppDatabase
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -40,6 +43,11 @@ class AppDatabase extends _$AppDatabase
       await m.createAll();
     },
     onUpgrade: (Migrator m, int from, int to) async {
+      // v9 新增独立的纪念日表，与日记表无关联，放在最前：下面 v1 的分支
+      // 重建日记表后直接 return，排在后面会被跳过。
+      if (from < 9) {
+        await m.createTable(anniversaries);
+      }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();
         return;

@@ -30,6 +30,44 @@ void main() {
       'diaryTags': [],
     },
     'missing tags': {'diaries': [], 'diaryTags': []},
+    'non-list anniversaries': {
+      'diaries': [],
+      'tags': [],
+      'diaryTags': [],
+      'anniversaries': {},
+    },
+    'non-map anniversary row': {
+      'diaries': [],
+      'tags': [],
+      'diaryTags': [],
+      'anniversaries': [1],
+    },
+    'missing anniversary fields': {
+      'diaries': [],
+      'tags': [],
+      'diaryTags': [],
+      'anniversaries': [
+        {'id': 1, 'anniversaryId': 'a'},
+      ],
+    },
+    'impossible anniversary date': {
+      'diaries': [],
+      'tags': [],
+      'diaryTags': [],
+      'anniversaries': [_anniversaryRow(1, 'a', baseDate: '2023-02-29')],
+    },
+    'blank anniversary name': {
+      'diaries': [],
+      'tags': [],
+      'diaryTags': [],
+      'anniversaries': [_anniversaryRow(1, 'a', title: '  ')],
+    },
+    'duplicate anniversary identities': {
+      'diaries': [],
+      'tags': [],
+      'diaryTags': [],
+      'anniversaries': [_anniversaryRow(1, 'a'), _anniversaryRow(2, 'a')],
+    },
   };
   for (final entry in invalidDatabases.entries) {
     test(
@@ -100,3 +138,17 @@ void main() {
     },
   );
 }
+
+Map<String, Object?> _anniversaryRow(
+  int id,
+  String anniversaryId, {
+  String title = '纪念日',
+  String baseDate = '2020-01-01',
+}) => {
+  'id': id,
+  'anniversaryId': anniversaryId,
+  'title': title,
+  'baseDate': baseDate,
+  'createdAt': 0,
+  'updatedAt': 0,
+};

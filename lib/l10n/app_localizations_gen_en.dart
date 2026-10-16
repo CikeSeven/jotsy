@@ -2650,4 +2650,259 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get calendarHolidayMakeUpWorkday => 'Make-up workday';
+
+  @override
+  String backupImportAnniversaryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count anniversaries',
+      one: '1 anniversary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportExistingAnniversaryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count anniversaries are already on this device',
+      one: '1 anniversary is already on this device',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteAnniversariesOnly(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Adds new items and replaces the $count existing anniversaries with the versions in the file',
+      one:
+          'Adds new items and replaces the existing anniversary with the version in the file',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteAnniversariesExtra(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Also replaces $count existing anniversaries',
+      one: 'Also replaces 1 existing anniversary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupOverwriteAllAnniversaries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count anniversaries',
+      one: '1 anniversary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupOverwriteExistingAnniversariesBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The $count anniversaries already on this device will be replaced by the versions in the file; local edits will be lost for good.',
+      one:
+          'The anniversary already on this device will be replaced by the version in the file; local edits will be lost for good.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportAnniversaryMergeResult(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Anniversaries: $added added',
+      one: 'Anniversaries: 1 added',
+      zero: 'Anniversaries: none added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportAnniversaryMergeSkippedResult(int added, int skipped) {
+    return 'Anniversaries: $added added, $skipped skipped (already on this device)';
+  }
+
+  @override
+  String backupImportAnniversaryOverwriteResult(int added, int replaced) {
+    return 'Anniversaries: $added added, $replaced overwritten';
+  }
+
+  @override
+  String get calendarShowAnniversaries => 'Anniversaries';
+
+  @override
+  String get calendarShowAnniversariesDescription =>
+      'Marks anniversaries on the dates and shows their cards for the selected day.';
+
+  @override
+  String get calendarDayActionAnniversary => 'Add an anniversary';
+
+  @override
+  String get calendarDayActionAnniversaryDescription =>
+      'Remember this day; the calendar marks it every year';
+
+  @override
+  String get calendarDayActionCountdownDescription => 'Count down to this day';
+
+  @override
+  String get anniversarySectionTitle => 'Anniversaries';
+
+  @override
+  String anniversaryOrdinal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-year anniversary',
+      one: '1-year anniversary',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String anniversaryTodayOrdinal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-year anniversary today',
+      one: '1-year anniversary today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String anniversaryDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String anniversaryDaysSince(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days since',
+      one: '1 day since',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get anniversaryBaseDay => 'The day it began';
+
+  @override
+  String get anniversaryCountdownLabel => 'Countdown';
+
+  @override
+  String get anniversaryIsToday => 'It\'s today';
+
+  @override
+  String get anniversaryAdjustedNote =>
+      'This year has no such date, so it moves to the nearest day';
+
+  @override
+  String get anniversaryNewTitle => 'New anniversary';
+
+  @override
+  String get anniversaryEditTitle => 'Edit anniversary';
+
+  @override
+  String get anniversaryFieldName => 'Name';
+
+  @override
+  String get anniversaryNameHint => 'e.g. Together, Mom\'s birthday, Exam day';
+
+  @override
+  String get anniversaryNameRequired => 'Enter a name';
+
+  @override
+  String get anniversaryFieldDate => 'Date';
+
+  @override
+  String get anniversaryFieldRepeat => 'Repeat';
+
+  @override
+  String get anniversaryRepeatSolar => 'Yearly';
+
+  @override
+  String get anniversaryRepeatLunar => 'Lunar yearly';
+
+  @override
+  String get anniversaryRepeatOnce => 'Once';
+
+  @override
+  String anniversaryRepeatSolarDescription(String date) {
+    return 'Marked every year on $date';
+  }
+
+  @override
+  String get anniversaryRepeatLeapDayDescription =>
+      'Every year on Feb 29; Feb 28 in common years';
+
+  @override
+  String anniversaryRepeatLunarDescription(String date) {
+    return 'Every year on lunar $date, converted to that year\'s date';
+  }
+
+  @override
+  String get anniversaryRepeatOnceDescription =>
+      'Just this day: counts down before it and counts up after';
+
+  @override
+  String anniversaryLunarYearDate(String year, String date) {
+    return 'Lunar $year year, $date';
+  }
+
+  @override
+  String get anniversaryFieldNote => 'Note';
+
+  @override
+  String get anniversaryNoteHint => 'Optional';
+
+  @override
+  String get anniversaryPin => 'Pin';
+
+  @override
+  String get anniversaryPinDescription =>
+      'Keep it at the top of the anniversary list';
+
+  @override
+  String get anniversaryDelete => 'Delete anniversary';
+
+  @override
+  String get anniversaryDeleteConfirmTitle => 'Delete this anniversary?';
+
+  @override
+  String anniversaryDeleteConfirmBody(String title) {
+    return '“$title” will be removed from the calendar. Linked diaries are not affected.';
+  }
+
+  @override
+  String get anniversaryDeleted => 'Anniversary deleted';
+
+  @override
+  String get anniversaryCreated => 'Anniversary added';
+
+  @override
+  String get anniversarySaveFailed => 'Couldn\'t save. Try again.';
 }

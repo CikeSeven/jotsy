@@ -27,13 +27,40 @@ Future<BackupImportMode?> chooseBackupImportMode(
   return mode;
 }
 
-/// 导入结果提示：合并说明新增/跳过的篇数；覆盖全部沿用各入口原有的成功文案
-/// [replaceAllMessage]（本地导入与 WebDAV 恢复不同）。
+/// 导入结果提示：合并说明新增/跳过的篇数，文件带纪念日时另起一行写纪念日
+/// 的统计；覆盖全部沿用各入口原有的成功文案 [replaceAllMessage]（本地导入与
+/// WebDAV 恢复不同）。
 String describeBackupImportResult(
   AppLocalizations l10n,
   BackupImportResult result, {
   required String replaceAllMessage,
 }) {
+  final diaries = _describeDiaries(l10n, result, replaceAllMessage);
+  if (result.mode == BackupImportMode.replaceAll ||
+      !result.touchedAnniversaries) {
+    return diaries;
+  }
+  final anniversaries = switch (result.mode) {
+    BackupImportMode.mergeOverwrite =>
+      l10n.backupImportAnniversaryOverwriteResult(
+        result.addedAnniversaries,
+        result.replacedAnniversaries,
+      ),
+    _ when result.skippedAnniversaries > 0 =>
+      l10n.backupImportAnniversaryMergeSkippedResult(
+        result.addedAnniversaries,
+        result.skippedAnniversaries,
+      ),
+    _ => l10n.backupImportAnniversaryMergeResult(result.addedAnniversaries),
+  };
+  return '$diaries\n$anniversaries';
+}
+
+String _describeDiaries(
+  AppLocalizations l10n,
+  BackupImportResult result,
+  String replaceAllMessage,
+) {
   return switch (result.mode) {
     BackupImportMode.replaceAll => replaceAllMessage,
     BackupImportMode.mergeOverwrite => l10n.backupImportOverwriteResult(

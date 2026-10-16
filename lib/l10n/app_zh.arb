@@ -3466,5 +3466,291 @@
   "calendarHolidayMakeUpWorkday": "调休上班",
   "@calendarHolidayMakeUpWorkday": {
     "description": "选中日标题下农历行末尾的调休上班说明。"
+  },
+  "backupImportAnniversaryCount": "纪念日 {count} 个",
+  "@backupImportAnniversaryCount": {
+    "description": "导入面板文件概要：文件内的纪念日数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportExistingAnniversaryCount": "其中 {count} 个纪念日本机已存在",
+  "@backupImportExistingAnniversaryCount": {
+    "description": "导入面板文件概要：文件内本机已有的纪念日数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteAnniversariesOnly": "添加新内容，并用文件中的版本替换本机已存在的 {count} 个纪念日",
+  "@backupImportModeOverwriteAnniversariesOnly": {
+    "description": "“合并并覆盖已存在”方式的说明：只有纪念日与本机重复时。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteAnniversariesExtra": "同时替换本机已存在的 {count} 个纪念日",
+  "@backupImportModeOverwriteAnniversariesExtra": {
+    "description": "“合并并覆盖已存在”方式说明的补充行：日记之外还有重复的纪念日。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteAllAnniversaries": "{count} 个纪念日",
+  "@backupOverwriteAllAnniversaries": {
+    "description": "覆盖全部数据的严重警告中列出的将被删除的纪念日数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupOverwriteExistingAnniversariesBody": "本机已存在的 {count} 个纪念日将被文件中的版本替换，本机上的修改会永久丢失。",
+  "@backupOverwriteExistingAnniversariesBody": {
+    "description": "合并并覆盖的严重警告：将被替换的纪念日。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportAnniversaryMergeResult": "纪念日：新增 {added} 个",
+  "@backupImportAnniversaryMergeResult": {
+    "description": "合并导入结果的第二行：新增的纪念日数。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportAnniversaryMergeSkippedResult": "纪念日：新增 {added} 个，跳过 {skipped} 个本机已存在的",
+  "@backupImportAnniversaryMergeSkippedResult": {
+    "description": "合并导入结果的第二行：新增与跳过的纪念日数。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportAnniversaryOverwriteResult": "纪念日：新增 {added} 个，覆盖 {replaced} 个",
+  "@backupImportAnniversaryOverwriteResult": {
+    "description": "合并并覆盖导入结果的第二行：新增与覆盖的纪念日数。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      },
+      "replaced": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarShowAnniversaries": "纪念日",
+  "@calendarShowAnniversaries": {
+    "description": "显示选项“区块”分组中纪念日的开关。"
+  },
+  "calendarShowAnniversariesDescription": "在日期上标出纪念日，选中那天时显示纪念日卡片。",
+  "@calendarShowAnniversariesDescription": {
+    "description": "纪念日开关的说明。"
+  },
+  "calendarDayActionAnniversary": "添加纪念日",
+  "@calendarDayActionAnniversary": {
+    "description": "长按日期菜单：以这一天新建纪念日。"
+  },
+  "calendarDayActionAnniversaryDescription": "记下这一天，以后每年日历上都会标出它",
+  "@calendarDayActionAnniversaryDescription": {
+    "description": "长按日期菜单“添加纪念日”的说明（今天及以前的日期）。"
+  },
+  "calendarDayActionCountdownDescription": "倒数到这一天",
+  "@calendarDayActionCountdownDescription": {
+    "description": "长按日期菜单“添加纪念日”的说明（未来的日期）。"
+  },
+  "anniversarySectionTitle": "纪念日",
+  "@anniversarySectionTitle": {
+    "description": "选中日下方纪念日卡片的读屏标题。"
+  },
+  "anniversaryOrdinal": "第 {count} 周年",
+  "@anniversaryOrdinal": {
+    "description": "纪念日的第几次（周年数）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryTodayOrdinal": "今天是第 {count} 周年",
+  "@anniversaryTodayOrdinal": {
+    "description": "纪念日当天的周年数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDaysLeft": "还有 {count} 天",
+  "@anniversaryDaysLeft": {
+    "description": "距下一次纪念日的天数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryDaysSince": "已经 {count} 天",
+  "@anniversaryDaysSince": {
+    "description": "距首次日期已过的天数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anniversaryBaseDay": "开始的那一天",
+  "@anniversaryBaseDay": {
+    "description": "纪念日首次的那一天。"
+  },
+  "anniversaryCountdownLabel": "倒数日",
+  "@anniversaryCountdownLabel": {
+    "description": "不重复、还没到的纪念日的标签。"
+  },
+  "anniversaryIsToday": "就是今天",
+  "@anniversaryIsToday": {
+    "description": "纪念日恰好是今天。"
+  },
+  "anniversaryAdjustedNote": "今年没有这一天，顺延到相近的日子",
+  "@anniversaryAdjustedNote": {
+    "description": "纪念日在当年没有对应日期（如平年的 2月29日、没有闰月的年份、小月的三十）而顺延时的说明。"
+  },
+  "anniversaryNewTitle": "新建纪念日",
+  "@anniversaryNewTitle": {
+    "description": "纪念日编辑页标题：新建。"
+  },
+  "anniversaryEditTitle": "编辑纪念日",
+  "@anniversaryEditTitle": {
+    "description": "纪念日编辑页标题：编辑。"
+  },
+  "anniversaryFieldName": "名称",
+  "@anniversaryFieldName": {
+    "description": "纪念日编辑页：名称字段标签。"
+  },
+  "anniversaryNameHint": "如：在一起、妈妈生日、考研",
+  "@anniversaryNameHint": {
+    "description": "纪念日名称输入框的提示文字。"
+  },
+  "anniversaryNameRequired": "请输入名称",
+  "@anniversaryNameRequired": {
+    "description": "纪念日名称为空时的错误提示。"
+  },
+  "anniversaryFieldDate": "日期",
+  "@anniversaryFieldDate": {
+    "description": "纪念日编辑页：日期字段标签。"
+  },
+  "anniversaryFieldRepeat": "重复",
+  "@anniversaryFieldRepeat": {
+    "description": "纪念日编辑页：重复规则字段标签。"
+  },
+  "anniversaryRepeatSolar": "每年",
+  "@anniversaryRepeatSolar": {
+    "description": "重复规则：每年按公历重复。"
+  },
+  "anniversaryRepeatLunar": "农历每年",
+  "@anniversaryRepeatLunar": {
+    "description": "重复规则：每年按农历重复。"
+  },
+  "anniversaryRepeatOnce": "不重复",
+  "@anniversaryRepeatOnce": {
+    "description": "重复规则：不重复。"
+  },
+  "anniversaryRepeatSolarDescription": "每年的 {date} 都会标出这一天",
+  "@anniversaryRepeatSolarDescription": {
+    "description": "公历每年重复的说明，date 为月日（如“11月20日”）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryRepeatLeapDayDescription": "每年的 2月29日，平年顺延到 2月28日",
+  "@anniversaryRepeatLeapDayDescription": {
+    "description": "公历每年重复、日期为 2月29日时的说明。"
+  },
+  "anniversaryRepeatLunarDescription": "每年农历{date}，按农历换算到当年的日子",
+  "@anniversaryRepeatLunarDescription": {
+    "description": "农历每年重复的说明，date 为农历月日（如“十月廿四”）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryRepeatOnceDescription": "只记这一天：之前倒数还有几天，之后记已经几天",
+  "@anniversaryRepeatOnceDescription": {
+    "description": "不重复规则的说明。"
+  },
+  "anniversaryLunarYearDate": "农历{year}年{date}",
+  "@anniversaryLunarYearDate": {
+    "description": "编辑页日期下方的农历日期，year 为干支纪年（如“己亥”），date 为农历月日。",
+    "placeholders": {
+      "year": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryFieldNote": "备注",
+  "@anniversaryFieldNote": {
+    "description": "纪念日编辑页：备注字段标签。"
+  },
+  "anniversaryNoteHint": "写点什么（可选）",
+  "@anniversaryNoteHint": {
+    "description": "纪念日备注输入框的提示文字。"
+  },
+  "anniversaryPin": "置顶",
+  "@anniversaryPin": {
+    "description": "纪念日编辑页：置顶开关；列表与详情页的置顶操作。"
+  },
+  "anniversaryPinDescription": "在纪念日列表里排在最前",
+  "@anniversaryPinDescription": {
+    "description": "纪念日置顶开关的说明。"
+  },
+  "anniversaryDelete": "删除纪念日",
+  "@anniversaryDelete": {
+    "description": "纪念日编辑页底部的删除按钮。"
+  },
+  "anniversaryDeleteConfirmTitle": "删除纪念日？",
+  "@anniversaryDeleteConfirmTitle": {
+    "description": "删除纪念日确认框标题。"
+  },
+  "anniversaryDeleteConfirmBody": "“{title}”将从日历中移除，关联的日记不受影响。",
+  "@anniversaryDeleteConfirmBody": {
+    "description": "删除纪念日确认框正文，title 为纪念日名称。",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "anniversaryDeleted": "已删除纪念日",
+  "@anniversaryDeleted": {
+    "description": "删除纪念日后的提示。"
+  },
+  "anniversaryCreated": "已添加纪念日",
+  "@anniversaryCreated": {
+    "description": "新建纪念日后的提示。"
+  },
+  "anniversarySaveFailed": "保存失败，请重试",
+  "@anniversarySaveFailed": {
+    "description": "保存纪念日失败的提示。"
   }
 }

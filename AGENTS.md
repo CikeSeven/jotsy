@@ -15,7 +15,7 @@
 │  ├─ app/                           # App 装配与主题系统
 │  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
-│  │  ├─ database/                   # Drift 数据库（schema / query / write / migration 拆分）
+│  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops 拆分）
 │  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、备份、其他日记应用与云端笔记导入等）
 │  ├─ ui/
 │  │  ├─ diaries/                    # 日记主业务模块（已分层）
@@ -24,6 +24,7 @@
 │  │  │  ├─ providers/               # 状态与筛选条件
 │  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块
+│  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ home|calendar|explore|settings/
 │  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载等）
 │  ├─ l10n/                          # 国际化封装
@@ -43,7 +44,7 @@
 - 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
 - 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。
 - 必须：可复用 UI 放 `sections/` 或 `widgets/`，避免页面文件膨胀。
-- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops）。
+- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops）。
 - 禁止：单文件混杂“页面布局 + 业务编排 + 数据转换”。
 - 例外：极简静态页面可不强制拆 controller。
 
@@ -89,6 +90,7 @@
 - 必须：打开大图统一经 `openImageViewer`（来源图片用 `ImageViewerHeroSource` 包裹并在点按时 `ImageViewerHero.capture`）；状态驱动的颜色变化经 `ExpressiveStateBlend` 补间；新增触觉反馈只用于“动作生效/越过阈值”的瞬间，类型对照 DESIGN.md §4.3。
 - 必须：启动品牌图形两端同源——原生 `drawable/launch_brand_mark.xml`、`values*/colors.xml` 的 `launch_*` 颜色与 `LaunchBrandMark` 几何、默认种子色，改动任一端须同步另一端；首页首屏新增一级区块经 `LaunchReveal` 声明启动编排槽位（见 DESIGN.md §4.3）。
 - 必须：日历页的显示偏好统一加在 `CalendarDisplayOptions`（单个 JSON 设置键 `calendarDisplayOptionsRaw`，逐字段容错解析并随备份导出），禁止为日历另加零散设置键；新增日期格样式经 `CalendarDayCell` 的填充/描边两种高亮形态实现，视觉规范见 DESIGN.md §5.7。
+- 必须：纪念日存 Drift `anniversaries` 表（业务 id `anniversaryId`；`linkedDiaryId` 存日记业务 id、不建外键），随完整备份导出、覆盖恢复与合并（按 `anniversaryId` 去重），日记包不含纪念日；某天落在哪、下一次是哪天一律经 `AnniversaryCalendar` 推算，禁止页面自行换算公历/农历。不做提醒通知。
 - 必须：日历的法定节假日（休/班）只取自 tyme 的 `LegalHoliday`，经 `CalendarHolidayDay` 读取，开关为 `CalendarDisplayOptions.holidayMode`；数字左上角标统一经 `CalendarCellLeadingBadge` 按优先级取一个，禁止在日期格另加角标位置。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。

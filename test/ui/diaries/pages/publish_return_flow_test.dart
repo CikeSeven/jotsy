@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +64,9 @@ void main() {
       () => database.getDiaryWithTagsByDiaryId(createdId! as String),
     );
     expect(stored?.diary.title, 'Sunset by the sea');
+    // 新日记默认不记录精力：用户没打开过开关，metadata 里没有精力值。
+    final context = (jsonDecode(stored!.diary.metadata) as Map)['context'];
+    expect((context as Map?)?['energyLevel'], isNull);
     // 编辑页虽已被移出路由栈，新建草稿仍被清除。
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),

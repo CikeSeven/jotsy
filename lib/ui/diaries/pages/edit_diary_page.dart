@@ -131,7 +131,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   String? _draftWeather;
   String? _draftWeatherIconCode;
   String? _draftMoodEmoji;
-  double? _draftEnergyLevel = 4;
+  // 新日记默认不记录精力：用户没打开开关的值不写进 metadata。
+  double? _draftEnergyLevel;
   DateTime? _draftCapsuleUnlockAt;
   String? _draftCapsulePrecision;
   // 已发布日记的发表时间（created_at）：详情回填时取库中原值，面板改选后随

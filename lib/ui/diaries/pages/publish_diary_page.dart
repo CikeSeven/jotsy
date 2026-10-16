@@ -82,7 +82,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
   double? _locationLongitude;
   bool _locationFromAuto = false;
   String? _weatherIconCode;
-  double? _energyLevel = 4;
+  double? _energyLevel;
   // 用户在本页亲自选的发表时间；没选过为 null，发表时间在提交那一刻现算
   // （见 PublishDiaryController.effectivePublishAt）。
   DateTime? _explicitPublishAt;

@@ -1556,6 +1556,9 @@ class _PublishDiaryPanelState extends State<PublishDiaryPanel> {
                   value: energyLevel,
                   min: 1,
                   max: 5,
+                  // 精力是五格电量：整档 1–5 与文案一一对应。旧版连续值照常显示，
+                  // 拖动后吸附到整档。
+                  divisions: 4,
                   label: EnergyBatteryIndicator.formatValue(energyLevel),
                   onChanged: (nextValue) {
                     _lastEnergyLevel = nextValue;

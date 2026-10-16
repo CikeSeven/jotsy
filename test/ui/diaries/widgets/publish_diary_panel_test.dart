@@ -132,6 +132,8 @@ void main() {
     final switchWidgetOn = tester.widget<Switch>(energySwitchFinder);
     expect(switchWidgetOn.value, isTrue);
     expect(find.byType(Slider), findsOneWidget);
+    // 五格电量：滑块按整档 1–5 移动。
+    expect(tester.widget<Slider>(find.byType(Slider)).divisions, 4);
     final switchRightOn = tester.getTopRight(energySwitchFinder).dx;
 
     // Toggle switch off
@@ -155,6 +157,18 @@ void main() {
     await tester.tap(energySwitchFinder);
     await tester.pumpAndSettle();
     expect(updatedEnergy, 4.0);
+  });
+
+  testWidgets('a legacy fractional energy value still shows', (tester) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(publishPanelHost(energyLevel: 3.37));
+    await PublishPanelDriver(tester).expand();
+
+    expect(tester.widget<Slider>(find.byType(Slider)).value, 3.37);
+    expect(find.text('So-so'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(

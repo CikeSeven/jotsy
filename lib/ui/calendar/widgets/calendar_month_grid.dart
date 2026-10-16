@@ -18,7 +18,7 @@ import 'calendar_day_cell.dart';
 /// table_calendar 自带的 eventLoader/markers：热力、照片等样式要画满格子
 /// 底色，默认“文字 + 底部圆点”的结构容纳不下。泛型参数沿用
 /// [DiaryCalendarMarker] 仅为保持组件类型稳定，网格本身不读事件。
-class CalendarMonthGrid extends StatelessWidget {
+class CalendarMonthGrid extends StatefulWidget {
   const CalendarMonthGrid({
     super.key,
     required this.focusedDay,
@@ -51,7 +51,9 @@ class CalendarMonthGrid extends StatelessWidget {
   final ValueChanged<DateTime>? onDayLongPressed;
 
   @override
-  Widget build(BuildContext context) {
+  State<CalendarMonthGrid> createState() => _CalendarMonthGridState();
+
+  Widget _buildCalendar(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -193,4 +195,18 @@ class CalendarMonthGrid extends StatelessWidget {
       },
     };
   }
+}
+
+class _CalendarMonthGridState extends State<CalendarMonthGrid> {
+  /// Home 的 tab_calendar 是 PageStorageKey；若沿用路由的 bucket，
+  /// TableCalendar 的页码会与外层列表的像素偏移共用同一个存储位置。
+  /// 从年视图回到月视图时，0 会被当作第一页（2010 年），旧页码则会覆盖
+  /// 新选的月份。这里截断祖先 key 的查找，让每次挂载都以 focusedDay 定位。
+  final _pageStorageBucket = PageStorageBucket();
+
+  @override
+  Widget build(BuildContext context) => PageStorage(
+    bucket: _pageStorageBucket,
+    child: widget._buildCalendar(context),
+  );
 }

@@ -140,15 +140,23 @@ class _CalendarPageController {
   ///
   /// 交互约束：
   /// - 日期范围与日历组件保持一致（2010-01-01 ~ 2100-12-31）；
-  /// - 选择完成后同步更新选中日和焦点月份；
+  /// - 从当前浏览日期打开，选择完成后同步更新选中日和焦点月份；
   /// - 跳转时统一切到月视图，便于用户定位月份上下文。
   Future<void> pickDateAndJump() async {
-    final firstDate = DateTime(2010, 1, 1);
-    final lastDate = DateTime(2100, 12, 31);
+    final firstDate = CalendarMonthGrid.firstDay;
+    final lastDate = CalendarMonthGrid.lastDay;
+    // 浏览年/月不会改变选中日；沿用选中日会让弹窗突然回到上次选择的年份。
+    // 年视图可浏览到范围外，弹窗仍须把初始日期限制在月历支持的范围内。
+    final focused = DateUtils.dateOnly(_state._focusedMonth);
+    final initialDate = focused.isBefore(firstDate)
+        ? firstDate
+        : focused.isAfter(lastDate)
+        ? lastDate
+        : focused;
 
     final pickedDate = await showDatePicker(
       context: _state.context,
-      initialDate: _state._selectedDay,
+      initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
       locale: Localizations.localeOf(_state.context),

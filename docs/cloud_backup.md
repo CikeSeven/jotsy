@@ -43,6 +43,8 @@ flutter build apk --release --split-per-abi --dart-define-from-file=cloud_backup
 
 OAuth 同意屏幕需要的首页与隐私政策由 GitHub Pages 托管（仓库 `docs/` 目录）：首页 `https://cikeseven.github.io/jotsy/`，隐私政策 `https://cikeseven.github.io/jotsy/privacy.html`，已获授权的网域填 `cikeseven.github.io`。
 
+GitHub Actions 发布（`.github/workflows/release-apk.yml`）从仓库 Secrets 读取同名的值（`JOTSY_GOOGLE_CLIENT_ID`、`JOTSY_GOOGLE_CLIENT_SECRET`、`JOTSY_GOOGLE_WEB_CLIENT_ID`、`JOTSY_DROPBOX_APP_KEY`、`JOTSY_MICROSOFT_CLIENT_ID`、`JOTSY_BAIDU_APP_KEY`、`JOTSY_BAIDU_SECRET_KEY`、`JOTSY_ALIYUN_CLIENT_ID`、`JOTSY_ALIYUN_CLIENT_SECRET`；`JOTSY_MICROSOFT_TENANT`、`JOTSY_BAIDU_APP_DIR` 为仓库 Variables）生成该文件。每个网盘都可选：没配的只告警、发布包里不显示；格式不对或成对的值只配一半时构建失败。
+
 各平台注册要点：
 
 - **Google Drive**：Google Cloud 控制台启用 Drive API，权限只用 `drive.file`（非敏感，只需基础验证）。同意屏幕处于“测试”状态时只有测试用户能授权、且授权 7 天过期，正式发布前需切到“正式版”。同一项目里建三个 OAuth 客户端：

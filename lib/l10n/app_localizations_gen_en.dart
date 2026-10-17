@@ -4901,7 +4901,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryShareTargetWechat => 'WeChat';
 
   @override
+  String get diaryShareTargetWechatMoments => 'Moments';
+
+  @override
   String get diaryShareTargetQq => 'QQ';
+
+  @override
+  String get diaryShareTargetQzone => 'Qzone';
 
   @override
   String get diaryShareTargetSystem => 'More apps';
@@ -4929,6 +4935,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get diaryShareRequiresImageSeveral =>
+      'Greyed-out apps need at least one image';
+
+  @override
   String get diaryShareNothingSelected => 'Choose something to share first';
 
   @override
@@ -4948,7 +4958,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String diaryShareImagesTrimmed(int count) {
-    return 'Up to $count images per share — the first $count were sent';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Up to $count images per share — the rest weren\'t sent',
+      one: 'Only 1 image per share — the rest weren\'t sent',
+    );
+    return '$_temp0';
   }
 
   @override

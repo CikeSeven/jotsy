@@ -8,20 +8,26 @@ import 'package:node_diary/ui/diaries/models/diary_share_target.dart';
 import 'package:path/path.dart' as p;
 
 class _FakeChannel extends DiaryShareChannel {
-  _FakeChannel({this.installed = const <String>{}, this.launches = true});
+  _FakeChannel({
+    this.installed = const <DiaryShareComponent>{},
+    this.launches = true,
+  });
 
-  final Set<String> installed;
+  final Set<DiaryShareComponent> installed;
   final bool launches;
-  final List<({String packageName, String? text, List<String> images})> calls =
-      [];
+  final List<
+    ({DiaryShareComponent component, String? text, List<String> images})
+  >
+  calls = [];
 
   @override
-  Future<Set<String>> installedPackages(Iterable<String> packageNames) async =>
-      packageNames.where(installed.contains).toSet();
+  Future<Set<DiaryShareComponent>> availableComponents(
+    Iterable<DiaryShareComponent> components,
+  ) async => components.where(installed.contains).toSet();
 
   @override
-  Future<bool> shareToPackage({
-    required String packageName,
+  Future<bool> shareTo(
+    DiaryShareComponent component, {
     String? text,
     List<String> imagePaths = const <String>[],
     String? chooserTitle,
@@ -30,7 +36,7 @@ class _FakeChannel extends DiaryShareChannel {
     for (final path in imagePaths) {
       expect(File(path).existsSync(), isTrue, reason: path);
     }
-    calls.add((packageName: packageName, text: text, images: imagePaths));
+    calls.add((component: component, text: text, images: imagePaths));
     return launches;
   }
 }
@@ -83,7 +89,10 @@ void main() {
       expect(result.textCopied, isTrue);
       expect(clipboard, <String>['春日小记\n#旅行#']);
       final call = channel.calls.single;
-      expect(call.packageName, 'com.sina.weibo');
+      expect(call.component, (
+        packageName: 'com.sina.weibo',
+        activityName: null,
+      ));
       // 带图时文字只走剪贴板，避免目标应用读到 EXTRA_TEXT 后重复一遍。
       expect(call.text, isNull);
       expect(call.images.map(p.basename), <String>[
@@ -136,6 +145,42 @@ void main() {
     expect(result.missingImages, 1);
     expect(channel.calls.single.images, hasLength(8));
     expect(clipboard, isEmpty);
+  });
+
+  test(
+    'Moments gets one image straight to its entry, text via clipboard',
+    () async {
+      final channel = _FakeChannel();
+      final sources = <String>[
+        for (var i = 0; i < 3; i++) await image('$i.jpg'),
+      ];
+
+      final result = await controller(
+        channel,
+      ).share(DiaryShareTarget.wechatMoments, text: '春日', images: sources);
+
+      expect(result.outcome, DiaryShareOutcome.shared);
+      expect(result.trimmedImages, 2);
+      expect(result.textCopied, isTrue);
+      expect(clipboard, <String>['春日']);
+      final call = channel.calls.single;
+      expect(call.component, (
+        packageName: 'com.tencent.mm',
+        activityName: 'com.tencent.mm.ui.tools.ShareToTimeLineUI',
+      ));
+      expect(call.text, isNull);
+      expect(call.images.map(p.basename), <String>['jotsy_01.jpg']);
+    },
+  );
+
+  test('Moments refuses a text-only share', () async {
+    final channel = _FakeChannel();
+    final result = await controller(
+      channel,
+    ).share(DiaryShareTarget.wechatMoments, text: '文字', images: const []);
+
+    expect(result.outcome, DiaryShareOutcome.nothingToShare);
+    expect(channel.calls, isEmpty);
   });
 
   test('stages data URI images and clears the previous staging run', () async {
@@ -220,10 +265,29 @@ void main() {
 
   test('lists only installed app targets', () async {
     final channel = _FakeChannel(
-      installed: const <String>{'com.tencent.mm', 'com.example.other'},
+      installed: const <DiaryShareComponent>{
+        (packageName: 'com.tencent.mm', activityName: null),
+        (packageName: 'com.qzone', activityName: null),
+        (packageName: 'com.example.other', activityName: null),
+      },
+    );
+    // 微信装了，但朋友圈入口没有报告可用（如改了类名），朋友圈就不出现。
+    expect(await controller(channel).availableTargets(), <DiaryShareTarget>{
+      DiaryShareTarget.wechat,
+      DiaryShareTarget.qzone,
+    });
+  });
+
+  test('Moments shows up when its own entry accepts the share', () async {
+    final channel = _FakeChannel(
+      installed: <DiaryShareComponent>{
+        DiaryShareTarget.wechat.component!,
+        DiaryShareTarget.wechatMoments.component!,
+      },
     );
     expect(await controller(channel).availableTargets(), <DiaryShareTarget>{
       DiaryShareTarget.wechat,
+      DiaryShareTarget.wechatMoments,
     });
   });
 

@@ -9,7 +9,9 @@ String diaryShareTargetLabel(AppLocalizations l10n, DiaryShareTarget target) {
     DiaryShareTarget.weibo => l10n.diaryShareTargetWeibo,
     DiaryShareTarget.xiaohongshu => l10n.diaryShareTargetXiaohongshu,
     DiaryShareTarget.wechat => l10n.diaryShareTargetWechat,
+    DiaryShareTarget.wechatMoments => l10n.diaryShareTargetWechatMoments,
     DiaryShareTarget.qq => l10n.diaryShareTargetQq,
+    DiaryShareTarget.qzone => l10n.diaryShareTargetQzone,
     DiaryShareTarget.system => l10n.diaryShareTargetSystem,
   };
 }

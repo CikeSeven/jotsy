@@ -83,6 +83,7 @@
         <package android:name="com.xingin.xhs" />
         <package android:name="com.tencent.mm" />
         <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.qzone" />
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />

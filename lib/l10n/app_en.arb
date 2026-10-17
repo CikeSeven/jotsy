@@ -6292,9 +6292,17 @@
   "@diaryShareTargetWechat": {
     "description": "Share target: WeChat."
   },
+  "diaryShareTargetWechatMoments": "Moments",
+  "@diaryShareTargetWechatMoments": {
+    "description": "Share target: WeChat Moments."
+  },
   "diaryShareTargetQq": "QQ",
   "@diaryShareTargetQq": {
     "description": "Share target: QQ."
+  },
+  "diaryShareTargetQzone": "Qzone",
+  "@diaryShareTargetQzone": {
+    "description": "Share target: Qzone."
   },
   "diaryShareTargetSystem": "More apps",
   "@diaryShareTargetSystem": {
@@ -6329,6 +6337,10 @@
       }
     }
   },
+  "diaryShareRequiresImageSeveral": "Greyed-out apps need at least one image",
+  "@diaryShareRequiresImageSeveral": {
+    "description": "Share sheet hint when several installed target apps need an image."
+  },
   "diaryShareNothingSelected": "Choose something to share first",
   "@diaryShareNothingSelected": {
     "description": "Share sheet hint when neither text nor images are selected."
@@ -6354,7 +6366,7 @@
   "@diaryShareCopied": {
     "description": "Hint after copying the text."
   },
-  "diaryShareImagesTrimmed": "Up to {count} images per share — the first {count} were sent",
+  "diaryShareImagesTrimmed": "{count, plural, =1{Only 1 image per share — the rest weren't sent} other{Up to {count} images per share — the rest weren't sent}}",
   "@diaryShareImagesTrimmed": {
     "description": "Hint when more images were selected than the target accepts.",
     "placeholders": {

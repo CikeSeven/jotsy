@@ -20,7 +20,8 @@ class DiaryShareFileProvider : FileProvider()
  * directory [DiaryShareFileProvider] exposes, and paths outside it are rejected here as well.
  *
  * When the target app has a single matching share activity it is launched directly; apps with
- * several entries (WeChat: send to chat / favorites) get a chooser limited to that package.
+ * several entries (WeChat: send to chat / favorites) get a chooser limited to that package. A
+ * target may also name one entry of an app (WeChat Moments), which is then the only one used.
  */
 class DiaryShareLauncher(
   private val activity: Activity,
@@ -33,11 +34,12 @@ class DiaryShareLauncher(
   init {
     channel.setMethodCallHandler { call, result ->
       when (call.method) {
-        "installedPackages" -> result.success(
-          installedPackages(call.argument<List<String>>("packages").orEmpty()),
+        "availableComponents" -> result.success(
+          availableComponents(call.argument<List<String>>("components").orEmpty()),
         )
         "shareToPackage" -> shareToPackage(
           packageName = call.argument<String>("packageName"),
+          activityName = call.argument<String>("activityName"),
           text = call.argument<String>("text"),
           imagePaths = call.argument<List<String>>("imagePaths").orEmpty(),
           chooserTitle = call.argument<String>("chooserTitle"),
@@ -52,18 +54,26 @@ class DiaryShareLauncher(
     channel.setMethodCallHandler(null)
   }
 
-  /** Installed apps that accept a text or image share; an app without a share entry is no use. */
-  private fun installedPackages(packages: List<String>): List<String> =
-    packages.filter { packageName ->
+  /**
+   * Targets that are installed and accept a text or image share; an app without a share entry is
+   * no use. A target is "package" or "package/activity" (ComponentName's flattened form); for the
+   * latter that very entry has to accept the share, so a renamed entry hides the target.
+   */
+  private fun availableComponents(components: List<String>): List<String> =
+    components.filter { component ->
+      val packageName = component.substringBefore('/')
+      val activityName = component.substringAfter('/', "").ifEmpty { null }
       listOf("text/plain", "image/*").any { mimeType ->
         handlersFor(
           Intent(Intent.ACTION_SEND).setType(mimeType).setPackage(packageName),
+          activityName,
         ).isNotEmpty()
       }
     }
 
   private fun shareToPackage(
     packageName: String?,
+    activityName: String?,
     text: String?,
     imagePaths: List<String>,
     chooserTitle: String?,
@@ -104,7 +114,7 @@ class DiaryShareLauncher(
     }
     intent.setPackage(packageName)
 
-    val handlers = handlersFor(intent)
+    val handlers = handlersFor(intent, activityName)
     if (handlers.isEmpty()) {
       result.success(false)
       return
@@ -134,7 +144,10 @@ class DiaryShareLauncher(
     return FileProvider.getUriForFile(activity, authority, file)
   }
 
+  /** Activities that take [intent], narrowed to [activityName] when the target names one. */
   @Suppress("DEPRECATION")
-  private fun handlersFor(intent: Intent): List<ResolveInfo> =
-    activity.packageManager.queryIntentActivities(intent, 0)
+  private fun handlersFor(intent: Intent, activityName: String? = null): List<ResolveInfo> =
+    activity.packageManager.queryIntentActivities(intent, 0).filter { handler ->
+      activityName == null || handler.activityInfo.name == activityName
+    }
 }

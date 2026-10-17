@@ -54,7 +54,7 @@ class DiaryShareResult {
 /// 分享日记的执行链路。
 ///
 /// 流程（[share]）：
-/// 1. 按目标上限截取勾选的图片（微博等 9 张）；
+/// 1. 按目标上限截取勾选的图片（微博等 9 张，朋友圈 1 张）；
 /// 2. 把图片复制到应用缓存 `diary_share/<时间戳>/`：原生侧只经 FileProvider
 ///    暴露这个目录，日记原图所在的私有目录不对外开放；网络图片先下载，
 ///    data URI 先解码；读不到的图片跳过并计数，不中断整次分享；
@@ -86,12 +86,12 @@ class DiaryShareController {
   /// 已安装、能接收分享的应用目标（不含始终可用的系统分享）。
   Future<Set<DiaryShareTarget>> availableTargets() async {
     final targets = DiaryShareTarget.appTargets;
-    final installed = await _channel.installedPackages(
-      targets.map((DiaryShareTarget target) => target.packageName!),
+    final available = await _channel.availableComponents(
+      targets.map((DiaryShareTarget target) => target.component!),
     );
     return targets
         .where(
-          (DiaryShareTarget target) => installed.contains(target.packageName),
+          (DiaryShareTarget target) => available.contains(target.component),
         )
         .toSet();
   }
@@ -135,16 +135,16 @@ class DiaryShareController {
       await _writeClipboard(normalizedText);
     }
 
-    final packageName = target.packageName;
-    if (packageName == null) {
+    final component = target.component;
+    if (component == null) {
       // 系统分享另把文字一并传入：邮件、便签等应用会读取它。
       await _systemShare(
         imagePaths: staged,
         text: normalizedText.isEmpty ? null : normalizedText,
       );
     } else {
-      final launched = await _channel.shareToPackage(
-        packageName: packageName,
+      final launched = await _channel.shareTo(
+        component,
         text: staged.isEmpty ? normalizedText : null,
         imagePaths: staged,
         chooserTitle: chooserTitle,

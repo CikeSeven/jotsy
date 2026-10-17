@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/services/diary_share_channel.dart';
+
 /// 分享文字里标签的写法。
 enum DiaryShareTagStyle {
   /// `#标签`：多数应用（含小红书、微信、QQ）把它当普通文字或话题。
@@ -18,8 +20,9 @@ enum DiaryShareTagStyle {
 ///
 /// 指定应用的目标只在 Android 上、且已安装时出现：原生侧按包名发出
 /// `ACTION_SEND(_MULTIPLE)`，应用内有多个分享入口（如微信的“发送给朋友 /
-/// 收藏”）时交给系统列出该应用自己的入口。[system] 走系统分享面板，所有
-/// 平台都可用。
+/// 收藏”）时交给系统列出该应用自己的入口；指定了 [activityName] 的目标
+/// （朋友圈）直达该入口，且只有该入口能接收分享时才出现。[system] 走系统
+/// 分享面板，所有平台都可用。
 ///
 /// 带图分享时，这些应用普遍忽略随图片一起传入的文字（`EXTRA_TEXT`），所以
 /// 文字改为复制到剪贴板、由用户在发布页粘贴（Diarium 分享到微博的做法）；
@@ -28,11 +31,24 @@ enum DiaryShareTarget {
   weibo(packageName: 'com.sina.weibo', tagStyle: DiaryShareTagStyle.weiboTopic),
   xiaohongshu(packageName: 'com.xingin.xhs', requiresImages: true),
   wechat(packageName: 'com.tencent.mm'),
+
+  /// 微信朋友圈的发布入口。微信 7.0 起它经 Intent 只接收单张图片、不接收
+  /// 纯文字，随图传入的文案（`Kdescription`）也被忽略——文字照常走剪贴板。
+  wechatMoments(
+    packageName: 'com.tencent.mm',
+    activityName: 'com.tencent.mm.ui.tools.ShareToTimeLineUI',
+    maxImages: 1,
+    requiresImages: true,
+  ),
   qq(packageName: 'com.tencent.mobileqq'),
+
+  /// QQ 空间独立应用（只装了 QQ 时不出现）。
+  qzone(packageName: 'com.qzone'),
   system(packageName: null, maxImages: null);
 
   const DiaryShareTarget({
     required this.packageName,
+    this.activityName,
     this.maxImages = 9,
     this.tagStyle = DiaryShareTagStyle.hashtag,
     this.requiresImages = false,
@@ -41,7 +57,10 @@ enum DiaryShareTarget {
   /// 目标应用包名；null 表示系统分享面板。
   final String? packageName;
 
-  /// 单次最多带几张图（微博、小红书、微信、QQ 的发布页都是 9 张）；
+  /// 直达的分享入口（Activity 类名）；null 表示交给应用自己的入口。
+  final String? activityName;
+
+  /// 单次最多带几张图（微博、小红书、微信、QQ 的发布页都按 9 张算）；
   /// null 表示不限制。
   final int? maxImages;
 
@@ -49,6 +68,11 @@ enum DiaryShareTarget {
 
   /// 是否必须带图：小红书的分享入口只接收图片或视频，纯文字发不过去。
   final bool requiresImages;
+
+  /// 原生侧定位这个目标的方式；null 表示系统分享面板。
+  DiaryShareComponent? get component => packageName == null
+      ? null
+      : (packageName: packageName!, activityName: activityName);
 
   /// 需要原生侧检测是否安装的应用目标。
   static List<DiaryShareTarget> get appTargets => values

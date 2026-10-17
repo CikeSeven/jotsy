@@ -287,16 +287,18 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
     final appTargets = DiaryShareTarget.appTargets.where(installed.contains);
     final needsImage = appTargets
         .where((DiaryShareTarget target) => target.requiresImages)
-        .firstOrNull;
-    // 一行说明，按优先级取一条：为什么全部不可点 > 为什么某个目标不可点 >
+        .toList(growable: false);
+    // 一行说明，按优先级取一条：为什么全部不可点 > 为什么某些目标不可点 >
     // 带图分享时文字去哪了。
     final String? hint;
     if (!hasContent) {
       hint = l10n.diaryShareNothingSelected;
-    } else if (needsImage != null && !hasImages) {
-      hint = l10n.diaryShareRequiresImage(
-        diaryShareTargetLabel(l10n, needsImage),
-      );
+    } else if (needsImage.isNotEmpty && !hasImages) {
+      hint = needsImage.length == 1
+          ? l10n.diaryShareRequiresImage(
+              diaryShareTargetLabel(l10n, needsImage.single),
+            )
+          : l10n.diaryShareRequiresImageSeveral;
     } else if (hasText && hasImages) {
       hint = l10n.diaryShareClipboardHint;
     } else {
@@ -362,7 +364,11 @@ FaIconData? _targetIcon(DiaryShareTarget target) {
   return switch (target) {
     DiaryShareTarget.weibo => FontAwesomeIcons.weibo,
     DiaryShareTarget.wechat => FontAwesomeIcons.weixin,
+    // 朋友圈页的发布入口就是相机。
+    DiaryShareTarget.wechatMoments => FontAwesomeIcons.cameraRetro,
     DiaryShareTarget.qq => FontAwesomeIcons.qq,
+    // QQ 空间的标志是一颗星。
+    DiaryShareTarget.qzone => FontAwesomeIcons.solidStar,
     DiaryShareTarget.system => FontAwesomeIcons.shareFromSquare,
     // 图标库没有小红书的图形，按钮里直接写名称。
     DiaryShareTarget.xiaohongshu => null,

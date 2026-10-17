@@ -6292,9 +6292,17 @@
   "@diaryShareTargetWechat": {
     "description": "分享目标：微信。"
   },
+  "diaryShareTargetWechatMoments": "朋友圈",
+  "@diaryShareTargetWechatMoments": {
+    "description": "分享目标：微信朋友圈。"
+  },
   "diaryShareTargetQq": "QQ",
   "@diaryShareTargetQq": {
     "description": "分享目标：QQ。"
+  },
+  "diaryShareTargetQzone": "QQ空间",
+  "@diaryShareTargetQzone": {
+    "description": "分享目标：QQ 空间。"
   },
   "diaryShareTargetSystem": "更多应用",
   "@diaryShareTargetSystem": {
@@ -6329,6 +6337,10 @@
       }
     }
   },
+  "diaryShareRequiresImageSeveral": "置灰的应用需要至少一张图片",
+  "@diaryShareRequiresImageSeveral": {
+    "description": "分享面板：多个已安装的目标应用都必须带图时的提示。"
+  },
   "diaryShareNothingSelected": "先选择要分享的内容",
   "@diaryShareNothingSelected": {
     "description": "分享面板：文字与图片都未选择时的提示。"
@@ -6354,7 +6366,7 @@
   "@diaryShareCopied": {
     "description": "复制文字后的提示。"
   },
-  "diaryShareImagesTrimmed": "单次最多分享 {count} 张图片，已取前 {count} 张",
+  "diaryShareImagesTrimmed": "单次最多分享 {count} 张图片，超出的没有发出",
   "@diaryShareImagesTrimmed": {
     "description": "分享时图片超出目标上限的提示。",
     "placeholders": {

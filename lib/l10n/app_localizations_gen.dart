@@ -8270,11 +8270,23 @@ abstract class AppLocalizations {
   /// **'WeChat'**
   String get diaryShareTargetWechat;
 
+  /// Share target: WeChat Moments.
+  ///
+  /// In en, this message translates to:
+  /// **'Moments'**
+  String get diaryShareTargetWechatMoments;
+
   /// Share target: QQ.
   ///
   /// In en, this message translates to:
   /// **'QQ'**
   String get diaryShareTargetQq;
+
+  /// Share target: Qzone.
+  ///
+  /// In en, this message translates to:
+  /// **'Qzone'**
+  String get diaryShareTargetQzone;
 
   /// Share target: the system share sheet.
   ///
@@ -8318,6 +8330,12 @@ abstract class AppLocalizations {
   /// **'{app} needs at least one image'**
   String diaryShareRequiresImage(String app);
 
+  /// Share sheet hint when several installed target apps need an image.
+  ///
+  /// In en, this message translates to:
+  /// **'Greyed-out apps need at least one image'**
+  String get diaryShareRequiresImageSeveral;
+
   /// Share sheet hint when neither text nor images are selected.
   ///
   /// In en, this message translates to:
@@ -8351,7 +8369,7 @@ abstract class AppLocalizations {
   /// Hint when more images were selected than the target accepts.
   ///
   /// In en, this message translates to:
-  /// **'Up to {count} images per share — the first {count} were sent'**
+  /// **'{count, plural, =1{Only 1 image per share — the rest weren\'t sent} other{Up to {count} images per share — the rest weren\'t sent}}'**
   String diaryShareImagesTrimmed(int count);
 
   /// Hint when some images could not be read.

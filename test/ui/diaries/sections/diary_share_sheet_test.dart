@@ -138,6 +138,39 @@ void main() {
     expect(request.text, contains('#旅行'));
   });
 
+  testWidgets('Moments and Qzone appear when installed and share images', (
+    tester,
+  ) async {
+    final result = await _openSheet(
+      tester,
+      content: _content(),
+      installed: const <DiaryShareTarget>{
+        DiaryShareTarget.xiaohongshu,
+        DiaryShareTarget.wechatMoments,
+        DiaryShareTarget.qzone,
+      },
+    );
+
+    expect(find.bySemanticsLabel('QQ空间'), findsOneWidget);
+
+    // 两个目标都必须带图时，说明不再点名其中一个。
+    await tester.tap(find.widgetWithText(FilterChip, '图片'));
+    await tester.pumpAndSettle();
+    expect(find.text('置灰的应用需要至少一张图片'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel('朋友圈'));
+    await tester.pumpAndSettle();
+    expect(find.text('分享日记'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilterChip, '图片'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsLabel('朋友圈'));
+    await tester.pumpAndSettle();
+    final request = result()!;
+    expect(request.target, DiaryShareTarget.wechatMoments);
+    // 面板只负责挑选，按目标截断交给执行链路。
+    expect(request.images, hasLength(2));
+  });
+
   testWidgets('with nothing selected every target is disabled', (tester) async {
     await _openSheet(
       tester,

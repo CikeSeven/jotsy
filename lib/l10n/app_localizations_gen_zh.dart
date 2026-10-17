@@ -4461,7 +4461,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryShareTargetWechat => '微信';
 
   @override
+  String get diaryShareTargetWechatMoments => '朋友圈';
+
+  @override
   String get diaryShareTargetQq => 'QQ';
+
+  @override
+  String get diaryShareTargetQzone => 'QQ空间';
 
   @override
   String get diaryShareTargetSystem => '更多应用';
@@ -4487,6 +4493,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get diaryShareRequiresImageSeveral => '置灰的应用需要至少一张图片';
+
+  @override
   String get diaryShareNothingSelected => '先选择要分享的内容';
 
   @override
@@ -4505,7 +4514,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String diaryShareImagesTrimmed(int count) {
-    return '单次最多分享 $count 张图片，已取前 $count 张';
+    return '单次最多分享 $count 张图片，超出的没有发出';
   }
 
   @override

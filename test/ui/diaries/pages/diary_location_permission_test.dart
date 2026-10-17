@@ -14,11 +14,11 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/services/location_test_support.dart';
 import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
 
 void main() {
   const configChannel = MethodChannel('com.jotsy.diary/config');
@@ -104,22 +104,21 @@ void main() {
           );
           await tester.tap(find.text('Open'));
           await tester.pumpAndSettle();
-          PublishDiaryPanel panel() =>
-              tester.widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel));
-          final l10n = tester.element(find.byType(PublishDiaryPanel)).l10n;
+          final panel = PublishPanelDriver(tester);
+          final l10n = panel.l10n;
 
-          panel().onResolveLocation();
+          panel.resolveLocation();
           await tester.pumpAndSettle();
           expect(find.text(l10n.locationPermissionDenied), findsOneWidget);
-          expect(panel().locationController.text, 'Old place');
+          expect(panel.locationText, 'Old place');
           expect(geolocator.permissionRequests, 1);
           expect(geolocator.settings, isEmpty);
 
-          expect(panel().locating, isFalse);
-          panel().onResolveLocation();
+          expect(panel.locating, isFalse);
+          panel.resolveLocation();
           await tester.pumpAndSettle();
           expect(geolocator.permissionRequests, 2);
-          expect(panel().locationController.text, 'Old place');
+          expect(panel.locationText, 'Old place');
           expect(tester.takeException(), isNull);
           await tester.pump(const Duration(seconds: 5));
           await tester.pumpAndSettle();

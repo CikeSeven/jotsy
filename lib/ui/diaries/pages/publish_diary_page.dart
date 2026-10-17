@@ -1,50 +1,34 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:path/path.dart' as path;
-
-import 'package:node_diary/core/database/app_database.dart';
-import 'package:node_diary/core/database/content_codec.dart';
-import 'package:node_diary/core/services/amap_config_channel.dart';
-import 'package:node_diary/core/services/diary_cover_storage_service.dart';
-import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/app_service.dart';
-import 'package:node_diary/core/services/settings_service.dart';
-import 'package:node_diary/core/services/location_resolver_service.dart';
-import 'package:node_diary/core/services/qweather_weather_service.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
-import 'package:node_diary/ui/diaries/models/diary_location.dart';
-import 'package:node_diary/ui/diaries/models/location_resolve_hint.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
+import 'package:node_diary/ui/diaries/controllers/publish_diary_controller.dart';
+import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
-import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
-import 'package:node_diary/ui/diaries/models/time_capsule.dart';
-import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
-import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
-import 'package:node_diary/ui/diaries/widgets/create_tag_dialog.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
+import 'package:node_diary/ui/diaries/widgets/time_capsule_seal_overlay.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
-import '../../../app/theme/expressive_motion.dart';
-
-part '../controllers/publish_diary_controller.dart';
+import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
+import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 /// 日记发布页（预览优先）。
 ///
-/// 页面职责：
-/// - 展示真实发布预览（封面 + 标题 + 富文本正文）；
-/// - 承载底部面板交互（封面/标签/位置/天气/心情/精力）；
-/// - 最终调用控制器执行发布写库。
+/// 页面只做装配：展示真实发布预览（封面 + 标题 + 富文本正文），承载底部
+/// 元数据面板，把用户操作交给控制器，并负责提示、触觉、封存动画与路由。
+/// - 面板字段：DiaryMetaDraftController（草稿）+ DiaryMetaActions（异步动作）；
+/// - 发布流程：PublishDiaryController（阶段、发表时间、写库、回传草稿）。
 class PublishDiaryPage extends ConsumerStatefulWidget {
   const PublishDiaryPage({
     super.key,
@@ -63,141 +47,136 @@ class PublishDiaryPage extends ConsumerStatefulWidget {
 }
 
 class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
-  // ==================== 输入控制器与面板控制器 ====================
-  final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _weatherController = TextEditingController();
+  // ==================== 面板与预览 ====================
   final PublishDiaryPanelController _panelController =
       PublishDiaryPanelController();
-  late final quill.QuillController _previewController;
-  late final Set<int> _selectedTagIds;
-
-  // ==================== 页面草稿态字段 ====================
-  String? _draftCover;
-  String? _moodEmoji;
-  late DiaryLocationPrecision _locationPrecision;
-  Map<String, Object?>? _locationAddressComponent;
-  double? _locationLatitude;
-  double? _locationLongitude;
-  bool _locationFromAuto = false;
-  String? _weatherIconCode;
-  double? _energyLevel = 4;
-  late DateTime _publishAt;
-  TimeCapsuleSchedule? _timeCapsuleSchedule;
   // 面板展开进度只驱动正文底部占位：用 ValueNotifier 局部刷新占位条，
   // 避免拖拽时每帧 setState 重建整页（含只读 QuillEditor 预览）。
   final ValueNotifier<double> _panelExpandProgress = ValueNotifier<double>(0);
 
-  // ==================== 异步流程状态 ====================
-  bool _saving = false;
-  bool _locating = false;
-  bool _weatherLoading = false;
-  bool _showCapsuleSealOverlay = false;
-  LocationResolverService? _locationResolverService;
-  QWeatherWeatherService? _weatherService;
-
-  // ==================== 业务控制器 ====================
-  late final PublishDiaryController _controller;
+  // ==================== 草稿与流程 ====================
+  // 面板字段的唯一来源；输入变化只通知监听它的局部（面板、封面），页面
+  // 不再为每次打字、拖动精力滑块 setState。
+  late final DiaryMetaDraftController _meta;
+  late final DiaryMetaActions _metaActions;
+  late final PublishDiaryController _publisher;
 
   @override
   void initState() {
     super.initState();
-    _controller = PublishDiaryController(this);
-    _selectedTagIds = <int>{...widget.initialDraft.selectedTagIds};
-    _draftCover = _controller.normalizeOptionalText(widget.initialDraft.cover);
-    _locationPrecision = widget.initialDraft.locationPrecision;
-    _locationAddressComponent = widget.initialDraft.locationAddressComponent;
-    _locationLatitude = widget.initialDraft.locationLatitude;
-    _locationLongitude = widget.initialDraft.locationLongitude;
-    _locationFromAuto = widget.initialDraft.locationFromAuto;
-    _locationController.text = widget.initialDraft.location ?? '';
-    _weatherController.text = widget.initialDraft.weather ?? '';
-    _weatherIconCode = widget.initialDraft.weatherIconCode;
-    _moodEmoji = widget.initialDraft.moodEmoji;
-    _publishAt = _controller.resolveInitialPublishAt(
-      widget.initialDraft.createdAtOverride,
+    _meta = DiaryMetaDraftController(
+      DiaryMetaDraft.fromNewDiaryDraft(widget.initialDraft),
     );
-    final initialCapsuleUnlockAt = widget.initialDraft.capsuleUnlockAt;
-    if (initialCapsuleUnlockAt != null) {
-      _timeCapsuleSchedule = TimeCapsuleSchedule(
-        unlockAt: initialCapsuleUnlockAt,
-        precision: TimeCapsuleSchedule.parsePrecision(
-          widget.initialDraft.capsulePrecision,
-        ),
-      );
-    }
-
-    // 精力值：未设置时保留为 null；存在时限制在 1~5，避免历史数据越界导致 UI 异常。
-    final rawEnergy = widget.initialDraft.energyLevel?.toDouble();
-    if (rawEnergy != null) {
-      _energyLevel = rawEnergy.clamp(1, 5).toDouble();
-    } else {
-      _energyLevel = null;
-    }
-
-    // 预览正文优先走 Delta JSON；失败时降级纯文本，确保页面总能打开。
-    quill.Document previewDoc;
-    try {
-      previewDoc = decodeDiaryContentToDocument(
-        widget.initialDraft.contentDocJson,
-      );
-    } catch (_) {
-      previewDoc = documentFromPlainText(widget.initialDraft.contentText);
-    }
-    _previewController = quill.QuillController(
-      document: previewDoc,
-      selection: const TextSelection.collapsed(offset: 0),
-      readOnly: true,
+    _publisher = PublishDiaryController(
+      initialDraft: widget.initialDraft,
+      meta: _meta,
+    );
+    // 阶段只在发布时变化几次（idle → saving → sealing/done），整页重建以
+    // 同步返回按钮、面板的“发布中”与封存遮罩。
+    _publisher.phase.addListener(_onPhaseChanged);
+    _metaActions = DiaryMetaActions(
+      ref,
+      draft: _meta,
+      // 发布新日记时“此时此地”就是现在：定位成功且没填天气时顺带取一次。
+      autoWeatherAfterLocate: true,
+      isBusy: () => _leaveBlocked,
     );
   }
 
   @override
   void dispose() {
-    _locationController.dispose();
-    _weatherController.dispose();
-    _previewController.dispose();
+    _publisher.phase.removeListener(_onPhaseChanged);
+    _publisher.dispose();
+    _metaActions.dispose();
+    _meta.dispose();
     _panelExpandProgress.dispose();
     super.dispose();
   }
 
+  void _onPhaseChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// 发布进行中、封存中或已发布退场中：此时带草稿返回会让已写库的日记
+  /// 留在编辑页草稿里，用户可以再发一次。
+  bool get _leaveBlocked => !_publisher.canLeave;
+
+  /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
+  void _closeWithDraft() {
+    if (_leaveBlocked) return;
+    Navigator.of(context).pop(_publisher.returnDraft());
+  }
+
+  /// 选择发表时间；约束见 [showPublishTimePicker]（与编辑已发布日记共用）。
+  Future<void> _pickPublishTime() async {
+    final shown = _publisher.effectivePublishAt;
+    final picked = await showPublishTimePicker(context, current: shown);
+    if (picked == null || !mounted) return;
+    _publisher.applyPickedPublishAt(picked, shown: shown);
+  }
+
+  /// 发布：校验 → 写库 →（胶囊）封存卡片 + 成功触觉 → 通知打开者 → 退场。
+  ///
+  /// 先通知打开者（[PublishDiaryPage.onPublished]，编辑页借此静默移出路由
+  /// 栈），再以新日记 id 作为结果退场；失败时只提示、留在本页可重试。
+  Future<void> _publish() async {
+    if (_leaveBlocked) return;
+    final l10n = context.l10n;
+    if (_publisher.validate() == PublishValidation.capsuleUnlockPassed) {
+      _hint(l10n.timeCapsuleUnlockPassed);
+      return;
+    }
+    final String diaryId;
+    try {
+      diaryId = await _publisher.submit(ref.read(appDatabaseProvider));
+    } catch (error) {
+      debugPrint('Publish failed: $error');
+      _hint(l10n.publishFailed);
+      return;
+    }
+    if (!mounted) return;
+    if (_publisher.phase.value == PublishPhase.sealing) {
+      // 封存是一次性的仪式动作：与封存卡片同时给出“成功”触觉，等卡片入场
+      // 播完、停留片刻让用户读到提示后再退场。
+      unawaited(HapticFeedback.successNotification());
+      await Future<void>.delayed(TimeCapsuleSealOverlay.totalWait(context));
+      if (!mounted) return;
+    }
+    widget.onPublished?.call(diaryId);
+    Navigator.of(context).pop(diaryId);
+  }
+
+  /// 轻提示不等待关闭，避免把后续状态复位拖到提示消失之后。
+  void _hint(String message) {
+    if (!mounted) return;
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: context,
+        snackBar: SnackBar(content: Text(message)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tagsAsync = ref.watch(tagListProvider);
-    final moodOptionsAsync = ref.watch(moodOptionsProvider);
-    final moodOptions = moodOptionsAsync.maybeWhen(
-      data: (options) => options,
-      orElse: () => SettingsService.defaultMoodOptions,
-    );
-    // 发布预览与编辑页、预览页同一套正文排版，所见即发布后的样子。
-    final textAppearance = ref.watch(diaryTextAppearanceProvider);
-
-    // 标签数据状态拆分为三元组，便于直接透传给悬浮面板组件。
-    var tags = const <Tag>[];
-    var tagsLoading = false;
-    String? tagsError;
-    tagsAsync.when(
-      data: (data) => tags = data,
-      loading: () => tagsLoading = true,
-      error: (error, stackTrace) => tagsError = '$error',
-    );
-
     // 返回键策略：
+    // 0) 发布进行中、封存中或已发布时忽略；
     // 1) 优先返回面板子页；
     // 2) 其次收起面板；
     // 3) 最后带草稿返回编辑页。
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          if (_panelController.canPopInnerPage) {
-            _panelController.popInnerPage();
-            return;
-          }
-          if (_panelController.isExpanded) {
-            _panelController.collapse();
-            return;
-          }
-          _controller.closeWithDraft();
+        if (didPop || _leaveBlocked) return;
+        if (_panelController.canPopInnerPage) {
+          _panelController.popInnerPage();
+          return;
         }
+        if (_panelController.isExpanded) {
+          _panelController.collapse();
+          return;
+        }
+        _closeWithDraft();
       },
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -205,7 +184,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
           title: Text(context.l10n.autoT0138),
           leading: IconButton(
             tooltip: context.l10n.commonBack,
-            onPressed: _controller.closeWithDraft,
+            onPressed: _leaveBlocked ? null : _closeWithDraft,
             icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
           ),
         ),
@@ -215,56 +194,15 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
             CustomScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               slivers: <Widget>[
-                AnimatedPublishDiaryCoverSliver(
-                  cover: _controller.normalizedCover,
+                // 只随封面重建：面板上打字、选心情不触碰封面头图。
+                ValueListenableSelector<DiaryMetaDraft, String?>(
+                  valueListenable: _meta,
+                  selector: (draft) => draft.cover,
+                  builder: (context, cover, _) =>
+                      AnimatedPublishDiaryCoverSliver(cover: cover),
                 ),
                 SliverToBoxAdapter(
-                  // 标题与正文预览区域。
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          _controller.title,
-                          style: textAppearance.titleStyle(
-                            Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // 不能只看纯文本镜像（contentText），纯图片正文在镜像里会为空。
-                        // 统一按 Quill 文档可见内容判断，图片/嵌入也算正文内容。
-                        if (!diaryDocumentHasVisibleContent(
-                          _previewController.document,
-                        ))
-                          Text(
-                            context.l10n.autoT0139,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          )
-                        else
-                          DiaryQuillStylesBuilder(
-                            appearance: textAppearance,
-                            builder:
-                                (
-                                  BuildContext context,
-                                  quill.DefaultStyles styles,
-                                ) => quill.QuillEditor.basic(
-                                  controller: _previewController,
-                                  config: quill.QuillEditorConfig(
-                                    autoFocus: false,
-                                    scrollable: false,
-                                    padding: EdgeInsets.zero,
-                                    showCursor: false,
-                                    customStyles: styles,
-                                    embedBuilders:
-                                        buildDiaryQuillEmbedBuilders(),
-                                  ),
-                                ),
-                          ),
-                      ],
-                    ),
-                  ),
+                  child: PublishDiaryPreview(draft: widget.initialDraft),
                 ),
                 // 根据面板展开进度动态预留底部空间，避免正文被面板遮挡。
                 SliverToBoxAdapter(
@@ -276,161 +214,58 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                 ),
               ],
             ),
-            Positioned(
-              // 底部悬浮交互面板。
+            // 底部悬浮交互面板：铺满 body、贴底对齐，面板据此拿到可用高度
+            // （键盘弹出时展开高度随之收缩）。
+            Positioned.fill(
               left: 16,
               right: 16,
-              bottom: 0,
-              child: PublishDiaryPanel(
-                controller: _panelController,
-                saving: _saving,
-                hasCover: _controller.normalizedCover != null,
-                coverLabel: _controller.coverLabel,
-                locating: _locating,
-                weatherLoading: _weatherLoading,
-                locationController: _locationController,
-                locationPrecision: _locationPrecision,
-                locationAddressComponent: _locationFromAuto
-                    ? _locationAddressComponent
-                    : null,
-                onLocationPrecisionChanged: _controller.updateLocationPrecision,
-                weatherController: _weatherController,
-                weatherIconCode: _weatherIconCode,
-                moodEmoji: _moodEmoji,
-                moodOptions: moodOptions,
-                energyLevel: _energyLevel,
-                tags: tags,
-                tagsLoading: tagsLoading,
-                tagsError: tagsError,
-                selectedTagIds: _selectedTagIds,
-                // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
-                // 非构建/布局阶段回调（见 _handleSheetMetricsChanged），此处可
-                // 直接写入 ValueNotifier。
-                onProgressChanged: (progress) {
-                  if (mounted) {
-                    _panelExpandProgress.value = progress;
-                  }
-                },
-                onPickCover: _controller.pickCover,
-                onClearCover: _controller.normalizedCover == null
-                    ? null
-                    : _controller.clearCover,
-                onCreateTag: _controller.createTagInline,
-                onResolveLocation: _controller.resolveLocation,
-                onResolveWeather: _controller.resolveWeather,
-                onLocationChanged: _controller.updateLocationText,
-                onWeatherChanged: (nextWeather) {
-                  setState(() {
-                    // 手动修改天气文本后，旧天气 code 可能与文案不一致，清空后走文案兜底图标。
-                    _weatherIconCode = null;
-                  });
-                },
-                showPublishTimeOption: true,
-                publishTimeLabel: _controller.formatPublishTimeLabel(
-                  _publishAt,
-                ),
-                onPickPublishTime: _controller.pickPublishAt,
-                showTimeCapsuleOption: true,
-                timeCapsuleLabel: _controller.timeCapsuleLabel,
-                timeCapsuleActive: _timeCapsuleSchedule != null,
-                timeCapsuleSchedule: _timeCapsuleSchedule,
-                onTimeCapsuleChanged: _controller.updateTimeCapsule,
-                onClearTimeCapsule: _timeCapsuleSchedule == null
-                    ? null
-                    : _controller.clearTimeCapsule,
-                onToggleTag: (tagId, selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedTagIds.add(tagId);
-                    } else {
-                      _selectedTagIds.remove(tagId);
-                    }
-                  });
-                },
-                onMoodChanged: (nextMood) {
-                  setState(() => _moodEmoji = nextMood);
-                },
-                onEnergyChanged: (nextValue) {
-                  setState(
-                    () => _energyLevel = nextValue?.clamp(1, 5).toDouble(),
-                  );
-                },
-                onPublish: _controller.publish,
-                actionLabel: _timeCapsuleSchedule == null
-                    ? ''
-                    : context.l10n.timeCapsuleSealAction,
-              ),
-            ),
-            if (_showCapsuleSealOverlay) _buildCapsuleSealOverlay(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCapsuleSealOverlay(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    // 遮罩只在封存时才插入树中，AnimatedOpacity 首帧即为目标值、从不淡入；
-    // 改用插入即播放的 0→1 补间。减少动画时两段补间时长为 0，直接显示。
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0, end: 1),
-          duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-          curve: ExpressiveMotion.effects,
-          builder: (context, opacity, child) =>
-              Opacity(opacity: opacity, child: child),
-          child: ColoredBox(
-            color: colorScheme.scrim.withValues(alpha: 0.36),
-            child: Center(
-              child: TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0.88, end: 1),
-                duration: ExpressiveMotion.duration(
-                  context,
-                  PublishDiaryController.capsuleSealAnimationDuration,
-                ),
-                curve: ExpressiveMotion.spatial,
-                builder: (context, value, child) {
-                  return Transform.scale(scale: value, child: child);
-                },
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colorScheme.surface,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: <BoxShadow>[
-                      BoxShadow(
-                        color: colorScheme.shadow.withValues(alpha: 0.18),
-                        blurRadius: 28,
-                        offset: const Offset(0, 14),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                // 面板各区块自己监听草稿；这里只随发表时间（选择后的文案）重建。
+                // 发布与封存期间锁住面板：写库后的改动不会再保存，不该看起来可改。
+                child: AbsorbPointer(
+                  absorbing: _leaveBlocked,
+                  child: ValueListenableBuilder<DateTime?>(
+                    valueListenable: _publisher.explicitPublishAt,
+                    builder: (context, _, _) => PublishDiaryPanel(
+                      controller: _panelController,
+                      draft: _meta,
+                      actions: _metaActions,
+                      busy: _leaveBlocked,
+                      publishTime: PublishTimeOption(
+                        // 既没选过、打开者也没指定时传 null，显示“自动获取当前时间”。
+                        label: _publisher.hasFixedPublishTime
+                            ? context.l10n.formatDateTimeMinute(
+                                _publisher.effectivePublishAt,
+                              )
+                            : null,
+                        onPick: _pickPublishTime,
                       ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
-                      vertical: 24,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        FaIcon(
-                          FontAwesomeIcons.lock,
-                          size: 34,
-                          color: colorScheme.primary,
-                        ),
-                        const SizedBox(height: 14),
-                        Text(
-                          context.l10n.timeCapsuleSealing,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                      ],
+                      capsuleEnabled: true,
+                      onPublish: _publish,
+                      // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
+                      // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。
+                      onProgressChanged: (progress) {
+                        if (mounted) {
+                          _panelExpandProgress.value = progress;
+                        }
+                      },
                     ),
                   ),
                 ),
               ),
             ),
-          ),
+            // 写库通常几十毫秒完成：遮罩立即拦截点击，超过 300ms 才淡入显示。
+            Positioned.fill(
+              child: ActionLoadingOverlay(
+                visible: _publisher.phase.value == PublishPhase.saving,
+                label: context.l10n.autoT0176,
+                revealDelay: DelayedLoadingGate.defaultDelay,
+              ),
+            ),
+            if (_publisher.phase.value == PublishPhase.sealing)
+              const TimeCapsuleSealOverlay(),
+          ],
         ),
       ),
     );

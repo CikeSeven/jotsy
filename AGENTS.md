@@ -23,7 +23,7 @@
 │  │  │  ├─ controllers/             # 业务编排（搜索/筛选/撤销/发布链路等）
 │  │  │  ├─ providers/               # 状态与筛选条件
 │  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态（models/diary_card_style/：卡片样式模型、预设与样式码；models/diary_preview_style/：预览页样式、阅读行为、预设与样式码；models/style_library/：各样式编辑页共用的“我的样式”、样式码与 JSON 工具）
-│  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片；widgets/diary_preview/：预览页的单篇视图、整页内容、各区块与左右翻页器）
+│  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片；widgets/diary_preview/：预览页的单篇视图、整页内容、各区块与左右翻页器；widgets/publish_panel/：发布页与编辑页共用的元数据面板区块）
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ home|calendar|explore|settings/
 │  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载等）

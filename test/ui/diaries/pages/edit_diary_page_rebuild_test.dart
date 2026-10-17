@@ -11,6 +11,7 @@ import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
 
 void main() {
   late AppDatabase database;
@@ -95,7 +96,7 @@ void main() {
       final paddingBefore = editorBottomPadding(tester);
 
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('Swipe up to expand')),
+        tester.getCenter(PublishPanelDriver(tester).collapsedHeader),
       );
       for (var i = 0; i < 4; i++) {
         await gesture.moveBy(const Offset(0, -30));

@@ -1538,35 +1538,11 @@ abstract class AppLocalizations {
   /// **'No valid cover path found'**
   String get autoT0088;
 
-  /// Auto-generated metadata for autoT0089.
-  ///
-  /// In en, this message translates to:
-  /// **'Cover import failed: {p0}'**
-  String autoT0089(String p0);
-
-  /// Auto-generated metadata for autoT0090.
-  ///
-  /// In en, this message translates to:
-  /// **'Tag creation failed: {p0}'**
-  String autoT0090(String p0);
-
-  /// Auto-generated metadata for autoT0091.
-  ///
-  /// In en, this message translates to:
-  /// **'Location failed: {p0}'**
-  String autoT0091(String p0);
-
   /// Auto-generated metadata for autoT0092.
   ///
   /// In en, this message translates to:
   /// **'Please get current location first'**
   String get autoT0092;
-
-  /// Auto-generated metadata for autoT0093.
-  ///
-  /// In en, this message translates to:
-  /// **'Weather fetch failed: {p0}'**
-  String autoT0093(String p0);
 
   /// Auto-generated metadata for autoT0094.
   ///
@@ -1591,12 +1567,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select publish time'**
   String get autoT0097;
-
-  /// Auto-generated metadata for autoT0098.
-  ///
-  /// In en, this message translates to:
-  /// **'Publish failed: {p0}'**
-  String autoT0098(String p0);
 
   /// Auto-generated metadata for autoT0099.
   ///
@@ -8143,6 +8113,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'System account authorization is unavailable on this device (Google Play services required), and this build has no fallback'**
   String get cloudBackupErrorPlatformUnavailable;
+
+  /// Publish page: hint shown when the time capsule's unlock time is no longer in the future at publish time.
+  ///
+  /// In en, this message translates to:
+  /// **'The unlock time has passed. Choose a new one before sealing.'**
+  String get timeCapsuleUnlockPassed;
+
+  /// Weather fetch hint: the configured QWeather API host is invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'The weather service host is set up incorrectly. Check qweather.api_host.'**
+  String get weatherInvalidHost;
+
+  /// Weather fetch hint: network failure or timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The weather request failed or timed out. Check your connection and try again.'**
+  String get weatherNetworkError;
+
+  /// Weather fetch hint: the weather service returned an error, or failed unexpectedly.
+  ///
+  /// In en, this message translates to:
+  /// **'The weather service is temporarily unavailable. Please try again later.'**
+  String get weatherApiError;
+
+  /// Weather fetch hint: the response could not be understood.
+  ///
+  /// In en, this message translates to:
+  /// **'No usable weather was returned. Please try again later or enter it manually.'**
+  String get weatherParseError;
+
+  /// Diary metadata panel hint: copying the picked cover image failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t import this picture as the cover. Please try another one.'**
+  String get publishCoverImportFailed;
+
+  /// Diary metadata panel hint: creating a tag inline failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create the tag. Please try again.'**
+  String get publishTagCreateFailed;
+
+  /// Publish page hint: writing the new diary failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t publish the diary. Please try again.'**
+  String get publishFailed;
+
+  /// Publish panel: the publish time row while a time lock is set; the diary is dated at the unlock time.
+  ///
+  /// In en, this message translates to:
+  /// **'Follows the time lock · {time}'**
+  String publishTimeFollowsCapsule(String time);
+
+  /// Diary metadata panel: hint next to the cover thumbnail once a cover is set.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to change'**
+  String get publishCoverChange;
+
+  /// Publish panel collapsed bar: shown when no metadata has been chosen yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tags, mood, place…'**
+  String get publishPanelSummaryEmpty;
+
+  /// Publish panel collapsed bar: short label of the publish button.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get publishPanelPublishShort;
+
+  /// Publish panel collapsed bar: short label of the publish button when a time lock is set.
+  ///
+  /// In en, this message translates to:
+  /// **'Seal'**
+  String get publishPanelSealShort;
 }
 
 class _AppLocalizationsDelegate

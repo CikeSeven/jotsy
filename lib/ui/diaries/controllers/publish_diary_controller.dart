@@ -1,518 +1,157 @@
-// ignore_for_file: library_private_types_in_public_api, invalid_use_of_protected_member
+import 'package:flutter/foundation.dart';
+import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
+import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
+import 'package:node_diary/ui/diaries/models/publish_time.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 
-part of 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
-
-/// 发布页业务控制器。
+/// 发布流程的阶段。
 ///
-/// 职责边界：
-/// - 处理封面、位置、天气、标签与发布提交流程；
-/// - 组装元数据并回传草稿；
-/// - 不参与页面结构渲染。
+/// - idle：可编辑、可返回编辑页；
+/// - saving：正在写库；
+/// - sealing：已写库的胶囊，封存卡片一直展示到页面退场；
+/// - done：已写库的普通日记，页面正在退场。
+///
+/// 除 idle 外都不允许带草稿返回或再次发布：日记已经（或即将）存在，带回
+/// 草稿会让编辑页留着它，用户可以重复发布。
+enum PublishPhase { idle, saving, sealing, done }
+
+/// 发布前校验结果。
+enum PublishValidation { ok, capsuleUnlockPassed }
+
+/// 发布页的发布流程（不含 UI）。
+///
+/// 输入：打开者带来的 [initialDraft]（标题、正文、请求的发表时间）与面板
+/// 草稿 [meta]；[clock] 供测试注入时间。
+/// 输出：[phase]、[explicitPublishAt] 两个可监听状态，[submit] 返回新日记
+/// id，[returnDraft] 给出返回编辑页时带回的草稿。
+/// 副作用：只有 [submit] 写数据库。提示、触觉、封存动画、路由由页面负责。
 class PublishDiaryController {
-  const PublishDiaryController(this._state);
+  PublishDiaryController({
+    required this.initialDraft,
+    required this.meta,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
 
-  /// 时间胶囊封存卡片的入场（缩放回弹）时长，页面动画与返回前等待共用。
-  static const Duration capsuleSealAnimationDuration = ExpressiveMotion.long;
+  final NewDiaryDraft initialDraft;
+  final DiaryMetaDraftController meta;
+  final DateTime Function() _clock;
 
-  /// 封存提示入场完成后的停留时间，供用户读到“封存中”再返回。
-  static const Duration _capsuleSealHoldDuration = Duration(milliseconds: 260);
+  final ValueNotifier<PublishPhase> phase = ValueNotifier<PublishPhase>(
+    PublishPhase.idle,
+  );
 
-  /// 发布页状态引用，控制器通过它访问输入值、临时状态与路由上下文。
-  final _PublishDiaryPageState _state;
+  /// 用户在本页亲自选的发表时间；没选过为 null，发表时间在提交时现算。
+  final ValueNotifier<DateTime?> explicitPublishAt = ValueNotifier<DateTime?>(
+    null,
+  );
 
-  /// 预览页展示标题：空标题回退为默认文案。
-  String get title {
-    final normalized = _state.widget.initialDraft.title.trim();
-    return normalized.isEmpty ? _state.context.l10n.autoT0095 : normalized;
-  }
+  bool _disposed = false;
 
-  /// 规范化封面路径，空字符串按“无封面”处理。
-  String? get normalizedCover {
-    final normalized = _state._draftCover?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
+  /// 是否仍可带草稿返回编辑页、可再次发布。
+  bool get canLeave => phase.value == PublishPhase.idle;
+
+  /// 实际发表时间：用户选过就用所选（晚于现在时回退到现在），否则按打开
+  /// 者带来的请求值现算（见 [resolvePublishAt]）。每次读取都重新计算，
+  /// 发布时取的是提交那一刻，而不是打开发布页的那一刻。
+  DateTime get effectivePublishAt {
+    final now = _clock();
+    final explicit = explicitPublishAt.value;
+    if (explicit != null) {
+      return explicit.isAfter(now) ? now : explicit;
     }
-    return normalized;
+    return resolvePublishAt(initialDraft.createdAtOverride, now: now);
   }
 
-  /// 封面展示文案：
-  /// - 网络图显示完整 URL；
-  /// - 本地图显示文件名，避免路径过长污染 UI。
-  String? get coverLabel {
-    final cover = normalizedCover;
-    if (cover == null) {
-      return null;
+  /// 是否有确定的发表时间可显示；既没选过、打开者也没指定时面板显示
+  /// “自动获取当前时间”。
+  bool get hasFixedPublishTime =>
+      explicitPublishAt.value != null || initialDraft.createdAtOverride != null;
+
+  /// 记录选择器返回的发表时间。原样确认（选回 [shown] 那一分钟时选择器
+  /// 返回 shown 本身）不算选择，发表时间继续跟随提交时刻。
+  void applyPickedPublishAt(DateTime picked, {required DateTime shown}) {
+    if (picked == shown) return;
+    explicitPublishAt.value = picked;
+  }
+
+  /// 发布前校验：解封时间必须仍在未来。日期精度选了今天、或恢复的草稿里
+  /// 那天已过，写入的就是一个立即解封的胶囊。
+  PublishValidation validate() {
+    final capsule = meta.value.capsule;
+    if (capsule != null && !capsule.isUnlockInFuture(_clock())) {
+      return PublishValidation.capsuleUnlockPassed;
     }
-    final uri = Uri.tryParse(cover);
-    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-      return cover;
-    }
-    return path.basename(cover);
+    return PublishValidation.ok;
   }
 
-  /// 通用可选文本标准化，统一去掉空白输入。
-  String? normalizeOptionalText(String? raw) {
-    final normalized = raw?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-
-  /// 页面内轻提示封装。
-  Future<void> showHint(String message) async {
-    if (!_state.mounted) {
-      return;
-    }
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: _state.context,
-      snackBar: SnackBar(content: Text(message)),
-    );
-  }
-
-  /// 组装设备上下文信息，写入 metadata.device。
-  Map<String, Object?> buildDeviceMetadata() {
-    final dispatcher = PlatformDispatcher.instance;
-    return <String, Object?>{
-      'platform': defaultTargetPlatform.name,
-      'locale': dispatcher.locale.toLanguageTag(),
-      'brightness': dispatcher.platformBrightness.name,
-    };
-  }
-
-  /// 组装最终 metadata JSON。
-  ///
-  /// 合并当前页面可编辑字段与自动采集字段，输出结构化字符串。
+  /// 组装 metadata；[generatedAt] 同时作为胶囊的封存时刻。
   String buildMetadataJson({DateTime? generatedAt}) {
-    final schedule = _state._timeCapsuleSchedule;
-    final lockedAt = generatedAt ?? DateTime.now();
-    return PublishMetadataComposer.compose(
-      contentText: _state.widget.initialDraft.contentText,
-      selectedTagIds: _state._selectedTagIds,
-      hasCover: normalizedCover != null,
-      deviceInfo: buildDeviceMetadata(),
+    final lockedAt = generatedAt ?? _clock();
+    return PublishMetadataComposer.composeDraft(
+      draft: meta.value,
+      contentText: initialDraft.contentText,
       generatedAt: lockedAt,
-      location: normalizeOptionalText(_state._locationController.text),
-      locationAddressComponent: _state._locationAddressComponent,
-      locationLatitude: _state._locationLatitude,
-      locationLongitude: _state._locationLongitude,
-      locationFromAuto: _state._locationFromAuto,
-      locationPrecision: _state._locationPrecision,
-      weather: normalizeOptionalText(_state._weatherController.text),
-      weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
-      moodEmoji: normalizeOptionalText(_state._moodEmoji),
-      energyLevel: _state._energyLevel,
-      capsuleLockedAt: schedule == null ? null : lockedAt,
-      capsuleUnlockAt: schedule?.normalizedUnlockAt,
-      capsulePrecision: schedule == null
-          ? null
-          : TimeCapsuleSchedule.encodePrecision(schedule.precision),
+      capsuleLockedAt: lockedAt,
     );
   }
 
-  /// 解析发布页初始发表时间。
+  /// 写库并返回新日记 id。
   ///
-  /// 规则：
-  /// - 无历史值时取当前时间；
-  /// - 仅包含“日期”的历史值（00:00:00）补齐当前时分秒；
-  /// - 超出当前时间的值回退到当前时间，防止产生未来发表时间。
-  DateTime resolveInitialPublishAt(DateTime? raw) {
-    final now = DateTime.now();
-    if (raw == null) {
-      return now;
+  /// 只在 idle 时可调用。成功后进入 sealing（有胶囊，页面播放封存卡片）或
+  /// done，不再回到 idle；失败回到 idle 并把异常抛给页面提示。日记的创建
+  /// 时间：有胶囊时是解封时刻，否则是 [effectivePublishAt]。
+  Future<String> submit(AppDatabase database) async {
+    if (!canLeave) {
+      throw StateError('Publishing is already in progress.');
     }
-
-    final local = raw.toLocal();
-    final isDateOnly =
-        local.hour == 0 &&
-        local.minute == 0 &&
-        local.second == 0 &&
-        local.millisecond == 0 &&
-        local.microsecond == 0;
-    final normalized = isDateOnly
-        ? DateTime(
-            local.year,
-            local.month,
-            local.day,
-            now.hour,
-            now.minute,
-            now.second,
-            now.millisecond,
-            now.microsecond,
-          )
-        : local;
-    if (normalized.isAfter(now)) {
-      return now;
-    }
-    return normalized;
-  }
-
-  /// 发表时间展示文案（固定到分钟）。
-  String formatPublishTimeLabel(DateTime value) =>
-      _state.context.l10n.formatDateTimeMinute(value);
-
-  String get timeCapsuleLabel {
-    final schedule = _state._timeCapsuleSchedule;
-    if (schedule == null) {
-      return _state.context.l10n.timeCapsuleUnset;
-    }
-    return _state.context.l10n.timeCapsuleSet(
-      formatPublishTimeLabel(schedule.normalizedUnlockAt),
-    );
-  }
-
-  /// 选择发表时间；约束见 [showPublishTimePicker]（与编辑已发布日记共用）。
-  Future<void> pickPublishAt() async {
-    final picked = await showPublishTimePicker(
-      _state.context,
-      current: _state._publishAt,
-    );
-    if (picked == null || !_state.mounted) {
-      return;
-    }
-    _state.setState(() => _state._publishAt = picked);
-  }
-
-  void updateTimeCapsule(TimeCapsuleSchedule picked) {
-    _state.setState(() {
-      _state._timeCapsuleSchedule = TimeCapsuleSchedule(
-        unlockAt: picked.normalizedUnlockAt,
-        precision: picked.precision,
-      );
-    });
-  }
-
-  void clearTimeCapsule() {
-    _state.setState(() => _state._timeCapsuleSchedule = null);
-  }
-
-  /// 只重组已解析的地址，不触发定位或网络请求。仅当前文案仍是自动文案时
-  /// 才按新层级改写；手动输入原样保留，避免用户调整下次定位的层级时丢失
-  /// 自己写的地点名称。选择同时记为新建日记的默认层级。
-  void updateLocationPrecision(DiaryLocationPrecision precision) {
-    if (_state._locating || _state._saving) return;
-    unawaited(DiaryLocationPreference.remember(_state.ref, precision));
-    final components = _state._locationAddressComponent;
-    final followsPrecision =
-        _state._locationFromAuto &&
-        DiaryLocationLabel.isAutoLabel(
-          _state._locationController.text,
-          components,
-          _state._locationPrecision,
-        );
-    _state.setState(() {
-      _state._locationPrecision = precision;
-      if (followsPrecision) {
-        _state._locationController.text =
-            DiaryLocationLabel.format(components, precision) ?? '';
-      }
-    });
-  }
-
-  /// 手动修改地点不影响坐标：自动定位后补几个字仍记录在哪里写的日记。
-  /// 清空地点则视为不记录位置，停止保存 geo，避免 metadata 残留用户看不到
-  /// 的经纬度；内存中的坐标保留给天气查询，重新定位后恢复保存。
-  void updateLocationText(String value) {
-    if (normalizeOptionalText(value) != null || !_state._locationFromAuto) {
-      return;
-    }
-    _state.setState(() => _state._locationFromAuto = false);
-  }
-
-  /// 获取定位服务实例（按需懒加载，避免页面初始化即做网络准备）。
-  Future<LocationResolverService?> ensureLocationResolverService() async {
-    if (_state._locationResolverService != null) {
-      return _state._locationResolverService;
-    }
-    final apiKey = await AMapConfigChannel.getAmapWebApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
-      return null;
-    }
-    _state._locationResolverService = LocationResolverService(
-      webApiKey: apiKey,
-    );
-    return _state._locationResolverService;
-  }
-
-  /// 获取天气服务实例（按需懒加载）。
-  Future<QWeatherWeatherService?> ensureWeatherService() async {
-    if (_state._weatherService != null) {
-      return _state._weatherService;
-    }
-
-    final apiKey = await AMapConfigChannel.getQWeatherApiKey();
-    final credentialId = await AMapConfigChannel.getQWeatherCredentialId();
-    final apiHost = await AMapConfigChannel.getQWeatherApiHost();
-    if (apiKey == null || apiKey.trim().isEmpty) {
-      return null;
-    }
-
-    final config = QWeatherConfig(
-      apiKey: apiKey,
-      credentialId: credentialId,
-      apiHost: apiHost,
-    );
-    _state._weatherService = QWeatherWeatherService(config: config);
-    return _state._weatherService;
-  }
-
-  /// 选择封面并拷贝到应用私有目录。
-  ///
-  /// 被替换的旧封面不在这里删除：它可能已写入持久化草稿，进程在草稿更新前
-  /// 被杀会留下坏封面；无人引用后由 DiaryMediaCleanupService 回收。
-  Future<void> pickCover() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-    if (result == null || !_state.mounted) {
-      return;
-    }
-
-    final selectedPath = result.files.first.path?.trim();
-    if (selectedPath == null || selectedPath.isEmpty) {
-      await showHint(_state.context.l10n.autoT0088);
-      return;
-    }
-
+    final draft = meta.value;
+    final schedule = draft.capsule;
+    _setPhase(PublishPhase.saving);
     try {
-      final importedPath = await DiaryCoverStorageService.importCover(
-        selectedPath,
-      );
-      if (!_state.mounted) {
-        await DiaryCoverStorageService.deleteManagedCover(importedPath);
-        return;
-      }
-
-      _state.setState(() => _state._draftCover = importedPath);
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await showHint(_state.context.l10n.autoT0089(error.toString()));
-    } finally {
-      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
-    }
-  }
-
-  /// 清除封面；文件同样交给 DiaryMediaCleanupService 按引用回收。
-  Future<void> clearCover() async {
-    _state.setState(() => _state._draftCover = null);
-  }
-
-  /// 发布页内联创建标签，成功后自动加入当前选中集合。
-  Future<void> createTagInline() async {
-    final draft = await showCreateTagDialog(_state.context);
-    if (draft == null) {
-      return;
-    }
-
-    try {
-      final db = _state.ref.read(appDatabaseProvider);
-      final tagId = await db.createTag(name: draft.name, color: draft.color);
-      if (!_state.mounted) {
-        return;
-      }
-      _state.setState(() => _state._selectedTagIds.add(tagId));
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await showHint(_state.context.l10n.autoT0090(error.toString()));
-    }
-  }
-
-  /// 自动定位并逆地理解析：
-  /// - 按选择的层级组装展示文案；
-  /// - 保存 addressComponent + 经纬度用于 metadata 组装。
-  Future<void> resolveLocation() async {
-    if (_state._locating) {
-      return;
-    }
-
-    _state.setState(() => _state._locating = true);
-
-    try {
-      final service = await ensureLocationResolverService();
-      if (service == null) {
-        throw LocationResolveException(
-          type: LocationResolveErrorType.missingApiKey,
-          message: _state.context.l10n.autoT0204,
-        );
-      }
-
-      final result = await service.resolveCurrentLocation();
-      if (!_state.mounted) {
-        return;
-      }
-
-      final autoLocationLabel = DiaryLocationLabel.format(
-        result.addressComponent,
-        _state._locationPrecision,
-      );
-      _state.setState(() {
-        _state._locationController.text = autoLocationLabel ?? '';
-        _state._locationAddressComponent = result.addressComponent;
-        _state._locationLatitude = result.latitude;
-        _state._locationLongitude = result.longitude;
-        _state._locationFromAuto = true;
-      });
-    } on LocationResolveException catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      // 提示的关闭 Future 不属于定位请求，避免错误已经显示后仍禁用按钮。
-      unawaited(showHint(locationResolveHint(_state.context.l10n, error.type)));
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      unawaited(showHint(_state.context.l10n.autoT0091(error.toString())));
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._locating = false);
-      }
-    }
-  }
-
-  /// 依据当前位置坐标请求天气并回填环境信息字段。
-  Future<void> resolveWeather() async {
-    if (_state._weatherLoading) {
-      return;
-    }
-    if (_state._locationLatitude == null || _state._locationLongitude == null) {
-      await showHint(_state.context.l10n.autoT0092);
-      return;
-    }
-
-    _state.setState(() => _state._weatherLoading = true);
-    try {
-      final service = await ensureWeatherService();
-      if (service == null) {
-        throw QWeatherException(
-          type: QWeatherErrorType.missingConfig,
-          message: _state.context.l10n.autoT0205,
-        );
-      }
-
-      final weatherNow = await service.fetchNow(
-        latitude: _state._locationLatitude!,
-        longitude: _state._locationLongitude!,
-        languageCode: (await _state.ref.read(
-          settingsServiceProvider.future,
-        )).appLocaleCode,
-      );
-      if (!_state.mounted) {
-        return;
-      }
-      _state.setState(() {
-        _state._weatherController.text = weatherNow.displayText;
-        _state._weatherIconCode = weatherNow.iconCode;
-      });
-    } on QWeatherException catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await showHint(error.userMessage);
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await showHint(_state.context.l10n.autoT0093(error.toString()));
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._weatherLoading = false);
-      }
-    }
-  }
-
-  /// 执行发布写库。
-  ///
-  /// 成功后先通知打开者（[PublishDiaryPage.onPublished]，编辑页借此静默移出
-  /// 路由栈），再以新日记 id 作为结果退场；失败时仅提示不退出。
-  Future<void> publish() async {
-    if (_state._saving) {
-      return;
-    }
-
-    _state.setState(() => _state._saving = true);
-
-    try {
-      final db = _state.ref.read(appDatabaseProvider);
-      final schedule = _state._timeCapsuleSchedule;
-      final lockedAt = schedule == null ? null : DateTime.now();
-      final diaryId = await db.createDiary(
-        title: _state.widget.initialDraft.title,
-        contentDocJson: _state.widget.initialDraft.contentDocJson,
-        contentText: _state.widget.initialDraft.contentText,
-        cover: normalizedCover,
+      final lockedAt = schedule == null ? null : _clock();
+      final diaryId = await database.createDiary(
+        title: initialDraft.title,
+        contentDocJson: initialDraft.contentDocJson,
+        contentText: initialDraft.contentText,
+        cover: draft.cover,
         metadataJson: buildMetadataJson(generatedAt: lockedAt),
-        tagIds: _state._selectedTagIds.toList(),
+        tagIds: draft.tagIds.toList(),
         createdAtOverride: TimeCapsuleSchedule.resolveDiaryCreatedAt(
           schedule: schedule,
-          fallbackPublishAt: _state._publishAt,
+          fallbackPublishAt: effectivePublishAt,
         ),
         capsuleUnlockAt: schedule?.normalizedUnlockAt,
         capsuleLockedAt: lockedAt,
       );
-      if (!_state.mounted) {
-        return;
-      }
-      if (schedule != null) {
-        _state.setState(() => _state._showCapsuleSealOverlay = true);
-        // 封存是一次性的仪式动作：与封存卡片同时给出“成功”触觉。
-        unawaited(HapticFeedback.successNotification());
-        // 等封存卡片入场动画播完，再停留片刻让用户读到提示后返回；
-        // 减少动画时入场时长为 0，只保留停留时间。
-        await Future<void>.delayed(
-          ExpressiveMotion.duration(
-                _state.context,
-                capsuleSealAnimationDuration,
-              ) +
-              _capsuleSealHoldDuration,
-        );
-        if (!_state.mounted) {
-          return;
-        }
-      }
-      _state.widget.onPublished?.call(diaryId);
-      Navigator.of(_state.context).pop(diaryId);
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await showHint(_state.context.l10n.autoT0098(error.toString()));
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._saving = false);
-      }
+      _setPhase(schedule == null ? PublishPhase.done : PublishPhase.sealing);
+      return diaryId;
+    } catch (_) {
+      _setPhase(PublishPhase.idle);
+      rethrow;
     }
   }
 
-  /// 返回编辑页时带回发布页草稿上下文，确保往返不丢状态。
-  void closeWithDraft() {
-    final schedule = _state._timeCapsuleSchedule;
-    Navigator.of(_state.context).pop(
-      _state.widget.initialDraft.copyWith(
-        cover: normalizedCover,
-        createdAtOverride: _state._publishAt,
-        metadataJson: buildMetadataJson(),
-        selectedTagIds: <int>{..._state._selectedTagIds},
-        location: normalizeOptionalText(_state._locationController.text),
-        locationAddressComponent: _state._locationAddressComponent,
-        locationLatitude: _state._locationLatitude,
-        locationLongitude: _state._locationLongitude,
-        locationFromAuto: _state._locationFromAuto,
-        locationPrecision: _state._locationPrecision,
-        weather: normalizeOptionalText(_state._weatherController.text),
-        weatherIconCode: normalizeOptionalText(_state._weatherIconCode),
-        moodEmoji: normalizeOptionalText(_state._moodEmoji),
-        energyLevel: _state._energyLevel,
-        capsuleUnlockAt: schedule?.normalizedUnlockAt,
-        capsulePrecision: schedule == null
-            ? null
-            : TimeCapsuleSchedule.encodePrecision(schedule.precision),
-      ),
-    );
+  /// 返回编辑页时带回的草稿：面板字段 + 用户亲自选的发表时间。没选过就
+  /// 原样带回打开者的请求值（如日历的按日新建），下次打开或发表时再现算，
+  /// 不把“打开发布页那一刻”冻结进草稿。
+  NewDiaryDraft returnDraft() => meta.value.applyTo(
+    initialDraft.copyWith(
+      createdAtOverride:
+          explicitPublishAt.value ?? initialDraft.createdAtOverride,
+      metadataJson: buildMetadataJson(),
+    ),
+  );
+
+  /// 页面销毁后写库才返回时，不再写已释放的通知器。
+  void _setPhase(PublishPhase next) {
+    if (!_disposed) phase.value = next;
+  }
+
+  void dispose() {
+    _disposed = true;
+    phase.dispose();
+    explicitPublishAt.dispose();
   }
 }

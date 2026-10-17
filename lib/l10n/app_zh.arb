@@ -1123,45 +1123,9 @@
   "@autoT0088": {
     "description": "Auto-generated metadata for autoT0088."
   },
-  "autoT0089": "封面导入失败: {p0}",
-  "@autoT0089": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0089."
-  },
-  "autoT0090": "标签创建失败: {p0}",
-  "@autoT0090": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0090."
-  },
-  "autoT0091": "获取位置失败: {p0}",
-  "@autoT0091": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0091."
-  },
   "autoT0092": "请先获取当前位置",
   "@autoT0092": {
     "description": "Auto-generated metadata for autoT0092."
-  },
-  "autoT0093": "获取天气失败: {p0}",
-  "@autoT0093": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0093."
   },
   "autoT0094": "删除日记",
   "@autoT0094": {
@@ -1178,15 +1142,6 @@
   "autoT0097": "选择发表时间",
   "@autoT0097": {
     "description": "Auto-generated metadata for autoT0097."
-  },
-  "autoT0098": "发布失败: {p0}",
-  "@autoT0098": {
-    "placeholders": {
-      "p0": {
-        "type": "String"
-      }
-    },
-    "description": "Auto-generated metadata for autoT0098."
   },
   "autoT0099": "已选择 {p0} 项",
   "@autoT0099": {
@@ -6213,5 +6168,63 @@
   "cloudBackupErrorPlatformUnavailable": "本机无法使用系统账号授权（需要 Google Play 服务），此版本也没有配置备用的授权方式",
   "@cloudBackupErrorPlatformUnavailable": {
     "description": "本机无法使用系统授权且没有备用方式。"
+  },
+  "timeCapsuleUnlockPassed": "解封时间已经过去，请重新选择后再封存",
+  "@timeCapsuleUnlockPassed": {
+    "description": "发布页：发布时时间胶囊的解封时间已不在未来时的提示。"
+  },
+  "weatherInvalidHost": "和风天气服务地址配置有误，请检查 qweather.api_host",
+  "@weatherInvalidHost": {
+    "description": "获取天气提示：配置的和风天气服务地址无效。"
+  },
+  "weatherNetworkError": "天气请求失败或超时，请检查网络后重试。",
+  "@weatherNetworkError": {
+    "description": "获取天气提示：网络失败或超时。"
+  },
+  "weatherApiError": "天气服务暂时不可用，请稍后重试。",
+  "@weatherApiError": {
+    "description": "获取天气提示：天气服务返回错误或意外失败。"
+  },
+  "weatherParseError": "未获取到有效天气，请稍后重试或手动填写。",
+  "@weatherParseError": {
+    "description": "获取天气提示：返回的数据无法解析。"
+  },
+  "publishCoverImportFailed": "这张图片无法设为封面，请换一张再试",
+  "@publishCoverImportFailed": {
+    "description": "日记元数据面板提示：复制所选封面图片失败。"
+  },
+  "publishTagCreateFailed": "标签创建失败，请重试",
+  "@publishTagCreateFailed": {
+    "description": "日记元数据面板提示：内联新建标签失败。"
+  },
+  "publishFailed": "发表失败，请重试",
+  "@publishFailed": {
+    "description": "发布页提示：写入新日记失败。"
+  },
+  "publishTimeFollowsCapsule": "跟随定时锁 · {time}",
+  "@publishTimeFollowsCapsule": {
+    "description": "发布面板：设置了定时锁时的发表时间行，日记按解封时间发表。",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2027年1月1日"
+      }
+    }
+  },
+  "publishCoverChange": "点击更换",
+  "@publishCoverChange": {
+    "description": "日记元数据面板：已设置封面时缩略图旁的提示。"
+  },
+  "publishPanelSummaryEmpty": "添加标签、心情、地点…",
+  "@publishPanelSummaryEmpty": {
+    "description": "发布面板收起栏：还没选择任何元数据时的提示。"
+  },
+  "publishPanelPublishShort": "发表",
+  "@publishPanelPublishShort": {
+    "description": "发布面板收起栏：发表按钮的短文案。"
+  },
+  "publishPanelSealShort": "封存",
+  "@publishPanelSealShort": {
+    "description": "发布面板收起栏：设置了定时锁时发表按钮的短文案。"
   }
 }

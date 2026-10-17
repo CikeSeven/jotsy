@@ -1,5 +1,6 @@
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
+import 'package:node_diary/ui/diaries/models/json_object_map.dart';
 
 /// 新建日记草稿模型。
 ///
@@ -79,7 +80,7 @@ class NewDiaryDraft {
       metadataJson: (json['metadataJson'] as String?) ?? '{}',
       selectedTagIds: tagIds,
       location: json['location'] as String?,
-      locationAddressComponent: _parseObjectMap(
+      locationAddressComponent: parseJsonObjectMap(
         json['locationAddressComponent'],
       ),
       locationLatitude: (json['locationLatitude'] as num?)?.toDouble(),
@@ -195,22 +196,6 @@ class NewDiaryDraft {
     );
   }
 
-  /// 归一化 Map 结构，确保只包含可 JSON 化的 value。
-  static Map<String, Object?>? _parseObjectMap(Object? raw) {
-    if (raw is! Map) {
-      return null;
-    }
-    final normalized = <String, Object?>{};
-    for (final entry in raw.entries) {
-      final key = entry.key?.toString();
-      if (key == null || key.isEmpty) {
-        continue;
-      }
-      normalized[key] = _normalizeJsonValue(entry.value);
-    }
-    return normalized;
-  }
-
   static DateTime? _parseDateTime(Object? raw) {
     if (raw is String && raw.trim().isNotEmpty) {
       return DateTime.tryParse(raw.trim());
@@ -222,27 +207,5 @@ class NewDiaryDraft {
       return DateTime.fromMillisecondsSinceEpoch(raw * 1000);
     }
     return null;
-  }
-
-  /// 递归清洗动态值，防止运行时对象进入草稿 JSON 导致编码失败。
-  static Object? _normalizeJsonValue(Object? value) {
-    if (value == null || value is num || value is bool || value is String) {
-      return value;
-    }
-    if (value is Map) {
-      final nested = <String, Object?>{};
-      for (final entry in value.entries) {
-        final key = entry.key?.toString();
-        if (key == null || key.isEmpty) {
-          continue;
-        }
-        nested[key] = _normalizeJsonValue(entry.value);
-      }
-      return nested;
-    }
-    if (value is List) {
-      return value.map(_normalizeJsonValue).toList(growable: false);
-    }
-    return value.toString();
   }
 }

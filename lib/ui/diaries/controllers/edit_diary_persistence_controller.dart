@@ -26,9 +26,9 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
       title: _state._titleController.text,
       contentDocJson: _state._currentContentDocJson,
       contentText: _state._currentContentText,
-      cover: _normalizeOptionalText(_state._draftCover),
+      cover: _state._meta.value.cover,
       metadataJson: _state._metadataJson.trim(),
-      selectedTagIds: _state._selectedTagIds,
+      selectedTagIds: _state._meta.value.tagIds,
       createdAt: _state._draftPublishAt,
     );
   }

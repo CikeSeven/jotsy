@@ -2,11 +2,14 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
+import 'amap_config_channel.dart';
 import 'app_update_service.dart';
 import 'cloud_backup_service.dart';
 import 'cloud_backup_settings_service.dart';
 import 'diary_font_storage_service.dart';
 import 'diary_media_cleanup_service.dart';
+import 'location_resolver_service.dart';
+import 'qweather_weather_service.dart';
 import 'settings_service.dart';
 import 'tag_order_codec.dart';
 
@@ -47,6 +50,35 @@ final diaryMediaCleanupServiceProvider = Provider<DiaryMediaCleanupService>((
   );
   ref.onDispose(service.dispose);
   return service;
+});
+
+/// 自动定位服务；高德 Web 服务 key 由原生层注入（见 [AMapConfigChannel]），
+/// 未配置或非 Android 平台时为 null。key 是构建期配置，进程内只读一次。
+/// 测试可覆盖为假服务，不必再模拟平台通道与网络。
+final locationResolverServiceProvider =
+    FutureProvider<LocationResolverService?>((Ref ref) async {
+      final apiKey = await AMapConfigChannel.getAmapWebApiKey();
+      if (apiKey == null || apiKey.isEmpty) {
+        return null;
+      }
+      return LocationResolverService(webApiKey: apiKey);
+    });
+
+/// 和风天气服务；未配置 key 时为 null，其余同 [locationResolverServiceProvider]。
+final weatherServiceProvider = FutureProvider<QWeatherWeatherService?>((
+  Ref ref,
+) async {
+  final apiKey = await AMapConfigChannel.getQWeatherApiKey();
+  if (apiKey == null || apiKey.trim().isEmpty) {
+    return null;
+  }
+  return QWeatherWeatherService(
+    config: QWeatherConfig(
+      apiKey: apiKey,
+      credentialId: await AMapConfigChannel.getQWeatherCredentialId(),
+      apiHost: await AMapConfigChannel.getQWeatherApiHost(),
+    ),
+  );
 });
 
 /// 当前心情符号配置 provider。

@@ -13,11 +13,11 @@ import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
-import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_location_precision_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
+import '../../../support/publish_panel_driver.dart';
 
 const _automaticDraft = NewDiaryDraft(
   title: 'A walk',
@@ -102,26 +102,13 @@ void main() {
     brightness: brightness,
   );
 
-  PublishDiaryPanel panel(WidgetTester tester) =>
-      tester.widget<PublishDiaryPanel>(find.byType(PublishDiaryPanel));
-
-  Finder locationField(WidgetTester tester) => find.byWidgetPredicate(
-    (widget) =>
-        widget is TextField &&
-        widget.controller == panel(tester).locationController,
-  );
+  PublishPanelDriver panel(WidgetTester tester) => PublishPanelDriver(tester);
 
   Finder option(String text) => find.widgetWithText(MenuItemButton, text);
 
-  AppLocalizations l10n(WidgetTester tester) =>
-      tester.element(find.byType(PublishDiaryPanel)).l10n;
+  AppLocalizations l10n(WidgetTester tester) => panel(tester).l10n;
 
-  Future<void> expandPanel(WidgetTester tester) async {
-    final expand = find.text(l10n(tester).autoT0158);
-    if (expand.evaluate().isEmpty) return;
-    await tester.tap(expand);
-    await tester.pumpAndSettle();
-  }
+  Future<void> expandPanel(WidgetTester tester) => panel(tester).expand();
 
   Future<void> openMenu(WidgetTester tester) async {
     await expandPanel(tester);
@@ -139,7 +126,7 @@ void main() {
   }
 
   Future<Map> publishedContext(WidgetTester tester) async {
-    panel(tester).onPublish!();
+    panel(tester).triggerPublish();
     for (var i = 0; i < 20 && results.isEmpty; i++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 20)),
@@ -173,10 +160,7 @@ void main() {
           );
         }
         await openPublisher(tester, brightness: brightness);
-        expect(
-          panel(tester).locationPrecision,
-          DiaryLocationPrecision.township,
-        );
+        expect(panel(tester).precision, DiaryLocationPrecision.township);
         expect(option('City'), findsNothing);
 
         await openMenu(tester);
@@ -187,12 +171,12 @@ void main() {
         await tester.tap(option('City'));
         await tester.pumpAndSettle();
         expect(option('City'), findsNothing);
-        expect(panel(tester).locationController.text, '北京市');
+        expect(panel(tester).locationText, '北京市');
 
         await choose(tester, 'Road');
-        expect(panel(tester).locationController.text, '北京市 · 朝阳区 · 阜通东大街');
+        expect(panel(tester).locationText, '北京市 · 朝阳区 · 阜通东大街');
         await choose(tester, 'House number');
-        expect(panel(tester).locationController.text, '北京市 · 朝阳区 · 阜通东大街6号');
+        expect(panel(tester).locationText, '北京市 · 朝阳区 · 阜通东大街6号');
         expect(settings.diaryLocationPrecisionRaw, 'address');
 
         final context = await publishedContext(tester);
@@ -219,8 +203,8 @@ void main() {
       final restored = NewDiaryDraft.fromJson(returned.toJson());
       await unmount(tester);
       await openPublisher(tester, draft: restored);
-      expect(panel(tester).locationPrecision, DiaryLocationPrecision.city);
-      expect(panel(tester).locationController.text, '北京市');
+      expect(panel(tester).precision, DiaryLocationPrecision.city);
+      expect(panel(tester).locationText, '北京市');
       await unmount(tester);
     },
   );
@@ -230,7 +214,7 @@ void main() {
   ) async {
     await openPublisher(tester);
     await expandPanel(tester);
-    await tester.enterText(locationField(tester), 'My favourite cafe');
+    await tester.enterText(panel(tester).locationField, 'My favourite cafe');
     await tester.pump();
 
     await openMenu(tester);
@@ -238,8 +222,8 @@ void main() {
     expect(option('北京市'), findsNothing);
     await tester.tap(option('City'));
     await tester.pumpAndSettle();
-    expect(panel(tester).locationController.text, 'My favourite cafe');
-    expect(panel(tester).locationPrecision, DiaryLocationPrecision.city);
+    expect(panel(tester).locationText, 'My favourite cafe');
+    expect(panel(tester).precision, DiaryLocationPrecision.city);
 
     final context = await publishedContext(tester);
     expect(context['location'], 'My favourite cafe');
@@ -252,7 +236,7 @@ void main() {
   ) async {
     await openPublisher(tester);
     await expandPanel(tester);
-    await tester.enterText(locationField(tester), '');
+    await tester.enterText(panel(tester).locationField, '');
     await tester.pump();
 
     final context = await publishedContext(tester);
@@ -329,7 +313,7 @@ void main() {
     final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
     await tester.tap(find.byTooltip(l10n.autoT0136));
     await tester.pumpAndSettle();
-    expect(panel(tester).locationPrecision, DiaryLocationPrecision.city);
+    expect(panel(tester).precision, DiaryLocationPrecision.city);
     await unmount(tester);
   });
 }

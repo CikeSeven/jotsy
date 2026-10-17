@@ -800,27 +800,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0088 => '未获取到可用的封面路径';
 
   @override
-  String autoT0089(String p0) {
-    return '封面导入失败: $p0';
-  }
-
-  @override
-  String autoT0090(String p0) {
-    return '标签创建失败: $p0';
-  }
-
-  @override
-  String autoT0091(String p0) {
-    return '获取位置失败: $p0';
-  }
-
-  @override
   String get autoT0092 => '请先获取当前位置';
-
-  @override
-  String autoT0093(String p0) {
-    return '获取天气失败: $p0';
-  }
 
   @override
   String get autoT0094 => '删除日记';
@@ -833,11 +813,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoT0097 => '选择发表时间';
-
-  @override
-  String autoT0098(String p0) {
-    return '发布失败: $p0';
-  }
 
   @override
   String autoT0099(String p0) {
@@ -4400,4 +4375,45 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get cloudBackupErrorPlatformUnavailable =>
       '本机无法使用系统账号授权（需要 Google Play 服务），此版本也没有配置备用的授权方式';
+
+  @override
+  String get timeCapsuleUnlockPassed => '解封时间已经过去，请重新选择后再封存';
+
+  @override
+  String get weatherInvalidHost => '和风天气服务地址配置有误，请检查 qweather.api_host';
+
+  @override
+  String get weatherNetworkError => '天气请求失败或超时，请检查网络后重试。';
+
+  @override
+  String get weatherApiError => '天气服务暂时不可用，请稍后重试。';
+
+  @override
+  String get weatherParseError => '未获取到有效天气，请稍后重试或手动填写。';
+
+  @override
+  String get publishCoverImportFailed => '这张图片无法设为封面，请换一张再试';
+
+  @override
+  String get publishTagCreateFailed => '标签创建失败，请重试';
+
+  @override
+  String get publishFailed => '发表失败，请重试';
+
+  @override
+  String publishTimeFollowsCapsule(String time) {
+    return '跟随定时锁 · $time';
+  }
+
+  @override
+  String get publishCoverChange => '点击更换';
+
+  @override
+  String get publishPanelSummaryEmpty => '添加标签、心情、地点…';
+
+  @override
+  String get publishPanelPublishShort => '发表';
+
+  @override
+  String get publishPanelSealShort => '封存';
 }

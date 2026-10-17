@@ -15,7 +15,7 @@ class EditDiaryController {
       writeSnapshot: _persistEditSnapshot,
       onError: (error) {
         if (_state.mounted) {
-          unawaited(_showHint(_state.context.l10n.autoT0087(error.toString())));
+          _showHint(_state.context.l10n.autoT0087(error.toString()));
         }
       },
     );
@@ -24,19 +24,6 @@ class EditDiaryController {
   /// 页面状态引用，承载控制器需要读写的输入与临时状态。
   final _EditDiaryPageState _state;
   late final EditDiaryAutoSaveController _editAutoSave;
-
-  /// 编辑态封面标签文案：网络图展示 URL，本地图展示文件名。
-  String? get coverLabelForEdit {
-    final cover = _normalizeOptionalText(_state._draftCover);
-    if (cover == null) {
-      return null;
-    }
-    final uri = Uri.tryParse(cover);
-    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https')) {
-      return cover;
-    }
-    return path.basename(cover);
-  }
 
   /// 编辑态发表时间文案（精确到分钟）；详情回填前为 null。
   String? get publishTimeLabelForEdit {
@@ -107,7 +94,7 @@ class EditDiaryController {
   Future<void> prepareCreateEntry({required bool restoreDraft}) async {
     final precision = await DiaryLocationPreference.load(_state.ref);
     if (!_state.mounted) return;
-    _state._draftLocationPrecision = precision;
+    _state._meta.setPrecision(precision);
     if (restoreDraft) await restoreCreateDraftIfExists();
   }
 
@@ -141,34 +128,19 @@ class EditDiaryController {
       }
 
       _state._lastPersistedCreateDraftRaw = jsonEncode(restoredDraft.toJson());
+      final restoredMeta = DiaryMetaDraft.fromNewDiaryDraft(restoredDraft);
       _state.setState(() {
         _state._titleController.text = restoredDraft.title;
         _state._createDateOverride =
             restoredDraft.createdAtOverride ?? _state._createDateOverride;
-        _state._draftCover = restoredDraft.cover;
         _state._metadataJson = restoredDraft.metadataJson;
-        _state._draftLocation = restoredDraft.location;
-        _state._locationController.text = restoredDraft.location ?? '';
-        _state._draftLocationAddressComponent =
-            restoredDraft.locationAddressComponent;
-        _state._draftLocationLatitude = restoredDraft.locationLatitude;
-        _state._draftLocationLongitude = restoredDraft.locationLongitude;
-        _state._draftLocationFromAuto = restoredDraft.locationFromAuto;
-        _state._draftLocationPrecision = restoredDraft.locationPrecision;
-        _state._draftWeather = restoredDraft.weather;
-        _state._draftWeatherIconCode = restoredDraft.weatherIconCode;
-        _state._weatherController.text = restoredDraft.weather ?? '';
-        _state._draftMoodEmoji = restoredDraft.moodEmoji;
-        _state._draftEnergyLevel = restoredDraft.energyLevel;
         // 与发表日期覆盖值同一规则：草稿自带胶囊设置时以草稿为准，否则保留
         // 入口预设的解封日（见 EditDiaryPage.createCapsuleUnlockAt）。
-        if (restoredDraft.capsuleUnlockAt != null) {
-          _state._draftCapsuleUnlockAt = restoredDraft.capsuleUnlockAt;
-          _state._draftCapsulePrecision = restoredDraft.capsulePrecision;
-        }
-        _state._selectedTagIds
-          ..clear()
-          ..addAll(restoredDraft.selectedTagIds);
+        _state._meta.restore(
+          restoredMeta.capsule == null
+              ? restoredMeta.copyWith(capsule: _state._meta.value.capsule)
+              : restoredMeta,
+        );
         replaceContentController(
           quill.QuillController(
             document: restoredDocument,
@@ -214,221 +186,6 @@ class EditDiaryController {
       return false;
     }
     return true;
-  }
-
-  /// 编辑态封面选择：导入到应用私有目录，替换时清理旧封面。
-  Future<void> pickCoverForEdit() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-    if (result == null || !_state.mounted) {
-      return;
-    }
-
-    final selectedPath = result.files.first.path?.trim();
-    if (selectedPath == null || selectedPath.isEmpty) {
-      await _showHint(_state.context.l10n.autoT0088);
-      return;
-    }
-
-    try {
-      final importedPath = await DiaryCoverStorageService.importCover(
-        selectedPath,
-      );
-      if (!_state.mounted) {
-        await DiaryCoverStorageService.deleteManagedCover(importedPath);
-        return;
-      }
-      // 自动保存完成前旧封面仍被数据库引用，不能提前删除；
-      // 更新成功且无人引用后由 DiaryMediaCleanupService 回收。
-      _state.setState(() {
-        _state._draftCover = importedPath;
-        _state._markEditPanelDirty();
-      });
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await _showHint(_state.context.l10n.autoT0089(error.toString()));
-    } finally {
-      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
-    }
-  }
-
-  /// 编辑态清除封面；理由同上，文件不在编辑期删除。
-  Future<void> clearCoverForEdit() async {
-    _state.setState(() {
-      _state._draftCover = null;
-      _state._markEditPanelDirty();
-    });
-  }
-
-  /// 编辑态内联创建标签，并自动选中新标签。
-  Future<void> createTagInlineForEdit() async {
-    final draft = await showCreateTagDialog(_state.context);
-    if (draft == null) {
-      return;
-    }
-
-    try {
-      final db = _state.ref.read(appDatabaseProvider);
-      final tagId = await db.createTag(name: draft.name, color: draft.color);
-      if (!_state.mounted) {
-        return;
-      }
-      _state.setState(() {
-        _state._selectedTagIds.add(tagId);
-        _state._markEditPanelDirty();
-      });
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await _showHint(_state.context.l10n.autoT0090(error.toString()));
-    }
-  }
-
-  /// 层级变化只改写仍是自动文案的地址，手动地点（含旧版本自动定位后手改、
-  /// metadata 仍带 geo 的日记）不被覆盖；变更与其他面板字段一起自动保存，
-  /// 并记为新建日记的默认层级。
-  void updateLocationPrecisionForEdit(DiaryLocationPrecision precision) {
-    if (_state._locating || _state._saving) return;
-    unawaited(DiaryLocationPreference.remember(_state.ref, precision));
-    final components = _state._draftLocationAddressComponent;
-    final followsPrecision =
-        _state._draftLocationFromAuto &&
-        DiaryLocationLabel.isAutoLabel(
-          _state._draftLocation,
-          components,
-          _state._draftLocationPrecision,
-        );
-    _state.setState(() {
-      _state._draftLocationPrecision = precision;
-      if (followsPrecision) {
-        final label = DiaryLocationLabel.format(components, precision);
-        _state._draftLocation = label;
-        _state._locationController.text = label ?? '';
-      }
-      _state._markEditPanelDirty();
-    });
-  }
-
-  /// 与发布页一致：手改地点保留坐标，清空地点则停止保存 geo。
-  void updateLocationTextForEdit(String value) {
-    _state.setState(() {
-      _state._draftLocation = _normalizeOptionalText(value);
-      if (_state._draftLocation == null) {
-        _state._draftLocationFromAuto = false;
-      }
-      _state._markEditPanelDirty();
-    });
-  }
-
-  /// 编辑态定位：获取最新地址并写入面板字段。
-  Future<void> resolveLocationForEdit() async {
-    if (_state._locating) {
-      return;
-    }
-    _state.setState(() => _state._locating = true);
-    try {
-      final service = await _ensureLocationResolverService();
-      if (service == null) {
-        throw LocationResolveException(
-          type: LocationResolveErrorType.missingApiKey,
-          message: _state.context.l10n.autoT0204,
-        );
-      }
-
-      final result = await service.resolveCurrentLocation();
-      if (!_state.mounted) {
-        return;
-      }
-      final autoLocationLabel = DiaryLocationLabel.format(
-        result.addressComponent,
-        _state._draftLocationPrecision,
-      );
-      _state.setState(() {
-        _state._draftLocation = autoLocationLabel;
-        _state._locationController.text = autoLocationLabel ?? '';
-        _state._draftLocationAddressComponent = result.addressComponent;
-        _state._draftLocationLatitude = result.latitude;
-        _state._draftLocationLongitude = result.longitude;
-        _state._draftLocationFromAuto = true;
-        _state._markEditPanelDirty();
-      });
-    } on LocationResolveException catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      // 提示的关闭 Future 不属于定位请求，避免错误已经显示后仍禁用按钮。
-      unawaited(
-        _showHint(locationResolveHint(_state.context.l10n, error.type)),
-      );
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      unawaited(_showHint(_state.context.l10n.autoT0091(error.toString())));
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._locating = false);
-      }
-    }
-  }
-
-  /// 编辑态天气获取：依赖当前定位坐标。
-  Future<void> resolveWeatherForEdit() async {
-    if (_state._weatherLoading) {
-      return;
-    }
-    if (_state._draftLocationLatitude == null ||
-        _state._draftLocationLongitude == null) {
-      await _showHint(_state.context.l10n.autoT0092);
-      return;
-    }
-
-    _state.setState(() => _state._weatherLoading = true);
-    try {
-      final service = await _ensureWeatherService();
-      if (service == null) {
-        throw QWeatherException(
-          type: QWeatherErrorType.missingConfig,
-          message: _state.context.l10n.autoT0205,
-        );
-      }
-
-      final weatherNow = await service.fetchNow(
-        latitude: _state._draftLocationLatitude!,
-        longitude: _state._draftLocationLongitude!,
-        languageCode: (await _state.ref.read(
-          settingsServiceProvider.future,
-        )).appLocaleCode,
-      );
-      if (!_state.mounted) {
-        return;
-      }
-      _state.setState(() {
-        _state._weatherController.text = weatherNow.displayText;
-        _state._draftWeather = weatherNow.displayText;
-        _state._draftWeatherIconCode = weatherNow.iconCode;
-        _state._markEditPanelDirty();
-      });
-    } on QWeatherException catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await _showHint(error.userMessage);
-    } catch (error) {
-      if (!_state.mounted) {
-        return;
-      }
-      await _showHint(_state.context.l10n.autoT0093(error.toString()));
-    } finally {
-      if (_state.mounted) {
-        _state.setState(() => _state._weatherLoading = false);
-      }
-    }
   }
 
   /// 修改已发布日记的发表时间，与其他面板字段一样自动保存。
@@ -529,27 +286,7 @@ class EditDiaryController {
         builder: (BuildContext context) {
           return PublishDiaryPage(
             onPublished: _handlePublished,
-            initialDraft: NewDiaryDraft(
-              title: _state._titleController.text,
-              contentDocJson: _state._currentContentDocJson,
-              contentText: _state._currentContentText,
-              createdAtOverride: _state._createDateOverride,
-              cover: _state._draftCover,
-              metadataJson: _state._metadataJson,
-              selectedTagIds: <int>{..._state._selectedTagIds},
-              location: _state._draftLocation,
-              locationAddressComponent: _state._draftLocationAddressComponent,
-              locationLatitude: _state._draftLocationLatitude,
-              locationLongitude: _state._draftLocationLongitude,
-              locationFromAuto: _state._draftLocationFromAuto,
-              locationPrecision: _state._draftLocationPrecision,
-              weather: _state._draftWeather,
-              weatherIconCode: _state._draftWeatherIconCode,
-              moodEmoji: _state._draftMoodEmoji,
-              energyLevel: _state._draftEnergyLevel,
-              capsuleUnlockAt: _state._draftCapsuleUnlockAt,
-              capsulePrecision: _state._draftCapsulePrecision,
-            ),
+            initialDraft: _state._currentCreateDraft,
           );
         },
       ),
@@ -563,194 +300,43 @@ class EditDiaryController {
       _state.setState(() {
         _state._createDateOverride =
             result.createdAtOverride ?? _state._createDateOverride;
-        _state._draftCover = result.cover;
         _state._metadataJson = result.metadataJson;
-        _state._draftLocation = result.location;
-        _state._locationController.text = result.location ?? '';
-        _state._draftLocationAddressComponent = result.locationAddressComponent;
-        _state._draftLocationLatitude = result.locationLatitude;
-        _state._draftLocationLongitude = result.locationLongitude;
-        _state._draftLocationFromAuto = result.locationFromAuto;
-        _state._draftLocationPrecision = result.locationPrecision;
-        _state._draftWeather = result.weather;
-        _state._draftWeatherIconCode = result.weatherIconCode;
-        _state._draftMoodEmoji = result.moodEmoji;
-        _state._draftEnergyLevel = result.energyLevel;
-        _state._draftCapsuleUnlockAt = result.capsuleUnlockAt;
-        _state._draftCapsulePrecision = result.capsulePrecision;
-        _state._weatherController.text = result.weather ?? '';
-        _state._markEditPanelDirty();
-        _state._selectedTagIds
-          ..clear()
-          ..addAll(result.selectedTagIds);
+        _state._meta.restore(DiaryMetaDraft.fromNewDiaryDraft(result));
       });
       scheduleCreateDraftAutoSave();
     }
   }
 
-  /// 从已存 metadata 中恢复发布上下文字段，供编辑页底部面板展示。
-  ///
-  /// 仅在进入编辑页首次加载详情时调用；不触发 setState，避免 build 期重入。
-  void restorePublishContextFromMetadata(String metadataRaw) {
-    try {
-      final decoded = jsonDecode(metadataRaw);
-      if (decoded is! Map<String, dynamic>) {
-        return;
-      }
-      final context = decoded['context'];
-      if (context is! Map<String, dynamic>) {
-        return;
-      }
-      _state._draftLocationPrecision = DiaryLocationPrecision.parse(
-        context['locationPrecision'],
-      );
-      _state._draftLocation = _normalizeOptionalText(
-        context['location']?.toString(),
-      );
-      _state._draftWeather = _normalizeOptionalText(
-        context['weather']?.toString(),
-      );
-      _state._draftWeatherIconCode = _normalizeOptionalText(
-        context['weatherIconCode']?.toString(),
-      );
-      _state._draftMoodEmoji = _normalizeOptionalText(
-        context['moodEmoji']?.toString(),
-      );
-      _state._locationController.text = _state._draftLocation ?? '';
-      _state._weatherController.text = _state._draftWeather ?? '';
-
-      final energyRaw = context['energyLevel'];
-      final parsedEnergy = switch (energyRaw) {
-        num value => value.toDouble(),
-        String value => double.tryParse(value),
-        _ => null,
-      };
-      _state._draftEnergyLevel = parsedEnergy?.clamp(1, 5).toDouble();
-
-      final geo = context['geo'];
-      if (geo is Map<String, dynamic>) {
-        _state._draftLocationLatitude = (geo['latitude'] as num?)?.toDouble();
-        _state._draftLocationLongitude = (geo['longitude'] as num?)?.toDouble();
-        _state._draftLocationFromAuto = true;
-        _state._draftLocationAddressComponent = _parseObjectMap(
-          geo['addressComponent'],
-        );
-      }
-    } catch (_) {
-      // metadata 非标准结构时不阻断编辑流程，保持默认空态。
-    }
-  }
-
   String _buildMetadataJsonForEdit({DateTime? generatedAt}) {
-    return PublishMetadataComposer.compose(
+    return PublishMetadataComposer.composeDraft(
+      draft: _state._meta.value,
       contentText: _state._currentContentText,
-      selectedTagIds: _state._selectedTagIds,
-      hasCover: _normalizeOptionalText(_state._draftCover) != null,
-      deviceInfo: _buildDeviceMetadata(),
       generatedAt: generatedAt ?? DateTime.now(),
-      location: _normalizeOptionalText(_state._locationController.text),
-      locationAddressComponent: _state._draftLocationAddressComponent,
-      locationLatitude: _state._draftLocationLatitude,
-      locationLongitude: _state._draftLocationLongitude,
-      locationFromAuto: _state._draftLocationFromAuto,
-      locationPrecision: _state._draftLocationPrecision,
-      weather: _normalizeOptionalText(_state._weatherController.text),
-      weatherIconCode: _normalizeOptionalText(_state._draftWeatherIconCode),
-      moodEmoji: _normalizeOptionalText(_state._draftMoodEmoji),
-      energyLevel: _state._draftEnergyLevel,
+      // 编辑页面板不管胶囊与导入来源：沿用原 metadata 里的这些块。
+      preserve: _decodeMetadataObject(_state._metadataJson),
     );
   }
 
-  Map<String, Object?> _buildDeviceMetadata() {
-    final dispatcher = PlatformDispatcher.instance;
-    return <String, Object?>{
-      'platform': defaultTargetPlatform.name,
-      'locale': dispatcher.locale.toLanguageTag(),
-      'brightness': dispatcher.platformBrightness.name,
-    };
-  }
-
-  Future<LocationResolverService?> _ensureLocationResolverService() async {
-    if (_state._locationResolverService != null) {
-      return _state._locationResolverService;
-    }
-    final apiKey = await AMapConfigChannel.getAmapWebApiKey();
-    if (apiKey == null || apiKey.isEmpty) {
+  Map<String, Object?>? _decodeMetadataObject(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      return decoded is Map<String, Object?> ? decoded : null;
+    } catch (_) {
       return null;
     }
-    _state._locationResolverService = LocationResolverService(
-      webApiKey: apiKey,
+  }
+
+  /// 页面内轻提示。不返回 Future，原因同 PublishDiaryController.showHint：
+  /// 等提示条关闭会把 finally 里的 loading 复位拖后约 4 秒。
+  void _showHint(String message) {
+    if (!_state.mounted) {
+      return;
+    }
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: _state.context,
+        snackBar: SnackBar(content: Text(message)),
+      ),
     );
-    return _state._locationResolverService;
-  }
-
-  Future<QWeatherWeatherService?> _ensureWeatherService() async {
-    if (_state._weatherService != null) {
-      return _state._weatherService;
-    }
-    final apiKey = await AMapConfigChannel.getQWeatherApiKey();
-    final credentialId = await AMapConfigChannel.getQWeatherCredentialId();
-    final apiHost = await AMapConfigChannel.getQWeatherApiHost();
-    if (apiKey == null || apiKey.trim().isEmpty) {
-      return null;
-    }
-    final config = QWeatherConfig(
-      apiKey: apiKey,
-      credentialId: credentialId,
-      apiHost: apiHost,
-    );
-    _state._weatherService = QWeatherWeatherService(config: config);
-    return _state._weatherService;
-  }
-
-  Future<void> _showHint(String message) async {
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: _state.context,
-      snackBar: SnackBar(content: Text(message)),
-    );
-  }
-
-  String? _normalizeOptionalText(String? raw) {
-    final normalized = raw?.trim();
-    if (normalized == null || normalized.isEmpty) {
-      return null;
-    }
-    return normalized;
-  }
-
-  Map<String, Object?>? _parseObjectMap(Object? raw) {
-    if (raw is! Map) {
-      return null;
-    }
-    final normalized = <String, Object?>{};
-    for (final entry in raw.entries) {
-      final key = entry.key?.toString();
-      if (key == null || key.isEmpty) {
-        continue;
-      }
-      normalized[key] = _normalizeJsonValue(entry.value);
-    }
-    return normalized;
-  }
-
-  Object? _normalizeJsonValue(Object? value) {
-    if (value == null || value is num || value is bool || value is String) {
-      return value;
-    }
-    if (value is Map) {
-      final nested = <String, Object?>{};
-      for (final entry in value.entries) {
-        final key = entry.key?.toString();
-        if (key == null || key.isEmpty) {
-          continue;
-        }
-        nested[key] = _normalizeJsonValue(entry.value);
-      }
-      return nested;
-    }
-    if (value is List) {
-      return value.map(_normalizeJsonValue).toList(growable: false);
-    }
-    return value.toString();
   }
 }

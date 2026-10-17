@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
 import 'app_update_service.dart';
+import 'cloud_backup_service.dart';
+import 'cloud_backup_settings_service.dart';
 import 'diary_font_storage_service.dart';
 import 'diary_media_cleanup_service.dart';
 import 'settings_service.dart';
 import 'tag_order_codec.dart';
-import 'webdav_settings_service.dart';
-import 'webdav_sync_service.dart';
 
 /// 全局数据库 provider。
 ///
@@ -93,28 +93,27 @@ final diaryCardTagLimitProvider = StreamProvider<int>((Ref ref) async* {
   yield* controller.stream;
 });
 
-/// WebDAV 配置服务 provider。
+/// 网盘备份位置的配置服务 provider。
 ///
-/// 与常规 SettingsService 分离，避免 WebDAV 凭据进入 ZIP 备份 payload。
-final webDavSettingsServiceProvider = FutureProvider<WebDavSettingsService>((
-  Ref ref,
-) async {
-  final service = await WebDavSettingsService.create();
-  ref.onDispose(service.dispose);
-  return service;
-});
+/// 与常规 SettingsService 分离，避免地址、密码与授权令牌进入 ZIP 备份 payload。
+final cloudBackupSettingsServiceProvider =
+    FutureProvider<CloudBackupSettingsService>((Ref ref) async {
+      final service = await CloudBackupSettingsService.create();
+      ref.onDispose(service.dispose);
+      return service;
+    });
 
-/// WebDAV 备份式同步服务 provider。
-final webDavSyncServiceProvider = FutureProvider<WebDavSyncService>((
+/// 网盘备份编排服务 provider。
+final cloudBackupServiceProvider = FutureProvider<CloudBackupService>((
   Ref ref,
 ) async {
   final database = ref.watch(appDatabaseProvider);
   final settings = await ref.watch(settingsServiceProvider.future);
-  final webDavSettings = await ref.watch(webDavSettingsServiceProvider.future);
-  return WebDavSyncService(
+  final targets = await ref.watch(cloudBackupSettingsServiceProvider.future);
+  return CloudBackupService(
     database: database,
     settingsService: settings,
-    webDavSettingsService: webDavSettings,
+    targets: targets,
   );
 });
 

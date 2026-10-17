@@ -1846,22 +1846,6 @@
   "@timeCapsuleUnlockedInsightNoMood": {
     "description": "Time capsule text for timeCapsuleUnlockedInsightNoMood."
   },
-  "dataMgmtWebDav": "WebDAV 同步",
-  "@dataMgmtWebDav": {
-    "description": "数据管理页 WebDAV 同步入口标题。"
-  },
-  "dataMgmtWebDavSubtitle": "备份到 NAS / 私有 WebDAV，并可从远程恢复",
-  "@dataMgmtWebDavSubtitle": {
-    "description": "数据管理页 WebDAV 同步入口副标题。"
-  },
-  "webDavTitle": "WebDAV 同步",
-  "@webDavTitle": {
-    "description": "WebDAV 同步页面标题。"
-  },
-  "webDavConfigSection": "连接配置",
-  "@webDavConfigSection": {
-    "description": "WebDAV 连接配置区标题。"
-  },
   "webDavServerUrl": "服务器地址",
   "@webDavServerUrl": {
     "description": "WebDAV 服务器地址输入框标签。"
@@ -1886,173 +1870,9 @@
   "@webDavRemoteDirectoryHint": {
     "description": "WebDAV 远程目录输入框提示。"
   },
-  "webDavSaveConfig": "保存配置",
-  "@webDavSaveConfig": {
-    "description": "保存 WebDAV 配置按钮。"
-  },
-  "webDavTestConnection": "测试连接",
-  "@webDavTestConnection": {
-    "description": "测试 WebDAV 连接按钮。"
-  },
-  "webDavUploadBackup": "上传当前备份",
-  "@webDavUploadBackup": {
-    "description": "上传当前数据备份到 WebDAV 的按钮。"
-  },
-  "webDavRefreshBackups": "刷新列表",
-  "@webDavRefreshBackups": {
-    "description": "刷新 WebDAV 远程备份列表按钮。"
-  },
-  "webDavBackupList": "远程备份",
-  "@webDavBackupList": {
-    "description": "WebDAV 远程备份列表标题。"
-  },
-  "webDavNoBackups": "暂无远程备份",
-  "@webDavNoBackups": {
-    "description": "WebDAV 远程备份列表空状态。"
-  },
-  "webDavConfigSaved": "WebDAV 配置已保存",
-  "@webDavConfigSaved": {
-    "description": "WebDAV 配置保存成功提示。"
-  },
-  "webDavConnectionOk": "WebDAV 连接成功",
-  "@webDavConnectionOk": {
-    "description": "WebDAV 连接测试成功提示。"
-  },
-  "webDavUploadSuccess": "备份已上传到 WebDAV",
-  "@webDavUploadSuccess": {
-    "description": "WebDAV 上传成功提示。"
-  },
-  "webDavRestoreSuccess": "已从 WebDAV 备份恢复数据",
-  "@webDavRestoreSuccess": {
-    "description": "WebDAV 恢复成功提示。"
-  },
-  "webDavDeleteSuccess": "远程备份已删除",
-  "@webDavDeleteSuccess": {
-    "description": "WebDAV 远程备份删除成功提示。"
-  },
-  "webDavOperationFailed": "操作失败：{error}",
-  "@webDavOperationFailed": {
-    "description": "WebDAV 操作失败提示。",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavBusySave": "正在保存配置...",
-  "@webDavBusySave": {
-    "description": "WebDAV 保存配置加载文案。"
-  },
-  "webDavBusyTest": "正在测试连接...",
-  "@webDavBusyTest": {
-    "description": "WebDAV 测试连接加载文案。"
-  },
-  "webDavBusyUpload": "正在上传备份...",
-  "@webDavBusyUpload": {
-    "description": "WebDAV 上传备份加载文案。"
-  },
-  "webDavBusyRefresh": "正在读取远程备份...",
-  "@webDavBusyRefresh": {
-    "description": "WebDAV 刷新列表加载文案。"
-  },
-  "webDavBusyRestore": "正在恢复备份...",
-  "@webDavBusyRestore": {
-    "description": "WebDAV 恢复备份加载文案。"
-  },
-  "webDavBusyDelete": "正在删除远程备份...",
-  "@webDavBusyDelete": {
-    "description": "WebDAV 删除远程备份加载文案。"
-  },
-  "webDavBusyLabel": "WebDAV 操作处理中",
-  "@webDavBusyLabel": {
-    "description": "WebDAV 操作加载组件语义标签。"
-  },
   "webDavHint": "建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复时可选择合并或覆盖本地数据。",
   "@webDavHint": {
     "description": "WebDAV 同步页安全与行为说明。"
-  },
-  "webDavDeleteConfirmTitle": "删除远程备份",
-  "@webDavDeleteConfirmTitle": {
-    "description": "WebDAV 删除确认弹窗标题。"
-  },
-  "webDavDeleteConfirmContent": "将从 WebDAV 服务器删除 {fileName}，此操作不可撤销。",
-  "@webDavDeleteConfirmContent": {
-    "description": "WebDAV 删除确认弹窗内容。",
-    "placeholders": {
-      "fileName": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavRestoreAction": "恢复",
-  "@webDavRestoreAction": {
-    "description": "WebDAV 恢复操作按钮。"
-  },
-  "webDavDeleteAction": "删除",
-  "@webDavDeleteAction": {
-    "description": "WebDAV 删除操作按钮。"
-  },
-  "webDavBackupSize": "大小：{size}",
-  "@webDavBackupSize": {
-    "description": "WebDAV 备份大小展示。",
-    "placeholders": {
-      "size": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavBackupTime": "时间：{time}",
-  "@webDavBackupTime": {
-    "description": "WebDAV 备份时间展示。",
-    "placeholders": {
-      "time": {
-        "type": "String"
-      }
-    }
-  },
-  "webDavPasswordDialogTitle": "备份密码",
-  "@webDavPasswordDialogTitle": {
-    "description": "WebDAV 上传/恢复备份密码弹窗标题。"
-  },
-  "webDavPasswordDialogHint": "不填写则不加密；恢复加密备份时请输入原密码",
-  "@webDavPasswordDialogHint": {
-    "description": "WebDAV 备份密码弹窗输入提示。"
-  },
-  "webDavPasswordWarning": "请妥善保管备份密码。遗忘后无法恢复加密备份。",
-  "@webDavPasswordWarning": {
-    "description": "WebDAV 备份密码警告。"
-  },
-  "webDavContinueWithoutPassword": "继续",
-  "@webDavContinueWithoutPassword": {
-    "description": "WebDAV 备份密码弹窗继续按钮。"
-  },
-  "webDavConfigRequired": "请先填写并保存 WebDAV 配置",
-  "@webDavConfigRequired": {
-    "description": "WebDAV 配置缺失提示。"
-  },
-  "webDavErrorConfig": "请检查 WebDAV 地址、账号、密码和远程目录",
-  "@webDavErrorConfig": {
-    "description": "WebDAV 配置错误的本地化错误说明。"
-  },
-  "webDavErrorAuth": "认证失败，请检查用户名和密码/Token",
-  "@webDavErrorAuth": {
-    "description": "WebDAV 认证失败的本地化错误说明。"
-  },
-  "webDavErrorNotFound": "远程路径不存在，请检查 NAS WebDAV 目录",
-  "@webDavErrorNotFound": {
-    "description": "WebDAV 远程路径不存在的本地化错误说明。"
-  },
-  "webDavErrorStorageFull": "WebDAV 服务器存储空间不足",
-  "@webDavErrorStorageFull": {
-    "description": "WebDAV 存储空间不足的本地化错误说明。"
-  },
-  "webDavErrorNetwork": "网络请求失败，请检查服务器地址、证书和网络状态",
-  "@webDavErrorNetwork": {
-    "description": "WebDAV 网络请求失败的本地化错误说明。"
-  },
-  "webDavErrorUnknown": "发生未知错误，请稍后重试",
-  "@webDavErrorUnknown": {
-    "description": "WebDAV 未知错误的本地化错误说明。"
   },
   "imageViewerSaveToGallery": "保存到相册",
   "@imageViewerSaveToGallery": {
@@ -5017,5 +4837,606 @@
         "type": "String"
       }
     }
+  },
+  "dataMgmtCloudBackup": "网盘备份",
+  "@dataMgmtCloudBackup": {
+    "description": "数据管理页网盘备份入口标题。"
+  },
+  "dataMgmtCloudBackupSubtitle": "备份到网盘、WebDAV 或对象存储，并可从远程恢复",
+  "@dataMgmtCloudBackupSubtitle": {
+    "description": "数据管理页网盘备份入口副标题。"
+  },
+  "cloudBackupTitle": "网盘备份",
+  "@cloudBackupTitle": {
+    "description": "网盘备份页标题。"
+  },
+  "cloudBackupEmpty": "还没有备份位置。添加一个网盘、WebDAV 或对象存储，即可把完整备份上传到云端，换机或重装后从那里恢复。",
+  "@cloudBackupEmpty": {
+    "description": "网盘备份页没有备份位置时的说明。"
+  },
+  "cloudBackupAdd": "添加备份位置",
+  "@cloudBackupAdd": {
+    "description": "网盘备份页添加备份位置按钮。"
+  },
+  "cloudBackupHint": "地址、密码与网盘授权只保存在本机，不会写入备份文件；上传的是完整备份 ZIP，可选加密。",
+  "@cloudBackupHint": {
+    "description": "网盘备份页底部说明。"
+  },
+  "cloudBackupSheetTitle": "选择备份位置",
+  "@cloudBackupSheetTitle": {
+    "description": "添加备份位置面板标题。"
+  },
+  "cloudBackupSheetHint": "恢复前会预检备份，并让你选择合并或覆盖本机数据。",
+  "@cloudBackupSheetHint": {
+    "description": "添加备份位置面板说明。"
+  },
+  "cloudBackupGroupDrives": "网盘（授权登录）",
+  "@cloudBackupGroupDrives": {
+    "description": "面板分组：授权类网盘。"
+  },
+  "cloudBackupGroupDrivesHint": "在网盘官方页面授权，应用只能访问它自己的备份目录。",
+  "@cloudBackupGroupDrivesHint": {
+    "description": "授权类网盘分组说明。"
+  },
+  "cloudBackupGroupWebDav": "WebDAV",
+  "@cloudBackupGroupWebDav": {
+    "description": "面板分组：WebDAV。"
+  },
+  "cloudBackupGroupWebDavHint": "坚果云、NAS、Nextcloud，以及经 Alist / OpenList 挂载的阿里云盘、夸克、115 等网盘。",
+  "@cloudBackupGroupWebDavHint": {
+    "description": "WebDAV 分组说明。"
+  },
+  "cloudBackupGroupS3": "对象存储（S3 兼容）",
+  "@cloudBackupGroupS3": {
+    "description": "面板分组：S3 兼容对象存储。"
+  },
+  "cloudBackupGroupS3Hint": "填写访问密钥，备份保存在你指定的存储桶。",
+  "@cloudBackupGroupS3Hint": {
+    "description": "S3 分组说明。"
+  },
+  "cloudBackupCustomWebDav": "其他 WebDAV",
+  "@cloudBackupCustomWebDav": {
+    "description": "自定义 WebDAV 选项名称。"
+  },
+  "cloudBackupCustomS3": "其他 S3 兼容存储",
+  "@cloudBackupCustomS3": {
+    "description": "自定义 S3 选项名称。"
+  },
+  "cloudBackupBaiduPan": "百度网盘",
+  "@cloudBackupBaiduPan": {
+    "description": "百度网盘名称。"
+  },
+  "cloudBackupAliyunDrive": "阿里云盘",
+  "@cloudBackupAliyunDrive": {
+    "description": "阿里云盘名称。"
+  },
+  "cloudBackupJianguoyun": "坚果云",
+  "@cloudBackupJianguoyun": {
+    "description": "坚果云名称。"
+  },
+  "cloudBackup123pan": "123云盘",
+  "@cloudBackup123pan": {
+    "description": "123云盘名称。"
+  },
+  "cloudBackupSynology": "群晖 NAS",
+  "@cloudBackupSynology": {
+    "description": "群晖 NAS 名称。"
+  },
+  "cloudBackupQnap": "威联通 NAS",
+  "@cloudBackupQnap": {
+    "description": "威联通 NAS 名称。"
+  },
+  "cloudBackupAliyunOss": "阿里云 OSS",
+  "@cloudBackupAliyunOss": {
+    "description": "阿里云 OSS 名称。"
+  },
+  "cloudBackupTencentCos": "腾讯云 COS",
+  "@cloudBackupTencentCos": {
+    "description": "腾讯云 COS 名称。"
+  },
+  "cloudBackupQiniuKodo": "七牛云 Kodo",
+  "@cloudBackupQiniuKodo": {
+    "description": "七牛云 Kodo 名称。"
+  },
+  "cloudBackupHuaweiObs": "华为云 OBS",
+  "@cloudBackupHuaweiObs": {
+    "description": "华为云 OBS 名称。"
+  },
+  "cloudBackupVolcengineTos": "火山引擎 TOS",
+  "@cloudBackupVolcengineTos": {
+    "description": "火山引擎 TOS 名称。"
+  },
+  "cloudBackupBaiduBos": "百度智能云 BOS",
+  "@cloudBackupBaiduBos": {
+    "description": "百度智能云 BOS 名称。"
+  },
+  "cloudBackupJdcloudOss": "京东云 OSS",
+  "@cloudBackupJdcloudOss": {
+    "description": "京东云 OSS 名称。"
+  },
+  "cloudBackupAwsChina": "Amazon S3（中国区）",
+  "@cloudBackupAwsChina": {
+    "description": "AWS 中国区名称。"
+  },
+  "cloudBackupHintJianguoyun": "用户名填坚果云账号；密码填网页版「账户信息 → 安全选项 → 第三方应用管理」中生成的应用密码。免费账户每 30 分钟限 600 次请求。",
+  "@cloudBackupHintJianguoyun": {
+    "description": "坚果云填写说明。"
+  },
+  "cloudBackupHint123pan": "地址与密码照抄 123云盘「工具中心 → 第三方挂载」页面显示的内容（密码只显示一次）。",
+  "@cloudBackupHint123pan": {
+    "description": "123云盘填写说明。"
+  },
+  "cloudBackupHintOpenList": "填写 Alist / OpenList 的地址（默认端口 5244，路径 /dav/），并在后台为该用户开启 WebDAV 读取与管理权限。经它挂载的各类网盘都可作为备份位置。",
+  "@cloudBackupHintOpenList": {
+    "description": "Alist / OpenList 填写说明。"
+  },
+  "cloudBackupHintCloudDrive2": "填写 CloudDrive2 的地址（默认端口 19798，路径 /dav）与登录账号。",
+  "@cloudBackupHintCloudDrive2": {
+    "description": "CloudDrive2 填写说明。"
+  },
+  "cloudBackupHintNextcloud": "地址从网页版「文件设置 → WebDAV」复制；密码建议使用「个人设置 → 安全」中生成的应用密码。",
+  "@cloudBackupHintNextcloud": {
+    "description": "Nextcloud 填写说明。"
+  },
+  "cloudBackupHintOwncloud": "密码建议使用应用令牌；oCIS 需管理员开启应用令牌服务。",
+  "@cloudBackupHintOwncloud": {
+    "description": "ownCloud 填写说明。"
+  },
+  "cloudBackupHintSeafile": "需服务器开启 SeafDAV；使用单点登录的账号需在网页设置单独的 WebDAV 密码。",
+  "@cloudBackupHintSeafile": {
+    "description": "Seafile 填写说明。"
+  },
+  "cloudBackupHintSynology": "在 DSM 套件中心安装并启用 WebDAV Server（HTTPS 默认端口 5006），用 DSM 账号登录；远程目录的第一级须是共享文件夹。",
+  "@cloudBackupHintSynology": {
+    "description": "群晖填写说明。"
+  },
+  "cloudBackupHintQnap": "在控制台开启 WebDAV，地址末尾带上共享文件夹名称。",
+  "@cloudBackupHintQnap": {
+    "description": "威联通填写说明。"
+  },
+  "cloudBackupHintKoofr": "必须使用 Koofr「设置 → 密码」中生成的应用密码；多次登录失败会被暂时封禁。",
+  "@cloudBackupHintKoofr": {
+    "description": "Koofr 填写说明。"
+  },
+  "cloudBackupHintPcloud": "用 pCloud 账号邮箱与密码登录；欧洲区账号请选 pCloud (EU)。",
+  "@cloudBackupHintPcloud": {
+    "description": "pCloud 填写说明。"
+  },
+  "cloudBackupHintInfinicloud": "地址与 Apps Connection 密码从 InfiniCLOUD 的 My Page 复制。",
+  "@cloudBackupHintInfinicloud": {
+    "description": "InfiniCLOUD 填写说明。"
+  },
+  "cloudBackupHintHetzner": "需在 Hetzner Console 为 Storage Box 开启 WebDAV 与外部访问。",
+  "@cloudBackupHintHetzner": {
+    "description": "Hetzner 填写说明。"
+  },
+  "cloudBackupHintKdrive": "地址中的 Drive ID 见 kDrive 网页地址；开启了两步验证时需使用应用密码。",
+  "@cloudBackupHintKdrive": {
+    "description": "kDrive 填写说明。"
+  },
+  "cloudBackupHintYandex": "需要付费的 Yandex 360，并使用类型为 WebDAV 的应用密码。",
+  "@cloudBackupHintYandex": {
+    "description": "Yandex Disk 填写说明。"
+  },
+  "cloudBackupHintMailru": "需要使用 Mail.ru 账户设置中生成的应用密码。",
+  "@cloudBackupHintMailru": {
+    "description": "Mail.ru 填写说明。"
+  },
+  "cloudBackupS3Hint": "端点与区域需与存储桶所在地域一致。建议为备份单独创建存储桶，并使用只能访问该桶的密钥。",
+  "@cloudBackupS3Hint": {
+    "description": "S3 通用填写说明。"
+  },
+  "cloudBackupHintAliyunOss": "使用 RAM 用户的 AccessKey；端点中的地域需与存储桶一致。2025 年 3 月后新开通的账号在中国内地可能无法用默认公网域名访问。",
+  "@cloudBackupHintAliyunOss": {
+    "description": "阿里云 OSS 填写说明。"
+  },
+  "cloudBackupHintTencentCos": "存储桶名称须带 APPID 后缀（如 backup-1250000000），密钥在「访问管理 → API 密钥」创建。",
+  "@cloudBackupHintTencentCos": {
+    "description": "腾讯云 COS 填写说明。"
+  },
+  "cloudBackupHintQiniuKodo": "S3 访问用的存储桶名称可能与空间名不同，以控制台显示为准。",
+  "@cloudBackupHintQiniuKodo": {
+    "description": "七牛云填写说明。"
+  },
+  "cloudBackupHintR2": "把地址中的 ACCOUNT_ID 换成 Cloudflare 账户 ID，并在 R2「管理 API 令牌」中创建令牌，使用其 S3 访问密钥；区域保持 auto。",
+  "@cloudBackupHintR2": {
+    "description": "Cloudflare R2 填写说明。"
+  },
+  "cloudBackupHintB2": "端点以存储桶详情页显示的为准，区域填端点中的部分（如 us-west-004），密钥使用 Application Key。",
+  "@cloudBackupHintB2": {
+    "description": "Backblaze B2 填写说明。"
+  },
+  "cloudBackupHintDigitalOcean": "端点中的区域填 Spaces 所在数据中心（如 nyc3），签名区域保持 us-east-1。",
+  "@cloudBackupHintDigitalOcean": {
+    "description": "DigitalOcean Spaces 填写说明。"
+  },
+  "cloudBackupHintMinio": "填写 MinIO 的 API 地址（默认端口 9000），保持开启路径风格访问。",
+  "@cloudBackupHintMinio": {
+    "description": "MinIO 填写说明。"
+  },
+  "cloudBackupHintGcs": "在 Cloud Storage「设置 → 互操作性」中创建 HMAC 密钥。",
+  "@cloudBackupHintGcs": {
+    "description": "Google Cloud Storage 填写说明。"
+  },
+  "cloudBackupHintOracle": "端点中的 NAMESPACE 与 REGION 见 OCI 控制台，密钥使用「客户密钥（Customer Secret Key）」。",
+  "@cloudBackupHintOracle": {
+    "description": "Oracle Cloud 填写说明。"
+  },
+  "cloudBackupFolderGoogleDrive": "备份保存在 Google Drive 的「Jotsy」文件夹；应用只能访问它自己创建的文件。删除的备份不进回收站。",
+  "@cloudBackupFolderGoogleDrive": {
+    "description": "Google Drive 存放位置说明。"
+  },
+  "cloudBackupFolderOneDrive": "备份保存在 OneDrive「应用」文件夹中的本应用目录；应用只能访问这个目录。删除的备份进入 OneDrive 回收站。",
+  "@cloudBackupFolderOneDrive": {
+    "description": "OneDrive 存放位置说明。"
+  },
+  "cloudBackupFolderDropbox": "备份保存在 Dropbox「应用」文件夹中的本应用目录；应用只能访问这个目录。",
+  "@cloudBackupFolderDropbox": {
+    "description": "Dropbox 存放位置说明。"
+  },
+  "cloudBackupFolderBaidu": "备份保存在百度网盘「我的应用数据」中的本应用目录。",
+  "@cloudBackupFolderBaidu": {
+    "description": "百度网盘存放位置说明。"
+  },
+  "cloudBackupFolderAliyun": "备份保存在授权时选择的文件夹（未选择时为根目录的「Jotsy」），删除的备份进入回收站。授权有效期以阿里云盘为准，到期后需重新授权。",
+  "@cloudBackupFolderAliyun": {
+    "description": "阿里云盘存放位置说明。"
+  },
+  "cloudBackupConfigSection": "连接配置",
+  "@cloudBackupConfigSection": {
+    "description": "备份位置配置区标题。"
+  },
+  "cloudBackupSaveConfig": "保存配置",
+  "@cloudBackupSaveConfig": {
+    "description": "保存备份位置配置按钮。"
+  },
+  "cloudBackupTestConnection": "测试连接",
+  "@cloudBackupTestConnection": {
+    "description": "测试备份位置连接按钮。"
+  },
+  "cloudBackupUploadBackup": "上传当前备份",
+  "@cloudBackupUploadBackup": {
+    "description": "上传当前数据备份按钮。"
+  },
+  "cloudBackupRefreshBackups": "刷新列表",
+  "@cloudBackupRefreshBackups": {
+    "description": "刷新远程备份列表按钮。"
+  },
+  "cloudBackupBackupList": "远程备份",
+  "@cloudBackupBackupList": {
+    "description": "远程备份列表标题。"
+  },
+  "cloudBackupNoBackups": "暂无远程备份",
+  "@cloudBackupNoBackups": {
+    "description": "远程备份列表空状态。"
+  },
+  "cloudBackupBackupTime": "时间：{time}",
+  "@cloudBackupBackupTime": {
+    "description": "远程备份的时间。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupBackupSize": "大小：{size}",
+  "@cloudBackupBackupSize": {
+    "description": "远程备份的大小。",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupRestoreAction": "恢复",
+  "@cloudBackupRestoreAction": {
+    "description": "恢复远程备份操作。"
+  },
+  "cloudBackupDeleteAction": "删除",
+  "@cloudBackupDeleteAction": {
+    "description": "删除远程备份操作。"
+  },
+  "cloudBackupDeleteConfirmTitle": "删除远程备份？",
+  "@cloudBackupDeleteConfirmTitle": {
+    "description": "删除远程备份确认标题。"
+  },
+  "cloudBackupDeleteConfirmContent": "将从备份位置删除 {fileName}，此操作不可撤销。",
+  "@cloudBackupDeleteConfirmContent": {
+    "description": "删除远程备份确认内容。",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupRemoveTarget": "移除此备份位置",
+  "@cloudBackupRemoveTarget": {
+    "description": "移除备份位置按钮提示。"
+  },
+  "cloudBackupRemoveTargetTitle": "移除备份位置？",
+  "@cloudBackupRemoveTargetTitle": {
+    "description": "移除备份位置确认标题。"
+  },
+  "cloudBackupRemoveTargetContent": "只清除本机保存的连接信息与授权，备份位置里已有的备份文件不会被删除，之后可以重新添加。",
+  "@cloudBackupRemoveTargetContent": {
+    "description": "移除备份位置确认内容。"
+  },
+  "cloudBackupRemoveTargetAction": "移除",
+  "@cloudBackupRemoveTargetAction": {
+    "description": "移除备份位置确认按钮。"
+  },
+  "cloudBackupRemoved": "已移除备份位置",
+  "@cloudBackupRemoved": {
+    "description": "移除备份位置成功提示。"
+  },
+  "cloudBackupConfigSaved": "配置已保存",
+  "@cloudBackupConfigSaved": {
+    "description": "配置保存成功提示。"
+  },
+  "cloudBackupConnectionOk": "连接成功",
+  "@cloudBackupConnectionOk": {
+    "description": "连接测试成功提示。"
+  },
+  "cloudBackupUploadSuccess": "备份已上传",
+  "@cloudBackupUploadSuccess": {
+    "description": "上传成功提示。"
+  },
+  "cloudBackupRestoreSuccess": "已从远程备份恢复数据",
+  "@cloudBackupRestoreSuccess": {
+    "description": "恢复成功提示。"
+  },
+  "cloudBackupDeleteSuccess": "远程备份已删除",
+  "@cloudBackupDeleteSuccess": {
+    "description": "删除成功提示。"
+  },
+  "cloudBackupAccountAuthorized": "已授权",
+  "@cloudBackupAccountAuthorized": {
+    "description": "授权类网盘已授权但没有账号名时的说明。"
+  },
+  "cloudBackupAccountConnected": "已授权：{account}",
+  "@cloudBackupAccountConnected": {
+    "description": "授权类网盘的账号。",
+    "placeholders": {
+      "account": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupReauthorize": "重新授权",
+  "@cloudBackupReauthorize": {
+    "description": "重新授权按钮。"
+  },
+  "cloudBackupAuthorized": "已连接 {name}",
+  "@cloudBackupAuthorized": {
+    "description": "授权成功提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupAuthorizeTitle": "授权 {name}",
+  "@cloudBackupAuthorizeTitle": {
+    "description": "授权对话框标题。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupDeviceCodeHint": "打开授权页面，登录后输入下方代码。授权完成后这里会自动继续。",
+  "@cloudBackupDeviceCodeHint": {
+    "description": "设备码授权说明。"
+  },
+  "cloudBackupDeviceCodeLabel": "授权代码",
+  "@cloudBackupDeviceCodeLabel": {
+    "description": "设备码的无障碍标签。"
+  },
+  "cloudBackupCopyCode": "复制代码",
+  "@cloudBackupCopyCode": {
+    "description": "复制设备码按钮。"
+  },
+  "cloudBackupDeviceCodeCopied": "已复制",
+  "@cloudBackupDeviceCodeCopied": {
+    "description": "设备码已复制。"
+  },
+  "cloudBackupOpenAuthorizePage": "打开授权页面",
+  "@cloudBackupOpenAuthorizePage": {
+    "description": "在浏览器打开授权页按钮。"
+  },
+  "cloudBackupWaitingAuthorization": "等待授权完成…",
+  "@cloudBackupWaitingAuthorization": {
+    "description": "等待设备码授权完成。"
+  },
+  "cloudBackupCodePasteHint": "在浏览器中授权后，页面会显示一串授权码，复制后粘贴到这里。",
+  "@cloudBackupCodePasteHint": {
+    "description": "粘贴授权码说明。"
+  },
+  "cloudBackupCodeLabel": "授权码",
+  "@cloudBackupCodeLabel": {
+    "description": "授权码输入框标签。"
+  },
+  "cloudBackupCodeConfirm": "完成授权",
+  "@cloudBackupCodeConfirm": {
+    "description": "提交授权码按钮。"
+  },
+  "cloudBackupBusyLabel": "网盘备份进行中",
+  "@cloudBackupBusyLabel": {
+    "description": "网盘备份忙碌遮罩的无障碍标签。"
+  },
+  "cloudBackupBusySave": "正在保存…",
+  "@cloudBackupBusySave": {
+    "description": "保存配置中。"
+  },
+  "cloudBackupBusyTest": "正在测试连接…",
+  "@cloudBackupBusyTest": {
+    "description": "测试连接中。"
+  },
+  "cloudBackupBusyUpload": "正在生成备份…",
+  "@cloudBackupBusyUpload": {
+    "description": "生成备份中。"
+  },
+  "cloudBackupBusyUploadProgress": "正在上传 {percent}%",
+  "@cloudBackupBusyUploadProgress": {
+    "description": "上传进度。",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudBackupBusyDownload": "正在下载备份…",
+  "@cloudBackupBusyDownload": {
+    "description": "下载备份中。"
+  },
+  "cloudBackupBusyDownloadProgress": "正在下载 {percent}%",
+  "@cloudBackupBusyDownloadProgress": {
+    "description": "下载进度。",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "cloudBackupBusyRestore": "正在恢复数据…",
+  "@cloudBackupBusyRestore": {
+    "description": "恢复数据中。"
+  },
+  "cloudBackupBusyRefresh": "正在读取远程备份…",
+  "@cloudBackupBusyRefresh": {
+    "description": "读取远程列表中。"
+  },
+  "cloudBackupBusyDelete": "正在删除远程备份…",
+  "@cloudBackupBusyDelete": {
+    "description": "删除远程备份中。"
+  },
+  "cloudBackupBusyAuthorize": "正在验证授权…",
+  "@cloudBackupBusyAuthorize": {
+    "description": "授权完成后校验中。"
+  },
+  "cloudBackupOperationFailed": "操作失败：{detail}",
+  "@cloudBackupOperationFailed": {
+    "description": "网盘备份操作失败提示。",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "cloudBackupErrorConfig": "请检查地址、存储桶、目录等配置是否完整正确",
+  "@cloudBackupErrorConfig": {
+    "description": "配置错误。"
+  },
+  "cloudBackupErrorAppKeyMissing": "此版本没有配置该网盘的应用密钥，暂不可用",
+  "@cloudBackupErrorAppKeyMissing": {
+    "description": "缺少应用密钥。"
+  },
+  "cloudBackupErrorAuth": "认证失败或无权访问，请检查账号、密码或密钥",
+  "@cloudBackupErrorAuth": {
+    "description": "认证失败。"
+  },
+  "cloudBackupErrorSessionExpired": "授权已失效，请重新授权",
+  "@cloudBackupErrorSessionExpired": {
+    "description": "授权失效。"
+  },
+  "cloudBackupErrorAuthorizationDenied": "授权被拒绝",
+  "@cloudBackupErrorAuthorizationDenied": {
+    "description": "用户拒绝授权。"
+  },
+  "cloudBackupErrorAuthorizationExpired": "授权码无效或已过期，请重新获取",
+  "@cloudBackupErrorAuthorizationExpired": {
+    "description": "授权码过期。"
+  },
+  "cloudBackupErrorNotFound": "远程文件或目录不存在",
+  "@cloudBackupErrorNotFound": {
+    "description": "远程不存在。"
+  },
+  "cloudBackupErrorStorageFull": "备份位置的存储空间不足",
+  "@cloudBackupErrorStorageFull": {
+    "description": "空间不足。"
+  },
+  "cloudBackupErrorFileTooLarge": "备份文件超过了该备份位置允许的单文件大小",
+  "@cloudBackupErrorFileTooLarge": {
+    "description": "文件过大。"
+  },
+  "cloudBackupErrorRateLimited": "请求过于频繁，请稍后再试",
+  "@cloudBackupErrorRateLimited": {
+    "description": "被限流。"
+  },
+  "cloudBackupErrorNetwork": "网络请求失败，请检查网络、地址与证书",
+  "@cloudBackupErrorNetwork": {
+    "description": "网络错误。"
+  },
+  "cloudBackupErrorProtocol": "备份位置返回了无法识别的响应",
+  "@cloudBackupErrorProtocol": {
+    "description": "协议不符。"
+  },
+  "cloudBackupErrorPassword": "备份密码错误",
+  "@cloudBackupErrorPassword": {
+    "description": "备份密码错误。"
+  },
+  "cloudBackupErrorArchive": "备份文件已损坏，或不是 Jotsy 的备份",
+  "@cloudBackupErrorArchive": {
+    "description": "备份文件损坏。"
+  },
+  "cloudBackupErrorLocalFile": "读写本地临时文件失败，请检查存储空间",
+  "@cloudBackupErrorLocalFile": {
+    "description": "本地文件错误。"
+  },
+  "cloudBackupErrorUnknown": "发生未知错误，请稍后重试",
+  "@cloudBackupErrorUnknown": {
+    "description": "未知错误。"
+  },
+  "s3Endpoint": "服务地址（Endpoint）",
+  "@s3Endpoint": {
+    "description": "S3 端点输入框标签。"
+  },
+  "s3EndpointHint": "例如 https://s3.us-east-1.amazonaws.com",
+  "@s3EndpointHint": {
+    "description": "S3 端点输入框提示。"
+  },
+  "s3Region": "区域（Region）",
+  "@s3Region": {
+    "description": "S3 区域输入框标签。"
+  },
+  "s3RegionHint": "留空按 us-east-1",
+  "@s3RegionHint": {
+    "description": "S3 区域输入框提示。"
+  },
+  "s3Bucket": "存储桶（Bucket）",
+  "@s3Bucket": {
+    "description": "S3 存储桶输入框标签。"
+  },
+  "s3AccessKeyId": "Access Key ID",
+  "@s3AccessKeyId": {
+    "description": "S3 访问密钥 ID 输入框标签。"
+  },
+  "s3SecretAccessKey": "Secret Access Key",
+  "@s3SecretAccessKey": {
+    "description": "S3 访问密钥输入框标签。"
+  },
+  "s3Prefix": "备份目录（对象前缀）",
+  "@s3Prefix": {
+    "description": "S3 对象前缀输入框标签。"
+  },
+  "s3PrefixHint": "例如 jotsy/，留空为存储桶根目录",
+  "@s3PrefixHint": {
+    "description": "S3 对象前缀输入框提示。"
+  },
+  "s3PathStyle": "路径风格访问",
+  "@s3PathStyle": {
+    "description": "S3 路径风格开关。"
+  },
+  "s3PathStyleSubtitle": "MinIO 等自建服务通常需要开启",
+  "@s3PathStyleSubtitle": {
+    "description": "S3 路径风格开关说明。"
+  },
+  "s3PathStyleLocked": "该服务只支持虚拟主机风格访问",
+  "@s3PathStyleLocked": {
+    "description": "S3 路径风格不可用说明。"
+  },
+  "cloudBackupErrorPlatformUnavailable": "本机无法使用系统账号授权（需要 Google Play 服务），此版本也没有配置备用的授权方式",
+  "@cloudBackupErrorPlatformUnavailable": {
+    "description": "本机无法使用系统授权且没有备用方式。"
   }
 }

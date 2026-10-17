@@ -6,10 +6,12 @@ import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
+import 'package:node_diary/core/services/backup_import_models.dart';
+import 'package:node_diary/core/services/cloud_backup_models.dart';
+import 'package:node_diary/core/services/cloud_backup_service.dart';
+import 'package:node_diary/core/services/cloud_backup_settings_service.dart';
+import 'package:node_diary/core/services/cloud_backup_target.dart';
 import 'package:node_diary/core/services/webdav_client.dart';
-import 'package:node_diary/core/services/webdav_models.dart';
-import 'package:node_diary/core/services/webdav_settings_service.dart';
-import 'package:node_diary/core/services/webdav_sync_service.dart';
 import 'package:path/path.dart' as p;
 
 import '../../support/backup_test_fixture.dart';
@@ -23,30 +25,32 @@ void main() {
 
   for (final password in [null, 'audit-password']) {
     test(
-      'WebDAV preserves mixed media, drafts and recycle bin (${password == null ? 'plain' : 'encrypted'})',
+      'WebDAV backup location preserves mixed media, drafts and recycle bin (${password == null ? 'plain' : 'encrypted'})',
       () async {
         final remoteRoot = await Directory(
           p.join(fixture.root.path, 'remote'),
         ).create();
         final server = await startWebDavFixture(remoteRoot);
-        final remoteSettings = await WebDavSettingsService.create();
+        final targets = await CloudBackupSettingsService.create();
         addTearDown(() async {
-          remoteSettings.dispose();
+          targets.dispose();
           await server.close(force: true);
         });
-        await remoteSettings.saveConfig(
-          WebDavConfig(
-            serverUrl: 'http://${server.address.host}:${server.port}/',
-            username: 'audit',
-            password: 'local-fixture-only',
-            remoteDirectory: '/backups/',
-          ),
+        final target = CloudBackupTarget.create(
+          kind: CloudBackupKind.webDav,
+          config: {
+            'serverUrl': 'http://${server.address.host}:${server.port}/',
+            'username': 'audit',
+            'password': 'local-fixture-only',
+            'remoteDirectory': '/backups/',
+          },
         );
-        final sync = WebDavSyncService(
+        await targets.saveTarget(target);
+        final sync = CloudBackupService(
           database: fixture.database,
           settingsService: fixture.settings,
-          webDavSettingsService: remoteSettings,
-          clientFactory: (config) => WebDavClient(
+          targets: targets,
+          webDavClientFactory: (config) => WebDavClient(
             config: config,
             clientFactory: realFixtureHttpClient,
           ),
@@ -122,9 +126,18 @@ void main() {
           }),
         );
 
-        final entry = await sync.uploadCurrentBackup(zipPassword: password);
-        expect(await sync.listRemoteBackups(), hasLength(1));
-        final localZip = await sync.downloadBackup(entry);
+        final entry = await sync.uploadCurrentBackup(
+          target,
+          zipPassword: password,
+        );
+        final listed = await sync.listBackups(target);
+        expect(listed.map((backup) => backup.fileName), [entry.fileName]);
+        // manifest 记录的创建时间与文件名推断一致，manifest 本身不算备份。
+        expect(
+          listed.single.createdAt!.isAtSameMomentAs(entry.createdAt!),
+          isTrue,
+        );
+        final localZip = await sync.downloadBackup(target, entry);
         expect(
           await sync.isLocalBackupPasswordProtected(localZip),
           password != null,
@@ -136,6 +149,7 @@ void main() {
         await sync.restoreFromLocalBackup(
           zipFile: localZip,
           zipPassword: password,
+          mode: BackupImportMode.replaceAll,
         );
 
         final restored = await fixture.database

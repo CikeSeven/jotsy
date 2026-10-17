@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jotsy · 本地日记</title>
+  <meta name="description" content="Jotsy：免费、开源、无广告、无需注册的本地日记应用，数据只存在你的手机里。">
+  <link rel="icon" href="https://raw.githubusercontent.com/CikeSeven/jotsy/main/assets/app_icon/mingcute_icon.png">
+  <style>
+    :root {
+      --bg: #f6fafe;
+      --surface: #ffffff;
+      --text: #171c20;
+      --muted: #41484d;
+      --primary: #1e6586;
+      --on-primary: #ffffff;
+      --border: #c1c7ce;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111318;
+        --surface: #1a1c20;
+        --text: #e1e2e8;
+        --muted: #c1c7ce;
+        --primary: #8dcff4;
+        --on-primary: #003549;
+        --border: #41484d;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+    .hero { text-align: center; }
+    .hero img { width: 88px; height: 88px; border-radius: 22px; }
+    h1 { font-size: 34px; margin: 12px 0 4px; }
+    .tagline { font-size: 18px; margin: 0; }
+    .sub { color: var(--muted); margin: 4px 0 20px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+    .button.primary { background: var(--primary); color: var(--on-primary); }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 20px 16px;
+      margin: 24px 0;
+    }
+    h2 { font-size: 20px; color: var(--primary); margin: 16px 0 8px; }
+    footer { text-align: center; color: var(--muted); font-size: 14px; }
+    footer a { color: var(--primary); }
+  </style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <img src="https://raw.githubusercontent.com/CikeSeven/jotsy/main/assets/app_icon/mingcute_icon.png" alt="Jotsy">
+    <h1>Jotsy</h1>
+    <p class="tagline">一本只属于你的本地日记 · A diary that stays on your phone</p>
+    <p class="sub">免费 · 开源 · 无广告 · 无需注册 — Free · Open source · No ads · No sign-up</p>
+    <div class="actions">
+      <a class="button primary" href="https://github.com/CikeSeven/jotsy/releases/latest">下载 / Download</a>
+      <a class="button" href="https://github.com/CikeSeven/jotsy">源代码 / Source</a>
+      <a class="button" href="privacy.html">隐私政策 / Privacy</a>
+    </div>
+  </div>
+
+  <section lang="zh-CN">
+    <h2>为什么选择 Jotsy</h2>
+    <ul>
+      <li><strong>私密</strong>：数据全部存在本机，没有账号和服务器；支持应用锁，备份可加密。</li>
+      <li><strong>好写</strong>：富文本编辑，图片、视频、附件、录音随手插入。</li>
+      <li><strong>有温度</strong>：每篇日记都能记下心情、精力、天气和地点。</li>
+      <li><strong>好回顾</strong>：农历日历、年度热力图、那年今日、时间胶囊。</li>
+      <li><strong>不锁定</strong>：ZIP 备份，备份到 WebDAV、对象存储或你自己的 Google Drive / Dropbox 等网盘；单篇可导出长图 / Markdown / PDF；支持从 18 款应用导入。</li>
+    </ul>
+  </section>
+
+  <section lang="en">
+    <h2>Why Jotsy</h2>
+    <ul>
+      <li><strong>Private</strong>: everything stays on your device, with no account and no server; app lock and encrypted backups.</li>
+      <li><strong>Easy to write</strong>: rich text with photos, videos, attachments and voice recordings.</li>
+      <li><strong>Personal</strong>: record mood, energy, weather and place with every entry.</li>
+      <li><strong>Easy to look back</strong>: lunar calendar, yearly heatmap, on-this-day and time capsules.</li>
+      <li><strong>No lock-in</strong>: ZIP backups to WebDAV, object storage or your own Google Drive / Dropbox; export entries as image, Markdown or PDF; import from 18 apps.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p><a href="privacy.html">隐私政策 / Privacy Policy</a> · <a href="https://github.com/CikeSeven/jotsy/issues">反馈 / Contact</a></p>
+  </footer>
+</main>
+</body>
+</html>

@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:xml/xml.dart';
 
+import 'cloud_backup_http.dart';
+import 'cloud_backup_models.dart';
 import 'webdav_models.dart';
 
 /// 轻量 WebDAV 协议客户端。
@@ -70,7 +72,11 @@ class WebDavClient {
     ).where((file) => !file.isDirectory).toList(growable: false);
   }
 
-  Future<void> putFile({required String remotePath, required File file}) async {
+  Future<void> putFile({
+    required String remotePath,
+    required File file,
+    CloudBackupProgress? onProgress,
+  }) async {
     if (!await file.exists()) {
       throw const FileSystemException('上传文件不存在');
     }
@@ -79,9 +85,15 @@ class WebDavClient {
     try {
       final request = await client.openUrl('PUT', uri).timeout(_timeout);
       _applyHeaders(request);
-      request.contentLength = await file.length();
+      final length = await file.length();
+      request.contentLength = length;
       // 传输阶段按数据块间隔判定空闲，慢网络下的大备份不会被建连超时误杀。
-      await request.addStream(file.openRead().timeout(_idleTimeout));
+      await request.addStream(
+        file
+            .openRead()
+            .timeout(_idleTimeout)
+            .transform(countingTransformer(onProgress, total: length)),
+      );
       final response = await request.close().timeout(_idleTimeout);
       await _ensureStatus(response, uri, const <int>{
         HttpStatus.ok,
@@ -138,6 +150,7 @@ class WebDavClient {
   Future<void> downloadFile({
     required String remotePath,
     required File targetFile,
+    CloudBackupProgress? onProgress,
   }) async {
     final uri = _config.resolveRemoteUri(remotePath);
     final response = await _send(
@@ -149,7 +162,10 @@ class WebDavClient {
     final sink = targetFile.openWrite();
     try {
       // 同样按数据块间隔判定空闲，避免大备份下载被整体超时打断。
-      await response.timeout(_idleTimeout).pipe(sink);
+      await response
+          .timeout(_idleTimeout)
+          .transform(countingTransformer(onProgress))
+          .pipe(sink);
     } catch (error) {
       await sink.close();
       if (await targetFile.exists()) {

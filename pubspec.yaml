@@ -65,6 +65,9 @@ dependencies:
   # OPPO、vivo 网页版的请求信封：随机 AES 会话密钥经厂商公开的 RSA 公钥
   # 包装（PKCS#1 v1.5），正文 AES-CBC 加密。
   pointycastle: ^4.0.0
+  # 网盘备份：装有 Google Play 服务的 Android 设备经系统账号选择器授权
+  # Google Drive（没有 Play 服务时回落到设备码授权）。
+  google_sign_in: ^7.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

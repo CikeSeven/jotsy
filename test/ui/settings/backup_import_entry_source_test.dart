@@ -18,13 +18,14 @@ void main() {
 
   test('archive imports only start from the reviewed entry points', () async {
     expect(await callersOf('importFromZip('), <String>[
+      'lib/core/services/cloud_backup_service.dart',
       'lib/core/services/data_archive_service.dart',
-      'lib/core/services/webdav_sync_service.dart',
       'lib/ui/settings/controllers/data_management_controller.dart',
     ]);
+    // 网盘备份（WebDAV / S3 / 各网盘）共用一个恢复入口。
     expect(await callersOf('restoreFromLocalBackup('), <String>[
-      'lib/core/services/webdav_sync_service.dart',
-      'lib/ui/settings/pages/webdav_sync_page.dart',
+      'lib/core/services/cloud_backup_service.dart',
+      'lib/ui/settings/controllers/cloud_backup_controller.dart',
     ]);
     // 其他日记应用的导出经转换后同样走合并导入（首项是构造函数自身）。
     expect(await callersOf('BackupMerge('), <String>[
@@ -41,7 +42,7 @@ void main() {
     for (final path in <String>[
       'lib/ui/settings/controllers/data_management_controller.dart',
       'lib/ui/settings/controllers/journal_import_controller.dart',
-      'lib/ui/settings/pages/webdav_sync_page.dart',
+      'lib/ui/settings/controllers/cloud_backup_controller.dart',
     ]) {
       final source = await File(path).readAsString();
       expect(source, contains('chooseBackupImportMode('), reason: path);

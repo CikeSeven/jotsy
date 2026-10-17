@@ -53,7 +53,7 @@ class SettingsService {
     '🤩',
   ];
   SettingsService._({
-    required SharedPreferences prefs,
+    required this._prefs,
     required ThemeMode mode,
     required Color themeSeedColor,
     required HomeTabSwitchCurveType homeTabSwitchCurveType,
@@ -71,8 +71,7 @@ class SettingsService {
     required String? calendarDisplayOptionsRaw,
     required String? diaryCardStyleRaw,
     required String? diaryPreviewStyleRaw,
-  }) : _prefs = prefs,
-       themeModeNotifier = ValueNotifier<ThemeMode>(mode),
+  }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
          homeTabSwitchCurveType,

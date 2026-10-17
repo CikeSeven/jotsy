@@ -1,0 +1,34 @@
+# 依赖更新 PR 同样经过 CI 门禁（含 Android release 构建）；提交信息前缀符合
+# AGENTS.md §9 的 Conventional Commit，能通过 CI 的提交信息检查。
+version: 2
+updates:
+  # 工作流与 .github/actions 下的复合 action 都按 commit SHA 固定版本，由这里统一升级。
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+      include: scope
+
+  # 只合并提 minor / patch 更新，每月一个 PR；主版本升级常伴随 API 变化，
+  # 需要人工评估后手动升级。
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+    groups:
+      pub-minor-and-patch:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: build
+      include: scope

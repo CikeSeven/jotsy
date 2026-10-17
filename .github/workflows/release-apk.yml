@@ -6,40 +6,76 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+# 同一个 tag 的发布不并行，也不互相取消：上传到 Release 的文件只能来自一次完整构建。
+concurrency:
+  group: release-apk-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  # 发布 tag 必须与 pubspec.yaml 的版本一致：否则“关于”页显示的版本与 Release 对
+  # 不上，versionCode 没递增时用户还无法覆盖升级。tag 可省略构建号（v0.6.0 对应
+  # 0.6.0+17）。单独成 job，版本不符时立即失败，不必等门禁跑完。
+  check-version:
+    name: Check tag matches pubspec version
+    if: github.event_name == 'release'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Compare release tag with pubspec.yaml
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | tr -d "\"'[:space:]")"
+          if [[ -z "$version" ]]; then
+            echo "::error file=pubspec.yaml::Cannot read the version from pubspec.yaml"
+            exit 1
+          fi
+          if [[ "$TAG" != "v${version}" && "$TAG" != "v${version%%+*}" ]]; then
+            echo "::error file=pubspec.yaml::Release tag $TAG does not match pubspec.yaml version $version (expected v${version%%+*} or v${version})"
+            exit 1
+          fi
+          echo "Release $TAG builds version $version"
+
+  # 与 PR / main 相同的门禁（格式、analyze、生成代码、测试、工作流 lint）。签名 APK
+  # 由下面的 job 自己构建，所以跳过 CI 里那次一次性签名的构建。
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+    with:
+      skip-android-build: true
+    permissions:
+      contents: read
+
   build-release-apk:
     name: Build signed split release APKs
+    needs: [check-version, ci]
+    # check-version 只在 release 事件运行；手动触发时它被跳过，不应连带跳过构建。
+    if: >-
+      ${{ !cancelled() && needs.ci.result == 'success' &&
+      (needs.check-version.result == 'success' || needs.check-version.result == 'skipped') }}
     # Pin the image instead of `ubuntu-latest`: the label migrates to Ubuntu 26 on
-    # 2026-10-19 while this workflow is pinned to Flutter 3.47.5, so an unplanned
+    # 2026-10-19 while Flutter is pinned in .github/actions/setup-flutter, so an unplanned
     # image jump could break signed release builds mid-window. Move deliberately.
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    # 只有这个 job 需要写权限（上传 Release 附件）。
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '17'
-          cache: gradle
-
+      # Flutter 版本与 CI 同源，定义在 .github/actions/setup-flutter。
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: ./.github/actions/setup-flutter
         with:
-          channel: stable
-          flutter-version: '3.47.5'
-          cache: true
-
-      - name: Show Flutter version
-        run: flutter --version
-
-      - name: Install dependencies
-        run: flutter pub get
+          java: 'true'
 
       - name: Restore Android release signing files
         env:
@@ -226,19 +262,26 @@ jobs:
           cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release-artifacts/jotsy-${safe_ref}-armeabi-v7a.apk"
           cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release-artifacts/jotsy-${safe_ref}-arm64-v8a.apk"
           cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release-artifacts/jotsy-${safe_ref}-x86_64.apk"
+          # 校验和随包一起发布，下载后可用 `sha256sum -c SHA256SUMS.txt` 核对完整性。
+          (cd release-artifacts && sha256sum -- *.apk > SHA256SUMS.txt)
+          cat release-artifacts/SHA256SUMS.txt
           echo "artifact_name=release-apks-${safe_ref}" >> "$GITHUB_OUTPUT"
 
       - name: Upload workflow artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ steps.artifact.outputs.artifact_name }}
-          path: release-artifacts/*.apk
+          path: |
+            release-artifacts/*.apk
+            release-artifacts/SHA256SUMS.txt
           if-no-files-found: error
 
       - name: Upload APK to GitHub Release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
-          files: release-artifacts/*.apk
+          files: |
+            release-artifacts/*.apk
+            release-artifacts/SHA256SUMS.txt
           fail_on_unmatched_files: true
           overwrite_files: true

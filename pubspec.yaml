@@ -25,7 +25,6 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   shared_preferences: ^2.5.4
-  json_annotation: ^4.11.0
   intl: ^0.20.2
   flutter_staggered_grid_view: ^0.7.0
   flutter_quill: ^11.6.0
@@ -78,7 +77,6 @@ dev_dependencies:
 
   flutter_lints: ^5.0.0
   build_runner: ^2.12.2
-  json_serializable: ^6.13.0
   drift_dev: ^2.32.0
   flutter_launcher_icons: ^0.14.4
   # 模拟备份恢复时偏好写入返回 false 或异常，验证跨数据库/媒体回滚。

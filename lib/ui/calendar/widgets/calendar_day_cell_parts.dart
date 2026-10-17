@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../widgets/expressive_image_frame.dart';
+import '../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../widgets/long_image/long_image_policy.dart';
 import '../models/calendar_display_options.dart';
 import '../viewmodels/calendar_day_summary.dart';
 
@@ -279,8 +280,8 @@ class CalendarCellBadgeBackdrop extends StatelessWidget {
   }
 }
 
-/// 日期格照片：按格子实际像素解码，只限制宽度以免非方形原图被压扁
-/// （与时间线缩略图的策略一致）；首次解码淡入。
+/// 日期格照片：按格子实际像素宽度保持比例解码（与时间线缩略图的策略一致），
+/// 长图顶部对齐；首次解码淡入。
 class CalendarCellImage extends StatelessWidget {
   const CalendarCellImage({super.key, required this.source});
 
@@ -298,23 +299,13 @@ class CalendarCellImage extends StatelessWidget {
             uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
         Widget error(BuildContext _, Object __, StackTrace? ___) =>
             const SizedBox.shrink();
-        return isRemote
-            ? Image.network(
-                source,
-                fit: BoxFit.cover,
-                cacheWidth: cacheWidth,
-                filterQuality: FilterQuality.low,
-                frameBuilder: expressiveImageFrameBuilder,
-                errorBuilder: error,
-              )
-            : Image.file(
-                File(source),
-                fit: BoxFit.cover,
-                cacheWidth: cacheWidth,
-                filterQuality: FilterQuality.low,
-                frameBuilder: expressiveImageFrameBuilder,
-                errorBuilder: error,
-              );
+        return CoverCroppedImage(
+          image: boundedImageProvider(
+            isRemote ? NetworkImage(source) : FileImage(File(source)),
+            width: cacheWidth,
+          ),
+          errorBuilder: error,
+        );
       },
     );
   }

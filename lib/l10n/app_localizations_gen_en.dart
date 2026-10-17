@@ -5306,4 +5306,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryDayPhotosCoverSet =>
       'Set as cover. You can see or change it on the publish page.';
+
+  @override
+  String get diaryLongImageBadge => 'Long image';
 }

@@ -3,6 +3,8 @@ import 'dart:ui' as ui show Image;
 import 'package:flutter/material.dart';
 
 import '../../../widgets/image_viewer_hero.dart';
+import '../../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../../widgets/long_image/long_image_policy.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
 import '../../viewmodels/diary_preview_resolved_style.dart';
 import '../../viewmodels/diary_text_appearance.dart';
@@ -101,19 +103,23 @@ class _StaticCoverImage extends StatelessWidget {
   Widget build(BuildContext context) {
     // 按头图框高度与设备像素比换算解码上限，避免把原图整张解码进内存
     // （多图日记内存峰值会明显升高）。
+    // 长图与在线头图一样顶部对齐，长图截到的画面与屏幕上一致。
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    return Image(
-      image: ResizeImage.resizeIfNeeded(
-        null,
-        (height * dpr).round(),
-        diaryImageProvider(source),
+    final provider = boundedImageProvider(
+      diaryImageProvider(source),
+      height: (height * dpr).round(),
+    );
+    return LongImageCoverAlignment(
+      image: provider,
+      builder: (BuildContext context, AlignmentGeometry alignment) => Image(
+        image: provider,
+        fit: fill ? BoxFit.cover : BoxFit.contain,
+        alignment: alignment,
+        width: fill ? double.infinity : null,
+        height: fill ? double.infinity : null,
+        filterQuality: FilterQuality.low,
+        errorBuilder: (_, _, _) => const SizedBox.shrink(),
       ),
-      fit: fill ? BoxFit.cover : BoxFit.contain,
-      alignment: Alignment.center,
-      width: fill ? double.infinity : null,
-      height: fill ? double.infinity : null,
-      filterQuality: FilterQuality.low,
-      errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );
   }
 }

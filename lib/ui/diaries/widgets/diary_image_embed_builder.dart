@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
@@ -6,8 +9,11 @@ import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart';
 
 /// 正文图片按独立块渲染，圆角、微边框与上下留白和视频/附件卡片保持同一节奏。
 ///
@@ -19,7 +25,8 @@ import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 ///   来源，点按瞬间抓取画面并交给回调，看图页从图片原位展开；
 /// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]；比列宽窄的
 ///   图片（缩小过或原图就小）靠行首对齐，所在行设了居中/居右时从之，见
-///   [diaryImageEmbedAlignment]。
+///   [diaryImageEmbedAlignment]；
+/// - 长图（高 ≥ 宽 × 3）折叠显示，见 [DiaryLongImageFold]。
 class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
   DiaryImageEmbedBuilder({required super.config, this.onImageOpen});
 
@@ -71,6 +78,11 @@ class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
 
 /// 正文图片本体。provider 按来源缓存在 State 中：编辑器每次改动都会重建
 /// 文本行，若每次构建新 provider，base64 图片会反复解码并闪烁。
+///
+/// 先经 [LongImageSourceBuilder] 读出原图尺寸（只读文件头）再决定怎么显示：
+/// 长图折叠（[DiaryLongImageFold]），其余按显示宽度保持比例解码
+/// （[boundedImageProvider]）——不再把几千像素的原图整张解码，超过纹理上限的
+/// 一边也不会被引擎单独压扁。尺寸未读出前不占位，与原先图片解码前一样。
 class DiaryEmbeddedImage extends StatefulWidget {
   const DiaryEmbeddedImage({
     super.key,
@@ -100,8 +112,45 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
     }
   }
 
+  /// 分片路径到 provider；整张退路的“分片”就是来源本身，复用缓存的 provider。
+  ImageProvider _providerOf(String path) =>
+      path == widget.source ? _provider : FileImage(File(path));
+
+  /// 解码宽度（物理像素）：正文列不会宽于屏幕，缩放菜单的宽度上限更窄时取它。
+  int _decodeWidth(BuildContext context) {
+    final width = math.min(
+      MediaQuery.sizeOf(context).width,
+      widget.bounds.maxWidth,
+    );
+    return (width * MediaQuery.devicePixelRatioOf(context)).ceil();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final decodeWidth = _decodeWidth(context);
+    return LongImageSourceBuilder(
+      source: widget.source,
+      builder: (BuildContext context, LongImageSnapshot snapshot) {
+        if (!snapshot.sizeResolved) {
+          return const SizedBox.shrink();
+        }
+        final size = snapshot.size;
+        if (size != null && snapshot.isLong) {
+          return DiaryLongImageFold(
+            size: size,
+            tiles: snapshot.tiles,
+            decodeWidth: decodeWidth,
+            providerOf: _providerOf,
+            bounds: widget.bounds,
+            heroTag: widget.heroTag,
+          );
+        }
+        return _buildPlain(context, decodeWidth);
+      },
+    );
+  }
+
+  Widget _buildPlain(BuildContext context, int decodeWidth) {
     final colors = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(AppRadii.input);
     // 不给 Image 指定宽高：RenderImage 会在约束内按原始比例取尺寸，
@@ -111,14 +160,14 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
       child: ImageViewerHeroSource(
         tag: widget.heroTag,
         borderRadius: BorderRadius.circular(AppRadii.input),
-        child: _buildImage(colors, radius),
+        child: _buildImage(colors, radius, decodeWidth),
       ),
     );
   }
 
-  Widget _buildImage(ColorScheme colors, BorderRadius radius) {
+  Widget _buildImage(ColorScheme colors, BorderRadius radius, int decodeWidth) {
     return Image(
-      image: _provider,
+      image: boundedImageProvider(_provider, width: decodeWidth),
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
         final framed = ClipRRect(
           borderRadius: radius,

@@ -7,6 +7,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/diary_media_cleanup_service.dart';
+import 'package:node_diary/core/services/long_image_tile_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -208,5 +209,40 @@ void main() {
 
     expect(report, isNull);
     expect(await orphan.exists(), isTrue);
+  });
+
+  test('long image tiles go once their original image is gone', () async {
+    final live = await put(documents, 'diary_images/media_1/long.png');
+    await createDiary([
+      {
+        'insert': {'image': stored('diary_images/media_1/long.png')},
+      },
+    ]);
+    Future<Directory> tiles(String key, {String? source}) async {
+      final dir = Directory(
+        p.join(cache.path, LongImageTileService.directoryName, key),
+      );
+      await put(dir, '0.png');
+      if (source != null) {
+        await File(
+          p.join(dir.path, LongImageTileService.manifestName),
+        ).writeAsString(jsonEncode({'source': source, 'tiles': []}));
+      }
+      return dir;
+    }
+
+    final kept = await tiles('live', source: live.path);
+    final orphaned = await tiles(
+      'orphaned',
+      source: p.join(documents.path, 'diary_images/media_1/deleted.png'),
+    );
+    // 中断的切片暂存目录没有清单。
+    final staging = await tiles('live.tmp-1');
+
+    await service().sweep();
+
+    expect(await kept.exists(), isTrue);
+    expect(await orphaned.exists(), isFalse);
+    expect(await staging.exists(), isFalse);
   });
 }

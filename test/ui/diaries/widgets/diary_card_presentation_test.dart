@@ -7,6 +7,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 
 void main() {
   DiaryWithTags createMockDiary({
@@ -203,7 +204,9 @@ void main() {
       final resizedImage = image.image as ResizeImage;
       expect(image.fit, BoxFit.cover);
       expect(resizedImage.width, isNotNull);
-      expect(resizedImage.height, isNull);
+      // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
+      expect(resizedImage.policy, ResizeImagePolicy.fit);
+      expect(resizedImage.height, kSafeImageDecodeExtent);
     },
   );
 

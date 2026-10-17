@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -5,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'backup_constants.dart';
 import 'diary_media_references.dart';
 import 'diary_media_storage_service.dart';
+import 'long_image_tile_service.dart';
 
 /// 一次回收所需的全部输入；只含可跨 isolate 发送的值。
 class DiaryMediaSweepRequest {
@@ -33,8 +35,8 @@ class DiaryMediaSweepReport {
   final int freedBytes;
 }
 
-/// 在后台 isolate 中执行：删除未被引用且超过宽限期的托管媒体，以及过期的
-/// 选择器缓存副本，再移除因此变空的批次目录。
+/// 在后台 isolate 中执行：删除未被引用且超过宽限期的托管媒体、过期的
+/// 选择器缓存副本，以及原图已不存在的长图分片，再移除因此变空的批次目录。
 ///
 /// - 只遍历托管目录与选择器缓存目录，不跟随符号链接，托管根目录本身保留；
 /// - 修改时间在宽限期内的文件一律保留：覆盖刚导入、尚未保存的编辑会话，
@@ -60,6 +62,11 @@ DiaryMediaSweepReport sweepDiaryMediaFiles(DiaryMediaSweepRequest request) {
       isReferenced: (_) => false,
     );
   }
+  sweep.runLongImageTiles(
+    Directory(
+      p.join(request.temporaryPath, LongImageTileService.directoryName),
+    ),
+  );
   return DiaryMediaSweepReport(
     deletedFiles: sweep.deletedFiles,
     freedBytes: sweep.freedBytes,
@@ -106,6 +113,51 @@ class _Sweep {
       } on FileSystemException {
         // 并发写入或已被删除，留给下一轮。
       }
+    }
+  }
+
+  /// 长图分片目录：原图已不存在（日记图被回收或删除）的整目录删除；没有
+  /// 清单的目录是中断的切片暂存，同样在过了宽限期后删除。分片只是显示缓存，
+  /// 原图还在的目录保留（删了下次显示时也会重切）。
+  void runLongImageTiles(Directory root) {
+    if (!root.existsSync()) return;
+    final List<FileSystemEntity> entries;
+    try {
+      entries = root.listSync(followLinks: false);
+    } on FileSystemException {
+      return;
+    }
+    for (final entry in entries) {
+      if (entry is! Directory) continue;
+      try {
+        if (!_isExpired(entry.statSync())) continue;
+        final source = _tileSource(entry);
+        if (source != null && File(source).existsSync()) continue;
+        for (final file in entry.listSync(
+          recursive: true,
+          followLinks: false,
+        )) {
+          if (file is File) {
+            freedBytes += file.lengthSync();
+            deletedFiles++;
+          }
+        }
+        entry.deleteSync(recursive: true);
+      } on FileSystemException {
+        // 正在切片或已被系统清理，留给下一轮。
+      }
+    }
+  }
+
+  static String? _tileSource(Directory dir) {
+    final manifest = File(p.join(dir.path, LongImageTileService.manifestName));
+    if (!manifest.existsSync()) return null;
+    try {
+      final decoded = jsonDecode(manifest.readAsStringSync());
+      final source = decoded is Map ? decoded['source'] : null;
+      return source is String ? source : null;
+    } on FormatException {
+      return null;
     }
   }
 

@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../../widgets/expressive_image_frame.dart';
 import '../../../widgets/image_viewer_hero.dart';
+import '../../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../../widgets/long_image/long_image_policy.dart';
 import '../diary_image_source.dart';
 
 /// 卡片封面图（自动区分网络图、本地文件与内置示例资源）。
 ///
-/// 解码尺寸只限定一条边：同时给出宽高会按 ResizeImagePolicy.exact 把原图
-/// 压成卡片比例而变形，BoxFit.cover 负责绘制时裁切。
+/// 解码尺寸只按一条边定（另一边只给安全上限）：按卡片的宽高去解码会把原图
+/// 缩到卡片框里，cover 裁切后发糊，BoxFit.cover 负责绘制时裁切。
 /// - 宽度有限：按宽度解码；
 /// - 宽度为 infinity（通栏封面）：用 LayoutBuilder 取实际列宽解码，不再退化
 ///   为只限高——那样竖图只解码出约 140dp 宽，拉伸到整列后发糊；
 /// - [lowResolution]：未解封胶囊的模糊封面，按极小尺寸解码，配合模糊既省
 ///   内存又无需高清细节。
+///
+/// 解码经 [boundedImageProvider] 保持比例：若只限一边，另一边按比例推出，
+/// 长截图的高度仍可能超过纹理上限而被压扁，所以另一边给安全上限。长图（高 ≥
+/// 宽 × 3）裁切时顶部对齐，露出开头而不是中段（[CoverCroppedImage]）。
 ///
 /// `asset:` 前缀只用于设置页预览的内置示例图，不会出现在用户数据里。
 class DiaryCardCoverImage extends StatelessWidget {
@@ -79,15 +84,14 @@ class DiaryCardCoverImage extends StatelessWidget {
 
     // 封面解码完成才出画面：用统一淡入替代“啪”地冒出，缓存命中（滚回已显示过
     // 的卡片）则直接显示，不会重复闪烁。
-    final imageWidget = Image(
-      image: ResizeImage.resizeIfNeeded(
-        cacheWidth,
-        cacheHeight,
-        diaryImageProvider(source),
-      ),
-      fit: BoxFit.cover,
+    final provider = boundedImageProvider(
+      diaryImageProvider(source),
+      width: cacheWidth,
+      height: cacheHeight,
+    );
+    final imageWidget = CoverCroppedImage(
+      image: provider,
       filterQuality: filterQuality,
-      frameBuilder: expressiveImageFrameBuilder,
       errorBuilder: errorBuilder,
     );
 

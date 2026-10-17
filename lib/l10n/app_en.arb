@@ -6834,5 +6834,9 @@
   "diaryDayPhotosCoverSet": "Set as cover. You can see or change it on the publish page.",
   "@diaryDayPhotosCoverSet": {
     "description": "Photos from this day: hint after a photo becomes the cover."
+  },
+  "diaryLongImageBadge": "Long image",
+  "@diaryLongImageBadge": {
+    "description": "Badge in the corner of a folded long image (much taller than wide) in the diary body."
   }
 }

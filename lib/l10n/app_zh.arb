@@ -6834,5 +6834,9 @@
   "diaryDayPhotosCoverSet": "已设为封面，发布页里可以查看或更换",
   "@diaryDayPhotosCoverSet": {
     "description": "这天拍的照片：设为封面成功的提示。"
+  },
+  "diaryLongImageBadge": "长图",
+  "@diaryLongImageBadge": {
+    "description": "正文里折叠显示的长图（高远大于宽）右下角的角标。"
   }
 }

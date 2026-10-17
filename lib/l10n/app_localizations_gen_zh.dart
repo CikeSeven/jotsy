@@ -4832,4 +4832,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryDayPhotosCoverSet => '已设为封面，发布页里可以查看或更换';
+
+  @override
+  String get diaryLongImageBadge => '长图';
 }

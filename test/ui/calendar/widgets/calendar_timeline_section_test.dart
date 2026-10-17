@@ -8,6 +8,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_timeline_section.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 
 /// 写一张 2:1 的真实 PNG 到临时目录，作为日记封面。
 Future<String> _writeCover() async {
@@ -106,11 +107,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // 同时限定宽高会按 ResizeImagePolicy.exact 把非方形图压成正方形。
+      // 按格子宽高 exact 解码会把非方形图压成正方形，因此只按宽度定尺寸。
       final image = tester.widget<Image>(find.byType(Image));
       final resized = image.image as ResizeImage;
       expect(resized.width, isNotNull);
-      expect(resized.height, isNull);
+      // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
+      expect(resized.policy, ResizeImagePolicy.fit);
+      expect(resized.height, kSafeImageDecodeExtent);
     },
   );
   testWidgets('tapping an entry hands the thumbnail frame to the preview', (

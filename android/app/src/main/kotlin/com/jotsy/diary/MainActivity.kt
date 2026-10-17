@@ -34,6 +34,7 @@ class MainActivity : FlutterFragmentActivity() {
   private var pendingBackupSourcePath: String? = null
   private var galleryVideoPicker: DiaryGalleryVideoPicker? = null
   private var shareLauncher: DiaryShareLauncher? = null
+  private var longImageSlicer: DiaryLongImageSlicer? = null
   // Must match launchBrandMarkEntrypointArg in lib/app/launch_brand_mark.dart.
   private val launchBrandMarkArg = "--launch-brand-mark"
 
@@ -192,6 +193,8 @@ class MainActivity : FlutterFragmentActivity() {
     )
     shareLauncher?.dispose()
     shareLauncher = DiaryShareLauncher(this, flutterEngine.dartExecutor.binaryMessenger)
+    longImageSlicer?.dispose()
+    longImageSlicer = DiaryLongImageSlicer(this, flutterEngine.dartExecutor.binaryMessenger)
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, configChannelName)
       .setMethodCallHandler { call, result ->
         when (call.method) {
@@ -350,6 +353,8 @@ class MainActivity : FlutterFragmentActivity() {
     galleryVideoPicker = null
     shareLauncher?.dispose()
     shareLauncher = null
+    longImageSlicer?.dispose()
+    longImageSlicer = null
     pendingBackupSaveResult?.success(null)
     clearPendingBackupSave()
     setPredictiveBackProgressEnabled(false)

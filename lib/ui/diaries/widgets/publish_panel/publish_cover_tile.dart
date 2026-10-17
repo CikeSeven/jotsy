@@ -7,8 +7,9 @@ import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
-import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_cover_alignment.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 import 'publish_panel_tile.dart';
@@ -112,15 +113,15 @@ class _CoverThumbnail extends StatelessWidget {
     // 宽度按 2 倍取，裁成 cover 时横图高度也基本够用，不至于明显发虚。
     final decodeWidth = (width * 2 * MediaQuery.devicePixelRatioOf(context))
         .round();
+    final provider = boundedImageProvider(source, width: decodeWidth);
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
         width: width,
         height: height,
-        child: Image(
-          image: ResizeImage(source, width: decodeWidth, allowUpscaling: false),
-          fit: BoxFit.cover,
-          frameBuilder: expressiveImageFrameBuilder,
+        child: CoverCroppedImage(
+          image: provider,
+          filterQuality: FilterQuality.medium,
           errorBuilder: (context, _, _) => ColoredBox(
             color: colorScheme.surfaceContainer,
             child: Center(

@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../widgets/long_image/long_image_policy.dart';
 
 /// 日历里日记条目的小封面缩略图（时间线、那年今日共用）。
 ///
@@ -30,31 +31,21 @@ class CalendarEntryThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    // 只限制解码宽度：同时指定 cacheWidth/cacheHeight 会按默认的
-    // ResizeImagePolicy.exact 把非方形原图压成正方形，BoxFit.cover 再裁切时
-    // 画面已被拉伸变形。与探索页 ExploreMediaThumb 的策略保持一致。
+    // 只按宽度定解码尺寸：同时按格子宽高解码会把非方形原图缩进方框，
+    // BoxFit.cover 再裁切时发糊；高度只给安全上限，长图不会被压扁。长图
+    // 顶部对齐。与探索页 ExploreMediaThumb 的策略保持一致。
     final cacheWidth = (size * dpr).round();
     final uri = Uri.tryParse(source);
     final isRemote =
         uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
 
-    final image = isRemote
-        ? Image.network(
-            source,
-            fit: BoxFit.cover,
-            cacheWidth: cacheWidth,
-            filterQuality: FilterQuality.low,
-            frameBuilder: expressiveImageFrameBuilder,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          )
-        : Image.file(
-            File(source),
-            fit: BoxFit.cover,
-            cacheWidth: cacheWidth,
-            filterQuality: FilterQuality.low,
-            frameBuilder: expressiveImageFrameBuilder,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-          );
+    final image = CoverCroppedImage(
+      image: boundedImageProvider(
+        isRemote ? NetworkImage(source) : FileImage(File(source)),
+        width: cacheWidth,
+      ),
+      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    );
 
     final borderRadius = BorderRadius.all(Radius.circular(radius));
     return Builder(

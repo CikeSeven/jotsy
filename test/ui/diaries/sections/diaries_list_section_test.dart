@@ -5,6 +5,7 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 
 const _threeTags = <Tag>[
   Tag(id: 1, name: 'Tag 1', color: 0xFF336699),
@@ -69,7 +70,9 @@ void main() {
     final resizedImage = image.image as ResizeImage;
     expect(image.fit, BoxFit.cover);
     expect(resizedImage.width, isNotNull);
-    expect(resizedImage.height, isNull);
+    // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
+    expect(resizedImage.policy, ResizeImagePolicy.fit);
+    expect(resizedImage.height, kSafeImageDecodeExtent);
   });
 
   testWidgets('waterfall cover decodes at the column width', (tester) async {
@@ -89,7 +92,9 @@ void main() {
     // 只限高时竖图只解码出约 140dp 宽、被拉伸到整列宽而发糊；按列宽解码，
     // 高度交给 BoxFit.cover 裁切（不同时限定宽高，避免按容器比例拉伸）。
     expect(resizedImage.width, (imageWidth * dpr).round());
-    expect(resizedImage.height, isNull);
+    // 只按宽度定解码尺寸，高度只给安全上限，fit 策略保持原图比例。
+    expect(resizedImage.policy, ResizeImagePolicy.fit);
+    expect(resizedImage.height, kSafeImageDecodeExtent);
   });
 
   testWidgets('waterfall layout hides tags when the configured limit is zero', (

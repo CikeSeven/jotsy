@@ -5,10 +5,9 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
-import 'package:node_diary/ui/widgets/double_tap_zoom_viewer.dart';
 import 'package:node_diary/ui/widgets/image_viewer_export_controller.dart';
-import 'package:node_diary/ui/widgets/image_viewer_full_image.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/image_viewer_image_page.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page_counter.dart';
 import 'package:node_diary/ui/widgets/swipe_dismiss_viewer.dart';
 
@@ -60,7 +59,8 @@ Future<void> openImageViewer(
 /// 职责边界：
 /// - 负责“全屏浏览 + 左右切图 + 双击/捏合缩放 + 下拉关闭 + 索引展示 + 保存到
 ///   相册 / 分享当前图片”；当前页放大时禁用左右翻页与下拉关闭，拖动只用于平移
-///   查看细节；
+///   查看细节；长图按屏宽从顶部开始竖向滚动（见 [ImageViewerImagePage]），
+///   该页的竖向拖动留给滚动，不响应下拉关闭；
 /// - 初始页可携带共享元素（[initialHero]）：从缩略图/正文图连续展开，返回时
 ///   飞回原处；翻到其他页后返回只做淡出；
 /// - 不承担数据加载、去重或业务归属判断，图片列表由调用方透传；
@@ -96,6 +96,9 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
   /// 当前页是否处于放大态；放大时 PageView 不再响应水平拖动。
   bool _pageZoomed = false;
+
+  /// 处于长图模式的页：竖向拖动用于滚动，停在这些页时关闭下拉关闭。
+  final Set<int> _tallPages = <int>{};
 
   @override
   void initState() {
@@ -185,7 +188,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     // 背景、顶栏随下拉距离淡出（路由不透明度为 false，能看到下层页面）；每页
     // 不再各自铺底色，否则底色会跟着图片一起被拖动。
     return SwipeDismissViewer(
-      enabled: hasImages && !_pageZoomed,
+      enabled: hasImages && !_pageZoomed && !_tallPages.contains(_activeIndex),
       onDismiss: () => Navigator.of(context).pop(),
       child: pages,
       builder: (BuildContext context, double chromeOpacity, Widget content) {
@@ -281,35 +284,25 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     );
   }
 
-  Widget _buildImagePage(int index) {
-    final source = widget.items[index].source;
-    final hero = index == _initialPage ? widget.initialHero : null;
-    if (hero == null) {
-      return DoubleTapZoomViewer(
-        onZoomChanged: _handleZoomChanged,
-        child: Center(
-          child: ImageViewerFullImage(
-            source: source,
-            fit: BoxFit.contain,
-            placeholderBehind: false,
-          ),
-        ),
-      );
+  void _handleTallChanged(int index, bool tall) {
+    if (!mounted || _tallPages.contains(index) == tall) {
+      return;
     }
-    // 放大后返回不做飞行（放大的画面飞回缩略图会先猛地缩一大截），只淡出。
-    return DoubleTapZoomViewer(
+    setState(() {
+      if (tall) {
+        _tallPages.add(index);
+      } else {
+        _tallPages.remove(index);
+      }
+    });
+  }
+
+  Widget _buildImagePage(int index) {
+    return ImageViewerImagePage(
+      source: widget.items[index].source,
+      hero: index == _initialPage ? widget.initialHero : null,
       onZoomChanged: _handleZoomChanged,
-      child: HeroMode(
-        enabled: !_pageZoomed,
-        child: ImageViewerHeroTarget(
-          hero: hero,
-          fullImage: ImageViewerFullImage(
-            source: source,
-            fit: BoxFit.cover,
-            placeholderBehind: true,
-          ),
-        ),
-      ),
+      onTallChanged: (tall) => _handleTallChanged(index, tall),
     );
   }
 }

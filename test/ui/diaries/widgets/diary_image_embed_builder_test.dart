@@ -1,13 +1,19 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderImage;
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/core/services/image_dimensions.dart';
+import 'package:node_diary/core/services/long_image_tile_service.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:path/path.dart' as p;
 
 Future<String> _pngDataUri(int width, int height) async {
   final recorder = ui.PictureRecorder();
@@ -19,6 +25,41 @@ Future<String> _pngDataUri(int width, int height) async {
   final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
   image.dispose();
   return 'data:image/png;base64,${base64Encode(bytes!.buffer.asUint8List())}';
+}
+
+Future<String> _writePng(
+  Directory dir,
+  String name,
+  int width,
+  int height,
+) async {
+  final recorder = ui.PictureRecorder();
+  Canvas(recorder).drawRect(
+    Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()),
+    Paint()..color = const Color(0xFF3366CC),
+  );
+  final image = await recorder.endRecording().toImage(width, height);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  final file = File(p.join(dir.path, name));
+  await file.writeAsBytes(bytes!.buffer.asUint8List());
+  return file.path;
+}
+
+/// 固定返回给定分片的切片服务（不走原生通道）。
+class _FixedTiles extends LongImageTileService {
+  _FixedTiles(this.tiles) : super(supported: true);
+
+  final LongImageTiles tiles;
+
+  @override
+  bool isResolved(String path) => true;
+
+  @override
+  LongImageTiles? peek(String path) => tiles;
+
+  @override
+  Future<LongImageTiles?> tilesFor(String path) async => tiles;
 }
 
 Future<void> _pumpEditor(
@@ -46,10 +87,30 @@ Future<void> _pumpEditor(
       ),
     ),
   );
-  // 图片解码/文件读取是真实异步，需离开 FakeAsync 等待完成后再推进帧。
-  await tester.runAsync(
-    () => Future<void>.delayed(const Duration(milliseconds: 200)),
-  );
+  await _settle(tester);
+}
+
+/// 先读尺寸（文件头）再解码，两步都是真实异步：离开 FakeAsync 等待，再推进
+/// 帧，直到正文里的图片都解码完成或出现失败占位。
+Future<void> _settle(WidgetTester tester) async {
+  for (var i = 0; i < 40; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump();
+    final images = find.descendant(
+      of: find.byType(DiaryEmbeddedImage),
+      matching: find.byType(RawImage),
+    );
+    final decoded =
+        images.evaluate().isNotEmpty &&
+        images.evaluate().every(
+          (element) => (element.renderObject! as RenderImage).image != null,
+        );
+    if (decoded || find.text('图片文件不存在或无法加载').evaluate().isNotEmpty) {
+      break;
+    }
+  }
   await tester.pumpAndSettle();
 }
 
@@ -167,6 +228,137 @@ void main() {
       tester.getCenter(image).dx,
       closeTo(tester.getCenter(find.byType(quill.QuillEditor)).dx, 0.5),
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a long image folds to a 2:3 box showing its top, with a badge', (
+    tester,
+  ) async {
+    ImageDimensions.debugReset();
+    // 300×1500：高是宽的 5 倍，按原图宽 300 显示时折叠到 300×450。
+    final source = (await tester.runAsync(() => _pngDataUri(300, 1500)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+    ImageViewerHero? hero;
+
+    await _pumpEditor(
+      tester,
+      controller,
+      onImageOpen: (_, capturedHero) => hero = capturedHero,
+    );
+
+    final fold = find.byType(DiaryLongImageFold);
+    expect(fold, findsOneWidget);
+    expect(tester.getSize(fold), const Size(300, 450));
+    expect(find.text('长图'), findsOneWidget);
+    // 拼回原图比例后顶部对齐：图片高 1500，被折叠盒子裁掉下面的部分。
+    final image = find.descendant(of: fold, matching: find.byType(Image));
+    expect(tester.getTopLeft(image), tester.getTopLeft(fold));
+    expect(tester.getSize(image), const Size(300, 1500));
+    // 靠行首。
+    expect(
+      tester.getTopLeft(fold).dx,
+      closeTo(tester.getTopLeft(find.byType(quill.QuillEditor)).dx, 0.5),
+    );
+
+    await tester.tap(fold);
+    await tester.pump();
+    // 看图页的飞入画面来自折叠盒子里已解码的图，仍是原图比例。
+    expect(hero, isNotNull);
+    expect(hero!.aspectRatio, closeTo(0.2, 1e-3));
+    hero!.dispose();
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a wide resize bound still folds a long image by its width', (
+    tester,
+  ) async {
+    final source = (await tester.runAsync(() => _pngDataUri(300, 1500)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+          'attributes': {'style': 'width: 120.0; height: 900.0; '},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+
+    await _pumpEditor(tester, controller);
+
+    // 缩放菜单把宽度限到 120：折叠盒子跟着变成 120×180。
+    expect(
+      tester.getSize(find.byType(DiaryLongImageFold)),
+      const Size(120, 180),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a sliced long image only builds the tiles inside the fold', (
+    tester,
+  ) async {
+    ImageDimensions.debugReset();
+    final original = LongImageTileService.instance;
+    addTearDown(() => LongImageTileService.instance = original);
+    final dir = (await tester.runAsync(
+      () => Directory.systemTemp.createTemp('jotsy_fold_tiles_'),
+    ))!;
+    addTearDown(() => tester.runAsync(() => dir.delete(recursive: true)));
+    final source = (await tester.runAsync(
+      () => _writePng(dir, 'long.png', 300, 1500),
+    ))!;
+    final tilePaths = <String>[];
+    for (var i = 0; i < 3; i++) {
+      tilePaths.add(
+        (await tester.runAsync(() => _writePng(dir, 'tile_$i.png', 300, 502)))!,
+      );
+    }
+    // 三段各 500 高（含 2 像素重叠）；折叠露出顶部 300 × 1.5 = 450 像素。
+    LongImageTileService.instance = _FixedTiles(
+      LongImageTiles(
+        width: 300,
+        height: 1500,
+        tiles: <LongImageTile>[
+          for (var i = 0; i < 3; i++)
+            LongImageTile(path: tilePaths[i], top: i * 500, height: 502),
+        ],
+      ),
+    );
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+
+    await _pumpEditor(tester, controller);
+
+    final fold = find.byType(DiaryLongImageFold);
+    expect(tester.getSize(fold), const Size(300, 450));
+    final images = find.descendant(of: fold, matching: find.byType(Image));
+    expect(images, findsOneWidget);
+    expect(
+      (tester.widget<Image>(images).image as ResizeImage).imageProvider,
+      FileImage(File(tilePaths.first)),
+    );
+    expect(tester.getTopLeft(images), tester.getTopLeft(fold));
     expect(tester.takeException(), isNull);
   });
 }

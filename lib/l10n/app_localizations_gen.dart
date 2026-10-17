@@ -8929,6 +8929,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Set as cover. You can see or change it on the publish page.'**
   String get diaryDayPhotosCoverSet;
+
+  /// Badge in the corner of a folded long image (much taller than wide) in the diary body.
+  ///
+  /// In en, this message translates to:
+  /// **'Long image'**
+  String get diaryLongImageBadge;
 }
 
 class _AppLocalizationsDelegate

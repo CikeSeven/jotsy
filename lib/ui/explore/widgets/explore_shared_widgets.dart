@@ -6,7 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../../app/theme/app_effects.dart';
-import '../../widgets/expressive_image_frame.dart';
+import '../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../widgets/long_image/long_image_policy.dart';
 
 /// 探索页通用卡片容器。
 ///
@@ -190,9 +191,9 @@ class ExploreMediaThumb extends StatelessWidget {
           constrained: constraints.maxHeight,
         );
         final dpr = MediaQuery.devicePixelRatioOf(context);
-        // 仅按缩略图容器长边给解码器一个缓存目标，避免同时指定
-        // cacheWidth/cacheHeight 把图片预缩放成容器比例，导致后续展示看起来被拉伸。
-        // 实际填充仍交给 BoxFit.cover 裁切，从而保留原图比例。
+        // 仅按缩略图容器长边给解码器一个缓存目标（另一边只给安全上限，按比例
+        // 解码，长图不会被压扁），避免按容器宽高把图片缩进容器后再 cover 裁切
+        // 发糊。实际填充仍交给 BoxFit.cover 裁切，长图顶部对齐。
         final cacheExtent = _cacheExtent(
           resolvedWidth >= resolvedHeight ? resolvedWidth : resolvedHeight,
           dpr,
@@ -202,29 +203,16 @@ class ExploreMediaThumb extends StatelessWidget {
         final uri = Uri.tryParse(source);
         final isRemote =
             uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
-        final image = isRemote
-            ? Image.network(
-                source,
-                width: width,
-                height: height,
-                fit: BoxFit.cover,
-                cacheWidth: cacheWidth,
-                cacheHeight: cacheHeight,
-                filterQuality: FilterQuality.low,
-                frameBuilder: expressiveImageFrameBuilder,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              )
-            : Image.file(
-                File(source),
-                width: width,
-                height: height,
-                fit: BoxFit.cover,
-                cacheWidth: cacheWidth,
-                cacheHeight: cacheHeight,
-                filterQuality: FilterQuality.low,
-                frameBuilder: expressiveImageFrameBuilder,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-              );
+        final image = CoverCroppedImage(
+          image: boundedImageProvider(
+            isRemote ? NetworkImage(source) : FileImage(File(source)),
+            width: cacheWidth,
+            height: cacheHeight,
+          ),
+          width: width,
+          height: height,
+          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        );
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(radius),

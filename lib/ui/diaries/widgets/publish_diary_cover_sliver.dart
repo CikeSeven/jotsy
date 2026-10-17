@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../widgets/expressive_image_frame.dart';
 import '../../widgets/image_viewer_hero.dart';
+import '../../widgets/long_image/long_image_policy.dart';
 import 'diary_image_source.dart';
 
 /// 发布页头图 Sliver。
@@ -287,18 +288,32 @@ class _CoverImageState extends State<_CoverImage> {
   Widget build(BuildContext context) {
     // 解码按可见区域等比缩小（ResizeImagePolicy.fit，小图不放大），避免把
     // 数千像素的原图整张解码进内存；fit 策略保持原图比例，不会拉伸变形。
+    // 长图铺满头部时 cover 只取顶部一段：若仍按“宽、高都不超过头部”解码，
+    // 整条长图会缩成几十像素宽再被放大，所以改为只按宽度解码并顶部对齐。
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final dpr = MediaQuery.devicePixelRatioOf(context);
         final source = diaryImageProvider(widget.cover);
-        final provider = constraints.hasBoundedWidth
-            ? ResizeImage(
+        final ratio = _aspectRatio;
+        final long =
+            widget.fillFrame &&
+            ratio != null &&
+            ratio > 0 &&
+            isLongImageSize(Size(ratio, 1));
+        final provider = !constraints.hasBoundedWidth
+            ? boundedImageProvider(source)
+            : long
+            ? boundedImageProvider(
+                source,
+                width: (constraints.maxWidth * dpr).round(),
+              )
+            : ResizeImage(
                 source,
                 width: (constraints.maxWidth * dpr).round(),
                 height: (widget.decodeHeight * dpr).round(),
                 policy: ResizeImagePolicy.fit,
-              )
-            : source;
+              );
+        final alignment = long ? Alignment.topCenter : Alignment.center;
         _listenTo(provider);
         // 加载淡入与滚动收起的渐隐各走一路：前者在 frameBuilder 里只持续一次
         // 解码完成的 180ms，之后不透明度恒为 1、不产生离屏层；后者仍直接作用在
@@ -306,6 +321,7 @@ class _CoverImageState extends State<_CoverImage> {
         final image = Image(
           image: provider,
           fit: BoxFit.cover,
+          alignment: alignment,
           width: double.infinity,
           height: double.infinity,
           opacity: AlwaysStoppedAnimation<double>(widget.opacity),
@@ -331,6 +347,7 @@ class _CoverImageState extends State<_CoverImage> {
                     RawImage(
                       image: placeholder,
                       fit: BoxFit.cover,
+                      alignment: alignment,
                       opacity: AlwaysStoppedAnimation<double>(widget.opacity),
                     ),
                     image,

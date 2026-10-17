@@ -5,7 +5,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../widgets/expressive_image_frame.dart';
+import '../../widgets/long_image/long_image_cover_alignment.dart';
+import '../../widgets/long_image/long_image_policy.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/diary_image_embed_data.dart';
 
@@ -124,16 +125,14 @@ class _ImageChoice extends StatelessWidget {
     final cacheSize = (size * MediaQuery.devicePixelRatioOf(context)).round();
     final radius = BorderRadius.circular(12);
     // 缩略图只解码到显示尺寸，选中切换时不重建图片。
-    final thumbnail = Image(
-      image: ResizeImage(
+    final thumbnail = CoverCroppedImage(
+      image: boundedImageProvider(
         resolveDiaryImageProvider(source),
         width: cacheSize,
-        policy: ResizeImagePolicy.fit,
       ),
       width: size,
       height: size,
-      fit: BoxFit.cover,
-      frameBuilder: expressiveImageFrameBuilder,
+      filterQuality: FilterQuality.medium,
       errorBuilder: (_, _, _) => ColoredBox(
         color: colorScheme.surfaceContainerHighest,
         child: Center(

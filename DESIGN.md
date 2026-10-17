@@ -311,6 +311,16 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
 - **解码尺寸**：展示型图片一律保持比例缩小解码（`boundedImageProvider`，另一边给 8192 的安全上限）：正文按屏幕宽度（不随缩放上限变化：拖动滑条时上限逐帧变，跟着换解码尺寸会让图片一直空白）、看图页普通图按长边 4096、缩略图按格子尺寸。原因：Impeller 把超过 GPU 纹理上限的一边单独压缩，只给 `cacheWidth` 的长截图会被压扁；整张原图解码也会把一张 5000 万像素的照片变成两百多 MB。
 - **长图分片**：Android 上长图经原生 `BitmapRegionDecoder` 切成 2048 像素高、相邻重叠 2 像素的整宽分片（`LongImageTileService`，缓存在 `cacheDir/diary_image_tiles/`，不进备份，原图不动），显示时只解码可见范围内的分片；带 EXIF 旋转的图片、`data:` 图片与其他平台退回整张按比例缩小解码（超长时会略糊但不变形）。
 
+### 5.13 软件更新（`AppUpdatePage` / `showAppUpdateAvailableSheet`）
+- **入口**：设置 → 关于 → 检查更新。有新版本时设置页“关于”入口与该行右侧显示 `primary` 底 + `onPrimary` 字的“新版本”小胶囊（`AppUpdateBadge`）；该行副标题随状态显示“vX 可更新 / 正在下载 N% / 新版本已下载，点按安装 / 已是最新版本”。
+- **页面结构**：标准顶栏（`angleLeft` 18）；内容自上而下为状态卡片 → 更新内容 → 更新设置，底部固定操作区（`surface` 底，随状态 `fast` 交叉淡入、高度 `medium` 平滑变化）。
+  - **状态卡片**（`SettingsCardGroup` 表面，20dp 内边距）：56dp 应用图标 + “Jotsy” + 当前版本；下方状态区按阶段切换：检查中（`ExpressiveLoadingIndicator` + 说明）/ 已是最新（`primary` 色 `circleCheck` 圆底图标 + 上次检查时间）/ 新版本（“新版本”胶囊 + `headlineSmall` w800 “发现新版本 vX” + 发布日期 · 大小 · ABI）/ 检查失败（`error` 色图标 + 原因与下一步）。
+  - **更新内容**：Markdown 子集渲染（`ReleaseNotesView`）：二级以上标题 `titleMedium` w700、其余 `titleSmall`；正文 `bodyMedium` 行高 1.55；无序列表 6dp 圆点（一级 `primary`、嵌套 `outline`），有序列表编号 `primary` 等宽数字；链接 `primary` 下划线可点；代码块 `surfaceContainerHighest` 12dp 圆角。右下角“在 GitHub 查看”。已是最新时标题为“本版本更新内容”。
+  - **更新设置**：“自动检查更新”开关与“下载线路”（打开线路面板：自动 / 各镜像 / GitHub 直连 / 自定义镜像，`ExpressiveChoiceTile` 单选，自定义时展开输入框并校验）。
+- **底部操作区**：有新版本时为填充按钮“下载并安装（大小）”（取消过则“继续下载（已完成 N%）”）+ 灰色文本按钮“跳过此版本”；下载中为“已下载 / 总大小”（`titleSmall` 等宽数字）+ 速度、进度条、“经 线路”与描边按钮“取消下载”；待安装为“安装”；缺少安装权限时为 `secondaryContainer` 说明块 + “去设置”；下载 / 安装失败为 `errorContainer` 说明块 + “重试” / “前往下载页面”。
+- **进度条**（`AppUpdateProgressBar`）：8dp 高圆角轨道（`secondaryContainer`），指示（`primary`）与轨道之间 4dp 间隙，末端停止点；进度变化 `medium` + `effects` 补间，减少动画时直接到位。不用 `LinearProgressIndicator`：其 2024 规格依赖已弃用的 `year2023` 开关。总长未知时改用 `ExpressiveLoadingIndicator`。
+- **启动提示**：冷启动发现未跳过的新版本、且首页在栈顶时弹出底部面板（最高 82% 屏高）：“新版本”胶囊、版本标题、当前版本 · 发布日期 · 大小，更新说明在面板内滚动；底部整宽填充按钮“立即更新”，下方并排灰色文本按钮“跳过此版本 / 以后再说”；点遮罩等同“以后再说”。
+
 ---
 
 ## 6. 无障碍与跨端屏幕自适应

@@ -16,7 +16,7 @@
 │  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
 │  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops 拆分）
-│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入、分享到其他应用、按日期读取相册照片、图片尺寸与长图分片等）
+│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入、分享到其他应用、按日期读取相册照片、图片尺寸与长图分片、应用内更新（检查 / 镜像线路 / 下载校验 / 安装）等）
 │  ├─ ui/
 │  │  ├─ diaries/                    # 日记主业务模块（已分层）
 │  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
@@ -33,7 +33,7 @@
 ├─ assets/                           # 静态资源
 ├─ test/                             # 测试
 ├─ integration_test/                 # 实机集成测试（隔离设置与数据库，验证录音/播放）
-├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart）
+├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart；write_update_manifest.dart：发布时生成应用内更新清单，逻辑在 update_manifest.dart）
 ├─ .github/                          # CI 门禁 workflows/ci.yml、发布 workflows/release-apk.yml、共用的 actions/setup-flutter（唯一定义 Flutter 版本）、Dependabot
 ├─ android/ ios/ web/ windows/ ...  # 各平台工程
 └─ AGENTS.md                         # 协作规范
@@ -106,6 +106,7 @@
 - 必须：补写日记的“这天拍的照片”只经 `DayPhotoLibrary`（`dayPhotoLibraryProvider`；photo_manager 实现在 Android 按 `datetaken` 拍摄时间筛选，缺失时才退回 `date_added`）读取相册，状态经 `DiaryDayPhotosController`，界面为编辑页标题下的 `DiaryDayPhotosStrip` 与 `showDiaryDayPhotosSheet`；只在新建模式且发表日期早于今天时出现，开关为编辑器设置 `dayPhotoSuggestionsEnabled`（本机偏好，不随备份导出）。进入页面只查询授权状态，系统权限框只能由用户点“允许访问”触发；只申请图片读取权限（Android 13+ `READ_MEDIA_IMAGES` 与 14+ 部分授权，不申请视频、音频与照片位置）。插入复用 `DiaryMediaImportController.pickAndInsert(picker:)` 复制到日记私有目录，禁止删除、移动或改写相册原文件；勾选与已插入状态只在本次编辑页内存中，不落盘。设为封面只经 `DiaryMetaActions.setCoverFromFile` 拷贝到封面私有目录并写进新建草稿（与发布页选封面同一条链路），禁止直接引用相册原图路径作为封面。视觉规范见 DESIGN.md §5.11。
 - 必须：展示型图片解码一律经 `boundedImageProvider` 保持比例缩小（禁止新增只给一边的 `cacheWidth`/`cacheHeight`、`Image.file(cacheWidth:)` 或 `ResizeImage.resizeIfNeeded`：另一边按比例推出后仍可能超过 GPU 纹理上限，被 Impeller 单独压扁）；长图（高 ≥ 宽 × 3）只经 `isLongImageSize` 判定，解码前的尺寸只经 `ImageDimensions` 读取（只读文件头）。正文图片经 `DiaryEmbeddedImage`：比列宽窄时靠行首（段落带对齐属性时从之），长图折叠为 `DiaryLongImageFold`（预览页阅读行为 `longImageMode` 为完整显示时用 `DiaryLongImageFull`，分片按滚动可见范围构建）；点按菜单只经 `showDiaryImageOptions`（“查看”经 `openImageViewer`），禁止回退到上游 `ImageOptionsMenu`；看图页每页经 `ImageViewerImagePage`，长图按屏宽竖向滚动（`DoubleTapZoomViewer.tall`）并关闭该页的下拉关闭；cover 裁切的封面与缩略图经 `CoverCroppedImage`（长图顶部对齐）。长图分片只经 `LongImageTileService`（Android 原生 `DiaryLongImageSlicer`，缓存 `getTemporaryDirectory()/diary_image_tiles/`，不随备份导出，原图只读），原图已不存在的分片目录由 `sweepDiaryMediaFiles` 回收。视觉规范见 DESIGN.md §5.12。
 - 必须：编辑页正文的光标跟随（打字、键盘扩选、软键盘弹起后把光标保持在底部浮层上方）只经 `DiaryCaretFollowController`：正文以 `scrollable: false` 嵌在页面滚动容器里，Quill 自带的光标揭示不生效；遮挡高度与正文底部占位 `_editorBottomSpacer` 同源（悬浮工具栏可见时含光标空隙 `_caretToolbarClearance`），新增叠在正文上的底部浮层必须同时计入占位；软键盘变高的每一帧立即揭示光标（与 `EditableText.didChangeMetrics` 一致），禁止改回只在键盘停稳后揭示（真机上点底部的字后那一行会留在键盘下）。软键盘“选择”模式的扩选经 `SoftKeyboardSelectionKeys`（绕开 flutter/flutter#185849，弃用的 `RawKeyboard` 只允许在该文件使用）；清理条件：上游修复并升级到含修复的 Flutter 后删除该组件及其包裹。
+- 必须：应用内更新统一经 `AppUpdateController`（编排与状态）→ `AppUpdateService`（检查 `AppUpdateChecker`、下载与校验 `AppUpdateDownloader`、原生安装 `AppUpdateInstaller`）；界面只有软件更新页 `AppUpdatePage`（设置 → 关于 → 检查更新）与冷启动提示 `runStartupUpdateCheck`。面向国内网络：版本信息优先读 Release 附件 `jotsy-update.json`，多线路同时请求、取最先成功；回退 GitHub 接口与 `releases/latest` 跳转 + `SHA256SUMS.txt`（读不到校验文件不提示新版本）；下载先测速择优，断线、换线路一律 Range 续传，失速或低速自动切换。线路只在 `AppUpdateSource.builtInSources` 登记（另有用户填写的自定义镜像），禁止在别处拼镜像地址；Android 上禁止以跳转浏览器作为主更新路径（只在没有适配安装包、安装失败或非 Android 时兜底）。偏好只存于 `AppUpdatePreferences`（单个 JSON 键 `app.update.preferences`，逐字段容错，本机偏好**不随备份导出**），禁止另加零散的更新设置键。安装包只暂存 `getTemporaryDirectory()/app_update/`（`AppUpdateFileProvider` 只暴露该目录），交给系统安装器前必须通过大小 / SHA-256（已知时）与包名 / 签名 / 版本校验，不通过即删除。自动检查只在 Android 冷启动、20 小时内最多一次，可关闭；“跳过此版本”只影响自动提示。说明见 docs/app_update.md，视觉规范见 DESIGN.md §5.13。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。
@@ -130,7 +131,7 @@
 - 必须：Flutter 版本只定义在 `.github/actions/setup-flutter/action.yml`（CI 与发布共用），升级须单独提交并先让 CI 全绿；依赖以 `pubspec.lock` 为准（CI 用 `flutter pub get --enforce-lockfile`），改动 `pubspec.yaml` 的依赖必须同时提交锁文件。
 - 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。
 - 禁止：CI 门禁读取签名材料或任何 secrets（fork 的 PR 也要能跑）；CI 用一次性密钥构建的 APK 不上传（签名与正式版不同，装上后无法覆盖升级）。secrets 只在 `release-apk.yml` 的签名构建 job 中使用。
-- 必须：发布经 GitHub Release 触发 `release-apk.yml`：tag 必须与 `pubspec.yaml` 的版本一致（`v0.6.0` 或 `v0.6.0+17`），先过同一套 CI 门禁再构建签名分包，随 APK 上传 `SHA256SUMS.txt`。
+- 必须：发布经 GitHub Release 触发 `release-apk.yml`：tag 必须与 `pubspec.yaml` 的版本一致（`v0.6.0` 或 `v0.6.0+17`），先过同一套 CI 门禁再构建签名分包，随 APK 上传 `SHA256SUMS.txt` 与应用内更新清单 `jotsy-update.json`（`tool/write_update_manifest.dart` 生成，最后上传）；每个版本须在 `docs/releases/` 写好中英文说明（`<tag>.md` / `<tag>.en.md`），应用内更新页按界面语言显示。
 - 必须：用户要求安装 Android 包时，先用 `adb devices -l` 确认设备；存在多台设备时必须指定目标序列号。构建后使用 `adb -s <serial> install -r <apk>` 覆盖安装，以保留现有应用数据。
 - 必须：profile 包覆盖安装到已有 release 包时，必须使用相同 release signing config；签名材料缺失或不匹配时停止安装，不得改用 debug 签名。
 - 禁止：为安装或升级应用执行 `adb uninstall`、`pm clear`、清除应用数据或恢复出厂设置。

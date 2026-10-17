@@ -13,7 +13,8 @@ import 'journal_import_models.dart';
 ///
 /// 网页视图按地址返回 Cookie，丢失了域名与路径信息，所以路径受限的
 /// Cookie 要按接口路径读取（如华为 `/notepad/` 下的 shareToken），文件
-/// 服务另在其他主机时也要列出（荣耀的下载域名）。
+/// 服务另在其他主机时也要列出（荣耀 `config/web` 的 `viteDownloadDomain`，
+/// 不带它的登录 Cookie 时文件服务回 401，整次读取会被当成登录失效）。
 final Map<JournalImportSource, CloudNotePlatform> cloudNotePlatforms = {
   JournalImportSource.xiaomiNotes: CloudNotePlatform(
     source: JournalImportSource.xiaomiNotes,
@@ -50,7 +51,7 @@ final Map<JournalImportSource, CloudNotePlatform> cloudNotePlatforms = {
     loginUrl: 'https://cloud.honor.com/',
     cookieOrigins: const [
       'https://cloud.honor.com/',
-      'https://download.cloud.hihonor.com/',
+      'https://fileproxy-drcn.cloud.honor.com/',
     ],
     create: HonorCloudProvider.new,
   ),

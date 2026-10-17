@@ -170,11 +170,13 @@ void main() {
     () async {
       http.json('GET', '$_api/config/web', {
         'code': 0,
-        'data': {'viteDownloadDomain': 'https://download.cloud.hihonor.com'},
+        'data': {
+          'viteDownloadDomain': 'https://fileproxy-drcn.cloud.honor.com',
+        },
       });
       http.on(
         'GET',
-        'download.cloud.hihonor.com/portal/notepad/file/singleFileDownstream',
+        'fileproxy-drcn.cloud.honor.com/portal/notepad/file/singleFileDownstream',
         (request) {
           expect(
             request.url.queryParameters['cloudPath'],
@@ -212,9 +214,9 @@ void main() {
   test('rejects file hosts outside HONOR domains', () async {
     for (final domain in [
       'https://evil.example',
-      'http://download.cloud.hihonor.com',
-      'https://download.cloud.hihonor.com:8443',
-      'https://download.cloud.hihonor.com/path',
+      'http://fileproxy-drcn.cloud.honor.com',
+      'https://fileproxy-drcn.cloud.honor.com:8443',
+      'https://fileproxy-drcn.cloud.honor.com/path',
     ]) {
       final fresh = HonorCloudProvider(http, wait: (_) async {});
       http.json('GET', '$_api/config/web', {

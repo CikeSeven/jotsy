@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 品牌图形（带装订环的笔记本），几何同 android/app/src/main/res/drawable/launch_brand_mark.xml；颜色取默认种子色。 -->
+  <style>
+    .bg { fill: #c4e7ff; }
+    .fg { fill: #1d6586; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #004c69; }
+      .fg { fill: #c4e7ff; }
+    }
+  </style>
+  <rect class="bg" width="64" height="64" rx="18"/>
+  <g class="fg" transform="translate(32 32) scale(0.56) translate(-144 -144)">
+    <path fill-rule="evenodd" d="M122,104 H170 A8,8 0 0 1 178,112 V176 A8,8 0 0 1 170,184 H122 A8,8 0 0 1 114,176 V112 A8,8 0 0 1 122,104 Z M132.4,120 H159.6 A6.4,6.4 0 0 1 166,126.4 V129.6 A6.4,6.4 0 0 1 159.6,136 H132.4 A6.4,6.4 0 0 1 126,129.6 V126.4 A6.4,6.4 0 0 1 132.4,120 Z"/>
+    <path d="M110,120 A4,4 0 1 0 118,120 A4,4 0 1 0 110,120 Z M110,136 A4,4 0 1 0 118,136 A4,4 0 1 0 110,136 Z M110,152 A4,4 0 1 0 118,152 A4,4 0 1 0 110,152 Z M110,168 A4,4 0 1 0 118,168 A4,4 0 1 0 110,168 Z"/>
+  </g>
+</svg>

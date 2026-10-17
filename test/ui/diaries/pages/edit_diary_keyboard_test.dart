@@ -15,8 +15,8 @@ import '../../../support/expressive_test_theme.dart';
 import '../../../support/soft_keyboard_keys.dart';
 
 /// 编辑页正文与手机键盘的配合：在底部打字时新内容跟着上升、离工具栏留出
-/// 空隙；软键盘弹起时光标不被盖住、软键盘“选择”模式能扩展正文选区；只改
-/// 格式不拽动视口。
+/// 空隙；点了屏幕下部的字再弹起键盘，那一行随键盘一起被顶上去；软键盘
+/// “选择”模式能扩展正文选区；只改格式不拽动视口。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -150,21 +150,35 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('raising the keyboard reveals the caret it would cover', (
+  testWidgets('tapped bottom text rides up with the rising keyboard', (
     tester,
   ) async {
     await pumpCreatePage(tester, keyboardHeight: 0);
     await fillBody(tester);
-    // 键盘未弹起时光标在屏幕下部；弹起后这一块会被键盘与工具栏盖住。
+    final position = bodyScroll(tester);
+    position.jumpTo(position.maxScrollExtent / 2);
+    await tester.pumpAndSettle();
+
+    // 键盘未弹起时点屏幕下部的一行：弹起后这一块会被键盘盖住。
+    await tester.tapAt(const Offset(40, 700));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
     expect(caretBottom(tester), greaterThan(900 - 300));
 
-    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-    await tester.pump();
-    // 等键盘高度停稳的去抖，再等揭示滚动结束。
+    // 键盘逐帧升高：每一帧光标都在键盘上方，而不是等停稳后才跳上来。
+    for (var step = 1; step <= 10; step += 1) {
+      final inset = 30.0 * step;
+      tester.view.viewInsets = FakeViewPadding(bottom: inset);
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(caretBottom(tester), lessThanOrEqualTo(900 - inset));
+    }
     await tester.pump(const Duration(milliseconds: 150));
     await tester.pumpAndSettle();
 
-    expect(caretBottom(tester), lessThanOrEqualTo(toolbarTop(tester)));
+    expect(
+      toolbarTop(tester) - caretBottom(tester),
+      greaterThanOrEqualTo(caretClearance),
+    );
     expect(tester.takeException(), isNull);
     await unmount(tester);
   });

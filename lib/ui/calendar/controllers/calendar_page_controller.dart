@@ -211,11 +211,13 @@ class _CalendarPageController {
 
   /// 打开日记预览页（与主页列表行为保持一致）。
   ///
-  /// [coverHero] 为从时间线缩略图抓取的共享元素画面，所有权转交预览页。
+  /// [coverHero] 为从时间线缩略图抓取的共享元素画面，所有权转交预览页；
+  /// [sequence] 为左右滑动的顺序（当天列表、那年今日），单篇入口不传。
   void openPreview(
     String diaryId, {
     DiaryWithTags? initialDetail,
     ImageViewerHero? coverHero,
+    DiaryPreviewSequence? sequence,
   }) {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
@@ -224,11 +226,14 @@ class _CalendarPageController {
               diaryId: diaryId,
               initialDetail: initialDetail,
               coverHero: coverHero,
+              sequence: sequence,
             ),
           ),
         )
         .then((DiaryPreviewResult? result) async {
-          if (!_state.mounted || result != DiaryPreviewResult.deleted) {
+          // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+          final deletedId = result?.diaryId;
+          if (!_state.mounted || deletedId == null) {
             return;
           }
 
@@ -239,7 +244,7 @@ class _CalendarPageController {
 
           try {
             final db = _state.ref.read(appDatabaseProvider);
-            await db.restoreDiary(diaryId, touchUpdatedAt: false);
+            await db.restoreDiary(deletedId, touchUpdatedAt: false);
             if (!_state.mounted) {
               return;
             }

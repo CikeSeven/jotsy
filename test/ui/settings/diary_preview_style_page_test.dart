@@ -135,10 +135,10 @@ Future<void> _dismissSnackBars(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('shows a live preview above six option tabs', (tester) async {
+  testWidgets('shows a live preview above seven option tabs', (tester) async {
     final (_, l10n) = await _pumpPage(tester);
     expect(find.byType(DiaryPreviewContent), findsWidgets);
-    expect(find.byType(Tab), findsNWidgets(6));
+    expect(find.byType(Tab), findsNWidgets(7));
     expect(
       find.bySemanticsLabel(l10n.diaryPreviewStyleSampleOf(1, 3)),
       findsOneWidget,
@@ -163,6 +163,62 @@ void main() {
     );
     expect(_stored(settings).current.meta.showLocation, isFalse);
     expect(find.text(l10n.diaryCardStyleSampleLocation), findsNothing);
+  });
+
+  testWidgets('the paging tab keeps reading behavior apart from the look', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryPreviewStyleTabPaging);
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleHapticOnPage),
+    );
+    await _tapVisible(
+      tester,
+      find.text(l10n.diaryPreviewStyleSensitivityStrict),
+    );
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleTransitionStack));
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleNeighborCards),
+    );
+    var stored = _stored(settings);
+    expect(stored.behavior.hapticOnPage, isTrue);
+    expect(
+      stored.behavior.swipeSensitivity,
+      DiaryPreviewSwipeSensitivity.strict,
+    );
+    expect(
+      stored.current.navigation.transition,
+      DiaryPreviewPageTransition.stack,
+    );
+    expect(stored.current.navigation.neighborCards, isTrue);
+
+    // 关掉滑动后灵敏度与轻震随之收起。
+    await _tapVisible(
+      tester,
+      find.widgetWithText(SwitchListTile, l10n.diaryPreviewStyleSwipe),
+    );
+    stored = _stored(settings);
+    expect(stored.behavior.swipeBetweenDiaries, isFalse);
+    expect(find.text(l10n.diaryPreviewStyleSwipeSensitivity), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the live preview swipes between samples', (tester) async {
+    final (_, l10n) = await _pumpPage(tester);
+    final gesture = await tester.startGesture(const Offset(300, 220));
+    for (var i = 0; i < 30; i++) {
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(
+      find.bySemanticsLabel(l10n.diaryPreviewStyleSampleOf(2, 3)),
+      findsOneWidget,
+    );
   });
 
   testWidgets('sliders preview while dragging and persist on release', (
@@ -346,6 +402,7 @@ void main() {
         l10n.diaryPreviewStyleTabTitle,
         l10n.diaryPreviewStyleTabMeta,
         l10n.diaryPreviewStyleTabBody,
+        l10n.diaryPreviewStyleTabPaging,
       ]) {
         await _openTab(tester, label);
         await tester.drag(find.byType(TabBarView), const Offset(0, -2000));

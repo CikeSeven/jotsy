@@ -215,6 +215,15 @@ class _ArchivedDiariesPageState extends ConsumerState<ArchivedDiariesPage> {
                                 diary.diary.diaryId,
                                 initialDetail: diary,
                                 coverHero: coverHero,
+                                // 正在取消归档而淡出的条目不参与翻页。
+                                sequence: DiaryPreviewSequence.fromItems(
+                                  visibleDiaries.where(
+                                    (DiaryWithTags item) =>
+                                        !_pendingHideDiaryIds.contains(
+                                          item.diary.diaryId,
+                                        ),
+                                  ),
+                                ),
                               ),
                           onToggleSelection: _controller.toggleSelection,
                           onArchiveDiary: (diaryId) => unawaited(

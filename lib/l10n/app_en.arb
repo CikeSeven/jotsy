@@ -5660,5 +5660,137 @@
   "diaryPreviewStyleSampleWeather": "Sunny",
   "@diaryPreviewStyleSampleWeather": {
     "description": "Diary preview style settings: weather of a sample entry."
+  },
+  "diaryPreviewFirstDiary": "This is the first one",
+  "@diaryPreviewFirstDiary": {
+    "description": "Diary preview: edge hint when pulling past the first diary."
+  },
+  "diaryPreviewLastDiary": "This is the last one",
+  "@diaryPreviewLastDiary": {
+    "description": "Diary preview: edge hint when pulling past the last diary."
+  },
+  "diaryPreviewPrevious": "Previous",
+  "@diaryPreviewPrevious": {
+    "description": "Diary preview: go to the previous diary (end-of-page card and screen reader action)."
+  },
+  "diaryPreviewNext": "Next",
+  "@diaryPreviewNext": {
+    "description": "Diary preview: go to the next diary (end-of-page card and screen reader action)."
+  },
+  "diaryPreviewPosition": "{index} / {count}",
+  "@diaryPreviewPosition": {
+    "description": "Diary preview: top bar position title, e.g. \"3 / 57\".",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewPositionMore": "{index} / {count}+",
+  "@diaryPreviewPositionMore": {
+    "description": "Diary preview: top bar position title while more diaries may still load.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewPositionSemantics": "{index} of {count}",
+  "@diaryPreviewPositionSemantics": {
+    "description": "Diary preview: screen reader text of the position title.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewPositionSemanticsMore": "{index} of at least {count}",
+  "@diaryPreviewPositionSemanticsMore": {
+    "description": "Diary preview: screen reader text of the position title while more may load.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewStyleTabPaging": "Paging",
+  "@diaryPreviewStyleTabPaging": {
+    "description": "Diary preview style settings: Paging tab."
+  },
+  "diaryPreviewStyleSwipe": "Swipe between diaries",
+  "@diaryPreviewStyleSwipe": {
+    "description": "Diary preview style settings: swipe between diaries switch."
+  },
+  "diaryPreviewStyleSwipeSubtitle": "In the order of the list you opened it from",
+  "@diaryPreviewStyleSwipeSubtitle": {
+    "description": "Diary preview style settings: subtitle of the swipe switch."
+  },
+  "diaryPreviewStyleSwipeSensitivity": "Sensitivity",
+  "@diaryPreviewStyleSwipeSensitivity": {
+    "description": "Diary preview style settings: swipe sensitivity."
+  },
+  "diaryPreviewStyleSensitivitySensitive": "Sensitive",
+  "@diaryPreviewStyleSensitivitySensitive": {
+    "description": "Diary preview style settings: sensitive swipe."
+  },
+  "diaryPreviewStyleSensitivityStandard": "Standard",
+  "@diaryPreviewStyleSensitivityStandard": {
+    "description": "Diary preview style settings: standard swipe."
+  },
+  "diaryPreviewStyleSensitivityStrict": "Strict",
+  "@diaryPreviewStyleSensitivityStrict": {
+    "description": "Diary preview style settings: strict swipe."
+  },
+  "diaryPreviewStyleSensitivityHint": "Further right needs a flatter swipe; Strict also needs a half-screen drag or a firm flick.",
+  "@diaryPreviewStyleSensitivityHint": {
+    "description": "Diary preview style settings: explanation of swipe sensitivity."
+  },
+  "diaryPreviewStyleHapticOnPage": "Vibrate when turning pages",
+  "@diaryPreviewStyleHapticOnPage": {
+    "description": "Diary preview style settings: haptic feedback on page turn."
+  },
+  "diaryPreviewStyleTransition": "Transition",
+  "@diaryPreviewStyleTransition": {
+    "description": "Diary preview style settings: page transition."
+  },
+  "diaryPreviewStyleTransitionSlide": "Slide",
+  "@diaryPreviewStyleTransitionSlide": {
+    "description": "Diary preview style settings: slide transition."
+  },
+  "diaryPreviewStyleTransitionStack": "Stack",
+  "@diaryPreviewStyleTransitionStack": {
+    "description": "Diary preview style settings: stack transition."
+  },
+  "diaryPreviewStyleTransitionFade": "Fade",
+  "@diaryPreviewStyleTransitionFade": {
+    "description": "Diary preview style settings: fade transition."
+  },
+  "diaryPreviewStyleNeighborCards": "Previous and next at the end",
+  "@diaryPreviewStyleNeighborCards": {
+    "description": "Diary preview style settings: show previous and next cards at the end of the page."
+  },
+  "diaryPreviewStyleEdgeHint": "Hint at either end",
+  "@diaryPreviewStyleEdgeHint": {
+    "description": "Diary preview style settings: edge hint switch."
+  },
+  "diaryPreviewStyleEdgeHintSubtitle": "When you pull past the first or last diary",
+  "@diaryPreviewStyleEdgeHintSubtitle": {
+    "description": "Diary preview style settings: subtitle of the edge hint switch."
+  },
+  "diaryPreviewStyleTopBarTitlePosition": "Position",
+  "@diaryPreviewStyleTopBarTitlePosition": {
+    "description": "Diary preview style settings: top bar title shows the position (e.g. 3 / 57)."
   }
 }

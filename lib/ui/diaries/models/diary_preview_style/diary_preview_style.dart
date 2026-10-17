@@ -15,6 +15,7 @@ export 'diary_preview_style_limits.dart';
 part 'diary_preview_body_style.dart';
 part 'diary_preview_cover_style.dart';
 part 'diary_preview_meta_style.dart';
+part 'diary_preview_navigation_style.dart';
 part 'diary_preview_page_style.dart';
 part 'diary_preview_title_style.dart';
 
@@ -27,7 +28,7 @@ part 'diary_preview_title_style.dart';
 /// 页与预览页共用。
 ///
 /// 结构：[page] 页面与顶栏，[cover] 头图，[title] 标题，[meta] 信息栏，[body]
-/// 正文与页尾。
+/// 正文与页尾，[navigation] 翻页的外观。
 ///
 /// 兼容策略：
 /// - 默认值逐项等于改版前写死的预览页（DESIGN.md §5.8），未自定义的用户看
@@ -44,6 +45,7 @@ class DiaryPreviewStyle {
     this.title = const DiaryPreviewTitleStyle(),
     this.meta = const DiaryPreviewMetaStyle(),
     this.body = const DiaryPreviewBodyStyle(),
+    this.navigation = const DiaryPreviewNavigationStyle(),
   });
 
   static const DiaryPreviewStyle defaults = DiaryPreviewStyle();
@@ -73,6 +75,7 @@ class DiaryPreviewStyle {
       title: DiaryPreviewTitleStyle._fromJson(json['title']),
       meta: DiaryPreviewMetaStyle._fromJson(json['meta']),
       body: DiaryPreviewBodyStyle._fromJson(json['body']),
+      navigation: DiaryPreviewNavigationStyle._fromJson(json['navigation']),
     );
   }
 
@@ -81,6 +84,7 @@ class DiaryPreviewStyle {
   final DiaryPreviewTitleStyle title;
   final DiaryPreviewMetaStyle meta;
   final DiaryPreviewBodyStyle body;
+  final DiaryPreviewNavigationStyle navigation;
 
   bool get isDefault => this == defaults;
 
@@ -92,6 +96,7 @@ class DiaryPreviewStyle {
     StyleJson.putObject(json, 'title', title._toJson());
     StyleJson.putObject(json, 'meta', meta._toJson());
     StyleJson.putObject(json, 'body', body._toJson());
+    StyleJson.putObject(json, 'navigation', navigation._toJson());
     return json;
   }
 
@@ -103,6 +108,7 @@ class DiaryPreviewStyle {
     DiaryPreviewTitleStyle? title,
     DiaryPreviewMetaStyle? meta,
     DiaryPreviewBodyStyle? body,
+    DiaryPreviewNavigationStyle? navigation,
   }) {
     return DiaryPreviewStyle(
       page: page ?? this.page,
@@ -110,6 +116,7 @@ class DiaryPreviewStyle {
       title: title ?? this.title,
       meta: meta ?? this.meta,
       body: body ?? this.body,
+      navigation: navigation ?? this.navigation,
     );
   }
 
@@ -120,9 +127,10 @@ class DiaryPreviewStyle {
         other.cover == cover &&
         other.title == title &&
         other.meta == meta &&
-        other.body == body;
+        other.body == body &&
+        other.navigation == navigation;
   }
 
   @override
-  int get hashCode => Object.hash(page, cover, title, meta, body);
+  int get hashCode => Object.hash(page, cover, title, meta, body, navigation);
 }

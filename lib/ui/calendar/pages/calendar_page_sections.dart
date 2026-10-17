@@ -298,6 +298,7 @@ extension _CalendarPageSections on _CalendarPageState {
         diary.diary.diaryId,
         initialDetail: diary,
         coverHero: coverHero,
+        sequence: DiaryPreviewSequence.fromItems(day.diaries),
       );
     }
 
@@ -401,6 +402,7 @@ extension _CalendarPageSections on _CalendarPageState {
                     diary.diary.diaryId,
                     initialDetail: diary,
                     coverHero: coverHero,
+                    sequence: DiaryPreviewSequence.fromItems(diaries),
                   ),
                 ),
         ),

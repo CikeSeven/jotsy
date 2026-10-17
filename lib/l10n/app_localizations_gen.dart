@@ -7399,6 +7399,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sunny'**
   String get diaryPreviewStyleSampleWeather;
+
+  /// Diary preview: edge hint when pulling past the first diary.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the first one'**
+  String get diaryPreviewFirstDiary;
+
+  /// Diary preview: edge hint when pulling past the last diary.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the last one'**
+  String get diaryPreviewLastDiary;
+
+  /// Diary preview: go to the previous diary (end-of-page card and screen reader action).
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get diaryPreviewPrevious;
+
+  /// Diary preview: go to the next diary (end-of-page card and screen reader action).
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get diaryPreviewNext;
+
+  /// Diary preview: top bar position title, e.g. "3 / 57".
+  ///
+  /// In en, this message translates to:
+  /// **'{index} / {count}'**
+  String diaryPreviewPosition(int index, int count);
+
+  /// Diary preview: top bar position title while more diaries may still load.
+  ///
+  /// In en, this message translates to:
+  /// **'{index} / {count}+'**
+  String diaryPreviewPositionMore(int index, int count);
+
+  /// Diary preview: screen reader text of the position title.
+  ///
+  /// In en, this message translates to:
+  /// **'{index} of {count}'**
+  String diaryPreviewPositionSemantics(int index, int count);
+
+  /// Diary preview: screen reader text of the position title while more may load.
+  ///
+  /// In en, this message translates to:
+  /// **'{index} of at least {count}'**
+  String diaryPreviewPositionSemanticsMore(int index, int count);
+
+  /// Diary preview style settings: Paging tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Paging'**
+  String get diaryPreviewStyleTabPaging;
+
+  /// Diary preview style settings: swipe between diaries switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe between diaries'**
+  String get diaryPreviewStyleSwipe;
+
+  /// Diary preview style settings: subtitle of the swipe switch.
+  ///
+  /// In en, this message translates to:
+  /// **'In the order of the list you opened it from'**
+  String get diaryPreviewStyleSwipeSubtitle;
+
+  /// Diary preview style settings: swipe sensitivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitivity'**
+  String get diaryPreviewStyleSwipeSensitivity;
+
+  /// Diary preview style settings: sensitive swipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitive'**
+  String get diaryPreviewStyleSensitivitySensitive;
+
+  /// Diary preview style settings: standard swipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get diaryPreviewStyleSensitivityStandard;
+
+  /// Diary preview style settings: strict swipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Strict'**
+  String get diaryPreviewStyleSensitivityStrict;
+
+  /// Diary preview style settings: explanation of swipe sensitivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Further right needs a flatter swipe; Strict also needs a half-screen drag or a firm flick.'**
+  String get diaryPreviewStyleSensitivityHint;
+
+  /// Diary preview style settings: haptic feedback on page turn.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrate when turning pages'**
+  String get diaryPreviewStyleHapticOnPage;
+
+  /// Diary preview style settings: page transition.
+  ///
+  /// In en, this message translates to:
+  /// **'Transition'**
+  String get diaryPreviewStyleTransition;
+
+  /// Diary preview style settings: slide transition.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide'**
+  String get diaryPreviewStyleTransitionSlide;
+
+  /// Diary preview style settings: stack transition.
+  ///
+  /// In en, this message translates to:
+  /// **'Stack'**
+  String get diaryPreviewStyleTransitionStack;
+
+  /// Diary preview style settings: fade transition.
+  ///
+  /// In en, this message translates to:
+  /// **'Fade'**
+  String get diaryPreviewStyleTransitionFade;
+
+  /// Diary preview style settings: show previous and next cards at the end of the page.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous and next at the end'**
+  String get diaryPreviewStyleNeighborCards;
+
+  /// Diary preview style settings: edge hint switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Hint at either end'**
+  String get diaryPreviewStyleEdgeHint;
+
+  /// Diary preview style settings: subtitle of the edge hint switch.
+  ///
+  /// In en, this message translates to:
+  /// **'When you pull past the first or last diary'**
+  String get diaryPreviewStyleEdgeHintSubtitle;
+
+  /// Diary preview style settings: top bar title shows the position (e.g. 3 / 57).
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get diaryPreviewStyleTopBarTitlePosition;
 }
 
 class _AppLocalizationsDelegate

@@ -4387,4 +4387,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleSampleWeather => 'Sunny';
+
+  @override
+  String get diaryPreviewFirstDiary => 'This is the first one';
+
+  @override
+  String get diaryPreviewLastDiary => 'This is the last one';
+
+  @override
+  String get diaryPreviewPrevious => 'Previous';
+
+  @override
+  String get diaryPreviewNext => 'Next';
+
+  @override
+  String diaryPreviewPosition(int index, int count) {
+    return '$index / $count';
+  }
+
+  @override
+  String diaryPreviewPositionMore(int index, int count) {
+    return '$index / $count+';
+  }
+
+  @override
+  String diaryPreviewPositionSemantics(int index, int count) {
+    return '$index of $count';
+  }
+
+  @override
+  String diaryPreviewPositionSemanticsMore(int index, int count) {
+    return '$index of at least $count';
+  }
+
+  @override
+  String get diaryPreviewStyleTabPaging => 'Paging';
+
+  @override
+  String get diaryPreviewStyleSwipe => 'Swipe between diaries';
+
+  @override
+  String get diaryPreviewStyleSwipeSubtitle =>
+      'In the order of the list you opened it from';
+
+  @override
+  String get diaryPreviewStyleSwipeSensitivity => 'Sensitivity';
+
+  @override
+  String get diaryPreviewStyleSensitivitySensitive => 'Sensitive';
+
+  @override
+  String get diaryPreviewStyleSensitivityStandard => 'Standard';
+
+  @override
+  String get diaryPreviewStyleSensitivityStrict => 'Strict';
+
+  @override
+  String get diaryPreviewStyleSensitivityHint =>
+      'Further right needs a flatter swipe; Strict also needs a half-screen drag or a firm flick.';
+
+  @override
+  String get diaryPreviewStyleHapticOnPage => 'Vibrate when turning pages';
+
+  @override
+  String get diaryPreviewStyleTransition => 'Transition';
+
+  @override
+  String get diaryPreviewStyleTransitionSlide => 'Slide';
+
+  @override
+  String get diaryPreviewStyleTransitionStack => 'Stack';
+
+  @override
+  String get diaryPreviewStyleTransitionFade => 'Fade';
+
+  @override
+  String get diaryPreviewStyleNeighborCards => 'Previous and next at the end';
+
+  @override
+  String get diaryPreviewStyleEdgeHint => 'Hint at either end';
+
+  @override
+  String get diaryPreviewStyleEdgeHintSubtitle =>
+      'When you pull past the first or last diary';
+
+  @override
+  String get diaryPreviewStyleTopBarTitlePosition => 'Position';
 }

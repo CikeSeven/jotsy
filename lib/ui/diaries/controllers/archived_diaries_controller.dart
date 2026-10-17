@@ -307,13 +307,15 @@ class ArchivedDiariesController {
     );
   }
 
-  /// 打开预览页（归档列表默认入口）。
+  /// 打开预览页（归档列表默认入口），[sequence] 为左右滑动的顺序（当前显示
+  /// 的归档列表）。
   ///
   /// 若在预览页中删除，返回后补一条轻提示反馈。
   void openPreview(
     String diaryId, {
     DiaryWithTags? initialDetail,
     ImageViewerHero? coverHero,
+    DiaryPreviewSequence? sequence,
   }) {
     Navigator.of(_state.context)
         .push<DiaryPreviewResult?>(
@@ -322,6 +324,7 @@ class ArchivedDiariesController {
               diaryId: diaryId,
               initialDetail: initialDetail,
               coverHero: coverHero,
+              sequence: sequence,
             ),
           ),
         )
@@ -329,7 +332,8 @@ class ArchivedDiariesController {
           if (!_state.mounted) {
             return;
           }
-          if (result == DiaryPreviewResult.deleted) {
+          // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+          if (result case DiaryPreviewResult(:final diaryId)) {
             final undoRequested = await showUndoSnackBar(
               message: _state.context.l10n.autoT0075,
               duration: _ArchivedDiariesPageState._undoSnackDuration,

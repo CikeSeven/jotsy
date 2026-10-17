@@ -23,7 +23,7 @@ const _everything = DiaryPreviewStyle(
     limitWidth: true,
     contentWidth: 720,
     topBar: DiaryPreviewTopBarMode.pinned,
-    topBarTitle: DiaryPreviewTopBarTitle.date,
+    topBarTitle: DiaryPreviewTopBarTitle.position,
     showTypographyButton: false,
     showEditButton: false,
     showShareButton: true,
@@ -72,6 +72,11 @@ const _everything = DiaryPreviewStyle(
     editedFormat: DiaryPreviewEditedFormat.full,
     showCapsuleInsight: false,
   ),
+  navigation: DiaryPreviewNavigationStyle(
+    transition: DiaryPreviewPageTransition.stack,
+    neighborCards: true,
+    edgeHint: false,
+  ),
 );
 
 void main() {
@@ -95,8 +100,61 @@ void main() {
     // 每个分组都有写入。
     expect(
       json.keys,
-      containsAll(<String>['page', 'cover', 'title', 'meta', 'body']),
+      containsAll(<String>[
+        'page',
+        'cover',
+        'title',
+        'meta',
+        'body',
+        'navigation',
+      ]),
     );
+  });
+
+  test('paging defaults keep swiping on with the plain slide', () {
+    const behavior = DiaryPreviewBehavior.defaults;
+    expect(behavior.swipeBetweenDiaries, isTrue);
+    expect(behavior.swipeSensitivity, DiaryPreviewSwipeSensitivity.standard);
+    expect(behavior.hapticOnPage, isFalse);
+    const navigation = DiaryPreviewNavigationStyle();
+    expect(navigation.transition, DiaryPreviewPageTransition.slide);
+    expect(navigation.neighborCards, isFalse);
+    expect(navigation.edgeHint, isTrue);
+    expect(behavior.toJson(), isEmpty);
+  });
+
+  test('paging behavior round trips and tolerates broken fields', () {
+    const behavior = DiaryPreviewBehavior(
+      swipeBetweenDiaries: false,
+      swipeSensitivity: DiaryPreviewSwipeSensitivity.strict,
+      hapticOnPage: true,
+    );
+    expect(
+      DiaryPreviewBehavior.fromJson(jsonDecode(jsonEncode(behavior.toJson()))),
+      behavior,
+    );
+    final broken = DiaryPreviewBehavior.fromJson(<String, Object?>{
+      'swipeBetweenDiaries': 'no',
+      'swipeSensitivity': 'turbo',
+      'hapticOnPage': true,
+    });
+    expect(broken.swipeBetweenDiaries, isTrue);
+    expect(broken.swipeSensitivity, DiaryPreviewSwipeSensitivity.standard);
+    expect(broken.hapticOnPage, isTrue);
+    final navigation = DiaryPreviewStyle.fromJson(<String, Object?>{
+      'navigation': <String, Object?>{'transition': 'warp', 'edgeHint': false},
+    }).navigation;
+    expect(navigation.transition, DiaryPreviewPageTransition.slide);
+    expect(navigation.edgeHint, isFalse);
+  });
+
+  test('presets and style codes leave the paging behavior alone', () {
+    const behavior = DiaryPreviewBehavior(swipeBetweenDiaries: false);
+    const settings = DiaryPreviewSettings(behavior: behavior);
+    final applied = settings.withCurrent(
+      DiaryPreviewPresets.styleOf(DiaryPreviewPresetId.immersive),
+    );
+    expect(applied.behavior, behavior);
   });
 
   test('settings keep the current style, saved styles and behavior', () {

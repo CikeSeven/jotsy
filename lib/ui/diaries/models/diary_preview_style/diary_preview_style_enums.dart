@@ -16,8 +16,9 @@ enum DiaryPreviewPaper { theme, warm, sepia, mint, gray, ink, custom }
 /// 顶栏：[floating] 随滚动隐藏、往回滚即出现（改版前的样子）；[pinned] 常驻。
 enum DiaryPreviewTopBarMode { floating, pinned }
 
-/// 顶栏标题：[label] 为“日记”（改版前的样子），[date] 为这篇日记的日期。
-enum DiaryPreviewTopBarTitle { label, date, none }
+/// 顶栏标题：[label] 为“日记”（改版前的样子），[date] 为这篇日记的日期，
+/// [position] 为在翻页顺序中的位置（如“3 / 57”，单篇打开时退回“日记”）。
+enum DiaryPreviewTopBarTitle { label, date, none, position }
 
 /// 阅读进度：[line] 在页面顶端画一条随滚动增长的细线。
 enum DiaryPreviewProgress { none, line }
@@ -48,3 +49,11 @@ enum DiaryPreviewChipStyle { chip, plain }
 
 /// “最后编辑于”的时间格式：[precise] 为改版前的分钟级精确时间。
 enum DiaryPreviewEditedFormat { precise, relative, full }
+
+/// 左右翻页的过渡：[slide] 两页并排平移（默认）；[stack] 新的一页盖上来、
+/// 旧的一页原地缩小；[fade] 两页原地交叉淡入淡出。
+enum DiaryPreviewPageTransition { slide, stack, fade }
+
+/// 翻页灵敏度（阅读行为）：越往后越需要明显的横向滑动才翻页，竖着读时更
+/// 不容易误翻。
+enum DiaryPreviewSwipeSensitivity { sensitive, standard, strict }

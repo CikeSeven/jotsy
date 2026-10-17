@@ -187,6 +187,35 @@ ${_diaryOrderBySql(sortMode)}
     ).watch().map(_mapDiaryWithTagsRows);
   }
 
+  /// 按首页 / 搜索列表的同一筛选与排序取出全部日记 id（只取 id，不带正文）。
+  ///
+  /// 预览页左右滑动时用它把列表里还没加载的部分接上：筛选与排序复用
+  /// [_writeActiveDiaryFilter] 与 [_diaryOrderBySql]，口径与列表完全一致。
+  Future<List<String>> getActiveDiaryIds({
+    String keyword = '',
+    List<int> requiredTagIds = const <int>[],
+    DiarySortMode sortMode = DiarySortMode.updatedDesc,
+  }) async {
+    final normalizedTagIds = requiredTagIds.toSet().toList()..sort();
+    final variables = <Variable<Object>>[];
+    final sql = StringBuffer('SELECT d.diary_id FROM diaries d\n');
+    _writeActiveDiaryFilter(
+      sql,
+      variables,
+      normalizedKeyword: keyword.trim(),
+      normalizedTagIds: normalizedTagIds,
+    );
+    sql.write('${_diaryOrderBySql(sortMode)}\n');
+    final rows = await customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: <TableInfo<Table, Object>>{diaries, diaryTags},
+    ).get();
+    return rows
+        .map((row) => row.read<String>('diary_id'))
+        .toList(growable: false);
+  }
+
   void _writeActiveDiaryFilter(
     StringBuffer sql,
     List<Variable<Object>> variables, {

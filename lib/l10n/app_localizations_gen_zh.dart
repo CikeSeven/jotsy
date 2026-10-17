@@ -3984,4 +3984,88 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleSampleWeather => '晴';
+
+  @override
+  String get diaryPreviewFirstDiary => '已经是第一篇';
+
+  @override
+  String get diaryPreviewLastDiary => '已经是最后一篇';
+
+  @override
+  String get diaryPreviewPrevious => '上一篇';
+
+  @override
+  String get diaryPreviewNext => '下一篇';
+
+  @override
+  String diaryPreviewPosition(int index, int count) {
+    return '$index / $count';
+  }
+
+  @override
+  String diaryPreviewPositionMore(int index, int count) {
+    return '$index / $count+';
+  }
+
+  @override
+  String diaryPreviewPositionSemantics(int index, int count) {
+    return '第 $index 篇，共 $count 篇';
+  }
+
+  @override
+  String diaryPreviewPositionSemanticsMore(int index, int count) {
+    return '第 $index 篇，至少 $count 篇';
+  }
+
+  @override
+  String get diaryPreviewStyleTabPaging => '翻页';
+
+  @override
+  String get diaryPreviewStyleSwipe => '左右滑动切换日记';
+
+  @override
+  String get diaryPreviewStyleSwipeSubtitle => '按打开时所在列表的顺序';
+
+  @override
+  String get diaryPreviewStyleSwipeSensitivity => '翻页灵敏度';
+
+  @override
+  String get diaryPreviewStyleSensitivitySensitive => '灵敏';
+
+  @override
+  String get diaryPreviewStyleSensitivityStandard => '标准';
+
+  @override
+  String get diaryPreviewStyleSensitivityStrict => '防误触';
+
+  @override
+  String get diaryPreviewStyleSensitivityHint =>
+      '越往后越需要更水平的滑动才翻页；“防误触”还要拖过半屏或用力一甩。';
+
+  @override
+  String get diaryPreviewStyleHapticOnPage => '翻页时轻震';
+
+  @override
+  String get diaryPreviewStyleTransition => '翻页效果';
+
+  @override
+  String get diaryPreviewStyleTransitionSlide => '平移';
+
+  @override
+  String get diaryPreviewStyleTransitionStack => '层叠';
+
+  @override
+  String get diaryPreviewStyleTransitionFade => '淡入';
+
+  @override
+  String get diaryPreviewStyleNeighborCards => '正文末尾显示上一篇 / 下一篇';
+
+  @override
+  String get diaryPreviewStyleEdgeHint => '到头时提示';
+
+  @override
+  String get diaryPreviewStyleEdgeHintSubtitle => '已经是第一篇或最后一篇还往外拉时提示';
+
+  @override
+  String get diaryPreviewStyleTopBarTitlePosition => '位置';
 }

@@ -1,8 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
+import '../../../../core/database/app_database.dart';
+import '../../../../core/services/settings_service.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../anniversaries/controllers/anniversary_navigation.dart';
+import '../../../anniversaries/models/anniversary_draft.dart';
+import '../../../settings/pages/diary_preview_style_page.dart';
+import '../../controllers/diary_preview_export_controller.dart';
+
+/// 预览页“更多”的完整接线：分享与导出经 [export]（正文尚未绑定时跳过
+/// Markdown 与 PDF），导出日记文件与设为纪念日经 [database]，“页面样式”打开
+/// 预览页样式设置且第一篇示例就是这篇（[settings] 尚未就绪时不显示这一项）。
+Future<void> showDiaryPreviewMore(
+  BuildContext context, {
+  required DiaryPreviewExportController export,
+  required DiaryWithTags detail,
+  required quill.Document? Function() readDocument,
+  required AppDatabase database,
+  required SettingsService? settings,
+  required Color background,
+  required Future<void> Function() onDelete,
+}) {
+  return showDiaryPreviewActionsSheet(
+    context,
+    onShareImage: () => export.shareLongImage(context, background: background),
+    onExportMarkdown: () async {
+      final document = readDocument();
+      if (document != null) {
+        await export.exportMarkdown(
+          context,
+          detail: detail,
+          document: document,
+        );
+      }
+    },
+    onExportPdf: () async {
+      final document = readDocument();
+      if (document != null) {
+        await export.exportPdf(context, detail: detail, document: document);
+      }
+    },
+    onExportDiaryFile: () =>
+        export.exportDiaryFile(context, detail: detail, database: database),
+    onSetAsAnniversary: () => openAnniversaryEditor(
+      context,
+      database: database,
+      draft: AnniversaryDraft.fromDiary(detail.diary),
+    ),
+    onDelete: onDelete,
+    onOpenStyle: settings == null
+        ? null
+        : () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => DiaryPreviewStylePage(
+                settingsService: settings,
+                previewDiary: detail,
+              ),
+            ),
+          ),
+  );
+}
 
 /// 预览页“更多”面板：分享长图、三种导出、设为纪念日、页面样式与删除。
 ///

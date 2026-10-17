@@ -12,6 +12,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../calendar/widgets/calendar_day_content_switcher.dart';
 import '../../calendar/widgets/calendar_diary_mini_card.dart';
+import '../../diaries/models/diary_preview_sequence.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../controllers/anniversary_navigation.dart';
 import '../providers/anniversary_providers.dart';
@@ -273,6 +274,7 @@ class AnniversaryPastDiariesSection extends ConsumerWidget {
                         database: ref.read(appDatabaseProvider),
                         diary: diary,
                         coverHero: hero,
+                        sequence: DiaryPreviewSequence.fromItems(diaries),
                       ),
                     ),
               ),

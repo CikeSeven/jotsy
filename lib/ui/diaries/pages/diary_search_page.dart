@@ -109,6 +109,10 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   String _pagingSignature = '';
   List<DiaryWithTags> _cachedSearchItems = const <DiaryWithTags>[];
 
+  /// [_cachedSearchItems] 对应的查询：新查询加载中时列表仍显示上一份结果，
+  /// 预览页接续加载必须用结果自己的查询条件。
+  DiaryPageQuery? _cachedSearchQuery;
+
   @override
   void initState() {
     super.initState();
@@ -162,6 +166,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     if (!query.hasAnyCondition) {
       _hasMoreDiaries = false;
       _cachedSearchItems = const <DiaryWithTags>[];
+      _cachedSearchQuery = null;
     }
     final pageQuery = DiaryPageQuery(
       keyword: query.keyword,
@@ -175,6 +180,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final latestPage = diariesAsync?.asData?.value;
     if (latestPage != null) {
       _cachedSearchItems = latestPage.items;
+      _cachedSearchQuery = pageQuery;
       _hasMoreDiaries = latestPage.hasMore;
     }
     final displayedSearchItems = latestPage?.items ?? _cachedSearchItems;
@@ -387,13 +393,27 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     Navigator.of(context).maybePop();
   }
 
+  /// 打开预览页：只在当前结果里左右翻，结果还有没加载的部分时按同一条件
+  /// 接上。
   void _openPreview(DiaryWithTags diary, ImageViewerHero? coverHero) {
+    final query = _cachedSearchQuery;
+    final sequence = DiaryPreviewSequence.fromItems(
+      _cachedSearchItems,
+      query: _hasMoreDiaries && query != null
+          ? DiaryPreviewListQuery(
+              keyword: query.keyword,
+              requiredTagIds: query.requiredTagIds,
+              sortMode: query.sortMode,
+            )
+          : null,
+    );
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => DiaryPreviewPage(
           diaryId: diary.diary.diaryId,
           initialDetail: diary,
           coverHero: coverHero,
+          sequence: sequence,
         ),
       ),
     );

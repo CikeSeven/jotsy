@@ -148,6 +148,29 @@ class DiariesPageController {
     );
   }
 
+  /// 预览页左右滑动的顺序：当前显示的列表，去掉正在归档、删除而暂时隐藏
+  /// 的条目；列表还有没加载的部分时带上同一查询条件，预览页据此接上。
+  DiaryPreviewSequence _previewSequence() {
+    final hidden = <String>{
+      ..._state._optimisticHiddenDiaryIds,
+      ..._state._pendingHideDiaryIds,
+    };
+    final query = _state._currentDiaryPageQuery;
+    return DiaryPreviewSequence.fromItems(
+      _state._lastDisplayedItems.where(
+        (DiaryWithTags item) => !hidden.contains(item.diary.diaryId),
+      ),
+      query: _state._hasMoreDiaries && query != null
+          ? DiaryPreviewListQuery(
+              keyword: query.keyword,
+              requiredTagIds: query.requiredTagIds,
+              sortMode: query.sortMode,
+              excludedIds: hidden,
+            )
+          : null,
+    );
+  }
+
   /// 打开日记预览页（列表默认入口）。
   ///
   /// 预览页内可能触发删除或编辑：
@@ -158,6 +181,7 @@ class DiariesPageController {
     DiaryWithTags? initialDetail,
     ImageViewerHero? coverHero,
   }) {
+    final sequence = _previewSequence();
     unawaited(
       Navigator.of(_state.context)
           .push<DiaryPreviewResult?>(
@@ -167,6 +191,7 @@ class DiariesPageController {
                   diaryId: diaryId,
                   initialDetail: initialDetail,
                   coverHero: coverHero,
+                  sequence: sequence,
                 );
               },
             ),
@@ -178,7 +203,8 @@ class DiariesPageController {
             // 预览页返回不再强制触发列表重建：
             // - 列表本身由数据库流驱动，数据变更会自动刷新；
             // - 强制刷新会导致滚动位置回跳，影响“返回后继续浏览”体验。
-            if (result == DiaryPreviewResult.deleted) {
+            // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+            if (result case DiaryPreviewResult(:final diaryId)) {
               final l10n = _state.context.l10n;
               final undoRequested = await feedback.showUndoSnackBar(
                 message: l10n.autoT0075,

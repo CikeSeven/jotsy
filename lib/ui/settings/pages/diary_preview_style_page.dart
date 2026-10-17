@@ -10,6 +10,7 @@ import '../sections/diary_preview_style/diary_preview_style_body_tab.dart';
 import '../sections/diary_preview_style/diary_preview_style_cover_tab.dart';
 import '../sections/diary_preview_style/diary_preview_style_meta_tab.dart';
 import '../sections/diary_preview_style/diary_preview_style_page_tab.dart';
+import '../sections/diary_preview_style/diary_preview_style_paging_tab.dart';
 import '../sections/diary_preview_style/diary_preview_style_presets_tab.dart';
 import '../sections/diary_preview_style/diary_preview_style_preview.dart';
 import '../sections/diary_preview_style/diary_preview_style_samples.dart';
@@ -20,7 +21,8 @@ import '../widgets/style_editor/style_editor_scaffold.dart';
 /// 设置 → 外观与语言 → 日记预览页（也可从预览页“更多 → 页面样式”进入）。
 ///
 /// 页面壳层：上方是实时预览（几篇示例，可左右切换；从某篇日记进入时第一页
-/// 就是它），下方按标签页分组调整（预设、页面、头图、标题、信息、正文）；
+/// 就是它），下方按标签页分组调整（预设、页面、头图、标题、信息、正文、
+/// 翻页）；
 /// 布局与三档面板见 [StyleEditorScaffold]。状态与写入由
 /// [DiaryPreviewStyleEditorController] 负责，改动即时生效；右上角“重置”回到
 /// 默认外观并提供撤销（阅读行为不受重置影响）。
@@ -95,6 +97,7 @@ class _DiaryPreviewStylePageState extends State<DiaryPreviewStylePage> {
         l10n.diaryPreviewStyleTabTitle,
         l10n.diaryPreviewStyleTabMeta,
         l10n.diaryPreviewStyleTabBody,
+        l10n.diaryPreviewStyleTabPaging,
       ],
       tabViews: () => <Widget>[
         DiaryPreviewStylePresetsTab(controller: _controller),
@@ -103,6 +106,7 @@ class _DiaryPreviewStylePageState extends State<DiaryPreviewStylePage> {
         DiaryPreviewStyleTitleTab(controller: _controller),
         DiaryPreviewStyleMetaTab(controller: _controller),
         DiaryPreviewStyleBodyTab(controller: _controller),
+        DiaryPreviewStylePagingTab(controller: _controller),
       ],
       toolbar: DiaryPreviewStylePreviewToolbar(
         controller: _controller,

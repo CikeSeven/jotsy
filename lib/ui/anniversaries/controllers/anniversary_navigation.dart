@@ -126,12 +126,14 @@ bool isOpenableDiary(DiaryWithTags diary, {DateTime? now}) {
 }
 
 /// 从纪念日打开日记预览（首帧用已有的 [diary]，缩略图作共享元素）。预览页
-/// 里删除日记后给出可撤销的提示，撤销即从回收站恢复。
+/// 里删除日记后给出可撤销的提示，撤销即从回收站恢复。[sequence] 为左右滑动
+/// 的顺序（历年的日记）；关联的那一篇是单篇入口，不传。
 Future<void> openDiaryFromAnniversary(
   BuildContext context, {
   required AppDatabase database,
   required DiaryWithTags diary,
   ImageViewerHero? coverHero,
+  DiaryPreviewSequence? sequence,
 }) async {
   final diaryId = diary.diary.diaryId;
   final result = await Navigator.of(context).push<DiaryPreviewResult?>(
@@ -140,10 +142,13 @@ Future<void> openDiaryFromAnniversary(
         diaryId: diaryId,
         initialDetail: diary,
         coverHero: coverHero,
+        sequence: sequence,
       ),
     ),
   );
-  if (result != DiaryPreviewResult.deleted || !context.mounted) {
+  // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
+  final deletedId = result?.diaryId;
+  if (deletedId == null || !context.mounted) {
     return;
   }
   final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
@@ -156,6 +161,6 @@ Future<void> openDiaryFromAnniversary(
     forceCloseAfter: _undoDuration,
   );
   if (reason == SnackBarClosedReason.action) {
-    await database.restoreDiary(diaryId, touchUpdatedAt: false);
+    await database.restoreDiary(deletedId, touchUpdatedAt: false);
   }
 }

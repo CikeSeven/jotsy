@@ -219,7 +219,7 @@ class DiaryPreviewStylePageTab extends StatelessWidget {
             SettingsChoiceTile(
               title: l10n.diaryPreviewStyleTopBarTitle,
               child: ExpressiveButtonGroup<DiaryPreviewTopBarTitle>(
-                minSegmentWidth: 80,
+                minSegmentWidth: 64,
                 segments: <ButtonSegment<DiaryPreviewTopBarTitle>>[
                   ButtonSegment<DiaryPreviewTopBarTitle>(
                     value: DiaryPreviewTopBarTitle.label,
@@ -228,6 +228,10 @@ class DiaryPreviewStylePageTab extends StatelessWidget {
                   ButtonSegment<DiaryPreviewTopBarTitle>(
                     value: DiaryPreviewTopBarTitle.date,
                     label: Text(l10n.diaryPreviewStyleTopBarTitleDate),
+                  ),
+                  ButtonSegment<DiaryPreviewTopBarTitle>(
+                    value: DiaryPreviewTopBarTitle.position,
+                    label: Text(l10n.diaryPreviewStyleTopBarTitlePosition),
                   ),
                   ButtonSegment<DiaryPreviewTopBarTitle>(
                     value: DiaryPreviewTopBarTitle.none,

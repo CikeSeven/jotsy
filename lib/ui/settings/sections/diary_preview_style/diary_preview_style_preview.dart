@@ -11,12 +11,15 @@ import '../../../diaries/providers/diary_card_style_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
 import '../../../diaries/viewmodels/diary_preview_resolved_style.dart';
 import '../../../diaries/viewmodels/diary_preview_view_data.dart';
+import '../../../diaries/widgets/diary_preview/diary_pager_view.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_content.dart';
+import '../../../diaries/widgets/diary_preview/diary_preview_neighbors.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_surface.dart';
 import '../../controllers/diary_preview_style_editor_controller.dart';
 
 /// 设置页的实时预览：用正式页面同一套组件（[DiaryPreviewSurface] +
-/// [DiaryPreviewContent]）渲染几篇内存示例，左右滑动切换示例。
+/// [DiaryPreviewContent]）渲染几篇内存示例，放进与正式页面相同的翻页器
+/// （[DiaryPagerView]），可以直接试滑动的灵敏度、翻页效果与到头提示。
 ///
 /// 预览不写库：示例的待办只在本地勾选；顶栏按钮、返回与点按图片都不做事，
 /// 免得在设置页里误触离开。明暗可在工具条单独切换（[previewBrightness] 为
@@ -61,16 +64,27 @@ class DiaryPreviewStylePreview extends ConsumerWidget {
           child: ClipRect(
             child: Theme(
               data: previewTheme,
-              child: PageView.builder(
+              child: DiaryPagerView(
                 itemCount: samples.length,
+                initialPage: page.value.clamp(0, samples.length - 1),
+                navigation: controller.style.navigation,
+                behavior: controller.behavior,
                 onPageChanged: (int index) => page.value = index,
-                itemBuilder: (BuildContext context, int index) => _SamplePage(
-                  key: ValueKey<String>(samples[index].diary.diaryId),
-                  controller: controller,
-                  detail: samples[index],
-                  appSeed: seed,
-                  bottomPadding: bottomPadding,
-                ),
+                itemBuilder: (BuildContext context, DiaryPagerPosition at) {
+                  return _SamplePage(
+                    key: ValueKey<String>(samples[at.index].diary.diaryId),
+                    controller: controller,
+                    detail: samples[at.index],
+                    appSeed: seed,
+                    bottomPadding: bottomPadding,
+                    paging: DiaryPreviewPaging.of(
+                      context.l10n,
+                      at,
+                      hasMore: false,
+                      titleAt: (int index) => samples[index].diary.title,
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -87,12 +101,14 @@ class _SamplePage extends ConsumerStatefulWidget {
     required this.detail,
     required this.appSeed,
     required this.bottomPadding,
+    required this.paging,
   });
 
   final DiaryPreviewStyleEditorController controller;
   final DiaryWithTags detail;
   final Color appSeed;
   final double bottomPadding;
+  final DiaryPreviewPaging paging;
 
   @override
   ConsumerState<_SamplePage> createState() => _SamplePageState();
@@ -142,6 +158,7 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
         resolved: resolved,
         behavior: controller.behavior,
         extraBottomPadding: widget.bottomPadding,
+        paging: widget.paging,
         onOpenImage: (_, _, hero) => hero?.dispose(),
         actions: DiaryPreviewActions(
           onOpenTypography: ignore,

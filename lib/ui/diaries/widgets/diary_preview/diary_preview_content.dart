@@ -16,6 +16,7 @@ import '../../viewmodels/diary_preview_view_data.dart';
 import 'diary_preview_body.dart';
 import 'diary_preview_header.dart';
 import 'diary_preview_meta.dart';
+import 'diary_preview_neighbors.dart';
 import 'diary_preview_top_bar.dart';
 
 /// 打开看图页：本篇的全部图片来源、点按的那一张与抓取的共享元素。
@@ -51,6 +52,10 @@ class DiaryPreviewActions {
 /// 输入：已解封的日记、它的派生数据与只读 Quill 控制器、解析后的样式与阅读
 /// 行为，以及顶栏动作与看图回调；不读写数据库，也不持有状态，设置页的实时
 /// 预览可以直接复用。默认样式下产出的部件结构与改版前逐项相同。
+///
+/// 放在翻页器里时传入 [paging]：顶栏可显示位置，正文末尾可显示上一篇 /
+/// 下一篇，滚动视图改为始终可滚动——正文不满一屏时也要有竖向识别器参与
+/// 手势竞争，斜着滑才不会被当成翻页（见 `DiaryPagerView`）。
 class DiaryPreviewContent extends ConsumerWidget {
   const DiaryPreviewContent({
     super.key,
@@ -66,6 +71,7 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.coverPlaceholder,
     this.staticCover = false,
     this.extraBottomPadding = 0,
+    this.paging,
   });
 
   final DiaryWithTags detail;
@@ -90,6 +96,9 @@ class DiaryPreviewContent extends ConsumerWidget {
 
   /// 页尾额外留白（设置页预览底部被面板圆角压住的高度）。
   final double extraBottomPadding;
+
+  /// 在翻页顺序里的位置；单篇打开时为 null。
+  final DiaryPreviewPaging? paging;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -119,6 +128,11 @@ class DiaryPreviewContent extends ConsumerWidget {
         ? diaryPreviewEditedLabel(l10n, diary, style.body.editedFormat)
         : null;
     final showInsight = style.body.showCapsuleInsight;
+    final paging = this.paging;
+    final neighbors =
+        paging != null && paging.hasNeighbors && style.navigation.neighborCards
+        ? paging
+        : null;
 
     // 标题与信息栏的上下顺序：信息栏在上时它先占 14 的上边距，标题收为 10。
     final metaAbove =
@@ -132,6 +146,7 @@ class DiaryPreviewContent extends ConsumerWidget {
 
     return CustomScrollView(
       controller: scrollController,
+      physics: paging == null ? null : const AlwaysScrollableScrollPhysics(),
       slivers: <Widget>[
         DiaryPreviewTopBar(
           style: style.page,
@@ -141,7 +156,13 @@ class DiaryPreviewContent extends ConsumerWidget {
               diary.createdAt.toLocal(),
             ),
             DiaryPreviewTopBarTitle.none => null,
+            DiaryPreviewTopBarTitle.position =>
+              paging?.position ?? l10n.autoT0120,
           },
+          titleSemantics:
+              style.page.topBarTitle == DiaryPreviewTopBarTitle.position
+              ? paging?.positionSemantics
+              : null,
           background: resolved.background,
           onOpenTypography: actions.onOpenTypography,
           onEdit: actions.onEdit,
@@ -207,6 +228,13 @@ class DiaryPreviewContent extends ConsumerWidget {
                 if (editedLabel != null) ...<Widget>[
                   const SizedBox(height: 16),
                   DiaryPreviewEditedLine(label: editedLabel),
+                ],
+                if (neighbors != null) ...<Widget>[
+                  const SizedBox(height: 24),
+                  DiaryPreviewNeighborCards(
+                    paging: neighbors,
+                    textColor: resolved.bodyColor,
+                  ),
                 ],
               ],
             ],

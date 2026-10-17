@@ -34,6 +34,7 @@ class DiaryPreviewTopBar extends StatelessWidget {
     required this.onEdit,
     required this.onShare,
     required this.onMore,
+    this.titleSemantics,
     this.onBack,
   });
 
@@ -41,6 +42,9 @@ class DiaryPreviewTopBar extends StatelessWidget {
 
   /// 顶栏标题；null 表示不显示。
   final String? title;
+
+  /// 标题的读屏文字（如位置“3 / 57”读作“第 3 篇，共 57 篇”）；null 时读标题。
+  final String? titleSemantics;
   final Color background;
   final VoidCallback onOpenTypography;
   final VoidCallback onEdit;
@@ -63,7 +67,7 @@ class DiaryPreviewTopBar extends StatelessWidget {
       centerTitle: true,
       automaticallyImplyLeading: false,
       leading: DiaryPreviewBackButton(onPressed: onBack),
-      title: title == null ? null : Text(title),
+      title: title == null ? null : Text(title, semanticsLabel: titleSemantics),
       systemOverlayStyle:
           theme.appBarTheme.systemOverlayStyle ??
           SystemUiOverlayStyle(

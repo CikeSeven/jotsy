@@ -96,6 +96,27 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     });
   }
 
+  /// 只更新正文（富文本 JSON 与纯文本）与 `updatedAt`。
+  ///
+  /// 供预览页勾选待办等“只改正文”的路径使用：[updateDiary] 会顺带取消归档、
+  /// 取消删除并重写标签，从归档列表打开的日记勾一下待办就会被移出归档；这里
+  /// 不碰归档、删除、置顶、标签与 metadata。日记不存在时静默不写。
+  Future<void> updateDiaryContent({
+    required String diaryId,
+    required String contentDocJson,
+    required String contentText,
+  }) async {
+    await (update(
+      diaries,
+    )..where((Diaries t) => t.diaryId.equals(diaryId))).write(
+      DiariesCompanion(
+        content: Value<String>(contentDocJson),
+        contentText: Value<String>(contentText),
+        updatedAt: Value<DateTime>(DateTime.now()),
+      ),
+    );
+  }
+
   /// 更新时间胶囊解封时间，不触碰正文以避免未解封管理页泄露内容。
   Future<void> updateDiaryCapsuleSchedule({
     required String diaryId,

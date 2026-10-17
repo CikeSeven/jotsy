@@ -9,12 +9,9 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/database/content_codec.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../anniversaries/controllers/anniversary_navigation.dart';
-import '../../../anniversaries/models/anniversary_draft.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/app_top_bar.dart';
-import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_preview_export_controller.dart';
@@ -32,6 +29,7 @@ import '../../viewmodels/diary_preview_view_data.dart';
 import 'diary_preview_actions_sheet.dart';
 import 'diary_preview_content.dart';
 import 'diary_preview_dialogs.dart';
+import 'diary_preview_neighbors.dart';
 import 'diary_preview_surface.dart';
 import 'diary_preview_top_bar.dart';
 
@@ -44,12 +42,21 @@ import 'diary_preview_top_bar.dart';
 ///
 /// 状态：详情查询返回前用入口数据渲染，返回后由最新数据接管；正文只在内容
 /// 变化时重建 Quill 控制器。
+///
+/// 放在翻页器（`DiaryPreviewPager`）里时：[paging] 给出位置与相邻篇，
+/// [onBusyChanged] 报告导出 / 分享长图的忙碌态（翻页器据此暂停翻页），共享
+/// 元素的标签与占位画面的所有权由翻页器决定（见 [coverHeroTag]、
+/// [ownsCoverHero]）。
 class DiaryPreviewView extends ConsumerStatefulWidget {
   const DiaryPreviewView({
     super.key,
     required this.diaryId,
     this.initialDetail,
     this.coverHero,
+    this.ownsCoverHero = true,
+    this.coverHeroTag,
+    this.paging,
+    this.onBusyChanged,
   });
 
   final String diaryId;
@@ -59,6 +66,19 @@ class DiaryPreviewView extends ConsumerStatefulWidget {
 
   /// 列表封面抓取的画面：头图以它为共享元素落点与占位。
   final ImageViewerHero? coverHero;
+
+  /// 为 true 时本组件销毁即释放 [coverHero]；翻页器里翻走的初始页会被回收
+  /// 又可能翻回来，占位画面改由翻页器在路由结束时释放。
+  final bool ownsCoverHero;
+
+  /// 头图的共享元素标签；null 时为 `diaryCoverHeroTag`（返回时飞回列表卡片）。
+  final Object? coverHeroTag;
+
+  /// 在翻页顺序里的位置；单篇打开时为 null。
+  final DiaryPreviewPaging? paging;
+
+  /// 导出、分享长图等忙碌态变化时回调。
+  final ValueChanged<bool>? onBusyChanged;
 
   @override
   ConsumerState<DiaryPreviewView> createState() => _DiaryPreviewViewState();
@@ -73,17 +93,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
         scrollController: _scrollController,
         onHint: _showHint,
       )..addListener(_handleExportChanged);
-  late final DiaryTodoAutoSaveController _todoAutoSave =
-      DiaryTodoAutoSaveController(
-        readDetail: () => _currentDetail,
-        readDocument: () => _controller?.document,
-        readDatabase: () => ref.read(appDatabaseProvider),
-        onSaved: () {
-          if (mounted) {
-            ref.invalidate(diaryDetailProvider(widget.diaryId));
-          }
-        },
-      );
+  late final DiaryTodoAutoSaveController _todoAutoSave;
 
   quill.QuillController? _controller;
   String? _boundContentRaw;
@@ -91,11 +101,30 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
   DiaryWithTags? _currentDetail;
   DiaryPreviewViewData? _viewData;
   bool _hadLoadedData = false;
+  bool _reportedBusy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 待办可能在本组件销毁时才补写（翻走后被回收、勾完立即返回），那时已
+    // 不能再用 ref：写库与刷新详情都经提前取得的 container。
+    final container = ProviderScope.containerOf(context, listen: false);
+    final diaryId = widget.diaryId;
+    _todoAutoSave = DiaryTodoAutoSaveController(
+      readDetail: () => _currentDetail,
+      readDocument: () => _controller?.document,
+      readDatabase: () => container.read(appDatabaseProvider),
+      onSaved: () => container.invalidate(diaryDetailProvider(diaryId)),
+    );
+  }
 
   @override
   void dispose() {
     // 返回飞行在本帧绘制前已结束，此时释放占位画面是安全的。
-    widget.coverHero?.dispose();
+    if (widget.ownsCoverHero) {
+      widget.coverHero?.dispose();
+    }
+    // 先于正文控制器释放：补写待办要读当下的文档。
     _todoAutoSave.dispose();
     _docChanges?.cancel();
     _controller?.dispose();
@@ -107,8 +136,14 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
   }
 
   void _handleExportChanged() {
-    if (mounted) {
-      setState(() {});
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+    final busy = _export.busy;
+    if (busy != _reportedBusy) {
+      _reportedBusy = busy;
+      widget.onBusyChanged?.call(busy);
     }
   }
 
@@ -162,8 +197,10 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
   }
 
   Future<void> _openEditor() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
+    // 编辑页里删除日记后以 true 返回：按“已删除”退出，入口给出撤销。经发布
+    // 页保存时编辑页以日记 id（String）结束，所以结果类型放宽为 Object?。
+    final result = await Navigator.of(context).push<Object?>(
+      MaterialPageRoute<Object?>(
         builder: (BuildContext context) {
           return EditDiaryPage(
             diaryId: widget.diaryId,
@@ -173,6 +210,10 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       ),
     );
     if (!mounted) {
+      return;
+    }
+    if (result == true) {
+      Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
       return;
     }
     ref.invalidate(diaryDetailProvider(widget.diaryId));
@@ -188,68 +229,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
     if (!mounted) {
       return;
     }
-    Navigator.of(context).pop(DiaryPreviewResult.deleted);
-  }
-
-  Future<void> _showActions(
-    DiaryWithTags detail,
-    DiaryPreviewResolvedStyle resolved,
-  ) {
-    return showDiaryPreviewActionsSheet(
-      context,
-      onShareImage: () =>
-          _export.shareLongImage(context, background: resolved.background),
-      onExportMarkdown: () async {
-        final controller = _controller;
-        if (controller == null) {
-          return;
-        }
-        await _export.exportMarkdown(
-          context,
-          detail: detail,
-          document: controller.document,
-        );
-      },
-      onExportPdf: () async {
-        final controller = _controller;
-        if (controller == null) {
-          return;
-        }
-        await _export.exportPdf(
-          context,
-          detail: detail,
-          document: controller.document,
-        );
-      },
-      onExportDiaryFile: () => _export.exportDiaryFile(
-        context,
-        detail: detail,
-        database: ref.read(appDatabaseProvider),
-      ),
-      onSetAsAnniversary: () => openAnniversaryEditor(
-        context,
-        database: ref.read(appDatabaseProvider),
-        draft: AnniversaryDraft.fromDiary(detail.diary),
-      ),
-      onDelete: _deleteDiary,
-      onOpenStyle: () => _openStyleSettings(detail),
-    );
-  }
-
-  /// “更多 → 页面样式”：打开预览页样式设置，第一篇示例就是这篇日记。
-  Future<void> _openStyleSettings(DiaryWithTags detail) async {
-    final settings = ref.read(settingsServiceProvider).asData?.value;
-    if (settings == null) {
-      return;
-    }
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) => DiaryPreviewStylePage(
-          settingsService: settings,
-          previewDiary: detail,
-        ),
-      ),
-    );
+    Navigator.of(context).pop(DiaryPreviewResult.deleted(widget.diaryId));
   }
 
   Widget _messageScaffold(Widget body) {
@@ -348,9 +328,11 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           scrollController: _scrollController,
           resolved: resolved,
           behavior: behavior,
-          coverHeroTag: diaryCoverHeroTag(widget.diaryId),
+          coverHeroTag:
+              widget.coverHeroTag ?? diaryCoverHeroTag(widget.diaryId),
           coverPlaceholder: widget.coverHero?.placeholder,
           staticCover: _export.staticCover,
+          paging: widget.paging,
           onOpenImage: _openImageViewer,
           actions: DiaryPreviewActions(
             onOpenTypography: () => showDiaryTypographySheet(context),
@@ -359,7 +341,16 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               context,
               background: resolved.background,
             ),
-            onMore: () => _showActions(detail, resolved),
+            onMore: () => showDiaryPreviewMore(
+              context,
+              export: _export,
+              detail: detail,
+              readDocument: () => _controller?.document,
+              database: ref.read(appDatabaseProvider),
+              settings: ref.read(settingsServiceProvider).asData?.value,
+              background: resolved.background,
+              onDelete: _deleteDiary,
+            ),
           ),
         ),
       ),

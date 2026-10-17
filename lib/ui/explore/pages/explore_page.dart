@@ -162,7 +162,17 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                           viewData: viewData,
                           controller: _controller,
                           onOpenDiary: (diaryId) {
-                            _openPreview(context, diaryId);
+                            _openPreview(
+                              context,
+                              diaryId,
+                              // 只有“那年今日”会打开日记：在这几篇里左右翻。
+                              sequence: DiaryPreviewSequence(
+                                ids: <String>[
+                                  for (final item in viewData.onThisDayDiaries)
+                                    item.diaryId,
+                                ],
+                              ),
+                            );
                           },
                           onOpenMediaGallery: () {
                             _openMediaGallery(context);
@@ -188,10 +198,14 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     );
   }
 
-  void _openPreview(BuildContext context, String diaryId) {
+  void _openPreview(
+    BuildContext context,
+    String diaryId, {
+    DiaryPreviewSequence? sequence,
+  }) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => DiaryPreviewPage(diaryId: diaryId),
+        builder: (_) => DiaryPreviewPage(diaryId: diaryId, sequence: sequence),
       ),
     );
   }

@@ -5660,5 +5660,137 @@
   "diaryPreviewStyleSampleWeather": "晴",
   "@diaryPreviewStyleSampleWeather": {
     "description": "预览页样式设置：示例日记的天气。"
+  },
+  "diaryPreviewFirstDiary": "已经是第一篇",
+  "@diaryPreviewFirstDiary": {
+    "description": "日记预览页翻到第一篇还往外拉时的边缘提示。"
+  },
+  "diaryPreviewLastDiary": "已经是最后一篇",
+  "@diaryPreviewLastDiary": {
+    "description": "日记预览页翻到最后一篇还往外拉时的边缘提示。"
+  },
+  "diaryPreviewPrevious": "上一篇",
+  "@diaryPreviewPrevious": {
+    "description": "日记预览页：翻到上一篇（正文末尾的卡片与读屏动作）。"
+  },
+  "diaryPreviewNext": "下一篇",
+  "@diaryPreviewNext": {
+    "description": "日记预览页：翻到下一篇（正文末尾的卡片与读屏动作）。"
+  },
+  "diaryPreviewPosition": "{index} / {count}",
+  "@diaryPreviewPosition": {
+    "description": "日记预览页顶栏的位置标题，如“3 / 57”。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewPositionMore": "{index} / {count}+",
+  "@diaryPreviewPositionMore": {
+    "description": "日记预览页顶栏的位置标题，列表还有没加载的部分时。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewPositionSemantics": "第 {index} 篇，共 {count} 篇",
+  "@diaryPreviewPositionSemantics": {
+    "description": "日记预览页位置标题的读屏文字。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewPositionSemanticsMore": "第 {index} 篇，至少 {count} 篇",
+  "@diaryPreviewPositionSemanticsMore": {
+    "description": "日记预览页位置标题的读屏文字，列表还有没加载的部分时。",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPreviewStyleTabPaging": "翻页",
+  "@diaryPreviewStyleTabPaging": {
+    "description": "预览页样式设置：“翻页”标签页。"
+  },
+  "diaryPreviewStyleSwipe": "左右滑动切换日记",
+  "@diaryPreviewStyleSwipe": {
+    "description": "预览页样式设置：左右滑动切换日记的开关。"
+  },
+  "diaryPreviewStyleSwipeSubtitle": "按打开时所在列表的顺序",
+  "@diaryPreviewStyleSwipeSubtitle": {
+    "description": "预览页样式设置：左右滑动开关的说明。"
+  },
+  "diaryPreviewStyleSwipeSensitivity": "翻页灵敏度",
+  "@diaryPreviewStyleSwipeSensitivity": {
+    "description": "预览页样式设置：翻页灵敏度。"
+  },
+  "diaryPreviewStyleSensitivitySensitive": "灵敏",
+  "@diaryPreviewStyleSensitivitySensitive": {
+    "description": "预览页样式设置：翻页灵敏度“灵敏”。"
+  },
+  "diaryPreviewStyleSensitivityStandard": "标准",
+  "@diaryPreviewStyleSensitivityStandard": {
+    "description": "预览页样式设置：翻页灵敏度“标准”。"
+  },
+  "diaryPreviewStyleSensitivityStrict": "防误触",
+  "@diaryPreviewStyleSensitivityStrict": {
+    "description": "预览页样式设置：翻页灵敏度“防误触”。"
+  },
+  "diaryPreviewStyleSensitivityHint": "越往后越需要更水平的滑动才翻页；“防误触”还要拖过半屏或用力一甩。",
+  "@diaryPreviewStyleSensitivityHint": {
+    "description": "预览页样式设置：翻页灵敏度的说明。"
+  },
+  "diaryPreviewStyleHapticOnPage": "翻页时轻震",
+  "@diaryPreviewStyleHapticOnPage": {
+    "description": "预览页样式设置：翻页时轻震的开关。"
+  },
+  "diaryPreviewStyleTransition": "翻页效果",
+  "@diaryPreviewStyleTransition": {
+    "description": "预览页样式设置：翻页效果。"
+  },
+  "diaryPreviewStyleTransitionSlide": "平移",
+  "@diaryPreviewStyleTransitionSlide": {
+    "description": "预览页样式设置：翻页效果“平移”。"
+  },
+  "diaryPreviewStyleTransitionStack": "层叠",
+  "@diaryPreviewStyleTransitionStack": {
+    "description": "预览页样式设置：翻页效果“层叠”。"
+  },
+  "diaryPreviewStyleTransitionFade": "淡入",
+  "@diaryPreviewStyleTransitionFade": {
+    "description": "预览页样式设置：翻页效果“淡入”。"
+  },
+  "diaryPreviewStyleNeighborCards": "正文末尾显示上一篇 / 下一篇",
+  "@diaryPreviewStyleNeighborCards": {
+    "description": "预览页样式设置：正文末尾显示上一篇、下一篇的开关。"
+  },
+  "diaryPreviewStyleEdgeHint": "到头时提示",
+  "@diaryPreviewStyleEdgeHint": {
+    "description": "预览页样式设置：到头提示的开关。"
+  },
+  "diaryPreviewStyleEdgeHintSubtitle": "已经是第一篇或最后一篇还往外拉时提示",
+  "@diaryPreviewStyleEdgeHintSubtitle": {
+    "description": "预览页样式设置：到头提示开关的说明。"
+  },
+  "diaryPreviewStyleTopBarTitlePosition": "位置",
+  "@diaryPreviewStyleTopBarTitlePosition": {
+    "description": "预览页样式设置：顶栏标题显示在翻页顺序中的位置（如 3 / 57）。"
   }
 }

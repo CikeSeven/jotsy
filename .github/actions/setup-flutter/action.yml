@@ -1,0 +1,41 @@
+name: Set up Flutter project
+description: >-
+  Installs the pinned Flutter SDK (plus JDK 17 for Android builds when asked)
+  and fetches pub dependencies exactly as locked in pubspec.lock.
+
+inputs:
+  java:
+    description: Also set up Temurin JDK 17 with the Gradle cache, for Android builds.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Java
+      if: inputs.java == 'true'
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+      with:
+        distribution: temurin
+        java-version: '17'
+        cache: gradle
+
+    # CI 与发布工作流的 Flutter 版本只在这里定义。升级时单独提交，并先让 CI
+    # 在新版本上全绿（含 Android release 构建），再发布签名包。
+    - name: Set up Flutter
+      uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+      with:
+        channel: stable
+        flutter-version: '3.47.5'
+        # 同时缓存 SDK 与 pub 缓存（pub 缓存键含 pubspec.lock 的哈希）。
+        cache: true
+
+    - name: Show Flutter version
+      shell: bash
+      run: flutter --version
+
+    # --enforce-lockfile：pubspec.yaml 改了依赖却没提交 pubspec.lock 时直接失败，
+    # 而不是在 CI 里悄悄重新解析出一份与本地不同的依赖。
+    - name: Install dependencies
+      shell: bash
+      run: flutter pub get --enforce-lockfile

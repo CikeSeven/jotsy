@@ -1,0 +1,212 @@
+name: CI
+
+# 合并门禁（规则见 AGENTS.md §7）：静态检查、生成代码一致性、全量测试、
+# Android release 构建、工作流 lint，PR 上另查提交信息。发布工作流经
+# workflow_call 复用同一套检查，打包前先过门禁。
+on:
+  push:
+    branches: [main]
+    # 只改文档时不跑：测试不读取任何 Markdown 或 docs/ 下的文件。
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'LICENSE'
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      skip-android-build:
+        description: Skip the throwaway-key Android build (the caller builds signed APKs itself).
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # 只取消同一 PR 的旧运行；main 上每个提交都要留下完整结果。
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  static-checks:
+    name: Format, analyze & codegen
+    # 与发布工作流一致地固定镜像：ubuntu-latest 将于 2026-10-19 切到 Ubuntu 26。
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        id: setup
+        uses: ./.github/actions/setup-flutter
+
+      # 各项检查互不依赖：前一项失败也继续跑后面的，一次报出全部问题。
+      - name: Check formatting
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: dart format --output=none --set-exit-if-changed lib test integration_test tool
+
+      - name: Analyze
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: flutter analyze --no-pub
+
+      - name: Check ARB metadata
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: dart run tool/check_arb.dart
+
+      # 重新生成本地化、drift 代码与插件注册文件，与提交内容不一致即失败。
+      - name: Check generated code is committed
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          flutter gen-l10n
+          dart run build_runner build --delete-conflicting-outputs
+          changes="$(git status --porcelain --untracked-files=all)"
+          if [[ -n "$changes" ]]; then
+            echo "$changes"
+            git --no-pager diff --stat
+            echo "::error::Generated files differ from the commit. Run 'flutter pub get', 'flutter gen-l10n' and 'dart run build_runner build --delete-conflicting-outputs', then commit the result."
+            exit 1
+          fi
+
+  test:
+    name: Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      # GitHub Actions 上默认使用 github 报告器，失败用例直接标注到源码行。
+      - name: Run tests
+        run: flutter test --no-pub --coverage
+
+      - name: Summarize coverage
+        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        run: |
+          awk -F: '
+            /^SF:/ { generated = ($2 ~ /\.g\.dart$/ || $2 ~ /\/l10n\/app_localizations_gen/) }
+            /^LF:/ && !generated { found += $2 }
+            /^LH:/ && !generated { hit += $2 }
+            END {
+              if (found > 0) {
+                printf "### Test coverage\n\nLine coverage: **%.1f%%** (%d / %d lines, generated code excluded)\n", hit * 100 / found, hit, found
+              }
+            }
+          ' coverage/lcov.info >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+          retention-days: 14
+
+  android:
+    name: Android release build
+    if: ${{ !inputs.skip-android-build }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+        with:
+          java: 'true'
+
+      # build.gradle.kts 的 release/profile 签名读取 key.properties，缺少时 Gradle
+      # 在配置阶段就失败。这里用随 runner 销毁的一次性密钥，只验证能否构建：
+      # 不读取任何 secrets（fork 的 PR 也能跑），产物也不上传——签名与正式版不同
+      # 的包装上后无法覆盖升级（AGENTS.md §7）。
+      - name: Create throwaway signing key
+        run: |
+          password="$(openssl rand -hex 24)"
+          keytool -genkeypair -noprompt -alias ci -keyalg RSA -keysize 2048 -validity 2 \
+            -dname 'CN=Jotsy CI throwaway key' -keystore android/ci-throwaway.jks \
+            -storepass "$password" -keypass "$password"
+          {
+            printf 'storePassword=%s\n' "$password"
+            printf 'keyPassword=%s\n' "$password"
+            printf 'keyAlias=ci\n'
+            printf 'storeFile=ci-throwaway.jks\n'
+          } > android/key.properties
+
+      # 选 release 而不是 debug：AOT 编译、图标字体 tree shaking 与 R8 混淆只在
+      # release 里发生，插件升级后最常见的就是这几类只在发布时才暴露的失败。
+      # 单一 ABI 足以覆盖 Gradle/R8 与 AOT，三种 ABI 的分包留给发布工作流。
+      - name: Build release APK (arm64)
+        run: flutter build apk --release --no-pub --target-platform android-arm64
+
+      - name: Report APK size
+        run: |
+          stat --format=%s build/app/outputs/flutter-apk/app-release.apk |
+            awk '{ printf "### Android build\n\napp-release.apk (arm64-v8a): %.1f MiB\n", $1 / 1048576 }' \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  actionlint:
+    name: Workflow lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Dependabot 不会更新这里的版本：升级时同时改版本号与发布页给出的校验和。
+      # shellcheck 已预装在 runner 镜像里，actionlint 会用它检查 run 脚本。
+      - name: Run actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.12
+          ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          archive="$RUNNER_TEMP/actionlint.tar.gz"
+          curl -sSfL -o "$archive" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
+          "$RUNNER_TEMP/actionlint" -color
+
+  commits:
+    name: Commit messages
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # AGENTS.md §9 要求 Conventional Commit。只查本 PR 新增的非合并提交；
+      # git 自动生成的 Revert "…" 也放行。
+      - name: Check Conventional Commit subjects
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^(feat|fix|refactor|perf|docs|test|build|ci|chore|style|revert)(\([^)]+\))?!?: [^ ].*'
+          failed=0
+          checked=0
+          while IFS= read -r line; do
+            sha="${line%% *}"
+            subject="${line#* }"
+            checked=$((checked + 1))
+            if [[ ! "$subject" =~ $pattern && ! "$subject" =~ ^Revert\ \" ]]; then
+              echo "::error title=Commit message::${sha:0:7} is not a Conventional Commit: ${subject//%/%25}"
+              failed=1
+            fi
+          done < <(git log --no-merges --format='%H %s' "$BASE_SHA..$HEAD_SHA")
+          if [[ "$failed" == 1 ]]; then
+            echo "Use '<type>(<scope>): <summary>' with type feat, fix, refactor, perf, docs, test, build, ci, chore, style or revert (AGENTS.md §9)."
+            exit 1
+          fi
+          echo "Checked $checked commit(s)."

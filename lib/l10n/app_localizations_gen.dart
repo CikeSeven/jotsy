@@ -8959,6 +8959,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy'**
   String get diaryImageMenuCopy;
+
+  /// Preview settings, Body tab: how long images show in the body.
+  ///
+  /// In en, this message translates to:
+  /// **'Long images'**
+  String get diaryPreviewStyleLongImage;
+
+  /// Explanation under the long image setting.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 3 times as tall as wide, like long screenshots. Tap a folded one to see it all.'**
+  String get diaryPreviewStyleLongImageSubtitle;
+
+  /// Long images: fold to a portrait box showing the top.
+  ///
+  /// In en, this message translates to:
+  /// **'Fold'**
+  String get diaryPreviewStyleLongImageFold;
+
+  /// Long images: show the whole image at column width.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get diaryPreviewStyleLongImageFull;
 }
 
 class _AppLocalizationsDelegate

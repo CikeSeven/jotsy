@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/long_image_tile_service.dart';
 import 'package:node_diary/ui/widgets/double_tap_zoom_viewer.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_cover_alignment.dart';
+import 'package:node_diary/ui/widgets/long_image/long_image_scroll_range.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_tiles_view.dart';
 
 Future<Uint8List> _png(int width, int height) async {
@@ -195,6 +196,73 @@ void main() {
       expect(restored.dy, closeTo(before.dy, 1e-6));
       expect(zoomEvents, <bool>[true, false]);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('LongImageScrollRange', () {
+    testWidgets('follows the scroll position with a viewport of margin', (
+      tester,
+    ) async {
+      final ranges = <(double, double)>[];
+      final scroll = ScrollController();
+      addTearDown(scroll.dispose);
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 100,
+              height: 500,
+              child: SingleChildScrollView(
+                controller: scroll,
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 1000),
+                    SizedBox(
+                      height: 5000,
+                      child: LongImageScrollRange(
+                        builder: (context, start, end) {
+                          ranges.add((start, end));
+                          return const SizedBox.expand();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      // 长图在视口下方 500 处：多留的一个视口刚好够到它的顶边。
+      expect(ranges.last.$1, 0);
+      expect(ranges.last.$2, 0);
+
+      scroll.jumpTo(2000);
+      await tester.pump();
+      await tester.pump();
+      // 视口里是长图的 1000～1500，上下各多 500。
+      expect(ranges.last.$1, closeTo(500 / 5000, 1e-9));
+      expect(ranges.last.$2, closeTo(2000 / 5000, 1e-9));
+    });
+
+    testWidgets('builds everything outside a scroll view', (tester) async {
+      (double, double)? range;
+      await tester.pumpWidget(
+        SizedBox(
+          height: 300,
+          child: LongImageScrollRange(
+            builder: (context, start, end) {
+              range = (start, end);
+              return const SizedBox.expand();
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(range, (0.0, 1.0));
     });
   });
 }

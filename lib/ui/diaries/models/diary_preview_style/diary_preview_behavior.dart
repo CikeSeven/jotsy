@@ -14,6 +14,7 @@ class DiaryPreviewBehavior {
     this.hapticOnPage = false,
     this.todoToggle = true,
     this.textSelection = true,
+    this.longImageMode = DiaryPreviewLongImageMode.fold,
   });
 
   static const DiaryPreviewBehavior defaults = DiaryPreviewBehavior();
@@ -42,6 +43,11 @@ class DiaryPreviewBehavior {
         json['textSelection'],
         defaults.textSelection,
       ),
+      longImageMode: StyleJson.enumByName(
+        DiaryPreviewLongImageMode.values,
+        json['longImageMode'],
+        defaults.longImageMode,
+      ),
     );
   }
 
@@ -58,6 +64,10 @@ class DiaryPreviewBehavior {
 
   /// 允许长按选择、复制正文文字。
   final bool textSelection;
+
+  /// 正文长图折叠还是完整显示。属于阅读习惯而非外观：套用预设或别人的
+  /// 样式码不该改掉它。
+  final DiaryPreviewLongImageMode longImageMode;
 
   bool get isDefault => this == defaults;
 
@@ -78,6 +88,12 @@ class DiaryPreviewBehavior {
     StyleJson.put(json, 'hapticOnPage', hapticOnPage, defaults.hapticOnPage);
     StyleJson.put(json, 'todoToggle', todoToggle, defaults.todoToggle);
     StyleJson.put(json, 'textSelection', textSelection, defaults.textSelection);
+    StyleJson.putEnum(
+      json,
+      'longImageMode',
+      longImageMode,
+      defaults.longImageMode,
+    );
     return json;
   }
 
@@ -87,6 +103,7 @@ class DiaryPreviewBehavior {
     bool? hapticOnPage,
     bool? todoToggle,
     bool? textSelection,
+    DiaryPreviewLongImageMode? longImageMode,
   }) {
     return DiaryPreviewBehavior(
       swipeBetweenDiaries: swipeBetweenDiaries ?? this.swipeBetweenDiaries,
@@ -94,6 +111,7 @@ class DiaryPreviewBehavior {
       hapticOnPage: hapticOnPage ?? this.hapticOnPage,
       todoToggle: todoToggle ?? this.todoToggle,
       textSelection: textSelection ?? this.textSelection,
+      longImageMode: longImageMode ?? this.longImageMode,
     );
   }
 
@@ -104,7 +122,8 @@ class DiaryPreviewBehavior {
         other.swipeSensitivity == swipeSensitivity &&
         other.hapticOnPage == hapticOnPage &&
         other.todoToggle == todoToggle &&
-        other.textSelection == textSelection;
+        other.textSelection == textSelection &&
+        other.longImageMode == longImageMode;
   }
 
   @override
@@ -114,5 +133,6 @@ class DiaryPreviewBehavior {
     hapticOnPage,
     todoToggle,
     textSelection,
+    longImageMode,
   );
 }

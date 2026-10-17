@@ -6854,5 +6854,21 @@
   "diaryImageMenuCopy": "Copy",
   "@diaryImageMenuCopy": {
     "description": "Image menu: copy the image (paste it back into the body or another app)."
+  },
+  "diaryPreviewStyleLongImage": "Long images",
+  "@diaryPreviewStyleLongImage": {
+    "description": "Preview settings, Body tab: how long images show in the body."
+  },
+  "diaryPreviewStyleLongImageSubtitle": "At least 3 times as tall as wide, like long screenshots. Tap a folded one to see it all.",
+  "@diaryPreviewStyleLongImageSubtitle": {
+    "description": "Explanation under the long image setting."
+  },
+  "diaryPreviewStyleLongImageFold": "Fold",
+  "@diaryPreviewStyleLongImageFold": {
+    "description": "Long images: fold to a portrait box showing the top."
+  },
+  "diaryPreviewStyleLongImageFull": "Full",
+  "@diaryPreviewStyleLongImageFull": {
+    "description": "Long images: show the whole image at column width."
   }
 }

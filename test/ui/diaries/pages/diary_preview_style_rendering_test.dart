@@ -15,6 +15,7 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_overlays.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_cover_sliver.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -351,6 +352,29 @@ void main() {
         .config;
     expect(config.checkBoxReadOnly, isTrue);
     expect(config.enableInteractiveSelection, isFalse);
+  });
+
+  testWidgets('the long image behavior reaches the body image builder', (
+    tester,
+  ) async {
+    bool foldsLongImages() => tester
+        .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
+        .config
+        .embedBuilders!
+        .whereType<DiaryImageEmbedBuilder>()
+        .single
+        .foldLongImages;
+
+    await _pump(tester);
+    expect(foldsLongImages(), isTrue);
+
+    await _pump(
+      tester,
+      behavior: const DiaryPreviewBehavior(
+        longImageMode: DiaryPreviewLongImageMode.full,
+      ),
+    );
+    expect(foldsLongImages(), isFalse);
   });
 
   testWidgets('a limited text width centers the text on wide screens', (

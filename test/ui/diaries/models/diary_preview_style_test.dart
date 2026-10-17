@@ -157,6 +157,29 @@ void main() {
     expect(applied.behavior, behavior);
   });
 
+  test('the long image mode is reading behavior that survives presets', () {
+    const behavior = DiaryPreviewBehavior(
+      longImageMode: DiaryPreviewLongImageMode.full,
+    );
+    const settings = DiaryPreviewSettings(behavior: behavior);
+    expect(DiaryPreviewSettings.decode(settings.encode()), settings);
+    expect(
+      settings
+          .withCurrent(DiaryPreviewPresets.styleOf(DiaryPreviewPresetId.night))
+          .behavior
+          .longImageMode,
+      DiaryPreviewLongImageMode.full,
+    );
+    // 默认值不写入；读不懂的值回到折叠。
+    expect(DiaryPreviewBehavior.defaults.toJson(), isEmpty);
+    expect(
+      DiaryPreviewBehavior.fromJson(<String, Object?>{
+        'longImageMode': 'zoom',
+      }).longImageMode,
+      DiaryPreviewLongImageMode.fold,
+    );
+  });
+
   test('settings keep the current style, saved styles and behavior', () {
     final settings = const DiaryPreviewSettings(
       current: _everything,

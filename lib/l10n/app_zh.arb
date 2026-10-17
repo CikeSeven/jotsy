@@ -6854,5 +6854,21 @@
   "diaryImageMenuCopy": "复制",
   "@diaryImageMenuCopy": {
     "description": "正文图片菜单：复制图片（可粘贴回正文或其他应用）。"
+  },
+  "diaryPreviewStyleLongImage": "长图显示",
+  "@diaryPreviewStyleLongImage": {
+    "description": "预览页设置“正文”标签：正文长图的显示方式。"
+  },
+  "diaryPreviewStyleLongImageSubtitle": "高是宽 3 倍以上的图片，如长截图；折叠时点按查看全图",
+  "@diaryPreviewStyleLongImageSubtitle": {
+    "description": "长图显示设置的说明。"
+  },
+  "diaryPreviewStyleLongImageFold": "折叠",
+  "@diaryPreviewStyleLongImageFold": {
+    "description": "长图显示：折叠成竖图大小、只露出顶部。"
+  },
+  "diaryPreviewStyleLongImageFull": "完整显示",
+  "@diaryPreviewStyleLongImageFull": {
+    "description": "长图显示：按列宽完整展开在正文里。"
   }
 }

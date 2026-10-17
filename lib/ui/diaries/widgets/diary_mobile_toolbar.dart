@@ -17,8 +17,12 @@ export 'diary_toolbar_panel_reserve.dart';
 /// 编辑、发布预览和阅读页共用全部 embed；图片点按菜单见 `showDiaryImageOptions`。
 /// [onImageOpen]：只读正文里点按图片时调用，第二个参数是从图片画面抓取的
 /// 看图页飞入信息（减少动画或图片未解码时为 null）。
+///
+/// [foldLongImages]：正文长图折叠（默认）还是完整展开，只有预览页按阅读行为
+/// 设置传入。
 List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
   void Function(String imageSource, ImageViewerHero? hero)? onImageOpen,
+  bool foldLongImages = true,
 }) {
   return [
     if (kIsWeb)
@@ -26,7 +30,10 @@ List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
     else ...[
       // 菜单里删除图片只移出正文，不删文件：撤销或放弃修改后原日记还要用，
       // 文件由 DiaryMediaCleanupService 按引用回收。
-      DiaryImageEmbedBuilder(onImageOpen: onImageOpen),
+      DiaryImageEmbedBuilder(
+        onImageOpen: onImageOpen,
+        foldLongImages: foldLongImages,
+      ),
       const DiaryVideoEmbedBuilder(),
     ],
     const DiaryAudioEmbedBuilder(),

@@ -27,11 +27,14 @@ import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart'
 /// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]；比列宽窄的
 ///   图片（缩小过或原图就小）靠行首对齐，所在行设了居中/居右时从之，见
 ///   [diaryImageEmbedAlignment]；
-/// - 长图（高 ≥ 宽 × 3）折叠显示，见 [DiaryLongImageFold]。
+/// - 长图（高 ≥ 宽 × 3）默认折叠显示（[DiaryLongImageFold]）；[foldLongImages]
+///   为 false（预览页“长图显示：完整显示”）时按列宽完整展开
+///   （[DiaryLongImageFull]）。
 class DiaryImageEmbedBuilder extends quill.EmbedBuilder {
-  const DiaryImageEmbedBuilder({this.onImageOpen});
+  const DiaryImageEmbedBuilder({this.onImageOpen, this.foldLongImages = true});
 
   final void Function(String imageSource, ImageViewerHero? hero)? onImageOpen;
+  final bool foldLongImages;
 
   @override
   String get key => quill.BlockEmbed.imageType;
@@ -60,14 +63,12 @@ class DiaryImageEmbedBuilder extends quill.EmbedBuilder {
                   readOnly: embedContext.readOnly,
                 ),
               )
-            : () => open(
-                source,
-                ImageViewerHero.capture(imageContext, tag: heroTag!),
-              ),
+            : () => open(source, _captureHero(imageContext, heroTag!)),
         child: DiaryEmbeddedImage(
           source: source,
           bounds: diaryImageEmbedBounds(embedContext.node),
           heroTag: heroTag,
+          foldLongImages: foldLongImages,
         ),
       ),
     );
@@ -82,6 +83,24 @@ class DiaryImageEmbedBuilder extends quill.EmbedBuilder {
         child: image,
       ),
     );
+  }
+
+  /// 抓取看图页的飞入画面；图片没有建立来源 Hero 时（完整展开的长图）返回
+  /// null：那样的画面只是可见的某一段分片，垫在看图页顶部会错位。
+  static ImageViewerHero? _captureHero(BuildContext context, Object tag) {
+    var hasHero = false;
+    void visit(Element element) {
+      if (hasHero) return;
+      final widget = element.widget;
+      if (widget is Hero && widget.tag == tag) {
+        hasHero = true;
+        return;
+      }
+      element.visitChildElements(visit);
+    }
+
+    context.visitChildElements(visit);
+    return hasHero ? ImageViewerHero.capture(context, tag: tag) : null;
   }
 }
 
@@ -98,6 +117,7 @@ class DiaryEmbeddedImage extends StatefulWidget {
     required this.source,
     this.bounds = const BoxConstraints(),
     this.heroTag,
+    this.foldLongImages = true,
   });
 
   final String source;
@@ -105,6 +125,9 @@ class DiaryEmbeddedImage extends StatefulWidget {
 
   /// 看图页共享元素标签；为 null（编辑页）时不建立 Hero。
   final Object? heroTag;
+
+  /// 长图折叠（默认）还是完整展开。
+  final bool foldLongImages;
 
   @override
   State<DiaryEmbeddedImage> createState() => _DiaryEmbeddedImageState();
@@ -146,6 +169,15 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
           return const SizedBox.shrink();
         }
         final size = snapshot.size;
+        if (size != null && snapshot.isLong && !widget.foldLongImages) {
+          return DiaryLongImageFull(
+            size: size,
+            tiles: snapshot.tiles,
+            decodeWidth: decodeWidth,
+            providerOf: _providerOf,
+            bounds: widget.bounds,
+          );
+        }
         if (size != null && snapshot.isLong) {
           return DiaryLongImageFold(
             size: size,

@@ -206,6 +206,29 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the body tab switches long images between fold and full', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.diaryPreviewStyleTabBody);
+    await _scrollTo(tester, find.text(l10n.diaryPreviewStyleLongImage));
+    expect(
+      _stored(settings).behavior.longImageMode,
+      DiaryPreviewLongImageMode.fold,
+    );
+
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleLongImageFull));
+    var stored = _stored(settings);
+    expect(stored.behavior.longImageMode, DiaryPreviewLongImageMode.full);
+    // 属于阅读行为：外观没有变化。
+    expect(stored.current, const DiaryPreviewStyle());
+
+    await _tapVisible(tester, find.text(l10n.diaryPreviewStyleLongImageFold));
+    stored = _stored(settings);
+    expect(stored.behavior.longImageMode, DiaryPreviewLongImageMode.fold);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the live preview swipes between samples', (tester) async {
     final (_, l10n) = await _pumpPage(tester);
     final gesture = await tester.startGesture(const Offset(300, 220));

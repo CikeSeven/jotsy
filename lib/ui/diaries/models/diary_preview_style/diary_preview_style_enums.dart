@@ -57,3 +57,8 @@ enum DiaryPreviewPageTransition { slide, stack, fade }
 /// 翻页灵敏度（阅读行为）：越往后越需要明显的横向滑动才翻页，竖着读时更
 /// 不容易误翻。
 enum DiaryPreviewSwipeSensitivity { sensitive, standard, strict }
+
+/// 正文长图（高 ≥ 宽 × 3，如长截图）的显示方式（阅读行为）：[fold] 折叠成
+/// 宽 : 高 = 2 : 3 的盒子、只露出顶部，点按进看图页（默认）；[full] 按列宽
+/// 完整展开在正文里。
+enum DiaryPreviewLongImageMode { fold, full }

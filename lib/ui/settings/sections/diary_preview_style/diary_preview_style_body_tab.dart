@@ -12,7 +12,7 @@ import '../../widgets/style_editor/style_editor_common.dart';
 
 /// “正文”标签页：正文字体与排版（入口，设置与编辑页共用、只存一处）、空正文
 /// 提示、“最后编辑于”、时间胶囊解封提示，以及不受预设影响的阅读行为（勾选
-/// 待办、长按选择文字）。
+/// 待办、长按选择文字、长图折叠或完整显示）。
 class DiaryPreviewStyleBodyTab extends StatelessWidget {
   const DiaryPreviewStyleBodyTab({super.key, required this.controller});
 
@@ -108,6 +108,28 @@ class DiaryPreviewStyleBodyTab extends StatelessWidget {
               value: behavior.textSelection,
               onChanged: (bool v) =>
                   controller.setBehavior(behavior.copyWith(textSelection: v)),
+            ),
+            SettingsChoiceTile(
+              title: l10n.diaryPreviewStyleLongImage,
+              subtitle: l10n.diaryPreviewStyleLongImageSubtitle,
+              child: ExpressiveButtonGroup<DiaryPreviewLongImageMode>(
+                minSegmentWidth: 96,
+                segments: <ButtonSegment<DiaryPreviewLongImageMode>>[
+                  ButtonSegment<DiaryPreviewLongImageMode>(
+                    value: DiaryPreviewLongImageMode.fold,
+                    label: Text(l10n.diaryPreviewStyleLongImageFold),
+                  ),
+                  ButtonSegment<DiaryPreviewLongImageMode>(
+                    value: DiaryPreviewLongImageMode.full,
+                    label: Text(l10n.diaryPreviewStyleLongImageFull),
+                  ),
+                ],
+                selected: <DiaryPreviewLongImageMode>{behavior.longImageMode},
+                onSelectionChanged: (Set<DiaryPreviewLongImageMode> v) =>
+                    controller.setBehavior(
+                      behavior.copyWith(longImageMode: v.single),
+                    ),
+              ),
             ),
           ],
         ),

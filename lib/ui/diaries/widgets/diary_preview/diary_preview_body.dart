@@ -31,6 +31,7 @@ class DiaryPreviewBody extends StatelessWidget {
     this.showEmptyHint = true,
     this.todoToggle = true,
     this.textSelection = true,
+    this.longImageMode = DiaryPreviewLongImageMode.fold,
     this.textColor,
   });
 
@@ -46,6 +47,9 @@ class DiaryPreviewBody extends StatelessWidget {
 
   /// 允许长按选择文字。
   final bool textSelection;
+
+  /// 正文长图折叠还是完整显示。
+  final DiaryPreviewLongImageMode longImageMode;
 
   /// 通过对比度检查的自定义正文颜色；null 用主题正文色。
   final Color? textColor;
@@ -72,6 +76,7 @@ class DiaryPreviewBody extends StatelessWidget {
               customStyles: styles,
               embedBuilders: buildDiaryQuillEmbedBuilders(
                 onImageOpen: onOpenImage,
+                foldLongImages: longImageMode == DiaryPreviewLongImageMode.fold,
               ),
             ),
           );

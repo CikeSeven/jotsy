@@ -67,6 +67,7 @@ Future<void> _pumpEditor(
   WidgetTester tester,
   quill.QuillController controller, {
   void Function(String imageSource, ImageViewerHero? hero)? onImageOpen,
+  bool foldLongImages = true,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -82,6 +83,7 @@ Future<void> _pumpEditor(
           config: quill.QuillEditorConfig(
             embedBuilders: buildDiaryQuillEmbedBuilders(
               onImageOpen: onImageOpen,
+              foldLongImages: foldLongImages,
             ),
           ),
         ),
@@ -472,6 +474,48 @@ void main() {
     expect(find.text('保存到相册'), findsOneWidget);
     expect(find.text('调整大小'), findsNothing);
     expect(find.text('删除'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('long images can show in full at column width', (tester) async {
+    final source = (await tester.runAsync(() => _pngDataUri(300, 1500)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+          // 上游滑条总会顺带写入一个屏幕高的高度：完整显示时不按它限高。
+          'attributes': {'style': 'width: 200.0; height: 600.0; '},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+    ImageViewerHero? hero;
+    var opened = false;
+
+    await _pumpEditor(
+      tester,
+      controller,
+      foldLongImages: false,
+      onImageOpen: (_, capturedHero) {
+        opened = true;
+        hero = capturedHero;
+      },
+    );
+
+    final full = find.byType(DiaryLongImageFull);
+    expect(full, findsOneWidget);
+    expect(find.byType(DiaryLongImageFold), findsNothing);
+    expect(tester.getSize(full), const Size(200, 1000));
+    expect(find.text('长图'), findsNothing);
+
+    await tester.tap(full);
+    await tester.pump();
+    // 整张图比屏幕还高时不做共享元素飞入，看图页直接淡入。
+    expect(opened, isTrue);
+    expect(hero, isNull);
     expect(tester.takeException(), isNull);
   });
 }

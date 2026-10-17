@@ -5321,4 +5321,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryImageMenuCopy => 'Copy';
+
+  @override
+  String get diaryPreviewStyleLongImage => 'Long images';
+
+  @override
+  String get diaryPreviewStyleLongImageSubtitle =>
+      'At least 3 times as tall as wide, like long screenshots. Tap a folded one to see it all.';
+
+  @override
+  String get diaryPreviewStyleLongImageFold => 'Fold';
+
+  @override
+  String get diaryPreviewStyleLongImageFull => 'Full';
 }

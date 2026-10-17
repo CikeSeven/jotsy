@@ -4847,4 +4847,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryImageMenuCopy => '复制';
+
+  @override
+  String get diaryPreviewStyleLongImage => '长图显示';
+
+  @override
+  String get diaryPreviewStyleLongImageSubtitle =>
+      '高是宽 3 倍以上的图片，如长截图；折叠时点按查看全图';
+
+  @override
+  String get diaryPreviewStyleLongImageFold => '折叠';
+
+  @override
+  String get diaryPreviewStyleLongImageFull => '完整显示';
 }

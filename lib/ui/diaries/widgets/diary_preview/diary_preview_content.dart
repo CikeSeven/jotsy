@@ -219,6 +219,7 @@ class DiaryPreviewContent extends ConsumerWidget {
                   showEmptyHint: style.body.showEmptyHint,
                   todoToggle: behavior.todoToggle,
                   textSelection: behavior.textSelection,
+                  longImageMode: behavior.longImageMode,
                   textColor: resolved.bodyColor,
                 ),
                 if (metaAtEnd) ...<Widget>[

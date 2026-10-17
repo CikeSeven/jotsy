@@ -20,42 +20,42 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_riverpod: ^3.2.1
   font_awesome_flutter: ^11.0.0
-  drift: ^2.32.0
+  drift: ^2.35.2
   sqlite3_flutter_libs: ^0.6.0+eol
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   path: ^1.9.1
-  shared_preferences: ^2.5.4
+  shared_preferences: ^2.5.6
   intl: ^0.20.2
   flutter_staggered_grid_view: ^0.7.0
   flutter_quill: ^11.6.0
   flutter_quill_extensions: ^11.0.0
-  file_picker: ^10.3.10
+  file_picker: ^12.0.0-beta.1
   smooth_sheets: ^0.17.0
-  geolocator: ^14.0.2
+  geolocator: ^14.1.1
   loading_indicator_m3e: ^0.1.1
-  share_plus: ^10.1.4
-  widget_screenshot_plus: ^0.0.7
-  table_calendar: ^3.2.0
-  flutter_svg: ^2.2.4
-  url_launcher: ^6.3.2
-  package_info_plus: ^9.0.0
-  archive: ^3.6.1
-  local_auth: ^3.0.1
+  share_plus: ^13.3.1
+  widget_screenshot_plus: ^0.0.9
+  table_calendar: ^3.3.0
+  flutter_svg: ^2.3.0
+  url_launcher: ^6.3.3
+  package_info_plus: ^10.2.2
+  archive: ^4.5.2
+  local_auth: ^3.0.2
   flutter_quill_to_pdf: ^2.3.9
-  pdf: ^3.11.3
-  xml: ^6.6.1
+  pdf: ^3.13.1
+  xml: ^7.0.1
   meta: ^1.15.0
-  gal: ^2.3.2
+  gal: ^2.3.3
   record: ^6.2.0
   audioplayers: ^6.5.0
   open_filex: ^4.7.0
-  video_player: ^2.11.1
+  video_player: ^2.14.1
   # 以下均为已有传递依赖的显式声明，用于导入其他日记应用的导出：
   # html 解析 HTML 正文，markdown 解析 Day One 的行内语法，crypto 生成稳定
   # 的导入日记 ID，sqlite3 只读打开 Diarium 的 .diary 备份。
   crypto: ^3.0.7
-  html: ^0.15.6
-  markdown: ^7.3.0
+  html: ^0.15.7
+  markdown: ^7.3.1
   sqlite3: ^3.2.0
   tyme: ^1.5.0
   # 从手机厂商与 WPS 云端导入笔记：在官方网页中登录，登录状态（Cookie）只用
@@ -76,11 +76,11 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^5.0.0
-  build_runner: ^2.12.2
+  build_runner: ^2.16.2
   drift_dev: ^2.32.0
   flutter_launcher_icons: ^0.14.4
   # 模拟备份恢复时偏好写入返回 false 或异常，验证跨数据库/媒体回滚。
-  shared_preferences_platform_interface: ^2.4.1
+  shared_preferences_platform_interface: ^2.4.2
 
 flutter:
   generate: true

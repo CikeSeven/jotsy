@@ -14,8 +14,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../support/expressive_test_theme.dart';
 import '../../../support/soft_keyboard_keys.dart';
 
-/// 编辑页正文与手机键盘的配合：在底部打字时新内容跟着上升、软键盘弹起时
-/// 光标不被盖住、软键盘“选择”模式能扩展正文选区；只改格式不拽动视口。
+/// 编辑页正文与手机键盘的配合：在底部打字时新内容跟着上升、离工具栏留出
+/// 空隙；软键盘弹起时光标不被盖住、软键盘“选择”模式能扩展正文选区；只改
+/// 格式不拽动视口。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -93,6 +94,9 @@ void main() {
   double toolbarTop(WidgetTester tester) =>
       tester.getTopLeft(find.byType(DiaryFloatingToolbar)).dy;
 
+  // 与编辑页的光标空隙一致：光标不贴着工具栏。
+  const caretClearance = 40.0;
+
   /// 正文写满 [lines] 行，光标停在末尾。
   Future<void> fillBody(WidgetTester tester, {int lines = 40}) async {
     final controller = bodyController(tester);
@@ -136,7 +140,10 @@ void main() {
 
     for (var index = 0; index < 5; index += 1) {
       await typeAtCaret(tester, '\nnew line $index');
-      expect(caretBottom(tester), lessThanOrEqualTo(toolbarTop(tester)));
+      expect(
+        toolbarTop(tester) - caretBottom(tester),
+        greaterThanOrEqualTo(caretClearance),
+      );
     }
     expect(position.pixels, greaterThan(offsetBefore));
     expect(tester.takeException(), isNull);

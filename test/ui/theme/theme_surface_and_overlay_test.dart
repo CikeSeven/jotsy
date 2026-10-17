@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
@@ -73,12 +74,15 @@ void main() {
           seedColor: Colors.pink,
         );
 
+        // 设置页的“关于”入口读取全局更新状态，与应用里一样放在 ProviderScope 下。
         await tester.pumpWidget(
-          MaterialApp(
-            theme: pinkTheme,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: const Scaffold(body: SettingsPage()),
+          ProviderScope(
+            child: MaterialApp(
+              theme: pinkTheme,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const Scaffold(body: SettingsPage()),
+            ),
           ),
         );
 

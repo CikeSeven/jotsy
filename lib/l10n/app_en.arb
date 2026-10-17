@@ -409,56 +409,315 @@
   "@aboutCheckUpdate": {
     "description": "Action title to check latest release in About page."
   },
-  "aboutCheckUpdateSubtitle": "Detect release and open APK download automatically",
-  "@aboutCheckUpdateSubtitle": {
-    "description": "Subtitle for update check action in About page."
-  },
-  "aboutUpdateAlreadyLatest": "You are already on the latest version ({version})",
-  "@aboutUpdateAlreadyLatest": {
-    "description": "Message shown when current version is already latest.",
+  "aboutUpdateSubtitleAvailable": "{version} is available",
+  "@aboutUpdateSubtitleAvailable": {
+    "description": "关于页“检查更新”行副标题：发现新版本。",
     "placeholders": {
       "version": {
         "type": "String"
       }
     }
   },
-  "aboutUpdateOpeningDownload": "New version found ({version}), opening download link",
-  "@aboutUpdateOpeningDownload": {
-    "description": "Message shown when new version is found and download link is opening.",
+  "aboutUpdateSubtitleDownloading": "Downloading {percent}%",
+  "@aboutUpdateSubtitleDownloading": {
+    "description": "关于页“检查更新”行副标题：下载进度。",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutUpdateSubtitleReady": "Update downloaded, tap to install",
+  "@aboutUpdateSubtitleReady": {
+    "description": "关于页“检查更新”行副标题：安装包已就绪。"
+  },
+  "appUpdateTitle": "App updates",
+  "@appUpdateTitle": {
+    "description": "软件更新页标题。"
+  },
+  "appUpdateCurrentVersion": "Current version {version}",
+  "@appUpdateCurrentVersion": {
+    "description": "软件更新页与提示面板：本机已安装的版本。",
     "placeholders": {
       "version": {
         "type": "String"
       }
     }
   },
-  "aboutUpdateOpenBrowserFailed": "Unable to open browser automatically, please try again later",
-  "@aboutUpdateOpenBrowserFailed": {
-    "description": "Message shown when browser launch fails after checking update."
+  "appUpdateChecking": "Checking for updates…",
+  "@appUpdateChecking": {
+    "description": "软件更新页：检查中。"
   },
-  "aboutUpdateCheckFailed": "Failed to check updates, please verify network and retry",
-  "@aboutUpdateCheckFailed": {
-    "description": "Message shown when update checking fails."
+  "appUpdateCheckingHint": "Trying several routes at once and using the first to answer",
+  "@appUpdateCheckingHint": {
+    "description": "软件更新页：检查中的说明。"
   },
-  "aboutUpdateNoApkFound": "New version found, but no downloadable APK was resolved",
-  "@aboutUpdateNoApkFound": {
-    "description": "Message shown when release exists but APK assets are not found."
+  "appUpdateUpToDate": "You're up to date",
+  "@appUpdateUpToDate": {
+    "description": "软件更新页与关于页：没有新版本。"
   },
-  "aboutUpdateDialogTitle": "New version found: {version}",
-  "@aboutUpdateDialogTitle": {
-    "description": "Title for update confirmation dialog.",
+  "appUpdateLastChecked": "Last checked: {time}",
+  "@appUpdateLastChecked": {
+    "description": "软件更新页：上次检查的时间。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateAvailableBadge": "New",
+  "@appUpdateAvailableBadge": {
+    "description": "有新版本时的小胶囊标记。"
+  },
+  "appUpdateAvailableTitle": "Version {version} is available",
+  "@appUpdateAvailableTitle": {
+    "description": "软件更新页与启动提示：新版本标题。",
     "placeholders": {
       "version": {
         "type": "String"
       }
     }
   },
-  "aboutUpdateDialogNoNotes": "No release notes were provided for this version.",
-  "@aboutUpdateDialogNoNotes": {
-    "description": "Fallback text when release notes are unavailable."
+  "appUpdatePublishedOn": "Released {date}",
+  "@appUpdatePublishedOn": {
+    "description": "新版本的发布日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
-  "aboutUpdateDialogConfirmDownload": "Download update",
-  "@aboutUpdateDialogConfirmDownload": {
-    "description": "Primary action label in update confirmation dialog."
+  "appUpdateReleaseNotesTitle": "What's new",
+  "@appUpdateReleaseNotesTitle": {
+    "description": "软件更新页：新版本说明的分组标题。"
+  },
+  "appUpdateCurrentNotesTitle": "In this version",
+  "@appUpdateCurrentNotesTitle": {
+    "description": "软件更新页：已是最新时当前版本说明的分组标题。"
+  },
+  "appUpdateNoReleaseNotes": "No release notes for this version.",
+  "@appUpdateNoReleaseNotes": {
+    "description": "版本没有更新说明时的占位文字。"
+  },
+  "appUpdateViewOnGitHub": "View on GitHub",
+  "@appUpdateViewOnGitHub": {
+    "description": "在浏览器打开 Release 页面。"
+  },
+  "appUpdateActionCheck": "Check for updates",
+  "@appUpdateActionCheck": {
+    "description": "软件更新页按钮：检查更新。"
+  },
+  "appUpdateActionDownload": "Download and install ({size})",
+  "@appUpdateActionDownload": {
+    "description": "软件更新页按钮：下载新版本，附安装包大小。",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateActionDownloadNoSize": "Download and install",
+  "@appUpdateActionDownloadNoSize": {
+    "description": "软件更新页按钮：下载新版本（大小未知）。"
+  },
+  "appUpdateActionResume": "Resume download ({percent}% done)",
+  "@appUpdateActionResume": {
+    "description": "软件更新页按钮：继续取消过的下载。",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "appUpdateActionCancel": "Cancel download",
+  "@appUpdateActionCancel": {
+    "description": "软件更新页按钮：取消下载（已下载部分保留）。"
+  },
+  "appUpdateActionInstall": "Install",
+  "@appUpdateActionInstall": {
+    "description": "软件更新页按钮：打开系统安装器。"
+  },
+  "appUpdateActionRetry": "Try again",
+  "@appUpdateActionRetry": {
+    "description": "软件更新页按钮：重试失败的步骤。"
+  },
+  "appUpdateActionOpenReleasePage": "Open download page",
+  "@appUpdateActionOpenReleasePage": {
+    "description": "软件更新页按钮：在浏览器打开 Release 页面。"
+  },
+  "appUpdateActionSkip": "Skip this version",
+  "@appUpdateActionSkip": {
+    "description": "跳过当前新版本，自动检查不再提示。"
+  },
+  "appUpdateSkippedHint": "Skipped: you won't be reminded at startup",
+  "@appUpdateSkippedHint": {
+    "description": "软件更新页：当前版本已被跳过。"
+  },
+  "appUpdateDownloadProgress": "{received} / {total}",
+  "@appUpdateDownloadProgress": {
+    "description": "下载进度：已下载 / 总大小。",
+    "placeholders": {
+      "received": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateDownloadSpeed": "{speed}/s",
+  "@appUpdateDownloadSpeed": {
+    "description": "下载速度。",
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateDownloadVia": "via {route}",
+  "@appUpdateDownloadVia": {
+    "description": "下载所用线路。",
+    "placeholders": {
+      "route": {
+        "type": "String"
+      }
+    }
+  },
+  "appUpdateVerifying": "Verifying the package…",
+  "@appUpdateVerifying": {
+    "description": "下载完成后校验 SHA-256 与签名。"
+  },
+  "appUpdateReadyToInstall": "Downloaded and verified",
+  "@appUpdateReadyToInstall": {
+    "description": "安装包已就绪。"
+  },
+  "appUpdateInstallPermissionTitle": "Allow installing apps",
+  "@appUpdateInstallPermissionTitle": {
+    "description": "缺少“安装未知应用”权限时的标题。"
+  },
+  "appUpdateInstallPermissionMessage": "Android needs you to allow Jotsy to install unknown apps in system settings. Turn it on and come back here; installation continues automatically.",
+  "@appUpdateInstallPermissionMessage": {
+    "description": "缺少“安装未知应用”权限时的说明。"
+  },
+  "appUpdateInstallPermissionAction": "Open settings",
+  "@appUpdateInstallPermissionAction": {
+    "description": "打开“安装未知应用”系统设置。"
+  },
+  "appUpdateInstallPermissionSettingsFailed": "Couldn't open system settings. Allow Jotsy to install unknown apps in Settings → Apps → Jotsy.",
+  "@appUpdateInstallPermissionSettingsFailed": {
+    "description": "打不开系统设置时的提示。"
+  },
+  "appUpdateUnsupportedPlatform": "In-app installation isn't supported on this platform. Get the new version from the download page.",
+  "@appUpdateUnsupportedPlatform": {
+    "description": "非 Android 平台的说明。"
+  },
+  "appUpdateNoCompatibleApk": "This release has no package for this device's processor. Pick one manually on the download page.",
+  "@appUpdateNoCompatibleApk": {
+    "description": "没有匹配本机 ABI 的安装包。"
+  },
+  "appUpdateFailedCheckTitle": "Couldn't check for updates",
+  "@appUpdateFailedCheckTitle": {
+    "description": "检查失败的标题。"
+  },
+  "appUpdateFailedDownloadTitle": "Download failed",
+  "@appUpdateFailedDownloadTitle": {
+    "description": "下载或校验失败的标题。"
+  },
+  "appUpdateFailedInstallTitle": "Couldn't install",
+  "@appUpdateFailedInstallTitle": {
+    "description": "安装失败的标题。"
+  },
+  "appUpdateFailureNetwork": "Every route failed. Try again later, or choose another route or a custom mirror under Download route below.",
+  "@appUpdateFailureNetwork": {
+    "description": "所有线路都连不上时的说明。"
+  },
+  "appUpdateFailureNotFound": "No published release was found.",
+  "@appUpdateFailureNotFound": {
+    "description": "没有找到已发布版本时的说明。"
+  },
+  "appUpdateFailureIntegrity": "The download was incomplete or altered (checksum mismatch) and has been deleted. Try again or use another route.",
+  "@appUpdateFailureIntegrity": {
+    "description": "SHA-256 或大小不符时的说明。"
+  },
+  "appUpdateFailureSignature": "The package is signed differently from this app and can't replace it. Only download from the official release page.",
+  "@appUpdateFailureSignature": {
+    "description": "签名或包名不符时的说明。"
+  },
+  "appUpdateFailureNotNewer": "The downloaded package isn't newer than this version.",
+  "@appUpdateFailureNotNewer": {
+    "description": "安装包版本不高于本机时的说明。"
+  },
+  "appUpdateFailureStorage": "Couldn't save the package. Check your device's free storage.",
+  "@appUpdateFailureStorage": {
+    "description": "写入缓存失败时的说明。"
+  },
+  "appUpdateFailureInstallUnavailable": "Couldn't open the system installer. Install manually from the download page.",
+  "@appUpdateFailureInstallUnavailable": {
+    "description": "打不开系统安装器时的说明。"
+  },
+  "appUpdateSettingsTitle": "Update settings",
+  "@appUpdateSettingsTitle": {
+    "description": "软件更新页：设置分组标题。"
+  },
+  "appUpdateAutoCheck": "Check automatically",
+  "@appUpdateAutoCheck": {
+    "description": "软件更新页：自动检查开关。"
+  },
+  "appUpdateAutoCheckSubtitle": "At most once a day at launch; only reads public release info",
+  "@appUpdateAutoCheckSubtitle": {
+    "description": "自动检查开关的说明。"
+  },
+  "appUpdateSource": "Download route",
+  "@appUpdateSource": {
+    "description": "下载线路设置项与面板标题。"
+  },
+  "appUpdateSourceAuto": "Automatic",
+  "@appUpdateSourceAuto": {
+    "description": "下载线路：自动测速择优。"
+  },
+  "appUpdateSourceAutoDescription": "Tests every route and uses the fastest; recommended in mainland China",
+  "@appUpdateSourceAutoDescription": {
+    "description": "自动线路的说明。"
+  },
+  "appUpdateSourceDirect": "GitHub direct",
+  "@appUpdateSourceDirect": {
+    "description": "下载线路：不经镜像直连 GitHub。"
+  },
+  "appUpdateSourceDirectDescription": "No mirror; may be slow or unreachable in mainland China",
+  "@appUpdateSourceDirectDescription": {
+    "description": "GitHub 直连的说明。"
+  },
+  "appUpdateSourceMirrorDescription": "Public mirror",
+  "@appUpdateSourceMirrorDescription": {
+    "description": "内置镜像的说明。"
+  },
+  "appUpdateSourceCustom": "Custom mirror",
+  "@appUpdateSourceCustom": {
+    "description": "下载线路：用户填写的镜像。"
+  },
+  "appUpdateSourceCustomDescription": "When the built-in mirrors stop working, enter a GitHub proxy that works for you",
+  "@appUpdateSourceCustomDescription": {
+    "description": "自定义镜像的说明。"
+  },
+  "appUpdateSourceCustomHint": "e.g. https://mirror.example.com/",
+  "@appUpdateSourceCustomHint": {
+    "description": "自定义镜像输入框提示。"
+  },
+  "appUpdateSourceCustomInvalid": "Enter an address starting with https://",
+  "@appUpdateSourceCustomInvalid": {
+    "description": "自定义镜像地址不合法。"
+  },
+  "appUpdateSourceSheetHint": "Mirrors are third-party public services. Every package is checked against its SHA-256 and the app signature after download, so a mirror cannot swap in another app.",
+  "@appUpdateSourceSheetHint": {
+    "description": "下载线路面板的说明。"
+  },
+  "appUpdatePromptUpdate": "Update now",
+  "@appUpdatePromptUpdate": {
+    "description": "启动提示：进入更新页并开始下载。"
+  },
+  "appUpdatePromptLater": "Later",
+  "@appUpdatePromptLater": {
+    "description": "启动提示：关闭，下次再提示。"
   },
   "aboutSubmitIssue": "Submit issue",
   "@aboutSubmitIssue": {

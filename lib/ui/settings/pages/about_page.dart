@@ -1,24 +1,21 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
-import '../../../core/services/app_service.dart';
-import '../../../core/services/app_update_service.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../app/theme/app_effects.dart';
-import '../../widgets/delayed_loading_gate.dart';
-import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_image_frame.dart';
+import '../controllers/app_update_controller.dart';
+import '../models/app_update_state.dart';
+import '../widgets/app_update_badge.dart';
+import '../widgets/external_link.dart';
+import 'app_update_page.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
 class AboutPage extends ConsumerStatefulWidget {
@@ -44,35 +41,11 @@ class AboutPage extends ConsumerStatefulWidget {
 
 class _AboutPageState extends ConsumerState<AboutPage> {
   late final Future<String> _appVersionFuture;
-  bool _checkingUpdate = false;
 
   @override
   void initState() {
     super.initState();
     _appVersionFuture = AboutPage._loadAppVersion();
-  }
-
-  /// 外链统一走这个入口：
-  /// 1) 优先拉起系统浏览器；
-  /// 2) 若系统无法处理 URL，则自动复制链接，避免用户丢失入口。
-  Future<void> _openExternalUrl(BuildContext context, String value) async {
-    final uri = Uri.tryParse(value);
-    if (uri != null) {
-      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (opened) {
-        return;
-      }
-    }
-    await Clipboard.setData(ClipboardData(text: value));
-    if (!context.mounted) {
-      return;
-    }
-    await HomeHintVisibilityScope.showTrackedSnackBar(
-      context: context,
-      snackBar: SnackBar(
-        content: Text(context.l10n.aboutOpenLinkFallbackCopied),
-      ),
-    );
   }
 
   Future<void> _copyQqFeedbackGroup(BuildContext context) async {
@@ -116,138 +89,6 @@ class _AboutPageState extends ConsumerState<AboutPage> {
         );
       },
     );
-  }
-
-  Future<void> _checkLatestRelease(BuildContext context) async {
-    if (_checkingUpdate) {
-      return;
-    }
-    setState(() => _checkingUpdate = true);
-    try {
-      final settingsService = await ref.read(settingsServiceProvider.future);
-      final updateService = ref.read(appUpdateServiceProvider);
-      final result = await updateService.checkLatestRelease(
-        settingsService: settingsService,
-      );
-      if (!context.mounted) {
-        return;
-      }
-
-      switch (result.status) {
-        case AppUpdateCheckStatus.upToDate:
-          unawaited(
-            HomeHintVisibilityScope.showTrackedSnackBar(
-              context: context,
-              snackBar: SnackBar(
-                content: Text(
-                  context.l10n.aboutUpdateAlreadyLatest(
-                    result.latestVersion ?? '--',
-                  ),
-                ),
-              ),
-            ),
-          );
-          return;
-        case AppUpdateCheckStatus.updateAvailable:
-          final url = result.downloadUrl;
-          final version = result.latestVersion ?? '--';
-          if (url == null || url.isEmpty) {
-            unawaited(
-              HomeHintVisibilityScope.showTrackedSnackBar(
-                context: context,
-                snackBar: SnackBar(
-                  content: Text(context.l10n.aboutUpdateNoApkFound),
-                ),
-              ),
-            );
-            return;
-          }
-          final confirmed = await _showUpdateConfirmDialog(
-            context,
-            version: version,
-            releaseNotes: result.releaseNotes,
-          );
-          if (!confirmed || !context.mounted) {
-            return;
-          }
-          final opened = await launchUrl(
-            Uri.parse(url),
-            mode: LaunchMode.externalApplication,
-          );
-          if (!context.mounted) {
-            return;
-          }
-          unawaited(
-            HomeHintVisibilityScope.showTrackedSnackBar(
-              context: context,
-              snackBar: SnackBar(
-                content: Text(
-                  opened
-                      ? context.l10n.aboutUpdateOpeningDownload(version)
-                      : context.l10n.aboutUpdateOpenBrowserFailed,
-                ),
-              ),
-            ),
-          );
-          return;
-        case AppUpdateCheckStatus.failed:
-          unawaited(
-            HomeHintVisibilityScope.showTrackedSnackBar(
-              context: context,
-              snackBar: SnackBar(
-                content: Text(context.l10n.aboutUpdateCheckFailed),
-              ),
-            ),
-          );
-          return;
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _checkingUpdate = false);
-      }
-    }
-  }
-
-  Future<bool> _showUpdateConfirmDialog(
-    BuildContext context, {
-    required String version,
-    String? releaseNotes,
-  }) async {
-    final colorScheme = Theme.of(context).colorScheme;
-    final notes = (releaseNotes ?? '').trim();
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        final l10n = dialogContext.l10n;
-        return AlertDialog(
-          title: Text(l10n.aboutUpdateDialogTitle(version)),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: Text(
-                notes.isEmpty ? l10n.aboutUpdateDialogNoNotes : notes,
-                style: Theme.of(dialogContext).textTheme.bodyMedium,
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(foregroundColor: colorScheme.primary),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.aboutUpdateDialogConfirmDownload),
-            ),
-          ],
-        );
-      },
-    );
-    return result == true;
   }
 
   @override
@@ -345,42 +186,16 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                             icon: FontAwesomeIcons.github,
                             title: l10n.aboutOpenSourceRepo,
                             onTap: () =>
-                                _openExternalUrl(context, AboutPage._repoUrl),
+                                openExternalLink(context, AboutPage._repoUrl),
                           ),
                           const Divider(height: 1),
-                          _AboutActionTile(
-                            icon: FontAwesomeIcons.arrowsRotate,
-                            title: l10n.aboutCheckUpdate,
-                            onTap: _checkingUpdate
-                                ? null
-                                : () => _checkLatestRelease(context),
-                            // 检查更新超过 300ms 才把箭头换成等待指示，
-                            // 两者之间缩放淡入切换，而不是硬切或一闪。
-                            trailing: DelayedLoadingGate(
-                              loading: _checkingUpdate,
-                              builder: (context, showLoading) =>
-                                  ExpressiveIconSwap(
-                                    switchKey: showLoading,
-                                    child: showLoading
-                                        ? const ExpressiveLoadingIndicator(
-                                            size: 18,
-                                          )
-                                        : FaIcon(
-                                            FontAwesomeIcons.angleRight,
-                                            size: 15,
-                                            color: Theme.of(
-                                              context,
-                                            ).colorScheme.onSurfaceVariant,
-                                          ),
-                                  ),
-                            ),
-                          ),
+                          const _CheckUpdateTile(),
                           const Divider(height: 1),
                           _AboutActionTile(
                             icon: FontAwesomeIcons.bug,
                             title: l10n.aboutSubmitIssue,
                             onTap: () =>
-                                _openExternalUrl(context, AboutPage._issueUrl),
+                                openExternalLink(context, AboutPage._issueUrl),
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(
@@ -541,6 +356,53 @@ class _SectionCard extends StatelessWidget {
           side: ExpressiveSurfaces.cardBorderSide(colorScheme),
         ),
         child: Padding(padding: padding, child: child),
+      ),
+    );
+  }
+}
+
+/// “检查更新”行：打开软件更新页；副标题随全局更新状态显示新版本、下载
+/// 进度或待安装，有新版本时右侧显示“新版本”胶囊。
+class _CheckUpdateTile extends ConsumerWidget {
+  const _CheckUpdateTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final state = ref.watch(appUpdateControllerProvider);
+    final release = state.release;
+    final fraction = state.progress?.fraction;
+    final String? subtitle = switch (state.phase) {
+      AppUpdatePhase.downloading when fraction != null =>
+        l10n.aboutUpdateSubtitleDownloading((fraction * 100).floor()),
+      AppUpdatePhase.readyToInstall => l10n.aboutUpdateSubtitleReady,
+      AppUpdatePhase.upToDate => l10n.appUpdateUpToDate,
+      _ when state.hasUpdate && release != null =>
+        l10n.aboutUpdateSubtitleAvailable('v${release.version.name}'),
+      _ => null,
+    };
+    return _AboutActionTile(
+      icon: FontAwesomeIcons.arrowsRotate,
+      title: l10n.aboutCheckUpdate,
+      subtitle: subtitle,
+      trailing: state.hasUpdate
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const AppUpdateBadge(),
+                const SizedBox(width: 8),
+                FaIcon(
+                  FontAwesomeIcons.angleRight,
+                  size: 15,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ],
+            )
+          : null,
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => const AppUpdatePage(),
+        ),
       ),
     );
   }

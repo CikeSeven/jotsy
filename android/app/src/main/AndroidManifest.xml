@@ -18,6 +18,9 @@
         tools:node="replace" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <!-- 应用内更新：把从 GitHub Release 下载并校验过的安装包交给系统安装器。
+         Android 8+ 还需用户在系统设置里为本应用开启“安装未知应用”。 -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <!-- 保存图片到相册：API <= 29 需要写外部存储权限（gal 插件要求）。 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -59,6 +62,16 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/diary_share_paths" />
+        </provider>
+        <!-- 应用内更新：只暴露 cacheDir/app_update/ 下校验过的安装包。 -->
+        <provider
+            android:name=".AppUpdateFileProvider"
+            android:authorities="${applicationId}.app_update"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/app_update_paths" />
         </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

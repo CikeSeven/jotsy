@@ -47,35 +47,38 @@ void main() {
         (tester) async {
           _phone(tester, const Size(320, 800));
           final theme = expressiveTestTheme(brightness);
+          // 设置页的“关于”入口读取全局更新状态，与应用里一样放在 ProviderScope 下。
           await tester.pumpWidget(
-            _app(
-              brightness: brightness,
-              locale: locale,
-              child: Scaffold(
-                body: SettingsPage(
-                  pageBackgroundColor: theme.colorScheme.surface,
-                ),
-                bottomNavigationBar: BottomNav(
-                  items: const [
-                    BottomNavItem(
-                      label: 'Diaries',
-                      icon: FontAwesomeIcons.book,
-                    ),
-                    BottomNavItem(
-                      label: 'Calendar',
-                      icon: FontAwesomeIcons.calendar,
-                    ),
-                    BottomNavItem(
-                      label: 'Explore',
-                      icon: FontAwesomeIcons.compass,
-                    ),
-                    BottomNavItem(
-                      label: 'Settings',
-                      icon: FontAwesomeIcons.gear,
-                    ),
-                  ],
-                  selectedIndex: 3,
-                  onTap: (_) {},
+            ProviderScope(
+              child: _app(
+                brightness: brightness,
+                locale: locale,
+                child: Scaffold(
+                  body: SettingsPage(
+                    pageBackgroundColor: theme.colorScheme.surface,
+                  ),
+                  bottomNavigationBar: BottomNav(
+                    items: const [
+                      BottomNavItem(
+                        label: 'Diaries',
+                        icon: FontAwesomeIcons.book,
+                      ),
+                      BottomNavItem(
+                        label: 'Calendar',
+                        icon: FontAwesomeIcons.calendar,
+                      ),
+                      BottomNavItem(
+                        label: 'Explore',
+                        icon: FontAwesomeIcons.compass,
+                      ),
+                      BottomNavItem(
+                        label: 'Settings',
+                        icon: FontAwesomeIcons.gear,
+                      ),
+                    ],
+                    selectedIndex: 3,
+                    onTap: (_) {},
+                  ),
                 ),
               ),
             ),

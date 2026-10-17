@@ -644,59 +644,383 @@ abstract class AppLocalizations {
   /// **'Check for updates'**
   String get aboutCheckUpdate;
 
-  /// Subtitle for update check action in About page.
+  /// 关于页“检查更新”行副标题：发现新版本。
   ///
   /// In en, this message translates to:
-  /// **'Detect release and open APK download automatically'**
-  String get aboutCheckUpdateSubtitle;
+  /// **'{version} is available'**
+  String aboutUpdateSubtitleAvailable(String version);
 
-  /// Message shown when current version is already latest.
+  /// 关于页“检查更新”行副标题：下载进度。
   ///
   /// In en, this message translates to:
-  /// **'You are already on the latest version ({version})'**
-  String aboutUpdateAlreadyLatest(String version);
+  /// **'Downloading {percent}%'**
+  String aboutUpdateSubtitleDownloading(int percent);
 
-  /// Message shown when new version is found and download link is opening.
+  /// 关于页“检查更新”行副标题：安装包已就绪。
   ///
   /// In en, this message translates to:
-  /// **'New version found ({version}), opening download link'**
-  String aboutUpdateOpeningDownload(String version);
+  /// **'Update downloaded, tap to install'**
+  String get aboutUpdateSubtitleReady;
 
-  /// Message shown when browser launch fails after checking update.
+  /// 软件更新页标题。
   ///
   /// In en, this message translates to:
-  /// **'Unable to open browser automatically, please try again later'**
-  String get aboutUpdateOpenBrowserFailed;
+  /// **'App updates'**
+  String get appUpdateTitle;
 
-  /// Message shown when update checking fails.
+  /// 软件更新页与提示面板：本机已安装的版本。
   ///
   /// In en, this message translates to:
-  /// **'Failed to check updates, please verify network and retry'**
-  String get aboutUpdateCheckFailed;
+  /// **'Current version {version}'**
+  String appUpdateCurrentVersion(String version);
 
-  /// Message shown when release exists but APK assets are not found.
+  /// 软件更新页：检查中。
   ///
   /// In en, this message translates to:
-  /// **'New version found, but no downloadable APK was resolved'**
-  String get aboutUpdateNoApkFound;
+  /// **'Checking for updates…'**
+  String get appUpdateChecking;
 
-  /// Title for update confirmation dialog.
+  /// 软件更新页：检查中的说明。
   ///
   /// In en, this message translates to:
-  /// **'New version found: {version}'**
-  String aboutUpdateDialogTitle(String version);
+  /// **'Trying several routes at once and using the first to answer'**
+  String get appUpdateCheckingHint;
 
-  /// Fallback text when release notes are unavailable.
+  /// 软件更新页与关于页：没有新版本。
   ///
   /// In en, this message translates to:
-  /// **'No release notes were provided for this version.'**
-  String get aboutUpdateDialogNoNotes;
+  /// **'You\'re up to date'**
+  String get appUpdateUpToDate;
 
-  /// Primary action label in update confirmation dialog.
+  /// 软件更新页：上次检查的时间。
   ///
   /// In en, this message translates to:
-  /// **'Download update'**
-  String get aboutUpdateDialogConfirmDownload;
+  /// **'Last checked: {time}'**
+  String appUpdateLastChecked(String time);
+
+  /// 有新版本时的小胶囊标记。
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get appUpdateAvailableBadge;
+
+  /// 软件更新页与启动提示：新版本标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String appUpdateAvailableTitle(String version);
+
+  /// 新版本的发布日期。
+  ///
+  /// In en, this message translates to:
+  /// **'Released {date}'**
+  String appUpdatePublishedOn(String date);
+
+  /// 软件更新页：新版本说明的分组标题。
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get appUpdateReleaseNotesTitle;
+
+  /// 软件更新页：已是最新时当前版本说明的分组标题。
+  ///
+  /// In en, this message translates to:
+  /// **'In this version'**
+  String get appUpdateCurrentNotesTitle;
+
+  /// 版本没有更新说明时的占位文字。
+  ///
+  /// In en, this message translates to:
+  /// **'No release notes for this version.'**
+  String get appUpdateNoReleaseNotes;
+
+  /// 在浏览器打开 Release 页面。
+  ///
+  /// In en, this message translates to:
+  /// **'View on GitHub'**
+  String get appUpdateViewOnGitHub;
+
+  /// 软件更新页按钮：检查更新。
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get appUpdateActionCheck;
+
+  /// 软件更新页按钮：下载新版本，附安装包大小。
+  ///
+  /// In en, this message translates to:
+  /// **'Download and install ({size})'**
+  String appUpdateActionDownload(String size);
+
+  /// 软件更新页按钮：下载新版本（大小未知）。
+  ///
+  /// In en, this message translates to:
+  /// **'Download and install'**
+  String get appUpdateActionDownloadNoSize;
+
+  /// 软件更新页按钮：继续取消过的下载。
+  ///
+  /// In en, this message translates to:
+  /// **'Resume download ({percent}% done)'**
+  String appUpdateActionResume(int percent);
+
+  /// 软件更新页按钮：取消下载（已下载部分保留）。
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel download'**
+  String get appUpdateActionCancel;
+
+  /// 软件更新页按钮：打开系统安装器。
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get appUpdateActionInstall;
+
+  /// 软件更新页按钮：重试失败的步骤。
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get appUpdateActionRetry;
+
+  /// 软件更新页按钮：在浏览器打开 Release 页面。
+  ///
+  /// In en, this message translates to:
+  /// **'Open download page'**
+  String get appUpdateActionOpenReleasePage;
+
+  /// 跳过当前新版本，自动检查不再提示。
+  ///
+  /// In en, this message translates to:
+  /// **'Skip this version'**
+  String get appUpdateActionSkip;
+
+  /// 软件更新页：当前版本已被跳过。
+  ///
+  /// In en, this message translates to:
+  /// **'Skipped: you won\'t be reminded at startup'**
+  String get appUpdateSkippedHint;
+
+  /// 下载进度：已下载 / 总大小。
+  ///
+  /// In en, this message translates to:
+  /// **'{received} / {total}'**
+  String appUpdateDownloadProgress(String received, String total);
+
+  /// 下载速度。
+  ///
+  /// In en, this message translates to:
+  /// **'{speed}/s'**
+  String appUpdateDownloadSpeed(String speed);
+
+  /// 下载所用线路。
+  ///
+  /// In en, this message translates to:
+  /// **'via {route}'**
+  String appUpdateDownloadVia(String route);
+
+  /// 下载完成后校验 SHA-256 与签名。
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying the package…'**
+  String get appUpdateVerifying;
+
+  /// 安装包已就绪。
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded and verified'**
+  String get appUpdateReadyToInstall;
+
+  /// 缺少“安装未知应用”权限时的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Allow installing apps'**
+  String get appUpdateInstallPermissionTitle;
+
+  /// 缺少“安装未知应用”权限时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Android needs you to allow Jotsy to install unknown apps in system settings. Turn it on and come back here; installation continues automatically.'**
+  String get appUpdateInstallPermissionMessage;
+
+  /// 打开“安装未知应用”系统设置。
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get appUpdateInstallPermissionAction;
+
+  /// 打不开系统设置时的提示。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open system settings. Allow Jotsy to install unknown apps in Settings → Apps → Jotsy.'**
+  String get appUpdateInstallPermissionSettingsFailed;
+
+  /// 非 Android 平台的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'In-app installation isn\'t supported on this platform. Get the new version from the download page.'**
+  String get appUpdateUnsupportedPlatform;
+
+  /// 没有匹配本机 ABI 的安装包。
+  ///
+  /// In en, this message translates to:
+  /// **'This release has no package for this device\'s processor. Pick one manually on the download page.'**
+  String get appUpdateNoCompatibleApk;
+
+  /// 检查失败的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for updates'**
+  String get appUpdateFailedCheckTitle;
+
+  /// 下载或校验失败的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get appUpdateFailedDownloadTitle;
+
+  /// 安装失败的标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t install'**
+  String get appUpdateFailedInstallTitle;
+
+  /// 所有线路都连不上时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Every route failed. Try again later, or choose another route or a custom mirror under Download route below.'**
+  String get appUpdateFailureNetwork;
+
+  /// 没有找到已发布版本时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'No published release was found.'**
+  String get appUpdateFailureNotFound;
+
+  /// SHA-256 或大小不符时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'The download was incomplete or altered (checksum mismatch) and has been deleted. Try again or use another route.'**
+  String get appUpdateFailureIntegrity;
+
+  /// 签名或包名不符时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'The package is signed differently from this app and can\'t replace it. Only download from the official release page.'**
+  String get appUpdateFailureSignature;
+
+  /// 安装包版本不高于本机时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'The downloaded package isn\'t newer than this version.'**
+  String get appUpdateFailureNotNewer;
+
+  /// 写入缓存失败时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the package. Check your device\'s free storage.'**
+  String get appUpdateFailureStorage;
+
+  /// 打不开系统安装器时的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the system installer. Install manually from the download page.'**
+  String get appUpdateFailureInstallUnavailable;
+
+  /// 软件更新页：设置分组标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Update settings'**
+  String get appUpdateSettingsTitle;
+
+  /// 软件更新页：自动检查开关。
+  ///
+  /// In en, this message translates to:
+  /// **'Check automatically'**
+  String get appUpdateAutoCheck;
+
+  /// 自动检查开关的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'At most once a day at launch; only reads public release info'**
+  String get appUpdateAutoCheckSubtitle;
+
+  /// 下载线路设置项与面板标题。
+  ///
+  /// In en, this message translates to:
+  /// **'Download route'**
+  String get appUpdateSource;
+
+  /// 下载线路：自动测速择优。
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get appUpdateSourceAuto;
+
+  /// 自动线路的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Tests every route and uses the fastest; recommended in mainland China'**
+  String get appUpdateSourceAutoDescription;
+
+  /// 下载线路：不经镜像直连 GitHub。
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub direct'**
+  String get appUpdateSourceDirect;
+
+  /// GitHub 直连的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'No mirror; may be slow or unreachable in mainland China'**
+  String get appUpdateSourceDirectDescription;
+
+  /// 内置镜像的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Public mirror'**
+  String get appUpdateSourceMirrorDescription;
+
+  /// 下载线路：用户填写的镜像。
+  ///
+  /// In en, this message translates to:
+  /// **'Custom mirror'**
+  String get appUpdateSourceCustom;
+
+  /// 自定义镜像的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'When the built-in mirrors stop working, enter a GitHub proxy that works for you'**
+  String get appUpdateSourceCustomDescription;
+
+  /// 自定义镜像输入框提示。
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. https://mirror.example.com/'**
+  String get appUpdateSourceCustomHint;
+
+  /// 自定义镜像地址不合法。
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an address starting with https://'**
+  String get appUpdateSourceCustomInvalid;
+
+  /// 下载线路面板的说明。
+  ///
+  /// In en, this message translates to:
+  /// **'Mirrors are third-party public services. Every package is checked against its SHA-256 and the app signature after download, so a mirror cannot swap in another app.'**
+  String get appUpdateSourceSheetHint;
+
+  /// 启动提示：进入更新页并开始下载。
+  ///
+  /// In en, this message translates to:
+  /// **'Update now'**
+  String get appUpdatePromptUpdate;
+
+  /// 启动提示：关闭，下次再提示。
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get appUpdatePromptLater;
 
   /// Action title to open issue feedback page.
   ///

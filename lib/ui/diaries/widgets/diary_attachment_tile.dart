@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/file_open_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -78,7 +77,7 @@ class _DiaryAttachmentTileState extends State<DiaryAttachmentTile> {
             ? context.l10n.attachmentOpenHint
             : [
                 if (extension.isNotEmpty) extension.toUpperCase(),
-                _formatSize(size, context.l10n.localeName),
+                context.l10n.formatByteSize(size),
               ].join(' · '));
     return AnimatedBuilder(
       animation: _controller,
@@ -186,15 +185,4 @@ class _DiaryAttachmentTileState extends State<DiaryAttachmentTile> {
         'txt' || 'md' => FontAwesomeIcons.fileLines,
         _ => FontAwesomeIcons.paperclip,
       };
-
-  static String _formatSize(int bytes, String locale) {
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    var value = bytes.toDouble();
-    var unit = 0;
-    while (value >= 1024 && unit < units.length - 1) {
-      value /= 1024;
-      unit++;
-    }
-    return '${NumberFormat('0.#', locale).format(value)} ${units[unit]}';
-  }
 }

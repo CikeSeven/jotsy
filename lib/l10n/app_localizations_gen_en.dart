@@ -322,42 +322,233 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutCheckUpdate => 'Check for updates';
 
   @override
-  String get aboutCheckUpdateSubtitle =>
-      'Detect release and open APK download automatically';
-
-  @override
-  String aboutUpdateAlreadyLatest(String version) {
-    return 'You are already on the latest version ($version)';
+  String aboutUpdateSubtitleAvailable(String version) {
+    return '$version is available';
   }
 
   @override
-  String aboutUpdateOpeningDownload(String version) {
-    return 'New version found ($version), opening download link';
+  String aboutUpdateSubtitleDownloading(int percent) {
+    return 'Downloading $percent%';
   }
 
   @override
-  String get aboutUpdateOpenBrowserFailed =>
-      'Unable to open browser automatically, please try again later';
+  String get aboutUpdateSubtitleReady => 'Update downloaded, tap to install';
 
   @override
-  String get aboutUpdateCheckFailed =>
-      'Failed to check updates, please verify network and retry';
+  String get appUpdateTitle => 'App updates';
 
   @override
-  String get aboutUpdateNoApkFound =>
-      'New version found, but no downloadable APK was resolved';
-
-  @override
-  String aboutUpdateDialogTitle(String version) {
-    return 'New version found: $version';
+  String appUpdateCurrentVersion(String version) {
+    return 'Current version $version';
   }
 
   @override
-  String get aboutUpdateDialogNoNotes =>
-      'No release notes were provided for this version.';
+  String get appUpdateChecking => 'Checking for updates…';
 
   @override
-  String get aboutUpdateDialogConfirmDownload => 'Download update';
+  String get appUpdateCheckingHint =>
+      'Trying several routes at once and using the first to answer';
+
+  @override
+  String get appUpdateUpToDate => 'You\'re up to date';
+
+  @override
+  String appUpdateLastChecked(String time) {
+    return 'Last checked: $time';
+  }
+
+  @override
+  String get appUpdateAvailableBadge => 'New';
+
+  @override
+  String appUpdateAvailableTitle(String version) {
+    return 'Version $version is available';
+  }
+
+  @override
+  String appUpdatePublishedOn(String date) {
+    return 'Released $date';
+  }
+
+  @override
+  String get appUpdateReleaseNotesTitle => 'What\'s new';
+
+  @override
+  String get appUpdateCurrentNotesTitle => 'In this version';
+
+  @override
+  String get appUpdateNoReleaseNotes => 'No release notes for this version.';
+
+  @override
+  String get appUpdateViewOnGitHub => 'View on GitHub';
+
+  @override
+  String get appUpdateActionCheck => 'Check for updates';
+
+  @override
+  String appUpdateActionDownload(String size) {
+    return 'Download and install ($size)';
+  }
+
+  @override
+  String get appUpdateActionDownloadNoSize => 'Download and install';
+
+  @override
+  String appUpdateActionResume(int percent) {
+    return 'Resume download ($percent% done)';
+  }
+
+  @override
+  String get appUpdateActionCancel => 'Cancel download';
+
+  @override
+  String get appUpdateActionInstall => 'Install';
+
+  @override
+  String get appUpdateActionRetry => 'Try again';
+
+  @override
+  String get appUpdateActionOpenReleasePage => 'Open download page';
+
+  @override
+  String get appUpdateActionSkip => 'Skip this version';
+
+  @override
+  String get appUpdateSkippedHint =>
+      'Skipped: you won\'t be reminded at startup';
+
+  @override
+  String appUpdateDownloadProgress(String received, String total) {
+    return '$received / $total';
+  }
+
+  @override
+  String appUpdateDownloadSpeed(String speed) {
+    return '$speed/s';
+  }
+
+  @override
+  String appUpdateDownloadVia(String route) {
+    return 'via $route';
+  }
+
+  @override
+  String get appUpdateVerifying => 'Verifying the package…';
+
+  @override
+  String get appUpdateReadyToInstall => 'Downloaded and verified';
+
+  @override
+  String get appUpdateInstallPermissionTitle => 'Allow installing apps';
+
+  @override
+  String get appUpdateInstallPermissionMessage =>
+      'Android needs you to allow Jotsy to install unknown apps in system settings. Turn it on and come back here; installation continues automatically.';
+
+  @override
+  String get appUpdateInstallPermissionAction => 'Open settings';
+
+  @override
+  String get appUpdateInstallPermissionSettingsFailed =>
+      'Couldn\'t open system settings. Allow Jotsy to install unknown apps in Settings → Apps → Jotsy.';
+
+  @override
+  String get appUpdateUnsupportedPlatform =>
+      'In-app installation isn\'t supported on this platform. Get the new version from the download page.';
+
+  @override
+  String get appUpdateNoCompatibleApk =>
+      'This release has no package for this device\'s processor. Pick one manually on the download page.';
+
+  @override
+  String get appUpdateFailedCheckTitle => 'Couldn\'t check for updates';
+
+  @override
+  String get appUpdateFailedDownloadTitle => 'Download failed';
+
+  @override
+  String get appUpdateFailedInstallTitle => 'Couldn\'t install';
+
+  @override
+  String get appUpdateFailureNetwork =>
+      'Every route failed. Try again later, or choose another route or a custom mirror under Download route below.';
+
+  @override
+  String get appUpdateFailureNotFound => 'No published release was found.';
+
+  @override
+  String get appUpdateFailureIntegrity =>
+      'The download was incomplete or altered (checksum mismatch) and has been deleted. Try again or use another route.';
+
+  @override
+  String get appUpdateFailureSignature =>
+      'The package is signed differently from this app and can\'t replace it. Only download from the official release page.';
+
+  @override
+  String get appUpdateFailureNotNewer =>
+      'The downloaded package isn\'t newer than this version.';
+
+  @override
+  String get appUpdateFailureStorage =>
+      'Couldn\'t save the package. Check your device\'s free storage.';
+
+  @override
+  String get appUpdateFailureInstallUnavailable =>
+      'Couldn\'t open the system installer. Install manually from the download page.';
+
+  @override
+  String get appUpdateSettingsTitle => 'Update settings';
+
+  @override
+  String get appUpdateAutoCheck => 'Check automatically';
+
+  @override
+  String get appUpdateAutoCheckSubtitle =>
+      'At most once a day at launch; only reads public release info';
+
+  @override
+  String get appUpdateSource => 'Download route';
+
+  @override
+  String get appUpdateSourceAuto => 'Automatic';
+
+  @override
+  String get appUpdateSourceAutoDescription =>
+      'Tests every route and uses the fastest; recommended in mainland China';
+
+  @override
+  String get appUpdateSourceDirect => 'GitHub direct';
+
+  @override
+  String get appUpdateSourceDirectDescription =>
+      'No mirror; may be slow or unreachable in mainland China';
+
+  @override
+  String get appUpdateSourceMirrorDescription => 'Public mirror';
+
+  @override
+  String get appUpdateSourceCustom => 'Custom mirror';
+
+  @override
+  String get appUpdateSourceCustomDescription =>
+      'When the built-in mirrors stop working, enter a GitHub proxy that works for you';
+
+  @override
+  String get appUpdateSourceCustomHint => 'e.g. https://mirror.example.com/';
+
+  @override
+  String get appUpdateSourceCustomInvalid =>
+      'Enter an address starting with https://';
+
+  @override
+  String get appUpdateSourceSheetHint =>
+      'Mirrors are third-party public services. Every package is checked against its SHA-256 and the app signature after download, so a mirror cannot swap in another app.';
+
+  @override
+  String get appUpdatePromptUpdate => 'Update now';
+
+  @override
+  String get appUpdatePromptLater => 'Later';
 
   @override
   String get aboutSubmitIssue => 'Submit issue';

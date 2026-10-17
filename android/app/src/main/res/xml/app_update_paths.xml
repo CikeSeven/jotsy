@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只暴露应用内更新的暂存目录：Dart 侧把安装包下载到 cacheDir/app_update/、
+     校验大小与 SHA-256 后再交给系统安装器，其余私有目录不对外开放。 -->
+<paths>
+    <cache-path name="app_update" path="app_update/" />
+</paths>

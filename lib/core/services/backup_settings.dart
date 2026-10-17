@@ -34,7 +34,6 @@ class BackupSettings {
     'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
     'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
     'diaryLocationPrecisionRaw': settingsService.diaryLocationPrecisionRaw,
-    'releaseMirrorStartIndex': settingsService.releaseMirrorStartIndexRaw,
   };
 
   static Future<void> restore(
@@ -226,17 +225,6 @@ class BackupSettings {
         ?.toString();
     if (locationPrecisionRaw != null && locationPrecisionRaw.isNotEmpty) {
       await settingsService.setDiaryLocationPrecisionRaw(locationPrecisionRaw);
-    }
-
-    final releaseMirrorStartIndexRaw = settingsNode['releaseMirrorStartIndex'];
-    final releaseMirrorStartIndex = switch (releaseMirrorStartIndexRaw) {
-      int value => value,
-      num value => value.toInt(),
-      String value => int.tryParse(value),
-      _ => null,
-    };
-    if (releaseMirrorStartIndex != null) {
-      await settingsService.setReleaseMirrorStartIndex(releaseMirrorStartIndex);
     }
   }
 

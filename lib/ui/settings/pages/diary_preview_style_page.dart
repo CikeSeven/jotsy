@@ -108,7 +108,7 @@ class _DiaryPreviewStylePageState extends State<DiaryPreviewStylePage> {
         DiaryPreviewStyleBodyTab(controller: _controller),
         DiaryPreviewStylePagingTab(controller: _controller),
       ],
-      toolbar: DiaryPreviewStylePreviewToolbar(
+      toolbarBuilder: (_) => DiaryPreviewStylePreviewToolbar(
         controller: _controller,
         page: _samplePage,
         count: samples.length,

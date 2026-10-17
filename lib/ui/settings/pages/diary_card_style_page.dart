@@ -109,7 +109,8 @@ class _DiaryCardStylePageState extends State<DiaryCardStylePage> {
         DiaryCardStyleColorTab(controller: _controller),
         DiaryCardStyleTextureTab(controller: _controller),
       ],
-      toolbar: DiaryCardStylePreviewToolbar(controller: _controller),
+      toolbarBuilder: (_) =>
+          DiaryCardStylePreviewToolbar(controller: _controller),
       previewBuilder:
           ({required bool showToolbar, required double bottomPadding}) =>
               DiaryCardStylePreview(

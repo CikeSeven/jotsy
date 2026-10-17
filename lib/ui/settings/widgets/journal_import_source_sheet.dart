@@ -171,8 +171,9 @@ class _SourceTile extends StatelessWidget {
           horizontal: AppSpacing.m,
           vertical: AppSpacing.xs,
         ),
-        // 说明可能折成多行，图标对齐首行。
-        titleAlignment: ListTileTitleAlignment.top,
+        // 说明常折成两三行；图标与右侧箭头仍相对整项垂直居中，不贴上沿
+        // （DESIGN.md §5.4）。
+        titleAlignment: ListTileTitleAlignment.center,
         onTap: onTap,
         leading: Container(
           width: 40,

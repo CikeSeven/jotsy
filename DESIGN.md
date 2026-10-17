@@ -220,6 +220,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
   - 右侧按钮：主色加粗文本按钮（确定/保存）；
   - 危险动作：右侧按钮使用 `colorScheme.error`。
   - 不可撤销的覆盖（导入覆盖本机数据）：严重警告弹窗——error 色警示图标、`errorContainer` 底色的后果说明块（逐项列出将被替换的数据与数量）、先备份的建议；确认键须勾选“我已了解”且 5 秒倒计时结束后才可点。其前一步的导入方式面板默认选中安全的“合并”，危险选项标题常驻 error 色、选中时底色为 `errorContainer`。
+- **注意：选项行的前导/尾随控件一律垂直居中**：单选圆点（`ExpressiveChoiceTile`）、勾选框、开关、来源图标头像与右侧 `angleRight` 箭头代表的是整个选项，必须相对整行垂直居中——标题下的说明不论一行还是折成多行都一样。说明可能折行的 `ListTile` 显式写 `titleAlignment: ListTileTitleAlignment.center`（不依赖主题默认值）。❌ 禁止用 `ListTileTitleAlignment.top` / `titleHeight` 或 `Row(crossAxisAlignment: CrossAxisAlignment.start)` 把这些控件对齐标题行：说明一折行，圆点就贴到选项上沿，与没有说明的选项错位（导入方式面板、导出格式列表与导入来源列表都曾因此显得“靠上”）。例外：正文式的信息块（如导入面板顶部的文件概要、列表项目符号 `•`）随首行排列。
 - **耗时等待操作**：
   - 启动预热、首屏分页加载统一使用 `loading_indicator_m3e`（`ExpressiveLoadingIndicator`），不再新增裸 `CircularProgressIndicator`；页面首屏 `loading` 分支用 `DelayedLoadingIndicator` 包装，动作等待遮罩用 `ActionLoadingOverlay`。
 - **全局提示 (SnackBar)**：
@@ -346,4 +347,5 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
 - [ ] 改动预览页渲染后，内置预设与极端样式在 320dp × 1.3 倍字号、明暗两种主题下是否仍 0 溢出，默认样式是否与改版前一致？
 - [ ] 改动预览页的手势或页内控件后，斜着滑是否仍只滚动正文、页内横向控件是否仍先于翻页、iOS 左缘返回是否仍可用（`diary_pager_view_test` / `diary_preview_pager_flow_test`）？
 - [ ] 新增图标是否统一使用 `FontAwesomeIcons`？返回键是否为 `angleLeft (18)`？
+- [ ] 选项行（单选、勾选、开关、带箭头的入口）的前导与尾随控件是否相对整行垂直居中，说明折成多行时也不贴上沿（§5.4）？
 - [ ] 是否执行并通过了 `dart format` 与 `flutter analyze`（0 error, 0 warning）？

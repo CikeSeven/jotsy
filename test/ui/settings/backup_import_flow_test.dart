@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -226,6 +227,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(result.finished, isTrue);
     expect(result.mode, isNull);
+  });
+
+  testWidgets('radio dots stay centered beside wrapping descriptions', (
+    tester,
+  ) async {
+    await _startFlow(tester, _fullBackup, size: const Size(320, 640));
+    final tiles = find.descendant(
+      of: find.byType(ExpressiveChoiceTile),
+      matching: find.byType(ListTile),
+    );
+    expect(tiles, findsNWidgets(3));
+    for (var index = 0; index < 3; index++) {
+      final tile = tiles.at(index);
+      final dot = find.descendant(of: tile, matching: find.byType(FaIcon));
+      expect(
+        (tester.getCenter(dot).dy - tester.getCenter(tile).dy).abs(),
+        lessThan(0.5),
+        reason: 'option $index',
+      );
+    }
   });
 
   for (final brightness in Brightness.values) {

@@ -172,7 +172,6 @@ class DiaryPreviewStyleMetaTab extends StatelessWidget {
                       ExpressiveChoiceTile(
                         label: label,
                         description: example(format),
-                        centerIndicator: true,
                         selected: meta.dateFormat == format,
                         onTap: () => commit(meta.copyWith(dateFormat: format)),
                       ),

@@ -5,7 +5,7 @@ import '../../app/theme/app_spacing.dart';
 import 'expressive_icon_swap.dart';
 import 'expressive_state_blend.dart';
 
-/// 面板中的单选项：单选圆点 + 文案，可带一行说明。
+/// 面板中的单选项：单选圆点 + 文案，可带说明（可折成多行）。
 ///
 /// 选中项只换容器色、字重与单选图标颜色，文字保持 onSurface：部分配色下
 /// onSecondaryContainer 偏浅，会让选中项看起来比其他项更弱（与地址层级菜单
@@ -13,6 +13,9 @@ import 'expressive_state_blend.dart';
 /// [ExpressiveStateBlend] 补间（ListTile 的 tileColor 不做隐式动画），单选图标
 /// 缩放淡入切换。容器色经 ListTile 的 tileColor（Ink 绘制）给出，外层不包
 /// 不透明容器，避免盖住水波纹；`selected` 同时为读屏暴露选中态。
+///
+/// 单选圆点始终相对整个选项垂直居中（DESIGN.md §5.4）：圆点代表整项，
+/// 对齐标题行时，说明一折行圆点就贴到选项上沿，与没有说明的选项错位。
 ///
 /// [destructive] 标记会永久改写数据的选项：标题常驻 error 色，选中时底色换成
 /// errorContainer、圆点换成 error 色，选到的那一刻就能看出风险。
@@ -23,7 +26,6 @@ class ExpressiveChoiceTile extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.description,
-    this.centerIndicator = false,
     this.destructive = false,
   });
 
@@ -33,10 +35,6 @@ class ExpressiveChoiceTile extends StatelessWidget {
 
   /// 选项后果的简短说明，显示在标题下方。
   final String? description;
-
-  /// 单选圆点相对整个选项垂直居中。说明只是一行示例（如日期格式的实时
-  /// 预览）时使用；默认说明可能折成多行，圆点对齐标题行。
-  final bool centerIndicator;
   final bool destructive;
 
   @override
@@ -66,13 +64,9 @@ class ExpressiveChoiceTile extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.l,
             ),
-            // 说明可能折成多行，圆点对齐标题行而不是整块的垂直中线；说明
-            // 只有一行示例时由调用方要求居中，与没有说明的选项一致。
-            titleAlignment: centerIndicator
-                ? ListTileTitleAlignment.center
-                : description == null
-                ? null
-                : ListTileTitleAlignment.top,
+            // 显式居中而不依赖主题默认的 threeLine：日后某处开启 isThreeLine
+            // 或主题改了对齐方式，圆点也不会跑到上沿。
+            titleAlignment: ListTileTitleAlignment.center,
             onTap: onTap,
             leading: ExpressiveIconSwap(
               switchKey: selected,

@@ -29,68 +29,64 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 | | |
 | :-- | :-- |
 | 🔒 **Private** | Everything is stored on your device. No account, no server. App lock and encrypted backups |
-| ✍️ **Easy to write** | Rich text with images, videos, attachments and voice recordings |
+| ✍️ **Easy to write** | Rich text with images, videos, attachments and voice recordings. Backfilling an old day brings up the photos you took that day |
 | 🌤️ **Full of context** | Record mood, energy, weather and location with every entry |
-| 📅 **Easy to look back** | Lunar calendar, yearly heatmap, On this day, time capsules |
+| 📅 **Easy to look back** | Lunar calendar with Chinese public holidays, anniversaries and countdowns, yearly heatmap, On this day, time capsules |
 | 📦 **No lock-in** | ZIP backups, cloud backup (WebDAV / object storage / major cloud drives), export to PDF / Word / Markdown / web page / TXT / CSV, import from 18 apps |
-| 🎨 **Beautiful** | Material 3 Expressive design, light and dark themes, 80 theme colors |
+| 🎨 **Make it yours** | Material 3 Expressive design, 80 theme colors, plus customizable diary cards, reading page and body font |
 
 ## 📱 Features
 
+<table>
+  <tr>
+    <td align="center"><img src="../assets/img/screenshots/en/editor.webp" width="180" alt="Rich text editor"/><br/><sub>Rich text editor</sub></td>
+    <td align="center"><img src="../assets/img/screenshots/en/waterfall.webp" width="180" alt="Waterfall view"/><br/><sub>Waterfall view</sub></td>
+    <td align="center"><img src="../assets/img/screenshots/en/dark.webp" width="180" alt="Dark theme"/><br/><sub>Dark theme</sub></td>
+    <td align="center"><img src="../assets/img/screenshots/en/calendar_photo.webp" width="180" alt="Photo calendar"/><br/><sub>Photo calendar</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="../assets/img/screenshots/en/year.webp" width="180" alt="Year view"/><br/><sub>Yearly heatmap</sub></td>
+    <td align="center"><img src="../assets/img/screenshots/en/explore.webp" width="180" alt="Explore"/><br/><sub>Stats and On this day</sub></td>
+    <td align="center"><img src="../assets/img/screenshots/en/gallery.webp" width="180" alt="Media gallery"/><br/><sub>Media gallery</sub></td>
+    <td align="center"><img src="../assets/img/screenshots/en/capsule.webp" width="180" alt="Time capsule"/><br/><sub>Time capsule</sub></td>
+  </tr>
+</table>
+
 ### ✍️ Writing: rich text, media and "here and now"
 
-<table>
-  <tr>
-    <td align="center"><img src="../assets/img/screenshots/en/editor.webp" width="240" alt="Rich text editor"/><br/><sub>Rich text with a floating toolbar</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/publish.webp" width="240" alt="Publish panel"/><br/><sub>Weather, mood and energy</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/preview.webp" width="240" alt="Diary detail"/><br/><sub>Diary detail</sub></td>
-  </tr>
-</table>
-
 - **23 editing tools**: headings, bold / italic / underline / strikethrough, text and background color, numbered / bulleted / checklists, quotes, code blocks, links, insert current time and more. Reorder or hide any of them.
-- **Media**: insert several images or videos at once and attach files of any type. Voice recordings can be paused and resumed, and you can scrub the waveform during playback.
+- **Media**: insert several images or videos at once and attach files of any type. Voice recordings can be paused and resumed, and you can scrub the waveform during playback. Long images such as long screenshots fold up in the entry and open at screen width for scrolling.
 - **Here and now**: fetch your location and weather automatically, or type them in. Choose how precise the address is: city, district, street or house number.
 - **Mood and energy**: 10 mood emojis (swap them in Settings) and 5 energy levels. The publish time can be changed at any time.
+- **Photos for backfilled days**: when you write an entry for a past day, the editor lists the photos you took that day. Tick a few to insert them, or make one the cover. Your photo library is only read after you tap "Allow access", and the originals are never changed.
 - **Never lose a draft**: new entries keep a draft, and edits to existing entries save automatically.
 
-### 🗂️ Browse and organize
-
-<table>
-  <tr>
-    <td align="center"><img src="../assets/img/screenshots/en/home.webp" width="240" alt="List view"/><br/><sub>List view</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/waterfall.webp" width="240" alt="Waterfall view"/><br/><sub>Waterfall view</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/dark.webp" width="240" alt="Dark theme"/><br/><sub>Dark theme</sub></td>
-  </tr>
-</table>
+### 🗂️ Browse and read
 
 - List or waterfall layout, sorted by date updated, date published or title.
 - Filter by tags (optionally remembered for next time), and combine tag conditions with a title or content search.
 - Pin, archive (just swipe left), and act on many entries at once. Deleted entries go to the recycle bin, with instant undo.
+- Swipe left or right on an entry's detail page to move to the previous or next one, in the order of the list you came from.
+- One word count everywhere: each Chinese character counts as one, English words and numbers count by word. Tap the count on the detail page to see paragraphs, images and estimated reading time.
 
-### 📅 Calendar: lunar dates, moods and photos
+### 🎨 Make it yours
 
-<table>
-  <tr>
-    <td align="center"><img src="../assets/img/screenshots/en/calendar.webp" width="240" alt="Mood calendar"/><br/><sub>Moods at a glance</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/calendar_photo.webp" width="240" alt="Photo calendar"/><br/><sub>Photo style</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/year.webp" width="240" alt="Year view"/><br/><sub>Yearly heatmap</sub></td>
-  </tr>
-</table>
+- **Diary cards**: 8 built-in styles (Classic, Compact, Magazine, Minimal, Gallery, Sticky note, Journal, Mood colors). Fine-tune layout, cover, date, fonts, colors and texture.
+- **Detail page**: 8 presets (Classic, Paper book, Magazine, Minimal, Night, Journal, Mood color, Immersive), with the cover, title, info bar and body adjustable on their own.
+- **My styles**: save up to 12 styles each for cards and the detail page, and share them as style codes or apply someone else's.
+- **Body font and layout**: HarmonyOS Sans built in, or follow the system font, or import TTF / OTF / TTC fonts. Adjust size, line height, letter spacing and paragraph spacing, applied consistently when editing, reading and publishing.
+- **Themes**: 80 theme colors in 10 families, light and dark themes, adjustable UI font size, in English or Chinese.
+
+### 📅 Calendar: lunar dates, holidays and anniversaries
 
 - Month and week views, with optional Chinese lunar dates, solar terms and festivals. Below the grid you get the month's entries, days written, characters, top mood and longest streak.
+- **Chinese public holidays**: days off and make-up workdays are marked on the calendar.
+- **Anniversaries and countdowns**: repeat every year by the solar or lunar calendar, or mark a single day. The calendar shows them along with which anniversary it is or how many days are left. Link an anniversary to an entry, and see what you wrote on that day in past years.
 - Five day-cell styles: dot, mood, heat, photo and tags. Filter the calendar by mood or tag.
 - Pick a start day and an end day to see stats for that range. The year view turns mood, entry count or length into a heatmap you can share as an image.
-- Long-press any day to write an entry for it, or to write a time capsule for a future date.
+- Long-press any day to write an entry for it, write a time capsule for a future date, or add an anniversary.
 
 ### 🧭 Explore and remember
-
-<table>
-  <tr>
-    <td align="center"><img src="../assets/img/screenshots/en/explore.webp" width="240" alt="Explore"/><br/><sub>Stats, On this day and trends</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/gallery.webp" width="240" alt="Media gallery"/><br/><sub>Media gallery</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/capsule.webp" width="240" alt="Time capsule"/><br/><sub>Time capsule</sub></td>
-  </tr>
-</table>
 
 - Total entries, current streak and characters written this month.
 - **On this day**: entries from the same date in past years.
@@ -98,23 +94,14 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 - **Media gallery**: every cover and inline image in one place, with zoom, save and share.
 - **Time capsules**: entries addressed to the future stay sealed until their unlock date.
 
-### 🔐 Data, privacy and personalization
-
-<table>
-  <tr>
-    <td align="center"><img src="../assets/img/screenshots/en/data.webp" width="240" alt="Data management"/><br/><sub>Backup, import and WebDAV</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/import.webp" width="240" alt="Import from other apps"/><br/><sub>Import from 18 apps</sub></td>
-    <td align="center"><img src="../assets/img/screenshots/en/appearance.webp" width="240" alt="Appearance settings"/><br/><sub>Themes and appearance</sub></td>
-  </tr>
-</table>
+### 🔐 Data and privacy
 
 - **App lock**: unlock with your device's biometrics or screen lock.
-- **Full backups**: one ZIP with entries, tags, settings and every image, recording, video and attachment. Add a password for AES-256 encryption.
+- **Full backups**: one ZIP with entries, tags, anniversaries, settings and every image, recording, video and attachment. Add a password for AES-256 encryption.
 - **Merge or overwrite**: choose how a backup is restored. Overwriting local data asks for a clear second confirmation.
 - **Cloud backup**: back up to WebDAV (Nextcloud, NAS, Alist…), S3-compatible object storage (R2, B2, OSS…) or Google Drive / OneDrive / Dropbox / Baidu Netdisk / Alipan, and restore from them directly. See [cloud_backup.md](cloud_backup.md).
 - **Export**: one entry, a selection, or a date / tag range as PDF, Word, Markdown (with front matter, ready for Obsidian), a web page, plain text, CSV, or a diary file that can be merged on another device.
-- **Share**: as a long image, or straight to Weibo, Xiaohongshu, WeChat and QQ with the text copied and the diary's photos attached.
-- **Make it yours**: 80 theme colors in 10 families, adjustable UI font size, body text size and line height, in English or Chinese.
+- **Share**: as a long image, or straight to Weibo, Xiaohongshu, WeChat, WeChat Moments, QQ and Qzone. The text is copied for you and the diary's photos come along.
 
 ## 🔁 Moving from another app
 
@@ -137,22 +124,26 @@ Export your data from the old app first, then open **Settings › Data & Privacy
    - `arm64-v8a`: almost every modern phone. Pick this one if you're not sure
    - `armeabi-v7a`: older 32-bit devices
    - `x86_64`: emulators
-3. Install it and start writing. You can check for updates later in **Settings › About**.
+3. Install it and start writing.
+
+When a new version is out, Jotsy lets you know and downloads and installs it in the app, with no trip back to the browser. Downloads try several mirrors at once and use the fastest, resume after a dropped connection, and the checksum and app signature are verified before installing. You can also check by hand, or turn automatic checks off, in **Settings › About › Check for updates**.
 
 ## 🛡️ Privacy
 
 Jotsy has no accounts and no server of its own. Entries are stored in a SQLite database in the app's private folder, next to your images, recordings, videos and attachments. Settings stay on the device too.
 
-Jotsy only goes online in these cases, and only when you ask it to:
+Jotsy only goes online in these cases:
 
 | When | Talks to | What is sent |
 | :-- | :-- | :-- |
 | Fetching location and weather | AMap, QWeather | Your current coordinates (or type them in yourself) |
 | Cloud backup / restore | The server or drive you set up | Your backup file |
-| Checking for updates (manual) | GitHub Releases and mirrors | No diary data |
+| Checking for and downloading updates | GitHub Releases and mirrors | No diary data |
 | Importing cloud notes | The vendor's official website | The sign-in you complete there |
 
-Permissions: internet, microphone (voice recordings), location (optional, for automatic location). See the full [privacy policy](https://cikeseven.github.io/jotsy/privacy.html).
+Update checks run automatically when you open or return to the app, at most once every 2 hours, and can be turned off in **Settings › About › Check for updates**. Everything else only happens when you use that feature.
+
+Permissions: internet, microphone (voice recordings), location (optional, for automatic location), photos (optional, to list a backfilled day's photos), and installing apps (for in-app updates). See the full [privacy policy](https://cikeseven.github.io/jotsy/privacy.html).
 
 ## ❓ FAQ
 

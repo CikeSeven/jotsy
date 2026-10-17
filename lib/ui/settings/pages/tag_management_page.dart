@@ -168,14 +168,15 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
     if (_savingOrder || _operating) {
       return;
     }
+    // onReorderItem 给出的 newIndex 已按移除 oldIndex 后的列表修正，原位放下
+    // 时两者相等，直接跳过保存。
     if (oldIndex == newIndex) {
       return;
     }
 
-    final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
     final reordered = List<Tag>.from(tags);
     final moved = reordered.removeAt(oldIndex);
-    reordered.insert(adjustedNewIndex, moved);
+    reordered.insert(newIndex, moved);
 
     setState(() {
       _displayTags = reordered;
@@ -211,7 +212,7 @@ class _TagManagementPageState extends ConsumerState<TagManagementPage> {
       // 拿起条目即生效的瞬间给一次触觉：拖拽手柄是立即拖动，不经过长按，系统
       // 不会自动反馈。
       onReorderStart: (_) => unawaited(HapticFeedback.mediumImpact()),
-      onReorder: (oldIndex, newIndex) {
+      onReorderItem: (oldIndex, newIndex) {
         _reorderTags(displayTags, oldIndex, newIndex);
       },
       itemBuilder: (BuildContext context, int index) {

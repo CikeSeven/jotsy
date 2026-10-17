@@ -18,12 +18,10 @@ class WebDavClient {
   WebDavClient({
     required WebDavConfig config,
     HttpClient Function()? clientFactory,
-    Duration timeout = const Duration(seconds: 30),
-    Duration idleTimeout = const Duration(seconds: 120),
+    this._timeout = const Duration(seconds: 30),
+    this._idleTimeout = const Duration(seconds: 120),
   }) : _config = config.validate(),
-       _clientFactory = clientFactory ?? HttpClient.new,
-       _timeout = timeout,
-       _idleTimeout = idleTimeout;
+       _clientFactory = clientFactory ?? HttpClient.new;
 
   final WebDavConfig _config;
   final HttpClient Function() _clientFactory;

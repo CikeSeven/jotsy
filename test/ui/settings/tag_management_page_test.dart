@@ -269,4 +269,54 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(Duration.zero);
   });
+
+  /// 拖动 [tagId] 的手柄纵向移动 [rows] 行后松手，并等待排序写入偏好。
+  Future<void> dragTag(WidgetTester tester, int tagId, double rows) async {
+    final tile = find.byKey(ValueKey<int>(tagId));
+    final handle = find.descendant(
+      of: tile,
+      matching: find.byType(ReorderableDragStartListener),
+    );
+    final step = tester.getSize(tile).height * rows / 4;
+    final gesture = await tester.startGesture(tester.getCenter(handle));
+    for (var i = 0; i < 4; i++) {
+      await gesture.moveBy(Offset(0, step));
+      await tester.pump();
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 400));
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+  }
+
+  // onReorderItem 的 newIndex 已扣除被拖走的那一行；若再手动减一，下移一位
+  // 会变成原地不动，这里锁住迁移后的落点。
+  testWidgets('dragging a tag down one row saves the new order', (
+    tester,
+  ) async {
+    await pumpTagPage(tester);
+
+    // 未保存排序时按名称升序：Last、Removed、Retained。
+    await dragTag(tester, removedTagId, 1.2);
+
+    expect(settings.tagOrderRaw, '$lastTagId,$retainedTagId,$removedTagId');
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
+  });
+
+  testWidgets('dropping a tag back in place does not save an order', (
+    tester,
+  ) async {
+    await pumpTagPage(tester);
+
+    await dragTag(tester, removedTagId, 0.2);
+
+    expect(settings.tagOrderRaw, isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(Duration.zero);
+  });
 }

@@ -4741,4 +4741,95 @@ class AppLocalizationsZh extends AppLocalizations {
   String diaryExportTooLarge(int size) {
     return '图片太多（约 $size MB），PDF 无法一次生成。请缩小日期范围，或关闭“包含图片”后再试';
   }
+
+  @override
+  String diaryDayPhotosTitle(int count) {
+    return '这天拍的 $count 张照片';
+  }
+
+  @override
+  String get diaryDayPhotosAccessTitle => '这天拍的照片';
+
+  @override
+  String get diaryDayPhotosAccessBody => '允许读取相册后，这里会列出这天拍的照片，可以挑几张插进日记。';
+
+  @override
+  String get diaryDayPhotosDeniedBody => '相册权限已关闭，可以在系统设置里开启。';
+
+  @override
+  String get diaryDayPhotosAllowAccess => '允许访问';
+
+  @override
+  String get diaryDayPhotosOpenSettings => '去设置';
+
+  @override
+  String get diaryDayPhotosShowAll => '全部';
+
+  @override
+  String get diaryDayPhotosDismiss => '本次不再显示';
+
+  @override
+  String diaryDayPhotosSelected(int count) {
+    return '已选 $count 张';
+  }
+
+  @override
+  String get diaryDayPhotosClear => '取消选择';
+
+  @override
+  String get diaryDayPhotosInsert => '插入';
+
+  @override
+  String diaryDayPhotosInsertCount(int count) {
+    return '插入 $count 张';
+  }
+
+  @override
+  String get diaryDayPhotosLimited => '只显示你允许访问的照片';
+
+  @override
+  String get diaryDayPhotosManageLimited => '选择更多';
+
+  @override
+  String diaryDayPhotosPhotoLabel(String time) {
+    return '$time 拍的照片';
+  }
+
+  @override
+  String diaryDayPhotosInsertedLabel(String time) {
+    return '$time 拍的照片，已插入';
+  }
+
+  @override
+  String diaryDayPhotosSheetTitle(String date) {
+    return '$date 拍的照片';
+  }
+
+  @override
+  String diaryDayPhotosMissing(int count) {
+    return '$count 张照片已无法读取，没有插入';
+  }
+
+  @override
+  String get settingsDayPhotoSuggestions => '补写时推荐当天照片';
+
+  @override
+  String get settingsDayPhotoSuggestionsSubtitle => '补写过去某天的日记时，列出相册里这天拍的照片供挑选';
+
+  @override
+  String get diaryDayPhotosSetCover => '设为封面';
+
+  @override
+  String get diaryDayPhotosClearCover => '取消封面';
+
+  @override
+  String get diaryDayPhotosCoverBadge => '封面';
+
+  @override
+  String diaryDayPhotosCoverLabel(String label) {
+    return '$label，封面';
+  }
+
+  @override
+  String get diaryDayPhotosCoverSet => '已设为封面，发布页里可以查看或更换';
 }

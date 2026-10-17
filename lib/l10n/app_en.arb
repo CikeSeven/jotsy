@@ -6694,5 +6694,145 @@
         "type": "int"
       }
     }
+  },
+  "diaryDayPhotosTitle": "{count, plural, =1{1 photo} other{{count} photos}} from this day",
+  "@diaryDayPhotosTitle": {
+    "description": "Backfill photo strip title: number of photos taken that day.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosAccessTitle": "Photos from this day",
+  "@diaryDayPhotosAccessTitle": {
+    "description": "Backfill photo strip title before photo access is granted."
+  },
+  "diaryDayPhotosAccessBody": "Allow photo access to see the photos you took on this day and add some to this entry.",
+  "@diaryDayPhotosAccessBody": {
+    "description": "Backfill photo strip: explanation for requesting photo access."
+  },
+  "diaryDayPhotosDeniedBody": "Photo access is off. You can turn it on in system settings.",
+  "@diaryDayPhotosDeniedBody": {
+    "description": "Backfill photo strip: explanation after photo access was denied."
+  },
+  "diaryDayPhotosAllowAccess": "Allow access",
+  "@diaryDayPhotosAllowAccess": {
+    "description": "Backfill photo strip: button that requests photo access."
+  },
+  "diaryDayPhotosOpenSettings": "Open settings",
+  "@diaryDayPhotosOpenSettings": {
+    "description": "Backfill photo strip: button that opens system settings to grant photo access."
+  },
+  "diaryDayPhotosShowAll": "All",
+  "@diaryDayPhotosShowAll": {
+    "description": "Backfill photo strip: button that opens the grid of all photos from that day."
+  },
+  "diaryDayPhotosDismiss": "Hide for this entry",
+  "@diaryDayPhotosDismiss": {
+    "description": "Backfill photo strip: tooltip of the close button."
+  },
+  "diaryDayPhotosSelected": "{count} selected",
+  "@diaryDayPhotosSelected": {
+    "description": "Photos from this day: number of selected photos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosClear": "Clear",
+  "@diaryDayPhotosClear": {
+    "description": "Photos from this day: button that clears the selection."
+  },
+  "diaryDayPhotosInsert": "Insert",
+  "@diaryDayPhotosInsert": {
+    "description": "Photos from this day: button that inserts the selected photos into the entry."
+  },
+  "diaryDayPhotosInsertCount": "Insert {count}",
+  "@diaryDayPhotosInsertCount": {
+    "description": "Photos from this day sheet: insert button with the number of selected photos.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosLimited": "Showing only photos you allowed",
+  "@diaryDayPhotosLimited": {
+    "description": "Photos from this day: note shown when photo access is limited."
+  },
+  "diaryDayPhotosManageLimited": "Select more",
+  "@diaryDayPhotosManageLimited": {
+    "description": "Photos from this day: button that lets the user allow more photos under limited access."
+  },
+  "diaryDayPhotosPhotoLabel": "Photo taken at {time}",
+  "@diaryDayPhotosPhotoLabel": {
+    "description": "Photos from this day: screen reader label of a photo.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosInsertedLabel": "Photo taken at {time}, added",
+  "@diaryDayPhotosInsertedLabel": {
+    "description": "Photos from this day: screen reader label of a photo already inserted.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosSheetTitle": "Photos from {date}",
+  "@diaryDayPhotosSheetTitle": {
+    "description": "Photos from this day sheet title; date is the day.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosMissing": "{count, plural, =1{1 photo couldn't be read and was skipped} other{{count} photos couldn't be read and were skipped}}",
+  "@diaryDayPhotosMissing": {
+    "description": "Hint when some photos from that day couldn't be read while inserting.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDayPhotoSuggestions": "Suggest photos when backfilling",
+  "@settingsDayPhotoSuggestions": {
+    "description": "Editor settings: title of the switch for suggesting photos when backfilling."
+  },
+  "settingsDayPhotoSuggestionsSubtitle": "When writing an entry for a past day, list photos taken that day so you can pick some",
+  "@settingsDayPhotoSuggestionsSubtitle": {
+    "description": "Editor settings: description of the backfill photo suggestion switch."
+  },
+  "diaryDayPhotosSetCover": "Set as cover",
+  "@diaryDayPhotosSetCover": {
+    "description": "Photos from this day: button and menu item that makes a photo the entry cover."
+  },
+  "diaryDayPhotosClearCover": "Remove cover",
+  "@diaryDayPhotosClearCover": {
+    "description": "Photos from this day: button and menu item that removes the cover."
+  },
+  "diaryDayPhotosCoverBadge": "Cover",
+  "@diaryDayPhotosCoverBadge": {
+    "description": "Photos from this day: badge on the photo used as the cover."
+  },
+  "diaryDayPhotosCoverLabel": "{label}, cover",
+  "@diaryDayPhotosCoverLabel": {
+    "description": "Photos from this day: screen reader label of the cover photo.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosCoverSet": "Set as cover. You can see or change it on the publish page.",
+  "@diaryDayPhotosCoverSet": {
+    "description": "Photos from this day: hint after a photo becomes the cover."
   }
 }

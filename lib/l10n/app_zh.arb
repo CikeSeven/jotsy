@@ -6694,5 +6694,145 @@
         "type": "int"
       }
     }
+  },
+  "diaryDayPhotosTitle": "这天拍的 {count} 张照片",
+  "@diaryDayPhotosTitle": {
+    "description": "补写日记时提示条标题：这天拍的照片数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosAccessTitle": "这天拍的照片",
+  "@diaryDayPhotosAccessTitle": {
+    "description": "补写日记时提示条在未授权相册时的标题。"
+  },
+  "diaryDayPhotosAccessBody": "允许读取相册后，这里会列出这天拍的照片，可以挑几张插进日记。",
+  "@diaryDayPhotosAccessBody": {
+    "description": "补写日记时提示条：申请相册权限的说明。"
+  },
+  "diaryDayPhotosDeniedBody": "相册权限已关闭，可以在系统设置里开启。",
+  "@diaryDayPhotosDeniedBody": {
+    "description": "补写日记时提示条：用户拒绝相册权限后的说明。"
+  },
+  "diaryDayPhotosAllowAccess": "允许访问",
+  "@diaryDayPhotosAllowAccess": {
+    "description": "补写日记时提示条：申请相册权限按钮。"
+  },
+  "diaryDayPhotosOpenSettings": "去设置",
+  "@diaryDayPhotosOpenSettings": {
+    "description": "补写日记时提示条：打开系统设置开启相册权限的按钮。"
+  },
+  "diaryDayPhotosShowAll": "全部",
+  "@diaryDayPhotosShowAll": {
+    "description": "补写日记时提示条：打开这天全部照片网格的按钮。"
+  },
+  "diaryDayPhotosDismiss": "本次不再显示",
+  "@diaryDayPhotosDismiss": {
+    "description": "补写日记时提示条：关闭按钮的提示文字。"
+  },
+  "diaryDayPhotosSelected": "已选 {count} 张",
+  "@diaryDayPhotosSelected": {
+    "description": "这天拍的照片：已勾选数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosClear": "取消选择",
+  "@diaryDayPhotosClear": {
+    "description": "这天拍的照片：清空勾选的按钮。"
+  },
+  "diaryDayPhotosInsert": "插入",
+  "@diaryDayPhotosInsert": {
+    "description": "这天拍的照片：把勾选的照片插入正文的按钮。"
+  },
+  "diaryDayPhotosInsertCount": "插入 {count} 张",
+  "@diaryDayPhotosInsertCount": {
+    "description": "这天拍的照片面板：带数量的插入按钮。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDayPhotosLimited": "只显示你允许访问的照片",
+  "@diaryDayPhotosLimited": {
+    "description": "这天拍的照片：相册为部分授权时的说明。"
+  },
+  "diaryDayPhotosManageLimited": "选择更多",
+  "@diaryDayPhotosManageLimited": {
+    "description": "这天拍的照片：部分授权时追加可访问照片的按钮。"
+  },
+  "diaryDayPhotosPhotoLabel": "{time} 拍的照片",
+  "@diaryDayPhotosPhotoLabel": {
+    "description": "这天拍的照片：读屏用的照片描述。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosInsertedLabel": "{time} 拍的照片，已插入",
+  "@diaryDayPhotosInsertedLabel": {
+    "description": "这天拍的照片：读屏用的已插入照片描述。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosSheetTitle": "{date} 拍的照片",
+  "@diaryDayPhotosSheetTitle": {
+    "description": "这天拍的照片面板标题，date 为日期。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosMissing": "{count} 张照片已无法读取，没有插入",
+  "@diaryDayPhotosMissing": {
+    "description": "插入这天拍的照片时部分照片读取失败的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDayPhotoSuggestions": "补写时推荐当天照片",
+  "@settingsDayPhotoSuggestions": {
+    "description": "编辑器设置：补写日记时推荐当天照片的开关标题。"
+  },
+  "settingsDayPhotoSuggestionsSubtitle": "补写过去某天的日记时，列出相册里这天拍的照片供挑选",
+  "@settingsDayPhotoSuggestionsSubtitle": {
+    "description": "编辑器设置：补写推荐照片开关的说明。"
+  },
+  "diaryDayPhotosSetCover": "设为封面",
+  "@diaryDayPhotosSetCover": {
+    "description": "这天拍的照片：把照片设为日记封面的按钮与菜单项。"
+  },
+  "diaryDayPhotosClearCover": "取消封面",
+  "@diaryDayPhotosClearCover": {
+    "description": "这天拍的照片：取消封面的按钮与菜单项。"
+  },
+  "diaryDayPhotosCoverBadge": "封面",
+  "@diaryDayPhotosCoverBadge": {
+    "description": "这天拍的照片：当前封面照片上的角标。"
+  },
+  "diaryDayPhotosCoverLabel": "{label}，封面",
+  "@diaryDayPhotosCoverLabel": {
+    "description": "这天拍的照片：读屏用，当前封面照片的描述。",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDayPhotosCoverSet": "已设为封面，发布页里可以查看或更换",
+  "@diaryDayPhotosCoverSet": {
+    "description": "这天拍的照片：设为封面成功的提示。"
   }
 }

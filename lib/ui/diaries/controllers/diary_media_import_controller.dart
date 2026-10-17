@@ -39,10 +39,13 @@ class DiaryMediaImportController extends ChangeNotifier {
 
   void cancel() => _generation++;
 
+  /// [picker] 替换本次的文件来源（如“这天拍的照片”已在页面里选好），
+  /// 复制、插入、取消与失败回滚仍走同一条链路。
   Future<DiaryMediaImportOutcome> pickAndInsert({
     required quill.QuillController controller,
     required DiaryMediaKind kind,
     required bool Function() isCurrent,
+    DiaryMediaPicker? picker,
   }) async {
     if (_disposed) return DiaryMediaImportOutcome.cancelled;
     if (isBusy) return DiaryMediaImportOutcome.busy;
@@ -73,7 +76,7 @@ class DiaryMediaImportController extends ChangeNotifier {
     _activeKind = kind;
     notifyListeners();
     try {
-      files = await _picker(kind);
+      files = await (picker ?? _picker)(kind);
       if (!canCommit() || files == null || files.isEmpty) {
         return DiaryMediaImportOutcome.cancelled;
       }

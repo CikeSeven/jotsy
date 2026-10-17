@@ -8779,6 +8779,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Too many images (about {size} MB) for one PDF. Narrow the date range or turn off “Include images” and try again'**
   String diaryExportTooLarge(int size);
+
+  /// Backfill photo strip title: number of photos taken that day.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo} other{{count} photos}} from this day'**
+  String diaryDayPhotosTitle(int count);
+
+  /// Backfill photo strip title before photo access is granted.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from this day'**
+  String get diaryDayPhotosAccessTitle;
+
+  /// Backfill photo strip: explanation for requesting photo access.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow photo access to see the photos you took on this day and add some to this entry.'**
+  String get diaryDayPhotosAccessBody;
+
+  /// Backfill photo strip: explanation after photo access was denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo access is off. You can turn it on in system settings.'**
+  String get diaryDayPhotosDeniedBody;
+
+  /// Backfill photo strip: button that requests photo access.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow access'**
+  String get diaryDayPhotosAllowAccess;
+
+  /// Backfill photo strip: button that opens system settings to grant photo access.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get diaryDayPhotosOpenSettings;
+
+  /// Backfill photo strip: button that opens the grid of all photos from that day.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get diaryDayPhotosShowAll;
+
+  /// Backfill photo strip: tooltip of the close button.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide for this entry'**
+  String get diaryDayPhotosDismiss;
+
+  /// Photos from this day: number of selected photos.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String diaryDayPhotosSelected(int count);
+
+  /// Photos from this day: button that clears the selection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get diaryDayPhotosClear;
+
+  /// Photos from this day: button that inserts the selected photos into the entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert'**
+  String get diaryDayPhotosInsert;
+
+  /// Photos from this day sheet: insert button with the number of selected photos.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert {count}'**
+  String diaryDayPhotosInsertCount(int count);
+
+  /// Photos from this day: note shown when photo access is limited.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing only photos you allowed'**
+  String get diaryDayPhotosLimited;
+
+  /// Photos from this day: button that lets the user allow more photos under limited access.
+  ///
+  /// In en, this message translates to:
+  /// **'Select more'**
+  String get diaryDayPhotosManageLimited;
+
+  /// Photos from this day: screen reader label of a photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo taken at {time}'**
+  String diaryDayPhotosPhotoLabel(String time);
+
+  /// Photos from this day: screen reader label of a photo already inserted.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo taken at {time}, added'**
+  String diaryDayPhotosInsertedLabel(String time);
+
+  /// Photos from this day sheet title; date is the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from {date}'**
+  String diaryDayPhotosSheetTitle(String date);
+
+  /// Hint when some photos from that day couldn't be read while inserting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo couldn\'t be read and was skipped} other{{count} photos couldn\'t be read and were skipped}}'**
+  String diaryDayPhotosMissing(int count);
+
+  /// Editor settings: title of the switch for suggesting photos when backfilling.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest photos when backfilling'**
+  String get settingsDayPhotoSuggestions;
+
+  /// Editor settings: description of the backfill photo suggestion switch.
+  ///
+  /// In en, this message translates to:
+  /// **'When writing an entry for a past day, list photos taken that day so you can pick some'**
+  String get settingsDayPhotoSuggestionsSubtitle;
+
+  /// Photos from this day: button and menu item that makes a photo the entry cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as cover'**
+  String get diaryDayPhotosSetCover;
+
+  /// Photos from this day: button and menu item that removes the cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove cover'**
+  String get diaryDayPhotosClearCover;
+
+  /// Photos from this day: badge on the photo used as the cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover'**
+  String get diaryDayPhotosCoverBadge;
+
+  /// Photos from this day: screen reader label of the cover photo.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}, cover'**
+  String diaryDayPhotosCoverLabel(String label);
+
+  /// Photos from this day: hint after a photo becomes the cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as cover. You can see or change it on the publish page.'**
+  String get diaryDayPhotosCoverSet;
 }
 
 class _AppLocalizationsDelegate

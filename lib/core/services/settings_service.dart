@@ -62,6 +62,7 @@ class SettingsService {
     required Locale locale,
     required bool appLockEnabled,
     required bool tagFilterMemoryEnabled,
+    required bool dayPhotoSuggestionsEnabled,
     required int diaryCardTagLimit,
     required String? diaryToolbarOrderRaw,
     required String? diaryToolbarHiddenItemsRaw,
@@ -84,6 +85,9 @@ class SettingsService {
        appLockEnabledNotifier = ValueNotifier<bool>(appLockEnabled),
        tagFilterMemoryEnabledNotifier = ValueNotifier<bool>(
          tagFilterMemoryEnabled,
+       ),
+       dayPhotoSuggestionsEnabledNotifier = ValueNotifier<bool>(
+         dayPhotoSuggestionsEnabled,
        ),
        diaryCardTagLimitNotifier = ValueNotifier<int>(diaryCardTagLimit),
        diaryToolbarOrderRawNotifier = ValueNotifier<String?>(
@@ -115,6 +119,10 @@ class SettingsService {
   final ValueNotifier<Locale> localeNotifier;
   final ValueNotifier<bool> appLockEnabledNotifier;
   final ValueNotifier<bool> tagFilterMemoryEnabledNotifier;
+
+  /// 补写过去某天的日记时，是否在编辑页列出相册里这天拍的照片（默认开）。
+  /// 与相册权限一样属于本机偏好，不随备份导出。
+  final ValueNotifier<bool> dayPhotoSuggestionsEnabledNotifier;
   final ValueNotifier<int> diaryCardTagLimitNotifier;
   final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
@@ -153,6 +161,8 @@ class SettingsService {
   static const _keyMoodOptions = 'app.settings.mood_options';
   static const _keyTagFilterMemoryEnabled =
       'app.settings.tag_filter_memory_enabled';
+  static const _keyDayPhotoSuggestionsEnabled =
+      'app.settings.day_photo_suggestions_enabled';
   static const _keyRememberedTagFilterIds =
       'app.settings.remembered_tag_filter_ids';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
@@ -201,6 +211,7 @@ class SettingsService {
     final appLockEnabled = prefs.getBool(_keyAppLockEnabled) ?? false;
     final tagFilterMemoryEnabled =
         prefs.getBool(_keyTagFilterMemoryEnabled) ?? false;
+    final storedDayPhotoSuggestions = prefs.get(_keyDayPhotoSuggestionsEnabled);
     final storedDiaryCardTagLimit = prefs.get(_keyDiaryCardTagLimit);
     final diaryCardTagLimit = _normalizeDiaryCardTagLimit(
       storedDiaryCardTagLimit is int
@@ -225,6 +236,9 @@ class SettingsService {
       locale: _localeFromCode(localeCode),
       appLockEnabled: appLockEnabled,
       tagFilterMemoryEnabled: tagFilterMemoryEnabled,
+      dayPhotoSuggestionsEnabled: storedDayPhotoSuggestions is bool
+          ? storedDayPhotoSuggestions
+          : true,
       diaryCardTagLimit: diaryCardTagLimit,
       diaryToolbarOrderRaw: prefs.getString(_keyDiaryToolbarOrder),
       diaryToolbarHiddenItemsRaw: prefs.getString(_keyDiaryToolbarHiddenItems),
@@ -299,6 +313,8 @@ class SettingsService {
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
   String? get tagOrderRaw => _prefs.getString(_keyTagOrder);
   bool get isTagFilterMemoryEnabled => tagFilterMemoryEnabledNotifier.value;
+  bool get isDayPhotoSuggestionsEnabled =>
+      dayPhotoSuggestionsEnabledNotifier.value;
   String? get rememberedTagFilterIdsRaw =>
       _prefs.getString(_keyRememberedTagFilterIds);
 
@@ -444,6 +460,13 @@ class SettingsService {
     if (!enabled) {
       await clearRememberedTagFilterIds();
     }
+  }
+
+  Future<void> setDayPhotoSuggestionsEnabled(bool enabled) async {
+    dayPhotoSuggestionsEnabledNotifier.value = enabled;
+    await _writePreference(
+      _prefs.setBool(_keyDayPhotoSuggestionsEnabled, enabled),
+    );
   }
 
   Future<void> setRememberedTagFilterIdsRaw(String value) async {

@@ -5,11 +5,19 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- 附件从系统选择器复制到私有目录，FileProvider 打开无需读取整个媒体库。
-         移除 open_filex 的外部文件权限声明，保留现有相册写入权限。 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove" />
+         移除 open_filex 的视频/音频读取声明，保留现有相册写入权限。 -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove" />
+    <!-- 补写日记时列出“这天拍的照片”（photo_manager 按拍摄日期查询相册）：
+         只读图片，且只在用户点“允许访问”时才申请。Android 13+ 为
+         READ_MEDIA_IMAGES，14+ 可只授权部分照片，12 及以下为读外部存储。
+         replace 覆盖其他库不带 maxSdkVersion 的同名声明。 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"
+        tools:node="replace" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <!-- 保存图片到相册：API <= 29 需要写外部存储权限（gal 插件要求）。 -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"

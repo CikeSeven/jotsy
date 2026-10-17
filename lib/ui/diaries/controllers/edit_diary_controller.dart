@@ -148,6 +148,7 @@ class EditDiaryController {
           ),
         );
       });
+      _state._syncDayPhotos();
     } catch (_) {
       // 草稿反序列化失败时静默忽略，避免阻断新建流程。
     }
@@ -303,6 +304,8 @@ class EditDiaryController {
         _state._metadataJson = result.metadataJson;
         _state._meta.restore(DiaryMetaDraft.fromNewDiaryDraft(result));
       });
+      // 发布页可能改了发表日期：补写的那天随之变化。
+      _state._syncDayPhotos();
       scheduleCreateDraftAutoSave();
     }
   }

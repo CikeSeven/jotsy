@@ -68,6 +68,8 @@ dependencies:
   # 网盘备份：装有 Google Play 服务的 Android 设备经系统账号选择器授权
   # Google Drive（没有 Play 服务时回落到设备码授权）。
   google_sign_in: ^7.2.0
+  photo_manager: ^3.12.0
+  photo_manager_image_provider: ^2.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

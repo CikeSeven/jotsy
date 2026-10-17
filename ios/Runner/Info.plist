@@ -45,6 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>补写日记时，列出相册里那一天拍的照片供你挑选插入。</string>
+	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
+	<true/>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>需要访问相册以保存图片到你的设备。</string>
 	<key>NSMicrophoneUsageDescription</key>

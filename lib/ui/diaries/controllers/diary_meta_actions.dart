@@ -79,24 +79,38 @@ class DiaryMetaActions {
       return;
     }
 
+    try {
+      await setCoverFromFile(context, selectedPath);
+    } finally {
+      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
+    }
+  }
+
+  /// 把一张本地图片拷贝到封面私有目录并设为封面，成功返回 true。
+  ///
+  /// [sourcePath] 只读不删（可能是相册原图）；来源的临时副本由调用方清理。
+  /// 正在导入另一张封面时直接返回 false。
+  Future<bool> setCoverFromFile(BuildContext context, String sourcePath) async {
+    if (importingCover.value) return false;
     _setFlag(importingCover, true);
     try {
       final importedPath = await DiaryCoverStorageService.importCover(
-        selectedPath,
+        sourcePath,
       );
       if (!context.mounted) {
         await DiaryCoverStorageService.deleteManagedCover(importedPath);
-        return;
+        return false;
       }
       draft.setCover(importedPath);
+      return true;
     } catch (error) {
       debugPrint('Cover import failed: $error');
       if (context.mounted) {
         _hint(context, context.l10n.publishCoverImportFailed);
       }
+      return false;
     } finally {
       _setFlag(importingCover, false);
-      await DiaryMediaStorageService.discardPickerCopy(selectedPath);
     }
   }
 

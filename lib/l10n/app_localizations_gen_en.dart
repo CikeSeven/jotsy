@@ -5199,4 +5199,111 @@ class AppLocalizationsEn extends AppLocalizations {
   String diaryExportTooLarge(int size) {
     return 'Too many images (about $size MB) for one PDF. Narrow the date range or turn off “Include images” and try again';
   }
+
+  @override
+  String diaryDayPhotosTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0 from this day';
+  }
+
+  @override
+  String get diaryDayPhotosAccessTitle => 'Photos from this day';
+
+  @override
+  String get diaryDayPhotosAccessBody =>
+      'Allow photo access to see the photos you took on this day and add some to this entry.';
+
+  @override
+  String get diaryDayPhotosDeniedBody =>
+      'Photo access is off. You can turn it on in system settings.';
+
+  @override
+  String get diaryDayPhotosAllowAccess => 'Allow access';
+
+  @override
+  String get diaryDayPhotosOpenSettings => 'Open settings';
+
+  @override
+  String get diaryDayPhotosShowAll => 'All';
+
+  @override
+  String get diaryDayPhotosDismiss => 'Hide for this entry';
+
+  @override
+  String diaryDayPhotosSelected(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get diaryDayPhotosClear => 'Clear';
+
+  @override
+  String get diaryDayPhotosInsert => 'Insert';
+
+  @override
+  String diaryDayPhotosInsertCount(int count) {
+    return 'Insert $count';
+  }
+
+  @override
+  String get diaryDayPhotosLimited => 'Showing only photos you allowed';
+
+  @override
+  String get diaryDayPhotosManageLimited => 'Select more';
+
+  @override
+  String diaryDayPhotosPhotoLabel(String time) {
+    return 'Photo taken at $time';
+  }
+
+  @override
+  String diaryDayPhotosInsertedLabel(String time) {
+    return 'Photo taken at $time, added';
+  }
+
+  @override
+  String diaryDayPhotosSheetTitle(String date) {
+    return 'Photos from $date';
+  }
+
+  @override
+  String diaryDayPhotosMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos couldn\'t be read and were skipped',
+      one: '1 photo couldn\'t be read and was skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsDayPhotoSuggestions => 'Suggest photos when backfilling';
+
+  @override
+  String get settingsDayPhotoSuggestionsSubtitle =>
+      'When writing an entry for a past day, list photos taken that day so you can pick some';
+
+  @override
+  String get diaryDayPhotosSetCover => 'Set as cover';
+
+  @override
+  String get diaryDayPhotosClearCover => 'Remove cover';
+
+  @override
+  String get diaryDayPhotosCoverBadge => 'Cover';
+
+  @override
+  String diaryDayPhotosCoverLabel(String label) {
+    return '$label, cover';
+  }
+
+  @override
+  String get diaryDayPhotosCoverSet =>
+      'Set as cover. You can see or change it on the publish page.';
 }

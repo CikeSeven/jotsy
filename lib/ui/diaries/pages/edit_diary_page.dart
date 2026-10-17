@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -13,6 +14,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/day_photo_library.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
@@ -32,6 +34,7 @@ import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controlle
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
@@ -41,6 +44,7 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_day_photos/diary_day_photos_strip.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
@@ -108,6 +112,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       PublishDiaryPanelController();
   DateTime? _createDateOverride;
 
+  // 补写过去某天时列出相册里这天拍的照片；日期跟随 _createDateOverride
+  // （日历入口、恢复的草稿、发布页改日期都会改它），开关来自编辑器设置。
+  late final DiaryDayPhotosController _dayPhotos;
+  SettingsService? _dayPhotoSettings;
+
   // ==================== 发布上下文草稿字段 ====================
   late quill.QuillController _contentController;
   String _metadataJson = '{}';
@@ -159,6 +168,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _createDateOverride = widget.createDateOverride;
+    // 先于草稿监听创建：_onMetaChanged 会同步封面角标。
+    _dayPhotos = DiaryDayPhotosController(
+      library: ref.read(dayPhotoLibraryProvider),
+    );
     final presetCapsule = widget.createCapsuleUnlockAt;
     _meta = DiaryMetaDraftController(
       DiaryMetaDraft(
@@ -206,6 +219,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _mediaImportController.removeListener(_onMediaImportChanged);
     _mediaImportController.dispose();
+    _dayPhotoSettings?.dayPhotoSuggestionsEnabledNotifier.removeListener(
+      _syncDayPhotos,
+    );
+    _dayPhotos.dispose();
     _titleController.dispose();
     _meta.removeListener(_onMetaChanged);
     _metaActions.dispose();
@@ -224,6 +241,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 从系统设置（开启相册权限）或相机回来：权限与当天照片都可能变了。
+    if (state == AppLifecycleState.resumed) {
+      _dayPhotos.refresh();
+    }
     if (_isEditEntry &&
         (state == AppLifecycleState.inactive ||
             state == AppLifecycleState.paused)) {
@@ -252,6 +273,30 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (mounted) setState(() {});
   }
 
+  /// 监听“补写时推荐当天照片”开关；设置服务异步就绪后才能绑定，绑定后
+  /// 在下一帧同步一次（不在 build 中直接改控制器状态）。
+  void _bindDayPhotoSettings(SettingsService settings) {
+    if (identical(_dayPhotoSettings, settings)) return;
+    _dayPhotoSettings?.dayPhotoSuggestionsEnabledNotifier.removeListener(
+      _syncDayPhotos,
+    );
+    _dayPhotoSettings = settings;
+    settings.dayPhotoSuggestionsEnabledNotifier.addListener(_syncDayPhotos);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncDayPhotos();
+    });
+  }
+
+  /// 把补写日期与开关交给照片控制器；只有新建模式且日期早于今天才算补写。
+  void _syncDayPhotos() {
+    _dayPhotos.configure(
+      day: _isCreateEntry
+          ? DiaryDayPhotosController.backfillDay(_createDateOverride)
+          : null,
+      enabled: _dayPhotoSettings?.isDayPhotoSuggestionsEnabled ?? false,
+    );
+  }
+
   /// 面板输入同正文一样自动保存，新建模式继续沿用草稿链路。
   void _markEditPanelDirty() {
     _panelMetadataDirty = true;
@@ -261,6 +306,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   /// 编辑模式下面板草稿每次真实变化都排程自动保存。详情回填（未初始化）
   /// 时的整体恢复不算修改；新建模式的草稿只随发布页往返，不走这里。
   void _onMetaChanged() {
+    // 发布页换了封面或清除封面时，“这天的照片”里的封面角标随之消失。
+    _dayPhotos.syncCover(_meta.value.cover);
     if (_isEditEntry && _initialized) {
       _markEditPanelDirty();
     }
@@ -427,6 +474,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               contentLocked: contentLocked,
               appearance: appearance,
             ),
+            if (_isCreateEntry)
+              IgnorePointer(
+                ignoring: contentLocked,
+                child: DiaryDayPhotosStrip(
+                  controller: _dayPhotos,
+                  busy:
+                      _saving ||
+                      _recordingPanelOpen ||
+                      _mediaImportController.isBusy,
+                  onInsert: () => unawaited(_controller.insertDayPhotos()),
+                  onSetCover: (photo) =>
+                      unawaited(_controller.setDayPhotoCover(photo)),
+                  onClearCover: _controller.clearDayPhotoCover,
+                ),
+              ),
             const SizedBox(height: 12),
             ConstrainedBox(
               // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
@@ -471,6 +533,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     final showEditMetaPanel = _isEditEntry;
     final settingsAsync = ref.watch(settingsServiceProvider);
     settingsAsync.whenData(_bindToolbarSettingsService);
+    settingsAsync.whenData(_bindDayPhotoSettings);
     final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
       _toolbarOrder,
       _toolbarHiddenItems,

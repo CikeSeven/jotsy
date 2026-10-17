@@ -68,8 +68,11 @@ class SettingsEditorSection extends StatelessWidget {
                               children: <Widget>[
                                 SettingsCardGroup(
                                   title: l10n.settingsEditorGroup,
-                                  children: const <Widget>[
-                                    _DiaryTypographyTile(),
+                                  children: <Widget>[
+                                    const _DiaryTypographyTile(),
+                                    _DayPhotoSuggestionsSwitch(
+                                      settings: settingsService,
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -182,6 +185,31 @@ class _DiaryTypographyTile extends ConsumerWidget {
           builder: (BuildContext context) => const DiaryTypographyPage(),
         ),
       ),
+    );
+  }
+}
+
+/// “补写时推荐当天照片”开关：关掉后补写日记不再出现这天的照片提示条，
+/// 也就不会再提示申请相册权限。
+class _DayPhotoSuggestionsSwitch extends StatelessWidget {
+  const _DayPhotoSuggestionsSwitch({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ValueListenableBuilder<bool>(
+      valueListenable: settings.dayPhotoSuggestionsEnabledNotifier,
+      builder: (BuildContext context, bool enabled, Widget? child) {
+        return SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          value: enabled,
+          title: Text(l10n.settingsDayPhotoSuggestions),
+          subtitle: Text(l10n.settingsDayPhotoSuggestionsSubtitle),
+          onChanged: settings.setDayPhotoSuggestionsEnabled,
+        );
+      },
     );
   }
 }

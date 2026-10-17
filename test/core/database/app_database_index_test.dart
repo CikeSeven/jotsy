@@ -207,4 +207,66 @@ CREATE TABLE diary_tags (
       }
     }
   });
+
+  test('v9 upgrade rebuilds list indexes a downgrade left behind', () async {
+    final root = await Directory.systemTemp.createTemp('jotsy_v9_leftover');
+    addTearDown(() => root.delete(recursive: true));
+    final file = File('${root.path}/v9_leftover.sqlite');
+    final original = AppDatabase.forTesting(NativeDatabase(file));
+    late DiaryWithTags before;
+    try {
+      final id = await original.createDiary(
+        title: '降级后仍在',
+        contentDocJson: '[{"insert":"正文\\n"}]',
+        contentText: '正文',
+        metadataJson: '{}',
+      );
+      before = (await original.getDiaryWithTagsByDiaryId(id))!;
+    } finally {
+      await original.close();
+    }
+    // 打开 v10 库的 v9 构建只把 user_version 写回 9，不删 v10 的索引；
+    // 另一个同名索引换成旧定义，模拟定义不同的早期构建留下的索引。
+    final legacy = sqlite3.open(file.path);
+    legacy.execute('DROP INDEX idx_diaries_active_created');
+    legacy.execute(
+      'CREATE INDEX idx_diaries_active_created ON diaries (created_at)',
+    );
+    legacy.execute('PRAGMA user_version = 9');
+    legacy.close();
+
+    for (var attempt = 0; attempt < 2; attempt++) {
+      final migrated = AppDatabase.forTesting(NativeDatabase(file));
+      try {
+        final after = (await migrated.getDiaryWithTagsByDiaryId(
+          before.diary.diaryId,
+        ))!;
+        expect(after.diary, before.diary);
+        final rows = await migrated
+            .customSelect(
+              "SELECT name, sql FROM sqlite_master "
+              "WHERE type = 'index' AND name LIKE 'idx_diaries_active_%'",
+            )
+            .get();
+        final sqlByName = <String, String>{
+          for (final row in rows)
+            row.read<String>('name'): row.read<String>('sql'),
+        };
+        expect(sqlByName, <String, String>{
+          for (final index in [
+            migrated.idxDiariesActiveUpdated,
+            migrated.idxDiariesActiveCreated,
+          ])
+            index.entityName:
+                index.createStatementsByDialect[SqlDialect.sqlite]!,
+        });
+        final version = await migrated
+            .customSelect('PRAGMA user_version')
+            .getSingle();
+        expect(version.read<int>('user_version'), migrated.schemaVersion);
+      } finally {
+        await migrated.close();
+      }
+    }
+  });
 }

@@ -199,17 +199,18 @@ class DiariesListSection extends StatelessWidget {
   /// 当条目排序变化（如编辑后更新时间变化）时，触发瀑布流 sliver 重建，避免旧布局残留空位。
   ///
   /// 性能说明：签名计算是 O(n) 遍历，列表较长时每帧重算会拖累滚动。
-  /// 这里用静态单槽 memo 缓存“上一次列表引用 → 签名”：父级未替换 diaries 列表实例时
+  /// 这里用静态单槽 memo 缓存“上一次列表弱引用 → 签名”：父级未替换 diaries 列表实例时
   /// （`identical` 命中）直接复用结果。父级每次重建若都生成新列表，则退化为原始计算，无副作用。
-  static List<DiaryWithTags>? _lastSignatureSource;
+  /// 使用弱引用，避免离开归档/搜索页后签名缓存仍把整份日记正文留在内存。
+  static WeakReference<List<DiaryWithTags>>? _lastSignatureSource;
   static int _lastSignatureValue = 0;
 
   int _waterfallLayoutSignature(List<DiaryWithTags> items) {
-    if (identical(items, _lastSignatureSource)) {
+    if (identical(items, _lastSignatureSource?.target)) {
       return _lastSignatureValue;
     }
     final value = _buildWaterfallLayoutSignature(items);
-    _lastSignatureSource = items;
+    _lastSignatureSource = WeakReference(items);
     _lastSignatureValue = value;
     return value;
   }

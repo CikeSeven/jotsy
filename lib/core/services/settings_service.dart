@@ -671,8 +671,18 @@ class SettingsService {
     if (weight == null) {
       return null;
     }
-    return 1 + ((weight - 1) / (moodOptionCount - 1)) * 4;
+    return _moodScoreForWeight(weight);
   }
+
+  /// 批量聚合时一次建立评分表；沿用默认符号别名与自定义符号的覆盖顺序，
+  /// 避免为每篇日记重新规范化设置、分配两份映射。
+  static Map<String, double> buildMoodScoreMap(List<String> moodOptions) =>
+      buildMoodWeightMap(
+        moodOptions,
+      ).map((mood, weight) => MapEntry(mood, _moodScoreForWeight(weight)));
+
+  static double _moodScoreForWeight(int weight) =>
+      1 + ((weight - 1) / (moodOptionCount - 1)) * 4;
 
   static String moodForWeight(int weight, List<String> moodOptions) {
     final normalized = normalizeMoodOptions(moodOptions);

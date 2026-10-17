@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_view_preferences.dart';
+import 'package:node_diary/utils/provider_retention.dart';
 
 /// 列表筛选状态：关键词 + 选中的标签集合。
 class DiaryFilterState {
@@ -134,25 +133,7 @@ final diaryFilterProvider =
 /// 结果列表（含正文），用得越久内存只增不减。现在无人监听超过该时长才释放：
 /// 短时间内来回切换（取消再勾回同一标签、从搜索返回）仍直接命中缓存，首帧
 /// 不必等待重新查询；更早的查询不再常驻。
-const Duration diaryQueryIdleRetention = Duration(seconds: 30);
-
-/// 让 autoDispose 查询在失去最后一个活跃监听者后再保留
-/// [diaryQueryIdleRetention]。
-///
-/// - 期间重新被监听（onResume）则取消释放；
-/// - 计时结束只是放开保活：若仍有暂停中的监听者（如不可见 Tab 里的列表），
-///   Riverpod 不会释放它，之后失去监听时立即释放；
-/// - 生命周期回调里不能再调用 `ref.keepAlive()`，所以保活链接只在构建时取一次。
-void _retainWhileRecentlyUsed(Ref ref) {
-  final link = ref.keepAlive();
-  Timer? releaseTimer;
-  ref.onCancel(() {
-    releaseTimer?.cancel();
-    releaseTimer = Timer(diaryQueryIdleRetention, link.close);
-  });
-  ref.onResume(() => releaseTimer?.cancel());
-  ref.onDispose(() => releaseTimer?.cancel());
-}
+const Duration diaryQueryIdleRetention = queryIdleRetention;
 
 /// 日记列表分页流 provider。
 ///
@@ -163,7 +144,7 @@ final pagedDiariesProvider = StreamProvider.autoDispose
       Ref ref,
       DiaryPageQuery query,
     ) {
-      _retainWhileRecentlyUsed(ref);
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       final fetchLimit = query.limit + 1;
       return db
@@ -275,7 +256,7 @@ final searchDiariesProvider = StreamProvider.autoDispose
       Ref ref,
       DiaryPageQuery query,
     ) {
-      _retainWhileRecentlyUsed(ref);
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       final fetchLimit = query.limit + 1;
       return db

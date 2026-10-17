@@ -31,7 +31,7 @@
 │  ├─ l10n/                          # 国际化封装
 │  └─ utils/                         # 工具函数
 ├─ assets/                           # 静态资源
-├─ test/                             # 测试
+├─ test/                             # 测试（performance/：手动启用的合成大数据微基准）
 ├─ integration_test/                 # 实机集成测试（隔离设置与数据库，验证录音/播放）
 ├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart）
 ├─ .github/                          # CI 门禁 workflows/ci.yml、发布 workflows/release-apk.yml、共用的 actions/setup-flutter（唯一定义 Flutter 版本）、Dependabot

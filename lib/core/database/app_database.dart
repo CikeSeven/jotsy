@@ -16,6 +16,7 @@ part 'app_database_schema.dart';
 part 'app_database_tag_ops.dart';
 part 'app_database_diary_writes.dart';
 part 'app_database_diary_queries.dart';
+part 'app_database_diary_list_queries.dart';
 part 'app_database_migrations.dart';
 part 'app_database_anniversary_schema.dart';
 part 'app_database_anniversary_ops.dart';
@@ -25,6 +26,7 @@ class AppDatabase extends _$AppDatabase
     with
         _AppDatabaseTagOps,
         _AppDatabaseDiaryQueries,
+        _AppDatabaseDiaryListQueries,
         _AppDatabaseDiaryWrites,
         _AppDatabaseAnniversaryOps,
         _AppDatabaseMigrations {
@@ -36,7 +38,7 @@ class AppDatabase extends _$AppDatabase
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -51,6 +53,9 @@ class AppDatabase extends _$AppDatabase
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();
+        // v1 分支已重建最新日记结构，不再逐列迁移，但仍需补齐当前索引。
+        await _migrateAddPerformanceIndexes();
+        await _migrateAddDiaryListIndexes(m);
         return;
       }
       if (from < 3) {
@@ -70,6 +75,9 @@ class AppDatabase extends _$AppDatabase
       }
       if (from < 8) {
         await _migrateRebindImportedMediaPaths();
+      }
+      if (from < 10) {
+        await _migrateAddDiaryListIndexes(m);
       }
     },
   );

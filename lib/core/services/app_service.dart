@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../utils/provider_retention.dart';
 import '../database/app_database.dart';
 import 'amap_config_channel.dart';
 import 'app_update_service.dart';
@@ -169,14 +170,18 @@ final tagListProvider = StreamProvider<List<Tag>>((Ref ref) {
   });
 });
 
-/// 归档日记流 provider。
-final archivedDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
-  final db = ref.watch(appDatabaseProvider);
-  return db.watchArchivedDiaries();
-});
+/// 归档日记只在最近使用时保留，避免离开页面后整份正文永久驻留内存。
+final archivedDiariesProvider = StreamProvider.autoDispose<List<DiaryWithTags>>(
+  (Ref ref) {
+    retainQueryWhileRecentlyUsed(ref);
+    return ref.watch(appDatabaseProvider).watchArchivedDiaries();
+  },
+);
 
-/// 回收站日记流 provider（仅软删除记录）。
-final deletedDiariesProvider = StreamProvider<List<DiaryWithTags>>((Ref ref) {
-  final db = ref.watch(appDatabaseProvider);
-  return db.watchDeletedDiaries();
+/// 回收站同样限时保留，短时间返回仍复用已加载的结果。
+final deletedDiariesProvider = StreamProvider.autoDispose<List<DiaryWithTags>>((
+  Ref ref,
+) {
+  retainQueryWhileRecentlyUsed(ref);
+  return ref.watch(appDatabaseProvider).watchDeletedDiaries();
 });

@@ -2205,6 +2205,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_diaries_capsule_unlock_at',
     'CREATE INDEX idx_diaries_capsule_unlock_at ON diaries (capsule_unlock_at)',
   );
+  late final Index idxDiariesActiveUpdated = Index(
+    'idx_diaries_active_updated',
+    'CREATE INDEX idx_diaries_active_updated ON diaries (is_pinned DESC, updated_at DESC, id DESC) WHERE is_deleted = 0 AND is_archived = 0',
+  );
+  late final Index idxDiariesActiveCreated = Index(
+    'idx_diaries_active_created',
+    'CREATE INDEX idx_diaries_active_created ON diaries (is_pinned DESC, created_at DESC, id DESC) WHERE is_deleted = 0 AND is_archived = 0',
+  );
   late final Index idxDiaryTagsTagId = Index(
     'idx_diary_tags_tag_id',
     'CREATE INDEX idx_diary_tags_tag_id ON diary_tags (tag_id)',
@@ -2221,6 +2229,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
+    idxDiariesActiveUpdated,
+    idxDiariesActiveCreated,
     idxDiaryTagsTagId,
   ];
   @override

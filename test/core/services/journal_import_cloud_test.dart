@@ -160,6 +160,33 @@ void main() {
       expect(jar.value('userId'), isNull);
       expect(jar.header(Uri.parse('https://i.mi.com/')), 'serviceToken=b');
     });
+
+    test('merges a cookie read on a host and its subdomain into one', () {
+      // 荣耀的登录 Cookie 以 Domain=cloud.honor.com 下发，网页视图对接口与
+      // 文件服务两个地址都会返回它；负载均衡 Cookie 只对各自主机生效。
+      final jar = CloudCookieJar()
+        ..addHeader('cloud.honor.com', 'hc_CSRF_Token=c1; agw=main')
+        ..addHeader('fileproxy-drcn.cloud.honor.com', 'hc_CSRF_Token=c1')
+        ..addHeader('fileproxy-drcn.cloud.honor.com', 'agw=file');
+
+      expect(
+        jar.header(Uri.parse('https://fileproxy-drcn.cloud.honor.com/f')),
+        'hc_CSRF_Token=c1; agw=file',
+      );
+
+      jar.absorb(Uri.parse('https://cloud.honor.com/portal/x'), [
+        'hc_CSRF_Token=c2; Domain=cloud.honor.com; Path=/',
+      ]);
+      expect(jar.value('hc_CSRF_Token'), 'c2');
+      expect(
+        jar.header(Uri.parse('https://fileproxy-drcn.cloud.honor.com/f')),
+        'agw=file; hc_CSRF_Token=c2',
+      );
+      expect(
+        jar.header(Uri.parse('https://cloud.honor.com/portal/x')),
+        'agw=main; hc_CSRF_Token=c2',
+      );
+    });
   });
 
   group('fetchCloudJournal', () {

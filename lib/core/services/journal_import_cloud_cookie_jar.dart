@@ -7,20 +7,47 @@ class CloudCookieJar {
 
   /// 从网页视图读到的 `name=value; …`（只知道它对 [host] 生效），按仅限
   /// 该主机的 Cookie 加入。
+  ///
+  /// 同名同值的 Cookie 已从 [host] 的父域名主机（或子域名主机）读到时，它
+  /// 是覆盖两者的域 Cookie（如荣耀以 `Domain=cloud.honor.com` 下发的登录
+  /// Cookie 也发往文件服务 `fileproxy-drcn.cloud.honor.com`），合并为父主机
+  /// 的一条域 Cookie：服务端按该域轮换 Set-Cookie 时替换的是同一条，不会
+  /// 在子主机上留下旧值，让 [value] 因多个不同值读不到。
   void addHeader(String host, String header) {
+    final target = host.toLowerCase();
     for (final pair in header.split(';')) {
       final index = pair.indexOf('=');
       if (index <= 0) continue;
+      final name = pair.substring(0, index).trim();
+      final value = pair.substring(index + 1).trim();
+      final shared = _cookies
+          .where(
+            (cookie) =>
+                cookie.name == name &&
+                cookie.value == value &&
+                cookie.path == '/' &&
+                (_isSubdomain(target, cookie.domain) ||
+                    _isSubdomain(cookie.domain, target)),
+          )
+          .firstOrNull;
+      if (shared == null) {
+        _put(_JarCookie(name, value, target, hostOnly: true));
+        continue;
+      }
+      _cookies.remove(shared);
       _put(
         _JarCookie(
-          pair.substring(0, index).trim(),
-          pair.substring(index + 1).trim(),
-          host.toLowerCase(),
-          hostOnly: true,
+          name,
+          value,
+          _isSubdomain(target, shared.domain) ? shared.domain : target,
+          hostOnly: false,
         ),
       );
     }
   }
+
+  static bool _isSubdomain(String host, String parent) =>
+      host.endsWith('.$parent');
 
   /// 写入或替换只对 [host] 生效的 Cookie；同名的其他条目一并移除，罐中
   /// 只留这一个值。

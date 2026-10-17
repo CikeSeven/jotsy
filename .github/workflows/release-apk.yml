@@ -126,8 +126,97 @@ jobs:
           grep -Eq '^qweather\.api_host=.+$' android/local.properties ||
             fail_runtime_secret 'Failed to write qweather.api_host'
 
+      # 网盘备份的应用密钥经 --dart-define-from-file 注入（见 docs/cloud_backup.md）。
+      # 每个网盘都是可选的：未配置的只告警，安装包里不显示该网盘；配置了但格式
+      # 不对、或成对的值只配了一半时构建失败，避免发布授权必然失败的包。
+      - name: Write cloud backup app keys
+        env:
+          JOTSY_GOOGLE_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_CLIENT_ID }}
+          JOTSY_GOOGLE_CLIENT_SECRET: ${{ secrets.JOTSY_GOOGLE_CLIENT_SECRET }}
+          JOTSY_GOOGLE_WEB_CLIENT_ID: ${{ secrets.JOTSY_GOOGLE_WEB_CLIENT_ID }}
+          JOTSY_DROPBOX_APP_KEY: ${{ secrets.JOTSY_DROPBOX_APP_KEY }}
+          JOTSY_MICROSOFT_CLIENT_ID: ${{ secrets.JOTSY_MICROSOFT_CLIENT_ID }}
+          JOTSY_MICROSOFT_TENANT: ${{ vars.JOTSY_MICROSOFT_TENANT }}
+          JOTSY_BAIDU_APP_KEY: ${{ secrets.JOTSY_BAIDU_APP_KEY }}
+          JOTSY_BAIDU_SECRET_KEY: ${{ secrets.JOTSY_BAIDU_SECRET_KEY }}
+          JOTSY_BAIDU_APP_DIR: ${{ vars.JOTSY_BAIDU_APP_DIR }}
+          JOTSY_ALIYUN_CLIENT_ID: ${{ secrets.JOTSY_ALIYUN_CLIENT_ID }}
+          JOTSY_ALIYUN_CLIENT_SECRET: ${{ secrets.JOTSY_ALIYUN_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          fail_key() {
+            echo "Cloud backup key validation failed: $1"
+            echo "::error::$1"
+            exit 1
+          }
+
+          # 已配置的值必须是单行、无首尾空白，且符合 [pattern]。
+          check_key() {
+            local name="$1" pattern="$2" value="${!1:-}"
+            [[ -z "$value" ]] && return 0
+            if [[ "$value" == *$'\n'* || "$value" == *$'\r'* ]]; then
+              fail_key "Secret $name must contain exactly one line"
+            fi
+            if [[ "$value" =~ ^[[:space:]] || "$value" =~ [[:space:]]$ ]]; then
+              fail_key "Secret $name must not contain leading or trailing whitespace"
+            fi
+            [[ "$value" =~ $pattern ]] || fail_key "Secret $name has an unexpected format"
+          }
+
+          # 成对使用的值要么都配，要么都不配。
+          check_pair() {
+            if [[ -n "${!1:-}" && -z "${!2:-}" ]] || [[ -z "${!1:-}" && -n "${!2:-}" ]]; then
+              fail_key "Secrets $1 and $2 must be set together"
+            fi
+          }
+
+          google_client='^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$'
+          check_key JOTSY_GOOGLE_CLIENT_ID "$google_client"
+          check_key JOTSY_GOOGLE_CLIENT_SECRET '^GOCSPX-[A-Za-z0-9_-]+$'
+          check_key JOTSY_GOOGLE_WEB_CLIENT_ID "$google_client"
+          check_key JOTSY_DROPBOX_APP_KEY '^[a-z0-9]+$'
+          check_key JOTSY_MICROSOFT_CLIENT_ID '^[0-9a-fA-F-]{36}$'
+          check_key JOTSY_MICROSOFT_TENANT '^[A-Za-z0-9.-]+$'
+          check_key JOTSY_BAIDU_APP_KEY '^[A-Za-z0-9]+$'
+          check_key JOTSY_BAIDU_SECRET_KEY '^[A-Za-z0-9]+$'
+          check_key JOTSY_BAIDU_APP_DIR '^[^/]+$'
+          check_key JOTSY_ALIYUN_CLIENT_ID '^[A-Za-z0-9]+$'
+          check_key JOTSY_ALIYUN_CLIENT_SECRET '^[A-Za-z0-9]+$'
+          check_pair JOTSY_GOOGLE_CLIENT_ID JOTSY_GOOGLE_CLIENT_SECRET
+          check_pair JOTSY_BAIDU_APP_KEY JOTSY_BAIDU_SECRET_KEY
+
+          [[ -n "${JOTSY_GOOGLE_CLIENT_ID:-}${JOTSY_GOOGLE_WEB_CLIENT_ID:-}" ]] ||
+            echo "::warning::Google Drive keys are not set; Google Drive is hidden in this build"
+          [[ -n "${JOTSY_DROPBOX_APP_KEY:-}" ]] ||
+            echo "::warning::Dropbox key is not set; Dropbox is hidden in this build"
+          [[ -n "${JOTSY_MICROSOFT_CLIENT_ID:-}" ]] ||
+            echo "::warning::OneDrive key is not set; OneDrive is hidden in this build"
+          [[ -n "${JOTSY_BAIDU_APP_KEY:-}" ]] ||
+            echo "::warning::Baidu Netdisk keys are not set; Baidu Netdisk is hidden in this build"
+          [[ -n "${JOTSY_ALIYUN_CLIENT_ID:-}" ]] ||
+            echo "::warning::Alipan key is not set; Alipan is hidden in this build"
+
+          # 只写入已配置的值，未配置的沿用代码里的默认值（空即隐藏）。
+          python3 - <<'PY'
+          import json
+          import os
+
+          names = [
+              'JOTSY_GOOGLE_CLIENT_ID', 'JOTSY_GOOGLE_CLIENT_SECRET',
+              'JOTSY_GOOGLE_WEB_CLIENT_ID', 'JOTSY_DROPBOX_APP_KEY',
+              'JOTSY_MICROSOFT_CLIENT_ID', 'JOTSY_MICROSOFT_TENANT',
+              'JOTSY_BAIDU_APP_KEY', 'JOTSY_BAIDU_SECRET_KEY', 'JOTSY_BAIDU_APP_DIR',
+              'JOTSY_ALIYUN_CLIENT_ID', 'JOTSY_ALIYUN_CLIENT_SECRET',
+          ]
+          keys = {name: os.environ[name] for name in names if os.environ.get(name)}
+          with open('cloud_backup_keys.json', 'w', encoding='utf-8') as file:
+              json.dump(keys, file)
+          print('Cloud backup keys configured:', ', '.join(sorted(keys)) or 'none')
+          PY
+
       - name: Build split release APKs
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release --split-per-abi --dart-define-from-file=cloud_backup_keys.json
 
       - name: Prepare release artifacts
         id: artifact

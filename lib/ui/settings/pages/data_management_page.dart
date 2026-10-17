@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
-import 'package:node_diary/ui/settings/pages/webdav_sync_page.dart';
+import 'package:node_diary/ui/settings/pages/cloud_backup_page.dart';
 import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 
 import '../../home/widgets/home_hint_visibility_scope.dart';
@@ -14,7 +14,7 @@ import '../controllers/data_management_controller.dart';
 import '../controllers/journal_import_controller.dart';
 
 /// 数据管理页面：完整备份导出、导入（合并或覆盖）、从其他日记应用导入与
-/// WebDAV 入口。
+/// 网盘备份入口。
 ///
 /// 只负责装配与忙碌/提示出口，导出导入流程见 [DataManagementController]，
 /// 其他应用的导入流程见 [JournalImportController]。
@@ -152,8 +152,8 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                         FontAwesomeIcons.cloudArrowUp,
                         size: 16,
                       ),
-                      title: Text(context.l10n.dataMgmtWebDav),
-                      subtitle: Text(context.l10n.dataMgmtWebDavSubtitle),
+                      title: Text(context.l10n.dataMgmtCloudBackup),
+                      subtitle: Text(context.l10n.dataMgmtCloudBackupSubtitle),
                       trailing: const FaIcon(
                         FontAwesomeIcons.angleRight,
                         size: 14,
@@ -165,7 +165,7 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (BuildContext context) {
-                              return const WebDavSyncPage();
+                              return const CloudBackupPage();
                             },
                           ),
                         );

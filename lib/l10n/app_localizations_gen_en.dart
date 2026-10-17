@@ -1337,19 +1337,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'This was sealed for your future self. How do you feel today?';
 
   @override
-  String get dataMgmtWebDav => 'WebDAV Sync';
-
-  @override
-  String get dataMgmtWebDavSubtitle =>
-      'Back up to NAS / private WebDAV and restore from remote backups';
-
-  @override
-  String get webDavTitle => 'WebDAV Sync';
-
-  @override
-  String get webDavConfigSection => 'Connection';
-
-  @override
   String get webDavServerUrl => 'Server URL';
 
   @override
@@ -1368,131 +1355,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webDavRemoteDirectoryHint => 'e.g. /jotsy/';
 
   @override
-  String get webDavSaveConfig => 'Save Config';
-
-  @override
-  String get webDavTestConnection => 'Test Connection';
-
-  @override
-  String get webDavUploadBackup => 'Upload Current Backup';
-
-  @override
-  String get webDavRefreshBackups => 'Refresh List';
-
-  @override
-  String get webDavBackupList => 'Remote Backups';
-
-  @override
-  String get webDavNoBackups => 'No remote backups yet';
-
-  @override
-  String get webDavConfigSaved => 'WebDAV config saved';
-
-  @override
-  String get webDavConnectionOk => 'WebDAV connection succeeded';
-
-  @override
-  String get webDavUploadSuccess => 'Backup uploaded to WebDAV';
-
-  @override
-  String get webDavRestoreSuccess => 'Data restored from WebDAV backup';
-
-  @override
-  String get webDavDeleteSuccess => 'Remote backup deleted';
-
-  @override
-  String webDavOperationFailed(String error) {
-    return 'Operation failed: $error';
-  }
-
-  @override
-  String get webDavBusySave => 'Saving config...';
-
-  @override
-  String get webDavBusyTest => 'Testing connection...';
-
-  @override
-  String get webDavBusyUpload => 'Uploading backup...';
-
-  @override
-  String get webDavBusyRefresh => 'Reading remote backups...';
-
-  @override
-  String get webDavBusyRestore => 'Restoring backup...';
-
-  @override
-  String get webDavBusyDelete => 'Deleting remote backup...';
-
-  @override
-  String get webDavBusyLabel => 'Processing WebDAV operation';
-
-  @override
   String get webDavHint =>
       'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.';
-
-  @override
-  String get webDavDeleteConfirmTitle => 'Delete Remote Backup';
-
-  @override
-  String webDavDeleteConfirmContent(String fileName) {
-    return 'Delete $fileName from the WebDAV server? This cannot be undone.';
-  }
-
-  @override
-  String get webDavRestoreAction => 'Restore';
-
-  @override
-  String get webDavDeleteAction => 'Delete';
-
-  @override
-  String webDavBackupSize(String size) {
-    return 'Size: $size';
-  }
-
-  @override
-  String webDavBackupTime(String time) {
-    return 'Time: $time';
-  }
-
-  @override
-  String get webDavPasswordDialogTitle => 'Backup Password';
-
-  @override
-  String get webDavPasswordDialogHint =>
-      'Leave empty for no encryption; enter the original password for encrypted restore';
-
-  @override
-  String get webDavPasswordWarning =>
-      'Keep this password safe. Encrypted backups cannot be restored if you forget it.';
-
-  @override
-  String get webDavContinueWithoutPassword => 'Continue';
-
-  @override
-  String get webDavConfigRequired => 'Fill and save WebDAV config first';
-
-  @override
-  String get webDavErrorConfig =>
-      'Check the WebDAV URL, account, password/token, and remote directory';
-
-  @override
-  String get webDavErrorAuth =>
-      'Authentication failed. Check the username and password/token';
-
-  @override
-  String get webDavErrorNotFound =>
-      'Remote path not found. Check the NAS WebDAV directory';
-
-  @override
-  String get webDavErrorStorageFull =>
-      'The WebDAV server does not have enough storage space';
-
-  @override
-  String get webDavErrorNetwork =>
-      'Network request failed. Check the server URL, certificate, and network status';
-
-  @override
-  String get webDavErrorUnknown => 'Unknown error. Please try again later';
 
   @override
   String get imageViewerSaveToGallery => 'Save to gallery';
@@ -4473,4 +4337,499 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleTopBarTitlePosition => 'Position';
+
+  @override
+  String get dataMgmtCloudBackup => 'Cloud backup';
+
+  @override
+  String get dataMgmtCloudBackupSubtitle =>
+      'Back up to cloud drives, WebDAV or object storage and restore from them';
+
+  @override
+  String get cloudBackupTitle => 'Cloud backup';
+
+  @override
+  String get cloudBackupEmpty =>
+      'No backup locations yet. Add a cloud drive, WebDAV server or object storage to upload full backups and restore them on a new device.';
+
+  @override
+  String get cloudBackupAdd => 'Add backup location';
+
+  @override
+  String get cloudBackupHint =>
+      'Addresses, passwords and drive authorizations stay on this device and are never written into backups. Uploads are full backup ZIPs, optionally encrypted.';
+
+  @override
+  String get cloudBackupSheetTitle => 'Choose a backup location';
+
+  @override
+  String get cloudBackupSheetHint =>
+      'Before restoring, the backup is checked and you choose whether to merge with or overwrite local data.';
+
+  @override
+  String get cloudBackupGroupDrives => 'Cloud drives (sign in)';
+
+  @override
+  String get cloudBackupGroupDrivesHint =>
+      'Authorize on the drive\'s official page; the app can only access its own backup folder.';
+
+  @override
+  String get cloudBackupGroupWebDav => 'WebDAV';
+
+  @override
+  String get cloudBackupGroupWebDavHint =>
+      'Nutstore, NAS, Nextcloud, and any drive mounted through Alist / OpenList.';
+
+  @override
+  String get cloudBackupGroupS3 => 'Object storage (S3-compatible)';
+
+  @override
+  String get cloudBackupGroupS3Hint =>
+      'Enter access keys; backups are stored in the bucket you choose.';
+
+  @override
+  String get cloudBackupCustomWebDav => 'Other WebDAV';
+
+  @override
+  String get cloudBackupCustomS3 => 'Other S3-compatible';
+
+  @override
+  String get cloudBackupBaiduPan => 'Baidu Netdisk';
+
+  @override
+  String get cloudBackupAliyunDrive => 'Alipan (Aliyun Drive)';
+
+  @override
+  String get cloudBackupJianguoyun => 'Nutstore (Jianguoyun)';
+
+  @override
+  String get cloudBackup123pan => '123pan';
+
+  @override
+  String get cloudBackupSynology => 'Synology NAS';
+
+  @override
+  String get cloudBackupQnap => 'QNAP NAS';
+
+  @override
+  String get cloudBackupAliyunOss => 'Alibaba Cloud OSS';
+
+  @override
+  String get cloudBackupTencentCos => 'Tencent Cloud COS';
+
+  @override
+  String get cloudBackupQiniuKodo => 'Qiniu Kodo';
+
+  @override
+  String get cloudBackupHuaweiObs => 'Huawei Cloud OBS';
+
+  @override
+  String get cloudBackupVolcengineTos => 'Volcengine TOS';
+
+  @override
+  String get cloudBackupBaiduBos => 'Baidu AI Cloud BOS';
+
+  @override
+  String get cloudBackupJdcloudOss => 'JD Cloud OSS';
+
+  @override
+  String get cloudBackupAwsChina => 'Amazon S3 (China)';
+
+  @override
+  String get cloudBackupHintJianguoyun =>
+      'Use your Nutstore account as the username and an app password from Account Info → Security → Third-party apps. Free accounts allow 600 requests per 30 minutes.';
+
+  @override
+  String get cloudBackupHint123pan =>
+      'Copy the address and password shown under Tools → Third-party mount in 123pan (the password is shown only once).';
+
+  @override
+  String get cloudBackupHintOpenList =>
+      'Enter the Alist / OpenList address (default port 5244, path /dav/) and grant the user WebDAV read and manage permissions. Any drive mounted there can hold backups.';
+
+  @override
+  String get cloudBackupHintCloudDrive2 =>
+      'Enter the CloudDrive2 address (default port 19798, path /dav) and your CloudDrive2 account.';
+
+  @override
+  String get cloudBackupHintNextcloud =>
+      'Copy the address from Files settings → WebDAV in the web app; prefer an app password from Personal settings → Security.';
+
+  @override
+  String get cloudBackupHintOwncloud =>
+      'Prefer an app token as the password; on oCIS the administrator must enable app tokens.';
+
+  @override
+  String get cloudBackupHintSeafile =>
+      'SeafDAV must be enabled on the server; single sign-on accounts need a separate WebDAV password set on the web.';
+
+  @override
+  String get cloudBackupHintSynology =>
+      'Install and enable WebDAV Server in DSM (HTTPS port 5006 by default) and sign in with a DSM account; the first level of the remote folder must be a shared folder.';
+
+  @override
+  String get cloudBackupHintQnap =>
+      'Enable WebDAV in the Control Panel and end the address with the shared folder name.';
+
+  @override
+  String get cloudBackupHintKoofr =>
+      'You must use an app password from Koofr Settings → Passwords; repeated failed logins are temporarily blocked.';
+
+  @override
+  String get cloudBackupHintPcloud =>
+      'Sign in with your pCloud email and password; choose pCloud (EU) for European accounts.';
+
+  @override
+  String get cloudBackupHintInfinicloud =>
+      'Copy the address and the Apps Connection password from your InfiniCLOUD My Page.';
+
+  @override
+  String get cloudBackupHintHetzner =>
+      'Enable WebDAV and external access for the Storage Box in Hetzner Console.';
+
+  @override
+  String get cloudBackupHintKdrive =>
+      'The Drive ID is in the kDrive web address; use an app password if two-factor authentication is on.';
+
+  @override
+  String get cloudBackupHintYandex =>
+      'Requires a paid Yandex 360 plan and an app password of type WebDAV.';
+
+  @override
+  String get cloudBackupHintMailru =>
+      'Use an app password created in your Mail.ru account settings.';
+
+  @override
+  String get cloudBackupS3Hint =>
+      'The endpoint and region must match the bucket\'s location. Use a dedicated bucket and keys that can access only that bucket.';
+
+  @override
+  String get cloudBackupHintAliyunOss =>
+      'Use a RAM user AccessKey; the endpoint region must match the bucket. Accounts opened after March 2025 may be unable to use the default public endpoint in mainland China.';
+
+  @override
+  String get cloudBackupHintTencentCos =>
+      'The bucket name must include the APPID suffix (e.g. backup-1250000000); create keys under CAM → API keys.';
+
+  @override
+  String get cloudBackupHintQiniuKodo =>
+      'The S3 bucket name may differ from the Kodo space name; use the one shown in the console.';
+
+  @override
+  String get cloudBackupHintR2 =>
+      'Replace ACCOUNT_ID with your Cloudflare account ID, create a token under R2 → Manage API tokens and use its S3 credentials; keep the region as auto.';
+
+  @override
+  String get cloudBackupHintB2 =>
+      'Use the endpoint shown on the bucket page and its region part (e.g. us-west-004) as the region; use an Application Key.';
+
+  @override
+  String get cloudBackupHintDigitalOcean =>
+      'Put the Spaces datacenter (e.g. nyc3) in the endpoint and keep the signing region as us-east-1.';
+
+  @override
+  String get cloudBackupHintMinio =>
+      'Enter the MinIO API address (default port 9000) and keep path-style access on.';
+
+  @override
+  String get cloudBackupHintGcs =>
+      'Create HMAC keys under Cloud Storage → Settings → Interoperability.';
+
+  @override
+  String get cloudBackupHintOracle =>
+      'Find NAMESPACE and REGION in the OCI console and use a Customer Secret Key.';
+
+  @override
+  String get cloudBackupFolderGoogleDrive =>
+      'Backups are stored in the \"Jotsy\" folder of Google Drive; the app can only access files it created. Deleted backups skip the trash.';
+
+  @override
+  String get cloudBackupFolderOneDrive =>
+      'Backups are stored in this app\'s folder under Apps in OneDrive; the app can only access that folder. Deleted backups go to the OneDrive recycle bin.';
+
+  @override
+  String get cloudBackupFolderDropbox =>
+      'Backups are stored in this app\'s folder under Apps in Dropbox; the app can only access that folder.';
+
+  @override
+  String get cloudBackupFolderBaidu =>
+      'Backups are stored in this app\'s folder under My App Data in Baidu Netdisk.';
+
+  @override
+  String get cloudBackupFolderAliyun =>
+      'Backups are stored in the folder chosen during authorization (or \"Jotsy\" at the root). Deleted backups go to the trash. Re-authorize when Alipan ends the authorization.';
+
+  @override
+  String get cloudBackupConfigSection => 'Connection';
+
+  @override
+  String get cloudBackupSaveConfig => 'Save';
+
+  @override
+  String get cloudBackupTestConnection => 'Test connection';
+
+  @override
+  String get cloudBackupUploadBackup => 'Upload backup';
+
+  @override
+  String get cloudBackupRefreshBackups => 'Refresh';
+
+  @override
+  String get cloudBackupBackupList => 'Remote backups';
+
+  @override
+  String get cloudBackupNoBackups => 'No remote backups yet';
+
+  @override
+  String cloudBackupBackupTime(String time) {
+    return 'Time: $time';
+  }
+
+  @override
+  String cloudBackupBackupSize(String size) {
+    return 'Size: $size';
+  }
+
+  @override
+  String get cloudBackupRestoreAction => 'Restore';
+
+  @override
+  String get cloudBackupDeleteAction => 'Delete';
+
+  @override
+  String get cloudBackupDeleteConfirmTitle => 'Delete remote backup?';
+
+  @override
+  String cloudBackupDeleteConfirmContent(String fileName) {
+    return 'Delete $fileName from this backup location? This cannot be undone.';
+  }
+
+  @override
+  String get cloudBackupRemoveTarget => 'Remove this location';
+
+  @override
+  String get cloudBackupRemoveTargetTitle => 'Remove backup location?';
+
+  @override
+  String get cloudBackupRemoveTargetContent =>
+      'Only the connection details and authorization saved on this device are removed. Backups already stored there are kept, and you can add the location again later.';
+
+  @override
+  String get cloudBackupRemoveTargetAction => 'Remove';
+
+  @override
+  String get cloudBackupRemoved => 'Backup location removed';
+
+  @override
+  String get cloudBackupConfigSaved => 'Settings saved';
+
+  @override
+  String get cloudBackupConnectionOk => 'Connection successful';
+
+  @override
+  String get cloudBackupUploadSuccess => 'Backup uploaded';
+
+  @override
+  String get cloudBackupRestoreSuccess =>
+      'Data restored from the remote backup';
+
+  @override
+  String get cloudBackupDeleteSuccess => 'Remote backup deleted';
+
+  @override
+  String get cloudBackupAccountAuthorized => 'Authorized';
+
+  @override
+  String cloudBackupAccountConnected(String account) {
+    return 'Signed in as $account';
+  }
+
+  @override
+  String get cloudBackupReauthorize => 'Re-authorize';
+
+  @override
+  String cloudBackupAuthorized(String name) {
+    return 'Connected to $name';
+  }
+
+  @override
+  String cloudBackupAuthorizeTitle(String name) {
+    return 'Authorize $name';
+  }
+
+  @override
+  String get cloudBackupDeviceCodeHint =>
+      'Open the authorization page, sign in and enter the code below. This continues automatically once you approve.';
+
+  @override
+  String get cloudBackupDeviceCodeLabel => 'Authorization code';
+
+  @override
+  String get cloudBackupCopyCode => 'Copy code';
+
+  @override
+  String get cloudBackupDeviceCodeCopied => 'Copied';
+
+  @override
+  String get cloudBackupOpenAuthorizePage => 'Open authorization page';
+
+  @override
+  String get cloudBackupWaitingAuthorization => 'Waiting for authorization…';
+
+  @override
+  String get cloudBackupCodePasteHint =>
+      'After you authorize in the browser, the page shows an authorization code. Copy it and paste it here.';
+
+  @override
+  String get cloudBackupCodeLabel => 'Authorization code';
+
+  @override
+  String get cloudBackupCodeConfirm => 'Finish';
+
+  @override
+  String get cloudBackupBusyLabel => 'Cloud backup in progress';
+
+  @override
+  String get cloudBackupBusySave => 'Saving…';
+
+  @override
+  String get cloudBackupBusyTest => 'Testing connection…';
+
+  @override
+  String get cloudBackupBusyUpload => 'Creating backup…';
+
+  @override
+  String cloudBackupBusyUploadProgress(int percent) {
+    return 'Uploading $percent%';
+  }
+
+  @override
+  String get cloudBackupBusyDownload => 'Downloading backup…';
+
+  @override
+  String cloudBackupBusyDownloadProgress(int percent) {
+    return 'Downloading $percent%';
+  }
+
+  @override
+  String get cloudBackupBusyRestore => 'Restoring data…';
+
+  @override
+  String get cloudBackupBusyRefresh => 'Loading remote backups…';
+
+  @override
+  String get cloudBackupBusyDelete => 'Deleting remote backup…';
+
+  @override
+  String get cloudBackupBusyAuthorize => 'Verifying authorization…';
+
+  @override
+  String cloudBackupOperationFailed(String detail) {
+    return 'Operation failed: $detail';
+  }
+
+  @override
+  String get cloudBackupErrorConfig =>
+      'Check that the address, bucket and folder settings are complete and correct';
+
+  @override
+  String get cloudBackupErrorAppKeyMissing =>
+      'This build has no app key for this drive, so it is unavailable';
+
+  @override
+  String get cloudBackupErrorAuth =>
+      'Authentication failed or access denied; check the account, password or keys';
+
+  @override
+  String get cloudBackupErrorSessionExpired =>
+      'The authorization has expired; please re-authorize';
+
+  @override
+  String get cloudBackupErrorAuthorizationDenied =>
+      'Authorization was declined';
+
+  @override
+  String get cloudBackupErrorAuthorizationExpired =>
+      'The code is invalid or expired; please get a new one';
+
+  @override
+  String get cloudBackupErrorNotFound =>
+      'The remote file or folder does not exist';
+
+  @override
+  String get cloudBackupErrorStorageFull =>
+      'The backup location is out of space';
+
+  @override
+  String get cloudBackupErrorFileTooLarge =>
+      'The backup exceeds the file size limit of this location';
+
+  @override
+  String get cloudBackupErrorRateLimited =>
+      'Too many requests; please try again later';
+
+  @override
+  String get cloudBackupErrorNetwork =>
+      'Network request failed; check the network, address and certificate';
+
+  @override
+  String get cloudBackupErrorProtocol =>
+      'The backup location returned an unexpected response';
+
+  @override
+  String get cloudBackupErrorPassword => 'Incorrect backup password';
+
+  @override
+  String get cloudBackupErrorArchive =>
+      'The backup is damaged or not a Jotsy backup';
+
+  @override
+  String get cloudBackupErrorLocalFile =>
+      'Failed to read or write a local temporary file; check free storage';
+
+  @override
+  String get cloudBackupErrorUnknown =>
+      'An unknown error occurred; please try again later';
+
+  @override
+  String get s3Endpoint => 'Endpoint';
+
+  @override
+  String get s3EndpointHint => 'e.g. https://s3.us-east-1.amazonaws.com';
+
+  @override
+  String get s3Region => 'Region';
+
+  @override
+  String get s3RegionHint => 'Defaults to us-east-1';
+
+  @override
+  String get s3Bucket => 'Bucket';
+
+  @override
+  String get s3AccessKeyId => 'Access Key ID';
+
+  @override
+  String get s3SecretAccessKey => 'Secret Access Key';
+
+  @override
+  String get s3Prefix => 'Backup folder (key prefix)';
+
+  @override
+  String get s3PrefixHint => 'e.g. jotsy/; leave empty for the bucket root';
+
+  @override
+  String get s3PathStyle => 'Path-style access';
+
+  @override
+  String get s3PathStyleSubtitle =>
+      'Usually required by self-hosted services such as MinIO';
+
+  @override
+  String get s3PathStyleLocked =>
+      'This service only supports virtual-hosted-style access';
+
+  @override
+  String get cloudBackupErrorPlatformUnavailable =>
+      'System account authorization is unavailable on this device (Google Play services required), and this build has no fallback';
 }

@@ -1295,18 +1295,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timeCapsuleUnlockedInsightNoMood => '这是一封写给未来自己的日记，今天感觉如何？';
 
   @override
-  String get dataMgmtWebDav => 'WebDAV 同步';
-
-  @override
-  String get dataMgmtWebDavSubtitle => '备份到 NAS / 私有 WebDAV，并可从远程恢复';
-
-  @override
-  String get webDavTitle => 'WebDAV 同步';
-
-  @override
-  String get webDavConfigSection => '连接配置';
-
-  @override
   String get webDavServerUrl => '服务器地址';
 
   @override
@@ -1325,124 +1313,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get webDavRemoteDirectoryHint => '例如 /jotsy/';
 
   @override
-  String get webDavSaveConfig => '保存配置';
-
-  @override
-  String get webDavTestConnection => '测试连接';
-
-  @override
-  String get webDavUploadBackup => '上传当前备份';
-
-  @override
-  String get webDavRefreshBackups => '刷新列表';
-
-  @override
-  String get webDavBackupList => '远程备份';
-
-  @override
-  String get webDavNoBackups => '暂无远程备份';
-
-  @override
-  String get webDavConfigSaved => 'WebDAV 配置已保存';
-
-  @override
-  String get webDavConnectionOk => 'WebDAV 连接成功';
-
-  @override
-  String get webDavUploadSuccess => '备份已上传到 WebDAV';
-
-  @override
-  String get webDavRestoreSuccess => '已从 WebDAV 备份恢复数据';
-
-  @override
-  String get webDavDeleteSuccess => '远程备份已删除';
-
-  @override
-  String webDavOperationFailed(String error) {
-    return '操作失败：$error';
-  }
-
-  @override
-  String get webDavBusySave => '正在保存配置...';
-
-  @override
-  String get webDavBusyTest => '正在测试连接...';
-
-  @override
-  String get webDavBusyUpload => '正在上传备份...';
-
-  @override
-  String get webDavBusyRefresh => '正在读取远程备份...';
-
-  @override
-  String get webDavBusyRestore => '正在恢复备份...';
-
-  @override
-  String get webDavBusyDelete => '正在删除远程备份...';
-
-  @override
-  String get webDavBusyLabel => 'WebDAV 操作处理中';
-
-  @override
   String get webDavHint =>
       '建议在 NAS 中为 Jotsy 创建独立目录，并优先使用应用专用密码或 Token。上传会生成完整 ZIP 备份；恢复时可选择合并或覆盖本地数据。';
-
-  @override
-  String get webDavDeleteConfirmTitle => '删除远程备份';
-
-  @override
-  String webDavDeleteConfirmContent(String fileName) {
-    return '将从 WebDAV 服务器删除 $fileName，此操作不可撤销。';
-  }
-
-  @override
-  String get webDavRestoreAction => '恢复';
-
-  @override
-  String get webDavDeleteAction => '删除';
-
-  @override
-  String webDavBackupSize(String size) {
-    return '大小：$size';
-  }
-
-  @override
-  String webDavBackupTime(String time) {
-    return '时间：$time';
-  }
-
-  @override
-  String get webDavPasswordDialogTitle => '备份密码';
-
-  @override
-  String get webDavPasswordDialogHint => '不填写则不加密；恢复加密备份时请输入原密码';
-
-  @override
-  String get webDavPasswordWarning => '请妥善保管备份密码。遗忘后无法恢复加密备份。';
-
-  @override
-  String get webDavContinueWithoutPassword => '继续';
-
-  @override
-  String get webDavConfigRequired => '请先填写并保存 WebDAV 配置';
-
-  @override
-  String get webDavErrorConfig => '请检查 WebDAV 地址、账号、密码和远程目录';
-
-  @override
-  String get webDavErrorAuth => '认证失败，请检查用户名和密码/Token';
-
-  @override
-  String get webDavErrorNotFound => '远程路径不存在，请检查 NAS WebDAV 目录';
-
-  @override
-  String get webDavErrorStorageFull => 'WebDAV 服务器存储空间不足';
-
-  @override
-  String get webDavErrorNetwork => '网络请求失败，请检查服务器地址、证书和网络状态';
-
-  @override
-  String get webDavErrorUnknown => '发生未知错误，请稍后重试';
 
   @override
   String get imageViewerSaveToGallery => '保存到相册';
@@ -4068,4 +3940,464 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleTopBarTitlePosition => '位置';
+
+  @override
+  String get dataMgmtCloudBackup => '网盘备份';
+
+  @override
+  String get dataMgmtCloudBackupSubtitle => '备份到网盘、WebDAV 或对象存储，并可从远程恢复';
+
+  @override
+  String get cloudBackupTitle => '网盘备份';
+
+  @override
+  String get cloudBackupEmpty =>
+      '还没有备份位置。添加一个网盘、WebDAV 或对象存储，即可把完整备份上传到云端，换机或重装后从那里恢复。';
+
+  @override
+  String get cloudBackupAdd => '添加备份位置';
+
+  @override
+  String get cloudBackupHint => '地址、密码与网盘授权只保存在本机，不会写入备份文件；上传的是完整备份 ZIP，可选加密。';
+
+  @override
+  String get cloudBackupSheetTitle => '选择备份位置';
+
+  @override
+  String get cloudBackupSheetHint => '恢复前会预检备份，并让你选择合并或覆盖本机数据。';
+
+  @override
+  String get cloudBackupGroupDrives => '网盘（授权登录）';
+
+  @override
+  String get cloudBackupGroupDrivesHint => '在网盘官方页面授权，应用只能访问它自己的备份目录。';
+
+  @override
+  String get cloudBackupGroupWebDav => 'WebDAV';
+
+  @override
+  String get cloudBackupGroupWebDavHint =>
+      '坚果云、NAS、Nextcloud，以及经 Alist / OpenList 挂载的阿里云盘、夸克、115 等网盘。';
+
+  @override
+  String get cloudBackupGroupS3 => '对象存储（S3 兼容）';
+
+  @override
+  String get cloudBackupGroupS3Hint => '填写访问密钥，备份保存在你指定的存储桶。';
+
+  @override
+  String get cloudBackupCustomWebDav => '其他 WebDAV';
+
+  @override
+  String get cloudBackupCustomS3 => '其他 S3 兼容存储';
+
+  @override
+  String get cloudBackupBaiduPan => '百度网盘';
+
+  @override
+  String get cloudBackupAliyunDrive => '阿里云盘';
+
+  @override
+  String get cloudBackupJianguoyun => '坚果云';
+
+  @override
+  String get cloudBackup123pan => '123云盘';
+
+  @override
+  String get cloudBackupSynology => '群晖 NAS';
+
+  @override
+  String get cloudBackupQnap => '威联通 NAS';
+
+  @override
+  String get cloudBackupAliyunOss => '阿里云 OSS';
+
+  @override
+  String get cloudBackupTencentCos => '腾讯云 COS';
+
+  @override
+  String get cloudBackupQiniuKodo => '七牛云 Kodo';
+
+  @override
+  String get cloudBackupHuaweiObs => '华为云 OBS';
+
+  @override
+  String get cloudBackupVolcengineTos => '火山引擎 TOS';
+
+  @override
+  String get cloudBackupBaiduBos => '百度智能云 BOS';
+
+  @override
+  String get cloudBackupJdcloudOss => '京东云 OSS';
+
+  @override
+  String get cloudBackupAwsChina => 'Amazon S3（中国区）';
+
+  @override
+  String get cloudBackupHintJianguoyun =>
+      '用户名填坚果云账号；密码填网页版「账户信息 → 安全选项 → 第三方应用管理」中生成的应用密码。免费账户每 30 分钟限 600 次请求。';
+
+  @override
+  String get cloudBackupHint123pan =>
+      '地址与密码照抄 123云盘「工具中心 → 第三方挂载」页面显示的内容（密码只显示一次）。';
+
+  @override
+  String get cloudBackupHintOpenList =>
+      '填写 Alist / OpenList 的地址（默认端口 5244，路径 /dav/），并在后台为该用户开启 WebDAV 读取与管理权限。经它挂载的各类网盘都可作为备份位置。';
+
+  @override
+  String get cloudBackupHintCloudDrive2 =>
+      '填写 CloudDrive2 的地址（默认端口 19798，路径 /dav）与登录账号。';
+
+  @override
+  String get cloudBackupHintNextcloud =>
+      '地址从网页版「文件设置 → WebDAV」复制；密码建议使用「个人设置 → 安全」中生成的应用密码。';
+
+  @override
+  String get cloudBackupHintOwncloud => '密码建议使用应用令牌；oCIS 需管理员开启应用令牌服务。';
+
+  @override
+  String get cloudBackupHintSeafile =>
+      '需服务器开启 SeafDAV；使用单点登录的账号需在网页设置单独的 WebDAV 密码。';
+
+  @override
+  String get cloudBackupHintSynology =>
+      '在 DSM 套件中心安装并启用 WebDAV Server（HTTPS 默认端口 5006），用 DSM 账号登录；远程目录的第一级须是共享文件夹。';
+
+  @override
+  String get cloudBackupHintQnap => '在控制台开启 WebDAV，地址末尾带上共享文件夹名称。';
+
+  @override
+  String get cloudBackupHintKoofr =>
+      '必须使用 Koofr「设置 → 密码」中生成的应用密码；多次登录失败会被暂时封禁。';
+
+  @override
+  String get cloudBackupHintPcloud => '用 pCloud 账号邮箱与密码登录；欧洲区账号请选 pCloud (EU)。';
+
+  @override
+  String get cloudBackupHintInfinicloud =>
+      '地址与 Apps Connection 密码从 InfiniCLOUD 的 My Page 复制。';
+
+  @override
+  String get cloudBackupHintHetzner =>
+      '需在 Hetzner Console 为 Storage Box 开启 WebDAV 与外部访问。';
+
+  @override
+  String get cloudBackupHintKdrive =>
+      '地址中的 Drive ID 见 kDrive 网页地址；开启了两步验证时需使用应用密码。';
+
+  @override
+  String get cloudBackupHintYandex => '需要付费的 Yandex 360，并使用类型为 WebDAV 的应用密码。';
+
+  @override
+  String get cloudBackupHintMailru => '需要使用 Mail.ru 账户设置中生成的应用密码。';
+
+  @override
+  String get cloudBackupS3Hint => '端点与区域需与存储桶所在地域一致。建议为备份单独创建存储桶，并使用只能访问该桶的密钥。';
+
+  @override
+  String get cloudBackupHintAliyunOss =>
+      '使用 RAM 用户的 AccessKey；端点中的地域需与存储桶一致。2025 年 3 月后新开通的账号在中国内地可能无法用默认公网域名访问。';
+
+  @override
+  String get cloudBackupHintTencentCos =>
+      '存储桶名称须带 APPID 后缀（如 backup-1250000000），密钥在「访问管理 → API 密钥」创建。';
+
+  @override
+  String get cloudBackupHintQiniuKodo => 'S3 访问用的存储桶名称可能与空间名不同，以控制台显示为准。';
+
+  @override
+  String get cloudBackupHintR2 =>
+      '把地址中的 ACCOUNT_ID 换成 Cloudflare 账户 ID，并在 R2「管理 API 令牌」中创建令牌，使用其 S3 访问密钥；区域保持 auto。';
+
+  @override
+  String get cloudBackupHintB2 =>
+      '端点以存储桶详情页显示的为准，区域填端点中的部分（如 us-west-004），密钥使用 Application Key。';
+
+  @override
+  String get cloudBackupHintDigitalOcean =>
+      '端点中的区域填 Spaces 所在数据中心（如 nyc3），签名区域保持 us-east-1。';
+
+  @override
+  String get cloudBackupHintMinio => '填写 MinIO 的 API 地址（默认端口 9000），保持开启路径风格访问。';
+
+  @override
+  String get cloudBackupHintGcs => '在 Cloud Storage「设置 → 互操作性」中创建 HMAC 密钥。';
+
+  @override
+  String get cloudBackupHintOracle =>
+      '端点中的 NAMESPACE 与 REGION 见 OCI 控制台，密钥使用「客户密钥（Customer Secret Key）」。';
+
+  @override
+  String get cloudBackupFolderGoogleDrive =>
+      '备份保存在 Google Drive 的「Jotsy」文件夹；应用只能访问它自己创建的文件。删除的备份不进回收站。';
+
+  @override
+  String get cloudBackupFolderOneDrive =>
+      '备份保存在 OneDrive「应用」文件夹中的本应用目录；应用只能访问这个目录。删除的备份进入 OneDrive 回收站。';
+
+  @override
+  String get cloudBackupFolderDropbox =>
+      '备份保存在 Dropbox「应用」文件夹中的本应用目录；应用只能访问这个目录。';
+
+  @override
+  String get cloudBackupFolderBaidu => '备份保存在百度网盘「我的应用数据」中的本应用目录。';
+
+  @override
+  String get cloudBackupFolderAliyun =>
+      '备份保存在授权时选择的文件夹（未选择时为根目录的「Jotsy」），删除的备份进入回收站。授权有效期以阿里云盘为准，到期后需重新授权。';
+
+  @override
+  String get cloudBackupConfigSection => '连接配置';
+
+  @override
+  String get cloudBackupSaveConfig => '保存配置';
+
+  @override
+  String get cloudBackupTestConnection => '测试连接';
+
+  @override
+  String get cloudBackupUploadBackup => '上传当前备份';
+
+  @override
+  String get cloudBackupRefreshBackups => '刷新列表';
+
+  @override
+  String get cloudBackupBackupList => '远程备份';
+
+  @override
+  String get cloudBackupNoBackups => '暂无远程备份';
+
+  @override
+  String cloudBackupBackupTime(String time) {
+    return '时间：$time';
+  }
+
+  @override
+  String cloudBackupBackupSize(String size) {
+    return '大小：$size';
+  }
+
+  @override
+  String get cloudBackupRestoreAction => '恢复';
+
+  @override
+  String get cloudBackupDeleteAction => '删除';
+
+  @override
+  String get cloudBackupDeleteConfirmTitle => '删除远程备份？';
+
+  @override
+  String cloudBackupDeleteConfirmContent(String fileName) {
+    return '将从备份位置删除 $fileName，此操作不可撤销。';
+  }
+
+  @override
+  String get cloudBackupRemoveTarget => '移除此备份位置';
+
+  @override
+  String get cloudBackupRemoveTargetTitle => '移除备份位置？';
+
+  @override
+  String get cloudBackupRemoveTargetContent =>
+      '只清除本机保存的连接信息与授权，备份位置里已有的备份文件不会被删除，之后可以重新添加。';
+
+  @override
+  String get cloudBackupRemoveTargetAction => '移除';
+
+  @override
+  String get cloudBackupRemoved => '已移除备份位置';
+
+  @override
+  String get cloudBackupConfigSaved => '配置已保存';
+
+  @override
+  String get cloudBackupConnectionOk => '连接成功';
+
+  @override
+  String get cloudBackupUploadSuccess => '备份已上传';
+
+  @override
+  String get cloudBackupRestoreSuccess => '已从远程备份恢复数据';
+
+  @override
+  String get cloudBackupDeleteSuccess => '远程备份已删除';
+
+  @override
+  String get cloudBackupAccountAuthorized => '已授权';
+
+  @override
+  String cloudBackupAccountConnected(String account) {
+    return '已授权：$account';
+  }
+
+  @override
+  String get cloudBackupReauthorize => '重新授权';
+
+  @override
+  String cloudBackupAuthorized(String name) {
+    return '已连接 $name';
+  }
+
+  @override
+  String cloudBackupAuthorizeTitle(String name) {
+    return '授权 $name';
+  }
+
+  @override
+  String get cloudBackupDeviceCodeHint => '打开授权页面，登录后输入下方代码。授权完成后这里会自动继续。';
+
+  @override
+  String get cloudBackupDeviceCodeLabel => '授权代码';
+
+  @override
+  String get cloudBackupCopyCode => '复制代码';
+
+  @override
+  String get cloudBackupDeviceCodeCopied => '已复制';
+
+  @override
+  String get cloudBackupOpenAuthorizePage => '打开授权页面';
+
+  @override
+  String get cloudBackupWaitingAuthorization => '等待授权完成…';
+
+  @override
+  String get cloudBackupCodePasteHint => '在浏览器中授权后，页面会显示一串授权码，复制后粘贴到这里。';
+
+  @override
+  String get cloudBackupCodeLabel => '授权码';
+
+  @override
+  String get cloudBackupCodeConfirm => '完成授权';
+
+  @override
+  String get cloudBackupBusyLabel => '网盘备份进行中';
+
+  @override
+  String get cloudBackupBusySave => '正在保存…';
+
+  @override
+  String get cloudBackupBusyTest => '正在测试连接…';
+
+  @override
+  String get cloudBackupBusyUpload => '正在生成备份…';
+
+  @override
+  String cloudBackupBusyUploadProgress(int percent) {
+    return '正在上传 $percent%';
+  }
+
+  @override
+  String get cloudBackupBusyDownload => '正在下载备份…';
+
+  @override
+  String cloudBackupBusyDownloadProgress(int percent) {
+    return '正在下载 $percent%';
+  }
+
+  @override
+  String get cloudBackupBusyRestore => '正在恢复数据…';
+
+  @override
+  String get cloudBackupBusyRefresh => '正在读取远程备份…';
+
+  @override
+  String get cloudBackupBusyDelete => '正在删除远程备份…';
+
+  @override
+  String get cloudBackupBusyAuthorize => '正在验证授权…';
+
+  @override
+  String cloudBackupOperationFailed(String detail) {
+    return '操作失败：$detail';
+  }
+
+  @override
+  String get cloudBackupErrorConfig => '请检查地址、存储桶、目录等配置是否完整正确';
+
+  @override
+  String get cloudBackupErrorAppKeyMissing => '此版本没有配置该网盘的应用密钥，暂不可用';
+
+  @override
+  String get cloudBackupErrorAuth => '认证失败或无权访问，请检查账号、密码或密钥';
+
+  @override
+  String get cloudBackupErrorSessionExpired => '授权已失效，请重新授权';
+
+  @override
+  String get cloudBackupErrorAuthorizationDenied => '授权被拒绝';
+
+  @override
+  String get cloudBackupErrorAuthorizationExpired => '授权码无效或已过期，请重新获取';
+
+  @override
+  String get cloudBackupErrorNotFound => '远程文件或目录不存在';
+
+  @override
+  String get cloudBackupErrorStorageFull => '备份位置的存储空间不足';
+
+  @override
+  String get cloudBackupErrorFileTooLarge => '备份文件超过了该备份位置允许的单文件大小';
+
+  @override
+  String get cloudBackupErrorRateLimited => '请求过于频繁，请稍后再试';
+
+  @override
+  String get cloudBackupErrorNetwork => '网络请求失败，请检查网络、地址与证书';
+
+  @override
+  String get cloudBackupErrorProtocol => '备份位置返回了无法识别的响应';
+
+  @override
+  String get cloudBackupErrorPassword => '备份密码错误';
+
+  @override
+  String get cloudBackupErrorArchive => '备份文件已损坏，或不是 Jotsy 的备份';
+
+  @override
+  String get cloudBackupErrorLocalFile => '读写本地临时文件失败，请检查存储空间';
+
+  @override
+  String get cloudBackupErrorUnknown => '发生未知错误，请稍后重试';
+
+  @override
+  String get s3Endpoint => '服务地址（Endpoint）';
+
+  @override
+  String get s3EndpointHint => '例如 https://s3.us-east-1.amazonaws.com';
+
+  @override
+  String get s3Region => '区域（Region）';
+
+  @override
+  String get s3RegionHint => '留空按 us-east-1';
+
+  @override
+  String get s3Bucket => '存储桶（Bucket）';
+
+  @override
+  String get s3AccessKeyId => 'Access Key ID';
+
+  @override
+  String get s3SecretAccessKey => 'Secret Access Key';
+
+  @override
+  String get s3Prefix => '备份目录（对象前缀）';
+
+  @override
+  String get s3PrefixHint => '例如 jotsy/，留空为存储桶根目录';
+
+  @override
+  String get s3PathStyle => '路径风格访问';
+
+  @override
+  String get s3PathStyleSubtitle => 'MinIO 等自建服务通常需要开启';
+
+  @override
+  String get s3PathStyleLocked => '该服务只支持虚拟主机风格访问';
+
+  @override
+  String get cloudBackupErrorPlatformUnavailable =>
+      '本机无法使用系统账号授权（需要 Google Play 服务），此版本也没有配置备用的授权方式';
 }

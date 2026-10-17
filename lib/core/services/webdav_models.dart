@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import 'cloud_backup_models.dart';
+
 /// WebDAV 同步相关纯模型与路径/manifest 编解码。
 ///
 /// 职责边界：
@@ -243,9 +245,7 @@ class WebDavBackupEntry {
   }
 
   factory WebDavBackupEntry.fromRemoteFile(WebDavRemoteFile file) {
-    final inferredTime = WebDavManifest.inferCreatedAtFromFileName(
-      file.fileName,
-    );
+    final inferredTime = cloudBackupCreatedAtFromFileName(file.fileName);
     return WebDavBackupEntry(
       fileName: file.fileName,
       remotePath: file.path,
@@ -400,29 +400,6 @@ class WebDavManifest {
     });
     return copied;
   }
-
-  static DateTime? inferCreatedAtFromFileName(String fileName) {
-    final match = RegExp(
-      r'jotsy_backup_(\d{8})_(\d{6})\.zip$',
-    ).firstMatch(fileName);
-    if (match == null) {
-      return null;
-    }
-    final date = match.group(1)!;
-    final time = match.group(2)!;
-    return DateTime.tryParse(
-      '${date.substring(0, 4)}-${date.substring(4, 6)}-${date.substring(6, 8)}T'
-      '${time.substring(0, 2)}:${time.substring(2, 4)}:${time.substring(4, 6)}',
-    );
-  }
-}
-
-String buildWebDavBackupFileName(DateTime now) {
-  String two(int value) => value.toString().padLeft(2, '0');
-  final local = now.toLocal();
-  return 'jotsy_backup_'
-      '${local.year}${two(local.month)}${two(local.day)}_'
-      '${two(local.hour)}${two(local.minute)}${two(local.second)}.zip';
 }
 
 String webDavManifestFileName() => 'manifest.json';

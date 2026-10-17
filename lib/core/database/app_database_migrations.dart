@@ -154,9 +154,21 @@ ADD COLUMN capsule_locked_at INTEGER NULL
 
   /// v10 只补建列表排序索引，不重写日记与标签；定义复用生成的 schema，
   /// 确保新库、v9 升级与 v1 重建分支使用完全相同的列顺序和过滤条件。
+  ///
+  /// 先删同名索引再建：v9 的构建打开 v10 库时，drift 也会调用 onUpgrade
+  /// （没有分支命中）并把 user_version 写回 9，v10 的索引却留在库里；再升级
+  /// 时直接 CREATE 会报 “already exists”，版本号写不回 10，之后每次打开都
+  /// 失败、日记全部读不出。同一 versionCode 的开发包互相覆盖安装就会走到
+  /// 这一步。不用 IF NOT EXISTS：留下的索引可能来自定义不同的早期构建，
+  /// 重建才能保证与生成的 schema 一致；只是索引，重建不碰日记数据。
   Future<void> _migrateAddDiaryListIndexes(Migrator migrator) async {
-    await migrator.createIndex(idxDiariesActiveUpdated);
-    await migrator.createIndex(idxDiariesActiveCreated);
+    for (final index in <Index>[
+      idxDiariesActiveUpdated,
+      idxDiariesActiveCreated,
+    ]) {
+      await migrator.drop(index);
+      await migrator.createIndex(index);
+    }
   }
 
   /// Imports performed by releases before schema 8 restored image files into

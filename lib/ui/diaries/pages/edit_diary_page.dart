@@ -32,6 +32,7 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dar
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_caret_follow_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.dart';
@@ -50,6 +51,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_entrance.dart';
 import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
@@ -104,6 +106,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       GlobalKey<quill.EditorState>();
   // 悬浮工具栏「更多」面板的目标高度（收起为 0），驱动正文末尾的额外留白。
   final ValueNotifier<double> _toolbarPanelExtent = ValueNotifier<double>(0);
+  // 打字、键盘扩选与软键盘弹起时把光标保持在底部浮层上方（正文不自带滚动）。
+  late final DiaryCaretFollowController _caretFollow;
+  // 最近一次构建是否显示了悬浮工具栏：帧末的光标揭示据此取与这一帧布局一致
+  // 的遮挡高度（见 [_editorBottomCover]）。
+  bool _floatingToolbarShown = false;
   final DiaryRecordingController _recordingController =
       DiaryRecordingController();
   final DiaryMediaImportController _mediaImportController =
@@ -192,6 +199,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
     );
+    _caretFollow = DiaryCaretFollowController(
+      editorKey: _quillEditorKey,
+      focusNode: _contentFocusNode,
+      coveredHeight: _editorBottomCover,
+      revealDuration: () =>
+          ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+    )..attach(_contentController);
     _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
     _controller = EditDiaryController(this);
     _mediaImportController.addListener(_onMediaImportChanged);
@@ -227,6 +241,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _meta.removeListener(_onMetaChanged);
     _metaActions.dispose();
     _meta.dispose();
+    _caretFollow.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
     _contentScrollController.dispose();
@@ -237,6 +252,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _recordingController.dispose();
     _unbindToolbarSettingsService();
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    final view = mounted ? View.maybeOf(context) : null;
+    if (view != null) {
+      _caretFollow.handleKeyboardInset(view.viewInsets.bottom);
+    }
   }
 
   @override
@@ -312,6 +335,31 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       _markEditPanelDirty();
     }
   }
+
+  /// 正文滚动容器的底部占位，也就是视口底部被浮层盖住的部分：悬浮工具栏/
+  /// 录音面板优先；否则编辑模式按元数据面板展开进度在 140~460 之间插值。
+  double _editorBottomSpacer(
+    double panelProgress, {
+    required bool showFloatingToolbar,
+  }) {
+    if (showFloatingToolbar) {
+      return _recordingPanelOpen
+          ? _recordingPanelReservedSpace
+          : _floatingToolbarReservedSpace;
+    }
+    if (!_isEditEntry) {
+      return 16.0;
+    }
+    return (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
+  }
+
+  /// 此刻被浮层盖住的高度：底部占位再加「更多」面板展开时的额外让位。
+  double _editorBottomCover() =>
+      _editorBottomSpacer(
+        _editPanelExpandProgress.value,
+        showFloatingToolbar: _floatingToolbarShown,
+      ) +
+      _toolbarPanelExtent.value;
 
   /// 汇总当前编辑态数据，形成可持久化的新建草稿对象。
   NewDiaryDraft get _currentCreateDraft => _meta.value.applyTo(
@@ -542,19 +590,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         enabledToolbarOrder.isNotEmpty &&
         (rawShowFloatingToolbar ||
             (_isMobileRuntime && _recordingPanelOpen && !_isEditPanelExpanded));
-    // 正文底部占位：悬浮工具栏/录音面板优先；否则编辑模式按面板展开进度
-    // 在 140~460 之间插值（进度由 ValueNotifier 驱动，不触发整页重建）。
-    double resolveEditorBottomSpacer(double panelProgress) {
-      if (showFloatingToolbar) {
-        return _recordingPanelOpen
-            ? _recordingPanelReservedSpace
-            : _floatingToolbarReservedSpace;
-      }
-      if (!showEditMetaPanel) {
-        return 16.0;
-      }
-      return (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
-    }
+    _floatingToolbarShown = showFloatingToolbar;
+    // 面板进度由 ValueNotifier 驱动，占位随之局部刷新，不触发整页重建。
+    double resolveEditorBottomSpacer(double panelProgress) =>
+        _editorBottomSpacer(
+          panelProgress,
+          showFloatingToolbar: showFloatingToolbar,
+        );
 
     final detailAsync = widget.diaryId == null
         ? const AsyncData<DiaryWithTags?>(null)
@@ -667,11 +709,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           body: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              _buildEditor(
-                context,
-                resolveBottomSpacer: resolveEditorBottomSpacer,
-                contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
-                appearance: ref.watch(diaryTextAppearanceProvider),
+              // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
+              // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
+              SoftKeyboardSelectionKeys(
+                child: _buildEditor(
+                  context,
+                  resolveBottomSpacer: resolveEditorBottomSpacer,
+                  contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
+                  appearance: ref.watch(diaryTextAppearanceProvider),
+                ),
               ),
               if (showEditMetaPanel &&
                   (!showFloatingToolbar || _isEditPanelExpanded))

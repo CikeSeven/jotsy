@@ -28,7 +28,12 @@ enum DiaryShareTagStyle {
 /// 文字改为复制到剪贴板、由用户在发布页粘贴（Diarium 分享到微博的做法）；
 /// 只分享文字时直接把文字发给目标应用。
 enum DiaryShareTarget {
-  weibo(packageName: 'com.sina.weibo', tagStyle: DiaryShareTagStyle.weiboTopic),
+  /// 微博的发布页实测能带超过 9 张图，不在这里截断，交给微博自己处理。
+  weibo(
+    packageName: 'com.sina.weibo',
+    maxImages: null,
+    tagStyle: DiaryShareTagStyle.weiboTopic,
+  ),
   xiaohongshu(packageName: 'com.xingin.xhs', requiresImages: true),
   wechat(packageName: 'com.tencent.mm'),
 
@@ -60,8 +65,8 @@ enum DiaryShareTarget {
   /// 直达的分享入口（Activity 类名）；null 表示交给应用自己的入口。
   final String? activityName;
 
-  /// 单次最多带几张图（微博、小红书、微信、QQ 的发布页都按 9 张算）；
-  /// null 表示不限制。
+  /// 单次最多带几张图（小红书、微信、QQ 按 9 张算，朋友圈 1 张）；null 表示
+  /// 不限制。
   final int? maxImages;
 
   final DiaryShareTagStyle tagStyle;

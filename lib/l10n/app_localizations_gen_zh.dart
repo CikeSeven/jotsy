@@ -4440,7 +4440,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String diaryShareImagesSelected(int selected, int total) {
-    return '已选 $selected/$total 张，微博等应用单次最多 9 张';
+    return '已选 $selected/$total 张';
   }
 
   @override

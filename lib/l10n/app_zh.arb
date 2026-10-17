@@ -6255,7 +6255,7 @@
   "@diaryShareTextEmpty": {
     "description": "分享面板：文字预览为空时的占位。"
   },
-  "diaryShareImagesSelected": "已选 {selected}/{total} 张，微博等应用单次最多 9 张",
+  "diaryShareImagesSelected": "已选 {selected}/{total} 张",
   "@diaryShareImagesSelected": {
     "description": "分享面板：图片勾选计数。",
     "placeholders": {

@@ -8237,7 +8237,7 @@ abstract class AppLocalizations {
   /// Share sheet: number of selected images.
   ///
   /// In en, this message translates to:
-  /// **'{selected} of {total} selected · Weibo and similar apps take up to 9'**
+  /// **'{selected} of {total} selected'**
   String diaryShareImagesSelected(int selected, int total);
 
   /// Share sheet: accessibility label of an image choice.

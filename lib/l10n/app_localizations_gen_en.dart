@@ -4880,7 +4880,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String diaryShareImagesSelected(int selected, int total) {
-    return '$selected of $total selected · Weibo and similar apps take up to 9';
+    return '$selected of $total selected';
   }
 
   @override

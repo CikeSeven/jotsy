@@ -6255,7 +6255,7 @@
   "@diaryShareTextEmpty": {
     "description": "Share sheet placeholder when the composed text is empty."
   },
-  "diaryShareImagesSelected": "{selected} of {total} selected · Weibo and similar apps take up to 9",
+  "diaryShareImagesSelected": "{selected} of {total} selected",
   "@diaryShareImagesSelected": {
     "description": "Share sheet: number of selected images.",
     "placeholders": {

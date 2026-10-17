@@ -183,6 +183,20 @@ void main() {
     expect(channel.calls, isEmpty);
   });
 
+  test('Weibo takes every selected image', () async {
+    final channel = _FakeChannel();
+    final sources = <String>[
+      for (var i = 0; i < 12; i++) await image('$i.jpg'),
+    ];
+
+    final result = await controller(
+      channel,
+    ).share(DiaryShareTarget.weibo, text: '', images: sources);
+
+    expect(result.trimmedImages, 0);
+    expect(channel.calls.single.images, hasLength(12));
+  });
+
   test('stages data URI images and clears the previous staging run', () async {
     final channel = _FakeChannel();
     final share = controller(channel);

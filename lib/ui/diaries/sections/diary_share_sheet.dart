@@ -68,7 +68,7 @@ class DiaryShareSheet extends StatefulWidget {
 class _DiaryShareSheetState extends State<DiaryShareSheet> {
   late DiaryShareOptions _options = widget.initialOptions;
 
-  /// 默认勾选前 9 张：正好是微博等应用的单次上限，多数情况下不用再调。
+  /// 默认勾选前 9 张：正好是微信、QQ 等应用的单次上限，多数情况下不用再调。
   late final Set<int> _selectedImages = <int>{
     for (var i = 0; i < widget.content.images.length && i < 9; i++) i,
   };

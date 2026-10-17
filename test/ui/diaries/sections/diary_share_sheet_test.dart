@@ -86,13 +86,13 @@ void main() {
       expect(find.widgetWithText(FilterChip, '地点'), findsNothing);
       expect(find.widgetWithText(FilterChip, '心情与天气'), findsOneWidget);
       expect(find.textContaining('#旅行'), findsOneWidget);
-      expect(find.text('已选 2/2 张，微博等应用单次最多 9 张'), findsOneWidget);
+      expect(find.text('已选 2/2 张'), findsOneWidget);
       // 未安装的应用不出现。
       expect(find.text('微信'), findsNothing);
 
       await tester.tap(find.bySemanticsLabel('第 1 张图片'));
       await tester.pumpAndSettle();
-      expect(find.text('已选 1/2 张，微博等应用单次最多 9 张'), findsOneWidget);
+      expect(find.text('已选 1/2 张'), findsOneWidget);
 
       await tester.tap(find.bySemanticsLabel('微博'));
       await tester.pumpAndSettle();

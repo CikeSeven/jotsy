@@ -144,8 +144,11 @@ jobs:
       # 选 release 而不是 debug：AOT 编译、图标字体 tree shaking 与 R8 混淆只在
       # release 里发生，插件升级后最常见的就是这几类只在发布时才暴露的失败。
       # 单一 ABI 足以覆盖 Gradle/R8 与 AOT，三种 ABI 的分包留给发布工作流。
+      # 不能加 --no-pub：release 构建要按构建模式重新生成插件注册文件，去掉
+      # integration_test 这类 dev_dependencies 插件；跳过时沿用 pub get 生成的
+      # 版本，javac 会找不到 dev.flutter.plugins.integration_test。
       - name: Build release APK (arm64)
-        run: flutter build apk --release --no-pub --target-platform android-arm64
+        run: flutter build apk --release --target-platform android-arm64
 
       - name: Report APK size
         run: |

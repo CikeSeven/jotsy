@@ -41,6 +41,7 @@ class EditDiaryController {
     _state._contentController.dispose();
     _state._contentController = nextController;
     _state._contentController.addListener(onCreateDraftInputChanged);
+    _state._caretFollow.attach(nextController);
   }
 
   /// 新建模式保存草稿，已有笔记直接自动保存；详情回填阶段不触发写入。

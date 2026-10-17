@@ -50,6 +50,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_entrance.dart';
 import 'package:node_diary/ui/widgets/route_entrance_waiter.dart';
@@ -667,11 +668,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           body: Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              _buildEditor(
-                context,
-                resolveBottomSpacer: resolveEditorBottomSpacer,
-                contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
-                appearance: ref.watch(diaryTextAppearanceProvider),
+              // 软键盘“选择”模式的方向键在 Flutter 3.47 上只会移动光标，这里
+              // 为标题与正文补回扩选（见 [SoftKeyboardSelectionKeys]）。
+              SoftKeyboardSelectionKeys(
+                child: _buildEditor(
+                  context,
+                  resolveBottomSpacer: resolveEditorBottomSpacer,
+                  contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
+                  appearance: ref.watch(diaryTextAppearanceProvider),
+                ),
               ),
               if (showEditMetaPanel &&
                   (!showFloatingToolbar || _isEditPanelExpanded))

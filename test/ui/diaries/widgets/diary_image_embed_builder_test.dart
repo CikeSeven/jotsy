@@ -361,4 +361,45 @@ void main() {
     expect(tester.getTopLeft(images), tester.getTopLeft(fold));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('dragging the resize slider keeps the image on screen', (
+    tester,
+  ) async {
+    final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+          'attributes': {'style': 'width: 100.0; height: 600.0; '},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+    addTearDown(controller.dispose);
+    await _pumpEditor(tester, controller);
+    final image = find.descendant(
+      of: find.byType(DiaryEmbeddedImage),
+      matching: find.byType(Image),
+    );
+    final decodeKey = tester.widget<Image>(image).image;
+
+    // 滑条每帧写一次宽度：解码尺寸不变，新宽度在同一帧里就画出来，
+    // 不会因为重新解码而空白。
+    for (final width in <double>[140, 180, 220]) {
+      controller.formatText(
+        0,
+        1,
+        quill.StyleAttribute('width: $width; height: 600.0; '),
+      );
+      await tester.pump();
+      expect(tester.widget<Image>(image).image, decodeKey);
+      expect(
+        (tester.renderObject(find.byType(RawImage)) as RenderImage).image,
+        isNotNull,
+      );
+      expect(tester.getSize(image), Size(width, width / 2));
+    }
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -116,13 +115,15 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
   ImageProvider _providerOf(String path) =>
       path == widget.source ? _provider : FileImage(File(path));
 
-  /// 解码宽度（物理像素）：正文列不会宽于屏幕，缩放菜单的宽度上限更窄时取它。
+  /// 解码宽度（物理像素）：正文列不会宽于屏幕，按屏宽解码即可。
+  ///
+  /// 不跟缩放菜单的宽度上限走：拖动滑条时上限逐帧变化，解码尺寸跟着变就是
+  /// 每帧一个新的缓存键，新尺寸解码完成前图片一直是空白，只偶尔闪出一帧。
+  /// 缩小显示的图片多占的那点内存远不值这个代价。
   int _decodeWidth(BuildContext context) {
-    final width = math.min(
-      MediaQuery.sizeOf(context).width,
-      widget.bounds.maxWidth,
-    );
-    return (width * MediaQuery.devicePixelRatioOf(context)).ceil();
+    return (MediaQuery.sizeOf(context).width *
+            MediaQuery.devicePixelRatioOf(context))
+        .ceil();
   }
 
   @override
@@ -168,6 +169,8 @@ class _DiaryEmbeddedImageState extends State<DiaryEmbeddedImage> {
   Widget _buildImage(ColorScheme colors, BorderRadius radius, int decodeWidth) {
     return Image(
       image: boundedImageProvider(_provider, width: decodeWidth),
+      // 换解码尺寸（转屏、分屏改变屏宽）时保留旧画面，直到新尺寸解码完成。
+      gaplessPlayback: true,
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
         final framed = ClipRRect(
           borderRadius: radius,

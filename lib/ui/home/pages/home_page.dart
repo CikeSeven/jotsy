@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
+import 'package:node_diary/ui/settings/controllers/app_update_auto_check.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
@@ -50,6 +51,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   // FAB 与提示上沿之间保留的间隙。
   static const double _fabGapAboveHint = 6;
   static const int _tabCount = 4;
+
+  /// 冷启动与回到前台时自动检查更新（时机与间隔见 [AppUpdateAutoChecker]）。
+  late final AppUpdateAutoChecker _updateAutoChecker;
 
   // 页面切换状态。
   int _currentIndex = 0;
@@ -95,6 +99,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       _VisibleTabRange(_currentIndex, _currentIndex),
     );
     _controller.pageController.addListener(_syncVisibleTabs);
+    _updateAutoChecker = AppUpdateAutoChecker(() async {
+      if (mounted) {
+        await runAutoUpdateCheck(context, ref);
+      }
+    })..start();
   }
 
   @override
@@ -115,6 +124,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void dispose() {
+    _updateAutoChecker.dispose();
     _controller.pageController.removeListener(_syncVisibleTabs);
     _visibleTabs.dispose();
     _controller.dispose();

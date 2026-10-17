@@ -84,6 +84,18 @@ extension AppLocalizationsProjectX on AppLocalizations {
     return '${DateFormat.yMMMd(localeName).format(localTarget)} $timePart';
   }
 
+  /// 文件大小（1024 进制，最多一位小数）：`512 B`、`49 MB`、`1.5 GB`。
+  String formatByteSize(num bytes) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var value = bytes.toDouble();
+    var unit = 0;
+    while (value >= 1024 && unit < units.length - 1) {
+      value /= 1024;
+      unit++;
+    }
+    return '${NumberFormat('0.#', localeName).format(value)} ${units[unit]}';
+  }
+
   /// 杂志眉线日期格式化（如：10月5日 · 周一 / Oct 5 · Mon）。
   String formatEyebrowDate(DateTime value) {
     final local = value.toLocal();

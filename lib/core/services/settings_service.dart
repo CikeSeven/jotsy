@@ -176,8 +176,10 @@ class SettingsService {
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
   static const _keyDiaryLocationPrecision =
       'app.settings.diary_location_precision';
-  static const _keyReleaseMirrorStartIndex =
+  // 旧版更新检查记录的镜像序号，已并入 [_keyAppUpdatePreferences]；启动时删除。
+  static const _keyLegacyReleaseMirrorStartIndex =
       'app.settings.release_mirror_start_index';
+  static const _keyAppUpdatePreferences = 'app.update.preferences';
   static const _keyAppLocaleCode = 'app.settings.locale_code';
   static const _keyAppLockEnabled = 'app.settings.app_lock_enabled';
 
@@ -196,8 +198,8 @@ class SettingsService {
     if (!prefs.containsKey(_keyFontScale)) {
       await prefs.setDouble(_keyFontScale, fontScale);
     }
-    if (!prefs.containsKey(_keyReleaseMirrorStartIndex)) {
-      await prefs.setInt(_keyReleaseMirrorStartIndex, 0);
+    if (prefs.containsKey(_keyLegacyReleaseMirrorStartIndex)) {
+      await prefs.remove(_keyLegacyReleaseMirrorStartIndex);
     }
     final storedLocaleCode = _normalizeLocaleCode(
       prefs.getString(_keyAppLocaleCode),
@@ -337,8 +339,13 @@ class SettingsService {
     return value is String ? value : null;
   }
 
-  int get releaseMirrorStartIndexRaw =>
-      _prefs.getInt(_keyReleaseMirrorStartIndex) ?? 0;
+  /// 应用更新的本机偏好（单个 JSON 字符串，见 `AppUpdatePreferences`）；
+  /// 只描述本机，不随备份导出。类型不符的旧值按未设置处理。
+  String? get appUpdatePreferencesRaw {
+    final value = _prefs.get(_keyAppUpdatePreferences);
+    return value is String ? value : null;
+  }
+
   Future<void> setDiarySortModeRaw(String value) async {
     await _writePreference(_prefs.setString(_keyDiarySortMode, value));
   }
@@ -499,11 +506,8 @@ class SettingsService {
     await _writePreference(_prefs.setString(_keyDiaryLocationPrecision, value));
   }
 
-  Future<void> setReleaseMirrorStartIndex(int index) async {
-    final normalized = index < 0 ? 0 : index;
-    await _writePreference(
-      _prefs.setInt(_keyReleaseMirrorStartIndex, normalized),
-    );
+  Future<void> setAppUpdatePreferencesRaw(String value) async {
+    await _writePreference(_prefs.setString(_keyAppUpdatePreferences, value));
   }
 
   String get appLocaleCode => _codeFromLocale(localeNotifier.value);

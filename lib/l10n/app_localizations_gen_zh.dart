@@ -300,37 +300,220 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutCheckUpdate => '检查最新版本';
 
   @override
-  String get aboutCheckUpdateSubtitle => '自动检测 Release 并跳转下载 APK';
-
-  @override
-  String aboutUpdateAlreadyLatest(String version) {
-    return '当前已是最新版本（$version）';
+  String aboutUpdateSubtitleAvailable(String version) {
+    return '$version 可更新';
   }
 
   @override
-  String aboutUpdateOpeningDownload(String version) {
-    return '发现新版本（$version），正在打开下载链接';
+  String aboutUpdateSubtitleDownloading(int percent) {
+    return '正在下载 $percent%';
   }
 
   @override
-  String get aboutUpdateOpenBrowserFailed => '无法自动打开浏览器，请稍后重试';
+  String get aboutUpdateSubtitleReady => '新版本已下载，点按安装';
 
   @override
-  String get aboutUpdateCheckFailed => '检查更新失败，请检查网络后重试';
+  String get appUpdateTitle => '软件更新';
 
   @override
-  String get aboutUpdateNoApkFound => '已发现新版本，但未解析到可下载 APK';
+  String appUpdateCurrentVersion(String version) {
+    return '当前版本 $version';
+  }
 
   @override
-  String aboutUpdateDialogTitle(String version) {
+  String get appUpdateChecking => '正在检查更新…';
+
+  @override
+  String get appUpdateCheckingHint => '同时尝试多条线路，用最先响应的一条';
+
+  @override
+  String get appUpdateUpToDate => '已是最新版本';
+
+  @override
+  String appUpdateLastChecked(String time) {
+    return '上次检查：$time';
+  }
+
+  @override
+  String get appUpdateAvailableBadge => '新版本';
+
+  @override
+  String appUpdateAvailableTitle(String version) {
     return '发现新版本 $version';
   }
 
   @override
-  String get aboutUpdateDialogNoNotes => '该版本暂无更新说明。';
+  String appUpdatePublishedOn(String date) {
+    return '发布于 $date';
+  }
 
   @override
-  String get aboutUpdateDialogConfirmDownload => '下载更新';
+  String get appUpdateReleaseNotesTitle => '更新内容';
+
+  @override
+  String get appUpdateCurrentNotesTitle => '本版本更新内容';
+
+  @override
+  String get appUpdateNoReleaseNotes => '这个版本没有填写更新说明。';
+
+  @override
+  String get appUpdateViewOnGitHub => '在 GitHub 查看';
+
+  @override
+  String get appUpdateActionCheck => '检查更新';
+
+  @override
+  String appUpdateActionDownload(String size) {
+    return '下载并安装（$size）';
+  }
+
+  @override
+  String get appUpdateActionDownloadNoSize => '下载并安装';
+
+  @override
+  String appUpdateActionResume(int percent) {
+    return '继续下载（已完成 $percent%）';
+  }
+
+  @override
+  String get appUpdateActionCancel => '取消下载';
+
+  @override
+  String get appUpdateActionInstall => '安装';
+
+  @override
+  String get appUpdateActionRetry => '重试';
+
+  @override
+  String get appUpdateActionOpenReleasePage => '前往下载页面';
+
+  @override
+  String get appUpdateActionSkip => '跳过此版本';
+
+  @override
+  String get appUpdateSkippedHint => '已跳过此版本，启动时不再提醒';
+
+  @override
+  String appUpdateDownloadProgress(String received, String total) {
+    return '$received / $total';
+  }
+
+  @override
+  String appUpdateDownloadSpeed(String speed) {
+    return '$speed/s';
+  }
+
+  @override
+  String appUpdateDownloadVia(String route) {
+    return '经 $route';
+  }
+
+  @override
+  String get appUpdateVerifying => '正在校验安装包…';
+
+  @override
+  String get appUpdateReadyToInstall => '安装包已下载并通过校验';
+
+  @override
+  String get appUpdateInstallPermissionTitle => '需要允许安装应用';
+
+  @override
+  String get appUpdateInstallPermissionMessage =>
+      'Android 需要你在系统设置里允许 Jotsy“安装未知应用”。开启后返回这里，会自动继续安装。';
+
+  @override
+  String get appUpdateInstallPermissionAction => '去设置';
+
+  @override
+  String get appUpdateInstallPermissionSettingsFailed =>
+      '无法打开系统设置，请在 设置 → 应用 → Jotsy 中允许安装未知应用';
+
+  @override
+  String get appUpdateUnsupportedPlatform => '当前平台不支持应用内安装，请前往下载页面获取新版本。';
+
+  @override
+  String get appUpdateNoCompatibleApk => '这个版本没有适合本机处理器架构的安装包，请前往下载页面手动选择。';
+
+  @override
+  String get appUpdateFailedCheckTitle => '检查更新失败';
+
+  @override
+  String get appUpdateFailedDownloadTitle => '下载失败';
+
+  @override
+  String get appUpdateFailedInstallTitle => '无法安装';
+
+  @override
+  String get appUpdateFailureNetwork =>
+      '所有线路都连接失败。可以稍后重试，或在下方“下载线路”中换一条线路、填写自定义镜像。';
+
+  @override
+  String get appUpdateFailureNotFound => '没有找到已发布的版本。';
+
+  @override
+  String get appUpdateFailureIntegrity => '下载的文件不完整或被改动过（校验值不符），已删除。请重试或换一条线路。';
+
+  @override
+  String get appUpdateFailureSignature =>
+      '安装包的签名与当前应用不同，无法覆盖安装。请只从官方 Release 页面下载。';
+
+  @override
+  String get appUpdateFailureNotNewer => '下载的安装包并不比当前版本新。';
+
+  @override
+  String get appUpdateFailureStorage => '无法保存安装包，请检查手机剩余空间。';
+
+  @override
+  String get appUpdateFailureInstallUnavailable => '无法打开系统安装器，请前往下载页面手动安装。';
+
+  @override
+  String get appUpdateSettingsTitle => '更新设置';
+
+  @override
+  String get appUpdateAutoCheck => '自动检查更新';
+
+  @override
+  String get appUpdateAutoCheckSubtitle => '打开或回到应用时检查，每 2 小时最多一次；只读取公开的版本信息';
+
+  @override
+  String get appUpdateSource => '下载线路';
+
+  @override
+  String get appUpdateSourceAuto => '自动选择';
+
+  @override
+  String get appUpdateSourceAutoDescription => '同时测速，使用最快的线路；国内网络推荐';
+
+  @override
+  String get appUpdateSourceDirect => 'GitHub 直连';
+
+  @override
+  String get appUpdateSourceDirectDescription => '不经镜像；国内网络下可能很慢或无法连接';
+
+  @override
+  String get appUpdateSourceMirrorDescription => '公共镜像加速';
+
+  @override
+  String get appUpdateSourceCustom => '自定义镜像';
+
+  @override
+  String get appUpdateSourceCustomDescription => '内置镜像都失效时，填写一个可用的 GitHub 加速地址';
+
+  @override
+  String get appUpdateSourceCustomHint => '例如 https://mirror.example.com/';
+
+  @override
+  String get appUpdateSourceCustomInvalid => '请输入以 https:// 开头的地址';
+
+  @override
+  String get appUpdateSourceSheetHint =>
+      '镜像是第三方公共服务。安装包下载后都会核对 SHA-256 与应用签名，镜像无法把它换成别的应用。';
+
+  @override
+  String get appUpdatePromptUpdate => '立即更新';
+
+  @override
+  String get appUpdatePromptLater => '以后再说';
 
   @override
   String get aboutSubmitIssue => '提交 Issue';

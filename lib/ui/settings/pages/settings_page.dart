@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/pages/appearance_language_page.dart';
@@ -9,6 +10,8 @@ import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/page_header.dart';
 import '../../../app/theme/app_effects.dart';
+import '../controllers/app_update_controller.dart';
+import '../widgets/app_update_badge.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
 class SettingsPage extends StatelessWidget {
@@ -94,17 +97,28 @@ class SettingsPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
-            _SettingsDestination(
-              icon: FontAwesomeIcons.circleInfo,
-              title: l10n.settingsAbout,
-              subtitle: l10n.settingsAboutSubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const AboutPage();
-                    },
+            // 有新版本时在“关于”入口上提示（自动检查或手动检查发现的）。
+            Consumer(
+              builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                final hasUpdate = ref.watch(
+                  appUpdateControllerProvider.select(
+                    (state) => state.hasUpdate,
                   ),
+                );
+                return _SettingsDestination(
+                  icon: FontAwesomeIcons.circleInfo,
+                  title: l10n.settingsAbout,
+                  subtitle: l10n.settingsAboutSubtitle,
+                  badge: hasUpdate ? const AppUpdateBadge() : null,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) {
+                          return const AboutPage();
+                        },
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -122,12 +136,16 @@ class _SettingsDestination extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.badge,
   });
 
   final FaIconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+
+  /// 显示在右侧箭头之前的标记（如“新版本”）。
+  final Widget? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -174,10 +192,19 @@ class _SettingsDestination extends StatelessWidget {
                 context,
               ).textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
             ),
-            trailing: FaIcon(
-              FontAwesomeIcons.angleRight,
-              size: 14,
-              color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (badge != null) ...<Widget>[
+                  badge!,
+                  const SizedBox(width: 8),
+                ],
+                FaIcon(
+                  FontAwesomeIcons.angleRight,
+                  size: 14,
+                  color: colors.onSurfaceVariant.withValues(alpha: 0.6),
+                ),
+              ],
             ),
             onTap: onTap,
           ),

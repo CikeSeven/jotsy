@@ -33,6 +33,8 @@
 ├─ assets/                           # 静态资源
 ├─ test/                             # 测试
 ├─ integration_test/                 # 实机集成测试（隔离设置与数据库，验证录音/播放）
+├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart）
+├─ .github/                          # CI 门禁 workflows/ci.yml、发布 workflows/release-apk.yml、共用的 actions/setup-flutter（唯一定义 Flutter 版本）、Dependabot
 ├─ android/ ios/ web/ windows/ ...  # 各平台工程
 └─ AGENTS.md                         # 协作规范
 ```
@@ -123,6 +125,12 @@
   - `flutter pub get`
   - `flutter test`
   - `dart run build_runner build --delete-conflicting-outputs`
+  - `dart run tool/check_arb.dart`（改动 ARB 后）
+- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（附覆盖率）、arm64 的 Android release 构建、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。
+- 必须：Flutter 版本只定义在 `.github/actions/setup-flutter/action.yml`（CI 与发布共用），升级须单独提交并先让 CI 全绿；依赖以 `pubspec.lock` 为准（CI 用 `flutter pub get --enforce-lockfile`），改动 `pubspec.yaml` 的依赖必须同时提交锁文件。
+- 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。
+- 禁止：CI 门禁读取签名材料或任何 secrets（fork 的 PR 也要能跑）；CI 用一次性密钥构建的 APK 不上传（签名与正式版不同，装上后无法覆盖升级）。secrets 只在 `release-apk.yml` 的签名构建 job 中使用。
+- 必须：发布经 GitHub Release 触发 `release-apk.yml`：tag 必须与 `pubspec.yaml` 的版本一致（`v0.6.0` 或 `v0.6.0+17`），先过同一套 CI 门禁再构建签名分包，随 APK 上传 `SHA256SUMS.txt`。
 - 必须：用户要求安装 Android 包时，先用 `adb devices -l` 确认设备；存在多台设备时必须指定目标序列号。构建后使用 `adb -s <serial> install -r <apk>` 覆盖安装，以保留现有应用数据。
 - 必须：profile 包覆盖安装到已有 release 包时，必须使用相同 release signing config；签名材料缺失或不匹配时停止安装，不得改用 debug 签名。
 - 禁止：为安装或升级应用执行 `adb uninstall`、`pm clear`、清除应用数据或恢复出厂设置。
@@ -136,6 +144,7 @@
 - 必须：测试命名采用行为描述，文件命名 `*_test.dart`。
 - 禁止：未验证核心路径就提交“看起来可用”的改动。
 - 例外：紧急热修可先发补丁，后续必须补充验证与回归记录。
+- 例外：`integration_test/` 依赖真机麦克风与播放器，不在 CI 中运行（只经 `flutter analyze` 检查能否编译）；改动录音/播放链路时必须在实机运行并在提交说明中记录结果。
 - 执行前检查项：
   - 影响范围是否明确
   - 是否存在状态同步/空值/异步取消风险

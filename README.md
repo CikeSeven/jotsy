@@ -9,6 +9,7 @@
 免费 · 开源 · 无广告 · 无需注册 · 数据只存在你的手机里
 
 [![Release](https://img.shields.io/github/v/release/CikeSeven/jotsy?style=flat-square&color=1E6586&label=Release)](https://github.com/CikeSeven/jotsy/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/CikeSeven/jotsy/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/CikeSeven/jotsy/actions/workflows/ci.yml)
 [![Downloads](https://img.shields.io/github/downloads/CikeSeven/jotsy/total?style=flat-square&color=4F7FAF&label=Downloads)](https://github.com/CikeSeven/jotsy/releases)
 [![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](#-下载安装)
 [![License](https://img.shields.io/github/license/CikeSeven/jotsy?style=flat-square&color=7E6BB0)](LICENSE)

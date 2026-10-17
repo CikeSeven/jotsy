@@ -1,32 +1,35 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:widget_screenshot_plus/widget_screenshot_plus.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../widgets/backup_password_dialog.dart';
-import '../utils/diary_export_saver.dart';
-import '../utils/diary_markdown_exporter.dart';
-import '../utils/diary_pdf_exporter.dart';
-import 'diary_file_export_controller.dart';
+import '../models/diary_share_content.dart';
+import '../models/diary_share_options.dart';
+import '../models/diary_share_target.dart';
+import '../sections/diary_share_sheet.dart';
+import '../viewmodels/diary_share_messages.dart';
+import 'diary_export_flow.dart';
+import 'diary_share_controller.dart';
 
-/// 预览页“更多”面板里的分享与导出：长图、Markdown、PDF 与日记文件。
+/// 预览页的分享与导出：分享面板（指定应用、系统分享、复制文字）、长图，以及
+/// 经共用导出流程（`runDiaryExportFlow`）导出这一篇。
 ///
 /// 输入：截图节点 [captureKey] 与正文 [scrollController]（页面持有），以及
-/// 每次调用时传入的 context、日记与 Quill 文档。输出：页面要显示的加载遮罩
-/// 与静态头图状态（经 [ChangeNotifier] 通知），结果提示经 [onHint] 给出。
-/// 副作用：写临时文件，调起系统分享与保存对话框。
+/// 每次调用时传入的 context 与日记。输出：页面要显示的加载遮罩、静态头图
+/// 状态与忙碌态（经 [ChangeNotifier] 通知，翻页器据此暂停翻页），结果提示经
+/// [onHint] 给出。副作用：写临时文件，调起系统分享、目标应用与保存对话框。
 ///
-/// 同一时刻只运行一个动作，进行中再次触发直接忽略。动作开始前先让加载遮罩
-/// 真正绘制出来，并保证遮罩的最短可见时长，避免“闪现式”动画。调用方的
+/// 同一时刻只运行一个动作，进行中再次触发直接忽略。分享与长图在本控制器的
+/// 加载遮罩下执行：动作开始前先让遮罩真正绘制出来，并保证最短可见时长，避免
+/// “闪现式”动画；导出流程自带根 Overlay 上的遮罩，这里只报告忙碌。调用方的
 /// context 卸载后不再提示，也不再通知。
 class DiaryPreviewExportController extends ChangeNotifier {
   DiaryPreviewExportController({
@@ -46,9 +49,9 @@ class DiaryPreviewExportController extends ChangeNotifier {
   String _loadingLabel = '';
   bool _sharingImage = false;
   bool _staticCover = false;
-  bool _exportingFile = false;
+  bool _exporting = false;
   bool _disposed = false;
-  final DiaryPdfExporter _pdf = DiaryPdfExporter();
+  final DiaryShareController _share = DiaryShareController();
 
   /// 是否显示动作加载遮罩。
   bool get showLoading => _showLoading;
@@ -58,7 +61,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
   bool get staticCover => _staticCover;
 
   /// 正在执行任一动作（遮罩、截图或导出中）。
-  bool get busy => _showLoading || _sharingImage || _exportingFile;
+  bool get busy => _showLoading || _sharingImage || _exporting;
 
   void _update(VoidCallback change) {
     change();
@@ -142,163 +145,90 @@ class DiaryPreviewExportController extends ChangeNotifier {
     );
   }
 
-  /// 导出 Markdown。
-  Future<void> exportMarkdown(
+  /// 打开分享面板，按用户的选择分享长图、分享到指定应用 / 系统分享或复制
+  /// 文字。
+  ///
+  /// 已安装应用的检测与面板打开并行：检测完成前面板先显示系统分享与复制，
+  /// 不让原生查询拖慢面板出现。内容开关在面板内每次改动即保存；[background]
+  /// 同 [shareLongImage]。
+  Future<void> openShareSheet(
     BuildContext context, {
     required DiaryWithTags detail,
-    required quill.Document document,
-  }) {
-    return _exportFile(
-      context,
-      label: context.l10n.previewExportMarkdown,
-      extension: 'md',
-      detail: detail,
-      build: () async {
-        final markdown = DiaryMarkdownExporter.build(
-          title: detail.diary.title,
-          createdAt: detail.diary.createdAt,
-          updatedAt: detail.diary.updatedAt,
-          tagNames: detail.tags.map((tag) => tag.name).toList(growable: false),
-          document: document,
-        );
-        return Uint8List.fromList(utf8.encode(markdown));
-      },
-    );
-  }
-
-  /// 导出 PDF（统一中文字体，见 [DiaryPdfExporter]）。
-  Future<void> exportPdf(
-    BuildContext context, {
-    required DiaryWithTags detail,
-    required quill.Document document,
-  }) {
-    final textDirection = Directionality.of(context);
-    return _exportFile(
-      context,
-      label: context.l10n.previewExportPdf,
-      extension: 'pdf',
-      detail: detail,
-      build: () => _pdf.build(document, textDirection: textDirection),
-    );
-  }
-
-  /// 导出为可重新导入的日记文件；密码可选，流程见 [DiaryFileExportController]。
-  Future<void> exportDiaryFile(
-    BuildContext context, {
-    required DiaryWithTags detail,
-    required AppDatabase database,
+    required SettingsService settings,
+    Color? background,
   }) async {
-    if (_exportingFile || _showLoading) {
+    if (busy) {
       return;
     }
-    final password = await showBackupPasswordDialog(
+    final request = await showDiaryShareSheet(
       context,
-      purpose: BackupPasswordPurpose.export,
-      confirmLabel: context.l10n.previewExportDiaryFileConfirm,
+      content: DiaryShareContent.fromDetail(detail),
+      initialOptions: DiaryShareOptions.fromRaw(settings.diaryShareOptionsRaw),
+      // 开关只是下次打开时的默认值，写入失败不打断本次分享。
+      onOptionsChanged: (DiaryShareOptions options) => unawaited(
+        settings
+            .setDiaryShareOptionsRaw(options.toRaw())
+            .catchError((Object _) {}),
+      ),
+      availableTargets: _share.availableTargets(),
     );
-    if (!context.mounted || password == null) {
+    if (!context.mounted || request == null) {
       return;
     }
+    if (request.action == DiaryShareAction.longImage) {
+      await shareLongImage(context, background: background);
+      return;
+    }
+    final l10n = context.l10n;
     await _runWithLoading(
       context,
-      label: context.l10n.previewExportDiaryFile,
+      label: l10n.diaryShareInProgress,
       action: () async {
-        _update(() => _exportingFile = true);
         try {
-          final saved = await DiaryFileExportController.export(
-            database: database,
-            diaryId: detail.diary.diaryId,
-            fileName:
-                'jotsy_${exportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.zip',
-            dialogTitle: context.l10n.previewExportSaveDialogTitle,
-            password: password,
-          );
-          if (!context.mounted) {
-            return;
+          final target = request.target;
+          final result = target == null
+              ? await _share.copyText(request.text)
+              : await _share.share(
+                  target,
+                  text: request.text,
+                  images: request.images,
+                  chooserTitle: l10n.diaryShareTargetsSection,
+                );
+          final message = diaryShareResultMessage(l10n, result, target: target);
+          if (context.mounted && message != null) {
+            onHint(message);
           }
-          onHint(
-            saved
-                ? context.l10n.previewExportDiaryFileSuccess
-                : context.l10n.previewExportCanceled,
-          );
         } catch (error) {
-          if (!context.mounted) {
-            return;
-          }
-          onHint(context.l10n.previewExportFailed(error.toString()));
-        } finally {
           if (context.mounted) {
-            _update(() => _exportingFile = false);
+            onHint(l10n.diaryShareFailed(error.toString()));
           }
         }
       },
     );
   }
 
-  /// 导出文件名主体：标题去掉文件系统非法字符、空白换成下划线，截到 24 字；
-  /// 没有标题时用 `diary`。
-  static String exportFileBaseName(DiaryWithTags detail) {
-    final rawTitle = detail.diary.title.trim().isEmpty
-        ? 'diary'
-        : detail.diary.title.trim();
-    final normalized = rawTitle
-        .replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')
-        .replaceAll(RegExp(r'\s+'), '_');
-    final short = normalized.length > 24
-        ? normalized.substring(0, 24)
-        : normalized;
-    return short.isEmpty ? 'diary' : short;
-  }
-
-  /// Markdown 与 PDF 共用的导出流程：生成字节 → 用户选择保存位置 → 提示
-  /// 结果（保存、取消或失败）。
-  Future<void> _exportFile(
-    BuildContext context, {
-    required String label,
-    required String extension,
+  /// 导出这一篇：格式选择、密码、生成与保存都在共用导出流程里。
+  Future<void> exportDiary(
+    BuildContext context,
+    WidgetRef ref, {
     required DiaryWithTags detail,
-    required Future<Uint8List> Function() build,
   }) async {
-    if (_exportingFile || _showLoading) {
+    if (busy) {
       return;
     }
-    await _runWithLoading(
-      context,
-      label: label,
-      action: () async {
-        _update(() => _exportingFile = true);
-        try {
-          final bytes = await build();
-          if (!context.mounted) {
-            return;
-          }
-          final saved = await saveDiaryExportBytes(
-            dialogTitle: context.l10n.previewExportSaveDialogTitle,
-            bytes: bytes,
-            fileName:
-                '${exportFileBaseName(detail)}_${DateTime.now().millisecondsSinceEpoch}.$extension',
-            allowedExtensions: <String>[extension],
-          );
-          if (!context.mounted) {
-            return;
-          }
-          onHint(
-            saved
-                ? context.l10n.previewExportSuccess
-                : context.l10n.previewExportCanceled,
-          );
-        } catch (error) {
-          if (!context.mounted) {
-            return;
-          }
-          onHint(context.l10n.previewExportFailed(error.toString()));
-        } finally {
-          if (context.mounted) {
-            _update(() => _exportingFile = false);
-          }
-        }
-      },
-    );
+    _update(() => _exporting = true);
+    try {
+      await runDiaryExportFlow(
+        context,
+        ref,
+        diaries: <DiaryWithTags>[detail],
+        showHint: onHint,
+      );
+    } finally {
+      if (context.mounted) {
+        _update(() => _exporting = false);
+      }
+    }
   }
 
   /// 统一动作加载态：共享的遮罩 loading，限制最短可见时长，并在真正的重

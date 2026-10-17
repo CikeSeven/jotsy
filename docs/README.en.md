@@ -31,7 +31,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 | ✍️ **Easy to write** | Rich text with images, videos, attachments and voice recordings |
 | 🌤️ **Full of context** | Record mood, energy, weather and location with every entry |
 | 📅 **Easy to look back** | Lunar calendar, yearly heatmap, On this day, time capsules |
-| 📦 **No lock-in** | ZIP backups, cloud backup (WebDAV / object storage / major cloud drives), single-entry export to image / Markdown / PDF, import from 18 apps |
+| 📦 **No lock-in** | ZIP backups, cloud backup (WebDAV / object storage / major cloud drives), export to PDF / Word / Markdown / web page / TXT / CSV, import from 18 apps |
 | 🎨 **Beautiful** | Material 3 Expressive design, light and dark themes, 80 theme colors |
 
 ## 📱 Features
@@ -111,7 +111,8 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 - **Full backups**: one ZIP with entries, tags, settings and every image, recording, video and attachment. Add a password for AES-256 encryption.
 - **Merge or overwrite**: choose how a backup is restored. Overwriting local data asks for a clear second confirmation.
 - **Cloud backup**: back up to WebDAV (Nextcloud, NAS, Alist…), S3-compatible object storage (R2, B2, OSS…) or Google Drive / OneDrive / Dropbox / Baidu Netdisk / Alipan, and restore from them directly. See [cloud_backup.md](cloud_backup.md).
-- **Share one entry**: as a long image, Markdown, PDF, or a diary file that can be merged on another device.
+- **Export**: one entry, a selection, or a date / tag range as PDF, Word, Markdown (with front matter, ready for Obsidian), a web page, plain text, CSV, or a diary file that can be merged on another device.
+- **Share**: as a long image, or straight to Weibo, Xiaohongshu, WeChat and QQ with the text copied and the diary's photos attached.
 - **Make it yours**: 80 theme colors in 10 families, adjustable UI font size, body text size and line height, in English or Chinese.
 
 ## 🔁 Moving from another app

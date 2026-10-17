@@ -1226,21 +1226,9 @@
   "@autoT0115": {
     "description": "Auto-generated metadata for autoT0115."
   },
-  "previewExportMarkdown": "Export as Markdown",
-  "@previewExportMarkdown": {
-    "description": "Menu label for exporting diary as Markdown."
-  },
-  "previewExportPdf": "Export as PDF",
-  "@previewExportPdf": {
-    "description": "Menu label for exporting diary as PDF."
-  },
   "previewExportSaveDialogTitle": "Save export file",
   "@previewExportSaveDialogTitle": {
     "description": "Dialog title when saving an exported diary file."
-  },
-  "previewExportSuccess": "Export succeeded",
-  "@previewExportSuccess": {
-    "description": "SnackBar text when export completes."
   },
   "previewExportCanceled": "Export canceled",
   "@previewExportCanceled": {
@@ -2417,10 +2405,6 @@
         "type": "int"
       }
     }
-  },
-  "previewExportDiaryFile": "Export as diary file",
-  "@previewExportDiaryFile": {
-    "description": "Menu label for exporting a diary as a diary file (ZIP with its tags and media) that can be imported again."
   },
   "previewExportDiaryFileConfirm": "Export",
   "@previewExportDiaryFileConfirm": {
@@ -6226,5 +6210,477 @@
   "publishPanelSealShort": "Seal",
   "@publishPanelSealShort": {
     "description": "Publish panel collapsed bar: short label of the publish button when a time lock is set."
+  },
+  "previewShare": "Share",
+  "@previewShare": {
+    "description": "Preview page action sheet entry that opens the share sheet."
+  },
+  "diaryShareSheetTitle": "Share diary",
+  "@diaryShareSheetTitle": {
+    "description": "Title of the diary share sheet."
+  },
+  "diaryShareContentSection": "Content",
+  "@diaryShareContentSection": {
+    "description": "Share sheet section header for the content toggles."
+  },
+  "diaryShareOptionTitle": "Title",
+  "@diaryShareOptionTitle": {
+    "description": "Share sheet toggle: include the title."
+  },
+  "diaryShareOptionBody": "Body",
+  "@diaryShareOptionBody": {
+    "description": "Share sheet toggle: include the body text."
+  },
+  "diaryShareOptionDate": "Date",
+  "@diaryShareOptionDate": {
+    "description": "Share sheet toggle: include the date."
+  },
+  "diaryShareOptionMoodWeather": "Mood & weather",
+  "@diaryShareOptionMoodWeather": {
+    "description": "Share sheet toggle: include mood and weather."
+  },
+  "diaryShareOptionLocation": "Location",
+  "@diaryShareOptionLocation": {
+    "description": "Share sheet toggle: include the location (off by default)."
+  },
+  "diaryShareOptionTags": "Tags",
+  "@diaryShareOptionTags": {
+    "description": "Share sheet toggle: include tags."
+  },
+  "diaryShareOptionImages": "Images",
+  "@diaryShareOptionImages": {
+    "description": "Share sheet toggle: attach images."
+  },
+  "diaryShareTextEmpty": "No text selected — only images will be shared",
+  "@diaryShareTextEmpty": {
+    "description": "Share sheet placeholder when the composed text is empty."
+  },
+  "diaryShareImagesSelected": "{selected} of {total} selected · Weibo and similar apps take up to 9",
+  "@diaryShareImagesSelected": {
+    "description": "Share sheet: number of selected images.",
+    "placeholders": {
+      "selected": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareImageLabel": "Image {index}",
+  "@diaryShareImageLabel": {
+    "description": "Share sheet: accessibility label of an image choice.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareTargetsSection": "Share to",
+  "@diaryShareTargetsSection": {
+    "description": "Share sheet section header for share targets; also the chooser title."
+  },
+  "diaryShareTargetWeibo": "Weibo",
+  "@diaryShareTargetWeibo": {
+    "description": "Share target: Weibo."
+  },
+  "diaryShareTargetXiaohongshu": "Xiaohongshu",
+  "@diaryShareTargetXiaohongshu": {
+    "description": "Share target: Xiaohongshu (RED)."
+  },
+  "diaryShareTargetWechat": "WeChat",
+  "@diaryShareTargetWechat": {
+    "description": "Share target: WeChat."
+  },
+  "diaryShareTargetQq": "QQ",
+  "@diaryShareTargetQq": {
+    "description": "Share target: QQ."
+  },
+  "diaryShareTargetSystem": "More apps",
+  "@diaryShareTargetSystem": {
+    "description": "Share target: the system share sheet."
+  },
+  "diaryShareCopyText": "Copy text",
+  "@diaryShareCopyText": {
+    "description": "Share sheet action: copy the text only."
+  },
+  "diaryShareClipboardHint": "When images are attached, the text is copied for you — just paste it into the post.",
+  "@diaryShareClipboardHint": {
+    "description": "Share sheet note: text goes through the clipboard when images are attached."
+  },
+  "diaryShareMoreSection": "Other formats",
+  "@diaryShareMoreSection": {
+    "description": "Share sheet section header for other formats."
+  },
+  "diaryShareLongImage": "Share as long image",
+  "@diaryShareLongImage": {
+    "description": "Share sheet action: share the whole diary as one long image."
+  },
+  "diaryShareLongImageSubtitle": "Renders the diary as it looks in the preview",
+  "@diaryShareLongImageSubtitle": {
+    "description": "Share sheet: subtitle of the long-image action."
+  },
+  "diaryShareRequiresImage": "{app} needs at least one image",
+  "@diaryShareRequiresImage": {
+    "description": "Share sheet hint when the target app needs an image.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareNothingSelected": "Choose something to share first",
+  "@diaryShareNothingSelected": {
+    "description": "Share sheet hint when neither text nor images are selected."
+  },
+  "diaryShareInProgress": "Preparing to share",
+  "@diaryShareInProgress": {
+    "description": "Loading overlay label while a share is prepared."
+  },
+  "diaryShareTextCopiedForApp": "Text copied — paste it in {app}",
+  "@diaryShareTextCopiedForApp": {
+    "description": "Hint after sharing images to an app: the text is on the clipboard.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareTextCopied": "Text copied — paste it in the app you shared to",
+  "@diaryShareTextCopied": {
+    "description": "Hint after sharing images via the system sheet: the text is on the clipboard."
+  },
+  "diaryShareCopied": "Copied to clipboard",
+  "@diaryShareCopied": {
+    "description": "Hint after copying the text."
+  },
+  "diaryShareImagesTrimmed": "Up to {count} images per share — the first {count} were sent",
+  "@diaryShareImagesTrimmed": {
+    "description": "Hint when more images were selected than the target accepts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareImagesMissing": "{count} image(s) could not be read and were left out",
+  "@diaryShareImagesMissing": {
+    "description": "Hint when some images could not be read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryShareAppUnavailable": "Couldn't open {app}. Make sure it is installed and up to date",
+  "@diaryShareAppUnavailable": {
+    "description": "Hint when the target app cannot receive the share.",
+    "placeholders": {
+      "app": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryShareNothingToShare": "Nothing to share",
+  "@diaryShareNothingToShare": {
+    "description": "Hint when there is nothing to share."
+  },
+  "diaryShareFailed": "Share failed: {error}",
+  "@diaryShareFailed": {
+    "description": "Hint when sharing fails.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "previewExport": "Export",
+  "@previewExport": {
+    "description": "Preview action sheet entry that opens the export sheet."
+  },
+  "diaryExportSelected": "Export",
+  "@diaryExportSelected": {
+    "description": "Diary list selection bar: tooltip of the export button."
+  },
+  "dataMgmtExportDiaries": "Export diaries",
+  "@dataMgmtExportDiaries": {
+    "description": "Data management entry that opens diary export."
+  },
+  "dataMgmtExportDiariesSubtitle": "Export by date or tag as PDF, Word, Markdown, web page and more",
+  "@dataMgmtExportDiariesSubtitle": {
+    "description": "Subtitle of the diary export entry in data management."
+  },
+  "diaryExportSheetTitle": "Export diaries",
+  "@diaryExportSheetTitle": {
+    "description": "Title of the export sheet."
+  },
+  "diaryExportSheetCount": "{count} diaries",
+  "@diaryExportSheetCount": {
+    "description": "Export sheet: number of diaries to export.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportFormatSection": "Format",
+  "@diaryExportFormatSection": {
+    "description": "Export sheet section header for formats."
+  },
+  "diaryExportOptionsSection": "Options",
+  "@diaryExportOptionsSection": {
+    "description": "Export sheet section header for options."
+  },
+  "diaryExportFormatPdf": "PDF",
+  "@diaryExportFormatPdf": {
+    "description": "Export format name: PDF."
+  },
+  "diaryExportFormatPdfDescription": "Fixed layout for reading and printing",
+  "@diaryExportFormatPdfDescription": {
+    "description": "Export format description: PDF."
+  },
+  "diaryExportFormatWord": "Word document",
+  "@diaryExportFormatWord": {
+    "description": "Export format name: Word document."
+  },
+  "diaryExportFormatWordDescription": ".docx you can keep editing",
+  "@diaryExportFormatWordDescription": {
+    "description": "Export format description: Word document."
+  },
+  "diaryExportFormatMarkdown": "Markdown",
+  "@diaryExportFormatMarkdown": {
+    "description": "Export format name: Markdown."
+  },
+  "diaryExportFormatMarkdownDescription": "With front matter for Obsidian and other note apps; can be imported back into Jotsy",
+  "@diaryExportFormatMarkdownDescription": {
+    "description": "Export format description: Markdown."
+  },
+  "diaryExportFormatHtml": "Web page",
+  "@diaryExportFormatHtml": {
+    "description": "Export format name: Web page."
+  },
+  "diaryExportFormatHtmlDescription": "Opens in any browser; several diaries with images come as a page plus an image folder",
+  "@diaryExportFormatHtmlDescription": {
+    "description": "Export format description: Web page."
+  },
+  "diaryExportFormatText": "Plain text",
+  "@diaryExportFormatText": {
+    "description": "Export format name: Plain text."
+  },
+  "diaryExportFormatTextDescription": ".txt that opens anywhere",
+  "@diaryExportFormatTextDescription": {
+    "description": "Export format description: Plain text."
+  },
+  "diaryExportFormatCsv": "Spreadsheet (CSV)",
+  "@diaryExportFormatCsv": {
+    "description": "Export format name: Spreadsheet (CSV)."
+  },
+  "diaryExportFormatCsvDescription": "One row per diary with mood, weather and more for Excel",
+  "@diaryExportFormatCsvDescription": {
+    "description": "Export format description: Spreadsheet (CSV)."
+  },
+  "diaryExportFormatDiaryFile": "Jotsy diary file",
+  "@diaryExportFormatDiaryFile": {
+    "description": "Export format name: Jotsy diary file."
+  },
+  "diaryExportFormatDiaryFileDescription": "Keeps everything including media, optional password, lossless re-import",
+  "@diaryExportFormatDiaryFileDescription": {
+    "description": "Export format description: Jotsy diary file."
+  },
+  "diaryExportIncludeImages": "Include images",
+  "@diaryExportIncludeImages": {
+    "description": "Export option: include images."
+  },
+  "diaryExportIncludeMedia": "Include images, recordings, videos and attachments",
+  "@diaryExportIncludeMedia": {
+    "description": "Export option (Markdown): bundle all media."
+  },
+  "diaryExportIncludeMeta": "Include mood, weather, location and tags",
+  "@diaryExportIncludeMeta": {
+    "description": "Export option: include mood, weather, location and tags."
+  },
+  "diaryExportOrderOldest": "Oldest first",
+  "@diaryExportOrderOldest": {
+    "description": "Export option: oldest first."
+  },
+  "diaryExportOrderNewest": "Newest first",
+  "@diaryExportOrderNewest": {
+    "description": "Export option: newest first."
+  },
+  "diaryExportSave": "Save to files",
+  "@diaryExportSave": {
+    "description": "Export sheet: save button."
+  },
+  "diaryExportInProgress": "Exporting",
+  "@diaryExportInProgress": {
+    "description": "Loading overlay label while exporting."
+  },
+  "diaryExportSaved": "Exported {count} diaries",
+  "@diaryExportSaved": {
+    "description": "Hint after the export is saved.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportSkippedCapsules": "{count} sealed time capsules were not exported",
+  "@diaryExportSkippedCapsules": {
+    "description": "Hint when sealed time capsules were skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportOnlyCapsules": "Only sealed time capsules were selected — nothing to export",
+  "@diaryExportOnlyCapsules": {
+    "description": "Hint when only sealed time capsules were selected."
+  },
+  "diaryExportNothing": "No diaries match",
+  "@diaryExportNothing": {
+    "description": "Hint when no diary matches the export scope."
+  },
+  "diaryExportPageTitle": "Export diaries",
+  "@diaryExportPageTitle": {
+    "description": "Title of the diary export page."
+  },
+  "diaryExportRangeSection": "Date range",
+  "@diaryExportRangeSection": {
+    "description": "Export page section header for the date range."
+  },
+  "diaryExportRangeAll": "All diaries",
+  "@diaryExportRangeAll": {
+    "description": "Export page: all diaries."
+  },
+  "diaryExportRangeThisYear": "This year",
+  "@diaryExportRangeThisYear": {
+    "description": "Export page: this year."
+  },
+  "diaryExportRangeLast30Days": "Last 30 days",
+  "@diaryExportRangeLast30Days": {
+    "description": "Export page: last 30 days."
+  },
+  "diaryExportRangeCustom": "Custom dates",
+  "@diaryExportRangeCustom": {
+    "description": "Export page: custom date range."
+  },
+  "diaryExportRangeCustomValue": "{start} – {end}, tap to change",
+  "@diaryExportRangeCustomValue": {
+    "description": "Export page: the chosen custom range.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryExportTagsSection": "Tags",
+  "@diaryExportTagsSection": {
+    "description": "Export page section header for tag filters."
+  },
+  "diaryExportTagsHint": "Leave empty for all tags; any selected tag matches",
+  "@diaryExportTagsHint": {
+    "description": "Export page: how tag filters combine."
+  },
+  "diaryExportIncludeArchived": "Include archived diaries",
+  "@diaryExportIncludeArchived": {
+    "description": "Export page: include archived diaries."
+  },
+  "diaryExportMatchCount": "{count} diaries will be exported",
+  "@diaryExportMatchCount": {
+    "description": "Export page: number of matching diaries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryExportCapsuleNote": "Sealed time capsules are never exported",
+  "@diaryExportCapsuleNote": {
+    "description": "Export page note about sealed capsules."
+  },
+  "diaryExportNext": "Choose format and export",
+  "@diaryExportNext": {
+    "description": "Export page: continue button."
+  },
+  "diaryExportLabelUntitled": "Untitled",
+  "@diaryExportLabelUntitled": {
+    "description": "Text written inside exported files: Untitled."
+  },
+  "diaryExportLabelMood": "Mood",
+  "@diaryExportLabelMood": {
+    "description": "Text written inside exported files: Mood."
+  },
+  "diaryExportLabelEnergy": "Energy",
+  "@diaryExportLabelEnergy": {
+    "description": "Text written inside exported files: Energy."
+  },
+  "diaryExportLabelWeather": "Weather",
+  "@diaryExportLabelWeather": {
+    "description": "Text written inside exported files: Weather."
+  },
+  "diaryExportLabelLocation": "Location",
+  "@diaryExportLabelLocation": {
+    "description": "Text written inside exported files: Location."
+  },
+  "diaryExportLabelTags": "Tags",
+  "@diaryExportLabelTags": {
+    "description": "Text written inside exported files: Tags."
+  },
+  "diaryExportLabelDate": "Date",
+  "@diaryExportLabelDate": {
+    "description": "Text written inside exported files: Date."
+  },
+  "diaryExportLabelTime": "Time",
+  "@diaryExportLabelTime": {
+    "description": "Text written inside exported files: Time."
+  },
+  "diaryExportLabelTitle": "Title",
+  "@diaryExportLabelTitle": {
+    "description": "Text written inside exported files: Title."
+  },
+  "diaryExportLabelContent": "Content",
+  "@diaryExportLabelContent": {
+    "description": "Text written inside exported files: Content."
+  },
+  "diaryExportLabelWordCount": "Characters",
+  "@diaryExportLabelWordCount": {
+    "description": "Text written inside exported files: Characters."
+  },
+  "diaryExportLabelUpdated": "Last edited",
+  "@diaryExportLabelUpdated": {
+    "description": "Text written inside exported files: Last edited."
+  },
+  "diaryExportLabelImage": "Image",
+  "@diaryExportLabelImage": {
+    "description": "Text written inside exported files: Image."
+  },
+  "diaryExportLabelAudio": "Recording",
+  "@diaryExportLabelAudio": {
+    "description": "Text written inside exported files: Recording."
+  },
+  "diaryExportLabelVideo": "Video",
+  "@diaryExportLabelVideo": {
+    "description": "Text written inside exported files: Video."
+  },
+  "diaryExportLabelAttachment": "Attachment",
+  "@diaryExportLabelAttachment": {
+    "description": "Text written inside exported files: Attachment."
+  },
+  "diaryExportLabelExportedBy": "Exported from Jotsy",
+  "@diaryExportLabelExportedBy": {
+    "description": "Text written inside exported files: Exported from Jotsy."
+  },
+  "diaryExportTooLarge": "Too many images (about {size} MB) for one PDF. Narrow the date range or turn off “Include images” and try again",
+  "@diaryExportTooLarge": {
+    "description": "Hint when a PDF export has too many images.",
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
   }
 }

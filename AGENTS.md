@@ -16,13 +16,14 @@
 │  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
 │  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops 拆分）
-│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入等）
+│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入、分享到其他应用等）
 │  ├─ ui/
 │  │  ├─ diaries/                    # 日记主业务模块（已分层）
 │  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
 │  │  │  ├─ controllers/             # 业务编排（搜索/筛选/撤销/发布链路等）
 │  │  │  ├─ providers/               # 状态与筛选条件
 │  │  │  ├─ models|viewmodels/       # 数据模型与局部派生状态（models/diary_card_style/：卡片样式模型、预设与样式码；models/diary_preview_style/：预览页样式、阅读行为、预设与样式码；models/style_library/：各样式编辑页共用的“我的样式”、样式码与 JSON 工具）
+│  │  │  ├─ export/                  # 导出写出器（正文块模型、PDF / Word / Markdown / 网页 / 纯文本 / CSV、媒体与命名）
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片；widgets/diary_preview/：预览页的单篇视图、整页内容、各区块与左右翻页器；widgets/publish_panel/：发布页与编辑页共用的元数据面板区块）
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ home|calendar|explore|settings/
@@ -98,6 +99,8 @@
 - 必须：预览页左右滑动切换日记统一经 `DiaryPreviewPage(sequence:)`：入口传进入时所在列表的 `DiaryPreviewSequence`（打开时冻结顺序；首页 / 搜索还有没加载的部分时带 `DiaryPreviewListQuery`，由 `getActiveDiaryIds` 按同一筛选与排序接上），单篇入口不传；翻页器为 `DiaryPreviewPager` → `DiaryPagerView`（设置页预览复用同一个）。手势冲突只靠起滑距离倍数（外层放大、页内还原）与页内始终可滚动的 physics 解决，禁止另写翻页手势识别器，禁止在预览页内放横向滚动容器（会抢走翻页）。预览页的删除结果带被删日记的 id（`DiaryPreviewResult.deleted(id)`），入口按它撤销；预览页勾选待办只经 `updateDiaryContent` 写正文，禁止用会取消归档 / 删除、重写标签的 `updateDiary`。
 - 必须：界面上的“字数”一律经 `TextStats`（`lib/utils/text_stats.dart`，按日记版本缓存用 `DiaryWordCounts`）计算，口径见 DESIGN.md §3.3；禁止自行用 `.length` 或按空白分词统计字数。
 - 必须：日历的法定节假日（休/班）只取自 tyme 的 `LegalHoliday`，经 `CalendarHolidayDay` 读取，开关为 `CalendarDisplayOptions.holidayMode`；数字左上角标统一经 `CalendarCellLeadingBadge` 按优先级取一个，禁止在日期格另加角标位置。
+- 必须：日记分享统一经预览页的分享面板 `showDiaryShareSheet`（只负责挑选）→ `DiaryShareController`（执行）；分享文字只经 `DiaryShareContent.composeText` 组装为纯文本（社交应用不渲染 Markdown），内容开关只存于 `DiaryShareOptions`（单个 JSON 设置键 `app.settings.diary_share_options`，逐字段容错并随备份导出），地点默认不带。分享到指定应用只经 `DiaryShareChannel`（Android 原生按包名发 Intent），图片先暂存到缓存 `diary_share/`（`DiaryShareFileProvider` 只暴露该目录，禁止直接交出日记原图路径），带图时文字经剪贴板传递；新增目标应用在 `DiaryShareTarget` 登记，并同步 `AndroidManifest.xml` 的 `<queries>` 包名。视觉规范见 DESIGN.md §5.9。
+- 必须：日记导出统一经 `runDiaryExportFlow`（预览页“更多 → 导出”、日记列表多选、设置 → 数据管理 → 导出日记三个入口共用）：导出面板 `showDiaryExportSheet` 只负责挑选，生成、保存与分享由 `DiaryExportController` 执行；导出选项只存于 `DiaryExportOptions`（单个 JSON 设置键 `app.settings.diary_export_options`，逐字段容错并随备份导出）。正文一律先经 `ExportBlockParser` 解析为块再交给 `lib/ui/diaries/export/` 下的写出器（PDF 例外，仍经 flutter_quill_to_pdf 渲染，但图片只经虚拟地址交付、缺失图片与媒体嵌入先改写）；新增格式只加写出器并在 `DiaryExportFormat` 登记，禁止在页面里另写导出逻辑。未解封的时间胶囊在任何导出格式中都不导出（完整备份除外）；导出文件不得写出设备私有路径，媒体以包内相对路径或内嵌方式交付；批量导出的媒体一律按文件流式打包（`DiaryExportBundleFile.file`），禁止把全部照片读进内存，PDF 这类只能整份持有图片的格式须设总量上限并提示。视觉规范见 DESIGN.md §5.10。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。

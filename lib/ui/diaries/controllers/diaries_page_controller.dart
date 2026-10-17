@@ -435,6 +435,33 @@ class DiariesPageController {
     transitionCoordinator.clearTransitionTimers(targetIds);
   }
 
+  /// 导出所选日记：按 id 从库中取最新的完整详情（列表项可能只是分页
+  /// 快照），交给共用导出流程；导出不改动数据，保持多选状态，方便接着
+  /// 归档或再导出成别的格式。
+  Future<void> exportSelectedDiaries() async {
+    if (_state._selectedDiaryIds.isEmpty) {
+      return;
+    }
+    final db = _state.ref.read(appDatabaseProvider);
+    final diaries = <DiaryWithTags>[];
+    for (final diaryId in _state._selectedDiaryIds.toList(growable: false)) {
+      final detail = await db.getDiaryWithTagsByDiaryId(diaryId);
+      if (detail != null) {
+        diaries.add(detail);
+      }
+    }
+    if (!_state.mounted) {
+      return;
+    }
+    await runDiaryExportFlow(
+      _state.context,
+      _state.ref,
+      diaries: diaries,
+      showHint: (String message) =>
+          unawaited(feedback.showInfoSnackBar(message)),
+    );
+  }
+
   /// 批量归档所选日记并提供撤销。
   Future<void> archiveSelectedDiaries() async {
     if (_state._selectedDiaryIds.isEmpty) {

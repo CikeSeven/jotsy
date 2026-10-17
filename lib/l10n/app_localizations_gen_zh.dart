@@ -872,16 +872,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0115 => '以文字形式分享';
 
   @override
-  String get previewExportMarkdown => '导出为 Markdown';
-
-  @override
-  String get previewExportPdf => '导出为 PDF';
-
-  @override
   String get previewExportSaveDialogTitle => '保存导出文件';
-
-  @override
-  String get previewExportSuccess => '导出成功';
 
   @override
   String get previewExportCanceled => '已取消导出';
@@ -1705,9 +1696,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportOverwriteResult(int added, int replaced) {
     return '导入完成：新增 $added 篇，覆盖 $replaced 篇日记';
   }
-
-  @override
-  String get previewExportDiaryFile => '导出为日记文件';
 
   @override
   String get previewExportDiaryFileConfirm => '导出';
@@ -4416,4 +4404,332 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get publishPanelSealShort => '封存';
+
+  @override
+  String get previewShare => '分享';
+
+  @override
+  String get diaryShareSheetTitle => '分享日记';
+
+  @override
+  String get diaryShareContentSection => '分享内容';
+
+  @override
+  String get diaryShareOptionTitle => '标题';
+
+  @override
+  String get diaryShareOptionBody => '正文';
+
+  @override
+  String get diaryShareOptionDate => '日期';
+
+  @override
+  String get diaryShareOptionMoodWeather => '心情与天气';
+
+  @override
+  String get diaryShareOptionLocation => '地点';
+
+  @override
+  String get diaryShareOptionTags => '标签';
+
+  @override
+  String get diaryShareOptionImages => '图片';
+
+  @override
+  String get diaryShareTextEmpty => '未选择文字内容，将只分享图片';
+
+  @override
+  String diaryShareImagesSelected(int selected, int total) {
+    return '已选 $selected/$total 张，微博等应用单次最多 9 张';
+  }
+
+  @override
+  String diaryShareImageLabel(int index) {
+    return '第 $index 张图片';
+  }
+
+  @override
+  String get diaryShareTargetsSection => '分享到';
+
+  @override
+  String get diaryShareTargetWeibo => '微博';
+
+  @override
+  String get diaryShareTargetXiaohongshu => '小红书';
+
+  @override
+  String get diaryShareTargetWechat => '微信';
+
+  @override
+  String get diaryShareTargetQq => 'QQ';
+
+  @override
+  String get diaryShareTargetSystem => '更多应用';
+
+  @override
+  String get diaryShareCopyText => '复制文字';
+
+  @override
+  String get diaryShareClipboardHint => '带图分享时文字会自动复制，在发布页粘贴即可。';
+
+  @override
+  String get diaryShareMoreSection => '其他方式';
+
+  @override
+  String get diaryShareLongImage => '分享为长图';
+
+  @override
+  String get diaryShareLongImageSubtitle => '按预览页的样子生成一整张图片';
+
+  @override
+  String diaryShareRequiresImage(String app) {
+    return '$app需要至少一张图片';
+  }
+
+  @override
+  String get diaryShareNothingSelected => '先选择要分享的内容';
+
+  @override
+  String get diaryShareInProgress => '正在准备分享';
+
+  @override
+  String diaryShareTextCopiedForApp(String app) {
+    return '文字已复制，在$app里粘贴即可';
+  }
+
+  @override
+  String get diaryShareTextCopied => '文字已复制，可在目标应用中粘贴';
+
+  @override
+  String get diaryShareCopied => '已复制到剪贴板';
+
+  @override
+  String diaryShareImagesTrimmed(int count) {
+    return '单次最多分享 $count 张图片，已取前 $count 张';
+  }
+
+  @override
+  String diaryShareImagesMissing(int count) {
+    return '$count 张图片读取失败，未一并分享';
+  }
+
+  @override
+  String diaryShareAppUnavailable(String app) {
+    return '无法打开$app，请确认已安装并更新到最新版本';
+  }
+
+  @override
+  String get diaryShareNothingToShare => '没有可分享的内容';
+
+  @override
+  String diaryShareFailed(String error) {
+    return '分享失败：$error';
+  }
+
+  @override
+  String get previewExport => '导出';
+
+  @override
+  String get diaryExportSelected => '导出';
+
+  @override
+  String get dataMgmtExportDiaries => '导出日记';
+
+  @override
+  String get dataMgmtExportDiariesSubtitle =>
+      '按日期或标签导出为 PDF、Word、Markdown、网页等格式';
+
+  @override
+  String get diaryExportSheetTitle => '导出日记';
+
+  @override
+  String diaryExportSheetCount(int count) {
+    return '共 $count 篇';
+  }
+
+  @override
+  String get diaryExportFormatSection => '格式';
+
+  @override
+  String get diaryExportOptionsSection => '选项';
+
+  @override
+  String get diaryExportFormatPdf => 'PDF';
+
+  @override
+  String get diaryExportFormatPdfDescription => '版式固定，适合阅读与打印';
+
+  @override
+  String get diaryExportFormatWord => 'Word 文档';
+
+  @override
+  String get diaryExportFormatWordDescription => '.docx，可以继续编辑与排版';
+
+  @override
+  String get diaryExportFormatMarkdown => 'Markdown';
+
+  @override
+  String get diaryExportFormatMarkdownDescription =>
+      '带 front matter，可导入 Obsidian 等笔记软件，也能导回 Jotsy';
+
+  @override
+  String get diaryExportFormatHtml => '网页';
+
+  @override
+  String get diaryExportFormatHtmlDescription => '浏览器直接打开；多篇带图时打包为网页加图片文件夹';
+
+  @override
+  String get diaryExportFormatText => '纯文本';
+
+  @override
+  String get diaryExportFormatTextDescription => '.txt，任何设备都能打开';
+
+  @override
+  String get diaryExportFormatCsv => '表格（CSV）';
+
+  @override
+  String get diaryExportFormatCsvDescription => '每篇一行，含心情、天气等，可用 Excel 统计';
+
+  @override
+  String get diaryExportFormatDiaryFile => 'Jotsy 日记文件';
+
+  @override
+  String get diaryExportFormatDiaryFileDescription =>
+      '完整保留日记与媒体，可设密码，导回 Jotsy 不丢信息';
+
+  @override
+  String get diaryExportIncludeImages => '包含图片';
+
+  @override
+  String get diaryExportIncludeMedia => '包含图片、录音、视频与附件';
+
+  @override
+  String get diaryExportIncludeMeta => '包含心情、天气、地点与标签';
+
+  @override
+  String get diaryExportOrderOldest => '从旧到新';
+
+  @override
+  String get diaryExportOrderNewest => '从新到旧';
+
+  @override
+  String get diaryExportSave => '保存到文件';
+
+  @override
+  String get diaryExportInProgress => '正在导出';
+
+  @override
+  String diaryExportSaved(int count) {
+    return '已导出 $count 篇日记';
+  }
+
+  @override
+  String diaryExportSkippedCapsules(int count) {
+    return '$count 篇未解封的时间胶囊没有导出';
+  }
+
+  @override
+  String get diaryExportOnlyCapsules => '选中的都是未解封的时间胶囊，没有可导出的日记';
+
+  @override
+  String get diaryExportNothing => '没有符合条件的日记';
+
+  @override
+  String get diaryExportPageTitle => '导出日记';
+
+  @override
+  String get diaryExportRangeSection => '日期范围';
+
+  @override
+  String get diaryExportRangeAll => '全部日记';
+
+  @override
+  String get diaryExportRangeThisYear => '今年';
+
+  @override
+  String get diaryExportRangeLast30Days => '最近 30 天';
+
+  @override
+  String get diaryExportRangeCustom => '自定义日期';
+
+  @override
+  String diaryExportRangeCustomValue(String start, String end) {
+    return '$start 至 $end，点按修改';
+  }
+
+  @override
+  String get diaryExportTagsSection => '标签';
+
+  @override
+  String get diaryExportTagsHint => '不选则不限标签；选多个时带有任一标签即可';
+
+  @override
+  String get diaryExportIncludeArchived => '包含已归档的日记';
+
+  @override
+  String diaryExportMatchCount(int count) {
+    return '将导出 $count 篇日记';
+  }
+
+  @override
+  String get diaryExportCapsuleNote => '未解封的时间胶囊不会导出';
+
+  @override
+  String get diaryExportNext => '选择格式并导出';
+
+  @override
+  String get diaryExportLabelUntitled => '无标题';
+
+  @override
+  String get diaryExportLabelMood => '心情';
+
+  @override
+  String get diaryExportLabelEnergy => '精力';
+
+  @override
+  String get diaryExportLabelWeather => '天气';
+
+  @override
+  String get diaryExportLabelLocation => '地点';
+
+  @override
+  String get diaryExportLabelTags => '标签';
+
+  @override
+  String get diaryExportLabelDate => '日期';
+
+  @override
+  String get diaryExportLabelTime => '时间';
+
+  @override
+  String get diaryExportLabelTitle => '标题';
+
+  @override
+  String get diaryExportLabelContent => '正文';
+
+  @override
+  String get diaryExportLabelWordCount => '字数';
+
+  @override
+  String get diaryExportLabelUpdated => '最后编辑';
+
+  @override
+  String get diaryExportLabelImage => '图片';
+
+  @override
+  String get diaryExportLabelAudio => '录音';
+
+  @override
+  String get diaryExportLabelVideo => '视频';
+
+  @override
+  String get diaryExportLabelAttachment => '附件';
+
+  @override
+  String get diaryExportLabelExportedBy => '由 Jotsy 导出';
+
+  @override
+  String diaryExportTooLarge(int size) {
+    return '图片太多（约 $size MB），PDF 无法一次生成。请缩小日期范围，或关闭“包含图片”后再试';
+  }
 }

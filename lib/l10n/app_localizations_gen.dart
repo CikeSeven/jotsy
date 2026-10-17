@@ -1670,29 +1670,11 @@ abstract class AppLocalizations {
   /// **'Share as text'**
   String get autoT0115;
 
-  /// Menu label for exporting diary as Markdown.
-  ///
-  /// In en, this message translates to:
-  /// **'Export as Markdown'**
-  String get previewExportMarkdown;
-
-  /// Menu label for exporting diary as PDF.
-  ///
-  /// In en, this message translates to:
-  /// **'Export as PDF'**
-  String get previewExportPdf;
-
   /// Dialog title when saving an exported diary file.
   ///
   /// In en, this message translates to:
   /// **'Save export file'**
   String get previewExportSaveDialogTitle;
-
-  /// SnackBar text when export completes.
-  ///
-  /// In en, this message translates to:
-  /// **'Export succeeded'**
-  String get previewExportSuccess;
 
   /// SnackBar text when export is canceled.
   ///
@@ -3199,12 +3181,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Import complete: {added} added, {replaced} overwritten'**
   String backupImportOverwriteResult(int added, int replaced);
-
-  /// Menu label for exporting a diary as a diary file (ZIP with its tags and media) that can be imported again.
-  ///
-  /// In en, this message translates to:
-  /// **'Export as diary file'**
-  String get previewExportDiaryFile;
 
   /// Confirm button of the optional password dialog when exporting a diary file.
   ///
@@ -8191,6 +8167,600 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seal'**
   String get publishPanelSealShort;
+
+  /// Preview page action sheet entry that opens the share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get previewShare;
+
+  /// Title of the diary share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Share diary'**
+  String get diaryShareSheetTitle;
+
+  /// Share sheet section header for the content toggles.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get diaryShareContentSection;
+
+  /// Share sheet toggle: include the title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diaryShareOptionTitle;
+
+  /// Share sheet toggle: include the body text.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get diaryShareOptionBody;
+
+  /// Share sheet toggle: include the date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get diaryShareOptionDate;
+
+  /// Share sheet toggle: include mood and weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood & weather'**
+  String get diaryShareOptionMoodWeather;
+
+  /// Share sheet toggle: include the location (off by default).
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get diaryShareOptionLocation;
+
+  /// Share sheet toggle: include tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryShareOptionTags;
+
+  /// Share sheet toggle: attach images.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get diaryShareOptionImages;
+
+  /// Share sheet placeholder when the composed text is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No text selected — only images will be shared'**
+  String get diaryShareTextEmpty;
+
+  /// Share sheet: number of selected images.
+  ///
+  /// In en, this message translates to:
+  /// **'{selected} of {total} selected · Weibo and similar apps take up to 9'**
+  String diaryShareImagesSelected(int selected, int total);
+
+  /// Share sheet: accessibility label of an image choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Image {index}'**
+  String diaryShareImageLabel(int index);
+
+  /// Share sheet section header for share targets; also the chooser title.
+  ///
+  /// In en, this message translates to:
+  /// **'Share to'**
+  String get diaryShareTargetsSection;
+
+  /// Share target: Weibo.
+  ///
+  /// In en, this message translates to:
+  /// **'Weibo'**
+  String get diaryShareTargetWeibo;
+
+  /// Share target: Xiaohongshu (RED).
+  ///
+  /// In en, this message translates to:
+  /// **'Xiaohongshu'**
+  String get diaryShareTargetXiaohongshu;
+
+  /// Share target: WeChat.
+  ///
+  /// In en, this message translates to:
+  /// **'WeChat'**
+  String get diaryShareTargetWechat;
+
+  /// Share target: QQ.
+  ///
+  /// In en, this message translates to:
+  /// **'QQ'**
+  String get diaryShareTargetQq;
+
+  /// Share target: the system share sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'More apps'**
+  String get diaryShareTargetSystem;
+
+  /// Share sheet action: copy the text only.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy text'**
+  String get diaryShareCopyText;
+
+  /// Share sheet note: text goes through the clipboard when images are attached.
+  ///
+  /// In en, this message translates to:
+  /// **'When images are attached, the text is copied for you — just paste it into the post.'**
+  String get diaryShareClipboardHint;
+
+  /// Share sheet section header for other formats.
+  ///
+  /// In en, this message translates to:
+  /// **'Other formats'**
+  String get diaryShareMoreSection;
+
+  /// Share sheet action: share the whole diary as one long image.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as long image'**
+  String get diaryShareLongImage;
+
+  /// Share sheet: subtitle of the long-image action.
+  ///
+  /// In en, this message translates to:
+  /// **'Renders the diary as it looks in the preview'**
+  String get diaryShareLongImageSubtitle;
+
+  /// Share sheet hint when the target app needs an image.
+  ///
+  /// In en, this message translates to:
+  /// **'{app} needs at least one image'**
+  String diaryShareRequiresImage(String app);
+
+  /// Share sheet hint when neither text nor images are selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose something to share first'**
+  String get diaryShareNothingSelected;
+
+  /// Loading overlay label while a share is prepared.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing to share'**
+  String get diaryShareInProgress;
+
+  /// Hint after sharing images to an app: the text is on the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Text copied — paste it in {app}'**
+  String diaryShareTextCopiedForApp(String app);
+
+  /// Hint after sharing images via the system sheet: the text is on the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Text copied — paste it in the app you shared to'**
+  String get diaryShareTextCopied;
+
+  /// Hint after copying the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get diaryShareCopied;
+
+  /// Hint when more images were selected than the target accepts.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} images per share — the first {count} were sent'**
+  String diaryShareImagesTrimmed(int count);
+
+  /// Hint when some images could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} image(s) could not be read and were left out'**
+  String diaryShareImagesMissing(int count);
+
+  /// Hint when the target app cannot receive the share.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open {app}. Make sure it is installed and up to date'**
+  String diaryShareAppUnavailable(String app);
+
+  /// Hint when there is nothing to share.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to share'**
+  String get diaryShareNothingToShare;
+
+  /// Hint when sharing fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Share failed: {error}'**
+  String diaryShareFailed(String error);
+
+  /// Preview action sheet entry that opens the export sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get previewExport;
+
+  /// Diary list selection bar: tooltip of the export button.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get diaryExportSelected;
+
+  /// Data management entry that opens diary export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export diaries'**
+  String get dataMgmtExportDiaries;
+
+  /// Subtitle of the diary export entry in data management.
+  ///
+  /// In en, this message translates to:
+  /// **'Export by date or tag as PDF, Word, Markdown, web page and more'**
+  String get dataMgmtExportDiariesSubtitle;
+
+  /// Title of the export sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Export diaries'**
+  String get diaryExportSheetTitle;
+
+  /// Export sheet: number of diaries to export.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} diaries'**
+  String diaryExportSheetCount(int count);
+
+  /// Export sheet section header for formats.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get diaryExportFormatSection;
+
+  /// Export sheet section header for options.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get diaryExportOptionsSection;
+
+  /// Export format name: PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF'**
+  String get diaryExportFormatPdf;
+
+  /// Export format description: PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed layout for reading and printing'**
+  String get diaryExportFormatPdfDescription;
+
+  /// Export format name: Word document.
+  ///
+  /// In en, this message translates to:
+  /// **'Word document'**
+  String get diaryExportFormatWord;
+
+  /// Export format description: Word document.
+  ///
+  /// In en, this message translates to:
+  /// **'.docx you can keep editing'**
+  String get diaryExportFormatWordDescription;
+
+  /// Export format name: Markdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Markdown'**
+  String get diaryExportFormatMarkdown;
+
+  /// Export format description: Markdown.
+  ///
+  /// In en, this message translates to:
+  /// **'With front matter for Obsidian and other note apps; can be imported back into Jotsy'**
+  String get diaryExportFormatMarkdownDescription;
+
+  /// Export format name: Web page.
+  ///
+  /// In en, this message translates to:
+  /// **'Web page'**
+  String get diaryExportFormatHtml;
+
+  /// Export format description: Web page.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens in any browser; several diaries with images come as a page plus an image folder'**
+  String get diaryExportFormatHtmlDescription;
+
+  /// Export format name: Plain text.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text'**
+  String get diaryExportFormatText;
+
+  /// Export format description: Plain text.
+  ///
+  /// In en, this message translates to:
+  /// **'.txt that opens anywhere'**
+  String get diaryExportFormatTextDescription;
+
+  /// Export format name: Spreadsheet (CSV).
+  ///
+  /// In en, this message translates to:
+  /// **'Spreadsheet (CSV)'**
+  String get diaryExportFormatCsv;
+
+  /// Export format description: Spreadsheet (CSV).
+  ///
+  /// In en, this message translates to:
+  /// **'One row per diary with mood, weather and more for Excel'**
+  String get diaryExportFormatCsvDescription;
+
+  /// Export format name: Jotsy diary file.
+  ///
+  /// In en, this message translates to:
+  /// **'Jotsy diary file'**
+  String get diaryExportFormatDiaryFile;
+
+  /// Export format description: Jotsy diary file.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps everything including media, optional password, lossless re-import'**
+  String get diaryExportFormatDiaryFileDescription;
+
+  /// Export option: include images.
+  ///
+  /// In en, this message translates to:
+  /// **'Include images'**
+  String get diaryExportIncludeImages;
+
+  /// Export option (Markdown): bundle all media.
+  ///
+  /// In en, this message translates to:
+  /// **'Include images, recordings, videos and attachments'**
+  String get diaryExportIncludeMedia;
+
+  /// Export option: include mood, weather, location and tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Include mood, weather, location and tags'**
+  String get diaryExportIncludeMeta;
+
+  /// Export option: oldest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get diaryExportOrderOldest;
+
+  /// Export option: newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get diaryExportOrderNewest;
+
+  /// Export sheet: save button.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to files'**
+  String get diaryExportSave;
+
+  /// Loading overlay label while exporting.
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting'**
+  String get diaryExportInProgress;
+
+  /// Hint after the export is saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} diaries'**
+  String diaryExportSaved(int count);
+
+  /// Hint when sealed time capsules were skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} sealed time capsules were not exported'**
+  String diaryExportSkippedCapsules(int count);
+
+  /// Hint when only sealed time capsules were selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Only sealed time capsules were selected — nothing to export'**
+  String get diaryExportOnlyCapsules;
+
+  /// Hint when no diary matches the export scope.
+  ///
+  /// In en, this message translates to:
+  /// **'No diaries match'**
+  String get diaryExportNothing;
+
+  /// Title of the diary export page.
+  ///
+  /// In en, this message translates to:
+  /// **'Export diaries'**
+  String get diaryExportPageTitle;
+
+  /// Export page section header for the date range.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get diaryExportRangeSection;
+
+  /// Export page: all diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'All diaries'**
+  String get diaryExportRangeAll;
+
+  /// Export page: this year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get diaryExportRangeThisYear;
+
+  /// Export page: last 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get diaryExportRangeLast30Days;
+
+  /// Export page: custom date range.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom dates'**
+  String get diaryExportRangeCustom;
+
+  /// Export page: the chosen custom range.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}, tap to change'**
+  String diaryExportRangeCustomValue(String start, String end);
+
+  /// Export page section header for tag filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryExportTagsSection;
+
+  /// Export page: how tag filters combine.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave empty for all tags; any selected tag matches'**
+  String get diaryExportTagsHint;
+
+  /// Export page: include archived diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Include archived diaries'**
+  String get diaryExportIncludeArchived;
+
+  /// Export page: number of matching diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} diaries will be exported'**
+  String diaryExportMatchCount(int count);
+
+  /// Export page note about sealed capsules.
+  ///
+  /// In en, this message translates to:
+  /// **'Sealed time capsules are never exported'**
+  String get diaryExportCapsuleNote;
+
+  /// Export page: continue button.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose format and export'**
+  String get diaryExportNext;
+
+  /// Text written inside exported files: Untitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled'**
+  String get diaryExportLabelUntitled;
+
+  /// Text written inside exported files: Mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryExportLabelMood;
+
+  /// Text written inside exported files: Energy.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get diaryExportLabelEnergy;
+
+  /// Text written inside exported files: Weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get diaryExportLabelWeather;
+
+  /// Text written inside exported files: Location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get diaryExportLabelLocation;
+
+  /// Text written inside exported files: Tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryExportLabelTags;
+
+  /// Text written inside exported files: Date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get diaryExportLabelDate;
+
+  /// Text written inside exported files: Time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get diaryExportLabelTime;
+
+  /// Text written inside exported files: Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get diaryExportLabelTitle;
+
+  /// Text written inside exported files: Content.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get diaryExportLabelContent;
+
+  /// Text written inside exported files: Characters.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters'**
+  String get diaryExportLabelWordCount;
+
+  /// Text written inside exported files: Last edited.
+  ///
+  /// In en, this message translates to:
+  /// **'Last edited'**
+  String get diaryExportLabelUpdated;
+
+  /// Text written inside exported files: Image.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get diaryExportLabelImage;
+
+  /// Text written inside exported files: Recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording'**
+  String get diaryExportLabelAudio;
+
+  /// Text written inside exported files: Video.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get diaryExportLabelVideo;
+
+  /// Text written inside exported files: Attachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachment'**
+  String get diaryExportLabelAttachment;
+
+  /// Text written inside exported files: Exported from Jotsy.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported from Jotsy'**
+  String get diaryExportLabelExportedBy;
+
+  /// Hint when a PDF export has too many images.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many images (about {size} MB) for one PDF. Narrow the date range or turn off “Include images” and try again'**
+  String diaryExportTooLarge(int size);
 }
 
 class _AppLocalizationsDelegate

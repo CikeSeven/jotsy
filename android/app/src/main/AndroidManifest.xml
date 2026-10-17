@@ -42,6 +42,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 分享日记到指定应用：只暴露 cacheDir/diary_share/ 下的暂存图片。 -->
+        <provider
+            android:name=".DiaryShareFileProvider"
+            android:authorities="${applicationId}.diary_share"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/diary_share_paths" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
@@ -67,6 +77,12 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.APP_GALLERY" />
         </intent>
+        <!-- 分享面板只列出已安装的应用（Android 11+ 需声明包可见性）。
+             包名须与 lib/ui/diaries/models/diary_share_target.dart 一致。 -->
+        <package android:name="com.sina.weibo" />
+        <package android:name="com.xingin.xhs" />
+        <package android:name="com.tencent.mm" />
+        <package android:name="com.tencent.mobileqq" />
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />

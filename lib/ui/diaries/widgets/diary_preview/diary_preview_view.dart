@@ -38,7 +38,7 @@ import 'diary_preview_top_bar.dart';
 /// 输入：日记业务 id，可选的入口数据（同一篇的 `DiaryWithTags`，首帧直接
 /// 渲染）与列表封面抓取的共享元素（本组件销毁时释放）。输出：整页
 /// Scaffold；未解封的时间胶囊内联显示封存页。副作用：勾选待办写库（见
-/// [DiaryTodoAutoSaveController]）、导出与删除。
+/// [DiaryTodoAutoSaveController]）、分享、导出与删除。
 ///
 /// 状态：详情查询返回前用入口数据渲染，返回后由最新数据接管；正文只在内容
 /// 变化时重建 Quill 控制器。
@@ -343,11 +343,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
             ),
             onMore: () => showDiaryPreviewMore(
               context,
+              ref,
               export: _export,
               detail: detail,
-              readDocument: () => _controller?.document,
-              database: ref.read(appDatabaseProvider),
-              settings: ref.read(settingsServiceProvider).asData?.value,
               background: resolved.background,
               onDelete: _deleteDiary,
             ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/diaries/pages/diary_export_page.dart';
 import 'package:node_diary/ui/settings/pages/cloud_backup_page.dart';
 import 'package:node_diary/ui/settings/widgets/settings_card_group.dart';
 
@@ -106,6 +107,36 @@ class _DataManagementPageState extends ConsumerState<DataManagementPage>
                         size: 14,
                       ),
                       onTap: _controller.exportAll,
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: const FaIcon(
+                        FontAwesomeIcons.bookOpen,
+                        size: 16,
+                      ),
+                      title: Text(context.l10n.dataMgmtExportDiaries),
+                      subtitle: Text(
+                        context.l10n.dataMgmtExportDiariesSubtitle,
+                      ),
+                      trailing: const FaIcon(
+                        FontAwesomeIcons.angleRight,
+                        size: 14,
+                      ),
+                      onTap: () {
+                        if (_busy) {
+                          return;
+                        }
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return const DiaryExportPage();
+                            },
+                          ),
+                        );
+                      },
                     ),
                     ListTile(
                       contentPadding: const EdgeInsets.symmetric(

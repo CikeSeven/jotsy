@@ -29,6 +29,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.isPinActionUnpin,
     required this.onPinSelected,
     required this.onArchiveSelected,
+    required this.onExportSelected,
     required this.onDeleteSelected,
     required this.onOpenArchived,
     required this.onOpenViewOptions,
@@ -41,6 +42,7 @@ class DiaryHeadSection extends StatelessWidget {
   final bool isPinActionUnpin;
   final VoidCallback onPinSelected;
   final VoidCallback onArchiveSelected;
+  final VoidCallback onExportSelected;
   final VoidCallback onDeleteSelected;
   final VoidCallback onOpenArchived;
 
@@ -128,6 +130,11 @@ class DiaryHeadSection extends StatelessWidget {
           tooltip: context.l10n.autoT0140,
           onPressed: onArchiveSelected,
           icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
+        ),
+        IconButton(
+          tooltip: context.l10n.diaryExportSelected,
+          onPressed: onExportSelected,
+          icon: const FaIcon(FontAwesomeIcons.fileExport, size: 18),
         ),
         IconButton(
           tooltip: context.l10n.commonDelete,

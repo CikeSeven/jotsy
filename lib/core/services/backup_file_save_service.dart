@@ -19,21 +19,43 @@ class BackupFileSaveService {
     required File zipFile,
     required String fileName,
     required String dialogTitle,
+  }) {
+    return saveFile(
+      file: zipFile,
+      fileName: fileName,
+      dialogTitle: dialogTitle,
+      mimeType: _zipMimeType,
+      extension: 'zip',
+    );
+  }
+
+  /// 把任意类型的临时文件交给系统保存（日记导出的 PDF、Word 等共用）；
+  /// 移动端同样只传路径，原生侧流式复制。
+  static Future<String?> saveFile({
+    required File file,
+    required String fileName,
+    required String dialogTitle,
+    required String mimeType,
+    required String extension,
   }) async {
     if (Platform.isAndroid || Platform.isIOS) {
-      return saveNativeBackupFile(zipFile: zipFile, fileName: fileName);
+      return saveNativeBackupFile(
+        zipFile: file,
+        fileName: fileName,
+        mimeType: mimeType,
+      );
     }
 
     final savePath = await FilePicker.platform.saveFile(
       dialogTitle: dialogTitle,
       fileName: fileName,
       type: FileType.custom,
-      allowedExtensions: const <String>['zip'],
+      allowedExtensions: <String>[extension],
     );
     if (savePath != null && savePath.trim().isNotEmpty) {
       final outputFile = File(savePath);
       await outputFile.parent.create(recursive: true);
-      await zipFile.copy(outputFile.path);
+      await file.copy(outputFile.path);
     }
     return savePath;
   }
@@ -41,11 +63,12 @@ class BackupFileSaveService {
   static Future<String?> saveNativeBackupFile({
     required File zipFile,
     required String fileName,
+    String mimeType = _zipMimeType,
   }) {
     return _mobileChannel.invokeMethod<String>('saveBackupFile', {
       'sourcePath': zipFile.path,
       'fileName': fileName,
-      'mimeType': _zipMimeType,
+      'mimeType': mimeType,
     });
   }
 }

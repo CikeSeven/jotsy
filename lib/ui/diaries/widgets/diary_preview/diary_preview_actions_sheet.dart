@@ -1,50 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../core/database/app_database.dart';
-import '../../../../core/services/settings_service.dart';
+import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../../anniversaries/models/anniversary_draft.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 
-/// 预览页“更多”的完整接线：分享与导出经 [export]（正文尚未绑定时跳过
-/// Markdown 与 PDF），导出日记文件与设为纪念日经 [database]，“页面样式”打开
-/// 预览页样式设置且第一篇示例就是这篇（[settings] 尚未就绪时不显示这一项）。
+/// 预览页“更多”的完整接线：分享与导出经 [export]（分享面板里可选长图），
+/// 设为纪念日经数据库，“页面样式”打开预览页样式设置且第一篇示例就是这篇
+/// （设置尚未就绪时不显示这一项）。[ref] 属于预览页本身，页面卸载后不再使用。
 Future<void> showDiaryPreviewMore(
-  BuildContext context, {
+  BuildContext context,
+  WidgetRef ref, {
   required DiaryPreviewExportController export,
   required DiaryWithTags detail,
-  required quill.Document? Function() readDocument,
-  required AppDatabase database,
-  required SettingsService? settings,
   required Color background,
   required Future<void> Function() onDelete,
 }) {
+  final database = ref.read(appDatabaseProvider);
+  final settings = ref.read(settingsServiceProvider).asData?.value;
   return showDiaryPreviewActionsSheet(
     context,
-    onShareImage: () => export.shareLongImage(context, background: background),
-    onExportMarkdown: () async {
-      final document = readDocument();
-      if (document != null) {
-        await export.exportMarkdown(
-          context,
-          detail: detail,
-          document: document,
-        );
+    onShare: () async {
+      final service = await ref.read(settingsServiceProvider.future);
+      if (!context.mounted) {
+        return;
       }
+      await export.openShareSheet(
+        context,
+        detail: detail,
+        settings: service,
+        background: background,
+      );
     },
-    onExportPdf: () async {
-      final document = readDocument();
-      if (document != null) {
-        await export.exportPdf(context, detail: detail, document: document);
-      }
-    },
-    onExportDiaryFile: () =>
-        export.exportDiaryFile(context, detail: detail, database: database),
+    onExport: () => export.exportDiary(context, ref, detail: detail),
     onSetAsAnniversary: () => openAnniversaryEditor(
       context,
       database: database,
@@ -64,16 +58,14 @@ Future<void> showDiaryPreviewMore(
   );
 }
 
-/// 预览页“更多”面板：分享长图、三种导出、设为纪念日、页面样式与删除。
+/// 预览页“更多”面板：分享、导出、设为纪念日、页面样式与删除。
 ///
 /// 每一项先关闭面板，再执行对应动作（长图截图要等面板完全退场，见
 /// `DiaryPreviewExportController.shareLongImage`）。
 Future<void> showDiaryPreviewActionsSheet(
   BuildContext context, {
-  required Future<void> Function() onShareImage,
-  required Future<void> Function() onExportMarkdown,
-  required Future<void> Function() onExportPdf,
-  required Future<void> Function() onExportDiaryFile,
+  required Future<void> Function() onShare,
+  required Future<void> Function() onExport,
   required Future<void> Function() onSetAsAnniversary,
   required Future<void> Function() onDelete,
   Future<void> Function()? onOpenStyle,
@@ -112,24 +104,14 @@ Future<void> showDiaryPreviewActionsSheet(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               item(
-                icon: const FaIcon(FontAwesomeIcons.image, size: 16),
-                title: Text(l10n.autoT0114),
-                action: onShareImage,
+                icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
+                title: Text(l10n.previewShare),
+                action: onShare,
               ),
               item(
-                icon: const FaIcon(FontAwesomeIcons.fileLines, size: 16),
-                title: Text(l10n.previewExportMarkdown),
-                action: onExportMarkdown,
-              ),
-              item(
-                icon: const FaIcon(FontAwesomeIcons.filePdf, size: 16),
-                title: Text(l10n.previewExportPdf),
-                action: onExportPdf,
-              ),
-              item(
-                icon: const FaIcon(FontAwesomeIcons.fileZipper, size: 16),
-                title: Text(l10n.previewExportDiaryFile),
-                action: onExportDiaryFile,
+                icon: const FaIcon(FontAwesomeIcons.fileExport, size: 16),
+                title: Text(l10n.previewExport),
+                action: onExport,
               ),
               item(
                 icon: const FaIcon(FontAwesomeIcons.heart, size: 16),

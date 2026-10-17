@@ -81,3 +81,42 @@ class ActionLoadingOverlay extends StatelessWidget {
     );
   }
 }
+
+/// 在 [task] 执行期间盖一层 [ActionLoadingOverlay]，供没有自带遮罩的页面
+/// （日记列表、设置子页）执行导出这类耗时动作。
+///
+/// 遮罩插在根 Overlay 上，覆盖底部导航；任务结束（含抛错）后先淡出再移除，
+/// 不在一帧内消失。[revealDelay] 内完成的任务不会闪出遮罩，但点击拦截从
+/// 一开始就生效，避免重复触发。
+Future<T> runWithActionLoadingOverlay<T>(
+  BuildContext context, {
+  required String label,
+  required Future<T> Function() task,
+  Duration revealDelay = const Duration(milliseconds: 150),
+}) async {
+  final overlay = Overlay.of(context, rootOverlay: true);
+  // 淡出时长在任务前解析：任务期间页面可能已经退出。
+  final fade = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
+  final visible = ValueNotifier<bool>(true);
+  final entry = OverlayEntry(
+    builder: (BuildContext context) => ValueListenableBuilder<bool>(
+      valueListenable: visible,
+      builder: (BuildContext context, bool shown, _) => ActionLoadingOverlay(
+        visible: shown,
+        label: label,
+        revealDelay: revealDelay,
+      ),
+    ),
+  );
+  overlay.insert(entry);
+  // 先让遮罩所在的帧提交，再开始可能占用主线程的生成工作。
+  await WidgetsBinding.instance.endOfFrame;
+  try {
+    return await task();
+  } finally {
+    visible.value = false;
+    await Future<void>.delayed(fade);
+    entry.remove();
+    visible.dispose();
+  }
+}

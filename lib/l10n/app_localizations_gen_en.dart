@@ -906,16 +906,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0115 => 'Share as text';
 
   @override
-  String get previewExportMarkdown => 'Export as Markdown';
-
-  @override
-  String get previewExportPdf => 'Export as PDF';
-
-  @override
   String get previewExportSaveDialogTitle => 'Save export file';
-
-  @override
-  String get previewExportSuccess => 'Export succeeded';
 
   @override
   String get previewExportCanceled => 'Export canceled';
@@ -1829,9 +1820,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String backupImportOverwriteResult(int added, int replaced) {
     return 'Import complete: $added added, $replaced overwritten';
   }
-
-  @override
-  String get previewExportDiaryFile => 'Export as diary file';
 
   @override
   String get previewExportDiaryFileConfirm => 'Export';
@@ -4855,4 +4843,344 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get publishPanelSealShort => 'Seal';
+
+  @override
+  String get previewShare => 'Share';
+
+  @override
+  String get diaryShareSheetTitle => 'Share diary';
+
+  @override
+  String get diaryShareContentSection => 'Content';
+
+  @override
+  String get diaryShareOptionTitle => 'Title';
+
+  @override
+  String get diaryShareOptionBody => 'Body';
+
+  @override
+  String get diaryShareOptionDate => 'Date';
+
+  @override
+  String get diaryShareOptionMoodWeather => 'Mood & weather';
+
+  @override
+  String get diaryShareOptionLocation => 'Location';
+
+  @override
+  String get diaryShareOptionTags => 'Tags';
+
+  @override
+  String get diaryShareOptionImages => 'Images';
+
+  @override
+  String get diaryShareTextEmpty =>
+      'No text selected — only images will be shared';
+
+  @override
+  String diaryShareImagesSelected(int selected, int total) {
+    return '$selected of $total selected · Weibo and similar apps take up to 9';
+  }
+
+  @override
+  String diaryShareImageLabel(int index) {
+    return 'Image $index';
+  }
+
+  @override
+  String get diaryShareTargetsSection => 'Share to';
+
+  @override
+  String get diaryShareTargetWeibo => 'Weibo';
+
+  @override
+  String get diaryShareTargetXiaohongshu => 'Xiaohongshu';
+
+  @override
+  String get diaryShareTargetWechat => 'WeChat';
+
+  @override
+  String get diaryShareTargetQq => 'QQ';
+
+  @override
+  String get diaryShareTargetSystem => 'More apps';
+
+  @override
+  String get diaryShareCopyText => 'Copy text';
+
+  @override
+  String get diaryShareClipboardHint =>
+      'When images are attached, the text is copied for you — just paste it into the post.';
+
+  @override
+  String get diaryShareMoreSection => 'Other formats';
+
+  @override
+  String get diaryShareLongImage => 'Share as long image';
+
+  @override
+  String get diaryShareLongImageSubtitle =>
+      'Renders the diary as it looks in the preview';
+
+  @override
+  String diaryShareRequiresImage(String app) {
+    return '$app needs at least one image';
+  }
+
+  @override
+  String get diaryShareNothingSelected => 'Choose something to share first';
+
+  @override
+  String get diaryShareInProgress => 'Preparing to share';
+
+  @override
+  String diaryShareTextCopiedForApp(String app) {
+    return 'Text copied — paste it in $app';
+  }
+
+  @override
+  String get diaryShareTextCopied =>
+      'Text copied — paste it in the app you shared to';
+
+  @override
+  String get diaryShareCopied => 'Copied to clipboard';
+
+  @override
+  String diaryShareImagesTrimmed(int count) {
+    return 'Up to $count images per share — the first $count were sent';
+  }
+
+  @override
+  String diaryShareImagesMissing(int count) {
+    return '$count image(s) could not be read and were left out';
+  }
+
+  @override
+  String diaryShareAppUnavailable(String app) {
+    return 'Couldn\'t open $app. Make sure it is installed and up to date';
+  }
+
+  @override
+  String get diaryShareNothingToShare => 'Nothing to share';
+
+  @override
+  String diaryShareFailed(String error) {
+    return 'Share failed: $error';
+  }
+
+  @override
+  String get previewExport => 'Export';
+
+  @override
+  String get diaryExportSelected => 'Export';
+
+  @override
+  String get dataMgmtExportDiaries => 'Export diaries';
+
+  @override
+  String get dataMgmtExportDiariesSubtitle =>
+      'Export by date or tag as PDF, Word, Markdown, web page and more';
+
+  @override
+  String get diaryExportSheetTitle => 'Export diaries';
+
+  @override
+  String diaryExportSheetCount(int count) {
+    return '$count diaries';
+  }
+
+  @override
+  String get diaryExportFormatSection => 'Format';
+
+  @override
+  String get diaryExportOptionsSection => 'Options';
+
+  @override
+  String get diaryExportFormatPdf => 'PDF';
+
+  @override
+  String get diaryExportFormatPdfDescription =>
+      'Fixed layout for reading and printing';
+
+  @override
+  String get diaryExportFormatWord => 'Word document';
+
+  @override
+  String get diaryExportFormatWordDescription => '.docx you can keep editing';
+
+  @override
+  String get diaryExportFormatMarkdown => 'Markdown';
+
+  @override
+  String get diaryExportFormatMarkdownDescription =>
+      'With front matter for Obsidian and other note apps; can be imported back into Jotsy';
+
+  @override
+  String get diaryExportFormatHtml => 'Web page';
+
+  @override
+  String get diaryExportFormatHtmlDescription =>
+      'Opens in any browser; several diaries with images come as a page plus an image folder';
+
+  @override
+  String get diaryExportFormatText => 'Plain text';
+
+  @override
+  String get diaryExportFormatTextDescription => '.txt that opens anywhere';
+
+  @override
+  String get diaryExportFormatCsv => 'Spreadsheet (CSV)';
+
+  @override
+  String get diaryExportFormatCsvDescription =>
+      'One row per diary with mood, weather and more for Excel';
+
+  @override
+  String get diaryExportFormatDiaryFile => 'Jotsy diary file';
+
+  @override
+  String get diaryExportFormatDiaryFileDescription =>
+      'Keeps everything including media, optional password, lossless re-import';
+
+  @override
+  String get diaryExportIncludeImages => 'Include images';
+
+  @override
+  String get diaryExportIncludeMedia =>
+      'Include images, recordings, videos and attachments';
+
+  @override
+  String get diaryExportIncludeMeta =>
+      'Include mood, weather, location and tags';
+
+  @override
+  String get diaryExportOrderOldest => 'Oldest first';
+
+  @override
+  String get diaryExportOrderNewest => 'Newest first';
+
+  @override
+  String get diaryExportSave => 'Save to files';
+
+  @override
+  String get diaryExportInProgress => 'Exporting';
+
+  @override
+  String diaryExportSaved(int count) {
+    return 'Exported $count diaries';
+  }
+
+  @override
+  String diaryExportSkippedCapsules(int count) {
+    return '$count sealed time capsules were not exported';
+  }
+
+  @override
+  String get diaryExportOnlyCapsules =>
+      'Only sealed time capsules were selected — nothing to export';
+
+  @override
+  String get diaryExportNothing => 'No diaries match';
+
+  @override
+  String get diaryExportPageTitle => 'Export diaries';
+
+  @override
+  String get diaryExportRangeSection => 'Date range';
+
+  @override
+  String get diaryExportRangeAll => 'All diaries';
+
+  @override
+  String get diaryExportRangeThisYear => 'This year';
+
+  @override
+  String get diaryExportRangeLast30Days => 'Last 30 days';
+
+  @override
+  String get diaryExportRangeCustom => 'Custom dates';
+
+  @override
+  String diaryExportRangeCustomValue(String start, String end) {
+    return '$start – $end, tap to change';
+  }
+
+  @override
+  String get diaryExportTagsSection => 'Tags';
+
+  @override
+  String get diaryExportTagsHint =>
+      'Leave empty for all tags; any selected tag matches';
+
+  @override
+  String get diaryExportIncludeArchived => 'Include archived diaries';
+
+  @override
+  String diaryExportMatchCount(int count) {
+    return '$count diaries will be exported';
+  }
+
+  @override
+  String get diaryExportCapsuleNote =>
+      'Sealed time capsules are never exported';
+
+  @override
+  String get diaryExportNext => 'Choose format and export';
+
+  @override
+  String get diaryExportLabelUntitled => 'Untitled';
+
+  @override
+  String get diaryExportLabelMood => 'Mood';
+
+  @override
+  String get diaryExportLabelEnergy => 'Energy';
+
+  @override
+  String get diaryExportLabelWeather => 'Weather';
+
+  @override
+  String get diaryExportLabelLocation => 'Location';
+
+  @override
+  String get diaryExportLabelTags => 'Tags';
+
+  @override
+  String get diaryExportLabelDate => 'Date';
+
+  @override
+  String get diaryExportLabelTime => 'Time';
+
+  @override
+  String get diaryExportLabelTitle => 'Title';
+
+  @override
+  String get diaryExportLabelContent => 'Content';
+
+  @override
+  String get diaryExportLabelWordCount => 'Characters';
+
+  @override
+  String get diaryExportLabelUpdated => 'Last edited';
+
+  @override
+  String get diaryExportLabelImage => 'Image';
+
+  @override
+  String get diaryExportLabelAudio => 'Recording';
+
+  @override
+  String get diaryExportLabelVideo => 'Video';
+
+  @override
+  String get diaryExportLabelAttachment => 'Attachment';
+
+  @override
+  String get diaryExportLabelExportedBy => 'Exported from Jotsy';
+
+  @override
+  String diaryExportTooLarge(int size) {
+    return 'Too many images (about $size MB) for one PDF. Narrow the date range or turn off “Include images” and try again';
+  }
 }

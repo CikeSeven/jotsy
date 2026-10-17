@@ -6838,5 +6838,21 @@
   "diaryLongImageBadge": "长图",
   "@diaryLongImageBadge": {
     "description": "正文里折叠显示的长图（高远大于宽）右下角的角标。"
+  },
+  "diaryImageMenuTitle": "图片",
+  "@diaryImageMenuTitle": {
+    "description": "正文图片点按菜单的标题。"
+  },
+  "diaryImageMenuView": "查看",
+  "@diaryImageMenuView": {
+    "description": "正文图片菜单：在看图页打开这张图。"
+  },
+  "diaryImageMenuResize": "调整大小",
+  "@diaryImageMenuResize": {
+    "description": "正文图片菜单：打开宽高滑条调整显示大小。"
+  },
+  "diaryImageMenuCopy": "复制",
+  "@diaryImageMenuCopy": {
+    "description": "正文图片菜单：复制图片（可粘贴回正文或其他应用）。"
   }
 }

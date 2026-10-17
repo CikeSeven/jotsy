@@ -8935,6 +8935,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Long image'**
   String get diaryLongImageBadge;
+
+  /// Title of the menu shown when tapping an image in the diary body.
+  ///
+  /// In en, this message translates to:
+  /// **'Image'**
+  String get diaryImageMenuTitle;
+
+  /// Image menu: open this image in the image viewer.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get diaryImageMenuView;
+
+  /// Image menu: open the width/height sliders to resize the image.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize'**
+  String get diaryImageMenuResize;
+
+  /// Image menu: copy the image (paste it back into the body or another app).
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get diaryImageMenuCopy;
 }
 
 class _AppLocalizationsDelegate

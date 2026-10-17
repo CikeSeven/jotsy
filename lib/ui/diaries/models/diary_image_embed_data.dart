@@ -52,6 +52,36 @@ AlignmentGeometry diaryImageEmbedAlignment(quill.Node node) {
   };
 }
 
+/// 把缩放菜单的宽高写进图片 embed 的 `style` 属性，保留其中其他声明。
+///
+/// 与上游缩放菜单同一写法（`width: 300.0; height: 600.0; `），已有数据与上游
+/// 解析都按它读；读取时只作上限，见 [diaryImageEmbedBounds]。
+String diaryImageStyleWithSize(
+  String? style, {
+  required double width,
+  required double height,
+}) {
+  final declarations = <String, String>{};
+  for (final declaration in (style ?? '').split(';')) {
+    final separator = declaration.indexOf(':');
+    if (separator < 0) continue;
+    declarations[declaration.substring(0, separator).trim()] = declaration
+        .substring(separator + 1)
+        .trim();
+  }
+  declarations[quill.Attribute.width.key] = width.toString();
+  declarations[quill.Attribute.height.key] = height.toString();
+  return declarations.entries
+      .map((entry) => '${entry.key}: ${entry.value}; ')
+      .join();
+}
+
+/// 图片 embed 当前的 `style` 属性（缩放菜单写入的宽高等）；没有时为 null。
+String? diaryImageStyleOf(quill.Node node) {
+  final style = node.style.attributes[quill.Attribute.style.key]?.value;
+  return style is String ? style : null;
+}
+
 double? _parseLength(Object? raw) {
   if (raw == null) return null;
   var text = raw.toString().trim();

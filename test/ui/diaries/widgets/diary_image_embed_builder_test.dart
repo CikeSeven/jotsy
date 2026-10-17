@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 import 'package:path/path.dart' as p;
 
 Future<String> _pngDataUri(int width, int height) async {
@@ -400,6 +401,77 @@ void main() {
       );
       expect(tester.getSize(image), Size(width, width / 2));
     }
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tapping an image in the editor offers view, resize and more', (
+    tester,
+  ) async {
+    final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {'insert': '开头\n'},
+        {
+          'insert': {'image': source},
+          'attributes': {'style': 'width: 100.0; height: 600.0; '},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+    addTearDown(controller.dispose);
+    await _pumpEditor(tester, controller);
+    final image = find.byType(DiaryEmbeddedImage);
+
+    await tester.tap(image);
+    await tester.pumpAndSettle();
+    for (final label in <String>['查看', '调整大小', '复制', '保存到相册', '删除']) {
+      expect(find.text(label), findsOneWidget);
+    }
+    // 上游菜单的“缩放”已由“查看”取代。
+    expect(find.text('缩放'), findsNothing);
+
+    // 查看：经看图页打开。
+    await tester.tap(find.text('查看'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ImageViewerPage), findsOneWidget);
+    Navigator.of(tester.element(find.byType(ImageViewerPage))).pop();
+    await tester.pumpAndSettle();
+
+    // 删除：只移出正文中的这张图，前面的文字不动。
+    await tester.tap(image);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('删除'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryEmbeddedImage), findsNothing);
+    expect(controller.document.toPlainText(), '开头\n\n');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a read-only body without a viewer hook only views and copies', (
+    tester,
+  ) async {
+    final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+        },
+        {'insert': '\n'},
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+    await _pumpEditor(tester, controller);
+
+    await tester.tap(find.byType(DiaryEmbeddedImage));
+    await tester.pumpAndSettle();
+    expect(find.text('查看'), findsOneWidget);
+    expect(find.text('复制'), findsOneWidget);
+    expect(find.text('保存到相册'), findsOneWidget);
+    expect(find.text('调整大小'), findsNothing);
+    expect(find.text('删除'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

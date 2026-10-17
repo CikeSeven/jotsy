@@ -6838,5 +6838,21 @@
   "diaryLongImageBadge": "Long image",
   "@diaryLongImageBadge": {
     "description": "Badge in the corner of a folded long image (much taller than wide) in the diary body."
+  },
+  "diaryImageMenuTitle": "Image",
+  "@diaryImageMenuTitle": {
+    "description": "Title of the menu shown when tapping an image in the diary body."
+  },
+  "diaryImageMenuView": "View",
+  "@diaryImageMenuView": {
+    "description": "Image menu: open this image in the image viewer."
+  },
+  "diaryImageMenuResize": "Resize",
+  "@diaryImageMenuResize": {
+    "description": "Image menu: open the width/height sliders to resize the image."
+  },
+  "diaryImageMenuCopy": "Copy",
+  "@diaryImageMenuCopy": {
+    "description": "Image menu: copy the image (paste it back into the body or another app)."
   }
 }

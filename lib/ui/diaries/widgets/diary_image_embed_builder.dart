@@ -1,13 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_image_options_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -16,20 +17,24 @@ import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart'
 
 /// 正文图片按独立块渲染，圆角、微边框与上下留白和视频/附件卡片保持同一节奏。
 ///
-/// 上游 [QuillEditorImageEmbedBuilder] 把图片当作行内 WidgetSpan 放进文本行：
-/// 直角、贴着文字基线、没有段间距。这里只接管显示层：
-/// - 编辑页点击仍复用上游构建出的回调，保留缩放/复制/删除/保存菜单（上游菜单
-///   未导出，无法在这里直接构造）；
-/// - 只读正文提供 [onImageOpen] 时由这里接管点击：图片作为看图页的共享元素
+/// 上游 `QuillEditorImageEmbedBuilder` 把图片当作行内 WidgetSpan 放进文本行：
+/// 直角、贴着文字基线、没有段间距，点按弹出的菜单里“缩放”打开它自带的
+/// PhotoView 页面。这里整体接管：
+/// - 只读正文提供 [onImageOpen] 时点按直接进看图页：图片作为看图页的共享元素
 ///   来源，点按瞬间抓取画面并交给回调，看图页从图片原位展开；
+/// - 其余情况（编辑页、发布页预览）点按弹出 [showDiaryImageOptions]：查看、
+///   调整大小、复制、保存到相册、删除（只读时没有调整大小与删除）；
 /// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]；比列宽窄的
 ///   图片（缩小过或原图就小）靠行首对齐，所在行设了居中/居右时从之，见
 ///   [diaryImageEmbedAlignment]；
 /// - 长图（高 ≥ 宽 × 3）折叠显示，见 [DiaryLongImageFold]。
-class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
-  DiaryImageEmbedBuilder({required super.config, this.onImageOpen});
+class DiaryImageEmbedBuilder extends quill.EmbedBuilder {
+  const DiaryImageEmbedBuilder({this.onImageOpen});
 
   final void Function(String imageSource, ImageViewerHero? hero)? onImageOpen;
+
+  @override
+  String get key => quill.BlockEmbed.imageType;
 
   /// 图片独占一行时走 EmbedProxy 块级布局；与文字同行的旧数据 Quill 仍按行内渲染。
   @override
@@ -37,9 +42,6 @@ class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
 
   @override
   Widget build(BuildContext context, quill.EmbedContext embedContext) {
-    final upstream = super.build(context, embedContext);
-    // 升级后若上游不再以 GestureDetector 包裹，退回原样渲染，至少不丢点击菜单。
-    if (upstream is! GestureDetector) return upstream;
     final source = embedContext.node.value.data.toString();
     final open = embedContext.readOnly ? onImageOpen : null;
     // 标签按 embed 在文档中的位置区分：同一张图可能在正文里出现多次。
@@ -49,7 +51,15 @@ class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
     final image = Builder(
       builder: (imageContext) => GestureDetector(
         onTap: open == null
-            ? upstream.onTap
+            ? () => unawaited(
+                showDiaryImageOptions(
+                  imageContext,
+                  controller: embedContext.controller,
+                  node: embedContext.node,
+                  source: source,
+                  readOnly: embedContext.readOnly,
+                ),
+              )
             : () => open(
                 source,
                 ImageViewerHero.capture(imageContext, tag: heroTag!),

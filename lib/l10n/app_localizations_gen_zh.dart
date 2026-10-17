@@ -4835,4 +4835,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryLongImageBadge => '长图';
+
+  @override
+  String get diaryImageMenuTitle => '图片';
+
+  @override
+  String get diaryImageMenuView => '查看';
+
+  @override
+  String get diaryImageMenuResize => '调整大小';
+
+  @override
+  String get diaryImageMenuCopy => '复制';
 }

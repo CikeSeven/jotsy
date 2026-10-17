@@ -5309,4 +5309,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryLongImageBadge => 'Long image';
+
+  @override
+  String get diaryImageMenuTitle => 'Image';
+
+  @override
+  String get diaryImageMenuView => 'View';
+
+  @override
+  String get diaryImageMenuResize => 'Resize';
+
+  @override
+  String get diaryImageMenuCopy => 'Copy';
 }

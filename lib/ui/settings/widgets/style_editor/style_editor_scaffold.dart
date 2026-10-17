@@ -26,13 +26,13 @@ class StyleEditorScaffold extends StatefulWidget {
     required this.onReset,
     required this.tabs,
     required this.tabViews,
-    required this.toolbar,
+    required this.toolbarBuilder,
     required this.previewBuilder,
   });
 
   final String title;
 
-  /// 编辑控制器：变化时重建预览与“重置”按钮。
+  /// 编辑控制器：变化时重建工具条、预览、选项与“重置”按钮。
   final Listenable listenable;
   final bool Function() isDefault;
   final VoidCallback onReset;
@@ -40,7 +40,9 @@ class StyleEditorScaffold extends StatefulWidget {
   final List<Widget> Function() tabViews;
 
   /// 窄屏时固定在预览上方的工具条（宽屏时由预览自己显示）。
-  final Widget toolbar;
+  /// 必须在监听回调内重新创建；复用同一个 Widget 会跳过重建，让选中态
+  /// 与捕获旧明暗值的按钮回调滞留到页面因其他交互重建时才刷新。
+  final WidgetBuilder toolbarBuilder;
 
   /// 实时预览：[showToolbar] 为宽屏时自带工具条；[bottomPadding] 为窄屏时
   /// 被面板圆角压住的高度，预览末尾多留这段空白。
@@ -168,7 +170,7 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
               );
               return Column(
                 children: <Widget>[
-                  widget.toolbar,
+                  widget.toolbarBuilder(context),
                   Expanded(
                     child: SnapPanel(
                       controller: _panel,

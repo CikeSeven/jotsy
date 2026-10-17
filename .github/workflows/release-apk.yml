@@ -267,6 +267,24 @@ jobs:
           cat release-artifacts/SHA256SUMS.txt
           echo "artifact_name=release-apks-${safe_ref}" >> "$GITHUB_OUTPUT"
 
+      # 应用内更新清单：版本（含构建号）、各 ABI 安装包的大小与 SHA-256、中英文
+      # 更新说明。应用经镜像读取 releases/latest/download/jotsy-update.json，一个
+      # 小请求拿全信息（国内网络下 api.github.com 常不可用或被限流），见
+      # lib/core/services/app_update_checker.dart。Release 正文经环境变量传入，
+      # 不直接展开进脚本。
+      - name: Write in-app update manifest
+        env:
+          RELEASE_BODY: ${{ github.event.release.body }}
+          PUBLISHED_AT: ${{ github.event.release.published_at }}
+        run: |
+          printf '%s' "$RELEASE_BODY" > "$RUNNER_TEMP/release-body.md"
+          dart run tool/write_update_manifest.dart \
+            --tag "$GITHUB_REF_NAME" \
+            --artifacts release-artifacts \
+            --published-at "$PUBLISHED_AT" \
+            --notes-fallback "$RUNNER_TEMP/release-body.md" \
+            --out release-artifacts/jotsy-update.json
+
       - name: Upload workflow artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -274,14 +292,17 @@ jobs:
           path: |
             release-artifacts/*.apk
             release-artifacts/SHA256SUMS.txt
+            release-artifacts/jotsy-update.json
           if-no-files-found: error
 
       - name: Upload APK to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
+          # 清单放在最后：应用读到清单即认为安装包已就绪。
           files: |
             release-artifacts/*.apk
             release-artifacts/SHA256SUMS.txt
+            release-artifacts/jotsy-update.json
           fail_on_unmatched_files: true
           overwrite_files: true

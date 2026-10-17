@@ -941,7 +941,7 @@ abstract class AppLocalizations {
   /// 自动检查开关的说明。
   ///
   /// In en, this message translates to:
-  /// **'At most once a day at launch; only reads public release info'**
+  /// **'When you open or return to the app, at most every 2 hours; only reads public release info'**
   String get appUpdateAutoCheckSubtitle;
 
   /// 下载线路设置项与面板标题。

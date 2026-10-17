@@ -42,6 +42,10 @@ class AppUpdateController extends Notifier<AppUpdateState> {
   AppUpdateCancelToken? _downloadToken;
   bool _preferencesLoaded = false;
 
+  /// 本次进程内已弹过提示的版本：自动检查每 2 小时可能跑一次，“以后再说”
+  /// 之后不再反复弹出，下次冷启动再提示。
+  final Set<String> _promptedVersions = <String>{};
+
   @override
   AppUpdateState build() {
     // 重建时状态回到默认偏好，须重新从设置读取。
@@ -94,18 +98,24 @@ class AppUpdateController extends Notifier<AppUpdateState> {
     }
   }
 
-  /// 检查更新。[silent] 用于冷启动自动检查：失败时回到原状态，不在入口上
-  /// 显示“检查失败”打扰用户。
+  /// 检查更新。[silent] 用于自动检查：过程不切到“检查中”（更新页开着时
+  /// 不闪烁、操作按钮不消失），失败时保持原状态，不在入口上显示“检查失败”
+  /// 打扰用户；只有拿到结果才更新状态。同一时间只跑一个检查。
   Future<void> check({
     required String languageCode,
     bool silent = false,
   }) async {
-    if (state.busy) {
+    if (state.busy || _checkToken != null) {
       return;
     }
     final previous = state;
     final token = _checkToken = AppUpdateCancelToken();
-    state = state.copyWith(phase: AppUpdatePhase.checking, failure: () => null);
+    if (!silent) {
+      state = state.copyWith(
+        phase: AppUpdatePhase.checking,
+        failure: () => null,
+      );
+    }
     try {
       final service = _service;
       final installed = await service.installedApp();
@@ -123,8 +133,10 @@ class AppUpdateController extends Notifier<AppUpdateState> {
         ),
       );
       final release = outcome.release;
+      // 静默检查期间用户已经开始了别的操作（如点了下载）：不覆盖其状态。
+      bool superseded() => silent && state.phase != previous.phase;
       if (!release.version.isNewerThan(installed.version)) {
-        if (!ref.mounted) return;
+        if (!ref.mounted || superseded()) return;
         state = state.copyWith(
           phase: AppUpdatePhase.upToDate,
           installed: installed,
@@ -141,7 +153,7 @@ class AppUpdateController extends Notifier<AppUpdateState> {
       final downloaded = asset == null
           ? null
           : await service.findDownloaded(release, asset);
-      if (!ref.mounted) return;
+      if (!ref.mounted || superseded()) return;
       final sameDownload =
           previous.release?.version == release.version &&
           previous.asset?.name == asset?.name;
@@ -158,11 +170,12 @@ class AppUpdateController extends Notifier<AppUpdateState> {
       );
       unawaited(service.cleanUp(installed: installed.version, keep: release));
     } catch (error) {
-      if (!ref.mounted) return;
+      // 静默检查没有改动过状态，失败时保持原样。
+      if (!ref.mounted || silent) return;
       final kind = error is AppUpdateException
           ? error.kind
           : AppUpdateFailureKind.network;
-      if (silent || kind == AppUpdateFailureKind.cancelled) {
+      if (kind == AppUpdateFailureKind.cancelled) {
         state = previous.copyWith(preferences: state.preferences);
         return;
       }
@@ -177,8 +190,10 @@ class AppUpdateController extends Notifier<AppUpdateState> {
     }
   }
 
-  /// 冷启动自动检查：未开启或距上次检查不足间隔时不请求（只清理已安装
-  /// 版本的安装包）。有未被跳过的新版本时返回它，由首页决定是否提示。
+  /// 自动检查（冷启动与回到前台时）：未开启或距上次检查不足
+  /// [AppUpdatePreferences.autoCheckInterval] 时不请求（只清理已安装版本的
+  /// 安装包）；正在下载、校验或已有待安装的安装包时也不打扰。有未被跳过、
+  /// 本次进程内还没提示过的新版本时返回它，由首页决定是否提示。
   ///
   /// 只在支持应用内安装的平台（Android）进行：Release 只发布 APK，其他平台
   /// 提示了也无从更新。
@@ -187,7 +202,9 @@ class AppUpdateController extends Notifier<AppUpdateState> {
       return null;
     }
     final preferences = await _ensurePreferences();
-    if (state.phase != AppUpdatePhase.idle ||
+    if (state.busy ||
+        _checkToken != null ||
+        state.phase == AppUpdatePhase.readyToInstall ||
         !preferences.shouldAutoCheck(_now())) {
       try {
         final service = _service;
@@ -203,12 +220,17 @@ class AppUpdateController extends Notifier<AppUpdateState> {
     if (!ref.mounted ||
         !current.hasUpdate ||
         current.isSkipped ||
+        _promptedVersions.contains(current.release!.version.toString()) ||
         (current.phase != AppUpdatePhase.available &&
             current.phase != AppUpdatePhase.readyToInstall)) {
       return null;
     }
     return current.release;
   }
+
+  /// 记下已为 [release] 弹出过提示（本次进程内不再自动提示）。
+  void markPrompted(AppUpdateRelease release) =>
+      _promptedVersions.add(release.version.toString());
 
   Future<void> download() async {
     final release = state.release;

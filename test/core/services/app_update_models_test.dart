@@ -255,17 +255,17 @@ void main() {
       expect(cleared.autoCheck, isFalse);
     });
 
-    test('auto-checks at most once per interval', () {
+    test('auto-checks at most once every two hours', () {
       final now = DateTime(2026, 10, 17, 12);
       expect(const AppUpdatePreferences().shouldAutoCheck(now), isTrue);
       final recent = AppUpdatePreferences(
-        lastCheckedAt: now.subtract(const Duration(hours: 2)),
+        lastCheckedAt: now.subtract(const Duration(minutes: 90)),
       );
       expect(recent.shouldAutoCheck(now), isFalse);
-      final old = AppUpdatePreferences(
-        lastCheckedAt: now.subtract(const Duration(days: 1)),
+      final due = AppUpdatePreferences(
+        lastCheckedAt: now.subtract(const Duration(hours: 2)),
       );
-      expect(old.shouldAutoCheck(now), isTrue);
+      expect(due.shouldAutoCheck(now), isTrue);
       expect(
         AppUpdatePreferences(
           lastCheckedAt: now.add(const Duration(days: 3)),

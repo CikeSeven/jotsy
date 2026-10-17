@@ -504,7 +504,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appUpdateAutoCheckSubtitle =>
-      'At most once a day at launch; only reads public release info';
+      'When you open or return to the app, at most every 2 hours; only reads public release info';
 
   @override
   String get appUpdateSource => 'Download route';

@@ -222,7 +222,7 @@ void main() {
       await setUpContainer(
         prefs: <String, Object>{
           'app.update.preferences': AppUpdatePreferences(
-            lastCheckedAt: now.subtract(const Duration(hours: 3)),
+            lastCheckedAt: now.subtract(const Duration(hours: 1)),
           ).encode(),
         },
       );
@@ -259,6 +259,99 @@ void main() {
       await controller().setAutoCheck(false);
       now = now.add(const Duration(days: 2));
       container.invalidate(appUpdateControllerProvider);
+      expect(await controller().autoCheck(languageCode: 'zh'), isNull);
+      expect(service.fetchCount, 1);
+    });
+
+    test(
+      'checks again every two hours without re-prompting the same version',
+      () async {
+        await setUpContainer();
+        service.outcome = AppUpdateCheckOutcome(
+          fakeRelease(),
+          AppUpdateSource.direct,
+        );
+        final first = await controller().autoCheck(languageCode: 'zh');
+        controller().markPrompted(first!);
+
+        now = now.add(const Duration(minutes: 90));
+        expect(await controller().autoCheck(languageCode: 'zh'), isNull);
+        expect(service.fetchCount, 1, reason: 'not due yet');
+
+        now = now.add(const Duration(minutes: 40));
+        expect(await controller().autoCheck(languageCode: 'zh'), isNull);
+        expect(service.fetchCount, 2, reason: 'due, but already prompted');
+
+        service.outcome = AppUpdateCheckOutcome(
+          fakeRelease(version: '0.6.2+19'),
+          AppUpdateSource.direct,
+        );
+        now = now.add(const Duration(hours: 2));
+        final newer = await controller().autoCheck(languageCode: 'zh');
+        expect(newer?.version, AppVersion.tryParse('0.6.2+19'));
+      },
+    );
+
+    test(
+      'a silent check keeps the current phase until it has a result',
+      () async {
+        await setUpContainer();
+        service.outcome = AppUpdateCheckOutcome(
+          fakeRelease(),
+          AppUpdateSource.direct,
+        );
+        await controller().check(languageCode: 'zh');
+        expect(state().phase, AppUpdatePhase.available);
+
+        now = now.add(const Duration(hours: 3));
+        service.fetchGate = Completer<void>();
+        final pending = controller().autoCheck(languageCode: 'zh');
+        await Future<void>.delayed(Duration.zero);
+        expect(service.fetchCount, 2);
+        expect(state().phase, AppUpdatePhase.available);
+
+        service.fetchGate!.complete();
+        await pending;
+        expect(state().phase, AppUpdatePhase.available);
+        expect(stored().lastCheckedAt, now);
+      },
+    );
+
+    test(
+      'a silent result does not undo a download started meanwhile',
+      () async {
+        await setUpContainer();
+        service.outcome = AppUpdateCheckOutcome(
+          fakeRelease(),
+          AppUpdateSource.direct,
+        );
+        await controller().check(languageCode: 'zh');
+
+        now = now.add(const Duration(hours: 3));
+        service
+          ..fetchGate = Completer<void>()
+          ..downloadCompleter = Completer<File>();
+        final pending = controller().autoCheck(languageCode: 'zh');
+        await Future<void>.delayed(Duration.zero);
+        unawaited(controller().download());
+        await Future<void>.delayed(Duration.zero);
+        expect(state().phase, AppUpdatePhase.downloading);
+
+        service.fetchGate!.complete();
+        await pending;
+        expect(state().phase, AppUpdatePhase.downloading);
+      },
+    );
+
+    test('leaves a downloaded update waiting to be installed alone', () async {
+      await setUpContainer();
+      service
+        ..outcome = AppUpdateCheckOutcome(fakeRelease(), AppUpdateSource.direct)
+        ..alreadyDownloaded = File('/cache/app_update/0.6.1+18-arm64-v8a.apk');
+      await controller().check(languageCode: 'zh');
+      expect(state().phase, AppUpdatePhase.readyToInstall);
+
+      now = now.add(const Duration(hours: 3));
       expect(await controller().autoCheck(languageCode: 'zh'), isNull);
       expect(service.fetchCount, 1);
     });

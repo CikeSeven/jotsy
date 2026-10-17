@@ -663,7 +663,7 @@
   "@appUpdateAutoCheck": {
     "description": "软件更新页：自动检查开关。"
   },
-  "appUpdateAutoCheckSubtitle": "启动时每天最多检查一次，只读取公开的版本信息",
+  "appUpdateAutoCheckSubtitle": "打开或回到应用时检查，每 2 小时最多一次；只读取公开的版本信息",
   "@appUpdateAutoCheckSubtitle": {
     "description": "自动检查开关的说明。"
   },

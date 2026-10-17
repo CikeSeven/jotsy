@@ -24,6 +24,9 @@ class FakeAppUpdateService implements AppUpdateService {
   /// 下一次检查的结果；为 null 时抛出 [checkFailure]。
   AppUpdateCheckOutcome? outcome;
   AppUpdateFailureKind checkFailure = AppUpdateFailureKind.network;
+
+  /// 设置后检查会一直等到它完成，用来观察检查进行中的状态。
+  Completer<void>? fetchGate;
   int fetchCount = 0;
   List<AppUpdateSource>? lastSources;
 
@@ -53,6 +56,7 @@ class FakeAppUpdateService implements AppUpdateService {
   }) async {
     fetchCount++;
     lastSources = sources;
+    await fetchGate?.future;
     final result = outcome;
     if (result == null) {
       throw AppUpdateException(checkFailure);

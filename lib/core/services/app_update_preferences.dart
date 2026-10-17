@@ -21,10 +21,11 @@ class AppUpdatePreferences {
   /// [sourceId] 取此值时自动选择线路（测速择优）。
   static const String autoSource = 'auto';
 
-  /// 自动检查的最短间隔：冷启动时距上次检查不足这么久就不再请求。
-  static const Duration autoCheckInterval = Duration(hours: 20);
+  /// 自动检查的最短间隔：冷启动或回到前台时，距上次检查不足这么久就不请求。
+  /// 清单走 Release 附件下载（不占 GitHub 接口配额），一次只有几 KB。
+  static const Duration autoCheckInterval = Duration(hours: 2);
 
-  /// 冷启动时自动检查（每天最多一次）。默认开启：应用不经应用商店分发，
+  /// 冷启动与回到前台时自动检查（间隔见 [autoCheckInterval]）。默认开启：应用不经应用商店分发，
   /// 不自动检查的话多数人永远不知道有新版本；请求只读取公开的版本信息。
   final bool autoCheck;
 

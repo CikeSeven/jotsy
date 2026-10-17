@@ -13,7 +13,7 @@ import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
-import 'package:node_diary/ui/settings/controllers/app_update_startup.dart';
+import 'package:node_diary/ui/settings/controllers/app_update_auto_check.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
@@ -52,10 +52,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   static const double _fabGapAboveHint = 6;
   static const int _tabCount = 4;
 
-  /// 冷启动后延迟多久自动检查更新：避开启动揭幕与首屏数据加载，不与首帧
-  /// 争抢网络和主线程（非动画计时）。
-  static const Duration _updateCheckDelay = Duration(seconds: 4);
-  Timer? _updateCheckTimer;
+  /// 冷启动与回到前台时自动检查更新（时机与间隔见 [AppUpdateAutoChecker]）。
+  late final AppUpdateAutoChecker _updateAutoChecker;
 
   // 页面切换状态。
   int _currentIndex = 0;
@@ -101,12 +99,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       _VisibleTabRange(_currentIndex, _currentIndex),
     );
     _controller.pageController.addListener(_syncVisibleTabs);
-    _updateCheckTimer = Timer(_updateCheckDelay, () {
-      _updateCheckTimer = null;
+    _updateAutoChecker = AppUpdateAutoChecker(() async {
       if (mounted) {
-        unawaited(runStartupUpdateCheck(context, ref));
+        await runAutoUpdateCheck(context, ref);
       }
-    });
+    })..start();
   }
 
   @override
@@ -127,7 +124,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   void dispose() {
-    _updateCheckTimer?.cancel();
+    _updateAutoChecker.dispose();
     _controller.pageController.removeListener(_syncVisibleTabs);
     _visibleTabs.dispose();
     _controller.dispose();

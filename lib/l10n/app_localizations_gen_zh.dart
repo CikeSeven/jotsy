@@ -473,7 +473,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appUpdateAutoCheck => '自动检查更新';
 
   @override
-  String get appUpdateAutoCheckSubtitle => '启动时每天最多检查一次，只读取公开的版本信息';
+  String get appUpdateAutoCheckSubtitle => '打开或回到应用时检查，每 2 小时最多一次；只读取公开的版本信息';
 
   @override
   String get appUpdateSource => '下载线路';

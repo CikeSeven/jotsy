@@ -1,0 +1,13 @@
+{
+  "name": "Jotsy",
+  "short_name": "Jotsy",
+  "description": "一本只属于你的本地日记 · A private diary that lives on your phone",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#f6fafe",
+  "theme_color": "#1d6586",
+  "icons": [
+    { "src": "assets/img/brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/brand/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

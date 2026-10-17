@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- GitHub Pages 对任意不存在的路径返回本页，资源一律用根路径（/assets/...）引用。 -->
+  <title data-en="Page not found · Jotsy">页面不存在 · Jotsy</title>
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6fafe">
+  <link rel="icon" href="/assets/img/brand/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/brand/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script>
+    (function () {
+      var d = document.documentElement;
+      function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+      var t = get('jotsy.theme');
+      if (t === 'light' || t === 'dark') d.setAttribute('data-theme', t);
+      var s = get('jotsy.seedCss');
+      if (s) { var st = document.createElement('style'); st.id = 'seed-theme'; st.textContent = s; document.head.appendChild(st); }
+      var l = get('jotsy.lang');
+      if (!l) { var n = (navigator.languages && navigator.languages[0]) || navigator.language || 'zh'; l = /^zh\b/i.test(n) ? 'zh' : 'en'; }
+      if (l === 'en') { d.lang = 'en'; d.classList.add('lang-pending'); }
+    })();
+  </script>
+  <script type="module" src="/assets/js/site.js"></script>
+</head>
+<body>
+  <header class="site-header" data-elevated="false">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Jotsy 首页" data-en-aria-label="Jotsy home">
+        <span class="brand-mark"><svg viewBox="0 0 80 92" aria-hidden="true"><use href="/assets/img/icons.svg#i-brand"></use></svg></span>
+        <span>Jotsy</span>
+      </a>
+      <div class="header-actions">
+        <button class="icon-btn lang-btn" type="button" data-lang-toggle aria-label="Switch to English" data-en-aria-label="切换到中文">
+          <svg class="i" aria-hidden="true"><use href="/assets/img/icons.svg#i-language"></use></svg>
+          <span data-en="中文">EN</span>
+        </button>
+        <button class="icon-btn theme-btn" type="button" data-theme-toggle aria-label="切换明暗主题" data-en-aria-label="Switch light or dark theme">
+          <svg class="i ic-system" aria-hidden="true"><use href="/assets/img/icons.svg#i-circle-half-stroke"></use></svg>
+          <svg class="i ic-light" aria-hidden="true"><use href="/assets/img/icons.svg#i-sun"></use></svg>
+          <svg class="i ic-dark" aria-hidden="true"><use href="/assets/img/icons.svg#i-moon"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="notfound">
+    <div>
+      <span class="sicon" aria-hidden="true"><b>404</b></span>
+      <h1 class="display" data-en="This page hasn't been written yet">这一页还没写</h1>
+      <p class="lead" data-en="The link may be wrong, or the page has moved. Everything else is right where you left it.">可能是链接有误，或者页面已经搬走了。其他内容都还在原来的地方。</p>
+      <div class="btn-row">
+        <a class="btn btn--filled btn--lg" href="/"><svg class="i" aria-hidden="true"><use href="/assets/img/icons.svg#i-house"></use></svg><span data-en="Back to home">回到首页</span></a>
+        <a class="btn btn--outlined btn--lg" href="/#download"><svg class="i" aria-hidden="true"><use href="/assets/img/icons.svg#i-android"></use></svg><span data-en="Download Jotsy">下载 Jotsy</span></a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -55,7 +55,7 @@ Future<void> _pumpEditor(
 
 void main() {
   testWidgets(
-    'resized image keeps its aspect ratio inside a centered rounded block',
+    'resized image keeps its aspect ratio inside a start-aligned rounded block',
     (tester) async {
       final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
       final controller = quill.QuillController(
@@ -88,10 +88,10 @@ void main() {
       );
       // 宽高只作上限：按 2:1 比例缩进 100 宽内，不会被撑成 100×600 的留白盒子。
       expect(tester.getSize(image), const Size(100, 50));
-      // 独占一行时按块级布局水平居中，而不是贴着行首的行内 WidgetSpan。
+      // 缩小后贴着正文左缘（块级布局，不再居中悬在行中间）。
       expect(
-        tester.getCenter(image).dx,
-        closeTo(tester.getCenter(find.byType(quill.QuillEditor)).dx, 0.5),
+        tester.getTopLeft(image).dx,
+        closeTo(tester.getTopLeft(find.byType(quill.QuillEditor)).dx, 0.5),
       );
       final clip = tester.widget<ClipRRect>(
         find.descendant(
@@ -135,6 +135,38 @@ void main() {
     await _pumpEditor(tester, controller);
 
     expect(find.text('图片文件不存在或无法加载'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a centered paragraph keeps its image centered', (tester) async {
+    final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
+    final controller = quill.QuillController(
+      document: quill.Document.fromJson([
+        {
+          'insert': {'image': source},
+          'attributes': {'style': 'width: 100.0; height: 600.0; '},
+        },
+        {
+          'insert': '\n',
+          'attributes': {'align': 'center'},
+        },
+      ]),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+
+    await _pumpEditor(tester, controller);
+
+    final image = find.descendant(
+      of: find.byType(DiaryEmbeddedImage),
+      matching: find.byType(Image),
+    );
+    // 导入的居中段落仍按段落对齐，只有未设对齐时才靠行首。
+    expect(
+      tester.getCenter(image).dx,
+      closeTo(tester.getCenter(find.byType(quill.QuillEditor)).dx, 0.5),
+    );
     expect(tester.takeException(), isNull);
   });
 }

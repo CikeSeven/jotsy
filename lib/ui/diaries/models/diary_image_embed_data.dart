@@ -2,7 +2,8 @@ import 'dart:convert' show base64Decode;
 import 'dart:io' show File;
 
 import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart' show BoxConstraints;
+import 'package:flutter/rendering.dart'
+    show AlignmentDirectional, BoxConstraints;
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 /// 把图片 embed 上记录的宽高解析为显示上限，而不是强制尺寸。
@@ -36,6 +37,19 @@ BoxConstraints diaryImageEmbedBounds(quill.Node node) {
     maxWidth: width ?? double.infinity,
     maxHeight: height ?? double.infinity,
   );
+}
+
+/// 比列宽窄的正文图片在行内的水平位置：默认靠行首（缩放菜单缩小后应贴着
+/// 正文左缘，而不是悬在中间）；所在行带对齐属性（导入的 HTML 居中/居右段落）
+/// 时从之。上游缩放菜单只写宽高，不写对齐。
+AlignmentGeometry diaryImageEmbedAlignment(quill.Node node) {
+  final line = node.parent;
+  final align = line?.style.attributes[quill.Attribute.align.key]?.value;
+  return switch (align) {
+    'center' => Alignment.center,
+    'right' => Alignment.centerRight,
+    _ => AlignmentDirectional.centerStart,
+  };
 }
 
 double? _parseLength(Object? raw) {

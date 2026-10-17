@@ -17,7 +17,9 @@ import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 ///   未导出，无法在这里直接构造）；
 /// - 只读正文提供 [onImageOpen] 时由这里接管点击：图片作为看图页的共享元素
 ///   来源，点按瞬间抓取画面并交给回调，看图页从图片原位展开；
-/// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]。
+/// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]；比列宽窄的
+///   图片（缩小过或原图就小）靠行首对齐，所在行设了居中/居右时从之，见
+///   [diaryImageEmbedAlignment]。
 class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
   DiaryImageEmbedBuilder({required super.config, this.onImageOpen});
 
@@ -54,10 +56,15 @@ class DiaryImageEmbedBuilder extends QuillEditorImageEmbedBuilder {
       ),
     );
     if (embedContext.inline) return image;
-    // 小图按原尺寸水平居中；heightFactor 防止有界高度下 Center 撑满整行。
+    // 比列宽窄的图片靠行首（与正文文字左缘对齐），不再一律居中；heightFactor
+    // 防止有界高度下 Align 撑满整行。
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Center(heightFactor: 1, child: image),
+      child: Align(
+        alignment: diaryImageEmbedAlignment(embedContext.node),
+        heightFactor: 1,
+        child: image,
+      ),
     );
   }
 }

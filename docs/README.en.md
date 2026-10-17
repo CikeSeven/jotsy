@@ -150,7 +150,7 @@ Jotsy only goes online in these cases, and only when you ask it to:
 | Checking for updates (manual) | GitHub Releases and mirrors | No diary data |
 | Importing cloud notes | The vendor's official website | The sign-in you complete there |
 
-Permissions: internet, microphone (voice recordings), location (optional, for automatic location).
+Permissions: internet, microphone (voice recordings), location (optional, for automatic location). See the full [privacy policy](https://cikeseven.github.io/jotsy/privacy.html).
 
 ## ❓ FAQ
 

@@ -17,11 +17,23 @@ part of 'app_database.dart';
 /// - `updated_at`：列表默认按更新时间倒序排序；
 /// - `created_at`：日历按日范围扫描、“那年今日”按创建时间过滤；
 /// - `capsule_unlock_at`：时间胶囊到期过滤。
+/// - 活跃列表的复合索引：覆盖置顶 + 时间 + id 的常用倒序分页；只索引
+///   未归档、未删除记录，避免为回收站与归档增加不必要的写入和存储成本。
 @TableIndex(name: 'idx_diaries_updated_at', columns: <Symbol>{#updatedAt})
 @TableIndex(name: 'idx_diaries_created_at', columns: <Symbol>{#createdAt})
 @TableIndex(
   name: 'idx_diaries_capsule_unlock_at',
   columns: <Symbol>{#capsuleUnlockAt},
+)
+@TableIndex.sql(
+  'CREATE INDEX idx_diaries_active_updated '
+  'ON diaries (is_pinned DESC, updated_at DESC, id DESC) '
+  'WHERE is_deleted = 0 AND is_archived = 0',
+)
+@TableIndex.sql(
+  'CREATE INDEX idx_diaries_active_created '
+  'ON diaries (is_pinned DESC, created_at DESC, id DESC) '
+  'WHERE is_deleted = 0 AND is_archived = 0',
 )
 class Diaries extends Table {
   IntColumn get id => integer().autoIncrement()();

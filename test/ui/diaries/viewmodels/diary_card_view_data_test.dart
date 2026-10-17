@@ -55,6 +55,38 @@ void main() {
     expect(identical(updated, first), isFalse);
   });
 
+  test('long bodies evict the least recently used text within the budget', () {
+    final body = '字' * (DiaryCardViewData.cacheTextCodeUnitLimit ~/ 3);
+    final a = _diary(id: 'a', contentText: body);
+    final b = _diary(id: 'b', contentText: body);
+    final c = _diary(id: 'c', contentText: body);
+    final first = DiaryCardViewData.of(a);
+    final second = DiaryCardViewData.of(b);
+    // 访问 a 刷新 LRU 次序；第三篇使文本总量超过预算，应先释放 b。
+    expect(identical(DiaryCardViewData.of(a), first), isTrue);
+    DiaryCardViewData.of(c);
+    expect(identical(DiaryCardViewData.of(a), first), isTrue);
+    expect(identical(DiaryCardViewData.of(b), second), isFalse);
+  });
+
+  test(
+    'an oversized entry renders without displacing ordinary cached entries',
+    () {
+      final ordinary = _diary();
+      final cached = DiaryCardViewData.of(ordinary);
+      final huge = _diary(
+        id: 'huge',
+        contentText: '字' * (DiaryCardViewData.cacheTextCodeUnitLimit + 1),
+        cover: '/cover.jpg',
+      );
+      final view = DiaryCardViewData.of(huge);
+      expect(view.previewText, '字' * DiaryCardViewData.previewTextMaxLength);
+      expect(view.previewCover, '/cover.jpg');
+      expect(identical(DiaryCardViewData.of(huge), view), isFalse);
+      expect(identical(DiaryCardViewData.of(ordinary), cached), isTrue);
+    },
+  );
+
   test('truncates long bodies into a single-line preview', () {
     final data = DiaryCardViewData.of(
       _diary(contentText: '${'a' * 300}\nsecond line'),

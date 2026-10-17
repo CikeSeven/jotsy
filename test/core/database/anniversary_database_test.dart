@@ -240,6 +240,16 @@ CREATE TABLE diaries (
         await tableNames(db),
         containsAll(<String>['anniversaries', 'diaries']),
       );
+      final indexes = await db
+          .customSelect("SELECT name FROM sqlite_master WHERE type = 'index'")
+          .get();
+      expect(
+        indexes.map((row) => row.read<String>('name')),
+        containsAll([
+          'idx_diaries_active_updated',
+          'idx_diaries_active_created',
+        ]),
+      );
     });
 
     test('fresh databases have the table', () async {

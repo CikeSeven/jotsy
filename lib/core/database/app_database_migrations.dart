@@ -152,6 +152,13 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     );
   }
 
+  /// v10 只补建列表排序索引，不重写日记与标签；定义复用生成的 schema，
+  /// 确保新库、v9 升级与 v1 重建分支使用完全相同的列顺序和过滤条件。
+  Future<void> _migrateAddDiaryListIndexes(Migrator migrator) async {
+    await migrator.createIndex(idxDiariesActiveUpdated);
+    await migrator.createIndex(idxDiariesActiveCreated);
+  }
+
   /// Imports performed by releases before schema 8 restored image files into
   /// this installation but kept the exporting app's absolute paths in rows.
   /// Rebind only embedded media whose extracted target exists so external

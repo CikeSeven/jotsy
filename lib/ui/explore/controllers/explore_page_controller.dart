@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/settings_service.dart';
 import 'explore_content_extractor.dart';
+import 'explore_trend_builder.dart';
 import '../models/explore_view_data.dart';
 import '../../../utils/text_stats.dart';
 
@@ -38,13 +39,11 @@ class ExplorePageController {
     final onThisDayDiaries = _pickOnThisDayList(diaries, now: now, l10n: l10n);
     final fallbackPrompt = fallbackPrompts[now.day % fallbackPrompts.length];
 
-    final moodWeights30 = _buildMoodSeries(
+    final trends = const ExploreTrendBuilder().build(
       diaries,
-      days: 30,
       now: now,
       moodOptions: moodOptions,
     );
-    final energyValues7 = _buildEnergySeries(diaries, days: 7, now: now);
     final tagUsages = _buildTagCloud(diaries, orderedTagIds: orderedTagIds);
     final mediaItems = _buildMediaGallery(diaries);
 
@@ -52,8 +51,8 @@ class ExplorePageController {
       stats: stats,
       onThisDayDiaries: onThisDayDiaries,
       fallbackPrompt: fallbackPrompt,
-      moodWeights30: moodWeights30,
-      energyValues7: energyValues7,
+      moodWeights30: trends.moodWeights30,
+      energyValues7: trends.energyValues7,
       tagUsages: tagUsages.take(18).toList(growable: false),
       mediaItems: mediaItems.take(12).toList(growable: false),
     );
@@ -82,12 +81,18 @@ class ExplorePageController {
               ),
         );
 
-    final daySet = diaries
-        .map((item) => DateUtils.dateOnly(item.createdAt.toLocal()))
-        .toSet();
+    // 连续记录只需“年月日”键，避免为全历史逐条构造本地零点（时区换算
+    // 与 DateTime 分配）。只对实际回溯的少数天做零点校验，保持原先按 24h
+    // 回溯时在夏令时边界上的匹配口径，不改变已展示的连续天数。
+    int dayKey(DateTime date) =>
+        date.year * 10000 + date.month * 100 + date.day;
+    final daySet = <int>{
+      for (final item in diaries) dayKey(item.createdAt.toLocal()),
+    };
     var streak = 0;
     var probe = DateUtils.dateOnly(now);
-    while (daySet.contains(probe)) {
+    while (probe == DateUtils.dateOnly(probe) &&
+        daySet.contains(dayKey(probe))) {
       streak += 1;
       probe = probe.subtract(const Duration(days: 1));
     }
@@ -153,80 +158,6 @@ class ExplorePageController {
     return l10n.formatFullDate(localCreated);
   }
 
-  List<double?> _buildMoodSeries(
-    List<ExploreDiaryOverview> diaries, {
-    required int days,
-    required DateTime now,
-    required List<String> moodOptions,
-  }) {
-    return _buildDailySeries(
-      diaries,
-      days: days,
-      now: now,
-      extractor: (context) {
-        final mood = context?['moodEmoji']?.toString().trim();
-        if (mood == null) {
-          return null;
-        }
-        return SettingsService.moodScore(mood, moodOptions);
-      },
-    );
-  }
-
-  List<double?> _buildEnergySeries(
-    List<ExploreDiaryOverview> diaries, {
-    required int days,
-    required DateTime now,
-  }) {
-    return _buildDailySeries(
-      diaries,
-      days: days,
-      now: now,
-      extractor: (context) {
-        final raw = context?['energyLevel'];
-        return switch (raw) {
-          num value => value.toDouble(),
-          String value => double.tryParse(value),
-          _ => null,
-        };
-      },
-    );
-  }
-
-  /// 通用“按日聚合平均值”序列构建器。
-  ///
-  /// 用于情绪和精力这类“同一天多条记录需要均值化”的趋势数据。
-  List<double?> _buildDailySeries(
-    List<ExploreDiaryOverview> diaries, {
-    required int days,
-    required DateTime now,
-    required double? Function(Map<String, dynamic>? context) extractor,
-  }) {
-    final buckets = <DateTime, List<double>>{};
-    for (final item in diaries) {
-      final context = contentExtractor.parseContext(item.metadata);
-      final value = extractor(context);
-      if (value == null) {
-        continue;
-      }
-      final day = DateUtils.dateOnly(item.createdAt.toLocal());
-      final bucket = buckets.putIfAbsent(day, () => <double>[]);
-      bucket.add(value);
-    }
-
-    final result = <double?>[];
-    for (int i = days - 1; i >= 0; i--) {
-      final day = DateUtils.dateOnly(now.subtract(Duration(days: i)));
-      final values = buckets[day];
-      if (values == null || values.isEmpty) {
-        result.add(null);
-        continue;
-      }
-      result.add(values.reduce((a, b) => a + b) / values.length);
-    }
-    return result;
-  }
-
   /// 标签频次统计 + 最近关联日记定位。
   ///
   /// 排序策略：
@@ -236,31 +167,17 @@ class ExplorePageController {
     List<ExploreDiaryOverview> diaries, {
     required List<int> orderedTagIds,
   }) {
-    final tagMap = <int, ExploreTagUsage>{};
+    // 每个标签只保留一个可变计数器，最终才生成展示模型。全库统计可能有
+    // 数万条关系，逐条 copyWith 会制造同等数量的短命对象并触发 GC。
+    final tagMap = <int, _TagUsageAccumulator>{};
     for (final item in diaries) {
       for (final tag in item.tags) {
         final previous = tagMap[tag.id];
         if (previous == null) {
-          tagMap[tag.id] = ExploreTagUsage(
-            id: tag.id,
-            name: tag.name,
-            color: tag.color,
-            count: 1,
-            latestDiaryId: item.diaryId,
-            latestAt: item.updatedAt,
-            maxCount: 1,
-          );
+          tagMap[tag.id] = _TagUsageAccumulator(tag, item);
           continue;
         }
-
-        final shouldReplaceLatest = item.updatedAt.isAfter(previous.latestAt);
-        tagMap[tag.id] = previous.copyWith(
-          count: previous.count + 1,
-          latestDiaryId: shouldReplaceLatest
-              ? item.diaryId
-              : previous.latestDiaryId,
-          latestAt: shouldReplaceLatest ? item.updatedAt : previous.latestAt,
-        );
+        previous.add(item);
       }
     }
 
@@ -269,12 +186,12 @@ class ExplorePageController {
     };
     final usages = tagMap.values.toList(growable: false)
       ..sort((a, b) {
-        final rankA = orderRank[a.id] ?? 1 << 20;
-        final rankB = orderRank[b.id] ?? 1 << 20;
+        final rankA = orderRank[a.tag.id] ?? 1 << 20;
+        final rankB = orderRank[b.tag.id] ?? 1 << 20;
         if (rankA != rankB) {
           return rankA.compareTo(rankB);
         }
-        return a.name.compareTo(b.name);
+        return a.tag.name.compareTo(b.tag.name);
       });
     final maxCount = usages.isEmpty
         ? 1
@@ -284,7 +201,17 @@ class ExplorePageController {
                 item.count > currentMax ? item.count : currentMax,
           );
     return usages
-        .map((item) => item.copyWith(maxCount: maxCount))
+        .map(
+          (item) => ExploreTagUsage(
+            id: item.tag.id,
+            name: item.tag.name,
+            color: item.tag.color,
+            count: item.count,
+            latestDiaryId: item.latestDiaryId,
+            latestAt: item.latestAt,
+            maxCount: maxCount,
+          ),
+        )
         .toList(growable: false);
   }
 
@@ -309,5 +236,24 @@ class ExplorePageController {
     }
     items.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     return items;
+  }
+}
+
+class _TagUsageAccumulator {
+  _TagUsageAccumulator(this.tag, ExploreDiaryOverview diary)
+    : latestDiaryId = diary.diaryId,
+      latestAt = diary.updatedAt;
+
+  final Tag tag;
+  int count = 1;
+  String latestDiaryId;
+  DateTime latestAt;
+
+  void add(ExploreDiaryOverview diary) {
+    count += 1;
+    if (diary.updatedAt.isAfter(latestAt)) {
+      latestDiaryId = diary.diaryId;
+      latestAt = diary.updatedAt;
+    }
   }
 }

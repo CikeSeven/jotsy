@@ -8,6 +8,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('SettingsService mood options codec', () {
+    test('batch score maps preserve normalized and legacy symbol scores', () {
+      for (final options in <List<String>>[
+        SettingsService.defaultMoodOptions,
+        [],
+        [' custom ', '', 'custom', '😊'],
+      ]) {
+        final scores = SettingsService.buildMoodScoreMap(options);
+        for (final entry in scores.entries) {
+          expect(entry.value, SettingsService.moodScore(entry.key, options));
+        }
+        expect(scores['unknown'], isNull);
+      }
+    });
     test('normalizes to exactly ten mood slots', () {
       final options = SettingsService.normalizeMoodOptions(<String>[
         ' 😡 ',

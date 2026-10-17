@@ -23,6 +23,8 @@ void main() {
     'idx_diaries_created_at',
     'idx_diaries_capsule_unlock_at',
     'idx_diary_tags_tag_id',
+    'idx_diaries_active_updated',
+    'idx_diaries_active_created',
   };
 
   /// 从 sqlite_master 读取当前库中所有用户定义索引名。
@@ -65,10 +67,10 @@ void main() {
     expect(names.length, names.toSet().length, reason: '索引名不应重复');
   });
 
-  test('旧库（v6，无索引）升级到 v8 后补建全部性能索引', () async {
+  test('旧库（v6，无索引）升级后补建全部性能索引', () async {
     // 在磁盘临时文件上手工搭建一个 schemaVersion=6 的旧库：
     // 仅建出迁移所需的两张表（无任何性能索引），并写入 user_version=6，
-    // 然后用当前 AppDatabase 打开，触发 onUpgrade(6 -> 8)。
+    // 然后用当前 AppDatabase 打开，触发 onUpgrade。
     final tempDir = await Directory.systemTemp.createTemp('jotsy_mig_test');
     addTearDown(() => tempDir.delete(recursive: true));
     final documentsDirectory = await Directory(
@@ -145,10 +147,64 @@ CREATE TABLE diary_tags (
     addTearDown(db.close);
 
     final indexes = await readIndexNames(db);
-    expect(
-      indexes,
-      containsAll(expectedIndexes),
-      reason: 'v6 -> v8 升级应通过 _migrateAddPerformanceIndexes 补建全部索引',
-    );
+    expect(indexes, containsAll(expectedIndexes), reason: '旧库升级应补建全部索引');
+  });
+
+  test('v9 upgrade adds list indexes and preserves all stored data', () async {
+    final root = await Directory.systemTemp.createTemp('jotsy_v9_indexes');
+    addTearDown(() => root.delete(recursive: true));
+    final file = File('${root.path}/v9.sqlite');
+    final original = AppDatabase.forTesting(NativeDatabase(file));
+    late DiaryWithTags before;
+    late Anniversary anniversary;
+    try {
+      final tag = await original.createTag(name: '保留标签', color: 0xff225588);
+      final id = await original.createDiary(
+        title: '保留正文与封面',
+        contentDocJson: '[{"insert":"正文\\n"}]',
+        contentText: '正文',
+        cover: '/private/cover.jpg',
+        metadataJson: '{"context":{"moodEmoji":"😊"}}',
+        tagIds: [tag],
+      );
+      await original.archiveDiary(id);
+      await original.pinDiary(id);
+      before = (await original.getDiaryWithTagsByDiaryId(id))!;
+      await original.createAnniversary(
+        title: '保留纪念日',
+        baseDate: DateTime(2026, 10, 17),
+        recurrence: AnniversaryRecurrence.solarYearly,
+        linkedDiaryId: id,
+      );
+      anniversary = (await original.watchAnniversaries().first).single;
+    } finally {
+      await original.close();
+    }
+    // v9 的表结构与当前版本相同，仅缺少两项列表索引。
+    final legacy = sqlite3.open(file.path);
+    legacy.execute('DROP INDEX idx_diaries_active_updated');
+    legacy.execute('DROP INDEX idx_diaries_active_created');
+    legacy.execute('PRAGMA user_version = 9');
+    legacy.close();
+
+    // 第二次打开已经是当前版本，验证重开不会重复执行索引迁移。
+    for (var attempt = 0; attempt < 2; attempt++) {
+      final migrated = AppDatabase.forTesting(NativeDatabase(file));
+      try {
+        expect(await readIndexNames(migrated), containsAll(expectedIndexes));
+        final after = (await migrated.getDiaryWithTagsByDiaryId(
+          before.diary.diaryId,
+        ))!;
+        expect(after.diary, before.diary);
+        expect(after.tags, before.tags);
+        expect((await migrated.watchAnniversaries().first).single, anniversary);
+        final version = await migrated
+            .customSelect('PRAGMA user_version')
+            .getSingle();
+        expect(version.read<int>('user_version'), migrated.schemaVersion);
+      } finally {
+        await migrated.close();
+      }
+    }
   });
 }

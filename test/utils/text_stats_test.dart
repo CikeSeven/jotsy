@@ -33,6 +33,26 @@ void main() {
     expect(TextStats.countWords('it’s'), 1);
   });
 
+  test('long punctuation runs preserve Chinese and word boundaries', () {
+    for (final run in <String>['·—―‘’“”…', '·—―‘’“”…' * 15000]) {
+      final length = run.runes.length;
+      expect(TextStats.countWords(run), 0);
+      expect(TextStats.countWords('${run}English'), 1);
+      expect(TextStats.countWords('English$run'), 1);
+      expect(TextStats.countWords('English${run}word'), 1);
+      expect(TextStats.countWords('$run中'), length + 1);
+      expect(TextStats.countWords('中$run'), length + 1);
+      expect(TextStats.countWords('中$run中'), length + 2);
+      expect(TextStats.countWords('English$run中'), length + 2);
+      expect(TextStats.countWords('中${run}English'), length + 2);
+      expect(TextStats.countWords('中 $run English'), 2);
+      // 扩展区汉字由两个 UTF-16 码元组成，仍按一个汉字计算。
+      expect(TextStats.countWords('$run𠀀'), length + 1);
+      expect(TextStats.countWords('ＡＢＣ$run中'), length + 2);
+      expect(TextStats.countWords('中$run\uFFFC English'), length + 2);
+    }
+  });
+
   test('whitespace, line breaks and embed placeholders are not counted', () {
     final stats = TextStats.of('第一段\n\n￼\n  second line　！');
     expect(stats.words, 6);

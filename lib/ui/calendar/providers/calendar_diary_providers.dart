@@ -5,27 +5,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../../utils/provider_retention.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
 
+/// 月份、年份、日期与正文首图查询只保留最近使用的实例：family 的参数随
+/// 翻页/选日增长，永久保活会把每个访问过的日期及其正文留在内存。短暂保活
+/// 仍能让来回切换直接命中；当前仍被监听的日期不受释放期限影响。
+///
 /// 某个月份的日历打点流（未删除，含归档）。
-final calendarMonthMarkersProvider =
-    StreamProvider.family<List<DiaryCalendarMarker>, DateTime>((ref, month) {
+final calendarMonthMarkersProvider = StreamProvider.autoDispose
+    .family<List<DiaryCalendarMarker>, DateTime>((ref, month) {
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       final normalizedMonth = DateTime(month.year, month.month);
       return db.watchDiaryMarkersByMonth(normalizedMonth);
     });
 
 /// 某个日期的日记列表流（按 createdAt 归类，未删除，含归档）。
-final calendarDayDiariesProvider =
-    StreamProvider.family<List<DiaryWithTags>, DateTime>((ref, day) {
+final calendarDayDiariesProvider = StreamProvider.autoDispose
+    .family<List<DiaryWithTags>, DateTime>((ref, day) {
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       final normalizedDay = DateUtils.dateOnly(day);
       return db.watchDiariesCreatedOnDay(normalizedDay);
     });
 
 /// 某一年的日历打点流（年视图用；未删除，含归档）。
-final calendarYearMarkersProvider =
-    StreamProvider.family<List<DiaryCalendarMarker>, int>((ref, year) {
+final calendarYearMarkersProvider = StreamProvider.autoDispose
+    .family<List<DiaryCalendarMarker>, int>((ref, year) {
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       return db.watchDiaryMarkersInRange(DateTime(year), DateTime(year + 1));
     });
@@ -45,8 +53,9 @@ final calendarRangeMarkersProvider = StreamProvider.autoDispose
 /// 只回看 [calendarOnThisDayYearSpan] 年，向后只到今年（之后的年份只可能有
 /// 未解封的胶囊，展示层也会过滤掉）。2 月 29 日只在闰年有对应日期，平年
 /// 跳过而不是顺延到 3 月 1 日。
-final calendarOnThisDayProvider =
-    StreamProvider.family<List<DiaryWithTags>, DateTime>((ref, day) {
+final calendarOnThisDayProvider = StreamProvider.autoDispose
+    .family<List<DiaryWithTags>, DateTime>((ref, day) {
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       return db.watchDiariesCreatedInRanges(
         calendarOnThisDayRanges(day, now: DateTime.now()),
@@ -86,8 +95,9 @@ List<(DateTime, DateTime)> calendarOnThisDayRanges(
 /// 只有照片样式会 watch 它，其他样式不为解析正文付出任何代价。月份内任意
 /// 日记变动都会让查询重新推送整月候选，解析结果按 `(diaryId, updatedAt)`
 /// 缓存，未改动的日记不再重复 jsonDecode 正文。
-final calendarMonthInlineImagesProvider =
-    StreamProvider.family<Map<String, String>, DateTime>((ref, month) {
+final calendarMonthInlineImagesProvider = StreamProvider.autoDispose
+    .family<Map<String, String>, DateTime>((ref, month) {
+      retainQueryWhileRecentlyUsed(ref);
       final db = ref.watch(appDatabaseProvider);
       return db
           .watchDiaryImageCandidatesInRange(

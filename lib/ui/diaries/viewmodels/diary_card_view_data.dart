@@ -19,7 +19,8 @@ class DiaryCardViewData {
   DiaryCardViewData._(
     this._explicitCover,
     this._contentJson,
-    this._contentText, {
+    this._contentText,
+    this._retainedTextUnits, {
     required this.moodEmoji,
     required this.weather,
     required this.weatherIconCode,
@@ -38,9 +39,18 @@ class DiaryCardViewData {
       return cached;
     }
     final data = DiaryCardViewData._parse(diary);
+    // 条目数不能代表内存成本：600 篇长文或内嵌 data URI 可远超可用内存。
+    // 以保留的原始文本总量再设一层预算；单篇超预算仍正常展示，但不长期缓存，
+    // 也不为它挤掉全部普通条目。这里只控制派生数据缓存，不改动日记内容。
+    if (data._retainedTextUnits > cacheTextCodeUnitLimit) {
+      return data;
+    }
     _cache[key] = data;
-    if (_cache.length > _maxEntries) {
-      _cache.remove(_cache.keys.first);
+    _cachedTextUnits += data._retainedTextUnits;
+    while (_cache.length > _maxEntries ||
+        _cachedTextUnits > cacheTextCodeUnitLimit) {
+      final removed = _cache.remove(_cache.keys.first)!;
+      _cachedTextUnits -= removed._retainedTextUnits;
     }
     return data;
   }
@@ -51,6 +61,10 @@ class DiaryCardViewData {
       diary.cover,
       diary.content,
       diary.contentText,
+      diary.content.length +
+          diary.contentText.length +
+          diary.metadata.length +
+          (diary.cover?.length ?? 0),
       moodEmoji: _nonEmptyString(context['moodEmoji']),
       weather: _nonEmptyString(context['weather']),
       weatherIconCode: _nonEmptyString(context['weatherIconCode']),
@@ -67,9 +81,15 @@ class DiaryCardViewData {
   /// 卡片最多展示 2~4 行摘要；超长正文截断后再交给 Text，避免每次排版都
   /// 测量整篇纯文本。
   static const int previewTextMaxLength = 240;
+
+  /// 缓存所保留的原始文本预算（UTF-16 码元）；不含派生对象/图片解码内存。
+  static const int cacheTextCodeUnitLimit = 4 * 1024 * 1024;
   static const int _maxEntries = 600;
   static final LinkedHashMap<String, DiaryCardViewData> _cache =
       LinkedHashMap<String, DiaryCardViewData>();
+  static int _cachedTextUnits = 0;
+
+  final int _retainedTextUnits;
 
   final String? moodEmoji;
   final String? weather;
@@ -143,7 +163,10 @@ class DiaryCardViewData {
   }
 
   /// 测试用：清空缓存，避免用例之间相互影响。
-  static void debugClearCache() => _cache.clear();
+  static void debugClearCache() {
+    _cache.clear();
+    _cachedTextUnits = 0;
+  }
 
   static Map<String, Object?> _decodeContext(String raw) {
     try {

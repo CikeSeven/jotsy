@@ -106,12 +106,12 @@ class TextStats {
   static final RegExp _letterOrDigit = RegExp(r'[\p{L}\p{N}]', unicode: true);
 
   static (int, int) _countWords(String text) {
-    final runes = text.runes.toList(growable: false);
     var cjk = 0;
     var latin = 0;
     var inWord = false;
     var wordHasAlnum = false;
     var previousCjk = false;
+    var pendingPunctuation = 0;
 
     void endWord() {
       if (inWord && wordHasAlnum) {
@@ -121,17 +121,34 @@ class TextStats {
       wordHasAlnum = false;
     }
 
-    for (var i = 0; i < runes.length; i++) {
-      final rune = runes[i];
+    // 共用标点是否算中文只取决于相邻的中文：左侧已经确定时直接计数，
+    // 否则只记连续标点的长度，遇到下一实体字符才结算。逐标点向后找中文
+    // 会让一长串破折号/省略号退化成 O(n²)，也不必为全文复制 rune 列表。
+    for (final rune in text.runes) {
+      if (_isSharedPunctuation(rune)) {
+        if (previousCjk) {
+          cjk += 1;
+        } else {
+          pendingPunctuation += 1;
+        }
+        continue;
+      }
+      final cjkHere = _isCjk(rune);
+      if (pendingPunctuation > 0) {
+        if (cjkHere) {
+          endWord();
+          cjk += pendingPunctuation;
+        } else {
+          // 非中文标点本身没有字母/数字，只影响尚未结束的非中文词边界。
+          inWord = true;
+        }
+        pendingPunctuation = 0;
+      }
       if (_isSpace(rune) || rune == _embed) {
         endWord();
         previousCjk = false;
         continue;
       }
-      final cjkHere =
-          _isCjk(rune) ||
-          (_isSharedPunctuation(rune) &&
-              (previousCjk || _nextSolidIsCjk(runes, i + 1)));
       if (cjkHere) {
         endWord();
         cjk += 1;
@@ -146,18 +163,6 @@ class TextStats {
     }
     endWord();
     return (cjk, latin);
-  }
-
-  /// 跳过连续的共用标点，看下一个字符是不是中文（处理“……中文”开头）。
-  static bool _nextSolidIsCjk(List<int> runes, int start) {
-    for (var i = start; i < runes.length; i++) {
-      final rune = runes[i];
-      if (_isSharedPunctuation(rune)) {
-        continue;
-      }
-      return _isCjk(rune);
-    }
-    return false;
   }
 
   static bool _isLetterOrDigit(int rune) {

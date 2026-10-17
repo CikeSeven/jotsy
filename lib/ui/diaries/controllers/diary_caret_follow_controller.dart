@@ -13,8 +13,12 @@ import 'package:node_diary/ui/diaries/widgets/diary_toolbar_panel_reserve.dart';
 /// 而那个控制器不挂在任何视口上，于是在底部打字时新内容落到键盘与工具栏
 /// 下面。这里改在页面视口里揭示（[revealDiaryCaretAbove]），并把浮层高度算进去。
 ///
-/// - 触发：正文选区变化且正文有焦点；软键盘高度变化并停稳后。只改格式、勾选
-///   待办这类选区不动的变化不滚动，免得把用户正在看的位置拽回光标处。
+/// - 触发：正文选区变化且正文有焦点；软键盘弹起（变高）的每一帧。只改格式、
+///   勾选待办这类选区不动的变化不滚动，免得把用户正在看的位置拽回光标处。
+/// - 软键盘弹起时与 Flutter 自带输入框（EditableText.didChangeMetrics）一样，
+///   每帧高度变大都立即（不带动画）揭示一次，光标随键盘一起被顶上去；不能只等
+///   高度停稳再揭示：真机上键盘动画的节奏各不相同，点了底部的字、键盘弹起后
+///   那一行仍会留在键盘下面。停稳后再补一次，校正最后一帧的布局。
 /// - 揭示哪一端：折叠的光标揭示光标；选区只有一端在动（键盘“选择”模式、拖动
 ///   手柄）时揭示在动的那端；两端同时变（全选、双击选词）不滚动。
 /// - 时机：同一帧内的多次变化合并为一次，放到帧末执行，此时新的一行已布局、
@@ -35,16 +39,19 @@ class DiaryCaretFollowController {
   /// 视口底部当前被浮层盖住的高度，与正文滚动容器的底部占位同源。
   final double Function() coveredHeight;
 
-  /// 揭示滚动的时长（经 ExpressiveMotion 解析，减少动画时为 0）。
+  /// 打字、移动选区时揭示滚动的时长（经 ExpressiveMotion 解析，减少动画时
+  /// 为 0）。软键盘弹起时的揭示不用它：每帧跟随键盘，再加动画只会落后一拍。
   final Duration Function() revealDuration;
 
-  /// 软键盘高度逐帧变化、还可能回弹，停稳后再揭示一次（与 Quill 自身对键盘
+  /// 软键盘高度逐帧变化、还可能回弹，停稳后再补一次揭示（与 Quill 自身对键盘
   /// 高度的去抖一致）。这是去抖计时，不是动画时长。
   static const Duration _keyboardSettleDelay = Duration(milliseconds: 100);
 
   quill.QuillController? _controller;
   TextSelection? _lastSelection;
   TextPosition? _pendingTarget;
+  // 同一帧里只要有一次来自键盘弹起，这一帧的揭示就不带动画。
+  bool _pendingImmediate = false;
   bool _revealScheduled = false;
   Timer? _keyboardSettleTimer;
   double? _lastKeyboardInset;
@@ -96,31 +103,36 @@ class DiaryCaretFollowController {
     return null;
   }
 
-  /// 页面 didChangeMetrics 时传入当前软键盘高度。弹起或改变高度后停稳再揭示
-  /// 光标；收起键盘不滚动。
+  /// 页面 didChangeMetrics 时传入当前软键盘高度（键盘动画期间逐帧调用）。
+  /// 变高的每一帧立即揭示光标，停稳后再补一次；收起或变矮时不滚动。
   void handleKeyboardInset(double inset) {
+    final previous = _lastKeyboardInset ?? 0;
     if (inset == _lastKeyboardInset) {
       return;
     }
     _lastKeyboardInset = inset;
     _keyboardSettleTimer?.cancel();
-    if (inset <= 0) {
+    if (inset <= previous) {
       return;
     }
-    _keyboardSettleTimer = Timer(_keyboardSettleDelay, () {
-      final selection = _controller?.selection;
-      if (_disposed ||
-          selection == null ||
-          !selection.isValid ||
-          !focusNode.hasFocus) {
-        return;
-      }
-      _scheduleReveal(selection.extent);
-    });
+    _revealCaretNow();
+    _keyboardSettleTimer = Timer(_keyboardSettleDelay, _revealCaretNow);
   }
 
-  void _scheduleReveal(TextPosition target) {
+  void _revealCaretNow() {
+    final selection = _controller?.selection;
+    if (_disposed ||
+        selection == null ||
+        !selection.isValid ||
+        !focusNode.hasFocus) {
+      return;
+    }
+    _scheduleReveal(selection.extent, immediate: true);
+  }
+
+  void _scheduleReveal(TextPosition target, {bool immediate = false}) {
     _pendingTarget = target;
+    _pendingImmediate = _pendingImmediate || immediate;
     if (_revealScheduled) {
       return;
     }
@@ -134,7 +146,9 @@ class DiaryCaretFollowController {
   void _revealPending() {
     _revealScheduled = false;
     final target = _pendingTarget;
+    final immediate = _pendingImmediate;
     _pendingTarget = null;
+    _pendingImmediate = false;
     if (_disposed || target == null || !focusNode.hasFocus) {
       return;
     }
@@ -142,7 +156,7 @@ class DiaryCaretFollowController {
       editorKey,
       position: target,
       coveredHeight: coveredHeight(),
-      duration: revealDuration(),
+      duration: immediate ? Duration.zero : revealDuration(),
     );
   }
 

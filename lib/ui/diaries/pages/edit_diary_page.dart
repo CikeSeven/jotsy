@@ -93,6 +93,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     with WidgetsBindingObserver {
   static const double _floatingToolbarReservedSpace = 56.0;
   static const double _recordingPanelReservedSpace = 310.0;
+  // 键盘弹起时光标与悬浮工具栏之间留出的空隙：光标贴着工具栏时下一行没有
+  // 余地、读起来像被压住。底部占位同样加上它，最后一行才能被顶到这么高。
+  static const double _caretToolbarClearance = 40.0;
 
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
@@ -336,8 +339,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     }
   }
 
-  /// 正文滚动容器的底部占位，也就是视口底部被浮层盖住的部分：悬浮工具栏/
-  /// 录音面板优先；否则编辑模式按元数据面板展开进度在 140~460 之间插值。
+  /// 正文滚动容器的底部占位，也就是视口底部被浮层盖住、光标要让开的部分：
+  /// 悬浮工具栏（连同光标上方的空隙）/录音面板优先；否则编辑模式按元数据
+  /// 面板展开进度在 140~460 之间插值。
   double _editorBottomSpacer(
     double panelProgress, {
     required bool showFloatingToolbar,
@@ -345,7 +349,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (showFloatingToolbar) {
       return _recordingPanelOpen
           ? _recordingPanelReservedSpace
-          : _floatingToolbarReservedSpace;
+          : _floatingToolbarReservedSpace + _caretToolbarClearance;
     }
     if (!_isEditEntry) {
       return 16.0;
@@ -950,8 +954,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       revealDiaryCaretAbove(
         _quillEditorKey,
         position: selection.extent,
-        // 被遮住的高度 = 工具栏一排及其底部留白（与平时的正文避让一致）+ 面板。
-        coveredHeight: _floatingToolbarReservedSpace + extent,
+        // 被遮住的高度 = 工具栏一排、底部留白与光标空隙（与平时的正文避让
+        // 一致）+ 面板。
+        coveredHeight: _editorBottomCover(),
         duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
       );
     });

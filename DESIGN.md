@@ -221,7 +221,7 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
   - 右侧按钮：主色加粗文本按钮（确定/保存）；
   - 危险动作：右侧按钮使用 `colorScheme.error`。
   - 不可撤销的覆盖（导入覆盖本机数据）：严重警告弹窗——error 色警示图标、`errorContainer` 底色的后果说明块（逐项列出将被替换的数据与数量）、先备份的建议；确认键须勾选“我已了解”且 5 秒倒计时结束后才可点。其前一步的导入方式面板默认选中安全的“合并”，危险选项标题常驻 error 色、选中时底色为 `errorContainer`。
-- **弹出菜单（`ExpressiveMenuButton` / `ExpressiveMenuAnchor` / `ExpressiveMenuItem`）**：内容少的操作（约 4 项以内、单行文字的动作）用锚定弹出菜单；项目多、需要说明文字、预览或分组时用底部面板（如预览页“更多”）。编辑页顶栏、模板行、“我的样式”列表、定位精度选择与“这天拍的照片”长按设封面都用它，禁止 `PopupMenuButton` / `showMenu` / SDK `MenuAnchor`。
+- **弹出菜单（`ExpressiveMenuButton` / `ExpressiveMenuAnchor` / `ExpressiveMenuItem`）**：内容少的操作（约 4 项以内、单行文字的动作）用锚定弹出菜单；项目多、需要说明文字、预览或分组时用底部面板（如预览页“更多”）。编辑页顶栏、纪念日详情页“更多”（置顶 / 删除）、模板行、“我的样式”列表、定位精度选择与“这天拍的照片”长按设封面都用它，禁止 `PopupMenuButton` / `showMenu` / SDK `MenuAnchor`。
   - 表面：`surfaceContainer`、无着色、elevation 2、28 圆角、内边距 8；宽度取内容固有宽度，最小 176、最大屏宽 − 32，超高时内部滚动。
   - 菜单项：最小高 48、左右内边距 16、图标与文字间距 12；前置 16px `FaIcon`（`onSurfaceVariant`）+ `bodyMedium` 文字（`onSurface`）；静止圆角 20、按下收紧到 12（`fast`）；`destructive` 文字与图标为 `error`。
   - 定位：默认 `ExpressiveMenuPlacement.end`（菜单结束边对齐触发控件结束边，适合顶栏与行尾 ⋮），`start` 用于行首文本入口；落在触发控件下方 4dp，放不下时翻到上方，夹在安全区内留 8dp。

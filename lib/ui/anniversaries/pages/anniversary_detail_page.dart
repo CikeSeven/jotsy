@@ -6,11 +6,11 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../controllers/anniversary_edit_controller.dart';
 import '../controllers/anniversary_navigation.dart';
 import '../models/anniversary_draft.dart';
@@ -70,85 +70,31 @@ class AnniversaryDetailPage extends ConsumerWidget {
         .setAnniversaryLink(row.anniversaryId, pick.diaryId);
   }
 
-  Future<void> _showMore(
+  Future<void> _togglePin(WidgetRef ref, Anniversary row) {
+    return ref
+        .read(appDatabaseProvider)
+        .setAnniversaryPinned(row.anniversaryId, !row.isPinned);
+  }
+
+  /// 确认后删除并返回上一页，撤销提示挂在上一页（这一页已出栈）。
+  Future<void> _delete(
     BuildContext context,
     WidgetRef ref,
     Anniversary row,
   ) async {
-    final l10n = context.l10n;
-    final colorScheme = Theme.of(context).colorScheme;
     final database = ref.read(appDatabaseProvider);
-    final action = await showModalBottomSheet<String>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
-          ? AnimationStyle.noAnimation
-          : null,
-      builder: (BuildContext sheetContext) => SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.s,
-            0,
-            AppSpacing.s,
-            AppSpacing.l,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                leading: FaIcon(
-                  FontAwesomeIcons.thumbtack,
-                  size: 16,
-                  color: colorScheme.primary,
-                ),
-                title: Text(
-                  row.isPinned ? l10n.anniversaryUnpin : l10n.anniversaryPin,
-                ),
-                onTap: () => Navigator.of(sheetContext).pop('pin'),
-              ),
-              ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                leading: FaIcon(
-                  FontAwesomeIcons.trashCan,
-                  size: 16,
-                  color: colorScheme.error,
-                ),
-                title: Text(
-                  l10n.anniversaryDelete,
-                  style: TextStyle(color: colorScheme.error),
-                ),
-                onTap: () => Navigator.of(sheetContext).pop('delete'),
-              ),
-            ],
-          ),
-        ),
-      ),
+    final confirmed = await AnniversaryEditController.confirmDelete(
+      context,
+      row.title,
     );
-    if (!context.mounted) return;
-    switch (action) {
-      case 'pin':
-        await database.setAnniversaryPinned(row.anniversaryId, !row.isPinned);
-      case 'delete':
-        final confirmed = await AnniversaryEditController.confirmDelete(
-          context,
-          row.title,
-        );
-        if (!confirmed || !context.mounted) return;
-        final navigator = Navigator.of(context);
-        // 撤销提示挂在上一页：先拿到它的 context，再出栈。
-        final deleted = await database.deleteAnniversary(row.anniversaryId);
-        navigator.pop();
-        final host = navigator.context;
-        if (deleted != null && host.mounted) {
-          unawaited(showAnniversaryDeletedUndo(host, database, deleted));
-        }
+    if (!confirmed || !context.mounted) return;
+    final navigator = Navigator.of(context);
+    // 撤销提示挂在上一页：先拿到它的 context，再出栈。
+    final deleted = await database.deleteAnniversary(row.anniversaryId);
+    navigator.pop();
+    final host = navigator.context;
+    if (deleted != null && host.mounted) {
+      unawaited(showAnniversaryDeletedUndo(host, database, deleted));
     }
   }
 
@@ -175,10 +121,25 @@ class AnniversaryDetailPage extends ConsumerWidget {
               onPressed: () => unawaited(_edit(context, ref, row)),
               icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 16),
             ),
-            IconButton(
+            // 只有两项单行动作：用锚定弹出菜单（条目先关菜单再执行动作）。
+            ExpressiveMenuButton(
               tooltip: l10n.anniversaryMoreActions,
-              onPressed: () => unawaited(_showMore(context, ref, row)),
               icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 16),
+              items: <Widget>[
+                ExpressiveMenuItem(
+                  leadingIcon: const FaIcon(FontAwesomeIcons.thumbtack),
+                  onPressed: () => unawaited(_togglePin(ref, row)),
+                  child: Text(
+                    row.isPinned ? l10n.anniversaryUnpin : l10n.anniversaryPin,
+                  ),
+                ),
+                ExpressiveMenuItem(
+                  leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
+                  destructive: true,
+                  onPressed: () => unawaited(_delete(context, ref, row)),
+                  child: Text(l10n.anniversaryDelete),
+                ),
+              ],
             ),
           ],
         ],

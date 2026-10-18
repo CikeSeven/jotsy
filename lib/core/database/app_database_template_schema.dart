@@ -1,5 +1,8 @@
 part of 'app_database.dart';
 
+/// 内置模板 id 的前缀；用户模板的 id 是 UUID，永远不会以它开头。
+const String builtInDiaryTemplateIdPrefix = 'builtin.';
+
 /// 用户自建的日记模板，每个模板一行；内置模板由 ARB 文案在运行时编译，
 /// 不落库。
 ///

@@ -7188,5 +7188,23 @@
   "diarySearchPreviewHint": "在 Jotsy 中搜索",
   "@diarySearchPreviewHint": {
     "description": "首页顶栏搜索条的提示文字。"
+  },
+  "backupOverwriteAllTemplates": "{count} 个日记模板",
+  "@backupOverwriteAllTemplates": {
+    "description": "覆盖全部数据的警告条目：将被删除的本机自建日记模板数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportTemplateMergeResult": "日记模板：新增 {added} 个",
+  "@backupImportTemplateMergeResult": {
+    "description": "合并导入结果的附加行：新增的日记模板数（本机已有的模板不会被替换）。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
   }
 }

@@ -40,6 +40,10 @@ mixin _AppDatabaseTemplateOps on _$AppDatabase {
     required String payload,
     DateTime? now,
   }) {
+    if (templateId != null &&
+        templateId.startsWith(builtInDiaryTemplateIdPrefix)) {
+      throw ArgumentError.value(templateId, 'templateId', '内置模板不能写入数据库');
+    }
     return transaction(() async {
       final id = templateId ?? _newBusinessUuid();
       final timestamp = now ?? DateTime.now();

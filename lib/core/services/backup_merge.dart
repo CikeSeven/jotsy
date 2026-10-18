@@ -19,6 +19,9 @@ import 'backup_payload.dart';
 ///   写入的日记用到的标签，跳过的日记不会把本机已改名或删除的标签带回来；
 /// - 纪念日按 anniversaryId 匹配：本机没有的新增，本机已有的按导入方式保留
 ///   或替换；关联的日记存业务 id，日记换了本地 id 也不影响；
+/// - 日记模板按 templateId 匹配：两种合并方式都只新增本机没有的模板，接在
+///   “我的模板”最后，**从不覆盖**本机已有的模板——模板是写作习惯的配置，
+///   本机那份往往是刻意改过的；只有覆盖全部恢复才整表换掉；
 /// - 媒体：只搬运实际写入的日记引用到的文件，统一放进各托管目录下的新批次
 ///   子目录（`<托管目录>/import_…/<原相对路径>`），不覆盖、不移动本机已有
 ///   文件；
@@ -144,6 +147,7 @@ class BackupMerge {
       payload.anniversaries,
       mode,
     );
+    final addedTemplates = await _mergeTemplates(db, payload.diaryTemplates);
 
     return BackupImportResult(
       mode: mode,
@@ -153,7 +157,38 @@ class BackupMerge {
       addedAnniversaries: anniversaries.added,
       replacedAnniversaries: anniversaries.replaced,
       skippedAnniversaries: anniversaries.skipped,
+      addedTemplates: addedTemplates,
     );
+  }
+
+  /// 本机没有的模板按文件中的顺序接在本机最后，返回新增个数；本机已有的
+  /// 同一模板保持不动（与导入方式无关）。
+  Future<int> _mergeTemplates(
+    AppDatabase db,
+    List<DiaryTemplateRow> incoming,
+  ) async {
+    if (incoming.isEmpty) return 0;
+    final local = await db.getDiaryTemplates();
+    final localIds = local.map((row) => row.templateId).toSet();
+    var nextOrder = local.isEmpty
+        ? 0
+        : local.map((row) => row.sortOrder).reduce((a, b) => a > b ? a : b) + 1;
+    final added =
+        incoming.where((row) => !localIds.contains(row.templateId)).toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    for (final row in added) {
+      await db
+          .into(db.diaryTemplates)
+          .insert(
+            row
+                .toCompanion(false)
+                .copyWith(
+                  id: const Value.absent(),
+                  sortOrder: Value(nextOrder++),
+                ),
+          );
+    }
+    return added.length;
   }
 
   /// 纪念日并入本机：本机已有的按 [mode] 跳过或整行替换（保留本机 id），

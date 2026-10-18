@@ -5574,4 +5574,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diarySearchPreviewHint => 'Search in Jotsy';
+
+  @override
+  String backupOverwriteAllTemplates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count diary templates',
+      one: '1 diary template',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportTemplateMergeResult(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Templates: $added added',
+      one: 'Templates: 1 added',
+    );
+    return '$_temp0';
+  }
 }

@@ -18,6 +18,7 @@ class BackupPayload {
     required this.diaryTags,
     this.anniversaries = const <Anniversary>[],
     this.diaryDrafts = const <DiaryDraftRow>[],
+    this.diaryTemplates = const <DiaryTemplateRow>[],
     this.settings,
   });
 
@@ -31,6 +32,10 @@ class BackupPayload {
   /// 草稿箱（schema v11 起）。更早的完整备份只在设置里带一份新建草稿
   /// （`createDiaryDraftRaw`），解析时转成一行；日记包没有草稿。
   final List<DiaryDraftRow> diaryDrafts;
+
+  /// 用户自建的日记模板（schema v12 起）。旧备份没有这张表，解析为空列表；
+  /// 日记包不带模板。内置模板不落库，id 以 `builtin.` 开头的行一律丢弃。
+  final List<DiaryTemplateRow> diaryTemplates;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -93,6 +98,18 @@ class BackupPayload {
                   })
                   .toList(growable: false)
             : _legacyDraftRows(settings as Map<String, dynamic>?),
+        diaryTemplates: _optionalRows(database, 'diaryTemplates')
+            .map((row) {
+              return DiaryTemplateRow.fromJson({
+                'name': '',
+                'sortOrder': 0,
+                ...row,
+              });
+            })
+            .where(
+              (row) => !row.templateId.startsWith(builtInDiaryTemplateIdPrefix),
+            )
+            .toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -156,6 +173,8 @@ class BackupPayload {
     _unique(anniversaries.map((row) => row.anniversaryId));
     _unique(diaryDrafts.map((row) => row.id));
     _unique(diaryDrafts.map((row) => row.draftId));
+    _unique(diaryTemplates.map((row) => row.id));
+    _unique(diaryTemplates.map((row) => row.templateId));
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -186,6 +205,7 @@ class BackupPayload {
           .toList(growable: false),
       anniversaries: anniversaries,
       diaryDrafts: diaryDrafts,
+      diaryTemplates: diaryTemplates,
       settings: settings,
     );
   }
@@ -222,6 +242,9 @@ class BackupPayload {
         'diaryDrafts': (await database.select(database.diaryDrafts).get())
             .map((row) => row.toJson())
             .toList(),
+        'diaryTemplates': (await database.select(database.diaryTemplates).get())
+            .map((row) => row.toJson())
+            .toList(),
       },
     );
     return {
@@ -234,8 +257,8 @@ class BackupPayload {
 
   /// 日记包载荷：指定日记及其标签与关联，不含应用设置。
   ///
-  /// 也不含纪念日：日记包是“分享这几篇日记”，纪念日属于整本日记，只随完整
-  /// 备份走；关联了这些日记的纪念日留在本机。
+  /// 也不含纪念日与日记模板：日记包是“分享这几篇日记”，纪念日与模板属于
+  /// 整本日记，只随完整备份走；关联了这些日记的纪念日留在本机。
   ///
   /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
   /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行，导出
@@ -308,6 +331,8 @@ class BackupPayload {
       diaryTags: diaryTags,
       anniversaries: anniversaries,
       diaryDrafts: restoredDrafts,
+      // 模板正文只有文字与分隔线，没有媒体路径要改写。
+      diaryTemplates: diaryTemplates,
       settings: settings,
     );
   }
@@ -347,6 +372,7 @@ class BackupPayload {
     await database.delete(database.tags).go();
     await database.delete(database.anniversaries).go();
     await database.delete(database.diaryDrafts).go();
+    await database.delete(database.diaryTemplates).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -369,6 +395,11 @@ class BackupPayload {
       batch.insertAll(
         database.diaryDrafts,
         diaryDrafts.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 模板只按名称引用标签，与其他表都没有外键。
+      batch.insertAll(
+        database.diaryTemplates,
+        diaryTemplates.map((row) => row.toCompanion(false)).toList(),
       );
     });
   }

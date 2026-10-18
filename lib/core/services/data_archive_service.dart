@@ -229,6 +229,7 @@ class DataArchiveService {
           .where((row) => localAnniversaryIds.contains(row.anniversaryId))
           .length,
       localAnniversaryCount: localAnniversaryIds.length,
+      localTemplateCount: await database.countDiaryTemplates(),
     );
   }
 
@@ -324,6 +325,7 @@ class DataArchiveService {
         replacedDiaries: 0,
         skippedDiaries: 0,
         addedAnniversaries: restored.anniversaries.length,
+        addedTemplates: restored.diaryTemplates.length,
       );
     } finally {
       if (cleanup) await _cleanWorkingDirectory(working);

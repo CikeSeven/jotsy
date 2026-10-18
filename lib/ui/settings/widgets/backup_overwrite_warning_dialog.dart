@@ -131,6 +131,11 @@ class _BackupOverwriteWarningDialogState
                           l10n.backupOverwriteAllAnniversaries(
                             widget.preview.localAnniversaryCount,
                           ),
+                        // 模板同理：不含模板的旧备份会清空本机自建模板。
+                        if (widget.preview.localTemplateCount > 0)
+                          l10n.backupOverwriteAllTemplates(
+                            widget.preview.localTemplateCount,
+                          ),
                         l10n.backupOverwriteAllMedia,
                         l10n.backupOverwriteAllSettings,
                       ])

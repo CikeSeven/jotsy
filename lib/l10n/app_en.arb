@@ -7188,5 +7188,23 @@
   "diarySearchPreviewHint": "Search in Jotsy",
   "@diarySearchPreviewHint": {
     "description": "Hint text of the search pill in the home header."
+  },
+  "backupOverwriteAllTemplates": "{count, plural, =1{1 diary template} other{{count} diary templates}}",
+  "@backupOverwriteAllTemplates": {
+    "description": "Bullet in the replace-everything warning: user-made diary templates that will be deleted.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportTemplateMergeResult": "{added, plural, =1{Templates: 1 added} other{Templates: {added} added}}",
+  "@backupImportTemplateMergeResult": {
+    "description": "Extra line of the merge import result: diary templates added (existing ones are never replaced).",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
   }
 }

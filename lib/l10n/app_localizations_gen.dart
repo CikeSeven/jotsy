@@ -9361,6 +9361,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search in Jotsy'**
   String get diarySearchPreviewHint;
+
+  /// Bullet in the replace-everything warning: user-made diary templates that will be deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 diary template} other{{count} diary templates}}'**
+  String backupOverwriteAllTemplates(int count);
+
+  /// Extra line of the merge import result: diary templates added (existing ones are never replaced).
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{Templates: 1 added} other{Templates: {added} added}}'**
+  String backupImportTemplateMergeResult(int added);
 }
 
 class _AppLocalizationsDelegate

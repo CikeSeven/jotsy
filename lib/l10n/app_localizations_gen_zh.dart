@@ -5078,4 +5078,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diarySearchPreviewHint => '在 Jotsy 中搜索';
+
+  @override
+  String backupOverwriteAllTemplates(int count) {
+    return '$count 个日记模板';
+  }
+
+  @override
+  String backupImportTemplateMergeResult(int added) {
+    return '日记模板：新增 $added 个';
+  }
 }

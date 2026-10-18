@@ -28,19 +28,28 @@ Future<BackupImportMode?> chooseBackupImportMode(
 }
 
 /// 导入结果提示：合并说明新增/跳过的篇数，文件带纪念日时另起一行写纪念日
-/// 的统计；覆盖全部沿用各入口原有的成功文案 [replaceAllMessage]（本地导入与
-/// WebDAV 恢复不同）。
+/// 的统计，新增了日记模板时再起一行；覆盖全部沿用各入口原有的成功文案
+/// [replaceAllMessage]（本地导入与 WebDAV 恢复不同）。
 String describeBackupImportResult(
   AppLocalizations l10n,
   BackupImportResult result, {
   required String replaceAllMessage,
 }) {
   final diaries = _describeDiaries(l10n, result, replaceAllMessage);
-  if (result.mode == BackupImportMode.replaceAll ||
-      !result.touchedAnniversaries) {
-    return diaries;
-  }
-  final anniversaries = switch (result.mode) {
+  if (result.mode == BackupImportMode.replaceAll) return diaries;
+  return <String>[
+    diaries,
+    if (result.touchedAnniversaries) _describeAnniversaries(l10n, result),
+    if (result.addedTemplates > 0)
+      l10n.backupImportTemplateMergeResult(result.addedTemplates),
+  ].join('\n');
+}
+
+String _describeAnniversaries(
+  AppLocalizations l10n,
+  BackupImportResult result,
+) {
+  return switch (result.mode) {
     BackupImportMode.mergeOverwrite =>
       l10n.backupImportAnniversaryOverwriteResult(
         result.addedAnniversaries,
@@ -53,7 +62,6 @@ String describeBackupImportResult(
       ),
     _ => l10n.backupImportAnniversaryMergeResult(result.addedAnniversaries),
   };
-  return '$diaries\n$anniversaries';
 }
 
 String _describeDiaries(

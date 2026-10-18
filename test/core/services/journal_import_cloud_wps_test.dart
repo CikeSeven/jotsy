@@ -72,17 +72,32 @@ void main() {
         'paragraph:转义 |*|星号|*| 与 |~|波浪|~',
       ]);
       expect(media, [
-        (key: '0123456789abcdef0123456789abcdef', audio: false),
-        (key: 'fedcba9876543210fedcba9876543210', audio: true),
+        (key: '0123456789abcdef0123456789abcdef', audio: false, name: null),
+        (key: 'fedcba9876543210fedcba9876543210', audio: true, name: null),
       ]);
       expect(
         blocks[6].attachmentId,
         '3eb1bd439947eb762998e566ccc2e099c791118b2f40579cc4f7da2b5061b7f9',
       );
-      expect(
-        () => decodeWpsBody('![x](abc){foo}', onMedia: (_) {}),
-        throwsFormatException,
+    });
+
+    test('keeps notes with unknown media lines and imports them as files', () {
+      final media = <WpsMedia>[];
+      final blocks = decodeWpsBody(
+        '前\n![file](ab-cd){name:报告.pdf;size:12}\n![x](ef){foo}\n后',
+        onMedia: media.add,
       );
+      expect(blocks.map((block) => block.kind), [
+        CloudBlockKind.paragraph,
+        CloudBlockKind.attachment,
+        CloudBlockKind.attachment,
+        CloudBlockKind.paragraph,
+      ]);
+      expect(media, [
+        (key: 'ab/cd', audio: false, name: '报告.pdf'),
+        (key: 'ef', audio: false, name: null),
+      ]);
+      expect(blocks[1].attachmentId, wpsMediaId('ab/cd'));
     });
 
     test('signs S3 requests with AWS Signature V4', () {

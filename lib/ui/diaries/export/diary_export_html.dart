@@ -186,6 +186,8 @@ class DiaryHtmlWriter {
           out.write(
             '<p class="attachment">${_text(labels.mediaLine(block))}</p>\n',
           );
+        case ExportBlockKind.divider:
+          out.write('<hr>\n');
         default:
           final html = _inlines(block.inlines);
           out.write(
@@ -316,6 +318,7 @@ p{margin:0}
 p.blank{height:1em}
 h2,h3,h4,h5,h6{margin:16px 0 4px;line-height:1.4}
 figure{margin:12px 0}
+hr{margin:16px 0;border:0;border-top:1px solid var(--line)}
 img{display:block;max-width:100%;height:auto;border-radius:16px}
 .cover img{width:100%}
 blockquote{margin:8px 0;padding:4px 0 4px 14px;border-left:3px solid var(--line);color:var(--muted)}

@@ -144,6 +144,8 @@ class DiaryDocxWriter {
             style: 'DiaryMeta',
             runs: <String>[b.run(labels.mediaLine(block))],
           );
+        case ExportBlockKind.divider:
+          b.paragraph(style: 'Divider', runs: const <String>[]);
         case ExportBlockKind.heading:
           b.paragraph(
             style: 'Heading${block.level.clamp(1, 3)}',
@@ -252,6 +254,7 @@ class DiaryDocxWriter {
         '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="28"/><w:szCs w:val="28"/>')}'
         '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="2"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
         '${style('Quote', 'Quote', pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
+        '${style('Divider', 'Divider', pPr: '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="C7CCD1"/></w:pBdr>')}'
         '${style('CodeBlock', 'Code Block', pPr: '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
         '${style('Hyperlink', 'Hyperlink', type: 'character', rPr: '<w:color w:val="1E6586"/><w:u w:val="single"/>')}'

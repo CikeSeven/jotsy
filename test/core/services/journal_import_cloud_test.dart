@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/journal_import_cloud_cookie_jar.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 import 'package:node_diary/core/services/journal_import_media.dart';
+import 'package:node_diary/core/services/journal_import_style.dart';
 import 'package:path/path.dart' as p;
 
 import '../../support/fake_cloud_http.dart';
@@ -297,12 +298,17 @@ void main() {
       'a | {"blockquote":true}',
       'b | {"blockquote":true}',
       'x = 1 | {"code-block":true}',
+      // 分隔线嵌入独占一行（探针不打印嵌入本身）。
+      ' | {}',
       '名称 数量 | {}',
       '苹果 3 | {}',
       'link js | {}',
     ]);
     expect(writer.json, contains('"link":"https://a.b"'));
     expect(writer.json, isNot(contains('javascript')));
+    expect(writer.json, contains('{"insert":{"divider":"hr"}}'));
+    // 只知道“高亮”的文字写成统一的高亮背景色。
+    expect(writer.json, contains('"background":"$journalHighlightColor"'));
   });
 }
 

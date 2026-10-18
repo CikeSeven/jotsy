@@ -211,6 +211,9 @@ class DiaryMarkdownWriter {
           } else if (_isRemote(block.source!)) {
             sections.add('![](${_destination(block.source!)})');
           }
+        case ExportBlockKind.divider:
+          flush();
+          sections.add('---');
         case ExportBlockKind.media:
           flush();
           final path = mediaPathOf(block.source!);

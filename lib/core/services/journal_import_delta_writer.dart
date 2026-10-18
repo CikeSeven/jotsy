@@ -57,12 +57,16 @@ class JournalDeltaWriter {
   }
 
   /// 插入独占一行的媒体；当前行的文本先以 [blockAttributes] 结束。
+  ///
+  /// [embedAttributes] 写在媒体行的换行符上，目前只用于图片的对齐
+  /// （`align`），编辑器据此决定比列宽窄的图片靠哪一侧。
   void embed(
     Map<String, Object?> data, [
     Map<String, Object?> blockAttributes = const {},
+    Map<String, Object?> embedAttributes = const {},
   ]) {
     closeLine(blockAttributes);
-    _lines.add(_Line.embed(data));
+    _lines.add(_Line.embed(data, embedAttributes));
   }
 
   ({String contentJson, String contentText}) build() {
@@ -81,7 +85,10 @@ class JournalDeltaWriter {
       final embed = line.embed;
       if (embed != null) {
         delta.insert(embed);
-        delta.insert('\n');
+        delta.insert(
+          '\n',
+          line.blockAttributes.isEmpty ? null : line.blockAttributes,
+        );
         plain.write('\n');
         continue;
       }
@@ -150,9 +157,8 @@ class _Segment {
 class _Line {
   const _Line.text(this.segments, this.blockAttributes) : embed = null;
 
-  const _Line.embed(Map<String, Object?> this.embed)
-    : segments = const <_Segment>[],
-      blockAttributes = const <String, Object?>{};
+  const _Line.embed(Map<String, Object?> this.embed, this.blockAttributes)
+    : segments = const <_Segment>[];
 
   final List<_Segment> segments;
   final Map<String, Object?> blockAttributes;

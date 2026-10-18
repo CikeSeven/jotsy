@@ -248,12 +248,7 @@ class WpsCloudProvider implements CloudNoteProvider {
       return null;
     }
     final media = <WpsMedia>[];
-    final List<CloudBlock> blocks;
-    try {
-      blocks = decodeWpsBody(body, onMedia: media.add);
-    } on FormatException {
-      return null;
-    }
+    final blocks = decodeWpsBody(body, onMedia: media.add);
     String field(String name) {
       try {
         return row[name] is String ? codec.decrypt(row[name] as String) : '';
@@ -275,7 +270,7 @@ class WpsCloudProvider implements CloudNoteProvider {
         for (final item in media)
           CloudAttachment(
             id: wpsMediaId(item.key),
-            name: item.key.split('/').last,
+            name: item.name ?? item.key.split('/').last,
             reference: item.key,
           ),
       ],

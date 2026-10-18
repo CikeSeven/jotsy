@@ -83,7 +83,8 @@ Map<String, Object?> _detail() => {
             '<element type="Bullet">0<hw_font size="1.0">未完成</hw_font></element>'
             '<element type="Attachment">/data/user/0/com.example.android.notepad/images/$_image</element>'
             '<element type="Text"><hw_font size="1.0"></hw_font></element>'
-            '<element type="Text"><hw_font size="1.0">第一行<br/>第二行</hw_font></element></note>',
+            '<element type="Text"><hw_font size="1.0">第一行<br/>第二行</hw_font></element>'
+            '<element type="Text"><hw_font size="1.5" color="#FFFA2A2D">大红</hw_font></element></note>',
       },
     }),
   },
@@ -183,8 +184,15 @@ void main() {
     );
     final content = writer.build();
     // 与标题相同的第一段去掉；空 hw_font 是空行；<br/> 换行。
-    expect(content.contentText, '加粗普通斜体下划线三合一\n已完成\n未完成\n\n\n第一行\n第二行');
+    expect(content.contentText, '加粗普通斜体下划线三合一\n已完成\n未完成\n\n\n第一行\n第二行\n大红');
     final ops = content.contentJson;
+    // hw_font 的 size 是相对倍数，color 按 Android 的 #AARRGGBB 理解。
+    expect(
+      ops,
+      contains(
+        '{"insert":"大红","attributes":{"color":"#FFFA2A2D","size":"huge"}}',
+      ),
+    );
     expect(ops, contains('"list":"checked"'));
     expect(ops, contains('"list":"unchecked"'));
     expect(ops, contains('local.png'));

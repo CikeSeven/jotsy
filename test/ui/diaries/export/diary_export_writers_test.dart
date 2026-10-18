@@ -12,6 +12,7 @@ import 'package:node_diary/ui/diaries/export/diary_export_markdown.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_media.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_naming.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_pdf.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_plain_text.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_text.dart';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
@@ -80,6 +81,94 @@ void main() {
         },
       ]);
       expect(blocks.map((ExportBlock b) => b.ordinal), <int>[1, 0, 1]);
+    });
+  });
+
+  group('dividers', () {
+    DiaryExportEntry dividerEntry() => DiaryExportEntry.parse(
+      diaryId: 'hr',
+      title: '分隔',
+      createdAt: DateTime(2026, 4, 3),
+      updatedAt: DateTime(2026, 4, 3),
+      deltaOps: <dynamic>[
+        <String, dynamic>{'insert': '上\n'},
+        <String, dynamic>{
+          'insert': <String, dynamic>{'divider': 'hr'},
+        },
+        <String, dynamic>{'insert': '\n下\n'},
+      ],
+    );
+
+    test('become a block of their own', () {
+      expect(
+        dividerEntry().blocks.map((block) => block.kind),
+        <ExportBlockKind>[
+          ExportBlockKind.paragraph,
+          ExportBlockKind.divider,
+          ExportBlockKind.paragraph,
+        ],
+      );
+      expect(ExportPlainText.render(dividerEntry().blocks), '上\n———\n下');
+    });
+
+    test('are written as each format\'s own rule', () async {
+      final options = DiaryExportOptions.defaults.copyWith(
+        includeMeta: false,
+        includeMedia: false,
+      );
+      final markdown = await DiaryMarkdownWriter.write(
+        <DiaryExportEntry>[dividerEntry()],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+      );
+      expect(utf8.decode(markdown.bytes!), contains('上\n\n---\n\n下'));
+
+      final html = await DiaryHtmlWriter.write(
+        <DiaryExportEntry>[dividerEntry()],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '分隔',
+        languageTag: 'zh',
+      );
+      expect(utf8.decode(html.bytes!), contains('<p>上</p>\n<hr>\n<p>下</p>'));
+
+      final docx = await DiaryDocxWriter.write(
+        <DiaryExportEntry>[dividerEntry()],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '分隔',
+        languageTag: 'zh-CN',
+        now: DateTime.utc(2026, 10, 16),
+      );
+      final parts = {for (final f in docx.files!) f.path: f};
+      final document = XmlDocument.parse(
+        utf8.decode(parts['word/document.xml']!.bytes!),
+      );
+      expect(
+        document
+            .findAllElements('w:pStyle')
+            .map((e) => e.getAttribute('w:val')),
+        contains('Divider'),
+      );
+      expect(
+        utf8.decode(parts['word/styles.xml']!.bytes!),
+        contains('w:styleId="Divider"'),
+      );
+
+      final pdfBody = await DiaryPdfWriter.prepareBody(
+        dividerEntry(),
+        includeImages: false,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        images: <Uint8List>[],
+      );
+      expect(
+        pdfBody!.toJson(),
+        contains(equals(<String, dynamic>{'insert': '———'})),
+      );
     });
   });
 

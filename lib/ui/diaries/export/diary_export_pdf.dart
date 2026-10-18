@@ -12,6 +12,7 @@ import 'diary_export_blocks.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
+import 'diary_export_plain_text.dart';
 
 /// PDF 用的字体：内置 HarmonyOS Sans SC 常规与粗体，生成时按实际字符做
 /// 子集嵌入。字体文件各约 8MB，加载一次后由调用方复用。
@@ -283,8 +284,12 @@ class DiaryPdfWriter {
       <String, dynamic>{'insert': insert},
     ]);
     final block = blocks.isEmpty ? null : blocks.single;
+    if (block?.kind == ExportBlockKind.divider) {
+      // 插件不认识分隔线嵌入，写成一行横线。
+      return (text: ExportPlainText.dividerLine, link: null);
+    }
     if (block == null || block.kind != ExportBlockKind.media) {
-      // 分割线等无文字的嵌入：插件本身也会忽略，这里直接去掉。
+      // 其他无文字的嵌入：插件本身也会忽略，这里直接去掉。
       return null;
     }
     return labelFor(block, block.source!);

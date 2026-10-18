@@ -66,12 +66,19 @@ class JournalMediaStager {
   }
 
   /// 把内存中的媒体（如 Diarium 备份里的 BLOB）写进暂存区并返回嵌入数据。
+  ///
+  /// 类型依次按 [kind]、文件名扩展名、来源给出的 [mime]、文件头判断。云端
+  /// 笔记的附件常以无扩展名的文件 ID 命名，MIME 比文件头可靠（手机录音的
+  /// 3GP 容器按文件头会被认成视频），据此补上扩展名，免得录音、视频被当作
+  /// 普通附件。
   Map<String, Object?> embedBytes(
     List<int> bytes, {
     required String name,
     JournalMediaKind? kind,
+    String? mime,
   }) {
-    final extension = _extensionOf(name) ?? _sniffBytes(bytes);
+    final extension =
+        _extensionOf(name) ?? _extensionForMime(mime) ?? _sniffBytes(bytes);
     final resolvedKind = kind ?? journalMediaKindOf(extension);
     final target = _target(resolvedKind, _fileName(name, extension));
     target.parent.createSync(recursive: true);
@@ -182,6 +189,8 @@ class JournalMediaStager {
     if (ascii(0, 4) == 'RIFF' && ascii(8, 12) == 'WAVE') return 'wav';
     if (ascii(0, 4) == '%PDF') return 'pdf';
     if (ascii(0, 4) == 'OggS') return 'ogg';
+    // 手机录音常见的 AMR（窄带 `#!AMR\n`、宽带 `#!AMR-WB\n`）。
+    if (ascii(0, 5) == '#!AMR') return 'amr';
     if (ascii(0, 3) == 'ID3' ||
         (bytes.length > 1 && bytes[0] == 0xFF && bytes[1] & 0xE0 == 0xE0)) {
       return 'mp3';
@@ -205,6 +214,35 @@ class JournalMediaStager {
     }
     return null;
   }
+}
+
+/// 常见媒体 MIME 对应的扩展名；未知或不是媒体时返回 null。
+String? _extensionForMime(String? mime) {
+  final type = mime?.split(';').first.trim().toLowerCase() ?? '';
+  return switch (type) {
+    'image/jpeg' || 'image/jpg' => 'jpg',
+    'image/png' => 'png',
+    'image/gif' => 'gif',
+    'image/webp' => 'webp',
+    'image/heic' || 'image/heif' => 'heic',
+    'video/mp4' => 'mp4',
+    'video/quicktime' => 'mov',
+    'video/3gpp' => '3gp',
+    'video/webm' => 'webm',
+    'audio/mp4' ||
+    'audio/m4a' ||
+    'audio/x-m4a' ||
+    'audio/aac' ||
+    'audio/3gpp' => 'm4a',
+    'audio/mpeg' || 'audio/mp3' => 'mp3',
+    'audio/amr' || 'audio/amr-wb' => 'amr',
+    'audio/wav' || 'audio/x-wav' || 'audio/wave' => 'wav',
+    'audio/ogg' => 'ogg',
+    'audio/opus' => 'opus',
+    'audio/flac' => 'flac',
+    'application/pdf' => 'pdf',
+    _ => null,
+  };
 }
 
 /// 按扩展名（不含点，小写）判断媒体类型，未知扩展名按附件处理。

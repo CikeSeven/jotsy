@@ -1,6 +1,7 @@
 import 'package:html/parser.dart' as html_parser;
 
 import 'journal_import_cloud_blocks.dart';
+import 'journal_import_style.dart';
 
 /// 小米笔记正文的解析结果：块与正文内联引用的附件（文件 ID、是否录音）。
 class XiaomiMarkup {
@@ -18,7 +19,10 @@ class XiaomiMarkup {
 /// - 行首的空标签是行标记：`<h1/>`~`<h3/>` 标题，`<bullet indent/>`、
 ///   `<order indent/>` 列表，`<input type="checkbox" [checked="true"]/>`
 ///   待办（只有字面 `true` 算已完成），`indent` 从 1 开始；
-/// - 行内 `<b>`/`<i>`/`<u>`/`<delete>`（删除线）/`<background>`（高亮）；
+/// - 行内 `<b>`/`<i>`/`<u>`/`<delete>`（删除线）/`<background color>`（高亮，
+///   颜色是 Android 的 `#AARRGGBB`）；`<size>`/`<mid-size>`/`<h3-size>` 是
+///   大 / 中 / 三级标题三档字号（官方网页版的 large / middle / h3Level，都
+///   比正文大），`<center>`/`<right>`/`<left>` 包住整行表示对齐；
 ///   `<quote>…</quote>` 内每行一个引用块；旧版 `<ul>/<ol>/<li>` 按嵌套
 ///   深度缩进，`<del>` 表示已完成的旧版待办；
 /// - `<img fileid/>`、`<sound fileid/>` 独占一块（之后紧跟的换行只是分隔），
@@ -43,6 +47,10 @@ class _Mark {
     this.underline = false,
     this.strike = false,
     this.highlight = false,
+    this.background,
+    this.size,
+    this.align,
+    this.alignSet = false,
   });
 
   final String tag;
@@ -51,6 +59,12 @@ class _Mark {
   final bool underline;
   final bool strike;
   final bool highlight;
+  final String? background;
+  final String? size;
+
+  /// 行对齐；[alignSet] 为 true 时生效（`<left>` 把对齐设回 null）。
+  final String? align;
+  final bool alignSet;
 }
 
 class _Line {
@@ -60,6 +74,7 @@ class _Line {
   int level = 1;
   bool ordered = false;
   bool checked = false;
+  String? align;
   final List<CloudSpan> spans = <CloudSpan>[];
 
   CloudBlock build() => CloudBlock(
@@ -68,6 +83,7 @@ class _Line {
     level: level,
     ordered: ordered,
     checked: checked,
+    align: align,
   );
 }
 
@@ -194,7 +210,26 @@ class _XiaomiParser {
       case 'delete':
         _marks.add(const _Mark('delete', strike: true));
       case 'background':
-        _marks.add(const _Mark('background', highlight: true));
+        final color = journalBackgroundColor(
+          journalArgbToCss(attributes['color']),
+        );
+        _marks.add(
+          _Mark('background', highlight: color == null, background: color),
+        );
+      case 'size' || 'mid-size' || 'h3-size':
+        _marks.add(
+          _Mark(
+            tag,
+            size: switch (tag) {
+              'size' => 'huge',
+              _ => 'large',
+            },
+          ),
+        );
+      case 'center' || 'right' || 'left':
+        _marks.add(
+          _Mark(tag, align: tag == 'left' ? null : tag, alignSet: true),
+        );
       default:
         _marks.add(_Mark(tag));
     }
@@ -231,38 +266,36 @@ class _XiaomiParser {
       link.text.write(data);
       return;
     }
-    final bold = _marks.any((mark) => mark.bold);
-    final italic = _marks.any((mark) => mark.italic);
-    final underline = _marks.any((mark) => mark.underline);
-    final strike = _marks.any((mark) => mark.strike);
-    final highlight = _marks.any((mark) => mark.highlight);
+    // 内层标记覆盖外层：取最后一个声明了背景色 / 字号 / 对齐的标记。
+    _Mark? innermost(bool Function(_Mark mark) test) =>
+        _marks.reversed.where(test).firstOrNull;
+    final background = innermost(
+      (mark) => mark.background != null || mark.highlight,
+    )?.background;
+    final alignMark = innermost((mark) => mark.alignSet);
+    final style = CloudSpan(
+      '',
+      bold: _marks.any((mark) => mark.bold),
+      italic: _marks.any((mark) => mark.italic),
+      underline: _marks.any((mark) => mark.underline),
+      strike: _marks.any((mark) => mark.strike),
+      highlight: _marks.any((mark) => mark.highlight) && background == null,
+      background: background,
+      size: innermost((mark) => mark.size != null)?.size,
+    );
     final parts = data.split('\n');
     for (var i = 0; i < parts.length; i++) {
       if (i > 0) _newline();
       final part = parts[i].replaceFirst(RegExp(r'\r$'), '');
       if (part.isEmpty) continue;
       _lineClosed = false;
+      if (alignMark != null) _current.align = alignMark.align;
       final spans = _current.spans;
       final last = spans.isEmpty ? null : spans.last;
-      if (last != null &&
-          last.bold == bold &&
-          last.italic == italic &&
-          last.underline == underline &&
-          last.strike == strike &&
-          last.highlight == highlight &&
-          last.link == null) {
+      if (last != null && last.sameStyle(style)) {
         spans[spans.length - 1] = last.copyWith(text: last.text + part);
       } else {
-        spans.add(
-          CloudSpan(
-            part,
-            bold: bold,
-            italic: italic,
-            underline: underline,
-            strike: strike,
-            highlight: highlight,
-          ),
-        );
+        spans.add(style.copyWith(text: part));
       }
     }
   }

@@ -1,7 +1,10 @@
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 
+import '../database/divider_embed_codec.dart';
 import 'journal_import_delta_writer.dart';
+import 'journal_import_html_style.dart';
+import 'journal_import_style.dart';
 
 /// 粗略判断导出正文是不是 HTML（Journey、Daylio 等的旧版本存纯文本）。
 bool looksLikeJournalHtml(String text) => RegExp(
@@ -11,26 +14,37 @@ bool looksLikeJournalHtml(String text) => RegExp(
 
 /// 把其他日记应用导出的 HTML 正文写入 [JournalDeltaWriter]。
 ///
-/// 只保留本应用编辑器能编辑的格式：粗体、斜体、下划线、删除线、行内代码、
-/// 链接、标题（最多三级）、有序/无序/待办列表与缩进、引用、代码块。颜色、
-/// 字号、字体、对齐等样式一律丢弃，避免导入后出现无法在编辑器里修改的格式。
+/// 保留本应用正文能渲染的格式：粗体、斜体、下划线、删除线、行内代码、链接、
+/// 文字颜色与背景色（`color` / `background-color`、`<font color>`、`<mark>`）、
+/// 字号（`font-size`、`<font size>`、`<big>` / `<small>`，换算成三档）、标题
+/// （最多三级）、有序/无序/待办列表与缩进、引用、代码块、段落对齐（
+/// `text-align`、`align` 属性、`<center>`）与分隔线（`<hr>`）。颜色、字号与
+/// 对齐的换算规则见 journal_import_style.dart（来源的默认墨色不导入，全文
+/// 占比最大的字号视为正文字号）；字体一律丢弃，正文字体只跟随本应用的排版
+/// 设置。
 ///
 /// 空白按 HTML 规则合并；空的 `<p></p>` 保留为空行（Journey 用它表示段间
 /// 空行），`<br>` 结束当前行。`<img>`、`<video>`、`<audio>` 经 [resolveEmbed]
-/// 转为本应用的媒体嵌入，无法解析的本地引用被丢弃，http(s) 图片保留原地址。
+/// 转为本应用的媒体嵌入，无法解析的本地引用被丢弃，http(s) 图片保留原地址；
+/// 图片所在段落的对齐写在图片行上。
 class JournalHtmlConverter {
   JournalHtmlConverter(this.writer, {this.resolveEmbed});
 
   final JournalDeltaWriter writer;
   final JournalEmbedResolver? resolveEmbed;
 
+  /// 本次转换的正文字号（见 journalDominantFontSizeRatio）。
+  double _baseRatio = 1;
+
   void appendHtml(String html) {
     appendNodes(html_parser.parseFragment(html).nodes);
   }
 
   void appendNodes(Iterable<dom.Node> nodes) {
+    final list = nodes.toList();
+    _baseRatio = journalDominantFontSizeRatio(list);
     const block = _Block();
-    for (final node in nodes) {
+    for (final node in list) {
       _visit(node, const <String, Object?>{}, block);
     }
     writer.closeLine();
@@ -70,7 +84,7 @@ class JournalHtmlConverter {
       case 'br':
         writer.endLine(block.attributes);
       case 'hr':
-        writer.closeLine(block.attributes);
+        writer.embed(diaryDividerEmbed, block.attributes);
       case 'img':
         _embed(node.attributes['src'], block, keepRemoteImage: true);
       case 'video' || 'audio':
@@ -84,13 +98,16 @@ class JournalHtmlConverter {
           block,
         );
       case 'b' || 'strong':
-        _visitChildren(node, {...inline, 'bold': true}, block);
+        _visitChildren(node, {..._styled(node, inline), 'bold': true}, block);
       case 'i' || 'em' || 'cite' || 'dfn':
-        _visitChildren(node, {...inline, 'italic': true}, block);
+        _visitChildren(node, {..._styled(node, inline), 'italic': true}, block);
       case 'u' || 'ins':
-        _visitChildren(node, {...inline, 'underline': true}, block);
+        _visitChildren(node, {
+          ..._styled(node, inline),
+          'underline': true,
+        }, block);
       case 's' || 'strike' || 'del':
-        _visitChildren(node, {...inline, 'strike': true}, block);
+        _visitChildren(node, {..._styled(node, inline), 'strike': true}, block);
       case 'code' || 'kbd' || 'samp' || 'tt':
         _visitChildren(
           node,
@@ -99,6 +116,7 @@ class JournalHtmlConverter {
         );
       case 'a':
         final href = node.attributes['href']?.trim();
+        final styled = _styled(node, inline);
         _visitChildren(
           node,
           href != null &&
@@ -106,11 +124,11 @@ class JournalHtmlConverter {
                     r'^(https?|mailto):',
                     caseSensitive: false,
                   ).hasMatch(href)
-              ? {...inline, 'link': href}
-              : inline,
+              ? {...styled, 'link': href}
+              : styled,
           block,
         );
-      case 'span' || 'font':
+      case 'span' || 'font' || 'mark' || 'big' || 'small':
         _visitChildren(node, _styled(node, inline), block);
       case 'ul' || 'ol':
         _visitBlock(
@@ -120,21 +138,26 @@ class JournalHtmlConverter {
           block.list(tag == 'ol' ? 'ordered' : 'bullet'),
         );
       case 'li':
-        _visitBlock(node, inline, block, block.listItem(_checkState(node)));
+        _visitBlock(
+          node,
+          _styled(node, inline),
+          block,
+          _aligned(node, block).listItem(_checkState(node)),
+        );
       case 'h1' || 'h2' || 'h3' || 'h4' || 'h5' || 'h6':
         final level = int.parse(tag.substring(1));
         _visitBlock(
           node,
-          inline,
+          _styled(node, inline),
           block,
-          block.withAttribute('header', level > 3 ? 3 : level),
+          _aligned(node, block).withAttribute('header', level > 3 ? 3 : level),
         );
       case 'blockquote':
         _visitBlock(
           node,
-          inline,
+          _styled(node, inline),
           block,
-          block.withAttribute('blockquote', true),
+          _aligned(node, block).withAttribute('blockquote', true),
         );
       case 'pre':
         _visitBlock(node, inline, block, block.preformattedBlock());
@@ -142,7 +165,13 @@ class JournalHtmlConverter {
         _visitChildren(node, inline, block);
         writer.text(' ', inline);
       case 'p':
-        _visitBlock(node, inline, block, block, blankWhenEmpty: true);
+        _visitBlock(
+          node,
+          _styled(node, inline),
+          block,
+          _aligned(node, block),
+          blankWhenEmpty: true,
+        );
       case 'div' ||
           'section' ||
           'article' ||
@@ -169,7 +198,7 @@ class JournalHtmlConverter {
           'summary' ||
           'body' ||
           'html':
-        _visitBlock(node, inline, block, block);
+        _visitBlock(node, _styled(node, inline), block, _aligned(node, block));
       default:
         _visitChildren(node, inline, block);
     }
@@ -225,26 +254,26 @@ class JournalHtmlConverter {
                 RegExp(r'^https?://', caseSensitive: false).hasMatch(src)
             ? <String, Object?>{'image': src}
             : null);
-    if (data != null) writer.embed(data, block.attributes);
+    if (data == null) return;
+    final align = block.attributes['align'];
+    writer.embed(data, block.attributes, {
+      if (align != null && data.containsKey('image')) 'align': align,
+    });
   }
 
-  /// 读取内联 style 中能映射到编辑器格式的部分。
-  static Map<String, Object?> _styled(
+  Map<String, Object?> _styled(
     dom.Element element,
     Map<String, Object?> inline,
-  ) {
-    final style = (element.attributes['style'] ?? '').toLowerCase();
-    if (style.isEmpty) return inline;
-    return {
-      ...inline,
-      if (RegExp(r'font-weight\s*:\s*(bold|[6-9]00)').hasMatch(style))
-        'bold': true,
-      if (RegExp(r'font-style\s*:\s*italic').hasMatch(style)) 'italic': true,
-      if (RegExp(r'text-decoration[^;]*underline').hasMatch(style))
-        'underline': true,
-      if (RegExp(r'text-decoration[^;]*line-through').hasMatch(style))
-        'strike': true,
-    };
+  ) => journalHtmlInlineStyle(element, inline, baseRatio: _baseRatio);
+
+  /// 块元素自身的对齐：`<center>`、`text-align`、`align` 属性；显式左对齐
+  /// 会取消外层继承的对齐，没有声明时沿用外层。
+  static _Block _aligned(dom.Element element, _Block block) {
+    if (element.localName == 'center') return block.aligned('center');
+    final raw =
+        journalStyleValue(element.attributes['style'], 'text-align') ??
+        element.attributes['align'];
+    return raw == null ? block : block.aligned(journalAlign(raw));
   }
 
   /// 待办项：`data-checked` 属性或内含复选框；不是待办时返回 null。
@@ -310,8 +339,25 @@ class _Block {
     );
   }
 
+  /// 设置（[align] 为 null 时取消）行对齐。
+  _Block aligned(String? align) => _Block(
+    attributes: {
+      for (final entry in attributes.entries)
+        if (entry.key != 'align') entry.key: entry.value,
+      'align': ?align,
+    },
+    listType: listType,
+    listDepth: listDepth,
+    preformatted: preformatted,
+  );
+
+  /// 代码块不带对齐：编辑器里代码块按原样左对齐显示。
   _Block preformattedBlock() => _Block(
-    attributes: {...attributes, 'code-block': true},
+    attributes: {
+      for (final entry in attributes.entries)
+        if (entry.key != 'align') entry.key: entry.value,
+      'code-block': true,
+    },
     listType: listType,
     listDepth: listDepth,
     preformatted: true,

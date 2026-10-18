@@ -6,6 +6,7 @@ import 'package:html/dom.dart' as dom;
 import 'journal_import_cloud.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_style.dart';
 
 /// 华为备忘录（云空间 cloud.huawei.com）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/huawei.py`、`huawei_transport.py`、
@@ -22,6 +23,9 @@ import 'journal_import_cloud_http.dart';
 /// - 正文 `html_content` 为 `<note><element type="Text|Bullet|Attachment">`
 ///   序列：Bullet 首字符 1/0 表示已完成/未完成，Attachment 的路径文件名
 ///   对应附件 `usage`；编辑器把标题作为第一段写入正文，与标题相同则去掉；
+///   行内 `<hw_font size color>` 的 `size` 是相对正文的倍数（`"1.0"`），
+///   `color` 只在参考实现的合成样例中出现过（`red`），8 位十六进制按
+///   Android 的 `#AARRGGBB` 理解；
 /// - 附件需账号使用新版文件代理（`getAboutGet` 为 `dataVersion=2.0`，
 ///   `getCommonParam` 给出版本号），每篇笔记下载前先 `preProcess`，再经
 ///   `GET /proxy/v1/download/<整段编码的路由>?version=` 下载原始字节。
@@ -334,6 +338,19 @@ class HuaweiCloudProvider implements CloudNoteProvider {
           }
       }
       element.replaceWith(replacement);
+    }
+    for (final font in root.getElementsByTagName('hw_font').toList()) {
+      final scale = double.tryParse(font.attributes['size'] ?? '');
+      final color = font.attributes['color'];
+      final style = [
+        if (scale != null && scale > 0) 'font-size:${scale}em',
+        if (color != null)
+          'color:${RegExp(r'^#?[0-9a-fA-F]{8}$').hasMatch(color) ? journalArgbToCss(color) : color}',
+      ].join(';');
+      final span = dom.Element.tag('span');
+      if (style.isNotEmpty) span.attributes['style'] = style;
+      font.reparentChildren(span);
+      font.replaceWith(span);
     }
   }
 

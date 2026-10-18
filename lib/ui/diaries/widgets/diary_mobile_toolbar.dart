@@ -3,6 +3,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_attachment_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_audio_embed_builder.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_divider_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_video_embed_builder.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -39,5 +40,6 @@ List<quill.EmbedBuilder> buildDiaryQuillEmbedBuilders({
     const DiaryAudioEmbedBuilder(),
     const DiaryAttachmentEmbedBuilder(),
     const DiaryAttachmentEmbedBuilder(embedType: 'file'),
+    const DiaryDividerEmbedBuilder(),
   ];
 }

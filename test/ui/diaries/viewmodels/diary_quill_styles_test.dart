@@ -72,6 +72,11 @@ void main() {
     expect(styles.lists!.lineSpacing, defaults.lists!.lineSpacing);
     expect(styles.code!.style.fontFamily, defaults.code!.style.fontFamily);
     expect(styles.code!.style.fontSize, 20);
+
+    // 导入带来的行内字号三档按正文字号缩放。
+    expect(styles.sizeSmall!.fontSize, 17);
+    expect(styles.sizeLarge!.fontSize, 25);
+    expect(styles.sizeHuge!.fontSize, 30);
   });
 
   testWidgets('the bundled font keeps the theme font family', (tester) async {

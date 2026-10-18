@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/audio_embed_codec.dart';
+import '../../../core/database/divider_embed_codec.dart';
 import '../../../core/database/file_embed_codec.dart';
 
 /// 正文 Delta 的块级中间表示，供 Markdown / HTML / Word / 纯文本写出器共用。
@@ -10,7 +11,8 @@ import '../../../core/database/file_embed_codec.dart';
 /// 在边界（只含嵌入的行、跨缩进的编号）上各自出错。这里统一解析一次：
 /// - 每个文本行成为一个 [ExportBlock]，带块类型、缩进与按段计数的序号；
 /// - 图片单独成块（[ExportBlockKind.image]），录音 / 视频 / 附件成块
-///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；
+///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；分隔线成块
+///   （[ExportBlockKind.divider]）；
 /// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接。
 /// 纯函数，无 IO。
 enum ExportBlockKind {
@@ -24,6 +26,7 @@ enum ExportBlockKind {
   code,
   image,
   media,
+  divider,
 }
 
 enum ExportMediaKind { audio, video, file }
@@ -249,7 +252,10 @@ class ExportBlockParser {
         );
       }
     }
-    // 分割线等其他嵌入没有可迁移的内容，直接略过。
+    if (insert.containsKey(diaryDividerEmbedType)) {
+      return const ExportBlock._(kind: ExportBlockKind.divider);
+    }
+    // 其他未知嵌入没有可迁移的内容，直接略过。
     return null;
   }
 }

@@ -106,5 +106,11 @@ quill.DefaultStyles buildDiaryQuillStyles(
     indent: paragraphBlock(defaults.indent),
     align: paragraphBlock(defaults.align),
     leading: text(defaults.leading, body),
+    // 行内字号三档（导入笔记带来的 small / large / huge）按正文字号缩放，跟随
+    // 用户的排版设置；Quill 默认是与正文无关的固定 10 / 18 / 22。档位划分见
+    // journalFontSizeForRatio。
+    sizeSmall: TextStyle(fontSize: typography.fontSize * 0.85),
+    sizeLarge: TextStyle(fontSize: typography.fontSize * 1.25),
+    sizeHuge: TextStyle(fontSize: typography.fontSize * 1.5),
   );
 }

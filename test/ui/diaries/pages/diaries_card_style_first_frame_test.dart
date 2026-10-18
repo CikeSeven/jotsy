@@ -9,6 +9,7 @@ import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style.d
 import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style_settings.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
+import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -37,6 +38,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          // 顶栏草稿角标：不打开真实数据库。
+          diaryDraftCountProvider.overrideWith((ref) => Stream.value(0)),
           settingsServiceProvider.overrideWith((ref) async => settings),
           tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
           pagedDiariesProvider.overrideWith(

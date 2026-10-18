@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
+import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -44,6 +45,8 @@ Future<SettingsService> _pumpPage(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        // 顶栏草稿角标：不打开真实数据库。
+        diaryDraftCountProvider.overrideWith((ref) => Stream.value(0)),
         settingsServiceProvider.overrideWith((ref) async => settings),
         tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[])),
         pagedDiariesProvider.overrideWith((ref, query) {

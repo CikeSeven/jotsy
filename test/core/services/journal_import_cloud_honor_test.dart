@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +7,8 @@ import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_honor.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_media.dart';
+import 'package:node_diary/core/services/journal_import_style.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -28,10 +31,42 @@ const _html =
     '<div class="Nk h_n"><div class="Ni h_n" void="1" hid="$_preview"><img src="cid:$_preview"></div></div>'
     '<p class="Nb h_n"><h-text><font><span>结尾</span></font></h-text></p>';
 
-Map<String, Object?> _attachment(String uuid, String filename) => {
+/// 富格式正文，结构照荣耀网页版编辑器保存的标记：居中/靠右段落、分隔线
+/// （`Nm` > `Nr` > svg）、文字色（含默认墨色 #191919）、字号档位、背景色
+/// （CSS `#RRGGBBAA`）与 `Le` 高亮、上传的文档与视频卡片、录音卡片、居中
+/// 图片。
+const _richHtml =
+    '<p class="Nb h_n Aj"><h-text><font hsize="16"><span>居中标题</span></font></h-text></p>'
+    '<p class="Nb h_n Ak"><h-text><font hsize="16"><span>靠右</span></font></h-text></p>'
+    '<div class="Nm h_n"><div class="Nr h_n"><svg height="7px" width="100%"><line id="line" x1="0" x2="99999" stroke="currentColor" stroke-width="1"></line></svg></div></div>'
+    '<p class="Nb h_n Ai"><h-text><font hsize="16" hcolor="#FA2A2D"><span>红字</span></font></h-text>'
+    '<h-text><font hsize="16" hcolor="#191919"><span>默认</span></font></h-text>'
+    '<h-text><font hsize="24"><span>特大</span></font></h-text>'
+    '<h-text><font hsize="14"><span>小字</span></font></h-text>'
+    '<h-text><font hsize="18" hbgcolor="#FFBF0061"><span>黄底</span></font></h-text>'
+    '<h-text><font hsize="16" class="Le"><span>高亮</span></font></h-text></p>'
+    '<div class="Nx h_n" void="1" hid="file\$1" huploadfiletype="Document" huploadsize="8">'
+    '<div spacer="1" style="height: 0px; position: absolute;"><br v="1"></div>'
+    '<div><div class="upload-file"><div class="upload-title"><span class="first-title">季度</span>'
+    '<span class="last-title">报告</span><span class="upload-type">.pdf</span></div>'
+    '<span class="upload-size">8 B</span></div><div class="upload-icon"></div></div></div>'
+    '<div class="N0 h_n" hid="voice\$1" vtype="1" vui="v2"></div>'
+    '<div class="Nx h_n" void="1" hid="video\$1" huploadfiletype="Video" huploadsize="8" hposterid="poster\$1">'
+    '<div class="video-poster-card" src="blob:poster" poster-cid="poster\$1"><div class="upload-file">'
+    '<div class="upload-title"><span class="first-title">旅行</span><span class="upload-type">.mp4</span>'
+    '</div></div></div></div>'
+    '<div class="Nk h_n Aj"><div class="Ni h_n" void="1" hid="$_preview">'
+    '<div spacer="1"><br v="1"></div><img src="cid:$_preview"></div></div>'
+    '<p class="Nb h_n"><h-text><font hsize="16"><span>结尾</span></font></h-text></p>';
+
+Map<String, Object?> _attachment(
+  String uuid,
+  String filename, [
+  String mimetype = 'image/png',
+]) => {
   'uuid': uuid,
   'filename': filename,
-  'mimetype': 'image/png',
+  'mimetype': mimetype,
   'parent_uuid': _note,
   'size': fakeJpeg.length,
   'hash': sha256.convert(fakeJpeg).toString(),
@@ -148,6 +183,156 @@ void main() {
       {'list': 'bullet'},
     ]);
     expect(content.contentJson, contains('p.png'));
+  });
+
+  group('rich formats and attachments', () {
+    late Directory temp;
+    setUp(() async {
+      temp = await Directory.systemTemp.createTemp('honor_');
+      http.json('POST', '$_api/notepad/note/initDataBase/getFolderList', {
+        'code': 0,
+        'data': <Object?>[],
+      });
+      http.json('POST', '$_api/notepad/note/util/getNoteList', {
+        'code': 0,
+        'data': [
+          {'uuid': _note},
+        ],
+      });
+      http.json('POST', '$_api/notepad/noteDetail', {
+        'code': 0,
+        'data': [
+          {
+            'uuid': _note,
+            'type': 2,
+            'title': '富格式',
+            'create_time': 1720000000000,
+            'lock_status': 0,
+            'delete_flag': 0,
+            'unstruct_guid': 'box',
+            'html_content': _richHtml,
+            'attachments': [
+              _attachment(
+                r'file$1',
+                r'file$1_1720000000000_import.pdf',
+                'application/pdf',
+              ),
+              _attachment(r'voice$1', r'voice$1', 'audio/mp4'),
+              _attachment(
+                r'video$1',
+                r'video$1_1720000000000.mp4',
+                'video/mp4',
+              ),
+              _attachment(r'poster$1', r'poster$1_320_180.jpg', 'image/jpeg'),
+              _attachment(r'7a6b5c4d$3e2f', _original),
+              _attachment(_preview, '${_preview}_80_50_1720000000000.png'),
+              // 文件名带路径的记录不能拼进下载路径，只按缺失计入。
+              _attachment(r'bad$1', '../escape.pdf', 'application/pdf'),
+            ],
+          },
+        ],
+      });
+      http.json('GET', '$_api/config/web', {
+        'code': 0,
+        'data': {
+          'viteDownloadDomain': 'https://fileproxy-drcn.cloud.honor.com',
+        },
+      });
+      http.on(
+        'GET',
+        'fileproxy-drcn.cloud.honor.com/portal/notepad/file/singleFileDownstream',
+        (_) => bytesResponse(fakeJpeg),
+      );
+    });
+    tearDown(() => temp.delete(recursive: true));
+
+    test('lists files by their card names and skips video posters', () async {
+      final note = (await provider.fetchNotes((_, _) {})).single;
+      expect(note.attachments.map((item) => (item.id, item.name)), [
+        (r'bad$1', r'bad$1'),
+        (r'file$1', '季度报告.pdf'),
+        (r'voice$1', r'voice$1'),
+        (r'video$1', '旅行.mp4'),
+        (_preview, _original),
+      ]);
+      expect(note.attachments.first.reference, isNull);
+    });
+
+    test('keeps alignment, dividers, colours, sizes and highlights', () async {
+      final note = (await provider.fetchNotes((_, _) {})).single;
+      final writer = JournalDeltaWriter();
+      note.writeBody(
+        writer,
+        (id) => switch (id) {
+          r'file$1' => {'attachment': 'f'},
+          r'voice$1' => {'audio': 'a'},
+          r'video$1' => {'video': 'v'},
+          _preview => {'image': 'p.png'},
+          _ => null,
+        },
+      );
+      final ops = (jsonDecode(writer.build().contentJson) as List)
+          .cast<Map<String, Object?>>();
+      Map? attributesOf(String text) =>
+          ops.firstWhere((op) => op['insert'] == text)['attributes'] as Map?;
+      String describe(Map<String, Object?> op) {
+        final insert = op['insert'];
+        final attributes = op['attributes'];
+        return insert is Map
+            ? '[${insert.keys.single}]'
+            : '${jsonEncode(insert)}${attributes == null ? '' : ' $attributes'}';
+      }
+
+      expect(ops.map(describe), [
+        '"居中标题"',
+        '"\\n" {align: center}',
+        '"靠右"',
+        '"\\n" {align: right}',
+        '[divider]',
+        '"\\n"',
+        '"红字" {color: #FFFA2A2D}',
+        '"默认"',
+        '"特大" {size: huge}',
+        '"小字" {size: small}',
+        '"黄底" {background: #61FFBF00, size: large}',
+        '"高亮" {background: $journalHighlightColor}',
+        '"\\n"',
+        '[attachment]',
+        '"\\n"',
+        '[audio]',
+        '"\\n"',
+        '[video]',
+        '"\\n"',
+        '[image]',
+        '"\\n" {align: center}',
+        '"结尾\\n"',
+      ]);
+      expect(attributesOf('默认'), isNull);
+    });
+
+    test(
+      'imports documents, recordings and videos as their own kinds',
+      () async {
+        final result = await fetchCloudJournal(
+          provider,
+          JournalMediaStager(temp.path),
+        );
+        final ops = (jsonDecode(result.entries.single.contentJson) as List)
+            .cast<Map<String, Object?>>();
+        final embeds = [
+          for (final op in ops)
+            if (op['insert'] case final Map insert) insert.keys.single,
+        ];
+        // 视频封面不单独导入，路径不合规的记录计为缺失。
+        expect(embeds, ['divider', 'attachment', 'audio', 'video', 'image']);
+        expect(result.missingMediaCount, 1);
+        final file = ops
+            .map((op) => op['insert'])
+            .whereType<Map>()
+            .firstWhere((insert) => insert.containsKey('attachment'));
+        expect(file['attachment'], contains('季度报告.pdf'));
+      },
+    );
   });
 
   test('a note list that disagrees with the count is rejected', () async {

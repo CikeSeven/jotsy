@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
-import 'package:html/dom.dart' as dom;
 
 import 'journal_import_cloud.dart';
+import 'journal_import_cloud_honor_html.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
 
@@ -17,12 +17,13 @@ import 'journal_import_cloud_http.dart';
 /// - 账号 `user/info`；分组 `getFolderList`；目录 `getNoteList`（一次取全，
 ///   条数须与 `note/count` 一致）；详情 `noteDetail`，只读普通笔记
 ///   （`type == 2`），跳过上锁与回收站中的笔记；
-/// - 正文是带 `h_n` 类名的私有 HTML（`Nb` 段落/`hlevel` 标题、`Na` 待办、
-///   `Nd`/`Nh` 有序/无序列表、`Nc` 列表项、`Nr` 分隔线、`Ni[hid]` 图片，
-///   行内 `font` 的 `La`~`Le` 类与 `hbgcolor`/`hlink` 属性表示格式）；
-/// - 图片的原图与预览图成对存放：下载 `_original` 原图，附件 ID 用预览图
-///   的 uuid（即正文里的 `hid`）；文件服务地址来自 `config/web`，下载后按
-///   记录的大小与 SHA-256 校验。
+/// - 正文是带 `h_n` 类名的私有 HTML（段落与对齐、标题、待办、列表、分隔线、
+///   图片、上传的文档/音频/视频、录音，行内粗斜体、颜色、高亮、字号与链接），
+///   标记说明与改写见 journal_import_cloud_honor_html.dart；
+/// - 附件记录逐条校验，不合规的一条按缺失计入、不影响其他附件；图片的原图
+///   与预览图成对存放：下载 `_original` 原图，附件 ID 用预览图的 uuid（即
+///   正文里的 `hid`）；上传文件用卡片上的原文件名，视频封面不单独导入；
+///   文件服务地址来自 `config/web`，下载后按记录的大小与 SHA-256 校验。
 class HonorCloudProvider implements CloudNoteProvider {
   HonorCloudProvider(
     this.http, {
@@ -157,56 +158,54 @@ class HonorCloudProvider implements CloudNoteProvider {
     }
     final created = _time(entry['create_time']);
     if (created == null) return null;
+    final index = indexHonorHtml(html);
     return CloudNote(
       id: '${entry['uuid']}',
       title: entry['title'] is String ? entry['title'] as String : '',
       createdAt: created,
       updatedAt: _time(entry['modify_time']),
       folder: folders[entry['folder_uuid']],
-      attachments: _attachments(entry),
+      attachments: _attachments(entry, index),
       writeBody: (writer, resolve) => writeCloudHtml(
         writer,
         html,
         resolve,
-        prepare: _normalize,
+        prepare: (root) => normalizeHonorHtml(root, posters: index.posters),
         imageId: (image) => image.attributes['src'],
       ),
     );
   }
 
-  /// 附件记录校验与原图/预览图配对；任何一项不合规就不读取附件，正文
-  /// 照常导入。
-  static List<CloudAttachment> _attachments(Map<String, Object?> entry) {
+  /// 附件记录逐条校验并配对原图/预览图。不合规的记录（归属不符、文件名
+  /// 含路径、大小或摘要缺失）仍列出但不带下载参数，下载时按缺失计入；只作
+  /// 视频封面的图片不导入；上传文件改用正文卡片上的原文件名，媒体类型也
+  /// 按它判断。
+  static List<CloudAttachment> _attachments(
+    Map<String, Object?> entry,
+    HonorHtmlIndex index,
+  ) {
     final rows = entry['attachments'];
     final container = entry['unstruct_guid'];
     if (rows is! List || rows.isEmpty) return const [];
-    if (container is! String ||
-        !RegExp(r'^[A-Za-z0-9$-]{1,80}$').hasMatch(container)) {
-      return const [];
-    }
+    final validContainer =
+        container is String &&
+        RegExp(r'^[A-Za-z0-9$-]{1,80}$').hasMatch(container);
     final records = <Map<String, Object?>>[];
+    final invalid = <String>[];
+    final seen = <String>{};
     for (final row in rows) {
-      if (row is! Map ||
-          row['parent_uuid'] != entry['uuid'] ||
-          row['uuid'] is! String ||
-          (row['uuid'] as String).isEmpty ||
-          row['filename'] is! String ||
-          !RegExp(
-            r'^[A-Za-z0-9$_.-]{1,200}$',
-          ).hasMatch(row['filename'] as String) ||
-          row['size'] is! int ||
-          (row['size'] as int) <= 0 ||
-          (row['size'] as int) > 209715200 ||
-          row['hash'] is! String ||
-          !RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(row['hash'] as String)) {
-        return const [];
+      final uuid = row is Map ? row['uuid'] : null;
+      if (uuid is! String || uuid.isEmpty || !seen.add(uuid)) continue;
+      if (validContainer && _validRecord(row as Map, entry['uuid'])) {
+        records.add(row.cast<String, Object?>());
+      } else if (!index.posters.contains(uuid)) {
+        invalid.add(uuid);
       }
-      records.add(row.cast<String, Object?>());
     }
-    if (records.map((row) => row['uuid']).toSet().length != records.length) {
-      return const [];
-    }
-    final result = <CloudAttachment>[];
+    final result = <CloudAttachment>[
+      for (final id in invalid)
+        CloudAttachment(id: id, name: index.names[id] ?? id),
+    ];
     final handled = <Map<String, Object?>>{};
     for (final row in records) {
       if (handled.contains(row)) continue;
@@ -239,14 +238,15 @@ class HonorCloudProvider implements CloudNoteProvider {
           handled.addAll(pair);
         }
       }
+      if (index.posters.contains(id)) continue;
       handled.add(row);
       result.add(
         CloudAttachment(
           id: id,
-          name: selected['filename'] as String,
+          name: index.names[id] ?? selected['filename'] as String,
           mime: mime.isEmpty ? null : mime,
           reference: (
-            container: container,
+            container: container as String,
             filename: selected['filename'] as String,
             size: selected['size'] as int,
             hash: (selected['hash'] as String).toLowerCase(),
@@ -257,65 +257,36 @@ class HonorCloudProvider implements CloudNoteProvider {
     return result;
   }
 
-  /// 把荣耀私有标记改写成通用 HTML（参考实现 `honor_html.py` 的 normalize）。
-  static void _normalize(dom.Element root) {
-    for (final node in root.querySelectorAll('.h_n')) {
-      final classes = node.classes;
-      final dom.Element replacement;
-      if (classes.contains('Nb')) {
-        final level = int.tryParse(node.attributes['hlevel'] ?? '');
-        replacement = dom.Element.tag(
-          level != null && level >= 1 && level <= 6 ? 'h$level' : 'p',
-        );
-        node.reparentChildren(replacement);
-      } else if (classes.contains('Na')) {
-        final checked =
-            classes.contains('Sc') || node.querySelector('.Sc') != null;
-        replacement = dom.Element.tag('li')
-          ..attributes['data-checked'] = '$checked';
-        // 待办的勾选图标等装饰去掉，只保留文字片段。
-        for (final text in node.querySelectorAll('h-text')) {
-          replacement.append(text);
-        }
-      } else if (classes.contains('Nd') || classes.contains('Nh')) {
-        replacement = dom.Element.tag(classes.contains('Nd') ? 'ol' : 'ul');
-        node.reparentChildren(replacement);
-      } else if (classes.contains('Nc')) {
-        replacement = dom.Element.tag('li');
-        node.reparentChildren(replacement);
-      } else if (classes.contains('Nr')) {
-        replacement = dom.Element.tag('hr');
-      } else if (classes.contains('Ni')) {
-        replacement = dom.Element.tag('img')
-          ..attributes['src'] = node.attributes['hid'] ?? '';
-      } else {
-        continue;
-      }
-      node.replaceWith(replacement);
-    }
-    for (final font in root.getElementsByTagName('font').toList()) {
-      final classes = font.classes;
-      final style = [
-        font.attributes['style'] ?? '',
-        if (classes.contains('La')) 'font-weight:bold',
-        if (classes.contains('Lb')) 'font-style:italic',
-        if (classes.contains('Lc') || classes.contains('Ld'))
-          'text-decoration:${[if (classes.contains('Lc')) 'underline', if (classes.contains('Ld')) 'line-through'].join(' ')}',
-      ].where((part) => part.isNotEmpty).join(';');
-      final link = font.attributes['hlink'];
-      final replacement = dom.Element.tag(link == null ? 'span' : 'a');
-      if (link != null) replacement.attributes['href'] = link;
-      if (style.isNotEmpty) replacement.attributes['style'] = style;
-      font.reparentChildren(replacement);
-      font.replaceWith(replacement);
-    }
+  /// 能安全下载的附件记录：属于这篇笔记，文件名是单层文件名（拼进
+  /// `cloudPath` 时不能越出笔记目录），大小在 200 MB 内且带 SHA-256。
+  static bool _validRecord(Map row, Object? noteId) {
+    final filename = row['filename'];
+    final size = row['size'];
+    final hash = row['hash'];
+    return row['parent_uuid'] == noteId &&
+        filename is String &&
+        filename.isNotEmpty &&
+        filename.length <= 255 &&
+        filename != '.' &&
+        filename != '..' &&
+        !RegExp(r'[/\\\x00-\x1F]').hasMatch(filename) &&
+        size is int &&
+        size > 0 &&
+        size <= 209715200 &&
+        hash is String &&
+        RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(hash);
   }
 
   @override
   Future<List<int>> download(CloudAttachment attachment) async {
-    final reference =
-        attachment.reference!
-            as ({String container, String filename, int size, String hash});
+    final reference = attachment.reference;
+    if (reference
+        is! ({String container, String filename, int size, String hash})) {
+      throw const CloudNoteException(
+        CloudNoteFailure.rejected,
+        'honor attachment record',
+      );
+    }
     final files = _files ??= await _fileTransport();
     final response = await files.request(
       'GET',

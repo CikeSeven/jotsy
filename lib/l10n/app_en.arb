@@ -8096,11 +8096,11 @@
   "@diaryTemplatesNewEntryGroup": {
     "description": "Group title on the template page for how templates appear when starting an entry."
   },
-  "diaryTemplatesStripSwitch": "Suggest templates",
+  "diaryTemplatesStripSwitch": "Suggest templates for new entries",
   "@diaryTemplatesStripSwitch": {
-    "description": "Switch: show the template suggestion strip in blank new entries."
+    "description": "Switch (template page and editor settings): show the template suggestion strip in blank new entries."
   },
-  "diaryTemplatesStripSwitchSubtitle": "Show suggestions under the title of a blank entry",
+  "diaryTemplatesStripSwitchSubtitle": "Show “Start from a template” under the title of a blank entry",
   "@diaryTemplatesStripSwitchSubtitle": {
     "description": "Subtitle of the suggestion strip switch."
   },

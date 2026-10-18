@@ -8096,11 +8096,11 @@
   "@diaryTemplatesNewEntryGroup": {
     "description": "模板管理页分组标题：新建日记时模板如何出现。"
   },
-  "diaryTemplatesStripSwitch": "推荐模板",
+  "diaryTemplatesStripSwitch": "新建时提示选择模板",
   "@diaryTemplatesStripSwitch": {
-    "description": "开关：在空白新建日记里显示模板建议条。"
+    "description": "开关（模板管理页与编辑器设置）：在空白新建日记里显示模板建议条。"
   },
-  "diaryTemplatesStripSwitchSubtitle": "在空白日记的标题下显示模板建议",
+  "diaryTemplatesStripSwitchSubtitle": "在空白日记的标题下显示「从模板开始」",
   "@diaryTemplatesStripSwitchSubtitle": {
     "description": "模板建议条开关的说明。"
   },

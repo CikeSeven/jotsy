@@ -5707,10 +5707,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplatesNewEntryGroup => '新建日记时';
 
   @override
-  String get diaryTemplatesStripSwitch => '推荐模板';
+  String get diaryTemplatesStripSwitch => '新建时提示选择模板';
 
   @override
-  String get diaryTemplatesStripSwitchSubtitle => '在空白日记的标题下显示模板建议';
+  String get diaryTemplatesStripSwitchSubtitle => '在空白日记的标题下显示「从模板开始」';
 
   @override
   String get diaryTemplatesAutoApply => '自动套用';

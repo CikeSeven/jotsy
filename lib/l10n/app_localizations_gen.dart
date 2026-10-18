@@ -10520,16 +10520,16 @@ abstract class AppLocalizations {
   /// **'New entries'**
   String get diaryTemplatesNewEntryGroup;
 
-  /// Switch: show the template suggestion strip in blank new entries.
+  /// Switch (template page and editor settings): show the template suggestion strip in blank new entries.
   ///
   /// In en, this message translates to:
-  /// **'Suggest templates'**
+  /// **'Suggest templates for new entries'**
   String get diaryTemplatesStripSwitch;
 
   /// Subtitle of the suggestion strip switch.
   ///
   /// In en, this message translates to:
-  /// **'Show suggestions under the title of a blank entry'**
+  /// **'Show “Start from a template” under the title of a blank entry'**
   String get diaryTemplatesStripSwitchSubtitle;
 
   /// Setting: a template applied to every blank new entry.

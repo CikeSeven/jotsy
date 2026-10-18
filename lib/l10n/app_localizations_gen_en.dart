@@ -6258,11 +6258,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplatesNewEntryGroup => 'New entries';
 
   @override
-  String get diaryTemplatesStripSwitch => 'Suggest templates';
+  String get diaryTemplatesStripSwitch => 'Suggest templates for new entries';
 
   @override
   String get diaryTemplatesStripSwitchSubtitle =>
-      'Show suggestions under the title of a blank entry';
+      'Show “Start from a template” under the title of a blank entry';
 
   @override
   String get diaryTemplatesAutoApply => 'Apply automatically';

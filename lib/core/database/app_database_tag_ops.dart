@@ -68,6 +68,56 @@ mixin _AppDatabaseTagOps on _$AppDatabase {
     );
   }
 
+  /// 按名称取得一组标签的 id，缺失的才新建。
+  ///
+  /// 与 [createTag] 不同，已存在的同名标签**不改颜色**：模板与模板码只带
+  /// 标签名和建议色，套用时不能悄悄改掉用户自己设好的标签颜色。名称先去首尾
+  /// 空白，空名与超过 40 个字符的名称跳过（与 `tags` 表约束一致）。
+  ///
+  /// 返回名称（去空白后）到 id 的映射，以及本次新建的 id——撤销套用时只回收
+  /// 这些新建且仍未被任何日记使用的标签。
+  Future<({Map<String, int> ids, Set<int> created})> ensureTagsByName(
+    Iterable<({String name, int color})> refs,
+  ) {
+    return transaction(() async {
+      final ids = <String, int>{};
+      final created = <int>{};
+      for (final ref in refs) {
+        final name = ref.name.trim();
+        if (name.isEmpty || name.length > 40 || ids.containsKey(name)) {
+          continue;
+        }
+        final existing = await (select(
+          tags,
+        )..where((Tags t) => t.name.equals(name))).getSingleOrNull();
+        if (existing != null) {
+          ids[name] = existing.id;
+          continue;
+        }
+        final id = await into(
+          tags,
+        ).insert(TagsCompanion.insert(name: name, color: ref.color));
+        ids[name] = id;
+        created.add(id);
+      }
+      return (ids: ids, created: created);
+    });
+  }
+
+  /// 删除 [tagIds] 中没有任何日记引用的标签；仍被日记使用的保持不动。
+  Future<void> deleteTagsIfUnused(Set<int> tagIds) async {
+    if (tagIds.isEmpty) return;
+    await (delete(tags)..where(
+          (Tags t) =>
+              t.id.isIn(tagIds) &
+              notExistsQuery(
+                select(diaryTags)
+                  ..where((DiaryTags link) => link.tagId.equalsExp(t.id)),
+              ),
+        ))
+        .go();
+  }
+
   /// 删除标签及其关联，不依赖历史连接是否开启了 SQLite 外键级联。
   Future<void> deleteTag(int tagId) async {
     await transaction(() async {

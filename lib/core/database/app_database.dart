@@ -22,9 +22,18 @@ part 'app_database_anniversary_schema.dart';
 part 'app_database_anniversary_ops.dart';
 part 'app_database_draft_schema.dart';
 part 'app_database_draft_ops.dart';
+part 'app_database_template_schema.dart';
+part 'app_database_template_ops.dart';
 
 @DriftDatabase(
-  tables: <Type>[Diaries, Tags, DiaryTags, Anniversaries, DiaryDrafts],
+  tables: <Type>[
+    Diaries,
+    Tags,
+    DiaryTags,
+    Anniversaries,
+    DiaryDrafts,
+    DiaryTemplates,
+  ],
 )
 class AppDatabase extends _$AppDatabase
     with
@@ -34,6 +43,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDiaryWrites,
         _AppDatabaseAnniversaryOps,
         _AppDatabaseDraftOps,
+        _AppDatabaseTemplateOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -42,12 +52,12 @@ class AppDatabase extends _$AppDatabase
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
 
-  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿写库时生成的同一种。
+  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿、模板写库时生成的同一种。
   /// 供数据库之外需要先定好 id 的场合使用（如旧备份里的单份草稿转为草稿行）。
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -63,6 +73,10 @@ class AppDatabase extends _$AppDatabase
       // v11 草稿箱表同样独立于日记表，也要排在 v1 分支之前。
       if (from < 11) {
         await _migrateAddDiaryDrafts(m);
+      }
+      // v12 日记模板表同样独立，排在 v1 分支之前。
+      if (from < 12) {
+        await _migrateAddDiaryTemplates(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

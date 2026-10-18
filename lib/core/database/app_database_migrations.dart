@@ -159,14 +159,25 @@ ADD COLUMN capsule_locked_at INTEGER NULL
   /// 覆盖安装就会这样），再升级时这张表里是用户的草稿。直接 createTable 会报
   /// “already exists”，版本号写不回去，之后每次打开都失败。
   Future<void> _migrateAddDiaryDrafts(Migrator migrator) async {
+    await _createTableIfMissing(migrator, diaryDrafts);
+  }
+
+  /// v12 新增日记模板表，与草稿表同理：表已存在（降级后再升级）时保留其中
+  /// 用户的模板，什么也不做。
+  Future<void> _migrateAddDiaryTemplates(Migrator migrator) async {
+    await _createTableIfMissing(migrator, diaryTemplates);
+  }
+
+  Future<void> _createTableIfMissing(
+    Migrator migrator,
+    TableInfo<Table, Object?> table,
+  ) async {
     final existing = await customSelect(
       "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
-      variables: <Variable<Object>>[
-        Variable<String>(diaryDrafts.actualTableName),
-      ],
+      variables: <Variable<Object>>[Variable<String>(table.actualTableName)],
     ).get();
     if (existing.isEmpty) {
-      await migrator.createTable(diaryDrafts);
+      await migrator.createTable(table);
     }
   }
 

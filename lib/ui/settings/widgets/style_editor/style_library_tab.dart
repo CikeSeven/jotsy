@@ -6,6 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/app_spacing.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../widgets/expressive_menu/expressive_menu.dart';
 import '../../../diaries/models/style_library/saved_style.dart';
 import '../../../diaries/models/style_library/style_code.dart';
 import '../../controllers/style_editor_controller.dart';
@@ -207,27 +208,23 @@ class StyleLibraryTab<S, L extends StyleLibrary<S, L>, P>
                 title: Text(item.name),
                 selected: identical(item, matchingSaved),
                 onTap: () => _applySaved(context, item),
-                trailing: PopupMenuButton<bool>(
+                trailing: ExpressiveMenuButton(
                   tooltip: l10n.styleEditorSavedActions(item.name),
                   icon: const FaIcon(
                     FontAwesomeIcons.ellipsisVertical,
                     size: 16,
                   ),
-                  onSelected: (bool rename) =>
-                      rename ? _rename(context, item) : _delete(context, item),
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<bool>>[
-                    PopupMenuItem<bool>(
-                      value: true,
+                  items: <Widget>[
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.penToSquare),
+                      onPressed: () => _rename(context, item),
                       child: Text(l10n.styleEditorRename),
                     ),
-                    PopupMenuItem<bool>(
-                      value: false,
-                      child: Text(
-                        l10n.commonDelete,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.trashCan),
+                      destructive: true,
+                      onPressed: () => _delete(context, item),
+                      child: Text(l10n.commonDelete),
                     ),
                   ],
                 ),

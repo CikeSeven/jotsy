@@ -9,6 +9,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../models/diary_template.dart';
 import '../widgets/diary_template_tile.dart';
 
@@ -226,7 +227,7 @@ class DiaryTemplatesBuiltInSliver extends StatelessWidget {
   }
 }
 
-/// 模板行右侧的“更多操作”菜单；删除项用 error 色。
+/// 模板行右侧的“更多操作”菜单；删除项为危险操作（error 色）。
 class DiaryTemplateActionsButton extends StatelessWidget {
   const DiaryTemplateActionsButton({
     super.key,
@@ -250,27 +251,31 @@ class DiaryTemplateActionsButton extends StatelessWidget {
       DiaryTemplateAction.show => l10n.diaryTemplatesShow,
       DiaryTemplateAction.delete => l10n.commonDelete,
     };
-    return PopupMenuButton<DiaryTemplateAction>(
+    FaIconData icon(DiaryTemplateAction action) => switch (action) {
+      DiaryTemplateAction.edit => FontAwesomeIcons.penToSquare,
+      DiaryTemplateAction.duplicate => FontAwesomeIcons.copy,
+      DiaryTemplateAction.copyToMine => FontAwesomeIcons.layerGroup,
+      DiaryTemplateAction.copyCode => FontAwesomeIcons.code,
+      DiaryTemplateAction.hide => FontAwesomeIcons.eyeSlash,
+      DiaryTemplateAction.show => FontAwesomeIcons.eye,
+      DiaryTemplateAction.delete => FontAwesomeIcons.trashCan,
+    };
+    return ExpressiveMenuButton(
       tooltip: l10n.diaryTemplatesMoreActions,
       icon: FaIcon(
         FontAwesomeIcons.ellipsisVertical,
         size: 16,
         color: colorScheme.onSurfaceVariant,
       ),
-      onSelected: onSelected,
-      itemBuilder: (BuildContext context) =>
-          <PopupMenuEntry<DiaryTemplateAction>>[
-            for (final action in actions)
-              PopupMenuItem<DiaryTemplateAction>(
-                value: action,
-                child: Text(
-                  label(action),
-                  style: action == DiaryTemplateAction.delete
-                      ? TextStyle(color: colorScheme.error)
-                      : null,
-                ),
-              ),
-          ],
+      items: <Widget>[
+        for (final action in actions)
+          ExpressiveMenuItem(
+            leadingIcon: FaIcon(icon(action)),
+            destructive: action == DiaryTemplateAction.delete,
+            onPressed: () => onSelected(action),
+            child: Text(label(action)),
+          ),
+      ],
     );
   }
 }

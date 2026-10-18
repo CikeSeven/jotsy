@@ -4,6 +4,7 @@ import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 
 /// 位置输入下方的地址层级入口：输入当前层级、地点输入框与自动定位的地址
 /// 组件，输出用户选择；只管理菜单开合，选择由页面控制器保存。
@@ -45,6 +46,17 @@ class _PublishLocationPrecisionPickerState
 
   bool _menuOpen = false;
 
+  /// 菜单关闭时焦点交还给入口按钮。
+  final FocusNode _triggerFocus = FocusNode(
+    debugLabel: 'PublishLocationPrecisionPicker',
+  );
+
+  @override
+  void dispose() {
+    _triggerFocus.dispose();
+    super.dispose();
+  }
+
   static String _label(
     AppLocalizations l10n,
     DiaryLocationPrecision precision,
@@ -83,10 +95,11 @@ class _PublishLocationPrecisionPickerState
                 .clamp(120.0, _menuContentMaxWidth);
             return Align(
               alignment: AlignmentDirectional.centerStart,
-              child: MenuAnchor(
+              child: ExpressiveMenuAnchor(
+                placement: ExpressiveMenuPlacement.start,
+                childFocusNode: _triggerFocus,
                 onOpen: () => _setMenuOpen(true),
                 onClose: () => _setMenuOpen(false),
-                alignmentOffset: const Offset(0, 4),
                 menuChildren: [
                   for (final precision in DiaryLocationPrecision.values)
                     _buildOption(
@@ -96,8 +109,7 @@ class _PublishLocationPrecisionPickerState
                       contentWidth,
                     ),
                 ],
-                builder: (context, controller, _) =>
-                    _buildTrigger(context, controller),
+                builder: (context, menu, _) => _buildTrigger(context, menu),
               ),
             );
           },
@@ -106,16 +118,15 @@ class _PublishLocationPrecisionPickerState
     );
   }
 
-  Widget _buildTrigger(BuildContext context, MenuController controller) {
+  Widget _buildTrigger(BuildContext context, ExpressiveMenuAnchorState menu) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final enabled = widget.onChanged != null;
     return Semantics(
       expanded: _menuOpen,
       child: TextButton(
-        onPressed: enabled
-            ? () => controller.isOpen ? controller.close() : controller.open()
-            : null,
+        focusNode: _triggerFocus,
+        onPressed: enabled ? menu.toggle : null,
         style: TextButton.styleFrom(
           foregroundColor: theme.colorScheme.onSurfaceVariant,
           textStyle: theme.textTheme.labelMedium,
@@ -186,8 +197,9 @@ class _PublishLocationPrecisionPickerState
     return Semantics(
       selected: selected,
       inMutuallyExclusiveGroup: true,
-      child: MenuItemButton(
+      child: ExpressiveMenuItem(
         onPressed: onChanged == null ? null : () => onChanged(precision),
+        // 层级选项保留自己的选中底色、主色勾与 16 圆角，覆盖菜单项默认样式。
         style: MenuItemButton.styleFrom(
           backgroundColor: selected ? colors.secondaryContainer : null,
           foregroundColor: colors.onSurface,

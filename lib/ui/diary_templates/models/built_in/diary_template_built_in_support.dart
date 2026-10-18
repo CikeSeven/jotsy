@@ -1,7 +1,6 @@
 import '../../../../core/database/app_database.dart'
     show builtInDiaryTemplateIdPrefix;
 import '../../../../l10n/app_localizations_gen.dart';
-import '../../../diaries/models/time_capsule.dart';
 import '../../../widgets/color_palette_families.dart';
 import '../diary_template.dart';
 import '../diary_template_body.dart';
@@ -17,16 +16,12 @@ class DiaryTemplateTokens {
     : date = _wrap(l10n.diaryTemplateVarDateToken),
       weekday = _wrap(l10n.diaryTemplateVarWeekdayToken),
       time = _wrap(l10n.diaryTemplateVarTimeToken),
-      yearProgress = _wrap(l10n.diaryTemplateVarYearProgressToken),
-      lunar = _wrap(l10n.diaryTemplateVarLunarToken),
       solarTerm = _wrap(l10n.diaryTemplateVarSolarTermToken),
       question = _wrap(l10n.diaryTemplateVarQuestionToken);
 
   final String date;
   final String weekday;
   final String time;
-  final String yearProgress;
-  final String lunar;
   final String solarTerm;
   final String question;
 
@@ -39,10 +34,8 @@ int paletteColor(int family) =>
     kColorPaletteFamilies[family].colors[5].toARGB32();
 
 abstract final class Palette {
-  static const int red = 0;
   static const int pink = 1;
   static const int orange = 2;
-  static const int yellow = 3;
   static const int green = 4;
   static const int cyan = 5;
   static const int blue = 6;
@@ -60,7 +53,6 @@ DiaryTemplate builtInDiaryTemplate({
   required String title,
   required List<DiaryTemplateBlock> blocks,
   List<DiaryTemplateTagRef> tags = const <DiaryTemplateTagRef>[],
-  TimeCapsulePreset? capsule,
   DiaryTemplateRecommendRules recommend = DiaryTemplateRecommendRules.none,
 }) {
   return DiaryTemplate(
@@ -73,7 +65,6 @@ DiaryTemplate builtInDiaryTemplate({
     titlePattern: title,
     bodyJson: encodeDiaryTemplateBody(compileDiaryTemplateBlocks(blocks)),
     tags: tags,
-    capsule: capsule,
     recommend: recommend,
   );
 }

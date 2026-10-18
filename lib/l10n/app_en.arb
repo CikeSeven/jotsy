@@ -7312,23 +7312,6 @@
       }
     }
   },
-  "diaryTemplateMonthlyName": "Monthly review",
-  "@diaryTemplateMonthlyName": {
-    "description": "Name of the built-in “Monthly review” diary template."
-  },
-  "diaryTemplateMonthlyDesc": "Look back on the month and set a direction for the next",
-  "@diaryTemplateMonthlyDesc": {
-    "description": "One-line description of the built-in “Monthly review” template."
-  },
-  "diaryTemplateMonthlyTitle": "Monthly review · {date}",
-  "@diaryTemplateMonthlyTitle": {
-    "description": "Title pattern of the built-in “Monthly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "diaryTemplateEmotionName": "Untangle a feeling",
   "@diaryTemplateEmotionName": {
     "description": "Name of the built-in “Untangle a feeling” diary template."
@@ -7340,40 +7323,6 @@
   "diaryTemplateEmotionTitle": "Feelings · {date}",
   "@diaryTemplateEmotionTitle": {
     "description": "Title pattern of the built-in “Untangle a feeling” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateDreamName": "Dream log",
-  "@diaryTemplateDreamName": {
-    "description": "Name of the built-in “Dream log” diary template."
-  },
-  "diaryTemplateDreamDesc": "Write the dream down before it fades",
-  "@diaryTemplateDreamDesc": {
-    "description": "One-line description of the built-in “Dream log” template."
-  },
-  "diaryTemplateDreamTitle": "Dream · {date}",
-  "@diaryTemplateDreamTitle": {
-    "description": "Title pattern of the built-in “Dream log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateTravelName": "Travel log",
-  "@diaryTemplateTravelName": {
-    "description": "Name of the built-in “Travel log” diary template."
-  },
-  "diaryTemplateTravelDesc": "Routes, sights and little moments on the road",
-  "@diaryTemplateTravelDesc": {
-    "description": "One-line description of the built-in “Travel log” template."
-  },
-  "diaryTemplateTravelTitle": "Travel · {date}",
-  "@diaryTemplateTravelTitle": {
-    "description": "Title pattern of the built-in “Travel log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
     "placeholders": {
       "date": {
         "type": "String"
@@ -7396,72 +7345,6 @@
         "type": "String"
       }
     }
-  },
-  "diaryTemplateMovieName": "Movie log",
-  "@diaryTemplateMovieName": {
-    "description": "Name of the built-in “Movie log” diary template."
-  },
-  "diaryTemplateMovieDesc": "Title, rating and what moved you",
-  "@diaryTemplateMovieDesc": {
-    "description": "One-line description of the built-in “Movie log” template."
-  },
-  "diaryTemplateMovieTitle": "Movie night · {date}",
-  "@diaryTemplateMovieTitle": {
-    "description": "Title pattern of the built-in “Movie log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateWorkoutName": "Workout log",
-  "@diaryTemplateWorkoutName": {
-    "description": "Name of the built-in “Workout log” diary template."
-  },
-  "diaryTemplateWorkoutDesc": "Activity, duration and how your body feels",
-  "@diaryTemplateWorkoutDesc": {
-    "description": "One-line description of the built-in “Workout log” template."
-  },
-  "diaryTemplateWorkoutTitle": "Workout · {date}",
-  "@diaryTemplateWorkoutTitle": {
-    "description": "Title pattern of the built-in “Workout log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateWorkName": "Work log",
-  "@diaryTemplateWorkName": {
-    "description": "Name of the built-in “Work log” diary template."
-  },
-  "diaryTemplateWorkDesc": "Done, in progress and tomorrow's plan",
-  "@diaryTemplateWorkDesc": {
-    "description": "One-line description of the built-in “Work log” template."
-  },
-  "diaryTemplateWorkTitle": "Work log · {weekday}, {date}",
-  "@diaryTemplateWorkTitle": {
-    "description": "Title pattern of the built-in “Work log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "weekday": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateLetterName": "Letter to future me",
-  "@diaryTemplateLetterName": {
-    "description": "Name of the built-in “Letter to future me” diary template."
-  },
-  "diaryTemplateLetterDesc": "A letter to yourself a year from now, sealed as a time capsule",
-  "@diaryTemplateLetterDesc": {
-    "description": "One-line description of the built-in “Letter to future me” template."
-  },
-  "diaryTemplateLetterTitle": "To me, one year from now",
-  "@diaryTemplateLetterTitle": {
-    "description": "Title pattern of the built-in “Letter to future me” template."
   },
   "diaryTemplateDailyHappened": "What happened today",
   "@diaryTemplateDailyHappened": {
@@ -7539,31 +7422,6 @@
   "@diaryTemplateWeeklyNext": {
     "description": "Body line of a built-in diary template (Weekly)."
   },
-  "diaryTemplateMonthlyProgress": "{progress} of the year has gone by.",
-  "@diaryTemplateMonthlyProgress": {
-    "description": "Body line of a built-in diary template (Monthly). Placeholders receive template variable tokens.",
-    "placeholders": {
-      "progress": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateMonthlyKeyword": "The month in a word",
-  "@diaryTemplateMonthlyKeyword": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
-  "diaryTemplateMonthlyMattered": "What mattered",
-  "@diaryTemplateMonthlyMattered": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
-  "diaryTemplateMonthlyWinsRegrets": "Wins and regrets",
-  "@diaryTemplateMonthlyWinsRegrets": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
-  "diaryTemplateMonthlyNext": "Next month",
-  "@diaryTemplateMonthlyNext": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
   "diaryTemplateEmotionHappened": "What happened",
   "@diaryTemplateEmotionHappened": {
     "description": "Body line of a built-in diary template (Emotion)."
@@ -7583,34 +7441,6 @@
   "diaryTemplateEmotionStep": "One small next step",
   "@diaryTemplateEmotionStep": {
     "description": "Body line of a built-in diary template (Emotion)."
-  },
-  "diaryTemplateDreamHappened": "What happened in the dream",
-  "@diaryTemplateDreamHappened": {
-    "description": "Body line of a built-in diary template (Dream)."
-  },
-  "diaryTemplateDreamImages": "Vivid images",
-  "@diaryTemplateDreamImages": {
-    "description": "Body line of a built-in diary template (Dream)."
-  },
-  "diaryTemplateDreamWaking": "How I felt on waking",
-  "@diaryTemplateDreamWaking": {
-    "description": "Body line of a built-in diary template (Dream)."
-  },
-  "diaryTemplateTravelRoute": "Today's route",
-  "@diaryTemplateTravelRoute": {
-    "description": "Body line of a built-in diary template (Travel)."
-  },
-  "diaryTemplateTravelSights": "What I saw",
-  "@diaryTemplateTravelSights": {
-    "description": "Body line of a built-in diary template (Travel)."
-  },
-  "diaryTemplateTravelFood": "What I ate",
-  "@diaryTemplateTravelFood": {
-    "description": "Body line of a built-in diary template (Travel)."
-  },
-  "diaryTemplateTravelNotes": "Notes from the road",
-  "@diaryTemplateTravelNotes": {
-    "description": "Body line of a built-in diary template (Travel)."
   },
   "diaryTemplateReadingBook": "Book: ",
   "@diaryTemplateReadingBook": {
@@ -7632,112 +7462,12 @@
   "@diaryTemplateReadingThoughts": {
     "description": "Body line of a built-in diary template (Reading)."
   },
-  "diaryTemplateMovieFilm": "Title: ",
-  "@diaryTemplateMovieFilm": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieRating": "Rating:   / 10",
-  "@diaryTemplateMovieRating": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieStory": "The story in one line",
-  "@diaryTemplateMovieStory": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieMoved": "What moved me",
-  "@diaryTemplateMovieMoved": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieLines": "Favorite lines",
-  "@diaryTemplateMovieLines": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateWorkoutActivity": "Activity: ",
-  "@diaryTemplateWorkoutActivity": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkoutDuration": "Duration: ",
-  "@diaryTemplateWorkoutDuration": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkoutTraining": "Today's training",
-  "@diaryTemplateWorkoutTraining": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkoutBody": "How my body feels",
-  "@diaryTemplateWorkoutBody": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkDone": "Done today",
-  "@diaryTemplateWorkDone": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateWorkInProgress": "In progress",
-  "@diaryTemplateWorkInProgress": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateWorkBlockers": "Blockers",
-  "@diaryTemplateWorkBlockers": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateWorkTomorrow": "Tomorrow",
-  "@diaryTemplateWorkTomorrow": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateLetterGreeting": "Dear me, a year from now,",
-  "@diaryTemplateLetterGreeting": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterNow": "Who I am now",
-  "@diaryTemplateLetterNow": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterMind": "What's on my mind lately",
-  "@diaryTemplateLetterMind": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterHope": "What I hope for you",
-  "@diaryTemplateLetterHope": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterSignature": "Written on {date}",
-  "@diaryTemplateLetterSignature": {
-    "description": "Body line of a built-in diary template (Letter). Placeholders receive template variable tokens.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "lunar": {
-        "type": "String"
-      }
-    }
-  },
   "diaryTemplateTagGratitude": "Gratitude",
   "@diaryTemplateTagGratitude": {
     "description": "Tag name preset by a built-in diary template (created when missing)."
   },
-  "diaryTemplateTagDream": "Dreams",
-  "@diaryTemplateTagDream": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagTravel": "Travel",
-  "@diaryTemplateTagTravel": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
   "diaryTemplateTagReading": "Reading",
   "@diaryTemplateTagReading": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagMovie": "Movies",
-  "@diaryTemplateTagMovie": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagWorkout": "Workout",
-  "@diaryTemplateTagWorkout": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagWork": "Work",
-  "@diaryTemplateTagWork": {
     "description": "Tag name preset by a built-in diary template (created when missing)."
   },
   "diaryTemplateQuestion01": "What small thing made you smile today?",

@@ -8,7 +8,7 @@ import '../../../core/database/app_database.dart'
 /// 日记模板的行为偏好，存于单个 JSON 设置键 `app.settings.diary_template_prefs`
 /// 并随完整备份导出（模板本身在数据库里）。
 ///
-/// 格式：`{"v":1,"strip":false,"auto":"<模板 id>","hidden":["builtin.dream"],
+/// 格式：`{"v":1,"strip":false,"auto":"<模板 id>","hidden":["builtin.weekly"],
 /// "recent":["<id>", …]}`，稀疏写入、逐字段容错：类型不符的字段回退默认值，
 /// 不连累其他字段。指向已删除模板的 id 留在这里无害，读取方按“不存在”处理。
 @immutable

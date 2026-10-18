@@ -13,7 +13,7 @@ void main() {
     final prefs = DiaryTemplatePrefs.defaults
         .withStrip(false)
         .withAuto('builtin.daily')
-        .withHidden('builtin.dream', true)
+        .withHidden('builtin.emotion', true)
         .recordUse('a')
         .recordUse('builtin.daily');
     expect(DiaryTemplatePrefs.decode(prefs.encode()), prefs);
@@ -42,11 +42,11 @@ void main() {
 
   test('only built-in templates can be hidden', () {
     final prefs = DiaryTemplatePrefs.defaults
-        .withHidden('builtin.work', true)
+        .withHidden('builtin.reading', true)
         .withHidden('user-id', true);
-    expect(prefs.hiddenBuiltIns, {'builtin.work'});
+    expect(prefs.hiddenBuiltIns, {'builtin.reading'});
     expect(
-      prefs.withHidden('builtin.work', false),
+      prefs.withHidden('builtin.reading', false),
       DiaryTemplatePrefs.defaults,
     );
   });

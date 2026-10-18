@@ -3,29 +3,23 @@ import '../diary_template.dart';
 import '../diary_template_body.dart';
 import '../diary_template_recommend.dart';
 import 'diary_template_built_in_support.dart';
-import 'diary_template_built_ins_life.dart';
 
-/// 内置模板库：15 个模板，文案全部来自 ARB、跟随界面语言，结构由块描述
-/// 给出（中英文两版结构一致）。内置模板只读、不落库；用户想改就“复制为我的
-/// 模板”。id 固定为 `builtin.<key>`，最近使用、隐藏与自动套用都按它记录，
+/// 内置模板库：只保留最常用的 8 个模板（太多反而难挑，其余场景交给“我的
+/// 模板”），文案全部来自 ARB、跟随界面语言，结构由块描述给出（中英文两版
+/// 结构一致）。内置模板只读、不落库；用户想改就“复制为我的模板”。id 固定为 `builtin.<key>`，最近使用、隐藏与自动套用都按它记录，
 /// 切换界面语言不受影响。
 ///
 /// 结果按语言缓存：模板面板、建议条每次重建都会取它。
 List<DiaryTemplate> buildBuiltInDiaryTemplates(AppLocalizations l10n) {
-  return _cache[l10n.localeName] ??=
-      List<DiaryTemplate>.unmodifiable(<DiaryTemplate>[
-        ..._everydayTemplates(l10n, DiaryTemplateTokens(l10n)),
-        ...buildLifeDiaryTemplates(l10n, DiaryTemplateTokens(l10n)),
-      ]);
+  return _cache[l10n.localeName] ??= List<DiaryTemplate>.unmodifiable(
+    _templates(l10n, DiaryTemplateTokens(l10n)),
+  );
 }
 
 final Map<String, List<DiaryTemplate>> _cache = <String, List<DiaryTemplate>>{};
 
-/// 日常、复盘与情绪类。
-List<DiaryTemplate> _everydayTemplates(
-  AppLocalizations l10n,
-  DiaryTemplateTokens t,
-) {
+/// 按日常 → 复盘 → 情绪 → 生活的顺序排列，模板面板与管理页按此顺序展示。
+List<DiaryTemplate> _templates(AppLocalizations l10n, DiaryTemplateTokens t) {
   return <DiaryTemplate>[
     builtInDiaryTemplate(
       key: 'daily',
@@ -139,32 +133,6 @@ List<DiaryTemplate> _everydayTemplates(
       ],
     ),
     builtInDiaryTemplate(
-      key: 'monthly',
-      name: l10n.diaryTemplateMonthlyName,
-      description: l10n.diaryTemplateMonthlyDesc,
-      icon: DiaryTemplateIcon.calendarDays,
-      accentFamily: Palette.yellow,
-      category: DiaryTemplateCategory.review,
-      title: l10n.diaryTemplateMonthlyTitle(t.date),
-      recommend: const DiaryTemplateRecommendRules(
-        monthPhases: <DiaryTemplateMonthPhase>{
-          DiaryTemplateMonthPhase.start,
-          DiaryTemplateMonthPhase.end,
-        },
-      ),
-      blocks: <DiaryTemplateBlock>[
-        TplParagraph(l10n.diaryTemplateMonthlyProgress(t.yearProgress)),
-        TplHeading(l10n.diaryTemplateMonthlyKeyword),
-        const TplParagraph(),
-        TplHeading(l10n.diaryTemplateMonthlyMattered),
-        TplBullets(blanks(1)),
-        TplHeading(l10n.diaryTemplateMonthlyWinsRegrets),
-        const TplParagraph(),
-        TplHeading(l10n.diaryTemplateMonthlyNext),
-        TplChecklist(blanks(3)),
-      ],
-    ),
-    builtInDiaryTemplate(
       key: 'emotion',
       name: l10n.diaryTemplateEmotionName,
       description: l10n.diaryTemplateEmotionDesc,
@@ -183,6 +151,27 @@ List<DiaryTemplate> _everydayTemplates(
         const TplParagraph(),
         TplHeading(l10n.diaryTemplateEmotionStep),
         TplChecklist(blanks(1)),
+      ],
+    ),
+    builtInDiaryTemplate(
+      key: 'reading',
+      name: l10n.diaryTemplateReadingName,
+      description: l10n.diaryTemplateReadingDesc,
+      icon: DiaryTemplateIcon.bookOpen,
+      accentFamily: Palette.orange,
+      category: DiaryTemplateCategory.life,
+      title: l10n.diaryTemplateReadingTitle(t.date),
+      tags: <DiaryTemplateTagRef>[
+        builtInTag(l10n.diaryTemplateTagReading, Palette.orange),
+      ],
+      blocks: <DiaryTemplateBlock>[
+        TplParagraph(l10n.diaryTemplateReadingBook),
+        TplParagraph(l10n.diaryTemplateReadingAuthor),
+        TplParagraph(l10n.diaryTemplateReadingProgress),
+        TplHeading(l10n.diaryTemplateReadingQuotes),
+        const TplQuote(),
+        TplHeading(l10n.diaryTemplateReadingThoughts),
+        const TplParagraph(),
       ],
     ),
   ];

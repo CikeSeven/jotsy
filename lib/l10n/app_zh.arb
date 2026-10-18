@@ -7312,23 +7312,6 @@
       }
     }
   },
-  "diaryTemplateMonthlyName": "月度复盘",
-  "@diaryTemplateMonthlyName": {
-    "description": "内置日记模板“月度复盘”的名称。"
-  },
-  "diaryTemplateMonthlyDesc": "回顾这个月，给下个月一个方向",
-  "@diaryTemplateMonthlyDesc": {
-    "description": "内置模板“月度复盘”的一行说明。"
-  },
-  "diaryTemplateMonthlyTitle": "月度复盘 · {date}",
-  "@diaryTemplateMonthlyTitle": {
-    "description": "内置模板“月度复盘”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "diaryTemplateEmotionName": "情绪梳理",
   "@diaryTemplateEmotionName": {
     "description": "内置日记模板“情绪梳理”的名称。"
@@ -7340,40 +7323,6 @@
   "diaryTemplateEmotionTitle": "情绪梳理 · {date}",
   "@diaryTemplateEmotionTitle": {
     "description": "内置模板“情绪梳理”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateDreamName": "梦境记录",
-  "@diaryTemplateDreamName": {
-    "description": "内置日记模板“梦境记录”的名称。"
-  },
-  "diaryTemplateDreamDesc": "醒来趁还记得，把梦写下来",
-  "@diaryTemplateDreamDesc": {
-    "description": "内置模板“梦境记录”的一行说明。"
-  },
-  "diaryTemplateDreamTitle": "梦 · {date}",
-  "@diaryTemplateDreamTitle": {
-    "description": "内置模板“梦境记录”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateTravelName": "旅行游记",
-  "@diaryTemplateTravelName": {
-    "description": "内置日记模板“旅行游记”的名称。"
-  },
-  "diaryTemplateTravelDesc": "记录路线、风景和旅途中的小事",
-  "@diaryTemplateTravelDesc": {
-    "description": "内置模板“旅行游记”的一行说明。"
-  },
-  "diaryTemplateTravelTitle": "旅行 · {date}",
-  "@diaryTemplateTravelTitle": {
-    "description": "内置模板“旅行游记”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
     "placeholders": {
       "date": {
         "type": "String"
@@ -7396,72 +7345,6 @@
         "type": "String"
       }
     }
-  },
-  "diaryTemplateMovieName": "观影记录",
-  "@diaryTemplateMovieName": {
-    "description": "内置日记模板“观影记录”的名称。"
-  },
-  "diaryTemplateMovieDesc": "片名、评分和打动你的地方",
-  "@diaryTemplateMovieDesc": {
-    "description": "内置模板“观影记录”的一行说明。"
-  },
-  "diaryTemplateMovieTitle": "观影 · {date}",
-  "@diaryTemplateMovieTitle": {
-    "description": "内置模板“观影记录”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateWorkoutName": "运动打卡",
-  "@diaryTemplateWorkoutName": {
-    "description": "内置日记模板“运动打卡”的名称。"
-  },
-  "diaryTemplateWorkoutDesc": "项目、时长与身体的感受",
-  "@diaryTemplateWorkoutDesc": {
-    "description": "内置模板“运动打卡”的一行说明。"
-  },
-  "diaryTemplateWorkoutTitle": "运动打卡 · {date}",
-  "@diaryTemplateWorkoutTitle": {
-    "description": "内置模板“运动打卡”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateWorkName": "工作日志",
-  "@diaryTemplateWorkName": {
-    "description": "内置日记模板“工作日志”的名称。"
-  },
-  "diaryTemplateWorkDesc": "今日完成、进行中与明日计划",
-  "@diaryTemplateWorkDesc": {
-    "description": "内置模板“工作日志”的一行说明。"
-  },
-  "diaryTemplateWorkTitle": "工作日志 · {date} {weekday}",
-  "@diaryTemplateWorkTitle": {
-    "description": "内置模板“工作日志”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "weekday": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateLetterName": "给未来的信",
-  "@diaryTemplateLetterName": {
-    "description": "内置日记模板“给未来的信”的名称。"
-  },
-  "diaryTemplateLetterDesc": "写给一年后的自己，封存成时间胶囊",
-  "@diaryTemplateLetterDesc": {
-    "description": "内置模板“给未来的信”的一行说明。"
-  },
-  "diaryTemplateLetterTitle": "写给一年后的自己",
-  "@diaryTemplateLetterTitle": {
-    "description": "内置模板“给未来的信”的标题格式。"
   },
   "diaryTemplateDailyHappened": "今天发生了什么",
   "@diaryTemplateDailyHappened": {
@@ -7539,31 +7422,6 @@
   "@diaryTemplateWeeklyNext": {
     "description": "内置日记模板（Weekly）正文中的一行。"
   },
-  "diaryTemplateMonthlyProgress": "今年已过去 {progress}。",
-  "@diaryTemplateMonthlyProgress": {
-    "description": "内置日记模板（Monthly）正文中的一行。占位符会填入模板变量。",
-    "placeholders": {
-      "progress": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateMonthlyKeyword": "这个月的关键词",
-  "@diaryTemplateMonthlyKeyword": {
-    "description": "内置日记模板（Monthly）正文中的一行。"
-  },
-  "diaryTemplateMonthlyMattered": "重要的事",
-  "@diaryTemplateMonthlyMattered": {
-    "description": "内置日记模板（Monthly）正文中的一行。"
-  },
-  "diaryTemplateMonthlyWinsRegrets": "收获与遗憾",
-  "@diaryTemplateMonthlyWinsRegrets": {
-    "description": "内置日记模板（Monthly）正文中的一行。"
-  },
-  "diaryTemplateMonthlyNext": "下个月想做的事",
-  "@diaryTemplateMonthlyNext": {
-    "description": "内置日记模板（Monthly）正文中的一行。"
-  },
   "diaryTemplateEmotionHappened": "发生了什么",
   "@diaryTemplateEmotionHappened": {
     "description": "内置日记模板（Emotion）正文中的一行。"
@@ -7583,34 +7441,6 @@
   "diaryTemplateEmotionStep": "接下来能做的一件小事",
   "@diaryTemplateEmotionStep": {
     "description": "内置日记模板（Emotion）正文中的一行。"
-  },
-  "diaryTemplateDreamHappened": "梦里发生了什么",
-  "@diaryTemplateDreamHappened": {
-    "description": "内置日记模板（Dream）正文中的一行。"
-  },
-  "diaryTemplateDreamImages": "印象深刻的画面",
-  "@diaryTemplateDreamImages": {
-    "description": "内置日记模板（Dream）正文中的一行。"
-  },
-  "diaryTemplateDreamWaking": "醒来后的感受",
-  "@diaryTemplateDreamWaking": {
-    "description": "内置日记模板（Dream）正文中的一行。"
-  },
-  "diaryTemplateTravelRoute": "今天的路线",
-  "@diaryTemplateTravelRoute": {
-    "description": "内置日记模板（Travel）正文中的一行。"
-  },
-  "diaryTemplateTravelSights": "看到的风景",
-  "@diaryTemplateTravelSights": {
-    "description": "内置日记模板（Travel）正文中的一行。"
-  },
-  "diaryTemplateTravelFood": "吃到的美食",
-  "@diaryTemplateTravelFood": {
-    "description": "内置日记模板（Travel）正文中的一行。"
-  },
-  "diaryTemplateTravelNotes": "旅途小记",
-  "@diaryTemplateTravelNotes": {
-    "description": "内置日记模板（Travel）正文中的一行。"
   },
   "diaryTemplateReadingBook": "书名：",
   "@diaryTemplateReadingBook": {
@@ -7632,112 +7462,12 @@
   "@diaryTemplateReadingThoughts": {
     "description": "内置日记模板（Reading）正文中的一行。"
   },
-  "diaryTemplateMovieFilm": "片名：",
-  "@diaryTemplateMovieFilm": {
-    "description": "内置日记模板（Movie）正文中的一行。"
-  },
-  "diaryTemplateMovieRating": "评分：  / 10",
-  "@diaryTemplateMovieRating": {
-    "description": "内置日记模板（Movie）正文中的一行。"
-  },
-  "diaryTemplateMovieStory": "一句话剧情",
-  "@diaryTemplateMovieStory": {
-    "description": "内置日记模板（Movie）正文中的一行。"
-  },
-  "diaryTemplateMovieMoved": "打动我的地方",
-  "@diaryTemplateMovieMoved": {
-    "description": "内置日记模板（Movie）正文中的一行。"
-  },
-  "diaryTemplateMovieLines": "台词摘录",
-  "@diaryTemplateMovieLines": {
-    "description": "内置日记模板（Movie）正文中的一行。"
-  },
-  "diaryTemplateWorkoutActivity": "项目：",
-  "@diaryTemplateWorkoutActivity": {
-    "description": "内置日记模板（Workout）正文中的一行。"
-  },
-  "diaryTemplateWorkoutDuration": "时长：",
-  "@diaryTemplateWorkoutDuration": {
-    "description": "内置日记模板（Workout）正文中的一行。"
-  },
-  "diaryTemplateWorkoutTraining": "今日训练",
-  "@diaryTemplateWorkoutTraining": {
-    "description": "内置日记模板（Workout）正文中的一行。"
-  },
-  "diaryTemplateWorkoutBody": "身体感受",
-  "@diaryTemplateWorkoutBody": {
-    "description": "内置日记模板（Workout）正文中的一行。"
-  },
-  "diaryTemplateWorkDone": "今日完成",
-  "@diaryTemplateWorkDone": {
-    "description": "内置日记模板（Work）正文中的一行。"
-  },
-  "diaryTemplateWorkInProgress": "进行中",
-  "@diaryTemplateWorkInProgress": {
-    "description": "内置日记模板（Work）正文中的一行。"
-  },
-  "diaryTemplateWorkBlockers": "遇到的问题",
-  "@diaryTemplateWorkBlockers": {
-    "description": "内置日记模板（Work）正文中的一行。"
-  },
-  "diaryTemplateWorkTomorrow": "明日计划",
-  "@diaryTemplateWorkTomorrow": {
-    "description": "内置日记模板（Work）正文中的一行。"
-  },
-  "diaryTemplateLetterGreeting": "亲爱的一年后的我：",
-  "@diaryTemplateLetterGreeting": {
-    "description": "内置日记模板（Letter）正文中的一行。"
-  },
-  "diaryTemplateLetterNow": "现在的我",
-  "@diaryTemplateLetterNow": {
-    "description": "内置日记模板（Letter）正文中的一行。"
-  },
-  "diaryTemplateLetterMind": "最近在想的事",
-  "@diaryTemplateLetterMind": {
-    "description": "内置日记模板（Letter）正文中的一行。"
-  },
-  "diaryTemplateLetterHope": "希望那时的你",
-  "@diaryTemplateLetterHope": {
-    "description": "内置日记模板（Letter）正文中的一行。"
-  },
-  "diaryTemplateLetterSignature": "写于 {date}，农历{lunar}",
-  "@diaryTemplateLetterSignature": {
-    "description": "内置日记模板（Letter）正文中的一行。占位符会填入模板变量。",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "lunar": {
-        "type": "String"
-      }
-    }
-  },
   "diaryTemplateTagGratitude": "感恩",
   "@diaryTemplateTagGratitude": {
     "description": "内置日记模板预设的标签名（本机没有时新建）。"
   },
-  "diaryTemplateTagDream": "梦境",
-  "@diaryTemplateTagDream": {
-    "description": "内置日记模板预设的标签名（本机没有时新建）。"
-  },
-  "diaryTemplateTagTravel": "旅行",
-  "@diaryTemplateTagTravel": {
-    "description": "内置日记模板预设的标签名（本机没有时新建）。"
-  },
   "diaryTemplateTagReading": "读书",
   "@diaryTemplateTagReading": {
-    "description": "内置日记模板预设的标签名（本机没有时新建）。"
-  },
-  "diaryTemplateTagMovie": "观影",
-  "@diaryTemplateTagMovie": {
-    "description": "内置日记模板预设的标签名（本机没有时新建）。"
-  },
-  "diaryTemplateTagWorkout": "运动",
-  "@diaryTemplateTagWorkout": {
-    "description": "内置日记模板预设的标签名（本机没有时新建）。"
-  },
-  "diaryTemplateTagWork": "工作",
-  "@diaryTemplateTagWork": {
     "description": "内置日记模板预设的标签名（本机没有时新建）。"
   },
   "diaryTemplateQuestion01": "今天让你微笑的一件小事是什么？",

@@ -47,11 +47,11 @@ void main() {
   ) async {
     final (:h, picked: _) = await openSheet(
       tester,
-      prefsRaw: '{"v":1,"hidden":["builtin.dream"]}',
+      prefsRaw: '{"v":1,"hidden":["builtin.morning"]}',
     );
     expect(find.text(h.l10n.diaryTemplatePickerTitle), findsOneWidget);
     expect(tile('builtin.daily'), findsOneWidget);
-    expect(tile('builtin.dream'), findsNothing);
+    expect(tile('builtin.morning'), findsNothing);
 
     await tester.tap(find.widgetWithText(ChoiceChip, '复盘'));
     await tester.pumpAndSettle();

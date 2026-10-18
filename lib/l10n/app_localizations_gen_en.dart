@@ -5669,18 +5669,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateMonthlyName => 'Monthly review';
-
-  @override
-  String get diaryTemplateMonthlyDesc =>
-      'Look back on the month and set a direction for the next';
-
-  @override
-  String diaryTemplateMonthlyTitle(String date) {
-    return 'Monthly review · $date';
-  }
-
-  @override
   String get diaryTemplateEmotionName => 'Untangle a feeling';
 
   @override
@@ -5690,29 +5678,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String diaryTemplateEmotionTitle(String date) {
     return 'Feelings · $date';
-  }
-
-  @override
-  String get diaryTemplateDreamName => 'Dream log';
-
-  @override
-  String get diaryTemplateDreamDesc => 'Write the dream down before it fades';
-
-  @override
-  String diaryTemplateDreamTitle(String date) {
-    return 'Dream · $date';
-  }
-
-  @override
-  String get diaryTemplateTravelName => 'Travel log';
-
-  @override
-  String get diaryTemplateTravelDesc =>
-      'Routes, sights and little moments on the road';
-
-  @override
-  String diaryTemplateTravelTitle(String date) {
-    return 'Travel · $date';
   }
 
   @override
@@ -5726,50 +5691,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String diaryTemplateReadingTitle(String date) {
     return 'Reading notes · $date';
   }
-
-  @override
-  String get diaryTemplateMovieName => 'Movie log';
-
-  @override
-  String get diaryTemplateMovieDesc => 'Title, rating and what moved you';
-
-  @override
-  String diaryTemplateMovieTitle(String date) {
-    return 'Movie night · $date';
-  }
-
-  @override
-  String get diaryTemplateWorkoutName => 'Workout log';
-
-  @override
-  String get diaryTemplateWorkoutDesc =>
-      'Activity, duration and how your body feels';
-
-  @override
-  String diaryTemplateWorkoutTitle(String date) {
-    return 'Workout · $date';
-  }
-
-  @override
-  String get diaryTemplateWorkName => 'Work log';
-
-  @override
-  String get diaryTemplateWorkDesc => 'Done, in progress and tomorrow\'s plan';
-
-  @override
-  String diaryTemplateWorkTitle(String date, String weekday) {
-    return 'Work log · $weekday, $date';
-  }
-
-  @override
-  String get diaryTemplateLetterName => 'Letter to future me';
-
-  @override
-  String get diaryTemplateLetterDesc =>
-      'A letter to yourself a year from now, sealed as a time capsule';
-
-  @override
-  String get diaryTemplateLetterTitle => 'To me, one year from now';
 
   @override
   String get diaryTemplateDailyHappened => 'What happened today';
@@ -5827,23 +5748,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateWeeklyNext => 'Next week';
 
   @override
-  String diaryTemplateMonthlyProgress(String progress) {
-    return '$progress of the year has gone by.';
-  }
-
-  @override
-  String get diaryTemplateMonthlyKeyword => 'The month in a word';
-
-  @override
-  String get diaryTemplateMonthlyMattered => 'What mattered';
-
-  @override
-  String get diaryTemplateMonthlyWinsRegrets => 'Wins and regrets';
-
-  @override
-  String get diaryTemplateMonthlyNext => 'Next month';
-
-  @override
   String get diaryTemplateEmotionHappened => 'What happened';
 
   @override
@@ -5857,27 +5761,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateEmotionStep => 'One small next step';
-
-  @override
-  String get diaryTemplateDreamHappened => 'What happened in the dream';
-
-  @override
-  String get diaryTemplateDreamImages => 'Vivid images';
-
-  @override
-  String get diaryTemplateDreamWaking => 'How I felt on waking';
-
-  @override
-  String get diaryTemplateTravelRoute => 'Today\'s route';
-
-  @override
-  String get diaryTemplateTravelSights => 'What I saw';
-
-  @override
-  String get diaryTemplateTravelFood => 'What I ate';
-
-  @override
-  String get diaryTemplateTravelNotes => 'Notes from the road';
 
   @override
   String get diaryTemplateReadingBook => 'Book: ';
@@ -5895,81 +5778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateReadingThoughts => 'My thoughts';
 
   @override
-  String get diaryTemplateMovieFilm => 'Title: ';
-
-  @override
-  String get diaryTemplateMovieRating => 'Rating:   / 10';
-
-  @override
-  String get diaryTemplateMovieStory => 'The story in one line';
-
-  @override
-  String get diaryTemplateMovieMoved => 'What moved me';
-
-  @override
-  String get diaryTemplateMovieLines => 'Favorite lines';
-
-  @override
-  String get diaryTemplateWorkoutActivity => 'Activity: ';
-
-  @override
-  String get diaryTemplateWorkoutDuration => 'Duration: ';
-
-  @override
-  String get diaryTemplateWorkoutTraining => 'Today\'s training';
-
-  @override
-  String get diaryTemplateWorkoutBody => 'How my body feels';
-
-  @override
-  String get diaryTemplateWorkDone => 'Done today';
-
-  @override
-  String get diaryTemplateWorkInProgress => 'In progress';
-
-  @override
-  String get diaryTemplateWorkBlockers => 'Blockers';
-
-  @override
-  String get diaryTemplateWorkTomorrow => 'Tomorrow';
-
-  @override
-  String get diaryTemplateLetterGreeting => 'Dear me, a year from now,';
-
-  @override
-  String get diaryTemplateLetterNow => 'Who I am now';
-
-  @override
-  String get diaryTemplateLetterMind => 'What\'s on my mind lately';
-
-  @override
-  String get diaryTemplateLetterHope => 'What I hope for you';
-
-  @override
-  String diaryTemplateLetterSignature(String date, String lunar) {
-    return 'Written on $date';
-  }
-
-  @override
   String get diaryTemplateTagGratitude => 'Gratitude';
 
   @override
-  String get diaryTemplateTagDream => 'Dreams';
-
-  @override
-  String get diaryTemplateTagTravel => 'Travel';
-
-  @override
   String get diaryTemplateTagReading => 'Reading';
-
-  @override
-  String get diaryTemplateTagMovie => 'Movies';
-
-  @override
-  String get diaryTemplateTagWorkout => 'Workout';
-
-  @override
-  String get diaryTemplateTagWork => 'Work';
 
   @override
   String get diaryTemplateQuestion01 =>

@@ -5156,17 +5156,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateMonthlyName => '月度复盘';
-
-  @override
-  String get diaryTemplateMonthlyDesc => '回顾这个月，给下个月一个方向';
-
-  @override
-  String diaryTemplateMonthlyTitle(String date) {
-    return '月度复盘 · $date';
-  }
-
-  @override
   String get diaryTemplateEmotionName => '情绪梳理';
 
   @override
@@ -5175,28 +5164,6 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String diaryTemplateEmotionTitle(String date) {
     return '情绪梳理 · $date';
-  }
-
-  @override
-  String get diaryTemplateDreamName => '梦境记录';
-
-  @override
-  String get diaryTemplateDreamDesc => '醒来趁还记得，把梦写下来';
-
-  @override
-  String diaryTemplateDreamTitle(String date) {
-    return '梦 · $date';
-  }
-
-  @override
-  String get diaryTemplateTravelName => '旅行游记';
-
-  @override
-  String get diaryTemplateTravelDesc => '记录路线、风景和旅途中的小事';
-
-  @override
-  String diaryTemplateTravelTitle(String date) {
-    return '旅行 · $date';
   }
 
   @override
@@ -5209,48 +5176,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String diaryTemplateReadingTitle(String date) {
     return '读书笔记 · $date';
   }
-
-  @override
-  String get diaryTemplateMovieName => '观影记录';
-
-  @override
-  String get diaryTemplateMovieDesc => '片名、评分和打动你的地方';
-
-  @override
-  String diaryTemplateMovieTitle(String date) {
-    return '观影 · $date';
-  }
-
-  @override
-  String get diaryTemplateWorkoutName => '运动打卡';
-
-  @override
-  String get diaryTemplateWorkoutDesc => '项目、时长与身体的感受';
-
-  @override
-  String diaryTemplateWorkoutTitle(String date) {
-    return '运动打卡 · $date';
-  }
-
-  @override
-  String get diaryTemplateWorkName => '工作日志';
-
-  @override
-  String get diaryTemplateWorkDesc => '今日完成、进行中与明日计划';
-
-  @override
-  String diaryTemplateWorkTitle(String date, String weekday) {
-    return '工作日志 · $date $weekday';
-  }
-
-  @override
-  String get diaryTemplateLetterName => '给未来的信';
-
-  @override
-  String get diaryTemplateLetterDesc => '写给一年后的自己，封存成时间胶囊';
-
-  @override
-  String get diaryTemplateLetterTitle => '写给一年后的自己';
 
   @override
   String get diaryTemplateDailyHappened => '今天发生了什么';
@@ -5306,23 +5231,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateWeeklyNext => '下周想做的事';
 
   @override
-  String diaryTemplateMonthlyProgress(String progress) {
-    return '今年已过去 $progress。';
-  }
-
-  @override
-  String get diaryTemplateMonthlyKeyword => '这个月的关键词';
-
-  @override
-  String get diaryTemplateMonthlyMattered => '重要的事';
-
-  @override
-  String get diaryTemplateMonthlyWinsRegrets => '收获与遗憾';
-
-  @override
-  String get diaryTemplateMonthlyNext => '下个月想做的事';
-
-  @override
   String get diaryTemplateEmotionHappened => '发生了什么';
 
   @override
@@ -5336,27 +5244,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTemplateEmotionStep => '接下来能做的一件小事';
-
-  @override
-  String get diaryTemplateDreamHappened => '梦里发生了什么';
-
-  @override
-  String get diaryTemplateDreamImages => '印象深刻的画面';
-
-  @override
-  String get diaryTemplateDreamWaking => '醒来后的感受';
-
-  @override
-  String get diaryTemplateTravelRoute => '今天的路线';
-
-  @override
-  String get diaryTemplateTravelSights => '看到的风景';
-
-  @override
-  String get diaryTemplateTravelFood => '吃到的美食';
-
-  @override
-  String get diaryTemplateTravelNotes => '旅途小记';
 
   @override
   String get diaryTemplateReadingBook => '书名：';
@@ -5374,81 +5261,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateReadingThoughts => '我的想法';
 
   @override
-  String get diaryTemplateMovieFilm => '片名：';
-
-  @override
-  String get diaryTemplateMovieRating => '评分：  / 10';
-
-  @override
-  String get diaryTemplateMovieStory => '一句话剧情';
-
-  @override
-  String get diaryTemplateMovieMoved => '打动我的地方';
-
-  @override
-  String get diaryTemplateMovieLines => '台词摘录';
-
-  @override
-  String get diaryTemplateWorkoutActivity => '项目：';
-
-  @override
-  String get diaryTemplateWorkoutDuration => '时长：';
-
-  @override
-  String get diaryTemplateWorkoutTraining => '今日训练';
-
-  @override
-  String get diaryTemplateWorkoutBody => '身体感受';
-
-  @override
-  String get diaryTemplateWorkDone => '今日完成';
-
-  @override
-  String get diaryTemplateWorkInProgress => '进行中';
-
-  @override
-  String get diaryTemplateWorkBlockers => '遇到的问题';
-
-  @override
-  String get diaryTemplateWorkTomorrow => '明日计划';
-
-  @override
-  String get diaryTemplateLetterGreeting => '亲爱的一年后的我：';
-
-  @override
-  String get diaryTemplateLetterNow => '现在的我';
-
-  @override
-  String get diaryTemplateLetterMind => '最近在想的事';
-
-  @override
-  String get diaryTemplateLetterHope => '希望那时的你';
-
-  @override
-  String diaryTemplateLetterSignature(String date, String lunar) {
-    return '写于 $date，农历$lunar';
-  }
-
-  @override
   String get diaryTemplateTagGratitude => '感恩';
 
   @override
-  String get diaryTemplateTagDream => '梦境';
-
-  @override
-  String get diaryTemplateTagTravel => '旅行';
-
-  @override
   String get diaryTemplateTagReading => '读书';
-
-  @override
-  String get diaryTemplateTagMovie => '观影';
-
-  @override
-  String get diaryTemplateTagWorkout => '运动';
-
-  @override
-  String get diaryTemplateTagWork => '工作';
 
   @override
   String get diaryTemplateQuestion01 => '今天让你微笑的一件小事是什么？';

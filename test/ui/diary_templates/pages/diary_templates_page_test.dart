@@ -116,11 +116,11 @@ void main() {
     tester,
   ) async {
     final h = await openPage(tester);
-    await menu(h, builtIn('dream'), h.l10n.diaryTemplatesHide);
-    expect(prefs(h).hiddenBuiltIns, {'builtin.dream'});
+    await menu(h, builtIn('gratitude'), h.l10n.diaryTemplatesHide);
+    expect(prefs(h).hiddenBuiltIns, {'builtin.gratitude'});
     expect(
       find.descendant(
-        of: builtIn('dream'),
+        of: builtIn('gratitude'),
         matching: find.text(h.l10n.diaryTemplateHiddenBadge),
       ),
       findsOneWidget,

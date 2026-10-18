@@ -210,22 +210,22 @@ void main() {
   testWidgets('a template chosen at the entry is applied without a hint and '
       'counts as recently used', (tester) async {
     final h = await DiaryDraftsHarness.create(tester);
-    final letter = buildBuiltInDiaryTemplates(
+    final reading = buildBuiltInDiaryTemplates(
       h.l10n,
-    ).firstWhere((t) => t.id == 'builtin.letter');
+    ).firstWhere((t) => t.id == 'builtin.reading');
     await h.pump(
       EditDiaryPage(
         entryMode: EditDiaryEntryMode.create,
-        createTemplate: DiaryTemplateSelection(letter),
+        createTemplate: DiaryTemplateSelection(reading),
       ),
     );
     await h.settle();
     await tester.pumpAndSettle();
 
-    expect(titleText(tester), '写给一年后的自己');
+    expect(titleText(tester), startsWith('读书笔记 · '));
     expect(find.byType(SnackBar), findsNothing);
     expect(DiaryTemplatePrefs.decode(h.settings.diaryTemplatePrefsRaw).recent, [
-      'builtin.letter',
+      'builtin.reading',
     ]);
     await h.unmount();
   });

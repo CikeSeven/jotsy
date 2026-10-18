@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
+import '../../widgets/list_item_presence.dart';
 import 'expanded_tag_filter_list.dart';
 import 'tag_filter_chip.dart';
 import 'tag_filter_clear_button.dart';
@@ -16,6 +18,8 @@ import 'tag_filter_layout.dart';
 ///
 /// 结构：
 /// - 左侧纯 `X` 清空筛选按钮（带缩放 + 旋转反馈）；
+/// - 一个标签都没有时整栏只剩这个 `X`，点了也无事可做，于是整栏收起淡出；
+///   仍有选中的筛选（例如记住的筛选指向已删除的标签）时保留，好让用户清除；
 /// - 收起时横向滚动，展开高度随实际行数变化，最多五行并独立滚动；
 /// - 卡片尺寸和主题样式在两种排列中一致；
 /// - 标签区域的拖动不移交给日记滚动或 Home 切页。
@@ -101,6 +105,17 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     );
     final collapsedTags = _buildCollapsedTags();
 
+    // 显隐会推动下方列表，不能在一帧内出现/消失；ListItemPresence 结构恒定，
+    // 切换时标签栏子树（滚动位置、清除按钮状态）不会被重新挂载。
+    return ListItemPresence(
+      visible: widget.tags.isNotEmpty || widget.selectedTagFilterIds.isNotEmpty,
+      appearing: false,
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      child: _buildBar(collapsedTags),
+    );
+  }
+
+  Widget _buildBar(Widget collapsedTags) {
     return LayoutBuilder(
       builder: (context, constraints) {
         _contentWidth = (constraints.maxWidth - AppSpacing.m * 2).clamp(

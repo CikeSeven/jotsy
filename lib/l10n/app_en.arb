@@ -7206,5 +7206,778 @@
         "type": "int"
       }
     }
+  },
+  "diaryTemplateDailyName": "Daily journal",
+  "@diaryTemplateDailyName": {
+    "description": "Name of the built-in “Daily journal” diary template."
+  },
+  "diaryTemplateDailyDesc": "What happened today and how you feel right now",
+  "@diaryTemplateDailyDesc": {
+    "description": "One-line description of the built-in “Daily journal” template."
+  },
+  "diaryTemplateDailyTitle": "{weekday}, {date}",
+  "@diaryTemplateDailyTitle": {
+    "description": "Title pattern of the built-in “Daily journal” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMorningName": "Morning pages",
+  "@diaryTemplateMorningName": {
+    "description": "Name of the built-in “Morning pages” diary template."
+  },
+  "diaryTemplateMorningDesc": "Set the tone for the day with a page in the morning",
+  "@diaryTemplateMorningDesc": {
+    "description": "One-line description of the built-in “Morning pages” template."
+  },
+  "diaryTemplateMorningTitle": "Morning · {date}",
+  "@diaryTemplateMorningTitle": {
+    "description": "Title pattern of the built-in “Morning pages” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEveningName": "Evening review",
+  "@diaryTemplateEveningName": {
+    "description": "Name of the built-in “Evening review” diary template."
+  },
+  "diaryTemplateEveningDesc": "Look back on the day and plan tomorrow",
+  "@diaryTemplateEveningDesc": {
+    "description": "One-line description of the built-in “Evening review” template."
+  },
+  "diaryTemplateEveningTitle": "Review · {date}",
+  "@diaryTemplateEveningTitle": {
+    "description": "Title pattern of the built-in “Evening review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateGratitudeName": "Gratitude journal",
+  "@diaryTemplateGratitudeName": {
+    "description": "Name of the built-in “Gratitude journal” diary template."
+  },
+  "diaryTemplateGratitudeDesc": "Three things you're grateful for",
+  "@diaryTemplateGratitudeDesc": {
+    "description": "One-line description of the built-in “Gratitude journal” template."
+  },
+  "diaryTemplateGratitudeTitle": "Gratitude · {date}",
+  "@diaryTemplateGratitudeTitle": {
+    "description": "Title pattern of the built-in “Gratitude journal” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateQuestionName": "Question of the day",
+  "@diaryTemplateQuestionName": {
+    "description": "Name of the built-in “Question of the day” diary template."
+  },
+  "diaryTemplateQuestionDesc": "One question a day to see yourself from a new angle",
+  "@diaryTemplateQuestionDesc": {
+    "description": "One-line description of the built-in “Question of the day” template."
+  },
+  "diaryTemplateQuestionTitle": "Question of the day · {date}",
+  "@diaryTemplateQuestionTitle": {
+    "description": "Title pattern of the built-in “Question of the day” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWeeklyName": "Weekly review",
+  "@diaryTemplateWeeklyName": {
+    "description": "Name of the built-in “Weekly review” diary template."
+  },
+  "diaryTemplateWeeklyDesc": "Highlights, wins and next week's plan",
+  "@diaryTemplateWeeklyDesc": {
+    "description": "One-line description of the built-in “Weekly review” template."
+  },
+  "diaryTemplateWeeklyTitle": "Weekly review · {date}",
+  "@diaryTemplateWeeklyTitle": {
+    "description": "Title pattern of the built-in “Weekly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMonthlyName": "Monthly review",
+  "@diaryTemplateMonthlyName": {
+    "description": "Name of the built-in “Monthly review” diary template."
+  },
+  "diaryTemplateMonthlyDesc": "Look back on the month and set a direction for the next",
+  "@diaryTemplateMonthlyDesc": {
+    "description": "One-line description of the built-in “Monthly review” template."
+  },
+  "diaryTemplateMonthlyTitle": "Monthly review · {date}",
+  "@diaryTemplateMonthlyTitle": {
+    "description": "Title pattern of the built-in “Monthly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEmotionName": "Untangle a feeling",
+  "@diaryTemplateEmotionName": {
+    "description": "Name of the built-in “Untangle a feeling” diary template."
+  },
+  "diaryTemplateEmotionDesc": "Write a feeling down and see where it comes from",
+  "@diaryTemplateEmotionDesc": {
+    "description": "One-line description of the built-in “Untangle a feeling” template."
+  },
+  "diaryTemplateEmotionTitle": "Feelings · {date}",
+  "@diaryTemplateEmotionTitle": {
+    "description": "Title pattern of the built-in “Untangle a feeling” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateDreamName": "Dream log",
+  "@diaryTemplateDreamName": {
+    "description": "Name of the built-in “Dream log” diary template."
+  },
+  "diaryTemplateDreamDesc": "Write the dream down before it fades",
+  "@diaryTemplateDreamDesc": {
+    "description": "One-line description of the built-in “Dream log” template."
+  },
+  "diaryTemplateDreamTitle": "Dream · {date}",
+  "@diaryTemplateDreamTitle": {
+    "description": "Title pattern of the built-in “Dream log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateTravelName": "Travel log",
+  "@diaryTemplateTravelName": {
+    "description": "Name of the built-in “Travel log” diary template."
+  },
+  "diaryTemplateTravelDesc": "Routes, sights and little moments on the road",
+  "@diaryTemplateTravelDesc": {
+    "description": "One-line description of the built-in “Travel log” template."
+  },
+  "diaryTemplateTravelTitle": "Travel · {date}",
+  "@diaryTemplateTravelTitle": {
+    "description": "Title pattern of the built-in “Travel log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateReadingName": "Reading notes",
+  "@diaryTemplateReadingName": {
+    "description": "Name of the built-in “Reading notes” diary template."
+  },
+  "diaryTemplateReadingDesc": "Quotes and thoughts from what you read",
+  "@diaryTemplateReadingDesc": {
+    "description": "One-line description of the built-in “Reading notes” template."
+  },
+  "diaryTemplateReadingTitle": "Reading notes · {date}",
+  "@diaryTemplateReadingTitle": {
+    "description": "Title pattern of the built-in “Reading notes” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMovieName": "Movie log",
+  "@diaryTemplateMovieName": {
+    "description": "Name of the built-in “Movie log” diary template."
+  },
+  "diaryTemplateMovieDesc": "Title, rating and what moved you",
+  "@diaryTemplateMovieDesc": {
+    "description": "One-line description of the built-in “Movie log” template."
+  },
+  "diaryTemplateMovieTitle": "Movie night · {date}",
+  "@diaryTemplateMovieTitle": {
+    "description": "Title pattern of the built-in “Movie log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWorkoutName": "Workout log",
+  "@diaryTemplateWorkoutName": {
+    "description": "Name of the built-in “Workout log” diary template."
+  },
+  "diaryTemplateWorkoutDesc": "Activity, duration and how your body feels",
+  "@diaryTemplateWorkoutDesc": {
+    "description": "One-line description of the built-in “Workout log” template."
+  },
+  "diaryTemplateWorkoutTitle": "Workout · {date}",
+  "@diaryTemplateWorkoutTitle": {
+    "description": "Title pattern of the built-in “Workout log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWorkName": "Work log",
+  "@diaryTemplateWorkName": {
+    "description": "Name of the built-in “Work log” diary template."
+  },
+  "diaryTemplateWorkDesc": "Done, in progress and tomorrow's plan",
+  "@diaryTemplateWorkDesc": {
+    "description": "One-line description of the built-in “Work log” template."
+  },
+  "diaryTemplateWorkTitle": "Work log · {weekday}, {date}",
+  "@diaryTemplateWorkTitle": {
+    "description": "Title pattern of the built-in “Work log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateLetterName": "Letter to future me",
+  "@diaryTemplateLetterName": {
+    "description": "Name of the built-in “Letter to future me” diary template."
+  },
+  "diaryTemplateLetterDesc": "A letter to yourself a year from now, sealed as a time capsule",
+  "@diaryTemplateLetterDesc": {
+    "description": "One-line description of the built-in “Letter to future me” template."
+  },
+  "diaryTemplateLetterTitle": "To me, one year from now",
+  "@diaryTemplateLetterTitle": {
+    "description": "Title pattern of the built-in “Letter to future me” template."
+  },
+  "diaryTemplateDailyHappened": "What happened today",
+  "@diaryTemplateDailyHappened": {
+    "description": "Body line of a built-in diary template (Daily)."
+  },
+  "diaryTemplateDailyMoment": "The moment that stayed with me",
+  "@diaryTemplateDailyMoment": {
+    "description": "Body line of a built-in diary template (Daily)."
+  },
+  "diaryTemplateDailyMood": "How I feel right now",
+  "@diaryTemplateDailyMood": {
+    "description": "Body line of a built-in diary template (Daily)."
+  },
+  "diaryTemplateMorningWake": "Up at {time}.",
+  "@diaryTemplateMorningWake": {
+    "description": "Body line of a built-in diary template (Morning). Placeholders receive template variable tokens.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMorningTop3": "Three things that matter most today",
+  "@diaryTemplateMorningTop3": {
+    "description": "Body line of a built-in diary template (Morning)."
+  },
+  "diaryTemplateMorningLookForward": "Something I'm looking forward to",
+  "@diaryTemplateMorningLookForward": {
+    "description": "Body line of a built-in diary template (Morning)."
+  },
+  "diaryTemplateMorningWords": "A line for today",
+  "@diaryTemplateMorningWords": {
+    "description": "Body line of a built-in diary template (Morning)."
+  },
+  "diaryTemplateEveningDone": "Done today",
+  "@diaryTemplateEveningDone": {
+    "description": "Body line of a built-in diary template (Evening)."
+  },
+  "diaryTemplateEveningWentWell": "What went well",
+  "@diaryTemplateEveningWentWell": {
+    "description": "Body line of a built-in diary template (Evening)."
+  },
+  "diaryTemplateEveningBetter": "What could be better",
+  "@diaryTemplateEveningBetter": {
+    "description": "Body line of a built-in diary template (Evening)."
+  },
+  "diaryTemplateEveningTomorrow": "Plans for tomorrow",
+  "@diaryTemplateEveningTomorrow": {
+    "description": "Body line of a built-in diary template (Evening)."
+  },
+  "diaryTemplateGratitudeThree": "Three things I'm grateful for today:",
+  "@diaryTemplateGratitudeThree": {
+    "description": "Body line of a built-in diary template (Gratitude)."
+  },
+  "diaryTemplateGratitudeThanks": "Someone I'd like to thank",
+  "@diaryTemplateGratitudeThanks": {
+    "description": "Body line of a built-in diary template (Gratitude)."
+  },
+  "diaryTemplateWeeklyHighlights": "Highlights of the week",
+  "@diaryTemplateWeeklyHighlights": {
+    "description": "Body line of a built-in diary template (Weekly)."
+  },
+  "diaryTemplateWeeklyWins": "Done and learned",
+  "@diaryTemplateWeeklyWins": {
+    "description": "Body line of a built-in diary template (Weekly)."
+  },
+  "diaryTemplateWeeklyOpen": "Still open",
+  "@diaryTemplateWeeklyOpen": {
+    "description": "Body line of a built-in diary template (Weekly)."
+  },
+  "diaryTemplateWeeklyNext": "Next week",
+  "@diaryTemplateWeeklyNext": {
+    "description": "Body line of a built-in diary template (Weekly)."
+  },
+  "diaryTemplateMonthlyProgress": "{progress} of the year has gone by.",
+  "@diaryTemplateMonthlyProgress": {
+    "description": "Body line of a built-in diary template (Monthly). Placeholders receive template variable tokens.",
+    "placeholders": {
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMonthlyKeyword": "The month in a word",
+  "@diaryTemplateMonthlyKeyword": {
+    "description": "Body line of a built-in diary template (Monthly)."
+  },
+  "diaryTemplateMonthlyMattered": "What mattered",
+  "@diaryTemplateMonthlyMattered": {
+    "description": "Body line of a built-in diary template (Monthly)."
+  },
+  "diaryTemplateMonthlyWinsRegrets": "Wins and regrets",
+  "@diaryTemplateMonthlyWinsRegrets": {
+    "description": "Body line of a built-in diary template (Monthly)."
+  },
+  "diaryTemplateMonthlyNext": "Next month",
+  "@diaryTemplateMonthlyNext": {
+    "description": "Body line of a built-in diary template (Monthly)."
+  },
+  "diaryTemplateEmotionHappened": "What happened",
+  "@diaryTemplateEmotionHappened": {
+    "description": "Body line of a built-in diary template (Emotion)."
+  },
+  "diaryTemplateEmotionFelt": "What I felt",
+  "@diaryTemplateEmotionFelt": {
+    "description": "Body line of a built-in diary template (Emotion)."
+  },
+  "diaryTemplateEmotionSource": "Where it comes from",
+  "@diaryTemplateEmotionSource": {
+    "description": "Body line of a built-in diary template (Emotion)."
+  },
+  "diaryTemplateEmotionNeed": "What I need",
+  "@diaryTemplateEmotionNeed": {
+    "description": "Body line of a built-in diary template (Emotion)."
+  },
+  "diaryTemplateEmotionStep": "One small next step",
+  "@diaryTemplateEmotionStep": {
+    "description": "Body line of a built-in diary template (Emotion)."
+  },
+  "diaryTemplateDreamHappened": "What happened in the dream",
+  "@diaryTemplateDreamHappened": {
+    "description": "Body line of a built-in diary template (Dream)."
+  },
+  "diaryTemplateDreamImages": "Vivid images",
+  "@diaryTemplateDreamImages": {
+    "description": "Body line of a built-in diary template (Dream)."
+  },
+  "diaryTemplateDreamWaking": "How I felt on waking",
+  "@diaryTemplateDreamWaking": {
+    "description": "Body line of a built-in diary template (Dream)."
+  },
+  "diaryTemplateTravelRoute": "Today's route",
+  "@diaryTemplateTravelRoute": {
+    "description": "Body line of a built-in diary template (Travel)."
+  },
+  "diaryTemplateTravelSights": "What I saw",
+  "@diaryTemplateTravelSights": {
+    "description": "Body line of a built-in diary template (Travel)."
+  },
+  "diaryTemplateTravelFood": "What I ate",
+  "@diaryTemplateTravelFood": {
+    "description": "Body line of a built-in diary template (Travel)."
+  },
+  "diaryTemplateTravelNotes": "Notes from the road",
+  "@diaryTemplateTravelNotes": {
+    "description": "Body line of a built-in diary template (Travel)."
+  },
+  "diaryTemplateReadingBook": "Book: ",
+  "@diaryTemplateReadingBook": {
+    "description": "Body line of a built-in diary template (Reading)."
+  },
+  "diaryTemplateReadingAuthor": "Author: ",
+  "@diaryTemplateReadingAuthor": {
+    "description": "Body line of a built-in diary template (Reading)."
+  },
+  "diaryTemplateReadingProgress": "Read up to: ",
+  "@diaryTemplateReadingProgress": {
+    "description": "Body line of a built-in diary template (Reading)."
+  },
+  "diaryTemplateReadingQuotes": "Quotes",
+  "@diaryTemplateReadingQuotes": {
+    "description": "Body line of a built-in diary template (Reading)."
+  },
+  "diaryTemplateReadingThoughts": "My thoughts",
+  "@diaryTemplateReadingThoughts": {
+    "description": "Body line of a built-in diary template (Reading)."
+  },
+  "diaryTemplateMovieFilm": "Title: ",
+  "@diaryTemplateMovieFilm": {
+    "description": "Body line of a built-in diary template (Movie)."
+  },
+  "diaryTemplateMovieRating": "Rating:   / 10",
+  "@diaryTemplateMovieRating": {
+    "description": "Body line of a built-in diary template (Movie)."
+  },
+  "diaryTemplateMovieStory": "The story in one line",
+  "@diaryTemplateMovieStory": {
+    "description": "Body line of a built-in diary template (Movie)."
+  },
+  "diaryTemplateMovieMoved": "What moved me",
+  "@diaryTemplateMovieMoved": {
+    "description": "Body line of a built-in diary template (Movie)."
+  },
+  "diaryTemplateMovieLines": "Favorite lines",
+  "@diaryTemplateMovieLines": {
+    "description": "Body line of a built-in diary template (Movie)."
+  },
+  "diaryTemplateWorkoutActivity": "Activity: ",
+  "@diaryTemplateWorkoutActivity": {
+    "description": "Body line of a built-in diary template (Workout)."
+  },
+  "diaryTemplateWorkoutDuration": "Duration: ",
+  "@diaryTemplateWorkoutDuration": {
+    "description": "Body line of a built-in diary template (Workout)."
+  },
+  "diaryTemplateWorkoutTraining": "Today's training",
+  "@diaryTemplateWorkoutTraining": {
+    "description": "Body line of a built-in diary template (Workout)."
+  },
+  "diaryTemplateWorkoutBody": "How my body feels",
+  "@diaryTemplateWorkoutBody": {
+    "description": "Body line of a built-in diary template (Workout)."
+  },
+  "diaryTemplateWorkDone": "Done today",
+  "@diaryTemplateWorkDone": {
+    "description": "Body line of a built-in diary template (Work)."
+  },
+  "diaryTemplateWorkInProgress": "In progress",
+  "@diaryTemplateWorkInProgress": {
+    "description": "Body line of a built-in diary template (Work)."
+  },
+  "diaryTemplateWorkBlockers": "Blockers",
+  "@diaryTemplateWorkBlockers": {
+    "description": "Body line of a built-in diary template (Work)."
+  },
+  "diaryTemplateWorkTomorrow": "Tomorrow",
+  "@diaryTemplateWorkTomorrow": {
+    "description": "Body line of a built-in diary template (Work)."
+  },
+  "diaryTemplateLetterGreeting": "Dear me, a year from now,",
+  "@diaryTemplateLetterGreeting": {
+    "description": "Body line of a built-in diary template (Letter)."
+  },
+  "diaryTemplateLetterNow": "Who I am now",
+  "@diaryTemplateLetterNow": {
+    "description": "Body line of a built-in diary template (Letter)."
+  },
+  "diaryTemplateLetterMind": "What's on my mind lately",
+  "@diaryTemplateLetterMind": {
+    "description": "Body line of a built-in diary template (Letter)."
+  },
+  "diaryTemplateLetterHope": "What I hope for you",
+  "@diaryTemplateLetterHope": {
+    "description": "Body line of a built-in diary template (Letter)."
+  },
+  "diaryTemplateLetterSignature": "Written on {date}",
+  "@diaryTemplateLetterSignature": {
+    "description": "Body line of a built-in diary template (Letter). Placeholders receive template variable tokens.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "lunar": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateTagGratitude": "Gratitude",
+  "@diaryTemplateTagGratitude": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateTagDream": "Dreams",
+  "@diaryTemplateTagDream": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateTagTravel": "Travel",
+  "@diaryTemplateTagTravel": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateTagReading": "Reading",
+  "@diaryTemplateTagReading": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateTagMovie": "Movies",
+  "@diaryTemplateTagMovie": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateTagWorkout": "Workout",
+  "@diaryTemplateTagWorkout": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateTagWork": "Work",
+  "@diaryTemplateTagWork": {
+    "description": "Tag name preset by a built-in diary template (created when missing)."
+  },
+  "diaryTemplateQuestion01": "What small thing made you smile today?",
+  "@diaryTemplateQuestion01": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion02": "If you could redo today, what would you change?",
+  "@diaryTemplateQuestion02": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion03": "When did you last feel proud of yourself?",
+  "@diaryTemplateQuestion03": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion04": "Who would you most like to say something to right now?",
+  "@diaryTemplateQuestion04": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion05": "What is one new thing you learned today?",
+  "@diaryTemplateQuestion05": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion06": "What has been weighing on your mind lately?",
+  "@diaryTemplateQuestion06": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion07": "What does your ideal weekend look like?",
+  "@diaryTemplateQuestion07": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion08": "Was there a moment today when you felt understood?",
+  "@diaryTemplateQuestion08": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion09": "What are you reading, watching or listening to lately, and what does it give you?",
+  "@diaryTemplateQuestion09": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion10": "Do you need rest, company or a challenge right now?",
+  "@diaryTemplateQuestion10": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion11": "What were you worried about a year ago today? And now?",
+  "@diaryTemplateQuestion11": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion12": "What did you do for yourself today?",
+  "@diaryTemplateQuestion12": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion13": "What made you laugh out loud recently?",
+  "@diaryTemplateQuestion13": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion14": "Which habit would you like to start or let go of?",
+  "@diaryTemplateQuestion14": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion15": "Describe yourself today in three words.",
+  "@diaryTemplateQuestion15": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion16": "What was the hardest part of today, and how did you handle it?",
+  "@diaryTemplateQuestion16": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion17": "Who are you grateful for lately, and why?",
+  "@diaryTemplateQuestion17": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion18": "If you could do only one thing tomorrow, what would it be?",
+  "@diaryTemplateQuestion18": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion19": "What changed your mind about something recently?",
+  "@diaryTemplateQuestion19": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion20": "What does today's weather remind you of?",
+  "@diaryTemplateQuestion20": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion21": "When did you last step out of your comfort zone?",
+  "@diaryTemplateQuestion21": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion22": "How will you see today's worries ten years from now?",
+  "@diaryTemplateQuestion22": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion23": "Did anything someone said today stay with you?",
+  "@diaryTemplateQuestion23": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion24": "Where have you felt most at peace lately?",
+  "@diaryTemplateQuestion24": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion25": "What would you tell your younger self?",
+  "@diaryTemplateQuestion25": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion26": "Do you know yourself a little better than yesterday?",
+  "@diaryTemplateQuestion26": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion27": "What small progress is worth celebrating lately?",
+  "@diaryTemplateQuestion27": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion28": "What have you wanted to try but haven't started? What's holding you back?",
+  "@diaryTemplateQuestion28": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion29": "How did you look after your feelings today?",
+  "@diaryTemplateQuestion29": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateQuestion30": "If you rated today from 1 to 10, what would it be, and why?",
+  "@diaryTemplateQuestion30": {
+    "description": "One question in the built-in question bank used by the {{question}} template variable."
+  },
+  "diaryTemplateVarDateToken": "date",
+  "@diaryTemplateVarDateToken": {
+    "description": "Template variable name inserted between double braces for the diary's date. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarDateLabel": "Date",
+  "@diaryTemplateVarDateLabel": {
+    "description": "Label of the template variable for the diary's date."
+  },
+  "diaryTemplateVarWeekdayToken": "weekday",
+  "@diaryTemplateVarWeekdayToken": {
+    "description": "Template variable name inserted between double braces for the weekday of the diary's date. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarWeekdayLabel": "Weekday",
+  "@diaryTemplateVarWeekdayLabel": {
+    "description": "Label of the template variable for the weekday of the diary's date."
+  },
+  "diaryTemplateVarTimeToken": "time",
+  "@diaryTemplateVarTimeToken": {
+    "description": "Template variable name inserted between double braces for the current time. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarTimeLabel": "Time",
+  "@diaryTemplateVarTimeLabel": {
+    "description": "Label of the template variable for the current time."
+  },
+  "diaryTemplateVarYearToken": "year",
+  "@diaryTemplateVarYearToken": {
+    "description": "Template variable name inserted between double braces for the year of the diary's date. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarYearLabel": "Year",
+  "@diaryTemplateVarYearLabel": {
+    "description": "Label of the template variable for the year of the diary's date."
+  },
+  "diaryTemplateVarMonthToken": "month",
+  "@diaryTemplateVarMonthToken": {
+    "description": "Template variable name inserted between double braces for the month of the diary's date. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarMonthLabel": "Month",
+  "@diaryTemplateVarMonthLabel": {
+    "description": "Label of the template variable for the month of the diary's date."
+  },
+  "diaryTemplateVarDayToken": "day",
+  "@diaryTemplateVarDayToken": {
+    "description": "Template variable name inserted between double braces for the day of the month. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarDayLabel": "Day",
+  "@diaryTemplateVarDayLabel": {
+    "description": "Label of the template variable for the day of the month."
+  },
+  "diaryTemplateVarWeekToken": "week",
+  "@diaryTemplateVarWeekToken": {
+    "description": "Template variable name inserted between double braces for the ISO week number. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarWeekLabel": "Week number",
+  "@diaryTemplateVarWeekLabel": {
+    "description": "Label of the template variable for the ISO week number."
+  },
+  "diaryTemplateVarDayOfYearToken": "dayOfYear",
+  "@diaryTemplateVarDayOfYearToken": {
+    "description": "Template variable name inserted between double braces for which day of the year it is. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarDayOfYearLabel": "Day of the year",
+  "@diaryTemplateVarDayOfYearLabel": {
+    "description": "Label of the template variable for which day of the year it is."
+  },
+  "diaryTemplateVarYearProgressToken": "yearProgress",
+  "@diaryTemplateVarYearProgressToken": {
+    "description": "Template variable name inserted between double braces for how much of the year has passed, as a percentage. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarYearProgressLabel": "Year progress",
+  "@diaryTemplateVarYearProgressLabel": {
+    "description": "Label of the template variable for how much of the year has passed, as a percentage."
+  },
+  "diaryTemplateVarLunarToken": "lunar",
+  "@diaryTemplateVarLunarToken": {
+    "description": "Template variable name inserted between double braces for the Chinese lunar date. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarLunarLabel": "Lunar date",
+  "@diaryTemplateVarLunarLabel": {
+    "description": "Label of the template variable for the Chinese lunar date."
+  },
+  "diaryTemplateVarSolarTermToken": "solarTerm",
+  "@diaryTemplateVarSolarTermToken": {
+    "description": "Template variable name inserted between double braces for the current solar term. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarSolarTermLabel": "Solar term",
+  "@diaryTemplateVarSolarTermLabel": {
+    "description": "Label of the template variable for the current solar term."
+  },
+  "diaryTemplateVarQuestionToken": "question",
+  "@diaryTemplateVarQuestionToken": {
+    "description": "Template variable name inserted between double braces for a question from the built-in question bank. Must be one of the aliases the app recognises."
+  },
+  "diaryTemplateVarQuestionLabel": "Question of the day",
+  "@diaryTemplateVarQuestionLabel": {
+    "description": "Label of the template variable for a question from the built-in question bank."
+  },
+  "diaryTemplateCategoryDaily": "Daily",
+  "@diaryTemplateCategoryDaily": {
+    "description": "Diary template category, used as a filter in the template picker."
+  },
+  "diaryTemplateCategoryReview": "Review",
+  "@diaryTemplateCategoryReview": {
+    "description": "Diary template category, used as a filter in the template picker."
+  },
+  "diaryTemplateCategoryMood": "Feelings",
+  "@diaryTemplateCategoryMood": {
+    "description": "Diary template category, used as a filter in the template picker."
+  },
+  "diaryTemplateCategoryLife": "Life",
+  "@diaryTemplateCategoryLife": {
+    "description": "Diary template category, used as a filter in the template picker."
+  },
+  "diaryTemplateCategoryWork": "Work",
+  "@diaryTemplateCategoryWork": {
+    "description": "Diary template category, used as a filter in the template picker."
+  },
+  "diaryTemplateCategoryOther": "Other",
+  "@diaryTemplateCategoryOther": {
+    "description": "Diary template category, used as a filter in the template picker."
   }
 }

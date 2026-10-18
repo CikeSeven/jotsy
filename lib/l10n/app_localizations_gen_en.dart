@@ -5596,4 +5596,587 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get diaryTemplateDailyName => 'Daily journal';
+
+  @override
+  String get diaryTemplateDailyDesc =>
+      'What happened today and how you feel right now';
+
+  @override
+  String diaryTemplateDailyTitle(String date, String weekday) {
+    return '$weekday, $date';
+  }
+
+  @override
+  String get diaryTemplateMorningName => 'Morning pages';
+
+  @override
+  String get diaryTemplateMorningDesc =>
+      'Set the tone for the day with a page in the morning';
+
+  @override
+  String diaryTemplateMorningTitle(String date) {
+    return 'Morning · $date';
+  }
+
+  @override
+  String get diaryTemplateEveningName => 'Evening review';
+
+  @override
+  String get diaryTemplateEveningDesc =>
+      'Look back on the day and plan tomorrow';
+
+  @override
+  String diaryTemplateEveningTitle(String date) {
+    return 'Review · $date';
+  }
+
+  @override
+  String get diaryTemplateGratitudeName => 'Gratitude journal';
+
+  @override
+  String get diaryTemplateGratitudeDesc => 'Three things you\'re grateful for';
+
+  @override
+  String diaryTemplateGratitudeTitle(String date) {
+    return 'Gratitude · $date';
+  }
+
+  @override
+  String get diaryTemplateQuestionName => 'Question of the day';
+
+  @override
+  String get diaryTemplateQuestionDesc =>
+      'One question a day to see yourself from a new angle';
+
+  @override
+  String diaryTemplateQuestionTitle(String date) {
+    return 'Question of the day · $date';
+  }
+
+  @override
+  String get diaryTemplateWeeklyName => 'Weekly review';
+
+  @override
+  String get diaryTemplateWeeklyDesc =>
+      'Highlights, wins and next week\'s plan';
+
+  @override
+  String diaryTemplateWeeklyTitle(String date) {
+    return 'Weekly review · $date';
+  }
+
+  @override
+  String get diaryTemplateMonthlyName => 'Monthly review';
+
+  @override
+  String get diaryTemplateMonthlyDesc =>
+      'Look back on the month and set a direction for the next';
+
+  @override
+  String diaryTemplateMonthlyTitle(String date) {
+    return 'Monthly review · $date';
+  }
+
+  @override
+  String get diaryTemplateEmotionName => 'Untangle a feeling';
+
+  @override
+  String get diaryTemplateEmotionDesc =>
+      'Write a feeling down and see where it comes from';
+
+  @override
+  String diaryTemplateEmotionTitle(String date) {
+    return 'Feelings · $date';
+  }
+
+  @override
+  String get diaryTemplateDreamName => 'Dream log';
+
+  @override
+  String get diaryTemplateDreamDesc => 'Write the dream down before it fades';
+
+  @override
+  String diaryTemplateDreamTitle(String date) {
+    return 'Dream · $date';
+  }
+
+  @override
+  String get diaryTemplateTravelName => 'Travel log';
+
+  @override
+  String get diaryTemplateTravelDesc =>
+      'Routes, sights and little moments on the road';
+
+  @override
+  String diaryTemplateTravelTitle(String date) {
+    return 'Travel · $date';
+  }
+
+  @override
+  String get diaryTemplateReadingName => 'Reading notes';
+
+  @override
+  String get diaryTemplateReadingDesc =>
+      'Quotes and thoughts from what you read';
+
+  @override
+  String diaryTemplateReadingTitle(String date) {
+    return 'Reading notes · $date';
+  }
+
+  @override
+  String get diaryTemplateMovieName => 'Movie log';
+
+  @override
+  String get diaryTemplateMovieDesc => 'Title, rating and what moved you';
+
+  @override
+  String diaryTemplateMovieTitle(String date) {
+    return 'Movie night · $date';
+  }
+
+  @override
+  String get diaryTemplateWorkoutName => 'Workout log';
+
+  @override
+  String get diaryTemplateWorkoutDesc =>
+      'Activity, duration and how your body feels';
+
+  @override
+  String diaryTemplateWorkoutTitle(String date) {
+    return 'Workout · $date';
+  }
+
+  @override
+  String get diaryTemplateWorkName => 'Work log';
+
+  @override
+  String get diaryTemplateWorkDesc => 'Done, in progress and tomorrow\'s plan';
+
+  @override
+  String diaryTemplateWorkTitle(String date, String weekday) {
+    return 'Work log · $weekday, $date';
+  }
+
+  @override
+  String get diaryTemplateLetterName => 'Letter to future me';
+
+  @override
+  String get diaryTemplateLetterDesc =>
+      'A letter to yourself a year from now, sealed as a time capsule';
+
+  @override
+  String get diaryTemplateLetterTitle => 'To me, one year from now';
+
+  @override
+  String get diaryTemplateDailyHappened => 'What happened today';
+
+  @override
+  String get diaryTemplateDailyMoment => 'The moment that stayed with me';
+
+  @override
+  String get diaryTemplateDailyMood => 'How I feel right now';
+
+  @override
+  String diaryTemplateMorningWake(String time, String term) {
+    return 'Up at $time.';
+  }
+
+  @override
+  String get diaryTemplateMorningTop3 => 'Three things that matter most today';
+
+  @override
+  String get diaryTemplateMorningLookForward =>
+      'Something I\'m looking forward to';
+
+  @override
+  String get diaryTemplateMorningWords => 'A line for today';
+
+  @override
+  String get diaryTemplateEveningDone => 'Done today';
+
+  @override
+  String get diaryTemplateEveningWentWell => 'What went well';
+
+  @override
+  String get diaryTemplateEveningBetter => 'What could be better';
+
+  @override
+  String get diaryTemplateEveningTomorrow => 'Plans for tomorrow';
+
+  @override
+  String get diaryTemplateGratitudeThree =>
+      'Three things I\'m grateful for today:';
+
+  @override
+  String get diaryTemplateGratitudeThanks => 'Someone I\'d like to thank';
+
+  @override
+  String get diaryTemplateWeeklyHighlights => 'Highlights of the week';
+
+  @override
+  String get diaryTemplateWeeklyWins => 'Done and learned';
+
+  @override
+  String get diaryTemplateWeeklyOpen => 'Still open';
+
+  @override
+  String get diaryTemplateWeeklyNext => 'Next week';
+
+  @override
+  String diaryTemplateMonthlyProgress(String progress) {
+    return '$progress of the year has gone by.';
+  }
+
+  @override
+  String get diaryTemplateMonthlyKeyword => 'The month in a word';
+
+  @override
+  String get diaryTemplateMonthlyMattered => 'What mattered';
+
+  @override
+  String get diaryTemplateMonthlyWinsRegrets => 'Wins and regrets';
+
+  @override
+  String get diaryTemplateMonthlyNext => 'Next month';
+
+  @override
+  String get diaryTemplateEmotionHappened => 'What happened';
+
+  @override
+  String get diaryTemplateEmotionFelt => 'What I felt';
+
+  @override
+  String get diaryTemplateEmotionSource => 'Where it comes from';
+
+  @override
+  String get diaryTemplateEmotionNeed => 'What I need';
+
+  @override
+  String get diaryTemplateEmotionStep => 'One small next step';
+
+  @override
+  String get diaryTemplateDreamHappened => 'What happened in the dream';
+
+  @override
+  String get diaryTemplateDreamImages => 'Vivid images';
+
+  @override
+  String get diaryTemplateDreamWaking => 'How I felt on waking';
+
+  @override
+  String get diaryTemplateTravelRoute => 'Today\'s route';
+
+  @override
+  String get diaryTemplateTravelSights => 'What I saw';
+
+  @override
+  String get diaryTemplateTravelFood => 'What I ate';
+
+  @override
+  String get diaryTemplateTravelNotes => 'Notes from the road';
+
+  @override
+  String get diaryTemplateReadingBook => 'Book: ';
+
+  @override
+  String get diaryTemplateReadingAuthor => 'Author: ';
+
+  @override
+  String get diaryTemplateReadingProgress => 'Read up to: ';
+
+  @override
+  String get diaryTemplateReadingQuotes => 'Quotes';
+
+  @override
+  String get diaryTemplateReadingThoughts => 'My thoughts';
+
+  @override
+  String get diaryTemplateMovieFilm => 'Title: ';
+
+  @override
+  String get diaryTemplateMovieRating => 'Rating:   / 10';
+
+  @override
+  String get diaryTemplateMovieStory => 'The story in one line';
+
+  @override
+  String get diaryTemplateMovieMoved => 'What moved me';
+
+  @override
+  String get diaryTemplateMovieLines => 'Favorite lines';
+
+  @override
+  String get diaryTemplateWorkoutActivity => 'Activity: ';
+
+  @override
+  String get diaryTemplateWorkoutDuration => 'Duration: ';
+
+  @override
+  String get diaryTemplateWorkoutTraining => 'Today\'s training';
+
+  @override
+  String get diaryTemplateWorkoutBody => 'How my body feels';
+
+  @override
+  String get diaryTemplateWorkDone => 'Done today';
+
+  @override
+  String get diaryTemplateWorkInProgress => 'In progress';
+
+  @override
+  String get diaryTemplateWorkBlockers => 'Blockers';
+
+  @override
+  String get diaryTemplateWorkTomorrow => 'Tomorrow';
+
+  @override
+  String get diaryTemplateLetterGreeting => 'Dear me, a year from now,';
+
+  @override
+  String get diaryTemplateLetterNow => 'Who I am now';
+
+  @override
+  String get diaryTemplateLetterMind => 'What\'s on my mind lately';
+
+  @override
+  String get diaryTemplateLetterHope => 'What I hope for you';
+
+  @override
+  String diaryTemplateLetterSignature(String date, String lunar) {
+    return 'Written on $date';
+  }
+
+  @override
+  String get diaryTemplateTagGratitude => 'Gratitude';
+
+  @override
+  String get diaryTemplateTagDream => 'Dreams';
+
+  @override
+  String get diaryTemplateTagTravel => 'Travel';
+
+  @override
+  String get diaryTemplateTagReading => 'Reading';
+
+  @override
+  String get diaryTemplateTagMovie => 'Movies';
+
+  @override
+  String get diaryTemplateTagWorkout => 'Workout';
+
+  @override
+  String get diaryTemplateTagWork => 'Work';
+
+  @override
+  String get diaryTemplateQuestion01 =>
+      'What small thing made you smile today?';
+
+  @override
+  String get diaryTemplateQuestion02 =>
+      'If you could redo today, what would you change?';
+
+  @override
+  String get diaryTemplateQuestion03 =>
+      'When did you last feel proud of yourself?';
+
+  @override
+  String get diaryTemplateQuestion04 =>
+      'Who would you most like to say something to right now?';
+
+  @override
+  String get diaryTemplateQuestion05 =>
+      'What is one new thing you learned today?';
+
+  @override
+  String get diaryTemplateQuestion06 =>
+      'What has been weighing on your mind lately?';
+
+  @override
+  String get diaryTemplateQuestion07 =>
+      'What does your ideal weekend look like?';
+
+  @override
+  String get diaryTemplateQuestion08 =>
+      'Was there a moment today when you felt understood?';
+
+  @override
+  String get diaryTemplateQuestion09 =>
+      'What are you reading, watching or listening to lately, and what does it give you?';
+
+  @override
+  String get diaryTemplateQuestion10 =>
+      'Do you need rest, company or a challenge right now?';
+
+  @override
+  String get diaryTemplateQuestion11 =>
+      'What were you worried about a year ago today? And now?';
+
+  @override
+  String get diaryTemplateQuestion12 => 'What did you do for yourself today?';
+
+  @override
+  String get diaryTemplateQuestion13 =>
+      'What made you laugh out loud recently?';
+
+  @override
+  String get diaryTemplateQuestion14 =>
+      'Which habit would you like to start or let go of?';
+
+  @override
+  String get diaryTemplateQuestion15 =>
+      'Describe yourself today in three words.';
+
+  @override
+  String get diaryTemplateQuestion16 =>
+      'What was the hardest part of today, and how did you handle it?';
+
+  @override
+  String get diaryTemplateQuestion17 =>
+      'Who are you grateful for lately, and why?';
+
+  @override
+  String get diaryTemplateQuestion18 =>
+      'If you could do only one thing tomorrow, what would it be?';
+
+  @override
+  String get diaryTemplateQuestion19 =>
+      'What changed your mind about something recently?';
+
+  @override
+  String get diaryTemplateQuestion20 =>
+      'What does today\'s weather remind you of?';
+
+  @override
+  String get diaryTemplateQuestion21 =>
+      'When did you last step out of your comfort zone?';
+
+  @override
+  String get diaryTemplateQuestion22 =>
+      'How will you see today\'s worries ten years from now?';
+
+  @override
+  String get diaryTemplateQuestion23 =>
+      'Did anything someone said today stay with you?';
+
+  @override
+  String get diaryTemplateQuestion24 =>
+      'Where have you felt most at peace lately?';
+
+  @override
+  String get diaryTemplateQuestion25 =>
+      'What would you tell your younger self?';
+
+  @override
+  String get diaryTemplateQuestion26 =>
+      'Do you know yourself a little better than yesterday?';
+
+  @override
+  String get diaryTemplateQuestion27 =>
+      'What small progress is worth celebrating lately?';
+
+  @override
+  String get diaryTemplateQuestion28 =>
+      'What have you wanted to try but haven\'t started? What\'s holding you back?';
+
+  @override
+  String get diaryTemplateQuestion29 =>
+      'How did you look after your feelings today?';
+
+  @override
+  String get diaryTemplateQuestion30 =>
+      'If you rated today from 1 to 10, what would it be, and why?';
+
+  @override
+  String get diaryTemplateVarDateToken => 'date';
+
+  @override
+  String get diaryTemplateVarDateLabel => 'Date';
+
+  @override
+  String get diaryTemplateVarWeekdayToken => 'weekday';
+
+  @override
+  String get diaryTemplateVarWeekdayLabel => 'Weekday';
+
+  @override
+  String get diaryTemplateVarTimeToken => 'time';
+
+  @override
+  String get diaryTemplateVarTimeLabel => 'Time';
+
+  @override
+  String get diaryTemplateVarYearToken => 'year';
+
+  @override
+  String get diaryTemplateVarYearLabel => 'Year';
+
+  @override
+  String get diaryTemplateVarMonthToken => 'month';
+
+  @override
+  String get diaryTemplateVarMonthLabel => 'Month';
+
+  @override
+  String get diaryTemplateVarDayToken => 'day';
+
+  @override
+  String get diaryTemplateVarDayLabel => 'Day';
+
+  @override
+  String get diaryTemplateVarWeekToken => 'week';
+
+  @override
+  String get diaryTemplateVarWeekLabel => 'Week number';
+
+  @override
+  String get diaryTemplateVarDayOfYearToken => 'dayOfYear';
+
+  @override
+  String get diaryTemplateVarDayOfYearLabel => 'Day of the year';
+
+  @override
+  String get diaryTemplateVarYearProgressToken => 'yearProgress';
+
+  @override
+  String get diaryTemplateVarYearProgressLabel => 'Year progress';
+
+  @override
+  String get diaryTemplateVarLunarToken => 'lunar';
+
+  @override
+  String get diaryTemplateVarLunarLabel => 'Lunar date';
+
+  @override
+  String get diaryTemplateVarSolarTermToken => 'solarTerm';
+
+  @override
+  String get diaryTemplateVarSolarTermLabel => 'Solar term';
+
+  @override
+  String get diaryTemplateVarQuestionToken => 'question';
+
+  @override
+  String get diaryTemplateVarQuestionLabel => 'Question of the day';
+
+  @override
+  String get diaryTemplateCategoryDaily => 'Daily';
+
+  @override
+  String get diaryTemplateCategoryReview => 'Review';
+
+  @override
+  String get diaryTemplateCategoryMood => 'Feelings';
+
+  @override
+  String get diaryTemplateCategoryLife => 'Life';
+
+  @override
+  String get diaryTemplateCategoryWork => 'Work';
+
+  @override
+  String get diaryTemplateCategoryOther => 'Other';
 }

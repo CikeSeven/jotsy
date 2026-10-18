@@ -5088,4 +5088,545 @@ class AppLocalizationsZh extends AppLocalizations {
   String backupImportTemplateMergeResult(int added) {
     return '日记模板：新增 $added 个';
   }
+
+  @override
+  String get diaryTemplateDailyName => '每日记录';
+
+  @override
+  String get diaryTemplateDailyDesc => '记下今天发生的事和此刻的心情';
+
+  @override
+  String diaryTemplateDailyTitle(String date, String weekday) {
+    return '$date $weekday';
+  }
+
+  @override
+  String get diaryTemplateMorningName => '晨间日记';
+
+  @override
+  String get diaryTemplateMorningDesc => '用一页清晨的文字给今天定个方向';
+
+  @override
+  String diaryTemplateMorningTitle(String date) {
+    return '晨间 · $date';
+  }
+
+  @override
+  String get diaryTemplateEveningName => '晚间复盘';
+
+  @override
+  String get diaryTemplateEveningDesc => '回顾今天的得失，安排好明天';
+
+  @override
+  String diaryTemplateEveningTitle(String date) {
+    return '复盘 · $date';
+  }
+
+  @override
+  String get diaryTemplateGratitudeName => '感恩日记';
+
+  @override
+  String get diaryTemplateGratitudeDesc => '写下三件值得感谢的事';
+
+  @override
+  String diaryTemplateGratitudeTitle(String date) {
+    return '感恩 · $date';
+  }
+
+  @override
+  String get diaryTemplateQuestionName => '每日一问';
+
+  @override
+  String get diaryTemplateQuestionDesc => '每天一个问题，换个角度看自己';
+
+  @override
+  String diaryTemplateQuestionTitle(String date) {
+    return '每日一问 · $date';
+  }
+
+  @override
+  String get diaryTemplateWeeklyName => '周回顾';
+
+  @override
+  String get diaryTemplateWeeklyDesc => '一周的亮点、收获和下周计划';
+
+  @override
+  String diaryTemplateWeeklyTitle(String date) {
+    return '周回顾 · $date';
+  }
+
+  @override
+  String get diaryTemplateMonthlyName => '月度复盘';
+
+  @override
+  String get diaryTemplateMonthlyDesc => '回顾这个月，给下个月一个方向';
+
+  @override
+  String diaryTemplateMonthlyTitle(String date) {
+    return '月度复盘 · $date';
+  }
+
+  @override
+  String get diaryTemplateEmotionName => '情绪梳理';
+
+  @override
+  String get diaryTemplateEmotionDesc => '把情绪写下来，看清它从哪里来';
+
+  @override
+  String diaryTemplateEmotionTitle(String date) {
+    return '情绪梳理 · $date';
+  }
+
+  @override
+  String get diaryTemplateDreamName => '梦境记录';
+
+  @override
+  String get diaryTemplateDreamDesc => '醒来趁还记得，把梦写下来';
+
+  @override
+  String diaryTemplateDreamTitle(String date) {
+    return '梦 · $date';
+  }
+
+  @override
+  String get diaryTemplateTravelName => '旅行游记';
+
+  @override
+  String get diaryTemplateTravelDesc => '记录路线、风景和旅途中的小事';
+
+  @override
+  String diaryTemplateTravelTitle(String date) {
+    return '旅行 · $date';
+  }
+
+  @override
+  String get diaryTemplateReadingName => '读书笔记';
+
+  @override
+  String get diaryTemplateReadingDesc => '摘录与感想，留下读过的痕迹';
+
+  @override
+  String diaryTemplateReadingTitle(String date) {
+    return '读书笔记 · $date';
+  }
+
+  @override
+  String get diaryTemplateMovieName => '观影记录';
+
+  @override
+  String get diaryTemplateMovieDesc => '片名、评分和打动你的地方';
+
+  @override
+  String diaryTemplateMovieTitle(String date) {
+    return '观影 · $date';
+  }
+
+  @override
+  String get diaryTemplateWorkoutName => '运动打卡';
+
+  @override
+  String get diaryTemplateWorkoutDesc => '项目、时长与身体的感受';
+
+  @override
+  String diaryTemplateWorkoutTitle(String date) {
+    return '运动打卡 · $date';
+  }
+
+  @override
+  String get diaryTemplateWorkName => '工作日志';
+
+  @override
+  String get diaryTemplateWorkDesc => '今日完成、进行中与明日计划';
+
+  @override
+  String diaryTemplateWorkTitle(String date, String weekday) {
+    return '工作日志 · $date $weekday';
+  }
+
+  @override
+  String get diaryTemplateLetterName => '给未来的信';
+
+  @override
+  String get diaryTemplateLetterDesc => '写给一年后的自己，封存成时间胶囊';
+
+  @override
+  String get diaryTemplateLetterTitle => '写给一年后的自己';
+
+  @override
+  String get diaryTemplateDailyHappened => '今天发生了什么';
+
+  @override
+  String get diaryTemplateDailyMoment => '印象最深的一刻';
+
+  @override
+  String get diaryTemplateDailyMood => '此刻的心情';
+
+  @override
+  String diaryTemplateMorningWake(String time, String term) {
+    return '$time 醒来，$term时节。';
+  }
+
+  @override
+  String get diaryTemplateMorningTop3 => '今天最重要的三件事';
+
+  @override
+  String get diaryTemplateMorningLookForward => '我期待的事';
+
+  @override
+  String get diaryTemplateMorningWords => '给今天的一句话';
+
+  @override
+  String get diaryTemplateEveningDone => '今天完成了';
+
+  @override
+  String get diaryTemplateEveningWentWell => '做得好的地方';
+
+  @override
+  String get diaryTemplateEveningBetter => '可以更好的地方';
+
+  @override
+  String get diaryTemplateEveningTomorrow => '明天的安排';
+
+  @override
+  String get diaryTemplateGratitudeThree => '今天让我心怀感激的三件事：';
+
+  @override
+  String get diaryTemplateGratitudeThanks => '想对谁说声谢谢';
+
+  @override
+  String get diaryTemplateWeeklyHighlights => '本周亮点';
+
+  @override
+  String get diaryTemplateWeeklyWins => '完成与收获';
+
+  @override
+  String get diaryTemplateWeeklyOpen => '没做完的事';
+
+  @override
+  String get diaryTemplateWeeklyNext => '下周想做的事';
+
+  @override
+  String diaryTemplateMonthlyProgress(String progress) {
+    return '今年已过去 $progress。';
+  }
+
+  @override
+  String get diaryTemplateMonthlyKeyword => '这个月的关键词';
+
+  @override
+  String get diaryTemplateMonthlyMattered => '重要的事';
+
+  @override
+  String get diaryTemplateMonthlyWinsRegrets => '收获与遗憾';
+
+  @override
+  String get diaryTemplateMonthlyNext => '下个月想做的事';
+
+  @override
+  String get diaryTemplateEmotionHappened => '发生了什么';
+
+  @override
+  String get diaryTemplateEmotionFelt => '我感受到的情绪';
+
+  @override
+  String get diaryTemplateEmotionSource => '它从哪里来';
+
+  @override
+  String get diaryTemplateEmotionNeed => '我需要什么';
+
+  @override
+  String get diaryTemplateEmotionStep => '接下来能做的一件小事';
+
+  @override
+  String get diaryTemplateDreamHappened => '梦里发生了什么';
+
+  @override
+  String get diaryTemplateDreamImages => '印象深刻的画面';
+
+  @override
+  String get diaryTemplateDreamWaking => '醒来后的感受';
+
+  @override
+  String get diaryTemplateTravelRoute => '今天的路线';
+
+  @override
+  String get diaryTemplateTravelSights => '看到的风景';
+
+  @override
+  String get diaryTemplateTravelFood => '吃到的美食';
+
+  @override
+  String get diaryTemplateTravelNotes => '旅途小记';
+
+  @override
+  String get diaryTemplateReadingBook => '书名：';
+
+  @override
+  String get diaryTemplateReadingAuthor => '作者：';
+
+  @override
+  String get diaryTemplateReadingProgress => '读到：';
+
+  @override
+  String get diaryTemplateReadingQuotes => '摘录';
+
+  @override
+  String get diaryTemplateReadingThoughts => '我的想法';
+
+  @override
+  String get diaryTemplateMovieFilm => '片名：';
+
+  @override
+  String get diaryTemplateMovieRating => '评分：  / 10';
+
+  @override
+  String get diaryTemplateMovieStory => '一句话剧情';
+
+  @override
+  String get diaryTemplateMovieMoved => '打动我的地方';
+
+  @override
+  String get diaryTemplateMovieLines => '台词摘录';
+
+  @override
+  String get diaryTemplateWorkoutActivity => '项目：';
+
+  @override
+  String get diaryTemplateWorkoutDuration => '时长：';
+
+  @override
+  String get diaryTemplateWorkoutTraining => '今日训练';
+
+  @override
+  String get diaryTemplateWorkoutBody => '身体感受';
+
+  @override
+  String get diaryTemplateWorkDone => '今日完成';
+
+  @override
+  String get diaryTemplateWorkInProgress => '进行中';
+
+  @override
+  String get diaryTemplateWorkBlockers => '遇到的问题';
+
+  @override
+  String get diaryTemplateWorkTomorrow => '明日计划';
+
+  @override
+  String get diaryTemplateLetterGreeting => '亲爱的一年后的我：';
+
+  @override
+  String get diaryTemplateLetterNow => '现在的我';
+
+  @override
+  String get diaryTemplateLetterMind => '最近在想的事';
+
+  @override
+  String get diaryTemplateLetterHope => '希望那时的你';
+
+  @override
+  String diaryTemplateLetterSignature(String date, String lunar) {
+    return '写于 $date，农历$lunar';
+  }
+
+  @override
+  String get diaryTemplateTagGratitude => '感恩';
+
+  @override
+  String get diaryTemplateTagDream => '梦境';
+
+  @override
+  String get diaryTemplateTagTravel => '旅行';
+
+  @override
+  String get diaryTemplateTagReading => '读书';
+
+  @override
+  String get diaryTemplateTagMovie => '观影';
+
+  @override
+  String get diaryTemplateTagWorkout => '运动';
+
+  @override
+  String get diaryTemplateTagWork => '工作';
+
+  @override
+  String get diaryTemplateQuestion01 => '今天让你微笑的一件小事是什么？';
+
+  @override
+  String get diaryTemplateQuestion02 => '如果今天可以重来，你会改变什么？';
+
+  @override
+  String get diaryTemplateQuestion03 => '最近一次感到自豪是什么时候？';
+
+  @override
+  String get diaryTemplateQuestion04 => '此刻你最想对谁说一句话？';
+
+  @override
+  String get diaryTemplateQuestion05 => '今天学到的一件新东西是什么？';
+
+  @override
+  String get diaryTemplateQuestion06 => '最近有什么事让你一直放不下？';
+
+  @override
+  String get diaryTemplateQuestion07 => '你理想中的周末是什么样子？';
+
+  @override
+  String get diaryTemplateQuestion08 => '今天有哪个瞬间让你觉得被理解？';
+
+  @override
+  String get diaryTemplateQuestion09 => '最近在读、在看或在听什么？它带给你什么？';
+
+  @override
+  String get diaryTemplateQuestion10 => '你现在最需要的是休息、陪伴还是挑战？';
+
+  @override
+  String get diaryTemplateQuestion11 => '一年前的今天你在担心什么？现在呢？';
+
+  @override
+  String get diaryTemplateQuestion12 => '今天你为自己做了什么？';
+
+  @override
+  String get diaryTemplateQuestion13 => '最近一次大笑是因为什么？';
+
+  @override
+  String get diaryTemplateQuestion14 => '有什么习惯是你想开始或想放下的？';
+
+  @override
+  String get diaryTemplateQuestion15 => '用三个词形容今天的自己。';
+
+  @override
+  String get diaryTemplateQuestion16 => '今天最大的困难是什么？你是怎么应对的？';
+
+  @override
+  String get diaryTemplateQuestion17 => '你最近感激的一个人是谁？为什么？';
+
+  @override
+  String get diaryTemplateQuestion18 => '如果明天只能做一件事，你会做什么？';
+
+  @override
+  String get diaryTemplateQuestion19 => '最近有什么让你改变了看法？';
+
+  @override
+  String get diaryTemplateQuestion20 => '今天的天气让你想起了什么？';
+
+  @override
+  String get diaryTemplateQuestion21 => '最近一次走出舒适区是什么时候？';
+
+  @override
+  String get diaryTemplateQuestion22 => '十年后的你会怎样看待今天的烦恼？';
+
+  @override
+  String get diaryTemplateQuestion23 => '今天有没有哪句话让你印象深刻？';
+
+  @override
+  String get diaryTemplateQuestion24 => '最近让你感到平静的地方是哪里？';
+
+  @override
+  String get diaryTemplateQuestion25 => '你想对小时候的自己说些什么？';
+
+  @override
+  String get diaryTemplateQuestion26 => '今天的你，比昨天多了解自己一点了吗？';
+
+  @override
+  String get diaryTemplateQuestion27 => '最近有什么值得庆祝的小进步？';
+
+  @override
+  String get diaryTemplateQuestion28 => '有什么事一直想尝试却还没开始？是什么在阻碍你？';
+
+  @override
+  String get diaryTemplateQuestion29 => '今天你是怎样照顾自己的情绪的？';
+
+  @override
+  String get diaryTemplateQuestion30 => '如果给今天打分（1–10），你会打几分？为什么？';
+
+  @override
+  String get diaryTemplateVarDateToken => '日期';
+
+  @override
+  String get diaryTemplateVarDateLabel => '日期';
+
+  @override
+  String get diaryTemplateVarWeekdayToken => '星期';
+
+  @override
+  String get diaryTemplateVarWeekdayLabel => '星期';
+
+  @override
+  String get diaryTemplateVarTimeToken => '时间';
+
+  @override
+  String get diaryTemplateVarTimeLabel => '时间';
+
+  @override
+  String get diaryTemplateVarYearToken => '年';
+
+  @override
+  String get diaryTemplateVarYearLabel => '年';
+
+  @override
+  String get diaryTemplateVarMonthToken => '月';
+
+  @override
+  String get diaryTemplateVarMonthLabel => '月';
+
+  @override
+  String get diaryTemplateVarDayToken => '日';
+
+  @override
+  String get diaryTemplateVarDayLabel => '日';
+
+  @override
+  String get diaryTemplateVarWeekToken => '周数';
+
+  @override
+  String get diaryTemplateVarWeekLabel => '周数';
+
+  @override
+  String get diaryTemplateVarDayOfYearToken => '第几天';
+
+  @override
+  String get diaryTemplateVarDayOfYearLabel => '第几天';
+
+  @override
+  String get diaryTemplateVarYearProgressToken => '年进度';
+
+  @override
+  String get diaryTemplateVarYearProgressLabel => '年进度';
+
+  @override
+  String get diaryTemplateVarLunarToken => '农历';
+
+  @override
+  String get diaryTemplateVarLunarLabel => '农历';
+
+  @override
+  String get diaryTemplateVarSolarTermToken => '节气';
+
+  @override
+  String get diaryTemplateVarSolarTermLabel => '节气';
+
+  @override
+  String get diaryTemplateVarQuestionToken => '今日一问';
+
+  @override
+  String get diaryTemplateVarQuestionLabel => '今日一问';
+
+  @override
+  String get diaryTemplateCategoryDaily => '日常';
+
+  @override
+  String get diaryTemplateCategoryReview => '复盘';
+
+  @override
+  String get diaryTemplateCategoryMood => '情绪';
+
+  @override
+  String get diaryTemplateCategoryLife => '生活';
+
+  @override
+  String get diaryTemplateCategoryWork => '工作';
+
+  @override
+  String get diaryTemplateCategoryOther => '其他';
 }

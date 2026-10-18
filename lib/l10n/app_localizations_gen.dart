@@ -10387,6 +10387,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get diaryTemplateCategoryOther;
+
+  /// Header of the template suggestion strip under the title of a blank new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a template'**
+  String get diaryTemplateStripTitle;
+
+  /// Template suggestion strip: open the full template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get diaryTemplateStripAll;
+
+  /// Tooltip of the close button on the template suggestion strip (hides it for this entry).
+  ///
+  /// In en, this message translates to:
+  /// **'Hide template suggestions'**
+  String get diaryTemplateStripDismiss;
+
+  /// Small badge on a template recommended for the current time or date.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get diaryTemplateRecommended;
+
+  /// Shown for a user template without a name.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled template'**
+  String get diaryTemplateUntitled;
+
+  /// Snackbar after applying a template to a new entry, with an Undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied “{name}”'**
+  String diaryTemplateApplied(String name);
+
+  /// Snackbar when a new entry opens with the auto-apply template already applied, with an Undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'Started with “{name}”'**
+  String diaryTemplateAutoApplied(String name);
+
+  /// Title of the template picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a template'**
+  String get diaryTemplatePickerTitle;
+
+  /// Template picker filter: every template.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get diaryTemplateFilterAll;
+
+  /// Template picker filter: templates recommended right now.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get diaryTemplateFilterRecommended;
+
+  /// Template picker filter: the user's own templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Mine'**
+  String get diaryTemplateFilterMine;
+
+  /// Template picker: the selected filter has no templates.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates here'**
+  String get diaryTemplatePickerEmpty;
+
+  /// Template picker preview: apply the previewed template.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this template'**
+  String get diaryTemplatePickerUse;
+
+  /// Template picker preview: pick another question for the question-of-the-day variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Another question'**
+  String get diaryTemplatePickerShuffle;
+
+  /// Hint above the template preview explaining that variables are already resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates and questions are filled in for this entry.'**
+  String get diaryTemplatePickerPreviewHint;
+
+  /// Preset summary chip: the template seals the entry as a time capsule; the placeholder is the duration such as “One year”.
+  ///
+  /// In en, this message translates to:
+  /// **'Time capsule: {when}'**
+  String diaryTemplatePresetCapsule(String when);
+
+  /// Preset summary chip: the energy level the template sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy {level}/5'**
+  String diaryTemplatePresetEnergy(int level);
+
+  /// Small badge on a built-in template the user has hidden from the picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get diaryTemplateHiddenBadge;
 }
 
 class _AppLocalizationsDelegate

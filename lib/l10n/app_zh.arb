@@ -7979,5 +7979,97 @@
   "diaryTemplateCategoryOther": "其他",
   "@diaryTemplateCategoryOther": {
     "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateStripTitle": "从模板开始",
+  "@diaryTemplateStripTitle": {
+    "description": "空白新建日记标题下“模板建议条”的标题。"
+  },
+  "diaryTemplateStripAll": "全部",
+  "@diaryTemplateStripAll": {
+    "description": "模板建议条：打开完整的模板面板。"
+  },
+  "diaryTemplateStripDismiss": "收起模板建议",
+  "@diaryTemplateStripDismiss": {
+    "description": "模板建议条关闭按钮的提示（本次编辑不再出现）。"
+  },
+  "diaryTemplateRecommended": "推荐",
+  "@diaryTemplateRecommended": {
+    "description": "按当前时段或日期推荐的模板上的小标记。"
+  },
+  "diaryTemplateUntitled": "未命名模板",
+  "@diaryTemplateUntitled": {
+    "description": "没有名称的用户模板显示的名称。"
+  },
+  "diaryTemplateApplied": "已套用「{name}」",
+  "@diaryTemplateApplied": {
+    "description": "套用模板后的提示，带撤销按钮。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateAutoApplied": "已自动套用「{name}」",
+  "@diaryTemplateAutoApplied": {
+    "description": "新建日记自动套用了默认模板时的提示，带撤销按钮。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatePickerTitle": "选择模板",
+  "@diaryTemplatePickerTitle": {
+    "description": "模板选择面板的标题。"
+  },
+  "diaryTemplateFilterAll": "全部",
+  "@diaryTemplateFilterAll": {
+    "description": "模板面板筛选项：全部模板。"
+  },
+  "diaryTemplateFilterRecommended": "推荐",
+  "@diaryTemplateFilterRecommended": {
+    "description": "模板面板筛选项：此刻推荐的模板。"
+  },
+  "diaryTemplateFilterMine": "我的",
+  "@diaryTemplateFilterMine": {
+    "description": "模板面板筛选项：我的模板。"
+  },
+  "diaryTemplatePickerEmpty": "这里还没有模板",
+  "@diaryTemplatePickerEmpty": {
+    "description": "模板面板：当前筛选下没有模板。"
+  },
+  "diaryTemplatePickerUse": "使用这个模板",
+  "@diaryTemplatePickerUse": {
+    "description": "模板面板预览页：套用正在预览的模板。"
+  },
+  "diaryTemplatePickerShuffle": "换一题",
+  "@diaryTemplatePickerShuffle": {
+    "description": "模板面板预览页：给“今日一问”换一道题。"
+  },
+  "diaryTemplatePickerPreviewHint": "日期与问题已按这篇日记填好。",
+  "@diaryTemplatePickerPreviewHint": {
+    "description": "模板预览上方的说明：变量已经按这篇日记替换。"
+  },
+  "diaryTemplatePresetCapsule": "时间胶囊 · {when}",
+  "@diaryTemplatePresetCapsule": {
+    "description": "预设摘要：模板会把日记设为时间胶囊，占位符为“一年后”这类时长。",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatePresetEnergy": "精力 {level}/5",
+  "@diaryTemplatePresetEnergy": {
+    "description": "预设摘要：模板预设的精力值。",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplateHiddenBadge": "已隐藏",
+  "@diaryTemplateHiddenBadge": {
+    "description": "被用户隐藏的内置模板上的小标记。"
   }
 }

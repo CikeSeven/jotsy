@@ -5629,4 +5629,66 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTemplateCategoryOther => '其他';
+
+  @override
+  String get diaryTemplateStripTitle => '从模板开始';
+
+  @override
+  String get diaryTemplateStripAll => '全部';
+
+  @override
+  String get diaryTemplateStripDismiss => '收起模板建议';
+
+  @override
+  String get diaryTemplateRecommended => '推荐';
+
+  @override
+  String get diaryTemplateUntitled => '未命名模板';
+
+  @override
+  String diaryTemplateApplied(String name) {
+    return '已套用「$name」';
+  }
+
+  @override
+  String diaryTemplateAutoApplied(String name) {
+    return '已自动套用「$name」';
+  }
+
+  @override
+  String get diaryTemplatePickerTitle => '选择模板';
+
+  @override
+  String get diaryTemplateFilterAll => '全部';
+
+  @override
+  String get diaryTemplateFilterRecommended => '推荐';
+
+  @override
+  String get diaryTemplateFilterMine => '我的';
+
+  @override
+  String get diaryTemplatePickerEmpty => '这里还没有模板';
+
+  @override
+  String get diaryTemplatePickerUse => '使用这个模板';
+
+  @override
+  String get diaryTemplatePickerShuffle => '换一题';
+
+  @override
+  String get diaryTemplatePickerPreviewHint => '日期与问题已按这篇日记填好。';
+
+  @override
+  String diaryTemplatePresetCapsule(String when) {
+    return '时间胶囊 · $when';
+  }
+
+  @override
+  String diaryTemplatePresetEnergy(int level) {
+    return '精力 $level/5';
+  }
+
+  @override
+  String get diaryTemplateHiddenBadge => '已隐藏';
 }

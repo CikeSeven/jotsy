@@ -6179,4 +6179,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateCategoryOther => 'Other';
+
+  @override
+  String get diaryTemplateStripTitle => 'Start from a template';
+
+  @override
+  String get diaryTemplateStripAll => 'All';
+
+  @override
+  String get diaryTemplateStripDismiss => 'Hide template suggestions';
+
+  @override
+  String get diaryTemplateRecommended => 'Suggested';
+
+  @override
+  String get diaryTemplateUntitled => 'Untitled template';
+
+  @override
+  String diaryTemplateApplied(String name) {
+    return 'Applied “$name”';
+  }
+
+  @override
+  String diaryTemplateAutoApplied(String name) {
+    return 'Started with “$name”';
+  }
+
+  @override
+  String get diaryTemplatePickerTitle => 'Choose a template';
+
+  @override
+  String get diaryTemplateFilterAll => 'All';
+
+  @override
+  String get diaryTemplateFilterRecommended => 'Suggested';
+
+  @override
+  String get diaryTemplateFilterMine => 'Mine';
+
+  @override
+  String get diaryTemplatePickerEmpty => 'No templates here';
+
+  @override
+  String get diaryTemplatePickerUse => 'Use this template';
+
+  @override
+  String get diaryTemplatePickerShuffle => 'Another question';
+
+  @override
+  String get diaryTemplatePickerPreviewHint =>
+      'Dates and questions are filled in for this entry.';
+
+  @override
+  String diaryTemplatePresetCapsule(String when) {
+    return 'Time capsule: $when';
+  }
+
+  @override
+  String diaryTemplatePresetEnergy(int level) {
+    return 'Energy $level/5';
+  }
+
+  @override
+  String get diaryTemplateHiddenBadge => 'Hidden';
 }

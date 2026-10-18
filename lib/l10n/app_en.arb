@@ -7979,5 +7979,97 @@
   "diaryTemplateCategoryOther": "Other",
   "@diaryTemplateCategoryOther": {
     "description": "Diary template category, used as a filter in the template picker."
+  },
+  "diaryTemplateStripTitle": "Start from a template",
+  "@diaryTemplateStripTitle": {
+    "description": "Header of the template suggestion strip under the title of a blank new entry."
+  },
+  "diaryTemplateStripAll": "All",
+  "@diaryTemplateStripAll": {
+    "description": "Template suggestion strip: open the full template picker."
+  },
+  "diaryTemplateStripDismiss": "Hide template suggestions",
+  "@diaryTemplateStripDismiss": {
+    "description": "Tooltip of the close button on the template suggestion strip (hides it for this entry)."
+  },
+  "diaryTemplateRecommended": "Suggested",
+  "@diaryTemplateRecommended": {
+    "description": "Small badge on a template recommended for the current time or date."
+  },
+  "diaryTemplateUntitled": "Untitled template",
+  "@diaryTemplateUntitled": {
+    "description": "Shown for a user template without a name."
+  },
+  "diaryTemplateApplied": "Applied “{name}”",
+  "@diaryTemplateApplied": {
+    "description": "Snackbar after applying a template to a new entry, with an Undo action.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateAutoApplied": "Started with “{name}”",
+  "@diaryTemplateAutoApplied": {
+    "description": "Snackbar when a new entry opens with the auto-apply template already applied, with an Undo action.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatePickerTitle": "Choose a template",
+  "@diaryTemplatePickerTitle": {
+    "description": "Title of the template picker sheet."
+  },
+  "diaryTemplateFilterAll": "All",
+  "@diaryTemplateFilterAll": {
+    "description": "Template picker filter: every template."
+  },
+  "diaryTemplateFilterRecommended": "Suggested",
+  "@diaryTemplateFilterRecommended": {
+    "description": "Template picker filter: templates recommended right now."
+  },
+  "diaryTemplateFilterMine": "Mine",
+  "@diaryTemplateFilterMine": {
+    "description": "Template picker filter: the user's own templates."
+  },
+  "diaryTemplatePickerEmpty": "No templates here",
+  "@diaryTemplatePickerEmpty": {
+    "description": "Template picker: the selected filter has no templates."
+  },
+  "diaryTemplatePickerUse": "Use this template",
+  "@diaryTemplatePickerUse": {
+    "description": "Template picker preview: apply the previewed template."
+  },
+  "diaryTemplatePickerShuffle": "Another question",
+  "@diaryTemplatePickerShuffle": {
+    "description": "Template picker preview: pick another question for the question-of-the-day variable."
+  },
+  "diaryTemplatePickerPreviewHint": "Dates and questions are filled in for this entry.",
+  "@diaryTemplatePickerPreviewHint": {
+    "description": "Hint above the template preview explaining that variables are already resolved."
+  },
+  "diaryTemplatePresetCapsule": "Time capsule: {when}",
+  "@diaryTemplatePresetCapsule": {
+    "description": "Preset summary chip: the template seals the entry as a time capsule; the placeholder is the duration such as “One year”.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatePresetEnergy": "Energy {level}/5",
+  "@diaryTemplatePresetEnergy": {
+    "description": "Preset summary chip: the energy level the template sets.",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplateHiddenBadge": "Hidden",
+  "@diaryTemplateHiddenBadge": {
+    "description": "Small badge on a built-in template the user has hidden from the picker."
   }
 }

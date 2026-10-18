@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:node_diary/ui/diaries/sections/diary_export_sheet.dart';
+import 'package:node_diary/ui/widgets/expressive_choice_tile.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -93,6 +95,30 @@ void main() {
     expect(find.text('从旧到新'), findsNothing);
     expect(find.text('选项'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('format radio dots stay centered beside the descriptions', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await _open(tester);
+
+    final tiles = find.descendant(
+      of: find.byType(ExpressiveChoiceTile),
+      matching: find.byType(ListTile),
+    );
+    expect(tiles, findsNWidgets(DiaryExportFormat.values.length));
+    for (var index = 0; index < DiaryExportFormat.values.length; index++) {
+      final tile = tiles.at(index);
+      final dot = find.descendant(of: tile, matching: find.byType(FaIcon));
+      expect(
+        (tester.getCenter(dot).dy - tester.getCenter(tile).dy).abs(),
+        lessThan(0.5),
+        reason: DiaryExportFormat.values[index].name,
+      );
+    }
   });
 
   testWidgets('save and share close the sheet with the chosen options', (

@@ -25,30 +25,36 @@ double _dotOffset(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('the dot follows the title row next to a description', (
+  testWidgets('the dot stays centered beside a description that wraps', (
     tester,
   ) async {
+    const description =
+        'Keeps every local entry and only adds the missing ones';
     await _pump(
       tester,
       ExpressiveChoiceTile(
         label: 'Merge',
-        description: 'Keeps every local entry and only adds the missing ones',
+        description: description,
         selected: true,
+        destructive: true,
         onTap: () {},
       ),
     );
-    expect(_dotOffset(tester), lessThan(-4));
+    // 说明确实折成了多行，否则居中与对齐标题行看不出差别。
+    final lineHeight = tester.getSize(find.text('Merge')).height;
+    expect(
+      tester.getSize(find.text(description)).height,
+      greaterThan(lineHeight * 1.5),
+    );
+    expect(_dotOffset(tester).abs(), lessThan(0.5));
   });
 
-  testWidgets('centerIndicator centers the dot beside a one-line example', (
-    tester,
-  ) async {
+  testWidgets('the dot is centered beside a one-line example', (tester) async {
     await _pump(
       tester,
       ExpressiveChoiceTile(
         label: 'Full date',
         description: '2026/10/13',
-        centerIndicator: true,
         selected: false,
         onTap: () {},
       ),

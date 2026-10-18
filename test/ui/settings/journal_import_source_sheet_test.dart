@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/widgets/journal_import_source_sheet.dart';
@@ -105,6 +106,30 @@ void main() {
       expect(find.text('Day One'), findsOneWidget);
     } finally {
       debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  testWidgets('the app icon and arrow stay centered beside a wrapping hint', (
+    tester,
+  ) async {
+    await _open(tester, size: const Size(320, 640));
+    const hint = '在 iPhone「设置 › App › 手记」中导出所有条目（.zip）';
+    final tile = find.ancestor(
+      of: find.text('Apple 手记'),
+      matching: find.byType(ListTile),
+    );
+    // 说明确实折成了多行，否则居中与对齐首行看不出差别。
+    final titleHeight = tester.getSize(find.text('Apple 手记')).height;
+    expect(tester.getSize(find.text(hint)).height, greaterThan(titleHeight));
+    final icons = find.descendant(of: tile, matching: find.byType(FaIcon));
+    expect(icons, findsNWidgets(2));
+    for (var index = 0; index < 2; index++) {
+      expect(
+        (tester.getCenter(icons.at(index)).dy - tester.getCenter(tile).dy)
+            .abs(),
+        lessThan(0.5),
+        reason: index == 0 ? 'app icon' : 'arrow',
+      );
     }
   });
 

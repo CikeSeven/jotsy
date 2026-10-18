@@ -1103,5 +1103,5 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
 enum EditDiaryEntryMode { create, edit }
 
-/// 顶栏菜单：存为模板、编辑器设置。
+/// 顶栏菜单：选择模板（只在新建空白日记）、存为模板、编辑器设置。
 enum _EditorMenuAction { chooseTemplate, saveAsTemplate, editorSettings }

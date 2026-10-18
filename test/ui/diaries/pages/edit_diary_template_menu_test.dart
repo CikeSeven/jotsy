@@ -143,6 +143,7 @@ void main() {
 
     final labels = <String>[
       h.l10n.diaryTemplateChoose,
+      h.l10n.diaryDayPhotosMenu,
       h.l10n.diaryTemplateSaveAs,
       h.l10n.settingsEditorTitle,
     ];
@@ -154,6 +155,13 @@ void main() {
       find.descendant(
         of: find.widgetWithText(ExpressiveMenuItem, h.l10n.diaryTemplateChoose),
         matching: find.byIcon(FontAwesomeIcons.wandMagicSparkles.data),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ExpressiveMenuItem, h.l10n.diaryDayPhotosMenu),
+        matching: find.byIcon(FontAwesomeIcons.solidImages.data),
       ),
       findsOneWidget,
     );

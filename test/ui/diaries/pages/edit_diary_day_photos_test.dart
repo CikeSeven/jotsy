@@ -78,11 +78,35 @@ void main() {
     return library;
   }
 
+  /// 编辑已有日记：日记表的读取在假时钟下要离开它推进。
+  Future<void> settleDrift(WidgetTester tester) async {
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+  }
+
+  /// 写入一篇发表在 [backfillDay] 晚上的日记，返回它的业务 id。
+  Future<String> seedDiary(WidgetTester tester) async => (await tester.runAsync(
+    () => database.createDiary(
+      title: 'Hike day',
+      contentDocJson: jsonEncode(<Map<String, Object?>>[
+        <String, Object?>{'insert': 'We walked.\n'},
+      ]),
+      contentText: 'We walked.',
+      metadataJson: '{}',
+      createdAtOverride: backfillDay.add(const Duration(hours: 21)),
+    ),
+  ))!;
+
   Future<AppLocalizations> openEditor(
     WidgetTester tester, {
     required DayPhotoLibrary library,
     DateTime? createDate,
     bool suggestionsEnabled = true,
+    bool editExisting = false,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -92,6 +116,7 @@ void main() {
     addTearDown(database.close);
     settings = await SettingsService.create();
     await settings.setDayPhotoSuggestionsEnabled(suggestionsEnabled);
+    final existing = editExisting ? await seedDiary(tester) : null;
 
     await tester.pumpWidget(
       ProviderScope(
@@ -108,13 +133,16 @@ void main() {
             quill.FlutterQuillLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: EditDiaryPage(
-            entryMode: EditDiaryEntryMode.create,
-            createDateOverride: createDate,
-          ),
+          home: existing != null
+              ? EditDiaryPage(diaryId: existing)
+              : EditDiaryPage(
+                  entryMode: EditDiaryEntryMode.create,
+                  createDateOverride: createDate,
+                ),
         ),
       ),
     );
+    if (existing != null) await settleDrift(tester);
     await tester.pumpAndSettle();
     addTearDown(() => tester.pump(Duration.zero));
     return tester.element(find.byType(EditDiaryPage)).l10n;
@@ -397,5 +425,218 @@ void main() {
     );
     expect(find.byType(DiaryDayPhotoTile), findsNothing);
     expect(library.checkCount, 0);
+  });
+
+  group('the top-bar menu', () {
+    Finder menuItem(AppLocalizations l10n) =>
+        find.text(l10n.diaryDayPhotosMenu);
+
+    Finder sheetTiles() => find.descendant(
+      of: find.byType(DiaryDayPhotosSheet),
+      matching: find.byType(DiaryDayPhotoTile),
+    );
+
+    Future<void> openMenu(WidgetTester tester, AppLocalizations l10n) async {
+      await tester.tap(find.byTooltip(l10n.diaryEditorMoreActions));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> openDayPhotos(
+      WidgetTester tester,
+      AppLocalizations l10n,
+    ) async {
+      await openMenu(tester, l10n);
+      await tester.tap(menuItem(l10n));
+      await tester.pumpAndSettle();
+    }
+
+    /// 编辑已有日记：页面卸载后让 drift 的计时器走完，避免“Timer is still
+    /// pending”。
+    Future<void> unmount(WidgetTester tester) async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(Duration.zero);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+    }
+
+    testWidgets('opens the past day\'s photos with the setting off', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+        suggestionsEnabled: false,
+      );
+      expect(find.byType(DiaryDayPhotoTile), findsNothing);
+      expect(library.checkCount, 0);
+
+      await openDayPhotos(tester, l10n);
+
+      expect(
+        find.text(
+          l10n.diaryDayPhotosSheetTitle(l10n.formatEyebrowDate(backfillDay)),
+        ),
+        findsOneWidget,
+      );
+      expect(sheetTiles(), findsNWidgets(2));
+      expect(library.requestCount, 0);
+
+      await tester.tap(sheetTiles().at(1));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.diaryDayPhotosInsertCount(1)));
+      await tester.pumpAndSettle();
+      expect(find.byType(DiaryDayPhotosSheet), findsNothing);
+      await waitForImages(tester, 1);
+      expect(imageEmbeds(tester).map(p.basename), ['hike.png']);
+      // 开关仍关着：提示条不因打开过面板而出现。
+      expect(find.byType(DiaryDayPhotoTile), findsNothing);
+    });
+
+    testWidgets('shows the empty state for a day without photos', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: now,
+        suggestionsEnabled: false,
+      );
+
+      await openDayPhotos(tester, l10n);
+
+      expect(find.text(l10n.diaryDayPhotosEmpty), findsOneWidget);
+      expect(sheetTiles(), findsNothing);
+      // 没有照片时没有底栏。
+      expect(find.text(l10n.diaryDayPhotosInsert), findsNothing);
+      expect(library.queriedDays, [DateTime(now.year, now.month, now.day)]);
+    });
+
+    testWidgets('asks for photo access only after tapping allow', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(
+        tester,
+        access: DayPhotoAccess.denied,
+      );
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: backfillDay,
+        suggestionsEnabled: false,
+      );
+
+      await openDayPhotos(tester, l10n);
+
+      expect(
+        find.descendant(
+          of: find.byType(DiaryDayPhotosSheet),
+          matching: find.text(l10n.diaryDayPhotosAccessBody),
+        ),
+        findsOneWidget,
+      );
+      expect(library.requestCount, 0);
+
+      await tester.tap(find.text(l10n.diaryDayPhotosAllowAccess));
+      await tester.pumpAndSettle();
+
+      expect(library.requestCount, 1);
+      expect(sheetTiles(), findsNWidgets(2));
+    });
+
+    testWidgets('is not offered for a future date', (tester) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        createDate: DateTime(now.year, now.month, now.day + 5),
+      );
+
+      await openMenu(tester, l10n);
+
+      expect(find.text(l10n.diaryTemplateSaveAs), findsOneWidget);
+      expect(menuItem(l10n), findsNothing);
+      expect(library.checkCount, 0);
+    });
+
+    testWidgets('editing a diary opens its day and inserts a photo', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        editExisting: true,
+      );
+
+      await openDayPhotos(tester, l10n);
+
+      expect(
+        find.text(
+          l10n.diaryDayPhotosSheetTitle(l10n.formatEyebrowDate(backfillDay)),
+        ),
+        findsOneWidget,
+      );
+      expect(sheetTiles(), findsNWidgets(2));
+
+      await tester.tap(sheetTiles().at(0));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.diaryDayPhotosInsertCount(1)));
+      await tester.pumpAndSettle();
+      await waitForImages(tester, 1);
+      expect(imageEmbeds(tester).map(p.basename), ['breakfast.png']);
+
+      await unmount(tester);
+    });
+
+    testWidgets('editing a diary sets the cover without writing a draft', (
+      tester,
+    ) async {
+      final library = await galleryLibrary(tester);
+      final l10n = await openEditor(
+        tester,
+        library: library,
+        editExisting: true,
+      );
+
+      await openDayPhotos(tester, l10n);
+      await tester.tap(sheetTiles().at(1));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(DiaryDayPhotosSheet),
+          matching: find.text(l10n.diaryDayPhotosSetCover),
+        ),
+      );
+      await waitForCover(tester, '14:00');
+
+      expect(coverLabel('14:00'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.text(l10n.diaryDayPhotosCoverSetEdit),
+        ),
+        findsOneWidget,
+      );
+
+      // 草稿防抖窗口（1.3 秒）与编辑自动保存（0.5 秒）都过去之后。
+      await tester.pump(const Duration(milliseconds: 1400));
+      await settleDrift(tester);
+      final drafts = await tester.runAsync(
+        () => database.watchDiaryDrafts().first,
+      );
+      expect(drafts, isEmpty);
+      final diaries = await tester.runAsync(
+        () => database.select(database.diaries).get(),
+      );
+      final cover = diaries!.single.cover;
+      expect(cover, isNotNull);
+      expect(p.isWithin(p.join(appRoot.path, 'diary_covers'), cover!), isTrue);
+
+      await unmount(tester);
+    });
   });
 }

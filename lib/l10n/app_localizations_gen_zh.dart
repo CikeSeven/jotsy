@@ -4979,10 +4979,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get settingsDayPhotoSuggestions => '补写时推荐当天照片';
+  String get settingsDayPhotoSuggestions => '自动显示当天照片';
 
   @override
-  String get settingsDayPhotoSuggestionsSubtitle => '补写过去某天的日记时，列出相册里这天拍的照片供挑选';
+  String get settingsDayPhotoSuggestionsSubtitle =>
+      '补写过去某天的日记时，在标题下列出这天拍的照片；关闭后仍可从编辑页右上角菜单查看';
 
   @override
   String get diaryDayPhotosSetCover => '设为封面';
@@ -5000,6 +5001,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryDayPhotosCoverSet => '已设为封面，发布页里可以查看或更换';
+
+  @override
+  String get diaryDayPhotosCoverSetEdit => '已设为封面';
+
+  @override
+  String get diaryDayPhotosMenu => '这天的照片';
+
+  @override
+  String get diaryDayPhotosEmpty => '这天没有拍照片';
 
   @override
   String get diaryLongImageBadge => '长图';

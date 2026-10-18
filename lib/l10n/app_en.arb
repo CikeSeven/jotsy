@@ -7041,11 +7041,11 @@
       }
     }
   },
-  "settingsDayPhotoSuggestions": "Suggest photos when backfilling",
+  "settingsDayPhotoSuggestions": "Show that day's photos automatically",
   "@settingsDayPhotoSuggestions": {
-    "description": "Editor settings: title of the switch for suggesting photos when backfilling."
+    "description": "Editor settings: title of the switch that automatically shows that day's photos under the title when backfilling."
   },
-  "settingsDayPhotoSuggestionsSubtitle": "When writing an entry for a past day, list photos taken that day so you can pick some",
+  "settingsDayPhotoSuggestionsSubtitle": "When backfilling a past day, list that day's photos under the title. When off, open them from the editor's top-right menu.",
   "@settingsDayPhotoSuggestionsSubtitle": {
     "description": "Editor settings: description of the backfill photo suggestion switch."
   },
@@ -7073,6 +7073,18 @@
   "diaryDayPhotosCoverSet": "Set as cover. You can see or change it on the publish page.",
   "@diaryDayPhotosCoverSet": {
     "description": "Photos from this day: hint after a photo becomes the cover."
+  },
+  "diaryDayPhotosCoverSetEdit": "Cover set",
+  "@diaryDayPhotosCoverSetEdit": {
+    "description": "Photos from this day: hint after a photo becomes the cover while editing an existing diary (there is no publish page)."
+  },
+  "diaryDayPhotosMenu": "Photos from this day",
+  "@diaryDayPhotosMenu": {
+    "description": "Editor top-bar menu item: opens the panel of photos taken on the diary's day."
+  },
+  "diaryDayPhotosEmpty": "No photos taken this day",
+  "@diaryDayPhotosEmpty": {
+    "description": "Photos from this day panel: shown when the gallery has no photos from that day."
   },
   "diaryLongImageBadge": "Long image",
   "@diaryLongImageBadge": {

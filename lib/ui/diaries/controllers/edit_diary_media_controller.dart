@@ -90,11 +90,38 @@ extension EditDiaryDayPhotosFlow on EditDiaryController {
     );
   }
 
+  /// 从顶栏菜单打开“这天的照片”面板（新建与编辑都可用，不看编辑器开关）。
+  ///
+  /// 先按当前日期同步一次（防止日期刚改、控制器还停在旧的一天），再
+  /// [DiaryDayPhotosController.browse] 发起读取（只查询授权，不弹权限框），
+  /// 然后打开面板；面板点“插入”返回 true，与提示条“全部”同一条插入链路。
+  Future<void> openDayPhotos() async {
+    if (_state._saving ||
+        _state._recordingPanelOpen ||
+        _state._mediaImportController.isBusy) {
+      return;
+    }
+    _state._syncDayPhotos();
+    final dayPhotos = _state._dayPhotos;
+    if (!dayPhotos.canBrowse) return;
+    dayPhotos.browse();
+    final insert = await showDiaryDayPhotosSheet(
+      _state.context,
+      controller: dayPhotos,
+      onSetCover: (photo) => unawaited(setDayPhotoCover(photo)),
+      onClearCover: clearDayPhotoCover,
+    );
+    if (insert == true && _state.mounted) await insertDayPhotos();
+  }
+
   /// 把“这天拍的照片”里的一张设为日记封面。
   ///
-  /// 封面拷贝到封面私有目录（与发布页选封面同一条链路），写进新建草稿并
-  /// 排程草稿保存；发布页打开即显示这张封面，仍可更换。原图只读，结束后
-  /// 释放插件为读取原图生成的缓存副本。
+  /// 封面拷贝到封面私有目录（与发布页选封面同一条链路）。新建模式写进新建
+  /// 草稿并排程草稿保存，发布页打开即显示这张封面，仍可更换；编辑模式经
+  /// _onMetaChanged → _markEditPanelDirty 随日记自动保存，不排程新建草稿：
+  /// 编辑模式下新建草稿的自动保存从未初始化，排程只是空操作，但显式按模式
+  /// 区分，免得日后初始化方式一变就往草稿箱写出多余的草稿。原图只读，结束
+  /// 后释放插件为读取原图生成的缓存副本。
   Future<void> setDayPhotoCover(DayPhoto photo) async {
     final actions = _state._metaActions;
     if (_state._saving || actions.importingCover.value) return;
@@ -121,14 +148,21 @@ extension EditDiaryDayPhotosFlow on EditDiaryController {
     final cover = _state._meta.value.cover;
     if (!applied || !_state.mounted || cover == null) return;
     dayPhotos.markCover(photo, cover);
-    scheduleCreateDraftAutoSave();
-    _showHint(_state.context.l10n.diaryDayPhotosCoverSet);
+    final l10n = _state.context.l10n;
+    if (_state._isCreateEntry) {
+      scheduleCreateDraftAutoSave();
+      _showHint(l10n.diaryDayPhotosCoverSet);
+    } else {
+      // 编辑页没有发布页，提示里不提它。
+      _showHint(l10n.diaryDayPhotosCoverSetEdit);
+    }
   }
 
-  /// 取消由“这天的照片”设定的封面；角标经 _onMetaChanged 同步消失。
+  /// 取消由“这天的照片”设定的封面；角标经 _onMetaChanged 同步消失。编辑
+  /// 模式同样经 _onMetaChanged 自动保存，只有新建模式排程草稿。
   void clearDayPhotoCover() {
     if (_state._saving) return;
     _state._metaActions.clearCover();
-    scheduleCreateDraftAutoSave();
+    if (_state._isCreateEntry) scheduleCreateDraftAutoSave();
   }
 }

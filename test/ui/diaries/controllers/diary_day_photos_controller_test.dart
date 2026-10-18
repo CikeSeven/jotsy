@@ -46,7 +46,7 @@ void main() {
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
 
-    controller.configure(day: DateTime(2026, 10, 12, 15, 20), enabled: true);
+    controller.configure(day: DateTime(2026, 10, 12, 15, 20), autoShow: true);
     // 读取中不显示，避免没照片的日子先闪出一块再消失。
     expect(controller.phase, DiaryDayPhotosPhase.hidden);
     await settle();
@@ -62,7 +62,7 @@ void main() {
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
 
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
 
     expect(controller.phase, DiaryDayPhotosPhase.hidden);
@@ -77,13 +77,13 @@ void main() {
     );
     final disabled = DiaryDayPhotosController(library: library);
     addTearDown(disabled.dispose);
-    disabled.configure(day: day, enabled: false);
+    disabled.configure(day: day, autoShow: false);
 
     final unsupported = DiaryDayPhotosController(
       library: FakeDayPhotoLibrary(isSupported: false),
     );
     addTearDown(unsupported.dispose);
-    unsupported.configure(day: day, enabled: true);
+    unsupported.configure(day: day, autoShow: true);
     await settle();
 
     expect(disabled.phase, DiaryDayPhotosPhase.hidden);
@@ -104,7 +104,7 @@ void main() {
       final controller = DiaryDayPhotosController(library: library);
       addTearDown(controller.dispose);
 
-      controller.configure(day: day, enabled: true);
+      controller.configure(day: day, autoShow: true);
       await settle();
       expect(controller.phase, DiaryDayPhotosPhase.needsAccess);
       expect(controller.shouldOpenSettings, isFalse);
@@ -138,7 +138,7 @@ void main() {
     );
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
 
     await controller.requestAccess();
@@ -158,9 +158,9 @@ void main() {
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
 
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
-    controller.configure(day: otherDay, enabled: true);
+    controller.configure(day: otherDay, autoShow: true);
     await settle();
     slow.complete([morning, noon]);
     await settle();
@@ -177,7 +177,7 @@ void main() {
     );
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
 
     controller
@@ -208,11 +208,11 @@ void main() {
     );
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
     controller.toggle(morning);
 
-    controller.configure(day: otherDay, enabled: true);
+    controller.configure(day: otherDay, autoShow: true);
     await settle();
 
     expect(controller.selectedCount, 0);
@@ -224,7 +224,7 @@ void main() {
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
 
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
 
     expect(controller.phase, DiaryDayPhotosPhase.hidden);
@@ -238,7 +238,7 @@ void main() {
     );
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
 
     controller.dismiss();
@@ -257,7 +257,7 @@ void main() {
     );
     final controller = DiaryDayPhotosController(library: library);
     addTearDown(controller.dispose);
-    controller.configure(day: day, enabled: true);
+    controller.configure(day: day, autoShow: true);
     await settle();
 
     controller.toggle(noon);
@@ -279,6 +279,242 @@ void main() {
     controller.markCover(noon, '/covers/noon.jpg');
     controller.syncCover(null);
     expect(controller.isCover(noon), isFalse);
+  });
+
+  group('diaryDay', () {
+    final now = DateTime(2026, 10, 17, 9);
+
+    test('today and earlier days can be browsed, future days cannot', () {
+      expect(
+        DiaryDayPhotosController.diaryDay(
+          DateTime(2026, 10, 17, 23, 30),
+          now: now,
+        ),
+        DateTime(2026, 10, 17),
+      );
+      expect(
+        DiaryDayPhotosController.diaryDay(DateTime(2026, 3, 2, 7), now: now),
+        DateTime(2026, 3, 2),
+      );
+      expect(
+        DiaryDayPhotosController.diaryDay(DateTime(2026, 10, 18), now: now),
+        isNull,
+      );
+      expect(DiaryDayPhotosController.diaryDay(null, now: now), isNull);
+    });
+  });
+
+  group('browsing from the menu', () {
+    test('loads the day even when the strip does not auto-show', () async {
+      final library = FakeDayPhotoLibrary(
+        photosByDay: {
+          day: [morning, noon],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+
+      controller.configure(day: day, autoShow: false);
+      await settle();
+      expect(library.checkCount, 0);
+      expect(controller.canBrowse, isTrue);
+
+      controller.browse();
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.loading);
+      await settle();
+
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.ready);
+      expect(controller.photos, [morning, noon]);
+      // 提示条仍不自动出现：开关只管它。
+      expect(controller.phase, DiaryDayPhotosPhase.hidden);
+    });
+
+    test('still loads after the strip was dismissed', () async {
+      final library = FakeDayPhotoLibrary(
+        photosByDay: {
+          day: [morning],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: true);
+      controller.dismiss();
+      await settle();
+      expect(controller.photos, isEmpty);
+
+      controller.browse();
+      await settle();
+
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.ready);
+      expect(controller.photos, [morning]);
+      expect(controller.phase, DiaryDayPhotosPhase.hidden);
+    });
+
+    test('dismissing the strip does not cancel a browse in flight', () async {
+      final slow = Completer<List<DayPhoto>>();
+      final library = FakeDayPhotoLibrary()..pendingQueries[day] = slow;
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: true);
+      controller.browse();
+      await settle();
+
+      controller.dismiss();
+      slow.complete([evening]);
+      await settle();
+
+      expect(controller.photos, [evening]);
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.ready);
+    });
+
+    test('never asks for permission, only checks it', () async {
+      final library = FakeDayPhotoLibrary(access: DayPhotoAccess.denied);
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: false);
+
+      controller.browse();
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.loading);
+      await settle();
+
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.needsAccess);
+      expect(library.checkCount, 1);
+      expect(library.requestCount, 0);
+      expect(library.queriedDays, isEmpty);
+    });
+
+    test('a day without photos ends in the empty state', () async {
+      final library = FakeDayPhotoLibrary(access: DayPhotoAccess.limited);
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: false);
+
+      controller.browse();
+      await settle();
+
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.empty);
+      expect(controller.isLimited, isTrue);
+    });
+
+    test('a failing query ends in the empty state', () async {
+      final library = FakeDayPhotoLibrary()..queryError = StateError('boom');
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: false);
+
+      controller.browse();
+      await settle();
+
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.empty);
+    });
+
+    test('granting access from the sheet loads the photos', () async {
+      final library = FakeDayPhotoLibrary(
+        access: DayPhotoAccess.denied,
+        photosByDay: {
+          day: [noon],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: false);
+      controller.browse();
+      await settle();
+
+      await controller.requestAccess();
+
+      expect(library.requestCount, 1);
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.ready);
+      expect(controller.photos, [noon]);
+    });
+
+    test(
+      'a result for the previous day is discarded after a day change',
+      () async {
+        final otherDay = DateTime(2026, 10, 13);
+        final slow = Completer<List<DayPhoto>>();
+        final library = FakeDayPhotoLibrary(
+          photosByDay: {
+            otherDay: [evening],
+          },
+        )..pendingQueries[day] = slow;
+        final controller = DiaryDayPhotosController(library: library);
+        addTearDown(controller.dispose);
+        controller.configure(day: day, autoShow: false);
+        controller.browse();
+        await settle();
+
+        controller.configure(day: otherDay, autoShow: false);
+        slow.complete([morning]);
+        await settle();
+        expect(controller.photos, isEmpty);
+        // 换了日期，“打开过面板”随之清掉：不自动读取新的一天。
+        expect(library.queriedDays, [day]);
+
+        controller.browse();
+        await settle();
+        expect(controller.day, otherDay);
+        expect(controller.photos, [evening]);
+      },
+    );
+
+    test('refresh reloads while browsing', () async {
+      final library = FakeDayPhotoLibrary(
+        access: DayPhotoAccess.denied,
+        photosByDay: {
+          day: [morning],
+        },
+      );
+      final controller = DiaryDayPhotosController(library: library);
+      addTearDown(controller.dispose);
+      controller.configure(day: day, autoShow: false);
+      controller.browse();
+      await settle();
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.needsAccess);
+
+      // 面板开着时去系统设置开了权限，回到应用。
+      library.access = DayPhotoAccess.granted;
+      controller.refresh();
+      await settle();
+
+      expect(controller.sheetPhase, DiaryDayPhotosSheetPhase.ready);
+      expect(library.requestCount, 0);
+    });
+
+    test(
+      'refresh does nothing when neither auto-showing nor browsing',
+      () async {
+        final library = FakeDayPhotoLibrary(
+          photosByDay: {
+            day: [morning],
+          },
+        );
+        final controller = DiaryDayPhotosController(library: library);
+        addTearDown(controller.dispose);
+        controller.configure(day: day, autoShow: false);
+
+        controller.refresh();
+        await settle();
+
+        expect(library.checkCount, 0);
+        expect(controller.photos, isEmpty);
+      },
+    );
+
+    test('cannot browse without a day or on unsupported platforms', () {
+      final noDay = DiaryDayPhotosController(library: FakeDayPhotoLibrary());
+      addTearDown(noDay.dispose);
+      noDay.configure(day: null, autoShow: false);
+      expect(noDay.canBrowse, isFalse);
+
+      final library = FakeDayPhotoLibrary(isSupported: false);
+      final unsupported = DiaryDayPhotosController(library: library);
+      addTearDown(unsupported.dispose);
+      unsupported.configure(day: day, autoShow: false);
+      unsupported.browse();
+      expect(unsupported.canBrowse, isFalse);
+      expect(library.checkCount, 0);
+    });
   });
 
   test('dayPhotoRange covers exactly one local calendar day', () {

@@ -250,8 +250,9 @@ class _TemplateSuggestionSwitch extends ConsumerWidget {
   }
 }
 
-/// “补写时推荐当天照片”开关：关掉后补写日记不再出现这天的照片提示条，
-/// 也就不会再提示申请相册权限。
+/// “自动显示当天照片”开关：只决定补写日记（新建且日期早于今天）时标题下
+/// 是否自动出现这天的照片提示条。关掉后编辑页右上角 ⋮ 菜单的“这天的照片”
+/// 仍能打开同一个面板；那里也只在用户点“允许访问”时才申请相册权限。
 class _DayPhotoSuggestionsSwitch extends StatelessWidget {
   const _DayPhotoSuggestionsSwitch({required this.settings});
 

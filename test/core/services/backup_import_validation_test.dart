@@ -131,7 +131,10 @@ void main() {
         await fixture.database.select(fixture.database.diaries).get(),
         isEmpty,
       );
-      expect(fixture.settings.createDiaryDraftRaw, isNull);
+      expect(
+        await fixture.database.select(fixture.database.diaryDrafts).get(),
+        isEmpty,
+      );
       for (final path in fixture.originalMedia.keys) {
         expect(await File(path).exists(), isFalse);
       }

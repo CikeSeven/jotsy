@@ -164,8 +164,14 @@ void main() {
         contentText: '',
         metadataJson: '{}',
       );
-      await settings.setCreateDiaryDraftRaw(
-        jsonEncode({'title': '', 'contentDocJson': content, 'contentText': ''}),
+      await database.saveDiaryDraft(
+        title: '',
+        contentText: '',
+        payload: jsonEncode({
+          'title': '',
+          'contentDocJson': content,
+          'contentText': '',
+        }),
       );
       final zip = await DataArchiveService.exportToZip(
         database: database,
@@ -207,7 +213,12 @@ void main() {
         'custom': 'preserve this metadata',
       });
       expect(inserts[3]['file'], restoredFile);
-      final draft = jsonDecode(settings.createDiaryDraftRaw!) as Map;
+      final draft =
+          jsonDecode(
+                (await database.select(database.diaryDrafts).getSingle())
+                    .payload,
+              )
+              as Map;
       expect(
         extractDiaryFilePaths(draft['contentDocJson'] as String),
         extractDiaryFilePaths(diary.content),

@@ -42,6 +42,10 @@ class AppDatabase extends _$AppDatabase
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
 
+  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿写库时生成的同一种。
+  /// 供数据库之外需要先定好 id 的场合使用（如旧备份里的单份草稿转为草稿行）。
+  static String newBusinessId() => _newBusinessUuid();
+
   @override
   int get schemaVersion => 11;
 

@@ -32,7 +32,6 @@ class BackupSettings {
     'tagOrderRaw': settingsService.tagOrderRaw,
     'tagFilterMemoryEnabled': settingsService.isTagFilterMemoryEnabled,
     'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
-    'createDiaryDraftRaw': settingsService.createDiaryDraftRaw,
     'diaryLocationPrecisionRaw': settingsService.diaryLocationPrecisionRaw,
   };
 
@@ -214,12 +213,10 @@ class BackupSettings {
       }
     }
 
-    final draftRaw = settingsNode['createDiaryDraftRaw']?.toString();
-    if (draftRaw != null && draftRaw.isNotEmpty) {
-      await settingsService.setCreateDiaryDraftRaw(draftRaw);
-    } else {
-      await settingsService.clearCreateDiaryDraft();
-    }
+    // 草稿随数据库的草稿表恢复（旧备份设置里的那份已在解析时转成草稿行）。
+    // 本机若还留着没迁移的旧版单份草稿，覆盖恢复时一并清掉，否则下次启动
+    // 会把它迁进刚恢复的草稿箱，多出一份不属于这份备份的草稿。
+    await settingsService.clearCreateDiaryDraft();
 
     final locationPrecisionRaw = settingsNode['diaryLocationPrecisionRaw']
         ?.toString();

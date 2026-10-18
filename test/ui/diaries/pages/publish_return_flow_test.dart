@@ -67,11 +67,11 @@ void main() {
     // 新日记默认不记录精力：用户没打开过开关，metadata 里没有精力值。
     final context = (jsonDecode(stored!.diary.metadata) as Map)['context'];
     expect((context as Map?)?['energyLevel'], isNull);
-    // 编辑页虽已被移出路由栈，新建草稿仍被清除。
+    // 编辑页虽已被移出路由栈，这份草稿仍从草稿箱删除。
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
-    expect(settings.createDiaryDraftRaw, isNull);
+    expect(await tester.runAsync(database.countDiaryDrafts), 0);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(Duration.zero);
@@ -311,7 +311,6 @@ Future<void> _openPublisherFromEditor(
                   MaterialPageRoute<Object?>(
                     builder: (_) => const EditDiaryPage(
                       entryMode: EditDiaryEntryMode.create,
-                      restoreCreateDraft: false,
                     ),
                   ),
                 );

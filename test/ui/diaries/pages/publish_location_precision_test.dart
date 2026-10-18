@@ -303,10 +303,7 @@ void main() {
     await settings.setDiaryLocationPrecisionRaw('city');
     await openRoute(
       tester,
-      (_) => const EditDiaryPage(
-        entryMode: EditDiaryEntryMode.create,
-        restoreCreateDraft: false,
-      ),
+      (_) => const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
     );
     await tester.enterText(find.byType(TextField).first, 'Morning walk');
     await tester.pump();

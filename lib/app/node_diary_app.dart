@@ -73,6 +73,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
     _loaderShowTimer = Timer(_loaderShowDelay, _handleLoaderShowDelayElapsed);
     // 编辑期不删除媒体文件，冷启动后延迟回收无人引用的文件与选择器缓存。
     ref.read(diaryMediaCleanupServiceProvider).scheduleStartupSweep();
+    // 旧版本的单份新建草稿搬进草稿箱；新建入口与草稿箱读取前也会等它完成。
+    unawaited(ref.read(diaryDraftLegacyMigrationProvider.future));
     // 常驻监听正文外观：设置就绪后即开始注册所选的导入字体，打开第一篇日记
     // 时通常已就绪，正文不会先按内置字体排一遍再换字体。
     ref.listenManual(diaryTextAppearanceProvider, (_, _) {});

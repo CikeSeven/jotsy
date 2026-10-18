@@ -85,6 +85,11 @@ class DiaryMediaCleanupService {
     final rows = await (_database.selectOnly(
       diaries,
     )..addColumns([diaries.content, diaries.cover, diaries.metadata])).get();
+    // 草稿箱里的正文与封面同样引用托管目录下的文件：整份草稿 JSON 作为来源。
+    final drafts = _database.diaryDrafts;
+    final draftRows = await (_database.selectOnly(
+      drafts,
+    )..addColumns([drafts.payload])).get();
     final settings = await _settings();
     return DiaryMediaSweepRequest(
       documentsPath: (await _documentsDirectory()).path,
@@ -95,6 +100,8 @@ class DiaryMediaCleanupService {
           row.read(diaries.cover),
           row.read(diaries.metadata),
         ],
+        for (final row in draftRows) row.read(drafts.payload),
+        // 旧版本的单份草稿迁进草稿箱前仍算引用（迁移成功后此键清空）。
         settings.createDiaryDraftRaw,
       ],
       now: _clock(),

@@ -1,12 +1,25 @@
+import 'dart:convert';
+
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/json_object_map.dart';
+
+/// 草稿箱自动保存的快照：要写进草稿表的整份 JSON 与列表用的镜像字段。
+///
+/// 用 record 是为了结构相等——自动保存控制器靠 `==` 判断“已存过”，内容
+/// 没变时不写库，打开一份草稿什么也不改就不会刷新它的编辑时间。
+typedef NewDiaryDraftSnapshot = ({
+  String payload,
+  String title,
+  String contentText,
+  bool hasContent,
+});
 
 /// 新建日记草稿模型。
 ///
 /// 作用：
 /// - 作为“编辑页 <-> 发布页”之间的状态载体；
-/// - 作为本地自动草稿持久化的数据结构；
+/// - 作为草稿箱（`diary_drafts` 表 `payload` 列）持久化的数据结构；
 /// - 统一承载发布上下文（封面、标签、位置、天气、心情、精力等）。
 class NewDiaryDraft {
   static const Object _fieldNotChanged = Object();
@@ -64,6 +77,14 @@ class NewDiaryDraft {
         diaryContentHasEmbeddedContent(contentDocJson);
   }
 
+  /// 草稿箱写入用的快照，`payload` 即 [toJson] 的编码结果。
+  NewDiaryDraftSnapshot toSnapshot() => (
+    payload: jsonEncode(toJson()),
+    title: title,
+    contentText: contentText,
+    hasContent: hasContent,
+  );
+
   /// 反序列化：从本地 JSON 恢复草稿对象。
   factory NewDiaryDraft.fromJson(Map<String, Object?> json) {
     final rawTagIds = json['selectedTagIds'];
@@ -98,7 +119,7 @@ class NewDiaryDraft {
     );
   }
 
-  /// 序列化：用于写入 SettingsService 的原始草稿字符串。
+  /// 序列化：草稿表 `payload` 列与备份中的草稿内容。
   Map<String, Object?> toJson() {
     return <String, Object?>{
       'title': title,

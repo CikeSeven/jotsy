@@ -45,7 +45,6 @@ void main() {
                   MaterialPageRoute<void>(
                     builder: (_) => const EditDiaryPage(
                       entryMode: EditDiaryEntryMode.create,
-                      restoreCreateDraft: false,
                     ),
                   ),
                 ),

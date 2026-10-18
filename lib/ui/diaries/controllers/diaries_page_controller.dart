@@ -121,7 +121,7 @@ class DiariesPageController {
   /// 返回后会触发一次列表刷新，确保编辑后的内容及时反映到首页；新建并发布
   /// 时编辑页以新日记 id 作为结果，新卡片在发布页退场后以出现动画插入。
   /// 结果类型放宽为 Object?：编辑页删除日记时以 true 返回。
-  void openEditor({String? diaryId, bool restoreCreateDraft = true}) {
+  void openEditor({String? diaryId, String? createDraftId}) {
     unawaited(
       Navigator.of(_state.context)
           .push<Object?>(
@@ -132,7 +132,7 @@ class DiariesPageController {
                   entryMode: diaryId == null
                       ? EditDiaryEntryMode.create
                       : EditDiaryEntryMode.edit,
-                  restoreCreateDraft: restoreCreateDraft,
+                  createDraftId: createDraftId,
                 );
               },
             ),
@@ -248,47 +248,26 @@ class DiariesPageController {
   /// - 若存在未完成草稿，先弹窗让用户选择继续或清空新建；
   /// - 无草稿时直接进入创建页。
   Future<void> openCreateEditorWithDraftPrompt() async {
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    final existingDraft = _tryDecodeCreateDraft(
-      settingsService.createDiaryDraftRaw,
-    );
+    final database = _state.ref.read(appDatabaseProvider);
+    await _state.ref.read(diaryDraftLegacyMigrationProvider.future);
+    final latestDraft = (await database.getRecentDiaryDrafts(1)).firstOrNull;
     if (!_state.mounted) {
       return;
     }
 
-    var restoreCreateDraft = true;
-    if (existingDraft?.hasContent == true) {
+    String? createDraftId;
+    if (latestDraft != null) {
       final decision = await feedback.showCreateDraftDecisionDialog();
       if (!_state.mounted || decision == null) {
         return;
       }
-      if (decision == _CreateDraftDecision.newEmpty) {
-        await settingsService.clearCreateDiaryDraft();
-        restoreCreateDraft = false;
+      // 新建空白不再删除旧草稿：它留在草稿箱里。
+      if (decision == _CreateDraftDecision.continueEditing) {
+        createDraftId = latestDraft.draftId;
       }
     }
 
-    openEditor(restoreCreateDraft: restoreCreateDraft);
-  }
-
-  /// 从本地存储字符串尝试解析草稿。
-  ///
-  /// 解析失败时返回 null，避免脏数据阻塞新建流程。
-  NewDiaryDraft? _tryDecodeCreateDraft(String? rawDraft) {
-    if (rawDraft == null || rawDraft.trim().isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(rawDraft);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-      return NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
-    } catch (_) {
-      return null;
-    }
+    openEditor(createDraftId: createDraftId);
   }
 
   /// 批量置顶所选日记。

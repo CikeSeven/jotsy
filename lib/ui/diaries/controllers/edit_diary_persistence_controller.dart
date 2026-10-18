@@ -79,5 +79,8 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
     }
   }
 
-  void dispose() => _editAutoSave.dispose();
+  void dispose() {
+    _editAutoSave.dispose();
+    _draftAutoSave.dispose();
+  }
 }

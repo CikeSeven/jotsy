@@ -13,25 +13,22 @@ extension _CalendarCreateActions on _CalendarPageController {
     DateTime? capsuleUnlockAt,
   }) async {
     final targetDay = DateUtils.dateOnly(day ?? _state._selectedDay);
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    final existingDraft = _tryDecodeCreateDraft(
-      settingsService.createDiaryDraftRaw,
-    );
+    final database = _state.ref.read(appDatabaseProvider);
+    await _state.ref.read(diaryDraftLegacyMigrationProvider.future);
+    final latestDraft = (await database.getRecentDiaryDrafts(1)).firstOrNull;
     if (!_state.mounted) {
       return;
     }
 
-    var restoreCreateDraft = true;
-    if (existingDraft?.hasContent == true) {
+    String? createDraftId;
+    if (latestDraft != null) {
       final decision = await _showCreateDraftDecisionDialog();
       if (!_state.mounted || decision == null) {
         return;
       }
-      if (decision == _CalendarCreateDraftDecision.newEmpty) {
-        await settingsService.clearCreateDiaryDraft();
-        restoreCreateDraft = false;
+      // 新建空白不再删除旧草稿：它留在草稿箱里。
+      if (decision == _CalendarCreateDraftDecision.continueEditing) {
+        createDraftId = latestDraft.draftId;
       }
     }
 
@@ -44,7 +41,7 @@ extension _CalendarCreateActions on _CalendarPageController {
         builder: (BuildContext context) {
           return EditDiaryPage(
             entryMode: EditDiaryEntryMode.create,
-            restoreCreateDraft: restoreCreateDraft,
+            createDraftId: createDraftId,
             createDateOverride: targetDay,
             createCapsuleUnlockAt: capsuleUnlockAt,
           );
@@ -87,20 +84,5 @@ extension _CalendarCreateActions on _CalendarPageController {
         );
       },
     );
-  }
-
-  NewDiaryDraft? _tryDecodeCreateDraft(String? rawDraft) {
-    if (rawDraft == null || rawDraft.trim().isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(rawDraft);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-      return NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
-    } catch (_) {
-      return null;
-    }
   }
 }

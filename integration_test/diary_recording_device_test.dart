@@ -56,10 +56,7 @@ void main() {
             ).copyWith(viewInsets: const EdgeInsets.only(bottom: 240)),
             child: child!,
           ),
-          home: const EditDiaryPage(
-            entryMode: EditDiaryEntryMode.create,
-            restoreCreateDraft: false,
-          ),
+          home: const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
         ),
       ),
     );

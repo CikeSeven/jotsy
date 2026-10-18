@@ -74,6 +74,10 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         );
         await fixture.settings.setDiaryShareOptionsRaw('{"title":false}');
         await fixture.settings.setDiaryExportOptionsRaw('{"format":"word"}');
+        // 升级前还没迁移的旧版单份草稿：覆盖恢复会清掉它，失败时须原样回滚。
+        await fixture.settings.setCreateDiaryDraftRaw(
+          '{"title":"legacy draft"}',
+        );
         final originalStore = SharedPreferencesStorePlatform.instance;
         final before = await originalStore.getAll();
         final store = _FailingPreferences(before, throwError);
@@ -86,7 +90,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['themeMode'] = 'dark';
         settings['fontScale'] = 1.25;
         settings['tagFilterMemoryEnabled'] = false;
-        settings['createDiaryDraftRaw'] = '{"title":"incoming draft"}';
+        settings['diaryLocationPrecisionRaw'] = 'city';
         settings['calendarDisplayOptionsRaw'] = '{"cellStyle":"photo"}';
         settings['diaryCardStyleRaw'] = '{"v":1,"saved":[]}';
         settings['diaryPreviewStyleRaw'] = '{"v":1,"current":{}}';
@@ -95,13 +99,17 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         final row =
             ((incoming['database'] as Map)['diaries'] as List).single as Map;
         row['title'] = 'incoming diary';
+        final draftRow =
+            ((incoming['database'] as Map)['diaryDrafts'] as List).single
+                as Map;
+        draftRow['payload'] = '{"title":"incoming draft"}';
         final zip = await fixture.writeZip(
           incoming,
           files: {
             'diary_videos/keep.bin': [99],
           },
         );
-        store.failNextDraftWrite = true;
+        store.failNextLateWrite = true;
         await expectLater(
           fixture.import(zip),
           throwsA(throwError ? isA<PlatformException>() : isA<StateError>()),
@@ -129,7 +137,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         expect(await store.getAll(), before);
         final recreated = await SettingsService.create();
         expect(recreated.themeModeNotifier.value, ThemeMode.light);
-        expect(recreated.createDiaryDraftRaw, '{"title":"current draft"}');
+        expect(recreated.createDiaryDraftRaw, '{"title":"legacy draft"}');
         expect(recreated.calendarDisplayOptionsRaw, '{"cellStyle":"heat"}');
         expect(recreated.diaryCardStyleRaw, '{"v":1,"current":{}}');
         expect(
@@ -165,13 +173,14 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
 class _FailingPreferences extends InMemorySharedPreferencesStore {
   _FailingPreferences(super.data, this.throwError) : super.withData();
   final bool throwError;
-  bool failNextDraftWrite = false;
+  // 恢复设置时最后写入的键：此前的设置都已改写，失败才能检验整体回滚。
+  bool failNextLateWrite = false;
   bool failed = false;
 
   @override
   Future<bool> setValue(String valueType, String key, Object value) async {
-    if (failNextDraftWrite && key.endsWith('diary_create_draft')) {
-      failNextDraftWrite = false;
+    if (failNextLateWrite && key.endsWith('diary_location_precision')) {
+      failNextLateWrite = false;
       failed = true;
       if (throwError) throw PlatformException(code: 'write_failed');
       return false;

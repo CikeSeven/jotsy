@@ -1340,18 +1340,6 @@
   "@autoT0080": {
     "description": "Auto-generated metadata for autoT0080."
   },
-  "autoT0081": "Unsaved draft found",
-  "@autoT0081": {
-    "description": "Auto-generated metadata for autoT0081."
-  },
-  "autoT0082": "New empty note",
-  "@autoT0082": {
-    "description": "Auto-generated metadata for autoT0082."
-  },
-  "autoT0083": "Continue editing",
-  "@autoT0083": {
-    "description": "Auto-generated metadata for autoT0083."
-  },
   "autoT0084": "Delete {p0} selected diaries?",
   "@autoT0084": {
     "placeholders": {
@@ -1893,10 +1881,6 @@
     },
     "description": "Auto-generated metadata for autoT0201."
   },
-  "autoT0202": "An unfinished diary was found. Continue editing?",
-  "@autoT0202": {
-    "description": "Auto-generated metadata for autoT0202."
-  },
   "autoT0203": "metadata must be a valid JSON object",
   "@autoT0203": {
     "description": "Auto-generated metadata for autoT0203."
@@ -1920,10 +1904,6 @@
   "autoT0208": "Header style (tap to cycle)",
   "@autoT0208": {
     "description": "Auto-generated metadata for autoT0208."
-  },
-  "autoT0209": "An unfinished diary draft was found. Continue editing?",
-  "@autoT0209": {
-    "description": "Auto-generated metadata for autoT0209."
   },
   "autoT0210": "Calendar diaries load failed: {p0}",
   "@autoT0210": {
@@ -7129,5 +7109,84 @@
   "diaryPreviewStyleLongImageFull": "Full",
   "@diaryPreviewStyleLongImageFull": {
     "description": "Long images: show the whole image at column width."
+  },
+  "diaryDraftsTitle": "Drafts",
+  "@diaryDraftsTitle": {
+    "description": "Title of the drafts page; also the entry name in the home header and settings."
+  },
+  "diaryDraftsSettingsSubtitle": "Unpublished entries you can keep writing or delete",
+  "@diaryDraftsSettingsSubtitle": {
+    "description": "Subtitle of the drafts entry in Settings → Data & privacy."
+  },
+  "diaryDraftsEmpty": "No drafts yet. New entries you leave before publishing are kept here",
+  "@diaryDraftsEmpty": {
+    "description": "Empty state of the drafts page."
+  },
+  "diaryDraftEditedAt": "Edited {time} · {words} words",
+  "@diaryDraftEditedAt": {
+    "description": "Draft row footer: last edit time and word count (formatted number).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDraftDeleted": "Draft deleted",
+  "@diaryDraftDeleted": {
+    "description": "Snackbar after swiping a draft away (with undo)."
+  },
+  "diaryDraftsDeleted": "{count, plural, =1{Deleted 1 draft} other{Deleted {count} drafts}}",
+  "@diaryDraftsDeleted": {
+    "description": "Snackbar after deleting selected drafts (with undo).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDraftsDeleteTitle": "Delete drafts",
+  "@diaryDraftsDeleteTitle": {
+    "description": "Title of the confirm dialog for deleting selected drafts."
+  },
+  "diaryDraftsDeleteMessage": "{count, plural, =1{Delete the selected draft?} other{Delete the {count} selected drafts?}}",
+  "@diaryDraftsDeleteMessage": {
+    "description": "Body of the confirm dialog for deleting selected drafts.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDraftsDeleteFailed": "Couldn't delete the drafts. Try again",
+  "@diaryDraftsDeleteFailed": {
+    "description": "Snackbar when deleting drafts fails."
+  },
+  "diaryDraftsRestoreFailed": "Couldn't undo. Try again",
+  "@diaryDraftsRestoreFailed": {
+    "description": "Snackbar when restoring deleted drafts fails."
+  },
+  "diaryDraftPickerTitle": "Continue a draft",
+  "@diaryDraftPickerTitle": {
+    "description": "Title of the sheet shown on “New” when drafts exist."
+  },
+  "diaryDraftPickerViewAll": "View all drafts ({count})",
+  "@diaryDraftPickerViewAll": {
+    "description": "Draft picker: open the drafts page; the number is the total count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDraftPickerNewBlank": "New blank entry",
+  "@diaryDraftPickerNewBlank": {
+    "description": "Draft picker: start a blank entry instead (drafts stay in the drafts box)."
+  },
+  "diarySearchPreviewHint": "Search in Jotsy",
+  "@diarySearchPreviewHint": {
+    "description": "Hint text of the search pill in the home header."
   }
 }

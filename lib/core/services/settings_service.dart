@@ -173,6 +173,8 @@ class SettingsService {
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
 
   static const _keyTagOrder = 'app.settings.tag_order';
+  // 草稿箱之前的单份新建草稿：只作迁移来源（见 migrateLegacyCreateDraft），
+  // 不再写入；迁移成功或覆盖恢复后清除。
   static const _keyCreateDiaryDraft = 'app.settings.diary_create_draft';
   static const _keyDiaryLocationPrecision =
       'app.settings.diary_location_precision';
@@ -494,6 +496,8 @@ class SettingsService {
     await _writePreference(_prefs.setString(_keyTagOrder, value));
   }
 
+  /// 只供测试构造“升级前留下旧草稿”的状态；应用内不再写入此键。
+  @visibleForTesting
   Future<void> setCreateDiaryDraftRaw(String value) async {
     await _writePreference(_prefs.setString(_keyCreateDiaryDraft, value));
   }

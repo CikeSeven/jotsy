@@ -116,38 +116,6 @@ class DiariesPageController {
     );
   }
 
-  /// 打开编辑页（新建或编辑）。
-  ///
-  /// 返回后会触发一次列表刷新，确保编辑后的内容及时反映到首页；新建并发布
-  /// 时编辑页以新日记 id 作为结果，新卡片在发布页退场后以出现动画插入。
-  /// 结果类型放宽为 Object?：编辑页删除日记时以 true 返回。
-  void openEditor({String? diaryId, bool restoreCreateDraft = true}) {
-    unawaited(
-      Navigator.of(_state.context)
-          .push<Object?>(
-            MaterialPageRoute<Object?>(
-              builder: (BuildContext context) {
-                return EditDiaryPage(
-                  diaryId: diaryId,
-                  entryMode: diaryId == null
-                      ? EditDiaryEntryMode.create
-                      : EditDiaryEntryMode.edit,
-                  restoreCreateDraft: restoreCreateDraft,
-                );
-              },
-            ),
-          )
-          .then((Object? result) {
-            if (!_state.mounted) {
-              return;
-            }
-            refreshAfterEditorReturn(
-              createdDiaryId: result is String ? result : null,
-            );
-          }),
-    );
-  }
-
   /// 预览页左右滑动的顺序：当前显示的列表，去掉正在归档、删除而暂时隐藏
   /// 的条目；列表还有没加载的部分时带上同一查询条件，预览页据此接上。
   DiaryPreviewSequence _previewSequence() {
@@ -244,51 +212,15 @@ class DiariesPageController {
     }
   }
 
-  /// 处理“新建日记”入口：
-  /// - 若存在未完成草稿，先弹窗让用户选择继续或清空新建；
-  /// - 无草稿时直接进入创建页。
+  /// 处理“新建日记”入口（FAB、空列表）：经共用的新建流程（有草稿时先弹
+  /// 草稿选择面板），返回后刷新列表；编辑页直接发布的新日记交给协调器，
+  /// 在发布页退场后以出现动画插入。
   Future<void> openCreateEditorWithDraftPrompt() async {
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    final existingDraft = _tryDecodeCreateDraft(
-      settingsService.createDiaryDraftRaw,
-    );
-    if (!_state.mounted) {
+    final result = await runDiaryCreateEntryFlow(_state.context, _state.ref);
+    if (!_state.mounted || !result.opened) {
       return;
     }
-
-    var restoreCreateDraft = true;
-    if (existingDraft?.hasContent == true) {
-      final decision = await feedback.showCreateDraftDecisionDialog();
-      if (!_state.mounted || decision == null) {
-        return;
-      }
-      if (decision == _CreateDraftDecision.newEmpty) {
-        await settingsService.clearCreateDiaryDraft();
-        restoreCreateDraft = false;
-      }
-    }
-
-    openEditor(restoreCreateDraft: restoreCreateDraft);
-  }
-
-  /// 从本地存储字符串尝试解析草稿。
-  ///
-  /// 解析失败时返回 null，避免脏数据阻塞新建流程。
-  NewDiaryDraft? _tryDecodeCreateDraft(String? rawDraft) {
-    if (rawDraft == null || rawDraft.trim().isEmpty) {
-      return null;
-    }
-    try {
-      final decoded = jsonDecode(rawDraft);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-      return NewDiaryDraft.fromJson(decoded.cast<String, Object?>());
-    } catch (_) {
-      return null;
-    }
+    refreshAfterEditorReturn(createdDiaryId: result.createdDiaryId);
   }
 
   /// 批量置顶所选日记。
@@ -609,6 +541,15 @@ class DiariesPageController {
     Navigator.of(_state.context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => const ArchivedDiariesPage(),
+      ),
+    );
+  }
+
+  /// 打开草稿箱（顶栏入口）。
+  void openDraftsPage() {
+    Navigator.of(_state.context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const DiaryDraftsPage(),
       ),
     );
   }

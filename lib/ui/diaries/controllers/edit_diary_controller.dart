@@ -5,12 +5,13 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 /// 编辑页业务控制器。
 ///
 /// 职责边界：
-/// - 处理草稿自动保存与恢复；
+/// - 新建模式：草稿箱里这一份草稿的自动保存、续写恢复与发布后删除；
 /// - 协调已有笔记自动保存、删除与新建发布跳转链路；
 /// - 不构建 UI，仅协调页面状态与数据层。
 class EditDiaryController {
   EditDiaryController(this._state) {
-    _editAutoSave = EditDiaryAutoSaveController(
+    _editAutoSave = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
       readSnapshot: _captureEditSnapshot,
       writeSnapshot: _persistEditSnapshot,
       onError: (error) {
@@ -19,11 +20,19 @@ class EditDiaryController {
         }
       },
     );
+    _draftAutoSave = DebouncedAutoSaveController<NewDiaryDraftSnapshot>(
+      debounce: const Duration(milliseconds: 1300),
+      readSnapshot: () => _state._currentCreateDraft.toSnapshot(),
+      writeSnapshot: _persistCreateDraft,
+      // 草稿写入失败不打断输入：快照保持未存，下一次输入、返回或切后台重试。
+      onError: (error) => debugPrint('Create draft autosave failed: $error'),
+    );
   }
 
   /// 页面状态引用，承载控制器需要读写的输入与临时状态。
   final _EditDiaryPageState _state;
-  late final EditDiaryAutoSaveController _editAutoSave;
+  late final DebouncedAutoSaveController<EditDiarySnapshot> _editAutoSave;
+  late final DebouncedAutoSaveController<NewDiaryDraftSnapshot> _draftAutoSave;
 
   /// 编辑态发表时间文案（精确到分钟）；详情回填前为 null。
   String? get publishTimeLabelForEdit {
@@ -53,70 +62,77 @@ class EditDiaryController {
     scheduleEditAutoSave();
   }
 
-  /// 1.3 秒防抖自动保存草稿。
-  void scheduleCreateDraftAutoSave() {
-    _state._createDraftSaveDebounceTimer?.cancel();
-    _state._createDraftSaveDebounceTimer = Timer(
-      const Duration(milliseconds: 1300),
-      () {
-        unawaited(persistOrClearCreateDraftDebounced());
-      },
+  /// 1.3 秒防抖自动保存草稿；续写的草稿在恢复完成前不排程（见
+  /// [prepareCreateEntry]）。
+  void scheduleCreateDraftAutoSave() => _draftAutoSave.schedule();
+
+  /// 立即补存防抖窗口里的输入（返回、切后台、页面销毁时调用）。
+  Future<bool> flushCreateDraft() => _draftAutoSave.flush();
+
+  /// 写入草稿表：有内容时新建或更新这一份；内容删光时删除这一行，但保留
+  /// id——接着再写字仍是同一份草稿（按同一 id 重新插入），不会多出一份。
+  ///
+  /// 页面卸载后仍可能执行（返回时补存），只用页面初始化时缓存的数据库。
+  Future<void> _persistCreateDraft(NewDiaryDraftSnapshot snapshot) async {
+    final database = _state._database;
+    if (!snapshot.hasContent) {
+      final draftId = _state._createDraftId;
+      if (draftId != null) await database.deleteDiaryDrafts([draftId]);
+      return;
+    }
+    _state._createDraftId = await database.saveDiaryDraft(
+      draftId: _state._createDraftId,
+      title: snapshot.title,
+      contentText: snapshot.contentText,
+      payload: snapshot.payload,
     );
-  }
-
-  /// 执行防抖后的草稿写入（或清空）。
-  Future<void> persistOrClearCreateDraftDebounced() async {
-    if (!_state.mounted || !_state._isCreateEntry || _state._saving) {
-      return;
-    }
-
-    final draft = _state._currentCreateDraft;
-    // 标题和正文都为空时自动清草稿，避免下次新建反复弹“继续编辑”提示。
-    if (!draft.hasContent) {
-      await clearCreateDraft();
-      return;
-    }
-
-    final rawDraft = jsonEncode(draft.toJson());
-    if (rawDraft == _state._lastPersistedCreateDraftRaw) {
-      return;
-    }
-
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    await settingsService.setCreateDiaryDraftRaw(rawDraft);
-    _state._lastPersistedCreateDraftRaw = rawDraft;
   }
 
   /// 新建页初始化：先沿用上次选择的地址层级，再按需恢复草稿。两步串行，
   /// 草稿里保存的层级一定覆盖默认值，而不依赖两个异步回调的执行顺序。
   /// 新建页不展示面板，层级只随草稿带进发布页，因此无需 setState。
-  Future<void> prepareCreateEntry({required bool restoreDraft}) async {
+  ///
+  /// 自动保存的基线在内容就位后才设定：新建空白取空白页，续写取恢复后的
+  /// 内容。在那之前输入不会排程写入——否则恢复前打的几个字可能先把这份
+  /// 草稿覆盖成只剩这几个字；只打开不修改也不会刷新草稿的编辑时间。
+  Future<void> prepareCreateEntry({required String? draftId}) async {
     final precision = await DiaryLocationPreference.load(_state.ref);
     if (!_state.mounted) return;
     _state._meta.setPrecision(precision);
-    if (restoreDraft) await restoreCreateDraftIfExists();
+    if (draftId != null) {
+      final restored = await restoreCreateDraft(draftId);
+      if (!_state.mounted) return;
+      // 这份草稿已不在（例如刚在别处删除）：当作新建空白，另存一份新草稿。
+      if (!restored) _state._createDraftId = null;
+    }
+    _draftAutoSave.initialize(_state._currentCreateDraft.toSnapshot());
+    // 等待期间若已输入，基线已含这些内容；再排一次，让它们按正常防抖落盘。
+    _draftAutoSave.schedule();
   }
 
-  /// 进入新建页时尝试恢复历史草稿。
-  Future<void> restoreCreateDraftIfExists() async {
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    final rawDraft = settingsService.createDiaryDraftRaw;
-    if (rawDraft == null || rawDraft.trim().isEmpty || !_state.mounted) {
-      return;
+  /// 从草稿箱读出 [draftId] 并填进编辑页；返回是否恢复成功。
+  Future<bool> restoreCreateDraft(String draftId) async {
+    final database = _state._database;
+    final row = await database.getDiaryDraft(draftId);
+    if (row == null || !_state.mounted) {
+      return false;
     }
 
     try {
-      final decoded = jsonDecode(rawDraft);
+      final decoded = jsonDecode(row.payload);
       if (decoded is! Map<String, dynamic>) {
-        return;
+        return false;
       }
       final restoredDraft = NewDiaryDraft.fromJson(
         decoded.cast<String, Object?>(),
       );
+      // 草稿可能放了很久，期间被删除的标签不能再带进发布页。
+      final existingTagIds = (await database.watchAllTags().first)
+          .map((tag) => tag.id)
+          .toSet();
+      if (!_state.mounted) {
+        return false;
+      }
 
       // 优先恢复富文本文档；若 JSON 不可用则降级为纯文本，保证可读可编辑。
       quill.Document restoredDocument;
@@ -128,8 +144,13 @@ class EditDiaryController {
         restoredDocument = documentFromPlainText(restoredDraft.contentText);
       }
 
-      _state._lastPersistedCreateDraftRaw = jsonEncode(restoredDraft.toJson());
-      final restoredMeta = DiaryMetaDraft.fromNewDiaryDraft(restoredDraft);
+      final restoredMeta = DiaryMetaDraft.fromNewDiaryDraft(
+        restoredDraft.copyWith(
+          selectedTagIds: restoredDraft.selectedTagIds
+              .where(existingTagIds.contains)
+              .toSet(),
+        ),
+      );
       _state.setState(() {
         _state._titleController.text = restoredDraft.title;
         _state._createDateOverride =
@@ -150,19 +171,22 @@ class EditDiaryController {
         );
       });
       _state._syncDayPhotos();
+      return true;
     } catch (_) {
       // 草稿反序列化失败时静默忽略，避免阻断新建流程。
+      return false;
     }
   }
 
-  /// 主动清除新建草稿（发布成功或用户显式清空场景）。
-  Future<void> clearCreateDraft() async {
-    _state._createDraftSaveDebounceTimer?.cancel();
-    final settingsService = await _state.ref.read(
-      settingsServiceProvider.future,
-    );
-    await settingsService.clearCreateDiaryDraft();
-    _state._lastPersistedCreateDraftRaw = null;
+  /// 发布成功后收尾：先关闭草稿自动保存并等进行中的写入结束，再删除这份
+  /// 草稿。顺序不能反：防抖窗口里已开始的写入若晚于删除落盘，会把已发布的
+  /// 草稿写回草稿箱。不依赖页面状态，页面被移除后继续完成。
+  Future<void> _deletePublishedDraft() async {
+    await _draftAutoSave.close();
+    final draftId = _state._createDraftId;
+    if (draftId != null) {
+      await _state._database.deleteDiaryDrafts([draftId]);
+    }
   }
 
   /// 保存前校验：至少需要标题或正文其一非空。
@@ -261,7 +285,7 @@ class EditDiaryController {
     Navigator.of(_state.context).pop(true);
   }
 
-  /// 发布成功、发布页即将退场时调用：清除新建草稿，并把编辑页静默移出路由栈。
+  /// 发布成功、发布页即将退场时调用：删除这份草稿，并把编辑页静默移出路由栈。
   ///
   /// 必须赶在发布页退场之前：导航器只允许在上层路由静止且不透明时立即移除
   /// 下层路由，若等发布页开始退场再移除，会被推迟到退场结束——编辑页先露出
@@ -270,7 +294,7 @@ class EditDiaryController {
   /// 打开者，列表据此播放新卡片的出现动画。草稿清理不依赖页面状态，页面被
   /// 移除后继续完成。
   void _handlePublished(String diaryId) {
-    unawaited(clearCreateDraft());
+    unawaited(_deletePublishedDraft());
     final route = ModalRoute.of(_state.context);
     if (route != null && route.isActive) {
       Navigator.of(_state.context).removeRoute(route, diaryId);

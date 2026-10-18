@@ -66,7 +66,6 @@ Future<void> _publishPresetCapsule(
                   MaterialPageRoute<Object?>(
                     builder: (_) => EditDiaryPage(
                       entryMode: EditDiaryEntryMode.create,
-                      restoreCreateDraft: false,
                       createDateOverride: unlockDay,
                       // 带时分的值也按“日期”精度归一到当天零点。
                       createCapsuleUnlockAt: unlockDay.add(

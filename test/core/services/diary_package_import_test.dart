@@ -75,7 +75,10 @@ void main() {
     );
     expect(local?.diary.title, 'current diary');
     expect(local?.diary.metadata, '{"keep":"metadata"}');
-    expect(fixture.settings.createDiaryDraftRaw, '{"title":"current draft"}');
+    final draft = await fixture.database
+        .select(fixture.database.diaryDrafts)
+        .getSingle();
+    expect(draft.payload, '{"title":"current draft"}');
     for (final entry in fixture.originalMedia.entries) {
       expect(await File(entry.key).readAsBytes(), entry.value);
     }

@@ -152,6 +152,24 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     );
   }
 
+  /// v11 新增草稿箱表。
+  ///
+  /// 表已存在时什么也不做，绝不能先删再建：v10 的构建打开 v11 库时 drift 会把
+  /// user_version 写回 10、草稿表却留在库里（同一 versionCode 的开发包互相
+  /// 覆盖安装就会这样），再升级时这张表里是用户的草稿。直接 createTable 会报
+  /// “already exists”，版本号写不回去，之后每次打开都失败。
+  Future<void> _migrateAddDiaryDrafts(Migrator migrator) async {
+    final existing = await customSelect(
+      "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+      variables: <Variable<Object>>[
+        Variable<String>(diaryDrafts.actualTableName),
+      ],
+    ).get();
+    if (existing.isEmpty) {
+      await migrator.createTable(diaryDrafts);
+    }
+  }
+
   /// v10 只补建列表排序索引，不重写日记与标签；定义复用生成的 schema，
   /// 确保新库、v9 升级与 v1 重建分支使用完全相同的列顺序和过滤条件。
   ///

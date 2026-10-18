@@ -955,15 +955,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0080 => '已恢复归档的日记';
 
   @override
-  String get autoT0081 => '发现未完成日记';
-
-  @override
-  String get autoT0082 => '新建空笔记';
-
-  @override
-  String get autoT0083 => '继续编辑';
-
-  @override
   String autoT0084(String p0) {
     return '确认删除已选择的 $p0 条日记吗？';
   }
@@ -1340,9 +1331,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get autoT0202 => '检测到你上次有未保存的日记，是否继续编辑？';
-
-  @override
   String get autoT0203 => 'metadata 必须是合法 JSON 对象';
 
   @override
@@ -1359,9 +1347,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoT0208 => '标题样式（点击切换）';
-
-  @override
-  String get autoT0209 => '检测到你上次有未保存的日记，是否继续编辑？';
 
   @override
   String autoT0210(String p0) {
@@ -5043,4 +5028,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleLongImageFull => '完整显示';
+
+  @override
+  String get diaryDraftsTitle => '草稿箱';
+
+  @override
+  String get diaryDraftsSettingsSubtitle => '未发布的新建日记，可继续编辑或删除';
+
+  @override
+  String get diaryDraftsEmpty => '还没有草稿。写到一半离开的新日记会自动存在这里';
+
+  @override
+  String diaryDraftEditedAt(String time, String words) {
+    return '编辑于 $time · $words 字';
+  }
+
+  @override
+  String get diaryDraftDeleted => '已删除草稿';
+
+  @override
+  String diaryDraftsDeleted(int count) {
+    return '已删除 $count 份草稿';
+  }
+
+  @override
+  String get diaryDraftsDeleteTitle => '删除草稿';
+
+  @override
+  String diaryDraftsDeleteMessage(int count) {
+    return '将删除选中的 $count 份草稿。';
+  }
+
+  @override
+  String get diaryDraftsDeleteFailed => '删除失败，请重试';
+
+  @override
+  String get diaryDraftsRestoreFailed => '撤销失败，请重试';
+
+  @override
+  String get diaryDraftPickerTitle => '继续写草稿';
+
+  @override
+  String diaryDraftPickerViewAll(int count) {
+    return '查看全部草稿（$count）';
+  }
+
+  @override
+  String get diaryDraftPickerNewBlank => '新建空白';
+
+  @override
+  String get diarySearchPreviewHint => '在 Jotsy 中搜索';
 }

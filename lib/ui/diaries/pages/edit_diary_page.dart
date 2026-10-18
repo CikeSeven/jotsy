@@ -30,7 +30,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
-import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/debounced_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_caret_follow_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
@@ -63,21 +63,24 @@ part '../controllers/edit_diary_media_controller.dart';
 
 /// 日记编辑页。
 ///
-/// - `diaryId == null`：新建模式
+/// - `diaryId == null`：新建模式（[createDraftId] 为 null 时新建空白，否则续写
+///   草稿箱里的那一份）；每次新建都是草稿箱里独立的一份，自动保存，发布后删除
 /// - `diaryId != null`：编辑模式
 class EditDiaryPage extends ConsumerStatefulWidget {
   const EditDiaryPage({
     super.key,
     this.diaryId,
     this.entryMode = EditDiaryEntryMode.edit,
-    this.restoreCreateDraft = true,
+    this.createDraftId,
     this.createDateOverride,
     this.createCapsuleUnlockAt,
   });
 
   final String? diaryId;
   final EditDiaryEntryMode entryMode;
-  final bool restoreCreateDraft;
+
+  /// 新建模式下要续写的草稿（草稿表业务 id）；null 为新建空白。
+  final String? createDraftId;
   final DateTime? createDateOverride;
 
   /// 新建模式下预设的时间胶囊解封日（按“日期”精度）：日历从未来日期进入
@@ -161,8 +164,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
   bool _saving = false;
-  Timer? _createDraftSaveDebounceTimer;
-  String? _lastPersistedCreateDraftRaw;
+  // 新建模式对应的草稿（草稿表业务 id）：续写时取入口传入的 id，新建空白在
+  // 第一次有内容写入时由数据库生成。草稿写入与发布后的删除都按它进行。
+  String? _createDraftId;
+  // 进入页面时就取好：返回与 dispose 时补存的草稿在页面卸载后才写完，那时
+  // 不能再经 ref 读取 provider。
+  late final AppDatabase _database;
 
   // ==================== 业务控制器 ====================
   late final EditDiaryController _controller;
@@ -177,6 +184,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _database = ref.read(appDatabaseProvider);
+    _createDraftId = widget.createDraftId;
     _createDateOverride = widget.createDateOverride;
     // 先于草稿监听创建：_onMetaChanged 会同步封面角标。
     _dayPhotos = DiaryDayPhotosController(
@@ -217,9 +226,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 新建模式无需等详情查询，直接允许渲染编辑区域。
     _initialized = widget.diaryId == null;
     if (_isCreateEntry) {
-      unawaited(
-        _controller.prepareCreateEntry(restoreDraft: widget.restoreCreateDraft),
-      );
+      unawaited(_controller.prepareCreateEntry(draftId: widget.createDraftId));
     }
     if (widget.diaryId == null) {
       _routeEntranceWaiter.schedule(this, _contentFocusNode.requestFocus);
@@ -228,10 +235,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   @override
   void dispose() {
+    // 必须排在释放输入控制器之前：flush 当场读出快照，写库在页面卸载后完成。
+    // 发布后草稿自动保存已关闭，这里不会把刚删除的草稿写回去。
+    if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
     _routeEntranceWaiter.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
-    _createDraftSaveDebounceTimer?.cancel();
     _titleController.removeListener(_controller.onCreateDraftInputChanged);
     _contentController.removeListener(_controller.onCreateDraftInputChanged);
     _mediaImportController.removeListener(_onMediaImportChanged);
@@ -271,10 +280,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (state == AppLifecycleState.resumed) {
       _dayPhotos.refresh();
     }
-    if (_isEditEntry &&
-        (state == AppLifecycleState.inactive ||
-            state == AppLifecycleState.paused)) {
-      unawaited(_controller.flushEditAutoSave());
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      // 切到后台可能就被系统回收进程：已有日记与新建草稿都不等防抖，立即补存。
+      if (_isEditEntry) unawaited(_controller.flushEditAutoSave());
+      if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
     }
   }
 
@@ -811,7 +821,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           onPopInvokedWithResult: (didPop, result) {
             if (!didPop) {
               unawaited(_controller.attemptExit());
+              return;
             }
+            // 新建模式直接返回：补存防抖窗口里的输入，草稿静默留在草稿箱。
+            if (_isCreateEntry) unawaited(_controller.flushCreateDraft());
           },
           child: scaffold,
         );

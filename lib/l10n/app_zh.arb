@@ -1340,18 +1340,6 @@
   "@autoT0080": {
     "description": "Auto-generated metadata for autoT0080."
   },
-  "autoT0081": "发现未完成日记",
-  "@autoT0081": {
-    "description": "Auto-generated metadata for autoT0081."
-  },
-  "autoT0082": "新建空笔记",
-  "@autoT0082": {
-    "description": "Auto-generated metadata for autoT0082."
-  },
-  "autoT0083": "继续编辑",
-  "@autoT0083": {
-    "description": "Auto-generated metadata for autoT0083."
-  },
   "autoT0084": "确认删除已选择的 {p0} 条日记吗？",
   "@autoT0084": {
     "placeholders": {
@@ -1893,10 +1881,6 @@
     },
     "description": "Auto-generated metadata for autoT0201."
   },
-  "autoT0202": "检测到你上次有未保存的日记，是否继续编辑？",
-  "@autoT0202": {
-    "description": "Auto-generated metadata for autoT0202."
-  },
   "autoT0203": "metadata 必须是合法 JSON 对象",
   "@autoT0203": {
     "description": "Auto-generated metadata for autoT0203."
@@ -1920,10 +1904,6 @@
   "autoT0208": "标题样式（点击切换）",
   "@autoT0208": {
     "description": "Auto-generated metadata for autoT0208."
-  },
-  "autoT0209": "检测到你上次有未保存的日记，是否继续编辑？",
-  "@autoT0209": {
-    "description": "Auto-generated metadata for autoT0209."
   },
   "autoT0210": "日历日记加载失败: {p0}",
   "@autoT0210": {
@@ -7129,5 +7109,84 @@
   "diaryPreviewStyleLongImageFull": "完整显示",
   "@diaryPreviewStyleLongImageFull": {
     "description": "长图显示：按列宽完整展开在正文里。"
+  },
+  "diaryDraftsTitle": "草稿箱",
+  "@diaryDraftsTitle": {
+    "description": "草稿箱页面标题，也是首页顶栏与设置里的入口名称。"
+  },
+  "diaryDraftsSettingsSubtitle": "未发布的新建日记，可继续编辑或删除",
+  "@diaryDraftsSettingsSubtitle": {
+    "description": "设置 → 数据与隐私里草稿箱入口的说明。"
+  },
+  "diaryDraftsEmpty": "还没有草稿。写到一半离开的新日记会自动存在这里",
+  "@diaryDraftsEmpty": {
+    "description": "草稿箱为空时的提示。"
+  },
+  "diaryDraftEditedAt": "编辑于 {time} · {words} 字",
+  "@diaryDraftEditedAt": {
+    "description": "草稿行的副信息：最后编辑时间与字数（已格式化的数字）。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryDraftDeleted": "已删除草稿",
+  "@diaryDraftDeleted": {
+    "description": "左滑删除一份草稿后的提示（带撤销）。"
+  },
+  "diaryDraftsDeleted": "已删除 {count} 份草稿",
+  "@diaryDraftsDeleted": {
+    "description": "多选删除草稿后的提示（带撤销）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDraftsDeleteTitle": "删除草稿",
+  "@diaryDraftsDeleteTitle": {
+    "description": "多选删除草稿的确认弹窗标题。"
+  },
+  "diaryDraftsDeleteMessage": "将删除选中的 {count} 份草稿。",
+  "@diaryDraftsDeleteMessage": {
+    "description": "多选删除草稿的确认弹窗正文。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDraftsDeleteFailed": "删除失败，请重试",
+  "@diaryDraftsDeleteFailed": {
+    "description": "删除草稿写库失败时的提示。"
+  },
+  "diaryDraftsRestoreFailed": "撤销失败，请重试",
+  "@diaryDraftsRestoreFailed": {
+    "description": "撤销删除草稿失败时的提示。"
+  },
+  "diaryDraftPickerTitle": "继续写草稿",
+  "@diaryDraftPickerTitle": {
+    "description": "已有草稿时点“新建”弹出的面板标题。"
+  },
+  "diaryDraftPickerViewAll": "查看全部草稿（{count}）",
+  "@diaryDraftPickerViewAll": {
+    "description": "草稿选择面板：打开草稿箱，括号内为草稿总数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryDraftPickerNewBlank": "新建空白",
+  "@diaryDraftPickerNewBlank": {
+    "description": "草稿选择面板：不续写草稿，新建一篇空白日记（草稿保留在草稿箱）。"
+  },
+  "diarySearchPreviewHint": "在 Jotsy 中搜索",
+  "@diarySearchPreviewHint": {
+    "description": "首页顶栏搜索条的提示文字。"
   }
 }

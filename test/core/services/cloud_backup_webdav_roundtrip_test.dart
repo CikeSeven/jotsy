@@ -118,8 +118,10 @@ void main() {
           metadataJson: '{}',
         );
         await fixture.database.softDeleteDiary(diaryId);
-        await fixture.settings.setCreateDiaryDraftRaw(
-          jsonEncode({
+        await fixture.database.saveDiaryDraft(
+          title: '',
+          contentText: '',
+          payload: jsonEncode({
             'title': '',
             'contentDocJson': content,
             'contentText': '',
@@ -164,7 +166,14 @@ void main() {
           ...extractDiaryAudioPaths(restored.content),
           ...extractDiaryFilePaths(restored.content),
         }, expectedPaths);
-        final draft = jsonDecode(fixture.settings.createDiaryDraftRaw!) as Map;
+        final draft =
+            jsonDecode(
+                  (await fixture.database
+                          .select(fixture.database.diaryDrafts)
+                          .getSingle())
+                      .payload,
+                )
+                as Map;
         expect(draft['contentDocJson'], restored.content);
         for (final item in pathsAndBytes.entries) {
           expect(

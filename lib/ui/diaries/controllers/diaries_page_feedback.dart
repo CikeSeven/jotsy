@@ -14,43 +14,6 @@ class DiariesPageFeedback {
   /// 页面状态引用，用于访问 `context` 以及提示计数状态。
   final _DiariesPage _state;
 
-  /// 新建时发现草稿后的分流弹窗。
-  Future<_CreateDraftDecision?> showCreateDraftDecisionDialog() {
-    return showDialog<_CreateDraftDecision>(
-      context: _state.context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        final l10n = dialogContext.l10n;
-        return AlertDialog(
-          title: Text(l10n.autoT0081),
-          content: Text(l10n.autoT0202),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  dialogContext,
-                ).colorScheme.onSurfaceVariant,
-              ),
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(_CreateDraftDecision.newEmpty),
-              child: Text(l10n.autoT0082),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.primary,
-              ),
-              onPressed: () => Navigator.of(
-                dialogContext,
-              ).pop(_CreateDraftDecision.continueEditing),
-              child: Text(l10n.autoT0083),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   /// 多选删除确认弹窗。
   Future<bool> showDeleteSelectedConfirmDialog(int count) async {
     final confirmed = await showDialog<bool>(

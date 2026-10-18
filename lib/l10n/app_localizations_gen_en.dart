@@ -997,15 +997,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0080 => 'Archived diary restored';
 
   @override
-  String get autoT0081 => 'Unsaved draft found';
-
-  @override
-  String get autoT0082 => 'New empty note';
-
-  @override
-  String get autoT0083 => 'Continue editing';
-
-  @override
   String autoT0084(String p0) {
     return 'Delete $p0 selected diaries?';
   }
@@ -1384,9 +1375,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get autoT0202 => 'An unfinished diary was found. Continue editing?';
-
-  @override
   String get autoT0203 => 'metadata must be a valid JSON object';
 
   @override
@@ -1406,10 +1394,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoT0208 => 'Header style (tap to cycle)';
-
-  @override
-  String get autoT0209 =>
-      'An unfinished diary draft was found. Continue editing?';
 
   @override
   String autoT0210(String p0) {
@@ -5525,4 +5509,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPreviewStyleLongImageFull => 'Full';
+
+  @override
+  String get diaryDraftsTitle => 'Drafts';
+
+  @override
+  String get diaryDraftsSettingsSubtitle =>
+      'Unpublished entries you can keep writing or delete';
+
+  @override
+  String get diaryDraftsEmpty =>
+      'No drafts yet. New entries you leave before publishing are kept here';
+
+  @override
+  String diaryDraftEditedAt(String time, String words) {
+    return 'Edited $time · $words words';
+  }
+
+  @override
+  String get diaryDraftDeleted => 'Draft deleted';
+
+  @override
+  String diaryDraftsDeleted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Deleted $count drafts',
+      one: 'Deleted 1 draft',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryDraftsDeleteTitle => 'Delete drafts';
+
+  @override
+  String diaryDraftsDeleteMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete the $count selected drafts?',
+      one: 'Delete the selected draft?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryDraftsDeleteFailed =>
+      'Couldn\'t delete the drafts. Try again';
+
+  @override
+  String get diaryDraftsRestoreFailed => 'Couldn\'t undo. Try again';
+
+  @override
+  String get diaryDraftPickerTitle => 'Continue a draft';
+
+  @override
+  String diaryDraftPickerViewAll(int count) {
+    return 'View all drafts ($count)';
+  }
+
+  @override
+  String get diaryDraftPickerNewBlank => 'New blank entry';
+
+  @override
+  String get diarySearchPreviewHint => 'Search in Jotsy';
 }

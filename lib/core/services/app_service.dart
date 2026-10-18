@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../utils/provider_retention.dart';
@@ -7,6 +9,7 @@ import 'amap_config_channel.dart';
 import 'app_update_service.dart';
 import 'cloud_backup_service.dart';
 import 'cloud_backup_settings_service.dart';
+import 'diary_draft_legacy.dart';
 import 'diary_font_storage_service.dart';
 import 'diary_media_cleanup_service.dart';
 import 'location_resolver_service.dart';
@@ -34,6 +37,20 @@ final settingsServiceProvider = FutureProvider<SettingsService>((
   Ref ref,
 ) async {
   return SettingsService.create();
+});
+
+/// 把旧版本的单份新建草稿迁进草稿箱；冷启动时触发，读草稿的入口（新建
+/// 面板、草稿箱）先等它完成，保证升级后第一次打开就能看到那份草稿。迁移
+/// 失败只记录日志，不阻断新建与草稿箱（旧键保留，下次启动再试）。
+final diaryDraftLegacyMigrationProvider = FutureProvider<void>((Ref ref) async {
+  try {
+    await migrateLegacyCreateDraft(
+      database: ref.watch(appDatabaseProvider),
+      settings: await ref.watch(settingsServiceProvider.future),
+    );
+  } catch (error, stackTrace) {
+    debugPrint('Legacy create draft migration skipped: $error\n$stackTrace');
+  }
 });
 
 /// 导入的正文字体存储服务；单例保证导入与删除串行写清单。

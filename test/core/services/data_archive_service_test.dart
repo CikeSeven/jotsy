@@ -121,8 +121,14 @@ void main() {
         contentText: '',
         metadataJson: '{}',
       );
-      await settingsService.setCreateDiaryDraftRaw(
-        jsonEncode({'title': '', 'contentDocJson': content, 'contentText': ''}),
+      await database.saveDiaryDraft(
+        title: '',
+        contentText: '',
+        payload: jsonEncode({
+          'title': '',
+          'contentDocJson': content,
+          'contentText': '',
+        }),
       );
       final backup = await DataArchiveService.exportToZip(
         database: database,
@@ -145,7 +151,11 @@ void main() {
       expect(extractDiaryAudioPaths(restoredDiary.content), {restoredPath});
       expect(await File(restoredPath).readAsBytes(), bytes);
       final restoredDraft =
-          jsonDecode(settingsService.createDiaryDraftRaw!) as Map;
+          jsonDecode(
+                (await database.select(database.diaryDrafts).getSingle())
+                    .payload,
+              )
+              as Map;
       expect(
         extractDiaryAudioPaths(restoredDraft['contentDocJson'] as String),
         {restoredPath},

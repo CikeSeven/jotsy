@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/pages/diary_drafts_page.dart';
 import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
@@ -147,6 +148,25 @@ class DataPrivacyPage extends ConsumerWidget {
                   title: Text(l10n.settingsAppLock),
                   subtitle: Text(l10n.settingsAppLockSubtitle),
                 ),
+              ),
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                leading: const FaIcon(FontAwesomeIcons.filePen, size: 16),
+                title: Text(l10n.diaryDraftsTitle),
+                subtitle: Text(l10n.diaryDraftsSettingsSubtitle),
+                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) {
+                        return const DiaryDraftsPage();
+                      },
+                    ),
+                  );
+                },
               ),
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(

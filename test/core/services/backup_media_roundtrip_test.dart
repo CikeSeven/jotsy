@@ -52,8 +52,10 @@ void main() {
           contentText: '',
           metadataJson: '{}',
         );
-        await fixture.settings.setCreateDiaryDraftRaw(
-          jsonEncode({'contentDocJson': content}),
+        await fixture.database.saveDiaryDraft(
+          title: '',
+          contentText: '',
+          payload: jsonEncode({'contentDocJson': content}),
         );
         final backup = await DataArchiveService.exportToZip(
           database: fixture.database,
@@ -85,7 +87,12 @@ void main() {
           [3, 4, 254],
         );
         expect(
-          (jsonDecode(fixture.settings.createDiaryDraftRaw!)
+          (jsonDecode(
+                (await fixture.database
+                        .select(fixture.database.diaryDrafts)
+                        .getSingle())
+                    .payload,
+              )
               as Map)['contentDocJson'],
           restored.content,
         );
@@ -112,8 +119,10 @@ void main() {
         capsuleUnlockAt: unlock,
         capsuleLockedAt: locked,
       );
-      await fixture.settings.setCreateDiaryDraftRaw(
-        jsonEncode({
+      await fixture.database.saveDiaryDraft(
+        title: '',
+        contentText: '',
+        payload: jsonEncode({
           'title': 'draft',
           'contentDocJson': '[{"insert":"draft\\n"}]',
           'cover': cover.path,
@@ -139,10 +148,52 @@ void main() {
       );
       expect(diary.cover, restoredCover);
       expect(
-        (jsonDecode(fixture.settings.createDiaryDraftRaw!) as Map)['cover'],
+        (jsonDecode(
+              (await fixture.database
+                      .select(fixture.database.diaryDrafts)
+                      .getSingle())
+                  .payload,
+            )
+            as Map)['cover'],
         restoredCover,
       );
       expect(await File(restoredCover).readAsBytes(), [1, 2, 3]);
+    },
+  );
+  test(
+    "an older backup's single draft is restored into the drafts box",
+    () async {
+      // 草稿箱之前的备份：没有 diaryDrafts 表，草稿在设置里，封面路径还是
+      // 导出那台设备的绝对路径。
+      final payload = fixture.emptyPayload();
+      (payload['settings'] as Map)['createDiaryDraftRaw'] = jsonEncode({
+        'title': '旧手机上的草稿',
+        'contentDocJson': '[{"insert":"写了一半\\n"}]',
+        'contentText': '写了一半',
+        'cover': '/data/old_phone/app_flutter/diary_covers/old.png',
+        'moodEmoji': '🌧',
+      });
+      await fixture.import(
+        await fixture.writeZip(
+          payload,
+          files: {
+            'diary_covers/old.png': [7, 8, 9],
+          },
+        ),
+      );
+
+      final draft = await fixture.database
+          .select(fixture.database.diaryDrafts)
+          .getSingle();
+      expect(draft.title, '旧手机上的草稿');
+      expect(draft.contentText, '写了一半');
+      final restored = jsonDecode(draft.payload) as Map;
+      final cover = p.join(fixture.documents.path, 'diary_covers', 'old.png');
+      expect(restored['cover'], cover);
+      expect(restored['moodEmoji'], '🌧');
+      expect(await File(cover).readAsBytes(), [7, 8, 9]);
+      // 设置里不再留旧键，下次启动不会再迁移出一份重复的草稿。
+      expect(fixture.settings.createDiaryDraftRaw, isNull);
     },
   );
 }

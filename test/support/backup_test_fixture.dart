@@ -76,7 +76,12 @@ class BackupTestFixture {
       contentText: '',
       metadataJson: '{"keep":"metadata"}',
     );
-    await settings.setCreateDiaryDraftRaw('{"title":"current draft"}');
+    await database.saveDiaryDraft(
+      draftId: 'current-draft',
+      title: 'current draft',
+      contentText: '',
+      payload: '{"title":"current draft"}',
+    );
     await database.createAnniversary(
       title: 'current anniversary',
       baseDate: DateTime(2020, 5, 23),
@@ -154,7 +159,9 @@ class BackupTestFixture {
       (await database.select(database.diaries).getSingle()).title,
       'current diary',
     );
-    expect(settings.createDiaryDraftRaw, '{"title":"current draft"}');
+    final draft = await database.select(database.diaryDrafts).getSingle();
+    expect(draft.draftId, 'current-draft');
+    expect(draft.payload, '{"title":"current draft"}');
     expect(
       (await database.select(database.anniversaries).getSingle()).title,
       'current anniversary',

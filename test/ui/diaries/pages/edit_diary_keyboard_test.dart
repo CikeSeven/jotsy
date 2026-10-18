@@ -50,10 +50,7 @@ void main() {
             quill.FlutterQuillLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const EditDiaryPage(
-            entryMode: EditDiaryEntryMode.create,
-            restoreCreateDraft: false,
-          ),
+          home: const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
         ),
       ),
     );

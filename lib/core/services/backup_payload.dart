@@ -6,6 +6,7 @@ import '../database/app_database.dart';
 import 'backup_constants.dart';
 import 'backup_media_paths.dart';
 import 'backup_settings.dart';
+import 'diary_draft_legacy.dart';
 import 'settings_service.dart';
 
 /// 强类型备份数据及表结构/关联校验；解析、媒体重绑阶段不修改现有数据。
@@ -16,6 +17,7 @@ class BackupPayload {
     required this.tags,
     required this.diaryTags,
     this.anniversaries = const <Anniversary>[],
+    this.diaryDrafts = const <DiaryDraftRow>[],
     this.settings,
   });
 
@@ -25,6 +27,10 @@ class BackupPayload {
 
   /// 纪念日（schema v9 起）。旧备份与日记包没有这张表，解析为空列表。
   final List<Anniversary> anniversaries;
+
+  /// 草稿箱（schema v11 起）。更早的完整备份只在设置里带一份新建草稿
+  /// （`createDiaryDraftRaw`），解析时转成一行；日记包没有草稿。
+  final List<DiaryDraftRow> diaryDrafts;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -76,6 +82,17 @@ class BackupPayload {
               });
             })
             .toList(growable: false),
+        diaryDrafts: database.containsKey('diaryDrafts')
+            ? _rows(database, 'diaryDrafts')
+                  .map((row) {
+                    return DiaryDraftRow.fromJson({
+                      'title': '',
+                      'contentText': '',
+                      ...row,
+                    });
+                  })
+                  .toList(growable: false)
+            : _legacyDraftRows(settings as Map<String, dynamic>?),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
@@ -95,6 +112,26 @@ class BackupPayload {
       throw FormatException('备份表 $name 格式错误');
     }
     return rows.cast<Map<String, dynamic>>();
+  }
+
+  /// 草稿箱之前的完整备份：设置里那一份新建草稿转成草稿行，覆盖恢复后它
+  /// 出现在草稿箱里。没有内容或 JSON 坏掉的草稿不转换（与启动迁移同一口径）。
+  static List<DiaryDraftRow> _legacyDraftRows(Map<String, dynamic>? settings) {
+    final raw = settings?['createDiaryDraftRaw'];
+    final draft = parseLegacyCreateDraft(raw is String ? raw : null);
+    if (draft == null) return const <DiaryDraftRow>[];
+    final now = DateTime.now();
+    return <DiaryDraftRow>[
+      DiaryDraftRow(
+        id: 1,
+        draftId: AppDatabase.newBusinessId(),
+        title: draft.title,
+        contentText: draft.contentText,
+        payload: draft.payload,
+        createdAt: now,
+        updatedAt: now,
+      ),
+    ];
   }
 
   /// 后来新增的表：旧版本导出的备份没有这个键，按空表处理；键存在时与
@@ -117,6 +154,8 @@ class BackupPayload {
     _unique(diaryTags.map((row) => (row.diaryId, row.tagId)));
     _unique(anniversaries.map((row) => row.id));
     _unique(anniversaries.map((row) => row.anniversaryId));
+    _unique(diaryDrafts.map((row) => row.id));
+    _unique(diaryDrafts.map((row) => row.draftId));
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -146,6 +185,7 @@ class BackupPayload {
           )
           .toList(growable: false),
       anniversaries: anniversaries,
+      diaryDrafts: diaryDrafts,
       settings: settings,
     );
   }
@@ -177,6 +217,9 @@ class BackupPayload {
             .map((row) => row.toJson())
             .toList(),
         'anniversaries': (await database.select(database.anniversaries).get())
+            .map((row) => row.toJson())
+            .toList(),
+        'diaryDrafts': (await database.select(database.diaryDrafts).get())
             .map((row) => row.toJson())
             .toList(),
       },
@@ -253,38 +296,48 @@ class BackupPayload {
         ),
       );
     }
-    final restoredSettings = settings == null
-        ? null
-        : Map<String, dynamic>.from(settings!);
-    final rawDraft = restoredSettings?['createDiaryDraftRaw'];
-    if (rawDraft is String && rawDraft.isNotEmpty) {
-      try {
-        final draft = jsonDecode(rawDraft);
-        if (draft is Map<String, dynamic>) {
-          if (draft['contentDocJson'] is String) {
-            draft['contentDocJson'] = await paths.rewriteContent(
-              draft['contentDocJson'] as String,
-            );
-          }
-          if (draft['cover'] is String) {
-            draft['cover'] = await paths.rewritePath(
-              draft['cover'] as String,
-              directoryNames: const ['diary_covers', 'diary_images'],
-            );
-          }
-          restoredSettings!['createDiaryDraftRaw'] = jsonEncode(draft);
-        }
-      } on FormatException {
-        // 历史草稿容错行为保持一致；不会因此覆盖或删除原媒体。
-      }
-    }
+    final restoredDrafts = <DiaryDraftRow>[
+      for (final draft in diaryDrafts)
+        draft.copyWith(
+          payload: await _rebindDraftPayload(draft.payload, paths),
+        ),
+    ];
     return BackupPayload(
       diaries: restored,
       tags: tags,
       diaryTags: diaryTags,
       anniversaries: anniversaries,
-      settings: restoredSettings,
+      diaryDrafts: restoredDrafts,
+      settings: settings,
     );
+  }
+
+  /// 草稿载荷是编辑页的草稿 JSON：改写其中正文与封面的媒体路径，其余字段
+  /// 原样保留。载荷损坏时原样返回——草稿打开时会按空白处理，不因此拒绝
+  /// 整份备份，也不覆盖或删除任何媒体。
+  static Future<String> _rebindDraftPayload(
+    String payload,
+    BackupMediaPaths paths,
+  ) async {
+    final Object? draft;
+    try {
+      draft = jsonDecode(payload);
+    } on FormatException {
+      return payload;
+    }
+    if (draft is! Map<String, dynamic>) return payload;
+    if (draft['contentDocJson'] is String) {
+      draft['contentDocJson'] = await paths.rewriteContent(
+        draft['contentDocJson'] as String,
+      );
+    }
+    if (draft['cover'] is String) {
+      draft['cover'] = await paths.rewritePath(
+        draft['cover'] as String,
+        directoryNames: const ['diary_covers', 'diary_images'],
+      );
+    }
+    return jsonEncode(draft);
   }
 
   /// 调用方负责整个恢复事务；生成的 companion 自动包含所有 schema 字段。
@@ -293,6 +346,7 @@ class BackupPayload {
     await database.delete(database.diaries).go();
     await database.delete(database.tags).go();
     await database.delete(database.anniversaries).go();
+    await database.delete(database.diaryDrafts).go();
     await database.batch((batch) {
       batch.insertAll(
         database.tags,
@@ -310,6 +364,11 @@ class BackupPayload {
       batch.insertAll(
         database.anniversaries,
         anniversaries.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 草稿载荷里的标签记的是本地 id（覆盖恢复保留标签 id），没有外键。
+      batch.insertAll(
+        database.diaryDrafts,
+        diaryDrafts.map((row) => row.toCompanion(false)).toList(),
       );
     });
   }

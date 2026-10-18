@@ -29,6 +29,7 @@ void main() {
   late Directory appRoot;
   late Directory gallery;
   late SettingsService settings;
+  late AppDatabase database;
 
   setUp(() async {
     appRoot = await Directory.systemTemp.createTemp('jotsy_day_photos_app_');
@@ -87,7 +88,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    final database = AppDatabase.forTesting(NativeDatabase.memory());
+    database = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(database.close);
     settings = await SettingsService.create();
     await settings.setDayPhotoSuggestionsEnabled(suggestionsEnabled);
@@ -109,7 +110,6 @@ void main() {
           supportedLocales: AppLocalizations.supportedLocales,
           home: EditDiaryPage(
             entryMode: EditDiaryEntryMode.create,
-            restoreCreateDraft: false,
             createDateOverride: createDate,
           ),
         ),
@@ -234,13 +234,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// 新建草稿防抖 1.3 秒后写入设置；返回草稿里的封面路径。
+  /// 新建草稿防抖 1.3 秒后写入草稿箱；返回草稿里的封面路径。
   Future<String?> savedDraftCover(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 1400));
     await tester.pumpAndSettle();
-    final raw = settings.createDiaryDraftRaw;
-    if (raw == null) return null;
-    return (jsonDecode(raw) as Map<String, Object?>)['cover'] as String?;
+    final drafts = await tester.runAsync(
+      () => database.watchDiaryDrafts().first,
+    );
+    if (drafts == null || drafts.isEmpty) return null;
+    final payload = jsonDecode(drafts.single.payload) as Map<String, Object?>;
+    return payload['cover'] as String?;
   }
 
   testWidgets('a single selected photo can become the cover', (tester) async {

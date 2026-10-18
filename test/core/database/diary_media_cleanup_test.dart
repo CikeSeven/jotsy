@@ -81,6 +81,8 @@ void main() {
       final recording = await put(documents, 'diary_recordings/rec_1.m4a');
       final recycled = await put(documents, 'diary_attachments/media_2/b.pdf');
       final drafted = await put(documents, 'diary_images/media_3/draft.jpg');
+      final boxedImage = await put(documents, 'diary_images/media_7/box.jpg');
+      final boxedCover = await put(documents, 'diary_covers/cover_box.jpg');
       final fresh = await put(
         documents,
         'diary_images/media_4/fresh.jpg',
@@ -132,6 +134,19 @@ void main() {
           ]),
         }),
       );
+      // 草稿箱里的草稿：正文图片与封面都只被草稿引用。
+      await database.saveDiaryDraft(
+        title: 'draft',
+        contentText: '',
+        payload: jsonEncode({
+          'contentDocJson': jsonEncode([
+            {
+              'insert': {'image': boxedImage.path},
+            },
+          ]),
+          'cover': boxedCover.path,
+        }),
+      );
 
       final report = await service().sweep();
 
@@ -141,6 +156,8 @@ void main() {
         recording,
         recycled,
         drafted,
+        boxedImage,
+        boxedCover,
         fresh,
         external,
         freshCopy,

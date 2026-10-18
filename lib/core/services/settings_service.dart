@@ -71,6 +71,7 @@ class SettingsService {
     required String? calendarDisplayOptionsRaw,
     required String? diaryCardStyleRaw,
     required String? diaryPreviewStyleRaw,
+    required String? diaryTemplatePrefsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
@@ -105,6 +106,9 @@ class SettingsService {
        diaryCardStyleRawNotifier = ValueNotifier<String?>(diaryCardStyleRaw),
        diaryPreviewStyleRawNotifier = ValueNotifier<String?>(
          diaryPreviewStyleRaw,
+       ),
+       diaryTemplatePrefsRawNotifier = ValueNotifier<String?>(
+         diaryTemplatePrefsRaw,
        );
 
   final SharedPreferences _prefs;
@@ -140,6 +144,11 @@ class SettingsService {
   /// 解析与默认值由日记模块负责，服务层只保存原文。
   final ValueNotifier<String?> diaryPreviewStyleRawNotifier;
 
+  /// 日记模板偏好（单个 JSON 字符串：建议条开关、自动套用的模板、隐藏的
+  /// 内置模板、最近使用）；解析与默认值由模板模块负责，服务层只保存原文。
+  /// 用户模板本身存在数据库 `diary_templates` 表里。
+  final ValueNotifier<String?> diaryTemplatePrefsRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
@@ -169,6 +178,7 @@ class SettingsService {
       'app.settings.calendar_display_options';
   static const _keyDiaryCardStyle = 'app.settings.diary_card_style';
   static const _keyDiaryPreviewStyle = 'app.settings.diary_preview_style';
+  static const _keyDiaryTemplatePrefs = 'app.settings.diary_template_prefs';
   static const _keyDiaryShareOptions = 'app.settings.diary_share_options';
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
 
@@ -229,6 +239,7 @@ class SettingsService {
     // 就按默认样式展示，不能让它阻断启动。
     final storedDiaryCardStyle = prefs.get(_keyDiaryCardStyle);
     final storedDiaryPreviewStyle = prefs.get(_keyDiaryPreviewStyle);
+    final storedDiaryTemplatePrefs = prefs.get(_keyDiaryTemplatePrefs);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -255,6 +266,9 @@ class SettingsService {
           : null,
       diaryPreviewStyleRaw: storedDiaryPreviewStyle is String
           ? storedDiaryPreviewStyle
+          : null,
+      diaryTemplatePrefsRaw: storedDiaryTemplatePrefs is String
+          ? storedDiaryTemplatePrefs
           : null,
     );
   }
@@ -311,6 +325,7 @@ class SettingsService {
       calendarDisplayOptionsRawNotifier.value;
   String? get diaryCardStyleRaw => diaryCardStyleRawNotifier.value;
   String? get diaryPreviewStyleRaw => diaryPreviewStyleRawNotifier.value;
+  String? get diaryTemplatePrefsRaw => diaryTemplatePrefsRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -454,6 +469,20 @@ class SettingsService {
     }
     diaryPreviewStyleRawNotifier.value = normalized;
     await _writePreference(_prefs.setString(_keyDiaryPreviewStyle, normalized));
+  }
+
+  /// 保存日记模板偏好；空值移除该键，回到默认（显示建议条、不自动套用）。
+  Future<void> setDiaryTemplatePrefsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      diaryTemplatePrefsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyDiaryTemplatePrefs));
+      return;
+    }
+    diaryTemplatePrefsRawNotifier.value = normalized;
+    await _writePreference(
+      _prefs.setString(_keyDiaryTemplatePrefs, normalized),
+    );
   }
 
   Future<void> setDiaryCardTagLimit(int value) async {

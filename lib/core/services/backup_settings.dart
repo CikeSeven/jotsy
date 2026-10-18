@@ -23,6 +23,7 @@ class BackupSettings {
     'calendarDisplayOptionsRaw': settingsService.calendarDisplayOptionsRaw,
     'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
     'diaryPreviewStyleRaw': settingsService.diaryPreviewStyleRaw,
+    'diaryTemplatePrefsRaw': settingsService.diaryTemplatePrefsRaw,
     'diaryShareOptionsRaw': settingsService.diaryShareOptionsRaw,
     'diaryExportOptionsRaw': settingsService.diaryExportOptionsRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
@@ -138,6 +139,17 @@ class BackupSettings {
     if (settingsNode.containsKey('diaryPreviewStyleRaw')) {
       final previewStyleRaw = settingsNode['diaryPreviewStyleRaw'];
       await settingsService.setDiaryPreviewStyleRaw(switch (previewStyleRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 模板偏好同上：旧版备份没有时保留本机偏好，显式 null 时恢复默认。
+    if (settingsNode.containsKey('diaryTemplatePrefsRaw')) {
+      final templatePrefsRaw = settingsNode['diaryTemplatePrefsRaw'];
+      await settingsService.setDiaryTemplatePrefsRaw(switch (templatePrefsRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

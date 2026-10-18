@@ -10,7 +10,8 @@ part of 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 /// - 不构建 UI，仅协调页面状态与数据层。
 class EditDiaryController {
   EditDiaryController(this._state) {
-    _editAutoSave = EditDiaryAutoSaveController(
+    _editAutoSave = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
       readSnapshot: _captureEditSnapshot,
       writeSnapshot: _persistEditSnapshot,
       onError: (error) {
@@ -23,7 +24,7 @@ class EditDiaryController {
 
   /// 页面状态引用，承载控制器需要读写的输入与临时状态。
   final _EditDiaryPageState _state;
-  late final EditDiaryAutoSaveController _editAutoSave;
+  late final DebouncedAutoSaveController<EditDiarySnapshot> _editAutoSave;
 
   /// 编辑态发表时间文案（精确到分钟）；详情回填前为 null。
   String? get publishTimeLabelForEdit {

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/debounced_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 
 EditDiarySnapshot snapshot(String title) => EditDiarySnapshot(
@@ -21,7 +21,8 @@ void main() {
       final firstWrite = Completer<void>();
       var current = snapshot('original');
       final written = <String>[];
-      final controller = EditDiaryAutoSaveController(
+      final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+        debounce: const Duration(milliseconds: 500),
         readSnapshot: () => current,
         writeSnapshot: (value) async {
           written.add(value.title);
@@ -50,7 +51,8 @@ void main() {
     var shouldFail = true;
     final errors = <Object>[];
     final written = <String>[];
-    final controller = EditDiaryAutoSaveController(
+    final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
       readSnapshot: () => current,
       writeSnapshot: (value) async {
         if (shouldFail) throw StateError('disk unavailable');
@@ -74,7 +76,8 @@ void main() {
   test('unchanged snapshots do not write to the database', () async {
     final current = snapshot('original');
     var writes = 0;
-    final controller = EditDiaryAutoSaveController(
+    final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
       readSnapshot: () => current,
       writeSnapshot: (_) async => writes++,
       onError: (error) => fail('$error'),
@@ -89,7 +92,8 @@ void main() {
     var current = snapshot('original');
     var reads = 0;
     final write = Completer<void>();
-    final controller = EditDiaryAutoSaveController(
+    final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
       readSnapshot: () {
         reads++;
         return current;
@@ -104,5 +108,36 @@ void main() {
     write.complete();
     expect(await saving, isFalse);
     expect(reads, 1);
+  });
+  test('close waits for the write in flight and stops later saves', () async {
+    var current = snapshot('original');
+    final write = Completer<void>();
+    final written = <String>[];
+    final controller = DebouncedAutoSaveController<EditDiarySnapshot>(
+      debounce: const Duration(milliseconds: 500),
+      readSnapshot: () => current,
+      writeSnapshot: (value) async {
+        written.add(value.title);
+        await write.future;
+      },
+      onError: (error) => fail('$error'),
+    );
+    controller.initialize(current);
+    current = snapshot('edit');
+    unawaited(controller.flush());
+
+    var closed = false;
+    final closing = controller.close().then((_) => closed = true);
+    await Future<void>.delayed(Duration.zero);
+    // 写入未完成时 close 不能先返回：调用方接着要删草稿，晚到的写入会把它写回。
+    expect(closed, isFalse);
+    write.complete();
+    await closing;
+    expect(closed, isTrue);
+
+    current = snapshot('after close');
+    controller.schedule();
+    expect(await controller.flush(), isFalse);
+    expect(written, ['edit']);
   });
 }

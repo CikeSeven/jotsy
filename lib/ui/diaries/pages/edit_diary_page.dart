@@ -30,7 +30,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
-import 'package:node_diary/ui/diaries/controllers/edit_diary_auto_save_controller.dart';
+import 'package:node_diary/ui/diaries/controllers/debounced_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_caret_follow_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';

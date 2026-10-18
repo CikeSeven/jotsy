@@ -4145,7 +4145,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPreviewStyleShowEditButton => 'Edit button';
 
   @override
-  String get diaryPreviewStyleShowShareButton => 'Share image button';
+  String get diaryPreviewStyleShowShareButton => 'Share button';
 
   @override
   String get diaryPreviewStyleReadingGroup => 'Reading aids';

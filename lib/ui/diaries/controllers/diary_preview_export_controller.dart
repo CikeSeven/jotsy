@@ -70,9 +70,12 @@ class DiaryPreviewExportController extends ChangeNotifier {
     }
   }
 
-  /// 分享整页长图；[background] 为长图底色（页面的纸色），默认取主题
-  /// surface。
-  Future<void> shareLongImage(BuildContext context, {Color? background}) async {
+  /// 分享整页长图（分享面板里选了长图时调用）；[background] 为长图底色
+  /// （页面的纸色），默认取主题 surface。
+  Future<void> _shareLongImage(
+    BuildContext context, {
+    Color? background,
+  }) async {
     if (_sharingImage || _showLoading) {
       return;
     }
@@ -150,7 +153,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
   ///
   /// 已安装应用的检测与面板打开并行：检测完成前面板先显示系统分享与复制，
   /// 不让原生查询拖慢面板出现。内容开关在面板内每次改动即保存；[background]
-  /// 同 [shareLongImage]。
+  /// 同 [_shareLongImage]。
   Future<void> openShareSheet(
     BuildContext context, {
     required DiaryWithTags detail,
@@ -176,7 +179,7 @@ class DiaryPreviewExportController extends ChangeNotifier {
       return;
     }
     if (request.action == DiaryShareAction.longImage) {
-      await shareLongImage(context, background: background);
+      await _shareLongImage(context, background: background);
       return;
     }
     final l10n = context.l10n;

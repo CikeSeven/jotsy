@@ -332,7 +332,7 @@ void main() {
     expect(bar.pinned, isTrue);
     expect(find.text('日记'), findsNothing);
     expect(find.byTooltip('编辑'), findsNothing);
-    expect(find.byTooltip('分享图片'), findsOneWidget);
+    expect(find.byTooltip('分享'), findsOneWidget);
     expect(find.byType(DiaryPreviewProgressLine), findsOneWidget);
     expect(find.byType(DiaryPreviewBackToTop), findsOneWidget);
   });

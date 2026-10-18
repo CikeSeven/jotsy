@@ -337,8 +337,11 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           actions: DiaryPreviewActions(
             onOpenTypography: () => showDiaryTypographySheet(context),
             onEdit: _openEditor,
-            onShare: () => _export.shareLongImage(
+            onShare: () => openDiaryPreviewShare(
               context,
+              ref,
+              export: _export,
+              detail: detail,
               background: resolved.background,
             ),
             onMore: () => showDiaryPreviewMore(

@@ -6941,7 +6941,7 @@ abstract class AppLocalizations {
   /// Diary preview style settings: switch for a top bar button.
   ///
   /// In en, this message translates to:
-  /// **'Share image button'**
+  /// **'Share button'**
   String get diaryPreviewStyleShowShareButton;
 
   /// Diary preview style settings: group title.

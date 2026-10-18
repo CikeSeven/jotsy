@@ -6245,4 +6245,235 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryDraftPickerFromTemplate => 'Start from a template';
+
+  @override
+  String get diaryTemplatesTitle => 'Diary templates';
+
+  @override
+  String diaryTemplatesSettingsSubtitle(int builtIn, int mine) {
+    return '$builtIn built-in · $mine of your own';
+  }
+
+  @override
+  String get diaryTemplatesNewEntryGroup => 'New entries';
+
+  @override
+  String get diaryTemplatesStripSwitch => 'Suggest templates';
+
+  @override
+  String get diaryTemplatesStripSwitchSubtitle =>
+      'Show suggestions under the title of a blank entry';
+
+  @override
+  String get diaryTemplatesAutoApply => 'Apply automatically';
+
+  @override
+  String get diaryTemplatesAutoApplyNone => 'Off';
+
+  @override
+  String get diaryTemplatesAutoApplyHint =>
+      'Every blank new entry starts with this template. You can undo it each time.';
+
+  @override
+  String get diaryTemplatesMineGroup => 'My templates';
+
+  @override
+  String get diaryTemplatesBuiltInGroup => 'Built-in templates';
+
+  @override
+  String get diaryTemplatesMineEmpty =>
+      'No templates of your own yet. Create one with +, or copy a built-in one and change it.';
+
+  @override
+  String get diaryTemplatesNew => 'New template';
+
+  @override
+  String get diaryTemplatesImport => 'Import a template code';
+
+  @override
+  String get diaryTemplatesMoreActions => 'More actions';
+
+  @override
+  String get diaryTemplatesDragHandle => 'Drag to reorder';
+
+  @override
+  String get diaryTemplatesDuplicate => 'Duplicate';
+
+  @override
+  String get diaryTemplatesCopyToMine => 'Copy to my templates';
+
+  @override
+  String get diaryTemplatesCopyCode => 'Copy template code';
+
+  @override
+  String get diaryTemplatesHide => 'Hide';
+
+  @override
+  String get diaryTemplatesShow => 'Show';
+
+  @override
+  String diaryTemplatesCopyName(String name) {
+    return '$name copy';
+  }
+
+  @override
+  String diaryTemplatesDeleted(String name) {
+    return 'Deleted “$name”';
+  }
+
+  @override
+  String diaryTemplatesHiddenDone(String name) {
+    return 'Hid “$name”';
+  }
+
+  @override
+  String get diaryTemplatesCodeCopied => 'Template code copied';
+
+  @override
+  String get diaryTemplatesCodeTooLong =>
+      'This template is too long for a template code';
+
+  @override
+  String get diaryTemplatesImportEmpty => 'No template code in the clipboard';
+
+  @override
+  String get diaryTemplatesImportInvalid => 'That\'s not a valid template code';
+
+  @override
+  String diaryTemplatesImported(String name) {
+    return 'Imported “$name”';
+  }
+
+  @override
+  String diaryTemplatesImportedNewer(String name) {
+    return 'Imported “$name”. It comes from a newer version, so some settings may not apply.';
+  }
+
+  @override
+  String get diaryTemplatesSaveFailed =>
+      'Couldn\'t save the template. Try again';
+
+  @override
+  String get diaryTemplateEditorNewTitle => 'New template';
+
+  @override
+  String get diaryTemplateEditorEditTitle => 'Edit template';
+
+  @override
+  String get diaryTemplateEditorTabContent => 'Content';
+
+  @override
+  String get diaryTemplateEditorTabSettings => 'Settings';
+
+  @override
+  String get diaryTemplateEditorTitleHint => 'Title (variables allowed)';
+
+  @override
+  String get diaryTemplateEditorBodyHint =>
+      'Write the body. Headings, lists and to-dos are kept.';
+
+  @override
+  String get diaryTemplateEditorAllVariables => 'All variables';
+
+  @override
+  String get diaryTemplateEditorVariablesTitle => 'Insert a variable';
+
+  @override
+  String get diaryTemplateEditorVariablesHint =>
+      'Variables are filled in from the entry\'s date when the template is applied. Lunar dates and solar terms use Chinese names.';
+
+  @override
+  String diaryTemplateEditorVariableExample(String example) {
+    return 'Today: $example';
+  }
+
+  @override
+  String get diaryTemplateEditorName => 'Name';
+
+  @override
+  String get diaryTemplateEditorNameRequired => 'Give the template a name';
+
+  @override
+  String get diaryTemplateEditorDescription => 'Short description';
+
+  @override
+  String get diaryTemplateEditorLook => 'Look';
+
+  @override
+  String get diaryTemplateEditorCategory => 'Category';
+
+  @override
+  String get diaryTemplateEditorIcon => 'Icon';
+
+  @override
+  String get diaryTemplateEditorAccent => 'Color';
+
+  @override
+  String get diaryTemplateEditorAccentTheme => 'Theme color';
+
+  @override
+  String get diaryTemplateEditorPresets => 'Also set when applied';
+
+  @override
+  String get diaryTemplateEditorTags => 'Tags';
+
+  @override
+  String get diaryTemplateEditorAddTag => 'Add tag';
+
+  @override
+  String get diaryTemplateEditorNewTag => 'New tag';
+
+  @override
+  String get diaryTemplateEditorTagsHint =>
+      'Tags are matched by name. Missing ones are created when the template is applied.';
+
+  @override
+  String get diaryTemplateEditorMood => 'Mood';
+
+  @override
+  String get diaryTemplateEditorNone => 'None';
+
+  @override
+  String get diaryTemplateEditorEnergy => 'Energy';
+
+  @override
+  String get diaryTemplateEditorCapsule => 'Time capsule';
+
+  @override
+  String get diaryTemplateEditorCapsuleHint =>
+      'Counted from the day the template is applied; you can still change it before publishing.';
+
+  @override
+  String get diaryTemplateEditorRecommend => 'When to suggest';
+
+  @override
+  String get diaryTemplateEditorRecommendHint =>
+      'The template moves to the front of the suggestions when every chosen group matches. Within a group, any choice is enough.';
+
+  @override
+  String get diaryTemplateEditorSlots => 'Time of day';
+
+  @override
+  String get diaryTemplateEditorWeekdays => 'Days of the week';
+
+  @override
+  String get diaryTemplateEditorMonth => 'Time of month';
+
+  @override
+  String get diaryTemplateSlotMorning => 'Morning';
+
+  @override
+  String get diaryTemplateSlotAfternoon => 'Afternoon';
+
+  @override
+  String get diaryTemplateSlotEvening => 'Evening';
+
+  @override
+  String get diaryTemplateSlotNight => 'Late night';
+
+  @override
+  String get diaryTemplateMonthStart => 'First 3 days';
+
+  @override
+  String get diaryTemplateMonthEnd => 'Last 3 days';
 }

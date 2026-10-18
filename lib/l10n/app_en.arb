@@ -8075,5 +8075,319 @@
   "diaryDraftPickerFromTemplate": "Start from a template",
   "@diaryDraftPickerFromTemplate": {
     "description": "Draft picker: choose a template and start a new entry with it."
+  },
+  "diaryTemplatesTitle": "Diary templates",
+  "@diaryTemplatesTitle": {
+    "description": "Title of the diary template management page and its settings entry."
+  },
+  "diaryTemplatesSettingsSubtitle": "{builtIn} built-in · {mine} of your own",
+  "@diaryTemplatesSettingsSubtitle": {
+    "description": "Subtitle of the diary templates entry in editor settings.",
+    "placeholders": {
+      "builtIn": {
+        "type": "int"
+      },
+      "mine": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesNewEntryGroup": "New entries",
+  "@diaryTemplatesNewEntryGroup": {
+    "description": "Group title on the template page for how templates appear when starting an entry."
+  },
+  "diaryTemplatesStripSwitch": "Suggest templates",
+  "@diaryTemplatesStripSwitch": {
+    "description": "Switch: show the template suggestion strip in blank new entries."
+  },
+  "diaryTemplatesStripSwitchSubtitle": "Show suggestions under the title of a blank entry",
+  "@diaryTemplatesStripSwitchSubtitle": {
+    "description": "Subtitle of the suggestion strip switch."
+  },
+  "diaryTemplatesAutoApply": "Apply automatically",
+  "@diaryTemplatesAutoApply": {
+    "description": "Setting: a template applied to every blank new entry."
+  },
+  "diaryTemplatesAutoApplyNone": "Off",
+  "@diaryTemplatesAutoApplyNone": {
+    "description": "Auto-apply setting value when no template is chosen."
+  },
+  "diaryTemplatesAutoApplyHint": "Every blank new entry starts with this template. You can undo it each time.",
+  "@diaryTemplatesAutoApplyHint": {
+    "description": "Explanation at the top of the auto-apply picker."
+  },
+  "diaryTemplatesMineGroup": "My templates",
+  "@diaryTemplatesMineGroup": {
+    "description": "Group title: the user's own templates."
+  },
+  "diaryTemplatesBuiltInGroup": "Built-in templates",
+  "@diaryTemplatesBuiltInGroup": {
+    "description": "Group title: templates that come with the app."
+  },
+  "diaryTemplatesMineEmpty": "No templates of your own yet. Create one with +, or copy a built-in one and change it.",
+  "@diaryTemplatesMineEmpty": {
+    "description": "Empty state of the user's template list."
+  },
+  "diaryTemplatesNew": "New template",
+  "@diaryTemplatesNew": {
+    "description": "Tooltip of the button that creates a template."
+  },
+  "diaryTemplatesImport": "Import a template code",
+  "@diaryTemplatesImport": {
+    "description": "Tooltip of the button that imports a template code from the clipboard."
+  },
+  "diaryTemplatesMoreActions": "More actions",
+  "@diaryTemplatesMoreActions": {
+    "description": "Tooltip of a template row's menu button."
+  },
+  "diaryTemplatesDragHandle": "Drag to reorder",
+  "@diaryTemplatesDragHandle": {
+    "description": "Accessibility label of the drag handle on a template row."
+  },
+  "diaryTemplatesDuplicate": "Duplicate",
+  "@diaryTemplatesDuplicate": {
+    "description": "Menu action: make a copy of the user's template."
+  },
+  "diaryTemplatesCopyToMine": "Copy to my templates",
+  "@diaryTemplatesCopyToMine": {
+    "description": "Action on a built-in template: copy it into the user's templates so it can be edited."
+  },
+  "diaryTemplatesCopyCode": "Copy template code",
+  "@diaryTemplatesCopyCode": {
+    "description": "Menu action: copy the template as a shareable code."
+  },
+  "diaryTemplatesHide": "Hide",
+  "@diaryTemplatesHide": {
+    "description": "Menu action: hide a built-in template from the picker."
+  },
+  "diaryTemplatesShow": "Show",
+  "@diaryTemplatesShow": {
+    "description": "Menu action: show a hidden built-in template again."
+  },
+  "diaryTemplatesCopyName": "{name} copy",
+  "@diaryTemplatesCopyName": {
+    "description": "Name given to a duplicated template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesDeleted": "Deleted “{name}”",
+  "@diaryTemplatesDeleted": {
+    "description": "Snackbar after deleting a template, with Undo.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesHiddenDone": "Hid “{name}”",
+  "@diaryTemplatesHiddenDone": {
+    "description": "Snackbar after hiding a built-in template, with Undo.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesCodeCopied": "Template code copied",
+  "@diaryTemplatesCodeCopied": {
+    "description": "Snackbar after copying a template code."
+  },
+  "diaryTemplatesCodeTooLong": "This template is too long for a template code",
+  "@diaryTemplatesCodeTooLong": {
+    "description": "Snackbar when a template is too long to fit in a template code."
+  },
+  "diaryTemplatesImportEmpty": "No template code in the clipboard",
+  "@diaryTemplatesImportEmpty": {
+    "description": "Snackbar when importing finds an empty clipboard."
+  },
+  "diaryTemplatesImportInvalid": "That's not a valid template code",
+  "@diaryTemplatesImportInvalid": {
+    "description": "Snackbar when the clipboard holds no valid template code."
+  },
+  "diaryTemplatesImported": "Imported “{name}”",
+  "@diaryTemplatesImported": {
+    "description": "Snackbar after importing a template code, with Undo.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesImportedNewer": "Imported “{name}”. It comes from a newer version, so some settings may not apply.",
+  "@diaryTemplatesImportedNewer": {
+    "description": "Snackbar after importing a code made by a newer app version, with Undo.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesSaveFailed": "Couldn't save the template. Try again",
+  "@diaryTemplatesSaveFailed": {
+    "description": "Snackbar when writing a template fails."
+  },
+  "diaryTemplateEditorNewTitle": "New template",
+  "@diaryTemplateEditorNewTitle": {
+    "description": "Title of the template editor for a new template."
+  },
+  "diaryTemplateEditorEditTitle": "Edit template",
+  "@diaryTemplateEditorEditTitle": {
+    "description": "Title of the template editor for an existing template."
+  },
+  "diaryTemplateEditorTabContent": "Content",
+  "@diaryTemplateEditorTabContent": {
+    "description": "Template editor tab: title and body."
+  },
+  "diaryTemplateEditorTabSettings": "Settings",
+  "@diaryTemplateEditorTabSettings": {
+    "description": "Template editor tab: name, look, presets and suggestions."
+  },
+  "diaryTemplateEditorTitleHint": "Title (variables allowed)",
+  "@diaryTemplateEditorTitleHint": {
+    "description": "Hint of the template's title field."
+  },
+  "diaryTemplateEditorBodyHint": "Write the body. Headings, lists and to-dos are kept.",
+  "@diaryTemplateEditorBodyHint": {
+    "description": "Hint of the template's empty body."
+  },
+  "diaryTemplateEditorAllVariables": "All variables",
+  "@diaryTemplateEditorAllVariables": {
+    "description": "Button that opens the full list of template variables."
+  },
+  "diaryTemplateEditorVariablesTitle": "Insert a variable",
+  "@diaryTemplateEditorVariablesTitle": {
+    "description": "Title of the template variable sheet."
+  },
+  "diaryTemplateEditorVariablesHint": "Variables are filled in from the entry's date when the template is applied. Lunar dates and solar terms use Chinese names.",
+  "@diaryTemplateEditorVariablesHint": {
+    "description": "Explanation in the template variable sheet."
+  },
+  "diaryTemplateEditorVariableExample": "Today: {example}",
+  "@diaryTemplateEditorVariableExample": {
+    "description": "Example value of a template variable, computed for today.",
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEditorName": "Name",
+  "@diaryTemplateEditorName": {
+    "description": "Label of the template name field."
+  },
+  "diaryTemplateEditorNameRequired": "Give the template a name",
+  "@diaryTemplateEditorNameRequired": {
+    "description": "Error shown when saving a template without a name."
+  },
+  "diaryTemplateEditorDescription": "Short description",
+  "@diaryTemplateEditorDescription": {
+    "description": "Label of the template description field."
+  },
+  "diaryTemplateEditorLook": "Look",
+  "@diaryTemplateEditorLook": {
+    "description": "Group title: category, icon and color of a template."
+  },
+  "diaryTemplateEditorCategory": "Category",
+  "@diaryTemplateEditorCategory": {
+    "description": "Label of the template category choice."
+  },
+  "diaryTemplateEditorIcon": "Icon",
+  "@diaryTemplateEditorIcon": {
+    "description": "Label of the template icon choice."
+  },
+  "diaryTemplateEditorAccent": "Color",
+  "@diaryTemplateEditorAccent": {
+    "description": "Label of the template color choice."
+  },
+  "diaryTemplateEditorAccentTheme": "Theme color",
+  "@diaryTemplateEditorAccentTheme": {
+    "description": "Color option: follow the app's theme color."
+  },
+  "diaryTemplateEditorPresets": "Also set when applied",
+  "@diaryTemplateEditorPresets": {
+    "description": "Group title: tags, mood, energy and time capsule the template sets."
+  },
+  "diaryTemplateEditorTags": "Tags",
+  "@diaryTemplateEditorTags": {
+    "description": "Label of the template's preset tags."
+  },
+  "diaryTemplateEditorAddTag": "Add tag",
+  "@diaryTemplateEditorAddTag": {
+    "description": "Button that adds a preset tag to the template."
+  },
+  "diaryTemplateEditorNewTag": "New tag",
+  "@diaryTemplateEditorNewTag": {
+    "description": "Option in the tag sheet: type a tag name that doesn't exist yet."
+  },
+  "diaryTemplateEditorTagsHint": "Tags are matched by name. Missing ones are created when the template is applied.",
+  "@diaryTemplateEditorTagsHint": {
+    "description": "Explanation under the template's preset tags."
+  },
+  "diaryTemplateEditorMood": "Mood",
+  "@diaryTemplateEditorMood": {
+    "description": "Label of the template's preset mood."
+  },
+  "diaryTemplateEditorNone": "None",
+  "@diaryTemplateEditorNone": {
+    "description": "Option meaning the template doesn't set this value."
+  },
+  "diaryTemplateEditorEnergy": "Energy",
+  "@diaryTemplateEditorEnergy": {
+    "description": "Label of the template's preset energy level."
+  },
+  "diaryTemplateEditorCapsule": "Time capsule",
+  "@diaryTemplateEditorCapsule": {
+    "description": "Label of the template's preset time capsule."
+  },
+  "diaryTemplateEditorCapsuleHint": "Counted from the day the template is applied; you can still change it before publishing.",
+  "@diaryTemplateEditorCapsuleHint": {
+    "description": "Explanation under the template's preset time capsule."
+  },
+  "diaryTemplateEditorRecommend": "When to suggest",
+  "@diaryTemplateEditorRecommend": {
+    "description": "Group title: when the template is suggested first."
+  },
+  "diaryTemplateEditorRecommendHint": "The template moves to the front of the suggestions when every chosen group matches. Within a group, any choice is enough.",
+  "@diaryTemplateEditorRecommendHint": {
+    "description": "Explanation of the template's suggestion rules."
+  },
+  "diaryTemplateEditorSlots": "Time of day",
+  "@diaryTemplateEditorSlots": {
+    "description": "Label of the time-of-day suggestion rule."
+  },
+  "diaryTemplateEditorWeekdays": "Days of the week",
+  "@diaryTemplateEditorWeekdays": {
+    "description": "Label of the weekday suggestion rule."
+  },
+  "diaryTemplateEditorMonth": "Time of month",
+  "@diaryTemplateEditorMonth": {
+    "description": "Label of the month start/end suggestion rule."
+  },
+  "diaryTemplateSlotMorning": "Morning",
+  "@diaryTemplateSlotMorning": {
+    "description": "Time of day 5:00–10:59."
+  },
+  "diaryTemplateSlotAfternoon": "Afternoon",
+  "@diaryTemplateSlotAfternoon": {
+    "description": "Time of day 11:00–16:59."
+  },
+  "diaryTemplateSlotEvening": "Evening",
+  "@diaryTemplateSlotEvening": {
+    "description": "Time of day 17:00–21:59."
+  },
+  "diaryTemplateSlotNight": "Late night",
+  "@diaryTemplateSlotNight": {
+    "description": "Time of day 22:00–4:59."
+  },
+  "diaryTemplateMonthStart": "First 3 days",
+  "@diaryTemplateMonthStart": {
+    "description": "Month rule: the first three days of a month."
+  },
+  "diaryTemplateMonthEnd": "Last 3 days",
+  "@diaryTemplateMonthEnd": {
+    "description": "Month rule: the last three days of a month."
   }
 }

@@ -3,73 +3,16 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
-import '../../../l10n/app_localizations_gen.dart';
 import '../../diaries/models/diary_meta_draft.dart';
 import '../../diaries/models/new_diary_draft.dart';
 import '../../diaries/models/time_capsule.dart';
-import '../../diaries/viewmodels/diary_meta_draft_controller.dart';
-import '../models/diary_template.dart';
 import '../models/diary_template_body.dart';
 import '../models/diary_template_selection.dart';
 import '../viewmodels/diary_template_application.dart';
 import '../viewmodels/diary_template_variable_values.dart';
+import 'diary_template_apply_port.dart';
 
-/// 编辑页交给模板套用的读写口：控制器不直接碰页面 State，测试可以换成假的。
-abstract interface class DiaryTemplateEditorPort {
-  String get title;
-
-  /// 当前正文的 Delta JSON（与草稿里的 `contentDocJson` 同一种编码）。
-  String get contentDocJson;
-
-  /// 标题或正文里已有内容（含图片等嵌入）。
-  bool get hasContent;
-
-  DiaryMetaDraftController get meta;
-
-  /// 日记的日期：日历补写时是那一天，否则是今天。
-  DateTime get diaryDate;
-
-  AppLocalizations get l10n;
-
-  /// 本机的心情选项：模板预设的心情不在其中时不套用。
-  List<String> get moodOptions;
-
-  /// 换上新的标题与正文，光标放到 [caret]；返回载入后的正文重新编码的
-  /// JSON——Quill 会合并相邻的同格式文字，与传入的 [ops] 未必逐字相同，
-  /// 之后判断“是否原样未动”必须拿载入后的编码比较。
-  String replaceContent({
-    required String title,
-    required List<Map<String, Object?>> ops,
-    required int caret,
-  });
-}
-
-/// 模板从哪里套用：只有自动套用不计入“最近使用”。
-enum DiaryTemplateApplySource { strip, picker, launch, auto }
-
-/// 一次套用留下的记录：撤销时据此只撤回模板带来的东西。
-class DiaryTemplateApplied {
-  DiaryTemplateApplied._({
-    required this.template,
-    required this.title,
-    required this.bodyJson,
-    required this.metaBefore,
-    required this.metaAfter,
-  });
-
-  final DiaryTemplate template;
-  final String title;
-  final String bodyJson;
-
-  /// 套用前与刚套用完预设（心情、精力、胶囊）后的元数据。
-  final DiaryMetaDraft metaBefore;
-  final DiaryMetaDraft metaAfter;
-
-  /// 模板勾上的标签（原本没选中的）与为此新建的标签；标签异步解析，撤销时
-  /// 读到的是已经完成的部分。
-  final Set<int> addedTagIds = <int>{};
-  final Set<int> createdTagIds = <int>{};
-}
+export 'diary_template_apply_port.dart';
 
 /// 新建编辑页里的模板套用：建议条的显示状态、套用、撤销，以及“套用后原样
 /// 未动的内容不算草稿”。
@@ -163,7 +106,7 @@ class DiaryTemplateApplyController extends ChangeNotifier {
     } finally {
       _applying = false;
     }
-    final applied = DiaryTemplateApplied._(
+    final applied = DiaryTemplateApplied(
       template: template,
       title: application.title,
       bodyJson: bodyJson,

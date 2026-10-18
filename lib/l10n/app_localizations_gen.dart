@@ -10501,6 +10501,420 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start from a template'**
   String get diaryDraftPickerFromTemplate;
+
+  /// Title of the diary template management page and its settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary templates'**
+  String get diaryTemplatesTitle;
+
+  /// Subtitle of the diary templates entry in editor settings.
+  ///
+  /// In en, this message translates to:
+  /// **'{builtIn} built-in · {mine} of your own'**
+  String diaryTemplatesSettingsSubtitle(int builtIn, int mine);
+
+  /// Group title on the template page for how templates appear when starting an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'New entries'**
+  String get diaryTemplatesNewEntryGroup;
+
+  /// Switch: show the template suggestion strip in blank new entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest templates'**
+  String get diaryTemplatesStripSwitch;
+
+  /// Subtitle of the suggestion strip switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show suggestions under the title of a blank entry'**
+  String get diaryTemplatesStripSwitchSubtitle;
+
+  /// Setting: a template applied to every blank new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply automatically'**
+  String get diaryTemplatesAutoApply;
+
+  /// Auto-apply setting value when no template is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get diaryTemplatesAutoApplyNone;
+
+  /// Explanation at the top of the auto-apply picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Every blank new entry starts with this template. You can undo it each time.'**
+  String get diaryTemplatesAutoApplyHint;
+
+  /// Group title: the user's own templates.
+  ///
+  /// In en, this message translates to:
+  /// **'My templates'**
+  String get diaryTemplatesMineGroup;
+
+  /// Group title: templates that come with the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in templates'**
+  String get diaryTemplatesBuiltInGroup;
+
+  /// Empty state of the user's template list.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates of your own yet. Create one with +, or copy a built-in one and change it.'**
+  String get diaryTemplatesMineEmpty;
+
+  /// Tooltip of the button that creates a template.
+  ///
+  /// In en, this message translates to:
+  /// **'New template'**
+  String get diaryTemplatesNew;
+
+  /// Tooltip of the button that imports a template code from the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a template code'**
+  String get diaryTemplatesImport;
+
+  /// Tooltip of a template row's menu button.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get diaryTemplatesMoreActions;
+
+  /// Accessibility label of the drag handle on a template row.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get diaryTemplatesDragHandle;
+
+  /// Menu action: make a copy of the user's template.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get diaryTemplatesDuplicate;
+
+  /// Action on a built-in template: copy it into the user's templates so it can be edited.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to my templates'**
+  String get diaryTemplatesCopyToMine;
+
+  /// Menu action: copy the template as a shareable code.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy template code'**
+  String get diaryTemplatesCopyCode;
+
+  /// Menu action: hide a built-in template from the picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get diaryTemplatesHide;
+
+  /// Menu action: show a hidden built-in template again.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get diaryTemplatesShow;
+
+  /// Name given to a duplicated template.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} copy'**
+  String diaryTemplatesCopyName(String name);
+
+  /// Snackbar after deleting a template, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted “{name}”'**
+  String diaryTemplatesDeleted(String name);
+
+  /// Snackbar after hiding a built-in template, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hid “{name}”'**
+  String diaryTemplatesHiddenDone(String name);
+
+  /// Snackbar after copying a template code.
+  ///
+  /// In en, this message translates to:
+  /// **'Template code copied'**
+  String get diaryTemplatesCodeCopied;
+
+  /// Snackbar when a template is too long to fit in a template code.
+  ///
+  /// In en, this message translates to:
+  /// **'This template is too long for a template code'**
+  String get diaryTemplatesCodeTooLong;
+
+  /// Snackbar when importing finds an empty clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'No template code in the clipboard'**
+  String get diaryTemplatesImportEmpty;
+
+  /// Snackbar when the clipboard holds no valid template code.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s not a valid template code'**
+  String get diaryTemplatesImportInvalid;
+
+  /// Snackbar after importing a template code, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported “{name}”'**
+  String diaryTemplatesImported(String name);
+
+  /// Snackbar after importing a code made by a newer app version, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported “{name}”. It comes from a newer version, so some settings may not apply.'**
+  String diaryTemplatesImportedNewer(String name);
+
+  /// Snackbar when writing a template fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the template. Try again'**
+  String get diaryTemplatesSaveFailed;
+
+  /// Title of the template editor for a new template.
+  ///
+  /// In en, this message translates to:
+  /// **'New template'**
+  String get diaryTemplateEditorNewTitle;
+
+  /// Title of the template editor for an existing template.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit template'**
+  String get diaryTemplateEditorEditTitle;
+
+  /// Template editor tab: title and body.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get diaryTemplateEditorTabContent;
+
+  /// Template editor tab: name, look, presets and suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get diaryTemplateEditorTabSettings;
+
+  /// Hint of the template's title field.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (variables allowed)'**
+  String get diaryTemplateEditorTitleHint;
+
+  /// Hint of the template's empty body.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the body. Headings, lists and to-dos are kept.'**
+  String get diaryTemplateEditorBodyHint;
+
+  /// Button that opens the full list of template variables.
+  ///
+  /// In en, this message translates to:
+  /// **'All variables'**
+  String get diaryTemplateEditorAllVariables;
+
+  /// Title of the template variable sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert a variable'**
+  String get diaryTemplateEditorVariablesTitle;
+
+  /// Explanation in the template variable sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Variables are filled in from the entry\'s date when the template is applied. Lunar dates and solar terms use Chinese names.'**
+  String get diaryTemplateEditorVariablesHint;
+
+  /// Example value of a template variable, computed for today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {example}'**
+  String diaryTemplateEditorVariableExample(String example);
+
+  /// Label of the template name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get diaryTemplateEditorName;
+
+  /// Error shown when saving a template without a name.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the template a name'**
+  String get diaryTemplateEditorNameRequired;
+
+  /// Label of the template description field.
+  ///
+  /// In en, this message translates to:
+  /// **'Short description'**
+  String get diaryTemplateEditorDescription;
+
+  /// Group title: category, icon and color of a template.
+  ///
+  /// In en, this message translates to:
+  /// **'Look'**
+  String get diaryTemplateEditorLook;
+
+  /// Label of the template category choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get diaryTemplateEditorCategory;
+
+  /// Label of the template icon choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get diaryTemplateEditorIcon;
+
+  /// Label of the template color choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get diaryTemplateEditorAccent;
+
+  /// Color option: follow the app's theme color.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme color'**
+  String get diaryTemplateEditorAccentTheme;
+
+  /// Group title: tags, mood, energy and time capsule the template sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Also set when applied'**
+  String get diaryTemplateEditorPresets;
+
+  /// Label of the template's preset tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryTemplateEditorTags;
+
+  /// Button that adds a preset tag to the template.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tag'**
+  String get diaryTemplateEditorAddTag;
+
+  /// Option in the tag sheet: type a tag name that doesn't exist yet.
+  ///
+  /// In en, this message translates to:
+  /// **'New tag'**
+  String get diaryTemplateEditorNewTag;
+
+  /// Explanation under the template's preset tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags are matched by name. Missing ones are created when the template is applied.'**
+  String get diaryTemplateEditorTagsHint;
+
+  /// Label of the template's preset mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryTemplateEditorMood;
+
+  /// Option meaning the template doesn't set this value.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get diaryTemplateEditorNone;
+
+  /// Label of the template's preset energy level.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get diaryTemplateEditorEnergy;
+
+  /// Label of the template's preset time capsule.
+  ///
+  /// In en, this message translates to:
+  /// **'Time capsule'**
+  String get diaryTemplateEditorCapsule;
+
+  /// Explanation under the template's preset time capsule.
+  ///
+  /// In en, this message translates to:
+  /// **'Counted from the day the template is applied; you can still change it before publishing.'**
+  String get diaryTemplateEditorCapsuleHint;
+
+  /// Group title: when the template is suggested first.
+  ///
+  /// In en, this message translates to:
+  /// **'When to suggest'**
+  String get diaryTemplateEditorRecommend;
+
+  /// Explanation of the template's suggestion rules.
+  ///
+  /// In en, this message translates to:
+  /// **'The template moves to the front of the suggestions when every chosen group matches. Within a group, any choice is enough.'**
+  String get diaryTemplateEditorRecommendHint;
+
+  /// Label of the time-of-day suggestion rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Time of day'**
+  String get diaryTemplateEditorSlots;
+
+  /// Label of the weekday suggestion rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Days of the week'**
+  String get diaryTemplateEditorWeekdays;
+
+  /// Label of the month start/end suggestion rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Time of month'**
+  String get diaryTemplateEditorMonth;
+
+  /// Time of day 5:00–10:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get diaryTemplateSlotMorning;
+
+  /// Time of day 11:00–16:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get diaryTemplateSlotAfternoon;
+
+  /// Time of day 17:00–21:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get diaryTemplateSlotEvening;
+
+  /// Time of day 22:00–4:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night'**
+  String get diaryTemplateSlotNight;
+
+  /// Month rule: the first three days of a month.
+  ///
+  /// In en, this message translates to:
+  /// **'First 3 days'**
+  String get diaryTemplateMonthStart;
+
+  /// Month rule: the last three days of a month.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 days'**
+  String get diaryTemplateMonthEnd;
 }
 
 class _AppLocalizationsDelegate

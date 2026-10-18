@@ -5694,4 +5694,227 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryDraftPickerFromTemplate => '从模板新建';
+
+  @override
+  String get diaryTemplatesTitle => '日记模板';
+
+  @override
+  String diaryTemplatesSettingsSubtitle(int builtIn, int mine) {
+    return '内置 $builtIn 个 · 我的 $mine 个';
+  }
+
+  @override
+  String get diaryTemplatesNewEntryGroup => '新建日记时';
+
+  @override
+  String get diaryTemplatesStripSwitch => '推荐模板';
+
+  @override
+  String get diaryTemplatesStripSwitchSubtitle => '在空白日记的标题下显示模板建议';
+
+  @override
+  String get diaryTemplatesAutoApply => '自动套用';
+
+  @override
+  String get diaryTemplatesAutoApplyNone => '不自动套用';
+
+  @override
+  String get diaryTemplatesAutoApplyHint => '每次新建空白日记都会先套用这个模板，每次都可以撤销。';
+
+  @override
+  String get diaryTemplatesMineGroup => '我的模板';
+
+  @override
+  String get diaryTemplatesBuiltInGroup => '内置模板';
+
+  @override
+  String get diaryTemplatesMineEmpty => '还没有自己的模板。点右上角 + 新建，或复制一个内置模板来改。';
+
+  @override
+  String get diaryTemplatesNew => '新建模板';
+
+  @override
+  String get diaryTemplatesImport => '导入模板码';
+
+  @override
+  String get diaryTemplatesMoreActions => '更多操作';
+
+  @override
+  String get diaryTemplatesDragHandle => '拖动排序';
+
+  @override
+  String get diaryTemplatesDuplicate => '复制';
+
+  @override
+  String get diaryTemplatesCopyToMine => '复制为我的模板';
+
+  @override
+  String get diaryTemplatesCopyCode => '复制模板码';
+
+  @override
+  String get diaryTemplatesHide => '隐藏';
+
+  @override
+  String get diaryTemplatesShow => '显示';
+
+  @override
+  String diaryTemplatesCopyName(String name) {
+    return '$name 副本';
+  }
+
+  @override
+  String diaryTemplatesDeleted(String name) {
+    return '已删除「$name」';
+  }
+
+  @override
+  String diaryTemplatesHiddenDone(String name) {
+    return '已隐藏「$name」';
+  }
+
+  @override
+  String get diaryTemplatesCodeCopied => '模板码已复制';
+
+  @override
+  String get diaryTemplatesCodeTooLong => '模板正文太长，无法生成模板码';
+
+  @override
+  String get diaryTemplatesImportEmpty => '剪贴板里没有模板码';
+
+  @override
+  String get diaryTemplatesImportInvalid => '这不是有效的模板码';
+
+  @override
+  String diaryTemplatesImported(String name) {
+    return '已导入「$name」';
+  }
+
+  @override
+  String diaryTemplatesImportedNewer(String name) {
+    return '已导入「$name」。它来自新版本，部分设置可能未生效。';
+  }
+
+  @override
+  String get diaryTemplatesSaveFailed => '模板保存失败，请重试';
+
+  @override
+  String get diaryTemplateEditorNewTitle => '新建模板';
+
+  @override
+  String get diaryTemplateEditorEditTitle => '编辑模板';
+
+  @override
+  String get diaryTemplateEditorTabContent => '内容';
+
+  @override
+  String get diaryTemplateEditorTabSettings => '设置';
+
+  @override
+  String get diaryTemplateEditorTitleHint => '标题（可插入变量）';
+
+  @override
+  String get diaryTemplateEditorBodyHint => '写下正文，小标题、列表与待办都会保留';
+
+  @override
+  String get diaryTemplateEditorAllVariables => '全部变量';
+
+  @override
+  String get diaryTemplateEditorVariablesTitle => '插入变量';
+
+  @override
+  String get diaryTemplateEditorVariablesHint =>
+      '套用模板时按日记的日期替换成具体内容。农历与节气为中文名称。';
+
+  @override
+  String diaryTemplateEditorVariableExample(String example) {
+    return '今天：$example';
+  }
+
+  @override
+  String get diaryTemplateEditorName => '名称';
+
+  @override
+  String get diaryTemplateEditorNameRequired => '请填写模板名称';
+
+  @override
+  String get diaryTemplateEditorDescription => '一句话说明';
+
+  @override
+  String get diaryTemplateEditorLook => '外观';
+
+  @override
+  String get diaryTemplateEditorCategory => '分类';
+
+  @override
+  String get diaryTemplateEditorIcon => '图标';
+
+  @override
+  String get diaryTemplateEditorAccent => '颜色';
+
+  @override
+  String get diaryTemplateEditorAccentTheme => '跟随主题';
+
+  @override
+  String get diaryTemplateEditorPresets => '套用时一并设置';
+
+  @override
+  String get diaryTemplateEditorTags => '标签';
+
+  @override
+  String get diaryTemplateEditorAddTag => '添加标签';
+
+  @override
+  String get diaryTemplateEditorNewTag => '新建标签';
+
+  @override
+  String get diaryTemplateEditorTagsHint => '按名称匹配，本机没有的标签会在套用时新建。';
+
+  @override
+  String get diaryTemplateEditorMood => '心情';
+
+  @override
+  String get diaryTemplateEditorNone => '不设';
+
+  @override
+  String get diaryTemplateEditorEnergy => '精力';
+
+  @override
+  String get diaryTemplateEditorCapsule => '时间胶囊';
+
+  @override
+  String get diaryTemplateEditorCapsuleHint => '从套用当天起算，发布前仍可修改。';
+
+  @override
+  String get diaryTemplateEditorRecommend => '推荐时间';
+
+  @override
+  String get diaryTemplateEditorRecommendHint =>
+      '满足每一组选中的条件时，这个模板会排在建议的最前面；同一组里选多个表示任一即可。';
+
+  @override
+  String get diaryTemplateEditorSlots => '时段';
+
+  @override
+  String get diaryTemplateEditorWeekdays => '星期';
+
+  @override
+  String get diaryTemplateEditorMonth => '月份';
+
+  @override
+  String get diaryTemplateSlotMorning => '清晨';
+
+  @override
+  String get diaryTemplateSlotAfternoon => '午后';
+
+  @override
+  String get diaryTemplateSlotEvening => '傍晚';
+
+  @override
+  String get diaryTemplateSlotNight => '深夜';
+
+  @override
+  String get diaryTemplateMonthStart => '月初三天';
+
+  @override
+  String get diaryTemplateMonthEnd => '月末三天';
 }

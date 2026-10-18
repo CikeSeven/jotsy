@@ -8075,5 +8075,319 @@
   "diaryDraftPickerFromTemplate": "从模板新建",
   "@diaryDraftPickerFromTemplate": {
     "description": "草稿选择面板：选一个模板，用它新建一篇日记。"
+  },
+  "diaryTemplatesTitle": "日记模板",
+  "@diaryTemplatesTitle": {
+    "description": "日记模板管理页与设置入口的标题。"
+  },
+  "diaryTemplatesSettingsSubtitle": "内置 {builtIn} 个 · 我的 {mine} 个",
+  "@diaryTemplatesSettingsSubtitle": {
+    "description": "编辑器设置里“日记模板”入口的副标题。",
+    "placeholders": {
+      "builtIn": {
+        "type": "int"
+      },
+      "mine": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesNewEntryGroup": "新建日记时",
+  "@diaryTemplatesNewEntryGroup": {
+    "description": "模板管理页分组标题：新建日记时模板如何出现。"
+  },
+  "diaryTemplatesStripSwitch": "推荐模板",
+  "@diaryTemplatesStripSwitch": {
+    "description": "开关：在空白新建日记里显示模板建议条。"
+  },
+  "diaryTemplatesStripSwitchSubtitle": "在空白日记的标题下显示模板建议",
+  "@diaryTemplatesStripSwitchSubtitle": {
+    "description": "模板建议条开关的说明。"
+  },
+  "diaryTemplatesAutoApply": "自动套用",
+  "@diaryTemplatesAutoApply": {
+    "description": "设置项：每次新建空白日记时自动套用的模板。"
+  },
+  "diaryTemplatesAutoApplyNone": "不自动套用",
+  "@diaryTemplatesAutoApplyNone": {
+    "description": "未选择自动套用模板时的取值。"
+  },
+  "diaryTemplatesAutoApplyHint": "每次新建空白日记都会先套用这个模板，每次都可以撤销。",
+  "@diaryTemplatesAutoApplyHint": {
+    "description": "自动套用选择面板顶部的说明。"
+  },
+  "diaryTemplatesMineGroup": "我的模板",
+  "@diaryTemplatesMineGroup": {
+    "description": "分组标题：用户自己的模板。"
+  },
+  "diaryTemplatesBuiltInGroup": "内置模板",
+  "@diaryTemplatesBuiltInGroup": {
+    "description": "分组标题：应用自带的模板。"
+  },
+  "diaryTemplatesMineEmpty": "还没有自己的模板。点右上角 + 新建，或复制一个内置模板来改。",
+  "@diaryTemplatesMineEmpty": {
+    "description": "我的模板为空时的提示。"
+  },
+  "diaryTemplatesNew": "新建模板",
+  "@diaryTemplatesNew": {
+    "description": "新建模板按钮的提示。"
+  },
+  "diaryTemplatesImport": "导入模板码",
+  "@diaryTemplatesImport": {
+    "description": "从剪贴板导入模板码按钮的提示。"
+  },
+  "diaryTemplatesMoreActions": "更多操作",
+  "@diaryTemplatesMoreActions": {
+    "description": "模板行菜单按钮的提示。"
+  },
+  "diaryTemplatesDragHandle": "拖动排序",
+  "@diaryTemplatesDragHandle": {
+    "description": "模板行拖动手柄的无障碍说明。"
+  },
+  "diaryTemplatesDuplicate": "复制",
+  "@diaryTemplatesDuplicate": {
+    "description": "菜单项：复制一份我的模板。"
+  },
+  "diaryTemplatesCopyToMine": "复制为我的模板",
+  "@diaryTemplatesCopyToMine": {
+    "description": "内置模板的操作：复制为我的模板以便修改。"
+  },
+  "diaryTemplatesCopyCode": "复制模板码",
+  "@diaryTemplatesCopyCode": {
+    "description": "菜单项：把模板复制为可分享的模板码。"
+  },
+  "diaryTemplatesHide": "隐藏",
+  "@diaryTemplatesHide": {
+    "description": "菜单项：在模板面板中隐藏这个内置模板。"
+  },
+  "diaryTemplatesShow": "显示",
+  "@diaryTemplatesShow": {
+    "description": "菜单项：重新显示已隐藏的内置模板。"
+  },
+  "diaryTemplatesCopyName": "{name} 副本",
+  "@diaryTemplatesCopyName": {
+    "description": "复制出的模板的名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesDeleted": "已删除「{name}」",
+  "@diaryTemplatesDeleted": {
+    "description": "删除模板后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesHiddenDone": "已隐藏「{name}」",
+  "@diaryTemplatesHiddenDone": {
+    "description": "隐藏内置模板后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesCodeCopied": "模板码已复制",
+  "@diaryTemplatesCodeCopied": {
+    "description": "复制模板码后的提示。"
+  },
+  "diaryTemplatesCodeTooLong": "模板正文太长，无法生成模板码",
+  "@diaryTemplatesCodeTooLong": {
+    "description": "模板太长、生成不了模板码时的提示。"
+  },
+  "diaryTemplatesImportEmpty": "剪贴板里没有模板码",
+  "@diaryTemplatesImportEmpty": {
+    "description": "导入时剪贴板为空的提示。"
+  },
+  "diaryTemplatesImportInvalid": "这不是有效的模板码",
+  "@diaryTemplatesImportInvalid": {
+    "description": "剪贴板里不是有效模板码时的提示。"
+  },
+  "diaryTemplatesImported": "已导入「{name}」",
+  "@diaryTemplatesImported": {
+    "description": "导入模板码后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesImportedNewer": "已导入「{name}」。它来自新版本，部分设置可能未生效。",
+  "@diaryTemplatesImportedNewer": {
+    "description": "导入来自新版本的模板码后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesSaveFailed": "模板保存失败，请重试",
+  "@diaryTemplatesSaveFailed": {
+    "description": "模板写入失败时的提示。"
+  },
+  "diaryTemplateEditorNewTitle": "新建模板",
+  "@diaryTemplateEditorNewTitle": {
+    "description": "新建模板时编辑页的标题。"
+  },
+  "diaryTemplateEditorEditTitle": "编辑模板",
+  "@diaryTemplateEditorEditTitle": {
+    "description": "编辑已有模板时编辑页的标题。"
+  },
+  "diaryTemplateEditorTabContent": "内容",
+  "@diaryTemplateEditorTabContent": {
+    "description": "模板编辑页标签：标题与正文。"
+  },
+  "diaryTemplateEditorTabSettings": "设置",
+  "@diaryTemplateEditorTabSettings": {
+    "description": "模板编辑页标签：名称、外观、预设与推荐。"
+  },
+  "diaryTemplateEditorTitleHint": "标题（可插入变量）",
+  "@diaryTemplateEditorTitleHint": {
+    "description": "模板标题输入框的提示。"
+  },
+  "diaryTemplateEditorBodyHint": "写下正文，小标题、列表与待办都会保留",
+  "@diaryTemplateEditorBodyHint": {
+    "description": "模板正文为空时的提示。"
+  },
+  "diaryTemplateEditorAllVariables": "全部变量",
+  "@diaryTemplateEditorAllVariables": {
+    "description": "打开全部模板变量列表的按钮。"
+  },
+  "diaryTemplateEditorVariablesTitle": "插入变量",
+  "@diaryTemplateEditorVariablesTitle": {
+    "description": "模板变量面板的标题。"
+  },
+  "diaryTemplateEditorVariablesHint": "套用模板时按日记的日期替换成具体内容。农历与节气为中文名称。",
+  "@diaryTemplateEditorVariablesHint": {
+    "description": "模板变量面板的说明。"
+  },
+  "diaryTemplateEditorVariableExample": "今天：{example}",
+  "@diaryTemplateEditorVariableExample": {
+    "description": "模板变量按今天算出的示例值。",
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEditorName": "名称",
+  "@diaryTemplateEditorName": {
+    "description": "模板名称输入框的标签。"
+  },
+  "diaryTemplateEditorNameRequired": "请填写模板名称",
+  "@diaryTemplateEditorNameRequired": {
+    "description": "保存没有名称的模板时的错误提示。"
+  },
+  "diaryTemplateEditorDescription": "一句话说明",
+  "@diaryTemplateEditorDescription": {
+    "description": "模板说明输入框的标签。"
+  },
+  "diaryTemplateEditorLook": "外观",
+  "@diaryTemplateEditorLook": {
+    "description": "分组标题：模板的分类、图标与颜色。"
+  },
+  "diaryTemplateEditorCategory": "分类",
+  "@diaryTemplateEditorCategory": {
+    "description": "模板分类选择的标签。"
+  },
+  "diaryTemplateEditorIcon": "图标",
+  "@diaryTemplateEditorIcon": {
+    "description": "模板图标选择的标签。"
+  },
+  "diaryTemplateEditorAccent": "颜色",
+  "@diaryTemplateEditorAccent": {
+    "description": "模板颜色选择的标签。"
+  },
+  "diaryTemplateEditorAccentTheme": "跟随主题",
+  "@diaryTemplateEditorAccentTheme": {
+    "description": "颜色选项：跟随应用主题色。"
+  },
+  "diaryTemplateEditorPresets": "套用时一并设置",
+  "@diaryTemplateEditorPresets": {
+    "description": "分组标题：模板一并设置的标签、心情、精力与时间胶囊。"
+  },
+  "diaryTemplateEditorTags": "标签",
+  "@diaryTemplateEditorTags": {
+    "description": "模板预设标签的标签。"
+  },
+  "diaryTemplateEditorAddTag": "添加标签",
+  "@diaryTemplateEditorAddTag": {
+    "description": "给模板添加预设标签的按钮。"
+  },
+  "diaryTemplateEditorNewTag": "新建标签",
+  "@diaryTemplateEditorNewTag": {
+    "description": "标签面板里的选项：输入一个还不存在的标签。"
+  },
+  "diaryTemplateEditorTagsHint": "按名称匹配，本机没有的标签会在套用时新建。",
+  "@diaryTemplateEditorTagsHint": {
+    "description": "模板预设标签下方的说明。"
+  },
+  "diaryTemplateEditorMood": "心情",
+  "@diaryTemplateEditorMood": {
+    "description": "模板预设心情的标签。"
+  },
+  "diaryTemplateEditorNone": "不设",
+  "@diaryTemplateEditorNone": {
+    "description": "选项：模板不设置这一项。"
+  },
+  "diaryTemplateEditorEnergy": "精力",
+  "@diaryTemplateEditorEnergy": {
+    "description": "模板预设精力的标签。"
+  },
+  "diaryTemplateEditorCapsule": "时间胶囊",
+  "@diaryTemplateEditorCapsule": {
+    "description": "模板预设时间胶囊的标签。"
+  },
+  "diaryTemplateEditorCapsuleHint": "从套用当天起算，发布前仍可修改。",
+  "@diaryTemplateEditorCapsuleHint": {
+    "description": "模板预设时间胶囊下方的说明。"
+  },
+  "diaryTemplateEditorRecommend": "推荐时间",
+  "@diaryTemplateEditorRecommend": {
+    "description": "分组标题：什么时候优先推荐这个模板。"
+  },
+  "diaryTemplateEditorRecommendHint": "满足每一组选中的条件时，这个模板会排在建议的最前面；同一组里选多个表示任一即可。",
+  "@diaryTemplateEditorRecommendHint": {
+    "description": "模板推荐规则的说明。"
+  },
+  "diaryTemplateEditorSlots": "时段",
+  "@diaryTemplateEditorSlots": {
+    "description": "时段推荐条件的标签。"
+  },
+  "diaryTemplateEditorWeekdays": "星期",
+  "@diaryTemplateEditorWeekdays": {
+    "description": "星期推荐条件的标签。"
+  },
+  "diaryTemplateEditorMonth": "月份",
+  "@diaryTemplateEditorMonth": {
+    "description": "月初月末推荐条件的标签。"
+  },
+  "diaryTemplateSlotMorning": "清晨",
+  "@diaryTemplateSlotMorning": {
+    "description": "时段 5:00–10:59。"
+  },
+  "diaryTemplateSlotAfternoon": "午后",
+  "@diaryTemplateSlotAfternoon": {
+    "description": "时段 11:00–16:59。"
+  },
+  "diaryTemplateSlotEvening": "傍晚",
+  "@diaryTemplateSlotEvening": {
+    "description": "时段 17:00–21:59。"
+  },
+  "diaryTemplateSlotNight": "深夜",
+  "@diaryTemplateSlotNight": {
+    "description": "时段 22:00–4:59。"
+  },
+  "diaryTemplateMonthStart": "月初三天",
+  "@diaryTemplateMonthStart": {
+    "description": "月份条件：每月头三天。"
+  },
+  "diaryTemplateMonthEnd": "月末三天",
+  "@diaryTemplateMonthEnd": {
+    "description": "月份条件：每月最后三天。"
   }
 }

@@ -9,6 +9,9 @@ import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_font_choices.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_typography_metrics_editor.dart';
+import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_built_ins.dart';
+import 'package:node_diary/ui/diary_templates/pages/diary_templates_page.dart';
+import 'package:node_diary/ui/diary_templates/providers/diary_template_providers.dart';
 import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
 import 'package:node_diary/ui/settings/pages/mood_options_page.dart';
@@ -70,6 +73,7 @@ class SettingsEditorSection extends StatelessWidget {
                                   title: l10n.settingsEditorGroup,
                                   children: <Widget>[
                                     const _DiaryTypographyTile(),
+                                    const _DiaryTemplatesTile(),
                                     _DayPhotoSuggestionsSwitch(
                                       settings: settingsService,
                                     ),
@@ -183,6 +187,33 @@ class _DiaryTypographyTile extends ConsumerWidget {
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (BuildContext context) => const DiaryTypographyPage(),
+        ),
+      ),
+    );
+  }
+}
+
+/// “日记模板”入口：副标题写内置与我的模板各有几个。我的模板读一次性快照
+/// （管理页写入后会让它失效），设置页不挂数据库的实时查询。
+class _DiaryTemplatesTile extends ConsumerWidget {
+  const _DiaryTemplatesTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final mine = ref.watch(userDiaryTemplatesSnapshotProvider).asData?.value;
+    return ListTile(
+      title: Text(l10n.diaryTemplatesTitle),
+      subtitle: Text(
+        l10n.diaryTemplatesSettingsSubtitle(
+          buildBuiltInDiaryTemplates(l10n).length,
+          mine?.length ?? 0,
+        ),
+      ),
+      trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => const DiaryTemplatesPage(),
         ),
       ),
     );

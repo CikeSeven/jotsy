@@ -51,6 +51,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/diary_templates/controllers/diary_template_apply_controller.dart';
+import 'package:node_diary/ui/diary_templates/controllers/diary_template_save_as.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_prefs.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_selection.dart';
@@ -739,18 +740,32 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   : context.l10n.autoT0135,
             ),
             actions: <Widget>[
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return const EditorSettingsPage();
-                      },
+              PopupMenuButton<_EditorMenuAction>(
+                tooltip: context.l10n.diaryEditorMoreActions,
+                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+                onSelected: (action) => switch (action) {
+                  _EditorMenuAction.saveAsTemplate => unawaited(
+                    _controller.saveAsTemplate(),
+                  ),
+                  _EditorMenuAction.editorSettings =>
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) =>
+                            const EditorSettingsPage(),
+                      ),
                     ),
-                  );
                 },
-                icon: const FaIcon(FontAwesomeIcons.gear, size: 16),
-                tooltip: context.l10n.settingsEditorTitle,
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<_EditorMenuAction>>[
+                      PopupMenuItem<_EditorMenuAction>(
+                        value: _EditorMenuAction.saveAsTemplate,
+                        child: Text(context.l10n.diaryTemplateSaveAs),
+                      ),
+                      PopupMenuItem<_EditorMenuAction>(
+                        value: _EditorMenuAction.editorSettings,
+                        child: Text(context.l10n.settingsEditorTitle),
+                      ),
+                    ],
               ),
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
@@ -1059,3 +1074,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 }
 
 enum EditDiaryEntryMode { create, edit }
+
+/// 顶栏菜单：存为模板、编辑器设置。
+enum _EditorMenuAction { saveAsTemplate, editorSettings }

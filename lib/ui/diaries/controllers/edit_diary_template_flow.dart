@@ -59,6 +59,24 @@ extension EditDiaryTemplateFlow on EditDiaryController {
     );
   }
 
+  /// 顶栏菜单“存为模板”：把正在写的标题、正文（去掉媒体）、标签、心情与
+  /// 精力预填进一个新模板的编辑页。
+  Future<void> saveAsTemplate() async {
+    final meta = _state._meta.value;
+    final tags = (await _state._database.watchAllTags().first)
+        .where((tag) => meta.tagIds.contains(tag.id))
+        .toList(growable: false);
+    if (!_state.mounted) return;
+    await openSaveAsTemplate(
+      _state.context,
+      title: _state._titleController.text,
+      contentDocJson: _state._currentContentDocJson,
+      tags: tags,
+      mood: meta.moodEmoji,
+      energy: meta.energyLevel,
+    );
+  }
+
   Future<void> _applyTemplate(
     DiaryTemplateSelection selection,
     DiaryTemplateApplySource source, {

@@ -6476,4 +6476,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateMonthEnd => 'Last 3 days';
+
+  @override
+  String get diaryTemplateSaveAs => 'Save as template';
+
+  @override
+  String get diaryTemplateSaveAsMediaDropped =>
+      'Images, recordings and other media aren\'t kept in templates';
+
+  @override
+  String get diaryEditorMoreActions => 'More';
 }

@@ -5917,4 +5917,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTemplateMonthEnd => '月末三天';
+
+  @override
+  String get diaryTemplateSaveAs => '存为模板';
+
+  @override
+  String get diaryTemplateSaveAsMediaDropped => '图片、录音等媒体不会存进模板';
+
+  @override
+  String get diaryEditorMoreActions => '更多';
 }

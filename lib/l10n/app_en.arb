@@ -8389,5 +8389,17 @@
   "diaryTemplateMonthEnd": "Last 3 days",
   "@diaryTemplateMonthEnd": {
     "description": "Month rule: the last three days of a month."
+  },
+  "diaryTemplateSaveAs": "Save as template",
+  "@diaryTemplateSaveAs": {
+    "description": "Action that turns a diary (or the entry being written) into a new template."
+  },
+  "diaryTemplateSaveAsMediaDropped": "Images, recordings and other media aren't kept in templates",
+  "@diaryTemplateSaveAsMediaDropped": {
+    "description": "Hint when saving as a template removed media from the body."
+  },
+  "diaryEditorMoreActions": "More",
+  "@diaryEditorMoreActions": {
+    "description": "Tooltip of the editor's top bar menu (save as template, editor settings)."
   }
 }

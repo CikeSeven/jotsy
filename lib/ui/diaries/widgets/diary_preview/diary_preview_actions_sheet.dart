@@ -8,11 +8,13 @@ import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../anniversaries/controllers/anniversary_navigation.dart';
 import '../../../anniversaries/models/anniversary_draft.dart';
+import '../../../diary_templates/controllers/diary_template_save_as.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
 import '../../controllers/diary_preview_export_controller.dart';
+import '../../models/publish_metadata_composer.dart';
 
 /// 预览页“更多”的完整接线：分享与导出经 [export]（分享面板里可选长图），
-/// 设为纪念日经数据库，“页面样式”打开预览页样式设置且第一篇示例就是这篇
+/// 设为纪念日经数据库，存为模板打开预填好的模板编辑页（去掉媒体），“页面样式”打开预览页样式设置且第一篇示例就是这篇
 /// （设置尚未就绪时不显示这一项）。[ref] 属于预览页本身，页面卸载后不再使用。
 Future<void> showDiaryPreviewMore(
   BuildContext context,
@@ -44,6 +46,17 @@ Future<void> showDiaryPreviewMore(
       database: database,
       draft: AnniversaryDraft.fromDiary(detail.diary),
     ),
+    onSaveAsTemplate: () {
+      final meta = PublishMetadataComposer.parse(detail.diary.metadata);
+      return openSaveAsTemplate(
+        context,
+        title: detail.diary.title,
+        contentDocJson: detail.diary.content,
+        tags: detail.tags,
+        mood: meta.moodEmoji,
+        energy: meta.energyLevel,
+      );
+    },
     onDelete: onDelete,
     onOpenStyle: settings == null
         ? null
@@ -58,7 +71,7 @@ Future<void> showDiaryPreviewMore(
   );
 }
 
-/// 预览页“更多”面板：分享、导出、设为纪念日、页面样式与删除。
+/// 预览页“更多”面板：分享、导出、设为纪念日、存为模板、页面样式与删除。
 ///
 /// 每一项先关闭面板，再执行对应动作（长图截图要等面板完全退场，见
 /// `DiaryPreviewExportController.shareLongImage`）。
@@ -68,6 +81,7 @@ Future<void> showDiaryPreviewActionsSheet(
   required Future<void> Function() onExport,
   required Future<void> Function() onSetAsAnniversary,
   required Future<void> Function() onDelete,
+  Future<void> Function()? onSaveAsTemplate,
   Future<void> Function()? onOpenStyle,
 }) {
   final l10n = context.l10n;
@@ -118,6 +132,12 @@ Future<void> showDiaryPreviewActionsSheet(
                 title: Text(l10n.previewSetAsAnniversary),
                 action: onSetAsAnniversary,
               ),
+              if (onSaveAsTemplate != null)
+                item(
+                  icon: const FaIcon(FontAwesomeIcons.layerGroup, size: 16),
+                  title: Text(l10n.diaryTemplateSaveAs),
+                  action: onSaveAsTemplate,
+                ),
               if (onOpenStyle != null)
                 item(
                   icon: const FaIcon(FontAwesomeIcons.swatchbook, size: 16),

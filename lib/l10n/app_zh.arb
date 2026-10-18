@@ -8389,5 +8389,17 @@
   "diaryTemplateMonthEnd": "月末三天",
   "@diaryTemplateMonthEnd": {
     "description": "月份条件：每月最后三天。"
+  },
+  "diaryTemplateSaveAs": "存为模板",
+  "@diaryTemplateSaveAs": {
+    "description": "把一篇日记（或正在写的内容）存为新模板的操作。"
+  },
+  "diaryTemplateSaveAsMediaDropped": "图片、录音等媒体不会存进模板",
+  "@diaryTemplateSaveAsMediaDropped": {
+    "description": "存为模板时去掉了正文里的媒体的提示。"
+  },
+  "diaryEditorMoreActions": "更多",
+  "@diaryEditorMoreActions": {
+    "description": "编辑页顶栏菜单（存为模板、编辑器设置）的提示。"
   }
 }

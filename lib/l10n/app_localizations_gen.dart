@@ -10915,6 +10915,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last 3 days'**
   String get diaryTemplateMonthEnd;
+
+  /// Action that turns a diary (or the entry being written) into a new template.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as template'**
+  String get diaryTemplateSaveAs;
+
+  /// Hint when saving as a template removed media from the body.
+  ///
+  /// In en, this message translates to:
+  /// **'Images, recordings and other media aren\'t kept in templates'**
+  String get diaryTemplateSaveAsMediaDropped;
+
+  /// Tooltip of the editor's top bar menu (save as template, editor settings).
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get diaryEditorMoreActions;
 }
 
 class _AppLocalizationsDelegate

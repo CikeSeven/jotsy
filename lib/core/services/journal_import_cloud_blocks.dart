@@ -1,5 +1,7 @@
+import '../database/divider_embed_codec.dart';
 import 'journal_import_cloud.dart';
 import 'journal_import_delta_writer.dart';
+import 'journal_import_style.dart';
 
 /// 云端笔记的通用富文本块，对应参考实现（笔记互迁 `models.py`）的
 /// Block/Span：各平台把自有格式解析成块，再统一写成本应用的正文。
@@ -15,8 +17,10 @@ enum CloudBlockKind {
   attachment,
 }
 
-/// 一段行内文字及其格式。[link] 只接受 http(s)/mailto。高亮在本应用的
-/// 编辑器中没有对应格式，写出时丢弃。
+/// 一段行内文字及其格式。[link] 只接受 http(s)/mailto。[color] /
+/// [background] 是已换算好的 `#AARRGGBB`（见 journal_import_style.dart），
+/// [size] 是 Quill 字号档位；只知道“高亮”而没有颜色时用 [highlight]，写出
+/// 为统一的高亮色。
 class CloudSpan {
   const CloudSpan(
     this.text, {
@@ -27,6 +31,9 @@ class CloudSpan {
     this.highlight = false,
     this.code = false,
     this.link,
+    this.color,
+    this.background,
+    this.size,
   });
 
   final String text;
@@ -37,6 +44,9 @@ class CloudSpan {
   final bool highlight;
   final bool code;
   final String? link;
+  final String? color;
+  final String? background;
+  final String? size;
 
   CloudSpan copyWith({String? text}) => CloudSpan(
     text ?? this.text,
@@ -47,7 +57,23 @@ class CloudSpan {
     highlight: highlight,
     code: code,
     link: link,
+    color: color,
+    background: background,
+    size: size,
   );
+
+  /// 两段文字格式完全相同（可以合并成一段）。
+  bool sameStyle(CloudSpan other) =>
+      bold == other.bold &&
+      italic == other.italic &&
+      underline == other.underline &&
+      strike == other.strike &&
+      highlight == other.highlight &&
+      code == other.code &&
+      link == other.link &&
+      color == other.color &&
+      background == other.background &&
+      size == other.size;
 
   Map<String, Object?> get attributes => {
     if (bold) 'bold': true,
@@ -58,10 +84,14 @@ class CloudSpan {
     if (link case final url?
         when RegExp(r'^(https?|mailto):', caseSensitive: false).hasMatch(url))
       'link': url,
+    'color': ?color,
+    'background': ?(background ?? (highlight ? journalHighlightColor : null)),
+    'size': ?size,
   };
 }
 
-/// 一个块。[level] 对标题是 1~6，对列表/待办是从 1 开始的缩进层级。
+/// 一个块。[level] 对标题是 1~6，对列表/待办是从 1 开始的缩进层级；
+/// [align] 是行对齐（center / right / justify，左对齐为 null）。
 class CloudBlock {
   const CloudBlock(
     this.kind, {
@@ -71,6 +101,7 @@ class CloudBlock {
     this.checked = false,
     this.rows = const <List<String>>[],
     this.attachmentId,
+    this.align,
   });
 
   const CloudBlock.paragraph(List<CloudSpan> spans)
@@ -83,13 +114,14 @@ class CloudBlock {
   final bool checked;
   final List<List<String>> rows;
   final String? attachmentId;
+  final String? align;
 
   String get text => spans.map((span) => span.text).join();
 }
 
 /// 把块写入正文：每块至少一行，块内文字中的换行拆成多行并沿用块格式；
-/// 附件块经 [resolve] 换成媒体嵌入，未下载到的附件丢弃；分隔线没有对应
-/// 格式，丢弃；表格每行一行、单元格以空格分隔。
+/// 附件块经 [resolve] 换成媒体嵌入，未下载到的附件丢弃；分隔线写成分隔线
+/// 嵌入；表格每行一行、单元格以空格分隔。
 void writeCloudBlocks(
   JournalDeltaWriter writer,
   List<CloudBlock> blocks,
@@ -103,7 +135,7 @@ void writeCloudBlocks(
             : resolve(block.attachmentId!);
         if (data != null) writer.embed(data);
       case CloudBlockKind.divider:
-        writer.closeLine();
+        writer.embed(diaryDividerEmbed);
       case CloudBlockKind.table:
         for (final row in block.rows) {
           writer.text(row.where((cell) => cell.trim().isNotEmpty).join(' '));
@@ -117,7 +149,7 @@ void writeCloudBlocks(
 
 Map<String, Object?> _attributes(CloudBlock block) {
   final indent = block.level - 1;
-  return switch (block.kind) {
+  final attributes = switch (block.kind) {
     CloudBlockKind.heading => {'header': block.level.clamp(1, 3)},
     CloudBlockKind.list => {
       'list': block.ordered ? 'ordered' : 'bullet',
@@ -131,6 +163,10 @@ Map<String, Object?> _attributes(CloudBlock block) {
     CloudBlockKind.code => {'code-block': true},
     _ => const <String, Object?>{},
   };
+  if (block.align == null || block.kind == CloudBlockKind.code) {
+    return attributes;
+  }
+  return {...attributes, 'align': block.align};
 }
 
 void _writeLines(

@@ -104,7 +104,11 @@ Future<JournalImportParseResult> fetchCloudJournal(
       if (embeds.containsKey(attachment.id)) continue;
       try {
         final bytes = await provider.download(attachment);
-        embeds[attachment.id] = media.embedBytes(bytes, name: attachment.name);
+        embeds[attachment.id] = media.embedBytes(
+          bytes,
+          name: attachment.name,
+          mime: attachment.mime,
+        );
       } on CloudNoteException catch (error) {
         if (_fatal(error.failure)) rethrow;
         media.missingCount++;

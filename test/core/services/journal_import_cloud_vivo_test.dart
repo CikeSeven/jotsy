@@ -159,7 +159,9 @@ void main() {
       (id) => id == 'asset-a' ? {'image': 'local.png'} : null,
     );
     final content = writer.build();
-    expect(content.contentText, 'before\n\ndone\npending\n手写\nafter');
+    // 图片与分隔线各占一行。
+    expect(content.contentText, 'before\n\ndone\npending\n\n手写\nafter');
+    expect(content.contentJson, contains('{"insert":{"divider":"hr"}}'));
     expect(content.contentJson, contains('"list":"checked"'));
     expect(content.contentJson, contains('"list":"unchecked"'));
     expect(content.contentJson, contains('local.png'));

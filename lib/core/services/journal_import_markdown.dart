@@ -1,20 +1,24 @@
 import 'package:html/parser.dart' as html_parser;
 import 'package:markdown/markdown.dart' as md;
 
+import '../database/divider_embed_codec.dart';
 import 'journal_import_delta_writer.dart';
+import 'journal_import_html_style.dart';
 
 /// 把 Markdown 正文（Day One、旧版 Journey、笔记应用导出）写入
 /// [JournalDeltaWriter]。
 ///
 /// 日记应用里每个换行都是用户敲下的换行，所以按“源文本一行 = 正文一行”
 /// 处理，不套用 Markdown 的段落合并规则（那会把相邻两行拼成一段）。块级
-/// 语法（标题、列表、待办、引用、代码围栏、分隔线）逐行识别；行内语法
+/// 语法（标题、列表、待办、引用、代码围栏、分隔线）逐行识别，分隔线写成
+/// 分隔线嵌入；行内语法
 /// （粗体、斜体、删除线、行内代码、链接、图片、转义字符）交给 markdown
 /// 包解析，图片经 [resolveEmbed] 转为本应用的媒体嵌入。
 ///
 /// [inlineHtml] 为 true 时识别行内 HTML 标签：Joplin、Obsidian、Bear 等
-/// 用 `<u>`、`<strong>`、`<img src>`、`<audio src>` 表达 Markdown 写不出的
-/// 格式与媒体，这些来源的阅读器会渲染 HTML，未知标签因此直接丢弃；Day One
+/// 用 `<u>`、`<strong>`、`<span style="color:…">`、`<font color>`、`<mark>`、
+/// `<img src>`、`<audio src>`、`<hr>` 表达 Markdown 写不出的格式与媒体，这些
+/// 来源的阅读器会渲染 HTML，未知标签因此直接丢弃；Day One
 /// 等纯文本来源保持关闭，`<` 开头的文字原样保留。[resolveLink] 把指向本地
 /// 文件的链接（如 `[说明书.pdf](resources/…)`）转为附件嵌入，返回 null 时
 /// 保留链接文字。
@@ -43,6 +47,11 @@ class JournalMarkdownConverter {
   /// 当前行内尚未闭合的 HTML 格式标签（属性 → 层数），每行开始时清空：
   /// 来源里的标签不跨行配对，残留的开标签不能把格式带到下一行。
   final Map<String, int> _htmlFormats = <String, int>{};
+
+  /// 当前行内尚未闭合、带值的 HTML 格式（颜色、背景、字号），按开标签顺序
+  /// 排列，内层覆盖外层；同样每行开始时清空。
+  final List<({String name, Map<String, Object?> style})> _htmlStyles =
+      <({String name, Map<String, Object?> style})>[];
 
   /// 列表各级的缩进宽度，用于把任意缩进风格（2/4 空格、Tab）换算成层级。
   final List<int> _listIndents = <int>[];
@@ -94,10 +103,12 @@ class JournalMarkdownConverter {
     }
     if (_rule.hasMatch(line)) {
       _listIndents.clear();
+      writer.embed(diaryDividerEmbed);
       return;
     }
     final (content, attributes) = _classify(line);
     _htmlFormats.clear();
+    _htmlStyles.clear();
     final before = writer.lineCount;
     _inline(_inlineParser.parseInline(content), const {}, attributes);
     if (writer.lineHasContent) {
@@ -214,8 +225,10 @@ class JournalMarkdownConverter {
     }
   }
 
-  /// 行内 HTML 标签（见 [_HtmlTagSyntax]）：格式标签开/闭当前行的格式，
-  /// `<br>` 换行，`<img>`/`<audio>`/`<video>` 转为媒体嵌入，其余丢弃。
+  /// 行内 HTML 标签（见 [_HtmlTagSyntax]）：格式标签开/闭当前行的格式
+  /// （`<span>`/`<font>`/`<mark>`/`<big>`/`<small>` 带颜色、背景与字号），
+  /// `<br>` 换行，`<hr>` 为分隔线，`<img>`/`<audio>`/`<video>` 转为媒体嵌入，
+  /// 其余丢弃。
   void _htmlTag(md.Element node, Map<String, Object?> line) {
     final closing = node.attributes['closing'] == 'true';
     final name = node.attributes['name']!;
@@ -227,6 +240,24 @@ class JournalMarkdownConverter {
       'code' => 'code',
       _ => null,
     };
+    if (const {'span', 'font', 'mark', 'big', 'small'}.contains(name)) {
+      if (closing) {
+        final index = _htmlStyles.lastIndexWhere((entry) => entry.name == name);
+        if (index >= 0) _htmlStyles.removeAt(index);
+      } else {
+        final element = html_parser
+            .parseFragment(node.attributes['raw']!)
+            .children
+            .firstOrNull;
+        _htmlStyles.add((
+          name: name,
+          style: element == null
+              ? const <String, Object?>{}
+              : journalHtmlInlineStyle(element, const {}),
+        ));
+      }
+      return;
+    }
     if (attribute != null) {
       final depth = (_htmlFormats[attribute] ?? 0) + (closing ? -1 : 1);
       if (depth > 0) {
@@ -240,6 +271,8 @@ class JournalMarkdownConverter {
     switch (name) {
       case 'br':
         writer.endLine(line);
+      case 'hr':
+        writer.embed(diaryDividerEmbed, line);
       case 'img' || 'audio' || 'video' || 'source':
         final src = html_parser
             .parseFragment(node.attributes['raw']!)
@@ -253,9 +286,13 @@ class JournalMarkdownConverter {
   }
 
   Map<String, Object?> _withHtml(Map<String, Object?> inline) =>
-      _htmlFormats.isEmpty
+      _htmlFormats.isEmpty && _htmlStyles.isEmpty
       ? inline
-      : {...inline, for (final key in _htmlFormats.keys) key: true};
+      : {
+          ...inline,
+          for (final key in _htmlFormats.keys) key: true,
+          for (final entry in _htmlStyles) ...entry.style,
+        };
 
   /// 图片/音视频引用：经 [resolveEmbed] 转为嵌入；解析不了的本地引用丢弃，
   /// http(s) 图片保留原地址。

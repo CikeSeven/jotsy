@@ -14,8 +14,9 @@ enum DiaryLayoutMode { list, waterfall }
 /// 日记页顶部头部区块。
 ///
 /// 布局职责：
-/// - 左侧展示页面标题或多选计数；
-/// - 右侧展示操作按钮（取消选择、归档、删除、归档列表入口、视图选项）。
+/// - 普通态：搜索条占满左侧，右侧为草稿箱（有草稿时带份数角标）、归档列表
+///   与视图选项入口；
+/// - 多选态：左侧为已选数量，右侧为批量操作（取消、置顶、归档、导出、删除）。
 class DiaryHeadSection extends StatelessWidget {
   // ==================== 头部过渡动画常量 ====================
   static const double _headerContentHeight = 52;
@@ -32,6 +33,8 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onExportSelected,
     required this.onDeleteSelected,
     required this.onOpenArchived,
+    required this.onOpenDrafts,
+    required this.draftCount,
     required this.onOpenViewOptions,
     required this.onOpenSearchPage,
   });
@@ -45,6 +48,10 @@ class DiaryHeadSection extends StatelessWidget {
   final VoidCallback onExportSelected;
   final VoidCallback onDeleteSelected;
   final VoidCallback onOpenArchived;
+  final VoidCallback onOpenDrafts;
+
+  /// 草稿份数，大于 0 时草稿箱图标带角标。
+  final int draftCount;
 
   /// 打开视图选项面板（排序与布局），面板由页面控制器负责呈现。
   final VoidCallback onOpenViewOptions;
@@ -149,22 +156,11 @@ class DiaryHeadSection extends StatelessWidget {
     );
   }
 
-  /// 普通态：标题、搜索预览、右侧操作区三段布局。
+  /// 普通态：搜索预览占满左侧，右侧为操作区。
   Widget _buildDefaultRow(BuildContext context) {
     return Row(
       key: const ValueKey<String>('head_default'),
       children: [
-        Text(
-          'Jotsy',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontSize: 25,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(width: AppSpacing.l),
         Expanded(
           child: _SearchPreview(
             key: const ValueKey<String>('search_preview'),
@@ -174,6 +170,8 @@ class DiaryHeadSection extends StatelessWidget {
         ),
         const SizedBox(width: AppSpacing.s),
         _TrailingActions(
+          onOpenDrafts: onOpenDrafts,
+          draftCount: draftCount,
           onOpenArchived: onOpenArchived,
           onOpenViewOptions: onOpenViewOptions,
         ),
@@ -223,7 +221,7 @@ class _SearchPreview extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    context.l10n.autoT0129,
+                    context.l10n.diarySearchPreviewHint,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -242,18 +240,36 @@ class _SearchPreview extends StatelessWidget {
 
 class _TrailingActions extends StatelessWidget {
   const _TrailingActions({
+    required this.onOpenDrafts,
+    required this.draftCount,
     required this.onOpenArchived,
     required this.onOpenViewOptions,
   });
 
+  final VoidCallback onOpenDrafts;
+  final int draftCount;
   final VoidCallback onOpenArchived;
   final VoidCallback onOpenViewOptions;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        IconButton(
+          tooltip: context.l10n.diaryDraftsTitle,
+          onPressed: onOpenDrafts,
+          // 角标用主色而不是默认的错误色：草稿是“还没写完”，不是警告。
+          icon: Badge.count(
+            count: draftCount,
+            maxCount: 99,
+            isLabelVisible: draftCount > 0,
+            backgroundColor: colorScheme.primary,
+            textColor: colorScheme.onPrimary,
+            child: const FaIcon(FontAwesomeIcons.filePen, size: 18),
+          ),
+        ),
         IconButton(
           tooltip: context.l10n.autoT0148,
           onPressed: onOpenArchived,

@@ -7184,5 +7184,9 @@
   "diaryDraftPickerNewBlank": "新建空白",
   "@diaryDraftPickerNewBlank": {
     "description": "草稿选择面板：不续写草稿，新建一篇空白日记（草稿保留在草稿箱）。"
+  },
+  "diarySearchPreviewHint": "在 Jotsy 中搜索",
+  "@diarySearchPreviewHint": {
+    "description": "首页顶栏搜索条的提示文字。"
   }
 }

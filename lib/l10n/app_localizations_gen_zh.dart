@@ -5075,4 +5075,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryDraftPickerNewBlank => '新建空白';
+
+  @override
+  String get diarySearchPreviewHint => '在 Jotsy 中搜索';
 }

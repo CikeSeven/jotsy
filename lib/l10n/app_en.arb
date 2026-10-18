@@ -7184,5 +7184,9 @@
   "diaryDraftPickerNewBlank": "New blank entry",
   "@diaryDraftPickerNewBlank": {
     "description": "Draft picker: start a blank entry instead (drafts stay in the drafts box)."
+  },
+  "diarySearchPreviewHint": "Search in Jotsy",
+  "@diarySearchPreviewHint": {
+    "description": "Hint text of the search pill in the home header."
   }
 }

@@ -9,6 +9,8 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_export_flow.dart';
 import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
+import 'package:node_diary/ui/diaries/pages/diary_drafts_page.dart';
+import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
@@ -347,32 +349,50 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   children: <Widget>[
                                     LaunchReveal(
                                       slot: LaunchRevealSlot.masthead,
-                                      child: DiaryHeadSection(
-                                        isSelectionMode: _isSelectionMode,
-                                        selectedCount: _selectedDiaryIds.length,
-                                        onCancelSelection:
-                                            _controller.clearSelection,
-                                        isPinActionUnpin: shouldUnpinSelected,
-                                        onPinSelected: () => unawaited(
-                                          _controller.pinSelectedDiaries(
-                                            unpin: shouldUnpinSelected,
-                                          ),
-                                        ),
-                                        onArchiveSelected: () => unawaited(
-                                          _controller.archiveSelectedDiaries(),
-                                        ),
-                                        onExportSelected: () => unawaited(
-                                          _controller.exportSelectedDiaries(),
-                                        ),
-                                        onDeleteSelected: () => unawaited(
-                                          _controller.deleteSelectedDiaries(),
-                                        ),
-                                        onOpenArchived:
-                                            _controller.openArchivedPage,
-                                        onOpenViewOptions:
-                                            _controller.openViewOptions,
-                                        onOpenSearchPage:
-                                            _controller.openSearchPage,
+                                      // 只让顶栏随草稿份数重建，不牵动整页。
+                                      child: Consumer(
+                                        builder: (context, ref, _) =>
+                                            DiaryHeadSection(
+                                              isSelectionMode: _isSelectionMode,
+                                              selectedCount:
+                                                  _selectedDiaryIds.length,
+                                              onCancelSelection:
+                                                  _controller.clearSelection,
+                                              isPinActionUnpin:
+                                                  shouldUnpinSelected,
+                                              onPinSelected: () => unawaited(
+                                                _controller.pinSelectedDiaries(
+                                                  unpin: shouldUnpinSelected,
+                                                ),
+                                              ),
+                                              onArchiveSelected: () => unawaited(
+                                                _controller
+                                                    .archiveSelectedDiaries(),
+                                              ),
+                                              onExportSelected: () => unawaited(
+                                                _controller
+                                                    .exportSelectedDiaries(),
+                                              ),
+                                              onDeleteSelected: () => unawaited(
+                                                _controller
+                                                    .deleteSelectedDiaries(),
+                                              ),
+                                              onOpenArchived:
+                                                  _controller.openArchivedPage,
+                                              onOpenDrafts:
+                                                  _controller.openDraftsPage,
+                                              draftCount:
+                                                  ref
+                                                      .watch(
+                                                        diaryDraftCountProvider,
+                                                      )
+                                                      .value ??
+                                                  0,
+                                              onOpenViewOptions:
+                                                  _controller.openViewOptions,
+                                              onOpenSearchPage:
+                                                  _controller.openSearchPage,
+                                            ),
                                       ),
                                     ),
                                     Container(

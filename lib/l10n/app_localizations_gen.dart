@@ -9355,6 +9355,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'New blank entry'**
   String get diaryDraftPickerNewBlank;
+
+  /// Hint text of the search pill in the home header.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in Jotsy'**
+  String get diarySearchPreviewHint;
 }
 
 class _AppLocalizationsDelegate

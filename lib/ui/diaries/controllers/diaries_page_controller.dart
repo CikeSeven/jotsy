@@ -545,6 +545,15 @@ class DiariesPageController {
     );
   }
 
+  /// 打开草稿箱（顶栏入口）。
+  void openDraftsPage() {
+    Navigator.of(_state.context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) => const DiaryDraftsPage(),
+      ),
+    );
+  }
+
   /// 打开视图选项面板（排序依据、正/倒序与布局），选项即点即生效。
   void openViewOptions() {
     unawaited(

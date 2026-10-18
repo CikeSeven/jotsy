@@ -5571,4 +5571,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryDraftPickerNewBlank => 'New blank entry';
+
+  @override
+  String get diarySearchPreviewHint => 'Search in Jotsy';
 }

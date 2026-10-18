@@ -8071,5 +8071,9 @@
   "diaryTemplateHiddenBadge": "已隐藏",
   "@diaryTemplateHiddenBadge": {
     "description": "被用户隐藏的内置模板上的小标记。"
+  },
+  "diaryDraftPickerFromTemplate": "从模板新建",
+  "@diaryDraftPickerFromTemplate": {
+    "description": "草稿选择面板：选一个模板，用它新建一篇日记。"
   }
 }

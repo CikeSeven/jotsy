@@ -10495,6 +10495,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hidden'**
   String get diaryTemplateHiddenBadge;
+
+  /// Draft picker: choose a template and start a new entry with it.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a template'**
+  String get diaryDraftPickerFromTemplate;
 }
 
 class _AppLocalizationsDelegate

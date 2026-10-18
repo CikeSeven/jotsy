@@ -5691,4 +5691,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTemplateHiddenBadge => '已隐藏';
+
+  @override
+  String get diaryDraftPickerFromTemplate => '从模板新建';
 }

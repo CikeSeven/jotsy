@@ -140,4 +140,55 @@ void main() {
     expect(results.single.opened, isFalse);
     await harness.unmount();
   });
+
+  testWidgets('starting from a template opens the editor with it applied', (
+    tester,
+  ) async {
+    final harness = await open(tester);
+    await harness.seed('一份', updatedAt: DateTime(2026, 10, 1));
+    await pumpOpener(harness);
+
+    await tapNew(tester, harness);
+    await tester.tap(find.text(harness.l10n.diaryDraftPickerFromTemplate));
+    await tester.pumpAndSettle();
+    await harness.settle();
+    await tester.pumpAndSettle();
+    expect(find.text(harness.l10n.diaryTemplatePickerTitle), findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('template_pick_builtin.daily')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(harness.l10n.diaryTemplatePickerUse));
+    await tester.pumpAndSettle();
+    await harness.settle();
+    await tester.pumpAndSettle();
+
+    expect(editor(tester).createDraftId, isNull);
+    expect(editor(tester).createTemplate?.template.id, 'builtin.daily');
+    final title = tester
+        .widget<TextField>(find.byType(TextField).first)
+        .controller!
+        .text;
+    expect(title, isNotEmpty);
+    await harness.unmount();
+  });
+
+  testWidgets('closing the template picker opens nothing', (tester) async {
+    final harness = await open(tester);
+    await harness.seed('一份', updatedAt: DateTime(2026, 10, 1));
+    await pumpOpener(harness);
+
+    await tapNew(tester, harness);
+    await tester.tap(find.text(harness.l10n.diaryDraftPickerFromTemplate));
+    await tester.pumpAndSettle();
+    await harness.settle();
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(200, 40));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EditDiaryPage), findsNothing);
+    expect(results.single.opened, isFalse);
+    await harness.unmount();
+  });
 }

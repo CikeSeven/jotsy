@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/app_service.dart';
+import '../../diary_templates/models/diary_template_selection.dart';
+import '../../diary_templates/sections/diary_template_picker_sheet.dart';
 import '../pages/diary_drafts_page.dart';
 import '../pages/edit_diary_page.dart';
 import '../sections/diary_draft_picker_sheet.dart';
@@ -16,8 +18,10 @@ typedef DiaryCreateEntryResult = ({bool opened, String? createdDiaryId});
 ///
 /// 1. 等旧版单份草稿迁移完成，读出最近编辑的几份草稿；
 /// 2. 没有草稿：直接打开空白编辑页；
-/// 3. 有草稿：弹出草稿选择面板——续写某一份、打开草稿箱，或新建空白。新建
-///    空白不删除任何草稿：每次新建都是草稿箱里独立的一份。
+/// 3. 有草稿：弹出草稿选择面板——续写某一份、打开草稿箱、从模板新建，或
+///    新建空白。新建空白不删除任何草稿：每次新建都是草稿箱里独立的一份。
+///    从模板新建时再弹出模板面板，选好的模板交给编辑页直接套用；关掉模板
+///    面板等同于什么也不做。没有草稿时模板经编辑页标题下的建议条选用。
 ///
 /// [day] 为新建日记的发表日期（日历入口），[capsuleUnlockAt] 为预设的时间
 /// 胶囊解封日。续写草稿时也一并传入：草稿自带日期或胶囊设置时以草稿为准
@@ -35,11 +39,15 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   final total = recent.isEmpty ? 0 : await database.countDiaryDrafts();
   if (!context.mounted) return dismissed;
 
-  Future<DiaryCreateEntryResult> openEditor(String? draftId) => _openEditor(
+  Future<DiaryCreateEntryResult> openEditor(
+    String? draftId, {
+    DiaryTemplateSelection? template,
+  }) => _openEditor(
     context,
     draftId: draftId,
     day: day,
     capsuleUnlockAt: capsuleUnlockAt,
+    template: template,
   );
   if (recent.isEmpty) return openEditor(null);
 
@@ -54,6 +62,13 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
       return openEditor(null);
     case DiaryDraftPickDraft(:final draftId):
       return openEditor(draftId);
+    case DiaryDraftPickTemplate():
+      final template = await showDiaryTemplatePickerSheet(
+        context,
+        diaryDate: day ?? DateTime.now(),
+      );
+      if (!context.mounted || template == null) return dismissed;
+      return openEditor(null, template: template);
     case DiaryDraftPickAll():
       await Navigator.of(context).push<void>(
         MaterialPageRoute<void>(builder: (_) => const DiaryDraftsPage()),
@@ -67,6 +82,7 @@ Future<DiaryCreateEntryResult> _openEditor(
   required String? draftId,
   required DateTime? day,
   required DateTime? capsuleUnlockAt,
+  DiaryTemplateSelection? template,
 }) async {
   final result = await Navigator.of(context).push<Object?>(
     MaterialPageRoute<Object?>(
@@ -75,6 +91,7 @@ Future<DiaryCreateEntryResult> _openEditor(
         createDraftId: draftId,
         createDateOverride: day,
         createCapsuleUnlockAt: capsuleUnlockAt,
+        createTemplate: template,
       ),
     ),
   );

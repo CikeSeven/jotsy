@@ -6242,4 +6242,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateHiddenBadge => 'Hidden';
+
+  @override
+  String get diaryDraftPickerFromTemplate => 'Start from a template';
 }

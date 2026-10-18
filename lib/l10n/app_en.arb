@@ -8071,5 +8071,9 @@
   "diaryTemplateHiddenBadge": "Hidden",
   "@diaryTemplateHiddenBadge": {
     "description": "Small badge on a built-in template the user has hidden from the picker."
+  },
+  "diaryDraftPickerFromTemplate": "Start from a template",
+  "@diaryDraftPickerFromTemplate": {
+    "description": "Draft picker: choose a template and start a new entry with it."
   }
 }

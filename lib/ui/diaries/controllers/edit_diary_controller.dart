@@ -22,7 +22,9 @@ class EditDiaryController {
     );
     _draftAutoSave = DebouncedAutoSaveController<NewDiaryDraftSnapshot>(
       debounce: const Duration(milliseconds: 1300),
-      readSnapshot: () => _state._currentCreateDraft.toSnapshot(),
+      // 只套用了模板、还没动过的内容不算草稿（见 snapshotFor）。
+      readSnapshot: () =>
+          _state._templates.snapshotFor(_state._currentCreateDraft),
       writeSnapshot: _persistCreateDraft,
       // 草稿写入失败不打断输入：快照保持未存，下一次输入、返回或切后台重试。
       onError: (error) => debugPrint('Create draft autosave failed: $error'),
@@ -56,6 +58,7 @@ class EditDiaryController {
   /// 新建模式保存草稿，已有笔记直接自动保存；详情回填阶段不触发写入。
   void onCreateDraftInputChanged() {
     if (_state._isCreateEntry) {
+      _state._templates.onEditorChanged();
       scheduleCreateDraftAutoSave();
       return;
     }
@@ -104,6 +107,10 @@ class EditDiaryController {
       if (!_state.mounted) return;
       // 这份草稿已不在（例如刚在别处删除）：当作新建空白，另存一份新草稿。
       if (!restored) _state._createDraftId = null;
+    } else {
+      // 入口带来的模板或自动套用的模板要算进基线：原样未动时它不是草稿。
+      await applyInitialTemplate();
+      if (!_state.mounted) return;
     }
     _draftAutoSave.initialize(_state._currentCreateDraft.toSnapshot());
     // 等待期间若已输入，基线已含这些内容；再排一次，让它们按正常防抖落盘。

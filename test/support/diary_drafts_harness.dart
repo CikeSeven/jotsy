@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -74,13 +75,15 @@ class DiaryDraftsHarness {
     }
   }
 
-  Future<void> pump(Widget home) async {
+  /// [overrides] 追加在公共 override 之后（如假的相册）。
+  Future<void> pump(Widget home, {List<Override> overrides = const []}) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           appDatabaseProvider.overrideWithValue(database),
           settingsServiceProvider.overrideWith((ref) async => settings),
           diaryMediaCleanupServiceProvider.overrideWithValue(mediaCleanup),
+          ...overrides,
         ],
         child: MaterialApp(
           theme: expressiveTestTheme(Brightness.light),

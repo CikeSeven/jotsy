@@ -7,7 +7,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../viewmodels/diary_draft_list_item.dart';
 import '../widgets/diary_draft_tile.dart';
 
-/// 草稿选择面板的结果：续写某一份、打开草稿箱，或新建空白。
+/// 草稿选择面板的结果：续写某一份、打开草稿箱、从模板新建，或新建空白。
 sealed class DiaryDraftPick {
   const DiaryDraftPick();
 }
@@ -29,8 +29,13 @@ final class DiaryDraftPickAll extends DiaryDraftPick {
   const DiaryDraftPickAll();
 }
 
+/// 先选一个模板，再用它新建。
+final class DiaryDraftPickTemplate extends DiaryDraftPick {
+  const DiaryDraftPickTemplate();
+}
+
 /// 已有草稿时点“新建”弹出的面板：最近编辑的几份草稿（点按即续写）、
-/// “查看全部草稿”与“新建空白”。只负责挑选，打开哪个页面由
+/// “查看全部草稿”、“从模板新建”与“新建空白”。只负责挑选，打开哪个页面由
 /// `runDiaryCreateEntryFlow` 决定；下滑或点空白处关闭返回 null，什么也不做。
 ///
 /// [recent] 已按最近编辑排序、最多 [maxRecent] 份；[total] 为草稿总数。
@@ -123,6 +128,22 @@ class _DiaryDraftPickerBody extends StatelessWidget {
               title: Text(l10n.diaryDraftPickerViewAll(total)),
               trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () => navigator.pop(const DiaryDraftPickAll()),
+            ),
+            ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xs,
+              ),
+              leading: FaIcon(
+                FontAwesomeIcons.layerGroup,
+                size: 16,
+                color: theme.colorScheme.primary,
+              ),
+              title: Text(l10n.diaryDraftPickerFromTemplate),
+              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+              onTap: () => navigator.pop(const DiaryDraftPickTemplate()),
             ),
             const SizedBox(height: AppSpacing.s),
             FilledButton.icon(

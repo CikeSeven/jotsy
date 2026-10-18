@@ -495,6 +495,71 @@ void main() {
     );
   });
 
+  group('SettingsService diary template prefs', () {
+    const key = 'app.settings.diary_template_prefs';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryTemplatePrefsRaw, isNull);
+
+      await settings.setDiaryTemplatePrefsRaw('  {"v":1,"strip":false}  ');
+      expect(settings.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
+      expect(
+        (await SettingsService.create()).diaryTemplatePrefsRaw,
+        '{"v":1,"strip":false}',
+      );
+
+      await settings.setDiaryTemplatePrefsRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.diaryTemplatePrefsRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.diaryTemplatePrefsRaw, isNull);
+    });
+
+    test(
+      'backups carry the prefs and older backups keep the local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryTemplatePrefsRaw(
+          '{"v":1,"auto":"builtin.daily"}',
+        );
+
+        final captured = BackupSettings.capture(settings);
+        expect(
+          captured['diaryTemplatePrefsRaw'],
+          '{"v":1,"auto":"builtin.daily"}',
+        );
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(
+          settings.diaryTemplatePrefsRaw,
+          '{"v":1,"auto":"builtin.daily"}',
+        );
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryTemplatePrefsRaw': <String, dynamic>{'v': 1, 'strip': false},
+        });
+        expect(settings.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryTemplatePrefsRaw': null,
+        });
+        expect(settings.diaryTemplatePrefsRaw, isNull);
+      },
+    );
+  });
+
   group('SettingsService diary share options', () {
     const key = 'app.settings.diary_share_options';
 

@@ -23,6 +23,7 @@ class CalendarLunarDay {
     required this.kind,
     this.festivals = const <String>[],
     this.term,
+    required this.termPeriod,
   });
 
   /// 农历月日，如“九月廿四”“闰六月初一”。
@@ -37,6 +38,11 @@ class CalendarLunarDay {
 
   /// 当天恰逢的节气；非节气日为 null。
   final String? term;
+
+  /// 当天所在的节气期（上一个节气到下一个节气之前都算），如霜降后到立冬前
+  /// 都是“霜降”。日记模板的 `{{节气}}` 变量取它：只在节气当天才有值的
+  /// [term] 一年里大多数日子都是空的。
+  final String termPeriod;
 
   /// 缓存上限：月视图翻页与选中日切换会反复重建同一批日期格，单日换算约
   /// 几十微秒，一页 42 格累计可观；满了整体清空即可，不需要精确的 LRU。
@@ -62,9 +68,8 @@ class CalendarLunarDay {
     final lunar = solar.getLunarDay();
     final lunarMonth = lunar.getLunarMonth();
     final termDay = solar.getTermDay();
-    final term = termDay.getDayIndex() == 0
-        ? termDay.getSolarTerm().getName()
-        : null;
+    final termPeriod = termDay.getSolarTerm().getName();
+    final term = termDay.getDayIndex() == 0 ? termPeriod : null;
     var traditional = lunar.getFestival()?.getName();
     if (term != null && traditional == '$term节') {
       traditional = null;
@@ -92,6 +97,7 @@ class CalendarLunarDay {
       kind: kind,
       festivals: List<String>.unmodifiable(<String>[?traditional, ?modern]),
       term: term,
+      termPeriod: termPeriod,
     );
   }
 }

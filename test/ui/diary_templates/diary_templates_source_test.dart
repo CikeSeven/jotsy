@@ -1,0 +1,35 @@
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+
+/// AGENTS.md §6 的源码约束：模板模块的提示条经 Home 的跟踪接口、等待态
+/// 用 Expressive 加载指示、不用渐变与固定黑白色、动画时长只取
+/// ExpressiveMotion token、图标只用 FontAwesome。
+///
+/// 另外禁止调用 `createTag(`：它会把同名标签改成传入的颜色，模板只能经
+/// `ensureTagsByName` 补建缺失的标签，不能悄悄改掉用户的标签颜色。
+void main() {
+  final files = Directory('lib/ui/diary_templates')
+      .listSync(recursive: true)
+      .whereType<File>()
+      .where((File file) => file.path.endsWith('.dart'))
+      .toList();
+
+  test('the templates module has source files', () {
+    expect(files, isNotEmpty);
+  });
+
+  for (final file in files) {
+    test('${file.path} follows the UI rules', () {
+      final source = file.readAsStringSync();
+      expect(source, isNot(contains('.showSnackBar(')));
+      expect(source, isNot(contains('CircularProgressIndicator')));
+      expect(source, isNot(contains('Gradient(')));
+      expect(source, isNot(contains('Duration(milliseconds')));
+      expect(source, isNot(contains('Colors.white')));
+      expect(source, isNot(contains('Colors.black')));
+      expect(source, isNot(contains('Icon(Icons.')));
+      expect(source, isNot(contains('createTag(')));
+    });
+  }
+}

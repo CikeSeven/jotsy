@@ -7188,5 +7188,1218 @@
   "diarySearchPreviewHint": "在 Jotsy 中搜索",
   "@diarySearchPreviewHint": {
     "description": "首页顶栏搜索条的提示文字。"
+  },
+  "backupOverwriteAllTemplates": "{count} 个日记模板",
+  "@backupOverwriteAllTemplates": {
+    "description": "覆盖全部数据的警告条目：将被删除的本机自建日记模板数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportTemplateMergeResult": "日记模板：新增 {added} 个",
+  "@backupImportTemplateMergeResult": {
+    "description": "合并导入结果的附加行：新增的日记模板数（本机已有的模板不会被替换）。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplateDailyName": "每日记录",
+  "@diaryTemplateDailyName": {
+    "description": "内置日记模板“每日记录”的名称。"
+  },
+  "diaryTemplateDailyDesc": "记下今天发生的事和此刻的心情",
+  "@diaryTemplateDailyDesc": {
+    "description": "内置模板“每日记录”的一行说明。"
+  },
+  "diaryTemplateDailyTitle": "{date} {weekday}",
+  "@diaryTemplateDailyTitle": {
+    "description": "内置模板“每日记录”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMorningName": "晨间日记",
+  "@diaryTemplateMorningName": {
+    "description": "内置日记模板“晨间日记”的名称。"
+  },
+  "diaryTemplateMorningDesc": "用一页清晨的文字给今天定个方向",
+  "@diaryTemplateMorningDesc": {
+    "description": "内置模板“晨间日记”的一行说明。"
+  },
+  "diaryTemplateMorningTitle": "晨间 · {date}",
+  "@diaryTemplateMorningTitle": {
+    "description": "内置模板“晨间日记”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEveningName": "晚间复盘",
+  "@diaryTemplateEveningName": {
+    "description": "内置日记模板“晚间复盘”的名称。"
+  },
+  "diaryTemplateEveningDesc": "回顾今天的得失，安排好明天",
+  "@diaryTemplateEveningDesc": {
+    "description": "内置模板“晚间复盘”的一行说明。"
+  },
+  "diaryTemplateEveningTitle": "复盘 · {date}",
+  "@diaryTemplateEveningTitle": {
+    "description": "内置模板“晚间复盘”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateGratitudeName": "感恩日记",
+  "@diaryTemplateGratitudeName": {
+    "description": "内置日记模板“感恩日记”的名称。"
+  },
+  "diaryTemplateGratitudeDesc": "写下三件值得感谢的事",
+  "@diaryTemplateGratitudeDesc": {
+    "description": "内置模板“感恩日记”的一行说明。"
+  },
+  "diaryTemplateGratitudeTitle": "感恩 · {date}",
+  "@diaryTemplateGratitudeTitle": {
+    "description": "内置模板“感恩日记”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateQuestionName": "每日一问",
+  "@diaryTemplateQuestionName": {
+    "description": "内置日记模板“每日一问”的名称。"
+  },
+  "diaryTemplateQuestionDesc": "每天一个问题，换个角度看自己",
+  "@diaryTemplateQuestionDesc": {
+    "description": "内置模板“每日一问”的一行说明。"
+  },
+  "diaryTemplateQuestionTitle": "每日一问 · {date}",
+  "@diaryTemplateQuestionTitle": {
+    "description": "内置模板“每日一问”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWeeklyName": "周回顾",
+  "@diaryTemplateWeeklyName": {
+    "description": "内置日记模板“周回顾”的名称。"
+  },
+  "diaryTemplateWeeklyDesc": "一周的亮点、收获和下周计划",
+  "@diaryTemplateWeeklyDesc": {
+    "description": "内置模板“周回顾”的一行说明。"
+  },
+  "diaryTemplateWeeklyTitle": "周回顾 · {date}",
+  "@diaryTemplateWeeklyTitle": {
+    "description": "内置模板“周回顾”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMonthlyName": "月度复盘",
+  "@diaryTemplateMonthlyName": {
+    "description": "内置日记模板“月度复盘”的名称。"
+  },
+  "diaryTemplateMonthlyDesc": "回顾这个月，给下个月一个方向",
+  "@diaryTemplateMonthlyDesc": {
+    "description": "内置模板“月度复盘”的一行说明。"
+  },
+  "diaryTemplateMonthlyTitle": "月度复盘 · {date}",
+  "@diaryTemplateMonthlyTitle": {
+    "description": "内置模板“月度复盘”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEmotionName": "情绪梳理",
+  "@diaryTemplateEmotionName": {
+    "description": "内置日记模板“情绪梳理”的名称。"
+  },
+  "diaryTemplateEmotionDesc": "把情绪写下来，看清它从哪里来",
+  "@diaryTemplateEmotionDesc": {
+    "description": "内置模板“情绪梳理”的一行说明。"
+  },
+  "diaryTemplateEmotionTitle": "情绪梳理 · {date}",
+  "@diaryTemplateEmotionTitle": {
+    "description": "内置模板“情绪梳理”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateDreamName": "梦境记录",
+  "@diaryTemplateDreamName": {
+    "description": "内置日记模板“梦境记录”的名称。"
+  },
+  "diaryTemplateDreamDesc": "醒来趁还记得，把梦写下来",
+  "@diaryTemplateDreamDesc": {
+    "description": "内置模板“梦境记录”的一行说明。"
+  },
+  "diaryTemplateDreamTitle": "梦 · {date}",
+  "@diaryTemplateDreamTitle": {
+    "description": "内置模板“梦境记录”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateTravelName": "旅行游记",
+  "@diaryTemplateTravelName": {
+    "description": "内置日记模板“旅行游记”的名称。"
+  },
+  "diaryTemplateTravelDesc": "记录路线、风景和旅途中的小事",
+  "@diaryTemplateTravelDesc": {
+    "description": "内置模板“旅行游记”的一行说明。"
+  },
+  "diaryTemplateTravelTitle": "旅行 · {date}",
+  "@diaryTemplateTravelTitle": {
+    "description": "内置模板“旅行游记”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateReadingName": "读书笔记",
+  "@diaryTemplateReadingName": {
+    "description": "内置日记模板“读书笔记”的名称。"
+  },
+  "diaryTemplateReadingDesc": "摘录与感想，留下读过的痕迹",
+  "@diaryTemplateReadingDesc": {
+    "description": "内置模板“读书笔记”的一行说明。"
+  },
+  "diaryTemplateReadingTitle": "读书笔记 · {date}",
+  "@diaryTemplateReadingTitle": {
+    "description": "内置模板“读书笔记”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMovieName": "观影记录",
+  "@diaryTemplateMovieName": {
+    "description": "内置日记模板“观影记录”的名称。"
+  },
+  "diaryTemplateMovieDesc": "片名、评分和打动你的地方",
+  "@diaryTemplateMovieDesc": {
+    "description": "内置模板“观影记录”的一行说明。"
+  },
+  "diaryTemplateMovieTitle": "观影 · {date}",
+  "@diaryTemplateMovieTitle": {
+    "description": "内置模板“观影记录”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWorkoutName": "运动打卡",
+  "@diaryTemplateWorkoutName": {
+    "description": "内置日记模板“运动打卡”的名称。"
+  },
+  "diaryTemplateWorkoutDesc": "项目、时长与身体的感受",
+  "@diaryTemplateWorkoutDesc": {
+    "description": "内置模板“运动打卡”的一行说明。"
+  },
+  "diaryTemplateWorkoutTitle": "运动打卡 · {date}",
+  "@diaryTemplateWorkoutTitle": {
+    "description": "内置模板“运动打卡”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWorkName": "工作日志",
+  "@diaryTemplateWorkName": {
+    "description": "内置日记模板“工作日志”的名称。"
+  },
+  "diaryTemplateWorkDesc": "今日完成、进行中与明日计划",
+  "@diaryTemplateWorkDesc": {
+    "description": "内置模板“工作日志”的一行说明。"
+  },
+  "diaryTemplateWorkTitle": "工作日志 · {date} {weekday}",
+  "@diaryTemplateWorkTitle": {
+    "description": "内置模板“工作日志”的标题格式。占位符会填入 {{日期}} 这类模板变量，套用时才换成具体内容。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateLetterName": "给未来的信",
+  "@diaryTemplateLetterName": {
+    "description": "内置日记模板“给未来的信”的名称。"
+  },
+  "diaryTemplateLetterDesc": "写给一年后的自己，封存成时间胶囊",
+  "@diaryTemplateLetterDesc": {
+    "description": "内置模板“给未来的信”的一行说明。"
+  },
+  "diaryTemplateLetterTitle": "写给一年后的自己",
+  "@diaryTemplateLetterTitle": {
+    "description": "内置模板“给未来的信”的标题格式。"
+  },
+  "diaryTemplateDailyHappened": "今天发生了什么",
+  "@diaryTemplateDailyHappened": {
+    "description": "内置日记模板（Daily）正文中的一行。"
+  },
+  "diaryTemplateDailyMoment": "印象最深的一刻",
+  "@diaryTemplateDailyMoment": {
+    "description": "内置日记模板（Daily）正文中的一行。"
+  },
+  "diaryTemplateDailyMood": "此刻的心情",
+  "@diaryTemplateDailyMood": {
+    "description": "内置日记模板（Daily）正文中的一行。"
+  },
+  "diaryTemplateMorningWake": "{time} 醒来，{term}时节。",
+  "@diaryTemplateMorningWake": {
+    "description": "内置日记模板（Morning）正文中的一行。占位符会填入模板变量。",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMorningTop3": "今天最重要的三件事",
+  "@diaryTemplateMorningTop3": {
+    "description": "内置日记模板（Morning）正文中的一行。"
+  },
+  "diaryTemplateMorningLookForward": "我期待的事",
+  "@diaryTemplateMorningLookForward": {
+    "description": "内置日记模板（Morning）正文中的一行。"
+  },
+  "diaryTemplateMorningWords": "给今天的一句话",
+  "@diaryTemplateMorningWords": {
+    "description": "内置日记模板（Morning）正文中的一行。"
+  },
+  "diaryTemplateEveningDone": "今天完成了",
+  "@diaryTemplateEveningDone": {
+    "description": "内置日记模板（Evening）正文中的一行。"
+  },
+  "diaryTemplateEveningWentWell": "做得好的地方",
+  "@diaryTemplateEveningWentWell": {
+    "description": "内置日记模板（Evening）正文中的一行。"
+  },
+  "diaryTemplateEveningBetter": "可以更好的地方",
+  "@diaryTemplateEveningBetter": {
+    "description": "内置日记模板（Evening）正文中的一行。"
+  },
+  "diaryTemplateEveningTomorrow": "明天的安排",
+  "@diaryTemplateEveningTomorrow": {
+    "description": "内置日记模板（Evening）正文中的一行。"
+  },
+  "diaryTemplateGratitudeThree": "今天让我心怀感激的三件事：",
+  "@diaryTemplateGratitudeThree": {
+    "description": "内置日记模板（Gratitude）正文中的一行。"
+  },
+  "diaryTemplateGratitudeThanks": "想对谁说声谢谢",
+  "@diaryTemplateGratitudeThanks": {
+    "description": "内置日记模板（Gratitude）正文中的一行。"
+  },
+  "diaryTemplateWeeklyHighlights": "本周亮点",
+  "@diaryTemplateWeeklyHighlights": {
+    "description": "内置日记模板（Weekly）正文中的一行。"
+  },
+  "diaryTemplateWeeklyWins": "完成与收获",
+  "@diaryTemplateWeeklyWins": {
+    "description": "内置日记模板（Weekly）正文中的一行。"
+  },
+  "diaryTemplateWeeklyOpen": "没做完的事",
+  "@diaryTemplateWeeklyOpen": {
+    "description": "内置日记模板（Weekly）正文中的一行。"
+  },
+  "diaryTemplateWeeklyNext": "下周想做的事",
+  "@diaryTemplateWeeklyNext": {
+    "description": "内置日记模板（Weekly）正文中的一行。"
+  },
+  "diaryTemplateMonthlyProgress": "今年已过去 {progress}。",
+  "@diaryTemplateMonthlyProgress": {
+    "description": "内置日记模板（Monthly）正文中的一行。占位符会填入模板变量。",
+    "placeholders": {
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateMonthlyKeyword": "这个月的关键词",
+  "@diaryTemplateMonthlyKeyword": {
+    "description": "内置日记模板（Monthly）正文中的一行。"
+  },
+  "diaryTemplateMonthlyMattered": "重要的事",
+  "@diaryTemplateMonthlyMattered": {
+    "description": "内置日记模板（Monthly）正文中的一行。"
+  },
+  "diaryTemplateMonthlyWinsRegrets": "收获与遗憾",
+  "@diaryTemplateMonthlyWinsRegrets": {
+    "description": "内置日记模板（Monthly）正文中的一行。"
+  },
+  "diaryTemplateMonthlyNext": "下个月想做的事",
+  "@diaryTemplateMonthlyNext": {
+    "description": "内置日记模板（Monthly）正文中的一行。"
+  },
+  "diaryTemplateEmotionHappened": "发生了什么",
+  "@diaryTemplateEmotionHappened": {
+    "description": "内置日记模板（Emotion）正文中的一行。"
+  },
+  "diaryTemplateEmotionFelt": "我感受到的情绪",
+  "@diaryTemplateEmotionFelt": {
+    "description": "内置日记模板（Emotion）正文中的一行。"
+  },
+  "diaryTemplateEmotionSource": "它从哪里来",
+  "@diaryTemplateEmotionSource": {
+    "description": "内置日记模板（Emotion）正文中的一行。"
+  },
+  "diaryTemplateEmotionNeed": "我需要什么",
+  "@diaryTemplateEmotionNeed": {
+    "description": "内置日记模板（Emotion）正文中的一行。"
+  },
+  "diaryTemplateEmotionStep": "接下来能做的一件小事",
+  "@diaryTemplateEmotionStep": {
+    "description": "内置日记模板（Emotion）正文中的一行。"
+  },
+  "diaryTemplateDreamHappened": "梦里发生了什么",
+  "@diaryTemplateDreamHappened": {
+    "description": "内置日记模板（Dream）正文中的一行。"
+  },
+  "diaryTemplateDreamImages": "印象深刻的画面",
+  "@diaryTemplateDreamImages": {
+    "description": "内置日记模板（Dream）正文中的一行。"
+  },
+  "diaryTemplateDreamWaking": "醒来后的感受",
+  "@diaryTemplateDreamWaking": {
+    "description": "内置日记模板（Dream）正文中的一行。"
+  },
+  "diaryTemplateTravelRoute": "今天的路线",
+  "@diaryTemplateTravelRoute": {
+    "description": "内置日记模板（Travel）正文中的一行。"
+  },
+  "diaryTemplateTravelSights": "看到的风景",
+  "@diaryTemplateTravelSights": {
+    "description": "内置日记模板（Travel）正文中的一行。"
+  },
+  "diaryTemplateTravelFood": "吃到的美食",
+  "@diaryTemplateTravelFood": {
+    "description": "内置日记模板（Travel）正文中的一行。"
+  },
+  "diaryTemplateTravelNotes": "旅途小记",
+  "@diaryTemplateTravelNotes": {
+    "description": "内置日记模板（Travel）正文中的一行。"
+  },
+  "diaryTemplateReadingBook": "书名：",
+  "@diaryTemplateReadingBook": {
+    "description": "内置日记模板（Reading）正文中的一行。"
+  },
+  "diaryTemplateReadingAuthor": "作者：",
+  "@diaryTemplateReadingAuthor": {
+    "description": "内置日记模板（Reading）正文中的一行。"
+  },
+  "diaryTemplateReadingProgress": "读到：",
+  "@diaryTemplateReadingProgress": {
+    "description": "内置日记模板（Reading）正文中的一行。"
+  },
+  "diaryTemplateReadingQuotes": "摘录",
+  "@diaryTemplateReadingQuotes": {
+    "description": "内置日记模板（Reading）正文中的一行。"
+  },
+  "diaryTemplateReadingThoughts": "我的想法",
+  "@diaryTemplateReadingThoughts": {
+    "description": "内置日记模板（Reading）正文中的一行。"
+  },
+  "diaryTemplateMovieFilm": "片名：",
+  "@diaryTemplateMovieFilm": {
+    "description": "内置日记模板（Movie）正文中的一行。"
+  },
+  "diaryTemplateMovieRating": "评分：  / 10",
+  "@diaryTemplateMovieRating": {
+    "description": "内置日记模板（Movie）正文中的一行。"
+  },
+  "diaryTemplateMovieStory": "一句话剧情",
+  "@diaryTemplateMovieStory": {
+    "description": "内置日记模板（Movie）正文中的一行。"
+  },
+  "diaryTemplateMovieMoved": "打动我的地方",
+  "@diaryTemplateMovieMoved": {
+    "description": "内置日记模板（Movie）正文中的一行。"
+  },
+  "diaryTemplateMovieLines": "台词摘录",
+  "@diaryTemplateMovieLines": {
+    "description": "内置日记模板（Movie）正文中的一行。"
+  },
+  "diaryTemplateWorkoutActivity": "项目：",
+  "@diaryTemplateWorkoutActivity": {
+    "description": "内置日记模板（Workout）正文中的一行。"
+  },
+  "diaryTemplateWorkoutDuration": "时长：",
+  "@diaryTemplateWorkoutDuration": {
+    "description": "内置日记模板（Workout）正文中的一行。"
+  },
+  "diaryTemplateWorkoutTraining": "今日训练",
+  "@diaryTemplateWorkoutTraining": {
+    "description": "内置日记模板（Workout）正文中的一行。"
+  },
+  "diaryTemplateWorkoutBody": "身体感受",
+  "@diaryTemplateWorkoutBody": {
+    "description": "内置日记模板（Workout）正文中的一行。"
+  },
+  "diaryTemplateWorkDone": "今日完成",
+  "@diaryTemplateWorkDone": {
+    "description": "内置日记模板（Work）正文中的一行。"
+  },
+  "diaryTemplateWorkInProgress": "进行中",
+  "@diaryTemplateWorkInProgress": {
+    "description": "内置日记模板（Work）正文中的一行。"
+  },
+  "diaryTemplateWorkBlockers": "遇到的问题",
+  "@diaryTemplateWorkBlockers": {
+    "description": "内置日记模板（Work）正文中的一行。"
+  },
+  "diaryTemplateWorkTomorrow": "明日计划",
+  "@diaryTemplateWorkTomorrow": {
+    "description": "内置日记模板（Work）正文中的一行。"
+  },
+  "diaryTemplateLetterGreeting": "亲爱的一年后的我：",
+  "@diaryTemplateLetterGreeting": {
+    "description": "内置日记模板（Letter）正文中的一行。"
+  },
+  "diaryTemplateLetterNow": "现在的我",
+  "@diaryTemplateLetterNow": {
+    "description": "内置日记模板（Letter）正文中的一行。"
+  },
+  "diaryTemplateLetterMind": "最近在想的事",
+  "@diaryTemplateLetterMind": {
+    "description": "内置日记模板（Letter）正文中的一行。"
+  },
+  "diaryTemplateLetterHope": "希望那时的你",
+  "@diaryTemplateLetterHope": {
+    "description": "内置日记模板（Letter）正文中的一行。"
+  },
+  "diaryTemplateLetterSignature": "写于 {date}，农历{lunar}",
+  "@diaryTemplateLetterSignature": {
+    "description": "内置日记模板（Letter）正文中的一行。占位符会填入模板变量。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "lunar": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateTagGratitude": "感恩",
+  "@diaryTemplateTagGratitude": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateTagDream": "梦境",
+  "@diaryTemplateTagDream": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateTagTravel": "旅行",
+  "@diaryTemplateTagTravel": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateTagReading": "读书",
+  "@diaryTemplateTagReading": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateTagMovie": "观影",
+  "@diaryTemplateTagMovie": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateTagWorkout": "运动",
+  "@diaryTemplateTagWorkout": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateTagWork": "工作",
+  "@diaryTemplateTagWork": {
+    "description": "内置日记模板预设的标签名（本机没有时新建）。"
+  },
+  "diaryTemplateQuestion01": "今天让你微笑的一件小事是什么？",
+  "@diaryTemplateQuestion01": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion02": "如果今天可以重来，你会改变什么？",
+  "@diaryTemplateQuestion02": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion03": "最近一次感到自豪是什么时候？",
+  "@diaryTemplateQuestion03": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion04": "此刻你最想对谁说一句话？",
+  "@diaryTemplateQuestion04": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion05": "今天学到的一件新东西是什么？",
+  "@diaryTemplateQuestion05": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion06": "最近有什么事让你一直放不下？",
+  "@diaryTemplateQuestion06": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion07": "你理想中的周末是什么样子？",
+  "@diaryTemplateQuestion07": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion08": "今天有哪个瞬间让你觉得被理解？",
+  "@diaryTemplateQuestion08": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion09": "最近在读、在看或在听什么？它带给你什么？",
+  "@diaryTemplateQuestion09": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion10": "你现在最需要的是休息、陪伴还是挑战？",
+  "@diaryTemplateQuestion10": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion11": "一年前的今天你在担心什么？现在呢？",
+  "@diaryTemplateQuestion11": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion12": "今天你为自己做了什么？",
+  "@diaryTemplateQuestion12": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion13": "最近一次大笑是因为什么？",
+  "@diaryTemplateQuestion13": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion14": "有什么习惯是你想开始或想放下的？",
+  "@diaryTemplateQuestion14": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion15": "用三个词形容今天的自己。",
+  "@diaryTemplateQuestion15": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion16": "今天最大的困难是什么？你是怎么应对的？",
+  "@diaryTemplateQuestion16": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion17": "你最近感激的一个人是谁？为什么？",
+  "@diaryTemplateQuestion17": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion18": "如果明天只能做一件事，你会做什么？",
+  "@diaryTemplateQuestion18": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion19": "最近有什么让你改变了看法？",
+  "@diaryTemplateQuestion19": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion20": "今天的天气让你想起了什么？",
+  "@diaryTemplateQuestion20": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion21": "最近一次走出舒适区是什么时候？",
+  "@diaryTemplateQuestion21": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion22": "十年后的你会怎样看待今天的烦恼？",
+  "@diaryTemplateQuestion22": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion23": "今天有没有哪句话让你印象深刻？",
+  "@diaryTemplateQuestion23": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion24": "最近让你感到平静的地方是哪里？",
+  "@diaryTemplateQuestion24": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion25": "你想对小时候的自己说些什么？",
+  "@diaryTemplateQuestion25": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion26": "今天的你，比昨天多了解自己一点了吗？",
+  "@diaryTemplateQuestion26": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion27": "最近有什么值得庆祝的小进步？",
+  "@diaryTemplateQuestion27": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion28": "有什么事一直想尝试却还没开始？是什么在阻碍你？",
+  "@diaryTemplateQuestion28": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion29": "今天你是怎样照顾自己的情绪的？",
+  "@diaryTemplateQuestion29": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateQuestion30": "如果给今天打分（1–10），你会打几分？为什么？",
+  "@diaryTemplateQuestion30": {
+    "description": "模板变量“今日一问”使用的内置题库中的一题。"
+  },
+  "diaryTemplateVarDateToken": "日期",
+  "@diaryTemplateVarDateToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarDateLabel": "日期",
+  "@diaryTemplateVarDateLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarWeekdayToken": "星期",
+  "@diaryTemplateVarWeekdayToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarWeekdayLabel": "星期",
+  "@diaryTemplateVarWeekdayLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarTimeToken": "时间",
+  "@diaryTemplateVarTimeToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarTimeLabel": "时间",
+  "@diaryTemplateVarTimeLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarYearToken": "年",
+  "@diaryTemplateVarYearToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarYearLabel": "年",
+  "@diaryTemplateVarYearLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarMonthToken": "月",
+  "@diaryTemplateVarMonthToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarMonthLabel": "月",
+  "@diaryTemplateVarMonthLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarDayToken": "日",
+  "@diaryTemplateVarDayToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarDayLabel": "日",
+  "@diaryTemplateVarDayLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarWeekToken": "周数",
+  "@diaryTemplateVarWeekToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarWeekLabel": "周数",
+  "@diaryTemplateVarWeekLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarDayOfYearToken": "第几天",
+  "@diaryTemplateVarDayOfYearToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarDayOfYearLabel": "第几天",
+  "@diaryTemplateVarDayOfYearLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarYearProgressToken": "年进度",
+  "@diaryTemplateVarYearProgressToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarYearProgressLabel": "年进度",
+  "@diaryTemplateVarYearProgressLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarLunarToken": "农历",
+  "@diaryTemplateVarLunarToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarLunarLabel": "农历",
+  "@diaryTemplateVarLunarLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarSolarTermToken": "节气",
+  "@diaryTemplateVarSolarTermToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarSolarTermLabel": "节气",
+  "@diaryTemplateVarSolarTermLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateVarQuestionToken": "今日一问",
+  "@diaryTemplateVarQuestionToken": {
+    "description": "插入到双花括号里的模板变量名，必须是应用认得的写法之一。"
+  },
+  "diaryTemplateVarQuestionLabel": "今日一问",
+  "@diaryTemplateVarQuestionLabel": {
+    "description": "模板变量的名称。"
+  },
+  "diaryTemplateCategoryDaily": "日常",
+  "@diaryTemplateCategoryDaily": {
+    "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateCategoryReview": "复盘",
+  "@diaryTemplateCategoryReview": {
+    "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateCategoryMood": "情绪",
+  "@diaryTemplateCategoryMood": {
+    "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateCategoryLife": "生活",
+  "@diaryTemplateCategoryLife": {
+    "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateCategoryWork": "工作",
+  "@diaryTemplateCategoryWork": {
+    "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateCategoryOther": "其他",
+  "@diaryTemplateCategoryOther": {
+    "description": "日记模板分类，用作模板面板的筛选项。"
+  },
+  "diaryTemplateStripTitle": "从模板开始",
+  "@diaryTemplateStripTitle": {
+    "description": "空白新建日记标题下“模板建议条”的标题。"
+  },
+  "diaryTemplateStripAll": "全部",
+  "@diaryTemplateStripAll": {
+    "description": "模板建议条：打开完整的模板面板。"
+  },
+  "diaryTemplateStripDismiss": "收起模板建议",
+  "@diaryTemplateStripDismiss": {
+    "description": "模板建议条关闭按钮的提示（本次编辑不再出现）。"
+  },
+  "diaryTemplateRecommended": "推荐",
+  "@diaryTemplateRecommended": {
+    "description": "按当前时段或日期推荐的模板上的小标记。"
+  },
+  "diaryTemplateUntitled": "未命名模板",
+  "@diaryTemplateUntitled": {
+    "description": "没有名称的用户模板显示的名称。"
+  },
+  "diaryTemplateApplied": "已套用「{name}」",
+  "@diaryTemplateApplied": {
+    "description": "套用模板后的提示，带撤销按钮。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateAutoApplied": "已自动套用「{name}」",
+  "@diaryTemplateAutoApplied": {
+    "description": "新建日记自动套用了默认模板时的提示，带撤销按钮。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatePickerTitle": "选择模板",
+  "@diaryTemplatePickerTitle": {
+    "description": "模板选择面板的标题。"
+  },
+  "diaryTemplateFilterAll": "全部",
+  "@diaryTemplateFilterAll": {
+    "description": "模板面板筛选项：全部模板。"
+  },
+  "diaryTemplateFilterRecommended": "推荐",
+  "@diaryTemplateFilterRecommended": {
+    "description": "模板面板筛选项：此刻推荐的模板。"
+  },
+  "diaryTemplateFilterMine": "我的",
+  "@diaryTemplateFilterMine": {
+    "description": "模板面板筛选项：我的模板。"
+  },
+  "diaryTemplatePickerEmpty": "这里还没有模板",
+  "@diaryTemplatePickerEmpty": {
+    "description": "模板面板：当前筛选下没有模板。"
+  },
+  "diaryTemplatePickerUse": "使用这个模板",
+  "@diaryTemplatePickerUse": {
+    "description": "模板面板预览页：套用正在预览的模板。"
+  },
+  "diaryTemplatePickerShuffle": "换一题",
+  "@diaryTemplatePickerShuffle": {
+    "description": "模板面板预览页：给“今日一问”换一道题。"
+  },
+  "diaryTemplatePickerPreviewHint": "日期与问题已按这篇日记填好。",
+  "@diaryTemplatePickerPreviewHint": {
+    "description": "模板预览上方的说明：变量已经按这篇日记替换。"
+  },
+  "diaryTemplatePresetCapsule": "时间胶囊 · {when}",
+  "@diaryTemplatePresetCapsule": {
+    "description": "预设摘要：模板会把日记设为时间胶囊，占位符为“一年后”这类时长。",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatePresetEnergy": "精力 {level}/5",
+  "@diaryTemplatePresetEnergy": {
+    "description": "预设摘要：模板预设的精力值。",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplateHiddenBadge": "已隐藏",
+  "@diaryTemplateHiddenBadge": {
+    "description": "被用户隐藏的内置模板上的小标记。"
+  },
+  "diaryDraftPickerFromTemplate": "从模板新建",
+  "@diaryDraftPickerFromTemplate": {
+    "description": "草稿选择面板：选一个模板，用它新建一篇日记。"
+  },
+  "diaryTemplatesTitle": "日记模板",
+  "@diaryTemplatesTitle": {
+    "description": "日记模板管理页与设置入口的标题。"
+  },
+  "diaryTemplatesSettingsSubtitle": "内置 {builtIn} 个 · 我的 {mine} 个",
+  "@diaryTemplatesSettingsSubtitle": {
+    "description": "编辑器设置里“日记模板”入口的副标题。",
+    "placeholders": {
+      "builtIn": {
+        "type": "int"
+      },
+      "mine": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesNewEntryGroup": "新建日记时",
+  "@diaryTemplatesNewEntryGroup": {
+    "description": "模板管理页分组标题：新建日记时模板如何出现。"
+  },
+  "diaryTemplatesStripSwitch": "推荐模板",
+  "@diaryTemplatesStripSwitch": {
+    "description": "开关：在空白新建日记里显示模板建议条。"
+  },
+  "diaryTemplatesStripSwitchSubtitle": "在空白日记的标题下显示模板建议",
+  "@diaryTemplatesStripSwitchSubtitle": {
+    "description": "模板建议条开关的说明。"
+  },
+  "diaryTemplatesAutoApply": "自动套用",
+  "@diaryTemplatesAutoApply": {
+    "description": "设置项：每次新建空白日记时自动套用的模板。"
+  },
+  "diaryTemplatesAutoApplyNone": "不自动套用",
+  "@diaryTemplatesAutoApplyNone": {
+    "description": "未选择自动套用模板时的取值。"
+  },
+  "diaryTemplatesAutoApplyHint": "每次新建空白日记都会先套用这个模板，每次都可以撤销。",
+  "@diaryTemplatesAutoApplyHint": {
+    "description": "自动套用选择面板顶部的说明。"
+  },
+  "diaryTemplatesMineGroup": "我的模板",
+  "@diaryTemplatesMineGroup": {
+    "description": "分组标题：用户自己的模板。"
+  },
+  "diaryTemplatesBuiltInGroup": "内置模板",
+  "@diaryTemplatesBuiltInGroup": {
+    "description": "分组标题：应用自带的模板。"
+  },
+  "diaryTemplatesMineEmpty": "还没有自己的模板。点右上角 + 新建，或复制一个内置模板来改。",
+  "@diaryTemplatesMineEmpty": {
+    "description": "我的模板为空时的提示。"
+  },
+  "diaryTemplatesNew": "新建模板",
+  "@diaryTemplatesNew": {
+    "description": "新建模板按钮的提示。"
+  },
+  "diaryTemplatesImport": "导入模板码",
+  "@diaryTemplatesImport": {
+    "description": "从剪贴板导入模板码按钮的提示。"
+  },
+  "diaryTemplatesMoreActions": "更多操作",
+  "@diaryTemplatesMoreActions": {
+    "description": "模板行菜单按钮的提示。"
+  },
+  "diaryTemplatesDragHandle": "拖动排序",
+  "@diaryTemplatesDragHandle": {
+    "description": "模板行拖动手柄的无障碍说明。"
+  },
+  "diaryTemplatesDuplicate": "复制",
+  "@diaryTemplatesDuplicate": {
+    "description": "菜单项：复制一份我的模板。"
+  },
+  "diaryTemplatesCopyToMine": "复制为我的模板",
+  "@diaryTemplatesCopyToMine": {
+    "description": "内置模板的操作：复制为我的模板以便修改。"
+  },
+  "diaryTemplatesCopyCode": "复制模板码",
+  "@diaryTemplatesCopyCode": {
+    "description": "菜单项：把模板复制为可分享的模板码。"
+  },
+  "diaryTemplatesHide": "隐藏",
+  "@diaryTemplatesHide": {
+    "description": "菜单项：在模板面板中隐藏这个内置模板。"
+  },
+  "diaryTemplatesShow": "显示",
+  "@diaryTemplatesShow": {
+    "description": "菜单项：重新显示已隐藏的内置模板。"
+  },
+  "diaryTemplatesCopyName": "{name} 副本",
+  "@diaryTemplatesCopyName": {
+    "description": "复制出的模板的名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesDeleted": "已删除「{name}」",
+  "@diaryTemplatesDeleted": {
+    "description": "删除模板后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesHiddenDone": "已隐藏「{name}」",
+  "@diaryTemplatesHiddenDone": {
+    "description": "隐藏内置模板后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesCodeCopied": "模板码已复制",
+  "@diaryTemplatesCodeCopied": {
+    "description": "复制模板码后的提示。"
+  },
+  "diaryTemplatesCodeTooLong": "模板正文太长，无法生成模板码",
+  "@diaryTemplatesCodeTooLong": {
+    "description": "模板太长、生成不了模板码时的提示。"
+  },
+  "diaryTemplatesImportEmpty": "剪贴板里没有模板码",
+  "@diaryTemplatesImportEmpty": {
+    "description": "导入时剪贴板为空的提示。"
+  },
+  "diaryTemplatesImportInvalid": "这不是有效的模板码",
+  "@diaryTemplatesImportInvalid": {
+    "description": "剪贴板里不是有效模板码时的提示。"
+  },
+  "diaryTemplatesImported": "已导入「{name}」",
+  "@diaryTemplatesImported": {
+    "description": "导入模板码后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesImportedNewer": "已导入「{name}」。它来自新版本，部分设置可能未生效。",
+  "@diaryTemplatesImportedNewer": {
+    "description": "导入来自新版本的模板码后的提示，带撤销。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesSaveFailed": "模板保存失败，请重试",
+  "@diaryTemplatesSaveFailed": {
+    "description": "模板写入失败时的提示。"
+  },
+  "diaryTemplateEditorNewTitle": "新建模板",
+  "@diaryTemplateEditorNewTitle": {
+    "description": "新建模板时编辑页的标题。"
+  },
+  "diaryTemplateEditorEditTitle": "编辑模板",
+  "@diaryTemplateEditorEditTitle": {
+    "description": "编辑已有模板时编辑页的标题。"
+  },
+  "diaryTemplateEditorTabContent": "内容",
+  "@diaryTemplateEditorTabContent": {
+    "description": "模板编辑页标签：标题与正文。"
+  },
+  "diaryTemplateEditorTabSettings": "设置",
+  "@diaryTemplateEditorTabSettings": {
+    "description": "模板编辑页标签：名称、外观、预设与推荐。"
+  },
+  "diaryTemplateEditorTitleHint": "标题（可插入变量）",
+  "@diaryTemplateEditorTitleHint": {
+    "description": "模板标题输入框的提示。"
+  },
+  "diaryTemplateEditorBodyHint": "写下正文，小标题、列表与待办都会保留",
+  "@diaryTemplateEditorBodyHint": {
+    "description": "模板正文为空时的提示。"
+  },
+  "diaryTemplateEditorAllVariables": "全部变量",
+  "@diaryTemplateEditorAllVariables": {
+    "description": "打开全部模板变量列表的按钮。"
+  },
+  "diaryTemplateEditorVariablesTitle": "插入变量",
+  "@diaryTemplateEditorVariablesTitle": {
+    "description": "模板变量面板的标题。"
+  },
+  "diaryTemplateEditorVariablesHint": "套用模板时按日记的日期替换成具体内容。农历与节气为中文名称。",
+  "@diaryTemplateEditorVariablesHint": {
+    "description": "模板变量面板的说明。"
+  },
+  "diaryTemplateEditorVariableExample": "今天：{example}",
+  "@diaryTemplateEditorVariableExample": {
+    "description": "模板变量按今天算出的示例值。",
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateEditorName": "名称",
+  "@diaryTemplateEditorName": {
+    "description": "模板名称输入框的标签。"
+  },
+  "diaryTemplateEditorNameRequired": "请填写模板名称",
+  "@diaryTemplateEditorNameRequired": {
+    "description": "保存没有名称的模板时的错误提示。"
+  },
+  "diaryTemplateEditorDescription": "一句话说明",
+  "@diaryTemplateEditorDescription": {
+    "description": "模板说明输入框的标签。"
+  },
+  "diaryTemplateEditorLook": "外观",
+  "@diaryTemplateEditorLook": {
+    "description": "分组标题：模板的分类、图标与颜色。"
+  },
+  "diaryTemplateEditorCategory": "分类",
+  "@diaryTemplateEditorCategory": {
+    "description": "模板分类选择的标签。"
+  },
+  "diaryTemplateEditorIcon": "图标",
+  "@diaryTemplateEditorIcon": {
+    "description": "模板图标选择的标签。"
+  },
+  "diaryTemplateEditorAccent": "颜色",
+  "@diaryTemplateEditorAccent": {
+    "description": "模板颜色选择的标签。"
+  },
+  "diaryTemplateEditorAccentTheme": "跟随主题",
+  "@diaryTemplateEditorAccentTheme": {
+    "description": "颜色选项：跟随应用主题色。"
+  },
+  "diaryTemplateEditorPresets": "套用时一并设置",
+  "@diaryTemplateEditorPresets": {
+    "description": "分组标题：模板一并设置的标签、心情、精力与时间胶囊。"
+  },
+  "diaryTemplateEditorTags": "标签",
+  "@diaryTemplateEditorTags": {
+    "description": "模板预设标签的标签。"
+  },
+  "diaryTemplateEditorAddTag": "添加标签",
+  "@diaryTemplateEditorAddTag": {
+    "description": "给模板添加预设标签的按钮。"
+  },
+  "diaryTemplateEditorNewTag": "新建标签",
+  "@diaryTemplateEditorNewTag": {
+    "description": "标签面板里的选项：输入一个还不存在的标签。"
+  },
+  "diaryTemplateEditorTagsHint": "按名称匹配，本机没有的标签会在套用时新建。",
+  "@diaryTemplateEditorTagsHint": {
+    "description": "模板预设标签下方的说明。"
+  },
+  "diaryTemplateEditorMood": "心情",
+  "@diaryTemplateEditorMood": {
+    "description": "模板预设心情的标签。"
+  },
+  "diaryTemplateEditorNone": "不设",
+  "@diaryTemplateEditorNone": {
+    "description": "选项：模板不设置这一项。"
+  },
+  "diaryTemplateEditorEnergy": "精力",
+  "@diaryTemplateEditorEnergy": {
+    "description": "模板预设精力的标签。"
+  },
+  "diaryTemplateEditorCapsule": "时间胶囊",
+  "@diaryTemplateEditorCapsule": {
+    "description": "模板预设时间胶囊的标签。"
+  },
+  "diaryTemplateEditorCapsuleHint": "从套用当天起算，发布前仍可修改。",
+  "@diaryTemplateEditorCapsuleHint": {
+    "description": "模板预设时间胶囊下方的说明。"
+  },
+  "diaryTemplateEditorRecommend": "推荐时间",
+  "@diaryTemplateEditorRecommend": {
+    "description": "分组标题：什么时候优先推荐这个模板。"
+  },
+  "diaryTemplateEditorRecommendHint": "满足每一组选中的条件时，这个模板会排在建议的最前面；同一组里选多个表示任一即可。",
+  "@diaryTemplateEditorRecommendHint": {
+    "description": "模板推荐规则的说明。"
+  },
+  "diaryTemplateEditorSlots": "时段",
+  "@diaryTemplateEditorSlots": {
+    "description": "时段推荐条件的标签。"
+  },
+  "diaryTemplateEditorWeekdays": "星期",
+  "@diaryTemplateEditorWeekdays": {
+    "description": "星期推荐条件的标签。"
+  },
+  "diaryTemplateEditorMonth": "月份",
+  "@diaryTemplateEditorMonth": {
+    "description": "月初月末推荐条件的标签。"
+  },
+  "diaryTemplateSlotMorning": "清晨",
+  "@diaryTemplateSlotMorning": {
+    "description": "时段 5:00–10:59。"
+  },
+  "diaryTemplateSlotAfternoon": "午后",
+  "@diaryTemplateSlotAfternoon": {
+    "description": "时段 11:00–16:59。"
+  },
+  "diaryTemplateSlotEvening": "傍晚",
+  "@diaryTemplateSlotEvening": {
+    "description": "时段 17:00–21:59。"
+  },
+  "diaryTemplateSlotNight": "深夜",
+  "@diaryTemplateSlotNight": {
+    "description": "时段 22:00–4:59。"
+  },
+  "diaryTemplateMonthStart": "月初三天",
+  "@diaryTemplateMonthStart": {
+    "description": "月份条件：每月头三天。"
+  },
+  "diaryTemplateMonthEnd": "月末三天",
+  "@diaryTemplateMonthEnd": {
+    "description": "月份条件：每月最后三天。"
+  },
+  "diaryTemplateSaveAs": "存为模板",
+  "@diaryTemplateSaveAs": {
+    "description": "把一篇日记（或正在写的内容）存为新模板的操作。"
+  },
+  "diaryTemplateSaveAsMediaDropped": "图片、录音等媒体不会存进模板",
+  "@diaryTemplateSaveAsMediaDropped": {
+    "description": "存为模板时去掉了正文里的媒体的提示。"
+  },
+  "diaryEditorMoreActions": "更多",
+  "@diaryEditorMoreActions": {
+    "description": "编辑页顶栏菜单（存为模板、编辑器设置）的提示。"
   }
 }

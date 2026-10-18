@@ -9361,6 +9361,1578 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search in Jotsy'**
   String get diarySearchPreviewHint;
+
+  /// Bullet in the replace-everything warning: user-made diary templates that will be deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 diary template} other{{count} diary templates}}'**
+  String backupOverwriteAllTemplates(int count);
+
+  /// Extra line of the merge import result: diary templates added (existing ones are never replaced).
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{Templates: 1 added} other{Templates: {added} added}}'**
+  String backupImportTemplateMergeResult(int added);
+
+  /// Name of the built-in “Daily journal” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily journal'**
+  String get diaryTemplateDailyName;
+
+  /// One-line description of the built-in “Daily journal” template.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened today and how you feel right now'**
+  String get diaryTemplateDailyDesc;
+
+  /// Title pattern of the built-in “Daily journal” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday}, {date}'**
+  String diaryTemplateDailyTitle(String date, String weekday);
+
+  /// Name of the built-in “Morning pages” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning pages'**
+  String get diaryTemplateMorningName;
+
+  /// One-line description of the built-in “Morning pages” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Set the tone for the day with a page in the morning'**
+  String get diaryTemplateMorningDesc;
+
+  /// Title pattern of the built-in “Morning pages” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning · {date}'**
+  String diaryTemplateMorningTitle(String date);
+
+  /// Name of the built-in “Evening review” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening review'**
+  String get diaryTemplateEveningName;
+
+  /// One-line description of the built-in “Evening review” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Look back on the day and plan tomorrow'**
+  String get diaryTemplateEveningDesc;
+
+  /// Title pattern of the built-in “Evening review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Review · {date}'**
+  String diaryTemplateEveningTitle(String date);
+
+  /// Name of the built-in “Gratitude journal” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Gratitude journal'**
+  String get diaryTemplateGratitudeName;
+
+  /// One-line description of the built-in “Gratitude journal” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Three things you\'re grateful for'**
+  String get diaryTemplateGratitudeDesc;
+
+  /// Title pattern of the built-in “Gratitude journal” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Gratitude · {date}'**
+  String diaryTemplateGratitudeTitle(String date);
+
+  /// Name of the built-in “Question of the day” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Question of the day'**
+  String get diaryTemplateQuestionName;
+
+  /// One-line description of the built-in “Question of the day” template.
+  ///
+  /// In en, this message translates to:
+  /// **'One question a day to see yourself from a new angle'**
+  String get diaryTemplateQuestionDesc;
+
+  /// Title pattern of the built-in “Question of the day” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Question of the day · {date}'**
+  String diaryTemplateQuestionTitle(String date);
+
+  /// Name of the built-in “Weekly review” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review'**
+  String get diaryTemplateWeeklyName;
+
+  /// One-line description of the built-in “Weekly review” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights, wins and next week\'s plan'**
+  String get diaryTemplateWeeklyDesc;
+
+  /// Title pattern of the built-in “Weekly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly review · {date}'**
+  String diaryTemplateWeeklyTitle(String date);
+
+  /// Name of the built-in “Monthly review” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly review'**
+  String get diaryTemplateMonthlyName;
+
+  /// One-line description of the built-in “Monthly review” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Look back on the month and set a direction for the next'**
+  String get diaryTemplateMonthlyDesc;
+
+  /// Title pattern of the built-in “Monthly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly review · {date}'**
+  String diaryTemplateMonthlyTitle(String date);
+
+  /// Name of the built-in “Untangle a feeling” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Untangle a feeling'**
+  String get diaryTemplateEmotionName;
+
+  /// One-line description of the built-in “Untangle a feeling” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a feeling down and see where it comes from'**
+  String get diaryTemplateEmotionDesc;
+
+  /// Title pattern of the built-in “Untangle a feeling” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Feelings · {date}'**
+  String diaryTemplateEmotionTitle(String date);
+
+  /// Name of the built-in “Dream log” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Dream log'**
+  String get diaryTemplateDreamName;
+
+  /// One-line description of the built-in “Dream log” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the dream down before it fades'**
+  String get diaryTemplateDreamDesc;
+
+  /// Title pattern of the built-in “Dream log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Dream · {date}'**
+  String diaryTemplateDreamTitle(String date);
+
+  /// Name of the built-in “Travel log” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel log'**
+  String get diaryTemplateTravelName;
+
+  /// One-line description of the built-in “Travel log” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Routes, sights and little moments on the road'**
+  String get diaryTemplateTravelDesc;
+
+  /// Title pattern of the built-in “Travel log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel · {date}'**
+  String diaryTemplateTravelTitle(String date);
+
+  /// Name of the built-in “Reading notes” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading notes'**
+  String get diaryTemplateReadingName;
+
+  /// One-line description of the built-in “Reading notes” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Quotes and thoughts from what you read'**
+  String get diaryTemplateReadingDesc;
+
+  /// Title pattern of the built-in “Reading notes” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading notes · {date}'**
+  String diaryTemplateReadingTitle(String date);
+
+  /// Name of the built-in “Movie log” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Movie log'**
+  String get diaryTemplateMovieName;
+
+  /// One-line description of the built-in “Movie log” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Title, rating and what moved you'**
+  String get diaryTemplateMovieDesc;
+
+  /// Title pattern of the built-in “Movie log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Movie night · {date}'**
+  String diaryTemplateMovieTitle(String date);
+
+  /// Name of the built-in “Workout log” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout log'**
+  String get diaryTemplateWorkoutName;
+
+  /// One-line description of the built-in “Workout log” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity, duration and how your body feels'**
+  String get diaryTemplateWorkoutDesc;
+
+  /// Title pattern of the built-in “Workout log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout · {date}'**
+  String diaryTemplateWorkoutTitle(String date);
+
+  /// Name of the built-in “Work log” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Work log'**
+  String get diaryTemplateWorkName;
+
+  /// One-line description of the built-in “Work log” template.
+  ///
+  /// In en, this message translates to:
+  /// **'Done, in progress and tomorrow\'s plan'**
+  String get diaryTemplateWorkDesc;
+
+  /// Title pattern of the built-in “Work log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
+  ///
+  /// In en, this message translates to:
+  /// **'Work log · {weekday}, {date}'**
+  String diaryTemplateWorkTitle(String date, String weekday);
+
+  /// Name of the built-in “Letter to future me” diary template.
+  ///
+  /// In en, this message translates to:
+  /// **'Letter to future me'**
+  String get diaryTemplateLetterName;
+
+  /// One-line description of the built-in “Letter to future me” template.
+  ///
+  /// In en, this message translates to:
+  /// **'A letter to yourself a year from now, sealed as a time capsule'**
+  String get diaryTemplateLetterDesc;
+
+  /// Title pattern of the built-in “Letter to future me” template.
+  ///
+  /// In en, this message translates to:
+  /// **'To me, one year from now'**
+  String get diaryTemplateLetterTitle;
+
+  /// Body line of a built-in diary template (Daily).
+  ///
+  /// In en, this message translates to:
+  /// **'What happened today'**
+  String get diaryTemplateDailyHappened;
+
+  /// Body line of a built-in diary template (Daily).
+  ///
+  /// In en, this message translates to:
+  /// **'The moment that stayed with me'**
+  String get diaryTemplateDailyMoment;
+
+  /// Body line of a built-in diary template (Daily).
+  ///
+  /// In en, this message translates to:
+  /// **'How I feel right now'**
+  String get diaryTemplateDailyMood;
+
+  /// Body line of a built-in diary template (Morning). Placeholders receive template variable tokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Up at {time}.'**
+  String diaryTemplateMorningWake(String time, String term);
+
+  /// Body line of a built-in diary template (Morning).
+  ///
+  /// In en, this message translates to:
+  /// **'Three things that matter most today'**
+  String get diaryTemplateMorningTop3;
+
+  /// Body line of a built-in diary template (Morning).
+  ///
+  /// In en, this message translates to:
+  /// **'Something I\'m looking forward to'**
+  String get diaryTemplateMorningLookForward;
+
+  /// Body line of a built-in diary template (Morning).
+  ///
+  /// In en, this message translates to:
+  /// **'A line for today'**
+  String get diaryTemplateMorningWords;
+
+  /// Body line of a built-in diary template (Evening).
+  ///
+  /// In en, this message translates to:
+  /// **'Done today'**
+  String get diaryTemplateEveningDone;
+
+  /// Body line of a built-in diary template (Evening).
+  ///
+  /// In en, this message translates to:
+  /// **'What went well'**
+  String get diaryTemplateEveningWentWell;
+
+  /// Body line of a built-in diary template (Evening).
+  ///
+  /// In en, this message translates to:
+  /// **'What could be better'**
+  String get diaryTemplateEveningBetter;
+
+  /// Body line of a built-in diary template (Evening).
+  ///
+  /// In en, this message translates to:
+  /// **'Plans for tomorrow'**
+  String get diaryTemplateEveningTomorrow;
+
+  /// Body line of a built-in diary template (Gratitude).
+  ///
+  /// In en, this message translates to:
+  /// **'Three things I\'m grateful for today:'**
+  String get diaryTemplateGratitudeThree;
+
+  /// Body line of a built-in diary template (Gratitude).
+  ///
+  /// In en, this message translates to:
+  /// **'Someone I\'d like to thank'**
+  String get diaryTemplateGratitudeThanks;
+
+  /// Body line of a built-in diary template (Weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights of the week'**
+  String get diaryTemplateWeeklyHighlights;
+
+  /// Body line of a built-in diary template (Weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'Done and learned'**
+  String get diaryTemplateWeeklyWins;
+
+  /// Body line of a built-in diary template (Weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'Still open'**
+  String get diaryTemplateWeeklyOpen;
+
+  /// Body line of a built-in diary template (Weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get diaryTemplateWeeklyNext;
+
+  /// Body line of a built-in diary template (Monthly). Placeholders receive template variable tokens.
+  ///
+  /// In en, this message translates to:
+  /// **'{progress} of the year has gone by.'**
+  String diaryTemplateMonthlyProgress(String progress);
+
+  /// Body line of a built-in diary template (Monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'The month in a word'**
+  String get diaryTemplateMonthlyKeyword;
+
+  /// Body line of a built-in diary template (Monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'What mattered'**
+  String get diaryTemplateMonthlyMattered;
+
+  /// Body line of a built-in diary template (Monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'Wins and regrets'**
+  String get diaryTemplateMonthlyWinsRegrets;
+
+  /// Body line of a built-in diary template (Monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get diaryTemplateMonthlyNext;
+
+  /// Body line of a built-in diary template (Emotion).
+  ///
+  /// In en, this message translates to:
+  /// **'What happened'**
+  String get diaryTemplateEmotionHappened;
+
+  /// Body line of a built-in diary template (Emotion).
+  ///
+  /// In en, this message translates to:
+  /// **'What I felt'**
+  String get diaryTemplateEmotionFelt;
+
+  /// Body line of a built-in diary template (Emotion).
+  ///
+  /// In en, this message translates to:
+  /// **'Where it comes from'**
+  String get diaryTemplateEmotionSource;
+
+  /// Body line of a built-in diary template (Emotion).
+  ///
+  /// In en, this message translates to:
+  /// **'What I need'**
+  String get diaryTemplateEmotionNeed;
+
+  /// Body line of a built-in diary template (Emotion).
+  ///
+  /// In en, this message translates to:
+  /// **'One small next step'**
+  String get diaryTemplateEmotionStep;
+
+  /// Body line of a built-in diary template (Dream).
+  ///
+  /// In en, this message translates to:
+  /// **'What happened in the dream'**
+  String get diaryTemplateDreamHappened;
+
+  /// Body line of a built-in diary template (Dream).
+  ///
+  /// In en, this message translates to:
+  /// **'Vivid images'**
+  String get diaryTemplateDreamImages;
+
+  /// Body line of a built-in diary template (Dream).
+  ///
+  /// In en, this message translates to:
+  /// **'How I felt on waking'**
+  String get diaryTemplateDreamWaking;
+
+  /// Body line of a built-in diary template (Travel).
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s route'**
+  String get diaryTemplateTravelRoute;
+
+  /// Body line of a built-in diary template (Travel).
+  ///
+  /// In en, this message translates to:
+  /// **'What I saw'**
+  String get diaryTemplateTravelSights;
+
+  /// Body line of a built-in diary template (Travel).
+  ///
+  /// In en, this message translates to:
+  /// **'What I ate'**
+  String get diaryTemplateTravelFood;
+
+  /// Body line of a built-in diary template (Travel).
+  ///
+  /// In en, this message translates to:
+  /// **'Notes from the road'**
+  String get diaryTemplateTravelNotes;
+
+  /// Body line of a built-in diary template (Reading).
+  ///
+  /// In en, this message translates to:
+  /// **'Book: '**
+  String get diaryTemplateReadingBook;
+
+  /// Body line of a built-in diary template (Reading).
+  ///
+  /// In en, this message translates to:
+  /// **'Author: '**
+  String get diaryTemplateReadingAuthor;
+
+  /// Body line of a built-in diary template (Reading).
+  ///
+  /// In en, this message translates to:
+  /// **'Read up to: '**
+  String get diaryTemplateReadingProgress;
+
+  /// Body line of a built-in diary template (Reading).
+  ///
+  /// In en, this message translates to:
+  /// **'Quotes'**
+  String get diaryTemplateReadingQuotes;
+
+  /// Body line of a built-in diary template (Reading).
+  ///
+  /// In en, this message translates to:
+  /// **'My thoughts'**
+  String get diaryTemplateReadingThoughts;
+
+  /// Body line of a built-in diary template (Movie).
+  ///
+  /// In en, this message translates to:
+  /// **'Title: '**
+  String get diaryTemplateMovieFilm;
+
+  /// Body line of a built-in diary template (Movie).
+  ///
+  /// In en, this message translates to:
+  /// **'Rating:   / 10'**
+  String get diaryTemplateMovieRating;
+
+  /// Body line of a built-in diary template (Movie).
+  ///
+  /// In en, this message translates to:
+  /// **'The story in one line'**
+  String get diaryTemplateMovieStory;
+
+  /// Body line of a built-in diary template (Movie).
+  ///
+  /// In en, this message translates to:
+  /// **'What moved me'**
+  String get diaryTemplateMovieMoved;
+
+  /// Body line of a built-in diary template (Movie).
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite lines'**
+  String get diaryTemplateMovieLines;
+
+  /// Body line of a built-in diary template (Workout).
+  ///
+  /// In en, this message translates to:
+  /// **'Activity: '**
+  String get diaryTemplateWorkoutActivity;
+
+  /// Body line of a built-in diary template (Workout).
+  ///
+  /// In en, this message translates to:
+  /// **'Duration: '**
+  String get diaryTemplateWorkoutDuration;
+
+  /// Body line of a built-in diary template (Workout).
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s training'**
+  String get diaryTemplateWorkoutTraining;
+
+  /// Body line of a built-in diary template (Workout).
+  ///
+  /// In en, this message translates to:
+  /// **'How my body feels'**
+  String get diaryTemplateWorkoutBody;
+
+  /// Body line of a built-in diary template (Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Done today'**
+  String get diaryTemplateWorkDone;
+
+  /// Body line of a built-in diary template (Work).
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get diaryTemplateWorkInProgress;
+
+  /// Body line of a built-in diary template (Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Blockers'**
+  String get diaryTemplateWorkBlockers;
+
+  /// Body line of a built-in diary template (Work).
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get diaryTemplateWorkTomorrow;
+
+  /// Body line of a built-in diary template (Letter).
+  ///
+  /// In en, this message translates to:
+  /// **'Dear me, a year from now,'**
+  String get diaryTemplateLetterGreeting;
+
+  /// Body line of a built-in diary template (Letter).
+  ///
+  /// In en, this message translates to:
+  /// **'Who I am now'**
+  String get diaryTemplateLetterNow;
+
+  /// Body line of a built-in diary template (Letter).
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on my mind lately'**
+  String get diaryTemplateLetterMind;
+
+  /// Body line of a built-in diary template (Letter).
+  ///
+  /// In en, this message translates to:
+  /// **'What I hope for you'**
+  String get diaryTemplateLetterHope;
+
+  /// Body line of a built-in diary template (Letter). Placeholders receive template variable tokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Written on {date}'**
+  String diaryTemplateLetterSignature(String date, String lunar);
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Gratitude'**
+  String get diaryTemplateTagGratitude;
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Dreams'**
+  String get diaryTemplateTagDream;
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get diaryTemplateTagTravel;
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get diaryTemplateTagReading;
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Movies'**
+  String get diaryTemplateTagMovie;
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get diaryTemplateTagWorkout;
+
+  /// Tag name preset by a built-in diary template (created when missing).
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get diaryTemplateTagWork;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What small thing made you smile today?'**
+  String get diaryTemplateQuestion01;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'If you could redo today, what would you change?'**
+  String get diaryTemplateQuestion02;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'When did you last feel proud of yourself?'**
+  String get diaryTemplateQuestion03;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Who would you most like to say something to right now?'**
+  String get diaryTemplateQuestion04;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What is one new thing you learned today?'**
+  String get diaryTemplateQuestion05;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What has been weighing on your mind lately?'**
+  String get diaryTemplateQuestion06;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What does your ideal weekend look like?'**
+  String get diaryTemplateQuestion07;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Was there a moment today when you felt understood?'**
+  String get diaryTemplateQuestion08;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you reading, watching or listening to lately, and what does it give you?'**
+  String get diaryTemplateQuestion09;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you need rest, company or a challenge right now?'**
+  String get diaryTemplateQuestion10;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What were you worried about a year ago today? And now?'**
+  String get diaryTemplateQuestion11;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you do for yourself today?'**
+  String get diaryTemplateQuestion12;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What made you laugh out loud recently?'**
+  String get diaryTemplateQuestion13;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Which habit would you like to start or let go of?'**
+  String get diaryTemplateQuestion14;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe yourself today in three words.'**
+  String get diaryTemplateQuestion15;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What was the hardest part of today, and how did you handle it?'**
+  String get diaryTemplateQuestion16;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Who are you grateful for lately, and why?'**
+  String get diaryTemplateQuestion17;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'If you could do only one thing tomorrow, what would it be?'**
+  String get diaryTemplateQuestion18;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What changed your mind about something recently?'**
+  String get diaryTemplateQuestion19;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What does today\'s weather remind you of?'**
+  String get diaryTemplateQuestion20;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'When did you last step out of your comfort zone?'**
+  String get diaryTemplateQuestion21;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'How will you see today\'s worries ten years from now?'**
+  String get diaryTemplateQuestion22;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Did anything someone said today stay with you?'**
+  String get diaryTemplateQuestion23;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Where have you felt most at peace lately?'**
+  String get diaryTemplateQuestion24;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you tell your younger self?'**
+  String get diaryTemplateQuestion25;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you know yourself a little better than yesterday?'**
+  String get diaryTemplateQuestion26;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What small progress is worth celebrating lately?'**
+  String get diaryTemplateQuestion27;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'What have you wanted to try but haven\'t started? What\'s holding you back?'**
+  String get diaryTemplateQuestion28;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'How did you look after your feelings today?'**
+  String get diaryTemplateQuestion29;
+
+  /// One question in the built-in question bank used by the {{question}} template variable.
+  ///
+  /// In en, this message translates to:
+  /// **'If you rated today from 1 to 10, what would it be, and why?'**
+  String get diaryTemplateQuestion30;
+
+  /// Template variable name inserted between double braces for the diary's date. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'date'**
+  String get diaryTemplateVarDateToken;
+
+  /// Label of the template variable for the diary's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get diaryTemplateVarDateLabel;
+
+  /// Template variable name inserted between double braces for the weekday of the diary's date. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'weekday'**
+  String get diaryTemplateVarWeekdayToken;
+
+  /// Label of the template variable for the weekday of the diary's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekday'**
+  String get diaryTemplateVarWeekdayLabel;
+
+  /// Template variable name inserted between double braces for the current time. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'time'**
+  String get diaryTemplateVarTimeToken;
+
+  /// Label of the template variable for the current time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get diaryTemplateVarTimeLabel;
+
+  /// Template variable name inserted between double braces for the year of the diary's date. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'year'**
+  String get diaryTemplateVarYearToken;
+
+  /// Label of the template variable for the year of the diary's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get diaryTemplateVarYearLabel;
+
+  /// Template variable name inserted between double braces for the month of the diary's date. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get diaryTemplateVarMonthToken;
+
+  /// Label of the template variable for the month of the diary's date.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get diaryTemplateVarMonthLabel;
+
+  /// Template variable name inserted between double braces for the day of the month. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get diaryTemplateVarDayToken;
+
+  /// Label of the template variable for the day of the month.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get diaryTemplateVarDayLabel;
+
+  /// Template variable name inserted between double braces for the ISO week number. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'week'**
+  String get diaryTemplateVarWeekToken;
+
+  /// Label of the template variable for the ISO week number.
+  ///
+  /// In en, this message translates to:
+  /// **'Week number'**
+  String get diaryTemplateVarWeekLabel;
+
+  /// Template variable name inserted between double braces for which day of the year it is. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'dayOfYear'**
+  String get diaryTemplateVarDayOfYearToken;
+
+  /// Label of the template variable for which day of the year it is.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of the year'**
+  String get diaryTemplateVarDayOfYearLabel;
+
+  /// Template variable name inserted between double braces for how much of the year has passed, as a percentage. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'yearProgress'**
+  String get diaryTemplateVarYearProgressToken;
+
+  /// Label of the template variable for how much of the year has passed, as a percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'Year progress'**
+  String get diaryTemplateVarYearProgressLabel;
+
+  /// Template variable name inserted between double braces for the Chinese lunar date. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'lunar'**
+  String get diaryTemplateVarLunarToken;
+
+  /// Label of the template variable for the Chinese lunar date.
+  ///
+  /// In en, this message translates to:
+  /// **'Lunar date'**
+  String get diaryTemplateVarLunarLabel;
+
+  /// Template variable name inserted between double braces for the current solar term. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'solarTerm'**
+  String get diaryTemplateVarSolarTermToken;
+
+  /// Label of the template variable for the current solar term.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar term'**
+  String get diaryTemplateVarSolarTermLabel;
+
+  /// Template variable name inserted between double braces for a question from the built-in question bank. Must be one of the aliases the app recognises.
+  ///
+  /// In en, this message translates to:
+  /// **'question'**
+  String get diaryTemplateVarQuestionToken;
+
+  /// Label of the template variable for a question from the built-in question bank.
+  ///
+  /// In en, this message translates to:
+  /// **'Question of the day'**
+  String get diaryTemplateVarQuestionLabel;
+
+  /// Diary template category, used as a filter in the template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get diaryTemplateCategoryDaily;
+
+  /// Diary template category, used as a filter in the template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get diaryTemplateCategoryReview;
+
+  /// Diary template category, used as a filter in the template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Feelings'**
+  String get diaryTemplateCategoryMood;
+
+  /// Diary template category, used as a filter in the template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Life'**
+  String get diaryTemplateCategoryLife;
+
+  /// Diary template category, used as a filter in the template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get diaryTemplateCategoryWork;
+
+  /// Diary template category, used as a filter in the template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get diaryTemplateCategoryOther;
+
+  /// Header of the template suggestion strip under the title of a blank new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a template'**
+  String get diaryTemplateStripTitle;
+
+  /// Template suggestion strip: open the full template picker.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get diaryTemplateStripAll;
+
+  /// Tooltip of the close button on the template suggestion strip (hides it for this entry).
+  ///
+  /// In en, this message translates to:
+  /// **'Hide template suggestions'**
+  String get diaryTemplateStripDismiss;
+
+  /// Small badge on a template recommended for the current time or date.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get diaryTemplateRecommended;
+
+  /// Shown for a user template without a name.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled template'**
+  String get diaryTemplateUntitled;
+
+  /// Snackbar after applying a template to a new entry, with an Undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'Applied “{name}”'**
+  String diaryTemplateApplied(String name);
+
+  /// Snackbar when a new entry opens with the auto-apply template already applied, with an Undo action.
+  ///
+  /// In en, this message translates to:
+  /// **'Started with “{name}”'**
+  String diaryTemplateAutoApplied(String name);
+
+  /// Title of the template picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a template'**
+  String get diaryTemplatePickerTitle;
+
+  /// Template picker filter: every template.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get diaryTemplateFilterAll;
+
+  /// Template picker filter: templates recommended right now.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested'**
+  String get diaryTemplateFilterRecommended;
+
+  /// Template picker filter: the user's own templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Mine'**
+  String get diaryTemplateFilterMine;
+
+  /// Template picker: the selected filter has no templates.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates here'**
+  String get diaryTemplatePickerEmpty;
+
+  /// Template picker preview: apply the previewed template.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this template'**
+  String get diaryTemplatePickerUse;
+
+  /// Template picker preview: pick another question for the question-of-the-day variable.
+  ///
+  /// In en, this message translates to:
+  /// **'Another question'**
+  String get diaryTemplatePickerShuffle;
+
+  /// Hint above the template preview explaining that variables are already resolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates and questions are filled in for this entry.'**
+  String get diaryTemplatePickerPreviewHint;
+
+  /// Preset summary chip: the template seals the entry as a time capsule; the placeholder is the duration such as “One year”.
+  ///
+  /// In en, this message translates to:
+  /// **'Time capsule: {when}'**
+  String diaryTemplatePresetCapsule(String when);
+
+  /// Preset summary chip: the energy level the template sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy {level}/5'**
+  String diaryTemplatePresetEnergy(int level);
+
+  /// Small badge on a built-in template the user has hidden from the picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get diaryTemplateHiddenBadge;
+
+  /// Draft picker: choose a template and start a new entry with it.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from a template'**
+  String get diaryDraftPickerFromTemplate;
+
+  /// Title of the diary template management page and its settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary templates'**
+  String get diaryTemplatesTitle;
+
+  /// Subtitle of the diary templates entry in editor settings.
+  ///
+  /// In en, this message translates to:
+  /// **'{builtIn} built-in · {mine} of your own'**
+  String diaryTemplatesSettingsSubtitle(int builtIn, int mine);
+
+  /// Group title on the template page for how templates appear when starting an entry.
+  ///
+  /// In en, this message translates to:
+  /// **'New entries'**
+  String get diaryTemplatesNewEntryGroup;
+
+  /// Switch: show the template suggestion strip in blank new entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest templates'**
+  String get diaryTemplatesStripSwitch;
+
+  /// Subtitle of the suggestion strip switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show suggestions under the title of a blank entry'**
+  String get diaryTemplatesStripSwitchSubtitle;
+
+  /// Setting: a template applied to every blank new entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply automatically'**
+  String get diaryTemplatesAutoApply;
+
+  /// Auto-apply setting value when no template is chosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get diaryTemplatesAutoApplyNone;
+
+  /// Explanation at the top of the auto-apply picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Every blank new entry starts with this template. You can undo it each time.'**
+  String get diaryTemplatesAutoApplyHint;
+
+  /// Group title: the user's own templates.
+  ///
+  /// In en, this message translates to:
+  /// **'My templates'**
+  String get diaryTemplatesMineGroup;
+
+  /// Group title: templates that come with the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Built-in templates'**
+  String get diaryTemplatesBuiltInGroup;
+
+  /// Empty state of the user's template list.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates of your own yet. Create one with +, or copy a built-in one and change it.'**
+  String get diaryTemplatesMineEmpty;
+
+  /// Tooltip of the button that creates a template.
+  ///
+  /// In en, this message translates to:
+  /// **'New template'**
+  String get diaryTemplatesNew;
+
+  /// Tooltip of the button that imports a template code from the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a template code'**
+  String get diaryTemplatesImport;
+
+  /// Tooltip of a template row's menu button.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get diaryTemplatesMoreActions;
+
+  /// Accessibility label of the drag handle on a template row.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get diaryTemplatesDragHandle;
+
+  /// Menu action: make a copy of the user's template.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get diaryTemplatesDuplicate;
+
+  /// Action on a built-in template: copy it into the user's templates so it can be edited.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to my templates'**
+  String get diaryTemplatesCopyToMine;
+
+  /// Menu action: copy the template as a shareable code.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy template code'**
+  String get diaryTemplatesCopyCode;
+
+  /// Menu action: hide a built-in template from the picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get diaryTemplatesHide;
+
+  /// Menu action: show a hidden built-in template again.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get diaryTemplatesShow;
+
+  /// Name given to a duplicated template.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} copy'**
+  String diaryTemplatesCopyName(String name);
+
+  /// Snackbar after deleting a template, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted “{name}”'**
+  String diaryTemplatesDeleted(String name);
+
+  /// Snackbar after hiding a built-in template, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Hid “{name}”'**
+  String diaryTemplatesHiddenDone(String name);
+
+  /// Snackbar after copying a template code.
+  ///
+  /// In en, this message translates to:
+  /// **'Template code copied'**
+  String get diaryTemplatesCodeCopied;
+
+  /// Snackbar when a template is too long to fit in a template code.
+  ///
+  /// In en, this message translates to:
+  /// **'This template is too long for a template code'**
+  String get diaryTemplatesCodeTooLong;
+
+  /// Snackbar when importing finds an empty clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'No template code in the clipboard'**
+  String get diaryTemplatesImportEmpty;
+
+  /// Snackbar when the clipboard holds no valid template code.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s not a valid template code'**
+  String get diaryTemplatesImportInvalid;
+
+  /// Snackbar after importing a template code, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported “{name}”'**
+  String diaryTemplatesImported(String name);
+
+  /// Snackbar after importing a code made by a newer app version, with Undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported “{name}”. It comes from a newer version, so some settings may not apply.'**
+  String diaryTemplatesImportedNewer(String name);
+
+  /// Snackbar when writing a template fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save the template. Try again'**
+  String get diaryTemplatesSaveFailed;
+
+  /// Title of the template editor for a new template.
+  ///
+  /// In en, this message translates to:
+  /// **'New template'**
+  String get diaryTemplateEditorNewTitle;
+
+  /// Title of the template editor for an existing template.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit template'**
+  String get diaryTemplateEditorEditTitle;
+
+  /// Template editor tab: title and body.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get diaryTemplateEditorTabContent;
+
+  /// Template editor tab: name, look, presets and suggestions.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get diaryTemplateEditorTabSettings;
+
+  /// Hint of the template's title field.
+  ///
+  /// In en, this message translates to:
+  /// **'Title (variables allowed)'**
+  String get diaryTemplateEditorTitleHint;
+
+  /// Hint of the template's empty body.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the body. Headings, lists and to-dos are kept.'**
+  String get diaryTemplateEditorBodyHint;
+
+  /// Button that opens the full list of template variables.
+  ///
+  /// In en, this message translates to:
+  /// **'All variables'**
+  String get diaryTemplateEditorAllVariables;
+
+  /// Title of the template variable sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert a variable'**
+  String get diaryTemplateEditorVariablesTitle;
+
+  /// Explanation in the template variable sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Variables are filled in from the entry\'s date when the template is applied. Lunar dates and solar terms use Chinese names.'**
+  String get diaryTemplateEditorVariablesHint;
+
+  /// Example value of a template variable, computed for today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {example}'**
+  String diaryTemplateEditorVariableExample(String example);
+
+  /// Label of the template name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get diaryTemplateEditorName;
+
+  /// Error shown when saving a template without a name.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the template a name'**
+  String get diaryTemplateEditorNameRequired;
+
+  /// Label of the template description field.
+  ///
+  /// In en, this message translates to:
+  /// **'Short description'**
+  String get diaryTemplateEditorDescription;
+
+  /// Group title: category, icon and color of a template.
+  ///
+  /// In en, this message translates to:
+  /// **'Look'**
+  String get diaryTemplateEditorLook;
+
+  /// Label of the template category choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get diaryTemplateEditorCategory;
+
+  /// Label of the template icon choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get diaryTemplateEditorIcon;
+
+  /// Label of the template color choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get diaryTemplateEditorAccent;
+
+  /// Color option: follow the app's theme color.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme color'**
+  String get diaryTemplateEditorAccentTheme;
+
+  /// Group title: tags, mood, energy and time capsule the template sets.
+  ///
+  /// In en, this message translates to:
+  /// **'Also set when applied'**
+  String get diaryTemplateEditorPresets;
+
+  /// Label of the template's preset tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get diaryTemplateEditorTags;
+
+  /// Button that adds a preset tag to the template.
+  ///
+  /// In en, this message translates to:
+  /// **'Add tag'**
+  String get diaryTemplateEditorAddTag;
+
+  /// Option in the tag sheet: type a tag name that doesn't exist yet.
+  ///
+  /// In en, this message translates to:
+  /// **'New tag'**
+  String get diaryTemplateEditorNewTag;
+
+  /// Explanation under the template's preset tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags are matched by name. Missing ones are created when the template is applied.'**
+  String get diaryTemplateEditorTagsHint;
+
+  /// Label of the template's preset mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get diaryTemplateEditorMood;
+
+  /// Option meaning the template doesn't set this value.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get diaryTemplateEditorNone;
+
+  /// Label of the template's preset energy level.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy'**
+  String get diaryTemplateEditorEnergy;
+
+  /// Label of the template's preset time capsule.
+  ///
+  /// In en, this message translates to:
+  /// **'Time capsule'**
+  String get diaryTemplateEditorCapsule;
+
+  /// Explanation under the template's preset time capsule.
+  ///
+  /// In en, this message translates to:
+  /// **'Counted from the day the template is applied; you can still change it before publishing.'**
+  String get diaryTemplateEditorCapsuleHint;
+
+  /// Group title: when the template is suggested first.
+  ///
+  /// In en, this message translates to:
+  /// **'When to suggest'**
+  String get diaryTemplateEditorRecommend;
+
+  /// Explanation of the template's suggestion rules.
+  ///
+  /// In en, this message translates to:
+  /// **'The template moves to the front of the suggestions when every chosen group matches. Within a group, any choice is enough.'**
+  String get diaryTemplateEditorRecommendHint;
+
+  /// Label of the time-of-day suggestion rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Time of day'**
+  String get diaryTemplateEditorSlots;
+
+  /// Label of the weekday suggestion rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Days of the week'**
+  String get diaryTemplateEditorWeekdays;
+
+  /// Label of the month start/end suggestion rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Time of month'**
+  String get diaryTemplateEditorMonth;
+
+  /// Time of day 5:00–10:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning'**
+  String get diaryTemplateSlotMorning;
+
+  /// Time of day 11:00–16:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Afternoon'**
+  String get diaryTemplateSlotAfternoon;
+
+  /// Time of day 17:00–21:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Evening'**
+  String get diaryTemplateSlotEvening;
+
+  /// Time of day 22:00–4:59.
+  ///
+  /// In en, this message translates to:
+  /// **'Late night'**
+  String get diaryTemplateSlotNight;
+
+  /// Month rule: the first three days of a month.
+  ///
+  /// In en, this message translates to:
+  /// **'First 3 days'**
+  String get diaryTemplateMonthStart;
+
+  /// Month rule: the last three days of a month.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 3 days'**
+  String get diaryTemplateMonthEnd;
+
+  /// Action that turns a diary (or the entry being written) into a new template.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as template'**
+  String get diaryTemplateSaveAs;
+
+  /// Hint when saving as a template removed media from the body.
+  ///
+  /// In en, this message translates to:
+  /// **'Images, recordings and other media aren\'t kept in templates'**
+  String get diaryTemplateSaveAsMediaDropped;
+
+  /// Tooltip of the editor's top bar menu (save as template, editor settings).
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get diaryEditorMoreActions;
 }
 
 class _AppLocalizationsDelegate

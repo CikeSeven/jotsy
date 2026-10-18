@@ -196,7 +196,13 @@ void main() {
       createDate: backfillDay,
     );
 
-    await tester.tap(find.text(l10n.diaryDayPhotosShowAll));
+    // 模板建议条也有“全部”，只点照片提示条里的这一个。
+    await tester.tap(
+      find.descendant(
+        of: find.byType(DiaryDayPhotosStrip),
+        matching: find.text(l10n.diaryDayPhotosShowAll),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(DiaryDayPhotosSheet), findsOneWidget);
     final inSheet = find.descendant(

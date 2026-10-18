@@ -82,6 +82,11 @@ class BackupTestFixture {
       contentText: '',
       payload: '{"title":"current draft"}',
     );
+    await database.saveDiaryTemplate(
+      templateId: 'current-template',
+      name: 'current template',
+      payload: '{"name":"current template"}',
+    );
     await database.createAnniversary(
       title: 'current anniversary',
       baseDate: DateTime(2020, 5, 23),
@@ -166,6 +171,9 @@ class BackupTestFixture {
       (await database.select(database.anniversaries).getSingle()).title,
       'current anniversary',
     );
+    final template = await database.select(database.diaryTemplates).getSingle();
+    expect(template.templateId, 'current-template');
+    expect(template.payload, '{"name":"current template"}');
     for (final entry in originalMedia.entries) {
       expect(await File(entry.key).readAsBytes(), entry.value);
     }

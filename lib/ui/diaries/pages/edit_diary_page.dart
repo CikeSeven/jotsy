@@ -42,6 +42,7 @@ import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
@@ -49,7 +50,16 @@ import 'package:node_diary/ui/diaries/widgets/diary_day_photos/diary_day_photos_
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/diary_templates/controllers/diary_template_apply_controller.dart';
+import 'package:node_diary/ui/diary_templates/controllers/diary_template_save_as.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_prefs.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_selection.dart';
+import 'package:node_diary/ui/diary_templates/providers/diary_template_providers.dart';
+import 'package:node_diary/ui/diary_templates/sections/diary_template_picker_sheet.dart';
+import 'package:node_diary/ui/diary_templates/widgets/diary_template_strip.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
+import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_common.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import '../../../app/theme/expressive_motion.dart';
@@ -60,6 +70,7 @@ part '../controllers/edit_diary_controller.dart';
 part '../controllers/edit_diary_persistence_controller.dart';
 part '../controllers/edit_diary_recording_controller.dart';
 part '../controllers/edit_diary_media_controller.dart';
+part '../controllers/edit_diary_template_flow.dart';
 
 /// 日记编辑页。
 ///
@@ -74,6 +85,7 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.createDraftId,
     this.createDateOverride,
     this.createCapsuleUnlockAt,
+    this.createTemplate,
   });
 
   final String? diaryId;
@@ -87,6 +99,10 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   /// “写给这一天的时间胶囊”时传入，发布页打开即为该日解封的胶囊，用户仍可
   /// 在发布页修改或取消。恢复的草稿若自带胶囊设置则以草稿为准。
   final DateTime? createCapsuleUnlockAt;
+
+  /// 新建空白日记时直接套用的模板（新建入口里先在模板面板选好、预览过）。
+  /// 续写草稿时不使用。
+  final DiaryTemplateSelection? createTemplate;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
@@ -138,6 +154,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 新建模式只随草稿带进发布页。新日记默认不记录精力。
   late final DiaryMetaDraftController _meta;
   late final DiaryMetaActions _metaActions;
+  // 新建空白日记时的模板建议条与套用、撤销（见 edit_diary_template_flow）。
+  late final DiaryTemplateApplyController _templates;
   // 已发布日记的发表时间（created_at）：详情回填时取库中原值，面板改选后随
   // 自动保存写回。新建模式不用它，发表时间经 _createDateOverride 交给发布页。
   DateTime? _draftPublishAt;
@@ -207,6 +225,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
     _meta.addListener(_onMetaChanged);
     _metaActions = DiaryMetaActions(ref, draft: _meta, isBusy: () => _saving);
+    // 先于业务控制器创建：草稿自动保存读快照时要经它判断“原样未动”。
+    _templates = DiaryTemplateApplyController(
+      enabled: _isCreateEntry && widget.createDraftId == null,
+      port: _EditDiaryTemplatePort(this),
+      database: _database,
+      onUsed: (templateId) async {
+        final settings = await ref.read(settingsServiceProvider.future);
+        await recordDiaryTemplateUse(settings, templateId);
+      },
+    );
     _contentController = quill.QuillController(
       document: documentFromPlainText(''),
       selection: const TextSelection.collapsed(offset: 0),
@@ -252,6 +280,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _titleController.dispose();
     _meta.removeListener(_onMetaChanged);
     _metaActions.dispose();
+    _templates.dispose();
     _meta.dispose();
     _caretFollow.dispose();
     _titleFocusNode.dispose();
@@ -295,6 +324,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   /// 当前正文 Delta JSON（用于富文本持久化）。
   String get _currentContentDocJson =>
       encodeDiaryDocumentToJson(_contentController.document);
+
+  /// 模板变量按哪天展开、推荐按哪天判断：补写时是那一天，否则是今天。
+  DateTime get _templateDiaryDate => _createDateOverride ?? DateTime.now();
 
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
@@ -539,6 +571,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
             if (_isCreateEntry)
               IgnorePointer(
                 ignoring: contentLocked,
+                child: DiaryTemplateStrip(
+                  controller: _templates,
+                  diaryDate: _templateDiaryDate,
+                  busy:
+                      _saving ||
+                      _recordingPanelOpen ||
+                      _mediaImportController.isBusy,
+                  onApply: (template) =>
+                      unawaited(_controller.applyTemplateFromStrip(template)),
+                  onOpenAll: () => unawaited(_controller.openTemplatePicker()),
+                ),
+              ),
+            if (_isCreateEntry)
+              IgnorePointer(
+                ignoring: contentLocked,
                 child: DiaryDayPhotosStrip(
                   controller: _dayPhotos,
                   busy:
@@ -693,18 +740,32 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   : context.l10n.autoT0135,
             ),
             actions: <Widget>[
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return const EditorSettingsPage();
-                      },
+              PopupMenuButton<_EditorMenuAction>(
+                tooltip: context.l10n.diaryEditorMoreActions,
+                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+                onSelected: (action) => switch (action) {
+                  _EditorMenuAction.saveAsTemplate => unawaited(
+                    _controller.saveAsTemplate(),
+                  ),
+                  _EditorMenuAction.editorSettings =>
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (BuildContext context) =>
+                            const EditorSettingsPage(),
+                      ),
                     ),
-                  );
                 },
-                icon: const FaIcon(FontAwesomeIcons.gear, size: 16),
-                tooltip: context.l10n.settingsEditorTitle,
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<_EditorMenuAction>>[
+                      PopupMenuItem<_EditorMenuAction>(
+                        value: _EditorMenuAction.saveAsTemplate,
+                        child: Text(context.l10n.diaryTemplateSaveAs),
+                      ),
+                      PopupMenuItem<_EditorMenuAction>(
+                        value: _EditorMenuAction.editorSettings,
+                        child: Text(context.l10n.settingsEditorTitle),
+                      ),
+                    ],
               ),
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
@@ -768,29 +829,17 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Material(
-                                color: Theme.of(context).colorScheme.surface,
-                                elevation: 8,
-                                borderRadius: BorderRadius.circular(18),
-                                clipBehavior: Clip.antiAlias,
-                                child: MediaQuery(
-                                  data: MediaQuery.of(
-                                    context,
-                                  ).copyWith(textScaler: TextScaler.noScaling),
-                                  child: IconTheme(
-                                    data: const IconThemeData(size: 16),
-                                    child: _buildFloatingToolbar(
-                                      enabledToolbarOrder,
-                                      // 面板最多铺满工具栏上方的整块正文区，
-                                      // 极矮的窗口里改为面板内滚动而不溢出。
-                                      maxPanelExtent:
-                                          constraints.maxHeight -
-                                          MediaQuery.paddingOf(
-                                            context,
-                                          ).bottom.clamp(8.0, double.infinity) -
-                                          kDiaryToolbarBarHeight,
-                                    ),
-                                  ),
+                              DiaryFloatingToolbarSurface(
+                                child: _buildFloatingToolbar(
+                                  enabledToolbarOrder,
+                                  // 面板最多铺满工具栏上方的整块正文区，
+                                  // 极矮的窗口里改为面板内滚动而不溢出。
+                                  maxPanelExtent:
+                                      constraints.maxHeight -
+                                      MediaQuery.paddingOf(
+                                        context,
+                                      ).bottom.clamp(8.0, double.infinity) -
+                                      kDiaryToolbarBarHeight,
                                 ),
                               ),
                               if (_recordingPanelOpen) ...[
@@ -1025,3 +1074,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 }
 
 enum EditDiaryEntryMode { create, edit }
+
+/// 顶栏菜单：存为模板、编辑器设置。
+enum _EditorMenuAction { saveAsTemplate, editorSettings }

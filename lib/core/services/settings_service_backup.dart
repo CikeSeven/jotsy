@@ -19,6 +19,7 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyCalendarDisplayOptions,
       SettingsService._keyDiaryCardStyle,
       SettingsService._keyDiaryPreviewStyle,
+      SettingsService._keyDiaryTemplatePrefs,
       SettingsService._keyDiaryShareOptions,
       SettingsService._keyDiaryExportOptions,
       SettingsService._keyTagOrder,
@@ -48,6 +49,7 @@ extension SettingsServiceBackup on SettingsService {
         _notifierRollback(calendarDisplayOptionsRawNotifier),
         _notifierRollback(diaryCardStyleRawNotifier),
         _notifierRollback(diaryPreviewStyleRawNotifier),
+        _notifierRollback(diaryTemplatePrefsRawNotifier),
       ],
     );
   }

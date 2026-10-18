@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -9,7 +11,7 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../diaries/pages/diary_preview_page.dart';
 import '../../diaries/pages/diary_search_page.dart';
-import '../../diaries/pages/edit_diary_page.dart';
+import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../widgets/page_header.dart';
 import '../controllers/explore_page_controller.dart';
 import '../models/explore_view_data.dart';
@@ -210,13 +212,9 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     );
   }
 
+  /// 与首页 FAB 同一条新建流程：有草稿时先弹草稿选择面板。
   void _openCreateToday(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
-      ),
-    );
+    unawaited(runDiaryCreateEntryFlow(context, ref));
   }
 
   /// 从探索页标签云进入搜索页，并自动注入标签条件。

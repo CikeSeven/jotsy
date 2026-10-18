@@ -11,7 +11,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_export_flow.dart';
 import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/diary_search_page.dart';
-import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
@@ -697,5 +697,3 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onFabVisibilityChanged?.call(visible);
   }
 }
-
-enum _CreateDraftDecision { newEmpty, continueEditing }

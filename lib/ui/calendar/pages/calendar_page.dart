@@ -27,7 +27,7 @@ import '../../anniversaries/viewmodels/anniversary_calendar_index.dart';
 import '../../diaries/providers/diary_card_style_provider.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/pages/diary_preview_page.dart';
-import '../../diaries/pages/edit_diary_page.dart';
+import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../../utils/text_stats.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../models/calendar_display_options.dart';
@@ -378,5 +378,3 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     }
   }
 }
-
-enum _CalendarCreateDraftDecision { newEmpty, continueEditing }

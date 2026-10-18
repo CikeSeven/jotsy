@@ -9,7 +9,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
-import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
@@ -391,13 +391,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       return;
     }
 
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          return const EditDiaryPage(entryMode: EditDiaryEntryMode.create);
-        },
-      ),
-    );
+    // 日记页尚未注册入口（如首帧之前）：走同一条新建流程，不绕过草稿面板。
+    await runDiaryCreateEntryFlow(context, ref);
   }
 
   Widget _buildGlobalCreateFab() {

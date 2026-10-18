@@ -1814,24 +1814,6 @@ abstract class AppLocalizations {
   /// **'Archived diary restored'**
   String get autoT0080;
 
-  /// Auto-generated metadata for autoT0081.
-  ///
-  /// In en, this message translates to:
-  /// **'Unsaved draft found'**
-  String get autoT0081;
-
-  /// Auto-generated metadata for autoT0082.
-  ///
-  /// In en, this message translates to:
-  /// **'New empty note'**
-  String get autoT0082;
-
-  /// Auto-generated metadata for autoT0083.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue editing'**
-  String get autoT0083;
-
   /// Auto-generated metadata for autoT0084.
   ///
   /// In en, this message translates to:
@@ -2516,12 +2498,6 @@ abstract class AppLocalizations {
   /// **'Unarchived {p0} diaries'**
   String autoT0201(String p0);
 
-  /// Auto-generated metadata for autoT0202.
-  ///
-  /// In en, this message translates to:
-  /// **'An unfinished diary was found. Continue editing?'**
-  String get autoT0202;
-
   /// Auto-generated metadata for autoT0203.
   ///
   /// In en, this message translates to:
@@ -2557,12 +2533,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Header style (tap to cycle)'**
   String get autoT0208;
-
-  /// Auto-generated metadata for autoT0209.
-  ///
-  /// In en, this message translates to:
-  /// **'An unfinished diary draft was found. Continue editing?'**
-  String get autoT0209;
 
   /// Auto-generated metadata for autoT0210.
   ///
@@ -9307,6 +9277,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Full'**
   String get diaryPreviewStyleLongImageFull;
+
+  /// Title of the drafts page; also the entry name in the home header and settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Drafts'**
+  String get diaryDraftsTitle;
+
+  /// Subtitle of the drafts entry in Settings → Data & privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpublished entries you can keep writing or delete'**
+  String get diaryDraftsSettingsSubtitle;
+
+  /// Empty state of the drafts page.
+  ///
+  /// In en, this message translates to:
+  /// **'No drafts yet. New entries you leave before publishing are kept here'**
+  String get diaryDraftsEmpty;
+
+  /// Draft row footer: last edit time and word count (formatted number).
+  ///
+  /// In en, this message translates to:
+  /// **'Edited {time} · {words} words'**
+  String diaryDraftEditedAt(String time, String words);
+
+  /// Snackbar after swiping a draft away (with undo).
+  ///
+  /// In en, this message translates to:
+  /// **'Draft deleted'**
+  String get diaryDraftDeleted;
+
+  /// Snackbar after deleting selected drafts (with undo).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Deleted 1 draft} other{Deleted {count} drafts}}'**
+  String diaryDraftsDeleted(int count);
+
+  /// Title of the confirm dialog for deleting selected drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete drafts'**
+  String get diaryDraftsDeleteTitle;
+
+  /// Body of the confirm dialog for deleting selected drafts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete the selected draft?} other{Delete the {count} selected drafts?}}'**
+  String diaryDraftsDeleteMessage(int count);
+
+  /// Snackbar when deleting drafts fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete the drafts. Try again'**
+  String get diaryDraftsDeleteFailed;
+
+  /// Snackbar when restoring deleted drafts fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t undo. Try again'**
+  String get diaryDraftsRestoreFailed;
+
+  /// Title of the sheet shown on “New” when drafts exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue a draft'**
+  String get diaryDraftPickerTitle;
+
+  /// Draft picker: open the drafts page; the number is the total count.
+  ///
+  /// In en, this message translates to:
+  /// **'View all drafts ({count})'**
+  String diaryDraftPickerViewAll(int count);
+
+  /// Draft picker: start a blank entry instead (drafts stay in the drafts box).
+  ///
+  /// In en, this message translates to:
+  /// **'New blank entry'**
+  String get diaryDraftPickerNewBlank;
 }
 
 class _AppLocalizationsDelegate

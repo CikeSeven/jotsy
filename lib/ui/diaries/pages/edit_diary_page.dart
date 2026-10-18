@@ -42,6 +42,7 @@ import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
@@ -768,29 +769,17 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Material(
-                                color: Theme.of(context).colorScheme.surface,
-                                elevation: 8,
-                                borderRadius: BorderRadius.circular(18),
-                                clipBehavior: Clip.antiAlias,
-                                child: MediaQuery(
-                                  data: MediaQuery.of(
-                                    context,
-                                  ).copyWith(textScaler: TextScaler.noScaling),
-                                  child: IconTheme(
-                                    data: const IconThemeData(size: 16),
-                                    child: _buildFloatingToolbar(
-                                      enabledToolbarOrder,
-                                      // 面板最多铺满工具栏上方的整块正文区，
-                                      // 极矮的窗口里改为面板内滚动而不溢出。
-                                      maxPanelExtent:
-                                          constraints.maxHeight -
-                                          MediaQuery.paddingOf(
-                                            context,
-                                          ).bottom.clamp(8.0, double.infinity) -
-                                          kDiaryToolbarBarHeight,
-                                    ),
-                                  ),
+                              DiaryFloatingToolbarSurface(
+                                child: _buildFloatingToolbar(
+                                  enabledToolbarOrder,
+                                  // 面板最多铺满工具栏上方的整块正文区，
+                                  // 极矮的窗口里改为面板内滚动而不溢出。
+                                  maxPanelExtent:
+                                      constraints.maxHeight -
+                                      MediaQuery.paddingOf(
+                                        context,
+                                      ).bottom.clamp(8.0, double.infinity) -
+                                      kDiaryToolbarBarHeight,
                                 ),
                               ),
                               if (_recordingPanelOpen) ...[

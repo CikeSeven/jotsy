@@ -5343,7 +5343,7 @@
   "@diaryPreviewStyleShowEditButton": {
     "description": "Diary preview style settings: switch for a top bar button."
   },
-  "diaryPreviewStyleShowShareButton": "Share image button",
+  "diaryPreviewStyleShowShareButton": "Share button",
   "@diaryPreviewStyleShowShareButton": {
     "description": "Diary preview style settings: switch for a top bar button."
   },

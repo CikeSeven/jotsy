@@ -3755,7 +3755,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryPreviewStyleShowEditButton => '编辑按钮';
 
   @override
-  String get diaryPreviewStyleShowShareButton => '分享图片按钮';
+  String get diaryPreviewStyleShowShareButton => '分享按钮';
 
   @override
   String get diaryPreviewStyleReadingGroup => '阅读辅助';

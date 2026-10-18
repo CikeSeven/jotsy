@@ -5343,7 +5343,7 @@
   "@diaryPreviewStyleShowEditButton": {
     "description": "预览页样式设置：开关：顶栏按钮。"
   },
-  "diaryPreviewStyleShowShareButton": "分享图片按钮",
+  "diaryPreviewStyleShowShareButton": "分享按钮",
   "@diaryPreviewStyleShowShareButton": {
     "description": "预览页样式设置：开关：顶栏按钮。"
   },

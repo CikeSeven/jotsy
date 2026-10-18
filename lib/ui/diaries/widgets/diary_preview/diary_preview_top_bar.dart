@@ -96,7 +96,7 @@ class DiaryPreviewTopBar extends StatelessWidget {
           ),
         if (style.showShareButton)
           IconButton(
-            tooltip: context.l10n.autoT0114,
+            tooltip: context.l10n.previewShare,
             onPressed: onShare,
             icon: const FaIcon(FontAwesomeIcons.shareFromSquare, size: 16),
           ),

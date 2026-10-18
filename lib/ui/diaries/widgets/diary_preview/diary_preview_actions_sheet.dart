@@ -28,18 +28,13 @@ Future<void> showDiaryPreviewMore(
   final settings = ref.read(settingsServiceProvider).asData?.value;
   return showDiaryPreviewActionsSheet(
     context,
-    onShare: () async {
-      final service = await ref.read(settingsServiceProvider.future);
-      if (!context.mounted) {
-        return;
-      }
-      await export.openShareSheet(
-        context,
-        detail: detail,
-        settings: service,
-        background: background,
-      );
-    },
+    onShare: () => openDiaryPreviewShare(
+      context,
+      ref,
+      export: export,
+      detail: detail,
+      background: background,
+    ),
     onExport: () => export.exportDiary(context, ref, detail: detail),
     onSetAsAnniversary: () => openAnniversaryEditor(
       context,
@@ -71,10 +66,32 @@ Future<void> showDiaryPreviewMore(
   );
 }
 
+/// 预览页的分享入口：顶栏分享按钮与“更多 → 分享”共用，打开同一个分享
+/// 面板（指定应用、系统分享、复制文字与长图，见
+/// `DiaryPreviewExportController.openShareSheet`）。[background] 为长图底色。
+Future<void> openDiaryPreviewShare(
+  BuildContext context,
+  WidgetRef ref, {
+  required DiaryPreviewExportController export,
+  required DiaryWithTags detail,
+  required Color background,
+}) async {
+  final service = await ref.read(settingsServiceProvider.future);
+  if (!context.mounted) {
+    return;
+  }
+  await export.openShareSheet(
+    context,
+    detail: detail,
+    settings: service,
+    background: background,
+  );
+}
+
 /// 预览页“更多”面板：分享、导出、设为纪念日、存为模板、页面样式与删除。
 ///
-/// 每一项先关闭面板，再执行对应动作（长图截图要等面板完全退场，见
-/// `DiaryPreviewExportController.shareLongImage`）。
+/// 每一项先关闭面板，再执行对应动作（分享面板里选了长图时，截图要等面板
+/// 完全退场，见 `DiaryPreviewExportController.openShareSheet`）。
 Future<void> showDiaryPreviewActionsSheet(
   BuildContext context, {
   required Future<void> Function() onShare,

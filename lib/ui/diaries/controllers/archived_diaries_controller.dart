@@ -96,6 +96,7 @@ class ArchivedDiariesController {
       snackBar: SnackBar(
         content: Text(message),
         duration: duration,
+        persist: false,
         action: SnackBarAction(
           label: _state.context.l10n.commonUndo,
           onPressed: () {
@@ -103,7 +104,6 @@ class ArchivedDiariesController {
           },
         ),
       ),
-      forceCloseAfter: duration,
     );
 
     return undoRequested || closedReason == SnackBarClosedReason.action;

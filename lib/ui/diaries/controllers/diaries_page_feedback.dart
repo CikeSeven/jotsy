@@ -63,17 +63,15 @@ class DiariesPageFeedback {
   /// build 读取，却会在每次提示出现/关闭时重建标签栏与所有可见卡片。
   Future<SnackBarClosedReason> showTrackedSnackBar({
     required SnackBar snackBar,
-    Duration? forceCloseAfter,
   }) {
     return HomeHintVisibilityScope.showTrackedSnackBar(
       context: _state.context,
       snackBar: snackBar,
-      forceCloseAfter: forceCloseAfter,
     );
   }
 
-  /// 统一展示“可撤销”提示，并在无障碍场景下强制到时关闭。
-  /// 撤销型提示条，返回值表示用户是否触发了撤销动作。
+  /// 撤销型提示条，返回值表示用户是否触发了撤销动作；`persist: false` 让它
+  /// 到时关闭（无障碍场景也一样）。
   Future<bool> showUndoSnackBar({
     required String message,
     required Duration duration,
@@ -83,6 +81,7 @@ class DiariesPageFeedback {
       snackBar: SnackBar(
         content: Text(message),
         duration: duration,
+        persist: false,
         action: SnackBarAction(
           label: _state.context.l10n.commonUndo,
           onPressed: () {
@@ -90,7 +89,6 @@ class DiariesPageFeedback {
           },
         ),
       ),
-      forceCloseAfter: duration,
     );
 
     return undoRequested || closedReason == SnackBarClosedReason.action;

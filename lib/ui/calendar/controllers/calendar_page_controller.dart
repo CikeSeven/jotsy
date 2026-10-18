@@ -269,6 +269,7 @@ class _CalendarPageController {
       snackBar: SnackBar(
         content: Text(l10n.autoT0075),
         duration: const Duration(seconds: 4),
+        persist: false,
         action: SnackBarAction(label: l10n.commonUndo, onPressed: () {}),
       ),
     );

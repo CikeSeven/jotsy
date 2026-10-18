@@ -201,12 +201,12 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
       snackBar: SnackBar(
         content: Text(message),
         duration: _undoSnackDuration,
+        persist: false,
         action: SnackBarAction(
           label: context.l10n.commonUndo,
           onPressed: () => undoRequested = true,
         ),
       ),
-      forceCloseAfter: _undoSnackDuration,
     );
     return undoRequested || reason == SnackBarClosedReason.action;
   }

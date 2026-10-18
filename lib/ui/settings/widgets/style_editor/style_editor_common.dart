@@ -29,8 +29,8 @@ class StyleEditorTabList extends StatelessWidget {
 }
 
 /// 可撤销的操作提示（套用、重置、导入、删除）。经
-/// [HomeHintVisibilityScope.showTrackedSnackBar] 展示，读屏等场景下到时强制
-/// 关闭，与日记列表的撤销提示一致。
+/// [HomeHintVisibilityScope.showTrackedSnackBar] 展示，`persist: false` 让它
+/// 到时关闭（读屏等场景也一样），与日记列表的撤销提示一致。
 Future<void> showStyleEditorUndoSnackBar(
   BuildContext context, {
   required String message,
@@ -43,6 +43,7 @@ Future<void> showStyleEditorUndoSnackBar(
     snackBar: SnackBar(
       content: Text(message),
       duration: duration,
+      persist: false,
       action: SnackBarAction(
         label: context.l10n.commonUndo,
         onPressed: () {
@@ -50,7 +51,6 @@ Future<void> showStyleEditorUndoSnackBar(
         },
       ),
     ),
-    forceCloseAfter: duration,
   );
   if (undone || reason == SnackBarClosedReason.action) {
     onUndo();

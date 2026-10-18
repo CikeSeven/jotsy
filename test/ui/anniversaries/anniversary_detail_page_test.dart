@@ -2,12 +2,14 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/anniversaries/pages/anniversary_detail_page.dart';
 import 'package:node_diary/ui/anniversaries/providers/anniversary_providers.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_diary_mini_card.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 
 import '../../support/calendar_test_harness.dart';
 import '../../support/expressive_test_theme.dart';
@@ -51,6 +53,7 @@ void main() {
     List<DiaryWithTags> past = const <DiaryWithTags>[],
     double width = 400,
     Brightness brightness = Brightness.light,
+    bool withHost = false,
   }) async {
     tester.view.physicalSize = Size(width, 1000);
     tester.view.devicePixelRatio = 1;
@@ -71,11 +74,37 @@ void main() {
           theme: expressiveTestTheme(brightness),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: AnniversaryDetailPage(anniversaryId: id),
+          home: withHost
+              ? Builder(
+                  builder: (context) => Scaffold(
+                    body: Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                AnniversaryDetailPage(anniversaryId: id),
+                          ),
+                        ),
+                        child: const Text('open'),
+                      ),
+                    ),
+                  ),
+                )
+              : AnniversaryDetailPage(anniversaryId: id),
         ),
       ),
     );
     await settle(tester);
+    if (withHost) {
+      await tester.tap(find.text('open'));
+      await settle(tester);
+    }
+  }
+
+  Future<void> openMore(WidgetTester tester) async {
+    final l10n = tester.element(find.byType(AnniversaryDetailPage)).l10n;
+    await tester.tap(find.byTooltip(l10n.anniversaryMoreActions));
+    await tester.pumpAndSettle();
   }
 
   Future<void> unmount(WidgetTester tester) async {
@@ -138,6 +167,72 @@ void main() {
     expect(cards, <String>['linked', 'last-year']);
     expect(find.textContaining(l10n.anniversaryOrdinal(2)), findsOneWidget);
     expect(find.text('秘密'), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('more opens an anchored menu and pin toggles', (tester) async {
+    final id = await seed(tester);
+    await pumpDetail(tester, id);
+    final l10n = tester.element(find.byType(AnniversaryDetailPage)).l10n;
+    await openMore(tester);
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(find.byType(ExpressiveMenuItem), findsNWidgets(2));
+    expect(find.byIcon(FontAwesomeIcons.thumbtack.data), findsOneWidget);
+    expect(find.byIcon(FontAwesomeIcons.trashCan.data), findsOneWidget);
+    final delete = tester.widget<ExpressiveMenuItem>(
+      find.ancestor(
+        of: find.text(l10n.anniversaryDelete),
+        matching: find.byType(ExpressiveMenuItem),
+      ),
+    );
+    expect(delete.destructive, isTrue);
+
+    await tester.tap(find.text(l10n.anniversaryPin));
+    await settle(tester);
+    expect(find.byType(ExpressiveMenuItem), findsNothing);
+    final row = await tester.runAsync(() => db.watchAnniversary(id).first);
+    expect(row?.isPinned, isTrue);
+
+    await openMore(tester);
+    expect(find.text(l10n.anniversaryUnpin), findsOneWidget);
+    expect(find.text(l10n.anniversaryPin), findsNothing);
+    await unmount(tester);
+  });
+
+  testWidgets('delete confirms, pops and offers undo on the previous page', (
+    tester,
+  ) async {
+    final id = await seed(tester);
+    await pumpDetail(tester, id, withHost: true);
+    final l10n = tester.element(find.byType(AnniversaryDetailPage)).l10n;
+    await openMore(tester);
+    await tester.tap(find.text(l10n.anniversaryDelete));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.anniversaryDeleteConfirmTitle), findsOneWidget);
+    await tester.tap(find.text(l10n.commonDelete));
+    await settle(tester);
+    expect(find.byType(AnniversaryDetailPage), findsNothing);
+    expect(find.text('open'), findsOneWidget);
+    expect(find.text(l10n.anniversaryDeleted), findsOneWidget);
+    final row = await tester.runAsync(() => db.watchAnniversary(id).first);
+    expect(row, isNull);
+    await unmount(tester);
+  });
+
+  testWidgets('cancelling the delete keeps the page', (tester) async {
+    final id = await seed(tester);
+    await pumpDetail(tester, id, withHost: true);
+    final l10n = tester.element(find.byType(AnniversaryDetailPage)).l10n;
+    await openMore(tester);
+    await tester.tap(find.text(l10n.anniversaryDelete));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.commonCancel));
+    await settle(tester);
+    expect(find.text(l10n.anniversaryDeleteConfirmTitle), findsNothing);
+    expect(find.byType(AnniversaryDetailPage), findsOneWidget);
+    expect(find.text(l10n.anniversaryDeleted), findsNothing);
+    final row = await tester.runAsync(() => db.watchAnniversary(id).first);
+    expect(row, isNotNull);
     await unmount(tester);
   });
 

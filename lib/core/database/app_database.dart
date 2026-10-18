@@ -20,8 +20,12 @@ part 'app_database_diary_list_queries.dart';
 part 'app_database_migrations.dart';
 part 'app_database_anniversary_schema.dart';
 part 'app_database_anniversary_ops.dart';
+part 'app_database_draft_schema.dart';
+part 'app_database_draft_ops.dart';
 
-@DriftDatabase(tables: <Type>[Diaries, Tags, DiaryTags, Anniversaries])
+@DriftDatabase(
+  tables: <Type>[Diaries, Tags, DiaryTags, Anniversaries, DiaryDrafts],
+)
 class AppDatabase extends _$AppDatabase
     with
         _AppDatabaseTagOps,
@@ -29,6 +33,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDiaryListQueries,
         _AppDatabaseDiaryWrites,
         _AppDatabaseAnniversaryOps,
+        _AppDatabaseDraftOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -38,7 +43,7 @@ class AppDatabase extends _$AppDatabase
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -50,6 +55,10 @@ class AppDatabase extends _$AppDatabase
       // 重建日记表后直接 return，排在后面会被跳过。
       if (from < 9) {
         await m.createTable(anniversaries);
+      }
+      // v11 草稿箱表同样独立于日记表，也要排在 v1 分支之前。
+      if (from < 11) {
+        await _migrateAddDiaryDrafts(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

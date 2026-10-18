@@ -10208,7 +10208,7 @@ abstract class AppLocalizations {
   /// **'Show “Start from a template” under the title of a blank entry'**
   String get diaryTemplatesStripSwitchSubtitle;
 
-  /// Setting: a template applied to every blank new entry.
+  /// Setting and page title: templates applied automatically to blank new entries.
   ///
   /// In en, this message translates to:
   /// **'Apply automatically'**
@@ -10220,11 +10220,167 @@ abstract class AppLocalizations {
   /// **'Off'**
   String get diaryTemplatesAutoApplyNone;
 
-  /// Explanation at the top of the auto-apply picker.
+  /// Explanation at the top of the default auto-apply template picker.
   ///
   /// In en, this message translates to:
-  /// **'Every blank new entry starts with this template. You can undo it each time.'**
+  /// **'Blank new entries start with this template outside every time range and when writing for another day. You can undo it each time.'**
   String get diaryTemplatesAutoApplyHint;
+
+  /// Auto-apply setting subtitle when only time ranges are set.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time range} other{{count} time ranges}}'**
+  String diaryTemplatesAutoApplyRulesSummary(int count);
+
+  /// Auto-apply setting subtitle when both time ranges and a default template are set.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 time range} other{{count} time ranges}} · otherwise “{name}”'**
+  String diaryTemplatesAutoApplyRulesAndDefault(int count, String name);
+
+  /// Explanation at the top of the auto-apply page.
+  ///
+  /// In en, this message translates to:
+  /// **'Blank new entries start with a template, and you can undo it each time. Time ranges only apply when writing for today.'**
+  String get diaryTemplatesAutoApplyIntro;
+
+  /// Group title on the auto-apply page: rules by time range.
+  ///
+  /// In en, this message translates to:
+  /// **'By time of day'**
+  String get diaryTemplatesAutoApplyRulesGroup;
+
+  /// Group title on the auto-apply page: the default template outside every time range.
+  ///
+  /// In en, this message translates to:
+  /// **'Other times'**
+  String get diaryTemplatesAutoApplyOtherGroup;
+
+  /// Setting: the template applied outside every time range.
+  ///
+  /// In en, this message translates to:
+  /// **'Default template'**
+  String get diaryTemplatesAutoApplyDefault;
+
+  /// Button and sheet title: add a new time-range auto-apply rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add time range'**
+  String get diaryTemplatesAutoApplyAddRule;
+
+  /// Shown when the maximum number of time ranges has been reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {max} time ranges'**
+  String diaryTemplatesAutoApplyRuleLimit(int max);
+
+  /// Footer on the auto-apply page explaining which overlapping range wins.
+  ///
+  /// In en, this message translates to:
+  /// **'When ranges overlap, ones set to specific days win first, then the shorter one.'**
+  String get diaryTemplatesAutoApplyOverlapHint;
+
+  /// Time range rule title: start and end time.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String diaryTemplatesAutoApplyRange(String start, String end);
+
+  /// Title of an overnight time range rule that ends the next day.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end} next day'**
+  String diaryTemplatesAutoApplyRangeOvernight(String start, String end);
+
+  /// Time range rule subtitle: which days it applies on and the template name.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} · {name}'**
+  String diaryTemplatesAutoApplyRuleSubtitle(String days, String name);
+
+  /// Days label for a time range rule that applies on every day.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get diaryTemplatesAutoApplyEveryDay;
+
+  /// Days label for a time range rule set to exactly Monday to Friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get diaryTemplatesAutoApplyWorkdays;
+
+  /// Days label for a time range rule set to exactly Saturday and Sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekends'**
+  String get diaryTemplatesAutoApplyWeekend;
+
+  /// Separator between short weekday names in a list.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get diaryTemplatesAutoApplyDaySeparator;
+
+  /// Shown when a time range rule points at a deleted template.
+  ///
+  /// In en, this message translates to:
+  /// **'Template no longer exists'**
+  String get diaryTemplatesAutoApplyMissing;
+
+  /// Sheet title when editing a time range rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit time range'**
+  String get diaryTemplatesAutoApplyEditRule;
+
+  /// Small label on the start time button in the time range sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts'**
+  String get diaryTemplatesAutoApplyStart;
+
+  /// Small label on the end time button in the time range sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends'**
+  String get diaryTemplatesAutoApplyEnd;
+
+  /// Hint when the end time is before the start time, so the range crosses midnight.
+  ///
+  /// In en, this message translates to:
+  /// **'Overnight, ends at {end} the next day'**
+  String diaryTemplatesAutoApplyOvernightHint(String end);
+
+  /// Error when the start and end times are equal.
+  ///
+  /// In en, this message translates to:
+  /// **'Start and end can\'t be the same time'**
+  String get diaryTemplatesAutoApplySameTime;
+
+  /// Label above the weekday chips in the time range sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Days'**
+  String get diaryTemplatesAutoApplyDays;
+
+  /// Hint under the weekday chips: selecting none means every day.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave all unselected for every day'**
+  String get diaryTemplatesAutoApplyDaysHint;
+
+  /// Row in the time range sheet for choosing the template.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get diaryTemplatesAutoApplyTemplate;
+
+  /// Message after deleting a time range rule, with an undo button.
+  ///
+  /// In en, this message translates to:
+  /// **'Time range deleted'**
+  String get diaryTemplatesAutoApplyRuleDeleted;
 
   /// Group title: the user's own templates.
   ///

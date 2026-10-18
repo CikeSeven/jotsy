@@ -6,14 +6,25 @@ import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../diaries/models/style_library/style_code.dart';
 import '../models/diary_template.dart';
+import '../models/diary_template_auto_rule.dart';
 import '../models/diary_template_code.dart';
 import '../models/diary_template_json.dart';
 import '../models/diary_template_prefs.dart';
 import '../providers/diary_template_providers.dart';
 
-/// 删除一个模板留下的记录：撤销时原样写回这一行，并在自动套用仍空着时
-/// 恢复成它。
-typedef DiaryTemplateDeletion = ({DiaryTemplateRow row, bool wasAuto});
+/// 删除或隐藏一个模板时一并撤下的自动套用设置：它是否是默认模板，以及
+/// 指向它的时间段规则。撤销时据此放回。
+typedef DiaryTemplateAutoRemoval = ({
+  bool wasAuto,
+  List<DiaryTemplateAutoRule> rules,
+});
+
+/// 删除一个模板留下的记录：撤销时原样写回这一行，并放回撤下的自动套用
+/// 设置（见 [DiaryTemplateAutoRemoval]）。
+typedef DiaryTemplateDeletion = ({
+  DiaryTemplateRow row,
+  DiaryTemplateAutoRemoval auto,
+});
 
 /// 导入模板码的结果：[templateId] 为新存下的模板（导入失败时为 null）。
 typedef DiaryTemplateImport = ({
@@ -29,8 +40,9 @@ typedef DiaryTemplateImport = ({
 /// 一次性快照（见 `userDiaryTemplatesSnapshotProvider`），需要据此刷新。
 ///
 /// 偏好每次都从设置原文重新解码再写回，不依赖页面手里可能过时的值。删除
-/// 或隐藏的正是自动套用的模板时一并清空自动套用——否则新建日记会套用一个
-/// 已经不在列表里的模板；撤销时再恢复。
+/// 或隐藏一个模板时，一并清空指向它的默认模板与时间段规则——否则新建日记
+/// 会套用一个已经不在列表里的模板；撤销时只放回仍空着的默认模板与本机还
+/// 没有的规则（撤销前用户可能已经重新设置过）。
 class DiaryTemplatesController {
   DiaryTemplatesController({
     required this.database,
@@ -79,19 +91,21 @@ class DiaryTemplatesController {
     final row = await database.getDiaryTemplate(templateId);
     if (row == null) return null;
     await database.deleteDiaryTemplates([templateId]);
-    final prefs = _prefs;
-    final wasAuto = prefs.autoTemplateId == templateId;
-    if (wasAuto) await _savePrefs(prefs.withAuto(null));
+    final (prefs, removed) = _withoutAuto(_prefs, templateId);
+    if (removed.wasAuto || removed.rules.isNotEmpty) await _savePrefs(prefs);
     onTemplatesChanged();
-    return (row: row, wasAuto: wasAuto);
+    return (row: row, auto: removed);
   }
 
   Future<void> restore(DiaryTemplateDeletion deletion) async {
     await database.restoreDiaryTemplates([deletion.row]);
     final prefs = _prefs;
-    if (deletion.wasAuto && prefs.autoTemplateId == null) {
-      await _savePrefs(prefs.withAuto(deletion.row.templateId));
-    }
+    final restored = _withAutoRestored(
+      prefs,
+      deletion.row.templateId,
+      deletion.auto,
+    );
+    if (restored != prefs) await _savePrefs(restored);
     onTemplatesChanged();
   }
 
@@ -100,23 +114,66 @@ class DiaryTemplatesController {
     onTemplatesChanged();
   }
 
-  /// 隐藏或重新显示内置模板；返回隐藏前它是否是自动套用的模板（撤销用）。
-  Future<bool> setHidden(String templateId, bool hidden) async {
-    var prefs = _prefs;
-    final wasAuto = hidden && prefs.autoTemplateId == templateId;
-    prefs = prefs.withHidden(templateId, hidden);
-    if (wasAuto) prefs = prefs.withAuto(null);
+  /// 隐藏或重新显示内置模板；隐藏时返回一并撤下的自动套用设置（撤销用），
+  /// 重新显示时什么也不撤下。
+  Future<DiaryTemplateAutoRemoval> setHidden(
+    String templateId,
+    bool hidden,
+  ) async {
+    var prefs = _prefs.withHidden(templateId, hidden);
+    DiaryTemplateAutoRemoval removed = (
+      wasAuto: false,
+      rules: const <DiaryTemplateAutoRule>[],
+    );
+    if (hidden) (prefs, removed) = _withoutAuto(prefs, templateId);
     await _savePrefs(prefs);
-    return wasAuto;
+    return removed;
   }
 
-  /// 撤销隐藏。
-  Future<void> unhide(String templateId, {required bool wasAuto}) async {
-    var prefs = _prefs.withHidden(templateId, false);
-    if (wasAuto && prefs.autoTemplateId == null) {
-      prefs = prefs.withAuto(templateId);
+  /// 撤销隐藏，并放回隐藏时撤下的自动套用设置。
+  Future<void> unhide(
+    String templateId, {
+    required DiaryTemplateAutoRemoval removed,
+  }) async {
+    final prefs = _prefs.withHidden(templateId, false);
+    await _savePrefs(_withAutoRestored(prefs, templateId, removed));
+  }
+
+  /// 去掉指向 [templateId] 的默认模板与时间段规则。
+  (DiaryTemplatePrefs, DiaryTemplateAutoRemoval) _withoutAuto(
+    DiaryTemplatePrefs prefs,
+    String templateId,
+  ) {
+    final wasAuto = prefs.autoTemplateId == templateId;
+    final rules = prefs.autoRulesFor(templateId);
+    var next = prefs;
+    if (wasAuto) next = next.withAuto(null);
+    if (rules.isNotEmpty) {
+      next = next.withAutoRules(
+        prefs.autoRules.where((rule) => rule.templateId != templateId),
+      );
     }
-    await _savePrefs(prefs);
+    return (next, (wasAuto: wasAuto, rules: rules));
+  }
+
+  /// 放回 [removed]：默认模板只在仍空着时放回，规则只放回本机还没有的
+  /// （上限内）。
+  DiaryTemplatePrefs _withAutoRestored(
+    DiaryTemplatePrefs prefs,
+    String templateId,
+    DiaryTemplateAutoRemoval removed,
+  ) {
+    var next = prefs;
+    if (removed.wasAuto && next.autoTemplateId == null) {
+      next = next.withAuto(templateId);
+    }
+    if (removed.rules.isNotEmpty) {
+      next = next.withAutoRules(<DiaryTemplateAutoRule>[
+        ...next.autoRules,
+        ...removed.rules,
+      ]);
+    }
+    return next;
   }
 
   Future<void> setStripEnabled(bool enabled) =>
@@ -124,6 +181,50 @@ class DiaryTemplatesController {
 
   Future<void> setAutoTemplate(String? templateId) =>
       _savePrefs(_prefs.withAuto(templateId));
+
+  /// 保存一条时间段规则；[replacing] 为正在编辑的原规则（新增时为 null）。
+  /// 已有一模一样的规则时不重复添加；新增时已满 [DiaryTemplatePrefs.maxAutoRules]
+  /// 条则不保存，返回 false。
+  Future<bool> saveAutoRule(
+    DiaryTemplateAutoRule rule, {
+    DiaryTemplateAutoRule? replacing,
+  }) async {
+    if (!rule.isValid) return false;
+    final prefs = _prefs;
+    final rest = prefs.autoRules.where((item) => item != replacing).toList();
+    if (!rest.contains(rule) &&
+        rest.length >= DiaryTemplatePrefs.maxAutoRules) {
+      return false;
+    }
+    await _savePrefs(
+      prefs.withAutoRules(<DiaryTemplateAutoRule>[...rest, rule]),
+    );
+    return true;
+  }
+
+  /// 删除一条时间段规则；返回被删的规则（撤销用），它已不存在时为 null。
+  Future<DiaryTemplateAutoRule?> deleteAutoRule(
+    DiaryTemplateAutoRule rule,
+  ) async {
+    final prefs = _prefs;
+    if (!prefs.autoRules.contains(rule)) return null;
+    await _savePrefs(
+      prefs.withAutoRules(prefs.autoRules.where((item) => item != rule)),
+    );
+    return rule;
+  }
+
+  /// 撤销删除：本机已有同样的规则或已满时什么也不做。
+  Future<void> restoreAutoRule(DiaryTemplateAutoRule rule) async {
+    final prefs = _prefs;
+    if (prefs.autoRules.contains(rule) ||
+        prefs.autoRules.length >= DiaryTemplatePrefs.maxAutoRules) {
+      return;
+    }
+    await _savePrefs(
+      prefs.withAutoRules(<DiaryTemplateAutoRule>[...prefs.autoRules, rule]),
+    );
+  }
 
   /// 导入剪贴板里的模板码：解析成功即存为新的用户模板。
   Future<DiaryTemplateImport> importCode(String? text) async {

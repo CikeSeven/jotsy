@@ -157,6 +157,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   late final DiaryMetaActions _metaActions;
   // 新建空白日记时的模板建议条与套用、撤销（见 edit_diary_template_flow）。
   late final DiaryTemplateApplyController _templates;
+  // 模板套用读的“此刻”（diaryTemplateClockProvider）：自动套用的时间段、
+  // 变量与“今天”都按它算，测试据此固定时间。
+  late final DateTime Function() _templateClock;
   // 已发布日记的发表时间（created_at）：详情回填时取库中原值，面板改选后随
   // 自动保存写回。新建模式不用它，发表时间经 _createDateOverride 交给发布页。
   DateTime? _draftPublishAt;
@@ -227,10 +230,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _meta.addListener(_onMetaChanged);
     _metaActions = DiaryMetaActions(ref, draft: _meta, isBusy: () => _saving);
     // 先于业务控制器创建：草稿自动保存读快照时要经它判断“原样未动”。
+    _templateClock = ref.read(diaryTemplateClockProvider);
     _templates = DiaryTemplateApplyController(
       enabled: _isCreateEntry && widget.createDraftId == null,
       port: _EditDiaryTemplatePort(this),
       database: _database,
+      clock: _templateClock,
       onUsed: (templateId) async {
         final settings = await ref.read(settingsServiceProvider.future);
         await recordDiaryTemplateUse(settings, templateId);
@@ -327,7 +332,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       encodeDiaryDocumentToJson(_contentController.document);
 
   /// 模板变量按哪天展开、推荐按哪天判断：补写时是那一天，否则是今天。
-  DateTime get _templateDiaryDate => _createDateOverride ?? DateTime.now();
+  DateTime get _templateDiaryDate => _createDateOverride ?? _templateClock();
 
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;

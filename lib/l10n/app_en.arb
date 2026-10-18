@@ -7849,15 +7849,166 @@
   },
   "diaryTemplatesAutoApply": "Apply automatically",
   "@diaryTemplatesAutoApply": {
-    "description": "Setting: a template applied to every blank new entry."
+    "description": "Setting and page title: templates applied automatically to blank new entries."
   },
   "diaryTemplatesAutoApplyNone": "Off",
   "@diaryTemplatesAutoApplyNone": {
     "description": "Auto-apply setting value when no template is chosen."
   },
-  "diaryTemplatesAutoApplyHint": "Every blank new entry starts with this template. You can undo it each time.",
+  "diaryTemplatesAutoApplyHint": "Blank new entries start with this template outside every time range and when writing for another day. You can undo it each time.",
   "@diaryTemplatesAutoApplyHint": {
-    "description": "Explanation at the top of the auto-apply picker."
+    "description": "Explanation at the top of the default auto-apply template picker."
+  },
+  "diaryTemplatesAutoApplyRulesSummary": "{count, plural, =1{1 time range} other{{count} time ranges}}",
+  "@diaryTemplatesAutoApplyRulesSummary": {
+    "description": "Auto-apply setting subtitle when only time ranges are set.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRulesAndDefault": "{count, plural, =1{1 time range} other{{count} time ranges}} · otherwise “{name}”",
+  "@diaryTemplatesAutoApplyRulesAndDefault": {
+    "description": "Auto-apply setting subtitle when both time ranges and a default template are set.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyIntro": "Blank new entries start with a template, and you can undo it each time. Time ranges only apply when writing for today.",
+  "@diaryTemplatesAutoApplyIntro": {
+    "description": "Explanation at the top of the auto-apply page."
+  },
+  "diaryTemplatesAutoApplyRulesGroup": "By time of day",
+  "@diaryTemplatesAutoApplyRulesGroup": {
+    "description": "Group title on the auto-apply page: rules by time range."
+  },
+  "diaryTemplatesAutoApplyOtherGroup": "Other times",
+  "@diaryTemplatesAutoApplyOtherGroup": {
+    "description": "Group title on the auto-apply page: the default template outside every time range."
+  },
+  "diaryTemplatesAutoApplyDefault": "Default template",
+  "@diaryTemplatesAutoApplyDefault": {
+    "description": "Setting: the template applied outside every time range."
+  },
+  "diaryTemplatesAutoApplyAddRule": "Add time range",
+  "@diaryTemplatesAutoApplyAddRule": {
+    "description": "Button and sheet title: add a new time-range auto-apply rule."
+  },
+  "diaryTemplatesAutoApplyRuleLimit": "Up to {max} time ranges",
+  "@diaryTemplatesAutoApplyRuleLimit": {
+    "description": "Shown when the maximum number of time ranges has been reached.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyOverlapHint": "When ranges overlap, ones set to specific days win first, then the shorter one.",
+  "@diaryTemplatesAutoApplyOverlapHint": {
+    "description": "Footer on the auto-apply page explaining which overlapping range wins."
+  },
+  "diaryTemplatesAutoApplyRange": "{start} – {end}",
+  "@diaryTemplatesAutoApplyRange": {
+    "description": "Time range rule title: start and end time.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRangeOvernight": "{start} – {end} next day",
+  "@diaryTemplatesAutoApplyRangeOvernight": {
+    "description": "Title of an overnight time range rule that ends the next day.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRuleSubtitle": "{days} · {name}",
+  "@diaryTemplatesAutoApplyRuleSubtitle": {
+    "description": "Time range rule subtitle: which days it applies on and the template name.",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyEveryDay": "Every day",
+  "@diaryTemplatesAutoApplyEveryDay": {
+    "description": "Days label for a time range rule that applies on every day."
+  },
+  "diaryTemplatesAutoApplyWorkdays": "Weekdays",
+  "@diaryTemplatesAutoApplyWorkdays": {
+    "description": "Days label for a time range rule set to exactly Monday to Friday."
+  },
+  "diaryTemplatesAutoApplyWeekend": "Weekends",
+  "@diaryTemplatesAutoApplyWeekend": {
+    "description": "Days label for a time range rule set to exactly Saturday and Sunday."
+  },
+  "diaryTemplatesAutoApplyDaySeparator": ", ",
+  "@diaryTemplatesAutoApplyDaySeparator": {
+    "description": "Separator between short weekday names in a list."
+  },
+  "diaryTemplatesAutoApplyMissing": "Template no longer exists",
+  "@diaryTemplatesAutoApplyMissing": {
+    "description": "Shown when a time range rule points at a deleted template."
+  },
+  "diaryTemplatesAutoApplyEditRule": "Edit time range",
+  "@diaryTemplatesAutoApplyEditRule": {
+    "description": "Sheet title when editing a time range rule."
+  },
+  "diaryTemplatesAutoApplyStart": "Starts",
+  "@diaryTemplatesAutoApplyStart": {
+    "description": "Small label on the start time button in the time range sheet."
+  },
+  "diaryTemplatesAutoApplyEnd": "Ends",
+  "@diaryTemplatesAutoApplyEnd": {
+    "description": "Small label on the end time button in the time range sheet."
+  },
+  "diaryTemplatesAutoApplyOvernightHint": "Overnight, ends at {end} the next day",
+  "@diaryTemplatesAutoApplyOvernightHint": {
+    "description": "Hint when the end time is before the start time, so the range crosses midnight.",
+    "placeholders": {
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplySameTime": "Start and end can't be the same time",
+  "@diaryTemplatesAutoApplySameTime": {
+    "description": "Error when the start and end times are equal."
+  },
+  "diaryTemplatesAutoApplyDays": "Days",
+  "@diaryTemplatesAutoApplyDays": {
+    "description": "Label above the weekday chips in the time range sheet."
+  },
+  "diaryTemplatesAutoApplyDaysHint": "Leave all unselected for every day",
+  "@diaryTemplatesAutoApplyDaysHint": {
+    "description": "Hint under the weekday chips: selecting none means every day."
+  },
+  "diaryTemplatesAutoApplyTemplate": "Template",
+  "@diaryTemplatesAutoApplyTemplate": {
+    "description": "Row in the time range sheet for choosing the template."
+  },
+  "diaryTemplatesAutoApplyRuleDeleted": "Time range deleted",
+  "@diaryTemplatesAutoApplyRuleDeleted": {
+    "description": "Message after deleting a time range rule, with an undo button."
   },
   "diaryTemplatesMineGroup": "My templates",
   "@diaryTemplatesMineGroup": {

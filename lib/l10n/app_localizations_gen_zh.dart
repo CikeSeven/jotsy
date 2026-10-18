@@ -5543,7 +5543,101 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplatesAutoApplyNone => '不自动套用';
 
   @override
-  String get diaryTemplatesAutoApplyHint => '每次新建空白日记都会先套用这个模板，每次都可以撤销。';
+  String get diaryTemplatesAutoApplyHint =>
+      '不在任何时间段内，或写其他日子的日记时，新建空白日记先套用这个模板，每次都可以撤销。';
+
+  @override
+  String diaryTemplatesAutoApplyRulesSummary(int count) {
+    return '$count 个时间段';
+  }
+
+  @override
+  String diaryTemplatesAutoApplyRulesAndDefault(int count, String name) {
+    return '$count 个时间段 · 其他时间用「$name」';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplyIntro =>
+      '新建空白日记时先套用模板，每次都可以撤销。时间段只在写今天的日记时生效。';
+
+  @override
+  String get diaryTemplatesAutoApplyRulesGroup => '按时间段';
+
+  @override
+  String get diaryTemplatesAutoApplyOtherGroup => '其他时间';
+
+  @override
+  String get diaryTemplatesAutoApplyDefault => '默认模板';
+
+  @override
+  String get diaryTemplatesAutoApplyAddRule => '添加时间段';
+
+  @override
+  String diaryTemplatesAutoApplyRuleLimit(int max) {
+    return '最多 $max 个时间段';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplyOverlapHint => '时间段重叠时，指定了星期的优先，其次是时长更短的。';
+
+  @override
+  String diaryTemplatesAutoApplyRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String diaryTemplatesAutoApplyRangeOvernight(String start, String end) {
+    return '$start – 次日 $end';
+  }
+
+  @override
+  String diaryTemplatesAutoApplyRuleSubtitle(String days, String name) {
+    return '$days · $name';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplyEveryDay => '每天';
+
+  @override
+  String get diaryTemplatesAutoApplyWorkdays => '工作日';
+
+  @override
+  String get diaryTemplatesAutoApplyWeekend => '周末';
+
+  @override
+  String get diaryTemplatesAutoApplyDaySeparator => '、';
+
+  @override
+  String get diaryTemplatesAutoApplyMissing => '模板已不存在';
+
+  @override
+  String get diaryTemplatesAutoApplyEditRule => '编辑时间段';
+
+  @override
+  String get diaryTemplatesAutoApplyStart => '开始';
+
+  @override
+  String get diaryTemplatesAutoApplyEnd => '结束';
+
+  @override
+  String diaryTemplatesAutoApplyOvernightHint(String end) {
+    return '跨夜，到次日 $end 结束';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplySameTime => '开始和结束不能是同一时间';
+
+  @override
+  String get diaryTemplatesAutoApplyDays => '星期';
+
+  @override
+  String get diaryTemplatesAutoApplyDaysHint => '不选即每天';
+
+  @override
+  String get diaryTemplatesAutoApplyTemplate => '模板';
+
+  @override
+  String get diaryTemplatesAutoApplyRuleDeleted => '已删除时间段';
 
   @override
   String get diaryTemplatesMineGroup => '我的模板';

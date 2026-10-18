@@ -20,11 +20,13 @@ import '../providers/diary_template_providers.dart';
 import '../sections/diary_template_picker_preview.dart';
 import '../sections/diary_templates_lists.dart';
 import '../sections/diary_templates_settings_group.dart';
+import 'diary_template_auto_apply_page.dart';
 import 'diary_template_editor_page.dart';
 
 /// 日记模板管理页（设置 → 编辑器设置 → 日记模板）。
 ///
-/// 自上而下：“新建日记时”的建议条开关与自动套用、我的模板（拖动排序、编辑、
+/// 自上而下：“新建日记时”的建议条开关与自动套用入口（时间段与默认模板在
+/// [DiaryTemplateAutoApplyPage]）、我的模板（拖动排序、编辑、
 /// 复制、复制模板码、删除可撤销）、内置模板（预览、复制为我的模板、复制
 /// 模板码、隐藏可撤销）。顶栏可从剪贴板导入模板码或新建模板。读写都经
 /// [DiaryTemplatesController]，页面只负责组合与提示。
@@ -81,7 +83,11 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
               library: library,
               onStripChanged: (value) =>
                   unawaited(controller.setStripEnabled(value)),
-              onAutoChanged: (id) => unawaited(controller.setAutoTemplate(id)),
+              onOpenAutoApply: () => Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => const DiaryTemplateAutoApplyPage(),
+                ),
+              ),
             ),
           ),
         ),
@@ -195,14 +201,14 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
               : l10n.diaryTemplatesCodeCopied,
         );
       case DiaryTemplateAction.hide:
-        final wasAuto = await controller.setHidden(template.id, true);
+        final removed = await controller.setHidden(template.id, true);
         if (!mounted) return;
         unawaited(
           showStyleEditorUndoSnackBar(
             context,
             message: l10n.diaryTemplatesHiddenDone(_name(template)),
             onUndo: () =>
-                unawaited(controller.unhide(template.id, wasAuto: wasAuto)),
+                unawaited(controller.unhide(template.id, removed: removed)),
           ),
         );
       case DiaryTemplateAction.show:

@@ -7849,15 +7849,166 @@
   },
   "diaryTemplatesAutoApply": "自动套用",
   "@diaryTemplatesAutoApply": {
-    "description": "设置项：每次新建空白日记时自动套用的模板。"
+    "description": "设置项与页面标题：新建空白日记时自动套用模板。"
   },
   "diaryTemplatesAutoApplyNone": "不自动套用",
   "@diaryTemplatesAutoApplyNone": {
     "description": "未选择自动套用模板时的取值。"
   },
-  "diaryTemplatesAutoApplyHint": "每次新建空白日记都会先套用这个模板，每次都可以撤销。",
+  "diaryTemplatesAutoApplyHint": "不在任何时间段内，或写其他日子的日记时，新建空白日记先套用这个模板，每次都可以撤销。",
   "@diaryTemplatesAutoApplyHint": {
-    "description": "自动套用选择面板顶部的说明。"
+    "description": "自动套用默认模板选择面板顶部的说明。"
+  },
+  "diaryTemplatesAutoApplyRulesSummary": "{count} 个时间段",
+  "@diaryTemplatesAutoApplyRulesSummary": {
+    "description": "自动套用设置项的副标题：只设了时间段时显示规则条数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRulesAndDefault": "{count} 个时间段 · 其他时间用「{name}」",
+  "@diaryTemplatesAutoApplyRulesAndDefault": {
+    "description": "自动套用设置项的副标题：既有时间段又有默认模板。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyIntro": "新建空白日记时先套用模板，每次都可以撤销。时间段只在写今天的日记时生效。",
+  "@diaryTemplatesAutoApplyIntro": {
+    "description": "自动套用页顶部的说明。"
+  },
+  "diaryTemplatesAutoApplyRulesGroup": "按时间段",
+  "@diaryTemplatesAutoApplyRulesGroup": {
+    "description": "自动套用页分组标题：按时间段套用的规则。"
+  },
+  "diaryTemplatesAutoApplyOtherGroup": "其他时间",
+  "@diaryTemplatesAutoApplyOtherGroup": {
+    "description": "自动套用页分组标题：不在任何时间段内时用的默认模板。"
+  },
+  "diaryTemplatesAutoApplyDefault": "默认模板",
+  "@diaryTemplatesAutoApplyDefault": {
+    "description": "设置项：不在任何时间段内时自动套用的模板。"
+  },
+  "diaryTemplatesAutoApplyAddRule": "添加时间段",
+  "@diaryTemplatesAutoApplyAddRule": {
+    "description": "按钮与面板标题：新增一条按时间段自动套用的规则。"
+  },
+  "diaryTemplatesAutoApplyRuleLimit": "最多 {max} 个时间段",
+  "@diaryTemplatesAutoApplyRuleLimit": {
+    "description": "时间段已满、不能再添加时的说明。",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyOverlapHint": "时间段重叠时，指定了星期的优先，其次是时长更短的。",
+  "@diaryTemplatesAutoApplyOverlapHint": {
+    "description": "自动套用页底部说明：多个时间段同时命中时的优先顺序。"
+  },
+  "diaryTemplatesAutoApplyRange": "{start} – {end}",
+  "@diaryTemplatesAutoApplyRange": {
+    "description": "时间段规则的标题：开始与结束时间。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRangeOvernight": "{start} – 次日 {end}",
+  "@diaryTemplatesAutoApplyRangeOvernight": {
+    "description": "跨夜时间段规则的标题：结束时间在第二天。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRuleSubtitle": "{days} · {name}",
+  "@diaryTemplatesAutoApplyRuleSubtitle": {
+    "description": "时间段规则的副标题：适用的星期与模板名称。",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyEveryDay": "每天",
+  "@diaryTemplatesAutoApplyEveryDay": {
+    "description": "时间段规则不限星期时的星期说明。"
+  },
+  "diaryTemplatesAutoApplyWorkdays": "工作日",
+  "@diaryTemplatesAutoApplyWorkdays": {
+    "description": "时间段规则正好是周一到周五时的星期说明。"
+  },
+  "diaryTemplatesAutoApplyWeekend": "周末",
+  "@diaryTemplatesAutoApplyWeekend": {
+    "description": "时间段规则正好是周六和周日时的星期说明。"
+  },
+  "diaryTemplatesAutoApplyDaySeparator": "、",
+  "@diaryTemplatesAutoApplyDaySeparator": {
+    "description": "列出多个星期简称时的分隔符。"
+  },
+  "diaryTemplatesAutoApplyMissing": "模板已不存在",
+  "@diaryTemplatesAutoApplyMissing": {
+    "description": "时间段规则指向的模板已被删除时的提示。"
+  },
+  "diaryTemplatesAutoApplyEditRule": "编辑时间段",
+  "@diaryTemplatesAutoApplyEditRule": {
+    "description": "编辑一条时间段规则的面板标题。"
+  },
+  "diaryTemplatesAutoApplyStart": "开始",
+  "@diaryTemplatesAutoApplyStart": {
+    "description": "时间段面板里开始时间按钮的小标题。"
+  },
+  "diaryTemplatesAutoApplyEnd": "结束",
+  "@diaryTemplatesAutoApplyEnd": {
+    "description": "时间段面板里结束时间按钮的小标题。"
+  },
+  "diaryTemplatesAutoApplyOvernightHint": "跨夜，到次日 {end} 结束",
+  "@diaryTemplatesAutoApplyOvernightHint": {
+    "description": "结束时间早于开始时间时的说明：时间段跨过午夜。",
+    "placeholders": {
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplySameTime": "开始和结束不能是同一时间",
+  "@diaryTemplatesAutoApplySameTime": {
+    "description": "开始与结束时间相同时的错误提示。"
+  },
+  "diaryTemplatesAutoApplyDays": "星期",
+  "@diaryTemplatesAutoApplyDays": {
+    "description": "时间段面板里星期选择的小标题。"
+  },
+  "diaryTemplatesAutoApplyDaysHint": "不选即每天",
+  "@diaryTemplatesAutoApplyDaysHint": {
+    "description": "星期选择下方的说明：一个都不选表示每天。"
+  },
+  "diaryTemplatesAutoApplyTemplate": "模板",
+  "@diaryTemplatesAutoApplyTemplate": {
+    "description": "时间段面板里选择模板的设置项。"
+  },
+  "diaryTemplatesAutoApplyRuleDeleted": "已删除时间段",
+  "@diaryTemplatesAutoApplyRuleDeleted": {
+    "description": "删除时间段规则后的提示，带撤销按钮。"
   },
   "diaryTemplatesMineGroup": "我的模板",
   "@diaryTemplatesMineGroup": {

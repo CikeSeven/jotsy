@@ -32,6 +32,11 @@ extension EditDiaryTemplateFlow on EditDiaryController {
   /// 新建空白页初始化时套用入口带来的模板或自动套用的模板，在草稿自动保存
   /// 设定基线之前完成（见 [prepareCreateEntry]）。等待期间用户已经开始写，
   /// 套用会自行放弃。
+  ///
+  /// 自动套用按偏好给出的候选顺序（命中的时间段由具体到宽泛，最后是默认
+  /// 模板，见 `DiaryTemplatePrefs.autoApplyCandidates`）逐个查库，套用第一个
+  /// 仍存在的：规则指向的模板被删掉时自然落到下一个，而不是什么都不套。
+  /// “此刻”与套用控制器用同一个时钟，时间段与变量里的时间不会错开。
   Future<void> applyInitialTemplate() async {
     final launch = _state.widget.createTemplate;
     if (launch != null) {
@@ -43,20 +48,26 @@ extension EditDiaryTemplateFlow on EditDiaryController {
       return;
     }
     final settings = await _state.ref.read(settingsServiceProvider.future);
-    final autoId = DiaryTemplatePrefs.decode(
-      settings.diaryTemplatePrefsRaw,
-    ).autoTemplateId;
-    if (autoId == null || !_state.mounted) return;
-    final template = await loadDiaryTemplate(
-      _state._database,
-      _state.context.l10n,
-      autoId,
-    );
-    if (template == null || !_state.mounted) return;
-    await _applyTemplate(
-      DiaryTemplateSelection(template),
-      DiaryTemplateApplySource.auto,
-    );
+    if (!_state.mounted) return;
+    final candidates = DiaryTemplatePrefs.decode(settings.diaryTemplatePrefsRaw)
+        .autoApplyCandidates(
+          now: _state._templateClock(),
+          diaryDate: _state._templateDiaryDate,
+        );
+    for (final id in candidates) {
+      final template = await loadDiaryTemplate(
+        _state._database,
+        _state.context.l10n,
+        id,
+      );
+      if (!_state.mounted) return;
+      if (template == null) continue;
+      await _applyTemplate(
+        DiaryTemplateSelection(template),
+        DiaryTemplateApplySource.auto,
+      );
+      return;
+    }
   }
 
   /// 顶栏菜单“存为模板”：把正在写的标题、正文（去掉媒体）、标签、心情与

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
@@ -14,6 +13,7 @@ import '../controllers/diary_template_editor_controller.dart';
 import '../models/diary_template_recommend.dart';
 import '../viewmodels/diary_template_labels.dart';
 import '../widgets/diary_template_tags_field.dart';
+import '../widgets/diary_template_weekday_chips.dart';
 
 /// 套用时一并设置：标签、心情、精力与时间胶囊。心情、精力直接复用发布面板
 /// 的区块（操作的是编辑页私有的元数据草稿），与发布时看到的一致。
@@ -114,10 +114,6 @@ class DiaryTemplateEditorRules extends StatelessWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final rules = controller.recommend;
-    // 2026-10-19 是周一：按 1–7 依次取当前语言的星期简称。
-    final weekdayFormat = DateFormat.E(l10n.localeName);
-    String weekdayLabel(int weekday) =>
-        weekdayFormat.format(DateTime(2026, 10, 18 + weekday));
     Set<T> toggled<T>(Set<T> set, T value, bool on) =>
         Set<T>.unmodifiable(on ? <T>{...set, value} : set.difference({value}));
 
@@ -152,17 +148,13 @@ class DiaryTemplateEditorRules extends StatelessWidget {
           ],
         ),
         CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorWeekdays),
-        _ChipWrap(
-          children: <Widget>[
-            for (var weekday = 1; weekday <= 7; weekday++)
-              FilterChip(
-                label: Text(weekdayLabel(weekday)),
-                selected: rules.weekdays.contains(weekday),
-                onSelected: (on) => controller.recommend = rules.copyWith(
-                  weekdays: toggled(rules.weekdays, weekday, on),
-                ),
-              ),
-          ],
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.l),
+          child: DiaryTemplateWeekdayChips(
+            selected: rules.weekdays,
+            onChanged: (weekdays) =>
+                controller.recommend = rules.copyWith(weekdays: weekdays),
+          ),
         ),
         CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorMonth),
         _ChipWrap(

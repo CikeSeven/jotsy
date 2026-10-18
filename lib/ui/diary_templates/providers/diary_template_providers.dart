@@ -39,6 +39,12 @@ class DiaryTemplatePrefsNotifier extends Notifier<DiaryTemplatePrefs> {
   }
 }
 
+/// 新建编辑页套用模板时读的“此刻”：按时间段自动套用、变量里的时间与
+/// 胶囊预设都以它为准，保证同一次套用里时间一致；测试覆盖它来固定时间。
+final diaryTemplateClockProvider = Provider<DateTime Function()>(
+  (Ref ref) => DateTime.now,
+);
+
 /// 持久化模板偏好；与默认完全相同时移除设置键。
 Future<void> saveDiaryTemplatePrefs(
   SettingsService settings,

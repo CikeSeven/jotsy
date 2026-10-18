@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_built_ins.dart';
 import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_questions.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_variables.dart';
@@ -20,11 +19,19 @@ void main() {
     await initializeDateFormatting('en');
   });
 
-  test('both languages have the same 15 built-in templates', () {
+  test('both languages have the same 8 built-in templates in order', () {
     final zhTemplates = buildBuiltInDiaryTemplates(zh);
     final enTemplates = buildBuiltInDiaryTemplates(en);
-    expect(zhTemplates, hasLength(15));
-    expect(zhTemplates.map((t) => t.id).toSet(), hasLength(15));
+    expect(zhTemplates.map((t) => t.id), [
+      'builtin.daily',
+      'builtin.morning',
+      'builtin.evening',
+      'builtin.gratitude',
+      'builtin.question',
+      'builtin.weekly',
+      'builtin.emotion',
+      'builtin.reading',
+    ]);
     expect(zhTemplates.map((t) => t.id), enTemplates.map((t) => t.id));
     for (final template in zhTemplates) {
       expect(template.id, startsWith('builtin.'));
@@ -32,10 +39,6 @@ void main() {
       expect(template.name, isNotEmpty);
       expect(template.description, isNotEmpty);
     }
-    expect(
-      zhTemplates.firstWhere((t) => t.id == 'builtin.letter').capsule,
-      TimeCapsulePreset.year,
-    );
   });
 
   test('zh and en bodies have the same block structure', () {

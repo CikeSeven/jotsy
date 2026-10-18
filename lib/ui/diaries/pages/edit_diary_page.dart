@@ -61,6 +61,7 @@ import 'package:node_diary/ui/diary_templates/widgets/diary_template_strip.dart'
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_common.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
 import 'package:node_diary/ui/widgets/soft_keyboard_selection_keys.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/expressive_entrance.dart';
@@ -156,6 +157,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   late final DiaryMetaActions _metaActions;
   // 新建空白日记时的模板建议条与套用、撤销（见 edit_diary_template_flow）。
   late final DiaryTemplateApplyController _templates;
+  // 模板套用读的“此刻”（diaryTemplateClockProvider）：自动套用的时间段、
+  // 变量与“今天”都按它算，测试据此固定时间。
+  late final DateTime Function() _templateClock;
   // 已发布日记的发表时间（created_at）：详情回填时取库中原值，面板改选后随
   // 自动保存写回。新建模式不用它，发表时间经 _createDateOverride 交给发布页。
   DateTime? _draftPublishAt;
@@ -226,10 +230,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _meta.addListener(_onMetaChanged);
     _metaActions = DiaryMetaActions(ref, draft: _meta, isBusy: () => _saving);
     // 先于业务控制器创建：草稿自动保存读快照时要经它判断“原样未动”。
+    _templateClock = ref.read(diaryTemplateClockProvider);
     _templates = DiaryTemplateApplyController(
       enabled: _isCreateEntry && widget.createDraftId == null,
       port: _EditDiaryTemplatePort(this),
       database: _database,
+      clock: _templateClock,
       onUsed: (templateId) async {
         final settings = await ref.read(settingsServiceProvider.future);
         await recordDiaryTemplateUse(settings, templateId);
@@ -326,7 +332,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       encodeDiaryDocumentToJson(_contentController.document);
 
   /// 模板变量按哪天展开、推荐按哪天判断：补写时是那一天，否则是今天。
-  DateTime get _templateDiaryDate => _createDateOverride ?? DateTime.now();
+  DateTime get _templateDiaryDate => _createDateOverride ?? _templateClock();
 
   bool get _isCreateEntry =>
       widget.diaryId == null && widget.entryMode == EditDiaryEntryMode.create;
@@ -631,6 +637,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
   }
 
+  /// 顶栏“更多”菜单的动作；菜单项经 [ExpressiveMenuItem] 先关菜单再调用这里。
+  void _onEditorMenuAction(_EditorMenuAction action) => switch (action) {
+    _EditorMenuAction.chooseTemplate => unawaited(
+      _controller.openTemplatePicker(),
+    ),
+    _EditorMenuAction.saveAsTemplate => unawaited(_controller.saveAsTemplate()),
+    _EditorMenuAction.editorSettings => unawaited(
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (BuildContext context) => const EditorSettingsPage(),
+        ),
+      ),
+    ),
+  };
+
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -740,32 +761,39 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   : context.l10n.autoT0135,
             ),
             actions: <Widget>[
-              PopupMenuButton<_EditorMenuAction>(
+              ExpressiveMenuButton(
                 tooltip: context.l10n.diaryEditorMoreActions,
                 icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
-                onSelected: (action) => switch (action) {
-                  _EditorMenuAction.saveAsTemplate => unawaited(
-                    _controller.saveAsTemplate(),
-                  ),
-                  _EditorMenuAction.editorSettings =>
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (BuildContext context) =>
-                            const EditorSettingsPage(),
+                items: <Widget>[
+                  // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
+                  if (_templates.enabled)
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(
+                        FontAwesomeIcons.wandMagicSparkles,
                       ),
+                      onPressed:
+                          _saving ||
+                              _recordingPanelOpen ||
+                              _mediaImportController.isBusy
+                          ? null
+                          : () => _onEditorMenuAction(
+                              _EditorMenuAction.chooseTemplate,
+                            ),
+                      child: Text(context.l10n.diaryTemplateChoose),
                     ),
-                },
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<_EditorMenuAction>>[
-                      PopupMenuItem<_EditorMenuAction>(
-                        value: _EditorMenuAction.saveAsTemplate,
-                        child: Text(context.l10n.diaryTemplateSaveAs),
-                      ),
-                      PopupMenuItem<_EditorMenuAction>(
-                        value: _EditorMenuAction.editorSettings,
-                        child: Text(context.l10n.settingsEditorTitle),
-                      ),
-                    ],
+                  ExpressiveMenuItem(
+                    leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
+                    onPressed: () =>
+                        _onEditorMenuAction(_EditorMenuAction.saveAsTemplate),
+                    child: Text(context.l10n.diaryTemplateSaveAs),
+                  ),
+                  ExpressiveMenuItem(
+                    leadingIcon: const FaIcon(FontAwesomeIcons.penNib),
+                    onPressed: () =>
+                        _onEditorMenuAction(_EditorMenuAction.editorSettings),
+                    child: Text(context.l10n.settingsEditorTitle),
+                  ),
+                ],
               ),
               if (widget.entryMode == EditDiaryEntryMode.create)
                 IconButton(
@@ -1075,5 +1103,5 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
 enum EditDiaryEntryMode { create, edit }
 
-/// 顶栏菜单：存为模板、编辑器设置。
-enum _EditorMenuAction { saveAsTemplate, editorSettings }
+/// 顶栏菜单：选择模板（只在新建空白日记）、存为模板、编辑器设置。
+enum _EditorMenuAction { chooseTemplate, saveAsTemplate, editorSettings }

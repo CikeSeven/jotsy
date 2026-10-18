@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../widgets/expressive_image_frame.dart';
+import '../../../widgets/expressive_menu/expressive_menu.dart';
 import '../../../widgets/expressive_state_blend.dart';
 import '../../controllers/diary_day_photos_controller.dart';
 
@@ -44,41 +45,16 @@ class DiaryDayPhotoTile extends StatelessWidget {
   final VoidCallback? onClearCover;
   final String? timeLabel;
 
-  /// 长按菜单：锚在格子上，只有一项（按当前状态是设为或取消封面）。
-  Future<void> _showCoverMenu(BuildContext context) async {
-    final box = context.findRenderObject() as RenderBox?;
-    final overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox?;
-    if (box == null || overlay == null) return;
-    Feedback.forLongPress(context);
-    final rect = box.localToGlobal(Offset.zero, ancestor: overlay) & box.size;
-    final l10n = context.l10n;
-    final confirmed = await showMenu<bool>(
-      context: context,
-      position: RelativeRect.fromRect(rect, Offset.zero & overlay.size),
-      items: <PopupMenuEntry<bool>>[
-        PopupMenuItem<bool>(
-          value: true,
-          child: Row(
-            children: <Widget>[
-              FaIcon(
-                isCover ? FontAwesomeIcons.xmark : FontAwesomeIcons.image,
-                size: 14,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                isCover
-                    ? l10n.diaryDayPhotosClearCover
-                    : l10n.diaryDayPhotosSetCover,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-    if (confirmed != true || !context.mounted) return;
-    (isCover ? onClearCover : onSetCover)?.call();
-  }
+  /// 长按菜单的唯一一项：按当前状态是设为或取消封面。
+  Widget _buildCoverMenuItem(AppLocalizations l10n) => ExpressiveMenuItem(
+    leadingIcon: FaIcon(
+      isCover ? FontAwesomeIcons.xmark : FontAwesomeIcons.image,
+    ),
+    onPressed: () => (isCover ? onClearCover : onSetCover)?.call(),
+    child: Text(
+      isCover ? l10n.diaryDayPhotosClearCover : l10n.diaryDayPhotosSetCover,
+    ),
+  );
 
   static const double radius = 12;
 
@@ -108,6 +84,25 @@ class DiaryDayPhotoTile extends StatelessWidget {
     );
     final canEditCover = isCover ? onClearCover != null : onSetCover != null;
     final l10n = context.l10n;
+    // 菜单锚在整个格子上、从格子起始边展开（与改版前的长按菜单一样贴格子起始边），
+    // 下方放不下时翻到上方。
+    return ExpressiveMenuAnchor(
+      placement: ExpressiveMenuPlacement.start,
+      menuChildren: <Widget>[_buildCoverMenuItem(l10n)],
+      builder: (BuildContext context, ExpressiveMenuAnchorState menu, _) =>
+          _buildTile(context, menu, thumbnail, canEditCover),
+    );
+  }
+
+  Widget _buildTile(
+    BuildContext context,
+    ExpressiveMenuAnchorState menu,
+    Widget thumbnail,
+    bool canEditCover,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final borderRadius = BorderRadius.circular(radius);
+    final l10n = context.l10n;
     return Semantics(
       button: !inserted,
       checked: selected || inserted,
@@ -122,7 +117,12 @@ class DiaryDayPhotoTile extends StatelessWidget {
       excludeSemantics: true,
       child: GestureDetector(
         onTap: inserted ? null : onTap,
-        onLongPress: canEditCover ? () => _showCoverMenu(context) : null,
+        onLongPress: canEditCover
+            ? () {
+                Feedback.forLongPress(context);
+                menu.open();
+              }
+            : null,
         child: ExpressiveStateBlend(
           active: selected,
           child: thumbnail,

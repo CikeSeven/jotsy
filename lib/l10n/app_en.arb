@@ -7312,23 +7312,6 @@
       }
     }
   },
-  "diaryTemplateMonthlyName": "Monthly review",
-  "@diaryTemplateMonthlyName": {
-    "description": "Name of the built-in “Monthly review” diary template."
-  },
-  "diaryTemplateMonthlyDesc": "Look back on the month and set a direction for the next",
-  "@diaryTemplateMonthlyDesc": {
-    "description": "One-line description of the built-in “Monthly review” template."
-  },
-  "diaryTemplateMonthlyTitle": "Monthly review · {date}",
-  "@diaryTemplateMonthlyTitle": {
-    "description": "Title pattern of the built-in “Monthly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
   "diaryTemplateEmotionName": "Untangle a feeling",
   "@diaryTemplateEmotionName": {
     "description": "Name of the built-in “Untangle a feeling” diary template."
@@ -7340,40 +7323,6 @@
   "diaryTemplateEmotionTitle": "Feelings · {date}",
   "@diaryTemplateEmotionTitle": {
     "description": "Title pattern of the built-in “Untangle a feeling” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateDreamName": "Dream log",
-  "@diaryTemplateDreamName": {
-    "description": "Name of the built-in “Dream log” diary template."
-  },
-  "diaryTemplateDreamDesc": "Write the dream down before it fades",
-  "@diaryTemplateDreamDesc": {
-    "description": "One-line description of the built-in “Dream log” template."
-  },
-  "diaryTemplateDreamTitle": "Dream · {date}",
-  "@diaryTemplateDreamTitle": {
-    "description": "Title pattern of the built-in “Dream log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateTravelName": "Travel log",
-  "@diaryTemplateTravelName": {
-    "description": "Name of the built-in “Travel log” diary template."
-  },
-  "diaryTemplateTravelDesc": "Routes, sights and little moments on the road",
-  "@diaryTemplateTravelDesc": {
-    "description": "One-line description of the built-in “Travel log” template."
-  },
-  "diaryTemplateTravelTitle": "Travel · {date}",
-  "@diaryTemplateTravelTitle": {
-    "description": "Title pattern of the built-in “Travel log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
     "placeholders": {
       "date": {
         "type": "String"
@@ -7396,72 +7345,6 @@
         "type": "String"
       }
     }
-  },
-  "diaryTemplateMovieName": "Movie log",
-  "@diaryTemplateMovieName": {
-    "description": "Name of the built-in “Movie log” diary template."
-  },
-  "diaryTemplateMovieDesc": "Title, rating and what moved you",
-  "@diaryTemplateMovieDesc": {
-    "description": "One-line description of the built-in “Movie log” template."
-  },
-  "diaryTemplateMovieTitle": "Movie night · {date}",
-  "@diaryTemplateMovieTitle": {
-    "description": "Title pattern of the built-in “Movie log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateWorkoutName": "Workout log",
-  "@diaryTemplateWorkoutName": {
-    "description": "Name of the built-in “Workout log” diary template."
-  },
-  "diaryTemplateWorkoutDesc": "Activity, duration and how your body feels",
-  "@diaryTemplateWorkoutDesc": {
-    "description": "One-line description of the built-in “Workout log” template."
-  },
-  "diaryTemplateWorkoutTitle": "Workout · {date}",
-  "@diaryTemplateWorkoutTitle": {
-    "description": "Title pattern of the built-in “Workout log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateWorkName": "Work log",
-  "@diaryTemplateWorkName": {
-    "description": "Name of the built-in “Work log” diary template."
-  },
-  "diaryTemplateWorkDesc": "Done, in progress and tomorrow's plan",
-  "@diaryTemplateWorkDesc": {
-    "description": "One-line description of the built-in “Work log” template."
-  },
-  "diaryTemplateWorkTitle": "Work log · {weekday}, {date}",
-  "@diaryTemplateWorkTitle": {
-    "description": "Title pattern of the built-in “Work log” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "weekday": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateLetterName": "Letter to future me",
-  "@diaryTemplateLetterName": {
-    "description": "Name of the built-in “Letter to future me” diary template."
-  },
-  "diaryTemplateLetterDesc": "A letter to yourself a year from now, sealed as a time capsule",
-  "@diaryTemplateLetterDesc": {
-    "description": "One-line description of the built-in “Letter to future me” template."
-  },
-  "diaryTemplateLetterTitle": "To me, one year from now",
-  "@diaryTemplateLetterTitle": {
-    "description": "Title pattern of the built-in “Letter to future me” template."
   },
   "diaryTemplateDailyHappened": "What happened today",
   "@diaryTemplateDailyHappened": {
@@ -7539,31 +7422,6 @@
   "@diaryTemplateWeeklyNext": {
     "description": "Body line of a built-in diary template (Weekly)."
   },
-  "diaryTemplateMonthlyProgress": "{progress} of the year has gone by.",
-  "@diaryTemplateMonthlyProgress": {
-    "description": "Body line of a built-in diary template (Monthly). Placeholders receive template variable tokens.",
-    "placeholders": {
-      "progress": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryTemplateMonthlyKeyword": "The month in a word",
-  "@diaryTemplateMonthlyKeyword": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
-  "diaryTemplateMonthlyMattered": "What mattered",
-  "@diaryTemplateMonthlyMattered": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
-  "diaryTemplateMonthlyWinsRegrets": "Wins and regrets",
-  "@diaryTemplateMonthlyWinsRegrets": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
-  "diaryTemplateMonthlyNext": "Next month",
-  "@diaryTemplateMonthlyNext": {
-    "description": "Body line of a built-in diary template (Monthly)."
-  },
   "diaryTemplateEmotionHappened": "What happened",
   "@diaryTemplateEmotionHappened": {
     "description": "Body line of a built-in diary template (Emotion)."
@@ -7583,34 +7441,6 @@
   "diaryTemplateEmotionStep": "One small next step",
   "@diaryTemplateEmotionStep": {
     "description": "Body line of a built-in diary template (Emotion)."
-  },
-  "diaryTemplateDreamHappened": "What happened in the dream",
-  "@diaryTemplateDreamHappened": {
-    "description": "Body line of a built-in diary template (Dream)."
-  },
-  "diaryTemplateDreamImages": "Vivid images",
-  "@diaryTemplateDreamImages": {
-    "description": "Body line of a built-in diary template (Dream)."
-  },
-  "diaryTemplateDreamWaking": "How I felt on waking",
-  "@diaryTemplateDreamWaking": {
-    "description": "Body line of a built-in diary template (Dream)."
-  },
-  "diaryTemplateTravelRoute": "Today's route",
-  "@diaryTemplateTravelRoute": {
-    "description": "Body line of a built-in diary template (Travel)."
-  },
-  "diaryTemplateTravelSights": "What I saw",
-  "@diaryTemplateTravelSights": {
-    "description": "Body line of a built-in diary template (Travel)."
-  },
-  "diaryTemplateTravelFood": "What I ate",
-  "@diaryTemplateTravelFood": {
-    "description": "Body line of a built-in diary template (Travel)."
-  },
-  "diaryTemplateTravelNotes": "Notes from the road",
-  "@diaryTemplateTravelNotes": {
-    "description": "Body line of a built-in diary template (Travel)."
   },
   "diaryTemplateReadingBook": "Book: ",
   "@diaryTemplateReadingBook": {
@@ -7632,112 +7462,12 @@
   "@diaryTemplateReadingThoughts": {
     "description": "Body line of a built-in diary template (Reading)."
   },
-  "diaryTemplateMovieFilm": "Title: ",
-  "@diaryTemplateMovieFilm": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieRating": "Rating:   / 10",
-  "@diaryTemplateMovieRating": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieStory": "The story in one line",
-  "@diaryTemplateMovieStory": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieMoved": "What moved me",
-  "@diaryTemplateMovieMoved": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateMovieLines": "Favorite lines",
-  "@diaryTemplateMovieLines": {
-    "description": "Body line of a built-in diary template (Movie)."
-  },
-  "diaryTemplateWorkoutActivity": "Activity: ",
-  "@diaryTemplateWorkoutActivity": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkoutDuration": "Duration: ",
-  "@diaryTemplateWorkoutDuration": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkoutTraining": "Today's training",
-  "@diaryTemplateWorkoutTraining": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkoutBody": "How my body feels",
-  "@diaryTemplateWorkoutBody": {
-    "description": "Body line of a built-in diary template (Workout)."
-  },
-  "diaryTemplateWorkDone": "Done today",
-  "@diaryTemplateWorkDone": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateWorkInProgress": "In progress",
-  "@diaryTemplateWorkInProgress": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateWorkBlockers": "Blockers",
-  "@diaryTemplateWorkBlockers": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateWorkTomorrow": "Tomorrow",
-  "@diaryTemplateWorkTomorrow": {
-    "description": "Body line of a built-in diary template (Work)."
-  },
-  "diaryTemplateLetterGreeting": "Dear me, a year from now,",
-  "@diaryTemplateLetterGreeting": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterNow": "Who I am now",
-  "@diaryTemplateLetterNow": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterMind": "What's on my mind lately",
-  "@diaryTemplateLetterMind": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterHope": "What I hope for you",
-  "@diaryTemplateLetterHope": {
-    "description": "Body line of a built-in diary template (Letter)."
-  },
-  "diaryTemplateLetterSignature": "Written on {date}",
-  "@diaryTemplateLetterSignature": {
-    "description": "Body line of a built-in diary template (Letter). Placeholders receive template variable tokens.",
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "lunar": {
-        "type": "String"
-      }
-    }
-  },
   "diaryTemplateTagGratitude": "Gratitude",
   "@diaryTemplateTagGratitude": {
     "description": "Tag name preset by a built-in diary template (created when missing)."
   },
-  "diaryTemplateTagDream": "Dreams",
-  "@diaryTemplateTagDream": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagTravel": "Travel",
-  "@diaryTemplateTagTravel": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
   "diaryTemplateTagReading": "Reading",
   "@diaryTemplateTagReading": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagMovie": "Movies",
-  "@diaryTemplateTagMovie": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagWorkout": "Workout",
-  "@diaryTemplateTagWorkout": {
-    "description": "Tag name preset by a built-in diary template (created when missing)."
-  },
-  "diaryTemplateTagWork": "Work",
-  "@diaryTemplateTagWork": {
     "description": "Tag name preset by a built-in diary template (created when missing)."
   },
   "diaryTemplateQuestion01": "What small thing made you smile today?",
@@ -8038,6 +7768,19 @@
   "@diaryTemplatePickerEmpty": {
     "description": "Template picker: the selected filter has no templates."
   },
+  "diaryTemplatePickerSearchHint": "Search templates",
+  "@diaryTemplatePickerSearchHint": {
+    "description": "Template picker: placeholder of the search field."
+  },
+  "diaryTemplatePickerSearchEmpty": "No templates match “{query}”",
+  "@diaryTemplatePickerSearchEmpty": {
+    "description": "Template picker: shown when the search has no results; {query} is the typed text.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "diaryTemplatePickerUse": "Use this template",
   "@diaryTemplatePickerUse": {
     "description": "Template picker preview: apply the previewed template."
@@ -8096,25 +7839,176 @@
   "@diaryTemplatesNewEntryGroup": {
     "description": "Group title on the template page for how templates appear when starting an entry."
   },
-  "diaryTemplatesStripSwitch": "Suggest templates",
+  "diaryTemplatesStripSwitch": "Suggest templates for new entries",
   "@diaryTemplatesStripSwitch": {
-    "description": "Switch: show the template suggestion strip in blank new entries."
+    "description": "Switch (template page and editor settings): show the template suggestion strip in blank new entries."
   },
-  "diaryTemplatesStripSwitchSubtitle": "Show suggestions under the title of a blank entry",
+  "diaryTemplatesStripSwitchSubtitle": "Show “Start from a template” under the title of a blank entry",
   "@diaryTemplatesStripSwitchSubtitle": {
     "description": "Subtitle of the suggestion strip switch."
   },
   "diaryTemplatesAutoApply": "Apply automatically",
   "@diaryTemplatesAutoApply": {
-    "description": "Setting: a template applied to every blank new entry."
+    "description": "Setting and page title: templates applied automatically to blank new entries."
   },
   "diaryTemplatesAutoApplyNone": "Off",
   "@diaryTemplatesAutoApplyNone": {
     "description": "Auto-apply setting value when no template is chosen."
   },
-  "diaryTemplatesAutoApplyHint": "Every blank new entry starts with this template. You can undo it each time.",
+  "diaryTemplatesAutoApplyHint": "Blank new entries start with this template outside every time range and when writing for another day. You can undo it each time.",
   "@diaryTemplatesAutoApplyHint": {
-    "description": "Explanation at the top of the auto-apply picker."
+    "description": "Explanation at the top of the default auto-apply template picker."
+  },
+  "diaryTemplatesAutoApplyRulesSummary": "{count, plural, =1{1 time range} other{{count} time ranges}}",
+  "@diaryTemplatesAutoApplyRulesSummary": {
+    "description": "Auto-apply setting subtitle when only time ranges are set.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRulesAndDefault": "{count, plural, =1{1 time range} other{{count} time ranges}} · otherwise “{name}”",
+  "@diaryTemplatesAutoApplyRulesAndDefault": {
+    "description": "Auto-apply setting subtitle when both time ranges and a default template are set.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyIntro": "Blank new entries start with a template, and you can undo it each time. Time ranges only apply when writing for today.",
+  "@diaryTemplatesAutoApplyIntro": {
+    "description": "Explanation at the top of the auto-apply page."
+  },
+  "diaryTemplatesAutoApplyRulesGroup": "By time of day",
+  "@diaryTemplatesAutoApplyRulesGroup": {
+    "description": "Group title on the auto-apply page: rules by time range."
+  },
+  "diaryTemplatesAutoApplyOtherGroup": "Other times",
+  "@diaryTemplatesAutoApplyOtherGroup": {
+    "description": "Group title on the auto-apply page: the default template outside every time range."
+  },
+  "diaryTemplatesAutoApplyDefault": "Default template",
+  "@diaryTemplatesAutoApplyDefault": {
+    "description": "Setting: the template applied outside every time range."
+  },
+  "diaryTemplatesAutoApplyAddRule": "Add time range",
+  "@diaryTemplatesAutoApplyAddRule": {
+    "description": "Button and sheet title: add a new time-range auto-apply rule."
+  },
+  "diaryTemplatesAutoApplyRuleLimit": "Up to {max} time ranges",
+  "@diaryTemplatesAutoApplyRuleLimit": {
+    "description": "Shown when the maximum number of time ranges has been reached.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyOverlapHint": "When ranges overlap, ones set to specific days win first, then the shorter one.",
+  "@diaryTemplatesAutoApplyOverlapHint": {
+    "description": "Footer on the auto-apply page explaining which overlapping range wins."
+  },
+  "diaryTemplatesAutoApplyRange": "{start} – {end}",
+  "@diaryTemplatesAutoApplyRange": {
+    "description": "Time range rule title: start and end time.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRangeOvernight": "{start} – {end} next day",
+  "@diaryTemplatesAutoApplyRangeOvernight": {
+    "description": "Title of an overnight time range rule that ends the next day.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyRuleSubtitle": "{days} · {name}",
+  "@diaryTemplatesAutoApplyRuleSubtitle": {
+    "description": "Time range rule subtitle: which days it applies on and the template name.",
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplyEveryDay": "Every day",
+  "@diaryTemplatesAutoApplyEveryDay": {
+    "description": "Days label for a time range rule that applies on every day."
+  },
+  "diaryTemplatesAutoApplyWorkdays": "Weekdays",
+  "@diaryTemplatesAutoApplyWorkdays": {
+    "description": "Days label for a time range rule set to exactly Monday to Friday."
+  },
+  "diaryTemplatesAutoApplyWeekend": "Weekends",
+  "@diaryTemplatesAutoApplyWeekend": {
+    "description": "Days label for a time range rule set to exactly Saturday and Sunday."
+  },
+  "diaryTemplatesAutoApplyDaySeparator": ", ",
+  "@diaryTemplatesAutoApplyDaySeparator": {
+    "description": "Separator between short weekday names in a list."
+  },
+  "diaryTemplatesAutoApplyMissing": "Template no longer exists",
+  "@diaryTemplatesAutoApplyMissing": {
+    "description": "Shown when a time range rule points at a deleted template."
+  },
+  "diaryTemplatesAutoApplyEditRule": "Edit time range",
+  "@diaryTemplatesAutoApplyEditRule": {
+    "description": "Sheet title when editing a time range rule."
+  },
+  "diaryTemplatesAutoApplyStart": "Starts",
+  "@diaryTemplatesAutoApplyStart": {
+    "description": "Small label on the start time button in the time range sheet."
+  },
+  "diaryTemplatesAutoApplyEnd": "Ends",
+  "@diaryTemplatesAutoApplyEnd": {
+    "description": "Small label on the end time button in the time range sheet."
+  },
+  "diaryTemplatesAutoApplyOvernightHint": "Overnight, ends at {end} the next day",
+  "@diaryTemplatesAutoApplyOvernightHint": {
+    "description": "Hint when the end time is before the start time, so the range crosses midnight.",
+    "placeholders": {
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesAutoApplySameTime": "Start and end can't be the same time",
+  "@diaryTemplatesAutoApplySameTime": {
+    "description": "Error when the start and end times are equal."
+  },
+  "diaryTemplatesAutoApplyDays": "Days",
+  "@diaryTemplatesAutoApplyDays": {
+    "description": "Label above the weekday chips in the time range sheet."
+  },
+  "diaryTemplatesAutoApplyDaysHint": "Leave all unselected for every day",
+  "@diaryTemplatesAutoApplyDaysHint": {
+    "description": "Hint under the weekday chips: selecting none means every day."
+  },
+  "diaryTemplatesAutoApplyTemplate": "Template",
+  "@diaryTemplatesAutoApplyTemplate": {
+    "description": "Row in the time range sheet for choosing the template."
+  },
+  "diaryTemplatesAutoApplyRuleDeleted": "Time range deleted",
+  "@diaryTemplatesAutoApplyRuleDeleted": {
+    "description": "Message after deleting a time range rule, with an undo button."
   },
   "diaryTemplatesMineGroup": "My templates",
   "@diaryTemplatesMineGroup": {
@@ -8400,6 +8294,14 @@
   },
   "diaryEditorMoreActions": "More",
   "@diaryEditorMoreActions": {
-    "description": "Tooltip of the editor's top bar menu (save as template, editor settings)."
+    "description": "Tooltip of the editor's top bar menu (choose a template, save as template, editor settings)."
+  },
+  "diaryTemplateChoose": "Choose a template",
+  "@diaryTemplateChoose": {
+    "description": "Top bar menu item of a new blank entry: opens the template picker and applies the chosen one, replacing a just-applied template that is still untouched."
+  },
+  "diaryTemplateNeedsBlankEntry": "Templates can only be applied to a blank entry",
+  "@diaryTemplateNeedsBlankEntry": {
+    "description": "Hint when \"Choose a template\" is tapped after the user has written in the title or body."
   }
 }

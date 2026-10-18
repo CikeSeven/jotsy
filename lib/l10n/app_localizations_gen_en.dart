@@ -5669,18 +5669,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateMonthlyName => 'Monthly review';
-
-  @override
-  String get diaryTemplateMonthlyDesc =>
-      'Look back on the month and set a direction for the next';
-
-  @override
-  String diaryTemplateMonthlyTitle(String date) {
-    return 'Monthly review · $date';
-  }
-
-  @override
   String get diaryTemplateEmotionName => 'Untangle a feeling';
 
   @override
@@ -5690,29 +5678,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String diaryTemplateEmotionTitle(String date) {
     return 'Feelings · $date';
-  }
-
-  @override
-  String get diaryTemplateDreamName => 'Dream log';
-
-  @override
-  String get diaryTemplateDreamDesc => 'Write the dream down before it fades';
-
-  @override
-  String diaryTemplateDreamTitle(String date) {
-    return 'Dream · $date';
-  }
-
-  @override
-  String get diaryTemplateTravelName => 'Travel log';
-
-  @override
-  String get diaryTemplateTravelDesc =>
-      'Routes, sights and little moments on the road';
-
-  @override
-  String diaryTemplateTravelTitle(String date) {
-    return 'Travel · $date';
   }
 
   @override
@@ -5726,50 +5691,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String diaryTemplateReadingTitle(String date) {
     return 'Reading notes · $date';
   }
-
-  @override
-  String get diaryTemplateMovieName => 'Movie log';
-
-  @override
-  String get diaryTemplateMovieDesc => 'Title, rating and what moved you';
-
-  @override
-  String diaryTemplateMovieTitle(String date) {
-    return 'Movie night · $date';
-  }
-
-  @override
-  String get diaryTemplateWorkoutName => 'Workout log';
-
-  @override
-  String get diaryTemplateWorkoutDesc =>
-      'Activity, duration and how your body feels';
-
-  @override
-  String diaryTemplateWorkoutTitle(String date) {
-    return 'Workout · $date';
-  }
-
-  @override
-  String get diaryTemplateWorkName => 'Work log';
-
-  @override
-  String get diaryTemplateWorkDesc => 'Done, in progress and tomorrow\'s plan';
-
-  @override
-  String diaryTemplateWorkTitle(String date, String weekday) {
-    return 'Work log · $weekday, $date';
-  }
-
-  @override
-  String get diaryTemplateLetterName => 'Letter to future me';
-
-  @override
-  String get diaryTemplateLetterDesc =>
-      'A letter to yourself a year from now, sealed as a time capsule';
-
-  @override
-  String get diaryTemplateLetterTitle => 'To me, one year from now';
 
   @override
   String get diaryTemplateDailyHappened => 'What happened today';
@@ -5827,23 +5748,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateWeeklyNext => 'Next week';
 
   @override
-  String diaryTemplateMonthlyProgress(String progress) {
-    return '$progress of the year has gone by.';
-  }
-
-  @override
-  String get diaryTemplateMonthlyKeyword => 'The month in a word';
-
-  @override
-  String get diaryTemplateMonthlyMattered => 'What mattered';
-
-  @override
-  String get diaryTemplateMonthlyWinsRegrets => 'Wins and regrets';
-
-  @override
-  String get diaryTemplateMonthlyNext => 'Next month';
-
-  @override
   String get diaryTemplateEmotionHappened => 'What happened';
 
   @override
@@ -5857,27 +5761,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateEmotionStep => 'One small next step';
-
-  @override
-  String get diaryTemplateDreamHappened => 'What happened in the dream';
-
-  @override
-  String get diaryTemplateDreamImages => 'Vivid images';
-
-  @override
-  String get diaryTemplateDreamWaking => 'How I felt on waking';
-
-  @override
-  String get diaryTemplateTravelRoute => 'Today\'s route';
-
-  @override
-  String get diaryTemplateTravelSights => 'What I saw';
-
-  @override
-  String get diaryTemplateTravelFood => 'What I ate';
-
-  @override
-  String get diaryTemplateTravelNotes => 'Notes from the road';
 
   @override
   String get diaryTemplateReadingBook => 'Book: ';
@@ -5895,81 +5778,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateReadingThoughts => 'My thoughts';
 
   @override
-  String get diaryTemplateMovieFilm => 'Title: ';
-
-  @override
-  String get diaryTemplateMovieRating => 'Rating:   / 10';
-
-  @override
-  String get diaryTemplateMovieStory => 'The story in one line';
-
-  @override
-  String get diaryTemplateMovieMoved => 'What moved me';
-
-  @override
-  String get diaryTemplateMovieLines => 'Favorite lines';
-
-  @override
-  String get diaryTemplateWorkoutActivity => 'Activity: ';
-
-  @override
-  String get diaryTemplateWorkoutDuration => 'Duration: ';
-
-  @override
-  String get diaryTemplateWorkoutTraining => 'Today\'s training';
-
-  @override
-  String get diaryTemplateWorkoutBody => 'How my body feels';
-
-  @override
-  String get diaryTemplateWorkDone => 'Done today';
-
-  @override
-  String get diaryTemplateWorkInProgress => 'In progress';
-
-  @override
-  String get diaryTemplateWorkBlockers => 'Blockers';
-
-  @override
-  String get diaryTemplateWorkTomorrow => 'Tomorrow';
-
-  @override
-  String get diaryTemplateLetterGreeting => 'Dear me, a year from now,';
-
-  @override
-  String get diaryTemplateLetterNow => 'Who I am now';
-
-  @override
-  String get diaryTemplateLetterMind => 'What\'s on my mind lately';
-
-  @override
-  String get diaryTemplateLetterHope => 'What I hope for you';
-
-  @override
-  String diaryTemplateLetterSignature(String date, String lunar) {
-    return 'Written on $date';
-  }
-
-  @override
   String get diaryTemplateTagGratitude => 'Gratitude';
 
   @override
-  String get diaryTemplateTagDream => 'Dreams';
-
-  @override
-  String get diaryTemplateTagTravel => 'Travel';
-
-  @override
   String get diaryTemplateTagReading => 'Reading';
-
-  @override
-  String get diaryTemplateTagMovie => 'Movies';
-
-  @override
-  String get diaryTemplateTagWorkout => 'Workout';
-
-  @override
-  String get diaryTemplateTagWork => 'Work';
 
   @override
   String get diaryTemplateQuestion01 =>
@@ -6221,6 +6033,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplatePickerEmpty => 'No templates here';
 
   @override
+  String get diaryTemplatePickerSearchHint => 'Search templates';
+
+  @override
+  String diaryTemplatePickerSearchEmpty(String query) {
+    return 'No templates match “$query”';
+  }
+
+  @override
   String get diaryTemplatePickerUse => 'Use this template';
 
   @override
@@ -6258,11 +6078,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplatesNewEntryGroup => 'New entries';
 
   @override
-  String get diaryTemplatesStripSwitch => 'Suggest templates';
+  String get diaryTemplatesStripSwitch => 'Suggest templates for new entries';
 
   @override
   String get diaryTemplatesStripSwitchSubtitle =>
-      'Show suggestions under the title of a blank entry';
+      'Show “Start from a template” under the title of a blank entry';
 
   @override
   String get diaryTemplatesAutoApply => 'Apply automatically';
@@ -6272,7 +6092,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplatesAutoApplyHint =>
-      'Every blank new entry starts with this template. You can undo it each time.';
+      'Blank new entries start with this template outside every time range and when writing for another day. You can undo it each time.';
+
+  @override
+  String diaryTemplatesAutoApplyRulesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count time ranges',
+      one: '1 time range',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryTemplatesAutoApplyRulesAndDefault(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count time ranges',
+      one: '1 time range',
+    );
+    return '$_temp0 · otherwise “$name”';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplyIntro =>
+      'Blank new entries start with a template, and you can undo it each time. Time ranges only apply when writing for today.';
+
+  @override
+  String get diaryTemplatesAutoApplyRulesGroup => 'By time of day';
+
+  @override
+  String get diaryTemplatesAutoApplyOtherGroup => 'Other times';
+
+  @override
+  String get diaryTemplatesAutoApplyDefault => 'Default template';
+
+  @override
+  String get diaryTemplatesAutoApplyAddRule => 'Add time range';
+
+  @override
+  String diaryTemplatesAutoApplyRuleLimit(int max) {
+    return 'Up to $max time ranges';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplyOverlapHint =>
+      'When ranges overlap, ones set to specific days win first, then the shorter one.';
+
+  @override
+  String diaryTemplatesAutoApplyRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String diaryTemplatesAutoApplyRangeOvernight(String start, String end) {
+    return '$start – $end next day';
+  }
+
+  @override
+  String diaryTemplatesAutoApplyRuleSubtitle(String days, String name) {
+    return '$days · $name';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplyEveryDay => 'Every day';
+
+  @override
+  String get diaryTemplatesAutoApplyWorkdays => 'Weekdays';
+
+  @override
+  String get diaryTemplatesAutoApplyWeekend => 'Weekends';
+
+  @override
+  String get diaryTemplatesAutoApplyDaySeparator => ', ';
+
+  @override
+  String get diaryTemplatesAutoApplyMissing => 'Template no longer exists';
+
+  @override
+  String get diaryTemplatesAutoApplyEditRule => 'Edit time range';
+
+  @override
+  String get diaryTemplatesAutoApplyStart => 'Starts';
+
+  @override
+  String get diaryTemplatesAutoApplyEnd => 'Ends';
+
+  @override
+  String diaryTemplatesAutoApplyOvernightHint(String end) {
+    return 'Overnight, ends at $end the next day';
+  }
+
+  @override
+  String get diaryTemplatesAutoApplySameTime =>
+      'Start and end can\'t be the same time';
+
+  @override
+  String get diaryTemplatesAutoApplyDays => 'Days';
+
+  @override
+  String get diaryTemplatesAutoApplyDaysHint =>
+      'Leave all unselected for every day';
+
+  @override
+  String get diaryTemplatesAutoApplyTemplate => 'Template';
+
+  @override
+  String get diaryTemplatesAutoApplyRuleDeleted => 'Time range deleted';
 
   @override
   String get diaryTemplatesMineGroup => 'My templates';
@@ -6486,4 +6414,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorMoreActions => 'More';
+
+  @override
+  String get diaryTemplateChoose => 'Choose a template';
+
+  @override
+  String get diaryTemplateNeedsBlankEntry =>
+      'Templates can only be applied to a blank entry';
 }

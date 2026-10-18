@@ -84,7 +84,7 @@ int firstEmptyLineOffset(String plainText) {
 
 /// 内置模板正文的块描述，由 [compileDiaryTemplateBlocks] 编译为 Delta。
 ///
-/// 内置模板的文字来自 ARB，按界面语言生成；块描述让 15 个模板的结构一目
+/// 内置模板的文字来自 ARB，按界面语言生成；块描述让每个模板的结构一目
 /// 了然，也保证中英文两版的结构完全一致。块里的文字都是单行，换行会被
 /// 折成空格。
 sealed class DiaryTemplateBlock {

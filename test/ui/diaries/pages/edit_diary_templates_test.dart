@@ -6,7 +6,9 @@ import 'package:node_diary/core/services/day_photo_library.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_built_ins.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_prefs.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_auto_rule.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_selection.dart';
+import 'package:node_diary/ui/diary_templates/providers/diary_template_providers.dart';
 import 'package:node_diary/ui/diary_templates/widgets/diary_template_strip.dart';
 
 import '../../../support/diary_drafts_harness.dart';
@@ -43,6 +45,7 @@ void main() {
     DateTime? day,
     DiaryTemplateSelection? template,
     String? prefsRaw,
+    DateTime? now,
   }) async {
     final h = harness ?? await DiaryDraftsHarness.create(tester);
     if (prefsRaw != null) {
@@ -59,6 +62,8 @@ void main() {
         dayPhotoLibraryProvider.overrideWithValue(
           FakeDayPhotoLibrary(access: DayPhotoAccess.denied),
         ),
+        if (now != null)
+          diaryTemplateClockProvider.overrideWithValue(() => now),
       ],
     );
     await h.settle();
@@ -210,22 +215,22 @@ void main() {
   testWidgets('a template chosen at the entry is applied without a hint and '
       'counts as recently used', (tester) async {
     final h = await DiaryDraftsHarness.create(tester);
-    final letter = buildBuiltInDiaryTemplates(
+    final reading = buildBuiltInDiaryTemplates(
       h.l10n,
-    ).firstWhere((t) => t.id == 'builtin.letter');
+    ).firstWhere((t) => t.id == 'builtin.reading');
     await h.pump(
       EditDiaryPage(
         entryMode: EditDiaryEntryMode.create,
-        createTemplate: DiaryTemplateSelection(letter),
+        createTemplate: DiaryTemplateSelection(reading),
       ),
     );
     await h.settle();
     await tester.pumpAndSettle();
 
-    expect(titleText(tester), '写给一年后的自己');
+    expect(titleText(tester), startsWith('读书笔记 · '));
     expect(find.byType(SnackBar), findsNothing);
     expect(DiaryTemplatePrefs.decode(h.settings.diaryTemplatePrefsRaw).recent, [
-      'builtin.letter',
+      'builtin.reading',
     ]);
     await h.unmount();
   });
@@ -237,5 +242,74 @@ void main() {
     expect(titleText(tester), '2026年3月5日 星期四');
     await closeSnackBar(h);
     await h.unmount();
+  });
+
+  group('auto-apply by time range', () {
+    // 早上 7–10 点用晨间日记，其他时间用感恩日记；还有一条指向已删除模板的
+    // 午间规则，命中时应落到默认模板。
+    final prefs = DiaryTemplatePrefs(autoTemplateId: 'builtin.gratitude')
+        .withAutoRules(const [
+          DiaryTemplateAutoRule(
+            startMinute: 7 * 60,
+            endMinute: 10 * 60,
+            templateId: 'builtin.morning',
+          ),
+          DiaryTemplateAutoRule(
+            startMinute: 12 * 60,
+            endMinute: 13 * 60,
+            templateId: 'deleted-template',
+          ),
+        ])
+        .encode();
+
+    testWidgets('a blank entry inside a range gets that range\'s template', (
+      tester,
+    ) async {
+      final h = await openEditor(
+        tester,
+        prefsRaw: prefs,
+        now: DateTime(2026, 10, 19, 8, 30),
+      );
+      expect(find.text('已自动套用「晨间日记」'), findsOneWidget);
+      await closeSnackBar(h);
+      await h.unmount();
+    });
+
+    testWidgets('outside every range the default template is used', (
+      tester,
+    ) async {
+      final h = await openEditor(
+        tester,
+        prefsRaw: prefs,
+        now: DateTime(2026, 10, 19, 15),
+      );
+      expect(find.text('已自动套用「感恩日记」'), findsOneWidget);
+      await closeSnackBar(h);
+      await h.unmount();
+    });
+
+    testWidgets('a range pointing at a deleted template falls back to the '
+        'default', (tester) async {
+      final h = await openEditor(
+        tester,
+        prefsRaw: prefs,
+        now: DateTime(2026, 10, 19, 12, 30),
+      );
+      expect(find.text('已自动套用「感恩日记」'), findsOneWidget);
+      await closeSnackBar(h);
+      await h.unmount();
+    });
+
+    testWidgets('backfilling another day ignores the ranges', (tester) async {
+      final h = await openEditor(
+        tester,
+        prefsRaw: prefs,
+        now: DateTime(2026, 10, 19, 8, 30),
+        day: DateTime(2026, 10, 18),
+      );
+      expect(find.text('已自动套用「感恩日记」'), findsOneWidget);
+      await closeSnackBar(h);
+      await h.unmount();
+    });
   });
 }

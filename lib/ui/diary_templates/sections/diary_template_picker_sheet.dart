@@ -11,6 +11,8 @@ import '../models/diary_template_selection.dart';
 import '../providers/diary_template_providers.dart';
 import '../viewmodels/diary_template_labels.dart';
 import '../viewmodels/diary_template_library.dart';
+import '../viewmodels/diary_template_search.dart';
+import '../widgets/diary_template_search_field.dart';
 import '../widgets/diary_template_tile.dart';
 import 'diary_template_picker_preview.dart';
 
@@ -77,6 +79,10 @@ class _PickerFilter {
 enum _FilterKind { all, recommended, mine, category }
 
 /// 面板内容：列表与预览两步，经淡入淡出切换。
+///
+/// 列表步顶部有搜索框，与筛选胶囊取“且”。搜索词与输入框控制器放在本
+/// State 而不是列表子树里：进入预览时列表子树被换掉，返回后搜索词与结果
+/// 仍在。
 class DiaryTemplatePicker extends ConsumerStatefulWidget {
   const DiaryTemplatePicker({
     super.key,
@@ -97,6 +103,22 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
   final DateTime _now = DateTime.now();
   _PickerFilter _filter = _PickerFilter.all;
   DiaryTemplate? _previewing;
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  void _openPreview(DiaryTemplate template) {
+    // 先收起键盘：预览页没有输入框，键盘留着只会挡住底部的“使用”按钮。
+    _searchFocus.unfocus();
+    setState(() => _previewing = template);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,6 +148,7 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
   ) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
+    // 胶囊按完整列表计算而不是按搜索结果：打字时胶囊不会忽隐忽现。
     final filters = <(_PickerFilter, String)>[
       (_PickerFilter.all, l10n.diaryTemplateFilterAll),
       if (ranked.any((item) => item.recommended))
@@ -143,8 +166,20 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
     final filter = filters.any((entry) => entry.$1 == _filter)
         ? _filter
         : _PickerFilter.all;
-    final items = ranked.where(filter.accepts).toList(growable: false);
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final items = ranked
+        .where(
+          (item) =>
+              filter.accepts(item) &&
+              diaryTemplateMatchesQuery(l10n, item.template, _query),
+        )
+        .toList(growable: false);
+    final searching = diaryTemplateSearchTerms(_query).isNotEmpty;
+    // 底部面板不会为软键盘让位，键盘盖在面板下半部分上；把键盘高度计入
+    // 列表底部留白，搜索时结果仍能滚到键盘上方。键盘弹起时系统已把
+    // padding.bottom 扣掉了键盘遮住的部分，两者相加不会重复计算。
+    final bottomInset =
+        MediaQuery.paddingOf(context).bottom +
+        MediaQuery.viewInsetsOf(context).bottom;
     return CustomScrollView(
       key: const ValueKey<String>('list'),
       controller: widget.scrollController,
@@ -169,6 +204,21 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
             ),
           ),
         ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.l,
+            0,
+            AppSpacing.l,
+            AppSpacing.s,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: DiaryTemplateSearchField(
+              controller: _searchController,
+              focusNode: _searchFocus,
+              onChanged: (value) => setState(() => _query = value),
+            ),
+          ),
+        ),
         SliverToBoxAdapter(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -189,11 +239,22 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.m)),
         if (items.isEmpty)
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: EmptyHint(
-              icon: FontAwesomeIcons.layerGroup,
-              message: l10n.diaryTemplatePickerEmpty,
+          SliverPadding(
+            // 空态居中在键盘上方的可见区域里。
+            padding: EdgeInsets.only(bottom: bottomInset),
+            sliver: SliverFillRemaining(
+              hasScrollBody: false,
+              child: searching
+                  ? EmptyHint(
+                      icon: FontAwesomeIcons.magnifyingGlass,
+                      message: l10n.diaryTemplatePickerSearchEmpty(
+                        _query.trim(),
+                      ),
+                    )
+                  : EmptyHint(
+                      icon: FontAwesomeIcons.layerGroup,
+                      message: l10n.diaryTemplatePickerEmpty,
+                    ),
             ),
           )
         else
@@ -213,7 +274,7 @@ class _DiaryTemplatePickerState extends ConsumerState<DiaryTemplatePicker> {
                   key: ValueKey<String>('template_pick_${item.template.id}'),
                   template: item.template,
                   recommended: item.recommended,
-                  onTap: () => setState(() => _previewing = item.template),
+                  onTap: () => _openPreview(item.template),
                 );
               },
             ),

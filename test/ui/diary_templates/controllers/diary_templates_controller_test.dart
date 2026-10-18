@@ -5,6 +5,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/ui/diaries/models/style_library/style_code.dart';
 import 'package:node_diary/ui/diary_templates/controllers/diary_templates_controller.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_auto_rule.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_code.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_json.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_prefs.dart';
@@ -91,14 +92,112 @@ void main() {
     'hiding the auto built-in clears it and unhiding brings it back',
     () async {
       await controller.setAutoTemplate('builtin.daily');
-      final wasAuto = await controller.setHidden('builtin.daily', true);
-      expect(wasAuto, isTrue);
+      final removed = await controller.setHidden('builtin.daily', true);
+      expect(removed.wasAuto, isTrue);
       expect(prefs().hiddenBuiltIns, {'builtin.daily'});
       expect(prefs().autoTemplateId, isNull);
 
-      await controller.unhide('builtin.daily', wasAuto: wasAuto);
+      await controller.unhide('builtin.daily', removed: removed);
       expect(prefs().hiddenBuiltIns, isEmpty);
       expect(prefs().autoTemplateId, 'builtin.daily');
+    },
+  );
+
+  DiaryTemplateAutoRule rule(String id, {int from = 420, int to = 600}) =>
+      DiaryTemplateAutoRule(startMinute: from, endMinute: to, templateId: id);
+
+  test(
+    'time range rules are saved, replaced, deleted and restored once',
+    () async {
+      final morning = rule('builtin.morning');
+      expect(await controller.saveAutoRule(morning), isTrue);
+      expect(await controller.saveAutoRule(morning), isTrue);
+      expect(prefs().autoRules, [morning], reason: '一模一样的规则不重复添加');
+
+      final later = rule('builtin.morning', from: 480);
+      await controller.saveAutoRule(later, replacing: morning);
+      expect(prefs().autoRules, [later]);
+
+      final deleted = await controller.deleteAutoRule(later);
+      expect(deleted, later);
+      expect(prefs().autoRules, isEmpty);
+      expect(await controller.deleteAutoRule(later), isNull);
+
+      await controller.restoreAutoRule(later);
+      await controller.restoreAutoRule(later);
+      expect(prefs().autoRules, [later]);
+    },
+  );
+
+  test('a new rule is refused once twelve exist', () async {
+    for (var i = 0; i < DiaryTemplatePrefs.maxAutoRules; i++) {
+      expect(
+        await controller.saveAutoRule(
+          rule('t$i', from: i * 60, to: i * 60 + 30),
+        ),
+        isTrue,
+      );
+    }
+    expect(
+      await controller.saveAutoRule(rule('extra', from: 1300, to: 1400)),
+      isFalse,
+    );
+    expect(prefs().autoRules, hasLength(DiaryTemplatePrefs.maxAutoRules));
+    // 编辑已有的一条不受上限影响。
+    final first = prefs().autoRules.first;
+    expect(
+      await controller.saveAutoRule(
+        first.copyWith(templateId: 'edited'),
+        replacing: first,
+      ),
+      isTrue,
+    );
+  });
+
+  test(
+    'deleting a template removes its rules and undo puts them back',
+    () async {
+      final id = await controller.save(const DiaryTemplate(id: '', name: '甲'));
+      final mine = rule(id);
+      final other = rule('builtin.daily', from: 1200, to: 1260);
+      await controller.saveAutoRule(mine);
+      await controller.saveAutoRule(other);
+      await controller.setAutoTemplate(id);
+
+      final deletion = (await controller.delete(id))!;
+      expect(deletion.auto.rules, [mine]);
+      expect(prefs().autoRules, [other]);
+      expect(prefs().autoTemplateId, isNull);
+
+      // 撤销前用户又加回了同一条：撤销不重复添加。
+      await controller.saveAutoRule(mine);
+      await controller.restore(deletion);
+      expect(prefs().autoRules, [mine, other]);
+      expect(prefs().autoTemplateId, id);
+    },
+  );
+
+  test(
+    'hiding a built-in removes its rules and unhiding restores them',
+    () async {
+      final dream = rule('builtin.dream', from: 300, to: 420);
+      final daily = rule('builtin.daily');
+      await controller.saveAutoRule(dream);
+      await controller.saveAutoRule(daily);
+
+      final removed = await controller.setHidden('builtin.dream', true);
+      expect(removed.wasAuto, isFalse);
+      expect(removed.rules, [dream]);
+      expect(prefs().autoRules, [daily]);
+
+      await controller.unhide('builtin.dream', removed: removed);
+      expect(prefs().hiddenBuiltIns, isEmpty);
+      expect(prefs().autoRules, [dream, daily]);
+
+      // 重新显示（非撤销）不撤下也不放回任何规则。
+      final shown = await controller.setHidden('builtin.dream', false);
+      expect(shown.rules, isEmpty);
+      expect(prefs().autoRules, [dream, daily]);
     },
   );
 

@@ -27,6 +27,19 @@ export 'diary_template_apply_port.dart';
 ///
 /// 撤销只在标题与正文仍是套用时的样子时生效：撤销提示条停留的 4 秒里用户
 /// 已经开始写，就不能再清空。元数据只撤回仍保持模板所设值的那几项。
+///
+/// 换模板（[apply] 带 `replacePristine: true`，顶栏菜单与“全部”面板用）：
+/// - 只在 [isPristine] 时替换——内容仍是本次套用的模板原样；用户写过字就
+///   拒绝，绝不覆盖模板以外的字（[canApply] 供界面提前判断）；
+/// - 旧模板的预设先撤回、再换上新模板的内容与预设，同一个同步步骤里完成：
+///   [_applied] 直接从旧记录换成新记录、只通知一次，建议条不会在两者之间
+///   闪出来，[onEditorChanged] 也看不到中间状态；
+/// - 旧记录随之失效：它的撤销提示条再点也不生效（[isPristine] 要求同一条
+///   记录）；撤销新记录回到空白日记，不会恢复上一个模板；
+/// - 标签：旧模板勾上的标签与撤销一样取消勾选；旧模板新建的标签先回收，
+///   再解析新模板的标签——两份模板都用到的同名标签由新模板重新取得并勾上，
+///   而不是在勾上之后才被回收。所有标签读写经 [_enqueueTagWork] 排队，
+///   上一份仍在解析的标签不会与回收或新的解析交错。
 class DiaryTemplateApplyController extends ChangeNotifier {
   DiaryTemplateApplyController({
     required this.enabled,
@@ -48,7 +61,19 @@ class DiaryTemplateApplyController extends ChangeNotifier {
   bool _disposed = false;
   DiaryTemplateApplied? _applied;
 
+  /// 标签读写的队尾：按名称取得与回收依次执行，见 [_enqueueTagWork]。
+  Future<void> _tagWork = Future<void>.value();
+
   DiaryTemplateApplied? get applied => _applied;
+
+  /// 此刻选一个模板能否生效（按 `replacePristine: true` 的规则）：标题与
+  /// 正文都为空，或仍是本次套用的模板原样（会被替换）。
+  bool get canApply {
+    if (!enabled || _applying) return false;
+    final applied = _applied;
+    if (applied != null && isPristine(applied)) return true;
+    return !_port.hasContent;
+  }
 
   /// 建议条此刻是否该出现（是否有可选的模板、偏好是否开启由建议条自己看）。
   bool get stripVisible =>
@@ -72,14 +97,24 @@ class DiaryTemplateApplyController extends ChangeNotifier {
 
   /// 套用 [selection]；标题或正文已有内容、或正在套用时什么也不做，返回 null。
   ///
+  /// 默认已经套用过一次就不再套用（建议条在套用后收起）；[replacePristine]
+  /// 为 true 时，内容仍是上一次套用的原样则换成 [selection]（见类注释），
+  /// 用户把内容删空后也可以重新套用。
+  ///
   /// 顺序：先换标题与正文（同步），再合并预设的心情、精力与胶囊（只填空着
   /// 的项；日历预设的胶囊优先），最后异步按名称取得标签并勾上。标签解析
-  /// 期间若已撤销，回收刚新建的标签。
+  /// 期间若已撤销或换了模板，回收刚新建的标签。
   Future<DiaryTemplateApplied?> apply(
     DiaryTemplateSelection selection, {
     required DiaryTemplateApplySource source,
+    bool replacePristine = false,
   }) async {
-    if (!enabled || _applying || _applied != null || _port.hasContent) {
+    if (!enabled || _applying) return null;
+    final previous = _applied;
+    final replacing =
+        replacePristine && previous != null && isPristine(previous);
+    if (!replacing &&
+        (_port.hasContent || (previous != null && !replacePristine))) {
       return null;
     }
     final template = selection.template;
@@ -93,10 +128,14 @@ class DiaryTemplateApplyController extends ChangeNotifier {
         questionShift: selection.questionShift,
       ),
     );
-    final metaBefore = _port.meta.value;
+    final DiaryMetaDraft metaBefore;
     final String bodyJson;
     _applying = true;
     try {
+      // 换模板：先撤回旧模板的预设，新模板的“套用前”就是没有旧模板时的
+      // 样子，撤销新模板因此回到空白日记。内容不必先清空，下面直接换上。
+      if (replacing) _revertPresets(previous);
+      metaBefore = _port.meta.value;
       bodyJson = _port.replaceContent(
         title: application.title,
         ops: application.ops,
@@ -115,7 +154,12 @@ class DiaryTemplateApplyController extends ChangeNotifier {
     );
     _applied = applied;
     notifyListeners();
-    await _applyTags(applied);
+    await _enqueueTagWork(() async {
+      // 先回收旧模板新建的标签，再解析新模板的：两份模板都用到的标签若在
+      // 新模板勾上之后才回收，会把刚勾上的删掉。
+      if (replacing) await _database.deleteTagsIfUnused(previous.createdTagIds);
+      await _applyTags(applied);
+    });
     if (source != DiaryTemplateApplySource.auto && !_disposed) {
       unawaited(_onUsed(template.id));
     }
@@ -140,7 +184,10 @@ class DiaryTemplateApplyController extends ChangeNotifier {
     }
     _applied = null;
     notifyListeners();
-    await _database.deleteTagsIfUnused(applied.createdTagIds);
+    // 排在仍在解析的标签之后：那时 createdTagIds 才完整。
+    await _enqueueTagWork(
+      () => _database.deleteTagsIfUnused(applied.createdTagIds),
+    );
     return true;
   }
 
@@ -225,9 +272,22 @@ class DiaryTemplateApplyController extends ChangeNotifier {
     }
   }
 
+  /// 把标签读写排到队尾依次执行，返回这一项的结果（出错照常抛给调用方，
+  /// 不影响队里后面的项）。
+  ///
+  /// 为什么要排队：按名称取得标签与回收标签都是异步的数据库操作。连着换
+  /// 模板或撤销后马上再套用时，若上一份的解析还没回来，回收与新的解析
+  /// 交错，可能把新模板刚勾上的同名标签删掉。
+  Future<void> _enqueueTagWork(Future<void> Function() task) {
+    final run = _tagWork.then((_) => task());
+    _tagWork = run.then<void>((_) {}, onError: (Object _, StackTrace _) {});
+    return run;
+  }
+
   Future<void> _applyTags(DiaryTemplateApplied applied) async {
     final tags = applied.template.tags;
-    if (tags.isEmpty) return;
+    // 排队等待期间已撤销、换了模板或离开页面：不必再新建标签。
+    if (tags.isEmpty || _disposed || !identical(_applied, applied)) return;
     final result = await _database.ensureTagsByName(
       tags.map((tag) => (name: tag.name, color: tag.color)),
     );

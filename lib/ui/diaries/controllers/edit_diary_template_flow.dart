@@ -18,20 +18,38 @@ extension EditDiaryTemplateFlow on EditDiaryController {
     DiaryTemplateApplySource.strip,
   );
 
-  /// 建议条的“全部”：打开完整的模板面板。面板是新路由，会收起键盘；套用
-  /// 后把焦点还给正文。
+  /// 建议条的“全部”与顶栏菜单的“选择模板”：打开完整的模板面板。面板是
+  /// 新路由，会收起键盘；套用后把焦点还给正文。
+  ///
+  /// 建议条只在空白时出现；菜单里任何时候都能点，所以先看此刻能否套用：
+  /// 标题与正文为空，或仍是本次套用的模板原样（选中后替换它）；用户已经
+  /// 写了字就只提示、不打开面板。面板打开期间状态可能变化，选中后由
+  /// [_applyTemplate] 再检查一次。
   Future<void> openTemplatePicker() async {
+    if (!_state._templates.canApply) {
+      _showTemplateNotBlankHint();
+      return;
+    }
     final selection = await showDiaryTemplatePickerSheet(
       _state.context,
       diaryDate: _state._templateDiaryDate,
     );
     if (selection == null || !_state.mounted) return;
-    await _applyTemplate(selection, DiaryTemplateApplySource.picker);
+    await _applyTemplate(
+      selection,
+      DiaryTemplateApplySource.picker,
+      replacePristine: true,
+    );
   }
 
   /// 新建空白页初始化时套用入口带来的模板或自动套用的模板，在草稿自动保存
   /// 设定基线之前完成（见 [prepareCreateEntry]）。等待期间用户已经开始写，
   /// 套用会自行放弃。
+  ///
+  /// 自动套用按偏好给出的候选顺序（命中的时间段由具体到宽泛，最后是默认
+  /// 模板，见 `DiaryTemplatePrefs.autoApplyCandidates`）逐个查库，套用第一个
+  /// 仍存在的：规则指向的模板被删掉时自然落到下一个，而不是什么都不套。
+  /// “此刻”与套用控制器用同一个时钟，时间段与变量里的时间不会错开。
   Future<void> applyInitialTemplate() async {
     final launch = _state.widget.createTemplate;
     if (launch != null) {
@@ -43,20 +61,26 @@ extension EditDiaryTemplateFlow on EditDiaryController {
       return;
     }
     final settings = await _state.ref.read(settingsServiceProvider.future);
-    final autoId = DiaryTemplatePrefs.decode(
-      settings.diaryTemplatePrefsRaw,
-    ).autoTemplateId;
-    if (autoId == null || !_state.mounted) return;
-    final template = await loadDiaryTemplate(
-      _state._database,
-      _state.context.l10n,
-      autoId,
-    );
-    if (template == null || !_state.mounted) return;
-    await _applyTemplate(
-      DiaryTemplateSelection(template),
-      DiaryTemplateApplySource.auto,
-    );
+    if (!_state.mounted) return;
+    final candidates = DiaryTemplatePrefs.decode(settings.diaryTemplatePrefsRaw)
+        .autoApplyCandidates(
+          now: _state._templateClock(),
+          diaryDate: _state._templateDiaryDate,
+        );
+    for (final id in candidates) {
+      final template = await loadDiaryTemplate(
+        _state._database,
+        _state.context.l10n,
+        id,
+      );
+      if (!_state.mounted) return;
+      if (template == null) continue;
+      await _applyTemplate(
+        DiaryTemplateSelection(template),
+        DiaryTemplateApplySource.auto,
+      );
+      return;
+    }
   }
 
   /// 顶栏菜单“存为模板”：把正在写的标题、正文（去掉媒体）、标签、心情与
@@ -77,12 +101,25 @@ extension EditDiaryTemplateFlow on EditDiaryController {
     );
   }
 
+  /// [replacePristine]：可以替换本次套用后原样未动的模板（见
+  /// [DiaryTemplateApplyController.apply]）；此刻已经不能套用时提示原因。
+  /// 撤销替换后的模板回到空白日记，不恢复上一个模板。
   Future<void> _applyTemplate(
     DiaryTemplateSelection selection,
     DiaryTemplateApplySource source, {
     bool announce = true,
+    bool replacePristine = false,
   }) async {
-    final applied = await _state._templates.apply(selection, source: source);
+    final templates = _state._templates;
+    if (replacePristine && !templates.canApply) {
+      _showTemplateNotBlankHint();
+      return;
+    }
+    final applied = await templates.apply(
+      selection,
+      source: source,
+      replacePristine: replacePristine,
+    );
     if (applied == null || !_state.mounted) return;
     _state._contentFocusNode.requestFocus();
     if (!announce) return;
@@ -97,6 +134,18 @@ extension EditDiaryTemplateFlow on EditDiaryController {
             ? l10n.diaryTemplateAutoApplied(name)
             : l10n.diaryTemplateApplied(name),
         onUndo: () => unawaited(_state._templates.undo(applied)),
+      ),
+    );
+  }
+
+  /// 已经开始写了：模板只能套用在空白日记上。
+  void _showTemplateNotBlankHint() {
+    unawaited(
+      HomeHintVisibilityScope.showTrackedSnackBar(
+        context: _state.context,
+        snackBar: SnackBar(
+          content: Text(_state.context.l10n.diaryTemplateNeedsBlankEntry),
+        ),
       ),
     );
   }

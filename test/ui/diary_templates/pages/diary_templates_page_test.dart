@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_auto_rule.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_code.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_json.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_prefs.dart';
+import 'package:node_diary/ui/diary_templates/pages/diary_template_auto_apply_page.dart';
 import 'package:node_diary/ui/diary_templates/pages/diary_template_editor_page.dart';
 import 'package:node_diary/ui/diary_templates/pages/diary_templates_page.dart';
+import 'package:node_diary/ui/diary_templates/sections/diary_templates_settings_group.dart';
 
 import '../../../support/diary_drafts_harness.dart';
 
@@ -116,11 +119,11 @@ void main() {
     tester,
   ) async {
     final h = await openPage(tester);
-    await menu(h, builtIn('dream'), h.l10n.diaryTemplatesHide);
-    expect(prefs(h).hiddenBuiltIns, {'builtin.dream'});
+    await menu(h, builtIn('gratitude'), h.l10n.diaryTemplatesHide);
+    expect(prefs(h).hiddenBuiltIns, {'builtin.gratitude'});
     expect(
       find.descendant(
-        of: builtIn('dream'),
+        of: builtIn('gratitude'),
         matching: find.text(h.l10n.diaryTemplateHiddenBadge),
       ),
       findsOneWidget,
@@ -143,10 +146,53 @@ void main() {
 
     await tester.tap(find.text(h.l10n.diaryTemplatesAutoApply));
     await tester.pumpAndSettle();
+    expect(find.byType(DiaryTemplateAutoApplyPage), findsOneWidget);
+    await tester.tap(find.text(h.l10n.diaryTemplatesAutoApplyDefault));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('晨间日记').last);
     await tester.pumpAndSettle();
     expect(prefs(h).autoTemplateId, 'builtin.morning');
+
+    await tester.tap(find.byTooltip(h.l10n.commonBack));
+    await tester.pumpAndSettle();
     expect(find.text('晨间日记'), findsWidgets);
+    await h.unmount();
+  });
+
+  testWidgets('the auto-apply row summarises time ranges and the default', (
+    tester,
+  ) async {
+    final h = await openPage(tester);
+    Finder summary(String text) => find.descendant(
+      of: find.byType(DiaryTemplatesSettingsGroup),
+      matching: find.text(text),
+    );
+    expect(summary(h.l10n.diaryTemplatesAutoApplyNone), findsOneWidget);
+
+    const rule = DiaryTemplateAutoRule(
+      startMinute: 420,
+      endMinute: 600,
+      templateId: 'builtin.daily',
+    );
+    final rulesOnly = DiaryTemplatePrefs.defaults.withAutoRules([
+      rule,
+      rule.copyWith(startMinute: 1320, endMinute: 120),
+    ]);
+    await h.settings.setDiaryTemplatePrefsRaw(rulesOnly.encode());
+    await tester.pumpAndSettle();
+    expect(summary('2 个时间段'), findsOneWidget);
+
+    await h.settings.setDiaryTemplatePrefsRaw(
+      rulesOnly.withAuto('builtin.morning').encode(),
+    );
+    await tester.pumpAndSettle();
+    expect(summary('2 个时间段 · 其他时间用「晨间日记」'), findsOneWidget);
+
+    await h.settings.setDiaryTemplatePrefsRaw(
+      DiaryTemplatePrefs.defaults.withAuto('builtin.morning').encode(),
+    );
+    await tester.pumpAndSettle();
+    expect(summary('晨间日记'), findsOneWidget);
     await h.unmount();
   });
 

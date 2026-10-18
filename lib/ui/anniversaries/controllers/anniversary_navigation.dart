@@ -68,6 +68,7 @@ Future<AnniversaryEditResult?> openAnniversaryEditor(
           context: context,
           snackBar: SnackBar(
             content: Text(context.l10n.anniversaryCreated),
+            persist: false,
             action: SnackBarAction(
               label: context.l10n.anniversaryView,
               onPressed: () {
@@ -104,12 +105,12 @@ Future<void> showAnniversaryDeletedUndo(
     snackBar: SnackBar(
       content: Text(context.l10n.anniversaryDeleted),
       duration: _undoDuration,
+      persist: false,
       action: SnackBarAction(
         label: context.l10n.commonUndo,
         onPressed: () => undo = true,
       ),
     ),
-    forceCloseAfter: _undoDuration,
   );
   if (undo || reason == SnackBarClosedReason.action) {
     await database.restoreAnniversary(row);
@@ -156,9 +157,9 @@ Future<void> openDiaryFromAnniversary(
     snackBar: SnackBar(
       content: Text(context.l10n.autoT0075),
       duration: _undoDuration,
+      persist: false,
       action: SnackBarAction(label: context.l10n.commonUndo, onPressed: () {}),
     ),
-    forceCloseAfter: _undoDuration,
   );
   if (reason == SnackBarClosedReason.action) {
     await database.restoreDiary(deletedId, touchUpdatedAt: false);

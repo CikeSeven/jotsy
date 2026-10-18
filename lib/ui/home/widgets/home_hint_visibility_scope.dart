@@ -77,12 +77,24 @@ class HomeHintVisibilityScope extends InheritedWidget {
     return widget.controller;
   }
 
+  /// 展示提示并等到它关闭，返回关闭原因（撤销型提示据此判断是否撤销）。
+  ///
+  /// 提示必须会到时自动关闭：调用方 await 关闭结果来结束撤销窗口（之后才真正
+  /// 回收媒体等），FAB 也要等它关闭才回落。Flutter 3.38 起带 action 的
+  /// SnackBar 默认 `persist: true`（到时不关，直到点按钮），因此带按钮的提示
+  /// 必须显式传 `persist: false`（下方断言与源码测试兜底）。此前靠调用方另传
+  /// 强制关闭时长、在这里起计时器关闭，漏传的提示（日历删除撤销、纪念日创建）
+  /// 就一直停在屏幕上；改由 SnackBar 自带的计时，它从入场动画结束才开始计。
   static Future<SnackBarClosedReason> showTrackedSnackBar({
     required BuildContext context,
     required SnackBar snackBar,
     bool hideCurrent = true,
-    Duration? forceCloseAfter,
   }) async {
+    assert(
+      !snackBar.persist,
+      'Tracked SnackBars must auto-dismiss: pass persist: false to a SnackBar '
+      'with an action (it persists by default since Flutter 3.38).',
+    );
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) {
       return SnackBarClosedReason.remove;
@@ -95,9 +107,6 @@ class HomeHintVisibilityScope extends InheritedWidget {
 
     controller?.onHintShown();
     final featureController = messenger.showSnackBar(snackBar);
-    final forceCloseTimer = forceCloseAfter == null
-        ? null
-        : Timer(forceCloseAfter, featureController.close);
     var closed = false;
     if (controller != null) {
       unawaited(
@@ -112,7 +121,6 @@ class HomeHintVisibilityScope extends InheritedWidget {
 
     final reason = await featureController.closed;
     closed = true;
-    forceCloseTimer?.cancel();
     controller?.onHintClosed();
     return reason;
   }

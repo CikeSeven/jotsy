@@ -285,12 +285,12 @@ class _LockedDiaryContent extends ConsumerWidget {
         snackBar: SnackBar(
           content: Text(context.l10n.autoT0075),
           duration: const Duration(seconds: 4),
+          persist: false,
           action: SnackBarAction(
             label: context.l10n.commonUndo,
             onPressed: () => undoRequested = true,
           ),
         ),
-        forceCloseAfter: const Duration(seconds: 4),
       );
       Navigator.of(context).pop();
       unawaited(

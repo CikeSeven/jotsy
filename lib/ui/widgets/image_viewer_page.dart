@@ -279,8 +279,8 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
       snackBar: SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
       ),
-      forceCloseAfter: const Duration(seconds: 2),
     );
   }
 

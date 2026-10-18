@@ -74,8 +74,8 @@ Future<void> showDiaryImageOptions(
           snackBar: SnackBar(
             content: Text(hint),
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
           ),
-          forceCloseAfter: const Duration(seconds: 2),
         );
       }
     case _ImageAction.delete:

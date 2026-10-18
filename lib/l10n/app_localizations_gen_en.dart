@@ -5458,11 +5458,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsDayPhotoSuggestions => 'Suggest photos when backfilling';
+  String get settingsDayPhotoSuggestions =>
+      'Show that day\'s photos automatically';
 
   @override
   String get settingsDayPhotoSuggestionsSubtitle =>
-      'When writing an entry for a past day, list photos taken that day so you can pick some';
+      'When backfilling a past day, list that day\'s photos under the title. When off, open them from the editor\'s top-right menu.';
 
   @override
   String get diaryDayPhotosSetCover => 'Set as cover';
@@ -5481,6 +5482,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryDayPhotosCoverSet =>
       'Set as cover. You can see or change it on the publish page.';
+
+  @override
+  String get diaryDayPhotosCoverSetEdit => 'Cover set';
+
+  @override
+  String get diaryDayPhotosMenu => 'Photos from this day';
+
+  @override
+  String get diaryDayPhotosEmpty => 'No photos taken this day';
 
   @override
   String get diaryLongImageBadge => 'Long image';

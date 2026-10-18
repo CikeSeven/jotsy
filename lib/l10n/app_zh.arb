@@ -7041,11 +7041,11 @@
       }
     }
   },
-  "settingsDayPhotoSuggestions": "补写时推荐当天照片",
+  "settingsDayPhotoSuggestions": "自动显示当天照片",
   "@settingsDayPhotoSuggestions": {
-    "description": "编辑器设置：补写日记时推荐当天照片的开关标题。"
+    "description": "编辑器设置：补写日记时在标题下自动显示当天照片的开关标题。"
   },
-  "settingsDayPhotoSuggestionsSubtitle": "补写过去某天的日记时，列出相册里这天拍的照片供挑选",
+  "settingsDayPhotoSuggestionsSubtitle": "补写过去某天的日记时，在标题下列出这天拍的照片；关闭后仍可从编辑页右上角菜单查看",
   "@settingsDayPhotoSuggestionsSubtitle": {
     "description": "编辑器设置：补写推荐照片开关的说明。"
   },
@@ -7073,6 +7073,18 @@
   "diaryDayPhotosCoverSet": "已设为封面，发布页里可以查看或更换",
   "@diaryDayPhotosCoverSet": {
     "description": "这天拍的照片：设为封面成功的提示。"
+  },
+  "diaryDayPhotosCoverSetEdit": "已设为封面",
+  "@diaryDayPhotosCoverSetEdit": {
+    "description": "这天的照片：编辑已有日记时设为封面成功的提示（编辑页没有发布页）。"
+  },
+  "diaryDayPhotosMenu": "这天的照片",
+  "@diaryDayPhotosMenu": {
+    "description": "编辑页顶栏菜单项：打开日记那天拍的照片面板。"
+  },
+  "diaryDayPhotosEmpty": "这天没有拍照片",
+  "@diaryDayPhotosEmpty": {
+    "description": "这天的照片面板：相册里这天没有照片时的说明。"
   },
   "diaryLongImageBadge": "长图",
   "@diaryLongImageBadge": {

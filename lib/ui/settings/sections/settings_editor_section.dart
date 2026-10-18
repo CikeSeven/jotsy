@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +9,6 @@ import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_font_choices.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_typography_metrics_editor.dart';
-import 'package:node_diary/ui/diary_templates/controllers/diary_templates_controller.dart';
 import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_built_ins.dart';
 import 'package:node_diary/ui/diary_templates/pages/diary_templates_page.dart';
 import 'package:node_diary/ui/diary_templates/providers/diary_template_providers.dart';
@@ -76,9 +73,6 @@ class SettingsEditorSection extends StatelessWidget {
                                   title: l10n.settingsEditorGroup,
                                   children: <Widget>[
                                     const _DiaryTypographyTile(),
-                                    _TemplateSuggestionSwitch(
-                                      settings: settingsService,
-                                    ),
                                     const _DiaryTemplatesTile(),
                                     _DayPhotoSuggestionsSwitch(
                                       settings: settingsService,
@@ -226,32 +220,9 @@ class _DiaryTemplatesTile extends ConsumerWidget {
   }
 }
 
-/// “新建时提示选择模板”开关：与模板管理页里的同一开关读写同一份
-/// `DiaryTemplatePrefs.showStrip`。provider 监听原始设置值，两处自动同步；
-/// 写入经控制器先从原始值重新解码，不会覆盖其他偏好字段。
-class _TemplateSuggestionSwitch extends ConsumerWidget {
-  const _TemplateSuggestionSwitch({required this.settings});
-
-  final SettingsService settings;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final enabled = ref.watch(diaryTemplatePrefsProvider).showStrip;
-    return SwitchListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      value: enabled,
-      title: Text(l10n.diaryTemplatesStripSwitch),
-      subtitle: Text(l10n.diaryTemplatesStripSwitchSubtitle),
-      onChanged: (bool value) => unawaited(
-        createDiaryTemplatesController(ref, settings).setStripEnabled(value),
-      ),
-    );
-  }
-}
-
-/// “补写时推荐当天照片”开关：关掉后补写日记不再出现这天的照片提示条，
-/// 也就不会再提示申请相册权限。
+/// “自动显示当天照片”开关：只决定补写日记（新建且日期早于今天）时标题下
+/// 是否自动出现这天的照片提示条。关掉后编辑页右上角 ⋮ 菜单的“这天的照片”
+/// 仍能打开同一个面板；那里也只在用户点“允许访问”时才申请相册权限。
 class _DayPhotoSuggestionsSwitch extends StatelessWidget {
   const _DayPhotoSuggestionsSwitch({required this.settings});
 

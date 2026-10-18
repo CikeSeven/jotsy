@@ -10,6 +10,7 @@ import '../../../../app/theme/expressive_motion.dart';
 import '../../../../app/theme/expressive_surfaces.dart';
 import '../../controllers/diary_day_photos_controller.dart';
 import 'diary_day_photo_tile.dart';
+import 'diary_day_photos_limited_hint.dart';
 import 'diary_day_photos_sheet.dart';
 
 /// 补写日记时放在标题与正文之间的“这天拍的照片”提示条。
@@ -17,7 +18,7 @@ import 'diary_day_photos_sheet.dart';
 /// - 未授权：说明 + “允许访问”（拒绝过后改为“去设置”）；
 /// - 有照片：横向缩略图，点按勾选；选中后底部出现“插入”；“全部”打开大图
 ///   网格面板（与提示条共用同一份勾选）；
-/// - 其余情况（读取中、这天没照片、已关掉）整块收起，不占位置。
+/// - 其余情况（读取中、这天没照片、已关掉、不自动显示）整块收起，不占位置。
 ///
 /// 出现与收起经 [AnimatedSize] 展开/折叠，正文平滑下移而不是一帧跳动。
 /// 插入与设封面只回调 [onInsert] / [onSetCover] / [onClearCover]，复制
@@ -299,7 +300,7 @@ class _PhotosCard extends StatelessWidget {
           if (controller.isLimited)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
-              child: _LimitedHint(controller: controller),
+              child: DiaryDayPhotosLimitedHint(controller: controller),
             ),
           // 有勾选时展开操作行；勾选清空后收起，缩略图不跳。
           AnimatedSize(
@@ -344,38 +345,6 @@ class _PhotosCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// 部分授权提示：只看得到用户挑过的照片，提供“选择更多”。
-class _LimitedHint extends StatelessWidget {
-  const _LimitedHint({required this.controller});
-
-  final DiaryDayPhotosController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = context.l10n;
-    return Row(
-      children: <Widget>[
-        Flexible(
-          child: Text(
-            l10n.diaryDayPhotosLimited,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        TextButton(
-          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-          onPressed: controller.manageLimitedSelection,
-          child: Text(l10n.diaryDayPhotosManageLimited),
-        ),
-      ],
     );
   }
 }

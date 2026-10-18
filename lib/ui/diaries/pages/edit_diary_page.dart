@@ -46,6 +46,7 @@ import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dar
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_recording_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_media_import_overlay.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_day_photos/diary_day_photos_sheet.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_day_photos/diary_day_photos_strip.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
@@ -142,8 +143,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       PublishDiaryPanelController();
   DateTime? _createDateOverride;
 
-  // 补写过去某天时列出相册里这天拍的照片；日期跟随 _createDateOverride
-  // （日历入口、恢复的草稿、发布页改日期都会改它），开关来自编辑器设置。
+  // 日记那天相册里拍的照片（见 [_dayPhotosDay]）：新建时跟随
+  // _createDateOverride（日历入口、恢复的草稿、发布页改日期都会改它），编辑
+  // 时跟随 _draftPublishAt。补写时提示条是否自动出现取决于编辑器设置；顶栏
+  // 菜单随时可打开面板。
   late final DiaryDayPhotosController _dayPhotos;
   SettingsService? _dayPhotoSettings;
 
@@ -361,13 +364,23 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     });
   }
 
-  /// 把补写日期与开关交给照片控制器；只有新建模式且日期早于今天才算补写。
+  /// “这天的照片”看哪一天：新建为发表日期（没改过就是今天），编辑为日记的
+  /// 发表时间（详情回填前为 null）；未来的日子（时间胶囊）没有照片可看。
+  ///
+  /// 顶栏菜单在 build 时直接据此决定是否显示入口，不依赖照片控制器的通知。
+  DateTime? get _dayPhotosDay => DiaryDayPhotosController.diaryDay(
+    _isCreateEntry ? _createDateOverride ?? DateTime.now() : _draftPublishAt,
+  );
+
+  /// 把日记那天与是否自动显示提示条交给照片控制器。提示条只在新建模式、
+  /// 日期早于今天且编辑器设置开着时自动出现；顶栏菜单打开面板不受这些限制。
   void _syncDayPhotos() {
     _dayPhotos.configure(
-      day: _isCreateEntry
-          ? DiaryDayPhotosController.backfillDay(_createDateOverride)
-          : null,
-      enabled: _dayPhotoSettings?.isDayPhotoSuggestionsEnabled ?? false,
+      day: _dayPhotosDay,
+      autoShow:
+          _isCreateEntry &&
+          DiaryDayPhotosController.backfillDay(_createDateOverride) != null &&
+          (_dayPhotoSettings?.isDayPhotoSuggestionsEnabled ?? false),
     );
   }
 
@@ -642,6 +655,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _EditorMenuAction.chooseTemplate => unawaited(
       _controller.openTemplatePicker(),
     ),
+    _EditorMenuAction.dayPhotos => unawaited(_controller.openDayPhotos()),
     _EditorMenuAction.saveAsTemplate => unawaited(_controller.saveAsTemplate()),
     _EditorMenuAction.editorSettings => unawaited(
       Navigator.of(context).push(
@@ -745,8 +759,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           _panelMetadataDirty = false;
           _controller.initializeEditAutoSave();
           _initialized = true;
+          // “这天的照片”跟随日记的发表日期；configure 会通知监听者，不能在
+          // build 中直接调用，放到这一帧之后。
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _syncDayPhotos();
+          });
         }
 
+        final showDayPhotosMenu =
+            _dayPhotos.library.isSupported && _dayPhotosDay != null;
         final scaffold = Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: AppTopBar(
@@ -780,6 +801,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                               _EditorMenuAction.chooseTemplate,
                             ),
                       child: Text(context.l10n.diaryTemplateChoose),
+                    ),
+                  // 新建与编辑都有，与“自动显示当天照片”开关无关；未来日期
+                  // 与不支持读取相册的平台没有。
+                  if (showDayPhotosMenu)
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.solidImages),
+                      onPressed:
+                          _saving ||
+                              _recordingPanelOpen ||
+                              _mediaImportController.isBusy
+                          ? null
+                          : () => _onEditorMenuAction(
+                              _EditorMenuAction.dayPhotos,
+                            ),
+                      child: Text(context.l10n.diaryDayPhotosMenu),
                     ),
                   ExpressiveMenuItem(
                     leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
@@ -1103,5 +1139,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
 enum EditDiaryEntryMode { create, edit }
 
-/// 顶栏菜单：选择模板（只在新建空白日记）、存为模板、编辑器设置。
-enum _EditorMenuAction { chooseTemplate, saveAsTemplate, editorSettings }
+/// 顶栏菜单：选择模板（只在新建空白日记）、这天的照片（日记那天不晚于今天
+/// 且平台能读相册时）、存为模板、编辑器设置。
+enum _EditorMenuAction {
+  chooseTemplate,
+  dayPhotos,
+  saveAsTemplate,
+  editorSettings,
+}

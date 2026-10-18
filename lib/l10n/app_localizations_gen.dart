@@ -9182,16 +9182,16 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 photo couldn\'t be read and was skipped} other{{count} photos couldn\'t be read and were skipped}}'**
   String diaryDayPhotosMissing(int count);
 
-  /// Editor settings: title of the switch for suggesting photos when backfilling.
+  /// Editor settings: title of the switch that automatically shows that day's photos under the title when backfilling.
   ///
   /// In en, this message translates to:
-  /// **'Suggest photos when backfilling'**
+  /// **'Show that day\'s photos automatically'**
   String get settingsDayPhotoSuggestions;
 
   /// Editor settings: description of the backfill photo suggestion switch.
   ///
   /// In en, this message translates to:
-  /// **'When writing an entry for a past day, list photos taken that day so you can pick some'**
+  /// **'When backfilling a past day, list that day\'s photos under the title. When off, open them from the editor\'s top-right menu.'**
   String get settingsDayPhotoSuggestionsSubtitle;
 
   /// Photos from this day: button and menu item that makes a photo the entry cover.
@@ -9223,6 +9223,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Set as cover. You can see or change it on the publish page.'**
   String get diaryDayPhotosCoverSet;
+
+  /// Photos from this day: hint after a photo becomes the cover while editing an existing diary (there is no publish page).
+  ///
+  /// In en, this message translates to:
+  /// **'Cover set'**
+  String get diaryDayPhotosCoverSetEdit;
+
+  /// Editor top-bar menu item: opens the panel of photos taken on the diary's day.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos from this day'**
+  String get diaryDayPhotosMenu;
+
+  /// Photos from this day panel: shown when the gallery has no photos from that day.
+  ///
+  /// In en, this message translates to:
+  /// **'No photos taken this day'**
+  String get diaryDayPhotosEmpty;
 
   /// Badge in the corner of a folded long image (much taller than wide) in the diary body.
   ///

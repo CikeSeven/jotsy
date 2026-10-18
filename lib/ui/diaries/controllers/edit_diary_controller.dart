@@ -240,6 +240,8 @@ class EditDiaryController {
       return;
     }
     _state.setState(() => _state._draftPublishAt = picked);
+    // 改到另一天：“这天的照片”随之换成新的日子（在事件回调里，不在 build 中）。
+    _state._syncDayPhotos();
     scheduleEditAutoSave();
   }
 

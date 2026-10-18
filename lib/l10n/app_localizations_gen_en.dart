@@ -6033,6 +6033,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplatePickerEmpty => 'No templates here';
 
   @override
+  String get diaryTemplatePickerSearchHint => 'Search templates';
+
+  @override
+  String diaryTemplatePickerSearchEmpty(String query) {
+    return 'No templates match “$query”';
+  }
+
+  @override
   String get diaryTemplatePickerUse => 'Use this template';
 
   @override

@@ -7768,6 +7768,19 @@
   "@diaryTemplatePickerEmpty": {
     "description": "模板面板：当前筛选下没有模板。"
   },
+  "diaryTemplatePickerSearchHint": "搜索模板",
+  "@diaryTemplatePickerSearchHint": {
+    "description": "模板面板：搜索框的占位提示。"
+  },
+  "diaryTemplatePickerSearchEmpty": "没有找到与「{query}」相关的模板",
+  "@diaryTemplatePickerSearchEmpty": {
+    "description": "模板面板：搜索没有结果时的提示，{query} 为输入的搜索词。",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "diaryTemplatePickerUse": "使用这个模板",
   "@diaryTemplatePickerUse": {
     "description": "模板面板预览页：套用正在预览的模板。"

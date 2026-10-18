@@ -7768,6 +7768,19 @@
   "@diaryTemplatePickerEmpty": {
     "description": "Template picker: the selected filter has no templates."
   },
+  "diaryTemplatePickerSearchHint": "Search templates",
+  "@diaryTemplatePickerSearchHint": {
+    "description": "Template picker: placeholder of the search field."
+  },
+  "diaryTemplatePickerSearchEmpty": "No templates match “{query}”",
+  "@diaryTemplatePickerSearchEmpty": {
+    "description": "Template picker: shown when the search has no results; {query} is the typed text.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
   "diaryTemplatePickerUse": "Use this template",
   "@diaryTemplatePickerUse": {
     "description": "Template picker preview: apply the previewed template."

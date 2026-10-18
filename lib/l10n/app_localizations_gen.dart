@@ -10124,6 +10124,18 @@ abstract class AppLocalizations {
   /// **'No templates here'**
   String get diaryTemplatePickerEmpty;
 
+  /// Template picker: placeholder of the search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search templates'**
+  String get diaryTemplatePickerSearchHint;
+
+  /// Template picker: shown when the search has no results; {query} is the typed text.
+  ///
+  /// In en, this message translates to:
+  /// **'No templates match “{query}”'**
+  String diaryTemplatePickerSearchEmpty(String query);
+
   /// Template picker preview: apply the previewed template.
   ///
   /// In en, this message translates to:

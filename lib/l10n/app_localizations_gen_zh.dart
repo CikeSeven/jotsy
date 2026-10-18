@@ -5487,6 +5487,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplatePickerEmpty => '这里还没有模板';
 
   @override
+  String get diaryTemplatePickerSearchHint => '搜索模板';
+
+  @override
+  String diaryTemplatePickerSearchEmpty(String query) {
+    return '没有找到与「$query」相关的模板';
+  }
+
+  @override
   String get diaryTemplatePickerUse => '使用这个模板';
 
   @override

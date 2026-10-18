@@ -254,10 +254,21 @@ class VivoCloudProvider implements CloudNoteProvider {
             '${resource['userId']}' != _userId) {
           continue;
         }
+        final mime = resource['mime'] is String
+            ? (resource['mime'] as String).trim()
+            : '';
+        var name = '${resource['name'] ?? resource['guid']}';
+        // `mime` 有时只是扩展名（如 `m4a`），文件名没有扩展名时补上。
+        if (!mime.contains('/') &&
+            RegExp(r'^[A-Za-z0-9]{1,6}$').hasMatch(mime) &&
+            !RegExp(r'\.[A-Za-z0-9]{1,6}$').hasMatch(name)) {
+          name = '$name.${mime.toLowerCase()}';
+        }
         attachments.add(
           CloudAttachment(
             id: resource['guid'] as String,
-            name: '${resource['name'] ?? resource['guid']}',
+            name: name,
+            mime: mime.contains('/') ? mime : null,
             reference: resource.cast<String, Object?>(),
           ),
         );

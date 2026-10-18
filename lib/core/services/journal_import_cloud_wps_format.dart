@@ -38,14 +38,16 @@ class WpsCodec {
       utf8.decode(aesCbc(_key, _iv, bytes, false));
 }
 
-/// WPS 正文里的媒体行：对象键（`-` 换成 `/`）、是否录音。
-typedef WpsMedia = ({String key, bool audio});
+/// WPS 正文里的媒体行：对象键（`-` 换成 `/`）、是否录音、原文件名（行尾
+/// `{…}` 参数里有 `name` 时）。
+typedef WpsMedia = ({String key, bool audio, String? name});
 
 /// 解析 WPS 便签正文（类 Markdown 的逐行语法，参考实现 `decode_body`）：
 ///
 /// - 一行一块，末尾的一个空行忽略；
-/// - `![](<键>){w:…;h:…}` 图片行、`![audio](<键>){…}` 录音行独占一块，其他
-///   `![…](…){` 开头的行是专有内容，整篇不转换（抛出 [FormatException]）；
+/// - `![](<键>){w:…;h:…}` 图片行、`![audio](<键>){…}` 录音行独占一块；其他
+///   `![…](<键>){…}` 行（视频、文件等参考实现未覆盖的媒体）同样按对象键作为
+///   附件导入，下载不到的计入缺失，不再整篇放弃；
 /// - 行首依次识别 `- [ ] `/`- [x] ` 待办，`### `/`## ` 标题，`0. ` 有序与
 ///   `* ` 无序列表（没有嵌套）；
 /// - 行内 `***`/`**`/`*` 为粗斜体/粗体/斜体，`~` 为下划线，`\X` 转义。
@@ -58,20 +60,24 @@ List<CloudBlock> decodeWpsBody(
   if (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
   final blocks = <CloudBlock>[];
   final image = RegExp(r'^!\[.*\]\(([^)]*)\)\{w:[0-9]+;h:[0-9]+\}$');
-  final audio = RegExp(r'^!\[audio\]\(([^)]*)\)\{[^}]*\}$');
+  final other = RegExp(r'^!\[([^\]]*)\]\(([^)]*)\)\{([^}]*)\}$');
   for (var line in lines) {
     final imageLine = image.firstMatch(line);
-    final media = imageLine ?? audio.firstMatch(line);
-    if (media != null) {
-      final key = media.group(1)!.replaceAll('-', '/');
-      onMedia((key: key, audio: imageLine == null));
+    final otherLine = imageLine == null ? other.firstMatch(line) : null;
+    if (imageLine != null || otherLine != null) {
+      final key = (imageLine?.group(1) ?? otherLine!.group(2)!).replaceAll(
+        '-',
+        '/',
+      );
+      onMedia((
+        key: key,
+        audio: otherLine?.group(1) == 'audio',
+        name: otherLine == null ? null : _mediaName(otherLine.group(3)!),
+      ));
       blocks.add(
         CloudBlock(CloudBlockKind.attachment, attachmentId: wpsMediaId(key)),
       );
       continue;
-    }
-    if (RegExp(r'^!\[.*\]\(.*\)\{').hasMatch(line)) {
-      throw const FormatException('wps proprietary');
     }
     var kind = CloudBlockKind.paragraph;
     var level = 1;
@@ -112,6 +118,20 @@ List<CloudBlock> decodeWpsBody(
 }
 
 String wpsMediaId(String key) => sha256.convert(utf8.encode(key)).toString();
+
+/// 媒体行参数 `{k:v;k:v}` 里的原文件名（`name` / `fileName` / `title`）。
+String? _mediaName(String parameters) {
+  for (final pair in parameters.split(';')) {
+    final colon = pair.indexOf(':');
+    if (colon <= 0) continue;
+    final key = pair.substring(0, colon).trim().toLowerCase();
+    final value = pair.substring(colon + 1).trim();
+    if (const {'name', 'filename', 'title'}.contains(key) && value.isNotEmpty) {
+      return value;
+    }
+  }
+  return null;
+}
 
 /// 行内标记（逐字对应参考实现 `inline_spans`）：标记必须与后面第一个相同
 /// 的标记配对，内部递归解析并继承格式；没有配对的标记按字面保留。

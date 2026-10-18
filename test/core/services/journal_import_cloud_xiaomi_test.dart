@@ -16,6 +16,7 @@ String _describe(CloudBlock block) {
       'l${block.level}',
     if (block.kind == CloudBlockKind.todo) block.checked ? 'x' : ' ',
     if (block.attachmentId case final id?) id,
+    if (block.align case final align?) 'align=$align',
   ];
   final spans = block.spans
       .map((span) {
@@ -25,6 +26,8 @@ String _describe(CloudBlock block) {
           if (span.underline) 'u',
           if (span.strike) 's',
           if (span.highlight) 'hl',
+          if (span.background case final color?) 'bg=$color',
+          if (span.size case final size?) 'size=$size',
           if (span.link case final link?) 'a=$link',
         ];
         return marks.isEmpty ? span.text : '${span.text}{${marks.join(',')}}';
@@ -54,7 +57,25 @@ void main() {
           '<background color="#9affe8af"><delete><u><i><b>原生样式</b></i></u>'
           '</delete></background>',
         ),
-        ['paragraph:原生样式{b,i,u,s,hl}'],
+        // 高亮色是 Android 的 #AARRGGBB，换成本应用同样写法的颜色。
+        ['paragraph:原生样式{b,i,u,s,bg=#9AFFE8AF}'],
+      );
+      expect(_parse('<background>无色</background>'), ['paragraph:无色{hl}']);
+    });
+
+    test('size presets and line alignment', () {
+      expect(
+        _parse(
+          '<center><size>大标题</size></center>\n'
+          '<right><mid-size>中号</mid-size></right>\n'
+          '<h3-size>三级</h3-size>\n<left>靠左</left>',
+        ),
+        [
+          'paragraph:align=center:大标题{size=huge}',
+          'paragraph:align=right:中号{size=large}',
+          'paragraph:三级{size=large}',
+          'paragraph:靠左',
+        ],
       );
     });
 

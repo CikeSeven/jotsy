@@ -1,3 +1,4 @@
+import 'package:html/dom.dart' as dom;
 import 'package:meta/meta.dart';
 import 'package:pointycastle/export.dart' show RSAPublicKey;
 
@@ -18,8 +19,11 @@ import 'journal_import_cloud_http.dart';
 ///   `totalCount` 一致）、详情 `info`（`version` 为空串取完整正文）；
 /// - 正文 `rawText` 是 tiptap 风格 HTML：待办为
 ///   `ul[data-type=taskList] > li[data-checked]`，图片为
-///   `<img src attachid>`，对应 `attachments` 中 `type == 0` 的项，文件经
-///   `GET …/file-download/<文件 ID>` 下载（不套信封）；
+///   `<img src attachid>`，高亮为 `span.highlight_color_<颜色>`，对齐、颜色
+///   与字号是内联样式；附件对应 `attachments` 的项，文件经
+///   `GET …/file-download/<文件 ID>` 下载（不套信封）。参考实现只验证过
+///   图片（`type == 0`），录音、文件等其他类型同样按文件 ID 下载，下载不到
+///   的计入缺失，正文没有引用的追加在末尾；
 /// - 手写笔记是专有格式，不读取。
 class OppoCloudProvider implements CloudNoteProvider {
   OppoCloudProvider(
@@ -182,12 +186,12 @@ class OppoCloudProvider implements CloudNoteProvider {
       for (final item in (detail['attachments'] as List?) ?? const [])
         if (item is Map &&
             item['id'] != null &&
-            item['type'] == 0 &&
             item['url'] is String &&
             RegExp(r'^/?[A-Za-z0-9_-]{1,150}$').hasMatch(item['url'] as String))
           CloudAttachment(
             id: '${item['id']}',
-            name: (item['url'] as String).replaceFirst('/', ''),
+            name: _attachmentName(item),
+            mime: _string(item['mimeType']) ?? _string(item['mime']),
             reference: (item['url'] as String).replaceFirst('/', ''),
           ),
     ];
@@ -205,6 +209,7 @@ class OppoCloudProvider implements CloudNoteProvider {
         writer,
         html.isEmpty ? '<p></p>' : html,
         resolve,
+        prepare: _normalize,
         imageId: (image) {
           final attachId = image.attributes['attachid'];
           if (ids.contains(attachId)) return attachId;
@@ -214,6 +219,46 @@ class OppoCloudProvider implements CloudNoteProvider {
       ),
     );
   }
+
+  /// 附件的文件名：带扩展名的原文件名优先，否则用文件 ID（类型再按 MIME
+  /// 与文件头判断）。
+  static String _attachmentName(Map item) {
+    for (final key in const ['fileName', 'name', 'title']) {
+      final name = _string(item[key]);
+      if (name != null && name.contains('.')) return name;
+    }
+    return (item['url'] as String).replaceFirst('/', '');
+  }
+
+  static String? _string(Object? value) =>
+      value is String && value.trim().isNotEmpty ? value.trim() : null;
+
+  /// 高亮类 `highlight_color_<颜色>` 改写成背景色（与参考实现写入时用的
+  /// 40% 不透明度一致），认不出的颜色名用统一的高亮色。
+  static void _normalize(dom.Element root) {
+    const prefix = 'highlight_color_';
+    for (final node in root.querySelectorAll('[class*="$prefix"]')) {
+      final name = node.classes
+          .firstWhere((value) => value.startsWith(prefix), orElse: () => prefix)
+          .substring(prefix.length);
+      final rgb = _highlights[name] ?? '255, 193, 7';
+      node.attributes['style'] = [
+        node.attributes['style'] ?? '',
+        'background-color: rgba($rgb, 0.4)',
+      ].where((part) => part.isNotEmpty).join(';');
+    }
+  }
+
+  static const Map<String, String> _highlights = {
+    'yellow': '255, 226, 39',
+    'orange': '255, 159, 64',
+    'red': '255, 99, 99',
+    'pink': '255, 128, 171',
+    'purple': '179, 136, 255',
+    'blue': '79, 166, 255',
+    'cyan': '64, 200, 224',
+    'green': '96, 200, 120',
+  };
 
   @override
   Future<List<int>> download(CloudAttachment attachment) async {

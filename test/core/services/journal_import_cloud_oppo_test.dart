@@ -110,7 +110,9 @@ void main() {
                   '<h1>标题</h1><p><i>斜体</i></p>'
                   '<ul data-type="taskList"><li data-type="taskItem" data-checked="true">'
                   '<div><p>完成</p></div></li></ul>'
-                  '<img src="555" attachid="555"><img src="https://x/y.jpg">',
+                  '<img src="555" attachid="555"><img src="https://x/y.jpg">'
+                  '<p style="text-align: center"><span class="highlight_color_yellow">黄</span></p>'
+                  '<hr class="hr-style-solid">',
               'attachments': [
                 {'id': 555, 'type': 0, 'url': '/file_abc'},
                 {'id': 556, 'type': 1, 'url': '/rec'},
@@ -131,8 +133,10 @@ void main() {
     expect(first.title, '清单');
     expect(first.folder, '旅行');
     expect(first.createdAt, DateTime.fromMillisecondsSinceEpoch(1700000000000));
+    // 图片以外的附件（录音等）同样按文件 ID 下载。
     expect(first.attachments.map((item) => (item.id, item.reference)), [
       ('555', 'file_abc'),
+      ('556', 'rec'),
     ]);
     final writer = JournalDeltaWriter();
     first.writeBody(
@@ -146,6 +150,13 @@ void main() {
     expect(ops, contains('local.jpg'));
     // 对应不上附件的远程图片不保留。
     expect(ops, isNot(contains('https://x/y.jpg')));
+    // 高亮类换成背景色，对齐与分隔线保留。
+    expect(
+      ops,
+      contains('{"insert":"黄","attributes":{"background":"#66FFE227"}}'),
+    );
+    expect(ops, contains('"align":"center"'));
+    expect(ops, contains('{"insert":{"divider":"hr"}}'));
     expect(second.folder, isNull);
   });
 

@@ -10760,11 +10760,23 @@ abstract class AppLocalizations {
   /// **'Images, recordings and other media aren\'t kept in templates'**
   String get diaryTemplateSaveAsMediaDropped;
 
-  /// Tooltip of the editor's top bar menu (save as template, editor settings).
+  /// Tooltip of the editor's top bar menu (choose a template, save as template, editor settings).
   ///
   /// In en, this message translates to:
   /// **'More'**
   String get diaryEditorMoreActions;
+
+  /// Top bar menu item of a new blank entry: opens the template picker and applies the chosen one, replacing a just-applied template that is still untouched.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a template'**
+  String get diaryTemplateChoose;
+
+  /// Hint when "Choose a template" is tapped after the user has written in the title or body.
+  ///
+  /// In en, this message translates to:
+  /// **'Templates can only be applied to a blank entry'**
+  String get diaryTemplateNeedsBlankEntry;
 }
 
 class _AppLocalizationsDelegate

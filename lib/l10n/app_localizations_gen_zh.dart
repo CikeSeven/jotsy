@@ -5844,4 +5844,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryEditorMoreActions => '更多';
+
+  @override
+  String get diaryTemplateChoose => '选择模板';
+
+  @override
+  String get diaryTemplateNeedsBlankEntry => '已经开始写了，模板只能套用在空白日记上';
 }

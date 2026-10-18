@@ -8294,6 +8294,14 @@
   },
   "diaryEditorMoreActions": "More",
   "@diaryEditorMoreActions": {
-    "description": "Tooltip of the editor's top bar menu (save as template, editor settings)."
+    "description": "Tooltip of the editor's top bar menu (choose a template, save as template, editor settings)."
+  },
+  "diaryTemplateChoose": "Choose a template",
+  "@diaryTemplateChoose": {
+    "description": "Top bar menu item of a new blank entry: opens the template picker and applies the chosen one, replacing a just-applied template that is still untouched."
+  },
+  "diaryTemplateNeedsBlankEntry": "Templates can only be applied to a blank entry",
+  "@diaryTemplateNeedsBlankEntry": {
+    "description": "Hint when \"Choose a template\" is tapped after the user has written in the title or body."
   }
 }

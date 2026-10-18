@@ -639,6 +639,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   /// 顶栏“更多”菜单的动作；菜单项经 [ExpressiveMenuItem] 先关菜单再调用这里。
   void _onEditorMenuAction(_EditorMenuAction action) => switch (action) {
+    _EditorMenuAction.chooseTemplate => unawaited(
+      _controller.openTemplatePicker(),
+    ),
     _EditorMenuAction.saveAsTemplate => unawaited(_controller.saveAsTemplate()),
     _EditorMenuAction.editorSettings => unawaited(
       Navigator.of(context).push(
@@ -762,6 +765,22 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 tooltip: context.l10n.diaryEditorMoreActions,
                 icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
                 items: <Widget>[
+                  // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
+                  if (_templates.enabled)
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(
+                        FontAwesomeIcons.wandMagicSparkles,
+                      ),
+                      onPressed:
+                          _saving ||
+                              _recordingPanelOpen ||
+                              _mediaImportController.isBusy
+                          ? null
+                          : () => _onEditorMenuAction(
+                              _EditorMenuAction.chooseTemplate,
+                            ),
+                      child: Text(context.l10n.diaryTemplateChoose),
+                    ),
                   ExpressiveMenuItem(
                     leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
                     onPressed: () =>
@@ -1085,4 +1104,4 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 enum EditDiaryEntryMode { create, edit }
 
 /// 顶栏菜单：存为模板、编辑器设置。
-enum _EditorMenuAction { saveAsTemplate, editorSettings }
+enum _EditorMenuAction { chooseTemplate, saveAsTemplate, editorSettings }

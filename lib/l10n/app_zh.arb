@@ -8294,6 +8294,14 @@
   },
   "diaryEditorMoreActions": "更多",
   "@diaryEditorMoreActions": {
-    "description": "编辑页顶栏菜单（存为模板、编辑器设置）的提示。"
+    "description": "编辑页顶栏菜单（选择模板、存为模板、编辑器设置）的提示。"
+  },
+  "diaryTemplateChoose": "选择模板",
+  "@diaryTemplateChoose": {
+    "description": "新建空白日记编辑页顶栏菜单项：打开模板面板，选中后套用；仍是刚套用的模板原样时换成新选的。"
+  },
+  "diaryTemplateNeedsBlankEntry": "已经开始写了，模板只能套用在空白日记上",
+  "@diaryTemplateNeedsBlankEntry": {
+    "description": "编辑页点“选择模板”时标题或正文已有用户写的内容：提示不能套用模板。"
   }
 }

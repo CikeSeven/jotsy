@@ -6414,4 +6414,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorMoreActions => 'More';
+
+  @override
+  String get diaryTemplateChoose => 'Choose a template';
+
+  @override
+  String get diaryTemplateNeedsBlankEntry =>
+      'Templates can only be applied to a blank entry';
 }

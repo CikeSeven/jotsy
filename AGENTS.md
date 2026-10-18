@@ -15,7 +15,7 @@
 │  ├─ app/                           # App 装配与主题系统
 │  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
-│  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops / 草稿箱 ops 拆分）
+│  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops / 草稿箱 ops / 模板 ops 拆分）
 │  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入、分享到其他应用、按日期读取相册照片、图片尺寸与长图分片、应用内更新（检查 / 镜像线路 / 下载校验 / 安装）等）
 │  ├─ ui/
 │  │  ├─ diaries/                    # 日记主业务模块（已分层）
@@ -26,6 +26,7 @@
 │  │  │  ├─ export/                  # 导出写出器（正文块模型、PDF / Word / Markdown / 网页 / 纯文本 / CSV、媒体与命名）
 │  │  │  └─ sections|widgets/        # 可复用 UI 区块（widgets/diary_card/：列表、瀑布流、搜索、归档与日历共用的日记卡片；widgets/diary_preview/：预览页的单篇视图、整页内容、各区块与左右翻页器；widgets/publish_panel/：发布页与编辑页共用的元数据面板区块；widgets/diary_day_photos/：补写日记时“这天拍的照片”提示条、全部面板与缩略图格子）
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
+│  │  ├─ diary_templates/            # 日记模板（模型与正文白名单、变量、推荐规则、内置模板、套用与撤销、建议条与模板面板、管理页与模板编辑页）
 │  │  ├─ home|calendar|explore|settings/
 │  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载、看图页等；long_image/：长图判定、保持比例的解码尺寸、分片拼图与 cover 裁切对齐）
 │  ├─ l10n/                          # 国际化封装
@@ -48,7 +49,7 @@
 - 必须：业务流程（异步链路、批量操作、撤销、防抖、发布流程）放 `controllers/`。
 - 必须：数据映射、草稿模型、metadata 组装放 `models/` 或 `viewmodels/`。
 - 必须：可复用 UI 放 `sections/` 或 `widgets/`，避免页面文件膨胀。
-- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / draft ops）。
+- 必须：`core/database` 维持按职责拆分（query / write / migration / tag ops / anniversary ops / draft ops / template ops）。
 - 禁止：单文件混杂“页面布局 + 业务编排 + 数据转换”。
 - 例外：极简静态页面可不强制拆 controller。
 
@@ -97,7 +98,8 @@
 - 必须：日记正文排版（字体、字号、行距、字间距、段间距）只存于 `DiaryTypography`（单个 JSON 设置键 `app.settings.diary_typography`，逐字段容错并随备份导出）；编辑页、预览页、发布页与设置预览的 Quill 样式一律经 `DiaryQuillStylesBuilder(appearance: ref.watch(diaryTextAppearanceProvider), …)` 在正文位置生成（禁止用页面 State 的 context 直接调用 `buildDiaryQuillStyles`：那里在 Scaffold 之上，只有 MaterialApp 的红色兜底样式），标题字体经 `DiaryTextAppearance.titleStyle`，禁止页面自行设置正文字号/行距或另加排版设置键。导入字体只经 `DiaryFontStorageService`（应用支持目录 `diary_fonts/`，字体文件不进备份，备份只带字体 id，缺失时回落内置字体）；修改经 `DiaryTypographyController`，滑块拖动只改草稿、松手才提交。规范见 DESIGN.md §3.2。
 - 必须：日历页的显示偏好统一加在 `CalendarDisplayOptions`（单个 JSON 设置键 `calendarDisplayOptionsRaw`，逐字段容错解析并随备份导出），禁止为日历另加零散设置键；新增日期格样式经 `CalendarDayCell` 的填充/描边两种高亮形态实现，视觉规范见 DESIGN.md §5.7。
 - 必须：纪念日存 Drift `anniversaries` 表（业务 id `anniversaryId`；`linkedDiaryId` 存日记业务 id、不建外键），随完整备份导出、覆盖恢复与合并（按 `anniversaryId` 去重），日记包不含纪念日；某天落在哪、下一次是哪天一律经 `AnniversaryCalendar` 推算，禁止页面自行换算公历/农历；纪念日页面与提示统一经 `anniversary_navigation.dart` 打开，关联的日记只经 `watchActiveDiaryWithTags`（排除回收站）读取，彻底删除日记时解除关联。不做提醒通知。
-- 必须：新建日记的草稿只存 Drift `diary_drafts` 表（业务 id `draftId`；`payload` 为 `NewDiaryDraft.toJson`，`title` / `contentText` 为列表镜像），每次新建都是独立的一份，经 `DebouncedAutoSaveController` 自动保存；返回、切后台与页面销毁时必须 flush，发布成功后先 `close` 自动保存再删除这一份。禁止重新引入单键草稿（旧键 `app.settings.diary_create_draft` 只作 `migrateLegacyCreateDraft` 的启动迁移来源），禁止“新建空白”删除已有草稿。所有新建入口（首页 FAB 与空列表、日历、探索）统一经 `runDiaryCreateEntryFlow`（有草稿时弹 `showDiaryDraftPickerSheet`），禁止另写新建弹窗或绕过它直接打开新建编辑页；管理页为 `DiaryDraftsPage`（首页顶栏与设置 → 数据与隐私），删除与撤销经 `DiaryDraftsController`，媒体回收必须等撤销窗口结束、确定不撤销后才执行。草稿随完整备份导出与覆盖恢复（旧备份设置里的单份草稿在解析时转成草稿行），合并导入与日记包不带草稿；媒体清理把草稿 `payload` 当作引用来源。视觉规范见 DESIGN.md §5.14。
+- 必须：新建日记的草稿只存 Drift `diary_drafts` 表（业务 id `draftId`；`payload` 为 `NewDiaryDraft.toJson`，`title` / `contentText` 为列表镜像），每次新建都是独立的一份，经 `DebouncedAutoSaveController` 自动保存；返回、切后台与页面销毁时必须 flush，发布成功后先 `close` 自动保存再删除这一份。禁止重新引入单键草稿（旧键 `app.settings.diary_create_draft` 只作 `migrateLegacyCreateDraft` 的启动迁移来源），禁止“新建空白”删除已有草稿。所有新建入口（首页 FAB 与空列表、日历、探索）统一经 `runDiaryCreateEntryFlow`（有草稿时弹 `showDiaryDraftPickerSheet`，其中“从模板新建”再弹 `showDiaryTemplatePickerSheet`），禁止另写新建弹窗或绕过它直接打开新建编辑页；管理页为 `DiaryDraftsPage`（首页顶栏与设置 → 数据与隐私），删除与撤销经 `DiaryDraftsController`，媒体回收必须等撤销窗口结束、确定不撤销后才执行。草稿随完整备份导出与覆盖恢复（旧备份设置里的单份草稿在解析时转成草稿行），合并导入与日记包不带草稿；媒体清理把草稿 `payload` 当作引用来源。视觉规范见 DESIGN.md §5.14。
+- 必须：日记模板的用户模板只存 Drift `diary_templates` 表（业务 id `templateId`；`payload` 为 `DiaryTemplateJson.toPayload`，`name` 为镜像，`sort_order` 为手动排序）；内置模板只由 ARB 文案经块描述编译（`buildBuiltInDiaryTemplates`，id 为 `builtin.<key>`，只读，想改就“复制为我的模板”），禁止落库。行为偏好（建议条开关、自动套用、隐藏的内置模板、最近使用）只存于 `DiaryTemplatePrefs`（单个 JSON 设置键 `app.settings.diary_template_prefs`，逐字段容错并随备份导出与失败回滚），禁止另加零散的模板设置键。模板随完整备份导出与覆盖恢复；两种合并都只新增本机没有的模板（按 `templateId`），从不覆盖本机模板；日记包不带模板。正文只允许文字与分隔线：保存、导入模板码、读出数据库行、另存为模板一律经 `sanitizeDiaryTemplateOps` 白名单清洗，禁止任何媒体嵌入或设备路径进入模板。变量只经 `DiaryTemplateVariable` 的中英别名表解析（认不出的原样保留），取值经 `DiaryTemplateVariableValues`：日期类按日记日期（补写取那一天），时间按当下，农历与节气只经 `CalendarLunarDay`；ARB 不能写字面 `{{…}}`，内置文案用 ICU 占位符填入变量写法。套用只经 `DiaryTemplateApplyController`：只在新建空白日记、标题与正文都为空时套用，预设只填空着的项（心情须在本机心情选项里，日历预设的胶囊优先），套用后原样未动的内容不算草稿（`snapshotFor`），撤销只在内容仍原样时生效；预设标签按名称经 `ensureTagsByName` 匹配、只新建缺失的，禁止在模板模块调用会改色的 `createTag`。新建编辑页的建议条与模板面板读一次性快照 `userDiaryTemplatesSnapshotProvider`（管理页每次写入后 invalidate），禁止在编辑页挂模板表的实时查询。管理页为设置 → 编辑器设置 → 日记模板（`DiaryTemplatesPage`，读写经 `DiaryTemplatesController`），模板码格式为 `jotsy-template:v1:`（`StyleCodeFormat`）。视觉规范见 DESIGN.md §5.15。
 - 必须：日记卡片外观统一收在 `DiaryCardStyleSettings`（单个 JSON 设置键 `diaryCardStyleRaw`：当前样式 + 最多 12 份“我的样式”，逐字段容错解析，随备份导出与失败回滚），渲染统一经 `DiaryCard` + `DiaryCardResolvedStyle`；禁止各页另拼日记卡片或另加零散的卡片外观设置键（标签显示数量 `diaryCardTagLimit` 为既有独立键）。`DiaryCardStyle.defaults` 必须逐项等于 DESIGN.md §5.1 的默认规格；未解封胶囊只套用表面样式，心情色与标签色回退主题色。编辑入口为设置 → 外观与语言 → 日记卡片样式（日记页视图选项面板有快捷入口）。
 - 必须：日记预览页的外观与阅读行为统一收在 `DiaryPreviewSettings`（单个 JSON 设置键 `diaryPreviewStyleRaw`：当前样式 + 最多 12 份“我的样式” + 阅读行为，逐字段容错解析，随备份导出与失败回滚）；渲染统一经 `DiaryPreviewContent` + `DiaryPreviewResolvedStyle`（页面外壳 `DiaryPreviewSurface`），设置页预览复用同一套组件；阅读行为不随预设与样式码改变；正文字体与排版仍只在 `DiaryTypography`，禁止另加零散的预览页设置键。`DiaryPreviewStyle.defaults` 必须等于 DESIGN.md §5.8 的默认规格。样式编辑页（卡片、预览页）共用 `StyleEditorScaffold`、`StyleEditorController` 与 `StyleLibraryTab`，禁止复制一份。
 - 必须：预览页左右滑动切换日记统一经 `DiaryPreviewPage(sequence:)`：入口传进入时所在列表的 `DiaryPreviewSequence`（打开时冻结顺序；首页 / 搜索还有没加载的部分时带 `DiaryPreviewListQuery`，由 `getActiveDiaryIds` 按同一筛选与排序接上），单篇入口不传；翻页器为 `DiaryPreviewPager` → `DiaryPagerView`（设置页预览复用同一个）。手势冲突只靠起滑距离倍数（外层放大、页内还原）与页内始终可滚动的 physics 解决，禁止另写翻页手势识别器，禁止在预览页内放横向滚动容器（会抢走翻页）。预览页的删除结果带被删日记的 id（`DiaryPreviewResult.deleted(id)`），入口按它撤销；预览页勾选待办只经 `updateDiaryContent` 写正文，禁止用会取消归档 / 删除、重写标签的 `updateDiary`。

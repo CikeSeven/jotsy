@@ -60,6 +60,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 - **Mood and energy**: 10 mood emojis (swap them in Settings) and 5 energy levels. The publish time can be changed at any time.
 - **Photos for backfilled days**: when you write an entry for a past day, the editor lists the photos you took that day. Tick a few to insert them, or make one the cover. Your photo library is only read after you tap "Allow access", and the originals are never changed.
 - **Never lose a draft**: new entries keep a draft, and edits to existing entries save automatically.
+- **Diary templates**: 15 built-in templates (morning pages, evening review, gratitude, question of the day, weekly review, reading notes, a letter to future you…), plus your own, or save any entry as a template. A blank entry suggests templates for the time of day right under the title; one tap applies it. Variables such as `{{date}}`, `{{lunar}}` and `{{question}}` are filled in from the entry's date, and a template can also set tags, mood and a time capsule. Share templates as template codes.
 
 ### 🗂️ Browse and read
 

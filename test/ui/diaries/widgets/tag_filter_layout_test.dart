@@ -55,13 +55,17 @@ void main() {
   ) async {
     final key = GlobalKey<TagBarHarnessState>();
     await tester.pumpWidget(buildTagBarHarness(key: key, tags: createTags(0)));
-    await tester.drag(find.byType(DiaryTagFilterBar), const Offset(0, 100));
+    // 没有标签时整栏收起为 0 高，从它原本所在的位置往下拖。
+    await tester.dragFrom(
+      tester.getTopLeft(find.byType(TagBarHarness)) + const Offset(40, 16),
+      const Offset(0, 100),
+    );
     await tester.pumpAndSettle();
 
     expect(key.currentState!.expanded, isFalse);
     expect(key.currentState!.verticalDragStarts, isEmpty);
     expect(find.byType(ExpandedTagFilterList), findsNothing);
-    expect(tester.getSize(find.byType(DiaryTagFilterBar)).height, 40);
+    expect(tester.getSize(find.byType(DiaryTagFilterBar)).height, 0);
     expect(tester.takeException(), isNull);
   });
 

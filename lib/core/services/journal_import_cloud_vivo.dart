@@ -309,7 +309,7 @@ class VivoCloudProvider implements CloudNoteProvider {
           }
           node.replaceWith(list);
         case 'vnote-divider':
-          node.replaceWith(dom.Element.tag('hr'));
+          _replaceKeepingContent(node, dom.Element.tag('hr'));
         case 'vnote-image' ||
             'vnote-audio' ||
             'vnote-audio2' ||
@@ -323,7 +323,8 @@ class VivoCloudProvider implements CloudNoteProvider {
                 (filename.isNotEmpty && filename.contains(item.id)) ||
                 item.name == filename,
           );
-          node.replaceWith(
+          _replaceKeepingContent(
+            node,
             matching.length == 1
                 ? (dom.Element.tag('img')
                     ..attributes['src'] = matching.single.id)
@@ -335,6 +336,19 @@ class VivoCloudProvider implements CloudNoteProvider {
           node.replaceWith(span);
       }
     }
+  }
+
+  /// 用 [replacement] 换掉 [node]，并把 [node] 的子节点移到它之后。
+  ///
+  /// vivo 自己写的是 `<vnote-image …></vnote-image>`，但正文若出现自闭合
+  /// 写法，HTML5 解析会忽略自定义标签的 `/>`，把后面的正文全收作它的子
+  /// 节点（参考实现用的 lxml 不会），直接替换就连同后文一起丢掉。
+  static void _replaceKeepingContent(dom.Element node, dom.Node replacement) {
+    final parent = node.parentNode!;
+    final trailing = node.nodes.toList();
+    final index = parent.nodes.indexOf(node);
+    node.replaceWith(replacement);
+    parent.nodes.insertAll(index + 1, trailing);
   }
 
   @override

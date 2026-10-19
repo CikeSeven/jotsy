@@ -165,6 +165,23 @@ void main() {
     expect(content.contentJson, contains('"list":"checked"'));
     expect(content.contentJson, contains('"list":"unchecked"'));
     expect(content.contentJson, contains('local.png'));
+
+    // 自闭合写法：HTML5 解析把后文收进自定义标签，换成图片与分隔线时后文
+    // 必须留下。
+    _route(
+      http,
+      '/note/getContent/v2',
+      (_) =>
+          '<p>before</p><vnote-image filename="prefix-asset-a.png"/>'
+          '<p>after image</p><vnote-divider/>tail',
+    );
+    final selfClosing = (await provider.fetchNotes((_, _) {})).single;
+    final again = JournalDeltaWriter();
+    selfClosing.writeBody(again, (_) => {'image': 'local.png'});
+    final rebuilt = again.build();
+    expect(rebuilt.contentText, 'before\n\nafter image\n\ntail');
+    expect(rebuilt.contentJson, contains('local.png'));
+    expect(rebuilt.contentJson, contains('{"insert":{"divider":"hr"}}'));
   });
 
   test('downloads originals cookie-free with the STS token', () async {

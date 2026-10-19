@@ -19,6 +19,8 @@ class BackupPayload {
     this.anniversaries = const <Anniversary>[],
     this.diaryDrafts = const <DiaryDraftRow>[],
     this.diaryTemplates = const <DiaryTemplateRow>[],
+    this.notebooks = const <NotebookRow>[],
+    this.diaryNotebooks = const <DiaryNotebookRow>[],
     this.settings,
   });
 
@@ -36,6 +38,15 @@ class BackupPayload {
   /// 用户自建的日记模板（schema v12 起）。旧备份没有这张表，解析为空列表；
   /// 日记包不带模板。内置模板不落库，id 以 `builtin.` 开头的行一律丢弃。
   final List<DiaryTemplateRow> diaryTemplates;
+
+  /// 日记本定义（schema v13 起）。旧备份没有这张表，解析为空列表；日记包只带
+  /// 包内日记所在的手动日记本。
+  final List<NotebookRow> notebooks;
+
+  /// 日记-日记本关联，两端都是**文件里的**本地 id（覆盖恢复原样保留，合并时
+  /// 经日记与日记本的 id 映射改写）。解析后只剩两端都在载荷里、且日记本为
+  /// 手动类型的行（见 [_withRestorableRelations]）。
+  final List<DiaryNotebookRow> diaryNotebooks;
   final Map<String, dynamic>? settings;
 
   factory BackupPayload.decode(String raw) {
@@ -110,10 +121,27 @@ class BackupPayload {
               (row) => !row.templateId.startsWith(builtInDiaryTemplateIdPrefix),
             )
             .toList(growable: false),
+        notebooks: _optionalRows(database, 'notebooks')
+            .map((row) {
+              return NotebookRow.fromJson({
+                // 有列默认值的字段省略时按默认值补齐，必填列缺失照常报错。
+                'kind': NotebookKind.manual.name,
+                'visibility': NotebookVisibility.normal.name,
+                'payload': '{}',
+                'sortOrder': 0,
+                'isPinned': false,
+                'isClosed': false,
+                ...row,
+              });
+            })
+            .toList(growable: false),
+        diaryNotebooks: _optionalRows(database, 'diaryNotebooks')
+            .map((row) => DiaryNotebookRow.fromJson({'position': 0, ...row}))
+            .toList(growable: false),
         settings: settings as Map<String, dynamic>?,
       );
       payload._validateKeys();
-      return payload._withRestorableTagRelations();
+      return payload._withRestorableRelations();
     } on TypeError {
       throw const FormatException('备份数据字段格式错误');
     }
@@ -175,6 +203,9 @@ class BackupPayload {
     _unique(diaryDrafts.map((row) => row.draftId));
     _unique(diaryTemplates.map((row) => row.id));
     _unique(diaryTemplates.map((row) => row.templateId));
+    _unique(notebooks.map((row) => row.id));
+    _unique(notebooks.map((row) => row.notebookId));
+    _unique(diaryNotebooks.map((row) => (row.diaryId, row.notebookId)));
     // 纪念日的日期与名称决定日历怎么画，坏行在写库前拒绝，而不是导入后
     // 才在页面上算不出日子。
     for (final row in anniversaries) {
@@ -185,15 +216,29 @@ class BackupPayload {
         throw const FormatException('备份中的纪念日数据无效');
       }
     }
+    // 名称长度是表上的约束，坏行留到写库时才会以数据库异常失败；与纪念日
+    // 一样在解析时就按“备份数据无效”拒绝。
+    for (final row in notebooks) {
+      final name = row.name.trim();
+      if (name.isEmpty || name.length > 60) {
+        throw const FormatException('备份中的日记本数据无效');
+      }
+    }
   }
 
-  BackupPayload _withRestorableTagRelations() {
+  BackupPayload _withRestorableRelations() {
     final diaryIds = diaries.map((row) => row.id).toSet();
     final tagIds = tags.map((row) => row.id).toSet();
+    // 只有手动日记本有成员关系；智能或认不出类型的日记本不接收关联行。
+    final manualNotebookIds = {
+      for (final row in notebooks)
+        if (row.acceptsManualEntries) row.id,
+    };
     // 历史连接没有一直开启 SQLite 外键，删除记录可能留下悬空关联。
     // 旧版本会把这些关联一起导出；它们不是整份备份损坏的证据。
     // 保留全部日记、标签及有效关联，只有已不存在的两端无法恢复为标签绑定。
     // 不对历史数据额外施加编辑器的长度或正数 ID 规则，避免拒绝旧库真实行。
+    // 日记本关联同理：悬空或指向智能日记本的行丢弃，不拒绝整份备份。
     return BackupPayload(
       diaries: diaries,
       tags: tags,
@@ -206,6 +251,14 @@ class BackupPayload {
       anniversaries: anniversaries,
       diaryDrafts: diaryDrafts,
       diaryTemplates: diaryTemplates,
+      notebooks: notebooks,
+      diaryNotebooks: diaryNotebooks
+          .where(
+            (row) =>
+                diaryIds.contains(row.diaryId) &&
+                manualNotebookIds.contains(row.notebookId),
+          )
+          .toList(growable: false),
       settings: settings,
     );
   }
@@ -245,6 +298,12 @@ class BackupPayload {
         'diaryTemplates': (await database.select(database.diaryTemplates).get())
             .map((row) => row.toJson())
             .toList(),
+        'notebooks': (await database.select(database.notebooks).get())
+            .map((row) => row.toJson())
+            .toList(),
+        'diaryNotebooks': (await database.select(database.diaryNotebooks).get())
+            .map((row) => row.toJson())
+            .toList(),
       },
     );
     return {
@@ -255,15 +314,26 @@ class BackupPayload {
     };
   }
 
-  /// 日记包载荷：指定日记及其标签与关联，不含应用设置。
+  /// 日记包载荷：指定日记及其标签与关联、所在的手动日记本及成员关系，不含
+  /// 应用设置。
+  ///
+  /// 日记本只带包内日记所在的手动日记本（定义与这些日记的成员行），不带无关
+  /// 的日记本与智能日记本：导入端按 notebookId 合并，本机没有的本子随之新增，
+  /// 日记仍落在原来的本子与章节里。
   ///
   /// 也不含纪念日与日记模板：日记包是“分享这几篇日记”，纪念日与模板属于
   /// 整本日记，只随完整备份走；关联了这些日记的纪念日留在本机。
   ///
   /// 同样在一个事务快照内读取；只导出两端都存在的关联，避免把历史悬空绑定
-  /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行，导出
-  /// 方据此收集被引用的媒体文件。
-  static Future<({Map<String, Object?> json, List<Diary> diaries})>
+  /// 带进包里。一篇都找不到时报错，调用方不应生成空包。同时返回日记行与
+  /// 日记本行，导出方据此收集被引用的媒体文件（日记本封面）。
+  static Future<
+    ({
+      Map<String, Object?> json,
+      List<Diary> diaries,
+      List<NotebookRow> notebooks,
+    })
+  >
   captureDiaries({
     required AppDatabase database,
     required Iterable<String> diaryIds,
@@ -286,6 +356,20 @@ class BackupPayload {
                 ))
                 .get();
       final tagIds = tags.map((tag) => tag.id).toSet();
+      final memberships = await (database.select(
+        database.diaryNotebooks,
+      )..where((row) => row.diaryId.isIn(diaries.map((d) => d.id)))).get();
+      final notebooks = memberships.isEmpty
+          ? const <NotebookRow>[]
+          : (await (database.select(database.notebooks)..where(
+                      (row) => row.id.isIn(
+                        memberships.map((r) => r.notebookId).toSet(),
+                      ),
+                    ))
+                    .get())
+                .where((row) => row.acceptsManualEntries)
+                .toList(growable: false);
+      final notebookIds = notebooks.map((row) => row.id).toSet();
       return (
         json: <String, Object?>{
           'formatVersion': backupFormatVersion,
@@ -297,9 +381,15 @@ class BackupPayload {
                 .where((row) => tagIds.contains(row.tagId))
                 .map((row) => row.toJson())
                 .toList(),
+            'notebooks': notebooks.map((row) => row.toJson()).toList(),
+            'diaryNotebooks': memberships
+                .where((row) => notebookIds.contains(row.notebookId))
+                .map((row) => row.toJson())
+                .toList(),
           },
         },
         diaries: diaries,
+        notebooks: notebooks,
       );
     });
   }
@@ -325,6 +415,12 @@ class BackupPayload {
           payload: await _rebindDraftPayload(draft.payload, paths),
         ),
     ];
+    final restoredNotebooks = <NotebookRow>[
+      for (final notebook in notebooks)
+        notebook.copyWith(
+          payload: await rebindNotebookPayload(notebook.payload, paths),
+        ),
+    ];
     return BackupPayload(
       diaries: restored,
       tags: tags,
@@ -333,8 +429,38 @@ class BackupPayload {
       diaryDrafts: restoredDrafts,
       // 模板正文只有文字与分隔线，没有媒体路径要改写。
       diaryTemplates: diaryTemplates,
+      notebooks: restoredNotebooks,
+      diaryNotebooks: diaryNotebooks,
       settings: settings,
     );
+  }
+
+  /// 日记本载荷里只有封面（`cover`）指向托管媒体：按与日记封面相同的规则
+  /// 改写，覆盖恢复与合并导入共用。
+  ///
+  /// 在 JSON 层面只改这一个字段、其余键原样保留，而不是经 [NotebookPayload]
+  /// 解码再编码：那样会丢掉更新版本写入、本版本认不出的字段。载荷损坏或
+  /// 没有封面时原样返回（日记本按默认设置显示，不因此拒绝整份备份）。
+  static Future<String> rebindNotebookPayload(
+    String payload,
+    BackupMediaPaths paths,
+  ) async {
+    final Object? json;
+    try {
+      json = jsonDecode(payload);
+    } on FormatException {
+      return payload;
+    }
+    if (json is! Map<String, dynamic>) return payload;
+    final cover = json['cover'];
+    if (cover is! String) return payload;
+    final rebound = await paths.rewritePath(
+      cover,
+      directoryNames: const ['diary_covers', 'diary_images'],
+    );
+    if (rebound == cover) return payload;
+    json['cover'] = rebound;
+    return jsonEncode(json);
   }
 
   /// 草稿载荷是编辑页的草稿 JSON：改写其中正文与封面的媒体路径，其余字段
@@ -367,6 +493,9 @@ class BackupPayload {
 
   /// 调用方负责整个恢复事务；生成的 companion 自动包含所有 schema 字段。
   Future<void> writeDatabase(AppDatabase database) async {
+    // 关联表先删：与两端表一起清空，不留指向旧本地 id 的行。
+    await database.delete(database.diaryNotebooks).go();
+    await database.delete(database.notebooks).go();
     await database.delete(database.diaryTags).go();
     await database.delete(database.diaries).go();
     await database.delete(database.tags).go();
@@ -400,6 +529,15 @@ class BackupPayload {
       batch.insertAll(
         database.diaryTemplates,
         diaryTemplates.map((row) => row.toCompanion(false)).toList(),
+      );
+      // 日记本与关联都保留文件里的本地 id，关联两端随日记一起原样恢复。
+      batch.insertAll(
+        database.notebooks,
+        notebooks.map((row) => row.toCompanion(false)).toList(),
+      );
+      batch.insertAll(
+        database.diaryNotebooks,
+        diaryNotebooks.map((row) => row.toCompanion(false)).toList(),
       );
     });
   }

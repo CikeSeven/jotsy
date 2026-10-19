@@ -117,13 +117,15 @@ class DataArchiveService {
         flush: true,
       );
       // 与媒体回收共用同一套引用识别：正文、封面与 metadata 里提到的托管文件
-      // 都会带上，导入端再按与完整备份相同的规则重绑。
+      // 都会带上，包里日记本的封面（在载荷 JSON 里）同样带上，导入端再按与
+      // 完整备份相同的规则重绑。
       final references = DiaryMediaReferences([
         for (final diary in captured.diaries) ...[
           diary.content,
           diary.cover,
           diary.metadata,
         ],
+        for (final notebook in captured.notebooks) notebook.payload,
       ]);
       await BackupArchiveIO.copyMediaFiles(
         await getApplicationDocumentsDirectory(),
@@ -201,6 +203,7 @@ class DataArchiveService {
         row.read(diaries.diaryId)!,
     };
     final localTags = countAll();
+    final localNotebooks = countAll();
     final anniversaries = database.anniversaries;
     final localAnniversaryIds = {
       for (final row in await (database.selectOnly(
@@ -230,6 +233,9 @@ class DataArchiveService {
           .length,
       localAnniversaryCount: localAnniversaryIds.length,
       localTemplateCount: await database.countDiaryTemplates(),
+      localNotebookCount: (await (database.selectOnly(
+        database.notebooks,
+      )..addColumns([localNotebooks])).getSingle()).read(localNotebooks)!,
     );
   }
 
@@ -326,6 +332,7 @@ class DataArchiveService {
         skippedDiaries: 0,
         addedAnniversaries: restored.anniversaries.length,
         addedTemplates: restored.diaryTemplates.length,
+        addedNotebooks: restored.notebooks.length,
       );
     } finally {
       if (cleanup) await _cleanWorkingDirectory(working);

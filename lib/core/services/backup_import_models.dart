@@ -18,12 +18,13 @@ enum BackupArchiveKind {
 enum BackupImportMode {
   /// 合并：保留本机全部数据，只新增本机没有的日记；本机已有的同一篇日记保持
   /// 本机版本。标签按名称复用，不修改应用设置与新建日记草稿；日记模板只新增
-  /// 本机没有的。
+  /// 本机没有的；日记本只新增本机没有的，本机已有的保持本机定义。
   merge,
 
   /// 合并并覆盖：在 [merge] 的基础上，把本机已有的同一篇日记整篇替换为文件
   /// 中的版本（正文、标签、归档/置顶/回收站状态一并替换）；同一条纪念日同样
-  /// 替换为文件中的版本。日记模板仍只新增、不替换本机已有的。
+  /// 替换为文件中的版本；同一个日记本的定义替换为文件中的版本（书架顺序保留
+  /// 本机的）。日记模板仍只新增、不替换本机已有的。
   mergeOverwrite,
 
   /// 覆盖全部：清空本机日记、标签、媒体与设置后换入备份内容，仅限完整备份。
@@ -50,6 +51,7 @@ class BackupArchivePreview {
     this.existingAnniversaryCount = 0,
     this.localAnniversaryCount = 0,
     this.localTemplateCount = 0,
+    this.localNotebookCount = 0,
   });
 
   final BackupArchiveKind kind;
@@ -90,6 +92,10 @@ class BackupArchivePreview {
   /// 不含模板的旧备份覆盖导入后，本机模板会被清空，警告里要列出来。
   final int localTemplateCount;
 
+  /// 本机当前的日记本数，即 [BackupImportMode.replaceAll] 会删除的个数——
+  /// 不含日记本的旧备份覆盖导入后，本机日记本会被清空，警告里要列出来。
+  final int localNotebookCount;
+
   /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记
   /// 或纪念日时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部数据。
   List<BackupImportMode> get availableModes => <BackupImportMode>[
@@ -111,6 +117,7 @@ class BackupImportResult {
     this.replacedAnniversaries = 0,
     this.skippedAnniversaries = 0,
     this.addedTemplates = 0,
+    this.addedNotebooks = 0,
   });
 
   final BackupImportMode mode;
@@ -132,6 +139,10 @@ class BackupImportResult {
 
   /// 新增的日记模板数；[BackupImportMode.replaceAll] 时为换入的全部模板数。
   final int addedTemplates;
+
+  /// 新增的日记本数（只算新建的定义，替换或保留本机已有的不计）；
+  /// [BackupImportMode.replaceAll] 时为换入的全部日记本数。
+  final int addedNotebooks;
 
   bool get touchedAnniversaries =>
       addedAnniversaries + replacedAnniversaries + skippedAnniversaries > 0;

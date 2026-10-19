@@ -222,7 +222,10 @@ void main() {
       await openShelfAndPick(h, '保险箱');
       expect(find.text('无法打开上锁的日记本'), findsOneWidget);
       expect(auth.reasons, isEmpty);
-      await tester.tap(find.text(h.l10n.commonCancel));
+      // 只有“知道了”：不再提供绕过验证的“去设置”。
+      expect(find.text(h.l10n.commonCancel), findsNothing);
+      expect(find.text('去设置'), findsNothing);
+      await tester.tap(find.text('知道了'));
       await h.settleAll();
       expect(containerOf(tester).read(homeNotebookScopeProvider).isAll, isTrue);
       expect(find.text('秘密'), findsNothing);

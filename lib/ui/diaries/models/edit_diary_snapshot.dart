@@ -9,7 +9,11 @@ class EditDiarySnapshot {
     required this.metadataJson,
     required Set<int> selectedTagIds,
     required this.createdAt,
-  }) : selectedTagIds = Set<int>.unmodifiable(selectedTagIds);
+    List<String>? notebookIds,
+  }) : selectedTagIds = Set<int>.unmodifiable(selectedTagIds),
+       notebookIds = notebookIds == null
+           ? null
+           : List<String>.unmodifiable(notebookIds);
 
   final String title;
   final String contentDocJson;
@@ -21,6 +25,9 @@ class EditDiarySnapshot {
   /// 发表时间（created_at）；null 表示沿用库中原值。
   final DateTime? createdAt;
 
+  /// 所在日记本；null 表示用户没改过，保存时不动关联。
+  final List<String>? notebookIds;
+
   @override
   bool operator ==(Object other) =>
       other is EditDiarySnapshot &&
@@ -31,7 +38,8 @@ class EditDiarySnapshot {
       other.metadataJson == metadataJson &&
       other.selectedTagIds.length == selectedTagIds.length &&
       other.selectedTagIds.containsAll(selectedTagIds) &&
-      other.createdAt == createdAt;
+      other.createdAt == createdAt &&
+      _sameIds(other.notebookIds, notebookIds);
 
   @override
   int get hashCode => Object.hash(
@@ -42,5 +50,15 @@ class EditDiarySnapshot {
     metadataJson,
     Object.hashAll(selectedTagIds.toList()..sort()),
     createdAt,
+    notebookIds == null ? null : Object.hashAll(notebookIds!),
   );
+
+  static bool _sameIds(List<String>? a, List<String>? b) {
+    if (a == null || b == null) return a == b;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 }

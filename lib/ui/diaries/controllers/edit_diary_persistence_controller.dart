@@ -30,6 +30,9 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
       metadataJson: _state._metadataJson.trim(),
       selectedTagIds: _state._meta.value.tagIds,
       createdAt: _state._draftPublishAt,
+      notebookIds: _state._notebookIdsDirty
+          ? _state._meta.value.notebookIds.toList(growable: false)
+          : null,
     );
   }
 
@@ -50,6 +53,8 @@ extension EditDiaryPersistenceFlow on EditDiaryController {
           metadataJson: snapshot.metadataJson,
           tagIds: snapshot.selectedTagIds.toList(),
           createdAt: snapshot.createdAt,
+          // null：用户没改过日记本，不动关联（仍在的本子保留章节与位置）。
+          notebookIds: snapshot.notebookIds,
         );
   }
 

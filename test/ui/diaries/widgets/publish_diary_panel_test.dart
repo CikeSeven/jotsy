@@ -33,6 +33,10 @@ void main() {
     await tester.tap(PublishPanelDriver(tester).collapsedHeader);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(find.text('Time lock'));
+
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text('Time lock'));
     await tester.pumpAndSettle();
 
@@ -47,6 +51,8 @@ void main() {
       addTearDown(tester.view.reset);
       await tester.pumpWidget(publishPanelHost(capsuleEnabled: true));
       await PublishPanelDriver(tester).expand();
+      await tester.ensureVisible(find.text('Time lock'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Time lock'));
       await tester.pumpAndSettle();
     }
@@ -305,6 +311,8 @@ void main() {
       await PublishPanelDriver(tester).expand();
 
       expect(find.text('Auto use current time'), findsOneWidget);
+      await tester.ensureVisible(find.text('Publish time'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Publish time'));
       await tester.tap(find.text('Auto use current time'));
       expect(picks, 2);
@@ -336,11 +344,15 @@ void main() {
       await PublishPanelDriver(tester).expand();
 
       expect(find.text('Follows the time lock · Jan 1, 2027'), findsOneWidget);
+      await tester.ensureVisible(find.text('Publish time'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Publish time'));
       expect(picks, 0);
 
       // 移除定时锁后恢复可选。
       draft.setCapsule(null);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Publish time'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Publish time'));
       expect(picks, 1);

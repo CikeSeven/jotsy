@@ -6,7 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../core/database/app_database.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
-import '../pages/notebook_editor_page.dart';
+import '../controllers/notebook_lock_flow.dart';
 import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_action_sheets.dart';
@@ -27,7 +27,29 @@ class NotebookDeleteHooks {
   final VoidCallback? onRestored;
 }
 
-/// 执行对 [notebook] 的一个操作：书架长按菜单与管理页“更多”面板共用。
+/// 会打开编辑页或让日记本内容露出来的操作：对上锁的日记本要先验证身份。
+///
+/// - 编辑：编辑页能把隐私改回“正常”；
+/// - 合并（这本是来源）：日记并入别的本子后不再受锁保护；
+/// - 删除：“只删除日记本”让日记回到全部日记，“连同日记删除”的日记进回收站
+///   也能看到；
+/// - 转为普通日记本：同样会打开设置。
+///
+/// 置顶、合上 / 重新打开、排序不涉及内容，不需要验证。
+const Set<NotebookAction> notebookRevealingActions = <NotebookAction>{
+  NotebookAction.edit,
+  NotebookAction.merge,
+  NotebookAction.convert,
+  NotebookAction.delete,
+};
+
+/// 执行对 [notebook] 的一个操作：书架长按菜单、管理页“更多”面板与首页头部
+/// 卡片共用。
+///
+/// [notebookRevealingActions] 里的操作对上锁的日记本先经
+/// [authorizeNotebookEntry]，取消、失败或设备不支持时什么也不做；
+/// [authorized] 为 true 表示调用方已在这本的解锁范围里（首页头部卡片），
+/// 不再重复验证。
 ///
 /// 读写经 [NotebooksController]；确认框、提示条与撤销在这里组装。删除带 4 秒
 /// 撤销（`showStyleEditorUndoSnackBar`，经 Home 的跟踪接口、`persist: false`）；
@@ -38,7 +60,14 @@ Future<void> runNotebookAction(
   required NotebookView notebook,
   required NotebookAction action,
   NotebookDeleteHooks hooks = const NotebookDeleteHooks(),
+  bool authorized = false,
 }) async {
+  if (!authorized && notebookRevealingActions.contains(action)) {
+    final allowed = await authorizeNotebookEntry(context, ref, notebook);
+    if (!allowed || !context.mounted) {
+      return;
+    }
+  }
   final controller = ref.read(notebooksControllerProvider);
   final l10n = context.l10n;
   Future<void> guarded(Future<void> Function() write) async {
@@ -54,9 +83,8 @@ Future<void> runNotebookAction(
 
   switch (action) {
     case NotebookAction.edit:
-      await Navigator.of(
-        context,
-      ).push(NotebookEditorPage.route(notebookId: notebook.id));
+      // 上面已验证过，这里不再重复。
+      await openNotebookEditor(context, ref, notebook, authorized: true);
     case NotebookAction.pin:
     case NotebookAction.unpin:
       await guarded(

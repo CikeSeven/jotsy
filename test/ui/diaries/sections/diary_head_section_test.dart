@@ -8,6 +8,8 @@ Widget _host({
   int count = 3,
   int draftCount = 0,
   VoidCallback? onOpenDrafts,
+  bool inManualNotebook = false,
+  VoidCallback? onAddToNotebook,
 }) => MaterialApp(
   locale: const Locale('zh'),
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -22,6 +24,9 @@ Widget _host({
       onArchiveSelected: () {},
       onExportSelected: () {},
       onDeleteSelected: () {},
+      onAddToNotebookSelected: onAddToNotebook ?? () {},
+      onRemoveFromNotebookSelected: inManualNotebook ? () {} : null,
+      onMoveToNotebookSelected: inManualNotebook ? () {} : null,
       onOpenArchived: () {},
       onOpenDrafts: onOpenDrafts ?? () {},
       draftCount: draftCount,
@@ -96,5 +101,54 @@ void main() {
     );
     await tester.tap(find.byTooltip('草稿箱'));
     expect(opened, 1);
+  });
+
+  testWidgets('selection bar fits 320dp with a large count', (tester) async {
+    tester.view.physicalSize = const Size(320, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      _host(selection: true, count: 1234, inManualNotebook: true),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    // 数量放不下时缩小而不是省略，仍能读出完整数字。
+    expect(find.text('已选择 1234 项'), findsOneWidget);
+    expect(find.byTooltip('收进日记本'), findsOneWidget);
+    expect(find.byTooltip('归档'), findsOneWidget);
+    expect(find.byTooltip('删除'), findsOneWidget);
+  });
+
+  testWidgets('add to notebook calls back from the selection bar', (
+    tester,
+  ) async {
+    var tapped = 0;
+    await tester.pumpWidget(
+      _host(selection: true, onAddToNotebook: () => tapped++),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('收进日记本'));
+    expect(tapped, 1);
+  });
+
+  testWidgets('remove / move only appear in the more menu of a manual '
+      'notebook', (tester) async {
+    await tester.pumpWidget(_host(selection: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('更多操作'));
+    await tester.pumpAndSettle();
+    expect(find.text('置顶'), findsOneWidget);
+    expect(find.text('导出'), findsOneWidget);
+    expect(find.text('从本日记本移出'), findsNothing);
+    expect(find.text('移动到…'), findsNothing);
+
+    await tester.tapAt(const Offset(5, 500));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(_host(selection: true, inManualNotebook: true));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('更多操作'));
+    await tester.pumpAndSettle();
+    expect(find.text('从本日记本移出'), findsOneWidget);
+    expect(find.text('移动到…'), findsOneWidget);
   });
 }

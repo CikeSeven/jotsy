@@ -8789,11 +8789,11 @@
   "@notebookLockUnsupportedTitle": {
     "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
   },
-  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified. You can change the notebook's privacy to \"Hide from all diaries\" in its settings.",
+  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings to open them.",
   "@notebookLockUnsupportedMessage": {
     "description": "Explanation when opening a locked notebook on a device without a screen lock."
   },
-  "notebookLockUnsupportedAction": "Settings",
+  "notebookLockUnsupportedAction": "Got it",
   "@notebookLockUnsupportedAction": {
     "description": "Dialog button that opens the notebook settings when a locked notebook can't be verified."
   },
@@ -8858,5 +8858,172 @@
   "backupImportFolderModeBothHint": "Creates notebooks and tags with the same names",
   "@backupImportFolderModeBothHint": {
     "description": "Explanation when “Both” is selected."
+  },
+  "notebookEmptyManualHint": "Write the first entry, or pick a few existing ones",
+  "@notebookEmptyManualHint": {
+    "description": "Hint under an empty manual notebook (two buttons follow)."
+  },
+  "notebookEmptyWriteFirst": "Write the first entry",
+  "@notebookEmptyWriteFirst": {
+    "description": "Empty-notebook button: write straight into this notebook."
+  },
+  "notebookEmptyPickExisting": "Pick existing entries",
+  "@notebookEmptyPickExisting": {
+    "description": "Empty-notebook button: open the add-entries page."
+  },
+  "notebookAddDiaries": "Add entries",
+  "@notebookAddDiaries": {
+    "description": "Notebook header button: pick existing entries to add."
+  },
+  "notebookPickerTitle": "Add to notebook",
+  "@notebookPickerTitle": {
+    "description": "Notebook picker title; also the multi-select and preview \"More\" entry."
+  },
+  "notebookPickerEmpty": "No notebooks to add to yet",
+  "@notebookPickerEmpty": {
+    "description": "Shown in the notebook picker when there is no notebook to choose."
+  },
+  "notebookPickerDone": "Done",
+  "@notebookPickerDone": {
+    "description": "Submit button at the bottom of the notebook picker."
+  },
+  "notebookPickerPrivateHint": "Added to \"{name}\". These entries now only show in that notebook",
+  "@notebookPickerPrivateHint": {
+    "description": "Hint after adding entries to a hidden or locked notebook; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSelectionMore": "More actions",
+  "@notebookSelectionMore": {
+    "description": "Tooltip of the multi-select bar \"more\" button."
+  },
+  "notebookRemoveFromCurrent": "Remove from this notebook",
+  "@notebookRemoveFromCurrent": {
+    "description": "Multi-select menu item: remove the selected entries from the current notebook."
+  },
+  "notebookMoveTo": "Move to…",
+  "@notebookMoveTo": {
+    "description": "Multi-select menu item and picker title: move to another notebook."
+  },
+  "notebookAddedToCount": "{count, plural, =1{Added to 1 notebook} other{Added to {count} notebooks}}",
+  "@notebookAddedToCount": {
+    "description": "Hint after adding entries to notebooks; count is the number of notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookMembershipUpdated": "Notebooks updated",
+  "@notebookMembershipUpdated": {
+    "description": "Hint after changing notebook membership (including removals)."
+  },
+  "notebookRemovedFrom": "{count, plural, =1{Removed 1 entry from \"{name}\"} other{Removed {count} entries from \"{name}\"}}",
+  "@notebookRemovedFrom": {
+    "description": "Hint after removing entries from a notebook; name is the notebook, count the number of entries.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookMovedTo": "{count, plural, =1{Moved 1 entry to \"{name}\"} other{Moved {count} entries to \"{name}\"}}",
+  "@notebookMovedTo": {
+    "description": "Hint after moving entries; name is the target notebook, count the number of entries.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookPublishNone": "Not in a notebook",
+  "@notebookPublishNone": {
+    "description": "Placeholder of the publish panel notebook row when none is selected."
+  },
+  "notebookWriteInto": "Write in {name}",
+  "@notebookWriteInto": {
+    "description": "Home create button label inside a notebook; name is the (shortened) notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookAddPageTitle": "Add to \"{name}\"",
+  "@notebookAddPageTitle": {
+    "description": "Add-entries page title; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookAddPageDone": "Done ({count})",
+  "@notebookAddPageDone": {
+    "description": "Add-entries page done button; count is the number selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookAddSearchHint": "Search entries",
+  "@notebookAddSearchHint": {
+    "description": "Search field placeholder on the add-entries page."
+  },
+  "notebookAddFilterAll": "All",
+  "@notebookAddFilterAll": {
+    "description": "Add-entries filter: any time."
+  },
+  "notebookAddFilterRecent": "Last 30 days",
+  "@notebookAddFilterRecent": {
+    "description": "Add-entries filter: written in the last 30 days."
+  },
+  "notebookAddFilterThisYear": "This year",
+  "@notebookAddFilterThisYear": {
+    "description": "Add-entries filter: written this year."
+  },
+  "notebookAddAlreadyIn": "Already in this notebook",
+  "@notebookAddAlreadyIn": {
+    "description": "Add-entries page note for entries already in the notebook."
+  },
+  "notebookAddedCount": "{count, plural, =1{Added 1 entry} other{Added {count} entries}}",
+  "@notebookAddedCount": {
+    "description": "Hint after adding entries; count is the number added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookAddEmpty": "No matching entries",
+  "@notebookAddEmpty": {
+    "description": "Shown on the add-entries page when nothing matches."
+  },
+  "notebookPreviewNone": "Not in any notebook yet",
+  "@notebookPreviewNone": {
+    "description": "Preview \"More\" subtitle when the entry is in no notebook."
+  },
+  "notebookListSeparator": ", ",
+  "@notebookListSeparator": {
+    "description": "Separator between notebook names in a list."
+  },
+  "notebookOpenNotebook": "Open \"{name}\"",
+  "@notebookOpenNotebook": {
+    "description": "Screen-reader hint of a notebook capsule on the preview page; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

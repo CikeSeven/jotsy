@@ -131,15 +131,26 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
 
   /// 包含这篇日记的手动日记本，按书架顺序（预览页的日记本胶囊用）。
   Stream<List<NotebookRow>> watchNotebooksOfDiary(String diaryId) {
-    final query = _manualMembershipQuery(diaries.diaryId.equals(diaryId))
+    return _notebooksOfDiaryQuery(diaryId).watch().map(
+      (rows) => <NotebookRow>[for (final row in rows) row.readTable(notebooks)],
+    );
+  }
+
+  /// [watchNotebooksOfDiary] 的一次性读取。
+  Future<List<NotebookRow>> getNotebooksOfDiary(String diaryId) async {
+    final rows = await _notebooksOfDiaryQuery(diaryId).get();
+    return <NotebookRow>[for (final row in rows) row.readTable(notebooks)];
+  }
+
+  JoinedSelectStatement<HasResultSet, dynamic> _notebooksOfDiaryQuery(
+    String diaryId,
+  ) {
+    return _manualMembershipQuery(diaries.diaryId.equals(diaryId))
       ..orderBy(<OrderingTerm>[
         OrderingTerm.desc(notebooks.isPinned),
         OrderingTerm.asc(notebooks.sortOrder),
         OrderingTerm.asc(notebooks.id),
       ]);
-    return query.watch().map(
-      (rows) => <NotebookRow>[for (final row in rows) row.readTable(notebooks)],
-    );
   }
 
   /// 把本子里的这些日记放进 [chapterId]（null 为“未分章”），不改成书顺序；
@@ -213,15 +224,16 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
   ///
   /// 仍选中的本子保留原关联行（章节、成书位置与加入时间都不变，否则编辑一次
   /// 日记就会把它挪到本子末尾、丢掉章节）；取消选中的删除；新选中的接在该本
-  /// 最后、未分章。智能、未知类型与不存在的 id 静默忽略：编辑页拿到的列表可能
-  /// 来自过期的快照，为此让整次保存失败不划算。
+  /// 最后，章节取 [chapterIds]（日记本业务 id → 章节 id；没有或已不是那本的
+  /// 章节时为“未分章”）。智能、未知类型与不存在的 id 静默忽略：编辑页拿到的
+  /// 列表可能来自过期的快照，为此让整次保存失败不划算。
   Future<void> _replaceDiaryNotebooks(
     int localDiaryId,
-    Set<String> notebookIds,
-  ) async {
-    final targets = <int>[
-      for (final row in await _manualNotebooksByBusinessId(notebookIds)) row.id,
-    ];
+    Set<String> notebookIds, {
+    Map<String, String> chapterIds = const <String, String>{},
+  }) async {
+    final targetRows = await _manualNotebooksByBusinessId(notebookIds);
+    final targets = <int>[for (final row in targetRows) row.id];
     final existing = await (select(
       diaryNotebooks,
     )..where((t) => t.diaryId.equals(localDiaryId))).get();
@@ -239,13 +251,16 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
           .go();
     }
     final now = DateTime.now();
-    for (final notebookId in targets) {
-      if (kept.contains(notebookId)) continue;
+    for (final notebook in targetRows) {
+      if (kept.contains(notebook.id)) continue;
       await into(diaryNotebooks).insert(
         DiaryNotebooksCompanion.insert(
           diaryId: localDiaryId,
-          notebookId: notebookId,
-          position: Value(await _nextEntryPosition(notebookId)),
+          notebookId: notebook.id,
+          chapterId: Value(
+            _validChapterId(notebook, chapterIds[notebook.notebookId]),
+          ),
+          position: Value(await _nextEntryPosition(notebook.id)),
           addedAt: now,
         ),
       );

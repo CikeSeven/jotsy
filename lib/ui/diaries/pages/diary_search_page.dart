@@ -102,8 +102,11 @@ class DiarySearchPage extends ConsumerStatefulWidget {
   ConsumerState<DiarySearchPage> createState() => _DiarySearchPageState();
 }
 
+/// 关键词输入的防抖（非动画计时）：搜索页与日记本“添加日记”页共用。
+const Duration diarySearchDebounce = Duration(milliseconds: 200);
+
 class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
-  static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
+  static const Duration _searchDebounceDuration = diarySearchDebounce;
   static const double _headerContentHeight = 64;
   static const int _diaryPageSize = 20;
   static const double _loadMoreTriggerExtent = 420;

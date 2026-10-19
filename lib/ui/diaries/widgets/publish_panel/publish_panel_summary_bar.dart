@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/viewmodels/publish_panel_summary.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/widgets/qweather_icon.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
@@ -20,6 +21,7 @@ class PublishPanelSummaryBar extends StatelessWidget {
     required this.tags,
     required this.busy,
     required this.onPublish,
+    this.notebooks = const <NotebookView>[],
   });
 
   /// 摘要区（不含按钮），测试与拖拽起点用它定位。
@@ -30,6 +32,9 @@ class PublishPanelSummaryBar extends StatelessWidget {
 
   final DiaryMetaDraftController draft;
   final List<Tag> tags;
+
+  /// 书架上的日记本：把草稿里的日记本 id 解析成名称与图标。
+  final List<NotebookView> notebooks;
   final bool busy;
 
   /// 编辑已发布日记时为 null：只有摘要，没有按钮。
@@ -41,7 +46,7 @@ class PublishPanelSummaryBar extends StatelessWidget {
     return ValueListenableBuilder<DiaryMetaDraft>(
       valueListenable: draft,
       builder: (context, value, _) {
-        final items = publishPanelSummary(value, tags);
+        final items = publishPanelSummary(value, tags, notebooks: notebooks);
         return Row(
           children: <Widget>[
             Expanded(
@@ -140,6 +145,18 @@ class _SummaryLine extends StatelessWidget {
               ),
             )
             ..add(TextSpan(text: tag.name));
+          if (more > 0) {
+            spans.add(
+              TextSpan(
+                text: ' +$more',
+                style: TextStyle(color: mutedColor),
+              ),
+            );
+          }
+        case PublishSummaryNotebook(:final notebook, :final more):
+          spans
+            ..add(icon(FaIcon(notebook.icon.data, size: 11, color: mutedColor)))
+            ..add(TextSpan(text: ' ${notebook.name}'));
           if (more > 0) {
             spans.add(
               TextSpan(

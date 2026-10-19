@@ -88,6 +88,8 @@ class EditDiaryPage extends ConsumerStatefulWidget {
     this.createDateOverride,
     this.createCapsuleUnlockAt,
     this.createTemplate,
+    this.createNotebookId,
+    this.createNotebookChapterId,
   });
 
   final String? diaryId;
@@ -105,6 +107,14 @@ class EditDiaryPage extends ConsumerStatefulWidget {
   /// 新建空白日记时直接套用的模板（新建入口里先在模板面板选好、预览过）。
   /// 续写草稿时不使用。
   final DiaryTemplateSelection? createTemplate;
+
+  /// 新建空白日记时预先收进的日记本（在日记本里点“新建”）；续写草稿时不
+  /// 使用，草稿自带它的日记本。
+  final String? createNotebookId;
+
+  /// 与 [createNotebookId] 同时传入：首页正停在这本的某一章时，新日记落在
+  /// 这一章（发布时写入，见 `createDiary.notebookChapterIds`）。
+  final String? createNotebookChapterId;
 
   @override
   ConsumerState<EditDiaryPage> createState() => _EditDiaryPageState();
@@ -167,6 +177,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 自动保存写回。新建模式不用它，发表时间经 _createDateOverride 交给发布页。
   DateTime? _draftPublishAt;
   bool _panelMetadataDirty = false;
+  // 所在日记本不在 metadata 里：编辑模式只在用户改过之后才随自动保存写回
+  // （未改过时不传，别处同时改了收录也不会被这份旧快照覆盖）。读回期间的
+  // 整体恢复不算修改。
+  bool _notebookIdsDirty = false;
+  bool _restoringNotebookIds = false;
+  // 上一次通知时的面板草稿：区分“只改了日记本”（不重组 metadata）与其他修改。
+  late DiaryMetaDraft _lastMeta;
+  // 新建模式按章节新建时的章节（日记本 id → 章节 id），随草稿保存与发布。
+  Map<String, String> _createNotebookChapters = const <String, String>{};
   // 元数据面板拖拽进度逐帧变化，只用于正文底部占位的连续插值；放进
   // ValueNotifier 让占位局部刷新，页面仅在跨越展开阈值时 setState。
   final ValueNotifier<double> _editPanelExpandProgress = ValueNotifier<double>(
@@ -217,8 +236,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       library: ref.read(dayPhotoLibraryProvider),
     );
     final presetCapsule = widget.createCapsuleUnlockAt;
+    // 在日记本里新建空白日记：预先收进这本（用户仍可在发布页取消）。
+    final presetNotebookId = _isCreateEntry && widget.createDraftId == null
+        ? widget.createNotebookId
+        : null;
+    final presetChapterId = widget.createNotebookChapterId;
+    if (presetNotebookId != null && presetChapterId != null) {
+      _createNotebookChapters = <String, String>{
+        presetNotebookId: presetChapterId,
+      };
+    }
     _meta = DiaryMetaDraftController(
       DiaryMetaDraft(
+        notebookIds: presetNotebookId == null
+            ? const <String>{}
+            : <String>{presetNotebookId},
         capsule: presetCapsule == null
             ? null
             : TimeCapsuleSchedule(
@@ -230,6 +262,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               ),
       ),
     );
+    _lastMeta = _meta.value;
     _meta.addListener(_onMetaChanged);
     _metaActions = DiaryMetaActions(ref, draft: _meta, isBusy: () => _saving);
     // 先于业务控制器创建：草稿自动保存读快照时要经它判断“原样未动”。
@@ -392,11 +425,47 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   /// 编辑模式下面板草稿每次真实变化都排程自动保存。详情回填（未初始化）
   /// 时的整体恢复不算修改；新建模式的草稿只随发布页往返，不走这里。
+  ///
+  /// 只改了所在日记本时不重组 metadata（那会刷新生成时间等字段），只记下
+  /// “日记本改过”并排程保存；读回日记本时的恢复不算修改。
   void _onMetaChanged() {
+    final previous = _lastMeta;
+    final current = _meta.value;
+    _lastMeta = current;
     // 发布页换了封面或清除封面时，“这天的照片”里的封面角标随之消失。
-    _dayPhotos.syncCover(_meta.value.cover);
-    if (_isEditEntry && _initialized) {
+    _dayPhotos.syncCover(current.cover);
+    if (!_isEditEntry || !_initialized) {
+      return;
+    }
+    final notebooksChanged = !setEquals(
+      previous.notebookIds,
+      current.notebookIds,
+    );
+    if (notebooksChanged && !_restoringNotebookIds) {
+      _notebookIdsDirty = true;
+    }
+    final othersChanged =
+        previous.copyWith(notebookIds: current.notebookIds) != current;
+    if (othersChanged) {
       _markEditPanelDirty();
+    } else if (notebooksChanged && _notebookIdsDirty) {
+      _controller.scheduleEditAutoSave();
+    }
+  }
+
+  /// 编辑模式读回这篇日记所在的日记本。在详情回填之后进行，读回之前用户
+  /// 已经在面板里改过日记本时以用户的选择为准。用一次性查询而不是订阅：
+  /// 编辑期间别处的收录变化不改面板（保存时也不写回，见 [_notebookIdsDirty]）。
+  Future<void> _loadEditNotebooks(String diaryId) async {
+    final ids = await _database.getDiaryNotebookIds(diaryId);
+    if (!mounted || _notebookIdsDirty) return;
+    _restoringNotebookIds = true;
+    try {
+      _meta.restore(
+        _meta.value.copyWith(notebookIds: Set<String>.unmodifiable(ids)),
+      );
+    } finally {
+      _restoringNotebookIds = false;
     }
   }
 
@@ -434,6 +503,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       contentText: _currentContentText,
       createdAtOverride: _createDateOverride,
       metadataJson: _metadataJson,
+      notebookChapterIds: _createNotebookChapters,
     ),
   );
 
@@ -759,6 +829,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           _panelMetadataDirty = false;
           _controller.initializeEditAutoSave();
           _initialized = true;
+          unawaited(_loadEditNotebooks(detail.diary.diaryId));
           // “这天的照片”跟随日记的发表日期；configure 会通知监听者，不能在
           // build 中直接调用，放到这一帧之后。
           WidgetsBinding.instance.addPostFrameCallback((_) {

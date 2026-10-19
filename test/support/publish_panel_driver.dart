@@ -11,6 +11,8 @@ import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_summary_bar.dart';
+import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 
 import 'expressive_test_theme.dart';
 
@@ -103,8 +105,8 @@ class PublishPanelDriver {
   void pickPublishTime() => _panel.publishTime!.onPick!();
 }
 
-/// 单独挂载面板的宿主：英文、亮色 Expressive 主题，面板贴底；标签为空、
-/// 心情为默认候选，不触碰数据库与设置。
+/// 单独挂载面板的宿主：英文、亮色 Expressive 主题，面板贴底；标签与日记本
+/// 为空、心情为默认候选，不触碰数据库与设置。
 ///
 /// [draft] 不传时宿主自建一个（精力 4）。[keyboardLayout] 为 true 时按
 /// 发布/编辑页的真实摆放（铺满 body、左右 16、贴底对齐），用于验证键盘
@@ -126,6 +128,12 @@ Widget publishPanelHost({
       tagListProvider.overrideWith((ref) => Stream.value(tags)),
       moodOptionsProvider.overrideWith(
         (ref) => Stream.value(SettingsService.defaultMoodOptions),
+      ),
+      notebooksProvider.overrideWith(
+        (ref) => Stream.value(const <NotebookView>[]),
+      ),
+      notebookEntryCountsProvider.overrideWith(
+        (ref) => Stream.value(const <String, int>{}),
       ),
     ],
     child: MaterialApp(

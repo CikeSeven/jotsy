@@ -11,6 +11,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   ///
   /// 事务内完成“主表插入 + 关联表写入”，保证一致性。[notebookIds] 为日记本
   /// 业务 id，新日记接在各本最后；智能或不存在的本子忽略。
+  /// [notebookChapterIds] 为日记本业务 id → 章节 id（在日记本里按章节新建时
+  /// 带上）：只对 [notebookIds] 里的本子生效，章节已不在那本里时落到“未分章”。
   Future<String> createDiary({
     required String title,
     required String contentDocJson,
@@ -22,6 +24,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
     DateTime? capsuleUnlockAt,
     DateTime? capsuleLockedAt,
     List<String>? notebookIds,
+    Map<String, String> notebookChapterIds = const <String, String>{},
   }) async {
     final now = createdAtOverride ?? DateTime.now();
     final diaryId = _generateDiaryId();
@@ -47,7 +50,11 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
 
       await _replaceDiaryTags(localDiaryId, normalizedTagIds);
       if (notebookIds != null && notebookIds.isNotEmpty) {
-        await _replaceDiaryNotebooks(localDiaryId, notebookIds.toSet());
+        await _replaceDiaryNotebooks(
+          localDiaryId,
+          notebookIds.toSet(),
+          chapterIds: notebookChapterIds,
+        );
       }
       return diaryId;
     });

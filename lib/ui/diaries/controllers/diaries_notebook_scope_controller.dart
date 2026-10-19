@@ -186,7 +186,8 @@ class DiariesNotebookScopeController {
   }
 
   /// 头部卡片“更多”菜单。删除前（确认之后）先回到全部日记，删除的撤销提示
-  /// 不会再叠一条“日记本已删除”。
+  /// 不会再叠一条“日记本已删除”。头部卡片只在这本已解锁时可见，编辑、删除
+  /// 不再二次验证（`authorized`）。
   Future<void> handleHeaderAction(NotebookAction action) async {
     final notebook = resolution.notebook;
     if (notebook == null) {
@@ -198,7 +199,30 @@ class DiariesNotebookScopeController {
       notebook: notebook,
       action: action,
       hooks: NotebookDeleteHooks(beforeDelete: () async => showAll()),
+      authorized: true,
     );
+  }
+
+  /// 头部卡片“添加日记”与空日记本的“从已有日记挑选”：打开添加日记页。
+  Future<void> openAddDiaries() async {
+    final notebook = resolution.notebook;
+    if (notebook == null || !notebook.isManual) {
+      return;
+    }
+    await Navigator.of(
+      _state.context,
+    ).push(NotebookAddDiariesPage.route(notebook: notebook));
+  }
+
+  /// 在当前范围里新建日记时预先收进的日记本与章节：普通日记本里为这本（停在
+  /// 某一章时带上这一章），全部日记与智能日记本里都为 null。
+  ({String? notebookId, String? chapterId}) createTarget() {
+    final current = resolution;
+    final notebook = current.notebook;
+    if (notebook == null || !notebook.isManual) {
+      return (notebookId: null, chapterId: null);
+    }
+    return (notebookId: notebook.id, chapterId: current.state.chapterId);
   }
 
   /// 搜索页的范围参数：在日记本里时带上这本与它的名称、图标。

@@ -24,11 +24,14 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
 import '../../notebooks/controllers/notebook_lock_flow.dart';
+import '../../notebooks/controllers/notebook_membership_ops.dart';
 import '../../notebooks/models/notebook_scope_resolver.dart';
 import '../../notebooks/providers/home_notebook_scope_provider.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/sections/notebook_action_flows.dart';
+import '../../notebooks/pages/notebook_add_diaries_page.dart';
 import '../../notebooks/sections/notebook_action_sheets.dart';
+import '../../notebooks/sections/notebook_picker_sheet.dart';
 import '../../notebooks/sections/notebook_shelf_sheet.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../notebooks/widgets/notebook_header_sliver.dart';
@@ -48,6 +51,7 @@ part '../controllers/diaries_page_feedback.dart';
 part '../controllers/diary_list_transition_coordinator.dart';
 part '../controllers/diaries_page_controller.dart';
 part '../controllers/diaries_notebook_scope_controller.dart';
+part '../controllers/diaries_notebook_membership_controller.dart';
 
 /// 日记列表页。
 ///
@@ -146,6 +150,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   late final DiaryListTransitionCoordinator _transitionCoordinator;
   late final DiariesPageController _controller;
   late final DiariesNotebookScopeController _scopeController;
+  late final DiariesNotebookMembershipController _membershipController;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
 
@@ -160,6 +165,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       transitionCoordinator: _transitionCoordinator,
     );
     _scopeController = DiariesNotebookScopeController(
+      this,
+      feedback: _feedback,
+      transitionCoordinator: _transitionCoordinator,
+    );
+    _membershipController = DiariesNotebookMembershipController(
       this,
       feedback: _feedback,
       transitionCoordinator: _transitionCoordinator,
@@ -283,6 +293,19 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           displayedItems,
         );
         final hasMoreDiaries = _hasMoreDiaries;
+        // 普通日记本里多选才有“移出 / 移动到”；头部卡片与列表卡片同一侧边距。
+        final manualNotebook =
+            currentNotebook != null && currentNotebook.isManual
+            ? currentNotebook
+            : null;
+        final cardStyle = ref.watch(diaryCardStyleProvider);
+        final cardSideMargin = cardStyle
+            .mode(
+              _layoutMode == DiaryLayoutMode.waterfall
+                  ? DiaryCardMode.waterfall
+                  : DiaryCardMode.list,
+            )
+            .sideMargin;
         final tagHeaderContent = tagsAsync.when(
           data: (tags) {
             final visibleTagFilters = _resolveTagFiltersForDisplay(
@@ -413,53 +436,65 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   slot: LaunchRevealSlot.masthead,
                                   // 只让顶栏随草稿份数重建，不牵动整页。
                                   child: Consumer(
-                                    builder: (context, ref, _) =>
-                                        DiaryHeadSection(
-                                          isSelectionMode: _isSelectionMode,
-                                          selectedCount:
-                                              _selectedDiaryIds.length,
-                                          onCancelSelection:
-                                              _controller.clearSelection,
-                                          isPinActionUnpin: shouldUnpinSelected,
-                                          onPinSelected: () => unawaited(
-                                            _controller.pinSelectedDiaries(
-                                              unpin: shouldUnpinSelected,
-                                            ),
-                                          ),
-                                          onArchiveSelected: () => unawaited(
-                                            _controller
-                                                .archiveSelectedDiaries(),
-                                          ),
-                                          onExportSelected: () => unawaited(
-                                            _controller.exportSelectedDiaries(),
-                                          ),
-                                          onDeleteSelected: () => unawaited(
-                                            _controller.deleteSelectedDiaries(),
-                                          ),
-                                          onOpenArchived:
-                                              _controller.openArchivedPage,
-                                          onOpenDrafts:
-                                              _controller.openDraftsPage,
-                                          draftCount:
-                                              ref
-                                                  .watch(
-                                                    diaryDraftCountProvider,
-                                                  )
-                                                  .value ??
-                                              0,
-                                          onOpenViewOptions:
-                                              _controller.openViewOptions,
-                                          onOpenSearchPage:
-                                              _controller.openSearchPage,
-                                          searchHint: currentNotebook == null
-                                              ? null
-                                              : context.l10n.notebookSearchIn(
-                                                  NotebookSwitcherChip.labelFor(
-                                                    context,
-                                                    currentNotebook,
-                                                  ),
-                                                ),
+                                    builder: (context, ref, _) => DiaryHeadSection(
+                                      isSelectionMode: _isSelectionMode,
+                                      selectedCount: _selectedDiaryIds.length,
+                                      onCancelSelection:
+                                          _controller.clearSelection,
+                                      isPinActionUnpin: shouldUnpinSelected,
+                                      onPinSelected: () => unawaited(
+                                        _controller.pinSelectedDiaries(
+                                          unpin: shouldUnpinSelected,
                                         ),
+                                      ),
+                                      onArchiveSelected: () => unawaited(
+                                        _controller.archiveSelectedDiaries(),
+                                      ),
+                                      onExportSelected: () => unawaited(
+                                        _controller.exportSelectedDiaries(),
+                                      ),
+                                      onDeleteSelected: () => unawaited(
+                                        _controller.deleteSelectedDiaries(),
+                                      ),
+                                      onAddToNotebookSelected: () => unawaited(
+                                        _membershipController
+                                            .addSelectedToNotebooks(),
+                                      ),
+                                      onRemoveFromNotebookSelected:
+                                          manualNotebook == null
+                                          ? null
+                                          : () => unawaited(
+                                              _membershipController
+                                                  .removeSelectedFromCurrent(),
+                                            ),
+                                      onMoveToNotebookSelected:
+                                          manualNotebook == null
+                                          ? null
+                                          : () => unawaited(
+                                              _membershipController
+                                                  .moveSelectedToNotebook(),
+                                            ),
+                                      onOpenArchived:
+                                          _controller.openArchivedPage,
+                                      onOpenDrafts: _controller.openDraftsPage,
+                                      draftCount:
+                                          ref
+                                              .watch(diaryDraftCountProvider)
+                                              .value ??
+                                          0,
+                                      onOpenViewOptions:
+                                          _controller.openViewOptions,
+                                      onOpenSearchPage:
+                                          _controller.openSearchPage,
+                                      searchHint: currentNotebook == null
+                                          ? null
+                                          : context.l10n.notebookSearchIn(
+                                              NotebookSwitcherChip.labelFor(
+                                                context,
+                                                currentNotebook,
+                                              ),
+                                            ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -467,9 +502,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                             tagHeader,
                             NotebookHeaderSliver(
                               notebook: currentNotebook,
+                              horizontalMargin: cardSideMargin,
                               onAction: (NotebookAction action) => unawaited(
                                 _scopeController.handleHeaderAction(action),
                               ),
+                              onAddDiaries: manualNotebook == null
+                                  ? null
+                                  : () => unawaited(
+                                      _scopeController.openAddDiaries(),
+                                    ),
                             ),
                             SliverFadeTransition(
                               opacity: _listRefreshPulseController,
@@ -507,9 +548,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       isSelectionMode: _isSelectionMode,
                                       selectedDiaryIds: _selectedDiaryIds,
                                       maxVisibleTags: diaryCardTagLimit,
-                                      cardStyle: ref.watch(
-                                        diaryCardStyleProvider,
-                                      ),
+                                      cardStyle: cardStyle,
                                       moodOptions: ref.watch(
                                         diaryCardMoodOptionsProvider,
                                       ),
@@ -542,7 +581,22 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       emptyState:
                                           currentNotebook != null &&
                                               filterState.selectedTagIds.isEmpty
-                                          ? const NotebookEmptyState()
+                                          ? NotebookEmptyState(
+                                              onWriteFirst:
+                                                  manualNotebook == null
+                                                  ? null
+                                                  : () => unawaited(
+                                                      _controller
+                                                          .openCreateEditorWithDraftPrompt(),
+                                                    ),
+                                              onPickExisting:
+                                                  manualNotebook == null
+                                                  ? null
+                                                  : () => unawaited(
+                                                      _scopeController
+                                                          .openAddDiaries(),
+                                                    ),
+                                            )
                                           : null,
                                     ),
                             ),

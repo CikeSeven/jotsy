@@ -8789,11 +8789,11 @@
   "@notebookLockUnsupportedTitle": {
     "description": "设备没有锁屏密码、无法打开上锁日记本时的对话框标题。"
   },
-  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份。可以在日记本设置里把隐私改为「不在全部日记中显示」。",
+  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码后就能打开。",
   "@notebookLockUnsupportedMessage": {
     "description": "设备没有锁屏密码时打开上锁日记本的说明。"
   },
-  "notebookLockUnsupportedAction": "去设置",
+  "notebookLockUnsupportedAction": "知道了",
   "@notebookLockUnsupportedAction": {
     "description": "上锁日记本无法验证时对话框里打开日记本设置的按钮。"
   },
@@ -8858,5 +8858,172 @@
   "backupImportFolderModeBothHint": "同时建日记本和同名标签",
   "@backupImportFolderModeBothHint": {
     "description": "选中“两者”时的说明。"
+  },
+  "notebookEmptyManualHint": "写下第一篇，或从已有日记里挑几篇放进来",
+  "@notebookEmptyManualHint": {
+    "description": "普通日记本还没有日记时的说明（下方有两个按钮）。"
+  },
+  "notebookEmptyWriteFirst": "写第一篇",
+  "@notebookEmptyWriteFirst": {
+    "description": "空日记本的按钮：直接写进这本。"
+  },
+  "notebookEmptyPickExisting": "从已有日记挑选",
+  "@notebookEmptyPickExisting": {
+    "description": "空日记本的按钮：打开添加日记页。"
+  },
+  "notebookAddDiaries": "添加日记",
+  "@notebookAddDiaries": {
+    "description": "日记本头部卡片的按钮：从已有日记挑选加入。"
+  },
+  "notebookPickerTitle": "收进日记本",
+  "@notebookPickerTitle": {
+    "description": "收录选择器标题，也是多选栏与预览页“更多”里的入口。"
+  },
+  "notebookPickerEmpty": "还没有可以收进的日记本",
+  "@notebookPickerEmpty": {
+    "description": "收录选择器里没有可选日记本时的提示。"
+  },
+  "notebookPickerDone": "完成",
+  "@notebookPickerDone": {
+    "description": "收录选择器底部的提交按钮。"
+  },
+  "notebookPickerPrivateHint": "已收进「{name}」，这些日记只在该日记本中显示",
+  "@notebookPickerPrivateHint": {
+    "description": "收进隐藏或上锁的日记本后的提示；name 为日记本名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSelectionMore": "更多操作",
+  "@notebookSelectionMore": {
+    "description": "日记页多选栏“更多”按钮的提示。"
+  },
+  "notebookRemoveFromCurrent": "从本日记本移出",
+  "@notebookRemoveFromCurrent": {
+    "description": "多选栏菜单项：把所选日记移出当前日记本。"
+  },
+  "notebookMoveTo": "移动到…",
+  "@notebookMoveTo": {
+    "description": "多选栏菜单项与选择器标题：移到另一本日记本。"
+  },
+  "notebookAddedToCount": "已收进 {count} 本日记本",
+  "@notebookAddedToCount": {
+    "description": "批量收进日记本后的提示；count 为日记本本数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookMembershipUpdated": "已更新日记本",
+  "@notebookMembershipUpdated": {
+    "description": "批量改动收录（含移出）后的提示。"
+  },
+  "notebookRemovedFrom": "已从「{name}」移出 {count} 篇",
+  "@notebookRemovedFrom": {
+    "description": "移出日记本后的提示；name 为日记本名称，count 为篇数。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookMovedTo": "已将 {count} 篇移到「{name}」",
+  "@notebookMovedTo": {
+    "description": "移到另一本后的提示；name 为目标日记本，count 为篇数。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookPublishNone": "不收进日记本",
+  "@notebookPublishNone": {
+    "description": "发布面板日记本行没有选择时的占位。"
+  },
+  "notebookWriteInto": "写进「{name}」",
+  "@notebookWriteInto": {
+    "description": "在日记本里时首页新建按钮的文字；name 为（截短的）日记本名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookAddPageTitle": "添加到「{name}」",
+  "@notebookAddPageTitle": {
+    "description": "添加日记页标题；name 为日记本名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookAddPageDone": "完成 ({count})",
+  "@notebookAddPageDone": {
+    "description": "添加日记页的完成按钮；count 为已选篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookAddSearchHint": "搜索日记",
+  "@notebookAddSearchHint": {
+    "description": "添加日记页搜索框的占位。"
+  },
+  "notebookAddFilterAll": "全部",
+  "@notebookAddFilterAll": {
+    "description": "添加日记页的筛选：不限时间。"
+  },
+  "notebookAddFilterRecent": "最近 30 天",
+  "@notebookAddFilterRecent": {
+    "description": "添加日记页的筛选：最近 30 天写的。"
+  },
+  "notebookAddFilterThisYear": "今年",
+  "@notebookAddFilterThisYear": {
+    "description": "添加日记页的筛选：今年写的。"
+  },
+  "notebookAddAlreadyIn": "已在本子里",
+  "@notebookAddAlreadyIn": {
+    "description": "添加日记页里已在这本的日记的说明。"
+  },
+  "notebookAddedCount": "已添加 {count} 篇",
+  "@notebookAddedCount": {
+    "description": "添加日记后的提示；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookAddEmpty": "没有符合条件的日记",
+  "@notebookAddEmpty": {
+    "description": "添加日记页没有结果时的提示。"
+  },
+  "notebookPreviewNone": "还没有收进日记本",
+  "@notebookPreviewNone": {
+    "description": "预览页“更多”里“收进日记本”的说明：这篇不在任何日记本里。"
+  },
+  "notebookListSeparator": "、",
+  "@notebookListSeparator": {
+    "description": "列出多本日记本名称时的分隔符。"
+  },
+  "notebookOpenNotebook": "打开「{name}」",
+  "@notebookOpenNotebook": {
+    "description": "预览页日记本胶囊的读屏提示；name 为日记本名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

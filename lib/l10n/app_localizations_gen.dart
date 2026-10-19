@@ -11375,13 +11375,13 @@ abstract class AppLocalizations {
   /// Explanation when opening a locked notebook on a device without a screen lock.
   ///
   /// In en, this message translates to:
-  /// **'This device has no screen lock, so your identity can\'t be verified. You can change the notebook\'s privacy to \"Hide from all diaries\" in its settings.'**
+  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.'**
   String get notebookLockUnsupportedMessage;
 
   /// Dialog button that opens the notebook settings when a locked notebook can't be verified.
   ///
   /// In en, this message translates to:
-  /// **'Settings'**
+  /// **'Got it'**
   String get notebookLockUnsupportedAction;
 
   /// Title of the overlay covering a locked notebook when returning to the app.
@@ -11461,6 +11461,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Creates notebooks and tags with the same names'**
   String get backupImportFolderModeBothHint;
+
+  /// Hint under an empty manual notebook (two buttons follow).
+  ///
+  /// In en, this message translates to:
+  /// **'Write the first entry, or pick a few existing ones'**
+  String get notebookEmptyManualHint;
+
+  /// Empty-notebook button: write straight into this notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the first entry'**
+  String get notebookEmptyWriteFirst;
+
+  /// Empty-notebook button: open the add-entries page.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick existing entries'**
+  String get notebookEmptyPickExisting;
+
+  /// Notebook header button: pick existing entries to add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add entries'**
+  String get notebookAddDiaries;
+
+  /// Notebook picker title; also the multi-select and preview "More" entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to notebook'**
+  String get notebookPickerTitle;
+
+  /// Shown in the notebook picker when there is no notebook to choose.
+  ///
+  /// In en, this message translates to:
+  /// **'No notebooks to add to yet'**
+  String get notebookPickerEmpty;
+
+  /// Submit button at the bottom of the notebook picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get notebookPickerDone;
+
+  /// Hint after adding entries to a hidden or locked notebook; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to \"{name}\". These entries now only show in that notebook'**
+  String notebookPickerPrivateHint(String name);
+
+  /// Tooltip of the multi-select bar "more" button.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get notebookSelectionMore;
+
+  /// Multi-select menu item: remove the selected entries from the current notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from this notebook'**
+  String get notebookRemoveFromCurrent;
+
+  /// Multi-select menu item and picker title: move to another notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to…'**
+  String get notebookMoveTo;
+
+  /// Hint after adding entries to notebooks; count is the number of notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added to 1 notebook} other{Added to {count} notebooks}}'**
+  String notebookAddedToCount(int count);
+
+  /// Hint after changing notebook membership (including removals).
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks updated'**
+  String get notebookMembershipUpdated;
+
+  /// Hint after removing entries from a notebook; name is the notebook, count the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Removed 1 entry from \"{name}\"} other{Removed {count} entries from \"{name}\"}}'**
+  String notebookRemovedFrom(String name, int count);
+
+  /// Hint after moving entries; name is the target notebook, count the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moved 1 entry to \"{name}\"} other{Moved {count} entries to \"{name}\"}}'**
+  String notebookMovedTo(String name, int count);
+
+  /// Placeholder of the publish panel notebook row when none is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in a notebook'**
+  String get notebookPublishNone;
+
+  /// Home create button label inside a notebook; name is the (shortened) notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Write in {name}'**
+  String notebookWriteInto(String name);
+
+  /// Add-entries page title; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to \"{name}\"'**
+  String notebookAddPageTitle(String name);
+
+  /// Add-entries page done button; count is the number selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Done ({count})'**
+  String notebookAddPageDone(int count);
+
+  /// Search field placeholder on the add-entries page.
+  ///
+  /// In en, this message translates to:
+  /// **'Search entries'**
+  String get notebookAddSearchHint;
+
+  /// Add-entries filter: any time.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notebookAddFilterAll;
+
+  /// Add-entries filter: written in the last 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get notebookAddFilterRecent;
+
+  /// Add-entries filter: written this year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get notebookAddFilterThisYear;
+
+  /// Add-entries page note for entries already in the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in this notebook'**
+  String get notebookAddAlreadyIn;
+
+  /// Hint after adding entries; count is the number added.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added 1 entry} other{Added {count} entries}}'**
+  String notebookAddedCount(int count);
+
+  /// Shown on the add-entries page when nothing matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching entries'**
+  String get notebookAddEmpty;
+
+  /// Preview "More" subtitle when the entry is in no notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in any notebook yet'**
+  String get notebookPreviewNone;
+
+  /// Separator between notebook names in a list.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get notebookListSeparator;
+
+  /// Screen-reader hint of a notebook capsule on the preview page; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Open \"{name}\"'**
+  String notebookOpenNotebook(String name);
 }
 
 class _AppLocalizationsDelegate

@@ -217,9 +217,16 @@ class DiariesPageController {
 
   /// 处理“新建日记”入口（FAB、空列表）：经共用的新建流程（有草稿时先弹
   /// 草稿选择面板），返回后刷新列表；编辑页直接发布的新日记交给协调器，
-  /// 在发布页退场后以出现动画插入。
+  /// 在发布页退场后以出现动画插入。在普通日记本里新建空白日记时预先收进
+  /// 这本（与当前章节），并套用这本的默认模板。
   Future<void> openCreateEditorWithDraftPrompt() async {
-    final result = await runDiaryCreateEntryFlow(_state.context, _state.ref);
+    final target = _state._scopeController.createTarget();
+    final result = await runDiaryCreateEntryFlow(
+      _state.context,
+      _state.ref,
+      notebookId: target.notebookId,
+      chapterId: target.chapterId,
+    );
     if (!_state.mounted || !result.opened) {
       return;
     }

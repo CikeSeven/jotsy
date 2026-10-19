@@ -89,6 +89,7 @@ void main() {
     await tester.pump();
     expect(find.text('海边日落'), findsOneWidget);
     expect(tester.takeException(), isNull);
+    await _unmount(tester);
   });
 
   testWidgets('locked capsule renders the entry data before the query lands', (
@@ -132,5 +133,12 @@ void main() {
     await tester.pump();
     expect(find.text('海边日落'), findsOneWidget);
     expect(find.byType(DelayedLoadingIndicator), findsNothing);
+    await _unmount(tester);
   });
+}
+
+/// 卸载后再走一帧：预览页读取所在日记本的查询在 drift 里留下 0 时长计时器。
+Future<void> _unmount(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump(Duration.zero);
 }

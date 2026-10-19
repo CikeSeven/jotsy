@@ -6183,10 +6183,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      '这台设备没有设置锁屏密码，无法验证身份。可以在日记本设置里把隐私改为「不在全部日记中显示」。';
+      '这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码后就能打开。';
 
   @override
-  String get notebookLockUnsupportedAction => '去设置';
+  String get notebookLockUnsupportedAction => '知道了';
 
   @override
   String notebookLockedTitle(String name) {
@@ -6230,4 +6230,109 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backupImportFolderModeBothHint => '同时建日记本和同名标签';
+
+  @override
+  String get notebookEmptyManualHint => '写下第一篇，或从已有日记里挑几篇放进来';
+
+  @override
+  String get notebookEmptyWriteFirst => '写第一篇';
+
+  @override
+  String get notebookEmptyPickExisting => '从已有日记挑选';
+
+  @override
+  String get notebookAddDiaries => '添加日记';
+
+  @override
+  String get notebookPickerTitle => '收进日记本';
+
+  @override
+  String get notebookPickerEmpty => '还没有可以收进的日记本';
+
+  @override
+  String get notebookPickerDone => '完成';
+
+  @override
+  String notebookPickerPrivateHint(String name) {
+    return '已收进「$name」，这些日记只在该日记本中显示';
+  }
+
+  @override
+  String get notebookSelectionMore => '更多操作';
+
+  @override
+  String get notebookRemoveFromCurrent => '从本日记本移出';
+
+  @override
+  String get notebookMoveTo => '移动到…';
+
+  @override
+  String notebookAddedToCount(int count) {
+    return '已收进 $count 本日记本';
+  }
+
+  @override
+  String get notebookMembershipUpdated => '已更新日记本';
+
+  @override
+  String notebookRemovedFrom(String name, int count) {
+    return '已从「$name」移出 $count 篇';
+  }
+
+  @override
+  String notebookMovedTo(String name, int count) {
+    return '已将 $count 篇移到「$name」';
+  }
+
+  @override
+  String get notebookPublishNone => '不收进日记本';
+
+  @override
+  String notebookWriteInto(String name) {
+    return '写进「$name」';
+  }
+
+  @override
+  String notebookAddPageTitle(String name) {
+    return '添加到「$name」';
+  }
+
+  @override
+  String notebookAddPageDone(int count) {
+    return '完成 ($count)';
+  }
+
+  @override
+  String get notebookAddSearchHint => '搜索日记';
+
+  @override
+  String get notebookAddFilterAll => '全部';
+
+  @override
+  String get notebookAddFilterRecent => '最近 30 天';
+
+  @override
+  String get notebookAddFilterThisYear => '今年';
+
+  @override
+  String get notebookAddAlreadyIn => '已在本子里';
+
+  @override
+  String notebookAddedCount(int count) {
+    return '已添加 $count 篇';
+  }
+
+  @override
+  String get notebookAddEmpty => '没有符合条件的日记';
+
+  @override
+  String get notebookPreviewNone => '还没有收进日记本';
+
+  @override
+  String get notebookListSeparator => '、';
+
+  @override
+  String notebookOpenNotebook(String name) {
+    return '打开「$name」';
+  }
 }

@@ -29,11 +29,16 @@ class NotebookHeaderCard extends ConsumerWidget {
     required this.notebook,
     required this.onAction,
     this.extras = const <Widget>[],
+    this.horizontalMargin = AppSpacing.l,
   });
 
   final NotebookView notebook;
   final ValueChanged<NotebookAction> onAction;
   final List<Widget> extras;
+
+  /// 卡片左右外边距：首页传入日记卡片样式的侧边距（用户可调），卡片两侧与
+  /// 下方列表卡片对齐。
+  final double horizontalMargin;
 
   static const double coverHeight = 112;
   static const double _radius = 24;
@@ -68,10 +73,10 @@ class NotebookHeaderCard extends ConsumerWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.l,
+      padding: EdgeInsets.fromLTRB(
+        horizontalMargin,
         AppSpacing.xs,
-        AppSpacing.l,
+        horizontalMargin,
         AppSpacing.m,
       ),
       child: Material(
@@ -100,8 +105,8 @@ class NotebookHeaderCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  // 居中：没有简介时名称只有一行，顶对齐会让它高出图标圆心。
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       NotebookIconCircle(icon: notebook.icon, accent: accent),
                       const SizedBox(width: AppSpacing.m),

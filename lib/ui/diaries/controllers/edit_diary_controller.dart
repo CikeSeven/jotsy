@@ -163,6 +163,7 @@ class EditDiaryController {
         _state._createDateOverride =
             restoredDraft.createdAtOverride ?? _state._createDateOverride;
         _state._metadataJson = restoredDraft.metadataJson;
+        _state._createNotebookChapters = restoredDraft.notebookChapterIds;
         // 与发表日期覆盖值同一规则：草稿自带胶囊设置时以草稿为准，否则保留
         // 入口预设的解封日（见 EditDiaryPage.createCapsuleUnlockAt）。
         _state._meta.restore(

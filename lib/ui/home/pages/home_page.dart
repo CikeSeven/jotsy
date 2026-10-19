@@ -11,7 +11,9 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/settings/controllers/app_update_auto_check.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
@@ -268,6 +270,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     ];
 
+    // 别的页面请求回到日记 Tab（预览页里点日记本胶囊）。
+    ref.listen<int>(homeDiariesTabRequestProvider, (_, _) {
+      unawaited(_controller.switchToDiariesTab());
+    });
+
     final settingsService = ref.watch(settingsServiceProvider).asData?.value;
     if (settingsService == null) {
       _controller.pageSwitchCurve =
@@ -442,12 +449,29 @@ class _HomePageState extends ConsumerState<HomePage> {
                 opacity: shouldShow ? 1 : 0,
                 child: LaunchReveal(
                   slot: LaunchRevealSlot.action,
-                  child: FloatingActionButton.extended(
-                    onPressed: () {
-                      unawaited(_openCreateFromGlobalFab());
+                  // 只有按钮文字随日记页的范围变化：在普通日记本里为
+                  // “写进「旅行」”，新建的日记预先收进这本。
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final notebook = ref
+                          .watch(homeNotebookScopeResolutionProvider)
+                          .notebook;
+                      return FloatingActionButton.extended(
+                        onPressed: () {
+                          unawaited(_openCreateFromGlobalFab());
+                        },
+                        icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
+                        label: Text(
+                          notebook != null && notebook.isManual
+                              ? context.l10n.notebookWriteInto(
+                                  shortNotebookName(notebook.name),
+                                )
+                              : context.l10n.commonNew,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
                     },
-                    icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
-                    label: Text(context.l10n.commonNew),
                   ),
                 ),
               ),
@@ -457,6 +481,20 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
     );
   }
+}
+
+/// FAB 上的日记本名称最多显示的字符数（按 Unicode 字符计）：超出时截断加
+/// 省略号，320dp 宽的屏幕上按钮也不会过宽。
+const int _fabNotebookNameMaxChars = 6;
+
+/// 截短日记本名称供 FAB 使用（“写进「一二三四五六…」”）。
+@visibleForTesting
+String shortNotebookName(String name) {
+  final runes = name.trim().runes.toList();
+  if (runes.length <= _fabNotebookNameMaxChars) {
+    return name.trim();
+  }
+  return '${String.fromCharCodes(runes.take(_fabNotebookNameMaxChars))}…';
 }
 
 /// 可见 Tab 的闭区间 [first, last]；静止时两端相同，滑动途中跨两页。

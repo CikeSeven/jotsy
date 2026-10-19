@@ -11,6 +11,7 @@ import '../../diary_templates/sections/diary_templates_lists.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
+import '../controllers/notebook_lock_flow.dart';
 import '../controllers/notebooks_controller.dart';
 import '../providers/notebook_providers.dart';
 import '../sections/notebook_action_flows.dart';
@@ -40,9 +41,9 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
   final Set<String> _collapsing = <String>{};
   final Set<String> _appearing = <String>{};
 
-  Future<void> _openEditor([String? notebookId]) => Navigator.of(
-    context,
-  ).push(NotebookEditorPage.route(notebookId: notebookId));
+  /// 新建日记本。
+  Future<void> _create() =>
+      Navigator.of(context).push(NotebookEditorPage.route());
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +55,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     if (notebooks == null) {
       body = const DelayedLoadingIndicator();
     } else if (notebooks.isEmpty) {
-      body = Center(child: NotebooksEmptyState(onCreate: _openEditor));
+      body = Center(child: NotebooksEmptyState(onCreate: _create));
     } else {
       body = _buildList(context, notebooks, counts);
     }
@@ -65,7 +66,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
         actions: <Widget>[
           IconButton(
             tooltip: l10n.notebookNew,
-            onPressed: () => unawaited(_openEditor()),
+            onPressed: () => unawaited(_create()),
             icon: const FaIcon(FontAwesomeIcons.plus, size: 16),
           ),
         ],
@@ -93,7 +94,9 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
               counts: counts,
               collapsing: _collapsing,
               appearing: _appearing,
-              onTap: (notebook) => unawaited(_openEditor(notebook.id)),
+              // 上锁的先验证：编辑页能把隐私改回正常。
+              onTap: (notebook) =>
+                  unawaited(openNotebookEditor(context, ref, notebook)),
               onMore: (notebook) => unawaited(_more(notebook)),
               onReorder: (oldIndex, newIndex) =>
                   _reorder(notebooks, members, oldIndex, newIndex),

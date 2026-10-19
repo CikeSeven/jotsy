@@ -56,3 +56,17 @@ final notebookScopeOverviewsProvider = StreamProvider.autoDispose
 final privateDiaryIdsProvider = StreamProvider.autoDispose<Set<String>>(
   (Ref ref) => ref.watch(appDatabaseProvider).watchPrivateDiaryIds(),
 );
+
+/// 包含这篇日记的普通日记本（按书架顺序）：预览页的日记本胶囊与“收进日记本”
+/// 的说明。
+///
+/// 一次性读取而不是订阅：这条查询连着日记表，订阅会在每次写日记（预览页
+/// 勾选待办）时重查。改动收录的地方（预览页“收进日记本”）写完后
+/// invalidate；预览页每次打开都重新读取。
+final diaryNotebooksProvider = FutureProvider.autoDispose
+    .family<List<NotebookView>, String>((Ref ref, String diaryId) async {
+      final rows = await ref
+          .watch(appDatabaseProvider)
+          .getNotebooksOfDiary(diaryId);
+      return List<NotebookView>.unmodifiable(rows.map(NotebookView.new));
+    });

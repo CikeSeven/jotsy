@@ -6803,10 +6803,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookLockUnsupportedMessage =>
-      'This device has no screen lock, so your identity can\'t be verified. You can change the notebook\'s privacy to \"Hide from all diaries\" in its settings.';
+      'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.';
 
   @override
-  String get notebookLockUnsupportedAction => 'Settings';
+  String get notebookLockUnsupportedAction => 'Got it';
 
   @override
   String notebookLockedTitle(String name) {
@@ -6862,4 +6862,134 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get backupImportFolderModeBothHint =>
       'Creates notebooks and tags with the same names';
+
+  @override
+  String get notebookEmptyManualHint =>
+      'Write the first entry, or pick a few existing ones';
+
+  @override
+  String get notebookEmptyWriteFirst => 'Write the first entry';
+
+  @override
+  String get notebookEmptyPickExisting => 'Pick existing entries';
+
+  @override
+  String get notebookAddDiaries => 'Add entries';
+
+  @override
+  String get notebookPickerTitle => 'Add to notebook';
+
+  @override
+  String get notebookPickerEmpty => 'No notebooks to add to yet';
+
+  @override
+  String get notebookPickerDone => 'Done';
+
+  @override
+  String notebookPickerPrivateHint(String name) {
+    return 'Added to \"$name\". These entries now only show in that notebook';
+  }
+
+  @override
+  String get notebookSelectionMore => 'More actions';
+
+  @override
+  String get notebookRemoveFromCurrent => 'Remove from this notebook';
+
+  @override
+  String get notebookMoveTo => 'Move to…';
+
+  @override
+  String notebookAddedToCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added to $count notebooks',
+      one: 'Added to 1 notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookMembershipUpdated => 'Notebooks updated';
+
+  @override
+  String notebookRemovedFrom(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Removed $count entries from \"$name\"',
+      one: 'Removed 1 entry from \"$name\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookMovedTo(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moved $count entries to \"$name\"',
+      one: 'Moved 1 entry to \"$name\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookPublishNone => 'Not in a notebook';
+
+  @override
+  String notebookWriteInto(String name) {
+    return 'Write in $name';
+  }
+
+  @override
+  String notebookAddPageTitle(String name) {
+    return 'Add to \"$name\"';
+  }
+
+  @override
+  String notebookAddPageDone(int count) {
+    return 'Done ($count)';
+  }
+
+  @override
+  String get notebookAddSearchHint => 'Search entries';
+
+  @override
+  String get notebookAddFilterAll => 'All';
+
+  @override
+  String get notebookAddFilterRecent => 'Last 30 days';
+
+  @override
+  String get notebookAddFilterThisYear => 'This year';
+
+  @override
+  String get notebookAddAlreadyIn => 'Already in this notebook';
+
+  @override
+  String notebookAddedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added $count entries',
+      one: 'Added 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookAddEmpty => 'No matching entries';
+
+  @override
+  String get notebookPreviewNone => 'Not in any notebook yet';
+
+  @override
+  String get notebookListSeparator => ', ';
+
+  @override
+  String notebookOpenNotebook(String name) {
+    return 'Open \"$name\"';
+  }
 }

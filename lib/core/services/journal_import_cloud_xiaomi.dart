@@ -15,8 +15,8 @@ import 'journal_import_cloud_xiaomi_markup.dart';
 ///   跳过 `deleted`/`purged` 与文件夹条目；游标停滞、ID 重复视为协议变化；
 /// - 详情 `GET /note/note/<id>/`（结尾斜杠不可少），`extraInfo` 是 JSON
 ///   字符串（`title`），`setting.data` 是附件元数据，正文格式见
-///   [parseXiaomiMarkup]；端到端加密、思维导图等非普通笔记与旧版 `☺ `
-///   图片格式跳过；
+///   [parseXiaomiMarkup]（含旧版 `☺ ` 图片写法）；端到端加密、思维导图等
+///   非普通笔记跳过；
 /// - 附件 `GET /file/full?type=note_img&fileid=<id>` 返回 302，跳到
 ///   `*.xmssdn.micloud.mi.com` 的签名地址，再以不带 Cookie 的请求下载。
 class XiaomiCloudProvider implements CloudNoteProvider {
@@ -146,7 +146,7 @@ class XiaomiCloudProvider implements CloudNoteProvider {
     }
   }
 
-  /// 不支持的笔记返回 null（端到端加密、思维导图等、旧版 `☺ ` 图片格式）。
+  /// 不支持的笔记返回 null（端到端加密、思维导图等）。
   CloudNote? _parseEntry(
     Map<String, Object?> entry,
     Map<String, String> folders,
@@ -167,7 +167,6 @@ class XiaomiCloudProvider implements CloudNoteProvider {
     }
     if (extra is! Map) return null;
     if ((extra['note_content_type'] ?? 'common') != 'common') return null;
-    if (RegExp(r'^☺ ', multiLine: true).hasMatch(content)) return null;
     final created = _time(entry['createDate']);
     if (created == null) return null;
 

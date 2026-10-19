@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi_markup.dart';
+import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -168,6 +171,34 @@ void main() {
       expect(media, [(id: 'a', audio: false), (id: 'b', audio: true)]);
     });
 
+    // 规则取自官网编辑器（i.mi.com/note 的 main.*.chunk.js）解析前的替换。
+    test('legacy ☺ images and √ tasks expand like the web editor', () {
+      const short = '1315204657.NT0kr_xxxxxxxxxxxxxxxx';
+      const hex = '0123456789abcdef0123456789abcdef01234567';
+      expect(
+        _parse(
+          '前言\n☺ $short<0/><说明/>\n☺ $hex\n√ 买牛奶\n'
+          '文字☺ $short<0/></>\n结尾',
+        ),
+        [
+          'paragraph:前言',
+          'attachment:$short:',
+          'attachment:$hex:',
+          'todo:l1:x:买牛奶',
+          'paragraph:文字',
+          'attachment:$short:',
+          'paragraph:结尾',
+        ],
+      );
+      expect(parseXiaomiMarkup('☺ $hex').media, [(id: hex, audio: false)]);
+      // 不是文件 ID 的笑脸、不在行首的勾照原样保留。
+      expect(_parse('☺ 你好\n心情 √ 不错\n√'), [
+        'paragraph:☺ 你好',
+        'paragraph:心情 √ 不错',
+        'paragraph:√',
+      ]);
+    });
+
     test('decodes entities and keeps emoji', () {
       expect(_parse('&lt;不是标签&gt; &amp; 😀'), ['paragraph:<不是标签> & 😀']);
     });
@@ -288,6 +319,51 @@ void main() {
       ]);
       expect(http.requests.last.url.queryParameters, isEmpty);
       expect(progress, [(1, null), (2, null), (1, 2), (2, 2)]);
+    });
+
+    test('keeps notes whose images use the legacy ☺ marker', () async {
+      const fileId = '1315204657.NT0kr_xxxxxxxxxxxxxxxx';
+      http.json('GET', 'i.mi.com/note/full/page', {
+        'code': 0,
+        'data': {
+          'entries': [
+            {'id': 'legacy', 'status': 'normal'},
+          ],
+          'lastPage': true,
+        },
+      });
+      http.json('GET', 'i.mi.com/note/note/legacy/', {
+        'code': 0,
+        'data': {
+          'entry': {
+            'id': 'legacy',
+            'createDate': 1720000000000,
+            'setting': {
+              'data': [
+                {'fileId': fileId, 'mimeType': 'image/jpeg', 'digest': 'd'},
+              ],
+            },
+            'content': '出门\n☺ $fileId<0/></>\n回家',
+          },
+        },
+      });
+
+      final note = (await provider.fetchNotes((_, _) {})).single;
+
+      expect(note.attachments.map((item) => (item.id, item.name)), [
+        (fileId, '$fileId.jpg'),
+      ]);
+      final writer = JournalDeltaWriter();
+      note.writeBody(writer, (id) => {'image': id});
+      final inserts = [
+        for (final op in jsonDecode(writer.build().contentJson) as List)
+          (op as Map)['insert'],
+      ];
+      expect(inserts, [
+        '出门\n',
+        {'image': fileId},
+        '\n回家\n',
+      ]);
     });
 
     test('an account where every note is encrypted is reported', () async {

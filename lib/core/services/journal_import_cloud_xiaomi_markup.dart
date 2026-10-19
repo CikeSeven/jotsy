@@ -27,11 +27,12 @@ class XiaomiMarkup {
 ///   深度缩进，`<del>` 表示已完成的旧版待办；
 /// - `<img fileid/>`、`<sound fileid/>` 独占一块（之后紧跟的换行只是分隔），
 ///   `<hr/>` 是分隔线；`<a href>` 的文字作为独立的链接段落放在当前行之后；
+/// - 旧版纯文本写法先按官网规则换成标签（见 [_expandLegacyMarks]）；
 /// - 可执行内容（script/style/iframe…）连同内容丢弃，其他未知标签透明。
 XiaomiMarkup parseXiaomiMarkup(String content) {
   final parser = _XiaomiParser();
   _tokenize(
-    content,
+    _expandLegacyMarks(content),
     onStart: parser.start,
     onEnd: parser.end,
     onText: parser.text,
@@ -314,6 +315,26 @@ class _XiaomiParser {
     return XiaomiMarkup(List.unmodifiable(blocks), List.unmodifiable(media));
   }
 }
+
+/// 旧版正文不用标签记图片与已完成的待办，官网编辑器（i.mi.com/note 的
+/// `main.*.chunk.js`）对每篇正文都在解析前先做这两步替换，这里照搬同样的
+/// 正则（此前把含 `☺ ` 的笔记整篇跳过，带图的笔记导入后全部缺失）：
+///
+/// - 行首 `√ 文字` → `<del>文字</del>`，即已完成的旧版待办；
+/// - `☺ <文件 ID>` → `<img fileid>`，文件 ID 是 40 位十六进制或
+///   `<数字>.<22 位>`（与 `setting.data` 的 `fileId` 相同），之后可选的
+///   `<显示方式/><说明/>` 两段一并吞掉（不导入）。不要求在行首。
+String _expandLegacyMarks(String content) => content
+    .replaceAllMapped(_legacyDonePattern, (match) => '<del>${match[1]}</del>')
+    .replaceAllMapped(
+      _legacyImagePattern,
+      (match) => '<img fileid="${match[1]}"/>',
+    );
+
+final RegExp _legacyDonePattern = RegExp(r'^√ (.+)$', multiLine: true);
+final RegExp _legacyImagePattern = RegExp(
+  r'☺ ([0-9a-f]{40}|\d+\.[\da-zA-Z\-_]{22})(?:<([^\r\n/]+)/><([^\r\n/]*)/>)?',
+);
 
 final RegExp _tagPattern = RegExp(
   r'<(/?)([a-zA-Z][a-zA-Z0-9:_-]*)'

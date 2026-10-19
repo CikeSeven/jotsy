@@ -8315,5 +8315,349 @@
   "diaryTemplateNeedsBlankEntry": "已经开始写了，模板只能套用在空白日记上",
   "@diaryTemplateNeedsBlankEntry": {
     "description": "编辑页点“选择模板”时标题或正文已有用户写的内容：提示不能套用模板。"
+  },
+  "notebookTitle": "日记本",
+  "@notebookTitle": {
+    "description": "日记本功能的标题：书架面板、管理页与设置入口。"
+  },
+  "notebookSettingsSubtitle": "整理、排序、合并你的日记本",
+  "@notebookSettingsSubtitle": {
+    "description": "设置首页“日记本”入口的副标题。"
+  },
+  "notebookNew": "新建日记本",
+  "@notebookNew": {
+    "description": "新建日记本：编辑页标题、按钮与书架末尾的新建格子。"
+  },
+  "notebookEditTitle": "编辑日记本",
+  "@notebookEditTitle": {
+    "description": "编辑已有日记本时编辑页的标题。"
+  },
+  "notebookManage": "管理",
+  "@notebookManage": {
+    "description": "书架面板标题行右侧的按钮，进入日记本管理页。"
+  },
+  "notebookAllDiaries": "全部日记",
+  "@notebookAllDiaries": {
+    "description": "书架面板里回到全部日记的一行。"
+  },
+  "notebookSectionPinned": "置顶",
+  "@notebookSectionPinned": {
+    "description": "书架面板分组：置顶的日记本。"
+  },
+  "notebookSectionMine": "我的日记本",
+  "@notebookSectionMine": {
+    "description": "书架与管理页分组：普通日记本。"
+  },
+  "notebookSectionSmart": "智能日记本",
+  "@notebookSectionSmart": {
+    "description": "书架与管理页分组：按规则自动收录的日记本。"
+  },
+  "notebookSectionClosed": "已合上",
+  "@notebookSectionClosed": {
+    "description": "书架与管理页分组：已合上的日记本（书架上默认收起）。"
+  },
+  "notebookEntryCount": "{count} 篇",
+  "@notebookEntryCount": {
+    "description": "日记本里的日记篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSemanticsSeparator": "，",
+  "@notebookSemanticsSeparator": {
+    "description": "读屏朗读日记本封面时，名称、篇数与状态之间的分隔符。"
+  },
+  "notebookEmptyHint": "把不同主题、不同时间的日记收进同一本",
+  "@notebookEmptyHint": {
+    "description": "还没有日记本时的空态说明。"
+  },
+  "notebookMissing": "这本日记本已不存在",
+  "@notebookMissing": {
+    "description": "打开编辑页时日记本已被删除的提示。"
+  },
+  "notebookNameLabel": "名称",
+  "@notebookNameLabel": {
+    "description": "日记本名称输入框的标签。"
+  },
+  "notebookNameHint": "例如：旅行",
+  "@notebookNameHint": {
+    "description": "日记本名称输入框的占位提示；名称为空时也用作预览封面上的示例名。"
+  },
+  "notebookDescriptionLabel": "简介",
+  "@notebookDescriptionLabel": {
+    "description": "日记本简介输入框的标签。"
+  },
+  "notebookDescriptionHint": "用一句话介绍这本（可选）",
+  "@notebookDescriptionHint": {
+    "description": "日记本简介输入框的占位提示。"
+  },
+  "notebookIconLabel": "图标",
+  "@notebookIconLabel": {
+    "description": "日记本图标选择分组的标题。"
+  },
+  "notebookIconMore": "更多图标",
+  "@notebookIconMore": {
+    "description": "快速新建弹窗里展开全部图标的按钮。"
+  },
+  "notebookIconLess": "收起",
+  "@notebookIconLess": {
+    "description": "快速新建弹窗里收起图标网格的按钮。"
+  },
+  "notebookColorLabel": "颜色",
+  "@notebookColorLabel": {
+    "description": "日记本颜色选择分组的标题。"
+  },
+  "notebookColorFollowTheme": "跟随主题",
+  "@notebookColorFollowTheme": {
+    "description": "日记本颜色选项：不设颜色，跟随应用主题色。"
+  },
+  "notebookCoverLabel": "封面图",
+  "@notebookCoverLabel": {
+    "description": "日记本封面图分组的标题。"
+  },
+  "notebookCoverPick": "选择图片",
+  "@notebookCoverPick": {
+    "description": "为日记本选择封面图的按钮。"
+  },
+  "notebookCoverRemove": "移除",
+  "@notebookCoverRemove": {
+    "description": "移除日记本封面图的按钮。"
+  },
+  "notebookTypeLabel": "类型",
+  "@notebookTypeLabel": {
+    "description": "新建日记本时的类型分组标题。"
+  },
+  "notebookTypeManual": "普通",
+  "@notebookTypeManual": {
+    "description": "日记本类型：自己挑选收录的日记。"
+  },
+  "notebookTypeSmart": "智能",
+  "@notebookTypeSmart": {
+    "description": "日记本类型：按条件自动收录。"
+  },
+  "notebookTypeManualHint": "自己挑选要收进来的日记",
+  "@notebookTypeManualHint": {
+    "description": "普通日记本类型的一行说明。"
+  },
+  "notebookTypeSmartHint": "按条件自动收录符合的日记",
+  "@notebookTypeSmartHint": {
+    "description": "智能日记本类型的一行说明。"
+  },
+  "notebookRulesPlaceholder": "规则：保存后在这里设置条件",
+  "@notebookRulesPlaceholder": {
+    "description": "新建智能日记本时规则区域的占位说明。"
+  },
+  "notebookPrivacyLabel": "隐私",
+  "@notebookPrivacyLabel": {
+    "description": "日记本隐私分组的标题。"
+  },
+  "notebookPrivacyNormal": "正常",
+  "@notebookPrivacyNormal": {
+    "description": "隐私选项：本子里的日记照常出现在全部日记里。"
+  },
+  "notebookPrivacyHidden": "不在全部日记中显示",
+  "@notebookPrivacyHidden": {
+    "description": "隐私选项：本子里的日记不出现在全部日记里。"
+  },
+  "notebookPrivacyHiddenHint": "只在这本里看到",
+  "@notebookPrivacyHiddenHint": {
+    "description": "“不在全部日记中显示”选项的说明。"
+  },
+  "notebookPrivacyLocked": "上锁",
+  "@notebookPrivacyLocked": {
+    "description": "隐私选项：打开本子要验证身份。"
+  },
+  "notebookPrivacyLockedHint": "打开时验证身份，并且不在全部日记中显示",
+  "@notebookPrivacyLockedHint": {
+    "description": "“上锁”选项的说明。"
+  },
+  "notebookSortLabel": "默认排序",
+  "@notebookSortLabel": {
+    "description": "日记本里日记默认排序的分组标题。"
+  },
+  "notebookSortCreatedDesc": "发表时间 新→旧",
+  "@notebookSortCreatedDesc": {
+    "description": "排序选项：按发表时间从新到旧。"
+  },
+  "notebookSortCreatedAsc": "发表时间 旧→新",
+  "@notebookSortCreatedAsc": {
+    "description": "排序选项：按发表时间从旧到新。"
+  },
+  "notebookSortCreatedAscHint": "适合读成一本书",
+  "@notebookSortCreatedAscHint": {
+    "description": "“发表时间 旧→新”排序的说明。"
+  },
+  "notebookSortUpdatedDesc": "最近编辑",
+  "@notebookSortUpdatedDesc": {
+    "description": "排序选项：最近编辑的在前。"
+  },
+  "notebookSortBook": "书序",
+  "@notebookSortBook": {
+    "description": "排序选项：按目录手动排好的顺序。"
+  },
+  "notebookSortBookHint": "按目录手动排列",
+  "@notebookSortBookHint": {
+    "description": "“书序”排序的说明。"
+  },
+  "notebookTemplateLabel": "新建时套用模板",
+  "@notebookTemplateLabel": {
+    "description": "在日记本里新建日记时默认套用的模板：编辑页一行与选择面板标题。"
+  },
+  "notebookTemplateNone": "不套用",
+  "@notebookTemplateNone": {
+    "description": "不为日记本设置默认模板。"
+  },
+  "notebookSaveFailed": "保存失败，请重试",
+  "@notebookSaveFailed": {
+    "description": "保存日记本失败的提示。"
+  },
+  "notebookActionFailed": "操作失败，请重试",
+  "@notebookActionFailed": {
+    "description": "日记本操作（置顶、合上、排序、删除、合并）写入失败的提示。"
+  },
+  "notebookMoreActions": "更多操作",
+  "@notebookMoreActions": {
+    "description": "管理页行尾“更多”按钮的提示。"
+  },
+  "notebookDragHandle": "拖动排序",
+  "@notebookDragHandle": {
+    "description": "管理页拖动手柄的读屏标签。"
+  },
+  "notebookStatePinned": "置顶",
+  "@notebookStatePinned": {
+    "description": "日记本状态：已置顶（管理页副标题）。"
+  },
+  "notebookStateSmart": "智能",
+  "@notebookStateSmart": {
+    "description": "日记本状态：智能日记本（副标题与读屏）。"
+  },
+  "notebookStateHidden": "隐藏",
+  "@notebookStateHidden": {
+    "description": "日记本状态：不在全部日记中显示。"
+  },
+  "notebookStateLocked": "上锁",
+  "@notebookStateLocked": {
+    "description": "日记本状态：已上锁。"
+  },
+  "notebookStateClosed": "已合上",
+  "@notebookStateClosed": {
+    "description": "日记本状态：已合上。"
+  },
+  "notebookActionPin": "置顶",
+  "@notebookActionPin": {
+    "description": "日记本操作：置顶。"
+  },
+  "notebookActionUnpin": "取消置顶",
+  "@notebookActionUnpin": {
+    "description": "日记本操作：取消置顶。"
+  },
+  "notebookActionClose": "合上",
+  "@notebookActionClose": {
+    "description": "日记本操作：合上（写完了、不再常用）。"
+  },
+  "notebookActionCloseHint": "合上后收进书架的“已合上”，不再出现在收录选择里",
+  "@notebookActionCloseHint": {
+    "description": "“合上”操作的说明。"
+  },
+  "notebookActionReopen": "重新打开",
+  "@notebookActionReopen": {
+    "description": "日记本操作：把合上的日记本重新打开。"
+  },
+  "notebookActionMerge": "合并到…",
+  "@notebookActionMerge": {
+    "description": "日记本操作：把这本并入另一本。"
+  },
+  "notebookActionConvert": "转为普通日记本",
+  "@notebookActionConvert": {
+    "description": "智能日记本的操作：转为普通日记本。"
+  },
+  "notebookActionConvertHint": "规则设置完成后可用",
+  "@notebookActionConvertHint": {
+    "description": "“转为普通日记本”暂不可用的说明。"
+  },
+  "notebookMergeSheetTitle": "合并到哪一本",
+  "@notebookMergeSheetTitle": {
+    "description": "选择合并目标的面板标题。"
+  },
+  "notebookMergeEmpty": "没有其他普通日记本可以并入",
+  "@notebookMergeEmpty": {
+    "description": "没有可选的合并目标时的提示。"
+  },
+  "notebookMergeConfirmTitle": "合并日记本",
+  "@notebookMergeConfirmTitle": {
+    "description": "合并确认框的标题。"
+  },
+  "notebookMergeConfirm": "把「{source}」的 {count} 篇日记并入「{target}」并删除「{source}」？",
+  "@notebookMergeConfirm": {
+    "description": "合并确认框的内容。",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMergeAction": "合并",
+  "@notebookMergeAction": {
+    "description": "合并确认框的确认按钮。"
+  },
+  "notebookMerged": "已并入「{target}」",
+  "@notebookMerged": {
+    "description": "合并完成的提示。",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookDeleteTitle": "删除「{name}」？",
+  "@notebookDeleteTitle": {
+    "description": "删除日记本确认框的标题。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookDeleteKeepDiaries": "只删除日记本",
+  "@notebookDeleteKeepDiaries": {
+    "description": "删除选项：只删除日记本，日记保留。"
+  },
+  "notebookDeleteKeepDiariesHint": "{count} 篇日记仍在全部日记里",
+  "@notebookDeleteKeepDiariesHint": {
+    "description": "“只删除日记本”选项的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookDeleteWithDiaries": "连同日记移到回收站",
+  "@notebookDeleteWithDiaries": {
+    "description": "删除选项：本子里的日记一并移进回收站。"
+  },
+  "notebookDeleteWithDiariesHint": "可在回收站恢复",
+  "@notebookDeleteWithDiariesHint": {
+    "description": "“连同日记移到回收站”选项的说明。"
+  },
+  "notebookDeleteSmartHint": "日记不会受影响",
+  "@notebookDeleteSmartHint": {
+    "description": "删除智能日记本时的说明。"
+  },
+  "notebookDeleted": "已删除「{name}」",
+  "@notebookDeleted": {
+    "description": "删除日记本后的撤销提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -8,6 +8,7 @@ import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../notebooks/pages/notebooks_page.dart';
 import '../../widgets/page_header.dart';
 import '../../../app/theme/app_effects.dart';
 import '../controllers/app_update_controller.dart';
@@ -76,6 +77,21 @@ class SettingsPage extends StatelessWidget {
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) {
                       return const TagManagementPage();
+                    },
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.book,
+              title: l10n.notebookTitle,
+              subtitle: l10n.notebookSettingsSubtitle,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return const NotebooksPage();
                     },
                   ),
                 );

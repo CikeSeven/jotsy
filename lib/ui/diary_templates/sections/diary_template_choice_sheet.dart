@@ -12,7 +12,8 @@ import '../viewmodels/diary_template_library.dart';
 ///
 /// 关闭面板返回 null；选了一项返回 `(id: …)`，其中 `(id: null)` 为“不自动
 /// 套用”——只有 [allowNone] 为 true 时才有这一项（时间段必须指向一个模板）。
-/// [selectedId] 为当前选中的模板；它已被隐藏或删除时没有选中项。
+/// [selectedId] 为当前选中的模板；它已被隐藏或删除时没有选中项。[noneLabel]
+/// 替换“不自动套用”这一项的文字（日记本的默认模板用“不套用”）。
 Future<({String? id})?> showDiaryTemplateChoiceSheet(
   BuildContext context, {
   required DiaryTemplateLibrary library,
@@ -20,6 +21,7 @@ Future<({String? id})?> showDiaryTemplateChoiceSheet(
   required String title,
   String? hint,
   bool allowNone = true,
+  String? noneLabel,
 }) {
   return showModalBottomSheet<({String? id})>(
     context: context,
@@ -79,7 +81,7 @@ Future<({String? id})?> showDiaryTemplateChoiceSheet(
                 ),
               if (allowNone)
                 ExpressiveChoiceTile(
-                  label: l10n.diaryTemplatesAutoApplyNone,
+                  label: noneLabel ?? l10n.diaryTemplatesAutoApplyNone,
                   selected: selectedId == null,
                   onTap: () => pick(null),
                 ),

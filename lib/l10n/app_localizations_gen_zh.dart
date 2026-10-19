@@ -5860,4 +5860,247 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTemplateNeedsBlankEntry => '已经开始写了，模板只能套用在空白日记上';
+
+  @override
+  String get notebookTitle => '日记本';
+
+  @override
+  String get notebookSettingsSubtitle => '整理、排序、合并你的日记本';
+
+  @override
+  String get notebookNew => '新建日记本';
+
+  @override
+  String get notebookEditTitle => '编辑日记本';
+
+  @override
+  String get notebookManage => '管理';
+
+  @override
+  String get notebookAllDiaries => '全部日记';
+
+  @override
+  String get notebookSectionPinned => '置顶';
+
+  @override
+  String get notebookSectionMine => '我的日记本';
+
+  @override
+  String get notebookSectionSmart => '智能日记本';
+
+  @override
+  String get notebookSectionClosed => '已合上';
+
+  @override
+  String notebookEntryCount(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String get notebookSemanticsSeparator => '，';
+
+  @override
+  String get notebookEmptyHint => '把不同主题、不同时间的日记收进同一本';
+
+  @override
+  String get notebookMissing => '这本日记本已不存在';
+
+  @override
+  String get notebookNameLabel => '名称';
+
+  @override
+  String get notebookNameHint => '例如：旅行';
+
+  @override
+  String get notebookDescriptionLabel => '简介';
+
+  @override
+  String get notebookDescriptionHint => '用一句话介绍这本（可选）';
+
+  @override
+  String get notebookIconLabel => '图标';
+
+  @override
+  String get notebookIconMore => '更多图标';
+
+  @override
+  String get notebookIconLess => '收起';
+
+  @override
+  String get notebookColorLabel => '颜色';
+
+  @override
+  String get notebookColorFollowTheme => '跟随主题';
+
+  @override
+  String get notebookCoverLabel => '封面图';
+
+  @override
+  String get notebookCoverPick => '选择图片';
+
+  @override
+  String get notebookCoverRemove => '移除';
+
+  @override
+  String get notebookTypeLabel => '类型';
+
+  @override
+  String get notebookTypeManual => '普通';
+
+  @override
+  String get notebookTypeSmart => '智能';
+
+  @override
+  String get notebookTypeManualHint => '自己挑选要收进来的日记';
+
+  @override
+  String get notebookTypeSmartHint => '按条件自动收录符合的日记';
+
+  @override
+  String get notebookRulesPlaceholder => '规则：保存后在这里设置条件';
+
+  @override
+  String get notebookPrivacyLabel => '隐私';
+
+  @override
+  String get notebookPrivacyNormal => '正常';
+
+  @override
+  String get notebookPrivacyHidden => '不在全部日记中显示';
+
+  @override
+  String get notebookPrivacyHiddenHint => '只在这本里看到';
+
+  @override
+  String get notebookPrivacyLocked => '上锁';
+
+  @override
+  String get notebookPrivacyLockedHint => '打开时验证身份，并且不在全部日记中显示';
+
+  @override
+  String get notebookSortLabel => '默认排序';
+
+  @override
+  String get notebookSortCreatedDesc => '发表时间 新→旧';
+
+  @override
+  String get notebookSortCreatedAsc => '发表时间 旧→新';
+
+  @override
+  String get notebookSortCreatedAscHint => '适合读成一本书';
+
+  @override
+  String get notebookSortUpdatedDesc => '最近编辑';
+
+  @override
+  String get notebookSortBook => '书序';
+
+  @override
+  String get notebookSortBookHint => '按目录手动排列';
+
+  @override
+  String get notebookTemplateLabel => '新建时套用模板';
+
+  @override
+  String get notebookTemplateNone => '不套用';
+
+  @override
+  String get notebookSaveFailed => '保存失败，请重试';
+
+  @override
+  String get notebookActionFailed => '操作失败，请重试';
+
+  @override
+  String get notebookMoreActions => '更多操作';
+
+  @override
+  String get notebookDragHandle => '拖动排序';
+
+  @override
+  String get notebookStatePinned => '置顶';
+
+  @override
+  String get notebookStateSmart => '智能';
+
+  @override
+  String get notebookStateHidden => '隐藏';
+
+  @override
+  String get notebookStateLocked => '上锁';
+
+  @override
+  String get notebookStateClosed => '已合上';
+
+  @override
+  String get notebookActionPin => '置顶';
+
+  @override
+  String get notebookActionUnpin => '取消置顶';
+
+  @override
+  String get notebookActionClose => '合上';
+
+  @override
+  String get notebookActionCloseHint => '合上后收进书架的“已合上”，不再出现在收录选择里';
+
+  @override
+  String get notebookActionReopen => '重新打开';
+
+  @override
+  String get notebookActionMerge => '合并到…';
+
+  @override
+  String get notebookActionConvert => '转为普通日记本';
+
+  @override
+  String get notebookActionConvertHint => '规则设置完成后可用';
+
+  @override
+  String get notebookMergeSheetTitle => '合并到哪一本';
+
+  @override
+  String get notebookMergeEmpty => '没有其他普通日记本可以并入';
+
+  @override
+  String get notebookMergeConfirmTitle => '合并日记本';
+
+  @override
+  String notebookMergeConfirm(String source, int count, String target) {
+    return '把「$source」的 $count 篇日记并入「$target」并删除「$source」？';
+  }
+
+  @override
+  String get notebookMergeAction => '合并';
+
+  @override
+  String notebookMerged(String target) {
+    return '已并入「$target」';
+  }
+
+  @override
+  String notebookDeleteTitle(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String get notebookDeleteKeepDiaries => '只删除日记本';
+
+  @override
+  String notebookDeleteKeepDiariesHint(int count) {
+    return '$count 篇日记仍在全部日记里';
+  }
+
+  @override
+  String get notebookDeleteWithDiaries => '连同日记移到回收站';
+
+  @override
+  String get notebookDeleteWithDiariesHint => '可在回收站恢复';
+
+  @override
+  String get notebookDeleteSmartHint => '日记不会受影响';
+
+  @override
+  String notebookDeleted(String name) {
+    return '已删除「$name」';
+  }
 }

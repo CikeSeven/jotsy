@@ -8315,5 +8315,349 @@
   "diaryTemplateNeedsBlankEntry": "Templates can only be applied to a blank entry",
   "@diaryTemplateNeedsBlankEntry": {
     "description": "Hint when \"Choose a template\" is tapped after the user has written in the title or body."
+  },
+  "notebookTitle": "Notebooks",
+  "@notebookTitle": {
+    "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
+  },
+  "notebookSettingsSubtitle": "Organize, reorder and merge your notebooks",
+  "@notebookSettingsSubtitle": {
+    "description": "Subtitle of the Notebooks entry on the settings home."
+  },
+  "notebookNew": "New notebook",
+  "@notebookNew": {
+    "description": "Create a notebook: editor title, buttons and the shelf's new tile."
+  },
+  "notebookEditTitle": "Edit notebook",
+  "@notebookEditTitle": {
+    "description": "Editor page title when editing an existing notebook."
+  },
+  "notebookManage": "Manage",
+  "@notebookManage": {
+    "description": "Shelf sheet header button that opens the notebook management page."
+  },
+  "notebookAllDiaries": "All entries",
+  "@notebookAllDiaries": {
+    "description": "Shelf sheet row that returns to all entries."
+  },
+  "notebookSectionPinned": "Pinned",
+  "@notebookSectionPinned": {
+    "description": "Shelf sheet group: pinned notebooks."
+  },
+  "notebookSectionMine": "My notebooks",
+  "@notebookSectionMine": {
+    "description": "Shelf and management group: regular notebooks."
+  },
+  "notebookSectionSmart": "Smart notebooks",
+  "@notebookSectionSmart": {
+    "description": "Shelf and management group: rule-based notebooks."
+  },
+  "notebookSectionClosed": "Closed",
+  "@notebookSectionClosed": {
+    "description": "Shelf and management group: closed notebooks (collapsed on the shelf by default)."
+  },
+  "notebookEntryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@notebookEntryCount": {
+    "description": "Number of entries in a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSemanticsSeparator": ", ",
+  "@notebookSemanticsSeparator": {
+    "description": "Separator between name, count and state in a notebook cover's screen-reader label."
+  },
+  "notebookEmptyHint": "Collect entries from different topics and times into one notebook",
+  "@notebookEmptyHint": {
+    "description": "Empty state text when there are no notebooks yet."
+  },
+  "notebookMissing": "This notebook no longer exists",
+  "@notebookMissing": {
+    "description": "Shown when the notebook being edited has been deleted."
+  },
+  "notebookNameLabel": "Name",
+  "@notebookNameLabel": {
+    "description": "Label of the notebook name field."
+  },
+  "notebookNameHint": "e.g. Travel",
+  "@notebookNameHint": {
+    "description": "Placeholder of the notebook name field; also the preview cover's sample name while empty."
+  },
+  "notebookDescriptionLabel": "Description",
+  "@notebookDescriptionLabel": {
+    "description": "Label of the notebook description field."
+  },
+  "notebookDescriptionHint": "Describe this notebook in a sentence (optional)",
+  "@notebookDescriptionHint": {
+    "description": "Placeholder of the notebook description field."
+  },
+  "notebookIconLabel": "Icon",
+  "@notebookIconLabel": {
+    "description": "Title of the notebook icon picker."
+  },
+  "notebookIconMore": "More icons",
+  "@notebookIconMore": {
+    "description": "Quick-create dialog button that shows all icons."
+  },
+  "notebookIconLess": "Show less",
+  "@notebookIconLess": {
+    "description": "Quick-create dialog button that collapses the icon grid."
+  },
+  "notebookColorLabel": "Color",
+  "@notebookColorLabel": {
+    "description": "Title of the notebook color picker."
+  },
+  "notebookColorFollowTheme": "Follow theme",
+  "@notebookColorFollowTheme": {
+    "description": "Notebook color option: no color, follow the app theme."
+  },
+  "notebookCoverLabel": "Cover image",
+  "@notebookCoverLabel": {
+    "description": "Title of the notebook cover image group."
+  },
+  "notebookCoverPick": "Choose image",
+  "@notebookCoverPick": {
+    "description": "Button that picks a cover image for the notebook."
+  },
+  "notebookCoverRemove": "Remove",
+  "@notebookCoverRemove": {
+    "description": "Button that removes the notebook cover image."
+  },
+  "notebookTypeLabel": "Type",
+  "@notebookTypeLabel": {
+    "description": "Title of the notebook type group when creating a notebook."
+  },
+  "notebookTypeManual": "Regular",
+  "@notebookTypeManual": {
+    "description": "Notebook type: entries are added by hand."
+  },
+  "notebookTypeSmart": "Smart",
+  "@notebookTypeSmart": {
+    "description": "Notebook type: entries are collected by rules."
+  },
+  "notebookTypeManualHint": "Pick the entries to add yourself",
+  "@notebookTypeManualHint": {
+    "description": "One-line description of the regular notebook type."
+  },
+  "notebookTypeSmartHint": "Automatically collects entries that match your conditions",
+  "@notebookTypeSmartHint": {
+    "description": "One-line description of the smart notebook type."
+  },
+  "notebookRulesPlaceholder": "Rules: set the conditions here after saving",
+  "@notebookRulesPlaceholder": {
+    "description": "Placeholder for the rules area when creating a smart notebook."
+  },
+  "notebookPrivacyLabel": "Privacy",
+  "@notebookPrivacyLabel": {
+    "description": "Title of the notebook privacy group."
+  },
+  "notebookPrivacyNormal": "Normal",
+  "@notebookPrivacyNormal": {
+    "description": "Privacy option: entries still appear in All entries."
+  },
+  "notebookPrivacyHidden": "Hide from All entries",
+  "@notebookPrivacyHidden": {
+    "description": "Privacy option: entries do not appear in All entries."
+  },
+  "notebookPrivacyHiddenHint": "Only visible inside this notebook",
+  "@notebookPrivacyHiddenHint": {
+    "description": "Description of the hide-from-All-entries option."
+  },
+  "notebookPrivacyLocked": "Lock",
+  "@notebookPrivacyLocked": {
+    "description": "Privacy option: opening the notebook needs authentication."
+  },
+  "notebookPrivacyLockedHint": "Verify your identity to open, and hide from All entries",
+  "@notebookPrivacyLockedHint": {
+    "description": "Description of the lock option."
+  },
+  "notebookSortLabel": "Default order",
+  "@notebookSortLabel": {
+    "description": "Title of the default entry order group."
+  },
+  "notebookSortCreatedDesc": "Date published, newest first",
+  "@notebookSortCreatedDesc": {
+    "description": "Order option: by publish date, newest first."
+  },
+  "notebookSortCreatedAsc": "Date published, oldest first",
+  "@notebookSortCreatedAsc": {
+    "description": "Order option: by publish date, oldest first."
+  },
+  "notebookSortCreatedAscHint": "Reads like a book",
+  "@notebookSortCreatedAscHint": {
+    "description": "Description of the oldest-first order."
+  },
+  "notebookSortUpdatedDesc": "Recently edited",
+  "@notebookSortUpdatedDesc": {
+    "description": "Order option: most recently edited first."
+  },
+  "notebookSortBook": "Book order",
+  "@notebookSortBook": {
+    "description": "Order option: the order arranged in the table of contents."
+  },
+  "notebookSortBookHint": "Arranged by hand in the table of contents",
+  "@notebookSortBookHint": {
+    "description": "Description of the book order."
+  },
+  "notebookTemplateLabel": "Template for new entries",
+  "@notebookTemplateLabel": {
+    "description": "Template applied to new entries in the notebook: editor row and picker title."
+  },
+  "notebookTemplateNone": "None",
+  "@notebookTemplateNone": {
+    "description": "No default template for the notebook."
+  },
+  "notebookSaveFailed": "Couldn't save. Please try again",
+  "@notebookSaveFailed": {
+    "description": "Shown when saving a notebook fails."
+  },
+  "notebookActionFailed": "Something went wrong. Please try again",
+  "@notebookActionFailed": {
+    "description": "Shown when a notebook action (pin, close, reorder, delete, merge) fails."
+  },
+  "notebookMoreActions": "More actions",
+  "@notebookMoreActions": {
+    "description": "Tooltip of the more-actions button on a management row."
+  },
+  "notebookDragHandle": "Drag to reorder",
+  "@notebookDragHandle": {
+    "description": "Screen-reader label of the drag handle on the management page."
+  },
+  "notebookStatePinned": "Pinned",
+  "@notebookStatePinned": {
+    "description": "Notebook state: pinned (management row subtitle)."
+  },
+  "notebookStateSmart": "Smart",
+  "@notebookStateSmart": {
+    "description": "Notebook state: smart notebook (subtitle and screen reader)."
+  },
+  "notebookStateHidden": "Hidden",
+  "@notebookStateHidden": {
+    "description": "Notebook state: hidden from All entries."
+  },
+  "notebookStateLocked": "Locked",
+  "@notebookStateLocked": {
+    "description": "Notebook state: locked."
+  },
+  "notebookStateClosed": "Closed",
+  "@notebookStateClosed": {
+    "description": "Notebook state: closed."
+  },
+  "notebookActionPin": "Pin",
+  "@notebookActionPin": {
+    "description": "Notebook action: pin."
+  },
+  "notebookActionUnpin": "Unpin",
+  "@notebookActionUnpin": {
+    "description": "Notebook action: unpin."
+  },
+  "notebookActionClose": "Close",
+  "@notebookActionClose": {
+    "description": "Notebook action: close (finished, rarely used)."
+  },
+  "notebookActionCloseHint": "Moves to Closed on the shelf and no longer appears when adding entries",
+  "@notebookActionCloseHint": {
+    "description": "Description of the close action."
+  },
+  "notebookActionReopen": "Reopen",
+  "@notebookActionReopen": {
+    "description": "Notebook action: reopen a closed notebook."
+  },
+  "notebookActionMerge": "Merge into…",
+  "@notebookActionMerge": {
+    "description": "Notebook action: merge this notebook into another."
+  },
+  "notebookActionConvert": "Convert to regular notebook",
+  "@notebookActionConvert": {
+    "description": "Smart notebook action: convert to a regular notebook."
+  },
+  "notebookActionConvertHint": "Available once rules are set up",
+  "@notebookActionConvertHint": {
+    "description": "Why converting to a regular notebook is not available yet."
+  },
+  "notebookMergeSheetTitle": "Merge into which notebook",
+  "@notebookMergeSheetTitle": {
+    "description": "Title of the merge target sheet."
+  },
+  "notebookMergeEmpty": "There is no other regular notebook to merge into",
+  "@notebookMergeEmpty": {
+    "description": "Shown when there is no merge target."
+  },
+  "notebookMergeConfirmTitle": "Merge notebooks",
+  "@notebookMergeConfirmTitle": {
+    "description": "Title of the merge confirmation dialog."
+  },
+  "notebookMergeConfirm": "Move {count, plural, =1{1 entry} other{{count} entries}} from \"{source}\" into \"{target}\" and delete \"{source}\"?",
+  "@notebookMergeConfirm": {
+    "description": "Body of the merge confirmation dialog.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMergeAction": "Merge",
+  "@notebookMergeAction": {
+    "description": "Confirm button of the merge dialog."
+  },
+  "notebookMerged": "Merged into \"{target}\"",
+  "@notebookMerged": {
+    "description": "Shown after merging.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookDeleteTitle": "Delete \"{name}\"?",
+  "@notebookDeleteTitle": {
+    "description": "Title of the delete notebook dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookDeleteKeepDiaries": "Delete notebook only",
+  "@notebookDeleteKeepDiaries": {
+    "description": "Delete option: delete only the notebook, keep the entries."
+  },
+  "notebookDeleteKeepDiariesHint": "{count, plural, =1{1 entry stays} other{{count} entries stay}} in All entries",
+  "@notebookDeleteKeepDiariesHint": {
+    "description": "Description of the delete-notebook-only option.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookDeleteWithDiaries": "Also move entries to trash",
+  "@notebookDeleteWithDiaries": {
+    "description": "Delete option: also move the notebook's entries to trash."
+  },
+  "notebookDeleteWithDiariesHint": "You can restore them from trash",
+  "@notebookDeleteWithDiariesHint": {
+    "description": "Description of the also-trash-entries option."
+  },
+  "notebookDeleteSmartHint": "Your entries are not affected",
+  "@notebookDeleteSmartHint": {
+    "description": "Shown when deleting a smart notebook."
+  },
+  "notebookDeleted": "Deleted \"{name}\"",
+  "@notebookDeleted": {
+    "description": "Undo message after deleting a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

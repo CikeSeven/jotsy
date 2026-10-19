@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/color_palette_families.dart';
 import '../../../app/theme/expressive_motion.dart';
-import '../../widgets/color_swatch_button.dart';
+import '../../widgets/color_palette_picker.dart';
 
 /// 弹窗创建标签时的临时数据对象。
 class NewTagDraft {
@@ -80,14 +80,10 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
   static const int _fallbackFamilyIndex = 3;
   static const int _fallbackColorIndex = 2;
 
-  // 颜色体系：
-  // - 顶部主色族用于粗粒度选择；
-  // - 下方给出该色族下的多个可选色。
+  // 颜色体系见 ColorPalettePicker：顶部主色族粗选，下方选该色族里的具体颜色。
   // 输入与选择状态。
   late final TextEditingController _nameController;
   bool _colorPickerExpanded = false;
-  int _selectedFamilyIndex = 0;
-  int _selectedColorIndex = 0;
   late int _selectedColorValue;
 
   bool get _canSubmit => _nameController.text.trim().isNotEmpty;
@@ -97,10 +93,7 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
   @override
   void initState() {
     super.initState();
-    final initialSelection = _resolveInitialColorSelection();
-    _selectedFamilyIndex = initialSelection.familyIndex;
-    _selectedColorIndex = initialSelection.colorIndex;
-    _selectedColorValue = initialSelection.colorValue;
+    _selectedColorValue = _resolveInitialColorSelection().colorValue;
     _nameController = TextEditingController(text: widget.initialName ?? '');
     _nameController.addListener(_handleNameChanged);
   }
@@ -117,25 +110,6 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
     if (mounted) {
       setState(() {});
     }
-  }
-
-  /// 切换主色族，并重置为该色族第一个颜色。
-  void _selectFamily(int index) {
-    setState(() {
-      _selectedFamilyIndex = index;
-      _selectedColorIndex = 0;
-      _selectedColorValue = kColorPaletteFamilies[index].colors[0].toARGB32();
-    });
-  }
-
-  /// 选择当前主色族下的具体颜色。
-  void _selectColor(int index) {
-    setState(() {
-      _selectedColorIndex = index;
-      _selectedColorValue = kColorPaletteFamilies[_selectedFamilyIndex]
-          .colors[index]
-          .toARGB32();
-    });
   }
 
   /// 提交创建结果。
@@ -266,65 +240,16 @@ class _CreateTagDialogState extends State<_CreateTagDialog> {
                 ),
               ),
             ),
-            // 展开后展示两层颜色选择：
-            // 1) 主色族横向卡片；
-            // 2) 具体颜色圆点网格。
+            // 展开后展示两层颜色选择（主色族 + 具体颜色，见 ColorPalettePicker）。
             AnimatedCrossFade(
               firstChild: const SizedBox.shrink(),
               secondChild: Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: List<Widget>.generate(
-                          kColorPaletteFamilies.length,
-                          (index) {
-                            final family = kColorPaletteFamilies[index];
-                            final selected = _selectedFamilyIndex == index;
-                            return ColorSwatchButton(
-                              color: family.colors[2],
-                              selected: selected,
-                              swatchSize: 34,
-                              borderRadius: 10,
-                              showCheck: false,
-                              semanticLabel: context.l10n
-                                  .colorFamilySwatchLabel(
-                                    index + 1,
-                                    colorSwatchHex(family.colors[2]),
-                                  ),
-                              onTap: () => _selectFamily(index),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // 48dp 点击区域内已含视觉留白，色块之间不再额外加间距。
-                    Wrap(
-                      children: List<Widget>.generate(
-                        kColorPaletteFamilies[_selectedFamilyIndex]
-                            .colors
-                            .length,
-                        (index) {
-                          final color =
-                              kColorPaletteFamilies[_selectedFamilyIndex]
-                                  .colors[index];
-                          return ColorSwatchButton(
-                            color: color,
-                            selected: _selectedColorIndex == index,
-                            swatchSize: 34,
-                            semanticLabel: context.l10n.colorSwatchLabel(
-                              colorSwatchHex(color),
-                            ),
-                            onTap: () => _selectColor(index),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                child: ColorPalettePicker(
+                  selectedColor: _selectedColorValue,
+                  fallbackFamilyIndex: _fallbackFamilyIndex,
+                  onSelected: (color) =>
+                      setState(() => _selectedColorValue = color),
                 ),
               ),
               crossFadeState: _colorPickerExpanded

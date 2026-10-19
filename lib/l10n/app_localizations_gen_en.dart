@@ -6431,4 +6431,274 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryTemplateNeedsBlankEntry =>
       'Templates can only be applied to a blank entry';
+
+  @override
+  String get notebookTitle => 'Notebooks';
+
+  @override
+  String get notebookSettingsSubtitle =>
+      'Organize, reorder and merge your notebooks';
+
+  @override
+  String get notebookNew => 'New notebook';
+
+  @override
+  String get notebookEditTitle => 'Edit notebook';
+
+  @override
+  String get notebookManage => 'Manage';
+
+  @override
+  String get notebookAllDiaries => 'All entries';
+
+  @override
+  String get notebookSectionPinned => 'Pinned';
+
+  @override
+  String get notebookSectionMine => 'My notebooks';
+
+  @override
+  String get notebookSectionSmart => 'Smart notebooks';
+
+  @override
+  String get notebookSectionClosed => 'Closed';
+
+  @override
+  String notebookEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookSemanticsSeparator => ', ';
+
+  @override
+  String get notebookEmptyHint =>
+      'Collect entries from different topics and times into one notebook';
+
+  @override
+  String get notebookMissing => 'This notebook no longer exists';
+
+  @override
+  String get notebookNameLabel => 'Name';
+
+  @override
+  String get notebookNameHint => 'e.g. Travel';
+
+  @override
+  String get notebookDescriptionLabel => 'Description';
+
+  @override
+  String get notebookDescriptionHint =>
+      'Describe this notebook in a sentence (optional)';
+
+  @override
+  String get notebookIconLabel => 'Icon';
+
+  @override
+  String get notebookIconMore => 'More icons';
+
+  @override
+  String get notebookIconLess => 'Show less';
+
+  @override
+  String get notebookColorLabel => 'Color';
+
+  @override
+  String get notebookColorFollowTheme => 'Follow theme';
+
+  @override
+  String get notebookCoverLabel => 'Cover image';
+
+  @override
+  String get notebookCoverPick => 'Choose image';
+
+  @override
+  String get notebookCoverRemove => 'Remove';
+
+  @override
+  String get notebookTypeLabel => 'Type';
+
+  @override
+  String get notebookTypeManual => 'Regular';
+
+  @override
+  String get notebookTypeSmart => 'Smart';
+
+  @override
+  String get notebookTypeManualHint => 'Pick the entries to add yourself';
+
+  @override
+  String get notebookTypeSmartHint =>
+      'Automatically collects entries that match your conditions';
+
+  @override
+  String get notebookRulesPlaceholder =>
+      'Rules: set the conditions here after saving';
+
+  @override
+  String get notebookPrivacyLabel => 'Privacy';
+
+  @override
+  String get notebookPrivacyNormal => 'Normal';
+
+  @override
+  String get notebookPrivacyHidden => 'Hide from All entries';
+
+  @override
+  String get notebookPrivacyHiddenHint => 'Only visible inside this notebook';
+
+  @override
+  String get notebookPrivacyLocked => 'Lock';
+
+  @override
+  String get notebookPrivacyLockedHint =>
+      'Verify your identity to open, and hide from All entries';
+
+  @override
+  String get notebookSortLabel => 'Default order';
+
+  @override
+  String get notebookSortCreatedDesc => 'Date published, newest first';
+
+  @override
+  String get notebookSortCreatedAsc => 'Date published, oldest first';
+
+  @override
+  String get notebookSortCreatedAscHint => 'Reads like a book';
+
+  @override
+  String get notebookSortUpdatedDesc => 'Recently edited';
+
+  @override
+  String get notebookSortBook => 'Book order';
+
+  @override
+  String get notebookSortBookHint =>
+      'Arranged by hand in the table of contents';
+
+  @override
+  String get notebookTemplateLabel => 'Template for new entries';
+
+  @override
+  String get notebookTemplateNone => 'None';
+
+  @override
+  String get notebookSaveFailed => 'Couldn\'t save. Please try again';
+
+  @override
+  String get notebookActionFailed => 'Something went wrong. Please try again';
+
+  @override
+  String get notebookMoreActions => 'More actions';
+
+  @override
+  String get notebookDragHandle => 'Drag to reorder';
+
+  @override
+  String get notebookStatePinned => 'Pinned';
+
+  @override
+  String get notebookStateSmart => 'Smart';
+
+  @override
+  String get notebookStateHidden => 'Hidden';
+
+  @override
+  String get notebookStateLocked => 'Locked';
+
+  @override
+  String get notebookStateClosed => 'Closed';
+
+  @override
+  String get notebookActionPin => 'Pin';
+
+  @override
+  String get notebookActionUnpin => 'Unpin';
+
+  @override
+  String get notebookActionClose => 'Close';
+
+  @override
+  String get notebookActionCloseHint =>
+      'Moves to Closed on the shelf and no longer appears when adding entries';
+
+  @override
+  String get notebookActionReopen => 'Reopen';
+
+  @override
+  String get notebookActionMerge => 'Merge into…';
+
+  @override
+  String get notebookActionConvert => 'Convert to regular notebook';
+
+  @override
+  String get notebookActionConvertHint => 'Available once rules are set up';
+
+  @override
+  String get notebookMergeSheetTitle => 'Merge into which notebook';
+
+  @override
+  String get notebookMergeEmpty =>
+      'There is no other regular notebook to merge into';
+
+  @override
+  String get notebookMergeConfirmTitle => 'Merge notebooks';
+
+  @override
+  String notebookMergeConfirm(String source, int count, String target) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return 'Move $_temp0 from \"$source\" into \"$target\" and delete \"$source\"?';
+  }
+
+  @override
+  String get notebookMergeAction => 'Merge';
+
+  @override
+  String notebookMerged(String target) {
+    return 'Merged into \"$target\"';
+  }
+
+  @override
+  String notebookDeleteTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get notebookDeleteKeepDiaries => 'Delete notebook only';
+
+  @override
+  String notebookDeleteKeepDiariesHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries stay',
+      one: '1 entry stays',
+    );
+    return '$_temp0 in All entries';
+  }
+
+  @override
+  String get notebookDeleteWithDiaries => 'Also move entries to trash';
+
+  @override
+  String get notebookDeleteWithDiariesHint => 'You can restore them from trash';
+
+  @override
+  String get notebookDeleteSmartHint => 'Your entries are not affected';
+
+  @override
+  String notebookDeleted(String name) {
+    return 'Deleted \"$name\"';
+  }
 }

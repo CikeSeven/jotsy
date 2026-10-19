@@ -10795,6 +10795,468 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Templates can only be applied to a blank entry'**
   String get diaryTemplateNeedsBlankEntry;
+
+  /// Title of the notebooks feature: shelf sheet, management page and settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get notebookTitle;
+
+  /// Subtitle of the Notebooks entry on the settings home.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize, reorder and merge your notebooks'**
+  String get notebookSettingsSubtitle;
+
+  /// Create a notebook: editor title, buttons and the shelf's new tile.
+  ///
+  /// In en, this message translates to:
+  /// **'New notebook'**
+  String get notebookNew;
+
+  /// Editor page title when editing an existing notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit notebook'**
+  String get notebookEditTitle;
+
+  /// Shelf sheet header button that opens the notebook management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get notebookManage;
+
+  /// Shelf sheet row that returns to all entries.
+  ///
+  /// In en, this message translates to:
+  /// **'All entries'**
+  String get notebookAllDiaries;
+
+  /// Shelf sheet group: pinned notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get notebookSectionPinned;
+
+  /// Shelf and management group: regular notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'My notebooks'**
+  String get notebookSectionMine;
+
+  /// Shelf and management group: rule-based notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart notebooks'**
+  String get notebookSectionSmart;
+
+  /// Shelf and management group: closed notebooks (collapsed on the shelf by default).
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get notebookSectionClosed;
+
+  /// Number of entries in a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String notebookEntryCount(int count);
+
+  /// Separator between name, count and state in a notebook cover's screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get notebookSemanticsSeparator;
+
+  /// Empty state text when there are no notebooks yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect entries from different topics and times into one notebook'**
+  String get notebookEmptyHint;
+
+  /// Shown when the notebook being edited has been deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'This notebook no longer exists'**
+  String get notebookMissing;
+
+  /// Label of the notebook name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get notebookNameLabel;
+
+  /// Placeholder of the notebook name field; also the preview cover's sample name while empty.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Travel'**
+  String get notebookNameHint;
+
+  /// Label of the notebook description field.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get notebookDescriptionLabel;
+
+  /// Placeholder of the notebook description field.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe this notebook in a sentence (optional)'**
+  String get notebookDescriptionHint;
+
+  /// Title of the notebook icon picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get notebookIconLabel;
+
+  /// Quick-create dialog button that shows all icons.
+  ///
+  /// In en, this message translates to:
+  /// **'More icons'**
+  String get notebookIconMore;
+
+  /// Quick-create dialog button that collapses the icon grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get notebookIconLess;
+
+  /// Title of the notebook color picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get notebookColorLabel;
+
+  /// Notebook color option: no color, follow the app theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow theme'**
+  String get notebookColorFollowTheme;
+
+  /// Title of the notebook cover image group.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover image'**
+  String get notebookCoverLabel;
+
+  /// Button that picks a cover image for the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get notebookCoverPick;
+
+  /// Button that removes the notebook cover image.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get notebookCoverRemove;
+
+  /// Title of the notebook type group when creating a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get notebookTypeLabel;
+
+  /// Notebook type: entries are added by hand.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get notebookTypeManual;
+
+  /// Notebook type: entries are collected by rules.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart'**
+  String get notebookTypeSmart;
+
+  /// One-line description of the regular notebook type.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the entries to add yourself'**
+  String get notebookTypeManualHint;
+
+  /// One-line description of the smart notebook type.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically collects entries that match your conditions'**
+  String get notebookTypeSmartHint;
+
+  /// Placeholder for the rules area when creating a smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules: set the conditions here after saving'**
+  String get notebookRulesPlaceholder;
+
+  /// Title of the notebook privacy group.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get notebookPrivacyLabel;
+
+  /// Privacy option: entries still appear in All entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get notebookPrivacyNormal;
+
+  /// Privacy option: entries do not appear in All entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide from All entries'**
+  String get notebookPrivacyHidden;
+
+  /// Description of the hide-from-All-entries option.
+  ///
+  /// In en, this message translates to:
+  /// **'Only visible inside this notebook'**
+  String get notebookPrivacyHiddenHint;
+
+  /// Privacy option: opening the notebook needs authentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get notebookPrivacyLocked;
+
+  /// Description of the lock option.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to open, and hide from All entries'**
+  String get notebookPrivacyLockedHint;
+
+  /// Title of the default entry order group.
+  ///
+  /// In en, this message translates to:
+  /// **'Default order'**
+  String get notebookSortLabel;
+
+  /// Order option: by publish date, newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Date published, newest first'**
+  String get notebookSortCreatedDesc;
+
+  /// Order option: by publish date, oldest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Date published, oldest first'**
+  String get notebookSortCreatedAsc;
+
+  /// Description of the oldest-first order.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads like a book'**
+  String get notebookSortCreatedAscHint;
+
+  /// Order option: most recently edited first.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently edited'**
+  String get notebookSortUpdatedDesc;
+
+  /// Order option: the order arranged in the table of contents.
+  ///
+  /// In en, this message translates to:
+  /// **'Book order'**
+  String get notebookSortBook;
+
+  /// Description of the book order.
+  ///
+  /// In en, this message translates to:
+  /// **'Arranged by hand in the table of contents'**
+  String get notebookSortBookHint;
+
+  /// Template applied to new entries in the notebook: editor row and picker title.
+  ///
+  /// In en, this message translates to:
+  /// **'Template for new entries'**
+  String get notebookTemplateLabel;
+
+  /// No default template for the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get notebookTemplateNone;
+
+  /// Shown when saving a notebook fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Please try again'**
+  String get notebookSaveFailed;
+
+  /// Shown when a notebook action (pin, close, reorder, delete, merge) fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again'**
+  String get notebookActionFailed;
+
+  /// Tooltip of the more-actions button on a management row.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get notebookMoreActions;
+
+  /// Screen-reader label of the drag handle on the management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get notebookDragHandle;
+
+  /// Notebook state: pinned (management row subtitle).
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get notebookStatePinned;
+
+  /// Notebook state: smart notebook (subtitle and screen reader).
+  ///
+  /// In en, this message translates to:
+  /// **'Smart'**
+  String get notebookStateSmart;
+
+  /// Notebook state: hidden from All entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get notebookStateHidden;
+
+  /// Notebook state: locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get notebookStateLocked;
+
+  /// Notebook state: closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get notebookStateClosed;
+
+  /// Notebook action: pin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get notebookActionPin;
+
+  /// Notebook action: unpin.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get notebookActionUnpin;
+
+  /// Notebook action: close (finished, rarely used).
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get notebookActionClose;
+
+  /// Description of the close action.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves to Closed on the shelf and no longer appears when adding entries'**
+  String get notebookActionCloseHint;
+
+  /// Notebook action: reopen a closed notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get notebookActionReopen;
+
+  /// Notebook action: merge this notebook into another.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into…'**
+  String get notebookActionMerge;
+
+  /// Smart notebook action: convert to a regular notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to regular notebook'**
+  String get notebookActionConvert;
+
+  /// Why converting to a regular notebook is not available yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Available once rules are set up'**
+  String get notebookActionConvertHint;
+
+  /// Title of the merge target sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into which notebook'**
+  String get notebookMergeSheetTitle;
+
+  /// Shown when there is no merge target.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no other regular notebook to merge into'**
+  String get notebookMergeEmpty;
+
+  /// Title of the merge confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge notebooks'**
+  String get notebookMergeConfirmTitle;
+
+  /// Body of the merge confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {count, plural, =1{1 entry} other{{count} entries}} from \"{source}\" into \"{target}\" and delete \"{source}\"?'**
+  String notebookMergeConfirm(String source, int count, String target);
+
+  /// Confirm button of the merge dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge'**
+  String get notebookMergeAction;
+
+  /// Shown after merging.
+  ///
+  /// In en, this message translates to:
+  /// **'Merged into \"{target}\"'**
+  String notebookMerged(String target);
+
+  /// Title of the delete notebook dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String notebookDeleteTitle(String name);
+
+  /// Delete option: delete only the notebook, keep the entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete notebook only'**
+  String get notebookDeleteKeepDiaries;
+
+  /// Description of the delete-notebook-only option.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry stays} other{{count} entries stay}} in All entries'**
+  String notebookDeleteKeepDiariesHint(int count);
+
+  /// Delete option: also move the notebook's entries to trash.
+  ///
+  /// In en, this message translates to:
+  /// **'Also move entries to trash'**
+  String get notebookDeleteWithDiaries;
+
+  /// Description of the also-trash-entries option.
+  ///
+  /// In en, this message translates to:
+  /// **'You can restore them from trash'**
+  String get notebookDeleteWithDiariesHint;
+
+  /// Shown when deleting a smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Your entries are not affected'**
+  String get notebookDeleteSmartHint;
+
+  /// Undo message after deleting a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted \"{name}\"'**
+  String notebookDeleted(String name);
 }
 
 class _AppLocalizationsDelegate

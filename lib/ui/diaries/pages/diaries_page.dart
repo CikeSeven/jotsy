@@ -31,6 +31,7 @@ import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/sections/notebook_action_flows.dart';
 import '../../notebooks/pages/notebook_add_diaries_page.dart';
 import '../../notebooks/pages/notebook_contents_page.dart';
+import '../../notebooks/controllers/notebook_book_export_flow.dart';
 import '../../notebooks/pages/notebook_insights_page.dart';
 import '../../notebooks/sections/notebook_action_sheets.dart';
 import '../../notebooks/sections/notebook_picker_sheet.dart';
@@ -509,6 +510,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                               onAction: (NotebookAction action) => unawaited(
                                 _scopeController.handleHeaderAction(action),
                               ),
+                              onExportBook: () =>
+                                  unawaited(_scopeController.exportBook()),
                               onAddDiaries: manualNotebook == null
                                   ? null
                                   : () => unawaited(

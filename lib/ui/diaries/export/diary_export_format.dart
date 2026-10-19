@@ -89,6 +89,11 @@ enum DiaryExportFormat {
 
   /// 导出顺序对日记文件没有意义（导入后按日期排列）。
   bool get supportsOrder => this != DiaryExportFormat.diaryFile;
+
+  /// 导出成书时能否写出书籍结构（扉页、目录与章节标题）：表格每篇一行，
+  /// 日记文件本身已带日记本归属，二者照常导出。
+  bool get supportsBookStructure =>
+      this != DiaryExportFormat.csv && this != DiaryExportFormat.diaryFile;
 }
 
 enum DiaryExportOrder { oldestFirst, newestFirst }

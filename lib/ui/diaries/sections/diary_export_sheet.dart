@@ -15,21 +15,33 @@ enum DiaryExportAction { save, share }
 /// 导出面板的选择：格式与开关，以及保存还是分享。
 @immutable
 class DiaryExportRequest {
-  const DiaryExportRequest(this.options, this.action);
+  const DiaryExportRequest(
+    this.options,
+    this.action, {
+    this.bookStructure = true,
+  });
 
   final DiaryExportOptions options;
   final DiaryExportAction action;
+
+  /// 导出成书时是否写出扉页、目录与章节标题；不是成书时没有意义。
+  final bool bookStructure;
 }
 
 /// 打开导出面板，返回用户的选择；关闭面板返回 null。
 ///
 /// 面板只负责挑选，生成与保存由 `runDiaryExportFlow` 在面板关闭后执行。
 /// 格式与开关每次改动即经 [onOptionsChanged] 交给调用方保存，下次打开沿用。
+///
+/// [isBook] 为 true（导出成书）时：先后顺序由书决定，不显示排序；能写出
+/// 结构的格式在“选项”最前多一个“书籍结构”开关（默认开），表格与日记文件
+/// 照常导出、不显示它。这个开关只对本次有效，不写进导出选项。
 Future<DiaryExportRequest?> showDiaryExportSheet(
   BuildContext context, {
   required int diaryCount,
   required DiaryExportOptions initialOptions,
   required ValueChanged<DiaryExportOptions> onOptionsChanged,
+  bool isBook = false,
 }) {
   return showModalBottomSheet<DiaryExportRequest>(
     context: context,
@@ -45,6 +57,7 @@ Future<DiaryExportRequest?> showDiaryExportSheet(
       diaryCount: diaryCount,
       initialOptions: initialOptions,
       onOptionsChanged: onOptionsChanged,
+      isBook: isBook,
     ),
   );
 }
@@ -55,11 +68,15 @@ class DiaryExportSheet extends StatefulWidget {
     required this.diaryCount,
     required this.initialOptions,
     required this.onOptionsChanged,
+    this.isBook = false,
   });
 
   final int diaryCount;
   final DiaryExportOptions initialOptions;
   final ValueChanged<DiaryExportOptions> onOptionsChanged;
+
+  /// 导出成书（见 [showDiaryExportSheet]）。
+  final bool isBook;
 
   @override
   State<DiaryExportSheet> createState() => _DiaryExportSheetState();
@@ -67,6 +84,7 @@ class DiaryExportSheet extends StatefulWidget {
 
 class _DiaryExportSheetState extends State<DiaryExportSheet> {
   late DiaryExportOptions _options = widget.initialOptions;
+  bool _bookStructure = true;
 
   void _update(DiaryExportOptions next) {
     if (next == _options) {
@@ -81,9 +99,14 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final format = _options.format;
-    final showOrder = widget.diaryCount > 1 && format.supportsOrder;
+    final showOrder =
+        !widget.isBook && widget.diaryCount > 1 && format.supportsOrder;
+    final showBookStructure = widget.isBook && format.supportsBookStructure;
     final hasOptions =
-        format.supportsMediaToggle || format.supportsMetaToggle || showOrder;
+        format.supportsMediaToggle ||
+        format.supportsMetaToggle ||
+        showOrder ||
+        showBookStructure;
     return SafeArea(
       top: false,
       child: SingleChildScrollView(
@@ -128,7 +151,11 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
               child: hasOptions
                   ? Padding(
                       padding: const EdgeInsets.only(top: AppSpacing.l),
-                      child: _buildOptions(l10n, showOrder: showOrder),
+                      child: _buildOptions(
+                        l10n,
+                        showOrder: showOrder,
+                        showBookStructure: showBookStructure,
+                      ),
                     )
                   : const SizedBox(width: double.infinity),
             ),
@@ -138,7 +165,11 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => Navigator.of(context).pop(
-                      DiaryExportRequest(_options, DiaryExportAction.share),
+                      DiaryExportRequest(
+                        _options,
+                        DiaryExportAction.share,
+                        bookStructure: _bookStructure,
+                      ),
                     ),
                     icon: const FaIcon(FontAwesomeIcons.shareNodes, size: 16),
                     label: Text(l10n.commonShare),
@@ -147,9 +178,13 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
                 const SizedBox(width: AppSpacing.m),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () => Navigator.of(
-                      context,
-                    ).pop(DiaryExportRequest(_options, DiaryExportAction.save)),
+                    onPressed: () => Navigator.of(context).pop(
+                      DiaryExportRequest(
+                        _options,
+                        DiaryExportAction.save,
+                        bookStructure: _bookStructure,
+                      ),
+                    ),
                     icon: const FaIcon(FontAwesomeIcons.download, size: 16),
                     label: Text(l10n.diaryExportSave),
                   ),
@@ -162,7 +197,11 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
     );
   }
 
-  Widget _buildOptions(AppLocalizations l10n, {required bool showOrder}) {
+  Widget _buildOptions(
+    AppLocalizations l10n, {
+    required bool showOrder,
+    required bool showBookStructure,
+  }) {
     final format = _options.format;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -172,6 +211,13 @@ class _DiaryExportSheetState extends State<DiaryExportSheet> {
           label: l10n.diaryExportOptionsSection,
         ),
         const SizedBox(height: AppSpacing.xs),
+        if (showBookStructure)
+          DiarySheetSwitch(
+            label: l10n.diaryExportBookStructure,
+            description: l10n.diaryExportBookStructureDescription,
+            value: _bookStructure,
+            onChanged: (bool value) => setState(() => _bookStructure = value),
+          ),
         if (format.supportsMediaToggle)
           DiarySheetSwitch(
             label: diaryExportMediaToggleLabel(l10n, format),

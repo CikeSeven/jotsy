@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'diary_export_blocks.dart';
+import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
@@ -16,6 +17,13 @@ import 'diary_export_media.dart';
 /// 产物是交给控制器打包的文件列表（容器扩展名 `.docx`）：图片按原文件
 /// 流式写入，识别尺寸只读文件头，导出几百张照片也不会整份读进内存。
 ///
+/// 导出成书（`book` 不为 null）时：第一页是扉页（封面、书名、简介、统计行与
+/// 导出日期），另起一页是目录（章节与“日期  标题”，点按经书签跳到对应
+/// 位置；不写页码——Word 的页码要靠目录域在打开后更新，生成时给不出真实
+/// 值），每章另起一页、以大纲 1 级的章节标题开头，每篇标题降到大纲 2 级，
+/// 正文标题的大纲级别随之顺延（字号不变），Word 的导航窗格按章、篇、小标题
+/// 分层。普通导出的样式表与正文保持原样。
+///
 /// 注意：Word 严格校验 `w:pPr` / `w:rPr` 子元素的顺序，顺序错了会提示
 /// “无法读取的内容”，下面拼接属性时都按 schema 顺序写出。
 class DiaryDocxWriter {
@@ -24,6 +32,9 @@ class DiaryDocxWriter {
   /// A4 纸、四边 2.54cm 页边距时的版心宽度（EMU）；图片最大高度留出页眉。
   static const int _maxImageWidthEmu = 5731510;
   static const int _maxImageHeightEmu = 7315200;
+
+  /// 扉页封面的最大高度（约 11.4cm），书名与统计行留在同一页。
+  static const int _maxCoverHeightEmu = 4114800;
 
   /// 按 96 DPI 把像素换算成 EMU（1 英寸 = 914400 EMU）。
   static const int _emuPerPixel = 9525;
@@ -36,17 +47,28 @@ class DiaryDocxWriter {
     required String documentTitle,
     required String languageTag,
     DateTime? now,
+    DiaryExportBookLayout? book,
   }) async {
     final builder = _DocxBuilder();
-    for (var i = 0; i < entries.length; i++) {
-      await _writeEntry(
+    if (book != null) {
+      await _writeBook(
         builder,
-        entries[i],
-        pageBreakBefore: i > 0,
+        book,
         options: options,
         labels: labels,
         media: media,
       );
+    } else {
+      for (var i = 0; i < entries.length; i++) {
+        await _writeEntry(
+          builder,
+          entries[i],
+          pageBreakBefore: i > 0,
+          options: options,
+          labels: labels,
+          media: media,
+        );
+      }
     }
     DiaryExportBundleFile text(String path, String content) =>
         DiaryExportBundleFile.bytes(path, utf8.encode(content));
@@ -60,7 +82,15 @@ class DiaryDocxWriter {
           _coreProps(documentTitle, now ?? DateTime.now()),
         ),
         text('docProps/app.xml', _appProps),
-        text('word/styles.xml', _styles(languageTag)),
+        text(
+          'word/styles.xml',
+          _styles(
+            languageTag,
+            book: book == null
+                ? null
+                : (chapterHeadings: book.hasChapterHeadings),
+          ),
+        ),
         text('word/document.xml', builder.document()),
         text('word/_rels/document.xml.rels', builder.relationships()),
         for (final image in builder.images)
@@ -79,6 +109,114 @@ class DiaryDocxWriter {
     );
   }
 
+  static Future<void> _writeBook(
+    _DocxBuilder b,
+    DiaryExportBookLayout book, {
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required DiaryExportMediaLibrary media,
+  }) async {
+    final hasCover =
+        options.includeMedia &&
+        book.coverPath != null &&
+        await _image(
+          b,
+          book.coverPath!,
+          media,
+          maxHeightEmu: _maxCoverHeightEmu,
+        );
+    if (!hasCover) {
+      // 没有封面时书名往下放，扉页不至于头重脚轻。
+      b.paragraph(style: 'BookSpacer', runs: const <String>[]);
+    }
+    b.paragraph(style: 'BookTitle', runs: <String>[b.run(book.title)]);
+    if (book.description != null) {
+      b.paragraph(
+        style: 'BookDescription',
+        runs: <String>[b.run(book.description!)],
+      );
+    }
+    for (final line in <String>[book.summaryLine, book.exportedLine]) {
+      if (line.isNotEmpty) {
+        b.paragraph(style: 'BookMeta', runs: <String>[b.run(line)]);
+      }
+    }
+
+    b.paragraph(
+      style: 'TocHeading',
+      pageBreakBefore: true,
+      runs: <String>[b.run(book.contentsTitle)],
+    );
+    final chapters = book.hasChapterHeadings;
+    for (final section in book.sections) {
+      if (section.title != null) {
+        b.paragraph(
+          style: 'TocChapter',
+          runs: <String>[
+            b.internalLink(_bookmark(section.anchor), b.run(section.title!)),
+          ],
+        );
+      }
+      for (final entry in section.entries) {
+        final line =
+            '${labels.formatDate(entry.createdAt.toLocal())}\t'
+            '${labels.titleOf(entry)}';
+        b.paragraph(
+          style: 'TocEntry',
+          indentTwips: chapters ? 420 : null,
+          runs: <String>[
+            b.internalLink(_bookmark(book.anchorOf(entry)), b.run(line)),
+          ],
+        );
+      }
+    }
+
+    for (final section in book.sections) {
+      final title = section.title;
+      if (title != null) {
+        b.paragraph(
+          style: 'BookChapter',
+          pageBreakBefore: true,
+          bookmark: _bookmark(section.anchor),
+          runs: <String>[b.run(title)],
+        );
+      }
+      for (var i = 0; i < section.entries.length; i++) {
+        final entry = section.entries[i];
+        await _writeEntry(
+          b,
+          entry,
+          // 章节标题后的第一篇与标题同页；其余每篇照常另起一页。
+          pageBreakBefore: title == null || i > 0,
+          options: options,
+          labels: labels,
+          media: media,
+          titleStyle: 'BookEntry',
+          bookmark: _bookmark(book.anchorOf(entry)),
+        );
+      }
+    }
+  }
+
+  /// Word 书签名只能含字母、数字与下划线。
+  static String _bookmark(String anchor) => anchor.replaceAll('-', '_');
+
+  /// 内嵌一张图片；不带图片、找不到或 Word 不支持的格式（WebP）返回 false。
+  static Future<bool> _image(
+    _DocxBuilder b,
+    String source,
+    DiaryExportMediaLibrary media, {
+    int maxHeightEmu = _maxImageHeightEmu,
+  }) async {
+    final file = await media.resolve(source);
+    final info = file == null ? null : await media.imageInfoOf(source);
+    if (file == null || info == null || info.mimeType == 'image/webp') {
+      return false;
+    }
+    b.imageParagraph(file, info, maxHeightEmu: maxHeightEmu);
+    return true;
+  }
+
   static Future<void> _writeEntry(
     _DocxBuilder b,
     DiaryExportEntry entry, {
@@ -86,10 +224,13 @@ class DiaryDocxWriter {
     required DiaryExportOptions options,
     required DiaryExportLabels labels,
     required DiaryExportMediaLibrary media,
+    String titleStyle = 'Title',
+    String? bookmark,
   }) async {
     b.paragraph(
-      style: 'Title',
+      style: titleStyle,
       pageBreakBefore: pageBreakBefore,
+      bookmark: bookmark,
       runs: <String>[b.run(labels.titleOf(entry))],
     );
     b.paragraph(
@@ -111,18 +252,8 @@ class DiaryDocxWriter {
       }
     }
 
-    Future<bool> image(String source) async {
-      if (!options.includeMedia) {
-        return false;
-      }
-      final file = await media.resolve(source);
-      final info = file == null ? null : await media.imageInfoOf(source);
-      if (file == null || info == null || info.mimeType == 'image/webp') {
-        return false;
-      }
-      b.imageParagraph(file, info);
-      return true;
-    }
+    Future<bool> image(String source) async =>
+        options.includeMedia && await _image(b, source, media);
 
     if (entry.cover != null) {
       await image(entry.cover!);
@@ -226,7 +357,12 @@ class DiaryDocxWriter {
 
   /// 样式表：正文默认 11pt、1.5 倍行距；中文字体交给系统（东亚字体留空
   /// 时 Word 按语言选择默认中文字体，Windows 与 macOS 都能正常显示）。
-  static String _styles(String languageTag) {
+  ///
+  /// 成书时（[book] 不为 null）另加扉页、目录、章节与篇标题的样式，正文
+  /// 标题的大纲级别顺延到章、篇之下（有章节标题时顺延两级，否则一级）。
+  static String _styles(String languageTag, {({bool chapterHeadings})? book}) {
+    final entryLevel = book == null ? 0 : (book.chapterHeadings ? 1 : 0);
+    final shift = book == null ? 0 : entryLevel + 1;
     String style(
       String id,
       String name, {
@@ -250,15 +386,31 @@ class DiaryDocxWriter {
         '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>'
         '${style('Title', 'Title', pPr: '<w:keepNext/><w:spacing w:after="60"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}'
         '${style('DiaryMeta', 'Diary Meta', pPr: '<w:spacing w:after="60"/>', rPr: '<w:color w:val="6B7280"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
-        '${style('Heading1', 'heading 1', pPr: '<w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="32"/><w:szCs w:val="32"/>')}'
-        '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="28"/><w:szCs w:val="28"/>')}'
-        '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="2"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
+        '${style('Heading1', 'heading 1', pPr: '<w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${0 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="32"/><w:szCs w:val="32"/>')}'
+        '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="${1 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="28"/><w:szCs w:val="28"/>')}'
+        '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
         '${style('Quote', 'Quote', pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
         '${style('Divider', 'Divider', pPr: '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="C7CCD1"/></w:pBdr>')}'
         '${style('CodeBlock', 'Code Block', pPr: '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
         '${style('Hyperlink', 'Hyperlink', type: 'character', rPr: '<w:color w:val="1E6586"/><w:u w:val="single"/>')}'
+        '${book == null ? '' : _bookStyles(style, entryLevel: entryLevel)}'
         '</w:styles>';
+  }
+
+  static String _bookStyles(
+    String Function(String id, String name, {String pPr, String rPr}) style, {
+    required int entryLevel,
+  }) {
+    return '${style('BookSpacer', 'Book Spacer', pPr: '<w:spacing w:before="2400" w:after="0"/>')}'
+        '${style('BookTitle', 'Book Title', pPr: '<w:spacing w:before="480" w:after="240"/><w:jc w:val="center"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="56"/><w:szCs w:val="56"/>')}'
+        '${style('BookDescription', 'Book Description', pPr: '<w:spacing w:after="240"/><w:jc w:val="center"/>', rPr: '<w:color w:val="5F6368"/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
+        '${style('BookMeta', 'Book Meta', pPr: '<w:spacing w:after="60"/><w:jc w:val="center"/>', rPr: '<w:color w:val="6B7280"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
+        '${style('TocHeading', 'Book Contents Heading', pPr: '<w:keepNext/><w:spacing w:after="240"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="36"/><w:szCs w:val="36"/>')}'
+        '${style('TocChapter', 'Book Contents Chapter', pPr: '<w:keepNext/><w:spacing w:before="120" w:after="60"/>', rPr: '<w:b/><w:bCs/>')}'
+        '${style('TocEntry', 'Book Contents Entry', pPr: '<w:tabs><w:tab w:val="left" w:pos="2400"/></w:tabs><w:spacing w:after="40"/>')}'
+        '${style('BookChapter', 'Book Chapter', pPr: '<w:keepNext/><w:spacing w:before="1200" w:after="480"/><w:outlineLvl w:val="0"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="52"/><w:szCs w:val="52"/>')}'
+        '${style('BookEntry', 'Book Entry', pPr: '<w:keepNext/><w:spacing w:after="60"/><w:outlineLvl w:val="$entryLevel"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}';
   }
 }
 
@@ -270,6 +422,7 @@ class _DocxBuilder {
       <({String name, DiaryExportMediaFile media})>[];
   final Map<String, String> _linkIds = <String, String>{};
   int _drawingId = 0;
+  int _bookmarkId = 0;
 
   String _nextRelationshipId() => 'rId${_relationships.length + 2}';
 
@@ -323,6 +476,10 @@ class _DocxBuilder {
     ];
   }
 
+  /// 文档内链接：跳到名为 [bookmark] 的书签（成书目录用）。
+  String internalLink(String bookmark, String run) =>
+      '<w:hyperlink w:anchor="${_xml(bookmark)}" w:history="1">$run</w:hyperlink>';
+
   String _withLink(String? link, String run) {
     final uri = link == null ? null : Uri.tryParse(link);
     if (uri == null || !uri.hasScheme) {
@@ -346,6 +503,7 @@ class _DocxBuilder {
     int? indentTwips,
     int? hangingTwips,
     ExportAlign align = ExportAlign.start,
+    String? bookmark,
   }) {
     // CT_PPr 顺序：pStyle → pageBreakBefore → ind → jc。
     final pPr = StringBuffer();
@@ -364,12 +522,24 @@ class _DocxBuilder {
       ExportAlign.start => null,
     };
     if (jc != null) pPr.write('<w:jc w:val="$jc"/>');
+    final props = pPr.isEmpty ? '' : '<w:pPr>$pPr</w:pPr>';
+    if (bookmark == null) {
+      _body.write('<w:p>$props${runs.join()}</w:p>');
+      return;
+    }
+    // 书签包住整段文字：目录链接跳到这一段的开头。
+    final id = _bookmarkId++;
     _body.write(
-      '<w:p>${pPr.isEmpty ? '' : '<w:pPr>$pPr</w:pPr>'}${runs.join()}</w:p>',
+      '<w:p>$props<w:bookmarkStart w:id="$id" w:name="${_xml(bookmark)}"/>'
+      '${runs.join()}<w:bookmarkEnd w:id="$id"/></w:p>',
     );
   }
 
-  void imageParagraph(DiaryExportMediaFile media, ExportImageInfo info) {
+  void imageParagraph(
+    DiaryExportMediaFile media,
+    ExportImageInfo info, {
+    int maxHeightEmu = DiaryDocxWriter._maxImageHeightEmu,
+  }) {
     final id = _nextRelationshipId();
     final name =
         'image${images.length + 1}${info.extension == '.jpg' ? '.jpeg' : info.extension}';
@@ -383,7 +553,7 @@ class _DocxBuilder {
     final scale = <double>[
       1,
       DiaryDocxWriter._maxImageWidthEmu / cx,
-      DiaryDocxWriter._maxImageHeightEmu / cy,
+      maxHeightEmu / cy,
     ].reduce((a, b) => a < b ? a : b);
     cx = (cx * scale).round();
     cy = (cy * scale).round();

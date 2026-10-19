@@ -21,6 +21,7 @@ class NotebookHeaderSliver extends StatelessWidget {
     super.key,
     required this.notebook,
     required this.onAction,
+    this.onExportBook,
     this.horizontalMargin = AppSpacing.l,
     this.onAddDiaries,
     this.onOpenContents,
@@ -33,6 +34,9 @@ class NotebookHeaderSliver extends StatelessWidget {
   /// 当前日记本；null（全部日记）时收起为 0 高度。
   final NotebookView? notebook;
   final ValueChanged<NotebookAction> onAction;
+
+  /// 头部菜单“导出成书”（见 `exportNotebookAsBook`）。
+  final VoidCallback? onExportBook;
 
   /// 卡片左右外边距，与下方日记卡片的侧边距一致（见 [NotebookHeaderCard]）。
   final double horizontalMargin;
@@ -82,6 +86,7 @@ class NotebookHeaderSliver extends StatelessWidget {
                   key: ValueKey<String>('notebook_header_${current.id}'),
                   notebook: current,
                   onAction: onAction,
+                  onExportBook: onExportBook,
                   horizontalMargin: horizontalMargin,
                   extras: <Widget>[
                     // 写作目标（只有设了目标的普通日记本）：点按打开编辑页。

@@ -8,6 +8,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/backup_password_dialog.dart';
+import '../export/diary_export_book.dart';
 import '../export/diary_export_format.dart';
 import '../sections/diary_export_sheet.dart';
 import '../viewmodels/diary_export_messages.dart';
@@ -25,11 +26,16 @@ import 'diary_export_controller.dart';
 ///
 /// 每一步之后检查 [context] 是否仍挂载；提示经调用方的 [showHint] 发出
 /// （统一走 `HomeHintVisibilityScope`）。
+///
+/// 导出成书（日记本头部“导出成书”）时给出 [book]，[diaries] 按书中的先后：
+/// 面板不再提供先后顺序、改为“书籍结构”开关（只对能写出结构的格式显示），
+/// 控制器按书序导出（见 `DiaryExportController.build`）。
 Future<void> runDiaryExportFlow(
   BuildContext context,
   WidgetRef ref, {
   required List<DiaryWithTags> diaries,
   required void Function(String message) showHint,
+  DiaryExportBook? book,
   @visibleForTesting
   DiaryExportController Function(AppDatabase)? createController,
 }) async {
@@ -46,6 +52,7 @@ Future<void> runDiaryExportFlow(
     context,
     diaryCount: diaries.length,
     initialOptions: DiaryExportOptions.fromRaw(settings.diaryExportOptionsRaw),
+    isBook: book != null,
     // 选项只是下次打开时的默认值，写入失败不打断本次导出。
     onOptionsChanged: (DiaryExportOptions options) => unawaited(
       settings
@@ -95,6 +102,8 @@ Future<void> runDiaryExportFlow(
         languageTag: languageTag,
         textDirection: textDirection,
         password: password,
+        book: book,
+        bookStructure: request.bookStructure,
       ),
     );
   } on DiaryExportEmptyException catch (error) {

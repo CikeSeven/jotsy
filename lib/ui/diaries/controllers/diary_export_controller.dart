@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/backup_file_save_service.dart';
 import '../../../core/services/data_archive_service.dart';
+import '../export/diary_export_book.dart';
 import '../export/diary_export_docx.dart';
 import '../export/diary_export_entry.dart';
 import '../export/diary_export_format.dart';
@@ -65,6 +66,10 @@ class DiaryExportEmptyException implements Exception {
 ///
 /// - 未解封的时间胶囊一律不导出（连同 Jotsy 日记文件）：导出文件会离开
 ///   应用、在别处被打开，胶囊内容不能借此提前看到；完整备份不受影响。
+/// - 导出成书（给了 [DiaryExportBook]）时顺序以书为准，不按日期重排、不看
+///   导出选项里的先后；文件名与文档标题用书名。[build] 的 `bookStructure`
+///   为 true 且格式支持时再解析成书版式（扉页、目录与章节标题），整章都是
+///   胶囊时连同章节标题一起去掉；关掉时与普通的多篇导出相同，只是仍按书序。
 /// - 产物写在缓存 `diary_export/<时间戳>/` 下，以最终文件名命名，保存
 ///   对话框与分享面板都直接显示这个名字。每次生成前清空上一次的暂存：
 ///   分享出去的文件由目标应用在被拉起时读取，那时上一次早已结束；保存
@@ -104,9 +109,11 @@ class DiaryExportController {
     required String languageTag,
     TextDirection textDirection = TextDirection.ltr,
     String? password,
+    DiaryExportBook? book,
+    bool bookStructure = true,
   }) async {
     final now = _now();
-    final exportable = diaries.where((DiaryWithTags detail) {
+    var exportable = diaries.where((DiaryWithTags detail) {
       final unlockAt = detail.diary.capsuleUnlockAt;
       return unlockAt == null || !now.isBefore(unlockAt);
     }).toList();
@@ -114,13 +121,40 @@ class DiaryExportController {
     if (exportable.isEmpty) {
       throw DiaryExportEmptyException(skipped);
     }
-    exportable.sort((DiaryWithTags a, DiaryWithTags b) {
-      final order = a.diary.createdAt.compareTo(b.diary.createdAt);
-      return options.order == DiaryExportOrder.oldestFirst ? order : -order;
-    });
-    final entries = exportable.map(DiaryExportEntry.fromDetail).toList();
-    final stem = DiaryExportNaming.exportStem(entries);
-    final documentTitle = entries.length == 1
+    if (book != null) {
+      exportable = book.arrange(
+        exportable,
+        (DiaryWithTags detail) => detail.diary.diaryId,
+      );
+    } else {
+      exportable.sort((DiaryWithTags a, DiaryWithTags b) {
+        final order = a.diary.createdAt.compareTo(b.diary.createdAt);
+        return options.order == DiaryExportOrder.oldestFirst ? order : -order;
+      });
+    }
+    var entries = exportable.map(DiaryExportEntry.fromDetail).toList();
+    DiaryExportBookLayout? layout;
+    if (book != null && bookStructure && options.format.supportsBookStructure) {
+      final bookLabels = labels.book;
+      if (bookLabels == null) {
+        throw ArgumentError.value(labels, 'labels', '导出成书需要成书文案');
+      }
+      layout = DiaryExportBookLayout.resolve(
+        book,
+        entries,
+        labels: bookLabels,
+        exportedAt: now,
+      );
+      // 与书序相同；以版式为准，写出器的篇目与目录不会错位。
+      entries = layout.entries;
+    }
+    final bookStem = book == null ? '' : DiaryExportNaming.sanitize(book.title);
+    final stem = bookStem.isNotEmpty
+        ? bookStem
+        : DiaryExportNaming.exportStem(entries);
+    final documentTitle = book != null && book.title.trim().isNotEmpty
+        ? book.title.trim()
+        : entries.length == 1
         ? labels.titleOf(entries.single)
         : stem;
 
@@ -146,6 +180,7 @@ class DiaryExportController {
           fonts: await (_fonts ??= _loadFonts()),
           documentTitle: documentTitle,
           textDirection: textDirection,
+          book: layout,
         ),
         DiaryExportFormat.word => await DiaryDocxWriter.write(
           entries,
@@ -155,12 +190,15 @@ class DiaryExportController {
           documentTitle: documentTitle,
           languageTag: languageTag,
           now: now,
+          book: layout,
         ),
         DiaryExportFormat.markdown => await DiaryMarkdownWriter.write(
           entries,
           options: options,
           labels: labels,
           media: media,
+          book: layout,
+          documentStem: stem,
         ),
         DiaryExportFormat.html => await DiaryHtmlWriter.write(
           entries,
@@ -169,11 +207,13 @@ class DiaryExportController {
           media: media,
           documentTitle: documentTitle,
           languageTag: languageTag,
+          book: layout,
         ),
         DiaryExportFormat.text => DiaryTextWriter.write(
           entries,
           options: options,
           labels: labels,
+          book: layout,
         ),
         DiaryExportFormat.csv => DiaryCsvWriter.write(entries, labels: labels),
         DiaryExportFormat.diaryFile => throw StateError('handled above'),

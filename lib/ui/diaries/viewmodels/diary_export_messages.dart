@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
+import '../export/diary_export_book.dart';
 import '../export/diary_export_entry.dart';
 import '../export/diary_export_format.dart';
 
@@ -8,6 +9,8 @@ import '../export/diary_export_format.dart';
 DiaryExportLabels buildDiaryExportLabels(AppLocalizations l10n) {
   final dateTime = DateFormat.yMMMEd(l10n.localeName).add_Hm();
   final date = DateFormat.yMd(l10n.localeName);
+  final month = DateFormat.yMMM(l10n.localeName);
+  final day = DateFormat.yMMMd(l10n.localeName);
   return DiaryExportLabels(
     untitled: l10n.diaryExportLabelUntitled,
     mood: l10n.diaryExportLabelMood,
@@ -28,6 +31,21 @@ DiaryExportLabels buildDiaryExportLabels(AppLocalizations l10n) {
     exportedBy: l10n.diaryExportLabelExportedBy,
     formatDateTime: dateTime.format,
     formatDate: date.format,
+    book: DiaryExportBookLabels(
+      contents: l10n.notebookContents,
+      unassignedChapter: l10n.notebookChapterUnassigned,
+      // 与日记本头部的时间跨度同一写法（按月），但书是导出那一刻的快照，
+      // 不写“至今”。
+      summary: (DateTime first, DateTime last, int count) {
+        final sameMonth = first.year == last.year && first.month == last.month;
+        final span = sameMonth
+            ? month.format(first)
+            : l10n.notebookMetaSpan(month.format(first), month.format(last));
+        return '$span · ${l10n.notebookEntryCount(count)}';
+      },
+      exportedOn: (DateTime value) =>
+          l10n.notebookBookExportedOn(day.format(value)),
+    ),
   );
 }
 

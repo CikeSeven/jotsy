@@ -212,6 +212,16 @@ class DiariesNotebookScopeController {
     ).push(NotebookInsightsPage.route(notebookId: notebook.id));
   }
 
+  /// 头部菜单“导出成书”：整本（含归档）按书序交给导出流程。已在这本的
+  /// 解锁范围里，不再验证。
+  Future<void> exportBook() async {
+    final notebook = resolution.notebook;
+    if (notebook == null) {
+      return;
+    }
+    await exportNotebookAsBook(_state.context, _state.ref, notebook);
+  }
+
   /// 视图选项里改本子的排序：先按新排序过渡显示，再写回本子；写入失败时
   /// 退回原排序并提示。
   void changeNotebookSort(NotebookSort sort) {

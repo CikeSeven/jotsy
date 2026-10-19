@@ -1,6 +1,18 @@
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_book.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_entry.dart';
+
+String _day(DateTime value) => '${value.year}-${value.month}-${value.day}';
+
+/// 成书的固定文案：统计行与导出日期按“年-月-日”写出，便于断言。
+final DiaryExportBookLabels testBookLabels = DiaryExportBookLabels(
+  contents: '目录',
+  unassignedChapter: '未分章',
+  summary: (DateTime first, DateTime last, int count) =>
+      '${_day(first)} – ${_day(last)} · $count 篇',
+  exportedOn: (DateTime value) => '导出于 ${_day(value)}',
+);
 
 /// 导出写出器测试共用的固定文案与日记。
 final DiaryExportLabels testExportLabels = DiaryExportLabels(
@@ -23,8 +35,9 @@ final DiaryExportLabels testExportLabels = DiaryExportLabels(
   formatDateTime: (DateTime value) =>
       '${value.year}年${value.month}月${value.day}日 '
       '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}',
-  formatDate: (DateTime value) => '${value.year}-${value.month}-${value.day}',
+  formatDate: _day,
   exportedBy: '由 Jotsy 导出',
+  book: testBookLabels,
 );
 
 const String testMetadata =

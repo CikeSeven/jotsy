@@ -51,25 +51,37 @@ class DiarySheetSectionHeader extends StatelessWidget {
 }
 
 /// 面板内的开关行：与设置页 SwitchListTile 同款，左右内边距收窄以对齐
-/// 分组标题。
+/// 分组标题；[description] 为标题下的一行说明（可选）。
 class DiarySheetSwitch extends StatelessWidget {
   const DiarySheetSwitch({
     super.key,
     required this.label,
     required this.value,
     required this.onChanged,
+    this.description,
   });
 
   final String label;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final String? description;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final description = this.description;
     return SwitchListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       value: value,
-      title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
+      title: Text(label, style: theme.textTheme.bodyLarge),
+      subtitle: description == null
+          ? null
+          : Text(
+              description,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
       onChanged: onChanged,
     );
   }

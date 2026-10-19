@@ -7,7 +7,7 @@ part of 'app_database.dart';
 /// [ArgumentError]（合上的日记本照常接受）；认不出的日记 id 静默跳过。
 /// 移除返回被删的关联行，撤销时经 [restoreNotebookMemberships] 原样写回。
 /// [_replaceDiaryNotebooks] 供日记写入在同一事务里改写某篇日记所在的本子。
-mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
+mixin _AppDatabaseNotebookEntryOps on _$AppDatabase, _AppDatabaseDiaryScopeSql {
   /// 把日记加进手动日记本，按 [diaryIds] 的顺序接在本子最后；已在本子里的与
   /// 不存在的日记跳过，返回实际加入的篇数。[chapterId] 已不是本子的章节时
   /// 落到“未分章”（章节可能刚在别处被删掉）。
@@ -242,7 +242,45 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
   /// 目录页：本子里的日记（含归档、不含回收站，私密规则同上）按成书位置排好，
   /// 只带目录行要显示的字段。
   Stream<List<NotebookContentsEntry>> watchNotebookContents(String notebookId) {
-    final query = _notebookEntryColumnsQuery(notebookId, includeArchived: true)
+    return _notebookContentsQuery(
+      notebookId,
+    ).watch().map(_mapNotebookContentsRows);
+  }
+
+  /// [watchNotebookContents] 的一次性读取（导出成书按它确定章节与顺序）。
+  Future<List<NotebookContentsEntry>> getNotebookContents(
+    String notebookId,
+  ) async {
+    return _mapNotebookContentsRows(
+      await _notebookContentsQuery(notebookId).get(),
+    );
+  }
+
+  /// 导出成书（智能日记本）：[scope] 里全部未删除的日记 id，含归档与未解封
+  /// 的胶囊（胶囊由导出链路跳过并计数提示），私密规则与列表范围一致；按发表
+  /// 时间从旧到新——一本书从最早的一篇读起，不跟随列表的排序。
+  Future<List<String>> getScopedDiaryIdsOldestFirst(
+    DiaryListScope scope,
+  ) async {
+    final variables = <Variable<Object>>[];
+    final sql = StringBuffer(
+      'SELECT d.diary_id FROM diaries d\n${_diaryScopeJoinSql(scope)}'
+      'WHERE d.is_deleted = 0\n',
+    );
+    _writeDiaryScopeFilter(sql, variables, scope);
+    sql.writeln('ORDER BY d.created_at ASC, d.id ASC');
+    final rows = await customSelect(
+      sql.toString(),
+      variables: variables,
+      readsFrom: _diaryScopeReadsFrom(scope, <TableInfo>[diaries]),
+    ).get();
+    return <String>[for (final row in rows) row.read<String>('diary_id')];
+  }
+
+  JoinedSelectStatement<HasResultSet, dynamic> _notebookContentsQuery(
+    String notebookId,
+  ) {
+    return _notebookEntryColumnsQuery(notebookId, includeArchived: true)
       ..addColumns(<Expression<Object>>[
         diaries.diaryId,
         diaries.title,
@@ -258,22 +296,22 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
         OrderingTerm.asc(diaryNotebooks.addedAt),
         OrderingTerm.asc(diaryNotebooks.diaryId),
       ]);
-    return query.watch().map(
-      (rows) =>
-          List<NotebookContentsEntry>.unmodifiable(<NotebookContentsEntry>[
-            for (final row in rows)
-              NotebookContentsEntry(
-                diaryId: row.read(diaries.diaryId)!,
-                title: row.read(diaries.title) ?? '',
-                createdAt: row.read(diaries.createdAt)!,
-                updatedAt: row.read(diaries.updatedAt)!,
-                isArchived: row.read(diaries.isArchived) ?? false,
-                capsuleLockedAt: row.read(diaries.capsuleLockedAt),
-                capsuleUnlockAt: row.read(diaries.capsuleUnlockAt),
-                chapterId: row.read(diaryNotebooks.chapterId),
-              ),
-          ]),
-    );
+  }
+
+  List<NotebookContentsEntry> _mapNotebookContentsRows(List<TypedResult> rows) {
+    return List<NotebookContentsEntry>.unmodifiable(<NotebookContentsEntry>[
+      for (final row in rows)
+        NotebookContentsEntry(
+          diaryId: row.read(diaries.diaryId)!,
+          title: row.read(diaries.title) ?? '',
+          createdAt: row.read(diaries.createdAt)!,
+          updatedAt: row.read(diaries.updatedAt)!,
+          isArchived: row.read(diaries.isArchived) ?? false,
+          capsuleLockedAt: row.read(diaries.capsuleLockedAt),
+          capsuleUnlockAt: row.read(diaries.capsuleUnlockAt),
+          chapterId: row.read(diaryNotebooks.chapterId),
+        ),
+    ]);
   }
 
   /// 本子成员 × 日记 × 日记本的只取列查询（调用方再加列与排序）。

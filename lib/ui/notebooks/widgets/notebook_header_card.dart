@@ -21,13 +21,14 @@ import 'notebook_cover_parts.dart';
 /// 简介、统计行、状态胶囊与“更多”菜单。
 ///
 /// 只负责展示；菜单项经 [onAction] 交给日记页执行（编辑 / 合上或打开 /
-/// 删除）。[extras] 是后续区块（写作目标进度、章节、统计 / 目录 / 添加日记
+/// 删除），“导出成书”经 [onExportBook]。[extras] 是后续区块（写作目标进度、章节、统计 / 目录 / 添加日记
 /// 等操作行）的插槽，按顺序排在统计行下方。
 class NotebookHeaderCard extends ConsumerWidget {
   const NotebookHeaderCard({
     super.key,
     required this.notebook,
     required this.onAction,
+    this.onExportBook,
     this.extras = const <Widget>[],
     this.bleedExtras = const <Widget>[],
     this.horizontalMargin = AppSpacing.l,
@@ -35,6 +36,9 @@ class NotebookHeaderCard extends ConsumerWidget {
 
   final NotebookView notebook;
   final ValueChanged<NotebookAction> onAction;
+
+  /// 菜单里的“导出成书”；null 时不显示这一项。
+  final VoidCallback? onExportBook;
   final List<Widget> extras;
 
   /// 排在 [extras] 之后、不受卡片左右内边距限制的区块（横向滚动的章节胶囊
@@ -151,7 +155,11 @@ class NotebookHeaderCard extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      _HeaderMenu(notebook: notebook, onAction: onAction),
+                      _HeaderMenu(
+                        notebook: notebook,
+                        onAction: onAction,
+                        onExportBook: onExportBook,
+                      ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.m),
@@ -207,10 +215,15 @@ class NotebookHeaderCard extends ConsumerWidget {
 
 /// 头部“更多”：编辑日记本 / 合上或重新打开 / 删除（不超过 4 项，用弹出菜单）。
 class _HeaderMenu extends StatelessWidget {
-  const _HeaderMenu({required this.notebook, required this.onAction});
+  const _HeaderMenu({
+    required this.notebook,
+    required this.onAction,
+    this.onExportBook,
+  });
 
   final NotebookView notebook;
   final ValueChanged<NotebookAction> onAction;
+  final VoidCallback? onExportBook;
 
   @override
   Widget build(BuildContext context) {
@@ -227,6 +240,12 @@ class _HeaderMenu extends StatelessWidget {
           onPressed: () => onAction(NotebookAction.edit),
           child: Text(l10n.notebookEditTitle),
         ),
+        if (onExportBook case final exportBook?)
+          ExpressiveMenuItem(
+            leadingIcon: const FaIcon(FontAwesomeIcons.bookOpen),
+            onPressed: exportBook,
+            child: Text(l10n.notebookExportAsBook),
+          ),
         ExpressiveMenuItem(
           leadingIcon: FaIcon(notebookActionIcon(closeAction)),
           onPressed: () => onAction(closeAction),

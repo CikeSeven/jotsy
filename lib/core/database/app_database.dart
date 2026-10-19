@@ -10,14 +10,17 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../utils/text_stats.dart';
 import 'content_codec.dart';
+import 'diary_list_scope.dart';
 import 'notebook_payload.dart';
 
+export 'diary_list_scope.dart';
 export 'notebook_payload.dart';
 
 part 'app_database.g.dart';
 part 'app_database_schema.dart';
 part 'app_database_tag_ops.dart';
 part 'app_database_diary_writes.dart';
+part 'app_database_diary_scope_sql.dart';
 part 'app_database_diary_queries.dart';
 part 'app_database_diary_list_queries.dart';
 part 'app_database_migrations.dart';
@@ -46,6 +49,7 @@ part 'app_database_notebook_entry_ops.dart';
 class AppDatabase extends _$AppDatabase
     with
         _AppDatabaseTagOps,
+        _AppDatabaseDiaryScopeSql,
         _AppDatabaseDiaryQueries,
         _AppDatabaseDiaryListQueries,
         _AppDatabaseNotebookEntryOps,

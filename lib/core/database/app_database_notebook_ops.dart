@@ -27,8 +27,11 @@ mixin _AppDatabaseNotebookOps on _$AppDatabase, _AppDatabaseNotebookEntryOps {
     )..where((t) => t.notebookId.equals(notebookId))).watchSingleOrNull();
   }
 
-  /// 手动日记本 id → 篇数，口径与本子里的日记列表一致：不算回收站与归档里的
-  /// 日记。没有这类日记的本子（含全部智能本）不在结果里，读取方按 0 处理。
+  /// 手动日记本 id → 篇数，口径与本子里的日记列表（`DiaryNotebookScope`）
+  /// 一致：不算回收站与归档里的日记；普通本子不算私密日记（同时在某本私密
+  /// 本子里的），否则书架上的篇数会透露私密日记的存在、也与列表对不上；私密
+  /// 本子自己算全部成员。没有这类日记的本子（含全部智能本）不在结果里，读取
+  /// 方按 0 处理。
   Stream<Map<String, int>> watchManualNotebookEntryCounts() {
     return customSelect(
       '''
@@ -37,9 +40,13 @@ FROM diary_notebooks dn
 INNER JOIN notebooks n ON n.id = dn.notebook_id
 INNER JOIN diaries d ON d.id = dn.diary_id
 WHERE n.kind = ? AND d.is_deleted = 0 AND d.is_archived = 0
+  AND (n.visibility <> ? OR ${_privateDiaryExclusionSql('d.id')})
 GROUP BY n.notebook_id
 ''',
-      variables: <Variable<Object>>[Variable<String>(NotebookKind.manual.name)],
+      variables: <Variable<Object>>[
+        Variable<String>(NotebookKind.manual.name),
+        Variable<String>(NotebookVisibility.normal.name),
+      ],
       readsFrom: <ResultSetImplementation<HasResultSet, dynamic>>{
         notebooks,
         diaryNotebooks,

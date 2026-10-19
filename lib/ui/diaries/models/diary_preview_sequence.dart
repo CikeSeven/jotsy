@@ -10,12 +10,16 @@ class DiaryPreviewListQuery {
     required this.keyword,
     required this.requiredTagIds,
     required this.sortMode,
+    this.scope = DiaryListScope.all,
     this.excludedIds = const <String>{},
   });
 
   final String keyword;
   final List<int> requiredTagIds;
   final DiarySortMode sortMode;
+
+  /// 列表所在的范围（全部日记或某本日记本），接续时按同一范围取 id。
+  final DiaryListScope scope;
 
   /// 列表里暂时隐藏、等待撤销的日记（刚归档或删除），翻页时同样跳过。
   final Set<String> excludedIds;

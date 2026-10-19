@@ -316,6 +316,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
   }
 
   /// 按业务 diaryId 获取单条日记及其标签。
+  ///
+  /// 刻意不排除私密日记：这是“按 id 直接打开”（编辑页、私密日记本里的预览
+  /// 等），调用方已经拿到了 id，说明它来自一个允许看到它的范围。
   Future<DiaryWithTags?> getDiaryWithTagsByDiaryId(String diaryId) async {
     final diary = await (select(
       diaries,

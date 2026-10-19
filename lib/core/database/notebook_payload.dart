@@ -29,9 +29,13 @@ enum NotebookVisibility {
   hidden,
   locked;
 
-  /// 认不出的值按 [normal] 解读。
-  static NotebookVisibility fromName(String? name) =>
-      values.asNameMap()[name] ?? normal;
+  /// 缺省（null）按 [normal]；认不出的值（更新版本写入的新可见性）按最严格
+  /// 的 [locked] 解读，与 SQL 私密排除“不等于 normal 即私密”的口径一致：
+  /// 宁可多问一次验证，也不把私密本当普通本打开。
+  static NotebookVisibility fromName(String? name) {
+    if (name == null) return normal;
+    return values.asNameMap()[name] ?? locked;
+  }
 }
 
 /// 日记本内的排序方式；[book] 为目录页手动排好的“成书顺序”。

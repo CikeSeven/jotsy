@@ -404,6 +404,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
               keyword: query.keyword,
               requiredTagIds: query.requiredTagIds,
               sortMode: query.sortMode,
+              scope: query.scope,
             )
           : null,
     );

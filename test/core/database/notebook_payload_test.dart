@@ -73,11 +73,12 @@ void main() {
       expect(payload.description, '😀' * 120);
     });
 
-    test('unknown enum names fall back to manual and normal', () {
+    test('unknown kind falls back to manual, unknown visibility to locked', () {
       expect(NotebookKind.fromName('folder'), NotebookKind.manual);
       expect(NotebookKind.fromName('smart'), NotebookKind.smart);
       expect(NotebookVisibility.fromName(null), NotebookVisibility.normal);
       expect(NotebookVisibility.fromName('locked'), NotebookVisibility.locked);
+      expect(NotebookVisibility.fromName('secret'), NotebookVisibility.locked);
     });
   });
 

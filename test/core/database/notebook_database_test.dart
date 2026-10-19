@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
@@ -303,6 +304,38 @@ void main() {
       final counts = await db.watchManualNotebookEntryCounts().first;
       expect(counts, <String, int>{book: 1});
       expect(counts[empty], isNull);
+    });
+
+    test('entry counts hide private diaries from normal notebooks', () async {
+      final book = await notebook('本子');
+      final locked = await db.createNotebook(
+        name: '锁',
+        visibility: NotebookVisibility.locked,
+      );
+      final a = await diary('甲', notebookIds: <String>[book]);
+      final b = await diary('乙', notebookIds: <String>[book, locked]);
+
+      final counts = StreamIterator(db.watchManualNotebookEntryCounts());
+      addTearDown(counts.cancel);
+      expect(await counts.moveNext(), isTrue);
+      expect(counts.current, <String, int>{book: 1, locked: 1});
+
+      await db.updateNotebook(locked, visibility: NotebookVisibility.normal);
+      expect(await counts.moveNext(), isTrue);
+      expect(counts.current, <String, int>{book: 2, locked: 1});
+
+      await db.addDiariesToNotebook(
+        await db.createNotebook(
+          name: '藏',
+          visibility: NotebookVisibility.hidden,
+        ),
+        <String>[a],
+      );
+      while (counts.current[book] != 1) {
+        expect(await counts.moveNext(), isTrue);
+      }
+      expect(counts.current[locked], 1);
+      expect(b, isNotEmpty);
     });
 
     test('reordering entries rewrites positions and chapters', () async {

@@ -15,10 +15,38 @@ class _EmptyDatabase extends AppDatabase {
     int? limit,
     int offset = 0,
     DiarySortMode sortMode = DiarySortMode.updatedDesc,
+    DiaryListScope scope = DiaryListScope.all,
   }) => Stream<List<DiaryWithTags>>.value(const <DiaryWithTags>[]);
 }
 
 void main() {
+  test('page and search queries include the scope in equality', () {
+    DiaryPageQuery page(DiaryListScope scope) => DiaryPageQuery(
+      keyword: 'k',
+      requiredTagIds: const <int>[1],
+      limit: 20,
+      sortMode: DiarySortMode.updatedDesc,
+      scope: scope,
+    );
+    const book = DiaryNotebookScope(notebookId: 'n');
+    expect(page(DiaryListScope.all), page(const DiaryAllScope()));
+    expect(page(book), page(const DiaryNotebookScope(notebookId: 'n')));
+    expect(
+      page(book).hashCode,
+      page(const DiaryNotebookScope(notebookId: 'n')).hashCode,
+    );
+    expect(page(book), isNot(page(DiaryListScope.all)));
+
+    expect(
+      SearchDiaryQuery(keyword: 'k', scope: book),
+      SearchDiaryQuery(keyword: ' k ', scope: book),
+    );
+    expect(
+      SearchDiaryQuery(keyword: 'k', scope: book),
+      isNot(SearchDiaryQuery(keyword: 'k')),
+    );
+  });
+
   test('setTags filters non-positive ids and replaces selected tags', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

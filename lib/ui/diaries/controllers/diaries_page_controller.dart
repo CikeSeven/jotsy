@@ -133,6 +133,7 @@ class DiariesPageController {
               keyword: query.keyword,
               requiredTagIds: query.requiredTagIds,
               sortMode: query.sortMode,
+              scope: query.scope,
               excludedIds: hidden,
             )
           : null,

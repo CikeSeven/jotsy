@@ -5,11 +5,12 @@ part of 'app_database.dart';
 /// 该分区负责：
 /// - 创建/更新日记；
 /// - 归档、软删除、恢复；
-/// - 日记与标签关联关系维护。
-mixin _AppDatabaseDiaryWrites on _$AppDatabase {
-  /// 创建日记并写入关联标签。
+/// - 日记与标签、日记与日记本关联关系维护。
+mixin _AppDatabaseDiaryWrites on _$AppDatabase, _AppDatabaseNotebookEntryOps {
+  /// 创建日记并写入关联标签与所在日记本。
   ///
-  /// 事务内完成“主表插入 + 关联表写入”，保证一致性。
+  /// 事务内完成“主表插入 + 关联表写入”，保证一致性。[notebookIds] 为日记本
+  /// 业务 id，新日记接在各本最后；智能或不存在的本子忽略。
   Future<String> createDiary({
     required String title,
     required String contentDocJson,
@@ -20,6 +21,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     DateTime? createdAtOverride,
     DateTime? capsuleUnlockAt,
     DateTime? capsuleLockedAt,
+    List<String>? notebookIds,
   }) async {
     final now = createdAtOverride ?? DateTime.now();
     final diaryId = _generateDiaryId();
@@ -44,6 +46,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
       );
 
       await _replaceDiaryTags(localDiaryId, normalizedTagIds);
+      if (notebookIds != null && notebookIds.isNotEmpty) {
+        await _replaceDiaryNotebooks(localDiaryId, notebookIds.toSet());
+      }
       return diaryId;
     });
   }
@@ -52,6 +57,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
   ///
   /// 事务内先更新主表，再重建关联表数据。[createdAt] 是发表时间，传 null
   /// 时保持原值：只改正文的路径（如预览页勾选待办）不应触碰发表时间。
+  /// [notebookIds] 为 null 时不动所在日记本；否则改为恰好在这些本子里，仍在的
+  /// 本子保留章节与成书位置（见 `_replaceDiaryNotebooks`）。
   Future<void> updateDiary({
     required String diaryId,
     required String title,
@@ -61,6 +68,7 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
     String? cover,
     List<int> tagIds = const <int>[],
     DateTime? createdAt,
+    List<String>? notebookIds,
   }) async {
     final normalizedMetadata = normalizeMetadataJson(metadataJson);
     final normalizedCover = _normalizeCover(cover);
@@ -93,6 +101,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
       );
 
       await _replaceDiaryTags(diary.id, normalizedTagIds);
+      if (notebookIds != null) {
+        await _replaceDiaryNotebooks(diary.id, notebookIds.toSet());
+      }
     });
   }
 
@@ -227,6 +238,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 软删除日记（不物理删除）。
   ///
+  /// 不动标签与日记本关联行：从回收站恢复后日记自然回到原来的本子与章节；
+  /// 日记本的篇数与列表按 `is_deleted` 过滤，不会把回收站里的算进去。
+  ///
   /// `touchUpdatedAt=false` 可用于“可撤销删除”场景，避免恢复后排序变化。
   Future<void> softDeleteDiary(
     String diaryId, {
@@ -270,7 +284,8 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
 
   /// 彻底删除日记（物理删除，不可恢复）。
   ///
-  /// 显式清理 diary_tags，兼容没有开启外键级联的历史连接；关联这篇日记的
+  /// 显式清理 diary_tags 与 diary_notebooks：本库不开启外键，diary_tags 声明
+  /// 的级联不会生效，diary_notebooks 则根本没有声明外键；关联这篇日记的
   /// 纪念日同时解除关联（纪念日只存日记业务 id、没有外键）。软删除不动关联，
   /// 从回收站恢复后关联仍在。
   /// 只删除数据库记录：正文媒体可能被其他日记或草稿复用（复制粘贴图片），
@@ -288,6 +303,9 @@ mixin _AppDatabaseDiaryWrites on _$AppDatabase {
       await (delete(
         diaryTags,
       )..where((DiaryTags t) => t.diaryId.equals(targetDiary.id))).go();
+      await (delete(
+        diaryNotebooks,
+      )..where((t) => t.diaryId.equals(targetDiary.id))).go();
       await (delete(
         diaries,
       )..where((Diaries t) => t.diaryId.equals(diaryId))).go();

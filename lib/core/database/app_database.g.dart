@@ -3092,6 +3092,1021 @@ class DiaryTemplatesCompanion extends UpdateCompanion<DiaryTemplateRow> {
   }
 }
 
+class $NotebooksTable extends Notebooks
+    with TableInfo<$NotebooksTable, NotebookRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NotebooksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _notebookIdMeta = const VerificationMeta(
+    'notebookId',
+  );
+  @override
+  late final GeneratedColumn<String> notebookId = GeneratedColumn<String>(
+    'notebook_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 1,
+      maxTextLength: 60,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  @override
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
+  static const VerificationMeta _visibilityMeta = const VerificationMeta(
+    'visibility',
+  );
+  @override
+  late final GeneratedColumn<String> visibility = GeneratedColumn<String>(
+    'visibility',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('normal'),
+  );
+  static const VerificationMeta _payloadMeta = const VerificationMeta(
+    'payload',
+  );
+  @override
+  late final GeneratedColumn<String> payload = GeneratedColumn<String>(
+    'payload',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('{}'),
+  );
+  static const VerificationMeta _sortOrderMeta = const VerificationMeta(
+    'sortOrder',
+  );
+  @override
+  late final GeneratedColumn<int> sortOrder = GeneratedColumn<int>(
+    'sort_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isPinnedMeta = const VerificationMeta(
+    'isPinned',
+  );
+  @override
+  late final GeneratedColumn<bool> isPinned = GeneratedColumn<bool>(
+    'is_pinned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_pinned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isClosedMeta = const VerificationMeta(
+    'isClosed',
+  );
+  @override
+  late final GeneratedColumn<bool> isClosed = GeneratedColumn<bool>(
+    'is_closed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_closed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    notebookId,
+    name,
+    kind,
+    visibility,
+    payload,
+    sortOrder,
+    isPinned,
+    isClosed,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'notebooks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NotebookRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('notebook_id')) {
+      context.handle(
+        _notebookIdMeta,
+        notebookId.isAcceptableOrUnknown(data['notebook_id']!, _notebookIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_notebookIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    }
+    if (data.containsKey('visibility')) {
+      context.handle(
+        _visibilityMeta,
+        visibility.isAcceptableOrUnknown(data['visibility']!, _visibilityMeta),
+      );
+    }
+    if (data.containsKey('payload')) {
+      context.handle(
+        _payloadMeta,
+        payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta),
+      );
+    }
+    if (data.containsKey('sort_order')) {
+      context.handle(
+        _sortOrderMeta,
+        sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
+      );
+    }
+    if (data.containsKey('is_pinned')) {
+      context.handle(
+        _isPinnedMeta,
+        isPinned.isAcceptableOrUnknown(data['is_pinned']!, _isPinnedMeta),
+      );
+    }
+    if (data.containsKey('is_closed')) {
+      context.handle(
+        _isClosedMeta,
+        isClosed.isAcceptableOrUnknown(data['is_closed']!, _isClosedMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  NotebookRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NotebookRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      notebookId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notebook_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      visibility: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}visibility'],
+      )!,
+      payload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload'],
+      )!,
+      sortOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_order'],
+      )!,
+      isPinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pinned'],
+      )!,
+      isClosed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_closed'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $NotebooksTable createAlias(String alias) {
+    return $NotebooksTable(attachedDatabase, alias);
+  }
+}
+
+class NotebookRow extends DataClass implements Insertable<NotebookRow> {
+  final int id;
+  final String notebookId;
+  final String name;
+  final String kind;
+  final String visibility;
+  final String payload;
+  final int sortOrder;
+  final bool isPinned;
+  final bool isClosed;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const NotebookRow({
+    required this.id,
+    required this.notebookId,
+    required this.name,
+    required this.kind,
+    required this.visibility,
+    required this.payload,
+    required this.sortOrder,
+    required this.isPinned,
+    required this.isClosed,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['notebook_id'] = Variable<String>(notebookId);
+    map['name'] = Variable<String>(name);
+    map['kind'] = Variable<String>(kind);
+    map['visibility'] = Variable<String>(visibility);
+    map['payload'] = Variable<String>(payload);
+    map['sort_order'] = Variable<int>(sortOrder);
+    map['is_pinned'] = Variable<bool>(isPinned);
+    map['is_closed'] = Variable<bool>(isClosed);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  NotebooksCompanion toCompanion(bool nullToAbsent) {
+    return NotebooksCompanion(
+      id: Value(id),
+      notebookId: Value(notebookId),
+      name: Value(name),
+      kind: Value(kind),
+      visibility: Value(visibility),
+      payload: Value(payload),
+      sortOrder: Value(sortOrder),
+      isPinned: Value(isPinned),
+      isClosed: Value(isClosed),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory NotebookRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NotebookRow(
+      id: serializer.fromJson<int>(json['id']),
+      notebookId: serializer.fromJson<String>(json['notebookId']),
+      name: serializer.fromJson<String>(json['name']),
+      kind: serializer.fromJson<String>(json['kind']),
+      visibility: serializer.fromJson<String>(json['visibility']),
+      payload: serializer.fromJson<String>(json['payload']),
+      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      isPinned: serializer.fromJson<bool>(json['isPinned']),
+      isClosed: serializer.fromJson<bool>(json['isClosed']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'notebookId': serializer.toJson<String>(notebookId),
+      'name': serializer.toJson<String>(name),
+      'kind': serializer.toJson<String>(kind),
+      'visibility': serializer.toJson<String>(visibility),
+      'payload': serializer.toJson<String>(payload),
+      'sortOrder': serializer.toJson<int>(sortOrder),
+      'isPinned': serializer.toJson<bool>(isPinned),
+      'isClosed': serializer.toJson<bool>(isClosed),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  NotebookRow copyWith({
+    int? id,
+    String? notebookId,
+    String? name,
+    String? kind,
+    String? visibility,
+    String? payload,
+    int? sortOrder,
+    bool? isPinned,
+    bool? isClosed,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => NotebookRow(
+    id: id ?? this.id,
+    notebookId: notebookId ?? this.notebookId,
+    name: name ?? this.name,
+    kind: kind ?? this.kind,
+    visibility: visibility ?? this.visibility,
+    payload: payload ?? this.payload,
+    sortOrder: sortOrder ?? this.sortOrder,
+    isPinned: isPinned ?? this.isPinned,
+    isClosed: isClosed ?? this.isClosed,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  NotebookRow copyWithCompanion(NotebooksCompanion data) {
+    return NotebookRow(
+      id: data.id.present ? data.id.value : this.id,
+      notebookId: data.notebookId.present
+          ? data.notebookId.value
+          : this.notebookId,
+      name: data.name.present ? data.name.value : this.name,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      visibility: data.visibility.present
+          ? data.visibility.value
+          : this.visibility,
+      payload: data.payload.present ? data.payload.value : this.payload,
+      sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
+      isClosed: data.isClosed.present ? data.isClosed.value : this.isClosed,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotebookRow(')
+          ..write('id: $id, ')
+          ..write('notebookId: $notebookId, ')
+          ..write('name: $name, ')
+          ..write('kind: $kind, ')
+          ..write('visibility: $visibility, ')
+          ..write('payload: $payload, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('isPinned: $isPinned, ')
+          ..write('isClosed: $isClosed, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    notebookId,
+    name,
+    kind,
+    visibility,
+    payload,
+    sortOrder,
+    isPinned,
+    isClosed,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NotebookRow &&
+          other.id == this.id &&
+          other.notebookId == this.notebookId &&
+          other.name == this.name &&
+          other.kind == this.kind &&
+          other.visibility == this.visibility &&
+          other.payload == this.payload &&
+          other.sortOrder == this.sortOrder &&
+          other.isPinned == this.isPinned &&
+          other.isClosed == this.isClosed &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class NotebooksCompanion extends UpdateCompanion<NotebookRow> {
+  final Value<int> id;
+  final Value<String> notebookId;
+  final Value<String> name;
+  final Value<String> kind;
+  final Value<String> visibility;
+  final Value<String> payload;
+  final Value<int> sortOrder;
+  final Value<bool> isPinned;
+  final Value<bool> isClosed;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  const NotebooksCompanion({
+    this.id = const Value.absent(),
+    this.notebookId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.visibility = const Value.absent(),
+    this.payload = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.isPinned = const Value.absent(),
+    this.isClosed = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  NotebooksCompanion.insert({
+    this.id = const Value.absent(),
+    required String notebookId,
+    required String name,
+    this.kind = const Value.absent(),
+    this.visibility = const Value.absent(),
+    this.payload = const Value.absent(),
+    this.sortOrder = const Value.absent(),
+    this.isPinned = const Value.absent(),
+    this.isClosed = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) : notebookId = Value(notebookId),
+       name = Value(name),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<NotebookRow> custom({
+    Expression<int>? id,
+    Expression<String>? notebookId,
+    Expression<String>? name,
+    Expression<String>? kind,
+    Expression<String>? visibility,
+    Expression<String>? payload,
+    Expression<int>? sortOrder,
+    Expression<bool>? isPinned,
+    Expression<bool>? isClosed,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (notebookId != null) 'notebook_id': notebookId,
+      if (name != null) 'name': name,
+      if (kind != null) 'kind': kind,
+      if (visibility != null) 'visibility': visibility,
+      if (payload != null) 'payload': payload,
+      if (sortOrder != null) 'sort_order': sortOrder,
+      if (isPinned != null) 'is_pinned': isPinned,
+      if (isClosed != null) 'is_closed': isClosed,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  NotebooksCompanion copyWith({
+    Value<int>? id,
+    Value<String>? notebookId,
+    Value<String>? name,
+    Value<String>? kind,
+    Value<String>? visibility,
+    Value<String>? payload,
+    Value<int>? sortOrder,
+    Value<bool>? isPinned,
+    Value<bool>? isClosed,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+  }) {
+    return NotebooksCompanion(
+      id: id ?? this.id,
+      notebookId: notebookId ?? this.notebookId,
+      name: name ?? this.name,
+      kind: kind ?? this.kind,
+      visibility: visibility ?? this.visibility,
+      payload: payload ?? this.payload,
+      sortOrder: sortOrder ?? this.sortOrder,
+      isPinned: isPinned ?? this.isPinned,
+      isClosed: isClosed ?? this.isClosed,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (notebookId.present) {
+      map['notebook_id'] = Variable<String>(notebookId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (visibility.present) {
+      map['visibility'] = Variable<String>(visibility.value);
+    }
+    if (payload.present) {
+      map['payload'] = Variable<String>(payload.value);
+    }
+    if (sortOrder.present) {
+      map['sort_order'] = Variable<int>(sortOrder.value);
+    }
+    if (isPinned.present) {
+      map['is_pinned'] = Variable<bool>(isPinned.value);
+    }
+    if (isClosed.present) {
+      map['is_closed'] = Variable<bool>(isClosed.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NotebooksCompanion(')
+          ..write('id: $id, ')
+          ..write('notebookId: $notebookId, ')
+          ..write('name: $name, ')
+          ..write('kind: $kind, ')
+          ..write('visibility: $visibility, ')
+          ..write('payload: $payload, ')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('isPinned: $isPinned, ')
+          ..write('isClosed: $isClosed, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DiaryNotebooksTable extends DiaryNotebooks
+    with TableInfo<$DiaryNotebooksTable, DiaryNotebookRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DiaryNotebooksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _diaryIdMeta = const VerificationMeta(
+    'diaryId',
+  );
+  @override
+  late final GeneratedColumn<int> diaryId = GeneratedColumn<int>(
+    'diary_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notebookIdMeta = const VerificationMeta(
+    'notebookId',
+  );
+  @override
+  late final GeneratedColumn<int> notebookId = GeneratedColumn<int>(
+    'notebook_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _chapterIdMeta = const VerificationMeta(
+    'chapterId',
+  );
+  @override
+  late final GeneratedColumn<String> chapterId = GeneratedColumn<String>(
+    'chapter_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _positionMeta = const VerificationMeta(
+    'position',
+  );
+  @override
+  late final GeneratedColumn<int> position = GeneratedColumn<int>(
+    'position',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _addedAtMeta = const VerificationMeta(
+    'addedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> addedAt = GeneratedColumn<DateTime>(
+    'added_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    diaryId,
+    notebookId,
+    chapterId,
+    position,
+    addedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'diary_notebooks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DiaryNotebookRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('diary_id')) {
+      context.handle(
+        _diaryIdMeta,
+        diaryId.isAcceptableOrUnknown(data['diary_id']!, _diaryIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_diaryIdMeta);
+    }
+    if (data.containsKey('notebook_id')) {
+      context.handle(
+        _notebookIdMeta,
+        notebookId.isAcceptableOrUnknown(data['notebook_id']!, _notebookIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_notebookIdMeta);
+    }
+    if (data.containsKey('chapter_id')) {
+      context.handle(
+        _chapterIdMeta,
+        chapterId.isAcceptableOrUnknown(data['chapter_id']!, _chapterIdMeta),
+      );
+    }
+    if (data.containsKey('position')) {
+      context.handle(
+        _positionMeta,
+        position.isAcceptableOrUnknown(data['position']!, _positionMeta),
+      );
+    }
+    if (data.containsKey('added_at')) {
+      context.handle(
+        _addedAtMeta,
+        addedAt.isAcceptableOrUnknown(data['added_at']!, _addedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_addedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {diaryId, notebookId};
+  @override
+  DiaryNotebookRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DiaryNotebookRow(
+      diaryId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}diary_id'],
+      )!,
+      notebookId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notebook_id'],
+      )!,
+      chapterId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chapter_id'],
+      ),
+      position: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}position'],
+      )!,
+      addedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}added_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DiaryNotebooksTable createAlias(String alias) {
+    return $DiaryNotebooksTable(attachedDatabase, alias);
+  }
+}
+
+class DiaryNotebookRow extends DataClass
+    implements Insertable<DiaryNotebookRow> {
+  final int diaryId;
+  final int notebookId;
+  final String? chapterId;
+  final int position;
+  final DateTime addedAt;
+  const DiaryNotebookRow({
+    required this.diaryId,
+    required this.notebookId,
+    this.chapterId,
+    required this.position,
+    required this.addedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['diary_id'] = Variable<int>(diaryId);
+    map['notebook_id'] = Variable<int>(notebookId);
+    if (!nullToAbsent || chapterId != null) {
+      map['chapter_id'] = Variable<String>(chapterId);
+    }
+    map['position'] = Variable<int>(position);
+    map['added_at'] = Variable<DateTime>(addedAt);
+    return map;
+  }
+
+  DiaryNotebooksCompanion toCompanion(bool nullToAbsent) {
+    return DiaryNotebooksCompanion(
+      diaryId: Value(diaryId),
+      notebookId: Value(notebookId),
+      chapterId: chapterId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(chapterId),
+      position: Value(position),
+      addedAt: Value(addedAt),
+    );
+  }
+
+  factory DiaryNotebookRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DiaryNotebookRow(
+      diaryId: serializer.fromJson<int>(json['diaryId']),
+      notebookId: serializer.fromJson<int>(json['notebookId']),
+      chapterId: serializer.fromJson<String?>(json['chapterId']),
+      position: serializer.fromJson<int>(json['position']),
+      addedAt: serializer.fromJson<DateTime>(json['addedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'diaryId': serializer.toJson<int>(diaryId),
+      'notebookId': serializer.toJson<int>(notebookId),
+      'chapterId': serializer.toJson<String?>(chapterId),
+      'position': serializer.toJson<int>(position),
+      'addedAt': serializer.toJson<DateTime>(addedAt),
+    };
+  }
+
+  DiaryNotebookRow copyWith({
+    int? diaryId,
+    int? notebookId,
+    Value<String?> chapterId = const Value.absent(),
+    int? position,
+    DateTime? addedAt,
+  }) => DiaryNotebookRow(
+    diaryId: diaryId ?? this.diaryId,
+    notebookId: notebookId ?? this.notebookId,
+    chapterId: chapterId.present ? chapterId.value : this.chapterId,
+    position: position ?? this.position,
+    addedAt: addedAt ?? this.addedAt,
+  );
+  DiaryNotebookRow copyWithCompanion(DiaryNotebooksCompanion data) {
+    return DiaryNotebookRow(
+      diaryId: data.diaryId.present ? data.diaryId.value : this.diaryId,
+      notebookId: data.notebookId.present
+          ? data.notebookId.value
+          : this.notebookId,
+      chapterId: data.chapterId.present ? data.chapterId.value : this.chapterId,
+      position: data.position.present ? data.position.value : this.position,
+      addedAt: data.addedAt.present ? data.addedAt.value : this.addedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiaryNotebookRow(')
+          ..write('diaryId: $diaryId, ')
+          ..write('notebookId: $notebookId, ')
+          ..write('chapterId: $chapterId, ')
+          ..write('position: $position, ')
+          ..write('addedAt: $addedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(diaryId, notebookId, chapterId, position, addedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DiaryNotebookRow &&
+          other.diaryId == this.diaryId &&
+          other.notebookId == this.notebookId &&
+          other.chapterId == this.chapterId &&
+          other.position == this.position &&
+          other.addedAt == this.addedAt);
+}
+
+class DiaryNotebooksCompanion extends UpdateCompanion<DiaryNotebookRow> {
+  final Value<int> diaryId;
+  final Value<int> notebookId;
+  final Value<String?> chapterId;
+  final Value<int> position;
+  final Value<DateTime> addedAt;
+  final Value<int> rowid;
+  const DiaryNotebooksCompanion({
+    this.diaryId = const Value.absent(),
+    this.notebookId = const Value.absent(),
+    this.chapterId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.addedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DiaryNotebooksCompanion.insert({
+    required int diaryId,
+    required int notebookId,
+    this.chapterId = const Value.absent(),
+    this.position = const Value.absent(),
+    required DateTime addedAt,
+    this.rowid = const Value.absent(),
+  }) : diaryId = Value(diaryId),
+       notebookId = Value(notebookId),
+       addedAt = Value(addedAt);
+  static Insertable<DiaryNotebookRow> custom({
+    Expression<int>? diaryId,
+    Expression<int>? notebookId,
+    Expression<String>? chapterId,
+    Expression<int>? position,
+    Expression<DateTime>? addedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (diaryId != null) 'diary_id': diaryId,
+      if (notebookId != null) 'notebook_id': notebookId,
+      if (chapterId != null) 'chapter_id': chapterId,
+      if (position != null) 'position': position,
+      if (addedAt != null) 'added_at': addedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DiaryNotebooksCompanion copyWith({
+    Value<int>? diaryId,
+    Value<int>? notebookId,
+    Value<String?>? chapterId,
+    Value<int>? position,
+    Value<DateTime>? addedAt,
+    Value<int>? rowid,
+  }) {
+    return DiaryNotebooksCompanion(
+      diaryId: diaryId ?? this.diaryId,
+      notebookId: notebookId ?? this.notebookId,
+      chapterId: chapterId ?? this.chapterId,
+      position: position ?? this.position,
+      addedAt: addedAt ?? this.addedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (diaryId.present) {
+      map['diary_id'] = Variable<int>(diaryId.value);
+    }
+    if (notebookId.present) {
+      map['notebook_id'] = Variable<int>(notebookId.value);
+    }
+    if (chapterId.present) {
+      map['chapter_id'] = Variable<String>(chapterId.value);
+    }
+    if (position.present) {
+      map['position'] = Variable<int>(position.value);
+    }
+    if (addedAt.present) {
+      map['added_at'] = Variable<DateTime>(addedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DiaryNotebooksCompanion(')
+          ..write('diaryId: $diaryId, ')
+          ..write('notebookId: $notebookId, ')
+          ..write('chapterId: $chapterId, ')
+          ..write('position: $position, ')
+          ..write('addedAt: $addedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3101,6 +4116,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $AnniversariesTable anniversaries = $AnniversariesTable(this);
   late final $DiaryDraftsTable diaryDrafts = $DiaryDraftsTable(this);
   late final $DiaryTemplatesTable diaryTemplates = $DiaryTemplatesTable(this);
+  late final $NotebooksTable notebooks = $NotebooksTable(this);
+  late final $DiaryNotebooksTable diaryNotebooks = $DiaryNotebooksTable(this);
   late final Index idxDiariesUpdatedAt = Index(
     'idx_diaries_updated_at',
     'CREATE INDEX idx_diaries_updated_at ON diaries (updated_at)',
@@ -3125,6 +4142,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_diary_tags_tag_id',
     'CREATE INDEX idx_diary_tags_tag_id ON diary_tags (tag_id)',
   );
+  late final Index idxDiaryNotebooksNotebook = Index(
+    'idx_diary_notebooks_notebook',
+    'CREATE INDEX idx_diary_notebooks_notebook ON diary_notebooks (notebook_id, position)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3136,12 +4157,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     anniversaries,
     diaryDrafts,
     diaryTemplates,
+    notebooks,
+    diaryNotebooks,
     idxDiariesUpdatedAt,
     idxDiariesCreatedAt,
     idxDiariesCapsuleUnlockAt,
     idxDiariesActiveUpdated,
     idxDiariesActiveCreated,
     idxDiaryTagsTagId,
+    idxDiaryNotebooksNotebook,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5098,6 +6122,526 @@ typedef $$DiaryTemplatesTableProcessedTableManager =
       DiaryTemplateRow,
       PrefetchHooks Function()
     >;
+typedef $$NotebooksTableCreateCompanionBuilder =
+    NotebooksCompanion Function({
+      Value<int> id,
+      required String notebookId,
+      required String name,
+      Value<String> kind,
+      Value<String> visibility,
+      Value<String> payload,
+      Value<int> sortOrder,
+      Value<bool> isPinned,
+      Value<bool> isClosed,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+    });
+typedef $$NotebooksTableUpdateCompanionBuilder =
+    NotebooksCompanion Function({
+      Value<int> id,
+      Value<String> notebookId,
+      Value<String> name,
+      Value<String> kind,
+      Value<String> visibility,
+      Value<String> payload,
+      Value<int> sortOrder,
+      Value<bool> isPinned,
+      Value<bool> isClosed,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+    });
+
+class $$NotebooksTableFilterComposer
+    extends Composer<_$AppDatabase, $NotebooksTable> {
+  $$NotebooksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notebookId => $composableBuilder(
+    column: $table.notebookId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get visibility => $composableBuilder(
+    column: $table.visibility,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPinned => $composableBuilder(
+    column: $table.isPinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isClosed => $composableBuilder(
+    column: $table.isClosed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$NotebooksTableOrderingComposer
+    extends Composer<_$AppDatabase, $NotebooksTable> {
+  $$NotebooksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notebookId => $composableBuilder(
+    column: $table.notebookId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get visibility => $composableBuilder(
+    column: $table.visibility,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sortOrder => $composableBuilder(
+    column: $table.sortOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPinned => $composableBuilder(
+    column: $table.isPinned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isClosed => $composableBuilder(
+    column: $table.isClosed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NotebooksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NotebooksTable> {
+  $$NotebooksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get notebookId => $composableBuilder(
+    column: $table.notebookId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get visibility => $composableBuilder(
+    column: $table.visibility,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => column);
+
+  GeneratedColumn<int> get sortOrder =>
+      $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPinned =>
+      $composableBuilder(column: $table.isPinned, builder: (column) => column);
+
+  GeneratedColumn<bool> get isClosed =>
+      $composableBuilder(column: $table.isClosed, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$NotebooksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NotebooksTable,
+          NotebookRow,
+          $$NotebooksTableFilterComposer,
+          $$NotebooksTableOrderingComposer,
+          $$NotebooksTableAnnotationComposer,
+          $$NotebooksTableCreateCompanionBuilder,
+          $$NotebooksTableUpdateCompanionBuilder,
+          (
+            NotebookRow,
+            BaseReferences<_$AppDatabase, $NotebooksTable, NotebookRow>,
+          ),
+          NotebookRow,
+          PrefetchHooks Function()
+        > {
+  $$NotebooksTableTableManager(_$AppDatabase db, $NotebooksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NotebooksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NotebooksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NotebooksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> notebookId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String> visibility = const Value.absent(),
+                Value<String> payload = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<bool> isPinned = const Value.absent(),
+                Value<bool> isClosed = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+              }) => NotebooksCompanion(
+                id: id,
+                notebookId: notebookId,
+                name: name,
+                kind: kind,
+                visibility: visibility,
+                payload: payload,
+                sortOrder: sortOrder,
+                isPinned: isPinned,
+                isClosed: isClosed,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String notebookId,
+                required String name,
+                Value<String> kind = const Value.absent(),
+                Value<String> visibility = const Value.absent(),
+                Value<String> payload = const Value.absent(),
+                Value<int> sortOrder = const Value.absent(),
+                Value<bool> isPinned = const Value.absent(),
+                Value<bool> isClosed = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+              }) => NotebooksCompanion.insert(
+                id: id,
+                notebookId: notebookId,
+                name: name,
+                kind: kind,
+                visibility: visibility,
+                payload: payload,
+                sortOrder: sortOrder,
+                isPinned: isPinned,
+                isClosed: isClosed,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$NotebooksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NotebooksTable,
+      NotebookRow,
+      $$NotebooksTableFilterComposer,
+      $$NotebooksTableOrderingComposer,
+      $$NotebooksTableAnnotationComposer,
+      $$NotebooksTableCreateCompanionBuilder,
+      $$NotebooksTableUpdateCompanionBuilder,
+      (
+        NotebookRow,
+        BaseReferences<_$AppDatabase, $NotebooksTable, NotebookRow>,
+      ),
+      NotebookRow,
+      PrefetchHooks Function()
+    >;
+typedef $$DiaryNotebooksTableCreateCompanionBuilder =
+    DiaryNotebooksCompanion Function({
+      required int diaryId,
+      required int notebookId,
+      Value<String?> chapterId,
+      Value<int> position,
+      required DateTime addedAt,
+      Value<int> rowid,
+    });
+typedef $$DiaryNotebooksTableUpdateCompanionBuilder =
+    DiaryNotebooksCompanion Function({
+      Value<int> diaryId,
+      Value<int> notebookId,
+      Value<String?> chapterId,
+      Value<int> position,
+      Value<DateTime> addedAt,
+      Value<int> rowid,
+    });
+
+class $$DiaryNotebooksTableFilterComposer
+    extends Composer<_$AppDatabase, $DiaryNotebooksTable> {
+  $$DiaryNotebooksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notebookId => $composableBuilder(
+    column: $table.notebookId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get chapterId => $composableBuilder(
+    column: $table.chapterId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DiaryNotebooksTableOrderingComposer
+    extends Composer<_$AppDatabase, $DiaryNotebooksTable> {
+  $$DiaryNotebooksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get diaryId => $composableBuilder(
+    column: $table.diaryId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notebookId => $composableBuilder(
+    column: $table.notebookId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get chapterId => $composableBuilder(
+    column: $table.chapterId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get position => $composableBuilder(
+    column: $table.position,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get addedAt => $composableBuilder(
+    column: $table.addedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DiaryNotebooksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DiaryNotebooksTable> {
+  $$DiaryNotebooksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get diaryId =>
+      $composableBuilder(column: $table.diaryId, builder: (column) => column);
+
+  GeneratedColumn<int> get notebookId => $composableBuilder(
+    column: $table.notebookId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get chapterId =>
+      $composableBuilder(column: $table.chapterId, builder: (column) => column);
+
+  GeneratedColumn<int> get position =>
+      $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get addedAt =>
+      $composableBuilder(column: $table.addedAt, builder: (column) => column);
+}
+
+class $$DiaryNotebooksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DiaryNotebooksTable,
+          DiaryNotebookRow,
+          $$DiaryNotebooksTableFilterComposer,
+          $$DiaryNotebooksTableOrderingComposer,
+          $$DiaryNotebooksTableAnnotationComposer,
+          $$DiaryNotebooksTableCreateCompanionBuilder,
+          $$DiaryNotebooksTableUpdateCompanionBuilder,
+          (
+            DiaryNotebookRow,
+            BaseReferences<
+              _$AppDatabase,
+              $DiaryNotebooksTable,
+              DiaryNotebookRow
+            >,
+          ),
+          DiaryNotebookRow,
+          PrefetchHooks Function()
+        > {
+  $$DiaryNotebooksTableTableManager(
+    _$AppDatabase db,
+    $DiaryNotebooksTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DiaryNotebooksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DiaryNotebooksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DiaryNotebooksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> diaryId = const Value.absent(),
+                Value<int> notebookId = const Value.absent(),
+                Value<String?> chapterId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                Value<DateTime> addedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DiaryNotebooksCompanion(
+                diaryId: diaryId,
+                notebookId: notebookId,
+                chapterId: chapterId,
+                position: position,
+                addedAt: addedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required int diaryId,
+                required int notebookId,
+                Value<String?> chapterId = const Value.absent(),
+                Value<int> position = const Value.absent(),
+                required DateTime addedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => DiaryNotebooksCompanion.insert(
+                diaryId: diaryId,
+                notebookId: notebookId,
+                chapterId: chapterId,
+                position: position,
+                addedAt: addedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DiaryNotebooksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DiaryNotebooksTable,
+      DiaryNotebookRow,
+      $$DiaryNotebooksTableFilterComposer,
+      $$DiaryNotebooksTableOrderingComposer,
+      $$DiaryNotebooksTableAnnotationComposer,
+      $$DiaryNotebooksTableCreateCompanionBuilder,
+      $$DiaryNotebooksTableUpdateCompanionBuilder,
+      (
+        DiaryNotebookRow,
+        BaseReferences<_$AppDatabase, $DiaryNotebooksTable, DiaryNotebookRow>,
+      ),
+      DiaryNotebookRow,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5113,4 +6657,8 @@ class $AppDatabaseManager {
       $$DiaryDraftsTableTableManager(_db, _db.diaryDrafts);
   $$DiaryTemplatesTableTableManager get diaryTemplates =>
       $$DiaryTemplatesTableTableManager(_db, _db.diaryTemplates);
+  $$NotebooksTableTableManager get notebooks =>
+      $$NotebooksTableTableManager(_db, _db.notebooks);
+  $$DiaryNotebooksTableTableManager get diaryNotebooks =>
+      $$DiaryNotebooksTableTableManager(_db, _db.diaryNotebooks);
 }

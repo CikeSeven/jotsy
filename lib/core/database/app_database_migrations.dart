@@ -168,6 +168,18 @@ ADD COLUMN capsule_locked_at INTEGER NULL
     await _createTableIfMissing(migrator, diaryTemplates);
   }
 
+  /// v13 新增日记本表与日记-日记本关联表。
+  ///
+  /// 两张表都按“已存在就保留”处理（降级后再升级时里面是用户的日记本）；
+  /// 关联表的索引与 [_migrateAddDiaryListIndexes] 同理先删再建：createTable
+  /// 不带索引，降级留下的同名索引也可能来自定义不同的开发构建。
+  Future<void> _migrateAddNotebooks(Migrator migrator) async {
+    await _createTableIfMissing(migrator, notebooks);
+    await _createTableIfMissing(migrator, diaryNotebooks);
+    await migrator.drop(idxDiaryNotebooksNotebook);
+    await migrator.createIndex(idxDiaryNotebooksNotebook);
+  }
+
   Future<void> _createTableIfMissing(
     Migrator migrator,
     TableInfo<Table, Object?> table,

@@ -4,6 +4,13 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      # 装机测试用：代码已在 PR / main 上过了门禁，这里只要尽快拿到与正式版同签名、
+      # 可覆盖安装的包。只对手动触发生效，Release 事件始终走完整流程。
+      test-build:
+        description: 'Test build: skip the CI gate, build arm64 only, no update manifest'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -42,9 +49,10 @@ jobs:
           echo "Release $TAG builds version $version"
 
   # 与 PR / main 相同的门禁（格式、analyze、生成代码、测试、工作流 lint）。签名 APK
-  # 由下面的 job 自己构建，所以跳过 CI 里那次一次性签名的构建。
+  # 由下面的 job 自己构建，所以跳过 CI 里那次一次性签名的构建。测试包不跑门禁。
   ci:
     name: CI
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.test-build) }}
     uses: ./.github/workflows/ci.yml
     with:
       skip-android-build: true
@@ -55,8 +63,11 @@ jobs:
     name: Build signed split release APKs
     needs: [check-version, ci]
     # check-version 只在 release 事件运行；手动触发时它被跳过，不应连带跳过构建。
+    # 门禁只有测试包可以跳过，其余情况必须通过。
     if: >-
-      ${{ !cancelled() && needs.ci.result == 'success' &&
+      ${{ !cancelled() &&
+      (needs.ci.result == 'success' ||
+      (github.event_name == 'workflow_dispatch' && inputs.test-build && needs.ci.result == 'skipped')) &&
       (needs.check-version.result == 'success' || needs.check-version.result == 'skipped') }}
     # Pin the image instead of `ubuntu-latest`: the label migrates to Ubuntu 26 on
     # 2026-10-19 while Flutter is pinned in .github/actions/setup-flutter, so an unplanned
@@ -251,28 +262,48 @@ jobs:
           print('Cloud backup keys configured:', ', '.join(sorted(keys)) or 'none')
           PY
 
+      # 测试包只编译 arm64（真机装机测试够用），省掉另外两种 ABI 的 AOT 编译；
+      # 分包方式不变，arm64 包的 versionCode 与正式版同一算法，可直接覆盖安装。
       - name: Build split release APKs
-        run: flutter build apk --release --split-per-abi --dart-define-from-file=cloud_backup_keys.json
+        env:
+          TARGET_PLATFORMS: >-
+            ${{ github.event_name == 'workflow_dispatch' && inputs.test-build &&
+            'android-arm64' || 'android-arm,android-arm64,android-x64' }}
+        run: flutter build apk --release --split-per-abi --target-platform "$TARGET_PLATFORMS" --dart-define-from-file=cloud_backup_keys.json
 
       - name: Prepare release artifacts
         id: artifact
+        env:
+          TEST_BUILD: ${{ github.event_name == 'workflow_dispatch' && inputs.test-build }}
         run: |
           safe_ref="${GITHUB_REF_NAME//\//-}"
           mkdir -p release-artifacts
-          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "release-artifacts/jotsy-${safe_ref}-armeabi-v7a.apk"
-          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk "release-artifacts/jotsy-${safe_ref}-arm64-v8a.apk"
-          cp build/app/outputs/flutter-apk/app-x86_64-release.apk "release-artifacts/jotsy-${safe_ref}-x86_64.apk"
+          for abi in armeabi-v7a arm64-v8a x86_64; do
+            apk="build/app/outputs/flutter-apk/app-${abi}-release.apk"
+            if [[ -f "$apk" ]]; then
+              cp "$apk" "release-artifacts/jotsy-${safe_ref}-${abi}.apk"
+            elif [[ "$TEST_BUILD" != 'true' || "$abi" == 'arm64-v8a' ]]; then
+              # 正式构建三种 ABI 缺一不可；测试包至少要有 arm64。
+              echo "::error::Missing $apk"
+              exit 1
+            fi
+          done
           # 校验和随包一起发布，下载后可用 `sha256sum -c SHA256SUMS.txt` 核对完整性。
           (cd release-artifacts && sha256sum -- *.apk > SHA256SUMS.txt)
           cat release-artifacts/SHA256SUMS.txt
-          echo "artifact_name=release-apks-${safe_ref}" >> "$GITHUB_OUTPUT"
+          if [[ "$TEST_BUILD" == 'true' ]]; then
+            echo "artifact_name=test-apk-${safe_ref}" >> "$GITHUB_OUTPUT"
+          else
+            echo "artifact_name=release-apks-${safe_ref}" >> "$GITHUB_OUTPUT"
+          fi
 
       # 应用内更新清单：版本（含构建号）、各 ABI 安装包的大小与 SHA-256、中英文
       # 更新说明。应用经镜像读取 releases/latest/download/jotsy-update.json，一个
       # 小请求拿全信息（国内网络下 api.github.com 常不可用或被限流），见
       # lib/core/services/app_update_checker.dart。Release 正文经环境变量传入，
-      # 不直接展开进脚本。
+      # 不直接展开进脚本。测试包不会发布，不需要清单。
       - name: Write in-app update manifest
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.test-build) }}
         env:
           RELEASE_BODY: ${{ github.event.release.body }}
           PUBLISHED_AT: ${{ github.event.release.published_at }}

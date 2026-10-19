@@ -140,6 +140,7 @@
 - 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。
 - 禁止：CI 门禁读取签名材料或任何 secrets（fork 的 PR 也要能跑）；CI 用一次性密钥构建的 APK 不上传（签名与正式版不同，装上后无法覆盖升级）。secrets 只在 `release-apk.yml` 的签名构建 job 中使用。
 - 必须：发布经 GitHub Release 触发 `release-apk.yml`：tag 必须与 `pubspec.yaml` 的版本一致（`v0.6.0` 或 `v0.6.0+17`），先过同一套 CI 门禁再构建签名分包，随 APK 上传 `SHA256SUMS.txt` 与应用内更新清单 `jotsy-update.json`（`tool/write_update_manifest.dart` 生成，最后上传）；每个版本须在 `docs/releases/` 写好中英文说明（`<tag>.md` / `<tag>.en.md`），应用内更新页按界面语言显示。
+- 例外：装机测试可手动触发 `release-apk.yml` 并勾选 `test-build`（`gh workflow run release-apk.yml --ref <分支> -f test-build=true`）：跳过 CI 门禁、只编译 arm64、不生成更新清单，签名与正式版相同、可覆盖安装，只上传为 workflow artifact（`test-apk-<分支>`）。测试包禁止用于发布；只对已过门禁或仅供本机验证的代码使用，Release 事件始终走完整流程。
 - 必须：用户要求安装 Android 包时，先用 `adb devices -l` 确认设备；存在多台设备时必须指定目标序列号。构建后使用 `adb -s <serial> install -r <apk>` 覆盖安装，以保留现有应用数据。
 - 必须：profile 包覆盖安装到已有 release 包时，必须使用相同 release signing config；签名材料缺失或不匹配时停止安装，不得改用 debug 签名。
 - 禁止：为安装或升级应用执行 `adb uninstall`、`pm clear`、清除应用数据或恢复出厂设置。

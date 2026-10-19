@@ -53,7 +53,7 @@ const Set<NotebookAction> notebookRevealingActions = <NotebookAction>{
 ///
 /// 读写经 [NotebooksController]；确认框、提示条与撤销在这里组装。删除带 4 秒
 /// 撤销（`showStyleEditorUndoSnackBar`，经 Home 的跟踪接口、`persist: false`）；
-/// 合并不可撤销，先确认。数据库写入失败时只提示，不改动界面状态。
+/// 合并与智能转普通不可撤销，先确认。数据库写入失败时只提示，不改动界面状态。
 Future<void> runNotebookAction(
   BuildContext context,
   WidgetRef ref, {
@@ -98,8 +98,7 @@ Future<void> runNotebookAction(
     case NotebookAction.merge:
       await _merge(context, ref, notebook);
     case NotebookAction.convert:
-      // 规则编辑器接入前不可用（面板里该项为禁用态）。
-      break;
+      await _convert(context, ref, notebook);
     case NotebookAction.delete:
       await _delete(context, ref, notebook, hooks);
   }
@@ -183,5 +182,47 @@ Future<void> _merge(
   }
   if (context.mounted) {
     showStyleEditorMessage(context, l10n.notebookMerged(target.name));
+  }
+}
+
+/// 智能日记本转为普通日记本：先按规则现算出符合的日记（未归档、非私密，
+/// 发表时间旧→新），确认框里写明篇数，确认后一个事务内改类型、清规则并收进
+/// 这些日记。算出篇数到确认之间新写的日记不会收进来（转换就是“定格”现在）。
+Future<void> _convert(
+  BuildContext context,
+  WidgetRef ref,
+  NotebookView notebook,
+) async {
+  final l10n = context.l10n;
+  final controller = ref.read(notebooksControllerProvider);
+  final List<String> diaryIds;
+  try {
+    diaryIds = await controller.smartMatches(notebook);
+  } catch (error) {
+    debugPrint('Reading smart notebook matches failed: $error');
+    if (context.mounted) {
+      showStyleEditorMessage(context, l10n.notebookActionFailed);
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  final confirmed = await showNotebookConvertConfirmDialog(
+    context,
+    notebook: notebook,
+    count: diaryIds.length,
+  );
+  if (!confirmed || !context.mounted) return;
+  final int added;
+  try {
+    added = await controller.convertToManual(notebook.id, diaryIds);
+  } catch (error) {
+    debugPrint('Converting notebook failed: $error');
+    if (context.mounted) {
+      showStyleEditorMessage(context, l10n.notebookActionFailed);
+    }
+    return;
+  }
+  if (context.mounted) {
+    showStyleEditorMessage(context, l10n.notebookConverted(added));
   }
 }

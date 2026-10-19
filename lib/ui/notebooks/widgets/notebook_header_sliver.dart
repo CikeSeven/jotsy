@@ -6,6 +6,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
+import 'notebook_chapter_chips.dart';
 import 'notebook_header_actions.dart';
 import 'notebook_header_card.dart';
 
@@ -21,6 +22,10 @@ class NotebookHeaderSliver extends StatelessWidget {
     required this.onAction,
     this.horizontalMargin = AppSpacing.l,
     this.onAddDiaries,
+    this.onOpenContents,
+    this.selectedChapterId,
+    this.unassignedChapterOnly = false,
+    this.onSelectChapter,
   });
 
   /// 当前日记本；null（全部日记）时收起为 0 高度。
@@ -32,6 +37,16 @@ class NotebookHeaderSliver extends StatelessWidget {
 
   /// “添加日记”（从已有日记挑选）；只对普通日记本显示，null 时不显示。
   final VoidCallback? onAddDiaries;
+
+  /// “目录”；只对普通日记本显示，null 时不显示。
+  final VoidCallback? onOpenContents;
+
+  /// 首页当前的章节筛选（章节胶囊的选中态）。
+  final String? selectedChapterId;
+  final bool unassignedChapterOnly;
+
+  /// 点章节胶囊；null 时不显示胶囊行。胶囊行只在有章节的普通日记本里出现。
+  final void Function({String? chapterId, bool unassigned})? onSelectChapter;
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +79,25 @@ class NotebookHeaderSliver extends StatelessWidget {
                   onAction: onAction,
                   horizontalMargin: horizontalMargin,
                   extras: <Widget>[
-                    if (current.isManual && onAddDiaries != null)
-                      NotebookHeaderActions(onAddDiaries: onAddDiaries),
+                    if (current.isManual &&
+                        (onAddDiaries != null || onOpenContents != null))
+                      NotebookHeaderActions(
+                        onAddDiaries: onAddDiaries,
+                        onOpenContents: onOpenContents,
+                      ),
+                  ],
+                  // 章节胶囊放在最下方，紧挨着它筛选的列表；横向滚动区铺到
+                  // 卡片边缘。
+                  bleedExtras: <Widget>[
+                    if (current.isManual &&
+                        current.payload.chapters.isNotEmpty &&
+                        onSelectChapter != null)
+                      NotebookChapterChips(
+                        notebook: current,
+                        selectedChapterId: selectedChapterId,
+                        unassignedOnly: unassignedChapterOnly,
+                        onSelect: onSelectChapter!,
+                      ),
                   ],
                 ),
         ),

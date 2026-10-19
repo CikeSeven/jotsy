@@ -8472,10 +8472,6 @@
   "@notebookTypeSmartHint": {
     "description": "智能日记本类型的一行说明。"
   },
-  "notebookRulesPlaceholder": "规则：保存后在这里设置条件",
-  "@notebookRulesPlaceholder": {
-    "description": "新建智能日记本时规则区域的占位说明。"
-  },
   "notebookPrivacyLabel": "隐私",
   "@notebookPrivacyLabel": {
     "description": "日记本隐私分组的标题。"
@@ -8600,9 +8596,9 @@
   "@notebookActionConvert": {
     "description": "智能日记本的操作：转为普通日记本。"
   },
-  "notebookActionConvertHint": "规则设置完成后可用",
+  "notebookActionConvertHint": "收进现在符合条件的日记，之后不再自动更新",
   "@notebookActionConvertHint": {
-    "description": "“转为普通日记本”暂不可用的说明。"
+    "description": "“转为普通日记本”的说明。"
   },
   "notebookMergeSheetTitle": "合并到哪一本",
   "@notebookMergeSheetTitle": {
@@ -8875,6 +8871,135 @@
   "@notebookAddDiaries": {
     "description": "日记本头部卡片的按钮：从已有日记挑选加入。"
   },
+  "notebookContentsUnassignedDropHint": "拖到这里移出章节",
+  "@notebookContentsUnassignedDropHint": {
+    "description": "Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters."
+  },
+  "notebookChapterAll": "全部",
+  "@notebookChapterAll": {
+    "description": "Chapter chip in the notebook header: show every chapter."
+  },
+  "notebookChapterUnassigned": "未分章",
+  "@notebookChapterUnassigned": {
+    "description": "Chapter chip / contents header for entries not in any chapter."
+  },
+  "notebookChapterChip": "{title} · {count}",
+  "@notebookChapterChip": {
+    "description": "Chapter chip label: chapter title and its number of entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContents": "目录",
+  "@notebookContents": {
+    "description": "Notebook contents page title and the header card button that opens it."
+  },
+  "notebookContentsNewChapter": "新章节",
+  "@notebookContentsNewChapter": {
+    "description": "Contents page top-bar action and dialog title: add a chapter."
+  },
+  "notebookContentsSelect": "多选",
+  "@notebookContentsSelect": {
+    "description": "Contents page top-bar action: enter multi-select mode."
+  },
+  "notebookContentsSelectDone": "退出多选",
+  "@notebookContentsSelectDone": {
+    "description": "Contents page top-bar action: leave multi-select mode."
+  },
+  "notebookContentsSelectedCount": "已选 {count} 篇",
+  "@notebookContentsSelectedCount": {
+    "description": "Contents page multi-select bar: number of selected entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContentsNoChapterHint": "添加章节，把日记分成几部分",
+  "@notebookContentsNoChapterHint": {
+    "description": "Contents page banner when the notebook has no chapters."
+  },
+  "notebookContentsEmpty": "这本还没有日记",
+  "@notebookContentsEmpty": {
+    "description": "Contents page empty state."
+  },
+  "notebookContentsArchived": "已归档",
+  "@notebookContentsArchived": {
+    "description": "Semantics label of the archived glyph on a contents row."
+  },
+  "notebookContentsSealed": "未解封的时间胶囊",
+  "@notebookContentsSealed": {
+    "description": "Semantics label of the lock glyph on a contents row."
+  },
+  "notebookContentsDragHandle": "拖动排序",
+  "@notebookContentsDragHandle": {
+    "description": "Semantics label of the drag handle on a contents row."
+  },
+  "notebookContentsChapterActions": "章节操作",
+  "@notebookContentsChapterActions": {
+    "description": "Tooltip of the chapter header menu on the contents page."
+  },
+  "notebookChapterRename": "重命名",
+  "@notebookChapterRename": {
+    "description": "Chapter menu item: rename the chapter."
+  },
+  "notebookChapterRenameTitle": "重命名章节",
+  "@notebookChapterRenameTitle": {
+    "description": "Title of the rename chapter dialog."
+  },
+  "notebookChapterMoveUp": "上移",
+  "@notebookChapterMoveUp": {
+    "description": "Chapter menu item: move the chapter one place up."
+  },
+  "notebookChapterMoveDown": "下移",
+  "@notebookChapterMoveDown": {
+    "description": "Chapter menu item: move the chapter one place down."
+  },
+  "notebookChapterTitleLabel": "章节名称",
+  "@notebookChapterTitleLabel": {
+    "description": "Label of the chapter name field."
+  },
+  "notebookChapterTitleHint": "例如：东京",
+  "@notebookChapterTitleHint": {
+    "description": "Hint of the chapter name field."
+  },
+  "notebookChapterDeleteConfirm": "删除章节「{title}」？其中的 {count} 篇回到未分章，日记不会被删除",
+  "@notebookChapterDeleteConfirm": {
+    "description": "Confirmation for deleting a chapter.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContentsMoveToChapter": "移到章节…",
+  "@notebookContentsMoveToChapter": {
+    "description": "Contents multi-select action: move the selected entries to a chapter."
+  },
+  "notebookContentsMoveSheetTitle": "移到章节",
+  "@notebookContentsMoveSheetTitle": {
+    "description": "Title of the chapter picker sheet."
+  },
+  "notebookContentsMoved": "已将 {count} 篇移到「{title}」",
+  "@notebookContentsMoved": {
+    "description": "Hint after moving entries to a chapter; title is the chapter (or No chapter).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notebookPickerTitle": "收进日记本",
   "@notebookPickerTitle": {
     "description": "收录选择器标题，也是多选栏与预览页“更多”里的入口。"
@@ -9025,5 +9150,397 @@
         "type": "String"
       }
     }
+  },
+  "notebookRulesTitle": "条件",
+  "@notebookRulesTitle": {
+    "description": "智能日记本编辑页规则区块的标题。"
+  },
+  "notebookRulesMatchAll": "全部满足",
+  "@notebookRulesMatchAll": {
+    "description": "规则组合方式：全部条件都满足。"
+  },
+  "notebookRulesMatchAny": "任一满足",
+  "@notebookRulesMatchAny": {
+    "description": "规则组合方式：满足任一条件即可。"
+  },
+  "notebookRulesMatchCount": "符合条件：{count} 篇",
+  "@notebookRulesMatchCount": {
+    "description": "编辑规则时实时显示的符合篇数；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRulesNeedOne": "至少添加一个条件才能保存",
+  "@notebookRulesNeedOne": {
+    "description": "智能日记本还没有条件时的说明（保存键不可用）。"
+  },
+  "notebookRulesLimit": "最多 {max} 个条件",
+  "@notebookRulesLimit": {
+    "description": "条件已达上限时代替“添加条件”的说明；max 为上限。",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRulesExamples": "从示例开始",
+  "@notebookRulesExamples": {
+    "description": "还没有条件时示例胶囊上方的标题。"
+  },
+  "notebookRuleExampleRecent": "最近 30 天",
+  "@notebookRuleExampleRecent": {
+    "description": "示例：最近 30 天的日记。"
+  },
+  "notebookRuleExampleThisMonth": "每年这个月",
+  "@notebookRuleExampleThisMonth": {
+    "description": "示例：每年这个月的日记。"
+  },
+  "notebookRuleExampleImages": "有图片的日记",
+  "@notebookRuleExampleImages": {
+    "description": "示例：正文里有图片的日记。"
+  },
+  "notebookRuleExamplePinned": "置顶的日记",
+  "@notebookRuleExamplePinned": {
+    "description": "示例：置顶的日记。"
+  },
+  "notebookRuleAdd": "添加条件",
+  "@notebookRuleAdd": {
+    "description": "添加条件的入口与类型面板标题。"
+  },
+  "notebookRuleRemove": "移除条件",
+  "@notebookRuleRemove": {
+    "description": "条件行尾移除按钮的提示。"
+  },
+  "notebookRuleDone": "完成",
+  "@notebookRuleDone": {
+    "description": "条件编辑面板的完成按钮。"
+  },
+  "notebookRuleTypeTags": "标签",
+  "@notebookRuleTypeTags": {
+    "description": "条件类型：标签。"
+  },
+  "notebookRuleTypeTagsHint": "带有或不带某些标签",
+  "@notebookRuleTypeTagsHint": {
+    "description": "标签条件的说明。"
+  },
+  "notebookRuleTypeMood": "心情",
+  "@notebookRuleTypeMood": {
+    "description": "条件类型：心情。"
+  },
+  "notebookRuleTypeMoodHint": "心情是其中之一",
+  "@notebookRuleTypeMoodHint": {
+    "description": "心情条件的说明。"
+  },
+  "notebookRuleTypeWeather": "天气",
+  "@notebookRuleTypeWeather": {
+    "description": "条件类型：天气。"
+  },
+  "notebookRuleTypeWeatherHint": "天气包含某段文字",
+  "@notebookRuleTypeWeatherHint": {
+    "description": "天气条件的说明。"
+  },
+  "notebookRuleTypeLocation": "地点",
+  "@notebookRuleTypeLocation": {
+    "description": "条件类型：地点。"
+  },
+  "notebookRuleTypeLocationHint": "地点包含某段文字",
+  "@notebookRuleTypeLocationHint": {
+    "description": "地点条件的说明。"
+  },
+  "notebookRuleTypeKeyword": "关键词",
+  "@notebookRuleTypeKeyword": {
+    "description": "条件类型：关键词。"
+  },
+  "notebookRuleTypeKeywordHint": "标题或正文包含某段文字",
+  "@notebookRuleTypeKeywordHint": {
+    "description": "关键词条件的说明。"
+  },
+  "notebookRuleTypeDate": "日期",
+  "@notebookRuleTypeDate": {
+    "description": "条件类型：日期。"
+  },
+  "notebookRuleTypeDateHint": "一段日期、最近几天或每年的某个时候",
+  "@notebookRuleTypeDateHint": {
+    "description": "日期条件的说明。"
+  },
+  "notebookRuleTypeMedia": "图片与附件",
+  "@notebookRuleTypeMedia": {
+    "description": "条件类型：正文里的图片、录音、视频或附件。"
+  },
+  "notebookRuleTypeMediaHint": "正文里有图片、录音、视频或附件",
+  "@notebookRuleTypeMediaHint": {
+    "description": "媒体条件的说明。"
+  },
+  "notebookRuleTypeFlag": "封面与置顶",
+  "@notebookRuleTypeFlag": {
+    "description": "条件类型：有封面或已置顶。"
+  },
+  "notebookRuleTypeFlagHint": "有封面或已置顶",
+  "@notebookRuleTypeFlagHint": {
+    "description": "封面与置顶条件的说明。"
+  },
+  "notebookRuleTagAny": "含任一",
+  "@notebookRuleTagAny": {
+    "description": "标签条件：带有其中任一标签。"
+  },
+  "notebookRuleTagAll": "全部都含",
+  "@notebookRuleTagAll": {
+    "description": "标签条件：带有全部所选标签。"
+  },
+  "notebookRuleTagNone": "都不含",
+  "@notebookRuleTagNone": {
+    "description": "标签条件：不带任何所选标签。"
+  },
+  "notebookRuleNoTags": "还没有标签",
+  "@notebookRuleNoTags": {
+    "description": "标签条件面板里没有任何标签时的说明。"
+  },
+  "notebookRuleWeatherHint": "如：雨",
+  "@notebookRuleWeatherHint": {
+    "description": "天气条件输入框的占位提示。"
+  },
+  "notebookRuleLocationHint": "如：京都",
+  "@notebookRuleLocationHint": {
+    "description": "地点条件输入框的占位提示。"
+  },
+  "notebookRuleKeywordHint": "标题或正文里的文字",
+  "@notebookRuleKeywordHint": {
+    "description": "关键词条件输入框的占位提示。"
+  },
+  "notebookRuleDateBetween": "固定区间",
+  "@notebookRuleDateBetween": {
+    "description": "日期条件：固定的一段日期。"
+  },
+  "notebookRuleDateLastDays": "最近几天",
+  "@notebookRuleDateLastDays": {
+    "description": "日期条件：最近 N 天。"
+  },
+  "notebookRuleDateThisYear": "今年",
+  "@notebookRuleDateThisYear": {
+    "description": "日期条件：今年。"
+  },
+  "notebookRuleDateMonth": "每年某月",
+  "@notebookRuleDateMonth": {
+    "description": "日期条件：每年的某个月。"
+  },
+  "notebookRuleDateToday": "每年的今天",
+  "@notebookRuleDateToday": {
+    "description": "日期条件：每年与今天同月同日。"
+  },
+  "notebookRuleDateTodayHint": "与今天同月同日的日记",
+  "@notebookRuleDateTodayHint": {
+    "description": "“每年的今天”的说明。"
+  },
+  "notebookRuleDaysValue": "{days} 天",
+  "@notebookRuleDaysValue": {
+    "description": "“最近几天”的天数；days 为天数。",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRuleDaysDecrease": "减少一天",
+  "@notebookRuleDaysDecrease": {
+    "description": "“最近几天”减号按钮的提示。"
+  },
+  "notebookRuleDaysIncrease": "增加一天",
+  "@notebookRuleDaysIncrease": {
+    "description": "“最近几天”加号按钮的提示。"
+  },
+  "notebookRuleMediaImage": "有图片",
+  "@notebookRuleMediaImage": {
+    "description": "媒体条件：正文里有图片。"
+  },
+  "notebookRuleMediaAudio": "有录音",
+  "@notebookRuleMediaAudio": {
+    "description": "媒体条件：正文里有录音。"
+  },
+  "notebookRuleMediaVideo": "有视频",
+  "@notebookRuleMediaVideo": {
+    "description": "媒体条件：正文里有视频。"
+  },
+  "notebookRuleMediaAttachment": "有附件",
+  "@notebookRuleMediaAttachment": {
+    "description": "媒体条件：正文里有附件。"
+  },
+  "notebookRuleFlagCover": "有封面",
+  "@notebookRuleFlagCover": {
+    "description": "标记条件：有封面。"
+  },
+  "notebookRuleFlagPinned": "已置顶",
+  "@notebookRuleFlagPinned": {
+    "description": "标记条件：已置顶。"
+  },
+  "notebookRuleSummaryTagsAny": "标签含任一：{tags}",
+  "@notebookRuleSummaryTagsAny": {
+    "description": "标签条件的一行摘要；tags 为 # 开头的标签名列表。",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryTagsAll": "标签全部都含：{tags}",
+  "@notebookRuleSummaryTagsAll": {
+    "description": "标签条件（全部都含）的一行摘要；tags 为标签列表。",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryTagsNone": "标签都不含：{tags}",
+  "@notebookRuleSummaryTagsNone": {
+    "description": "标签条件（都不含）的一行摘要；tags 为标签列表。",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryMood": "心情：{moods}",
+  "@notebookRuleSummaryMood": {
+    "description": "心情条件的一行摘要；moods 为所选心情。",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryWeather": "天气包含“{text}”",
+  "@notebookRuleSummaryWeather": {
+    "description": "天气条件的一行摘要；text 为文字。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryLocation": "地点包含“{text}”",
+  "@notebookRuleSummaryLocation": {
+    "description": "地点条件的一行摘要；text 为文字。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryKeyword": "标题或正文包含“{text}”",
+  "@notebookRuleSummaryKeyword": {
+    "description": "关键词条件的一行摘要；text 为关键词。",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryRange": "{start} – {end}",
+  "@notebookRuleSummaryRange": {
+    "description": "一段日期（固定区间条件的摘要、由日期范围新建的日记本默认名称）；start、end 为首尾日期。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryLastDays": "最近 {days} 天",
+  "@notebookRuleSummaryLastDays": {
+    "description": "“最近几天”条件的摘要；days 为天数。",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRuleSummaryMonth": "每年 {month} 月",
+  "@notebookRuleSummaryMonth": {
+    "description": "“每年某月”条件的摘要；month 为月份数字，monthName 为月份名称（中文不用）。",
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "monthName": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryToday": "每年的今天（{date}）",
+  "@notebookRuleSummaryToday": {
+    "description": "“每年的今天”条件的摘要；date 为今天的月日。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleUnknown": "无法识别的条件（来自更新的版本）",
+  "@notebookRuleUnknown": {
+    "description": "认不出的条件的摘要：保留不动，不匹配任何日记。"
+  },
+  "notebookConvertTitle": "把「{name}」转为普通日记本？",
+  "@notebookConvertTitle": {
+    "description": "智能日记本转为普通日记本的确认框标题；name 为日记本名称。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookConvertMessage": "现在符合条件的 {count} 篇日记会收进来（不含归档的），以后不再按条件自动更新。",
+  "@notebookConvertMessage": {
+    "description": "转为普通日记本的确认说明；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookConvertAction": "转换",
+  "@notebookConvertAction": {
+    "description": "转为普通日记本确认框的确认键。"
+  },
+  "notebookConverted": "已转为普通日记本，收进 {count} 篇",
+  "@notebookConverted": {
+    "description": "转为普通日记本后的提示；count 为收进的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSaveRange": "存为日记本",
+  "@notebookSaveRange": {
+    "description": "日历范围统计标题行的按钮：把这段日期存为日记本。"
+  },
+  "notebookSaveRangeSmartHint": "这段日期里的日记，之后补写的也会自动收进来",
+  "@notebookSaveRangeSmartHint": {
+    "description": "“存为日记本”面板里智能日记本选项的说明。"
+  },
+  "notebookSaveRangeManualHint": "收进现在这 {count} 篇",
+  "@notebookSaveRangeManualHint": {
+    "description": "“存为日记本”面板里普通日记本选项的说明；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSaveSearchAsSmart": "存为智能日记本",
+  "@notebookSaveSearchAsSmart": {
+    "description": "搜索页按钮：把当前关键词与标签条件存为智能日记本。"
+  },
+  "notebookSaveRangeSmart": "智能日记本",
+  "@notebookSaveRangeSmart": {
+    "description": "“存为日记本”面板的选项：智能日记本。"
+  },
+  "notebookSaveRangeManual": "普通日记本",
+  "@notebookSaveRangeManual": {
+    "description": "“存为日记本”面板的选项：普通日记本。"
   }
 }

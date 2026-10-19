@@ -120,3 +120,41 @@ Future<bool> showNotebookMergeConfirmDialog(
   );
   return confirmed ?? false;
 }
+
+/// 智能日记本转为普通日记本的确认框：“把「X」转为普通日记本？现在符合条件的
+/// N 篇会收进来……”。不可撤销，确认键为主色（不删除任何数据）。确认返回 true。
+Future<bool> showNotebookConvertConfirmDialog(
+  BuildContext context, {
+  required NotebookView notebook,
+  required int count,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      final l10n = dialogContext.l10n;
+      final scheme = Theme.of(dialogContext).colorScheme;
+      return AlertDialog(
+        title: Text(l10n.notebookConvertTitle(notebook.name)),
+        content: Text(l10n.notebookConvertMessage(count)),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: scheme.onSurfaceVariant,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: scheme.primary,
+              textStyle: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.notebookConvertAction),
+          ),
+        ],
+      );
+    },
+  );
+  return confirmed ?? false;
+}

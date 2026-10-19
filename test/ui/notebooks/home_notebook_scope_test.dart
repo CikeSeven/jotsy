@@ -119,9 +119,9 @@ void main() {
       );
       final scope = resolveNotebookScope(notebook);
       expect(scope, isA<DiarySmartScope>());
-      // 规则编译器接入前：什么都不匹配。
+      // 认不出的规则原文：什么都不匹配。
       expect((scope as DiarySmartScope).predicate.sql, '0');
-      expect(compileNotebookRules(null).sql, '0');
+      expect(compileNotebookPayloadRules(null).sql, '0');
       expect(
         effectiveNotebookSort(notebook, NotebookSort.book),
         NotebookSort.createdDesc,

@@ -17,12 +17,13 @@ import '../../widgets/unsaved_changes_dialog.dart';
 import '../controllers/notebook_editor_controller.dart';
 import '../sections/notebook_editor_appearance.dart';
 import '../sections/notebook_editor_behavior.dart';
+import '../sections/notebook_editor_rules.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 日记本编辑页：新建与编辑共用。
 ///
 /// 自上而下：实时预览、名称与简介、图标、颜色、封面图、类型（仅新建）、
-/// 隐私（仅普通日记本）、默认排序、新建时套用的模板。表单状态在
+/// 规则（仅智能日记本）、隐私（仅普通日记本）、默认排序、新建时套用的模板。表单状态在
 /// [NotebookEditorController]，页面只负责组合、导航与提示。保存成功后带着
 /// 日记本 id 返回；有未保存改动时返回先确认（与其他编辑页同一个对话框）。
 class NotebookEditorPage extends ConsumerStatefulWidget {
@@ -31,6 +32,7 @@ class NotebookEditorPage extends ConsumerStatefulWidget {
     this.notebookId,
     this.initialKind = NotebookKind.manual,
     this.initialName,
+    this.initialPayload,
   });
 
   /// 要编辑的日记本；null 为新建。
@@ -40,17 +42,22 @@ class NotebookEditorPage extends ConsumerStatefulWidget {
   final NotebookKind initialKind;
   final String? initialName;
 
+  /// 新建时预填的设置（日历范围、搜索页“存为日记本”预填规则）；编辑时忽略。
+  final NotebookPayload? initialPayload;
+
   /// 打开编辑页；保存后返回日记本 id，未保存返回 null。
   static Route<String> route({
     String? notebookId,
     NotebookKind initialKind = NotebookKind.manual,
     String? initialName,
+    NotebookPayload? initialPayload,
   }) {
     return MaterialPageRoute<String>(
       builder: (_) => NotebookEditorPage(
         notebookId: notebookId,
         initialKind: initialKind,
         initialName: initialName,
+        initialPayload: initialPayload,
       ),
     );
   }
@@ -73,6 +80,7 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
       _editor = NotebookEditorController(
         initialKind: widget.initialKind,
         initialName: widget.initialName,
+        initialPayload: widget.initialPayload,
       );
       // 等页面滑入结束再聚焦名称框：键盘不与转场叠在一起。
       _entrance.schedule(this, _nameFocus.requestFocus);
@@ -234,6 +242,10 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
         if (editor.isNew) ...<Widget>[
           gap,
           NotebookEditorTypeSection(controller: editor),
+        ],
+        if (editor.isSmart) ...<Widget>[
+          gap,
+          NotebookEditorRulesSection(controller: editor),
         ],
         if (!editor.isSmart) ...<Widget>[
           gap,

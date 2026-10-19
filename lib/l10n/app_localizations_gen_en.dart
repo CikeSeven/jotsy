@@ -6573,10 +6573,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Automatically collects entries that match your conditions';
 
   @override
-  String get notebookRulesPlaceholder =>
-      'Rules: set the conditions here after saving';
-
-  @override
   String get notebookPrivacyLabel => 'Privacy';
 
   @override
@@ -6673,7 +6669,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookActionConvert => 'Convert to regular notebook';
 
   @override
-  String get notebookActionConvertHint => 'Available once rules are set up';
+  String get notebookActionConvertHint =>
+      'Adds the entries that match now; stops updating automatically';
 
   @override
   String get notebookMergeSheetTitle => 'Merge into which notebook';
@@ -6877,6 +6874,111 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookAddDiaries => 'Add entries';
 
   @override
+  String get notebookContentsUnassignedDropHint =>
+      'Drag here to take entries out of chapters';
+
+  @override
+  String get notebookChapterAll => 'All';
+
+  @override
+  String get notebookChapterUnassigned => 'No chapter';
+
+  @override
+  String notebookChapterChip(String title, int count) {
+    return '$title · $count';
+  }
+
+  @override
+  String get notebookContents => 'Contents';
+
+  @override
+  String get notebookContentsNewChapter => 'New chapter';
+
+  @override
+  String get notebookContentsSelect => 'Select';
+
+  @override
+  String get notebookContentsSelectDone => 'Done selecting';
+
+  @override
+  String notebookContentsSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookContentsNoChapterHint =>
+      'Add chapters to split this notebook into parts';
+
+  @override
+  String get notebookContentsEmpty => 'No entries in this notebook yet';
+
+  @override
+  String get notebookContentsArchived => 'Archived';
+
+  @override
+  String get notebookContentsSealed => 'Sealed time capsule';
+
+  @override
+  String get notebookContentsDragHandle => 'Drag to reorder';
+
+  @override
+  String get notebookContentsChapterActions => 'Chapter actions';
+
+  @override
+  String get notebookChapterRename => 'Rename';
+
+  @override
+  String get notebookChapterRenameTitle => 'Rename chapter';
+
+  @override
+  String get notebookChapterMoveUp => 'Move up';
+
+  @override
+  String get notebookChapterMoveDown => 'Move down';
+
+  @override
+  String get notebookChapterTitleLabel => 'Chapter name';
+
+  @override
+  String get notebookChapterTitleHint => 'e.g. Tokyo';
+
+  @override
+  String notebookChapterDeleteConfirm(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Delete chapter \"$title\"? Its $count entries go back to No chapter; no entries are deleted.',
+      one:
+          'Delete chapter \"$title\"? Its 1 entry goes back to No chapter; no entries are deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookContentsMoveToChapter => 'Move to chapter…';
+
+  @override
+  String get notebookContentsMoveSheetTitle => 'Move to chapter';
+
+  @override
+  String notebookContentsMoved(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Moved $count entries to \"$title\"',
+      one: 'Moved 1 entry to \"$title\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get notebookPickerTitle => 'Add to notebook';
 
   @override
@@ -6992,4 +7094,304 @@ class AppLocalizationsEn extends AppLocalizations {
   String notebookOpenNotebook(String name) {
     return 'Open \"$name\"';
   }
+
+  @override
+  String get notebookRulesTitle => 'Rules';
+
+  @override
+  String get notebookRulesMatchAll => 'Match all';
+
+  @override
+  String get notebookRulesMatchAny => 'Match any';
+
+  @override
+  String notebookRulesMatchCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Matches $count entries',
+      one: 'Matches 1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookRulesNeedOne => 'Add at least one rule to save';
+
+  @override
+  String notebookRulesLimit(int max) {
+    return 'Up to $max rules';
+  }
+
+  @override
+  String get notebookRulesExamples => 'Start from an example';
+
+  @override
+  String get notebookRuleExampleRecent => 'Last 30 days';
+
+  @override
+  String get notebookRuleExampleThisMonth => 'This month every year';
+
+  @override
+  String get notebookRuleExampleImages => 'Entries with photos';
+
+  @override
+  String get notebookRuleExamplePinned => 'Pinned entries';
+
+  @override
+  String get notebookRuleAdd => 'Add rule';
+
+  @override
+  String get notebookRuleRemove => 'Remove rule';
+
+  @override
+  String get notebookRuleDone => 'Done';
+
+  @override
+  String get notebookRuleTypeTags => 'Tags';
+
+  @override
+  String get notebookRuleTypeTagsHint => 'Has, or lacks, certain tags';
+
+  @override
+  String get notebookRuleTypeMood => 'Mood';
+
+  @override
+  String get notebookRuleTypeMoodHint => 'Mood is one of these';
+
+  @override
+  String get notebookRuleTypeWeather => 'Weather';
+
+  @override
+  String get notebookRuleTypeWeatherHint => 'Weather contains some text';
+
+  @override
+  String get notebookRuleTypeLocation => 'Location';
+
+  @override
+  String get notebookRuleTypeLocationHint => 'Location contains some text';
+
+  @override
+  String get notebookRuleTypeKeyword => 'Keyword';
+
+  @override
+  String get notebookRuleTypeKeywordHint => 'Title or text contains some words';
+
+  @override
+  String get notebookRuleTypeDate => 'Date';
+
+  @override
+  String get notebookRuleTypeDateHint =>
+      'A date range, recent days or a time every year';
+
+  @override
+  String get notebookRuleTypeMedia => 'Media';
+
+  @override
+  String get notebookRuleTypeMediaHint =>
+      'Has photos, recordings, videos or attachments';
+
+  @override
+  String get notebookRuleTypeFlag => 'Cover & pin';
+
+  @override
+  String get notebookRuleTypeFlagHint => 'Has a cover or is pinned';
+
+  @override
+  String get notebookRuleTagAny => 'Any of';
+
+  @override
+  String get notebookRuleTagAll => 'All of';
+
+  @override
+  String get notebookRuleTagNone => 'None of';
+
+  @override
+  String get notebookRuleNoTags => 'No tags yet';
+
+  @override
+  String get notebookRuleWeatherHint => 'e.g. rain';
+
+  @override
+  String get notebookRuleLocationHint => 'e.g. Kyoto';
+
+  @override
+  String get notebookRuleKeywordHint => 'Words in the title or text';
+
+  @override
+  String get notebookRuleDateBetween => 'Date range';
+
+  @override
+  String get notebookRuleDateLastDays => 'Recent days';
+
+  @override
+  String get notebookRuleDateThisYear => 'This year';
+
+  @override
+  String get notebookRuleDateMonth => 'A month every year';
+
+  @override
+  String get notebookRuleDateToday => 'This day every year';
+
+  @override
+  String get notebookRuleDateTodayHint =>
+      'Entries from this month and day in any year';
+
+  @override
+  String notebookRuleDaysValue(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookRuleDaysDecrease => 'One day fewer';
+
+  @override
+  String get notebookRuleDaysIncrease => 'One day more';
+
+  @override
+  String get notebookRuleMediaImage => 'Has photos';
+
+  @override
+  String get notebookRuleMediaAudio => 'Has recordings';
+
+  @override
+  String get notebookRuleMediaVideo => 'Has videos';
+
+  @override
+  String get notebookRuleMediaAttachment => 'Has attachments';
+
+  @override
+  String get notebookRuleFlagCover => 'Has a cover';
+
+  @override
+  String get notebookRuleFlagPinned => 'Pinned';
+
+  @override
+  String notebookRuleSummaryTagsAny(String tags) {
+    return 'Tags, any of: $tags';
+  }
+
+  @override
+  String notebookRuleSummaryTagsAll(String tags) {
+    return 'Tags, all of: $tags';
+  }
+
+  @override
+  String notebookRuleSummaryTagsNone(String tags) {
+    return 'Tags, none of: $tags';
+  }
+
+  @override
+  String notebookRuleSummaryMood(String moods) {
+    return 'Mood: $moods';
+  }
+
+  @override
+  String notebookRuleSummaryWeather(String text) {
+    return 'Weather contains \"$text\"';
+  }
+
+  @override
+  String notebookRuleSummaryLocation(String text) {
+    return 'Location contains \"$text\"';
+  }
+
+  @override
+  String notebookRuleSummaryKeyword(String text) {
+    return 'Title or text contains \"$text\"';
+  }
+
+  @override
+  String notebookRuleSummaryRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String notebookRuleSummaryLastDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Last $days days',
+      one: 'Today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookRuleSummaryMonth(int month, String monthName) {
+    return '$monthName every year';
+  }
+
+  @override
+  String notebookRuleSummaryToday(String date) {
+    return 'This day every year ($date)';
+  }
+
+  @override
+  String get notebookRuleUnknown => 'Unrecognized rule (from a newer version)';
+
+  @override
+  String notebookConvertTitle(String name) {
+    return 'Convert \"$name\" to a regular notebook?';
+  }
+
+  @override
+  String notebookConvertMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The $count entries that match now will be added (archived entries excluded), and the notebook will stop updating automatically.',
+      one:
+          'The 1 entry that matches now will be added (archived entries excluded), and the notebook will stop updating automatically.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookConvertAction => 'Convert';
+
+  @override
+  String notebookConverted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Converted; $count entries added',
+      one: 'Converted; 1 entry added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookSaveRange => 'Save as notebook';
+
+  @override
+  String get notebookSaveRangeSmartHint =>
+      'Entries in these dates; ones you backfill later join automatically';
+
+  @override
+  String notebookSaveRangeManualHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add the $count entries there now',
+      one: 'Add the 1 entry there now',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookSaveSearchAsSmart => 'Save as smart notebook';
+
+  @override
+  String get notebookSaveRangeSmart => 'Smart notebook';
+
+  @override
+  String get notebookSaveRangeManual => 'Regular notebook';
 }

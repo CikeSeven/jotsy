@@ -10,7 +10,7 @@ import '../../support/diary_drafts_harness.dart';
 import 'notebook_test_support.dart';
 
 /// 日记本编辑页：新建与编辑写库、名称为空不能保存、未保存改动返回确认、
-/// 智能日记本不显示隐私。
+/// 智能日记本不显示隐私（规则区见 notebook_rules_editor_test.dart）。
 void main() {
   /// 首页是一个按钮，点它推入编辑页并记下返回值。
   /// [seed] 写入初始数据，返回要编辑的日记本 id（null 为新建）。
@@ -135,7 +135,10 @@ void main() {
       scrollable: scrollable(),
     );
     await tapVisible(h, find.text('智能'));
-    expect(find.text('规则：保存后在这里设置条件'), findsOneWidget);
+    // 智能日记本至少要有一个条件才能保存。
+    expect(saveButton(tester).onPressed, isNull);
+    await tapVisible(h, find.text('有图片的日记'));
+    expect(saveButton(tester).onPressed, isNotNull);
     await h.tester.scrollUntilVisible(
       find.text('默认排序'),
       200,

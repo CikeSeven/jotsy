@@ -283,6 +283,49 @@ GROUP BY n.notebook_id
     });
   }
 
+  /// 把智能日记本转为普通日记本，一个事务内完成：类型改为手动、payload 去掉
+  /// 规则，并按 [diaryIds] 的顺序把这些日记收进来（未分章）。
+  ///
+  /// [diaryIds] 由调用方按转换前的规则现算（`getActiveDiaryIds` + 智能范围，
+  /// 只含未归档、未删除、非私密的日记）；不存在的 id 与重复 id 跳过。本子不是
+  /// 智能日记本时抛 [ArgumentError]，不改动任何数据。返回收进的篇数。
+  Future<int> convertSmartNotebookToManual(
+    String notebookId,
+    List<String> diaryIds,
+  ) {
+    return transaction(() async {
+      final row = await _requireNotebookRow(notebookId);
+      if (row.kind != NotebookKind.smart.name) {
+        throw ArgumentError.value(notebookId, 'notebookId', '不是智能日记本');
+      }
+      await (update(notebooks)..where((t) => t.id.equals(row.id))).write(
+        NotebooksCompanion(
+          kind: Value(NotebookKind.manual.name),
+          visibility: Value(NotebookVisibility.normal.name),
+          payload: Value(row.parsedPayload.copyWith(clearRules: true).encode()),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      final local = await _diaryLocalIds(diaryIds);
+      // 智能本没有关联行；仍按已有成员去重，防御不一致的旧数据。
+      final present = await _entryDiaryIds(row.id);
+      var position = await _nextEntryPosition(row.id);
+      final now = DateTime.now();
+      final rows = <DiaryNotebooksCompanion>[
+        for (final diaryId in diaryIds)
+          if (local[diaryId] case final id? when present.add(id))
+            DiaryNotebooksCompanion.insert(
+              diaryId: id,
+              notebookId: row.id,
+              position: Value(position++),
+              addedAt: now,
+            ),
+      ];
+      await batch((batch) => batch.insertAll(diaryNotebooks, rows));
+      return rows.length;
+    });
+  }
+
   String _normalizeNotebookName(String name) {
     final normalized = name.trim();
     if (normalized.isEmpty || normalized.length > 60) {

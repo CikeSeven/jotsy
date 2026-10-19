@@ -51,6 +51,7 @@ class DiariesListSection extends StatelessWidget {
     this.moodOptions = SettingsService.defaultMoodOptions,
     this.enableCoverHero = true,
     this.opensLockedCapsulePage = true,
+    this.sectionHeaderBuilder,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -99,6 +100,11 @@ class DiariesListSection extends StatelessWidget {
 
   /// 点按未解封胶囊是否进入封存页（设置页预览关闭）。
   final bool opensLockedCapsulePage;
+
+  /// 列表布局里第 index 篇卡片上方的分组标题（如日记本书序的章节分隔行），
+  /// 返回 null 表示这篇上方没有。只在列表布局生效，瀑布流忽略；默认 null，
+  /// 其他列表（归档、搜索、全部日记）不受影响。
+  final Widget? Function(BuildContext context, int index)? sectionHeaderBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +187,7 @@ class DiariesListSection extends StatelessWidget {
       delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
         final diary = diaries[index];
         final isLast = index == diaries.length - 1;
+        final sectionHeader = sectionHeaderBuilder?.call(context, index);
         return KeyedSubtree(
           key: ValueKey<String>('list_${diary.diary.diaryId}'),
           child: LaunchReveal(
@@ -190,6 +197,7 @@ class DiariesListSection extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  ?sectionHeader,
                   _buildDiaryItem(context, diary: diary, resolved: resolved),
                   if (!isLast) SizedBox(height: modeStyle.cardGap),
                 ],

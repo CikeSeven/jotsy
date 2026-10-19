@@ -1,7 +1,8 @@
 import '../../../core/database/app_database.dart';
+import '../models/notebook_scope_resolver.dart';
 import '../viewmodels/notebook_view.dart';
 
-/// 日记本的书架操作：置顶、合上、排序、删除与撤销、合并。书架面板与管理页
+/// 日记本的书架操作：置顶、合上、排序、删除与撤销、合并、智能转普通。书架面板与管理页
 /// 共用，不构建 UI——确认、提示与撤销条由 `notebook_action_flows.dart` 负责。
 ///
 /// 输入输出一律是业务 id；数据库里找不到时由数据库层抛 [ArgumentError]。
@@ -30,6 +31,19 @@ class NotebooksController {
   /// 经用户确认）。
   Future<void> merge({required String sourceId, required String targetId}) =>
       database.mergeNotebook(sourceId: sourceId, targetId: targetId);
+
+  /// 智能日记本 [notebook] 现在符合规则的日记（未删除、未归档、非私密），
+  /// 按发表时间旧→新：转为普通日记本时按这个顺序收进去。
+  Future<List<String>> smartMatches(NotebookView notebook) =>
+      database.getActiveDiaryIds(
+        scope: notebookStatsScope(notebook),
+        sortMode: DiarySortMode.createdAsc,
+      );
+
+  /// 把智能日记本转为普通日记本并收进 [diaryIds]（见
+  /// `AppDatabase.convertSmartNotebookToManual`）。不可撤销，调用前须确认。
+  Future<int> convertToManual(String notebookId, List<String> diaryIds) =>
+      database.convertSmartNotebookToManual(notebookId, diaryIds);
 
   Future<void> reorder(List<String> manualOrder) =>
       database.reorderNotebooks(manualOrder);

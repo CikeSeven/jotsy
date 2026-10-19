@@ -219,6 +219,86 @@ mixin _AppDatabaseNotebookEntryOps on _$AppDatabase {
     });
   }
 
+  /// 首页列表口径下本子里每篇日记的章节：日记业务 id → `chapter_id`（未分章
+  /// 或指向已删除章节时原样给出，读取方按章节列表判断）。
+  ///
+  /// 口径与 `DiaryNotebookScope` 一致：不算回收站与归档里的日记；普通本子不算
+  /// 私密日记，私密本子算全部成员。章节胶囊的篇数与书序分隔行都由它派生，
+  /// 只读两列，不随正文变化重新解码大字段。
+  Stream<Map<String, String?>> watchNotebookEntryChapters(String notebookId) {
+    final query = _notebookEntryColumnsQuery(notebookId, includeArchived: false)
+      ..addColumns(<Expression<Object>>[
+        diaries.diaryId,
+        diaryNotebooks.chapterId,
+      ]);
+    return query.watch().map(
+      (rows) => <String, String?>{
+        for (final row in rows)
+          row.read(diaries.diaryId)!: row.read(diaryNotebooks.chapterId),
+      },
+    );
+  }
+
+  /// 目录页：本子里的日记（含归档、不含回收站，私密规则同上）按成书位置排好，
+  /// 只带目录行要显示的字段。
+  Stream<List<NotebookContentsEntry>> watchNotebookContents(String notebookId) {
+    final query = _notebookEntryColumnsQuery(notebookId, includeArchived: true)
+      ..addColumns(<Expression<Object>>[
+        diaries.diaryId,
+        diaries.title,
+        diaries.createdAt,
+        diaries.updatedAt,
+        diaries.isArchived,
+        diaries.capsuleLockedAt,
+        diaries.capsuleUnlockAt,
+        diaryNotebooks.chapterId,
+      ])
+      ..orderBy(<OrderingTerm>[
+        OrderingTerm.asc(diaryNotebooks.position),
+        OrderingTerm.asc(diaryNotebooks.addedAt),
+        OrderingTerm.asc(diaryNotebooks.diaryId),
+      ]);
+    return query.watch().map(
+      (rows) =>
+          List<NotebookContentsEntry>.unmodifiable(<NotebookContentsEntry>[
+            for (final row in rows)
+              NotebookContentsEntry(
+                diaryId: row.read(diaries.diaryId)!,
+                title: row.read(diaries.title) ?? '',
+                createdAt: row.read(diaries.createdAt)!,
+                updatedAt: row.read(diaries.updatedAt)!,
+                isArchived: row.read(diaries.isArchived) ?? false,
+                capsuleLockedAt: row.read(diaries.capsuleLockedAt),
+                capsuleUnlockAt: row.read(diaries.capsuleUnlockAt),
+                chapterId: row.read(diaryNotebooks.chapterId),
+              ),
+          ]),
+    );
+  }
+
+  /// 本子成员 × 日记 × 日记本的只取列查询（调用方再加列与排序）。
+  JoinedSelectStatement<HasResultSet, dynamic> _notebookEntryColumnsQuery(
+    String notebookId, {
+    required bool includeArchived,
+  }) {
+    final query = selectOnly(diaryNotebooks).join(<Join>[
+      innerJoin(diaries, diaries.id.equalsExp(diaryNotebooks.diaryId)),
+      innerJoin(notebooks, notebooks.id.equalsExp(diaryNotebooks.notebookId)),
+    ]);
+    var filter =
+        notebooks.notebookId.equals(notebookId) &
+        diaries.isDeleted.equals(false) &
+        (notebooks.visibility.equals(NotebookVisibility.normal.name).not() |
+            CustomExpression<bool>(
+              _privateDiaryExclusionSql('"diaries"."id"'),
+            ));
+    if (!includeArchived) {
+      filter = filter & diaries.isArchived.equals(false);
+    }
+    query.where(filter);
+    return query;
+  }
+
   /// 日记写入事务内调用：让本地 id 为 [localDiaryId] 的日记恰好在
   /// [notebookIds] 这些本子里。
   ///
@@ -388,4 +468,30 @@ Iterable<List<T>> _chunked<T>(List<T> items, [int size = 500]) sync* {
   for (var start = 0; start < items.length; start += size) {
     yield items.sublist(start, min(start + size, items.length));
   }
+}
+
+/// 目录页的一行日记（[AppDatabase.watchNotebookContents]）。
+@immutable
+class NotebookContentsEntry {
+  const NotebookContentsEntry({
+    required this.diaryId,
+    required this.title,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.isArchived,
+    required this.chapterId,
+    this.capsuleLockedAt,
+    this.capsuleUnlockAt,
+  });
+
+  final String diaryId;
+  final String title;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool isArchived;
+  final DateTime? capsuleLockedAt;
+  final DateTime? capsuleUnlockAt;
+
+  /// 原始 `chapter_id`；不在章节列表里时算“未分章”。
+  final String? chapterId;
 }

@@ -30,10 +30,12 @@ import '../../notebooks/providers/home_notebook_scope_provider.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/sections/notebook_action_flows.dart';
 import '../../notebooks/pages/notebook_add_diaries_page.dart';
+import '../../notebooks/pages/notebook_contents_page.dart';
 import '../../notebooks/sections/notebook_action_sheets.dart';
 import '../../notebooks/sections/notebook_picker_sheet.dart';
 import '../../notebooks/sections/notebook_shelf_sheet.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
+import '../../notebooks/widgets/notebook_chapter_divider.dart';
 import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
@@ -511,6 +513,16 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   : () => unawaited(
                                       _scopeController.openAddDiaries(),
                                     ),
+                              onOpenContents: manualNotebook == null
+                                  ? null
+                                  : () => unawaited(
+                                      _scopeController.openContents(),
+                                    ),
+                              selectedChapterId:
+                                  scopeResolution.state.chapterId,
+                              unassignedChapterOnly:
+                                  scopeResolution.state.unassignedChapterOnly,
+                              onSelectChapter: _scopeController.selectChapter,
                             ),
                             SliverFadeTransition(
                               opacity: _listRefreshPulseController,
@@ -577,6 +589,10 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         ),
                                       ),
                                       isSearchResultEmpty: false,
+                                      sectionHeaderBuilder: _bookSectionHeaders(
+                                        scopeResolution,
+                                        displayedItems,
+                                      ),
                                       // 日记本里没筛选时的空列表：“这本还空着”。
                                       emptyState:
                                           currentNotebook != null &&
@@ -633,6 +649,36 @@ class _DiariesPage extends ConsumerState<DiariesPage>
           ),
         );
       },
+    );
+  }
+
+  /// 书序分隔行：只在普通日记本按书序、选着“全部”章节、列表布局且本子有
+  /// 章节时提供（瀑布流不分隔，保持简单）。只在这时订阅本子的章节归属，
+  /// 其他情况不多一条查询。
+  Widget? Function(BuildContext, int)? _bookSectionHeaders(
+    HomeNotebookScopeResolution resolution,
+    List<DiaryWithTags> displayedItems,
+  ) {
+    final notebook = resolution.notebook;
+    if (notebook == null ||
+        !notebook.isManual ||
+        resolution.sort != NotebookSort.book ||
+        resolution.state.chapterId != null ||
+        resolution.state.unassignedChapterOnly ||
+        _layoutMode != DiaryLayoutMode.list ||
+        notebook.payload.chapters.isEmpty) {
+      return null;
+    }
+    final entryChapters = ref
+        .watch(notebookEntryChaptersProvider(notebook.id))
+        .value;
+    if (entryChapters == null) {
+      return null;
+    }
+    return notebookBookSectionHeaders(
+      diaries: displayedItems,
+      chapters: notebook.payload.chapters,
+      entryChapters: entryChapters,
     );
   }
 

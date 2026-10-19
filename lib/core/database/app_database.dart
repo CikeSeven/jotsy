@@ -15,6 +15,7 @@ import 'notebook_payload.dart';
 
 export 'diary_list_scope.dart';
 export 'notebook_payload.dart';
+export 'notebook_rules.dart';
 
 part 'app_database.g.dart';
 part 'app_database_schema.dart';

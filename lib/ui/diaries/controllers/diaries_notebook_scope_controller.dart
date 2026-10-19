@@ -135,6 +135,16 @@ class DiariesNotebookScopeController {
     }
     final override = next.state.sortOverride;
     final notebook = next.notebook;
+    // 选着的章节被删了（目录页或编辑页），或本子已没有章节（“未分章”胶囊
+    // 跟着整行消失）：回到全部章节，免得列表停在一个看不见的筛选上。
+    if (notebook != null && _chapterSelectionStale(next.state, notebook)) {
+      scheduleMicrotask(() {
+        if (_state.mounted &&
+            _chapterSelectionStale(resolution.state, notebook)) {
+          selectChapter();
+        }
+      });
+    }
     if (override != null &&
         notebook != null &&
         effectiveNotebookSort(notebook, notebook.payload.sort) == override) {
@@ -144,6 +154,50 @@ class DiariesNotebookScopeController {
         }
       });
     }
+  }
+
+  static bool _chapterSelectionStale(
+    HomeNotebookScope state,
+    NotebookView notebook,
+  ) {
+    final chapterId = state.chapterId;
+    final chapters = notebook.payload.chapters;
+    if (chapterId != null) {
+      return !chapters.any((chapter) => chapter.id == chapterId);
+    }
+    return state.unassignedChapterOnly && chapters.isEmpty;
+  }
+
+  /// 头部章节胶囊：切换章节筛选（全部 / 某章 / 未分章），列表走筛选过渡；
+  /// 不改排序，也不回到顶部（头部卡片仍在原处，胶囊就在手指下）。
+  void selectChapter({String? chapterId, bool unassigned = false}) {
+    final current = _state.ref.read(homeNotebookScopeProvider);
+    if (current.isAll ||
+        (current.chapterId == chapterId &&
+            current.unassignedChapterOnly ==
+                (chapterId == null && unassigned))) {
+      return;
+    }
+    if (_state._selectedDiaryIds.isNotEmpty) {
+      _state.setState(_state._selectedDiaryIds.clear);
+    }
+    transitionCoordinator.queueFilterMutation(
+      () => _notifier.selectChapter(
+        chapterId: chapterId,
+        unassignedOnly: unassigned,
+      ),
+    );
+  }
+
+  /// 头部卡片“目录”：打开这本的目录页（只对普通日记本）。
+  Future<void> openContents() async {
+    final notebook = resolution.notebook;
+    if (notebook == null || !notebook.isManual) {
+      return;
+    }
+    await Navigator.of(
+      _state.context,
+    ).push(NotebookContentsPage.route(notebookId: notebook.id));
   }
 
   /// 视图选项里改本子的排序：先按新排序过渡显示，再写回本子；写入失败时

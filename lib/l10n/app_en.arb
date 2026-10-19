@@ -8472,10 +8472,6 @@
   "@notebookTypeSmartHint": {
     "description": "One-line description of the smart notebook type."
   },
-  "notebookRulesPlaceholder": "Rules: set the conditions here after saving",
-  "@notebookRulesPlaceholder": {
-    "description": "Placeholder for the rules area when creating a smart notebook."
-  },
   "notebookPrivacyLabel": "Privacy",
   "@notebookPrivacyLabel": {
     "description": "Title of the notebook privacy group."
@@ -8600,9 +8596,9 @@
   "@notebookActionConvert": {
     "description": "Smart notebook action: convert to a regular notebook."
   },
-  "notebookActionConvertHint": "Available once rules are set up",
+  "notebookActionConvertHint": "Adds the entries that match now; stops updating automatically",
   "@notebookActionConvertHint": {
-    "description": "Why converting to a regular notebook is not available yet."
+    "description": "Description of converting to a regular notebook."
   },
   "notebookMergeSheetTitle": "Merge into which notebook",
   "@notebookMergeSheetTitle": {
@@ -8875,6 +8871,135 @@
   "@notebookAddDiaries": {
     "description": "Notebook header button: pick existing entries to add."
   },
+  "notebookContentsUnassignedDropHint": "Drag here to take entries out of chapters",
+  "@notebookContentsUnassignedDropHint": {
+    "description": "Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters."
+  },
+  "notebookChapterAll": "All",
+  "@notebookChapterAll": {
+    "description": "Chapter chip in the notebook header: show every chapter."
+  },
+  "notebookChapterUnassigned": "No chapter",
+  "@notebookChapterUnassigned": {
+    "description": "Chapter chip / contents header for entries not in any chapter."
+  },
+  "notebookChapterChip": "{title} · {count}",
+  "@notebookChapterChip": {
+    "description": "Chapter chip label: chapter title and its number of entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContents": "Contents",
+  "@notebookContents": {
+    "description": "Notebook contents page title and the header card button that opens it."
+  },
+  "notebookContentsNewChapter": "New chapter",
+  "@notebookContentsNewChapter": {
+    "description": "Contents page top-bar action and dialog title: add a chapter."
+  },
+  "notebookContentsSelect": "Select",
+  "@notebookContentsSelect": {
+    "description": "Contents page top-bar action: enter multi-select mode."
+  },
+  "notebookContentsSelectDone": "Done selecting",
+  "@notebookContentsSelectDone": {
+    "description": "Contents page top-bar action: leave multi-select mode."
+  },
+  "notebookContentsSelectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@notebookContentsSelectedCount": {
+    "description": "Contents page multi-select bar: number of selected entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContentsNoChapterHint": "Add chapters to split this notebook into parts",
+  "@notebookContentsNoChapterHint": {
+    "description": "Contents page banner when the notebook has no chapters."
+  },
+  "notebookContentsEmpty": "No entries in this notebook yet",
+  "@notebookContentsEmpty": {
+    "description": "Contents page empty state."
+  },
+  "notebookContentsArchived": "Archived",
+  "@notebookContentsArchived": {
+    "description": "Semantics label of the archived glyph on a contents row."
+  },
+  "notebookContentsSealed": "Sealed time capsule",
+  "@notebookContentsSealed": {
+    "description": "Semantics label of the lock glyph on a contents row."
+  },
+  "notebookContentsDragHandle": "Drag to reorder",
+  "@notebookContentsDragHandle": {
+    "description": "Semantics label of the drag handle on a contents row."
+  },
+  "notebookContentsChapterActions": "Chapter actions",
+  "@notebookContentsChapterActions": {
+    "description": "Tooltip of the chapter header menu on the contents page."
+  },
+  "notebookChapterRename": "Rename",
+  "@notebookChapterRename": {
+    "description": "Chapter menu item: rename the chapter."
+  },
+  "notebookChapterRenameTitle": "Rename chapter",
+  "@notebookChapterRenameTitle": {
+    "description": "Title of the rename chapter dialog."
+  },
+  "notebookChapterMoveUp": "Move up",
+  "@notebookChapterMoveUp": {
+    "description": "Chapter menu item: move the chapter one place up."
+  },
+  "notebookChapterMoveDown": "Move down",
+  "@notebookChapterMoveDown": {
+    "description": "Chapter menu item: move the chapter one place down."
+  },
+  "notebookChapterTitleLabel": "Chapter name",
+  "@notebookChapterTitleLabel": {
+    "description": "Label of the chapter name field."
+  },
+  "notebookChapterTitleHint": "e.g. Tokyo",
+  "@notebookChapterTitleHint": {
+    "description": "Hint of the chapter name field."
+  },
+  "notebookChapterDeleteConfirm": "{count, plural, =1{Delete chapter \"{title}\"? Its 1 entry goes back to No chapter; no entries are deleted.} other{Delete chapter \"{title}\"? Its {count} entries go back to No chapter; no entries are deleted.}}",
+  "@notebookChapterDeleteConfirm": {
+    "description": "Confirmation for deleting a chapter.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContentsMoveToChapter": "Move to chapter…",
+  "@notebookContentsMoveToChapter": {
+    "description": "Contents multi-select action: move the selected entries to a chapter."
+  },
+  "notebookContentsMoveSheetTitle": "Move to chapter",
+  "@notebookContentsMoveSheetTitle": {
+    "description": "Title of the chapter picker sheet."
+  },
+  "notebookContentsMoved": "{count, plural, =1{Moved 1 entry to \"{title}\"} other{Moved {count} entries to \"{title}\"}}",
+  "@notebookContentsMoved": {
+    "description": "Hint after moving entries to a chapter; title is the chapter (or No chapter).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "notebookPickerTitle": "Add to notebook",
   "@notebookPickerTitle": {
     "description": "Notebook picker title; also the multi-select and preview \"More\" entry."
@@ -9025,5 +9150,397 @@
         "type": "String"
       }
     }
+  },
+  "notebookRulesTitle": "Rules",
+  "@notebookRulesTitle": {
+    "description": "Title of the rules section on the smart notebook editor."
+  },
+  "notebookRulesMatchAll": "Match all",
+  "@notebookRulesMatchAll": {
+    "description": "How rules combine: every rule must match."
+  },
+  "notebookRulesMatchAny": "Match any",
+  "@notebookRulesMatchAny": {
+    "description": "How rules combine: any rule may match."
+  },
+  "notebookRulesMatchCount": "{count, plural, =1{Matches 1 entry} other{Matches {count} entries}}",
+  "@notebookRulesMatchCount": {
+    "description": "Live number of entries matching the draft rules; count is the number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRulesNeedOne": "Add at least one rule to save",
+  "@notebookRulesNeedOne": {
+    "description": "Shown while a smart notebook has no rules yet (save is disabled)."
+  },
+  "notebookRulesLimit": "Up to {max} rules",
+  "@notebookRulesLimit": {
+    "description": "Shown instead of \"Add rule\" at the limit; max is the limit.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRulesExamples": "Start from an example",
+  "@notebookRulesExamples": {
+    "description": "Heading above the example chips when there are no rules yet."
+  },
+  "notebookRuleExampleRecent": "Last 30 days",
+  "@notebookRuleExampleRecent": {
+    "description": "Example rule: entries from the last 30 days."
+  },
+  "notebookRuleExampleThisMonth": "This month every year",
+  "@notebookRuleExampleThisMonth": {
+    "description": "Example rule: entries from this month in any year."
+  },
+  "notebookRuleExampleImages": "Entries with photos",
+  "@notebookRuleExampleImages": {
+    "description": "Example rule: entries with images."
+  },
+  "notebookRuleExamplePinned": "Pinned entries",
+  "@notebookRuleExamplePinned": {
+    "description": "Example rule: pinned entries."
+  },
+  "notebookRuleAdd": "Add rule",
+  "@notebookRuleAdd": {
+    "description": "Entry to add a rule; also the rule type sheet title."
+  },
+  "notebookRuleRemove": "Remove rule",
+  "@notebookRuleRemove": {
+    "description": "Tooltip of the remove button on a rule row."
+  },
+  "notebookRuleDone": "Done",
+  "@notebookRuleDone": {
+    "description": "Done button of a rule editor sheet."
+  },
+  "notebookRuleTypeTags": "Tags",
+  "@notebookRuleTypeTags": {
+    "description": "Rule type: tags."
+  },
+  "notebookRuleTypeTagsHint": "Has, or lacks, certain tags",
+  "@notebookRuleTypeTagsHint": {
+    "description": "Description of the tags rule."
+  },
+  "notebookRuleTypeMood": "Mood",
+  "@notebookRuleTypeMood": {
+    "description": "Rule type: mood."
+  },
+  "notebookRuleTypeMoodHint": "Mood is one of these",
+  "@notebookRuleTypeMoodHint": {
+    "description": "Description of the mood rule."
+  },
+  "notebookRuleTypeWeather": "Weather",
+  "@notebookRuleTypeWeather": {
+    "description": "Rule type: weather."
+  },
+  "notebookRuleTypeWeatherHint": "Weather contains some text",
+  "@notebookRuleTypeWeatherHint": {
+    "description": "Description of the weather rule."
+  },
+  "notebookRuleTypeLocation": "Location",
+  "@notebookRuleTypeLocation": {
+    "description": "Rule type: location."
+  },
+  "notebookRuleTypeLocationHint": "Location contains some text",
+  "@notebookRuleTypeLocationHint": {
+    "description": "Description of the location rule."
+  },
+  "notebookRuleTypeKeyword": "Keyword",
+  "@notebookRuleTypeKeyword": {
+    "description": "Rule type: keyword."
+  },
+  "notebookRuleTypeKeywordHint": "Title or text contains some words",
+  "@notebookRuleTypeKeywordHint": {
+    "description": "Description of the keyword rule."
+  },
+  "notebookRuleTypeDate": "Date",
+  "@notebookRuleTypeDate": {
+    "description": "Rule type: date."
+  },
+  "notebookRuleTypeDateHint": "A date range, recent days or a time every year",
+  "@notebookRuleTypeDateHint": {
+    "description": "Description of the date rule."
+  },
+  "notebookRuleTypeMedia": "Media",
+  "@notebookRuleTypeMedia": {
+    "description": "Rule type: images, recordings, videos or attachments in the text."
+  },
+  "notebookRuleTypeMediaHint": "Has photos, recordings, videos or attachments",
+  "@notebookRuleTypeMediaHint": {
+    "description": "Description of the media rule."
+  },
+  "notebookRuleTypeFlag": "Cover & pin",
+  "@notebookRuleTypeFlag": {
+    "description": "Rule type: has a cover or is pinned."
+  },
+  "notebookRuleTypeFlagHint": "Has a cover or is pinned",
+  "@notebookRuleTypeFlagHint": {
+    "description": "Description of the cover & pin rule."
+  },
+  "notebookRuleTagAny": "Any of",
+  "@notebookRuleTagAny": {
+    "description": "Tags rule: has any of the tags."
+  },
+  "notebookRuleTagAll": "All of",
+  "@notebookRuleTagAll": {
+    "description": "Tags rule: has all of the tags."
+  },
+  "notebookRuleTagNone": "None of",
+  "@notebookRuleTagNone": {
+    "description": "Tags rule: has none of the tags."
+  },
+  "notebookRuleNoTags": "No tags yet",
+  "@notebookRuleNoTags": {
+    "description": "Shown in the tags rule sheet when there are no tags."
+  },
+  "notebookRuleWeatherHint": "e.g. rain",
+  "@notebookRuleWeatherHint": {
+    "description": "Placeholder of the weather rule field."
+  },
+  "notebookRuleLocationHint": "e.g. Kyoto",
+  "@notebookRuleLocationHint": {
+    "description": "Placeholder of the location rule field."
+  },
+  "notebookRuleKeywordHint": "Words in the title or text",
+  "@notebookRuleKeywordHint": {
+    "description": "Placeholder of the keyword rule field."
+  },
+  "notebookRuleDateBetween": "Date range",
+  "@notebookRuleDateBetween": {
+    "description": "Date rule: a fixed range of dates."
+  },
+  "notebookRuleDateLastDays": "Recent days",
+  "@notebookRuleDateLastDays": {
+    "description": "Date rule: the last N days."
+  },
+  "notebookRuleDateThisYear": "This year",
+  "@notebookRuleDateThisYear": {
+    "description": "Date rule: this year."
+  },
+  "notebookRuleDateMonth": "A month every year",
+  "@notebookRuleDateMonth": {
+    "description": "Date rule: one month in every year."
+  },
+  "notebookRuleDateToday": "This day every year",
+  "@notebookRuleDateToday": {
+    "description": "Date rule: the same month and day as today, any year."
+  },
+  "notebookRuleDateTodayHint": "Entries from this month and day in any year",
+  "@notebookRuleDateTodayHint": {
+    "description": "Description of \"This day every year\"."
+  },
+  "notebookRuleDaysValue": "{days, plural, =1{1 day} other{{days} days}}",
+  "@notebookRuleDaysValue": {
+    "description": "Number of days of the recent-days rule; days is the number.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRuleDaysDecrease": "One day fewer",
+  "@notebookRuleDaysDecrease": {
+    "description": "Tooltip of the minus button of the recent-days rule."
+  },
+  "notebookRuleDaysIncrease": "One day more",
+  "@notebookRuleDaysIncrease": {
+    "description": "Tooltip of the plus button of the recent-days rule."
+  },
+  "notebookRuleMediaImage": "Has photos",
+  "@notebookRuleMediaImage": {
+    "description": "Media rule: has images."
+  },
+  "notebookRuleMediaAudio": "Has recordings",
+  "@notebookRuleMediaAudio": {
+    "description": "Media rule: has recordings."
+  },
+  "notebookRuleMediaVideo": "Has videos",
+  "@notebookRuleMediaVideo": {
+    "description": "Media rule: has videos."
+  },
+  "notebookRuleMediaAttachment": "Has attachments",
+  "@notebookRuleMediaAttachment": {
+    "description": "Media rule: has attachments."
+  },
+  "notebookRuleFlagCover": "Has a cover",
+  "@notebookRuleFlagCover": {
+    "description": "Flag rule: has a cover."
+  },
+  "notebookRuleFlagPinned": "Pinned",
+  "@notebookRuleFlagPinned": {
+    "description": "Flag rule: pinned."
+  },
+  "notebookRuleSummaryTagsAny": "Tags, any of: {tags}",
+  "@notebookRuleSummaryTagsAny": {
+    "description": "One-line summary of a tags rule; tags is the list of #tag names.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryTagsAll": "Tags, all of: {tags}",
+  "@notebookRuleSummaryTagsAll": {
+    "description": "One-line summary of an all-of tags rule; tags is the tag list.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryTagsNone": "Tags, none of: {tags}",
+  "@notebookRuleSummaryTagsNone": {
+    "description": "One-line summary of a none-of tags rule; tags is the tag list.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryMood": "Mood: {moods}",
+  "@notebookRuleSummaryMood": {
+    "description": "One-line summary of a mood rule; moods are the chosen moods.",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryWeather": "Weather contains \"{text}\"",
+  "@notebookRuleSummaryWeather": {
+    "description": "One-line summary of a weather rule; text is the text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryLocation": "Location contains \"{text}\"",
+  "@notebookRuleSummaryLocation": {
+    "description": "One-line summary of a location rule; text is the text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryKeyword": "Title or text contains \"{text}\"",
+  "@notebookRuleSummaryKeyword": {
+    "description": "One-line summary of a keyword rule; text is the keyword.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryRange": "{start} – {end}",
+  "@notebookRuleSummaryRange": {
+    "description": "A date range (fixed-range rule summary and the default name of a notebook made from a range); start and end are the dates.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryLastDays": "{days, plural, =1{Today} other{Last {days} days}}",
+  "@notebookRuleSummaryLastDays": {
+    "description": "Summary of a recent-days rule; days is the number.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRuleSummaryMonth": "{monthName} every year",
+  "@notebookRuleSummaryMonth": {
+    "description": "Summary of a month-every-year rule; month is the number, monthName the month name.",
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "monthName": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryToday": "This day every year ({date})",
+  "@notebookRuleSummaryToday": {
+    "description": "Summary of a this-day-every-year rule; date is today's month and day.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleUnknown": "Unrecognized rule (from a newer version)",
+  "@notebookRuleUnknown": {
+    "description": "Summary of a rule this version cannot read; it is kept and matches nothing."
+  },
+  "notebookConvertTitle": "Convert \"{name}\" to a regular notebook?",
+  "@notebookConvertTitle": {
+    "description": "Title of the convert-to-regular confirmation; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookConvertMessage": "{count, plural, =1{The 1 entry that matches now will be added (archived entries excluded), and the notebook will stop updating automatically.} other{The {count} entries that match now will be added (archived entries excluded), and the notebook will stop updating automatically.}}",
+  "@notebookConvertMessage": {
+    "description": "Body of the convert-to-regular confirmation; count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookConvertAction": "Convert",
+  "@notebookConvertAction": {
+    "description": "Confirm button of the convert-to-regular dialog."
+  },
+  "notebookConverted": "{count, plural, =1{Converted; 1 entry added} other{Converted; {count} entries added}}",
+  "@notebookConverted": {
+    "description": "Shown after converting; count is the number of entries added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSaveRange": "Save as notebook",
+  "@notebookSaveRange": {
+    "description": "Button in the calendar range header: save the range as a notebook."
+  },
+  "notebookSaveRangeSmartHint": "Entries in these dates; ones you backfill later join automatically",
+  "@notebookSaveRangeSmartHint": {
+    "description": "Description of the smart option in the save-range sheet."
+  },
+  "notebookSaveRangeManualHint": "{count, plural, =1{Add the 1 entry there now} other{Add the {count} entries there now}}",
+  "@notebookSaveRangeManualHint": {
+    "description": "Description of the regular option in the save-range sheet; count is the number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSaveSearchAsSmart": "Save as smart notebook",
+  "@notebookSaveSearchAsSmart": {
+    "description": "Search page button: save the keyword and tag conditions as a smart notebook."
+  },
+  "notebookSaveRangeSmart": "Smart notebook",
+  "@notebookSaveRangeSmart": {
+    "description": "Option in the save-range sheet: smart notebook."
+  },
+  "notebookSaveRangeManual": "Regular notebook",
+  "@notebookSaveRangeManual": {
+    "description": "Option in the save-range sheet: regular notebook."
   }
 }

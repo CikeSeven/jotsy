@@ -83,7 +83,7 @@ class _SheetTitle extends StatelessWidget {
 }
 
 /// 管理页行尾“更多”的底部面板：编辑、置顶、合并到…、合上 / 重新打开、
-/// 转为普通日记本（仅智能本，规则设置完成前不可用）、删除（error 色）。
+/// 转为普通日记本（仅智能本）、删除（error 色）。
 /// 项目多且带说明，按 DESIGN.md §5.4 用面板而不是弹出菜单。
 Future<NotebookAction?> showNotebookActionsSheet(
   BuildContext context, {
@@ -104,7 +104,7 @@ Future<NotebookAction?> showNotebookActionsSheet(
           ? (NotebookAction.reopen, null, true)
           : (NotebookAction.close, l10n.notebookActionCloseHint, true),
       if (notebook.isSmart)
-        (NotebookAction.convert, l10n.notebookActionConvertHint, false),
+        (NotebookAction.convert, l10n.notebookActionConvertHint, true),
       (NotebookAction.delete, null, true),
     ];
     return SingleChildScrollView(

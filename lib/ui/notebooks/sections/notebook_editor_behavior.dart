@@ -17,8 +17,8 @@ import '../../widgets/expressive_choice_tile.dart';
 import '../controllers/notebook_editor_controller.dart';
 import '../viewmodels/notebook_labels.dart';
 
-/// 类型（只在新建时出现）：普通 | 智能，下方一行说明；选了智能时附一张
-/// 规则占位卡片（规则编辑器由后续任务接入）。
+/// 类型（只在新建时出现）：普通 | 智能，下方一行说明。选了智能时，编辑页在
+/// 这一节下方显示规则编辑区（`NotebookEditorRulesSection`）。
 class NotebookEditorTypeSection extends StatelessWidget {
   const NotebookEditorTypeSection({super.key, required this.controller});
 
@@ -61,37 +61,6 @@ class NotebookEditorTypeSection extends StatelessWidget {
                   color: scheme.onSurfaceVariant,
                 ),
               ),
-              if (controller.isSmart) ...<Widget>[
-                const SizedBox(height: AppSpacing.m),
-                DecoratedBox(
-                  key: const ValueKey<String>('notebook_rules_placeholder'),
-                  decoration: BoxDecoration(
-                    color: scheme.surfaceContainerHigh,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.m),
-                    child: Row(
-                      children: <Widget>[
-                        FaIcon(
-                          FontAwesomeIcons.wandMagicSparkles,
-                          size: 16,
-                          color: scheme.primary,
-                        ),
-                        const SizedBox(width: AppSpacing.m),
-                        Expanded(
-                          child: Text(
-                            l10n.notebookRulesPlaceholder,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -147,13 +116,17 @@ class NotebookEditorSortSection extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.s),
           child: Column(
             children: <Widget>[
+              // 书序靠目录页手动排列，智能日记本没有目录，不提供（已存的书序
+              // 由 effectiveNotebookSort 在显示时回退）。
               for (final sort in NotebookSort.values)
-                ExpressiveChoiceTile(
-                  label: notebookSortLabel(l10n, sort),
-                  description: notebookSortDescription(l10n, sort),
-                  selected: controller.sort == sort,
-                  onTap: () => controller.sort = sort,
-                ),
+                if (sort != NotebookSort.book ||
+                    controller.kind == NotebookKind.manual)
+                  ExpressiveChoiceTile(
+                    label: notebookSortLabel(l10n, sort),
+                    description: notebookSortDescription(l10n, sort),
+                    selected: controller.sort == sort,
+                    onTap: () => controller.sort = sort,
+                  ),
             ],
           ),
         ),

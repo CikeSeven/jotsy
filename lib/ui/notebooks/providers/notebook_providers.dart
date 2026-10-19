@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../controllers/notebooks_controller.dart';
+import '../models/notebook_scope_resolver.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 书架上的全部日记本（置顶在前，再按手动顺序），实时跟随数据库。
@@ -16,10 +17,46 @@ final notebooksProvider = StreamProvider<List<NotebookView>>((Ref ref) {
 });
 
 /// 普通日记本 id → 篇数（不算回收站与归档）。没有日记的本子不在表里，读取方
-/// 按 0 处理；智能日记本的篇数由规则现算，暂不在这里。
+/// 按 0 处理；智能日记本的篇数由规则现算，见 [smartNotebookCountProvider]。
 final notebookEntryCountsProvider = StreamProvider<Map<String, int>>((Ref ref) {
   return ref.watch(appDatabaseProvider).watchManualNotebookEntryCounts();
 });
+
+/// 智能日记本按规则现算的篇数（未删除、未归档、非私密），口径与首页在这本里的
+/// 列表一致（同一个 [notebookStatsScope]）。
+///
+/// 只 select 这本的范围：书架流因别的本子改名、排序推送时，范围相等就不重新
+/// 订阅计数查询；改了规则才换查询。不是智能日记本或已删除时保持加载中（调用方
+/// 只对智能本读取）。
+final smartNotebookCountProvider = StreamProvider.autoDispose
+    .family<int, String>((Ref ref, String notebookId) {
+      final scope = ref.watch(
+        notebooksProvider.select((AsyncValue<List<NotebookView>> async) {
+          for (final notebook in async.value ?? const <NotebookView>[]) {
+            if (notebook.id == notebookId) {
+              return notebook.isSmart ? notebookStatsScope(notebook) : null;
+            }
+          }
+          return null;
+        }),
+      );
+      if (scope == null) return const Stream<int>.empty();
+      return ref.watch(appDatabaseProvider).watchScopedDiaryCount(scope);
+    });
+
+/// 书架、管理页等列表上显示的篇数：普通日记本取 [counts]（来自
+/// [notebookEntryCountsProvider]），智能日记本取 [smartNotebookCountProvider]
+/// （计算出来之前为 null，不显示篇数）。须在 build 期间调用。
+int? watchNotebookDisplayCount(
+  WidgetRef ref,
+  NotebookView notebook,
+  Map<String, int> counts,
+) {
+  if (notebook.isSmart) {
+    return ref.watch(smartNotebookCountProvider(notebook.id)).value;
+  }
+  return notebook.isManual ? counts[notebook.id] ?? 0 : null;
+}
 
 /// 单个日记本，不存在（已删除）时为 null。
 final notebookProvider = StreamProvider.autoDispose
@@ -70,3 +107,18 @@ final diaryNotebooksProvider = FutureProvider.autoDispose
           .getNotebooksOfDiary(diaryId);
       return List<NotebookView>.unmodifiable(rows.map(NotebookView.new));
     });
+
+/// 普通日记本里每篇日记（首页列表口径）的章节：章节胶囊的篇数与书序分隔行
+/// 由它派生（见 `NotebookChapterCounts`）。
+final notebookEntryChaptersProvider = StreamProvider.autoDispose
+    .family<Map<String, String?>, String>(
+      (Ref ref, String notebookId) =>
+          ref.watch(appDatabaseProvider).watchNotebookEntryChapters(notebookId),
+    );
+
+/// 目录页的日记行（含归档），按成书位置排好。
+final notebookContentsProvider = StreamProvider.autoDispose
+    .family<List<NotebookContentsEntry>, String>(
+      (Ref ref, String notebookId) =>
+          ref.watch(appDatabaseProvider).watchNotebookContents(notebookId),
+    );

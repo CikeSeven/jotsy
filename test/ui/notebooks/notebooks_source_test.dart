@@ -22,7 +22,11 @@ void main() {
       expect(source, isNot(contains('.showSnackBar(')));
       expect(source, isNot(contains('CircularProgressIndicator')));
       expect(source, isNot(contains('Gradient(')));
-      expect(source, isNot(contains('Duration(milliseconds')));
+      // 动画时长只取 ExpressiveMotion；controllers/ 里的防抖、超时不是动画
+      // （AGENTS.md §6 例外），不在此列。
+      if (!file.path.contains('/controllers/')) {
+        expect(source, isNot(contains('Duration(milliseconds')));
+      }
       expect(source, isNot(contains('Colors.white')));
       expect(source, isNot(contains('Colors.black')));
       expect(source, isNot(contains('Icon(Icons.')));

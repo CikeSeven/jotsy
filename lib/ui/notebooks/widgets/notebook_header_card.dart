@@ -29,12 +29,21 @@ class NotebookHeaderCard extends ConsumerWidget {
     required this.notebook,
     required this.onAction,
     this.extras = const <Widget>[],
+    this.bleedExtras = const <Widget>[],
     this.horizontalMargin = AppSpacing.l,
   });
 
   final NotebookView notebook;
   final ValueChanged<NotebookAction> onAction;
   final List<Widget> extras;
+
+  /// 排在 [extras] 之后、不受卡片左右内边距限制的区块（横向滚动的章节胶囊
+  /// 行）：滚出的胶囊消失在卡片边缘而不是卡片里面；区块自己用
+  /// [contentPadding] 作为左右内容边距，与上方文字对齐。
+  final List<Widget> bleedExtras;
+
+  /// 卡片内容的内边距（[bleedExtras] 的左右内容边距取它）。
+  static const double contentPadding = AppSpacing.l;
 
   /// 卡片左右外边距：首页传入日记卡片样式的侧边距（用户可调），卡片两侧与
   /// 下方列表卡片对齐。
@@ -101,7 +110,12 @@ class NotebookHeaderCard extends ConsumerWidget {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.l),
+              padding: EdgeInsets.fromLTRB(
+                contentPadding,
+                contentPadding,
+                contentPadding,
+                bleedExtras.isEmpty ? contentPadding : 0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -176,6 +190,14 @@ class NotebookHeaderCard extends ConsumerWidget {
                 ],
               ),
             ),
+            if (bleedExtras.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: contentPadding),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: bleedExtras,
+                ),
+              ),
           ],
         ),
       ),

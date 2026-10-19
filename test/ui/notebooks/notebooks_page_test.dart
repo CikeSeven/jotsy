@@ -48,7 +48,8 @@ void main() {
     expect(find.text('智能日记本'), findsOneWidget);
     expect(find.text('已合上'), findsOneWidget);
     expect(find.text('1 篇 · 置顶'), findsOneWidget);
-    expect(find.text('智能'), findsOneWidget);
+    // 智能日记本的篇数按规则现算（没有规则时什么都不匹配）。
+    expect(find.text('0 篇 · 智能'), findsOneWidget);
     expect(find.text('0 篇 · 已合上'), findsOneWidget);
     await h.unmount();
   });

@@ -194,8 +194,8 @@ class _NotebookShelfState extends ConsumerState<NotebookShelf> {
     Widget tile(NotebookView notebook) => NotebookShelfTile(
       key: ValueKey<String>('notebook_shelf_${notebook.id}'),
       notebook: notebook,
-      // 智能日记本的篇数由规则现算，接入前不显示。
-      count: notebook.isManual ? counts[notebook.id] ?? 0 : null,
+      // 智能日记本的篇数由规则现算（算出之前不显示）。
+      count: watchNotebookDisplayCount(ref, notebook, counts),
       selected: notebook.id == widget.currentNotebookId,
       onTap: () => _select(NotebookShelfResult.selectNotebook(notebook.id)),
     );

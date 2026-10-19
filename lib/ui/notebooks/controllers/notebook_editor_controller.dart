@@ -21,6 +21,7 @@ typedef _NotebookDraft = ({
   NotebookVisibility visibility,
   NotebookSort sort,
   String? templateId,
+  NotebookRuleSet rules,
 });
 
 /// 日记本编辑页的表单状态与保存（新建与编辑共用）。
@@ -30,8 +31,11 @@ typedef _NotebookDraft = ({
 ///
 /// - 名称与简介是 [TextEditingController]，其余字段经 setter 修改并通知；
 /// - [dirty] 比较当前值与打开时（或上次保存后）的快照，决定返回时是否确认；
-/// - 编辑时以原 payload 为底 `copyWith`，章节、写作目标、智能规则这些本页
-///   不编辑的字段原样保留；
+/// - 编辑时以原 payload 为底 `copyWith`，章节、写作目标这些本页不编辑的
+///   字段原样保留；新建时以 [NotebookEditorController.new] 的 `initialPayload`
+///   为底（日历、搜索的快捷新建预填规则）；
+/// - 智能规则（[rules]）也是表单的一部分：参与改动比较；智能日记本至少要有
+///   一条规则才能保存（空规则什么都不匹配）；保存为普通日记本时不写规则；
 /// - 智能日记本不能私密：类型选了“智能”时私密选项隐藏，保存一律写 normal
 ///   （数据库层也会兜底），切回“普通”时恢复之前的选择；
 /// - 选封面只拷贝新图到封面私有目录，被替换或移除的旧封面不在这里删除——
@@ -41,8 +45,11 @@ class NotebookEditorController extends ChangeNotifier {
     NotebookView? notebook,
     NotebookKind initialKind = NotebookKind.manual,
     String? initialName,
-  }) : _notebook = notebook {
-    final payload = notebook?.payload ?? NotebookPayload.defaults;
+    NotebookPayload? initialPayload,
+  }) : _notebook = notebook,
+       _basePayload =
+           notebook?.payload ?? initialPayload ?? NotebookPayload.defaults {
+    final payload = _basePayload;
     name = TextEditingController(text: notebook?.name ?? initialName ?? '');
     description = TextEditingController(text: payload.description);
     _icon = notebook?.icon ?? NotebookIcon.fallback;
@@ -52,6 +59,7 @@ class NotebookEditorController extends ChangeNotifier {
     _visibility = notebook?.visibility ?? NotebookVisibility.normal;
     _sort = payload.sort;
     _templateId = payload.templateId;
+    _rules = NotebookRuleSet.decode(payload.rules);
     _initial = _draft;
     name.addListener(notifyListeners);
     description.addListener(notifyListeners);
@@ -61,6 +69,9 @@ class NotebookEditorController extends ChangeNotifier {
   static const int maxNameLength = 30;
 
   final NotebookView? _notebook;
+
+  /// 表单的底：编辑时为原 payload，新建时为预填的 payload。
+  final NotebookPayload _basePayload;
   late final TextEditingController name;
   late final TextEditingController description;
   late _NotebookDraft _initial;
@@ -101,6 +112,52 @@ class NotebookEditorController extends ChangeNotifier {
   String? get templateId => _templateId;
   set templateId(String? value) => _set(() => _templateId = value);
 
+  late NotebookRuleSet _rules;
+
+  /// 智能日记本的规则（草稿）。
+  NotebookRuleSet get rules => _rules;
+
+  bool get canAddRule => _rules.rules.length < NotebookRuleSet.maxRules;
+
+  set ruleMatch(NotebookRuleMatch value) =>
+      _set(() => _rules = _rules.copyWith(match: value));
+
+  /// 追加一条规则；已到上限时忽略。
+  void addRule(NotebookRule rule) {
+    if (!canAddRule) return;
+    _set(
+      () => _rules = _rules.copyWith(
+        rules: <NotebookRule>[..._rules.rules, rule],
+      ),
+    );
+  }
+
+  void replaceRule(int index, NotebookRule rule) {
+    if (index < 0 || index >= _rules.rules.length) return;
+    _set(
+      () => _rules = _rules.copyWith(
+        rules: <NotebookRule>[..._rules.rules]..[index] = rule,
+      ),
+    );
+  }
+
+  void removeRuleAt(int index) {
+    if (index < 0 || index >= _rules.rules.length) return;
+    _set(
+      () => _rules = _rules.copyWith(
+        rules: <NotebookRule>[..._rules.rules]..removeAt(index),
+      ),
+    );
+  }
+
+  /// “从示例开始”：放入示例规则；名称还空着时一并填上 [name]。
+  void applyExample(NotebookRule rule, {required String name}) {
+    if (name.isNotEmpty && this.name.text.trim().isEmpty) {
+      this.name.text = name;
+    }
+    addRule(rule);
+  }
+
   bool _saving = false;
   bool get saving => _saving;
 
@@ -109,7 +166,10 @@ class NotebookEditorController extends ChangeNotifier {
 
   bool get isSmart => _kind == NotebookKind.smart;
 
-  bool get canSave => name.text.trim().isNotEmpty && !_saving;
+  /// 智能日记本还没有规则（保存键因此不可用，页面给出说明）。
+  bool get needsRule => isSmart && _rules.isEmpty;
+
+  bool get canSave => name.text.trim().isNotEmpty && !_saving && !needsRule;
 
   bool get dirty => _draft != _initial;
 
@@ -123,6 +183,7 @@ class NotebookEditorController extends ChangeNotifier {
     visibility: _visibility,
     sort: _sort,
     templateId: _templateId,
+    rules: _rules,
   );
 
   /// 实际写入的可见性：智能日记本一律 normal。
@@ -131,8 +192,7 @@ class NotebookEditorController extends ChangeNotifier {
 
   /// 当前表单对应的 payload（编辑时保留本页不编辑的字段）。
   NotebookPayload get payload {
-    final base = _notebook?.payload ?? NotebookPayload.defaults;
-    return base.copyWith(
+    return _basePayload.copyWith(
       description: description.text,
       icon: _icon.name,
       color: _color,
@@ -142,6 +202,8 @@ class NotebookEditorController extends ChangeNotifier {
       sort: _sort,
       templateId: _templateId,
       clearTemplateId: _templateId == null,
+      rules: isSmart ? _rules.encode() : null,
+      clearRules: !isSmart,
     );
   }
 

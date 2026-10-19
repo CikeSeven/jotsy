@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
@@ -10,6 +11,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import '../../widgets/list_item_presence.dart';
+import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_labels.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_cover_tile.dart';
@@ -62,12 +64,16 @@ class NotebooksSectionSliver extends StatelessWidget {
             duration: duration,
             child: Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.s),
-              child: NotebookManageRow(
-                notebook: notebook,
-                count: notebook.isManual ? counts[notebook.id] ?? 0 : null,
-                index: index,
-                onTap: () => onTap(notebook),
-                onMore: () => onMore(notebook),
+              // 智能日记本的篇数由规则现算，只让这一行订阅它的计数。
+              child: Consumer(
+                builder: (BuildContext context, WidgetRef ref, Widget? _) =>
+                    NotebookManageRow(
+                      notebook: notebook,
+                      count: watchNotebookDisplayCount(ref, notebook, counts),
+                      index: index,
+                      onTap: () => onTap(notebook),
+                      onMore: () => onMore(notebook),
+                    ),
               ),
             ),
           );

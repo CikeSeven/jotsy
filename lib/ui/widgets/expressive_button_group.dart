@@ -12,6 +12,7 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
     required this.selected,
     required this.onSelectionChanged,
     this.minSegmentWidth = 104,
+    this.dense = false,
   }) : assert(segments.length > 0),
        assert(selected.length == 1);
 
@@ -23,6 +24,11 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
   /// 标签很短（两三个字）时可调小，避免窄屏下无谓地堆成三行。
   final double minSegmentWidth;
 
+  /// 紧凑横排：36dp 高、每段按标签自身宽度排列、始终不改为纵向，用于放进
+  /// 固定高度的一行（如编辑器颜色面板的 40dp 表头）。宽度可能不够时由调用方
+  /// 整体缩放（如 `FittedBox`），标签不省略。
+  final bool dense;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -30,8 +36,9 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final stacked =
-            constraints.maxWidth < segments.length * minSegmentWidth ||
-            MediaQuery.textScalerOf(context).scale(14) > 20;
+            !dense &&
+            (constraints.maxWidth < segments.length * minSegmentWidth ||
+                MediaQuery.textScalerOf(context).scale(14) > 20);
         final children = <Widget>[];
         for (var index = 0; index < segments.length; index++) {
           final segment = segments[index];
@@ -48,9 +55,17 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
                   context,
                   ExpressiveMotion.fast,
                 ),
-                minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
-                padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                minimumSize: WidgetStatePropertyAll(
+                  dense ? const Size(48, 36) : const Size(48, 48),
+                ),
+                tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
+                padding: WidgetStatePropertyAll(
+                  dense
+                      ? const EdgeInsets.symmetric(horizontal: 12)
+                      : const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                 ),
                 backgroundColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.disabled)) return null;
@@ -92,7 +107,9 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
                     segment.icon!,
                     const SizedBox(width: 8),
                   ],
-                  if (segment.label != null) Flexible(child: segment.label!),
+                  // 紧凑横排的宽度不受限（按标签排列），不能用 Flexible。
+                  if (segment.label != null)
+                    dense ? segment.label! : Flexible(child: segment.label!),
                 ],
               ),
             ),
@@ -102,7 +119,7 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
               SizedBox(width: stacked ? 0 : 4, height: stacked ? 4 : 0),
             );
           }
-          children.add(stacked ? button : Expanded(child: button));
+          children.add(stacked || dense ? button : Expanded(child: button));
         }
         return FocusTraversalGroup(
           child: stacked
@@ -111,7 +128,10 @@ class ExpressiveButtonGroup<T> extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: children,
                 )
-              : Row(children: children),
+              : Row(
+                  mainAxisSize: dense ? MainAxisSize.min : MainAxisSize.max,
+                  children: children,
+                ),
         );
       },
     );

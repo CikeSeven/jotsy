@@ -107,32 +107,6 @@ void main() {
     );
   });
 
-  group('resolveDiaryHexInputColor', () {
-    test('keeps the current alpha when the RGB is unchanged', () {
-      expect(
-        resolveDiaryHexInputColor(
-          const Color(0xFFFFC107),
-          const Color(0x66FFC107),
-        ),
-        const Color(0x66FFC107),
-      );
-    });
-
-    test('uses an opaque color when the RGB changes', () {
-      expect(
-        resolveDiaryHexInputColor(
-          const Color(0xFF3A7BD5),
-          const Color(0x66FFC107),
-        ),
-        const Color(0xFF3A7BD5),
-      );
-      expect(
-        resolveDiaryHexInputColor(const Color(0xFF3A7BD5), null),
-        const Color(0xFF3A7BD5),
-      );
-    });
-  });
-
   test('collects distinct non-preset colors in document order', () {
     final document = quill.Document.fromDelta(
       Delta()

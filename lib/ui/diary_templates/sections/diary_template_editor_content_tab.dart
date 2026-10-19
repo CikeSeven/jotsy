@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
+import '../../diaries/providers/diary_recent_colors_provider.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
 import '../../diaries/viewmodels/diary_quill_styles.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
@@ -227,6 +228,10 @@ class _DiaryTemplateEditorContentTabState
                   controller: widget.controller.body,
                   order: order,
                   maxPanelExtent: MediaQuery.sizeOf(context).height / 3,
+                  recentColors: ref.watch(diaryRecentColorsProvider),
+                  onCustomColorUsed: ref
+                      .read(diaryRecentColorsProvider.notifier)
+                      .record,
                 ),
               ),
             ),

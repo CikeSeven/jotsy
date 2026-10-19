@@ -156,13 +156,15 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('文字颜色'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('输入颜色代码'));
+    await tester.tap(find.text('自定义'));
     await tester.pumpAndSettle();
-
     final hexField = find.descendant(
-      of: find.byType(DiaryColorHexInputRow),
+      of: find.byType(DiaryColorHexField),
       matching: find.byType(TextField),
     );
+    await tester.tap(hexField);
+    await tester.pumpAndSettle();
+
     FocusNode hexFocus() => tester.widget<TextField>(hexField).focusNode!;
     expect(hexFocus().hasFocus, isTrue);
 
@@ -177,10 +179,11 @@ void main() {
     expect(hexField, findsOneWidget);
     expect(hexFocus().hasFocus, isTrue);
 
-    // 取消后回到正文，键盘收起时工具栏照旧隐藏。
-    await tester.tap(find.byTooltip(h.l10n.commonCancel));
+    // 按“完成”应用后回到正文，键盘收起时工具栏照旧隐藏。
+    await tester.enterText(hexField, '3A7BD5');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(hexField, findsNothing);
+    expect(hexFocus().hasFocus, isFalse);
     tester.view.viewInsets = FakeViewPadding.zero;
     await tester.pumpAndSettle();
     expect(find.byType(DiaryFloatingToolbar), findsNothing);

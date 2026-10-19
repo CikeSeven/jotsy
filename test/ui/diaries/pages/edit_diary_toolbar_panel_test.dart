@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_spectrum.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -141,6 +142,34 @@ void main() {
     await unmount(tester);
   });
 
+  testWidgets('a custom color is saved and offered on the swatches page', (
+    tester,
+  ) async {
+    await pumpCreatePage(tester);
+    await tester.tap(find.byTooltip('更多工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('文字颜色'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('自定义'));
+    await tester.pumpAndSettle();
+
+    // 点饱和度 / 亮度面的右上角：起始色相 210°，饱和度与亮度取满。
+    final area = tester.getRect(find.byType(DiaryColorSaturationValueArea));
+    final gesture = await tester.startGesture(
+      area.topRight + const Offset(-1, 1),
+    );
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    expect(settings.diaryRecentColorsRaw, contains('#FF0080FF'));
+    await tester.tap(find.text('色板'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('颜色 #0080FF'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
   testWidgets('the color code input survives the keyboard closing briefly', (
     tester,
   ) async {
@@ -149,18 +178,20 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('文字颜色'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('输入颜色代码'));
+    await tester.tap(find.text('自定义'));
     await tester.pumpAndSettle();
-
     final hexField = find.descendant(
-      of: find.byType(DiaryColorHexInputRow),
+      of: find.byType(DiaryColorHexField),
       matching: find.byType(TextField),
     );
+    await tester.tap(hexField);
+    await tester.pumpAndSettle();
+
     FocusNode hexFocus() => tester.widget<TextField>(hexField).focusNode!;
     expect(hexFocus().hasFocus, isTrue);
 
-    // 输入法换键盘（如小米对“可见密码”输入框换成系统安全键盘）：旧键盘收起、
-    // 新键盘弹出之间键盘高度归零，工具栏与输入框都不能因此卸载。
+    // 焦点交接时输入法可能先收起再弹出：键盘高度短暂归零，工具栏与输入框
+    // 都不能因此卸载。
     tester.view.viewInsets = FakeViewPadding.zero;
     await tester.pumpAndSettle();
     expect(hexField, findsOneWidget);
@@ -171,10 +202,11 @@ void main() {
     expect(hexField, findsOneWidget);
     expect(hexFocus().hasFocus, isTrue);
 
-    // 取消后焦点回到正文，工具栏照旧跟着键盘：键盘收起就不再显示。
-    await tester.tap(find.byTooltip('取消'));
+    // 按“完成”应用后焦点回到正文，工具栏照旧跟着键盘：键盘收起就不再显示。
+    await tester.enterText(hexField, '3A7BD5');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pumpAndSettle();
-    expect(hexField, findsNothing);
+    expect(hexFocus().hasFocus, isFalse);
     expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
     tester.view.viewInsets = FakeViewPadding.zero;
     await tester.pumpAndSettle();

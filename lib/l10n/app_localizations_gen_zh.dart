@@ -6886,7 +6886,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryColorPanelHexHint => 'RRGGBB';
 
   @override
-  String get diaryColorPanelApply => '应用';
+  String get diaryColorPanelSwatches => '色板';
+
+  @override
+  String get diaryColorPanelSaturationValue => '饱和度与亮度';
+
+  @override
+  String get diaryColorPanelHue => '色相';
+
+  @override
+  String get diaryColorPanelOpacity => '不透明度';
 
   @override
   String get diaryColorRed => '红';

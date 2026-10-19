@@ -48,7 +48,9 @@ void main() {
     });
   }
 
-  test('gradients are painted only by the selection surface', () {
+  // 例外只有两处（AGENTS.md §6）：用户开启的卡片渐变，以及颜色面板自定义
+  // 页的色谱（颜色空间本身）。
+  test('gradients are painted only by the selection surface and spectrum', () {
     final users = Directory('lib')
         .listSync(recursive: true)
         .whereType<File>()
@@ -58,7 +60,8 @@ void main() {
         )
         .map((File file) => file.path)
         .toList();
-    expect(users, <String>[
+    expect(users..sort(), <String>[
+      'lib/ui/diaries/widgets/diary_color_panel/diary_color_spectrum_painters.dart',
       'lib/ui/diaries/widgets/diary_selection_surface.dart',
     ]);
   });

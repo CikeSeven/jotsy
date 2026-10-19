@@ -2058,7 +2058,7 @@
   },
   "imageViewerSaveToGallery": "保存到相册",
   "@imageViewerSaveToGallery": {
-    "description": "图片查看器顶栏“保存到相册”按钮的语义标签。"
+    "description": "看图页长按面板与正文图片菜单中“保存到相册”的操作名称。"
   },
   "imageViewerSaving": "正在保存…",
   "@imageViewerSaving": {
@@ -2097,6 +2097,18 @@
   "imageViewerDownloadFailed": "图片下载失败，请检查网络后重试",
   "@imageViewerDownloadFailed": {
     "description": "网络图片下载失败时的提示。"
+  },
+  "imageViewerOpenDiary": "打开日记",
+  "@imageViewerOpenDiary": {
+    "description": "看图页长按面板中打开这张图片所在日记的操作。"
+  },
+  "imageViewerImageUnreadable": "读取不到这张图片，无法分享",
+  "@imageViewerImageUnreadable": {
+    "description": "看图页分享时图片文件已不存在或无法读取的提示。"
+  },
+  "imageViewerMoreActions": "更多操作",
+  "@imageViewerMoreActions": {
+    "description": "看图页顶栏 ⋮ 按钮的提示文字，也是图片的读屏长按提示：打开分享、保存等操作面板。"
   },
   "diaryToolbarInsertCurrentTime": "插入当前时间",
   "@diaryToolbarInsertCurrentTime": {

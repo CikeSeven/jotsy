@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
@@ -18,7 +22,8 @@ import '../widgets/explore_shared_widgets.dart';
 ///
 /// 职责边界：
 /// - 监听页面控制器的分页结果，滚动触底时请求续载；
-/// - 负责三列网格渲染与图片查看页跳转；
+/// - 负责三列网格渲染与图片查看页跳转；看图页长按“打开日记”打开图片所在
+///   的日记（叠在看图页之上，返回时回到刚才那张图）；
 /// - 不负责日记聚合统计（保持与 ExplorePageController 解耦）。
 class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
   const ExploreMediaGalleryPage({super.key});
@@ -233,17 +238,51 @@ class _ExploreMediaGalleryPageState
   static Object _heroTag(String source) =>
       ImageViewerHeroTag('explore_gallery', source);
 
-  /// 打开看图页：缩略图以共享元素展开成原图，返回时飞回原格子。
+  /// 打开看图页：缩略图以共享元素展开成原图，返回时飞回原格子。每张图带上
+  /// 所在日记，长按面板可直接打开它。
   void _openViewer(int initialIndex, BuildContext cellContext) {
     final source = _mediaItems[initialIndex].source;
     openImageViewer(
       context,
       items: _mediaItems
-          .map((item) => ImageViewerItem(source: item.source))
+          .map(
+            (item) =>
+                ImageViewerItem(source: item.source, diaryId: item.diaryId),
+          )
           .toList(growable: false),
       initialIndex: initialIndex,
       hero: ImageViewerHero.capture(cellContext, tag: _heroTag(source)),
+      onOpenDiary: (String diaryId) => unawaited(_openDiary(diaryId)),
     );
+  }
+
+  /// 看图页长按“打开日记”：预览页压在看图页之上（单篇入口，不左右翻），
+  /// 返回时回到刚才那张图。在预览页删除日记时给 4 秒撤销，撤销即从回收站
+  /// 恢复；提示落在返回后的看图页上。
+  Future<void> _openDiary(String diaryId) async {
+    final database = ref.read(appDatabaseProvider);
+    final result = await Navigator.of(context).push<DiaryPreviewResult?>(
+      MaterialPageRoute<DiaryPreviewResult?>(
+        builder: (BuildContext context) => DiaryPreviewPage(diaryId: diaryId),
+      ),
+    );
+    final deletedId = result?.diaryId;
+    if (deletedId == null || !mounted) {
+      return;
+    }
+    final l10n = context.l10n;
+    final reason = await HomeHintVisibilityScope.showTrackedSnackBar(
+      context: context,
+      snackBar: SnackBar(
+        content: Text(l10n.autoT0075),
+        duration: const Duration(seconds: 4),
+        persist: false,
+        action: SnackBarAction(label: l10n.commonUndo, onPressed: () {}),
+      ),
+    );
+    if (reason == SnackBarClosedReason.action) {
+      await database.restoreDiary(deletedId, touchUpdatedAt: false);
+    }
   }
 }
 

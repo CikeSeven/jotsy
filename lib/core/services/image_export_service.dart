@@ -5,7 +5,6 @@ import 'package:gal/gal.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 /// 图片导出失败的语义分类。
 ///
@@ -20,7 +19,7 @@ enum ImageExportErrorType {
   /// 网络图片下载失败（超时 / 网络不可用 / 非 200）。
   downloadFailed,
 
-  /// 写入相册或调用分享时发生的其他失败。
+  /// 写入相册时发生的其他失败。
   unknown,
 }
 
@@ -40,11 +39,12 @@ class ImageExportException implements Exception {
   String toString() => 'ImageExportException($type, $message)';
 }
 
-/// 图片保存到相册 / 分享服务。
+/// 图片保存到相册服务，并为分享链路提供网络图片下载。
 ///
 /// 职责边界：
 /// - 输入：一个媒体 `source`，可能是应用私有目录下的本地文件路径，也可能是 http(s) URL；
-/// - 输出：把该图片保存到系统相册，或交给系统分享面板；
+/// - 输出：把该图片保存到系统相册；网络图片经 [downloadRemoteImage] 落成本地
+///   文件，供分享链路（`DiaryShareController`）暂存后交给目标应用；
 /// - 副作用：网络图片会先流式下载到应用临时目录（[getTemporaryDirectory]）再处理，
 ///   短时间重复保存/分享同一 URL 会复用仍存在的临时文件；过期缓存会被清理；
 /// - 不负责：UI 提示、loading 态、权限弹窗时机（仅触发 [Gal.requestAccess]）。
@@ -121,38 +121,6 @@ class ImageExportService {
       throw ImageExportException(
         type: ImageExportErrorType.unknown,
         message: 'save to gallery failed',
-        cause: error,
-      );
-    }
-  }
-
-  /// 将 [source] 指向的图片交给系统分享面板。
-  ///
-  /// 本地图片直接分享其文件；网络图片先下载到临时文件再分享。
-  Future<void> shareImage(String source) async {
-    final normalized = source.trim();
-    if (normalized.isEmpty) {
-      throw const ImageExportException(
-        type: ImageExportErrorType.invalidSource,
-        message: 'empty image source',
-      );
-    }
-
-    try {
-      final String path;
-      if (isRemoteSource(normalized)) {
-        final file = await _downloadToTempFile(normalized);
-        path = file.path;
-      } else {
-        path = normalized;
-      }
-      await Share.shareXFiles(<XFile>[XFile(path)]);
-    } on ImageExportException {
-      rethrow;
-    } catch (error) {
-      throw ImageExportException(
-        type: ImageExportErrorType.unknown,
-        message: 'share image failed',
         cause: error,
       );
     }

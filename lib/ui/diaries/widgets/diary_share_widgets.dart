@@ -9,6 +9,8 @@ import '../../widgets/long_image/long_image_cover_alignment.dart';
 import '../../widgets/long_image/long_image_policy.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/diary_image_embed_data.dart';
+import '../models/diary_share_target.dart';
+import '../viewmodels/diary_share_messages.dart';
 
 /// 分享文字预览：展示即将发出的纯文本，最多 8 行。
 ///
@@ -234,6 +236,24 @@ class DiaryShareTargetButton extends StatelessWidget {
     this.glyph,
   }) : assert(icon != null || glyph != null);
 
+  /// 某个分享目标的按钮：名称与图形按 [target] 取。日记分享面板与看图页
+  /// 长按面板共用，两处同一应用的图形保持一致。
+  DiaryShareTargetButton.forTarget(
+    AppLocalizations l10n,
+    DiaryShareTarget target, {
+    super.key,
+    required this.onTap,
+  }) : label = diaryShareTargetLabel(l10n, target),
+       icon = diaryShareTargetIcon(target),
+       glyph = diaryShareTargetIcon(target) == null
+           ? diaryShareTargetLabel(l10n, target)
+           : null;
+
+  /// 按钮宽度（含名称）与其中圆形的直径；按钮在圆形两侧各宽出一截，给
+  /// 名称留位置。看图页长按面板据此让圆形与面板其他内容的边缘对齐。
+  static const double width = 68;
+  static const double circleSize = 52;
+
   final String label;
   final FaIconData? icon;
   final String? glyph;
@@ -247,58 +267,82 @@ class DiaryShareTargetButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final enabled = onTap != null;
     final foreground = colorScheme.onSecondaryContainer;
+    // 读屏的点按动作直接挂在这一层：子树（含 InkWell）的语义都被排除了。
     return Semantics(
       button: true,
       enabled: enabled,
       label: label,
+      onTap: onTap,
       excludeSemantics: true,
       child: AnimatedOpacity(
         opacity: enabled ? 1 : 0.38,
         duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
         curve: ExpressiveMotion.effects,
-        child: SizedBox(
-          width: 68,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Material(
-                color: colorScheme.secondaryContainer,
-                shape: const CircleBorder(),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: onTap,
-                  child: SizedBox.square(
-                    dimension: 52,
-                    child: Center(
-                      child: icon != null
-                          ? FaIcon(icon, size: 22, color: foreground)
-                          : Text(
-                              glyph!,
-                              maxLines: 1,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: foreground,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0,
+        // 点名称也算点了按钮：圆形上的点按由内层 InkWell 赢得竞技场并显示
+        // 水波纹，两者不会重复触发。
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: SizedBox(
+            width: width,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Material(
+                  color: colorScheme.secondaryContainer,
+                  shape: const CircleBorder(),
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: onTap,
+                    child: SizedBox.square(
+                      dimension: circleSize,
+                      child: Center(
+                        child: icon != null
+                            ? FaIcon(icon, size: 22, color: foreground)
+                            : Text(
+                                glyph!,
+                                maxLines: 1,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: foreground,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+/// 分享目标的图形；图标库没有图形的品牌（小红书）返回 null，按钮里直接写
+/// 名称。
+FaIconData? diaryShareTargetIcon(DiaryShareTarget target) {
+  return switch (target) {
+    DiaryShareTarget.weibo => FontAwesomeIcons.weibo,
+    DiaryShareTarget.wechat => FontAwesomeIcons.weixin,
+    // 朋友圈页的发布入口就是相机。
+    DiaryShareTarget.wechatMoments => FontAwesomeIcons.cameraRetro,
+    DiaryShareTarget.qq => FontAwesomeIcons.qq,
+    // QQ 空间的标志是一颗星。
+    DiaryShareTarget.qzone => FontAwesomeIcons.solidStar,
+    DiaryShareTarget.system => FontAwesomeIcons.shareFromSquare,
+    DiaryShareTarget.xiaohongshu => null,
+  };
 }

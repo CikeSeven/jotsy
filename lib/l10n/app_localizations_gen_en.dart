@@ -1530,6 +1530,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to download image, please check your network and retry';
 
   @override
+  String get imageViewerOpenDiary => 'Open diary';
+
+  @override
+  String get imageViewerImageUnreadable =>
+      'Couldn\'t read this image to share it';
+
+  @override
+  String get imageViewerMoreActions => 'More actions';
+
+  @override
   String get diaryToolbarInsertCurrentTime => 'Insert current time';
 
   @override

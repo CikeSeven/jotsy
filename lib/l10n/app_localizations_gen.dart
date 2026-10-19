@@ -2708,7 +2708,7 @@ abstract class AppLocalizations {
   /// **'Create a dedicated Jotsy folder on your NAS and prefer an app password or token. Upload creates a full ZIP backup; when restoring you can merge into or overwrite local data.'**
   String get webDavHint;
 
-  /// Semantic label for the save-to-gallery action in the image viewer top bar.
+  /// Name of the save-to-gallery action in the image viewer long-press sheet and the in-text image menu.
   ///
   /// In en, this message translates to:
   /// **'Save to gallery'**
@@ -2755,6 +2755,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to download image, please check your network and retry'**
   String get imageViewerDownloadFailed;
+
+  /// Action in the image viewer long-press sheet that opens the diary the image belongs to.
+  ///
+  /// In en, this message translates to:
+  /// **'Open diary'**
+  String get imageViewerOpenDiary;
+
+  /// Hint shown when sharing from the image viewer but the image file is missing or unreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t read this image to share it'**
+  String get imageViewerImageUnreadable;
+
+  /// Tooltip of the image viewer top-bar more button, also the screen reader long-press hint on an image: opens the share / save actions sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get imageViewerMoreActions;
 
   /// Tooltip and settings-page label for the diary editor floating toolbar action that inserts the current system time.
   ///

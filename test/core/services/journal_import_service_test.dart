@@ -268,6 +268,78 @@ void main() {
     expect(tags.map((tag) => tag.name).toSet(), {'Travel', 'Work'});
   });
 
+  test('a session without source folders offers no folder choice', () async {
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.dayOne,
+      filePath: (await dayOneZip()).path,
+    );
+    addTearDown(session.dispose);
+    expect(session.hasSourceFolders, isFalse);
+    expect(session.sourceFolderCount, 0);
+    expect(
+      session.previewFor(JournalImportFolderMode.tags).tagCount,
+      session.preview.tagCount,
+    );
+  });
+
+  group('the folder mode chosen after parsing', () {
+    final expectations = {
+      JournalImportFolderMode.notebooks: (
+        notebooks: {'Travel', 'Work'},
+        tags: <String>{},
+      ),
+      JournalImportFolderMode.tags: (
+        notebooks: <String>{},
+        tags: {'Travel', 'Work'},
+      ),
+      JournalImportFolderMode.both: (
+        notebooks: {'Travel', 'Work'},
+        tags: {'Travel', 'Work'},
+      ),
+    };
+    for (final MapEntry(key: mode, value: expected) in expectations.entries) {
+      test('${mode.name} is what gets written', () async {
+        final db = fixture.database;
+        final session = await JournalImportService.prepare(
+          database: db,
+          source: JournalImportSource.dayOne,
+          filePath: (await dayOneTwoJournalsZip()).path,
+        );
+        expect(session.hasSourceFolders, isTrue);
+        expect(session.sourceFolderCount, 2);
+        expect(session.folderMode, JournalImportFolderMode.notebooks);
+        // 预检按方式预先算好：标签数跟着方式变。
+        expect(session.previewFor(mode).tagCount, expected.tags.length);
+        // 同一方式的载荷只建一次。
+        expect(
+          identical(session.payloadFor(mode), session.payloadFor(mode)),
+          isTrue,
+        );
+
+        await session.apply(
+          database: db,
+          mode: BackupImportMode.merge,
+          folderMode: mode,
+        );
+        await session.dispose();
+
+        expect(
+          (await db.getNotebooks()).map((row) => row.name).toSet(),
+          expected.notebooks,
+        );
+        expect(
+          (await db.select(db.tags).get()).map((tag) => tag.name).toSet(),
+          expected.tags,
+        );
+        expect(
+          await db.select(db.diaryNotebooks).get(),
+          hasLength(expected.notebooks.isEmpty ? 0 : 3),
+        );
+      });
+    }
+  });
+
   test('maps Daylio moods onto the user mood scale', () async {
     final csv = File(p.join(fixture.temporary.path, 'daylio.csv'))
       ..writeAsStringSync(

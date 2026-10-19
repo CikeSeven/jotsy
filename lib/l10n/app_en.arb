@@ -8825,5 +8825,38 @@
   "notebookAnniversaryLinkPrivate": "The linked entry is in a private notebook",
   "@notebookAnniversaryLinkPrivate": {
     "description": "Shown on an anniversary when its linked entry is in a hidden or locked notebook."
+  },
+  "backupImportFolderModeTitle": "Original notebooks / folders",
+  "@backupImportFolderModeTitle": {
+    "description": "Header of a section in the import options sheet: what the other app's notebooks or folders become after import."
+  },
+  "backupImportFolderModeNotebooks": "Notebooks",
+  "@backupImportFolderModeNotebooks": {
+    "description": "Folder mode segment: create notebooks."
+  },
+  "backupImportFolderModeTags": "Tags",
+  "@backupImportFolderModeTags": {
+    "description": "Folder mode segment: turn them into tags with the same names (previous behaviour)."
+  },
+  "backupImportFolderModeBoth": "Both",
+  "@backupImportFolderModeBoth": {
+    "description": "Folder mode segment: create both notebooks and tags."
+  },
+  "backupImportFolderModeNotebooksHint": "{count, plural, =1{Turns the source notebook / folder into a notebook; one with the same name joins your existing notebook} other{Turns the {count} source notebooks / folders into notebooks; ones with the same name join your existing notebooks}}",
+  "@backupImportFolderModeNotebooksHint": {
+    "description": "Explanation when “Notebooks” is selected; count is the number of distinct source notebooks / folders.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportFolderModeTagsHint": "As before, they become tags with the same names",
+  "@backupImportFolderModeTagsHint": {
+    "description": "Explanation when “Tags” is selected."
+  },
+  "backupImportFolderModeBothHint": "Creates notebooks and tags with the same names",
+  "@backupImportFolderModeBothHint": {
+    "description": "Explanation when “Both” is selected."
   }
 }

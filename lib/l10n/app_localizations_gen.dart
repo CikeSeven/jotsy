@@ -11419,6 +11419,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The linked entry is in a private notebook'**
   String get notebookAnniversaryLinkPrivate;
+
+  /// Header of a section in the import options sheet: what the other app's notebooks or folders become after import.
+  ///
+  /// In en, this message translates to:
+  /// **'Original notebooks / folders'**
+  String get backupImportFolderModeTitle;
+
+  /// Folder mode segment: create notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get backupImportFolderModeNotebooks;
+
+  /// Folder mode segment: turn them into tags with the same names (previous behaviour).
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get backupImportFolderModeTags;
+
+  /// Folder mode segment: create both notebooks and tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get backupImportFolderModeBoth;
+
+  /// Explanation when “Notebooks” is selected; count is the number of distinct source notebooks / folders.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Turns the source notebook / folder into a notebook; one with the same name joins your existing notebook} other{Turns the {count} source notebooks / folders into notebooks; ones with the same name join your existing notebooks}}'**
+  String backupImportFolderModeNotebooksHint(int count);
+
+  /// Explanation when “Tags” is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'As before, they become tags with the same names'**
+  String get backupImportFolderModeTagsHint;
+
+  /// Explanation when “Both” is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Creates notebooks and tags with the same names'**
+  String get backupImportFolderModeBothHint;
 }
 
 class _AppLocalizationsDelegate

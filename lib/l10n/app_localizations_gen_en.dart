@@ -6829,4 +6829,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notebookAnniversaryLinkPrivate =>
       'The linked entry is in a private notebook';
+
+  @override
+  String get backupImportFolderModeTitle => 'Original notebooks / folders';
+
+  @override
+  String get backupImportFolderModeNotebooks => 'Notebooks';
+
+  @override
+  String get backupImportFolderModeTags => 'Tags';
+
+  @override
+  String get backupImportFolderModeBoth => 'Both';
+
+  @override
+  String backupImportFolderModeNotebooksHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Turns the $count source notebooks / folders into notebooks; ones with the same name join your existing notebooks',
+      one:
+          'Turns the source notebook / folder into a notebook; one with the same name joins your existing notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupImportFolderModeTagsHint =>
+      'As before, they become tags with the same names';
+
+  @override
+  String get backupImportFolderModeBothHint =>
+      'Creates notebooks and tags with the same names';
 }

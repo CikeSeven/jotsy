@@ -6207,4 +6207,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookAnniversaryLinkPrivate => '关联的日记在私密日记本中';
+
+  @override
+  String get backupImportFolderModeTitle => '原来的日记本 / 文件夹';
+
+  @override
+  String get backupImportFolderModeNotebooks => '日记本';
+
+  @override
+  String get backupImportFolderModeTags => '标签';
+
+  @override
+  String get backupImportFolderModeBoth => '两者';
+
+  @override
+  String backupImportFolderModeNotebooksHint(int count) {
+    return '按来源的 $count 个笔记本 / 文件夹建成日记本，同名的并入本机已有的';
+  }
+
+  @override
+  String get backupImportFolderModeTagsHint => '像以前一样，变成同名标签';
+
+  @override
+  String get backupImportFolderModeBothHint => '同时建日记本和同名标签';
 }

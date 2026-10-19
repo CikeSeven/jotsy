@@ -8825,5 +8825,38 @@
   "notebookAnniversaryLinkPrivate": "关联的日记在私密日记本中",
   "@notebookAnniversaryLinkPrivate": {
     "description": "纪念日关联的日记在隐藏或上锁的日记本里、不能直接显示时的提示。"
+  },
+  "backupImportFolderModeTitle": "原来的日记本 / 文件夹",
+  "@backupImportFolderModeTitle": {
+    "description": "导入方式面板里一节的标题：其他应用里的日记本、笔记本或文件夹导入后变成什么。"
+  },
+  "backupImportFolderModeNotebooks": "日记本",
+  "@backupImportFolderModeNotebooks": {
+    "description": "落地方式分段按钮：建成日记本。"
+  },
+  "backupImportFolderModeTags": "标签",
+  "@backupImportFolderModeTags": {
+    "description": "落地方式分段按钮：变成同名标签（旧版行为）。"
+  },
+  "backupImportFolderModeBoth": "两者",
+  "@backupImportFolderModeBoth": {
+    "description": "落地方式分段按钮：日记本与标签都要。"
+  },
+  "backupImportFolderModeNotebooksHint": "按来源的 {count} 个笔记本 / 文件夹建成日记本，同名的并入本机已有的",
+  "@backupImportFolderModeNotebooksHint": {
+    "description": "选中“日记本”时的说明；count 为来源里不同的笔记本 / 文件夹个数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportFolderModeTagsHint": "像以前一样，变成同名标签",
+  "@backupImportFolderModeTagsHint": {
+    "description": "选中“标签”时的说明。"
+  },
+  "backupImportFolderModeBothHint": "同时建日记本和同名标签",
+  "@backupImportFolderModeBothHint": {
+    "description": "选中“两者”时的说明。"
   }
 }

@@ -161,3 +161,13 @@ String normalizeJournalImportNotebookName(String raw) {
   // 截断处可能正好留下空格。
   return buffer.toString().trimRight();
 }
+
+/// 条目里出现的来源日记本 / 文件夹个数，按 [normalizeJournalImportNotebookName]
+/// 规整后去重，空名不计。
+int journalImportFolderCount(Iterable<JournalImportEntry> entries) => {
+  for (final entry in entries)
+    for (final raw in entry.notebooks)
+      if (normalizeJournalImportNotebookName(raw) case final name
+          when name.isNotEmpty)
+        name,
+}.length;

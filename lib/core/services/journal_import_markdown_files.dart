@@ -20,7 +20,8 @@ import 'journal_import_support.dart';
 /// - 发表时间：front matter 的 `created`/`date` 等；否则文件名里的日期
 ///   （可带时间）；再否则 ZIP 里记录的文件修改时间；
 /// - 标签：front matter 的 `tags`（列表或逗号分隔），位置取 `location` 与
-///   `latitude`/`longitude`；
+///   `latitude`/`longitude`；所在一级文件夹记为所在日记本
+///   （[JournalImportEntry.notebooks]）；
 /// - 正文逐行转换并识别行内 HTML；图片与附件链接先按相对路径、再按文件名
 ///   在整个导出中查找（Obsidian 的附件文件夹），`![[图片.png]]` 嵌入同样
 ///   支持，`[[笔记]]` 双链保留为文字；
@@ -79,8 +80,8 @@ const Set<String> _noteExtensions = {'md', 'markdown', 'mdown', 'txt'};
 String _extension(String path) =>
     p.extension(path).toLowerCase().replaceFirst('.', '');
 
-/// 每个文件所在的一级文件夹（Obsidian 的文件夹、Joplin 的笔记本），作为
-/// 标签。先去掉所有文件共有的外层目录（打包时多出的那一层），TextBundle
+/// 每个文件所在的一级文件夹（Obsidian 的文件夹、Joplin 的笔记本），记为
+/// 所在日记本。先去掉所有文件共有的外层目录（打包时多出的那一层），TextBundle
 /// 包不算文件夹，Notion 文件夹名去掉 ID。
 Map<String, String> _topFolders(List<File> notes, String root) {
   final directories = {
@@ -184,10 +185,8 @@ JournalImportEntry _parseNote(
     contentText: content.contentText,
     createdAt: created,
     updatedAt: updated,
-    tags: [
-      ..._tags(fields['tags'] ?? fields['tag'] ?? fields['keywords']),
-      ?folder,
-    ],
+    tags: [..._tags(fields['tags'] ?? fields['tag'] ?? fields['keywords'])],
+    notebooks: [?folder],
     location: journalFrontMatterString(fields, const ['location', 'place']),
     latitude: hasCoordinate ? latitude : null,
     longitude: hasCoordinate ? longitude : null,

@@ -90,6 +90,7 @@ class JournalImportEntry {
     DateTime? updatedAt,
     this.title = '',
     this.tags = const <String>[],
+    this.notebooks = const <String>[],
     this.moodLevel,
     this.weather,
     this.location,
@@ -114,6 +115,11 @@ class JournalImportEntry {
   final DateTime updatedAt;
   final List<String> tags;
 
+  /// 来源里这篇所在的日记本 / 笔记本 / 文件夹名称（原样，未规整）。落成
+  /// 本应用的日记本、标签还是两者，由 [JournalImportFolderMode] 在生成载荷
+  /// 时决定；解析器只负责如实报告，不替用户做选择。
+  final List<String> notebooks;
+
   /// 心情：1（最差）~ 5（最好），来源没有心情或无法换算时为 null。
   final int? moodLevel;
   final String? weather;
@@ -124,6 +130,18 @@ class JournalImportEntry {
 
   /// 来源里已归档（如 Google Keep 的归档笔记），导入后同样归档。
   final bool archived;
+}
+
+/// 来源里的日记本 / 文件夹（[JournalImportEntry.notebooks]）落成什么：
+/// 日记本（默认，保留原来的分本）、标签（旧版行为），或两者都要。
+enum JournalImportFolderMode {
+  notebooks,
+  tags,
+  both;
+
+  bool get createsNotebooks => this != tags;
+
+  bool get createsTags => this != notebooks;
 }
 
 /// 解析结果：日记与缺失的媒体数（导出里有引用、但文件不在包内）。

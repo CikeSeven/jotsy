@@ -6,6 +6,7 @@ import '../../utils/text_stats.dart';
 import '../database/app_database.dart';
 import 'backup_payload.dart';
 import 'journal_import_models.dart';
+import 'journal_import_notebooks.dart';
 import 'settings_service.dart';
 
 /// 导入日记标签未指定颜色时使用的中性色。
@@ -18,6 +19,10 @@ const int journalImportFallbackTagColor = 0xFF78909C;
 ///   同一文件时识别为“本机已存在”，可选择跳过或覆盖；
 /// - 标签按名称去重，长度截到数据库上限；颜色按 [tagColors] 轮流分配，
 ///   合并时与本机同名标签复用本机标签与颜色；
+/// - 来源日记本 / 文件夹（[JournalImportEntry.notebooks]）按 [folderMode]
+///   落成日记本（经 [JournalImportNotebookBuilder]，与本机日记本的复用规则
+///   见那里）、标签（旧版行为：接在条目标签之后，与标签同样规整）或两者；
+///   [existingNotebooks] 是本机现有日记本，由调用方读库后传入；
 /// - 心情 1~5 级换算到心情量表的 1~10 档，取用户当前心情选项中对应的表情；
 /// - metadata 与发布页结构一致（stats/context），另记录 `import.source/
 ///   sourceKey` 以便追溯来源。
@@ -28,7 +33,17 @@ BackupPayload buildJournalImportPayload(
   List<JournalImportEntry> entries, {
   List<String> moodOptions = SettingsService.defaultMoodOptions,
   List<int> tagColors = const <int>[],
+  JournalImportFolderMode folderMode = JournalImportFolderMode.notebooks,
+  List<NotebookRow> existingNotebooks = const <NotebookRow>[],
+  DateTime? now,
 }) {
+  final notebooks = JournalImportNotebookBuilder(
+    source: source,
+    existing: existingNotebooks,
+    colors: tagColors,
+    fallbackColor: journalImportFallbackTagColor,
+    now: now ?? DateTime.now(),
+  );
   final tags = <String, Tag>{};
   final diaries = <Diary>[];
   final relations = <DiaryTag>[];
@@ -56,7 +71,10 @@ BackupPayload buildJournalImportPayload(
       ),
     );
     final names = <String>{
-      for (final raw in entry.tags)
+      for (final raw in [
+        ...entry.tags,
+        if (folderMode.createsTags) ...entry.notebooks,
+      ])
         if (_clamp(raw.replaceAll(RegExp(r'\s+'), ' ').trim(), 40)
             case final name when name.isNotEmpty)
           name,
@@ -71,18 +89,30 @@ BackupPayload buildJournalImportPayload(
       );
       relations.add(DiaryTag(diaryId: localId, tagId: tag.id));
     }
+    if (folderMode.createsNotebooks) notebooks.add(localId, entry.notebooks);
   }
   return BackupPayload(
     diaries: diaries,
     tags: tags.values.toList(growable: false),
     diaryTags: relations,
+    notebooks: notebooks.notebooks,
+    diaryNotebooks: notebooks.memberships,
   );
 }
 
 /// 来源 + 稳定键 → UUID v5 格式的 diaryId（与本机生成的 v4 ID 同形）。
-String journalImportDiaryId(JournalImportSource source, String sourceKey) {
+String journalImportDiaryId(JournalImportSource source, String sourceKey) =>
+    _uuidV5(_namespace, '${source.name}:$sourceKey');
+
+/// 来源 + 规整后的名称（见 [normalizeJournalImportNotebookName]）→ UUID v5
+/// 格式的 notebookId。命名空间与日记的不同：来源里某篇的稳定键恰好与某个
+/// 日记本名相同时，两者也不会得到同一个 id。
+String journalImportNotebookId(JournalImportSource source, String name) =>
+    _uuidV5(_notebookNamespace, '${source.name}:$name');
+
+String _uuidV5(List<int> namespace, String name) {
   final bytes = sha1
-      .convert([..._namespace, ...utf8.encode('${source.name}:$sourceKey')])
+      .convert([...namespace, ...utf8.encode(name)])
       .bytes
       .sublist(0, 16);
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
@@ -98,6 +128,12 @@ String journalImportDiaryId(JournalImportSource source, String sourceKey) {
 const List<int> _namespace = [
   0x6b, 0x2f, 0x9e, 0x41, 0xc7, 0x3d, 0x4a, 0x8e, //
   0x91, 0x5c, 0x0d, 0x7a, 0xe2, 0x64, 0xb8, 0x13,
+];
+
+/// 日记本 id 的固定命名空间。
+const List<int> _notebookNamespace = [
+  0x3a, 0xd1, 0x57, 0x0e, 0x8b, 0x42, 0x4f, 0x96, //
+  0xa4, 0x1f, 0x63, 0xc8, 0x2d, 0x75, 0xe9, 0x0b,
 ];
 
 /// 心情 1~5 级在 1~10 档量表上的位置：最差、较差、一般、较好、最好。

@@ -38,6 +38,9 @@ import 'settings_service.dart';
 /// 2. [JournalImportSession.apply]：在备份服务的串行队列中经 BackupMerge
 ///    合并导入（事务写表、媒体搬进新批次目录、失败整体回滚）。
 ///
+/// 来源里的日记本 / 文件夹按 `folderMode` 落成日记本（默认）、标签或两者，
+/// 见 [buildJournalImportPayload]。
+///
 /// 暂存区与文档目录同一文件系统，媒体搬运只需 rename。会话结束（导入完成
 /// 或取消）必须调用 [JournalImportSession.dispose] 删除暂存区；进程意外退出
 /// 留下的暂存区在下一次 [prepare] 时清理。
@@ -55,6 +58,7 @@ class JournalImportService {
     required String filePath,
     List<String> moodOptions = SettingsService.defaultMoodOptions,
     List<int> tagColors = const <int>[],
+    JournalImportFolderMode folderMode = JournalImportFolderMode.notebooks,
   }) async {
     if (!await File(filePath).exists()) {
       throw FileSystemException('导入文件不存在', filePath);
@@ -64,6 +68,7 @@ class JournalImportService {
       source: source,
       moodOptions: moodOptions,
       tagColors: tagColors,
+      folderMode: folderMode,
       parse: (staging) async {
         String? extracted;
         if (await _isZip(filePath)) {
@@ -93,12 +98,14 @@ class JournalImportService {
     CloudProgress? onProgress,
     List<String> moodOptions = SettingsService.defaultMoodOptions,
     List<int> tagColors = const <int>[],
+    JournalImportFolderMode folderMode = JournalImportFolderMode.notebooks,
   }) {
     return _prepare(
       database: database,
       source: source,
       moodOptions: moodOptions,
       tagColors: tagColors,
+      folderMode: folderMode,
       parse: (staging) => fetchCloudJournal(
         provider,
         JournalMediaStager(staging.path),
@@ -114,6 +121,7 @@ class JournalImportService {
     required JournalImportSource source,
     required List<String> moodOptions,
     required List<int> tagColors,
+    required JournalImportFolderMode folderMode,
     required Future<JournalImportParseResult> Function(Directory staging) parse,
   }) async {
     final documents = await getApplicationDocumentsDirectory();
@@ -126,11 +134,19 @@ class JournalImportService {
       if (parsed.entries.isEmpty) {
         throw JournalImportFormatException(source, noEntries: true);
       }
+      // 本机日记本只在这里读一次：载荷生成保持纯函数，复用本机同名 / 上次
+      // 导入建的日记本所需的信息由此传入。预检到确认之间用户若又改了日记本，
+      // 合并按 notebookId 处理，最坏只是多建一本或沿用旧定义，不会写坏数据。
+      final existingNotebooks = folderMode.createsNotebooks
+          ? await database.getNotebooks()
+          : const <NotebookRow>[];
       final payload = buildJournalImportPayload(
         source,
         parsed.entries,
         moodOptions: moodOptions,
         tagColors: tagColors,
+        folderMode: folderMode,
+        existingNotebooks: existingNotebooks,
       );
       final preview = await DataArchiveService.previewPayload(
         database: database,

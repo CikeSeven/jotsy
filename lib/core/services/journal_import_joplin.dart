@@ -20,8 +20,9 @@ import 'journal_import_support.dart';
 /// 格式依据 Joplin 源码 `BaseItem.serialize/unserialize`。
 ///
 /// 映射：ID → 稳定键；user_created_time/user_updated_time（UTC，用户可改的
-/// 日期，缺失时用 created_time/updated_time）→ 发表/更新时间；标签 → 标签，
-/// 笔记分属多个笔记本时再加笔记本名；经纬度 → 坐标。`markup_language: 2`
+/// 日期，缺失时用 created_time/updated_time）→ 发表/更新时间；标签 → 标签；
+/// 笔记分属多个笔记本时记下所在笔记本（[JournalImportEntry.notebooks]）；
+/// 经纬度 → 坐标。`markup_language: 2`
 /// 的笔记正文是 HTML。正文中 `:/<ID>` 指向附件的转为媒体嵌入，指向其他
 /// 笔记的保留链接文字。加密、上锁（正文为密文）、回收站中与冲突副本不导入。
 JournalImportParseResult parseJoplinExport(
@@ -123,8 +124,8 @@ JournalImportParseResult parseJoplinExport(
             File(input.filePath).lastModifiedSync(),
         updatedAt:
             _time(note['user_updated_time']) ?? _time(note['updated_time']),
-        tags: [
-          ...?noteTags[id],
+        tags: [...?noteTags[id]],
+        notebooks: [
           if (notebooks.length > 1 && notebook != null && notebook.isNotEmpty)
             notebook,
         ],

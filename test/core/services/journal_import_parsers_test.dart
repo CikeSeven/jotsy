@@ -109,7 +109,7 @@ void main() {
       expect(result.missingMediaCount, 1);
     });
 
-    test('tags entries with the journal name when there are several', () {
+    test('records the journal name when there are several', () {
       for (final name in ['Work', 'Home']) {
         write('$name.json', {
           'entries': [
@@ -118,10 +118,11 @@ void main() {
         });
       }
       final result = parseDayOneExport(extracted(), media);
-      expect(result.entries.map((entry) => entry.tags), [
+      expect(result.entries.map((entry) => entry.notebooks), [
         ['Home'],
         ['Work'],
       ]);
+      expect(result.entries.map((entry) => entry.tags), [isEmpty, isEmpty]);
     });
 
     test('rejects files that are not Day One exports', () {
@@ -523,7 +524,8 @@ void main() {
       // 2025-08-11T14:45:17.768Z 在 -04:00 是 10:45:17。
       expect(entry.createdAt, DateTime(2025, 8, 11, 10, 45, 17, 768));
       expect(entry.contentText, '\n- With metadata\n- 16:46');
-      expect(entry.tags, ['Idea', 'Dream', 'Vacations']);
+      expect(entry.tags, ['Idea', 'Dream']);
+      expect(entry.notebooks, ['Vacations']);
       expect(entry.moodLevel, 4);
       expect(entry.weather, 'clear sky 20℃');
       expect(entry.location, 'Male, Maldives');

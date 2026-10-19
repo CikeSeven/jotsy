@@ -42,7 +42,8 @@ class CloudNote {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
-  /// 所在分组（文件夹）名称，导入为标签。
+  /// 所在分组（文件夹）名称，记为所在日记本（[JournalImportEntry.notebooks]），
+  /// 落成日记本还是标签由 [JournalImportFolderMode] 决定。
   final String? folder;
   final List<CloudAttachment> attachments;
   final void Function(JournalDeltaWriter writer, CloudEmbedResolver resolve)
@@ -134,7 +135,7 @@ Future<JournalImportParseResult> fetchCloudJournal(
         contentText: content.contentText,
         createdAt: note.createdAt,
         updatedAt: note.updatedAt,
-        tags: [
+        notebooks: [
           if (note.folder?.trim() case final folder? when folder.isNotEmpty)
             folder,
         ],

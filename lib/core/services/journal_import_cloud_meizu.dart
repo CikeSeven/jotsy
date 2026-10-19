@@ -5,6 +5,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// 魅族笔记（Flyme 云服务 notes.flyme.cn）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/meizu.py`、`meizu_files.py`、`meizu_groups.py`）：
@@ -223,9 +224,8 @@ class MeizuCloudProvider implements CloudNoteProvider {
     return response.bytes;
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }
 
 /// 解析魅族正文区块树。图片、录音、文件区块经 [onAttachment] 报告附件

@@ -41,6 +41,21 @@ dom.Element enmlToHtml(String enml, XmlElement note) {
   return body;
 }
 
+/// 保留无法解密的原始片段与解密提示；正文仍显示可读内容，预览会说明有
+/// 不完整的篇目。密文只进入日记 metadata，随完整备份保留。
+List<Map<String, String>> enexEncryptedFragments(XmlElement note) {
+  final enml = note.getElement('content')?.innerText ?? '';
+  final body = html_parser.parseFragment(_htmlFromEnml(enml));
+  return [
+    for (final element in body.querySelectorAll('en-crypt'))
+      {
+        for (final entry in element.attributes.entries)
+          '${entry.key}': entry.value,
+        'ciphertext': element.text,
+      },
+  ];
+}
+
 /// v10 任务：按 `taskGroupNoteLevelID` 分组、组内按 `sortWeight` 排序，
 /// 值为（标题，是否完成）。
 Map<String, List<(String, bool)>> _tasks(XmlElement note) {
@@ -143,7 +158,7 @@ class EnexResources {
   EnexResources(this._media);
 
   final JournalMediaStager _media;
-  final Map<String, ({List<int> bytes, String name})> _byHash = {};
+  final Map<String, ({List<int> bytes, String name, String mime})> _byHash = {};
   final Map<String, Map<String, Object?>> _staged = {};
 
   void add(XmlElement resource) {
@@ -155,7 +170,10 @@ class EnexResources {
       _media.missingCount++;
       return;
     }
-    if (bytes.isEmpty) return;
+    if (bytes.isEmpty) {
+      _media.missingCount++;
+      return;
+    }
     final mime = resource.getElement('mime')?.innerText.trim() ?? '';
     final fileName = journalString(
       resource
@@ -165,7 +183,7 @@ class EnexResources {
     );
     _byHash.putIfAbsent(
       md5.convert(bytes).toString(),
-      () => (bytes: bytes, name: fileName ?? 'media${_extensionFor(mime)}'),
+      () => (bytes: bytes, name: fileName ?? 'media', mime: mime),
     );
   }
 
@@ -180,24 +198,10 @@ class EnexResources {
       return _staged[hash] ??= _media.embedBytes(
         resource.bytes,
         name: resource.name,
+        mime: resource.mime,
       );
     }
-    // 网页剪藏里内嵌的 data URI 图片。
-    final inline = RegExp(
-      r'^data:([\w/+.-]+);base64,',
-      caseSensitive: false,
-    ).firstMatch(source);
-    if (inline == null) return null;
-    try {
-      return _media.embedBytes(
-        base64.decode(
-          source.substring(inline.end).replaceAll(RegExp(r'\s+'), ''),
-        ),
-        name: 'image${_extensionFor(inline.group(1)!)}',
-      );
-    } on FormatException {
-      return null;
-    }
+    return _media.embedDataUri(source);
   }
 
   /// 正文没有引用的附件，按导出中的顺序追加在末尾。
@@ -207,20 +211,4 @@ class EnexResources {
       yield resolve('enex:$hash')!;
     }
   }
-
-  static String _extensionFor(String mime) => switch (mime.toLowerCase()) {
-    'image/jpeg' || 'image/jpg' => '.jpg',
-    'image/png' => '.png',
-    'image/gif' => '.gif',
-    'image/webp' => '.webp',
-    'image/heic' => '.heic',
-    'audio/mpeg' || 'audio/mp3' => '.mp3',
-    'audio/wav' || 'audio/x-wav' => '.wav',
-    'audio/amr' => '.amr',
-    'audio/mp4' || 'audio/m4a' || 'audio/x-m4a' => '.m4a',
-    'video/mp4' => '.mp4',
-    'video/quicktime' => '.mov',
-    'application/pdf' => '.pdf',
-    _ => '',
-  };
 }

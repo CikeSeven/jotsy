@@ -3818,6 +3818,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{The body of 1 note couldn\'t be read; only its summary will be imported} other{The bodies of {count} notes couldn\'t be read; only their summaries will be imported}}'**
   String backupImportSummaryOnly(int count);
 
+  /// Notes with encrypted or undisplayable sections whose readable body and original data will be preserved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 note contains sections that cannot be decrypted or displayed; readable text and original data will be preserved} other{{count} notes contain sections that cannot be decrypted or displayed; readable text and original data will be preserved}}'**
+  String backupImportPartialContent(int count);
+
   /// Tooltip of the calendar header button that opens the display options sheet.
   ///
   /// In en, this message translates to:

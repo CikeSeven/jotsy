@@ -7,6 +7,7 @@ import 'journal_import_cloud_honor_html.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// 荣耀笔记（新荣耀账号，cloud.honor.com）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/honor.py`、`honor_html.py`、`honor_files.py`、
@@ -355,7 +356,6 @@ class HonorCloudProvider implements CloudNoteProvider {
     );
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }

@@ -24,9 +24,15 @@ void writeCloudHtml(
   final root = dom.Element.tag('div');
   html_parser.parseFragment(html).reparentChildren(root);
   prepare?.call(root);
-  for (final image in root.querySelectorAll('img')) {
-    final id = imageId == null ? image.attributes['src'] : imageId(image);
+  for (final image in root.querySelectorAll('img, video, audio').toList()) {
+    final source =
+        image.attributes['src'] ??
+        image.querySelector('source[src]')?.attributes['src'];
+    final id = imageId == null ? source : imageId(image);
     if (id == null || id.isEmpty) {
+      // 找不到附件元数据的签名图片也不能静默消失；交给公共读取链路计入
+      // 缺失，保留其余正文。不会向这个未知地址发起请求。
+      if (source != null && source.isNotEmpty) resolve('unresolved:$source');
       image.remove();
     } else {
       image.attributes['src'] = '$_scheme$id';

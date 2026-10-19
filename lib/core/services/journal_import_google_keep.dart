@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -32,13 +33,16 @@ JournalImportParseResult parseGoogleKeepExport(
       : listJournalExportFiles(input.extractedPath!);
   final entries = <JournalImportEntry>[];
   final keys = JournalKeyRegistry();
-  final listings = <String, List<String>>{};
+  final exportFiles = JournalImportFiles(
+    input.extractedPath ?? p.dirname(input.filePath),
+  );
+  final issues = JournalImportIssues();
   var recognized = false;
   for (final file in files) {
     if (p.extension(file.path).toLowerCase() != '.json') continue;
     final Object? decoded;
     try {
-      decoded = jsonDecode(file.readAsStringSync());
+      decoded = jsonDecode(readJournalText(file));
     } on FormatException {
       continue;
     } on FileSystemException {
@@ -48,11 +52,26 @@ JournalImportParseResult parseGoogleKeepExport(
     final raw = decoded.cast<String, Object?>();
     final created = _usec(raw['createdTimestampUsec']);
     final edited = _usec(raw['userEditedTimestampUsec']);
-    if (created == null && edited == null) continue;
+    if (created == null && edited == null) {
+      if (raw.containsKey('createdTimestampUsec') ||
+          raw.containsKey('userEditedTimestampUsec')) {
+        recognized = true;
+        if (raw['isTrashed'] != true) issues.skip(JournalSkipReason.unreadable);
+      }
+      continue;
+    }
     recognized = true;
     if (raw['isTrashed'] == true) continue;
     entries.add(
-      _parseNote(raw, created ?? edited!, edited, file, media, keys, listings),
+      _parseNote(
+        raw,
+        created ?? edited!,
+        edited,
+        file,
+        media,
+        keys,
+        exportFiles,
+      ),
     );
   }
   if (!recognized) {
@@ -61,12 +80,13 @@ JournalImportParseResult parseGoogleKeepExport(
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
 /// 正数微秒时间戳 → 本地时间；缺失或为 0 时返回 null。
-DateTime? _usec(Object? value) => value is num && value > 0
-    ? DateTime.fromMicrosecondsSinceEpoch(value.toInt())
+DateTime? _usec(Object? value) => (journalNumber(value) ?? 0) > 0
+    ? journalEpochTime(value, microseconds: true)
     : null;
 
 JournalImportEntry _parseNote(
@@ -76,21 +96,20 @@ JournalImportEntry _parseNote(
   File file,
   JournalMediaStager media,
   JournalKeyRegistry keys,
-  Map<String, List<String>> listings,
+  JournalImportFiles files,
 ) {
   final writer = JournalDeltaWriter();
-  final attachments = [
-    for (final item in (raw['attachments'] as List?) ?? const [])
-      if (item is Map && journalString(item['filePath']) != null)
-        _attachmentPath(
-          file.parent,
-          journalString(item['filePath'])!,
-          listings,
-        ),
-  ];
   // Keep 把图片与涂鸦显示在标题上方，录音在正文下方。
   final later = <Map<String, Object?>>[];
-  for (final path in attachments) {
+  for (final item in journalList(raw['attachments']).whereType<Map>()) {
+    final source = journalString(item['filePath']);
+    final path = source == null
+        ? null
+        : files.resolve(source, from: file.parent.path, matchStem: true);
+    if (path == null) {
+      media.missingCount++;
+      continue;
+    }
     final data = media.embedFile(path);
     if (data == null) continue;
     if (data.containsKey('image') || data.containsKey('video')) {
@@ -107,15 +126,15 @@ JournalImportEntry _parseNote(
   } else if (text is String) {
     appendJournalPlainText(writer, text);
   }
-  for (final item in (raw['listContent'] as List?) ?? const []) {
+  for (final item in journalList(raw['listContent'])) {
     if (item is! Map) continue;
-    final itemText = (item['text'] as String? ?? '').replaceAll('\n', ' ');
+    final itemText = (journalString(item['text']) ?? '').replaceAll('\n', ' ');
     writer.text(itemText);
     writer.endLine({
       'list': item['isChecked'] == true ? 'checked' : 'unchecked',
     });
   }
-  for (final annotation in (raw['annotations'] as List?) ?? const []) {
+  for (final annotation in journalList(raw['annotations'])) {
     if (annotation is! Map) continue;
     final url = journalString(annotation['url']);
     if (url == null || !RegExp(r'^https?://').hasMatch(url)) continue;
@@ -140,49 +159,11 @@ JournalImportEntry _parseNote(
     createdAt: createdAt,
     updatedAt: updatedAt,
     tags: [
-      for (final label in (raw['labels'] as List?) ?? const [])
+      for (final label in journalList(raw['labels']))
         if (label is Map && journalString(label['name']) != null)
           journalString(label['name'])!,
     ],
     pinned: raw['isPinned'] == true,
     archived: raw['isArchived'] == true,
-  );
-}
-
-/// 附件与 JSON 同级。早期导出里 JSON 写 `.jpeg` 而文件是 `.jpg`（或相反），
-/// 依次尝试原名、互换扩展名、同主名的任一文件；都找不到时返回原路径，由
-/// 媒体暂存计入缺失。同主名查找用的目录清单缓存在 [listings]，几千篇笔记
-/// 的导出也只列一次目录。
-String _attachmentPath(
-  Directory directory,
-  String filePath,
-  Map<String, List<String>> listings,
-) {
-  final name = p.basename(filePath.replaceAll('\\', '/'));
-  final exact = p.join(directory.path, name);
-  if (File(exact).existsSync()) return exact;
-  final extension = p.extension(name).toLowerCase();
-  final swapped = switch (extension) {
-    '.jpeg' => '.jpg',
-    '.jpg' => '.jpeg',
-    _ => null,
-  };
-  if (swapped != null) {
-    final candidate = p.join(directory.path, p.setExtension(name, swapped));
-    if (File(candidate).existsSync()) return candidate;
-  }
-  final stem = p.basenameWithoutExtension(name);
-  final siblings = listings[directory.path] ??= [
-    for (final entity in directory.listSync())
-      if (entity is File &&
-          !const {
-            '.json',
-            '.html',
-          }.contains(p.extension(entity.path).toLowerCase()))
-        entity.path,
-  ];
-  return siblings.firstWhere(
-    (path) => p.basenameWithoutExtension(path) == stem,
-    orElse: () => exact,
   );
 }

@@ -2253,6 +2253,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String backupImportPartialContent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count notes contain sections that cannot be decrypted or displayed; readable text and original data will be preserved',
+      one:
+          '1 note contains sections that cannot be decrypted or displayed; readable text and original data will be preserved',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get calendarDisplayOptionsTooltip => 'Calendar display';
 
   @override

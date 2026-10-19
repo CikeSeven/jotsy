@@ -197,6 +197,74 @@ void main() {
     tearDown(() => temp.delete(recursive: true));
 
     test(
+      'duplicate note IDs stop import before any attachment downloads',
+      () async {
+        final note = CloudNote(
+          id: 'same',
+          title: '',
+          createdAt: DateTime(2024),
+          writeBody: (_, _) {},
+        );
+        await expectLater(
+          fetchCloudJournal(
+            _FakeProvider([note, note]),
+            JournalMediaStager(temp.path),
+          ),
+          throwsA(_failure(CloudNoteFailure.protocolChanged)),
+        );
+        expect(temp.listSync(), isEmpty);
+      },
+    );
+
+    test(
+      'empty files and missing attachment metadata are reported once',
+      () async {
+        final provider = _FakeProvider([
+          CloudNote(
+            id: 'one',
+            title: '',
+            createdAt: DateTime(2024),
+            attachments: const [
+              CloudAttachment(id: 'empty', name: 'empty.jpg'),
+              CloudAttachment(id: 'empty', name: 'duplicate.jpg'),
+            ],
+            writeBody: (writer, resolve) {
+              resolve('empty');
+              resolve('unknown');
+              resolve('unknown');
+              writer.text('Retained');
+            },
+          ),
+        ]);
+        final result = await fetchCloudJournal(
+          provider,
+          JournalMediaStager(temp.path),
+        );
+        expect(result.entries.single.contentText, 'Retained');
+        expect(result.missingMediaCount, 2);
+        expect(temp.listSync(), isEmpty);
+      },
+    );
+
+    test('a changed attachment protocol stops the import', () async {
+      final provider = _FakeProvider([
+        CloudNote(
+          id: 'one',
+          title: '',
+          createdAt: DateTime(2024),
+          attachments: const [
+            CloudAttachment(id: 'protocol', name: 'photo.jpg'),
+          ],
+          writeBody: (_, _) {},
+        ),
+      ]);
+      await expectLater(
+        fetchCloudJournal(provider, JournalMediaStager(temp.path)),
+        throwsA(_failure(CloudNoteFailure.protocolChanged)),
+      );
+    });
+
+    test(
       'downloads media, appends unreferenced ones, counts failures',
       () async {
         final provider = _FakeProvider([
@@ -387,6 +455,10 @@ class _FakeProvider implements CloudNoteProvider {
 
   @override
   Future<List<int>> download(CloudAttachment attachment) async {
+    if (attachment.id == 'empty') return [];
+    if (attachment.id == 'protocol') {
+      throw const CloudNoteException(CloudNoteFailure.protocolChanged);
+    }
     if (attachment.id == 'gone') {
       throw const CloudNoteException(CloudNoteFailure.rejected);
     }

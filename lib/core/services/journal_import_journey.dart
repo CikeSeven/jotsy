@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_html.dart';
 import 'journal_import_markdown.dart';
 import 'journal_import_media.dart';
@@ -31,11 +32,15 @@ JournalImportParseResult parseJourneyExport(
         ).where((file) => p.extension(file.path).toLowerCase() == '.json');
   final entries = <JournalImportEntry>[];
   final keys = JournalKeyRegistry();
+  final issues = JournalImportIssues();
+  final exportFiles = JournalImportFiles(
+    input.extractedPath ?? p.dirname(input.filePath),
+  );
   var recognized = false;
   for (final file in files) {
     final Object? decoded;
     try {
-      decoded = jsonDecode(file.readAsStringSync());
+      decoded = jsonDecode(readJournalText(file));
     } on FormatException {
       continue;
     } on FileSystemException {
@@ -45,9 +50,16 @@ JournalImportParseResult parseJourneyExport(
     final items = decoded is List ? decoded : [decoded];
     for (final item in items.whereType<Map>()) {
       final raw = item.cast<String, Object?>();
-      if (raw['date_journal'] is! num || raw['text'] is! String) continue;
+      if (!raw.containsKey('date_journal')) continue;
       recognized = true;
-      entries.add(_parseEntry(raw, file.parent.path, input, media, keys));
+      final created = journalEpochTime(raw['date_journal']);
+      if (created == null || (raw['text'] != null && raw['text'] is! String)) {
+        issues.skip(JournalSkipReason.unreadable);
+        continue;
+      }
+      entries.add(
+        _parseEntry(raw, created, file.parent.path, exportFiles, media, keys),
+      );
     }
   }
   if (!recognized) {
@@ -56,67 +68,85 @@ JournalImportParseResult parseJourneyExport(
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
 JournalImportEntry _parseEntry(
   Map<String, Object?> raw,
+  DateTime createdAt,
   String directory,
-  JournalImportInput input,
+  JournalImportFiles files,
   JournalMediaStager media,
   JournalKeyRegistry keys,
 ) {
-  final createdAt = DateTime.fromMillisecondsSinceEpoch(
-    (raw['date_journal'] as num).toInt(),
-  );
-  final modified = raw['date_modified'];
+  final embedded = <String>{};
+  Map<String, Object?>? resolve(String source) {
+    if (source.toLowerCase().startsWith('data:')) {
+      return media.embedDataUri(source);
+    }
+    if (RegExp(r'^[a-z][a-z0-9+.-]*:', caseSensitive: false).hasMatch(source)) {
+      return null;
+    }
+    final path = files.resolve(source, from: directory);
+    if (path == null) {
+      media.missingCount++;
+      return null;
+    }
+    final data = media.embedFile(path);
+    if (data != null) embedded.add(path);
+    return data;
+  }
+
   final writer = JournalDeltaWriter();
-  final text = raw['text'] as String;
+  final text = raw['text'] as String? ?? '';
   if (raw['type'] == 'html' ||
       (raw['type'] == null && looksLikeJournalHtml(text))) {
-    JournalHtmlConverter(writer).appendHtml(text);
+    JournalHtmlConverter(
+      writer,
+      resolveEmbed: resolve,
+      resolveLink: resolve,
+    ).appendHtml(text);
   } else {
-    JournalMarkdownConverter(writer).append(text);
+    JournalMarkdownConverter(
+      writer,
+      resolveEmbed: resolve,
+      resolveLink: resolve,
+    ).append(text);
   }
   for (final name in journalStringList(raw['photos'])) {
-    // 文件通常与 JSON 同级；个别导出会把 JSON 与媒体分在不同层级，再回退到根目录。
-    final candidates = [
-      p.join(directory, p.basename(name)),
-      if (input.extractedPath != null)
-        p.join(input.extractedPath!, p.basename(name)),
-    ];
-    final path = candidates.firstWhere(
-      (candidate) => File(candidate).existsSync(),
-      orElse: () => candidates.first,
-    );
+    final path = files.resolve(name, from: directory);
+    if (path == null) {
+      media.missingCount++;
+      continue;
+    }
+    if (!embedded.add(path)) continue;
     final data = media.embedFile(path);
     if (data != null) writer.embed(data);
   }
   final content = writer.build();
 
-  final latitude = raw['lat'];
-  final longitude = raw['lon'];
+  final latitude = journalNumber(raw['lat']);
+  final longitude = journalNumber(raw['lon']);
   final hasCoordinate =
-      latitude is num &&
-      longitude is num &&
+      latitude != null &&
+      longitude != null &&
       isJournalCoordinate(latitude, longitude);
   final weather = raw['weather'];
   return JournalImportEntry(
     sourceKey: keys.unique(
-      journalString(raw['id']) ?? journalWallClockKey(createdAt, seconds: true),
+      journalId(raw['id']) ?? journalWallClockKey(createdAt, seconds: true),
     ),
     title: journalString(raw['title']) ?? '',
     contentJson: content.contentJson,
     contentText: content.contentText,
     createdAt: createdAt,
-    updatedAt: modified is num && modified > 0
-        ? DateTime.fromMillisecondsSinceEpoch(modified.toInt())
-        : null,
+    updatedAt: journalEpochTime(raw['date_modified']),
     tags: journalStringList(raw['tags']),
     weather: weather is Map
         ? journalWeatherText(
             journalString(weather['description']),
-            weather['degree_c'] as num?,
+            journalNumber(weather['degree_c']),
           )
         : null,
     location: journalString(raw['address']),

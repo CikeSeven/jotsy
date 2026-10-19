@@ -9,6 +9,7 @@ import 'journal_import_cloud_envelope.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// vivo 笔记（云服务网页版 pc.vivo.com.cn）的只读客户端，协议依据参考
 /// 实现（笔记互迁 `providers/vivo.py`、`vivo_wire.py`）：
@@ -261,7 +262,7 @@ class VivoCloudProvider implements CloudNoteProvider {
           'vivo resources',
         );
       }
-      for (final resource in (detail['resources'] as List?) ?? const []) {
+      for (final resource in journalList(detail['resources'])) {
         if (resource is! Map ||
             resource['guid'] is! String ||
             resource['noteGuid'] != guid ||
@@ -425,7 +426,6 @@ class VivoCloudProvider implements CloudNoteProvider {
     return value;
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }

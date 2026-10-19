@@ -7,6 +7,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 import 'journal_import_style.dart';
 
 /// 华为备忘录（云空间 cloud.huawei.com）的只读客户端，协议依据参考实现
@@ -264,7 +265,7 @@ class HuaweiCloudProvider implements CloudNoteProvider {
     final guid = info['guid'] as String;
     final idPattern = RegExp(r'^[A-Za-z0-9_$-]{1,150}$');
     final attachments = <CloudAttachment>[];
-    for (final item in (info['attachments'] as List?) ?? const []) {
+    for (final item in journalList(info['attachments'])) {
       if (item is! Map ||
           item['usage'] is! String ||
           !idPattern.hasMatch('${item['assetId']}') ||
@@ -446,7 +447,6 @@ class HuaweiCloudProvider implements CloudNoteProvider {
     return version;
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }

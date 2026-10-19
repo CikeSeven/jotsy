@@ -2069,6 +2069,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String backupImportPartialContent(int count) {
+    return '$count 篇笔记含无法解密或显示的片段，可读正文与原始信息将保留';
+  }
+
+  @override
   String get calendarDisplayOptionsTooltip => '调整日历';
 
   @override

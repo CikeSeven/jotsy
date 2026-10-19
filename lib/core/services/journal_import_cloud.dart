@@ -54,31 +54,7 @@ typedef CloudProgress = void Function(int done, int? total);
 
 /// 一次读取中没能完整导入的笔记，由平台在 [CloudNoteProvider.fetchNotes]
 /// 里记下，导入预览据此逐项说明，免得笔记悄悄少了没人发现。
-class CloudReadIssues {
-  final Map<JournalSkipReason, int> _skipped = <JournalSkipReason, int>{};
-
-  /// 正文读不到、改用目录摘要作正文的篇数。
-  int summaryOnly = 0;
-
-  Map<JournalSkipReason, int> get skipped => Map.unmodifiable(_skipped);
-
-  /// 记下 [count] 篇因 [reason] 整篇跳过的笔记。
-  void skip(JournalSkipReason reason, [int count = 1]) {
-    if (count > 0) {
-      _skipped.update(reason, (value) => value + count, ifAbsent: () => count);
-    }
-  }
-
-  /// 某原因的计数至少为 [count]（平台另有统计、列表里未必列出时用）。
-  void atLeast(JournalSkipReason reason, int count) {
-    if (count > (_skipped[reason] ?? 0)) _skipped[reason] = count;
-  }
-
-  void reset() {
-    _skipped.clear();
-    summaryOnly = 0;
-  }
-}
+class CloudReadIssues extends JournalImportIssues {}
 
 /// 一个平台的只读云端客户端（协议依据参考实现「笔记互迁」的 providers）。
 abstract interface class CloudNoteProvider {
@@ -130,13 +106,27 @@ Future<JournalImportParseResult> fetchCloudJournal(
 }) async {
   provider.issues.reset();
   final notes = await provider.fetchNotes(onProgress ?? (_, _) {});
+  final ids = <String>{};
+  for (final note in notes) {
+    if (note.id.trim().isEmpty || !ids.add(note.id)) {
+      throw const CloudNoteException(
+        CloudNoteFailure.protocolChanged,
+        'note id',
+      );
+    }
+  }
   final entries = <JournalImportEntry>[];
   for (final (index, note) in notes.indexed) {
     final embeds = <String, Map<String, Object?>>{};
+    final attempted = <String>{};
     for (final attachment in note.attachments) {
-      if (embeds.containsKey(attachment.id)) continue;
+      if (!attempted.add(attachment.id)) continue;
       try {
         final bytes = await provider.download(attachment);
+        if (bytes.isEmpty) {
+          media.missingCount++;
+          continue;
+        }
         embeds[attachment.id] = media.embedBytes(
           bytes,
           name: attachment.name,
@@ -152,6 +142,7 @@ Future<JournalImportParseResult> fetchCloudJournal(
     note.writeBody(writer, (id) {
       final data = embeds[id];
       if (data != null) used.add(id);
+      if (data == null && attempted.add(id)) media.missingCount++;
       return data;
     });
     for (final attachment in note.attachments) {
@@ -180,6 +171,7 @@ Future<JournalImportParseResult> fetchCloudJournal(
     missingMediaCount: media.missingCount,
     skippedNotes: provider.issues.skipped,
     summaryOnlyCount: provider.issues.summaryOnly,
+    partialContentCount: provider.issues.partialContent,
   );
 }
 
@@ -189,6 +181,7 @@ bool isFatalCloudFailure(CloudNoteFailure failure) => switch (failure) {
   CloudNoteFailure.sessionExpired ||
   CloudNoteFailure.rateLimited ||
   CloudNoteFailure.network ||
+  CloudNoteFailure.protocolChanged ||
   CloudNoteFailure.unsupportedAccount => true,
   _ => false,
 };

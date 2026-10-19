@@ -182,6 +182,50 @@ void main() {
       expect(entry.createdAt, DateTime.utc(2025).toLocal());
       // 两篇分属两个笔记本，但被锁的那篇不导入，只剩一个笔记本，不加标签。
       expect(entry.tags, isEmpty);
+      expect(result.skippedNotes, {JournalSkipReason.encrypted: 2});
+    });
+
+    test('keeps conflict copies and does not import deleted notes', () {
+      for (final MapEntry(:key, :value) in _joplinItems().entries) {
+        write(
+          'raw/$key',
+          value.replaceFirst('is_conflict: 0', 'is_conflict: 1'),
+        );
+      }
+      write('raw/resources/$_resourceId.jpg', _jpeg);
+      final result = parseJoplinExport(extracted(), media);
+      expect(result.entries.single.title, 'Day 1 in Kyoto');
+      expect(result.entries.single.sourceMetadata['conflict'], isTrue);
+      write(
+        'raw/$_noteId.md',
+        _joplinItems()['$_noteId.md']!.replaceFirst(
+          'deleted_time: 0',
+          'deleted_time: 1700000000000',
+        ),
+      );
+      expect(parseJoplinExport(extracted(), media).entries, isEmpty);
+    });
+
+    test('corrupted or truncated JEX cannot silently import a prefix', () {
+      final archive = Archive();
+      for (final MapEntry(:key, :value) in _joplinItems().entries) {
+        final bytes = utf8.encode(value);
+        archive.addFile(ArchiveFile(key, bytes.length, bytes));
+      }
+      final bytes = TarEncoder().encode(archive);
+      for (final bad in [
+        bytes.sublist(0, bytes.length - 1024),
+        bytes.sublist(0, 600),
+        [...bytes]..[100] ^= 1,
+      ]) {
+        final file = File(p.join(temp.path, 'broken.jex'))
+          ..writeAsBytesSync(bad);
+        expect(
+          () =>
+              parseJoplinExport(JournalImportInput(filePath: file.path), media),
+          throwsA(isA<JournalImportFormatException>()),
+        );
+      }
     });
 
     test('rejects files that are not Joplin exports', () {

@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:archive/archive_io.dart';
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
 import 'journal_import_html.dart';
+import 'journal_import_joplin_archive.dart';
 import 'journal_import_markdown.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -23,16 +22,27 @@ import 'journal_import_support.dart';
 /// 日期，缺失时用 created_time/updated_time）→ 发表/更新时间；标签 → 标签，
 /// 笔记分属多个笔记本时再加笔记本名；经纬度 → 坐标。`markup_language: 2`
 /// 的笔记正文是 HTML。正文中 `:/<ID>` 指向附件的转为媒体嵌入，指向其他
-/// 笔记的保留链接文字。加密、上锁（正文为密文）、回收站中与冲突副本不导入。
+/// 笔记的保留链接文字。加密、上锁（正文为密文）、回收站中的笔记不导入；冲突副本同样保留。
 JournalImportParseResult parseJoplinExport(
   JournalImportInput input,
   JournalMediaStager media,
 ) {
-  final root = input.extractedPath ?? _extractJex(input.filePath, media);
+  final String? root;
+  try {
+    root =
+        input.extractedPath ??
+        extractJoplinArchive(input.filePath, media.stagingPath);
+  } on FormatException {
+    throw const JournalImportFormatException(JournalImportSource.joplin);
+  } on RangeError {
+    throw const JournalImportFormatException(JournalImportSource.joplin);
+  }
+  final issues = JournalImportIssues();
   if (root == null) {
     throw const JournalImportFormatException(JournalImportSource.joplin);
   }
   final items = <String, Map<String, String>>{};
+  final fallbackTimes = <String, DateTime>{};
   final blobs = <String, String>{};
   for (final file in listJournalExportFiles(root)) {
     final name = p.basename(file.path);
@@ -41,12 +51,21 @@ JournalImportParseResult parseJoplinExport(
       final item = _readItem(file);
       if (item != null &&
           item['id']?.toLowerCase() == itemId.group(1)!.toLowerCase()) {
+        if (items.containsKey(item['id'])) {
+          throw const JournalImportFormatException(JournalImportSource.joplin);
+        }
         items[item['id']!.toLowerCase()] = item;
+        fallbackTimes[item['id']!] = file.lastModifiedSync();
+      } else {
+        issues.skip(JournalSkipReason.unreadable);
       }
       continue;
     }
     final blob = RegExp(r'^([0-9a-fA-F]{32})(\.[^.]+)?$').firstMatch(name);
     if (blob != null && p.basename(file.parent.path) == 'resources') {
+      if (blobs.containsKey(blob.group(1)!.toLowerCase())) {
+        throw const JournalImportFormatException(JournalImportSource.joplin);
+      }
       blobs[blob.group(1)!.toLowerCase()] = file.path;
     }
   }
@@ -68,7 +87,21 @@ JournalImportParseResult parseJoplinExport(
       (noteTags[noteId] ??= <String>[]).add(name);
     }
   }
-  final imported = ofType(1).where(_importable).toList(growable: false);
+  final imported = <Map<String, String>>[];
+  for (final note in ofType(1)) {
+    final deleted = journalNumber(note['deleted_time']);
+    if ((deleted != null && deleted > 0) ||
+        _time(note['deleted_time']) != null) {
+      continue;
+    }
+    if (note['encryption_applied'] == '1' ||
+        note['is_locked'] == '1' ||
+        (note['body'] ?? '').startsWith('JLD')) {
+      issues.skip(JournalSkipReason.encrypted);
+      continue;
+    }
+    imported.add(note);
+  }
   final notebooks = imported
       .map((note) => note['parent_id']?.toLowerCase())
       .toSet();
@@ -90,13 +123,21 @@ JournalImportParseResult parseJoplinExport(
         media.missingCount++;
         return null;
       }
-      return media.embedFile(path, name: journalString(resource['title']));
+      return media.embedFile(
+        path,
+        name: journalString(resource['title']),
+        mime: journalString(resource['mime']),
+      );
     }
 
     final writer = JournalDeltaWriter();
     final body = note['body'] ?? '';
     if (note['markup_language'] == '2') {
-      JournalHtmlConverter(writer, resolveEmbed: resolve).appendHtml(body);
+      JournalHtmlConverter(
+        writer,
+        resolveEmbed: resolve,
+        resolveLink: resolve,
+      ).appendHtml(body);
     } else {
       JournalMarkdownConverter(
         writer,
@@ -120,7 +161,7 @@ JournalImportParseResult parseJoplinExport(
             _time(note['user_created_time']) ??
             _time(note['created_time']) ??
             _time(note['user_updated_time']) ??
-            File(input.filePath).lastModifiedSync(),
+            fallbackTimes[id]!,
         updatedAt:
             _time(note['user_updated_time']) ?? _time(note['updated_time']),
         tags: [
@@ -130,25 +171,21 @@ JournalImportParseResult parseJoplinExport(
         ],
         latitude: hasCoordinate ? latitude : null,
         longitude: hasCoordinate ? longitude : null,
+        sourceMetadata: {if (note['is_conflict'] == '1') 'conflict': true},
       ),
     );
   }
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
-bool _importable(Map<String, String> note) =>
-    note['encryption_applied'] != '1' &&
-    note['is_locked'] != '1' &&
-    !(note['body'] ?? '').startsWith('JLD') &&
-    note['is_conflict'] != '1' &&
-    (int.tryParse(note['deleted_time'] ?? '') ?? 0) == 0;
-
 DateTime? _time(String? raw) {
   final parsed = parseJournalDateTime(raw);
-  return parsed == null || parsed.millisecondsSinceEpoch <= 0 ? null : parsed;
+  if (parsed != null) return parsed;
+  return (journalNumber(raw) ?? 0) != 0 ? journalEpochTime(raw) : null;
 }
 
 /// 按 Joplin 的 `BaseItem.unserialize` 读取一个对象：从末尾向上逐行读取
@@ -157,11 +194,12 @@ DateTime? _time(String? raw) {
 Map<String, String>? _readItem(File file) {
   final String text;
   try {
-    text = utf8
-        .decode(file.readAsBytesSync(), allowMalformed: true)
-        .replaceFirst('﻿', '')
-        .replaceFirst(RegExp(r'\r?\n$'), '');
+    text = readJournalText(
+      file,
+    ).replaceAll('\r\n', '\n').replaceFirst(RegExp(r'\r?\n$'), '');
   } on FileSystemException {
+    return null;
+  } on FormatException {
     return null;
   }
   final lines = text.split('\n');
@@ -197,77 +235,3 @@ String _unescape(String value) => value
     .replaceAll(r'\r', '\r')
     .replaceAll('\\\n', r'\n')
     .replaceAll('\\\r', r'\r');
-
-/// 把 JEX（tar，偶尔被 gzip 压缩）解开到暂存区；不是 tar 时返回 null。
-///
-/// 只写出 `<ID>.md` 与 `resources/<ID>.<扩展名>` 两种条目，其余（包括带
-/// `..` 的路径）一律跳过，条目名因此不会越出解压目录。
-String? _extractJex(String path, JournalMediaStager media) {
-  final InputStreamBase input;
-  final head = _readHead(path, 512);
-  if (head.length >= 2 && head[0] == 0x1F && head[1] == 0x8B) {
-    final compressed = InputFileStream(path);
-    try {
-      input = InputStream(GZipDecoder().decodeBuffer(compressed));
-    } finally {
-      compressed.closeSync();
-    }
-  } else if (_isTarHeader(head)) {
-    input = InputFileStream(path);
-  } else {
-    return null;
-  }
-  final root = p.join(media.stagingPath, 'jex');
-  try {
-    final archive = TarDecoder().decodeBuffer(input);
-    for (final entry in archive.files) {
-      if (!entry.isFile) continue;
-      final name = entry.name.replaceAll('\\', '/').replaceFirst('./', '');
-      if (!RegExp(
-        r'^(resources/)?[0-9a-fA-F]{32}(\.[A-Za-z0-9_-]{1,16})?$',
-      ).hasMatch(name)) {
-        continue;
-      }
-      final target = File(p.joinAll([root, ...name.split('/')]));
-      target.parent.createSync(recursive: true);
-      final output = OutputFileStream(target.path);
-      try {
-        entry.writeContent(output);
-      } finally {
-        output.closeSync();
-      }
-    }
-  } on FormatException {
-    return null;
-  } on RangeError {
-    // 截断的 tar：已解出的部分照常导入。
-  } finally {
-    input.closeSync();
-  }
-  return Directory(root).existsSync() ? root : null;
-}
-
-/// tar 头块的校验和（148 起 8 字节八进制，计算时该字段按空格计）是否
-/// 吻合；同时适用于带 `ustar` 标记的 POSIX 头与老式 v7 头。
-bool _isTarHeader(List<int> head) {
-  if (head.length < 512) return false;
-  final field = String.fromCharCodes(
-    head.sublist(148, 156),
-  ).replaceAll(RegExp(r'[\x00 ]'), '');
-  final expected = int.tryParse(field, radix: 8);
-  if (expected == null) return false;
-  var sum = 0;
-  for (var i = 0; i < 512; i++) {
-    sum += i >= 148 && i < 156 ? 0x20 : head[i];
-  }
-  return sum == expected;
-}
-
-List<int> _readHead(String path, int length) {
-  final handle = File(path).openSync();
-  try {
-    return handle.readSync(length);
-  } finally {
-    handle.closeSync();
-  }
-}

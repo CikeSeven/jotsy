@@ -2946,6 +2946,15 @@
       }
     }
   },
+  "backupImportPartialContent": "{count, plural, =1{1 note contains sections that cannot be decrypted or displayed; readable text and original data will be preserved} other{{count} notes contain sections that cannot be decrypted or displayed; readable text and original data will be preserved}}",
+  "@backupImportPartialContent": {
+    "description": "Notes with encrypted or undisplayable sections whose readable body and original data will be preserved.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "calendarDisplayOptionsTooltip": "Calendar display",
   "@calendarDisplayOptionsTooltip": {
     "description": "Tooltip of the calendar header button that opens the display options sheet."

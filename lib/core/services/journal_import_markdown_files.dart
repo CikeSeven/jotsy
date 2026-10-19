@@ -1,9 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_front_matter.dart';
 import 'journal_import_markdown.dart';
 import 'journal_import_media.dart';
@@ -45,32 +45,33 @@ JournalImportParseResult parseMarkdownFilesExport(
   if (notes.isEmpty) {
     throw const JournalImportFormatException(JournalImportSource.markdown);
   }
-  // 附件按文件名兜底查找：Obsidian 的 `![[x.png]]` 只写文件名。
-  final byName = <String, String>{
-    for (final file in files.reversed)
-      if (!_noteExtensions.contains(_extension(file.path)))
-        p.basename(file.path).toLowerCase(): file.path,
-  };
+  final exportFiles = JournalImportFiles(root);
 
   final folders = _topFolders(notes, root);
   final entries = <JournalImportEntry>[];
+  final issues = JournalImportIssues();
   for (final file in notes) {
     Map<String, Object?>? resolve(String source) =>
-        _resolve(source, file.parent.path, root, byName, media);
-    entries.add(
-      _parseNote(
-        file,
-        input.extractedPath == null
-            ? p.basename(file.path)
-            : p.posix.joinAll(p.split(p.relative(file.path, from: root))),
-        resolve,
-        folder: folders[file.path],
-      ),
-    );
+        _resolve(source, file.parent.path, exportFiles, media);
+    try {
+      entries.add(
+        _parseNote(
+          file,
+          input.extractedPath == null
+              ? p.basename(file.path)
+              : p.posix.joinAll(p.split(p.relative(file.path, from: root))),
+          resolve,
+          folder: folders[file.path],
+        ),
+      );
+    } on FormatException {
+      issues.skip(JournalSkipReason.unreadable);
+    }
   }
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
@@ -116,11 +117,23 @@ JournalImportEntry _parseNote(
   JournalEmbedResolver resolve, {
   String? folder,
 }) {
-  final text = utf8
-      .decode(file.readAsBytesSync(), allowMalformed: true)
-      .replaceFirst('﻿', '')
-      .replaceAll('\r\n', '\n')
-      .replaceAll('\r', '\n');
+  final text = readJournalText(
+    file,
+  ).replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  if (_extension(file.path) == 'txt') {
+    final writer = JournalDeltaWriter(preserveWhitespace: true);
+    appendJournalPlainText(writer, text);
+    final content = writer.build();
+    final nameDate = _fileNameDate(_noteStem(file));
+    return JournalImportEntry(
+      sourceKey: sourceKey,
+      title: nameDate?.rest ?? _noteStem(file),
+      contentJson: content.contentJson,
+      contentText: content.contentText,
+      createdAt: nameDate?.date ?? file.lastModifiedSync(),
+      tags: [?folder],
+    );
+  }
   final (:fields, :body) = splitJournalFrontMatter(text);
   var markdown = body;
   var title = journalFrontMatterString(fields, const ['title']) ?? '';
@@ -215,8 +228,8 @@ String _noteStem(File file) {
   if (match == null) return null;
   int field(int group) => int.tryParse(match.group(group) ?? '') ?? 0;
   final (month, day, hour, minute) = (field(2), field(3), field(4), field(5));
-  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-  if (hour > 23 || minute > 59) return null;
+  if (!isJournalCalendarDate(field(1), month, day)) return null;
+  if (hour > 23 || minute > 59 || field(6) > 59) return null;
   return (
     date: DateTime(field(1), month, day, hour, minute, field(6)),
     rest: stem
@@ -281,11 +294,11 @@ String _wikiLinks(String markdown) {
 Map<String, Object?>? _resolve(
   String source,
   String directory,
-  String root,
-  Map<String, String> byName,
+  JournalImportFiles files,
   JournalMediaStager media,
 ) {
   var src = source.trim();
+  if (src.toLowerCase().startsWith('data:')) return media.embedDataUri(src);
   if (src.startsWith('<') && src.endsWith('>')) {
     src = src.substring(1, src.length - 1);
   }
@@ -298,18 +311,8 @@ Map<String, Object?>? _resolve(
   if (_noteExtensions.contains(_extension(src.split(RegExp('[?#]')).first))) {
     return null;
   }
-  String relative;
-  try {
-    relative = Uri.decodeFull(src.split(RegExp('[?#]')).first);
-  } on ArgumentError {
-    relative = src;
-  } on FormatException {
-    relative = src;
-  }
-  final direct = p.normalize(p.join(directory, relative));
-  final path = p.isWithin(root, direct) && File(direct).existsSync()
-      ? direct
-      : byName[p.basename(relative).toLowerCase()];
+  final path = files.resolve(src, from: directory);
+  if (path != null && _noteExtensions.contains(_extension(path))) return null;
   if (path == null) {
     media.missingCount++;
     return null;

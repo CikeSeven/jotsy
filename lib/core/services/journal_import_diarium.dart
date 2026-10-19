@@ -35,10 +35,11 @@ JournalImportParseResult parseDiariumExport(
       : listJournalExportFiles(input.extractedPath!);
   final entries = <JournalImportEntry>[];
   final keys = JournalKeyRegistry();
+  final issues = JournalImportIssues();
   var recognized = false;
   for (final file in files) {
     if (_isSqlite(file)) {
-      entries.addAll(_parseDatabase(file.path, media, keys));
+      entries.addAll(_parseDatabase(file.path, media, keys, issues));
       recognized = true;
       continue;
     }
@@ -47,8 +48,14 @@ JournalImportParseResult parseDiariumExport(
     if (items == null) continue;
     recognized = true;
     for (final item in items) {
-      final entry = _parseJsonEntry(item, keys);
-      if (entry != null) entries.add(entry);
+      final entry = item is Map
+          ? _parseJsonEntry(item.cast<String, Object?>(), keys)
+          : null;
+      if (entry != null) {
+        entries.add(entry);
+      } else {
+        issues.skip(JournalSkipReason.unreadable);
+      }
     }
   }
   if (!recognized) {
@@ -57,6 +64,7 @@ JournalImportParseResult parseDiariumExport(
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
@@ -75,33 +83,36 @@ bool _isSqlite(File file) {
 }
 
 /// 读取 JSON 导出中的日记对象；不是 Diarium 格式时返回 null。
-List<Map<String, Object?>>? _jsonEntries(File file) {
+List<Object?>? _jsonEntries(File file) {
   Object? decoded;
   try {
-    decoded = jsonDecode(file.readAsStringSync());
+    decoded = jsonDecode(readJournalText(file));
   } on FormatException {
     return null;
   } on FileSystemException {
     return null;
   }
-  final list = decoded is List
-      ? decoded
-      : decoded is Map
-      ? decoded.values.whereType<List>().firstOrNull
-      : null;
-  if (list == null) return null;
-  final items = list
-      .whereType<Map>()
-      .map((item) => item.cast<String, Object?>())
-      .where(
-        (item) =>
-            item['date'] is String &&
-            (item.containsKey('html') ||
-                item.containsKey('heading') ||
-                item.containsKey('text')),
-      )
-      .toList(growable: false);
-  return items.isEmpty && list.isNotEmpty ? null : items;
+  bool resemblesEntry(Object? item) =>
+      item is Map &&
+      item.containsKey('date') &&
+      (item.containsKey('html') ||
+          item.containsKey('heading') ||
+          item.containsKey('text'));
+  if (decoded is List) {
+    return decoded.isEmpty || decoded.any(resemblesEntry) ? decoded : null;
+  }
+  if (decoded is Map) {
+    // 容器可能先带 tags/people 等数组，不能把第一个数组误当成日记列表。
+    for (final list in decoded.values.whereType<List>()) {
+      if (list.any(resemblesEntry)) return list;
+    }
+    for (final key in const ['entries', 'diaries']) {
+      if (decoded[key] is List && (decoded[key] as List).isEmpty) {
+        return const [];
+      }
+    }
+  }
+  return null;
 }
 
 JournalImportEntry? _parseJsonEntry(
@@ -126,6 +137,7 @@ JournalImportEntry? _parseJsonEntry(
     contentJson: content.contentJson,
     contentText: content.contentText,
     createdAt: createdAt,
+    updatedAt: parseJournalDateTime(raw['updated'] ?? raw['modified']),
     tags: [
       ...journalStringList(raw['tags']),
       ...journalStringList(raw['people']),
@@ -157,8 +169,10 @@ String _plainHeading(Object? raw) {
       .trim();
 }
 
-int? _moodLevel(Object? rating) =>
-    rating is num && rating >= 1 && rating <= 5 ? rating.round() : null;
+int? _moodLevel(Object? raw) {
+  final rating = journalNumber(raw);
+  return rating != null && rating >= 1 && rating <= 5 ? rating.round() : null;
+}
 
 String? _weather(Object? raw) {
   final text = journalString(raw);

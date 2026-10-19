@@ -6938,4 +6938,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryColorGray => '灰';
+
+  @override
+  String get tagPickerSearchHint => '搜索标签';
+
+  @override
+  String get tagPickerSortTooltip => '排序方式';
+
+  @override
+  String get tagPickerSortCustom => '默认排序';
+
+  @override
+  String get tagPickerSortAlphabetical => '按字母排序';
+
+  @override
+  String tagPickerCreateNamed(String name) {
+    return '新建「$name」';
+  }
+
+  @override
+  String tagPickerSearchEmpty(String query) {
+    return '没有找到「$query」';
+  }
 }

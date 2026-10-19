@@ -7755,4 +7755,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryColorGray => 'Gray';
+
+  @override
+  String get tagPickerSearchHint => 'Search tags';
+
+  @override
+  String get tagPickerSortTooltip => 'Sort order';
+
+  @override
+  String get tagPickerSortCustom => 'Default order';
+
+  @override
+  String get tagPickerSortAlphabetical => 'Alphabetical';
+
+  @override
+  String tagPickerCreateNamed(String name) {
+    return 'Create “$name”';
+  }
+
+  @override
+  String tagPickerSearchEmpty(String query) {
+    return 'No tags match “$query”';
+  }
 }

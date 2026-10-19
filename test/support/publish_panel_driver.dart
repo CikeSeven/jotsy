@@ -8,9 +8,12 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_location.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
+import 'package:node_diary/ui/diaries/models/tag_picker_sort.dart';
+import 'package:node_diary/ui/diaries/providers/tag_picker_sort_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_panel_summary_bar.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_panel/publish_tag_search_bar.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 
@@ -98,6 +101,35 @@ class PublishPanelDriver {
   void toggleTag(int tagId, bool selected) =>
       draft.setTagSelected(tagId, selected);
 
+  /// 展开面板并进入标签子页。
+  Future<void> openTags() async {
+    await expand();
+    await tester.tap(find.text(l10n.autoT0109));
+    await tester.pumpAndSettle();
+  }
+
+  /// 标签子页的搜索框。
+  Finder get tagSearchField => find.descendant(
+    of: find.byType(PublishTagSearchBar),
+    matching: find.byType(TextField),
+  );
+
+  /// 标签子页的排序按钮（按提示文字找）。
+  Finder get tagSortButton => find.byTooltip(l10n.tagPickerSortTooltip);
+
+  /// 在排序菜单里选一种排序方式。
+  Future<void> chooseTagSort(TagPickerSort sort) async {
+    await tester.tap(tagSortButton);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.text(switch (sort) {
+        TagPickerSort.custom => l10n.tagPickerSortCustom,
+        TagPickerSort.alphabetical => l10n.tagPickerSortAlphabetical,
+      }),
+    );
+    await tester.pumpAndSettle();
+  }
+
   bool get showsPublishTime => _panel.publishTime != null;
 
   String? get publishTimeLabel => _panel.publishTime?.label;
@@ -106,7 +138,8 @@ class PublishPanelDriver {
 }
 
 /// 单独挂载面板的宿主：英文、亮色 Expressive 主题，面板贴底；标签与日记本
-/// 为空、心情为默认候选，不触碰数据库与设置。
+/// 为空、心情为默认候选，不触碰数据库与设置（标签子页的排序方式从
+/// [tagPickerSort] 开始、只记在内存里）。
 ///
 /// [draft] 不传时宿主自建一个（精力 4）。[keyboardLayout] 为 true 时按
 /// 发布/编辑页的真实摆放（铺满 body、左右 16、贴底对齐），用于验证键盘
@@ -122,10 +155,14 @@ Widget publishPanelHost({
   Brightness brightness = Brightness.light,
   String locale = 'en',
   double textScale = 1,
+  TagPickerSort tagPickerSort = TagPickerSort.custom,
 }) {
   return ProviderScope(
     overrides: [
       tagListProvider.overrideWith((ref) => Stream.value(tags)),
+      tagPickerSortProvider.overrideWith(
+        () => _MemoryTagPickerSort(tagPickerSort),
+      ),
       moodOptionsProvider.overrideWith(
         (ref) => Stream.value(SettingsService.defaultMoodOptions),
       ),
@@ -157,6 +194,19 @@ Widget publishPanelHost({
       ),
     ),
   );
+}
+
+/// 只在内存里记住选择的排序方式，不读写设置。
+class _MemoryTagPickerSort extends TagPickerSortNotifier {
+  _MemoryTagPickerSort(this._initial);
+
+  final TagPickerSort _initial;
+
+  @override
+  TagPickerSort build() => _initial;
+
+  @override
+  void select(TagPickerSort sort) => state = sort;
 }
 
 class _PanelHost extends ConsumerStatefulWidget {

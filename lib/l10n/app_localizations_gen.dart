@@ -12661,6 +12661,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gray'**
   String get diaryColorGray;
+
+  /// Publish panel tag page: placeholder of the search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search tags'**
+  String get tagPickerSearchHint;
+
+  /// Publish panel tag page: tooltip of the sort button next to the search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort order'**
+  String get tagPickerSortTooltip;
+
+  /// Publish panel tag page sort menu: the order arranged in tag management.
+  ///
+  /// In en, this message translates to:
+  /// **'Default order'**
+  String get tagPickerSortCustom;
+
+  /// Publish panel tag page sort menu: A to Z, Chinese names by pinyin, with a letter index on the right.
+  ///
+  /// In en, this message translates to:
+  /// **'Alphabetical'**
+  String get tagPickerSortAlphabetical;
+
+  /// Publish panel tag page: the create row while searching, which pre-fills the new tag dialog with the search text.
+  ///
+  /// In en, this message translates to:
+  /// **'Create “{name}”'**
+  String tagPickerCreateNamed(String name);
+
+  /// Publish panel tag page: hint when the search has no results.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags match “{query}”'**
+  String tagPickerSearchEmpty(String query);
 }
 
 class _AppLocalizationsDelegate

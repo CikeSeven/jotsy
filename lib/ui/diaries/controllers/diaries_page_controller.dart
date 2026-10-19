@@ -34,25 +34,23 @@ class DiariesPageController {
     _state.setState(_state._selectedDiaryIds.clear);
   }
 
-  /// 处理系统返回键：
-  /// 1. 选择模式优先退出选择；
-  /// 2. 其余场景交还系统路由栈。
-  void handleBackPressed() {
-    if (_state._isSelectionMode) {
-      clearSelection();
-    }
-  }
-
   /// 打开独立搜索页。
   ///
   /// 使用淡入覆盖式路由，弱化“页面跳转”感，保持同场景搜索体验。
+  /// 在日记本里时带上这本作为搜索范围（搜索页里可移除）。
   void openSearchPage() {
     final selectedTagIds = <int>{
       ..._state.ref.read(diaryFilterProvider).selectedTagIds,
     };
-    Navigator.of(
-      _state.context,
-    ).push(DiarySearchPage.buildRoute(initialTagIds: selectedTagIds));
+    final scope = _state._scopeController.searchScope();
+    Navigator.of(_state.context).push(
+      DiarySearchPage.buildRoute(
+        initialTagIds: selectedTagIds,
+        scope: scope.scope,
+        scopeLabel: scope.label,
+        scopeIcon: scope.icon,
+      ),
+    );
   }
 
   /// 应用启动后按“标签记忆”设置恢复上次的标签筛选。
@@ -95,7 +93,11 @@ class DiariesPageController {
     });
   }
 
+  /// “记住标签筛选”只记全部日记里的选择：日记本里的筛选各自独立、不落盘。
   void _persistTagFilterMemoryIfNeeded() {
+    if (!_state.ref.read(homeNotebookScopeProvider).isAll) {
+      return;
+    }
     final settingsService = _state.ref
         .read(settingsServiceProvider)
         .asData
@@ -556,7 +558,12 @@ class DiariesPageController {
   }
 
   /// 打开视图选项面板（排序依据、正/倒序与布局），选项即点即生效。
+  ///
+  /// 在日记本里时排序换成本子的排序（写回本子，布局仍是全局的）；面板里
+  /// 另有打开书架的入口。
   void openViewOptions() {
+    final scope = _state._scopeController.resolution;
+    final notebook = scope.notebook;
     unawaited(
       showDiaryViewOptionsSheet(
         _state.context,
@@ -565,6 +572,11 @@ class DiariesPageController {
         onSortModeChanged: _changeSortMode,
         onLayoutModeChanged: _changeLayoutMode,
         onOpenCardStyle: openCardStyleEditor,
+        onOpenNotebookShelf: () =>
+            unawaited(_state._scopeController.openShelf()),
+        notebookSort: scope.sort,
+        allowBookOrder: notebook != null && !notebook.isSmart,
+        onNotebookSortChanged: _state._scopeController.changeNotebookSort,
       ),
     );
   }

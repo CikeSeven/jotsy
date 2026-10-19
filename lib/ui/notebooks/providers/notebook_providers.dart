@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../controllers/notebooks_controller.dart';
 import '../viewmodels/notebook_view.dart';
@@ -32,4 +33,26 @@ final notebookProvider = StreamProvider.autoDispose
 /// 书架与管理页共用的日记本操作（置顶、合上、排序、删除与撤销、合并）。
 final notebooksControllerProvider = Provider<NotebooksController>(
   (Ref ref) => NotebooksController(ref.watch(appDatabaseProvider)),
+);
+
+/// 范围内（未删除、未归档）的篇数：日记本头部卡片的篇数，与首页列表一致。
+final notebookScopeCountProvider = StreamProvider.autoDispose
+    .family<int, DiaryListScope>(
+      (Ref ref, DiaryListScope scope) =>
+          ref.watch(appDatabaseProvider).watchScopedDiaryCount(scope),
+    );
+
+/// 范围内未归档日记的轻量概览（不含富文本正文与未解封的胶囊）：头部卡片
+/// 统计字数与时间跨度。
+final notebookScopeOverviewsProvider = StreamProvider.autoDispose
+    .family<List<ExploreDiaryOverview>, DiaryListScope>(
+      (Ref ref, DiaryListScope scope) => ref
+          .watch(appDatabaseProvider)
+          .watchExploreDiaryOverviews(scope: scope, includeArchived: false),
+    );
+
+/// 私密日记（在隐藏 / 上锁的普通日记本里）的业务 id，含回收站里的：回收站与
+/// 纪念日据此把它们显示为占位，而不是“已删除”。
+final privateDiaryIdsProvider = StreamProvider.autoDispose<Set<String>>(
+  (Ref ref) => ref.watch(appDatabaseProvider).watchPrivateDiaryIds(),
 );

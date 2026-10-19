@@ -8686,5 +8686,144 @@
         "type": "String"
       }
     }
+  },
+  "notebookSwitcherSemantics": "Switch notebook, current: {name}",
+  "@notebookSwitcherSemantics": {
+    "description": "Screen reader label of the notebook switcher chip at the start of the home tag bar.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookScopeDeleted": "Notebook deleted",
+  "@notebookScopeDeleted": {
+    "description": "Hint shown when the notebook open on the home page was deleted or merged and the list returns to all diaries."
+  },
+  "notebookSearchIn": "Search in \"{name}\"",
+  "@notebookSearchIn": {
+    "description": "Search bar placeholder on the home page while inside a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSearchRemoveScope": "Remove notebook condition: {name}",
+  "@notebookSearchRemoveScope": {
+    "description": "Screen reader label of the remove button on the search page's notebook condition chip.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaWords": "{words} words",
+  "@notebookMetaWords": {
+    "description": "Total word count in the notebook header meta line (already formatted with grouping, e.g. 21,345).",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaSpan": "{start} – {end}",
+  "@notebookMetaSpan": {
+    "description": "Time span in the notebook header meta line: month of the first to the last entry.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaSpanOngoing": "{start} – now",
+  "@notebookMetaSpanOngoing": {
+    "description": "Time span in the notebook header meta line when the latest entry is from the current month.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookHeaderSmartBadge": "Smart notebook",
+  "@notebookHeaderSmartBadge": {
+    "description": "Capsule on the notebook header card marking a smart notebook."
+  },
+  "notebookHeaderPrivateBadge": "Only shown in this notebook",
+  "@notebookHeaderPrivateBadge": {
+    "description": "Capsule on the notebook header card marking a private (hidden or locked) notebook."
+  },
+  "notebookEmptyTitle": "This notebook is empty",
+  "@notebookEmptyTitle": {
+    "description": "Empty state title on the home page inside a notebook with no entries."
+  },
+  "notebookEmptyCreateHint": "Tap New below to write the first entry",
+  "@notebookEmptyCreateHint": {
+    "description": "Explanation under the empty state of a notebook on the home page."
+  },
+  "notebookViewSortSection": "Sort in this notebook",
+  "@notebookViewSortSection": {
+    "description": "Sort section title of the view options sheet while inside a notebook."
+  },
+  "notebookViewOptionsEntry": "Switch notebook",
+  "@notebookViewOptionsEntry": {
+    "description": "Entry in the view options sheet that opens the notebook shelf."
+  },
+  "notebookViewOptionsEntrySubtitle": "Show only one notebook's entries, or create one",
+  "@notebookViewOptionsEntrySubtitle": {
+    "description": "Subtitle of the notebook shelf entry in the view options sheet."
+  },
+  "notebookUnlockReason": "Unlock \"{name}\"",
+  "@notebookUnlockReason": {
+    "description": "Reason shown on the system authentication prompt when opening a locked notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookLockUnsupportedTitle": "Can't open locked notebook",
+  "@notebookLockUnsupportedTitle": {
+    "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
+  },
+  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified. You can change the notebook's privacy to \"Hide from all diaries\" in its settings.",
+  "@notebookLockUnsupportedMessage": {
+    "description": "Explanation when opening a locked notebook on a device without a screen lock."
+  },
+  "notebookLockUnsupportedAction": "Settings",
+  "@notebookLockUnsupportedAction": {
+    "description": "Dialog button that opens the notebook settings when a locked notebook can't be verified."
+  },
+  "notebookLockedTitle": "\"{name}\" is locked",
+  "@notebookLockedTitle": {
+    "description": "Title of the overlay covering a locked notebook when returning to the app.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookLockedSubtitle": "Verify your identity again after leaving the app",
+  "@notebookLockedSubtitle": {
+    "description": "Subtitle of the locked notebook overlay."
+  },
+  "notebookLockUnlock": "Unlock",
+  "@notebookLockUnlock": {
+    "description": "Unlock button on the locked notebook overlay."
+  },
+  "notebookLockBackToAll": "Back to all diaries",
+  "@notebookLockBackToAll": {
+    "description": "Button on the locked notebook overlay that leaves the notebook and returns to all diaries."
+  },
+  "notebookPrivateDiaryPlaceholder": "Entry in a private notebook",
+  "@notebookPrivateDiaryPlaceholder": {
+    "description": "Placeholder shown in the recycle bin instead of the title of an entry from a private notebook."
+  },
+  "notebookAnniversaryLinkPrivate": "The linked entry is in a private notebook",
+  "@notebookAnniversaryLinkPrivate": {
+    "description": "Shown on an anniversary when its linked entry is in a hidden or locked notebook."
   }
 }

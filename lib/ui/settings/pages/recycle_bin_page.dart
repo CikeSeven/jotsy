@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/empty_hint.dart';
@@ -204,6 +205,9 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final deletedAsync = ref.watch(deletedDiariesProvider);
+    // 私密日记本里的日记不露出标题，只显示占位（仍可勾选恢复或彻底删除）。
+    final privateIds =
+        ref.watch(privateDiaryIdsProvider).value ?? const <String>{};
 
     return Scaffold(
       appBar: AppTopBar(
@@ -275,7 +279,10 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
                       final selected = _selectedDiaryIds.contains(
                         diary.diaryId,
                       );
-                      final title = diary.title.trim().isEmpty
+                      final isPrivate = privateIds.contains(diary.diaryId);
+                      final title = isPrivate
+                          ? l10n.notebookPrivateDiaryPlaceholder
+                          : diary.title.trim().isEmpty
                           ? l10n.autoT0033
                           : diary.title.trim();
                       return ListItemPresence(
@@ -290,10 +297,26 @@ class _RecycleBinPageState extends ConsumerState<RecycleBinPage> {
                             value: selected,
                             onChanged: (_) => _toggleSelection(diary.diaryId),
                           ),
-                          title: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          title: Row(
+                            children: <Widget>[
+                              if (isPrivate) ...<Widget>[
+                                FaIcon(
+                                  FontAwesomeIcons.lock,
+                                  size: 13,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                           subtitle: Text(
                             l10n.autoT0194(_formatDeletedAt(diary.deletedAt)),

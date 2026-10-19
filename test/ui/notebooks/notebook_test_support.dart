@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../support/diary_drafts_harness.dart';
@@ -72,4 +73,28 @@ Widget notebookTestApp(
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: child),
   );
+}
+
+/// 设备验证的假实现：记录每次验证的说明文字，按预设结果返回。
+class FakeDeviceAuth extends DeviceAuthService {
+  FakeDeviceAuth({this.supported = true, this.results = const <bool>[]});
+
+  bool supported;
+  List<bool> results;
+  final List<String> reasons = <String>[];
+
+  @override
+  Future<bool> isSupported() async => supported;
+
+  @override
+  Future<bool> authenticate({
+    required String reason,
+    bool persistAcrossBackgrounding = true,
+  }) async {
+    reasons.add(reason);
+    if (results.isEmpty) return false;
+    final next = results.first;
+    results = results.sublist(1);
+    return next;
+  }
 }

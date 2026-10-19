@@ -46,6 +46,7 @@ class DiariesListSection extends StatelessWidget {
     this.swipeActionBackgroundColor,
     this.swipeActionIconColor,
     this.isSearchResultEmpty = false,
+    this.emptyState,
     this.cardStyle = DiaryCardStyle.defaults,
     this.moodOptions = SettingsService.defaultMoodOptions,
     this.enableCoverHero = true,
@@ -84,6 +85,9 @@ class DiariesListSection extends StatelessWidget {
   /// 空列表时是否处于“搜索结果为空”语义。
   final bool isSearchResultEmpty;
 
+  /// 自定义空状态（如日记本里的“这本还空着”）；null 时用默认空状态。
+  final Widget? emptyState;
+
   /// 用户的卡片样式；默认即改版前的经典外观。
   final DiaryCardStyle cardStyle;
 
@@ -113,10 +117,12 @@ class DiariesListSection extends StatelessWidget {
             ),
             // 最后一篇被归档/删除、或首屏没有日记时淡入上移，而不是硬切出现。
             child: ExpressiveEntrance(
-              child: DiariesEmptyState(
-                onCreate: onCreate,
-                isSearchResultEmpty: isSearchResultEmpty,
-              ),
+              child:
+                  emptyState ??
+                  DiariesEmptyState(
+                    onCreate: onCreate,
+                    isSearchResultEmpty: isSearchResultEmpty,
+                  ),
             ),
           ),
         ),

@@ -13,6 +13,7 @@ import '../../../core/services/app_service.dart';
 import '../../calendar/widgets/calendar_day_content_switcher.dart';
 import '../../calendar/widgets/calendar_diary_mini_card.dart';
 import '../../diaries/models/diary_preview_sequence.dart';
+import '../../notebooks/providers/notebook_providers.dart';
 import '../../widgets/image_viewer_hero.dart';
 import '../controllers/anniversary_navigation.dart';
 import '../providers/anniversary_providers.dart';
@@ -130,6 +131,18 @@ class AnniversaryLinkedDiarySection extends ConsumerWidget {
         body = const SizedBox(
           key: ValueKey<String>('loading'),
           width: double.infinity,
+        );
+      } else if (diary == null &&
+          (ref.watch(privateDiaryIdsProvider).value?.contains(linkedId) ??
+              false)) {
+        // 关联的日记在隐藏 / 上锁的日记本里：它还在，只是这里不显示，不提供
+        // “取消关联”。
+        body = Text(
+          key: const ValueKey<String>('private'),
+          l10n.notebookAnniversaryLinkPrivate,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         );
       } else if (diary == null || !isOpenableDiary(diary)) {
         body = Row(

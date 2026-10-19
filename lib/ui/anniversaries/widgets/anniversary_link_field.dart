@@ -6,6 +6,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../diaries/viewmodels/diary_card_view_data.dart';
+import '../../notebooks/providers/notebook_providers.dart';
 import '../providers/anniversary_providers.dart';
 import 'anniversary_diary_picker.dart';
 
@@ -45,7 +46,11 @@ class AnniversaryLinkField extends ConsumerWidget {
       label = l10n.anniversaryLinkNone;
     } else {
       final diary = ref.watch(anniversaryLinkedDiaryProvider(diaryId)).value;
-      if (diary == null) {
+      final isPrivate =
+          ref.watch(privateDiaryIdsProvider).value?.contains(diaryId) ?? false;
+      if (diary == null && isPrivate) {
+        label = l10n.notebookAnniversaryLinkPrivate;
+      } else if (diary == null) {
         label = l10n.anniversaryLinkMissing;
       } else {
         final title = diary.diary.title.trim();

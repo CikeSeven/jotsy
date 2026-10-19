@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
@@ -22,6 +23,16 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/tag_order_codec.dart';
+import '../../notebooks/controllers/notebook_lock_flow.dart';
+import '../../notebooks/models/notebook_scope_resolver.dart';
+import '../../notebooks/providers/home_notebook_scope_provider.dart';
+import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/sections/notebook_action_flows.dart';
+import '../../notebooks/sections/notebook_action_sheets.dart';
+import '../../notebooks/sections/notebook_shelf_sheet.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
+import '../../notebooks/widgets/notebook_header_sliver.dart';
+import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../providers/diary_card_style_provider.dart';
@@ -36,6 +47,7 @@ import 'package:node_diary/ui/widgets/launch_reveal.dart';
 part '../controllers/diaries_page_feedback.dart';
 part '../controllers/diary_list_transition_coordinator.dart';
 part '../controllers/diaries_page_controller.dart';
+part '../controllers/diaries_notebook_scope_controller.dart';
 
 /// 日记列表页。
 ///
@@ -125,10 +137,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   late final AnimationController _tagFilterExpansionController;
   double _tagFilterDragDelta = 0;
 
+  /// 标签栏是否（部分）展开：决定系统返回是否先收起标签栏，变化时重建页面
+  /// 以更新 PopScope。
+  bool _tagFiltersExpanded = false;
+
   // ==================== 页面职责拆分协作对象 ====================
   late final DiariesPageFeedback _feedback;
   late final DiaryListTransitionCoordinator _transitionCoordinator;
   late final DiariesPageController _controller;
+  late final DiariesNotebookScopeController _scopeController;
 
   bool get _isSelectionMode => _selectedDiaryIds.isNotEmpty;
 
@@ -142,10 +159,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       feedback: _feedback,
       transitionCoordinator: _transitionCoordinator,
     );
+    _scopeController = DiariesNotebookScopeController(
+      this,
+      feedback: _feedback,
+      transitionCoordinator: _transitionCoordinator,
+    );
     _tagFilterExpansionController = AnimationController(
       vsync: this,
       duration: _tagFilterSnapDuration,
-    );
+    )..addListener(_syncTagFiltersExpanded);
     widget.onCreateActionChanged?.call(_openCreateFromHomeFab);
     widget.onFabVisibilityChanged?.call(_fabVisibleByScroll);
     unawaited(_controller.restoreRememberedTagFiltersOnStartup());
@@ -194,6 +216,22 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     final filterState = ref.watch(diaryFilterProvider);
     final tagsAsync = ref.watch(tagListProvider);
     final listBottomOffset = _listBottomExtraSpace;
+    // 当前范围（全部日记 / 某本日记本）；全部日记时不订阅书架列表。
+    final scopeResolution = ref.watch(homeNotebookScopeResolutionProvider);
+    final currentNotebook = scopeResolution.notebook;
+    final hasNotebooks = ref.watch(hasNotebooksProvider);
+    ref.listen<HomeNotebookScopeResolution>(
+      homeNotebookScopeResolutionProvider,
+      _scopeController.handleResolutionChanged,
+    );
+    ref.listen<String?>(
+      homeNotebookScopeProvider.select((scope) => scope.notebookId),
+      (_, String? next) => _scopeController.handleScopeIdChanged(next),
+    );
+    // 日记本里只列本子里用到的标签（已选的保留，好让用户取消）。
+    final scopeTagIds = scopeResolution.isAll
+        ? null
+        : ref.watch(scopeTagIdsProvider(scopeResolution.scope)).value;
 
     return settingsAsync.when(
       loading: () => const Scaffold(body: DelayedLoadingIndicator()),
@@ -202,13 +240,23 @@ class _DiariesPage extends ConsumerState<DiariesPage>
       ),
       data: (settingsService) {
         _controller.loadViewPreferencesIfNeeded(settingsService);
-        final currentPagingSignature = _buildPagingSignature(filterState);
+        // 日记本里按本子自己的排序，不用全局排序偏好。
+        final notebookSort = scopeResolution.sort;
+        final sortMode = notebookSort == null
+            ? _sortMode
+            : diarySortModeForNotebook(notebookSort);
+        final currentPagingSignature = _buildPagingSignature(
+          filterState,
+          sortMode: sortMode,
+          scope: scopeResolution.scope,
+        );
         _syncPagingStateWithFilterSignature(currentPagingSignature);
         final diaryPageQuery = DiaryPageQuery(
           keyword: filterState.keyword.trim(),
           requiredTagIds: filterState.selectedTagIds.toList()..sort(),
           limit: _visibleDiaryLimit,
-          sortMode: _sortMode,
+          sortMode: sortMode,
+          scope: scopeResolution.scope,
         );
         final diariesAsync = ref.watch(pagedDiariesProvider(diaryPageQuery));
         final latestPage = diariesAsync.asData?.value;
@@ -238,7 +286,11 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         final tagHeaderContent = tagsAsync.when(
           data: (tags) {
             final visibleTagFilters = _resolveTagFiltersForDisplay(
-              allTags: tags,
+              allTags: _scopeTags(
+                tags,
+                scopeTagIds,
+                filterState.selectedTagIds,
+              ),
               visibleItems: displayedItems,
               keyword: filterState.keyword,
             );
@@ -259,6 +311,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 onVerticalDragUpdate: _handleTagFilterDragUpdate,
                 onVerticalDragEnd: _handleTagFilterDragEnd,
                 onCollapse: () => _animateTagFiltersTo(false),
+                leading: NotebookSwitcherChip(
+                  notebook: currentNotebook,
+                  onTap: () => unawaited(_scopeController.openShelf()),
+                ),
+                leadingWidth: NotebookSwitcherChip.measureWidth(
+                  context,
+                  currentNotebook,
+                ),
+                keepVisible: hasNotebooks || currentNotebook != null,
               ),
             );
           },
@@ -311,14 +372,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             children: [
               // 返回键优先处理页面内部状态，再交给路由栈。
               PopScope(
-                canPop: !_isSelectionMode,
+                canPop:
+                    !_isSelectionMode &&
+                    !_tagFiltersExpanded &&
+                    scopeResolution.isAll,
                 onPopInvokedWithResult: (didPop, result) {
                   if (didPop) {
                     return;
                   }
-                  if (_isSelectionMode) {
-                    _controller.clearSelection();
-                  }
+                  _handlePopBlocked();
                 },
                 child: Focus(
                   autofocus: true,
@@ -389,12 +451,26 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                               _controller.openViewOptions,
                                           onOpenSearchPage:
                                               _controller.openSearchPage,
+                                          searchHint: currentNotebook == null
+                                              ? null
+                                              : context.l10n.notebookSearchIn(
+                                                  NotebookSwitcherChip.labelFor(
+                                                    context,
+                                                    currentNotebook,
+                                                  ),
+                                                ),
                                         ),
                                   ),
                                 ),
                               ),
                             ),
                             tagHeader,
+                            NotebookHeaderSliver(
+                              notebook: currentNotebook,
+                              onAction: (NotebookAction action) => unawaited(
+                                _scopeController.handleHeaderAction(action),
+                              ),
+                            ),
                             SliverFadeTransition(
                               opacity: _listRefreshPulseController,
                               sliver:
@@ -462,6 +538,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                         ),
                                       ),
                                       isSearchResultEmpty: false,
+                                      // 日记本里没筛选时的空列表：“这本还空着”。
+                                      emptyState:
+                                          currentNotebook != null &&
+                                              filterState.selectedTagIds.isEmpty
+                                          ? const NotebookEmptyState()
+                                          : null,
                                     ),
                             ),
                             // 还有下一页时常驻一个固定高度的槽位（加载前后
@@ -498,6 +580,71 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         );
       },
     );
+  }
+
+  /// 返回被拦下时的顺序：退出多选 → 收起展开的标签栏 → 回到全部日记。
+  ///
+  /// 日记页在 Home 里保活，切到别的 Tab 后它的 PopScope 仍会收到返回；那时
+  /// 返回只用于切回日记页（Home 处理），后两步只在日记页可见时执行。
+  void _handlePopBlocked() {
+    if (_isSelectionMode) {
+      _controller.clearSelection();
+      return;
+    }
+    if (!TickerMode.valuesOf(context).enabled) {
+      return;
+    }
+    if (_tagFiltersExpanded) {
+      _animateTagFiltersTo(false);
+      return;
+    }
+    _scopeController.showAll();
+  }
+
+  void _syncTagFiltersExpanded() {
+    final expanded = _tagFilterExpansionController.value > 0;
+    if (expanded != _tagFiltersExpanded && mounted) {
+      setState(() => _tagFiltersExpanded = expanded);
+    }
+  }
+
+  /// 标签栏的候选标签：全部日记时为全部标签；日记本里只留本子里用到的与
+  /// 已选的（[scopeTagIds] 还没查出来时先显示全部）。
+  List<Tag> _scopeTags(
+    List<Tag> tags,
+    Set<int>? scopeTagIds,
+    Set<int> selectedTagIds,
+  ) {
+    if (scopeTagIds == null) {
+      return tags;
+    }
+    final filtered = <Tag>[
+      for (final tag in tags)
+        if (scopeTagIds.contains(tag.id) || selectedTagIds.contains(tag.id))
+          tag,
+    ];
+    // 内容没变时沿用上次的列表实例，下游的标签缓存按引用复用。
+    final previous = _cachedScopeTags;
+    if (previous != null &&
+        previous.length == filtered.length &&
+        identical(_cachedScopeTagsSource, tags) &&
+        _sameTagIds(previous, filtered)) {
+      return previous;
+    }
+    _cachedScopeTagsSource = tags;
+    return _cachedScopeTags = filtered;
+  }
+
+  List<Tag>? _cachedScopeTags;
+  List<Tag>? _cachedScopeTagsSource;
+
+  static bool _sameTagIds(List<Tag> a, List<Tag> b) {
+    for (var index = 0; index < a.length; index++) {
+      if (a[index].id != b[index].id) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<void> _openCreateFromHomeFab() async {
@@ -656,11 +803,17 @@ class _DiariesPage extends ConsumerState<DiariesPage>
 
   /// 构建当前分页上下文签名。
   ///
-  /// 当关键词或标签筛选发生变化时，签名会变化，分页会自动回到首屏 20 条。
-  String _buildPagingSignature(DiaryFilterState filterState) {
+  /// 当关键词、标签筛选、排序或范围（全部日记 / 日记本）发生变化时，签名会
+  /// 变化，分页会自动回到首屏 20 条。
+  String _buildPagingSignature(
+    DiaryFilterState filterState, {
+    required DiarySortMode sortMode,
+    required DiaryListScope scope,
+  }) {
     final normalizedKeyword = filterState.keyword.trim();
     final sortedTagIds = filterState.selectedTagIds.toList()..sort();
-    return '$normalizedKeyword|${sortedTagIds.join(",")}|${_sortMode.name}';
+    return '$normalizedKeyword|${sortedTagIds.join(",")}|${sortMode.name}'
+        '|$scope';
   }
 
   /// 同步分页状态与筛选条件。

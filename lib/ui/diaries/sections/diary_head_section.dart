@@ -37,6 +37,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.draftCount,
     required this.onOpenViewOptions,
     required this.onOpenSearchPage,
+    this.searchHint,
   });
 
   final bool isSelectionMode;
@@ -56,6 +57,9 @@ class DiaryHeadSection extends StatelessWidget {
   /// 打开视图选项面板（排序与布局），面板由页面控制器负责呈现。
   final VoidCallback onOpenViewOptions;
   final VoidCallback onOpenSearchPage;
+
+  /// 搜索条占位文字；null 时用默认文案（在日记本里时为“在「旅行」中搜索”）。
+  final String? searchHint;
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +170,7 @@ class DiaryHeadSection extends StatelessWidget {
             key: const ValueKey<String>('search_preview'),
             height: _searchPreviewHeight,
             onTap: onOpenSearchPage,
+            hint: searchHint,
           ),
         ),
         const SizedBox(width: AppSpacing.s),
@@ -181,10 +186,16 @@ class DiaryHeadSection extends StatelessWidget {
 }
 
 class _SearchPreview extends StatelessWidget {
-  const _SearchPreview({super.key, required this.height, required this.onTap});
+  const _SearchPreview({
+    super.key,
+    required this.height,
+    required this.onTap,
+    this.hint,
+  });
 
   final double height;
   final VoidCallback onTap;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +232,7 @@ class _SearchPreview extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    context.l10n.diarySearchPreviewHint,
+                    hint ?? context.l10n.diarySearchPreviewHint,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(

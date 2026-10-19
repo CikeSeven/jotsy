@@ -10,6 +10,8 @@ import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 import 'package:node_diary/ui/diaries/providers/diary_draft_providers.dart';
+import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -49,6 +51,10 @@ Future<void> _pumpPage(
       overrides: [
         // 顶栏草稿角标：不打开真实数据库。
         diaryDraftCountProvider.overrideWith((ref) => Stream.value(0)),
+        // 书架：没有日记本（不打开真实数据库）。
+        notebooksProvider.overrideWith(
+          (ref) => Stream.value(const <NotebookView>[]),
+        ),
         settingsServiceProvider.overrideWith((ref) async => settings),
         tagListProvider.overrideWith((ref) => Stream.value(const <Tag>[_tag])),
         pagedDiariesProvider.overrideWith((ref, query) {

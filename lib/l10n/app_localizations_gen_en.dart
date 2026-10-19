@@ -6736,4 +6736,97 @@ class AppLocalizationsEn extends AppLocalizations {
   String notebookDeleted(String name) {
     return 'Deleted \"$name\"';
   }
+
+  @override
+  String notebookSwitcherSemantics(String name) {
+    return 'Switch notebook, current: $name';
+  }
+
+  @override
+  String get notebookScopeDeleted => 'Notebook deleted';
+
+  @override
+  String notebookSearchIn(String name) {
+    return 'Search in \"$name\"';
+  }
+
+  @override
+  String notebookSearchRemoveScope(String name) {
+    return 'Remove notebook condition: $name';
+  }
+
+  @override
+  String notebookMetaWords(String words) {
+    return '$words words';
+  }
+
+  @override
+  String notebookMetaSpan(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String notebookMetaSpanOngoing(String start) {
+    return '$start – now';
+  }
+
+  @override
+  String get notebookHeaderSmartBadge => 'Smart notebook';
+
+  @override
+  String get notebookHeaderPrivateBadge => 'Only shown in this notebook';
+
+  @override
+  String get notebookEmptyTitle => 'This notebook is empty';
+
+  @override
+  String get notebookEmptyCreateHint =>
+      'Tap New below to write the first entry';
+
+  @override
+  String get notebookViewSortSection => 'Sort in this notebook';
+
+  @override
+  String get notebookViewOptionsEntry => 'Switch notebook';
+
+  @override
+  String get notebookViewOptionsEntrySubtitle =>
+      'Show only one notebook\'s entries, or create one';
+
+  @override
+  String notebookUnlockReason(String name) {
+    return 'Unlock \"$name\"';
+  }
+
+  @override
+  String get notebookLockUnsupportedTitle => 'Can\'t open locked notebook';
+
+  @override
+  String get notebookLockUnsupportedMessage =>
+      'This device has no screen lock, so your identity can\'t be verified. You can change the notebook\'s privacy to \"Hide from all diaries\" in its settings.';
+
+  @override
+  String get notebookLockUnsupportedAction => 'Settings';
+
+  @override
+  String notebookLockedTitle(String name) {
+    return '\"$name\" is locked';
+  }
+
+  @override
+  String get notebookLockedSubtitle =>
+      'Verify your identity again after leaving the app';
+
+  @override
+  String get notebookLockUnlock => 'Unlock';
+
+  @override
+  String get notebookLockBackToAll => 'Back to all diaries';
+
+  @override
+  String get notebookPrivateDiaryPlaceholder => 'Entry in a private notebook';
+
+  @override
+  String get notebookAnniversaryLinkPrivate =>
+      'The linked entry is in a private notebook';
 }

@@ -66,10 +66,13 @@ ORDER BY d.is_pinned DESC, d.updated_at DESC
   /// 只读取统计与卡片展示需要的字段，刻意避开富文本 Delta `content`，
   /// 让探索页切入/刷新时不再被全量正文传输和正文图片解析拖慢。
   ///
-  /// 含归档，不含已删除与未解封的胶囊。[scope] 默认全部日记（排除私密日记）；
-  /// 日记本统计传日记本范围复用同一口径（成书顺序不影响这里的排序）。
+  /// 默认含归档，不含已删除与未解封的胶囊。[scope] 默认全部日记（排除私密
+  /// 日记）；日记本统计传日记本范围复用同一口径（成书顺序不影响这里的排序）。
+  /// [includeArchived] 为 false 时只要未归档的（与首页列表的篇目一致，供
+  /// 日记本头部卡片统计字数与时间跨度）。
   Stream<List<ExploreDiaryOverview>> watchExploreDiaryOverviews({
     DiaryListScope scope = DiaryListScope.all,
+    bool includeArchived = true,
   }) {
     final variables = <Variable<Object>>[Variable<DateTime>(DateTime.now())];
     final sql = StringBuffer('''
@@ -95,6 +98,9 @@ LEFT JOIN tags t ON t.id = dt.tag_id
 WHERE d.is_deleted = 0
   AND (d.capsule_unlock_at IS NULL OR d.capsule_unlock_at <= ?)
 ''');
+    if (!includeArchived) {
+      sql.write('  AND d.is_archived = 0\n');
+    }
     _writeDiaryScopeFilter(sql, variables, scope);
     sql.write('''
 GROUP BY d.id

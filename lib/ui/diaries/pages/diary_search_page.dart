@@ -17,6 +17,7 @@ import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
+import '../widgets/search_scope_condition_chip.dart';
 import 'diary_preview_page.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/route_entrance_waiter.dart';
@@ -33,15 +34,27 @@ class DiarySearchPage extends ConsumerStatefulWidget {
     super.key,
     this.initialKeyword = '',
     this.initialTagIds = const <int>{},
+    this.scope = DiaryListScope.all,
+    this.scopeLabel,
+    this.scopeIcon,
   });
 
   final String initialKeyword;
   final Set<int> initialTagIds;
 
+  /// 搜索范围：从日记本里打开时为这本，搜索条前显示可移除的日记本条件
+  /// （[scopeLabel] + [scopeIcon]）；移除后在全部日记中搜索。
+  final DiaryListScope scope;
+  final String? scopeLabel;
+  final FaIconData? scopeIcon;
+
   /// 构建覆盖式搜索页路由，保持与日记列表入口一致的体感。
   static Route<void> buildRoute({
     String initialKeyword = '',
     Set<int> initialTagIds = const <int>{},
+    DiaryListScope scope = DiaryListScope.all,
+    String? scopeLabel,
+    FaIconData? scopeIcon,
   }) {
     // 不透明路由：转场期间下层仍会绘制，完成后下层转为 offstage，不再在
     // 搜索期间持续绘制整屏日记列表（并暂停其 ticker）。
@@ -52,6 +65,9 @@ class DiarySearchPage extends ConsumerStatefulWidget {
         return DiarySearchPage(
           initialKeyword: initialKeyword,
           initialTagIds: initialTagIds,
+          scope: scope,
+          scopeLabel: scopeLabel,
+          scopeIcon: scopeIcon,
         );
       },
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -103,6 +119,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   late final Set<int> _selectedTagIds;
+  late DiaryListScope _scope = widget.scope;
   int _visibleDiaryLimit = _diaryPageSize;
   bool _hasMoreDiaries = false;
   bool _isPagingCooldown = false;
@@ -161,6 +178,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final query = SearchDiaryQuery(
       keyword: _effectiveSearchKeyword,
       requiredTagIds: _selectedTagIds,
+      scope: _scope,
     );
     _syncPagingStateWithQuery(query);
     if (!query.hasAnyCondition) {
@@ -173,6 +191,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       requiredTagIds: query.requiredTagIds,
       limit: _visibleDiaryLimit,
       sortMode: DiarySortMode.updatedDesc,
+      scope: query.scope,
     );
     final diariesAsync = query.hasAnyCondition
         ? ref.watch(searchDiariesProvider(pageQuery))
@@ -326,10 +345,14 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                       autofocus: _searchAutofocusEnabled,
                       hasSearchText: _searchInput.trim().isNotEmpty,
                       selectedTags: selectedTags,
+                      scopeChip: _buildScopeChip(),
                       onExitSearch: _closePage,
                       onClearSearch: _clearSearchInPlace,
                       onSearchChanged: _onSearchChanged,
                       onRemoveTagCondition: _removeTagCondition,
+                      onRemoveScopeCondition: _hasScopeCondition
+                          ? _removeScopeCondition
+                          : null,
                     ),
                   ),
                   Container(
@@ -374,6 +397,34 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       _effectiveSearchKeyword = '';
     });
     _searchFocusNode.requestFocus();
+  }
+
+  bool get _hasScopeCondition =>
+      _scope != DiaryListScope.all && widget.scopeLabel != null;
+
+  /// 日记本条件胶囊；在全部日记中搜索时为 null。
+  Widget? _buildScopeChip() {
+    final label = widget.scopeLabel;
+    if (!_hasScopeCondition || label == null) {
+      return null;
+    }
+    return SearchScopeConditionChip(
+      icon: widget.scopeIcon ?? FontAwesomeIcons.book,
+      label: label,
+      onRemove: _removeScopeCondition,
+    );
+  }
+
+  /// 移除日记本条件：改为在全部日记中搜索（不影响首页所在的范围）。
+  void _removeScopeCondition() {
+    if (_scope == DiaryListScope.all) {
+      return;
+    }
+    setState(() {
+      _scope = DiaryListScope.all;
+      _visibleDiaryLimit = _diaryPageSize;
+      _isPagingCooldown = false;
+    });
   }
 
   /// 移除单个标签搜索条件（仅影响搜索页本地状态，不回写主页筛选）。
@@ -433,7 +484,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   /// 条件变更时重置分页窗口，避免沿用旧查询的加载进度。
   void _syncPagingStateWithQuery(SearchDiaryQuery query) {
-    final signature = '${query.keyword}|${query.requiredTagIds.join(",")}';
+    final signature =
+        '${query.keyword}|${query.requiredTagIds.join(",")}|${query.scope}';
     if (_pagingSignature == signature) {
       return;
     }
@@ -473,10 +525,12 @@ class _SearchInputBar extends StatelessWidget {
     required this.autofocus,
     required this.hasSearchText,
     required this.selectedTags,
+    required this.scopeChip,
     required this.onExitSearch,
     required this.onClearSearch,
     required this.onSearchChanged,
     required this.onRemoveTagCondition,
+    this.onRemoveScopeCondition,
   });
 
   final TextEditingController searchController;
@@ -484,10 +538,16 @@ class _SearchInputBar extends StatelessWidget {
   final bool autofocus;
   final bool hasSearchText;
   final List<Tag> selectedTags;
+
+  /// 日记本条件胶囊，排在标签条件前；null 时没有。
+  final Widget? scopeChip;
   final VoidCallback onExitSearch;
   final VoidCallback onClearSearch;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<int> onRemoveTagCondition;
+
+  /// 退格删到日记本条件时移除它；没有日记本条件时为 null。
+  final VoidCallback? onRemoveScopeCondition;
 
   @override
   Widget build(BuildContext context) {
@@ -516,7 +576,7 @@ class _SearchInputBar extends StatelessWidget {
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
             Expanded(
-              child: selectedTags.isEmpty
+              child: selectedTags.isEmpty && scopeChip == null
                   ? TextField(
                       controller: searchController,
                       focusNode: searchFocusNode,
@@ -539,6 +599,10 @@ class _SearchInputBar extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: <Widget>[
+                          if (scopeChip case final chip?) ...[
+                            chip,
+                            const SizedBox(width: 6),
+                          ],
                           for (final tag in selectedTags) ...[
                             _TagConditionChip(
                               tag: tag,
@@ -561,6 +625,13 @@ class _SearchInputBar extends StatelessWidget {
                                     isInputEmpty &&
                                     selectedTags.isNotEmpty) {
                                   onRemoveTagCondition(selectedTags.last.id);
+                                  return KeyEventResult.handled;
+                                }
+                                final removeScope = onRemoveScopeCondition;
+                                if (isBackspace &&
+                                    isInputEmpty &&
+                                    removeScope != null) {
+                                  removeScope();
                                   return KeyEventResult.handled;
                                 }
                                 return KeyEventResult.ignored;

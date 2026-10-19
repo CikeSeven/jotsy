@@ -6118,4 +6118,93 @@ class AppLocalizationsZh extends AppLocalizations {
   String notebookDeleted(String name) {
     return '已删除「$name」';
   }
+
+  @override
+  String notebookSwitcherSemantics(String name) {
+    return '切换日记本，当前：$name';
+  }
+
+  @override
+  String get notebookScopeDeleted => '日记本已删除';
+
+  @override
+  String notebookSearchIn(String name) {
+    return '在「$name」中搜索';
+  }
+
+  @override
+  String notebookSearchRemoveScope(String name) {
+    return '移除日记本条件：$name';
+  }
+
+  @override
+  String notebookMetaWords(String words) {
+    return '$words 字';
+  }
+
+  @override
+  String notebookMetaSpan(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String notebookMetaSpanOngoing(String start) {
+    return '$start – 至今';
+  }
+
+  @override
+  String get notebookHeaderSmartBadge => '智能日记本';
+
+  @override
+  String get notebookHeaderPrivateBadge => '仅在本日记本中显示';
+
+  @override
+  String get notebookEmptyTitle => '这本还空着';
+
+  @override
+  String get notebookEmptyCreateHint => '点下方的新建，写下第一篇';
+
+  @override
+  String get notebookViewSortSection => '本日记本的排序';
+
+  @override
+  String get notebookViewOptionsEntry => '切换日记本';
+
+  @override
+  String get notebookViewOptionsEntrySubtitle => '只看某一本里的日记，或新建一本';
+
+  @override
+  String notebookUnlockReason(String name) {
+    return '解锁「$name」';
+  }
+
+  @override
+  String get notebookLockUnsupportedTitle => '无法打开上锁的日记本';
+
+  @override
+  String get notebookLockUnsupportedMessage =>
+      '这台设备没有设置锁屏密码，无法验证身份。可以在日记本设置里把隐私改为「不在全部日记中显示」。';
+
+  @override
+  String get notebookLockUnsupportedAction => '去设置';
+
+  @override
+  String notebookLockedTitle(String name) {
+    return '「$name」已上锁';
+  }
+
+  @override
+  String get notebookLockedSubtitle => '离开应用后需要重新验证身份';
+
+  @override
+  String get notebookLockUnlock => '解锁';
+
+  @override
+  String get notebookLockBackToAll => '回到全部日记';
+
+  @override
+  String get notebookPrivateDiaryPlaceholder => '私密日记本中的日记';
+
+  @override
+  String get notebookAnniversaryLinkPrivate => '关联的日记在私密日记本中';
 }

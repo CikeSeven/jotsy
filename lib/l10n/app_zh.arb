@@ -8686,5 +8686,144 @@
         "type": "String"
       }
     }
+  },
+  "notebookSwitcherSemantics": "切换日记本，当前：{name}",
+  "@notebookSwitcherSemantics": {
+    "description": "首页标签栏最前面的日记本切换胶囊的读屏说明。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookScopeDeleted": "日记本已删除",
+  "@notebookScopeDeleted": {
+    "description": "首页正在看的日记本被删除或并入别的本子后，回到全部日记时的提示。"
+  },
+  "notebookSearchIn": "在「{name}」中搜索",
+  "@notebookSearchIn": {
+    "description": "首页在日记本里时搜索条的占位文字。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSearchRemoveScope": "移除日记本条件：{name}",
+  "@notebookSearchRemoveScope": {
+    "description": "搜索页日记本条件胶囊上移除按钮的读屏说明。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaWords": "{words} 字",
+  "@notebookMetaWords": {
+    "description": "日记本头部卡片统计行里的总字数（已按语言加千分位，如 21,345）。",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaSpan": "{start} – {end}",
+  "@notebookMetaSpan": {
+    "description": "日记本头部卡片统计行里的时间跨度：最早到最晚一篇的月份。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaSpanOngoing": "{start} – 至今",
+  "@notebookMetaSpanOngoing": {
+    "description": "日记本头部卡片的时间跨度，最近一篇写在本月时。",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookHeaderSmartBadge": "智能日记本",
+  "@notebookHeaderSmartBadge": {
+    "description": "日记本头部卡片上标明这是智能日记本的小胶囊。"
+  },
+  "notebookHeaderPrivateBadge": "仅在本日记本中显示",
+  "@notebookHeaderPrivateBadge": {
+    "description": "日记本头部卡片上标明本子私密（隐藏或上锁）的小胶囊。"
+  },
+  "notebookEmptyTitle": "这本还空着",
+  "@notebookEmptyTitle": {
+    "description": "首页在日记本里、本子没有日记时的空状态标题。"
+  },
+  "notebookEmptyCreateHint": "点下方的新建，写下第一篇",
+  "@notebookEmptyCreateHint": {
+    "description": "首页日记本空状态的说明。"
+  },
+  "notebookViewSortSection": "本日记本的排序",
+  "@notebookViewSortSection": {
+    "description": "首页在日记本里时视图选项面板的排序分组标题。"
+  },
+  "notebookViewOptionsEntry": "切换日记本",
+  "@notebookViewOptionsEntry": {
+    "description": "视图选项面板里打开书架的入口。"
+  },
+  "notebookViewOptionsEntrySubtitle": "只看某一本里的日记，或新建一本",
+  "@notebookViewOptionsEntrySubtitle": {
+    "description": "视图选项面板里书架入口的说明。"
+  },
+  "notebookUnlockReason": "解锁「{name}」",
+  "@notebookUnlockReason": {
+    "description": "打开上锁日记本时系统身份验证面板上的说明。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookLockUnsupportedTitle": "无法打开上锁的日记本",
+  "@notebookLockUnsupportedTitle": {
+    "description": "设备没有锁屏密码、无法打开上锁日记本时的对话框标题。"
+  },
+  "notebookLockUnsupportedMessage": "这台设备没有设置锁屏密码，无法验证身份。可以在日记本设置里把隐私改为「不在全部日记中显示」。",
+  "@notebookLockUnsupportedMessage": {
+    "description": "设备没有锁屏密码时打开上锁日记本的说明。"
+  },
+  "notebookLockUnsupportedAction": "去设置",
+  "@notebookLockUnsupportedAction": {
+    "description": "上锁日记本无法验证时对话框里打开日记本设置的按钮。"
+  },
+  "notebookLockedTitle": "「{name}」已上锁",
+  "@notebookLockedTitle": {
+    "description": "回到应用时盖住上锁日记本的遮罩标题。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookLockedSubtitle": "离开应用后需要重新验证身份",
+  "@notebookLockedSubtitle": {
+    "description": "上锁日记本遮罩的说明。"
+  },
+  "notebookLockUnlock": "解锁",
+  "@notebookLockUnlock": {
+    "description": "上锁日记本遮罩上的解锁按钮。"
+  },
+  "notebookLockBackToAll": "回到全部日记",
+  "@notebookLockBackToAll": {
+    "description": "上锁日记本遮罩上离开这本、回到全部日记的按钮。"
+  },
+  "notebookPrivateDiaryPlaceholder": "私密日记本中的日记",
+  "@notebookPrivateDiaryPlaceholder": {
+    "description": "回收站里私密日记本中的日记不显示标题，用这句占位。"
+  },
+  "notebookAnniversaryLinkPrivate": "关联的日记在私密日记本中",
+  "@notebookAnniversaryLinkPrivate": {
+    "description": "纪念日关联的日记在隐藏或上锁的日记本里、不能直接显示时的提示。"
   }
 }

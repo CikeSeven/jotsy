@@ -11275,6 +11275,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deleted \"{name}\"'**
   String notebookDeleted(String name);
+
+  /// Screen reader label of the notebook switcher chip at the start of the home tag bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch notebook, current: {name}'**
+  String notebookSwitcherSemantics(String name);
+
+  /// Hint shown when the notebook open on the home page was deleted or merged and the list returns to all diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook deleted'**
+  String get notebookScopeDeleted;
+
+  /// Search bar placeholder on the home page while inside a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in \"{name}\"'**
+  String notebookSearchIn(String name);
+
+  /// Screen reader label of the remove button on the search page's notebook condition chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove notebook condition: {name}'**
+  String notebookSearchRemoveScope(String name);
+
+  /// Total word count in the notebook header meta line (already formatted with grouping, e.g. 21,345).
+  ///
+  /// In en, this message translates to:
+  /// **'{words} words'**
+  String notebookMetaWords(String words);
+
+  /// Time span in the notebook header meta line: month of the first to the last entry.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String notebookMetaSpan(String start, String end);
+
+  /// Time span in the notebook header meta line when the latest entry is from the current month.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – now'**
+  String notebookMetaSpanOngoing(String start);
+
+  /// Capsule on the notebook header card marking a smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart notebook'**
+  String get notebookHeaderSmartBadge;
+
+  /// Capsule on the notebook header card marking a private (hidden or locked) notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Only shown in this notebook'**
+  String get notebookHeaderPrivateBadge;
+
+  /// Empty state title on the home page inside a notebook with no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'This notebook is empty'**
+  String get notebookEmptyTitle;
+
+  /// Explanation under the empty state of a notebook on the home page.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap New below to write the first entry'**
+  String get notebookEmptyCreateHint;
+
+  /// Sort section title of the view options sheet while inside a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort in this notebook'**
+  String get notebookViewSortSection;
+
+  /// Entry in the view options sheet that opens the notebook shelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch notebook'**
+  String get notebookViewOptionsEntry;
+
+  /// Subtitle of the notebook shelf entry in the view options sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Show only one notebook\'s entries, or create one'**
+  String get notebookViewOptionsEntrySubtitle;
+
+  /// Reason shown on the system authentication prompt when opening a locked notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock \"{name}\"'**
+  String notebookUnlockReason(String name);
+
+  /// Dialog title when a locked notebook can't be opened because the device has no screen lock.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t open locked notebook'**
+  String get notebookLockUnsupportedTitle;
+
+  /// Explanation when opening a locked notebook on a device without a screen lock.
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no screen lock, so your identity can\'t be verified. You can change the notebook\'s privacy to \"Hide from all diaries\" in its settings.'**
+  String get notebookLockUnsupportedMessage;
+
+  /// Dialog button that opens the notebook settings when a locked notebook can't be verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get notebookLockUnsupportedAction;
+
+  /// Title of the overlay covering a locked notebook when returning to the app.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" is locked'**
+  String notebookLockedTitle(String name);
+
+  /// Subtitle of the locked notebook overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity again after leaving the app'**
+  String get notebookLockedSubtitle;
+
+  /// Unlock button on the locked notebook overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get notebookLockUnlock;
+
+  /// Button on the locked notebook overlay that leaves the notebook and returns to all diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to all diaries'**
+  String get notebookLockBackToAll;
+
+  /// Placeholder shown in the recycle bin instead of the title of an entry from a private notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry in a private notebook'**
+  String get notebookPrivateDiaryPlaceholder;
+
+  /// Shown on an anniversary when its linked entry is in a hidden or locked notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'The linked entry is in a private notebook'**
+  String get notebookAnniversaryLinkPrivate;
 }
 
 class _AppLocalizationsDelegate

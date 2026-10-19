@@ -40,8 +40,10 @@ void main() {
           );
           expect(
             tester.getSize(tagBarFinder).height,
+            // 3 个标签加上最前面的日记本切换胶囊，在 390dp 宽下排成两行。
             tagCount == 3
-                ? DiaryTagFilterBar.chipExtent +
+                ? DiaryTagFilterBar.chipExtent * 2 +
+                      4 +
                       DiaryTagFilterBar.collapseHandleExtent +
                       8
                 : DiaryTagFilterBar.maxExpandedBarExtent,

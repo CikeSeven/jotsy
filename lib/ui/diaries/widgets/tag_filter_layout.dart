@@ -17,6 +17,7 @@ class TagFilterLayoutCache {
   TextDirection? _direction;
   double _width = -1;
   double _spacing = -1;
+  double _leadingWidth = 0;
   TagFilterLayout? _layout;
 
   TagFilterLayout resolve(
@@ -25,6 +26,7 @@ class TagFilterLayoutCache {
     required Set<int> selectedTagIds,
     required double width,
     required double spacing,
+    double leadingWidth = 0,
   }) {
     if (width <= 0) {
       return const TagFilterLayout(<List<TagFilterCell>>[]);
@@ -42,7 +44,8 @@ class TagFilterLayoutCache {
         _scaler == scaler &&
         _direction == direction &&
         _width == width &&
-        _spacing == spacing) {
+        _spacing == spacing &&
+        _leadingWidth == leadingWidth) {
       return _layout!;
     }
 
@@ -55,8 +58,10 @@ class TagFilterLayoutCache {
       maxLines: 1,
     );
     try {
-      for (var index = 0; index <= tags.length; index++) {
-        var itemWidth = 26.0;
+      // 有前置项（日记本切换胶囊）时它占第一格，下标为 -1。
+      final firstIndex = leadingWidth > 0 ? -1 : 0;
+      for (var index = firstIndex; index <= tags.length; index++) {
+        var itemWidth = index < 0 ? leadingWidth : 26.0;
         if (index > 0) {
           final tag = tags[index - 1];
           painter.text = TextSpan(text: tag.name, style: style);
@@ -92,6 +97,7 @@ class TagFilterLayoutCache {
     _direction = direction;
     _width = width;
     _spacing = spacing;
+    _leadingWidth = leadingWidth;
     return _layout = TagFilterLayout(rows);
   }
 }

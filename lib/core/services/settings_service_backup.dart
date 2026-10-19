@@ -23,6 +23,7 @@ extension SettingsServiceBackup on SettingsService {
       SettingsService._keyDiaryShareOptions,
       SettingsService._keyDiaryExportOptions,
       SettingsService._keyTagOrder,
+      SettingsService._keyTagPickerSort,
       SettingsService._keyTagFilterMemoryEnabled,
       SettingsService._keyRememberedTagFilterIds,
       SettingsService._keyCreateDiaryDraft,

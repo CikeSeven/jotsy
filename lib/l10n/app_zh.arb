@@ -9958,5 +9958,39 @@
   "diaryColorGray": "灰",
   "@diaryColorGray": {
     "description": "Name of the gray preset color in the editor color panel."
+  },
+  "tagPickerSearchHint": "搜索标签",
+  "@tagPickerSearchHint": {
+    "description": "发布面板标签子页：搜索框的占位提示。"
+  },
+  "tagPickerSortTooltip": "排序方式",
+  "@tagPickerSortTooltip": {
+    "description": "发布面板标签子页：搜索框右侧排序按钮的提示。"
+  },
+  "tagPickerSortCustom": "默认排序",
+  "@tagPickerSortCustom": {
+    "description": "发布面板标签子页排序菜单：按标签管理里排好的顺序。"
+  },
+  "tagPickerSortAlphabetical": "按字母排序",
+  "@tagPickerSortAlphabetical": {
+    "description": "发布面板标签子页排序菜单：A–Z，汉字按拼音，右侧出现字母索引条。"
+  },
+  "tagPickerCreateNamed": "新建「{name}」",
+  "@tagPickerCreateNamed": {
+    "description": "发布面板标签子页：检索时的新建行，点按以检索词预填新建弹窗。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagPickerSearchEmpty": "没有找到「{query}」",
+  "@tagPickerSearchEmpty": {
+    "description": "发布面板标签子页：检索没有结果时的提示。",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
   }
 }

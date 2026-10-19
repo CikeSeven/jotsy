@@ -32,6 +32,7 @@ class BackupSettings {
     'diaryToolbarCurrentTimeFormatRaw':
         settingsService.diaryToolbarCurrentTimeFormatRaw,
     'tagOrderRaw': settingsService.tagOrderRaw,
+    'tagPickerSortRaw': settingsService.tagPickerSortRaw,
     'tagFilterMemoryEnabled': settingsService.isTagFilterMemoryEnabled,
     'rememberedTagFilterIdsRaw': settingsService.rememberedTagFilterIdsRaw,
     'diaryLocationPrecisionRaw': settingsService.diaryLocationPrecisionRaw,
@@ -213,6 +214,12 @@ class BackupSettings {
     final tagOrderRaw = settingsNode['tagOrderRaw']?.toString();
     if (tagOrderRaw != null && tagOrderRaw.isNotEmpty) {
       await settingsService.setTagOrderRaw(tagOrderRaw);
+    }
+
+    // 旧版备份没有标签子页排序时保留本机选择；未知值由日记模块回退为默认。
+    final tagPickerSortRaw = settingsNode['tagPickerSortRaw'];
+    if (tagPickerSortRaw is String && tagPickerSortRaw.isNotEmpty) {
+      await settingsService.setTagPickerSortRaw(tagPickerSortRaw);
     }
 
     final tagFilterMemoryEnabledRaw = settingsNode['tagFilterMemoryEnabled'];

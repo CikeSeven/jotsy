@@ -17,11 +17,17 @@ class NewTagDraft {
 ///
 /// - 返回 `null` 表示取消
 /// - 返回 `NewTagDraft` 表示输入合法可提交
-Future<NewTagDraft?> showCreateTagDialog(BuildContext context) async {
+///
+/// [initialName] 预填名称（如标签子页里没有结果的检索词）。
+Future<NewTagDraft?> showCreateTagDialog(
+  BuildContext context, {
+  String? initialName,
+}) async {
   return showTagDraftDialog(
     context,
     title: context.l10n.autoT0040,
     actionLabel: context.l10n.commonCreate,
+    initialName: initialName,
   );
 }
 

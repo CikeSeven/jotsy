@@ -117,9 +117,9 @@ class DiaryMetaActions {
   /// 清除封面；文件同样交给 DiaryMediaCleanupService 按引用回收。
   void clearCover() => draft.setCover(null);
 
-  /// 内联新建标签，成功后自动选中。
-  Future<void> createTag(BuildContext context) async {
-    final tag = await showCreateTagDialog(context);
+  /// 内联新建标签，成功后自动选中；[initialName] 预填弹窗里的名称。
+  Future<void> createTag(BuildContext context, {String? initialName}) async {
+    final tag = await showCreateTagDialog(context, initialName: initialName);
     if (tag == null || !context.mounted) return;
     try {
       final tagId = await _ref

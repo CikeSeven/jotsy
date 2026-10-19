@@ -9958,5 +9958,39 @@
   "diaryColorGray": "Gray",
   "@diaryColorGray": {
     "description": "Name of the gray preset color in the editor color panel."
+  },
+  "tagPickerSearchHint": "Search tags",
+  "@tagPickerSearchHint": {
+    "description": "Publish panel tag page: placeholder of the search field."
+  },
+  "tagPickerSortTooltip": "Sort order",
+  "@tagPickerSortTooltip": {
+    "description": "Publish panel tag page: tooltip of the sort button next to the search field."
+  },
+  "tagPickerSortCustom": "Default order",
+  "@tagPickerSortCustom": {
+    "description": "Publish panel tag page sort menu: the order arranged in tag management."
+  },
+  "tagPickerSortAlphabetical": "Alphabetical",
+  "@tagPickerSortAlphabetical": {
+    "description": "Publish panel tag page sort menu: A to Z, Chinese names by pinyin, with a letter index on the right."
+  },
+  "tagPickerCreateNamed": "Create “{name}”",
+  "@tagPickerCreateNamed": {
+    "description": "Publish panel tag page: the create row while searching, which pre-fills the new tag dialog with the search text.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagPickerSearchEmpty": "No tags match “{query}”",
+  "@tagPickerSearchEmpty": {
+    "description": "Publish panel tag page: hint when the search has no results.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
   }
 }

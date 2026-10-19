@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -136,6 +137,48 @@ void main() {
 
     expect(find.byTooltip('插入图片'), findsOneWidget);
     expect(position.pixels, offsetBefore);
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
+  testWidgets('the color code input survives the keyboard closing briefly', (
+    tester,
+  ) async {
+    await pumpCreatePage(tester);
+    await tester.tap(find.byTooltip('更多工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('文字颜色'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('输入颜色代码'));
+    await tester.pumpAndSettle();
+
+    final hexField = find.descendant(
+      of: find.byType(DiaryColorHexInputRow),
+      matching: find.byType(TextField),
+    );
+    FocusNode hexFocus() => tester.widget<TextField>(hexField).focusNode!;
+    expect(hexFocus().hasFocus, isTrue);
+
+    // 输入法换键盘（如小米对“可见密码”输入框换成系统安全键盘）：旧键盘收起、
+    // 新键盘弹出之间键盘高度归零，工具栏与输入框都不能因此卸载。
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    expect(hexField, findsOneWidget);
+    expect(hexFocus().hasFocus, isTrue);
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(hexField, findsOneWidget);
+    expect(hexFocus().hasFocus, isTrue);
+
+    // 取消后焦点回到正文，工具栏照旧跟着键盘：键盘收起就不再显示。
+    await tester.tap(find.byTooltip('取消'));
+    await tester.pumpAndSettle();
+    expect(hexField, findsNothing);
+    expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryFloatingToolbar), findsNothing);
     expect(tester.takeException(), isNull);
     await unmount(tester);
   });

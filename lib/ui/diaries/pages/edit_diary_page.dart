@@ -750,9 +750,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    // 焦点在工具栏内（颜色代码输入框）时不看键盘高度：焦点从正文交给输入框
+    // 时，输入法可能先收起再弹出（如小米对可见密码类输入框换成系统安全
+    // 键盘），键盘高度会短暂归零；此时卸载工具栏会连同面板与输入框一起丢掉。
     final rawShowFloatingToolbar =
         _isMobileRuntime &&
-        keyboardInset > 0 &&
+        (keyboardInset > 0 || _toolbarFocusNode.hasFocus) &&
         _isEditingNoteText &&
         !_isEditPanelExpanded;
     final showEditMetaPanel = _isEditEntry;

@@ -138,9 +138,11 @@ class _DiaryTemplateEditorContentTabState
     final appearance = ref.watch(diaryTextAppearanceProvider);
     final titleStyle = appearance.titleStyle(theme.textTheme.headlineSmall);
     final order = _toolbarOrder();
+    // 焦点在工具栏内（颜色代码输入框）时不看键盘：交接焦点时输入法可能先收起
+    // 再弹出，键盘短暂消失也不能卸载工具栏（与日记编辑页同一口径）。
     final showToolbar =
-        widget.keyboardVisible &&
-        (_bodyFocus.hasFocus || _toolbarFocus.hasFocus) &&
+        ((widget.keyboardVisible && _bodyFocus.hasFocus) ||
+            _toolbarFocus.hasFocus) &&
         order.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

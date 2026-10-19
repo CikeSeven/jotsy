@@ -142,7 +142,11 @@ class DiaryColorDot extends StatelessWidget {
 /// - 输出：[onSubmit]（按应用或键盘“完成”，代码有效时才调用，给出不透明的
 ///   输入色，透明度由调用方按 [resolveDiaryHexInputColor] 决定）、[onCancel]；
 /// - 键盘类型用 visiblePassword：强制 ASCII 键盘，不会弹出拼音输入法的候选；
-///   同时关闭自动更正与联想。
+///   同时关闭自动更正与联想（Android 上关联想本身也会带上可见密码变体）。
+///   有的系统（如小米的安全键盘）会因此换一个输入法，旧键盘收起、新键盘
+///   弹出之间键盘高度短暂归零，所以编辑页在焦点位于工具栏内时不以键盘高度
+///   决定工具栏去留。不改成 url 等类型并打开联想：输入法组字时与转大写的
+///   [DiaryHexInputFormatter] 可能冲突、重复上屏。
 class DiaryColorHexInputRow extends StatelessWidget {
   const DiaryColorHexInputRow({
     super.key,

@@ -132,6 +132,14 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final _titleController = TextEditingController();
   final FocusNode _titleFocusNode = FocusNode();
   final FocusNode _contentFocusNode = FocusNode();
+  // 包住悬浮工具栏：颜色面板里的颜色代码输入框拿到焦点时，正文与标题都失焦，
+  // 工具栏仍须留着（它的显示条件含“正在编辑”），否则输入框随之卸载。
+  // 自身不可获得焦点，只用来判断焦点是否在工具栏内。
+  final FocusNode _toolbarFocusNode = FocusNode(
+    debugLabel: 'diary-floating-toolbar',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
   final ScrollController _contentScrollController = ScrollController();
   final ScrollController _editorInnerScrollController = ScrollController();
@@ -327,6 +335,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _caretFollow.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
+    _toolbarFocusNode.dispose();
     _contentScrollController.dispose();
     _editorInnerScrollController.dispose();
     _editPanelExpandProgress.dispose();
@@ -377,7 +386,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   bool get _isEditPanelExpanded =>
       _isEditEntry && _editPanelExpandProgress.value >= 0.56;
   bool get _isEditingNoteText =>
-      _titleFocusNode.hasFocus || _contentFocusNode.hasFocus;
+      _titleFocusNode.hasFocus ||
+      _contentFocusNode.hasFocus ||
+      _toolbarFocusNode.hasFocus;
 
   void _onMediaImportChanged() {
     if (mounted) setState(() {});
@@ -965,16 +976,22 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               DiaryFloatingToolbarSurface(
-                                child: _buildFloatingToolbar(
-                                  enabledToolbarOrder,
-                                  // 面板最多铺满工具栏上方的整块正文区，
-                                  // 极矮的窗口里改为面板内滚动而不溢出。
-                                  maxPanelExtent:
-                                      constraints.maxHeight -
-                                      MediaQuery.paddingOf(
-                                        context,
-                                      ).bottom.clamp(8.0, double.infinity) -
-                                      kDiaryToolbarBarHeight,
+                                child: Focus(
+                                  focusNode: _toolbarFocusNode,
+                                  // 焦点在正文与颜色代码输入框之间交接时，
+                                  // 按新的焦点重新判断工具栏是否显示。
+                                  onFocusChange: (_) => setState(() {}),
+                                  child: _buildFloatingToolbar(
+                                    enabledToolbarOrder,
+                                    // 面板最多铺满工具栏上方的整块正文区，
+                                    // 极矮的窗口里改为面板内滚动而不溢出。
+                                    maxPanelExtent:
+                                        constraints.maxHeight -
+                                        MediaQuery.paddingOf(
+                                          context,
+                                        ).bottom.clamp(8.0, double.infinity) -
+                                        kDiaryToolbarBarHeight,
+                                  ),
                                 ),
                               ),
                               if (_recordingPanelOpen) ...[

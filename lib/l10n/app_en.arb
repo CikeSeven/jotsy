@@ -9878,5 +9878,73 @@
   "notebookInsightsRandom": "Open a random entry",
   "@notebookInsightsRandom": {
     "description": "Stats page button: open a random entry of this notebook."
+  },
+  "diaryColorPanelDefaultColor": "Default color",
+  "@diaryColorPanelDefaultColor": {
+    "description": "Editor toolbar color panel: swatch that clears the text color back to the default ink."
+  },
+  "diaryColorPanelNoBackground": "No background",
+  "@diaryColorPanelNoBackground": {
+    "description": "Editor toolbar color panel: swatch that removes the background (highlight) color."
+  },
+  "diaryColorPanelCustom": "Custom",
+  "@diaryColorPanelCustom": {
+    "description": "Editor toolbar color panel: color code chip label when the selection has no color or a color without a readable code."
+  },
+  "diaryColorPanelEnterCode": "Enter color code",
+  "@diaryColorPanelEnterCode": {
+    "description": "Editor toolbar color panel: tooltip of the chip that opens the hex color code input."
+  },
+  "diaryColorPanelHexHint": "RRGGBB",
+  "@diaryColorPanelHexHint": {
+    "description": "Editor toolbar color panel: hint of the hex color code field (six hex digits after #)."
+  },
+  "diaryColorPanelApply": "Apply",
+  "@diaryColorPanelApply": {
+    "description": "Editor toolbar color panel: button that applies the typed hex color code."
+  },
+  "diaryColorRed": "Red",
+  "@diaryColorRed": {
+    "description": "Name of the red preset color in the editor color panel."
+  },
+  "diaryColorOrange": "Orange",
+  "@diaryColorOrange": {
+    "description": "Name of the orange preset color in the editor color panel."
+  },
+  "diaryColorYellow": "Yellow",
+  "@diaryColorYellow": {
+    "description": "Name of the yellow preset color in the editor color panel."
+  },
+  "diaryColorGreen": "Green",
+  "@diaryColorGreen": {
+    "description": "Name of the green preset color in the editor color panel."
+  },
+  "diaryColorTeal": "Teal",
+  "@diaryColorTeal": {
+    "description": "Name of the teal preset color in the editor color panel."
+  },
+  "diaryColorBlue": "Blue",
+  "@diaryColorBlue": {
+    "description": "Name of the blue preset color in the editor color panel."
+  },
+  "diaryColorIndigo": "Indigo",
+  "@diaryColorIndigo": {
+    "description": "Name of the indigo preset color in the editor color panel."
+  },
+  "diaryColorPurple": "Purple",
+  "@diaryColorPurple": {
+    "description": "Name of the purple preset color in the editor color panel."
+  },
+  "diaryColorPink": "Pink",
+  "@diaryColorPink": {
+    "description": "Name of the pink preset color in the editor color panel."
+  },
+  "diaryColorBrown": "Brown",
+  "@diaryColorBrown": {
+    "description": "Name of the brown preset color in the editor color panel."
+  },
+  "diaryColorGray": "Gray",
+  "@diaryColorGray": {
+    "description": "Name of the gray preset color in the editor color panel."
   }
 }

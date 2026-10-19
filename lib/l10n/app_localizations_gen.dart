@@ -12523,6 +12523,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open a random entry'**
   String get notebookInsightsRandom;
+
+  /// Editor toolbar color panel: swatch that clears the text color back to the default ink.
+  ///
+  /// In en, this message translates to:
+  /// **'Default color'**
+  String get diaryColorPanelDefaultColor;
+
+  /// Editor toolbar color panel: swatch that removes the background (highlight) color.
+  ///
+  /// In en, this message translates to:
+  /// **'No background'**
+  String get diaryColorPanelNoBackground;
+
+  /// Editor toolbar color panel: color code chip label when the selection has no color or a color without a readable code.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom'**
+  String get diaryColorPanelCustom;
+
+  /// Editor toolbar color panel: tooltip of the chip that opens the hex color code input.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter color code'**
+  String get diaryColorPanelEnterCode;
+
+  /// Editor toolbar color panel: hint of the hex color code field (six hex digits after #).
+  ///
+  /// In en, this message translates to:
+  /// **'RRGGBB'**
+  String get diaryColorPanelHexHint;
+
+  /// Editor toolbar color panel: button that applies the typed hex color code.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get diaryColorPanelApply;
+
+  /// Name of the red preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get diaryColorRed;
+
+  /// Name of the orange preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get diaryColorOrange;
+
+  /// Name of the yellow preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get diaryColorYellow;
+
+  /// Name of the green preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get diaryColorGreen;
+
+  /// Name of the teal preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get diaryColorTeal;
+
+  /// Name of the blue preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get diaryColorBlue;
+
+  /// Name of the indigo preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get diaryColorIndigo;
+
+  /// Name of the purple preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get diaryColorPurple;
+
+  /// Name of the pink preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get diaryColorPink;
+
+  /// Name of the brown preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Brown'**
+  String get diaryColorBrown;
+
+  /// Name of the gray preset color in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Gray'**
+  String get diaryColorGray;
 }
 
 class _AppLocalizationsDelegate

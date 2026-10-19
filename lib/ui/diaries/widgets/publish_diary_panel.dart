@@ -383,7 +383,8 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
           content: PublishTagPickerPage(
             draft: widget.draft,
             tags: tags,
-            onCreateTag: () => widget.actions.createTag(context),
+            onCreateTag: (name) =>
+                widget.actions.createTag(context, initialName: name),
           ),
         ),
         PublishPanelPageScaffold(

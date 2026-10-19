@@ -94,6 +94,25 @@ void main() {
     expect(recreatedSettings.diaryLocationPrecisionRaw, 'city');
   });
 
+  test('export and import round-trips the tag picker sort', () async {
+    await settingsService.setTagPickerSortRaw('alphabetical');
+    final backup = await DataArchiveService.exportToZip(
+      database: database,
+      settingsService: settingsService,
+    );
+
+    await settingsService.setTagPickerSortRaw('custom');
+    await DataArchiveService.importFromZip(
+      database: database,
+      settingsService: settingsService,
+      zipPath: backup.path,
+    );
+
+    expect(settingsService.tagPickerSortRaw, 'alphabetical');
+    final recreatedSettings = await SettingsService.create();
+    expect(recreatedSettings.tagPickerSortRaw, 'alphabetical');
+  });
+
   test(
     'backup restores recording bytes and rebinds diary and draft audio paths',
     () async {

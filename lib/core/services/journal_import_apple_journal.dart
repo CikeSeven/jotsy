@@ -5,6 +5,7 @@ import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -32,21 +33,20 @@ JournalImportParseResult parseAppleJournalExport(
   final files = listJournalExportFiles(root);
   bool isHtml(File file) =>
       const {'.html', '.htm'}.contains(p.extension(file.path).toLowerCase());
-  // 资源按文件名兜底查找：路径大小写或 Unicode 规范化与 HTML 中的不一致时仍能找到。
-  final resources = <String, String>{
-    for (final file in files.where((file) => !isHtml(file)))
-      p.basename(file.path).toLowerCase(): file.path,
-  };
+  final fileIndex = JournalImportFiles(root);
+  final issues = JournalImportIssues();
   final order = <String, int>{};
   for (final index in files.where(
     (file) => p.basename(file.path).toLowerCase() == 'index.html',
   )) {
-    final document = html_parser.parse(index.readAsStringSync());
+    final document = html_parser.parse(readJournalText(index));
     for (final link in document.querySelectorAll('a[href]')) {
-      final target = p.normalize(
-        p.join(index.parent.path, Uri.decodeFull(link.attributes['href']!)),
+      final target = fileIndex.resolve(
+        link.attributes['href']!,
+        from: index.parent.path,
+        fallbackToName: false,
       );
-      order.putIfAbsent(target, () => order.length);
+      if (target != null) order.putIfAbsent(target, () => order.length);
     }
   }
 
@@ -54,7 +54,7 @@ JournalImportParseResult parseAppleJournalExport(
   var recognized = false;
   for (final file in files.where(isHtml)) {
     if (p.basename(file.path).toLowerCase() == 'index.html') continue;
-    final document = html_parser.parse(file.readAsStringSync());
+    final document = html_parser.parse(readJournalText(file));
     if (document.querySelector('.pageHeader, .bodyText, .assetGrid') == null) {
       continue;
     }
@@ -62,7 +62,11 @@ JournalImportParseResult parseAppleJournalExport(
     final date =
         _fileDate(p.basename(file.path)) ??
         _headerDate(document.querySelector('.pageHeader')?.text ?? '');
-    if (date != null) pages.add((file: file, document: document, date: date));
+    if (date != null) {
+      pages.add((file: file, document: document, date: date));
+    } else {
+      issues.skip(JournalSkipReason.unreadable);
+    }
   }
   if (!recognized) {
     throw const JournalImportFormatException(JournalImportSource.appleJournal);
@@ -78,6 +82,10 @@ JournalImportParseResult parseAppleJournalExport(
   });
 
   final entries = <JournalImportEntry>[];
+  final counts = <DateTime, int>{};
+  for (final page in pages) {
+    counts.update(page.date, (count) => count + 1, ifAbsent: () => 1);
+  }
   DateTime? previousDate;
   var minute = 0;
   for (final page in pages) {
@@ -89,15 +97,18 @@ JournalImportParseResult parseAppleJournalExport(
       page.date.month,
       page.date.day,
       12,
-      minute,
+      0,
+      0,
+      minute * (43200000 ~/ counts[page.date]!).clamp(1, 60000),
     );
     entries.add(
-      _parsePage(page.file, page.document, createdAt, root, resources, media),
+      _parsePage(page.file, page.document, createdAt, root, fileIndex, media),
     );
   }
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
@@ -106,16 +117,19 @@ JournalImportEntry _parsePage(
   dom.Document document,
   DateTime createdAt,
   String root,
-  Map<String, String> resources,
+  JournalImportFiles files,
   JournalMediaStager media,
 ) {
   Map<String, Object?>? resolve(String source) {
+    if (source.toLowerCase().startsWith('data:')) {
+      return media.embedDataUri(source);
+    }
     if (RegExp(r'^[a-z]+:', caseSensitive: false).hasMatch(source)) return null;
-    final relative = Uri.decodeFull(source);
-    final direct = p.normalize(p.join(file.parent.path, relative));
-    final path = File(direct).existsSync()
-        ? direct
-        : resources[p.basename(relative).toLowerCase()] ?? direct;
+    final path = files.resolve(source, from: file.parent.path);
+    if (path == null) {
+      media.missingCount++;
+      return null;
+    }
     return media.embedFile(path);
   }
 
@@ -131,17 +145,29 @@ JournalImportEntry _parsePage(
       continue;
     }
     if (!const {'photo', 'livephoto', 'video', 'audio'}.contains(type)) {
+      final description = _overlayText(item);
+      if (description != null) {
+        writer.text(description);
+        writer.endLine();
+      }
       continue;
     }
-    final source = [
-      for (final element in item.querySelectorAll(
-        'video[src], video source[src], audio[src], audio source[src], img[src]',
-      ))
-        element.attributes['src']!,
-    ].firstOrNull;
-    if (source == null) continue;
-    final data = resolve(source);
-    if (data != null) writer.embed(data);
+    // 视频网格可能先放封面 <img>。按媒体类型取源，不能依赖 DOM 顺序，
+    // 否则用户导入的是一张缩略图，真正的视频会丢失。
+    final playable = item.querySelectorAll(
+      'video[src], video source[src], audio[src], audio source[src]',
+    );
+    final images = item.querySelectorAll('img[src]');
+    final sources = <String>{
+      for (final element in playable) element.attributes['src']!,
+      if (playable.isEmpty || type == 'livephoto')
+        for (final element in images) element.attributes['src']!,
+    };
+    if (sources.isEmpty) media.missingCount++;
+    for (final source in sources) {
+      final data = resolve(source);
+      if (data != null) writer.embed(data);
+    }
   }
 
   final prompt = document.querySelector('.reflectionPrompt')?.text.trim();
@@ -149,7 +175,11 @@ JournalImportEntry _parsePage(
     writer.text(prompt, const {'italic': true});
     writer.endLine(const {'blockquote': true});
   }
-  final converter = JournalHtmlConverter(writer, resolveEmbed: resolve);
+  final converter = JournalHtmlConverter(
+    writer,
+    resolveEmbed: resolve,
+    resolveLink: resolve,
+  );
   final body = document.querySelector('.bodyText');
   if (body != null) {
     // 导出的包裹标记不成对（`<div class='bodyText'></span></p>`），HTML 解析
@@ -199,7 +229,7 @@ DateTime? _fileDate(String name) {
   final year = int.parse(match.group(1)!);
   final month = int.parse(match.group(2)!);
   final day = int.parse(match.group(3)!);
-  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  if (!isJournalCalendarDate(year, month, day)) return null;
   return DateTime(year, month, day);
 }
 
@@ -209,5 +239,7 @@ DateTime? _headerDate(String header) {
   final day = RegExp(r'\b(\d{1,2})\b').firstMatch(header);
   final month = journalEnglishMonth(header);
   if (year == null || day == null || month == null) return null;
-  return DateTime(int.parse(year.group(1)!), month, int.parse(day.group(1)!));
+  final y = int.parse(year.group(1)!);
+  final d = int.parse(day.group(1)!);
+  return isJournalCalendarDate(y, month, d) ? DateTime(y, month, d) : null;
 }

@@ -2,6 +2,8 @@
 /// 导入（Obsidian、Bear、Joplin 的 Markdown 导出等）共用。纯文本处理，无 IO。
 library;
 
+import 'journal_import_support.dart';
+
 /// 拆出文件开头 `---` 包围的 front matter，返回字段与其后的正文；没有
 /// front matter 时字段为空、正文为原文。
 ///
@@ -88,15 +90,15 @@ String? journalFrontMatterString(
 DateTime? parseLooseJournalDate(String? raw) {
   final text = raw?.trim();
   if (text == null || text.isEmpty) return null;
+  final iso = parseJournalDateTime(text);
+  if (iso != null) return iso;
   if (RegExp(r'^\d{10}(\d{3})?$').hasMatch(text)) {
     final value = int.parse(text);
-    return DateTime.fromMillisecondsSinceEpoch(
-      text.length == 10 ? value * 1000 : value,
-    );
+    return journalEpochTime(text.length == 10 ? value * 1000 : value);
   }
   final match = RegExp(
     r'^(\d{4})[-/.年]?(\d{1,2})[-/.月]?(\d{1,2})日?'
-    r'(?:[ T]+(\d{1,2})[:：]?(\d{2})(?:[:：]?(\d{2}))?(?:[.,]\d+)?)?'
+    r'(?:[ T]+(\d{1,2})[:：]?(\d{2})(?:[:：]?(\d{2}))?(?:[.,](\d+))?)?'
     r'\s*(Z|[+-]\d{2}(?::?\d{2})?)?$',
     caseSensitive: false,
   ).firstMatch(text);
@@ -108,20 +110,43 @@ DateTime? parseLooseJournalDate(String? raw) {
   final hour = field(4);
   final minute = field(5);
   final second = field(6);
-  if (month < 1 ||
-      month > 12 ||
-      day < 1 ||
-      day > 31 ||
+  if (!isJournalCalendarDate(year, month, day) ||
       hour > 23 ||
       minute > 59 ||
       second > 59) {
     return null;
   }
-  final zone = match.group(7)?.toUpperCase();
-  if (zone == null) return DateTime(year, month, day, hour, minute, second);
-  final utc = DateTime.utc(year, month, day, hour, minute, second);
+  final fraction = (match.group(7) ?? '').padRight(6, '0').substring(0, 6);
+  final micros = int.parse(fraction);
+  final zone = match.group(8)?.toUpperCase();
+  if (zone == null) {
+    return DateTime(
+      year,
+      month,
+      day,
+      hour,
+      minute,
+      second,
+      micros ~/ 1000,
+      micros % 1000,
+    );
+  }
+  final utc = DateTime.utc(
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    second,
+    micros ~/ 1000,
+    micros % 1000,
+  );
   if (zone == 'Z') return utc.toLocal();
   final digits = zone.substring(1).replaceAll(':', '');
+  if (int.parse(digits.substring(0, 2)) > 23 ||
+      (digits.length > 2 && int.parse(digits.substring(2)) > 59)) {
+    return null;
+  }
   final offset = Duration(
     hours: int.parse(digits.substring(0, 2)),
     minutes: digits.length > 2 ? int.parse(digits.substring(2)) : 0,

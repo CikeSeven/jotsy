@@ -2910,6 +2910,51 @@
       }
     }
   },
+  "backupImportSkippedEncrypted": "{count, plural, =1{1 encrypted or locked note can't be read and will be skipped} other{{count} encrypted or locked notes can't be read and will be skipped}}",
+  "@backupImportSkippedEncrypted": {
+    "description": "How many notes from another app are encrypted or locked, cannot be read and will be skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportSkippedUnsupported": "{count, plural, =1{1 handwritten note, mind map or other special note will be skipped} other{{count} handwritten notes, mind maps or other special notes will be skipped}}",
+  "@backupImportSkippedUnsupported": {
+    "description": "How many notes from another app are handwriting, mind maps or other proprietary types and will be skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportSkippedUnreadable": "{count, plural, =1{1 note is in a format that can't be recognized and will be skipped} other{{count} notes are in a format that can't be recognized and will be skipped}}",
+  "@backupImportSkippedUnreadable": {
+    "description": "How many notes from another app lack a body or date or have an unrecognized structure and will be skipped.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportSummaryOnly": "{count, plural, =1{The body of 1 note couldn't be read; only its summary will be imported} other{The bodies of {count} notes couldn't be read; only their summaries will be imported}}",
+  "@backupImportSummaryOnly": {
+    "description": "How many notes from another app will be imported with only their list summary because the body could not be read.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportPartialContent": "{count, plural, =1{1 note contains sections that cannot be decrypted or displayed; readable text and original data will be preserved} other{{count} notes contain sections that cannot be decrypted or displayed; readable text and original data will be preserved}}",
+  "@backupImportPartialContent": {
+    "description": "Notes with encrypted or undisplayable sections whose readable body and original data will be preserved.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "calendarDisplayOptionsTooltip": "Calendar display",
   "@calendarDisplayOptionsTooltip": {
     "description": "Tooltip of the calendar header button that opens the display options sheet."

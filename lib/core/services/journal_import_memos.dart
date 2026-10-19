@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_markdown.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -47,21 +48,23 @@ JournalImportParseResult parseMemosExport(
             '${(item.$2 as Map)['formatVersion']}'.startsWith('1.'),
       )
       .firstOrNull;
+  final issues = JournalImportIssues();
   final entries = manifest != null
-      ? _parseFormat1(manifest.$1.parent.path, media)
-      : _parseLegacy(files);
+      ? _parseFormat1(manifest.$1.parent.path, media, issues)
+      : _parseLegacy(files, issues);
   if (entries == null) {
     throw const JournalImportFormatException(JournalImportSource.memos);
   }
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
 Object? _readJson(File file) {
   try {
-    return jsonDecode(file.readAsStringSync());
+    return jsonDecode(readJournalText(file));
   } on FormatException {
     return null;
   } on FileSystemException {
@@ -69,36 +72,83 @@ Object? _readJson(File file) {
   }
 }
 
-List<JournalImportEntry> _parseFormat1(String root, JournalMediaStager media) {
+List<JournalImportEntry> _parseFormat1(
+  String root,
+  JournalMediaStager media,
+  JournalImportIssues issues,
+) {
   final directory = Directory(p.join(root, 'memos'));
+  final files = JournalImportFiles(root);
   final records = directory.existsSync()
       ? (listJournalExportFiles(directory.path)
             .where((file) => p.extension(file.path) == '.json')
             .map(_readJson)
-            .whereType<Map>()
-            .map((record) => record.cast<String, Object?>())
-            .where((record) => journalString(record['uid']) != null)
             .toList())
-      : <Map<String, Object?>>[];
+      : <Object?>[];
   final entries = <JournalImportEntry>[];
-  for (final record in records) {
+  final keys = JournalKeyRegistry();
+  for (final value in records) {
+    if (value is! Map || journalId(value['uid']) == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
+    final record = value.cast<String, Object?>();
     final createdAt = parseJournalDateTime(record['createTime']);
-    if (createdAt == null) continue;
-    final contentPath = _inside(root, journalString(record['contentPath']));
-    final markdown = contentPath != null && File(contentPath).existsSync()
-        ? utf8.decode(File(contentPath).readAsBytesSync(), allowMalformed: true)
-        : '';
+    if (createdAt == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
+    final contentPath = files.resolve(
+      journalString(record['contentPath']) ?? '',
+      from: root,
+      fallbackToName: false,
+    );
+    final String markdown;
+    try {
+      if (contentPath != null) {
+        markdown = readJournalText(File(contentPath));
+      } else if (record['content'] is String) {
+        markdown = record['content'] as String;
+      } else {
+        // 正文文件丢失与空白正文不同。不能用空串覆盖先前已完整导入的日记。
+        issues.skip(JournalSkipReason.unreadable);
+        continue;
+      }
+    } on FormatException {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
 
     final attachments = <String, Map<String, Object?>>{
-      for (final item in (record['attachments'] as List?) ?? const [])
+      for (final item in journalList(record['attachments']))
         if (item is Map && journalString(item['uid']) != null)
           journalString(item['uid'])!: item.cast<String, Object?>(),
     };
     final used = <String>{};
+    final attempted = <String>{};
+    final staged = <String, Map<String, Object?>>{};
     Map<String, Object?>? embed(Map<String, Object?> attachment) {
-      final path = _inside(root, journalString(attachment['path']));
-      if (path == null) return null;
-      return media.embedFile(path, name: journalString(attachment['filename']));
+      final id = journalString(attachment['uid'])!;
+      if (staged.containsKey(id)) return staged[id];
+      if (!attempted.add(id)) return null;
+      final path = files.resolve(
+        journalString(attachment['path']) ?? '',
+        from: root,
+        fallbackToName: false,
+      );
+      if (path == null) {
+        if (journalString(attachment['externalLink']) == null) {
+          media.missingCount++;
+        }
+        return null;
+      }
+      final data = media.embedFile(
+        path,
+        name: journalString(attachment['filename']),
+        mime: journalString(attachment['type']),
+      );
+      if (data != null) staged[id] = data;
+      return data;
     }
 
     Map<String, Object?>? resolve(String source) {
@@ -107,8 +157,9 @@ List<JournalImportEntry> _parseFormat1(String root, JournalMediaStager media) {
       ).firstMatch(source.trim());
       final attachment = attachments[match?.group(1)];
       if (attachment == null) return null;
-      used.add(match!.group(1)!);
-      return embed(attachment);
+      final data = embed(attachment);
+      if (data != null) used.add(match!.group(1)!);
+      return data;
     }
 
     final writer = JournalDeltaWriter();
@@ -141,7 +192,7 @@ List<JournalImportEntry> _parseFormat1(String root, JournalMediaStager media) {
         isJournalCoordinate(latitude, longitude);
     entries.add(
       JournalImportEntry(
-        sourceKey: journalString(record['uid'])!,
+        sourceKey: keys.unique(journalId(record['uid'])!),
         title: title,
         contentJson: content.contentJson,
         contentText: content.contentText,
@@ -162,10 +213,13 @@ List<JournalImportEntry> _parseFormat1(String root, JournalMediaStager media) {
 }
 
 /// 旧版平铺导出；没有一个文件符合命名规则时返回 null（不是 Memos 导出）。
-List<JournalImportEntry>? _parseLegacy(List<File> files) {
+List<JournalImportEntry>? _parseLegacy(
+  List<File> files,
+  JournalImportIssues issues,
+) {
   // 时间后可能依次跟 uid 与可见性；uid 可含 `-`，所以两端锚定。
   final name = RegExp(
-    r'^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2}))'
+    r'^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))'
     r'(?:(?:-(.+))?-(?:PUBLIC|PROTECTED|PRIVATE))?\.md$',
   );
   final entries = <JournalImportEntry>[];
@@ -173,13 +227,14 @@ List<JournalImportEntry>? _parseLegacy(List<File> files) {
   for (final file in files) {
     final match = name.firstMatch(p.basename(file.path));
     final createdAt = parseJournalDateTime(match?.group(1));
-    if (match == null || createdAt == null) continue;
+    if (match == null) continue;
+    if (createdAt == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
     final writer = JournalDeltaWriter();
     final converter = JournalMarkdownConverter(writer);
-    final (title, body) = _splitTitle(
-      utf8.decode(file.readAsBytesSync(), allowMalformed: true),
-      converter,
-    );
+    final (title, body) = _splitTitle(readJournalText(file), converter);
     converter.append(body);
     final content = writer.build();
     entries.add(
@@ -207,11 +262,4 @@ List<JournalImportEntry>? _parseLegacy(List<File> files) {
     converter.plainInline(heading.group(1)!).trim(),
     text.substring(heading.end),
   );
-}
-
-/// 导出内的相对路径；越出导出目录的路径返回 null。
-String? _inside(String root, String? relative) {
-  if (relative == null) return null;
-  final path = p.normalize(p.join(root, relative));
-  return p.isWithin(root, path) ? path : null;
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_markdown.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -48,29 +49,41 @@ JournalImportParseResult parseDayOneExport(
 
   final entries = <JournalImportEntry>[];
   final keys = JournalKeyRegistry();
+  final issues = JournalImportIssues();
+  final files = JournalImportFiles(
+    input.extractedPath ?? p.dirname(input.filePath),
+  );
   for (final journal in journals) {
-    final files = _DayOneMediaFiles(journal.root);
     for (final raw in journal.entries) {
-      if (raw is! Map) continue;
+      if (raw is! Map) {
+        issues.skip(JournalSkipReason.unreadable);
+        continue;
+      }
       final entry = _parseEntry(
         raw.cast<String, Object?>(),
         files,
         media,
         keys,
+        root: journal.root,
         journal: journals.length > 1 ? journal.name : null,
       );
-      if (entry != null) entries.add(entry);
+      if (entry != null) {
+        entries.add(entry);
+      } else {
+        issues.skip(JournalSkipReason.unreadable);
+      }
     }
   }
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
 Object? _tryDecodeJson(File file) {
   try {
-    return jsonDecode(file.readAsStringSync());
+    return jsonDecode(readJournalText(file));
   } on FormatException {
     return null;
   } on FileSystemException {
@@ -80,9 +93,10 @@ Object? _tryDecodeJson(File file) {
 
 JournalImportEntry? _parseEntry(
   Map<String, Object?> raw,
-  _DayOneMediaFiles files,
+  JournalImportFiles files,
   JournalMediaStager media,
   JournalKeyRegistry keys, {
+  required String root,
   String? journal,
 }) {
   final createdAt = parseJournalDateTime(raw['creationDate']);
@@ -94,15 +108,16 @@ JournalImportEntry? _parseEntry(
     final list = raw[kind.jsonKey];
     if (list is! List) continue;
     for (final item in list.whereType<Map>()) {
-      final identifier = journalString(item['identifier']);
+      final identifier =
+          journalId(item['identifier']) ?? journalString(item['md5']);
       if (identifier == null) continue;
-      final order = item['orderInEntry'];
-      final duration = item['duration'];
+      final order = journalNumber(item['orderInEntry']);
+      final duration = journalNumber(item['duration']);
       resources[identifier] = _DayOneResource(
         kind: kind,
-        md5: journalString(item['md5']),
+        md5: journalString(item['md5']) ?? identifier,
         order: order is num ? order.toInt() : resources.length,
-        duration: duration is num && duration > 0
+        duration: duration != null && duration > 0 && duration < 31536000
             ? Duration(milliseconds: (duration * 1000).round())
             : null,
         name: journalString(item['filename']),
@@ -112,8 +127,20 @@ JournalImportEntry? _parseEntry(
   final referenced = <String>{};
   Map<String, Object?>? embedResource(String identifier) {
     final resource = resources[identifier];
-    if (resource == null || !referenced.add(identifier)) return null;
-    final path = files.find(resource.kind, resource.md5);
+    if (resource == null) {
+      if (referenced.add(identifier)) media.missingCount++;
+      return null;
+    }
+    referenced.add(identifier);
+    final path =
+        files.resolve(
+          '${resource.kind.directory}/${resource.md5}',
+          from: root,
+          matchStem: true,
+        ) ??
+        (resource.name == null
+            ? null
+            : files.resolve(resource.name!, from: root));
     if (path == null) {
       media.missingCount++;
       return null;
@@ -160,7 +187,7 @@ JournalImportEntry? _parseEntry(
 
   final location = raw['location'];
   final weather = raw['weather'];
-  final uuid = journalString(raw['uuid']);
+  final uuid = journalId(raw['uuid']);
   return JournalImportEntry(
     sourceKey: keys.unique(
       uuid ?? journalWallClockKey(createdAt, seconds: true),
@@ -175,7 +202,7 @@ JournalImportEntry? _parseEntry(
     weather: weather is Map
         ? journalWeatherText(
             journalString(weather['conditionsDescription']),
-            weather['temperatureCelsius'] as num?,
+            journalNumber(weather['temperatureCelsius']),
           )
         : null,
     location: location is Map ? _locationLabel(location) : null,
@@ -207,14 +234,14 @@ String? _locationLabel(Map<Object?, Object?> location) {
 }
 
 double? _coordinate(Map<Object?, Object?> location, String key) {
-  final latitude = location['latitude'];
-  final longitude = location['longitude'];
-  if (latitude is! num ||
-      longitude is! num ||
+  final latitude = journalNumber(location['latitude']);
+  final longitude = journalNumber(location['longitude']);
+  if (latitude == null ||
+      longitude == null ||
       !isJournalCoordinate(latitude, longitude)) {
     return null;
   }
-  return (location[key] as num).toDouble();
+  return journalNumber(location[key])?.toDouble();
 }
 
 enum _DayOneKind {
@@ -244,21 +271,4 @@ class _DayOneResource {
   final int order;
   final Duration? duration;
   final String? name;
-}
-
-/// 日记本 JSON 同级各媒体目录中“md5 → 文件路径”的索引（不区分扩展名）。
-class _DayOneMediaFiles {
-  _DayOneMediaFiles(this.root);
-
-  final String root;
-  final Map<_DayOneKind, Map<String, String>> _index = {};
-
-  String? find(_DayOneKind kind, String? md5) {
-    if (md5 == null) return null;
-    final index = _index[kind] ??= {
-      for (final file in listJournalExportFiles(p.join(root, kind.directory)))
-        p.basenameWithoutExtension(file.path).toLowerCase(): file.path,
-    };
-    return index[md5.toLowerCase()];
-  }
 }

@@ -53,6 +53,23 @@ const _backupWithNotebooks = BackupArchivePreview(
   existingNotebookCount: 2,
 );
 
+const _cloudNotes = BackupArchivePreview(
+  kind: BackupArchiveKind.journalExport,
+  journalSource: JournalImportSource.wpsNotes,
+  diaryCount: 18,
+  tagCount: 2,
+  existingDiaryCount: 0,
+  localDiaryCount: 12,
+  localTagCount: 4,
+  skippedNotes: {
+    JournalSkipReason.unreadable: 1,
+    JournalSkipReason.encrypted: 2,
+    JournalSkipReason.unsupported: 3,
+  },
+  summaryOnlyCount: 1,
+  partialContentCount: 2,
+);
+
 class _FlowResult {
   BackupImportMode? mode;
   bool finished = false;
@@ -261,6 +278,41 @@ void main() {
       expect(result.mode, BackupImportMode.merge);
     },
   );
+
+  for (final brightness in Brightness.values) {
+    testWidgets('lists skipped and summary-only cloud notes in $brightness', (
+      tester,
+    ) async {
+      await _startFlow(
+        tester,
+        _cloudNotes,
+        brightness: brightness,
+        size: const Size(320, 640),
+      );
+
+      const lines = [
+        '2 篇加密或上锁的笔记读不到，将跳过',
+        '3 篇手写、思维导图等专有格式的笔记将跳过',
+        '1 篇笔记的格式无法识别，将跳过',
+        '1 篇笔记的正文没能读取，只导入摘要',
+        '2 篇笔记含无法解密或显示的片段，可读正文与原始信息将保留',
+      ];
+      // 按原因的固定顺序排列，与平台记下的先后无关。
+      final tops = [
+        for (final line in lines) tester.getTopLeft(find.text(line)).dy,
+      ];
+      expect(tops, orderedEquals([...tops]..sort()));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('nothing about skipped notes when none were skipped', (
+    tester,
+  ) async {
+    await _startFlow(tester, _dayOneExport);
+    expect(find.textContaining('将跳过'), findsOneWidget); // 只有缺失媒体那一行
+    expect(find.textContaining('只导入摘要'), findsNothing);
+  });
 
   testWidgets('cancelling the warning imports nothing', (tester) async {
     final result = await _startFlow(tester, _fullBackup);

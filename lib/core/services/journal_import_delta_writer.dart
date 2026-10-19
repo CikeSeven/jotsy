@@ -19,6 +19,10 @@ typedef JournalEmbedResolver = Map<String, Object?>? Function(String source);
 /// 纯文本镜像与 Document.toPlainText 的规则一致：嵌入物不计文本，只留换行。
 /// 只是内存中的组装，不做 IO，可在后台 isolate 中使用。
 class JournalDeltaWriter {
+  JournalDeltaWriter({this.preserveWhitespace = false});
+
+  /// 纯文本导出中的缩进、空行和尾随空格也是正文，不按 HTML 排版清理。
+  final bool preserveWhitespace;
   final List<_Line> _lines = <_Line>[];
   final List<_Segment> _pending = <_Segment>[];
 
@@ -40,7 +44,8 @@ class JournalDeltaWriter {
 
   /// 结束当前行（即使为空，用于 `<br>` 与空段落）。
   void endLine([Map<String, Object?> blockAttributes = const {}]) {
-    final segments = blockAttributes.containsKey('code-block')
+    final segments =
+        preserveWhitespace || blockAttributes.containsKey('code-block')
         ? List<_Segment>.of(_pending)
         : _trimmed(_pending);
     _lines.add(_Line.text(segments, blockAttributes));
@@ -49,7 +54,7 @@ class JournalDeltaWriter {
 
   /// 当前行有文本时结束它，否则丢弃只含空白的片段，不产生空行。
   void closeLine([Map<String, Object?> blockAttributes = const {}]) {
-    if (lineHasContent) {
+    if (lineHasContent || (preserveWhitespace && _pending.isNotEmpty)) {
       endLine(blockAttributes);
     } else {
       _pending.clear();
@@ -73,10 +78,10 @@ class JournalDeltaWriter {
     closeLine();
     var start = 0;
     var end = _lines.length;
-    while (start < end && _lines[start].isBlank) {
+    while (!preserveWhitespace && start < end && _lines[start].isBlank) {
       start++;
     }
-    while (end > start && _lines[end - 1].isBlank) {
+    while (!preserveWhitespace && end > start && _lines[end - 1].isBlank) {
       end--;
     }
     final delta = Delta();
@@ -137,12 +142,15 @@ class JournalDeltaWriter {
 
 /// 把纯文本按行写入 [writer]，保留空行。
 void appendJournalPlainText(JournalDeltaWriter writer, String text) {
-  final lines = text
-      .replaceAll('\r\n', '\n')
-      .replaceAll('\r', '\n')
-      .split('\n');
+  var normalized = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+  // Delta 已要求最后一个换行。纯文本保留模式只补必要的终止符，不能把
+  // 原有的终止换行当作额外空段落再写一次。
+  if (writer.preserveWhitespace && normalized.endsWith('\n')) {
+    normalized = normalized.substring(0, normalized.length - 1);
+  }
+  final lines = normalized.split('\n');
   for (final line in lines) {
-    writer.text(line.replaceAll('\u00a0', ' '));
+    writer.text(line);
     writer.endLine();
   }
 }

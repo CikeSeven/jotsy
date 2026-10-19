@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+
+export 'journal_import_dates.dart';
 
 /// 一次导入的输入：用户选择的文件，以及它是 ZIP 时解压到的目录。
 ///
@@ -44,11 +47,17 @@ List<File> listJournalExportFiles(String root) {
 /// 调用方需按稳定顺序（如时间 + 正文）登记，重复导入同一文件时键才不变。
 class JournalKeyRegistry {
   final Map<String, int> _counts = <String, int>{};
+  final Set<String> _used = <String>{};
 
   String unique(String base) {
-    final count = (_counts[base] ?? 0) + 1;
+    var count = (_counts[base] ?? 0) + 1;
+    var key = count == 1 ? base : '$base#$count';
+    // 来源 ID 本身也可能带 #2；只数同名次数不能保证生成的键没有被占用。
+    while (!_used.add(key)) {
+      key = '$base#${++count}';
+    }
     _counts[base] = count;
-    return count == 1 ? base : '$base#$count';
+    return key;
   }
 }
 
@@ -61,14 +70,59 @@ String journalWallClockKey(DateTime local, {bool seconds = false}) {
   return seconds ? '$base:${two(local.second)}' : base;
 }
 
-/// 解析 ISO 8601 时间：带时区（含 `Z`）时换算为本机时间，不带时区时视为
-/// 本地墙钟时间。无法解析返回 null。
-DateTime? parseJournalDateTime(Object? raw) {
-  if (raw is! String || raw.trim().isEmpty) return null;
-  final parsed = DateTime.tryParse(raw.trim());
-  if (parsed == null) return null;
-  return parsed.isUtc ? parsed.toLocal() : parsed;
+/// 导出文本可能来自 Windows（UTF-16）或带 BOM 的编辑器。明确识别编码，
+/// 不以替换字符掩盖损坏的数据；调用方把解码失败作为格式错误处理。
+String readJournalText(File file) {
+  final bytes = file.readAsBytesSync();
+  if (bytes.length >= 2 &&
+      ((bytes[0] == 0xFF && bytes[1] == 0xFE) ||
+          (bytes[0] == 0xFE && bytes[1] == 0xFF))) {
+    if (bytes.length.isOdd) throw const FormatException('Truncated UTF-16');
+    final littleEndian = bytes[0] == 0xFF;
+    final units = <int>[
+      for (var i = 2; i < bytes.length; i += 2)
+        littleEndian
+            ? bytes[i] | bytes[i + 1] << 8
+            : bytes[i] << 8 | bytes[i + 1],
+    ];
+    for (var i = 0; i < units.length; i++) {
+      final unit = units[i];
+      if (unit >= 0xD800 && unit <= 0xDBFF) {
+        if (++i >= units.length || units[i] < 0xDC00 || units[i] > 0xDFFF) {
+          throw const FormatException('Invalid UTF-16 surrogate');
+        }
+      } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+        throw const FormatException('Invalid UTF-16 surrogate');
+      }
+    }
+    return String.fromCharCodes(units);
+  }
+  return utf8.decode(bytes).replaceFirst(RegExp(r'^\uFEFF'), '');
 }
+
+/// 可选数值允许 JSON 数字或数字字符串；NaN、无穷与异常类型视为缺失，
+/// 不能让一项天气、坐标或时长中断整包导入。
+num? journalNumber(Object? value) {
+  final number = value is num
+      ? value
+      : value is String
+      ? num.tryParse(value.trim())
+      : null;
+  return number != null && number.isFinite ? number : null;
+}
+
+/// JSON 中稳定 ID 有时是整数；只接受字符串与有限的整数数值。
+String? journalId(Object? value) => switch (value) {
+  final String text => journalString(text),
+  final int number => '$number',
+  final double number
+      when number.isFinite && number == number.truncateToDouble() =>
+    '${number.toInt()}',
+  _ => null,
+};
+
+/// 可选数组字段类型变化时视为空数组，避免不安全的 `as List?` 强转。
+List<Object?> journalList(Object? value) => value is List ? value : const [];
 
 /// 与天气服务一致的展示文案：`<天气> <温度>℃`，缺一项时只保留另一项。
 ///

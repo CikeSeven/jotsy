@@ -8,6 +8,8 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_envelope.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// vivo 笔记（云服务网页版 pc.vivo.com.cn）的只读客户端，协议依据参考
 /// 实现（笔记互迁 `providers/vivo.py`、`vivo_wire.py`）：
@@ -40,6 +42,9 @@ class VivoCloudProvider implements CloudNoteProvider {
   final CloudNoteHttp http;
   final CloudNoteTransport _api;
   final Future<void> Function(Duration)? _wait;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   /// 只供测试替换厂商公钥（测试持有对应私钥以模拟服务端）。
   @visibleForTesting
@@ -108,7 +113,8 @@ class VivoCloudProvider implements CloudNoteProvider {
     return 'vivo:$id';
   }
 
-  Future<int> _statistics() async {
+  /// 笔记总数与其中加密的篇数（后者缺失时为 0）。
+  Future<({int total, int encrypted})> _statistics() async {
     final stats = await _call(
       'POST',
       '/statistics/note',
@@ -121,13 +127,14 @@ class VivoCloudProvider implements CloudNoteProvider {
         'vivo statistics',
       );
     }
-    return total;
+    final encrypted = (stats as Map)['encryptedNotes'];
+    return (total: total, encrypted: encrypted is int ? encrypted : 0);
   }
 
   @override
   Future<List<CloudNote>> fetchNotes(CloudProgress onProgress) async {
     if (_userId == null) await probe();
-    final total = await _statistics();
+    final (:total, :encrypted) = await _statistics();
     final books = await _call(
       'POST',
       '/noteBook/getList',
@@ -205,6 +212,8 @@ class VivoCloudProvider implements CloudNoteProvider {
       if (note != null) notes.add(note);
       onProgress(index + 1, rows.length);
     }
+    // 目录里未必列出加密笔记，以平台统计为下限。
+    issues.atLeast(JournalSkipReason.encrypted, encrypted);
     return notes;
   }
 
@@ -213,23 +222,29 @@ class VivoCloudProvider implements CloudNoteProvider {
     Map<String, String> folders,
   ) async {
     final guid = row['guid'] as String;
-    if (!const [null, 0].contains(row['encryptType']) ||
-        row['deleted'] != 1 ||
-        row['type'] != 1) {
+    CloudNote? skip(JournalSkipReason reason) {
+      issues.skip(reason);
       return null;
     }
+
+    // vivo 以 1 表示有效、0 表示已删除（与其他平台相反）。
+    if (row['deleted'] != 1) return null;
+    if (!const [null, 0].contains(row['encryptType'])) {
+      return skip(JournalSkipReason.encrypted);
+    }
+    if (row['type'] != 1) return skip(JournalSkipReason.unsupported);
     if (row['userId'] == null || '${row['userId']}' != _userId) {
       throw const CloudNoteException(CloudNoteFailure.sessionExpired);
     }
     final created = _time(row['createTime']);
-    if (created == null) return null;
+    if (created == null) return skip(JournalSkipReason.unreadable);
     final body = await _call(
       'POST',
       '/note/getContent/v2',
       data: {'guid': guid},
       encrypted: true,
     );
-    if (body is! String) return null;
+    if (body is! String) return skip(JournalSkipReason.unreadable);
 
     final attachments = <CloudAttachment>[];
     if (row['resources'] != null ||
@@ -247,7 +262,7 @@ class VivoCloudProvider implements CloudNoteProvider {
           'vivo resources',
         );
       }
-      for (final resource in (detail['resources'] as List?) ?? const []) {
+      for (final resource in journalList(detail['resources'])) {
         if (resource is! Map ||
             resource['guid'] is! String ||
             resource['noteGuid'] != guid ||
@@ -309,7 +324,7 @@ class VivoCloudProvider implements CloudNoteProvider {
           }
           node.replaceWith(list);
         case 'vnote-divider':
-          node.replaceWith(dom.Element.tag('hr'));
+          _replaceKeepingContent(node, dom.Element.tag('hr'));
         case 'vnote-image' ||
             'vnote-audio' ||
             'vnote-audio2' ||
@@ -323,7 +338,8 @@ class VivoCloudProvider implements CloudNoteProvider {
                 (filename.isNotEmpty && filename.contains(item.id)) ||
                 item.name == filename,
           );
-          node.replaceWith(
+          _replaceKeepingContent(
+            node,
             matching.length == 1
                 ? (dom.Element.tag('img')
                     ..attributes['src'] = matching.single.id)
@@ -335,6 +351,19 @@ class VivoCloudProvider implements CloudNoteProvider {
           node.replaceWith(span);
       }
     }
+  }
+
+  /// 用 [replacement] 换掉 [node]，并把 [node] 的子节点移到它之后。
+  ///
+  /// vivo 自己写的是 `<vnote-image …></vnote-image>`，但正文若出现自闭合
+  /// 写法，HTML5 解析会忽略自定义标签的 `/>`，把后面的正文全收作它的子
+  /// 节点（参考实现用的 lxml 不会），直接替换就连同后文一起丢掉。
+  static void _replaceKeepingContent(dom.Element node, dom.Node replacement) {
+    final parent = node.parentNode!;
+    final trailing = node.nodes.toList();
+    final index = parent.nodes.indexOf(node);
+    node.replaceWith(replacement);
+    parent.nodes.insertAll(index + 1, trailing);
   }
 
   @override
@@ -397,7 +426,6 @@ class VivoCloudProvider implements CloudNoteProvider {
     return value;
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }

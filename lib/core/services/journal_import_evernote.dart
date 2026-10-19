@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -6,6 +5,7 @@ import 'package:xml/xml.dart';
 
 import 'journal_import_delta_writer.dart';
 import 'journal_import_evernote_enml.dart';
+import 'journal_import_evernote_reader.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -21,7 +21,7 @@ import 'journal_import_support.dart';
 /// 是附件解码后字节的 MD5，附件元素本身不带 hash，需要自己计算；正文没有
 /// 引用的附件追加在末尾。v10 的待办列表（`--en-todo`/`--en-checked` 样式）、
 /// 代码块（`--en-codeblock` 样式）与任务（`<task>` 元素，正文里只有占位块）
-/// 都会还原；加密片段无法解密，丢弃。
+/// 都会还原；加密片段无法解密，原始密文与提示保留在 metadata 并在预览说明。
 ///
 /// ENEX 不含笔记 ID 与笔记本名：稳定键由笔记本文件名、创建时间与标题组成；
 /// 多个笔记本一起导入时记下文件名作为所在笔记本（[JournalImportEntry.notebooks]），
@@ -39,22 +39,31 @@ JournalImportParseResult parseEvernoteExport(
   final entries = <JournalImportEntry>[];
   final keys = JournalKeyRegistry();
   var recognized = false;
+  final issues = JournalImportIssues();
   for (final file in files) {
     final notebook = p.basenameWithoutExtension(file.path);
-    _forEachNote(file, (xml) {
-      final note = _parseXml(xml);
-      if (note == null) return;
+    try {
+      readEnexNotes(file, (note) {
+        final encrypted = enexEncryptedFragments(note);
+        if (encrypted.isNotEmpty) issues.partialContent++;
+        entries.add(
+          _parseNote(
+            note,
+            media,
+            keys,
+            notebook: notebook,
+            keepNotebook: files.length > 1,
+            fallbackTime: file.lastModifiedSync(),
+            encrypted: encrypted,
+          ),
+        );
+      });
       recognized = true;
-      entries.add(
-        _parseNote(
-          note,
-          media,
-          keys,
-          notebook: notebook,
-          keepNotebook: files.length > 1,
-        ),
-      );
-    });
+    } on XmlException {
+      throw const JournalImportFormatException(JournalImportSource.evernote);
+    } on FormatException {
+      throw const JournalImportFormatException(JournalImportSource.evernote);
+    }
   }
   if (!recognized) {
     throw const JournalImportFormatException(JournalImportSource.evernote);
@@ -62,104 +71,8 @@ JournalImportParseResult parseEvernoteExport(
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    partialContentCount: issues.partialContent,
   );
-}
-
-/// 逐块解码文件，每凑齐一个 `<note>…</note>` 就交给 [onNote]。ENML 在 CDATA
-/// 里且已转义，正文不会出现字面的 `</note>`。
-void _forEachNote(File file, void Function(String xml) onNote) {
-  final RandomAccessFile handle;
-  try {
-    handle = file.openSync();
-  } on FileSystemException {
-    return;
-  }
-  final decoded = StringBuffer();
-  final sink = const Utf8Decoder(
-    allowMalformed: true,
-  ).startChunkedConversion(StringConversionSink.fromStringSink(decoded));
-  final splitter = _NoteSplitter(onNote);
-  try {
-    while (true) {
-      final chunk = handle.readSync(1 << 20);
-      if (chunk.isEmpty) {
-        sink.close();
-      } else {
-        sink.add(chunk);
-      }
-      splitter.feed(decoded.toString());
-      decoded.clear();
-      if (chunk.isEmpty) break;
-    }
-  } finally {
-    handle.closeSync();
-  }
-}
-
-/// 按 `<note>` / `</note>` 切分流式文本。每块只扫描新到的文字（加上可能
-/// 跨块的标记残余），单篇笔记带着几十 MB 附件时也不会反复重扫、反复拼接
-/// 整段字符串。
-class _NoteSplitter {
-  _NoteSplitter(this._onNote);
-
-  static const String _open = '<note>';
-  static const String _close = '</note>';
-
-  final void Function(String xml) _onNote;
-  final StringBuffer _note = StringBuffer();
-  bool _inNote = false;
-
-  /// 上一块末尾可能是半个标记的几个字符。
-  String _carry = '';
-
-  void feed(String text) {
-    var offset = 0;
-    while (offset < text.length) {
-      final rest = text.substring(offset);
-      final probe = _carry + rest;
-      final marker = _inNote ? _close : _open;
-      final found = probe.indexOf(marker);
-      if (found < 0) {
-        if (_inNote) _note.write(rest);
-        final keep = marker.length - 1;
-        _carry = probe.length > keep
-            ? probe.substring(probe.length - keep)
-            : probe;
-        return;
-      }
-      // 标记可能从 _carry 中开始；consumed 是本块中到标记末尾的字符数。
-      final consumed = found + marker.length - _carry.length;
-      _carry = '';
-      if (_inNote) {
-        _note.write(rest.substring(0, consumed));
-        _onNote(_note.toString());
-        _note.clear();
-      } else {
-        _note.write(_open);
-      }
-      _inNote = !_inNote;
-      offset += consumed;
-    }
-  }
-}
-
-/// 解析一篇笔记的 XML。印象笔记偶尔在图注里留下未转义的 `&`，严格解析
-/// 失败时把这种 `&` 转义后重试一次。
-XmlElement? _parseXml(String xml) {
-  for (final source in [
-    xml,
-    xml.replaceAll(
-      RegExp(r'&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#\d+|#x[0-9a-fA-F]+);)'),
-      '&amp;',
-    ),
-  ]) {
-    try {
-      return XmlDocument.parse(source).rootElement;
-    } on XmlException {
-      continue;
-    }
-  }
-  return null;
 }
 
 JournalImportEntry _parseNote(
@@ -168,6 +81,8 @@ JournalImportEntry _parseNote(
   JournalKeyRegistry keys, {
   required String notebook,
   required bool keepNotebook,
+  required DateTime fallbackTime,
+  required List<Map<String, String>> encrypted,
 }) {
   final resources = EnexResources(media);
   for (final resource in note.findElements('resource')) {
@@ -194,7 +109,7 @@ JournalImportEntry _parseNote(
   final title = note.getElement('title')?.innerText.trim() ?? '';
   final created = _enexTime(note.getElement('created')?.innerText);
   final updated = _enexTime(note.getElement('updated')?.innerText);
-  final createdAt = created ?? updated ?? DateTime.now();
+  final createdAt = created ?? updated ?? fallbackTime;
   return JournalImportEntry(
     sourceKey: keys.unique(
       '$notebook|${(created ?? updated)?.toUtc().toIso8601String()}|$title',
@@ -212,23 +127,33 @@ JournalImportEntry _parseNote(
     location: journalString(attributes?.getElement('place-name')?.innerText),
     latitude: hasCoordinate ? latitude : null,
     longitude: hasCoordinate ? longitude : null,
+    sourceMetadata: {if (encrypted.isNotEmpty) 'encryptedFragments': encrypted},
   );
 }
 
 /// `20240228T183012Z`（UTC）；兼容个别导出里的 `20180306T91108 AMZ`。
 DateTime? _enexTime(String? raw) {
   final text = raw?.trim() ?? '';
-  final parsed = DateTime.tryParse(text);
+  final parsed = parseJournalDateTime(text);
   if (parsed != null) {
-    return parsed.year <= 1970
-        ? null
-        : (parsed.isUtc ? parsed.toLocal() : parsed);
+    return parsed;
   }
   final match = RegExp(
     r'^(\d{4})(\d{2})(\d{2})T(\d{1,2})(\d{2})(\d{2}) ?([AP]M)Z$',
     caseSensitive: false,
   ).firstMatch(text);
   if (match == null) return null;
+  if (!isJournalCalendarDate(
+        int.parse(match.group(1)!),
+        int.parse(match.group(2)!),
+        int.parse(match.group(3)!),
+      ) ||
+      int.parse(match.group(4)!) < 1 ||
+      int.parse(match.group(4)!) > 12 ||
+      int.parse(match.group(5)!) > 59 ||
+      int.parse(match.group(6)!) > 59) {
+    return null;
+  }
   var hour = int.parse(match.group(4)!) % 12;
   if (match.group(7)!.toUpperCase() == 'PM') hour += 12;
   return DateTime.utc(

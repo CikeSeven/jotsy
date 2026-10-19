@@ -68,3 +68,16 @@ FaIconData journalImportSourceIcon(JournalImportSource source) {
     _ => FontAwesomeIcons.mobileScreenButton,
   };
 }
+
+/// 导入预览里“整篇跳过了几篇”的说明，按 [JournalSkipReason] 分行。
+String journalSkipReasonText(
+  AppLocalizations l10n,
+  JournalSkipReason reason,
+  int count,
+) {
+  return switch (reason) {
+    JournalSkipReason.encrypted => l10n.backupImportSkippedEncrypted(count),
+    JournalSkipReason.unsupported => l10n.backupImportSkippedUnsupported(count),
+    JournalSkipReason.unreadable => l10n.backupImportSkippedUnreadable(count),
+  };
+}

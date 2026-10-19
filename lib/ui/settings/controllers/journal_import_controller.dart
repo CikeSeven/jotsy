@@ -220,7 +220,12 @@ class JournalImportController {
     if (error is JournalImportFormatException) {
       if (error.encrypted) return l10n.journalImportEncrypted(sourceName);
       return error.noEntries
-          ? l10n.journalImportNoEntries
+          ? [
+              l10n.journalImportNoEntries,
+              for (final reason in JournalSkipReason.values)
+                if (error.skippedNotes[reason] case final count? when count > 0)
+                  journalSkipReasonText(l10n, reason, count),
+            ].join('\n')
           : l10n.journalImportUnrecognized(sourceName);
     }
     if (error is CloudNoteException) {

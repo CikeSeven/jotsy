@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/backup_import_models.dart';
+import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/expressive_state_blend.dart';
@@ -316,6 +317,24 @@ class _ArchiveSummary extends StatelessWidget {
               if (preview.missingMediaCount > 0)
                 Text(
                   l10n.backupImportMissingMedia(preview.missingMediaCount),
+                  style: detailStyle,
+                ),
+              // 没能完整导入的笔记逐项说明，免得少了几篇没人发现。
+              for (final reason in JournalSkipReason.values)
+                if (preview.skippedNotes[reason] case final count?
+                    when count > 0)
+                  Text(
+                    journalSkipReasonText(l10n, reason, count),
+                    style: detailStyle,
+                  ),
+              if (preview.summaryOnlyCount > 0)
+                Text(
+                  l10n.backupImportSummaryOnly(preview.summaryOnlyCount),
+                  style: detailStyle,
+                ),
+              if (preview.partialContentCount > 0)
+                Text(
+                  l10n.backupImportPartialContent(preview.partialContentCount),
                   style: detailStyle,
                 ),
             ],

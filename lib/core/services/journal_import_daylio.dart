@@ -38,7 +38,7 @@ JournalImportParseResult parseDaylioExport(
         extracted == null) {
       final backup = _decodeBackup(file);
       if (backup != null) {
-        return _parseBackup(backup, extracted, media);
+        return _parseBackup(backup, file.parent.path, media);
       }
     }
   }
@@ -48,13 +48,15 @@ JournalImportParseResult parseDaylioExport(
     }
     final String text;
     try {
-      text = file.readAsStringSync();
+      text = readJournalText(file);
+    } on FormatException {
+      continue;
     } on FileSystemException {
       continue;
     }
-    final entries = _parseCsv(text);
-    if (entries != null) {
-      return JournalImportParseResult(entries: entries);
+    final result = _parseCsv(text);
+    if (result != null) {
+      return result;
     }
   }
   throw const JournalImportFormatException(JournalImportSource.daylio);
@@ -62,8 +64,12 @@ JournalImportParseResult parseDaylioExport(
 
 Map<String, Object?>? _decodeBackup(File file) {
   try {
-    final encoded = file.readAsStringSync().replaceAll(RegExp(r'\s'), '');
-    final decoded = jsonDecode(utf8.decode(base64.decode(encoded)));
+    final encoded = readJournalText(file).trim();
+    final decoded = jsonDecode(
+      encoded.startsWith('{')
+          ? encoded
+          : utf8.decode(base64.decode(encoded.replaceAll(RegExp(r'\s'), ''))),
+    );
     return decoded is Map && decoded['dayEntries'] is List
         ? decoded.cast<String, Object?>()
         : null;
@@ -80,7 +86,8 @@ JournalImportParseResult _parseBackup(
   JournalMediaStager media,
 ) {
   List<Map> listOf(String key) =>
-      (backup[key] as List?)?.whereType<Map>().toList() ?? const <Map>[];
+      journalList(backup[key]).whereType<Map>().toList();
+  final issues = JournalImportIssues();
 
   final moodGroups = <int, int>{
     for (final mood in listOf('customMoods'))
@@ -104,9 +111,17 @@ JournalImportParseResult _parseBackup(
   };
 
   final parsed = <({DateTime createdAt, String note, Map raw})>[];
-  for (final raw in listOf('dayEntries')) {
+  for (final value in journalList(backup['dayEntries'])) {
+    if (value is! Map) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
+    final raw = value;
     final createdAt = _backupTime(raw);
-    if (createdAt == null) continue;
+    if (createdAt == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
     parsed.add((createdAt: createdAt, note: '${raw['note'] ?? ''}', raw: raw));
   }
   // 同一分钟内的多篇按正文排序后再分配键，重复导入时键不变。
@@ -122,7 +137,7 @@ JournalImportParseResult _parseBackup(
     final raw = item.raw;
     final writer = JournalDeltaWriter();
     _appendNote(writer, item.note);
-    for (final id in (raw['assets'] as List?)?.whereType<int>() ?? <int>[]) {
+    for (final id in journalList(raw['assets']).whereType<int>()) {
       final asset = assets[id];
       final checksum = journalString(asset?['checksum'])?.toLowerCase();
       final path = checksum == null ? null : assetFiles[checksum];
@@ -149,7 +164,7 @@ JournalImportParseResult _parseBackup(
         contentText: content.contentText,
         createdAt: item.createdAt,
         tags: [
-          for (final id in (raw['tags'] as List?)?.whereType<int>() ?? <int>[])
+          for (final id in journalList(raw['tags']).whereType<int>())
             ?tagNames[id],
         ],
         moodLevel: group != null && group >= 1 && group <= 5 ? 6 - group : null,
@@ -159,6 +174,7 @@ JournalImportParseResult _parseBackup(
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: issues.skipped,
   );
 }
 
@@ -169,6 +185,11 @@ DateTime? _backupTime(Map raw) {
   if (year is int && month is int && day is int) {
     final hour = raw['hour'];
     final minute = raw['minute'];
+    if (!isJournalCalendarDate(year, month + 1, day) ||
+        (hour is int && (hour < 0 || hour > 23)) ||
+        (minute is int && (minute < 0 || minute > 59))) {
+      return null;
+    }
     return DateTime(
       year,
       month + 1,
@@ -177,13 +198,11 @@ DateTime? _backupTime(Map raw) {
       minute is int ? minute : 0,
     );
   }
-  final millis = raw['datetime'];
-  if (millis is! num) return null;
-  final offset = raw['timeZoneOffset'];
-  final wall = DateTime.fromMillisecondsSinceEpoch(
-    millis.toInt() + (offset is num ? offset.toInt() : 0),
-    isUtc: true,
-  );
+  final millis = journalNumber(raw['datetime']);
+  if (millis == null) return null;
+  final offset = journalNumber(raw['timeZoneOffset']) ?? 0;
+  final wall = journalEpochTime(millis + offset)?.toUtc();
+  if (wall == null) return null;
   return DateTime(wall.year, wall.month, wall.day, wall.hour, wall.minute);
 }
 

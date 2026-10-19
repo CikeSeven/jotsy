@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/journal_import_cloud_envelope.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_vivo.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/cloud_test_keys.dart';
 import '../../support/fake_cloud_http.dart';
@@ -115,9 +116,22 @@ void main() {
             'deleted': 0,
             'createTime': 1720000000000,
           },
+          {
+            'guid': 'ink',
+            'userId': 'fixture-user',
+            'type': 2,
+            'deleted': 1,
+            'createTime': 1720000000000,
+          },
         ],
       };
     });
+    // 加密笔记不在目录里，只出现在统计中。
+    _route(
+      http,
+      '/statistics/note',
+      (_) => {'totalNotes': 3, 'encryptedNotes': 1},
+    );
     _route(http, '/note/getContent/v2', (request) {
       expect(request['guid'], 'n1');
       return '<p>before</p><vnote-image filename="prefix-asset-a.png"></vnote-image>'
@@ -153,6 +167,11 @@ void main() {
     expect(note.title, '清单');
     expect(note.folder, '工作');
     expect(note.attachments.single.id, 'asset-a');
+    // 回收站不算跳过；手写笔记与统计里的加密笔记算。
+    expect(provider.issues.skipped, {
+      JournalSkipReason.unsupported: 1,
+      JournalSkipReason.encrypted: 1,
+    });
     final writer = JournalDeltaWriter();
     note.writeBody(
       writer,
@@ -165,6 +184,23 @@ void main() {
     expect(content.contentJson, contains('"list":"checked"'));
     expect(content.contentJson, contains('"list":"unchecked"'));
     expect(content.contentJson, contains('local.png'));
+
+    // 自闭合写法：HTML5 解析把后文收进自定义标签，换成图片与分隔线时后文
+    // 必须留下。
+    _route(
+      http,
+      '/note/getContent/v2',
+      (_) =>
+          '<p>before</p><vnote-image filename="prefix-asset-a.png"/>'
+          '<p>after image</p><vnote-divider/>tail',
+    );
+    final selfClosing = (await provider.fetchNotes((_, _) {})).single;
+    final again = JournalDeltaWriter();
+    selfClosing.writeBody(again, (_) => {'image': 'local.png'});
+    final rebuilt = again.build();
+    expect(rebuilt.contentText, 'before\n\nafter image\n\ntail');
+    expect(rebuilt.contentJson, contains('local.png'));
+    expect(rebuilt.contentJson, contains('{"insert":{"divider":"hr"}}'));
   });
 
   test('downloads originals cookie-free with the STS token', () async {

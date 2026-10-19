@@ -183,6 +183,50 @@ void main() {
       // 两篇分属两个笔记本，但被锁的那篇不导入，只剩一个笔记本，不记笔记本。
       expect(entry.tags, isEmpty);
       expect(entry.notebooks, isEmpty);
+      expect(result.skippedNotes, {JournalSkipReason.encrypted: 2});
+    });
+
+    test('keeps conflict copies and does not import deleted notes', () {
+      for (final MapEntry(:key, :value) in _joplinItems().entries) {
+        write(
+          'raw/$key',
+          value.replaceFirst('is_conflict: 0', 'is_conflict: 1'),
+        );
+      }
+      write('raw/resources/$_resourceId.jpg', _jpeg);
+      final result = parseJoplinExport(extracted(), media);
+      expect(result.entries.single.title, 'Day 1 in Kyoto');
+      expect(result.entries.single.sourceMetadata['conflict'], isTrue);
+      write(
+        'raw/$_noteId.md',
+        _joplinItems()['$_noteId.md']!.replaceFirst(
+          'deleted_time: 0',
+          'deleted_time: 1700000000000',
+        ),
+      );
+      expect(parseJoplinExport(extracted(), media).entries, isEmpty);
+    });
+
+    test('corrupted or truncated JEX cannot silently import a prefix', () {
+      final archive = Archive();
+      for (final MapEntry(:key, :value) in _joplinItems().entries) {
+        final bytes = utf8.encode(value);
+        archive.addFile(ArchiveFile(key, bytes.length, bytes));
+      }
+      final bytes = TarEncoder().encode(archive);
+      for (final bad in [
+        bytes.sublist(0, bytes.length - 1024),
+        bytes.sublist(0, 600),
+        [...bytes]..[100] ^= 1,
+      ]) {
+        final file = File(p.join(temp.path, 'broken.jex'))
+          ..writeAsBytesSync(bad);
+        expect(
+          () =>
+              parseJoplinExport(JournalImportInput(filePath: file.path), media),
+          throwsA(isA<JournalImportFormatException>()),
+        );
+      }
     });
 
     test('rejects files that are not Joplin exports', () {
@@ -245,6 +289,21 @@ Arrived **early**.
       expect(run.title, 'Run');
       expect(run.createdAt, DateTime(2024, 1, 16, 8, 30));
       expect(result.missingMediaCount, 0);
+    });
+
+    test('plain .txt notes record their top folder as a notebook too', () {
+      write('Vault/Travel/Kyoto.md', 'temple');
+      write('Vault/Daily/2024-01-15 Walk.txt', 'park');
+
+      final result = parseMarkdownFilesExport(extracted(), media);
+
+      final byKey = {for (final e in result.entries) e.sourceKey: e};
+      final walk = byKey['Vault/Daily/2024-01-15 Walk.txt']!;
+      expect(walk.title, 'Walk');
+      expect(walk.contentText, 'park');
+      expect(walk.tags, isEmpty);
+      expect(walk.notebooks, ['Daily']);
+      expect(byKey['Vault/Travel/Kyoto.md']!.notebooks, ['Travel']);
     });
 
     test('reads a single picked .md file', () {

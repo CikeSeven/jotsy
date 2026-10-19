@@ -2,7 +2,14 @@
 ///
 /// 支持引号包裹的逗号与换行、`""` 转义、CRLF/LF 换行，并忽略开头的 UTF-8
 /// BOM。字段不做 trim，完全空白的行由调用方自行跳过。
-List<List<String>> parseCsvRows(String source) {
+List<List<String>> parseCsvRows(
+  String source, {
+  String delimiter = ',',
+  bool strict = false,
+}) {
+  if (delimiter.length != 1 || '"\r\n'.contains(delimiter)) {
+    throw ArgumentError.value(delimiter, 'delimiter');
+  }
   final text = source.startsWith('\uFEFF') ? source.substring(1) : source;
   final rows = <List<String>>[];
   var row = <String>[];
@@ -33,11 +40,13 @@ List<List<String>> parseCsvRows(String source) {
       }
       continue;
     }
+    if (char == delimiter) {
+      endField();
+      continue;
+    }
     switch (char) {
       case '"':
         inQuotes = true;
-      case ',':
-        endField();
       case '\r':
         if (i + 1 < text.length && text[i + 1] == '\n') i++;
         endRow();
@@ -47,6 +56,7 @@ List<List<String>> parseCsvRows(String source) {
         field.write(char);
     }
   }
+  if (strict && inQuotes) throw const FormatException('Unterminated CSV quote');
   if (field.isNotEmpty || row.isNotEmpty) endRow();
   return rows;
 }

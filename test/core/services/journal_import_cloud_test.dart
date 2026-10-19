@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/journal_import_cloud_cookie_jar.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 import 'package:node_diary/core/services/journal_import_media.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
 import 'package:path/path.dart' as p;
 
@@ -196,6 +197,74 @@ void main() {
     tearDown(() => temp.delete(recursive: true));
 
     test(
+      'duplicate note IDs stop import before any attachment downloads',
+      () async {
+        final note = CloudNote(
+          id: 'same',
+          title: '',
+          createdAt: DateTime(2024),
+          writeBody: (_, _) {},
+        );
+        await expectLater(
+          fetchCloudJournal(
+            _FakeProvider([note, note]),
+            JournalMediaStager(temp.path),
+          ),
+          throwsA(_failure(CloudNoteFailure.protocolChanged)),
+        );
+        expect(temp.listSync(), isEmpty);
+      },
+    );
+
+    test(
+      'empty files and missing attachment metadata are reported once',
+      () async {
+        final provider = _FakeProvider([
+          CloudNote(
+            id: 'one',
+            title: '',
+            createdAt: DateTime(2024),
+            attachments: const [
+              CloudAttachment(id: 'empty', name: 'empty.jpg'),
+              CloudAttachment(id: 'empty', name: 'duplicate.jpg'),
+            ],
+            writeBody: (writer, resolve) {
+              resolve('empty');
+              resolve('unknown');
+              resolve('unknown');
+              writer.text('Retained');
+            },
+          ),
+        ]);
+        final result = await fetchCloudJournal(
+          provider,
+          JournalMediaStager(temp.path),
+        );
+        expect(result.entries.single.contentText, 'Retained');
+        expect(result.missingMediaCount, 2);
+        expect(temp.listSync(), isEmpty);
+      },
+    );
+
+    test('a changed attachment protocol stops the import', () async {
+      final provider = _FakeProvider([
+        CloudNote(
+          id: 'one',
+          title: '',
+          createdAt: DateTime(2024),
+          attachments: const [
+            CloudAttachment(id: 'protocol', name: 'photo.jpg'),
+          ],
+          writeBody: (_, _) {},
+        ),
+      ]);
+      await expectLater(
+        fetchCloudJournal(provider, JournalMediaStager(temp.path)),
+        throwsA(_failure(CloudNoteFailure.protocolChanged)),
+      );
+    });
+
+    test(
       'downloads media, appends unreferenced ones, counts failures',
       () async {
         final provider = _FakeProvider([
@@ -262,6 +331,52 @@ void main() {
         throwsA(_failure(CloudNoteFailure.sessionExpired)),
       );
     });
+
+    test('reports skipped and summary-only notes from one read', () async {
+      final provider = _FakeProvider(
+        [
+          CloudNote(
+            id: 'n1',
+            title: 'kept',
+            createdAt: DateTime(2024),
+            writeBody: (writer, resolve) => writer.text('body'),
+          ),
+        ],
+        onFetch: (issues) {
+          issues
+            ..skip(JournalSkipReason.encrypted, 2)
+            ..skip(JournalSkipReason.unsupported)
+            ..skip(JournalSkipReason.unreadable, 0)
+            ..summaryOnly += 1;
+        },
+      );
+
+      for (var round = 0; round < 2; round++) {
+        final result = await fetchCloudJournal(
+          provider,
+          JournalMediaStager(temp.path),
+        );
+        // 每次读取重新计数，第二次不会翻倍；计数为 0 的原因不出现。
+        expect(result.skippedNotes, {
+          JournalSkipReason.encrypted: 2,
+          JournalSkipReason.unsupported: 1,
+        });
+        expect(result.summaryOnlyCount, 1);
+        expect(result.entries.single.title, 'kept');
+      }
+    });
+  });
+
+  test('CloudReadIssues.atLeast only raises a count', () {
+    final issues = CloudReadIssues()..skip(JournalSkipReason.encrypted, 3);
+    issues
+      ..atLeast(JournalSkipReason.encrypted, 2)
+      ..atLeast(JournalSkipReason.unsupported, 4)
+      ..atLeast(JournalSkipReason.unreadable, 0);
+    expect(issues.skipped, {
+      JournalSkipReason.encrypted: 3,
+      JournalSkipReason.unsupported: 4,
+    });
   });
 
   test('writeCloudBlocks maps every block kind', () {
@@ -320,18 +435,31 @@ Matcher _failure(CloudNoteFailure failure) => isA<CloudNoteException>().having(
 );
 
 class _FakeProvider implements CloudNoteProvider {
-  _FakeProvider(this.notes);
+  _FakeProvider(this.notes, {this.onFetch});
 
   final List<CloudNote> notes;
+
+  /// 读取时顺带记下的问题（模拟平台跳过笔记）。
+  final void Function(CloudReadIssues issues)? onFetch;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   @override
   Future<String> probe() async => 'account';
 
   @override
-  Future<List<CloudNote>> fetchNotes(CloudProgress onProgress) async => notes;
+  Future<List<CloudNote>> fetchNotes(CloudProgress onProgress) async {
+    onFetch?.call(issues);
+    return notes;
+  }
 
   @override
   Future<List<int>> download(CloudAttachment attachment) async {
+    if (attachment.id == 'empty') return [];
+    if (attachment.id == 'protocol') {
+      throw const CloudNoteException(CloudNoteFailure.protocolChanged);
+    }
     if (attachment.id == 'gone') {
       throw const CloudNoteException(CloudNoteFailure.rejected);
     }

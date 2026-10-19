@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'journal_import_cloud.dart';
 import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// 魅族笔记（Flyme 云服务 notes.flyme.cn）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/meizu.py`、`meizu_files.py`、`meizu_groups.py`）：
@@ -28,6 +31,9 @@ class MeizuCloudProvider implements CloudNoteProvider {
   final CloudNoteHttp http;
   final CloudNoteTransport _api;
   final Future<void> Function(Duration)? _wait;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   Future<Map<String, Object?>> _call(
     String name, {
@@ -135,26 +141,27 @@ class MeizuCloudProvider implements CloudNoteProvider {
     return notes;
   }
 
-  /// 加密笔记、未知区块等无法转换的笔记返回 null。
-  static CloudNote? _parseEntry(
+  /// 加密笔记与缺少正文或创建时间的条目记入 [issues] 并返回 null。
+  CloudNote? _parseEntry(
     Map<String, Object?> entry,
     Map<String, String> folders,
   ) {
     final encrypt = entry['encrypt'];
-    if (encrypt != null && encrypt != 0 && encrypt != '0') return null;
+    if (encrypt != null && encrypt != 0 && encrypt != '0') {
+      issues.skip(JournalSkipReason.encrypted);
+      return null;
+    }
     final rawBody = entry['body'];
     final created = _time(entry['createTime']);
-    if (rawBody is! String || created == null) return null;
+    if (rawBody is! String || created == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      return null;
+    }
     final files = entry['files'] is Map
         ? (entry['files'] as Map).cast<Object?, Object?>()
         : const <Object?, Object?>{};
-    final List<CloudBlock> blocks;
     final names = <String>[];
-    try {
-      blocks = decodeMeizuBody(rawBody, onAttachment: names.add);
-    } on FormatException {
-      return null;
-    }
+    final blocks = decodeMeizuBody(rawBody, onAttachment: names.add);
     final attachments = <CloudAttachment>[];
     for (final name in {...names, ...files.keys.whereType<String>()}) {
       attachments.add(
@@ -217,71 +224,80 @@ class MeizuCloudProvider implements CloudNoteProvider {
     return response.bytes;
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }
 
-/// 解析魅族正文区块树；未知区块、嵌套超过 6 层或样式区间不合法时抛出
-/// [FormatException]（整篇不转换，与参考实现一致）。图片、录音、文件区块
-/// 经 [onAttachment] 报告附件名称，并在正文中占一个附件块。
+/// 解析魅族正文区块树。图片、录音、文件区块经 [onAttachment] 报告附件
+/// 名称，并在正文中占一个附件块。
+///
+/// 参考实现是迁移工具，遇到未知区块、过深嵌套或不合法的样式区间就整篇
+/// 拒绝（原笔记还在云端）；导入时整篇放弃等于丢掉这篇，所以这里尽量保留：
+/// 未知区块留下文字（有子区块的照常展开），嵌套超过 6 层按 6 层，样式
+/// 区间不合法时保留不带样式的文字，正文不是区块 JSON 时按纯文本逐行导入。
 List<CloudBlock> decodeMeizuBody(
   String body, {
   required void Function(String name) onAttachment,
 }) {
-  final decoded = body.isEmpty ? const <Object?>[] : jsonDecode(body);
+  Object? decoded;
+  try {
+    decoded = body.isEmpty ? const <Object?>[] : jsonDecode(body);
+  } on FormatException {
+    return [
+      for (final line in body.split('\n'))
+        CloudBlock.paragraph([if (line.isNotEmpty) CloudSpan(line)]),
+    ];
+  }
   final blocks = <CloudBlock>[];
 
   void visit(Object? items, int level, bool? ordered) {
-    if (items is! List || level > 6) {
-      throw const FormatException('meizu nesting');
-    }
+    if (items is! List) return;
     for (final item in items) {
-      final state = item is Map ? item['state'] : null;
-      if (state is! int) throw const FormatException('meizu state');
-      final row = item as Map;
+      if (item is! Map) continue;
+      final state = item['state'];
+      final text = item['text'] is String ? item['text'] as String : '';
+      List<CloudSpan> spans() {
+        try {
+          return decodeMeizuSpans(text, item['span']);
+        } on FormatException {
+          return [if (text.isNotEmpty) CloudSpan(text)];
+        }
+      }
+
       switch (state) {
         case 50 || 51:
           visit(
-            row['children'],
-            level + (ordered == null ? 0 : 1),
+            item['children'],
+            min(level + (ordered == null ? 0 : 1), 6),
             state == 50,
           );
         case 53:
-          visit(row['children'], level, ordered);
+          visit(item['children'], level, ordered);
         case 0 || 1 || 2 || 60:
-          final spans = decodeMeizuSpans(
-            row['text'] is String ? row['text'] as String : '',
-            row['span'],
-          );
           final kind = switch (state) {
             60 => CloudBlockKind.heading,
             1 || 2 => CloudBlockKind.todo,
             _ when ordered != null => CloudBlockKind.list,
             _ => CloudBlockKind.paragraph,
           };
-          final headingLevel = row['level'] is int ? row['level'] as int : 1;
-          if (state == 60 && (headingLevel < 1 || headingLevel > 6)) {
-            throw const FormatException('meizu heading');
-          }
+          final headingLevel = item['level'] is int ? item['level'] as int : 1;
           blocks.add(
             CloudBlock(
               kind,
-              spans: spans,
-              level: state == 60 ? headingLevel : level,
+              spans: spans(),
+              level: state == 60 ? headingLevel.clamp(1, 6) : level,
               ordered: ordered ?? false,
               checked: state == 2,
             ),
           );
         case 3 || 4 || 5:
-          final name = row['name'];
-          if (name is! String || name.isEmpty) {
-            throw const FormatException('meizu attachment');
-          }
+          final name = item['name'];
+          if (name is! String || name.isEmpty) continue;
           onAttachment(name);
           blocks.add(CloudBlock(CloudBlockKind.attachment, attachmentId: name));
         default:
-          throw const FormatException('meizu proprietary');
+          if (text.isNotEmpty) blocks.add(CloudBlock.paragraph(spans()));
+          visit(item['children'], level, ordered);
       }
     }
   }

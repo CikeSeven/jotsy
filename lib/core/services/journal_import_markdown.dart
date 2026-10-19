@@ -4,6 +4,7 @@ import 'package:markdown/markdown.dart' as md;
 import '../database/divider_embed_codec.dart';
 import 'journal_import_delta_writer.dart';
 import 'journal_import_html_style.dart';
+import 'journal_import_markdown_references.dart';
 
 /// 把 Markdown 正文（Day One、旧版 Journey、笔记应用导出）写入
 /// [JournalDeltaWriter]。
@@ -70,8 +71,10 @@ class JournalMarkdownConverter {
         .replaceAll('\r', '\n')
         .replaceAll('\u200b', '')
         .split('\n');
+    final definitions = collectJournalMarkdownReferences(lines, _inlineParser);
     String? fence;
-    for (final line in lines) {
+    for (final (index, line) in lines.indexed) {
+      if (definitions.contains(index)) continue;
       if (fence != null) {
         if (line.trimLeft().startsWith(fence)) {
           fence = null;

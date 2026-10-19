@@ -5,6 +5,7 @@ import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_meizu.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -100,6 +101,72 @@ void main() {
     });
   });
 
+  group('decodeMeizuBody', () {
+    List<String> decode(String body, [List<String>? names]) => [
+      for (final block in decodeMeizuBody(
+        body,
+        onAttachment: names?.add ?? (_) {},
+      ))
+        '${block.kind.name}:${block.level}:${_spans(block.spans)}',
+    ];
+
+    test('keeps what it can instead of dropping the note', () {
+      final names = <String>[];
+      expect(
+        decode(
+          jsonEncode([
+            // 未知区块：留下文字，子区块照常展开。
+            {
+              'state': 99,
+              'text': '未知区块',
+              'children': [
+                {'state': 0, 'text': '子段落'},
+              ],
+            },
+            // 样式区间越界：保留不带样式的文字。
+            {
+              'state': 0,
+              'text': '样式坏了',
+              'span': '[{"span":1,"param":1,"start":0,"end":99}]',
+            },
+            {'state': 60, 'level': 9, 'text': '标题'},
+            {'state': 3},
+            {'state': 3, 'name': 'a.png'},
+            'not a block',
+          ]),
+          names,
+        ),
+        [
+          'paragraph:1:未知区块',
+          'paragraph:1:子段落',
+          'paragraph:1:样式坏了',
+          'heading:6:标题',
+          'attachment:1:',
+        ],
+      );
+      expect(names, ['a.png']);
+    });
+
+    test('nesting deeper than six levels stays at six', () {
+      Map<String, Object?> nest(int depth) => depth == 0
+          ? {'state': 0, 'text': '最深'}
+          : {
+              'state': 51,
+              'children': [
+                {
+                  'state': 53,
+                  'children': [nest(depth - 1)],
+                },
+              ],
+            };
+      expect(decode(jsonEncode([nest(9)])), ['list:6:最深']);
+    });
+
+    test('a body that is not block JSON imports as plain lines', () {
+      expect(decode('第一行\n第二行'), ['paragraph:1:第一行', 'paragraph:1:第二行']);
+    });
+  });
+
   group('MeizuCloudProvider', () {
     late FakeCloudHttp http;
     late MeizuCloudProvider provider;
@@ -152,7 +219,7 @@ void main() {
         return jsonResponse({
           'returnCode': 200,
           'returnValue': {
-            'count': 3,
+            'count': 4,
             'content': [
               {
                 'uuid': '0f1e',
@@ -177,6 +244,12 @@ void main() {
                 'body': '[{"state":99,"text":"未知"}]',
                 'createTime': 1719990000000,
               },
+              {
+                'uuid': '3333',
+                'body': '',
+                'encrypt': 1,
+                'createTime': 1719990000000,
+              },
             ],
           },
         });
@@ -184,8 +257,12 @@ void main() {
 
       final notes = await provider.fetchNotes((_, _) {});
 
-      // 含未知区块的笔记整篇跳过。
-      final [first, second] = notes;
+      // 含未知区块的笔记照样导入，未知区块留下文字。
+      final [first, second, third] = notes;
+      final unknown = JournalDeltaWriter();
+      third.writeBody(unknown, (_) => null);
+      expect(unknown.build().contentText, '未知');
+      expect(provider.issues.skipped, {JournalSkipReason.encrypted: 1});
       expect(first.title, '周末计划');
       expect(first.folder, '工作');
       expect(first.attachments.single.reference, '/file/a1b2c3d4.png');

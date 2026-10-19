@@ -278,6 +278,42 @@ void main() {
     expect(normalizeJournalImportNotebookName('  a \n b  '), 'a b');
   });
 
+  test('keeps the original folder names when landing shortens them', () {
+    final long = '日' * 50;
+    final named = [
+      entry('long', notebooks: [long]),
+      entry('spaced', notebooks: ['  Work   notes ']),
+      entry('plain', notebooks: ['Travel']),
+    ];
+    Map<String, Object?> imported(BackupPayload payload, int index) =>
+        (jsonDecode(payload.diaries[index].metadata) as Map)['import']
+            as Map<String, Object?>;
+
+    // 日记本名上限 60：50 字的名字原样落地，不必另存；空白规整过的要存。
+    final asNotebooks = buildJournalImportPayload(source, named, now: now);
+    expect(imported(asNotebooks, 0), isNot(contains('originalNotebooks')));
+    expect(imported(asNotebooks, 1)['originalNotebooks'], ['  Work   notes ']);
+    expect(imported(asNotebooks, 2), isNot(contains('originalNotebooks')));
+
+    // 标签上限 40：同一个名字落成标签会被截断，原名留在 metadata 里。
+    for (final mode in [
+      JournalImportFolderMode.tags,
+      JournalImportFolderMode.both,
+    ]) {
+      final payload = buildJournalImportPayload(
+        source,
+        named,
+        folderMode: mode,
+        now: now,
+      );
+      expect(imported(payload, 0)['originalNotebooks'], [long]);
+      expect(imported(payload, 1)['originalNotebooks'], ['  Work   notes ']);
+      expect(imported(payload, 2), isNot(contains('originalNotebooks')));
+      // 来源标签本身没有被改动，不记 originalTags。
+      expect(imported(payload, 0), isNot(contains('originalTags')));
+    }
+  });
+
   test('notebook ids do not collide with diary ids of the same key', () {
     expect(
       journalImportNotebookId(source, 'x'),

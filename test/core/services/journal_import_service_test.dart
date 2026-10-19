@@ -162,7 +162,9 @@ void main() {
   );
 
   /// 两个日记本的 Day One 导出：只有一本时不记日记本，所以至少要两本。
-  Future<File> dayOneTwoJournalsZip() {
+  /// [withUnreadable] 时 Travel 里再夹两条读不出来的条目（不是对象、缺创建
+  /// 时间），解析会按“无法识别”跳过它们。
+  Future<File> dayOneTwoJournalsZip({bool withUnreadable = false}) {
     final archive = Archive();
     for (final (name, keys) in [
       ('Travel', ['T1', 'T2']),
@@ -177,6 +179,10 @@ void main() {
                 'creationDate': '2024-05-0${index + 1}T08:00:00Z',
                 'text': key,
               },
+            if (withUnreadable && name == 'Travel') ...[
+              'not an entry',
+              {'uuid': 'NO-DATE', 'text': 'undated'},
+            ],
           ],
         }),
       );
@@ -281,6 +287,24 @@ void main() {
       session.previewFor(JournalImportFolderMode.tags).tagCount,
       session.preview.tagCount,
     );
+  });
+
+  test('every folder mode previews the notes the parse skipped', () async {
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.dayOne,
+      filePath: (await dayOneTwoJournalsZip(withUnreadable: true)).path,
+    );
+    addTearDown(session.dispose);
+    expect(session.hasSourceFolders, isTrue);
+    // 跳过的篇数来自解析，与来源文件夹落成什么无关：切换方式后预览照样说明。
+    for (final mode in JournalImportFolderMode.values) {
+      final preview = session.previewFor(mode);
+      expect(preview.diaryCount, 3, reason: mode.name);
+      expect(preview.skippedNotes, {
+        JournalSkipReason.unreadable: 2,
+      }, reason: mode.name);
+    }
   });
 
   group('the folder mode chosen after parsing', () {

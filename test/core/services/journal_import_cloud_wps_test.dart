@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_wps.dart';
 import 'package:node_diary/core/services/journal_import_cloud_wps_format.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -273,6 +274,98 @@ void main() {
         expect(writer.build().contentText, '长正文\n第一段');
       },
     );
+
+    test('imports the summary when the body cannot be read', () async {
+      http.json('POST', '$_api/notesvr/get/notegroup', {'noteGroups': []});
+      http.json(
+        'GET',
+        '$_api/notesvr/v2/user/123456789/home/startindex/0/rows/50/notes',
+        {
+          'webNotes': [
+            for (final id in ['gone', 'odd', 'undated'])
+              {
+                'noteId': id,
+                'title': '',
+                'summary': _encSummary,
+                if (id != 'undated') 'createTime': 1720000000000,
+              },
+          ],
+        },
+      );
+      http.json('POST', '$_api/notesvr/web/getnotes/remind', {'webNotes': []});
+      http.on('POST', '$_api/notesvr/get/notebody', (request) {
+        final id = ((request.json! as Map)['noteIds'] as List).single;
+        return jsonResponse({
+          'noteBodies': [
+            {
+              'noteId': id,
+              'valid': 1,
+              // gone：长正文对象已不在 S3（未登记的路由回 404）；odd：不认识
+              // 的存放方式。
+              ...switch (id) {
+                'gone' => {'bodyType': 1, 'body': _encLongKey},
+                _ => {'bodyType': 7, 'body': ''},
+              },
+            },
+          ],
+        });
+      });
+      http.json('POST', '$_api/s3/requestdownload', _storageConfig);
+
+      final notes = await provider.fetchNotes((_, _) {});
+
+      expect(notes.map((note) => note.id), ['gone', 'odd']);
+      for (final note in notes) {
+        expect(note.title, '购物清单');
+        final writer = JournalDeltaWriter();
+        note.writeBody(writer, (_) => null);
+        expect(writer.build().contentText, '购物清单\n牛奶');
+      }
+      expect(provider.issues.summaryOnly, 2);
+      expect(provider.issues.skipped, {JournalSkipReason.unreadable: 1});
+    });
+
+    test('renews S3 credentials once when a request is refused', () async {
+      var grants = 0;
+      http.on('POST', '$_api/s3/requestdownload', (_) {
+        grants++;
+        return jsonResponse(_storageConfig);
+      });
+      var attempts = 0;
+      CloudNoteResponse Function(int attempt) reply = (attempt) => attempt == 1
+          ? CloudNoteResponse(400, utf8.encode('<Code>ExpiredToken</Code>'))
+          : bytesResponse(fakeJpeg);
+      http.on('GET', '$_s3/notes/u123/0123456789abcdef0123456789abcdef', (_) {
+        attempts++;
+        return reply(attempts);
+      });
+      const attachment = CloudAttachment(
+        id: 'x',
+        name: 'x',
+        reference: '0123456789abcdef0123456789abcdef',
+      );
+      await provider.probe();
+
+      // 过期的令牌（400）：换一份凭据后读到。
+      expect(await provider.download(attachment), fakeJpeg);
+      expect((grants, attempts), (2, 2));
+
+      // 换了凭据仍被拒（403）：这一项算读不到，只重试一次。
+      grants = 0;
+      attempts = 0;
+      reply = (_) => const CloudNoteResponse(403, []);
+      await expectLater(
+        provider.download(attachment),
+        throwsA(
+          isA<CloudNoteException>().having(
+            (error) => error.failure,
+            'failure',
+            CloudNoteFailure.forbidden,
+          ),
+        ),
+      );
+      expect((grants, attempts), (1, 2));
+    });
 
     test('downloads 32-hex attachment keys from S3 only', () async {
       http.json('POST', '$_api/s3/requestdownload', _storageConfig);

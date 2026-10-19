@@ -7,6 +7,7 @@ import '../database/app_database.dart';
 import 'backup_payload.dart';
 import 'journal_import_models.dart';
 import 'journal_import_notebooks.dart';
+import 'journal_import_support.dart';
 import 'settings_service.dart';
 
 /// 导入日记标签未指定颜色时使用的中性色。
@@ -47,11 +48,12 @@ BackupPayload buildJournalImportPayload(
   final tags = <String, Tag>{};
   final diaries = <Diary>[];
   final relations = <DiaryTag>[];
-  final seenDiaryIds = <String>{};
+  final keys = JournalKeyRegistry();
   for (final entry in entries) {
-    final diaryId = journalImportDiaryId(source, entry.sourceKey);
-    // 解析器已为重复键追加序号；这里兜底，避免载荷出现重复 diaryId。
-    if (!seenDiaryIds.add(diaryId)) continue;
+    // 即使某个来源返回了重复 ID，也不能丢掉后面的正文。保持第一次的稳定
+    // ID，其余确定性分配后缀；云端分页的重复另在读取阶段视为协议错误。
+    final sourceKey = keys.unique(entry.sourceKey);
+    final diaryId = journalImportDiaryId(source, sourceKey);
     final localId = diaries.length + 1;
     diaries.add(
       Diary(
@@ -60,7 +62,13 @@ BackupPayload buildJournalImportPayload(
         title: _clamp(entry.title.trim(), 200),
         content: entry.contentJson,
         contentText: entry.contentText,
-        metadata: _metadata(source, entry, _moodEmoji(entry, moodOptions)),
+        metadata: _metadata(
+          source,
+          sourceKey,
+          entry,
+          _moodEmoji(entry, moodOptions),
+          folderMode,
+        ),
         createdAt: entry.createdAt,
         updatedAt: entry.updatedAt.isBefore(entry.createdAt)
             ? entry.createdAt
@@ -75,9 +83,7 @@ BackupPayload buildJournalImportPayload(
         ...entry.tags,
         if (folderMode.createsTags) ...entry.notebooks,
       ])
-        if (_clamp(raw.replaceAll(RegExp(r'\s+'), ' ').trim(), 40)
-            case final name when name.isNotEmpty)
-          name,
+        if (_tagName(raw) case final name when name.isNotEmpty) name,
     };
     for (final name in names) {
       final tag = tags[name] ??= Tag(
@@ -148,14 +154,16 @@ String? _moodEmoji(JournalImportEntry entry, List<String> moodOptions) {
 
 String _metadata(
   JournalImportSource source,
+  String sourceKey,
   JournalImportEntry entry,
   String? moodEmoji,
+  JournalImportFolderMode folderMode,
 ) {
   final text = entry.contentText.trim();
   final context = <String, Object?>{
     if (entry.location?.trim() case final location? when location.isNotEmpty)
       'location': location,
-    if (entry.latitude != null && entry.longitude != null)
+    if (isJournalCoordinate(entry.latitude, entry.longitude))
       'geo': <String, Object?>{
         'source': 'import',
         'latitude': entry.latitude,
@@ -178,10 +186,29 @@ String _metadata(
     if (context.isNotEmpty) 'context': context,
     'import': <String, Object?>{
       'source': source.name,
-      'sourceKey': entry.sourceKey,
+      'sourceKey': sourceKey,
+      if (sourceKey != entry.sourceKey) 'originalSourceKey': entry.sourceKey,
+      if (_clamp(entry.title.trim(), 200) != entry.title)
+        'originalTitle': entry.title,
+      if (entry.tags.any((tag) => _tagName(tag) != tag))
+        'originalTags': entry.tags,
+      // 来源日记本 / 文件夹名同理：按所选方式落地时被规整或截断（标签 40、
+      // 日记本 60）就留下原名，免得长名称的后半截悄悄丢了。
+      if (entry.notebooks.any(
+        (name) =>
+            (folderMode.createsTags && _tagName(name) != name) ||
+            (folderMode.createsNotebooks &&
+                normalizeJournalImportNotebookName(name) != name),
+      ))
+        'originalNotebooks': entry.notebooks,
+      if (entry.sourceMetadata.isNotEmpty) 'details': entry.sourceMetadata,
     },
   });
 }
+
+/// 标签名规整：连续空白合成一个空格、去首尾空白、截到数据库上限 40。
+String _tagName(String raw) =>
+    _clamp(raw.replaceAll(RegExp(r'\s+'), ' ').trim(), 40);
 
 /// 按 UTF-16 长度截断（数据库按此校验），不拆开代理对。
 String _clamp(String text, int maxLength) {

@@ -6,6 +6,7 @@ import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_huawei.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -177,6 +178,8 @@ void main() {
     expect(note.folder, '工作');
     expect(note.createdAt, DateTime.utc(2024, 7, 3, 9, 46, 40).toLocal());
     expect(note.attachments.single.id, 'synthetic-asset-0');
+    // 待办（task）等非 note 类型不读取，计入跳过。
+    expect(provider.issues.skipped, {JournalSkipReason.unsupported: 1});
     final writer = JournalDeltaWriter();
     note.writeBody(
       writer,

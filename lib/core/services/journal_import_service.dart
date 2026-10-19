@@ -125,15 +125,26 @@ class JournalImportService {
     required JournalImportFolderMode folderMode,
     required Future<JournalImportParseResult> Function(Directory staging) parse,
   }) async {
-    final documents = await getApplicationDocumentsDirectory();
-    await documents.create(recursive: true);
-    await _removeStaleStaging(documents);
-    final staging = await documents.createTemp(_stagingPrefix);
-    _liveStaging.add(staging.path);
+    // 创建目录和登记存活状态属于同一个临界区。并发准备时，不能让另一
+    // 会话在 createTemp 完成、_liveStaging 登记前把新目录误当作遗留目录删掉。
+    final (documents, staging) = await DataArchiveService.runSerialized(
+      () async {
+        final documents = await getApplicationDocumentsDirectory();
+        await documents.create(recursive: true);
+        await _removeStaleStaging(documents);
+        final staging = await documents.createTemp(_stagingPrefix);
+        _liveStaging.add(staging.path);
+        return (documents, staging);
+      },
+    );
     try {
       final parsed = await parse(staging);
       if (parsed.entries.isEmpty) {
-        throw JournalImportFormatException(source, noEntries: true);
+        throw JournalImportFormatException(
+          source,
+          noEntries: true,
+          skippedNotes: parsed.skippedNotes,
+        );
       }
       // 本机日记本只在这里读一次：载荷生成保持纯函数，复用本机同名 / 上次
       // 导入建的日记本所需的信息由此传入。预检到确认之间用户若又改了日记本，
@@ -159,7 +170,8 @@ class JournalImportService {
       );
       // 预检统计（标签数、已存在的日记本数）随落地方式变化，且要读库，在这里
       // 一次算好：导入方式面板切换时同步取用，不再等待也不重新解析。没有来源
-      // 文件夹时三种方式的载荷相同，只算一份。
+      // 文件夹时三种方式的载荷相同，只算一份。跳过 / 只有摘要 / 部分内容的
+      // 篇数来自解析，与落地方式无关，每种方式的预检都带上。
       for (final mode
           in folderCount > 0
               ? JournalImportFolderMode.values
@@ -170,6 +182,9 @@ class JournalImportService {
           payload: session.payloadFor(mode),
           journalSource: source,
           missingMediaCount: parsed.missingMediaCount,
+          skippedNotes: parsed.skippedNotes,
+          summaryOnlyCount: parsed.summaryOnlyCount,
+          partialContentCount: parsed.partialContentCount,
         );
       }
       return session;
@@ -193,8 +208,8 @@ class JournalImportService {
       return head.length == 4 &&
           head[0] == 0x50 &&
           head[1] == 0x4B &&
-          (head[2] == 0x03 || head[2] == 0x05) &&
-          (head[3] == 0x04 || head[3] == 0x06);
+          ((head[2] == 0x03 && head[3] == 0x04) ||
+              (head[2] == 0x05 && head[3] == 0x06));
     } finally {
       await handle.close();
     }
@@ -251,6 +266,9 @@ class JournalImportSession {
   /// 条目里出现的来源日记本 / 文件夹个数（按规整后的名称去重）。
   final int sourceFolderCount;
   bool _applied = false;
+  bool _disposed = false;
+  Future<BackupImportResult>? _application;
+  Future<void>? _disposal;
 
   /// 是否有来源日记本 / 文件夹，没有时三种落地方式没有区别，界面不必询问。
   bool get hasSourceFolders => sourceFolderCount > 0;
@@ -276,9 +294,10 @@ class JournalImportSession {
       throw ArgumentError.value(mode, 'mode', '其他应用的导出只能合并导入');
     }
     if (_applied) throw StateError('导入会话已执行过');
+    if (_disposed) throw StateError('导入会话已释放');
     _applied = true;
     final payload = payloadFor(folderMode ?? this.folderMode);
-    return DataArchiveService.runSerialized(
+    return _application = DataArchiveService.runSerialized(
       () => BackupMerge(
         documents: _documents,
         staging: _staging,
@@ -286,7 +305,22 @@ class JournalImportSession {
     );
   }
 
-  Future<void> dispose() => JournalImportService._discard(_staging);
+  Future<void> dispose() {
+    _disposed = true;
+    return _disposal ??= _dispose();
+  }
+
+  Future<void> _dispose() async {
+    // 合并可能尚在备份队列中等待，媒体必须留到事务提交或回滚之后。
+    // apply 的异常仍交给原调用方，释放只保证暂存区最终被清理。
+    try {
+      await _application;
+    } catch (_) {
+      // 原调用方持有同一个 Future，不在资源释放时重复抛出。
+    } finally {
+      await JournalImportService._discard(_staging);
+    }
+  }
 }
 
 /// 按来源解析导出（在后台 isolate 中执行，使用同步 IO）。

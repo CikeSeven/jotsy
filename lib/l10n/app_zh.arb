@@ -7219,6 +7219,33 @@
       }
     }
   },
+  "backupOverwriteAllNotebooks": "{count} 个日记本",
+  "@backupOverwriteAllNotebooks": {
+    "description": "覆盖全部数据的警告条目：将被删除的本机日记本数（日记本里的日记另按日记计数）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportNotebookMergeResult": "日记本：新增 {added} 个",
+  "@backupImportNotebookMergeResult": {
+    "description": "合并导入结果的附加行：新增的日记本数（本机已有的日记本不计）。",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteNotebooksExtra": "同时替换本机已存在的 {count} 个日记本的名称、封面与章节等设置",
+  "@backupImportModeOverwriteNotebooksExtra": {
+    "description": "“合并并覆盖已存在”方式说明的补充行：文件里有与本机相同的日记本，它们的设置会被替换（书架顺序保留本机的）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diaryTemplateDailyName": "每日记录",
   "@diaryTemplateDailyName": {
     "description": "内置日记模板“每日记录”的名称。"

@@ -159,6 +159,22 @@ String _modeDescription(
   BackupImportMode mode,
   BackupArchivePreview preview,
 ) {
+  final description = _baseModeDescription(l10n, mode, preview);
+  // 同一个日记本的定义也会被替换（名称、封面、章节等），在说明末尾补一行；
+  // 日记本重复本身不决定是否提供这种方式。
+  if (mode == BackupImportMode.mergeOverwrite &&
+      preview.existingNotebookCount > 0) {
+    return '$description\n'
+        '${l10n.backupImportModeOverwriteNotebooksExtra(preview.existingNotebookCount)}';
+  }
+  return description;
+}
+
+String _baseModeDescription(
+  AppLocalizations l10n,
+  BackupImportMode mode,
+  BackupArchivePreview preview,
+) {
   return switch (mode) {
     BackupImportMode.merge => l10n.backupImportModeMergeDescription,
     // 只有纪念日重复时单独一句；日记与纪念日都有重复时在日记说明后补一行。

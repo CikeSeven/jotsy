@@ -382,6 +382,18 @@ void main() {
     );
     final local = (await db.getNotebook(shared))!;
 
+    final preview = await DataArchiveService.inspectZip(
+      database: db,
+      zipPath: (await fixture.writeZip(payload)).path,
+    );
+    expect(preview.existingNotebookCount, 1);
+    expect(preview.localNotebookCount, 2);
+    // 只有日记本重复时不提供“覆盖已存在”。
+    expect(
+      preview.availableModes,
+      isNot(contains(BackupImportMode.mergeOverwrite)),
+    );
+
     final merged = await importPayload(payload, BackupImportMode.merge);
     expect(merged.addedNotebooks, 0);
     expect(await db.getNotebook(shared), local);

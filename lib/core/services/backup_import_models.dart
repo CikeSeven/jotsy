@@ -52,6 +52,7 @@ class BackupArchivePreview {
     this.localAnniversaryCount = 0,
     this.localTemplateCount = 0,
     this.localNotebookCount = 0,
+    this.existingNotebookCount = 0,
   });
 
   final BackupArchiveKind kind;
@@ -95,6 +96,11 @@ class BackupArchivePreview {
   /// 本机当前的日记本数，即 [BackupImportMode.replaceAll] 会删除的个数——
   /// 不含日记本的旧备份覆盖导入后，本机日记本会被清空，警告里要列出来。
   final int localNotebookCount;
+
+  /// 文件内本机已有（按 notebookId）的日记本数，即
+  /// [BackupImportMode.mergeOverwrite] 会替换定义的个数。日记本重复本身不
+  /// 提供“覆盖已存在”（见 [availableModes]），只在说明里补一行。
+  final int existingNotebookCount;
 
   /// 当前文件可用的导入方式，按“安全在前”的展示顺序排列：没有已存在的日记
   /// 或纪念日时不提供“覆盖已存在”；日记包与其他应用的导出不能覆盖全部数据。

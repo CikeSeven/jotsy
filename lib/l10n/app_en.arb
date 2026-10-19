@@ -7219,6 +7219,33 @@
       }
     }
   },
+  "backupOverwriteAllNotebooks": "{count, plural, =1{1 notebook} other{{count} notebooks}}",
+  "@backupOverwriteAllNotebooks": {
+    "description": "Bullet in the replace-everything warning: notebooks on this device that will be deleted (their diaries are counted as diaries).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportNotebookMergeResult": "{added, plural, =1{Notebooks: 1 added} other{Notebooks: {added} added}}",
+  "@backupImportNotebookMergeResult": {
+    "description": "Extra line of the merge import result: notebooks added (existing ones are not counted).",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteNotebooksExtra": "{count, plural, =1{Also replaces the name, cover, chapters and other settings of 1 existing notebook} other{Also replaces the name, cover, chapters and other settings of {count} existing notebooks}}",
+  "@backupImportModeOverwriteNotebooksExtra": {
+    "description": "Extra line of the “merge and overwrite existing” description: notebooks also on this device whose settings will be replaced (the local shelf order is kept).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diaryTemplateDailyName": "Daily journal",
   "@diaryTemplateDailyName": {
     "description": "Name of the built-in “Daily journal” diary template."

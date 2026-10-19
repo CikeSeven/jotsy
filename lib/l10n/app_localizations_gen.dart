@@ -9392,6 +9392,24 @@ abstract class AppLocalizations {
   /// **'{added, plural, =1{Templates: 1 added} other{Templates: {added} added}}'**
   String backupImportTemplateMergeResult(int added);
 
+  /// Bullet in the replace-everything warning: notebooks on this device that will be deleted (their diaries are counted as diaries).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 notebook} other{{count} notebooks}}'**
+  String backupOverwriteAllNotebooks(int count);
+
+  /// Extra line of the merge import result: notebooks added (existing ones are not counted).
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{Notebooks: 1 added} other{Notebooks: {added} added}}'**
+  String backupImportNotebookMergeResult(int added);
+
+  /// Extra line of the “merge and overwrite existing” description: notebooks also on this device whose settings will be replaced (the local shelf order is kept).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Also replaces the name, cover, chapters and other settings of 1 existing notebook} other{Also replaces the name, cover, chapters and other settings of {count} existing notebooks}}'**
+  String backupImportModeOverwriteNotebooksExtra(int count);
+
   /// Name of the built-in “Daily journal” diary template.
   ///
   /// In en, this message translates to:

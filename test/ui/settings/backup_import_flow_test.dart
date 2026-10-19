@@ -40,6 +40,18 @@ const _dayOneExport = BackupArchivePreview(
   missingMediaCount: 3,
 );
 
+/// 本机有日记本、文件里也带着其中两本的完整备份。
+const _backupWithNotebooks = BackupArchivePreview(
+  kind: BackupArchiveKind.fullBackup,
+  diaryCount: 30,
+  tagCount: 6,
+  existingDiaryCount: 3,
+  localDiaryCount: 12,
+  localTagCount: 4,
+  localNotebookCount: 5,
+  existingNotebookCount: 2,
+);
+
 class _FlowResult {
   BackupImportMode? mode;
   bool finished = false;
@@ -165,6 +177,43 @@ void main() {
       expect(result.mode, BackupImportMode.replaceAll);
     },
   );
+
+  testWidgets('the replace-everything warning lists local notebooks only '
+      'when there are any', (tester) async {
+    await _startFlow(tester, _backupWithNotebooks);
+    await tester.tap(find.text('覆盖全部数据'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('继续'));
+    await tester.pumpAndSettle();
+    expect(find.text('5 个日记本'), findsOneWidget);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('a backup without local notebooks adds no notebook line', (
+    tester,
+  ) async {
+    await _startFlow(tester, _fullBackup);
+    await tester.tap(find.text('覆盖全部数据'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('继续'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('日记本'), findsNothing);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('overwriting existing items says notebook settings are '
+      'replaced too', (tester) async {
+    await _startFlow(tester, _backupWithNotebooks);
+    expect(
+      find.text(
+        '添加新日记，并用文件中的版本替换本机已存在的 3 篇日记\n'
+        '同时替换本机已存在的 2 个日记本的名称、封面与章节等设置',
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('acknowledging early still waits for the countdown', (
     tester,
@@ -331,5 +380,29 @@ void main() {
     );
     expect(describe(BackupImportMode.merge, 0, 0, 0), '导入完成：新增 1 篇日记');
     expect(describe(BackupImportMode.replaceAll, 5, 0, 0), 'restored');
+  });
+
+  test('adds a notebook line when merging added notebooks', () async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+    String describe(BackupImportMode mode, int added) =>
+        describeBackupImportResult(
+          l10n,
+          BackupImportResult(
+            mode: mode,
+            addedDiaries: 1,
+            replacedDiaries: 0,
+            skippedDiaries: 0,
+            addedNotebooks: added,
+          ),
+          replaceAllMessage: 'restored',
+        );
+
+    expect(describe(BackupImportMode.merge, 2), '导入完成：新增 1 篇日记\n日记本：新增 2 个');
+    expect(
+      describe(BackupImportMode.mergeOverwrite, 1),
+      '导入完成：新增 1 篇，覆盖 0 篇日记\n日记本：新增 1 个',
+    );
+    expect(describe(BackupImportMode.merge, 0), '导入完成：新增 1 篇日记');
+    expect(describe(BackupImportMode.replaceAll, 3), 'restored');
   });
 }

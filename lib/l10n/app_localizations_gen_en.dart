@@ -5608,6 +5608,41 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String backupOverwriteAllNotebooks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count notebooks',
+      one: '1 notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportNotebookMergeResult(int added) {
+    String _temp0 = intl.Intl.pluralLogic(
+      added,
+      locale: localeName,
+      other: 'Notebooks: $added added',
+      one: 'Notebooks: 1 added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportModeOverwriteNotebooksExtra(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Also replaces the name, cover, chapters and other settings of $count existing notebooks',
+      one:
+          'Also replaces the name, cover, chapters and other settings of 1 existing notebook',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get diaryTemplateDailyName => 'Daily journal';
 
   @override

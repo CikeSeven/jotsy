@@ -136,6 +136,11 @@ class _BackupOverwriteWarningDialogState
                           l10n.backupOverwriteAllTemplates(
                             widget.preview.localTemplateCount,
                           ),
+                        // 日记本同理：不含日记本的旧备份会清空本机日记本。
+                        if (widget.preview.localNotebookCount > 0)
+                          l10n.backupOverwriteAllNotebooks(
+                            widget.preview.localNotebookCount,
+                          ),
                         l10n.backupOverwriteAllMedia,
                         l10n.backupOverwriteAllSettings,
                       ])

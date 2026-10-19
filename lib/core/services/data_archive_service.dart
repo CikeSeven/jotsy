@@ -203,13 +203,19 @@ class DataArchiveService {
         row.read(diaries.diaryId)!,
     };
     final localTags = countAll();
-    final localNotebooks = countAll();
     final anniversaries = database.anniversaries;
     final localAnniversaryIds = {
       for (final row in await (database.selectOnly(
         anniversaries,
       )..addColumns([anniversaries.anniversaryId])).get())
         row.read(anniversaries.anniversaryId)!,
+    };
+    final notebooks = database.notebooks;
+    final localNotebookIds = {
+      for (final row in await (database.selectOnly(
+        notebooks,
+      )..addColumns([notebooks.notebookId])).get())
+        row.read(notebooks.notebookId)!,
     };
     return BackupArchivePreview(
       kind: kind,
@@ -233,9 +239,10 @@ class DataArchiveService {
           .length,
       localAnniversaryCount: localAnniversaryIds.length,
       localTemplateCount: await database.countDiaryTemplates(),
-      localNotebookCount: (await (database.selectOnly(
-        database.notebooks,
-      )..addColumns([localNotebooks])).getSingle()).read(localNotebooks)!,
+      localNotebookCount: localNotebookIds.length,
+      existingNotebookCount: payload.notebooks
+          .where((row) => localNotebookIds.contains(row.notebookId))
+          .length,
     );
   }
 

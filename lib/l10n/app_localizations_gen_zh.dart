@@ -5100,6 +5100,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String backupOverwriteAllNotebooks(int count) {
+    return '$count 个日记本';
+  }
+
+  @override
+  String backupImportNotebookMergeResult(int added) {
+    return '日记本：新增 $added 个';
+  }
+
+  @override
+  String backupImportModeOverwriteNotebooksExtra(int count) {
+    return '同时替换本机已存在的 $count 个日记本的名称、封面与章节等设置';
+  }
+
+  @override
   String get diaryTemplateDailyName => '每日记录';
 
   @override

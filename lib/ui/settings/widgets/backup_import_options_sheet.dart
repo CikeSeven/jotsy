@@ -297,6 +297,11 @@ class _ArchiveSummary extends StatelessWidget {
                   l10n.backupImportSummaryOnly(preview.summaryOnlyCount),
                   style: detailStyle,
                 ),
+              if (preview.partialContentCount > 0)
+                Text(
+                  l10n.backupImportPartialContent(preview.partialContentCount),
+                  style: detailStyle,
+                ),
             ],
           ),
         ),

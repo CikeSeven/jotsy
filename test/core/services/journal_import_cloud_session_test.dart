@@ -21,7 +21,8 @@ class _SkippingProvider implements CloudNoteProvider {
     issues
       ..skip(JournalSkipReason.encrypted, 2)
       ..skip(JournalSkipReason.unsupported)
-      ..summaryOnly = 1;
+      ..summaryOnly = 1
+      ..partialContent = 2;
     return [
       CloudNote(
         id: 'n1',
@@ -76,5 +77,6 @@ void main() {
       JournalSkipReason.unsupported: 1,
     });
     expect(session.preview.summaryOnlyCount, 1);
+    expect(session.preview.partialContentCount, 2);
   });
 }

@@ -97,6 +97,7 @@ class JournalImportEntry {
     this.longitude,
     this.pinned = false,
     this.archived = false,
+    this.sourceMetadata = const <String, Object?>{},
   }) : updatedAt = updatedAt ?? createdAt;
 
   /// 来源应用内稳定的条目标识，同一导出文件再次导入时不变，用于生成
@@ -124,6 +125,10 @@ class JournalImportEntry {
 
   /// 来源里已归档（如 Google Keep 的归档笔记），导入后同样归档。
   final bool archived;
+
+  /// 本应用没有直接对应字段的原始信息（例如 ENEX 加密片段），随日记的
+  /// import metadata 与备份保留，不能因为正文无法渲染就静默删除。
+  final Map<String, Object?> sourceMetadata;
 }
 
 /// 整篇没有导入的原因，导入预览按原因分别说明。回收站里的笔记本来就不该
@@ -147,6 +152,7 @@ class JournalImportParseResult {
     this.missingMediaCount = 0,
     this.skippedNotes = const <JournalSkipReason, int>{},
     this.summaryOnlyCount = 0,
+    this.partialContentCount = 0,
   });
 
   final List<JournalImportEntry> entries;
@@ -157,6 +163,35 @@ class JournalImportParseResult {
 
   /// 正文读不到、改用目录摘要作正文导入的篇数（如 WPS 长正文）。
   final int summaryOnlyCount;
+
+  /// 已保留可读部分，但包含无法解密或转换的片段的篇数。
+  final int partialContentCount;
+}
+
+/// 文件与云端导入共用的问题统计。解析器遇到坏行时记录原因，再继续保留
+/// 其他条目；预览明确展示这些计数，不能让部分成功看起来像完整成功。
+class JournalImportIssues {
+  final Map<JournalSkipReason, int> _skipped = {};
+  int summaryOnly = 0;
+  int partialContent = 0;
+
+  Map<JournalSkipReason, int> get skipped => Map.unmodifiable(_skipped);
+
+  void skip(JournalSkipReason reason, [int count = 1]) {
+    if (count > 0) {
+      _skipped.update(reason, (value) => value + count, ifAbsent: () => count);
+    }
+  }
+
+  void atLeast(JournalSkipReason reason, int count) {
+    if (count > (_skipped[reason] ?? 0)) _skipped[reason] = count;
+  }
+
+  void reset() {
+    _skipped.clear();
+    summaryOnly = 0;
+    partialContent = 0;
+  }
 }
 
 /// 所选文件不是对应来源的导出格式，或格式正确但没有可导入的日记
@@ -167,11 +202,13 @@ class JournalImportFormatException implements Exception {
     this.source, {
     this.noEntries = false,
     this.encrypted = false,
+    this.skippedNotes = const <JournalSkipReason, int>{},
   });
 
   final JournalImportSource source;
   final bool noEntries;
   final bool encrypted;
+  final Map<JournalSkipReason, int> skippedNotes;
 
   @override
   String toString() =>

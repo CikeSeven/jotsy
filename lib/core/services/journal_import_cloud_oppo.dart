@@ -7,6 +7,7 @@ import 'journal_import_cloud_envelope.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// OPPO 笔记（云服务网页版 Connect v2）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/oppo.py`、`oppo_files.py`、`oppo_wire.py`）：
@@ -136,7 +137,13 @@ class OppoCloudProvider implements CloudNoteProvider {
           'oppo list',
         );
       }
-      total ??= listing['totalCount'] as int;
+      if (total != null && total != listing['totalCount']) {
+        throw const CloudNoteException(
+          CloudNoteFailure.protocolChanged,
+          'oppo total changed',
+        );
+      }
+      total = listing['totalCount'] as int;
       for (final row in listing['records'] as List) {
         final id = row is Map ? row['recordId'] : null;
         if (id is! String || id.isEmpty || !seen.add(id)) {
@@ -216,14 +223,14 @@ class OppoCloudProvider implements CloudNoteProvider {
     Map<String, Object?> detail,
     Map<String, String> folders,
   ) {
-    if (detail['status'] != 0) return null;
+    if (detail['status'] != null && detail['status'] != 0) return null;
     final html = detail['rawText'];
     if (html is! String) {
       issues.skip(JournalSkipReason.unreadable);
       return null;
     }
     final attachments = <CloudAttachment>[
-      for (final item in (detail['attachments'] as List?) ?? const [])
+      for (final item in journalList(detail['attachments']))
         if (item is Map &&
             item['id'] != null &&
             item['url'] is String &&
@@ -321,7 +328,6 @@ class OppoCloudProvider implements CloudNoteProvider {
     return response.bytes;
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }

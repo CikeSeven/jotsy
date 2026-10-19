@@ -5,6 +5,7 @@ import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_cloud_xiaomi_markup.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// 小米笔记（i.mi.com）的只读客户端，协议依据参考实现（笔记互迁
 /// `providers/xiaomi.py`、`xiaomi_files.py`）：
@@ -276,9 +277,7 @@ class XiaomiCloudProvider implements CloudNoteProvider {
   };
 
   static DateTime? _time(Object? value) =>
-      value is num && value is! bool && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 
   static String _extensionFor(String? mime) => switch (mime) {
     'image/jpeg' => '.jpg',

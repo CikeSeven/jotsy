@@ -6,6 +6,7 @@ import '../../utils/text_stats.dart';
 import '../database/app_database.dart';
 import 'backup_payload.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 import 'settings_service.dart';
 
 /// 导入日记标签未指定颜色时使用的中性色。
@@ -32,11 +33,12 @@ BackupPayload buildJournalImportPayload(
   final tags = <String, Tag>{};
   final diaries = <Diary>[];
   final relations = <DiaryTag>[];
-  final seenDiaryIds = <String>{};
+  final keys = JournalKeyRegistry();
   for (final entry in entries) {
-    final diaryId = journalImportDiaryId(source, entry.sourceKey);
-    // 解析器已为重复键追加序号；这里兜底，避免载荷出现重复 diaryId。
-    if (!seenDiaryIds.add(diaryId)) continue;
+    // 即使某个来源返回了重复 ID，也不能丢掉后面的正文。保持第一次的稳定
+    // ID，其余确定性分配后缀；云端分页的重复另在读取阶段视为协议错误。
+    final sourceKey = keys.unique(entry.sourceKey);
+    final diaryId = journalImportDiaryId(source, sourceKey);
     final localId = diaries.length + 1;
     diaries.add(
       Diary(
@@ -45,7 +47,12 @@ BackupPayload buildJournalImportPayload(
         title: _clamp(entry.title.trim(), 200),
         content: entry.contentJson,
         contentText: entry.contentText,
-        metadata: _metadata(source, entry, _moodEmoji(entry, moodOptions)),
+        metadata: _metadata(
+          source,
+          sourceKey,
+          entry,
+          _moodEmoji(entry, moodOptions),
+        ),
         createdAt: entry.createdAt,
         updatedAt: entry.updatedAt.isBefore(entry.createdAt)
             ? entry.createdAt
@@ -112,6 +119,7 @@ String? _moodEmoji(JournalImportEntry entry, List<String> moodOptions) {
 
 String _metadata(
   JournalImportSource source,
+  String sourceKey,
   JournalImportEntry entry,
   String? moodEmoji,
 ) {
@@ -119,7 +127,7 @@ String _metadata(
   final context = <String, Object?>{
     if (entry.location?.trim() case final location? when location.isNotEmpty)
       'location': location,
-    if (entry.latitude != null && entry.longitude != null)
+    if (isJournalCoordinate(entry.latitude, entry.longitude))
       'geo': <String, Object?>{
         'source': 'import',
         'latitude': entry.latitude,
@@ -142,7 +150,15 @@ String _metadata(
     if (context.isNotEmpty) 'context': context,
     'import': <String, Object?>{
       'source': source.name,
-      'sourceKey': entry.sourceKey,
+      'sourceKey': sourceKey,
+      if (sourceKey != entry.sourceKey) 'originalSourceKey': entry.sourceKey,
+      if (_clamp(entry.title.trim(), 200) != entry.title)
+        'originalTitle': entry.title,
+      if (entry.tags.any(
+        (tag) => _clamp(tag.replaceAll(RegExp(r'\s+'), ' ').trim(), 40) != tag,
+      ))
+        'originalTags': entry.tags,
+      if (entry.sourceMetadata.isNotEmpty) 'details': entry.sourceMetadata,
     },
   });
 }

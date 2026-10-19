@@ -48,6 +48,7 @@ class BackupArchivePreview {
     this.missingMediaCount = 0,
     this.skippedNotes = const <JournalSkipReason, int>{},
     this.summaryOnlyCount = 0,
+    this.partialContentCount = 0,
     this.anniversaryCount = 0,
     this.existingAnniversaryCount = 0,
     this.localAnniversaryCount = 0,
@@ -83,6 +84,9 @@ class BackupArchivePreview {
 
   /// 其他应用的笔记中正文读不到、只导入了摘要的篇数。
   final int summaryOnlyCount;
+
+  /// 保留了可读正文及原始信息，但含无法解密或显示片段的笔记数。
+  final int partialContentCount;
 
   /// 文件内的纪念日数（只有完整备份带纪念日）。
   final int anniversaryCount;

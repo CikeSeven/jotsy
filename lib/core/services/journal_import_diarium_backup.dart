@@ -6,6 +6,7 @@ List<JournalImportEntry> _parseDatabase(
   String path,
   JournalMediaStager media,
   JournalKeyRegistry keys,
+  JournalImportIssues issues,
 ) {
   final Database database;
   try {
@@ -87,15 +88,20 @@ List<JournalImportEntry> _parseDatabase(
         'FROM Entries ORDER BY DiaryEntryId',
       )) {
         final id = row['DiaryEntryId'];
-        if (id is! int) continue;
-        final createdAt = _ticksToLocal(id);
-        if (createdAt == null) continue;
+        final createdAt = id is int ? _ticksToLocal(id) : null;
+        if (id is! int || createdAt == null) {
+          issues.skip(JournalSkipReason.unreadable);
+          continue;
+        }
         final writer = JournalDeltaWriter();
         _appendBody(writer, journalString(row['Text']));
         if (mediaQuery != null) {
           for (final item in mediaQuery.select([id])) {
             final data = item['Data'];
-            if (data is! Uint8List || data.isEmpty) continue;
+            if (data is! Uint8List || data.isEmpty) {
+              media.missingCount++;
+              continue;
+            }
             writer.embed(
               media.embedBytes(
                 data,
@@ -145,8 +151,9 @@ List<JournalImportEntry> _parseDatabase(
 DateTime? _ticksToLocal(int ticks) {
   const unixEpochTicks = 621355968000000000;
   final micros = (ticks - unixEpochTicks) ~/ 10;
-  // 只接受 1970~2200 年之间的值，避免把非时间 ID 当成日期。
-  if (micros < 0 || micros > 7258118400000000) return null;
+  // .NET DateTime 支持 0001~9999 年。历史日记也可能早于 Unix epoch，
+  // 不能把负的 Unix 微秒误当成坏 ID。
+  if (ticks < 0 || ticks > 3155378975999999999) return null;
   final wall = DateTime.fromMicrosecondsSinceEpoch(micros, isUtc: true);
   return DateTime(
     wall.year,
@@ -156,6 +163,7 @@ DateTime? _ticksToLocal(int ticks) {
     wall.minute,
     wall.second,
     wall.millisecond,
+    wall.microsecond,
   );
 }
 

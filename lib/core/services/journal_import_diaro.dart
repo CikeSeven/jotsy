@@ -4,6 +4,7 @@ import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
 import 'journal_import_delta_writer.dart';
+import 'journal_import_files.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
 import 'journal_import_support.dart';
@@ -40,17 +41,29 @@ JournalImportParseResult parseDiaroExport(
       (file) => p.basename(file.path).toLowerCase() != 'diarobackup.xml',
     ),
   ];
+  final entries = <JournalImportEntry>[];
+  final issues = JournalImportIssues();
+  final keys = JournalKeyRegistry();
+  final fileIndex = JournalImportFiles(
+    input.extractedPath ?? p.dirname(input.filePath),
+  );
+  var recognized = false;
   for (final file in ordered) {
     final tables = _readTables(file);
     if (tables == null || !tables.containsKey('diaro_entries')) continue;
-    return JournalImportParseResult(
-      entries: _parseEntries(tables, file.parent.path, media),
-      missingMediaCount: media.missingCount,
+    recognized = true;
+    entries.addAll(
+      _parseEntries(tables, file.parent.path, media, fileIndex, keys, issues),
     );
   }
-  if (files.any(
-    (file) => p.basename(file.path).toLowerCase() == 'diarobackup.denc',
-  )) {
+  if (recognized) {
+    return JournalImportParseResult(
+      entries: entries,
+      missingMediaCount: media.missingCount,
+      skippedNotes: issues.skipped,
+    );
+  }
+  if (files.any((file) => p.extension(file.path).toLowerCase() == '.denc')) {
     throw const JournalImportFormatException(
       JournalImportSource.diaro,
       encrypted: true,
@@ -65,10 +78,12 @@ typedef _Row = Map<String, String>;
 Map<String, List<_Row>>? _readTables(File file) {
   final XmlElement root;
   try {
-    root = XmlDocument.parse(file.readAsStringSync()).rootElement;
+    root = XmlDocument.parse(readJournalText(file)).rootElement;
   } on XmlException {
     return null;
   } on FileSystemException {
+    return null;
+  } on FormatException {
     return null;
   }
   if (root.name.local != 'data') return null;
@@ -89,6 +104,9 @@ List<JournalImportEntry> _parseEntries(
   Map<String, List<_Row>> tables,
   String root,
   JournalMediaStager media,
+  JournalImportFiles files,
+  JournalKeyRegistry keys,
+  JournalImportIssues issues,
 ) {
   Map<String, _Row> byUid(String table) => {
     for (final row in tables[table] ?? const <_Row>[])
@@ -108,10 +126,12 @@ List<JournalImportEntry> _parseEntries(
   int position(_Row row) => int.tryParse(row['position']?.trim() ?? '') ?? 0;
 
   final entries = <JournalImportEntry>[];
-  final keys = JournalKeyRegistry();
   for (final row in tables['diaro_entries']!) {
     final createdAt = _wallClock(row['date'], row['tz_offset']);
-    if (createdAt == null) continue;
+    if (createdAt == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
     final uid = row['uid']?.trim() ?? '';
 
     final writer = JournalDeltaWriter();
@@ -119,16 +139,24 @@ List<JournalImportEntry> _parseEntries(
         in (attachments[uid] ?? const <_Row>[]).toList()
           ..sort((a, b) => position(a).compareTo(position(b)))) {
       final name = attachment['filename']?.trim() ?? '';
-      if (name.isEmpty) continue;
+      if (name.isEmpty) {
+        media.missingCount++;
+        continue;
+      }
       final type = attachment['type']?.trim();
-      final data = media.embedFile(
-        p.join(
-          root,
+      final path = files.resolve(
+        p.posix.join(
           'media',
           type == null || type.isEmpty ? 'photo' : type,
-          p.basename(name),
+          name.replaceAll('\\', '/'),
         ),
+        from: root,
       );
+      if (path == null) {
+        media.missingCount++;
+        continue;
+      }
+      final data = media.embedFile(path);
       if (data != null) writer.embed(data);
     }
     appendJournalPlainText(writer, row['text'] ?? '');
@@ -181,16 +209,21 @@ List<JournalImportEntry> _parseEntries(
 DateTime? _wallClock(String? rawDate, String? rawOffset) {
   final millis = int.tryParse(rawDate?.trim() ?? '');
   if (millis == null) return null;
+  final instant = journalEpochTime(millis);
+  if (instant == null) return null;
   final offset = RegExp(
     r'^([+-])(\d{2}):(\d{2})$',
   ).firstMatch(rawOffset?.trim() ?? '');
-  if (offset == null) return DateTime.fromMillisecondsSinceEpoch(millis);
+  if (offset == null ||
+      int.parse(offset.group(2)!) > 23 ||
+      int.parse(offset.group(3)!) > 59) {
+    return instant;
+  }
   final minutes =
       int.parse(offset.group(2)!) * 60 + int.parse(offset.group(3)!);
-  final shifted = DateTime.fromMillisecondsSinceEpoch(
-    millis,
-    isUtc: true,
-  ).add(Duration(minutes: offset.group(1) == '-' ? -minutes : minutes));
+  final shifted = instant.toUtc().add(
+    Duration(minutes: offset.group(1) == '-' ? -minutes : minutes),
+  );
   return DateTime(
     shifted.year,
     shifted.month,

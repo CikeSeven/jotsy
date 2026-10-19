@@ -54,6 +54,7 @@ const _cloudNotes = BackupArchivePreview(
     JournalSkipReason.unsupported: 3,
   },
   summaryOnlyCount: 1,
+  partialContentCount: 2,
 );
 
 class _FlowResult {
@@ -239,6 +240,7 @@ void main() {
         '3 篇手写、思维导图等专有格式的笔记将跳过',
         '1 篇笔记的格式无法识别，将跳过',
         '1 篇笔记的正文没能读取，只导入摘要',
+        '2 篇笔记含无法解密或显示的片段，可读正文与原始信息将保留',
       ];
       // 按原因的固定顺序排列，与平台记下的先后无关。
       final tops = [

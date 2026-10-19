@@ -2946,6 +2946,15 @@
       }
     }
   },
+  "backupImportPartialContent": "{count} 篇笔记含无法解密或显示的片段，可读正文与原始信息将保留",
+  "@backupImportPartialContent": {
+    "description": "导入预览中含加密等无法显示片段、但保留可读正文和原始信息的笔记数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "calendarDisplayOptionsTooltip": "调整日历",
   "@calendarDisplayOptionsTooltip": {
     "description": "日历页头部打开显示选项面板的按钮提示。"

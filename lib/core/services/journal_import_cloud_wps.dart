@@ -3,6 +3,7 @@ import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_cloud_wps_format.dart';
 import 'journal_import_models.dart';
+import 'journal_import_support.dart';
 
 /// WPS 便签（note.wps.cn）的只读客户端，协议依据参考实现（笔记互迁
 /// `providers/wps.py`、`wps_files.py`）：
@@ -122,7 +123,7 @@ class WpsCloudProvider implements CloudNoteProvider {
       body: const {'lastRequestTime': 0, 'excludeInValid': true},
     );
     final folders = <String, String>{
-      for (final group in (groups['noteGroups'] as List?) ?? const [])
+      for (final group in journalList(groups['noteGroups']))
         if (group is Map &&
             group['groupId'] != null &&
             '${group['groupId']}'.isNotEmpty &&
@@ -373,7 +374,6 @@ class WpsCloudProvider implements CloudNoteProvider {
     return _s3Object((storage) => '${storage.keyPrefix}$key');
   }
 
-  static DateTime? _time(Object? value) => value is num && value > 0
-      ? DateTime.fromMillisecondsSinceEpoch(value.round())
-      : null;
+  static DateTime? _time(Object? value) =>
+      (journalNumber(value) ?? 0) > 0 ? journalEpochTime(value) : null;
 }

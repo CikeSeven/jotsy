@@ -11,20 +11,42 @@ const Map<String, int> _defaultMoodLevels = {
 };
 
 /// 解析 CSV 导出；表头不像 Daylio 时返回 null。
-List<JournalImportEntry>? _parseCsv(String text) {
-  final rows = parseCsvRows(text);
+JournalImportParseResult? _parseCsv(String text) {
+  List<List<String>>? rows;
+  Map<String, int>? header;
+  // 系统区域设置会让 CSV 使用分号或 Tab；按实际表头识别，不能只根据
+  // 正文中逗号的多少猜分隔符。未闭合引号会吞掉后续条目，必须整次拒绝。
+  for (final delimiter in [',', ';', '\t']) {
+    final candidate = parseCsvRows(text, delimiter: delimiter);
+    if (candidate.isEmpty) continue;
+    final columns = {
+      for (final (index, name) in candidate.first.indexed)
+        name.trim().toLowerCase(): index,
+    };
+    if (!columns.containsKey('note') ||
+        !columns.containsKey('time') ||
+        !columns.containsKey('mood')) {
+      continue;
+    }
+    try {
+      rows = parseCsvRows(text, delimiter: delimiter, strict: true);
+    } on FormatException {
+      throw const JournalImportFormatException(JournalImportSource.daylio);
+    }
+    header = columns;
+    break;
+  }
+  if (rows == null || header == null) return null;
   if (rows.isEmpty) return null;
-  final header = {
-    for (final (index, name) in rows.first.indexed)
-      name.trim().toLowerCase(): index,
-  };
+  final columns = header;
+  final issues = JournalImportIssues();
   final hasDate =
-      header.containsKey('full_date') ||
-      (header.containsKey('year') && header.containsKey('date'));
+      columns.containsKey('full_date') ||
+      (columns.containsKey('year') && columns.containsKey('date'));
   if (!hasDate ||
-      !header.containsKey('time') ||
-      !header.containsKey('mood') ||
-      !header.containsKey('note')) {
+      !columns.containsKey('time') ||
+      !columns.containsKey('mood') ||
+      !columns.containsKey('note')) {
     return null;
   }
 
@@ -41,15 +63,19 @@ List<JournalImportEntry>? _parseCsv(String text) {
   for (final row in rows.skip(1)) {
     if (row.every((cell) => cell.trim().isEmpty)) continue;
     String cell(String name) {
-      final index = header[name];
+      final index = columns[name];
       return index == null || index >= row.length ? '' : row[index].trim();
     }
 
     final date =
-        DateTime.tryParse(cell('full_date')) ??
+        parseJournalDateTime(cell('full_date')) ??
         _yearAndDay(cell('year'), cell('date'));
-    if (date == null) continue;
-    final (hour, minute) = _clock(cell('time'));
+    final clock = _clock(cell('time'));
+    if (date == null || clock == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      continue;
+    }
+    final (hour, minute) = clock;
     parsed.add((
       createdAt: DateTime(date.year, date.month, date.day, hour, minute),
       note: cell('note'),
@@ -86,7 +112,10 @@ List<JournalImportEntry>? _parseCsv(String text) {
       ),
     );
   }
-  return entries;
+  return JournalImportParseResult(
+    entries: entries,
+    skippedNotes: issues.skipped,
+  );
 }
 
 /// 旧版 CSV 的 `year` + `date`（如 `January 23` 或 `23 January`）。
@@ -96,13 +125,16 @@ DateTime? _yearAndDay(String year, String date) {
   final day = RegExp(r'\d{1,2}').firstMatch(date);
   final month = journalEnglishMonth(date);
   if (day == null || month == null) return null;
-  return DateTime(y, month, int.parse(day.group(0)!));
+  final d = int.parse(day.group(0)!);
+  return isJournalCalendarDate(y, month, d) ? DateTime(y, month, d) : null;
 }
 
-/// `10:00 pm`、`22:00`、`下午10:00` → (时, 分)；无法识别时为 0 点。
-(int, int) _clock(String raw) {
+/// `10:00 pm`、`22:00`、`下午10:00` → (时, 分)。空值视为无指定时间；
+/// 非空的非法时间返回 null，不能用 0 点或 clamp 掩盖解析错误。
+(int, int)? _clock(String raw) {
+  if (raw.trim().isEmpty) return (0, 0);
   final match = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(raw);
-  if (match == null) return (0, 0);
+  if (match == null) return null;
   var hour = int.parse(match.group(1)!);
   final minute = int.parse(match.group(2)!);
   final lower = raw.toLowerCase();
@@ -117,7 +149,10 @@ DateTime? _yearAndDay(String year, String date) {
       raw.contains('上午') ||
       raw.contains('凌晨') ||
       raw.contains('早上');
+  if (minute > 59 || hour > 23 || ((am || pm) && (hour < 1 || hour > 12))) {
+    return null;
+  }
   if (pm && hour < 12) hour += 12;
   if (am && hour == 12) hour = 0;
-  return (hour.clamp(0, 23), minute.clamp(0, 59));
+  return (hour, minute);
 }

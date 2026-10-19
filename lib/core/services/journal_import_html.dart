@@ -8,7 +8,7 @@ import 'journal_import_style.dart';
 
 /// 粗略判断导出正文是不是 HTML（Journey、Daylio 等的旧版本存纯文本）。
 bool looksLikeJournalHtml(String text) => RegExp(
-  r'<(p|div|br|span|b|i|u|s|strong|em|ul|ol|li|h[1-6]|blockquote|pre|a|img)\b[^>]*>',
+  r'<(p|div|br|span|b|i|u|s|strong|em|ul|ol|li|h[1-6]|blockquote|pre|a|img|hr|table|video|audio)\b[^>]*>',
   caseSensitive: false,
 ).hasMatch(text);
 
@@ -28,10 +28,11 @@ bool looksLikeJournalHtml(String text) => RegExp(
 /// 转为本应用的媒体嵌入，无法解析的本地引用被丢弃，http(s) 图片保留原地址；
 /// 图片所在段落的对齐写在图片行上。
 class JournalHtmlConverter {
-  JournalHtmlConverter(this.writer, {this.resolveEmbed});
+  JournalHtmlConverter(this.writer, {this.resolveEmbed, this.resolveLink});
 
   final JournalDeltaWriter writer;
   final JournalEmbedResolver? resolveEmbed;
+  final JournalEmbedResolver? resolveLink;
 
   /// 本次转换的正文字号（见 journalDominantFontSizeRatio）。
   double _baseRatio = 1;
@@ -117,6 +118,18 @@ class JournalHtmlConverter {
       case 'a':
         final href = node.attributes['href']?.trim();
         final styled = _styled(node, inline);
+        final attachment =
+            href == null ||
+                RegExp(
+                  r'^(https?|mailto):',
+                  caseSensitive: false,
+                ).hasMatch(href)
+            ? null
+            : resolveLink?.call(href);
+        if (attachment != null) {
+          writer.embed(attachment, block.attributes);
+          return;
+        }
         _visitChildren(
           node,
           href != null &&

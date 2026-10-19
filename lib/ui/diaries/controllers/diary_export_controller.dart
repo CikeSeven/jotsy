@@ -13,6 +13,7 @@ import '../../../core/services/data_archive_service.dart';
 import '../export/diary_export_book.dart';
 import '../export/diary_export_docx.dart';
 import '../export/diary_export_entry.dart';
+import '../export/diary_export_font.dart';
 import '../export/diary_export_format.dart';
 import '../export/diary_export_html.dart';
 import '../export/diary_export_markdown.dart';
@@ -77,30 +78,45 @@ class DiaryExportEmptyException implements Exception {
 /// - 多文件的产物（带媒体的 Markdown、多篇带图的网页、Word 文档本身）
 ///   打包成 zip 容器，媒体经 [ZipFileEncoder] 流式写入，照片与视频不整段
 ///   读进内存。
+/// - 正文字体跟随正文排版：[loadBodyFont] 给出用户选的导入字体（见
+///   [DiaryExportFont]），PDF 嵌入它，Word 与网页按字族名引用；只在这三种
+///   格式下读取。没给或读不到时各格式保持原有字体。
 class DiaryExportController {
   DiaryExportController({
     required this._database,
     DiaryExportMediaLibrary Function()? createMediaLibrary,
+    Future<DiaryExportFont?> Function()? loadBodyFont,
     this._loadFonts = DiaryPdfFonts.load,
     this._cacheDirectory = getTemporaryDirectory,
     this._now = DateTime.now,
     this._saveFile = BackupFileSaveService.saveFile,
     DiaryExportFileSharer? shareFile,
   }) : _createMediaLibrary = createMediaLibrary ?? DiaryExportMediaLibrary.new,
+       _loadBodyFont = loadBodyFont ?? _noBodyFont,
        _shareFile = shareFile ?? _shareWithSystemSheet;
 
   static const String stagingDirectoryName = 'diary_export';
 
   final AppDatabase _database;
   final DiaryExportMediaLibrary Function() _createMediaLibrary;
-  final Future<DiaryPdfFonts> Function() _loadFonts;
+  final Future<DiaryExportFont?> Function() _loadBodyFont;
+  final Future<DiaryPdfFonts> Function(DiaryExportFont? bodyFont) _loadFonts;
   final Future<Directory> Function() _cacheDirectory;
   final DateTime Function() _now;
   final DiaryExportFileSaver _saveFile;
   final DiaryExportFileSharer _shareFile;
 
-  /// 字体约 16MB，同一个控制器内只解析一次。
+  /// 导入字体文件可达十几 MB，同一个控制器内只读一次。
+  Future<DiaryExportFont?>? _bodyFont;
+
+  /// PDF 字体（内置字体约 16MB），同一个控制器内只解析一次。
   Future<DiaryPdfFonts>? _fonts;
+
+  Future<DiaryExportFont?> _resolveBodyFont() => _bodyFont ??= _loadBodyFont();
+
+  /// Word 与网页引用的字族名；没有导入字体时为空。
+  Future<List<String>> _bodyFontFamilies() async =>
+      (await _resolveBodyFont())?.families ?? const <String>[];
 
   Future<DiaryExportArtifact> build(
     List<DiaryWithTags> diaries, {
@@ -177,7 +193,7 @@ class DiaryExportController {
           options: options,
           labels: labels,
           media: media,
-          fonts: await (_fonts ??= _loadFonts()),
+          fonts: await (_fonts ??= _resolveBodyFont().then(_loadFonts)),
           documentTitle: documentTitle,
           textDirection: textDirection,
           book: layout,
@@ -189,6 +205,7 @@ class DiaryExportController {
           media: media,
           documentTitle: documentTitle,
           languageTag: languageTag,
+          fontFamilies: await _bodyFontFamilies(),
           now: now,
           book: layout,
         ),
@@ -207,6 +224,7 @@ class DiaryExportController {
           media: media,
           documentTitle: documentTitle,
           languageTag: languageTag,
+          fontFamilies: await _bodyFontFamilies(),
           book: layout,
         ),
         DiaryExportFormat.text => DiaryTextWriter.write(
@@ -303,6 +321,8 @@ class DiaryExportController {
     }
     return File(target);
   }
+
+  static Future<DiaryExportFont?> _noBodyFont() async => null;
 
   static Future<void> _deleteQuietly(FileSystemEntity entity) async {
     try {

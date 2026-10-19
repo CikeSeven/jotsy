@@ -48,6 +48,20 @@ const int _versionTrueType = 0x00010000;
 const int _nameIdFamily = 1;
 const int _nameIdTypographicFamily = 16;
 
+/// 一个可单独使用的 TrueType 字面必须带的表（glyf / loca 即 TrueType 轮廓，
+/// CFF 字体没有）。
+const List<int> _trueTypeTables = <int>[
+  0x636D6170, // 'cmap'
+  0x676C7966, // 'glyf'
+  0x68656164, // 'head'
+  0x68686561, // 'hhea'
+  0x686D7478, // 'hmtx'
+  0x6C6F6361, // 'loca'
+  0x6D617870, // 'maxp'
+  _tagName,
+  0x706F7374, // 'post'
+];
+
 /// 解析字体文件；不是受支持的 sfnt 字体或结构越界时返回 null。
 ///
 /// TTC 字体集合只读第一个字面：引擎注册集合时同样只取第一个字面。
@@ -87,6 +101,82 @@ FontFileInfo? readFontFileInfo(Uint8List bytes) {
     }
     // 没有 name 表的字体仍可注册，显示名交由调用方用文件名兜底。
     return FontFileInfo(format: format, familyNames: const <String, String>{});
+  } on RangeError {
+    return null;
+  }
+}
+
+/// 取出可单独使用的 TrueType 字面，交给只认单个 TTF 文件的排版库（PDF 导出
+/// 嵌入导入字体）。
+///
+/// - 普通 TTF 原样返回，不复制（导入的中文字体常有十几 MB）；
+/// - TTC 取第一个字面（与引擎注册集合时相同），按它的表目录另拼一份独立的
+///   sfnt：集合里的表偏移相对整个文件，单独拿出来必须重排；旧版 Mac 的
+///   `true` 版本号也走这条路，改写为 0x00010000；
+/// - CFF 轮廓（`OTTO`，多数 .otf）没有 glyf / loca 表，缺少其他必需的表或
+///   表越界时同样返回 null，由调用方回落到内置字体。
+Uint8List? extractTrueTypeFace(Uint8List bytes) {
+  final data = ByteData.sublistView(bytes);
+  try {
+    var fontOffset = 0;
+    if (data.getUint32(0) == _tagTtcf) {
+      if (data.getUint32(8) == 0) {
+        return null;
+      }
+      fontOffset = data.getUint32(12);
+    }
+    final version = data.getUint32(fontOffset);
+    if (version != _versionTrueType && version != _tagTrue) {
+      return null;
+    }
+    final tableCount = data.getUint16(fontOffset + 4);
+    final tables = <({int tag, int checksum, int offset, int length})>[];
+    for (var index = 0; index < tableCount; index += 1) {
+      final record = fontOffset + 12 + index * 16;
+      final table = (
+        tag: data.getUint32(record),
+        checksum: data.getUint32(record + 4),
+        offset: data.getUint32(record + 8),
+        length: data.getUint32(record + 12),
+      );
+      if (table.offset + table.length > bytes.length) {
+        return null;
+      }
+      tables.add(table);
+    }
+    final tags = tables.map((table) => table.tag).toSet();
+    if (!_trueTypeTables.every(tags.contains)) {
+      return null;
+    }
+    if (fontOffset == 0 && version == _versionTrueType) {
+      return bytes;
+    }
+
+    int align(int length) => (length + 3) & ~3;
+    final headerLength = 12 + tableCount * 16;
+    final face = Uint8List(
+      tables.fold<int>(headerLength, (sum, table) => sum + align(table.length)),
+    );
+    // searchRange / entrySelector / rangeShift 只由表数决定，原样沿用。
+    final out = ByteData.sublistView(face)
+      ..setUint32(0, _versionTrueType)
+      ..setUint16(4, tableCount)
+      ..setUint16(6, data.getUint16(fontOffset + 6))
+      ..setUint16(8, data.getUint16(fontOffset + 8))
+      ..setUint16(10, data.getUint16(fontOffset + 10));
+    var offset = headerLength;
+    for (var index = 0; index < tables.length; index += 1) {
+      final table = tables[index];
+      final record = 12 + index * 16;
+      out
+        ..setUint32(record, table.tag)
+        ..setUint32(record + 4, table.checksum)
+        ..setUint32(record + 8, offset)
+        ..setUint32(record + 12, table.length);
+      face.setRange(offset, offset + table.length, bytes, table.offset);
+      offset += align(table.length);
+    }
+    return face;
   } on RangeError {
     return null;
   }

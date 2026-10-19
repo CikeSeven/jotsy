@@ -76,6 +76,25 @@ Uint8List buildTestFont({
   return output.toBytes();
 }
 
+/// 把一个独立的 sfnt 字体包进只含这一个字面的 TTC。集合里的表偏移相对整个
+/// 文件，因此每条表记录的偏移都后移 TTC 头的长度。
+Uint8List wrapInCollection(Uint8List font) {
+  const headerLength = 16;
+  final output = Uint8List(headerLength + font.length)
+    ..setAll(headerLength, font);
+  final view = ByteData.sublistView(output)
+    ..setUint32(0, 0x74746366)
+    ..setUint32(4, 0x00010000)
+    ..setUint32(8, 1)
+    ..setUint32(12, headerLength);
+  final tableCount = view.getUint16(headerLength + 4);
+  for (var index = 0; index < tableCount; index += 1) {
+    final record = headerLength + 12 + index * 16;
+    view.setUint32(record + 8, view.getUint32(record + 8) + headerLength);
+  }
+  return output;
+}
+
 List<int> _utf16Be(String value) => <int>[
   for (final unit in value.codeUnits) ...<int>[unit >> 8, unit & 0xFF],
 ];

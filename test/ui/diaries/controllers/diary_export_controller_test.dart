@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/backup_constants.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_export_controller.dart';
+import 'package:node_diary/ui/diaries/export/diary_export_font.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
 import 'package:path/path.dart' as p;
 
@@ -265,5 +266,48 @@ void main() {
     );
     expect(shared.single.existsSync(), isFalse);
     expect(await staged(), hasLength(1));
+  });
+
+  test('reads the body font once, only for formats that show it', () async {
+    final a = await diary('一', createdAt: DateTime(2026, 5, 1));
+    var reads = 0;
+    final export = DiaryExportController(
+      database: fixture.database,
+      now: () => now,
+      loadBodyFont: () async {
+        reads += 1;
+        return DiaryExportFont(
+          bytes: Uint8List(0),
+          families: const <String>['LXGW WenKai'],
+        );
+      },
+      shareFile: (File file, {required String mimeType}) async {},
+    );
+    Future<DiaryExportArtifact> build(DiaryExportFormat format) => export.build(
+      <DiaryWithTags>[a],
+      options: DiaryExportOptions(format: format),
+      labels: testExportLabels,
+      languageTag: 'zh',
+    );
+
+    await build(DiaryExportFormat.markdown);
+    await build(DiaryExportFormat.text);
+    expect(reads, 0);
+
+    final word = await build(DiaryExportFormat.word);
+    final styles = ZipDecoder()
+        .decodeBytes(await word.file.readAsBytes())
+        .files
+        .firstWhere((ArchiveFile f) => f.name == 'word/styles.xml');
+    expect(
+      utf8.decode(styles.content as List<int>),
+      contains('<w:rFonts w:ascii="LXGW WenKai"'),
+    );
+    final html = await build(DiaryExportFormat.html);
+    expect(
+      await html.file.readAsString(),
+      contains('font-family:"LXGW WenKai",'),
+    );
+    expect(reads, 1);
   });
 }

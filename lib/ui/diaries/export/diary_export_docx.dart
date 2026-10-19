@@ -46,6 +46,7 @@ class DiaryDocxWriter {
     required DiaryExportMediaLibrary media,
     required String documentTitle,
     required String languageTag,
+    List<String> fontFamilies = const <String>[],
     DateTime? now,
     DiaryExportBookLayout? book,
   }) async {
@@ -86,6 +87,7 @@ class DiaryDocxWriter {
           'word/styles.xml',
           _styles(
             languageTag,
+            fontFamilies: fontFamilies,
             book: book == null
                 ? null
                 : (chapterHeadings: book.hasChapterHeadings),
@@ -358,9 +360,20 @@ class DiaryDocxWriter {
   /// 样式表：正文默认 11pt、1.5 倍行距；中文字体交给系统（东亚字体留空
   /// 时 Word 按语言选择默认中文字体，Windows 与 macOS 都能正常显示）。
   ///
+  /// 用户选了导入字体时（[fontFamilies] 不为空）默认字体的西文与东亚槽位都
+  /// 写它的第一个字族名（英文名优先，跨平台最容易匹配），整份文档跟随；复杂
+  /// 文种（阿拉伯文等）槽位留给 Word 默认字体，导入字体多半没有这些字形；
+  /// 代码样式仍是 Consolas。字体文件不嵌入，没装这款字体的设备由 Word 换用
+  /// 默认字体。
+  ///
   /// 成书时（[book] 不为 null）另加扉页、目录、章节与篇标题的样式，正文
   /// 标题的大纲级别顺延到章、篇之下（有章节标题时顺延两级，否则一级）。
-  static String _styles(String languageTag, {({bool chapterHeadings})? book}) {
+  static String _styles(
+    String languageTag, {
+    required List<String> fontFamilies,
+    ({bool chapterHeadings})? book,
+  }) {
+    final font = fontFamilies.isEmpty ? null : _xml(fontFamilies.first);
     final entryLevel = book == null ? 0 : (book.chapterHeadings ? 1 : 0);
     final shift = book == null ? 0 : entryLevel + 1;
     String style(
@@ -379,7 +392,10 @@ class DiaryDocxWriter {
 
     return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
         '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
-        '<w:docDefaults><w:rPrDefault><w:rPr><w:sz w:val="22"/><w:szCs w:val="22"/>'
+        '<w:docDefaults><w:rPrDefault><w:rPr>'
+        // w:rFonts 必须是 w:rPr 的第一个子元素。
+        '${font == null ? '' : '<w:rFonts w:ascii="$font" w:eastAsia="$font" w:hAnsi="$font"/>'}'
+        '<w:sz w:val="22"/><w:szCs w:val="22"/>'
         '<w:lang w:val="${_xml(languageTag)}" w:eastAsia="${_xml(languageTag)}"/></w:rPr></w:rPrDefault>'
         '<w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="360" w:lineRule="auto"/></w:pPr></w:pPrDefault>'
         '</w:docDefaults>'

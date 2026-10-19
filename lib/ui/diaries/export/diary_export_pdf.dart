@@ -9,28 +9,70 @@ import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../core/services/font_file_info.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
+import 'diary_export_font.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
 import 'diary_export_plain_text.dart';
 
-/// PDF 用的字体：内置 HarmonyOS Sans SC 常规与粗体，生成时按实际字符做
-/// 子集嵌入。字体文件各约 8MB，加载一次后由调用方复用。
+/// PDF 用的字体，生成时按实际字符做子集嵌入。字体文件各约 8MB 起，加载一次
+/// 后由调用方复用。
+///
+/// - 默认为内置 HarmonyOS Sans SC 常规与粗体；
+/// - 正文排版选了导入字体（[load] 给出 `bodyFont`）且 pdf 库能嵌入时，整份
+///   文档（标题、信息行、正文、目录与页码）改用它。导入字体只有一个字重，
+///   粗体也用它：pdf 库不会像应用内的引擎那样合成粗体，换成内置粗体又会在
+///   同一段里混用两种字形；
+/// - [bundled] 始终是内置常规体：导入字体缺字时回落到它（如只含西文的字体
+///   遇到中文），代码块也用它（应用内代码块同样不跟随正文字体）。
 class DiaryPdfFonts {
-  const DiaryPdfFonts(this.regular, this.bold);
+  const DiaryPdfFonts(this.regular, this.bold, {pw.Font? bundled})
+    : bundled = bundled ?? regular;
 
   final pw.Font regular;
   final pw.Font bold;
+  final pw.Font bundled;
 
-  static Future<DiaryPdfFonts> load() async {
+  static Future<DiaryPdfFonts> load([DiaryExportFont? bodyFont]) async {
     const base = 'assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC';
     // 依次加载：资源包可能返回 SynchronousFuture，交给 Future.wait 会在
     // 结果写入前就完成，得到空列表。
-    final regular = await rootBundle.load('${base}_Regular.ttf');
-    final bold = await rootBundle.load('${base}_Bold.ttf');
-    return DiaryPdfFonts(pw.Font.ttf(regular), pw.Font.ttf(bold));
+    final regular = pw.Font.ttf(await rootBundle.load('${base}_Regular.ttf'));
+    final imported = bodyFont == null ? null : embeddable(bodyFont.bytes);
+    if (imported != null) {
+      // 用不到内置粗体，不再读入。
+      return DiaryPdfFonts(imported, imported, bundled: regular);
+    }
+    final bold = pw.Font.ttf(await rootBundle.load('${base}_Bold.ttf'));
+    return DiaryPdfFonts(regular, bold);
+  }
+
+  /// 导入字体能否交给 pdf 库：先取出 TrueType 字面（TTC 取第一个），再试
+  /// 解析一遍。CFF 轮廓、缺表、没有 Unicode 字符映射或解析出错时返回 null，
+  /// 整份文档回落内置字体——字体在排版途中才被解析，那时出错会让整次导出
+  /// 失败。
+  @visibleForTesting
+  static pw.Font? embeddable(Uint8List bytes) {
+    final face = extractTrueTypeFace(bytes);
+    if (face == null) {
+      return null;
+    }
+    final data = ByteData.sublistView(face);
+    try {
+      final parser = TtfParser(data);
+      // 子集写出时空格的字形是直接取用的（没有就会抛出）。
+      if (parser.glyphOffsets.isEmpty ||
+          !parser.charToGlyphIndexMap.containsKey(0x20)) {
+        return null;
+      }
+    } catch (_) {
+      // 调试模式下是断言失败，发布模式下多为越界；都按无法嵌入处理。
+      return null;
+    }
+    return pw.Font.ttf(data);
   }
 }
 
@@ -95,7 +137,7 @@ class DiaryPdfWriter {
       bold: fonts.bold,
       italic: fonts.regular,
       boldItalic: fonts.bold,
-      fontFallback: <pw.Font>[fonts.regular],
+      fontFallback: <pw.Font>[fonts.bundled],
     );
     final images = <Uint8List>[];
     final document = pw.Document(
@@ -617,12 +659,12 @@ class DiaryPdfWriter {
       document: body,
       textDirection: textDirection,
       themeData: theme,
-      codeBlockFont: fonts.regular,
+      codeBlockFont: fonts.bundled,
       // 日记里的代码块只是等宽文字；语法高亮库还会把解析异常打到控制台。
       // 插件把该参数标为实验性，变动时这里会编译失败，不会静默失效。
       // ignore: experimental_member_use
       enableCodeBlockHighlighting: false,
-      fallbacks: <pw.Font>[fonts.regular],
+      fallbacks: <pw.Font>[fonts.bundled],
       // 插件把该回调标为实验性；它是唯一能直接交给插件图片字节的入口，
       // 接口若在升级中变化，这里会编译失败而不是静默失效。
       // ignore: experimental_member_use
@@ -637,7 +679,7 @@ class DiaryPdfWriter {
         boldFontV: fonts.bold,
         italicFontV: fonts.regular,
         boldItalicFontV: fonts.bold,
-        fallbacks: <pw.Font>[fonts.regular],
+        fallbacks: <pw.Font>[fonts.bundled],
       ),
     );
     // 只借用插件把 Delta 转成块级组件；它生成的那份文档直接丢弃。

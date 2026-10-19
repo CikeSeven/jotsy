@@ -78,6 +78,7 @@ extension _CalendarPageSections on _CalendarPageState {
     required CalendarDisplayOptions options,
     required CalendarMarkerFilter filter,
     required List<Tag> filterTags,
+    required List<NotebookView> filterNotebooks,
     required Map<DateTime, CalendarDaySummary> summaries,
     required AsyncValue<List<DiaryCalendarMarker>> markersAsync,
     required List<String> moodOptions,
@@ -141,6 +142,7 @@ extension _CalendarPageSections on _CalendarPageState {
                   child: CalendarFilterBar(
                     filter: filter,
                     tags: filterTags,
+                    notebooks: filterNotebooks,
                     onTap: () => unawaited(_controller.openFilter()),
                     onClear: _controller.clearFilter,
                   ),

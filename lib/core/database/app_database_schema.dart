@@ -212,6 +212,7 @@ class DiaryCalendarMarker {
     this.capsuleUnlockAt,
     this.tagColors = const <int>[],
     this.tagIds = const <int>[],
+    this.notebookIds = const <String>[],
   });
 
   final String diaryId;
@@ -234,6 +235,10 @@ class DiaryCalendarMarker {
 
   /// 所挂标签的 id，升序（日历按标签筛选用）。
   final List<int> tagIds;
+
+  /// 所在普通日记本的业务 id，升序（日历按日记本筛选用）；智能日记本按规则
+  /// 现算，不在其中。
+  final List<String> notebookIds;
 
   /// 在 [now] 时刻是否仍是未解封的时间胶囊：未解封前不得泄露心情、封面、
   /// 字数等内容信息（与时间线只显示倒计时一致）。

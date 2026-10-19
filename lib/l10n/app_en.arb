@@ -3364,11 +3364,15 @@
   "@calendarFilterTitle": {
     "description": "Title of the calendar filter sheet."
   },
+  "calendarFilterNotebooks": "Notebooks",
+  "@calendarFilterNotebooks": {
+    "description": "Notebook group title in the calendar filter sheet (only regular, non-private notebooks are listed)."
+  },
   "calendarFilterClear": "Clear filter",
   "@calendarFilterClear": {
     "description": "Button that clears the calendar filter."
   },
-  "calendarFilterDescription": "Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.",
+  "calendarFilterDescription": "Dates and stats only count matching entries. Any choice within a group matches; when several groups are set, an entry must match all of them.",
   "@calendarFilterDescription": {
     "description": "Explains the calendar filter."
   },
@@ -8871,6 +8875,27 @@
   "@notebookAddDiaries": {
     "description": "Notebook header button: pick existing entries to add."
   },
+  "notebookExportAsBook": "Export as book",
+  "@notebookExportAsBook": {
+    "description": "Notebook header overflow menu item: export the whole notebook as one document with a title page, contents and chapter headings."
+  },
+  "notebookBookExportedOn": "Exported on {date}",
+  "@notebookBookExportedOn": {
+    "description": "Export date line on the title page of a notebook exported as a book.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryExportBookStructure": "Book structure",
+  "@diaryExportBookStructure": {
+    "description": "Export sheet switch shown when exporting a notebook as a book: whether to write a title page, contents and chapter headings."
+  },
+  "diaryExportBookStructureDescription": "Title page, contents and chapter headings",
+  "@diaryExportBookStructureDescription": {
+    "description": "One-line description under the Book structure switch."
+  },
   "notebookContentsUnassignedDropHint": "Drag here to take entries out of chapters",
   "@notebookContentsUnassignedDropHint": {
     "description": "Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters."
@@ -9542,5 +9567,271 @@
   "notebookSaveRangeManual": "Regular notebook",
   "@notebookSaveRangeManual": {
     "description": "Option in the save-range sheet: regular notebook."
+  },
+  "notebookGoalLabel": "Writing goal",
+  "@notebookGoalLabel": {
+    "description": "Editor group title: writing goal."
+  },
+  "notebookGoalEnable": "Set a goal",
+  "@notebookGoalEnable": {
+    "description": "Switch in the writing-goal group."
+  },
+  "notebookGoalEnableHint": "Shows progress on the notebook header. No reminders.",
+  "@notebookGoalEnableHint": {
+    "description": "Subtitle of the writing-goal switch."
+  },
+  "notebookGoalDecrease": "One fewer",
+  "@notebookGoalDecrease": {
+    "description": "Tooltip of the goal count minus button."
+  },
+  "notebookGoalIncrease": "One more",
+  "@notebookGoalIncrease": {
+    "description": "Tooltip of the goal count plus button."
+  },
+  "notebookGoalPeriodDay": "Daily",
+  "@notebookGoalPeriodDay": {
+    "description": "Writing goal period: daily."
+  },
+  "notebookGoalPeriodWeek": "Weekly",
+  "@notebookGoalPeriodWeek": {
+    "description": "Writing goal period: weekly."
+  },
+  "notebookGoalPeriodMonth": "Monthly",
+  "@notebookGoalPeriodMonth": {
+    "description": "Writing goal period: monthly."
+  },
+  "notebookGoalSummaryDay": "{count, plural, =1{1 entry a day} other{{count} entries a day}}",
+  "@notebookGoalSummaryDay": {
+    "description": "Goal sentence (daily); count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalSummaryWeek": "{count, plural, =1{1 entry a week} other{{count} entries a week}}",
+  "@notebookGoalSummaryWeek": {
+    "description": "Goal sentence (weekly); count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalSummaryMonth": "{count, plural, =1{1 entry a month} other{{count} entries a month}}",
+  "@notebookGoalSummaryMonth": {
+    "description": "Goal sentence (monthly); count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressDay": "Today {current} / {target}",
+  "@notebookGoalProgressDay": {
+    "description": "Goal progress (daily); current is entries written, target is the goal.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressWeek": "This week {current} / {target}",
+  "@notebookGoalProgressWeek": {
+    "description": "Goal progress (weekly); current is entries written, target is the goal.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressMonth": "This month {current} / {target}",
+  "@notebookGoalProgressMonth": {
+    "description": "Goal progress (monthly); current is entries written, target is the goal.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalMetDay": "Done for today ✓",
+  "@notebookGoalMetDay": {
+    "description": "Goal met for the current period (daily)."
+  },
+  "notebookGoalMetWeek": "Done this week ✓",
+  "@notebookGoalMetWeek": {
+    "description": "Goal met for the current period (weekly)."
+  },
+  "notebookGoalMetMonth": "Done this month ✓",
+  "@notebookGoalMetMonth": {
+    "description": "Goal met for the current period (monthly)."
+  },
+  "notebookGoalStreakDay": "{count, plural, =1{1-day streak} other{{count}-day streak}}",
+  "@notebookGoalStreakDay": {
+    "description": "Number of consecutive periods the goal was met (daily).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalStreakWeek": "{count, plural, =1{1-week streak} other{{count}-week streak}}",
+  "@notebookGoalStreakWeek": {
+    "description": "Number of consecutive periods the goal was met (weekly).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalStreakMonth": "{count, plural, =1{1-month streak} other{{count}-month streak}}",
+  "@notebookGoalStreakMonth": {
+    "description": "Number of consecutive periods the goal was met (monthly).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsights": "Stats",
+  "@notebookInsights": {
+    "description": "Notebook header button and title of the stats page."
+  },
+  "notebookInsightsEmpty": "No entries to count in this notebook yet",
+  "@notebookInsightsEmpty": {
+    "description": "Empty state of the notebook stats page."
+  },
+  "notebookInsightsEntries": "Entries",
+  "@notebookInsightsEntries": {
+    "description": "Stats overview tile: entries."
+  },
+  "notebookInsightsWords": "Words",
+  "@notebookInsightsWords": {
+    "description": "Stats overview tile: words."
+  },
+  "notebookInsightsRecordedDays": "Days written",
+  "@notebookInsightsRecordedDays": {
+    "description": "Stats overview tile: number of days with entries."
+  },
+  "notebookInsightsSpan": "Time span",
+  "@notebookInsightsSpan": {
+    "description": "Stats overview tile: span from the first to the last entry."
+  },
+  "notebookInsightsPhotos": "Photos",
+  "@notebookInsightsPhotos": {
+    "description": "Stats overview tile: number of cover and inline images."
+  },
+  "notebookInsightsLongestStreak": "Longest streak",
+  "@notebookInsightsLongestStreak": {
+    "description": "Stats overview tile: longest run of consecutive days."
+  },
+  "notebookInsightsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@notebookInsightsDays": {
+    "description": "A number of days (short time span, longest streak).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanMonths": "{months, plural, =1{1 month} other{{months} months}}",
+  "@notebookInsightsSpanMonths": {
+    "description": "Time span: months.",
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanYears": "{years, plural, =1{1 year} other{{years} years}}",
+  "@notebookInsightsSpanYears": {
+    "description": "Time span: whole years.",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanYearsMonths": "{years} yr {months} mo",
+  "@notebookInsightsSpanYearsMonths": {
+    "description": "Time span: years and months (compact).",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsMoods": "Moods",
+  "@notebookInsightsMoods": {
+    "description": "Stats section title: mood distribution."
+  },
+  "notebookInsightsMoodShare": "{count} · {percent}%",
+  "@notebookInsightsMoodShare": {
+    "description": "Right side of a mood row: count and percentage.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsTopTags": "Top tags",
+  "@notebookInsightsTopTags": {
+    "description": "Stats section title: most used tags."
+  },
+  "notebookInsightsRhythm": "Writing rhythm",
+  "@notebookInsightsRhythm": {
+    "description": "Stats section title: entries-per-month chart."
+  },
+  "notebookInsightsRhythmBar": "{month}: {count}",
+  "@notebookInsightsRhythmBar": {
+    "description": "Screen-reader text of a rhythm bar; month is the month, count the entries.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsGoalRecent": "Met in {met} of the last {total} periods",
+  "@notebookInsightsGoalRecent": {
+    "description": "Screen-reader text of the goal dots.",
+    "placeholders": {
+      "met": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsGoalRecentCaption": "Last {count} periods",
+  "@notebookInsightsGoalRecentCaption": {
+    "description": "Caption next to the goal dots.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsRandom": "Open a random entry",
+  "@notebookInsightsRandom": {
+    "description": "Stats page button: open a random entry of this notebook."
   }
 }

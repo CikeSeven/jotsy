@@ -1,34 +1,68 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
 
-/// 日历打点筛选（按标签或心情）。
+/// 日历筛选面板可选的日记本：普通、可见性为 normal 的本子，保持书架顺序，
+/// 已合上的排在最后（合上了也仍装着日记）。
 ///
-/// 输入：所选标签 id 与心情 emoji；输出过滤后的打点。不可变、无副作用。
+/// 私密本子（隐藏 / 上锁）里的日记不进日历打点，列出来也筛不出任何东西，
+/// 还会在日历页露出它的名字；智能日记本见 [CalendarMarkerFilter] 的说明。
+List<NotebookView> calendarFilterNotebooks(Iterable<NotebookView> notebooks) {
+  final eligible = notebooks
+      .where(
+        (NotebookView notebook) =>
+            notebook.isManual &&
+            notebook.visibility == NotebookVisibility.normal,
+      )
+      .toList(growable: false);
+  return List<NotebookView>.unmodifiable(<NotebookView>[
+    ...eligible.where((NotebookView notebook) => !notebook.isClosed),
+    ...eligible.where((NotebookView notebook) => notebook.isClosed),
+  ]);
+}
+
+/// 日历打点筛选（按心情、标签或日记本）。
+///
+/// 输入：所选标签 id、心情 emoji 与普通日记本业务 id；输出过滤后的打点。
+/// 不可变、无副作用。
 /// 筛选是日历页的临时状态，不写进 `CalendarDisplayOptions`，离开页面即
 /// 清空；它只影响日期格与统计（月度概览、年视图、范围统计），那年今日与
 /// 选中日的日记列表照常显示全部。
 ///
-/// 口径：同一类里任选其一即可（标签之间、心情之间为“或”），两类都选时
-/// 需同时满足（“与”）。未解封的时间胶囊不参与筛选、始终保留：它只贡献
-/// 锁角标，若按心情或标签决定锁是否出现，等于提前泄露了胶囊的内容。
+/// 口径：同一类里任选其一即可（标签之间、心情之间、日记本之间为“或”），
+/// 多类都选时需同时满足（“与”）。未解封的时间胶囊不参与筛选、始终保留：它
+/// 只贡献锁角标，若按心情、标签或所在本子决定锁是否出现，等于提前泄露了
+/// 胶囊的内容（与心情、标签一视同仁，即便本子是用户自己放的）。
+///
+/// 只能按普通日记本筛选：智能日记本的规则要对整篇日记求值，打点上没有这些
+/// 字段，在 UI 层重算一遍规则也会与数据库口径分叉，所以不提供。
 @immutable
 class CalendarMarkerFilter {
   const CalendarMarkerFilter({
     this.tagIds = const <int>{},
     this.moods = const <String>{},
+    this.notebookIds = const <String>{},
   });
 
   final Set<int> tagIds;
   final Set<String> moods;
 
-  bool get isActive => tagIds.isNotEmpty || moods.isNotEmpty;
+  /// 普通日记本的业务 id。
+  final Set<String> notebookIds;
+
+  bool get isActive =>
+      tagIds.isNotEmpty || moods.isNotEmpty || notebookIds.isNotEmpty;
 
   bool matches(DiaryCalendarMarker marker, {required DateTime now}) {
     if (marker.isLockedCapsuleAt(now)) {
       return true;
     }
     if (tagIds.isNotEmpty && !marker.tagIds.any(tagIds.contains)) {
+      return false;
+    }
+    if (notebookIds.isNotEmpty &&
+        !marker.notebookIds.any(notebookIds.contains)) {
       return false;
     }
     return moods.isEmpty || moods.contains(marker.moodEmoji);
@@ -48,10 +82,13 @@ class CalendarMarkerFilter {
   }
 
   CalendarMarkerFilter toggleTag(int tagId) =>
-      CalendarMarkerFilter(tagIds: _toggled(tagIds, tagId), moods: moods);
+      _copyWith(tagIds: _toggled(tagIds, tagId));
 
   CalendarMarkerFilter toggleMood(String mood) =>
-      CalendarMarkerFilter(tagIds: tagIds, moods: _toggled(moods, mood));
+      _copyWith(moods: _toggled(moods, mood));
+
+  CalendarMarkerFilter toggleNotebook(String notebookId) =>
+      _copyWith(notebookIds: _toggled(notebookIds, notebookId));
 
   /// 去掉已不存在的标签（标签被删除后筛选不应残留看不见的条件）。
   CalendarMarkerFilter retainTags(Iterable<int> existingTagIds) {
@@ -59,11 +96,29 @@ class CalendarMarkerFilter {
     if (tagIds.every(existing.contains)) {
       return this;
     }
-    return CalendarMarkerFilter(
-      tagIds: tagIds.where(existing.contains).toSet(),
-      moods: moods,
-    );
+    return _copyWith(tagIds: tagIds.where(existing.contains).toSet());
   }
+
+  /// 只保留仍可筛选的日记本（[eligibleNotebookIds]：存在、普通、非私密）。
+  /// 本子被删除、改成智能或设为隐藏 / 上锁后，筛选条里不应残留看不见的
+  /// 条件，否则日历会无声地变空。
+  CalendarMarkerFilter retainNotebooks(Iterable<String> eligibleNotebookIds) {
+    final eligible = eligibleNotebookIds.toSet();
+    if (notebookIds.every(eligible.contains)) {
+      return this;
+    }
+    return _copyWith(notebookIds: notebookIds.where(eligible.contains).toSet());
+  }
+
+  CalendarMarkerFilter _copyWith({
+    Set<int>? tagIds,
+    Set<String>? moods,
+    Set<String>? notebookIds,
+  }) => CalendarMarkerFilter(
+    tagIds: tagIds ?? this.tagIds,
+    moods: moods ?? this.moods,
+    notebookIds: notebookIds ?? this.notebookIds,
+  );
 
   static Set<T> _toggled<T>(Set<T> values, T value) {
     final next = Set<T>.of(values);
@@ -77,11 +132,13 @@ class CalendarMarkerFilter {
   bool operator ==(Object other) =>
       other is CalendarMarkerFilter &&
       setEquals(other.tagIds, tagIds) &&
-      setEquals(other.moods, moods);
+      setEquals(other.moods, moods) &&
+      setEquals(other.notebookIds, notebookIds);
 
   @override
   int get hashCode => Object.hash(
     Object.hashAllUnordered(tagIds),
     Object.hashAllUnordered(moods),
+    Object.hashAllUnordered(notebookIds),
   );
 }

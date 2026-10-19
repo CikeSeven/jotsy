@@ -31,6 +31,8 @@ import '../../diaries/controllers/diary_create_entry_flow.dart';
 import '../../../utils/text_stats.dart';
 import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
+import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
 import '../models/calendar_display_options.dart';
 import '../models/calendar_marker_filter.dart';
 import '../models/calendar_range_selection.dart';
@@ -197,9 +199,21 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
     final filterTags = _filter.tagIds.isEmpty
         ? null
         : ref.watch(tagListProvider).asData?.value;
-    final filter = filterTags == null
+    // 日记本同理：删除、改成智能或设为私密后不再参与筛选。
+    final allNotebooks = _filter.notebookIds.isEmpty
+        ? null
+        : ref.watch(notebooksProvider).asData?.value;
+    final filterNotebooks = allNotebooks == null
+        ? null
+        : calendarFilterNotebooks(allNotebooks);
+    var filter = filterTags == null
         ? _filter
         : _filter.retainTags(filterTags.map((Tag tag) => tag.id));
+    if (filterNotebooks != null) {
+      filter = filter.retainNotebooks(
+        filterNotebooks.map((NotebookView notebook) => notebook.id),
+      );
+    }
     final summaries = _resolveDaySummaries(
       markersAsync.asData?.value,
       moodOptions: moodOptions,
@@ -249,6 +263,8 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                       options: options,
                       filter: filter,
                       filterTags: filterTags ?? const <Tag>[],
+                      filterNotebooks:
+                          filterNotebooks ?? const <NotebookView>[],
                       summaries: summaries,
                       markersAsync: markersAsync,
                       moodOptions: moodOptions,

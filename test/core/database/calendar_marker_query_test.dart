@@ -161,4 +161,46 @@ void main() {
     expect(diaries.map((d) => d.diary.diaryId), <String>['y2025', 'y2024']);
     expect(await db.watchDiariesCreatedInRanges(const []).first, isEmpty);
   });
+
+  test('markers list the regular notebooks a diary is in', () async {
+    await insert('both', createdAt: DateTime(2026, 3, 5, 9));
+    await insert('loose', createdAt: DateTime(2026, 3, 6, 9));
+    await insert('private', createdAt: DateTime(2026, 3, 7, 9));
+    final trip = await db.createNotebook(name: 'Trip');
+    final work = await db.createNotebook(name: 'Work');
+    final secret = await db.createNotebook(
+      name: 'Secret',
+      visibility: NotebookVisibility.hidden,
+    );
+    await db.createNotebook(name: 'Smart', kind: NotebookKind.smart);
+    await db.addDiariesToNotebook(trip, <String>['both']);
+    await db.addDiariesToNotebook(work, <String>['both']);
+    await db.addDiariesToNotebook(secret, <String>['private']);
+
+    final markers = await db
+        .watchDiaryMarkersInRange(monthStart, nextMonthStart)
+        .first;
+
+    // 私密日记不打点；其余按业务 id 升序列出所在的普通日记本。
+    expect(markers.map((m) => m.diaryId), <String>['both', 'loose']);
+    expect(markers.first.notebookIds, <String>[trip, work]..sort());
+    expect(markers.last.notebookIds, isEmpty);
+  });
+
+  test('marker stream refreshes when a diary joins a notebook', () async {
+    await insert('a', createdAt: DateTime(2026, 3, 5, 9));
+    final trip = await db.createNotebook(name: 'Trip');
+    final stream = db.watchDiaryMarkersInRange(monthStart, nextMonthStart);
+    final emissions = <List<String>>[];
+    final subscription = stream.listen(
+      (markers) => emissions.add(markers.single.notebookIds),
+    );
+    addTearDown(subscription.cancel);
+    await pumpEventQueue();
+    await db.addDiariesToNotebook(trip, <String>['a']);
+    await pumpEventQueue();
+
+    expect(emissions.first, isEmpty);
+    expect(emissions.last, <String>[trip]);
+  });
 }

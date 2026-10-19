@@ -371,6 +371,13 @@ ORDER BY d.created_at DESC, d.id DESC
   /// 本身不保证顺序，内层按标签 id 排序后再拼接，同一天的标签色点不会随
   /// 查询计划变化而换位。readsFrom 包含标签两表，增删标签或改标签色后日期
   /// 格会刷新。
+  ///
+  /// 所在的普通日记本（日历按日记本筛选用）同样是一个相关子查询，走
+  /// `diary_notebooks` 复合主键的 diary_id 前缀；业务 id 是文本，用
+  /// json_group_array 而不是逗号拼接，不依赖 id 里没有逗号。只收普通日记本：
+  /// 智能日记本没有成员行，按规则现算不在打点范围内。私密日记整篇已被排除，
+  /// 所以这里不会出现隐藏 / 上锁的本子。readsFrom 已含日记本两表（私密排除
+  /// 依赖它们），加入 / 移出本子后日期格会刷新。
   Stream<List<DiaryCalendarMarker>> watchDiaryMarkersInRange(
     DateTime start,
     DateTime end,
@@ -405,7 +412,18 @@ SELECT
       WHERE dt.diary_id = d.id
       ORDER BY dt.tag_id
     )
-  ) AS tag_ids
+  ) AS tag_ids,
+  (
+    SELECT json_group_array(notebook_id)
+    FROM (
+      SELECT n.notebook_id AS notebook_id
+      FROM diary_notebooks dn
+      JOIN notebooks n ON n.id = dn.notebook_id
+      WHERE dn.diary_id = d.id
+        AND n.kind = '${NotebookKind.manual.name}'
+      ORDER BY n.notebook_id
+    )
+  ) AS notebook_ids
 FROM diaries d
 WHERE d.is_deleted = 0
   AND d.created_at >= ?
@@ -437,6 +455,7 @@ ORDER BY d.created_at ASC, d.id ASC
               capsuleUnlockAt: _readNullableDateTime(row, 'capsule_unlock_at'),
               tagColors: _parseIntList(row.data['tag_colors']),
               tagIds: _parseIntList(row.data['tag_ids']),
+              notebookIds: _parseStringArray(row.data['notebook_ids']),
             );
           })
           .toList(growable: false);
@@ -495,6 +514,18 @@ ORDER BY created_at ASC, id ASC
   }
 
   /// 解析 `group_concat` 拼出的逗号分隔整数；无标签时为 NULL。
+  /// 解析 json_group_array 拼出的文本数组；没有元素时 SQLite 给 `[]`。
+  List<String> _parseStringArray(Object? raw) {
+    if (raw == null) {
+      return const <String>[];
+    }
+    final decoded = jsonDecode(raw.toString());
+    if (decoded is! List) {
+      return const <String>[];
+    }
+    return List<String>.unmodifiable(decoded.whereType<String>());
+  }
+
   List<int> _parseIntList(Object? raw) {
     if (raw == null) {
       return const <int>[];

@@ -4352,6 +4352,12 @@ abstract class AppLocalizations {
   /// **'Filter calendar'**
   String get calendarFilterTitle;
 
+  /// Notebook group title in the calendar filter sheet (only regular, non-private notebooks are listed).
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get calendarFilterNotebooks;
+
   /// Button that clears the calendar filter.
   ///
   /// In en, this message translates to:
@@ -4361,7 +4367,7 @@ abstract class AppLocalizations {
   /// Explains the calendar filter.
   ///
   /// In en, this message translates to:
-  /// **'Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.'**
+  /// **'Dates and stats only count matching entries. Any choice within a group matches; when several groups are set, an entry must match all of them.'**
   String get calendarFilterDescription;
 
   /// Mood group title in the calendar filter sheet.
@@ -11480,6 +11486,30 @@ abstract class AppLocalizations {
   /// **'Add entries'**
   String get notebookAddDiaries;
 
+  /// Notebook header overflow menu item: export the whole notebook as one document with a title page, contents and chapter headings.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as book'**
+  String get notebookExportAsBook;
+
+  /// Export date line on the title page of a notebook exported as a book.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported on {date}'**
+  String notebookBookExportedOn(String date);
+
+  /// Export sheet switch shown when exporting a notebook as a book: whether to write a title page, contents and chapter headings.
+  ///
+  /// In en, this message translates to:
+  /// **'Book structure'**
+  String get diaryExportBookStructure;
+
+  /// One-line description under the Book structure switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Title page, contents and chapter headings'**
+  String get diaryExportBookStructureDescription;
+
   /// Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters.
   ///
   /// In en, this message translates to:
@@ -12223,6 +12253,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Regular notebook'**
   String get notebookSaveRangeManual;
+
+  /// Editor group title: writing goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing goal'**
+  String get notebookGoalLabel;
+
+  /// Switch in the writing-goal group.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a goal'**
+  String get notebookGoalEnable;
+
+  /// Subtitle of the writing-goal switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows progress on the notebook header. No reminders.'**
+  String get notebookGoalEnableHint;
+
+  /// Tooltip of the goal count minus button.
+  ///
+  /// In en, this message translates to:
+  /// **'One fewer'**
+  String get notebookGoalDecrease;
+
+  /// Tooltip of the goal count plus button.
+  ///
+  /// In en, this message translates to:
+  /// **'One more'**
+  String get notebookGoalIncrease;
+
+  /// Writing goal period: daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get notebookGoalPeriodDay;
+
+  /// Writing goal period: weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get notebookGoalPeriodWeek;
+
+  /// Writing goal period: monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get notebookGoalPeriodMonth;
+
+  /// Goal sentence (daily); count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry a day} other{{count} entries a day}}'**
+  String notebookGoalSummaryDay(int count);
+
+  /// Goal sentence (weekly); count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry a week} other{{count} entries a week}}'**
+  String notebookGoalSummaryWeek(int count);
+
+  /// Goal sentence (monthly); count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry a month} other{{count} entries a month}}'**
+  String notebookGoalSummaryMonth(int count);
+
+  /// Goal progress (daily); current is entries written, target is the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Today {current} / {target}'**
+  String notebookGoalProgressDay(int current, int target);
+
+  /// Goal progress (weekly); current is entries written, target is the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'This week {current} / {target}'**
+  String notebookGoalProgressWeek(int current, int target);
+
+  /// Goal progress (monthly); current is entries written, target is the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'This month {current} / {target}'**
+  String notebookGoalProgressMonth(int current, int target);
+
+  /// Goal met for the current period (daily).
+  ///
+  /// In en, this message translates to:
+  /// **'Done for today ✓'**
+  String get notebookGoalMetDay;
+
+  /// Goal met for the current period (weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'Done this week ✓'**
+  String get notebookGoalMetWeek;
+
+  /// Goal met for the current period (monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'Done this month ✓'**
+  String get notebookGoalMetMonth;
+
+  /// Number of consecutive periods the goal was met (daily).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-day streak} other{{count}-day streak}}'**
+  String notebookGoalStreakDay(int count);
+
+  /// Number of consecutive periods the goal was met (weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-week streak} other{{count}-week streak}}'**
+  String notebookGoalStreakWeek(int count);
+
+  /// Number of consecutive periods the goal was met (monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-month streak} other{{count}-month streak}}'**
+  String notebookGoalStreakMonth(int count);
+
+  /// Notebook header button and title of the stats page.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get notebookInsights;
+
+  /// Empty state of the notebook stats page.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries to count in this notebook yet'**
+  String get notebookInsightsEmpty;
+
+  /// Stats overview tile: entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get notebookInsightsEntries;
+
+  /// Stats overview tile: words.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get notebookInsightsWords;
+
+  /// Stats overview tile: number of days with entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Days written'**
+  String get notebookInsightsRecordedDays;
+
+  /// Stats overview tile: span from the first to the last entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Time span'**
+  String get notebookInsightsSpan;
+
+  /// Stats overview tile: number of cover and inline images.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get notebookInsightsPhotos;
+
+  /// Stats overview tile: longest run of consecutive days.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get notebookInsightsLongestStreak;
+
+  /// A number of days (short time span, longest streak).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String notebookInsightsDays(int count);
+
+  /// Time span: months.
+  ///
+  /// In en, this message translates to:
+  /// **'{months, plural, =1{1 month} other{{months} months}}'**
+  String notebookInsightsSpanMonths(int months);
+
+  /// Time span: whole years.
+  ///
+  /// In en, this message translates to:
+  /// **'{years, plural, =1{1 year} other{{years} years}}'**
+  String notebookInsightsSpanYears(int years);
+
+  /// Time span: years and months (compact).
+  ///
+  /// In en, this message translates to:
+  /// **'{years} yr {months} mo'**
+  String notebookInsightsSpanYearsMonths(int years, int months);
+
+  /// Stats section title: mood distribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Moods'**
+  String get notebookInsightsMoods;
+
+  /// Right side of a mood row: count and percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} · {percent}%'**
+  String notebookInsightsMoodShare(int count, int percent);
+
+  /// Stats section title: most used tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Top tags'**
+  String get notebookInsightsTopTags;
+
+  /// Stats section title: entries-per-month chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing rhythm'**
+  String get notebookInsightsRhythm;
+
+  /// Screen-reader text of a rhythm bar; month is the month, count the entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{month}: {count}'**
+  String notebookInsightsRhythmBar(String month, int count);
+
+  /// Screen-reader text of the goal dots.
+  ///
+  /// In en, this message translates to:
+  /// **'Met in {met} of the last {total} periods'**
+  String notebookInsightsGoalRecent(int met, int total);
+
+  /// Caption next to the goal dots.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {count} periods'**
+  String notebookInsightsGoalRecentCaption(int count);
+
+  /// Stats page button: open a random entry of this notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a random entry'**
+  String get notebookInsightsRandom;
 }
 
 class _AppLocalizationsDelegate

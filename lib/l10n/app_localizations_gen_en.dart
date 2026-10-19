@@ -2576,11 +2576,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarFilterTitle => 'Filter calendar';
 
   @override
+  String get calendarFilterNotebooks => 'Notebooks';
+
+  @override
   String get calendarFilterClear => 'Clear filter';
 
   @override
   String get calendarFilterDescription =>
-      'Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.';
+      'Dates and stats only count matching entries. Any choice within a group matches; when several groups are set, an entry must match all of them.';
 
   @override
   String get calendarFilterMoods => 'Mood';
@@ -6874,6 +6877,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notebookAddDiaries => 'Add entries';
 
   @override
+  String get notebookExportAsBook => 'Export as book';
+
+  @override
+  String notebookBookExportedOn(String date) {
+    return 'Exported on $date';
+  }
+
+  @override
+  String get diaryExportBookStructure => 'Book structure';
+
+  @override
+  String get diaryExportBookStructureDescription =>
+      'Title page, contents and chapter headings';
+
+  @override
   String get notebookContentsUnassignedDropHint =>
       'Drag here to take entries out of chapters';
 
@@ -7394,4 +7412,214 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookSaveRangeManual => 'Regular notebook';
+
+  @override
+  String get notebookGoalLabel => 'Writing goal';
+
+  @override
+  String get notebookGoalEnable => 'Set a goal';
+
+  @override
+  String get notebookGoalEnableHint =>
+      'Shows progress on the notebook header. No reminders.';
+
+  @override
+  String get notebookGoalDecrease => 'One fewer';
+
+  @override
+  String get notebookGoalIncrease => 'One more';
+
+  @override
+  String get notebookGoalPeriodDay => 'Daily';
+
+  @override
+  String get notebookGoalPeriodWeek => 'Weekly';
+
+  @override
+  String get notebookGoalPeriodMonth => 'Monthly';
+
+  @override
+  String notebookGoalSummaryDay(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries a day',
+      one: '1 entry a day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookGoalSummaryWeek(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries a week',
+      one: '1 entry a week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookGoalSummaryMonth(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries a month',
+      one: '1 entry a month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookGoalProgressDay(int current, int target) {
+    return 'Today $current / $target';
+  }
+
+  @override
+  String notebookGoalProgressWeek(int current, int target) {
+    return 'This week $current / $target';
+  }
+
+  @override
+  String notebookGoalProgressMonth(int current, int target) {
+    return 'This month $current / $target';
+  }
+
+  @override
+  String get notebookGoalMetDay => 'Done for today ✓';
+
+  @override
+  String get notebookGoalMetWeek => 'Done this week ✓';
+
+  @override
+  String get notebookGoalMetMonth => 'Done this month ✓';
+
+  @override
+  String notebookGoalStreakDay(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-day streak',
+      one: '1-day streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookGoalStreakWeek(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-week streak',
+      one: '1-week streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookGoalStreakMonth(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count-month streak',
+      one: '1-month streak',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get notebookInsights => 'Stats';
+
+  @override
+  String get notebookInsightsEmpty =>
+      'No entries to count in this notebook yet';
+
+  @override
+  String get notebookInsightsEntries => 'Entries';
+
+  @override
+  String get notebookInsightsWords => 'Words';
+
+  @override
+  String get notebookInsightsRecordedDays => 'Days written';
+
+  @override
+  String get notebookInsightsSpan => 'Time span';
+
+  @override
+  String get notebookInsightsPhotos => 'Photos';
+
+  @override
+  String get notebookInsightsLongestStreak => 'Longest streak';
+
+  @override
+  String notebookInsightsDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookInsightsSpanMonths(int months) {
+    String _temp0 = intl.Intl.pluralLogic(
+      months,
+      locale: localeName,
+      other: '$months months',
+      one: '1 month',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookInsightsSpanYears(int years) {
+    String _temp0 = intl.Intl.pluralLogic(
+      years,
+      locale: localeName,
+      other: '$years years',
+      one: '1 year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String notebookInsightsSpanYearsMonths(int years, int months) {
+    return '$years yr $months mo';
+  }
+
+  @override
+  String get notebookInsightsMoods => 'Moods';
+
+  @override
+  String notebookInsightsMoodShare(int count, int percent) {
+    return '$count · $percent%';
+  }
+
+  @override
+  String get notebookInsightsTopTags => 'Top tags';
+
+  @override
+  String get notebookInsightsRhythm => 'Writing rhythm';
+
+  @override
+  String notebookInsightsRhythmBar(String month, int count) {
+    return '$month: $count';
+  }
+
+  @override
+  String notebookInsightsGoalRecent(int met, int total) {
+    return 'Met in $met of the last $total periods';
+  }
+
+  @override
+  String notebookInsightsGoalRecentCaption(int count) {
+    return 'Last $count periods';
+  }
+
+  @override
+  String get notebookInsightsRandom => 'Open a random entry';
 }

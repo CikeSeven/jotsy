@@ -2357,11 +2357,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarFilterTitle => '筛选日历';
 
   @override
+  String get calendarFilterNotebooks => '日记本';
+
+  @override
   String get calendarFilterClear => '清除筛选';
 
   @override
   String get calendarFilterDescription =>
-      '日期格与统计只算符合条件的日记。同一类里任选其一即可，心情和标签都选时需同时满足。';
+      '日期格与统计只算符合条件的日记。同一类里任选其一即可，选了多类时需同时满足。';
 
   @override
   String get calendarFilterMoods => '心情';
@@ -6241,6 +6244,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notebookAddDiaries => '添加日记';
 
   @override
+  String get notebookExportAsBook => '导出成书';
+
+  @override
+  String notebookBookExportedOn(String date) {
+    return '导出于 $date';
+  }
+
+  @override
+  String get diaryExportBookStructure => '书籍结构';
+
+  @override
+  String get diaryExportBookStructureDescription => '扉页、目录与章节标题';
+
+  @override
   String get notebookContentsUnassignedDropHint => '拖到这里移出章节';
 
   @override
@@ -6673,4 +6690,158 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookSaveRangeManual => '普通日记本';
+
+  @override
+  String get notebookGoalLabel => '写作目标';
+
+  @override
+  String get notebookGoalEnable => '设置目标';
+
+  @override
+  String get notebookGoalEnableHint => '在日记本头部显示进度，不会发送提醒';
+
+  @override
+  String get notebookGoalDecrease => '少一篇';
+
+  @override
+  String get notebookGoalIncrease => '多一篇';
+
+  @override
+  String get notebookGoalPeriodDay => '每天';
+
+  @override
+  String get notebookGoalPeriodWeek => '每周';
+
+  @override
+  String get notebookGoalPeriodMonth => '每月';
+
+  @override
+  String notebookGoalSummaryDay(int count) {
+    return '每天写 $count 篇';
+  }
+
+  @override
+  String notebookGoalSummaryWeek(int count) {
+    return '每周写 $count 篇';
+  }
+
+  @override
+  String notebookGoalSummaryMonth(int count) {
+    return '每月写 $count 篇';
+  }
+
+  @override
+  String notebookGoalProgressDay(int current, int target) {
+    return '今天 $current / $target 篇';
+  }
+
+  @override
+  String notebookGoalProgressWeek(int current, int target) {
+    return '本周 $current / $target 篇';
+  }
+
+  @override
+  String notebookGoalProgressMonth(int current, int target) {
+    return '本月 $current / $target 篇';
+  }
+
+  @override
+  String get notebookGoalMetDay => '今天已完成 ✓';
+
+  @override
+  String get notebookGoalMetWeek => '本周已完成 ✓';
+
+  @override
+  String get notebookGoalMetMonth => '本月已完成 ✓';
+
+  @override
+  String notebookGoalStreakDay(int count) {
+    return '连续达成 $count 天';
+  }
+
+  @override
+  String notebookGoalStreakWeek(int count) {
+    return '连续达成 $count 周';
+  }
+
+  @override
+  String notebookGoalStreakMonth(int count) {
+    return '连续达成 $count 个月';
+  }
+
+  @override
+  String get notebookInsights => '统计';
+
+  @override
+  String get notebookInsightsEmpty => '这本还没有可统计的日记';
+
+  @override
+  String get notebookInsightsEntries => '篇数';
+
+  @override
+  String get notebookInsightsWords => '字数';
+
+  @override
+  String get notebookInsightsRecordedDays => '记录天数';
+
+  @override
+  String get notebookInsightsSpan => '时间跨度';
+
+  @override
+  String get notebookInsightsPhotos => '照片数';
+
+  @override
+  String get notebookInsightsLongestStreak => '最长连续';
+
+  @override
+  String notebookInsightsDays(int count) {
+    return '$count 天';
+  }
+
+  @override
+  String notebookInsightsSpanMonths(int months) {
+    return '$months 个月';
+  }
+
+  @override
+  String notebookInsightsSpanYears(int years) {
+    return '$years 年';
+  }
+
+  @override
+  String notebookInsightsSpanYearsMonths(int years, int months) {
+    return '$years 年 $months 个月';
+  }
+
+  @override
+  String get notebookInsightsMoods => '心情分布';
+
+  @override
+  String notebookInsightsMoodShare(int count, int percent) {
+    return '$count 篇 · $percent%';
+  }
+
+  @override
+  String get notebookInsightsTopTags => '常用标签';
+
+  @override
+  String get notebookInsightsRhythm => '写作节奏';
+
+  @override
+  String notebookInsightsRhythmBar(String month, int count) {
+    return '$month：$count 篇';
+  }
+
+  @override
+  String notebookInsightsGoalRecent(int met, int total) {
+    return '最近 $total 个周期达成 $met 个';
+  }
+
+  @override
+  String notebookInsightsGoalRecentCaption(int count) {
+    return '最近 $count 个周期';
+  }
+
+  @override
+  String get notebookInsightsRandom => '随机翻一篇';
 }

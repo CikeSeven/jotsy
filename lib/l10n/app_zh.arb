@@ -3364,11 +3364,15 @@
   "@calendarFilterTitle": {
     "description": "日历筛选面板标题。"
   },
+  "calendarFilterNotebooks": "日记本",
+  "@calendarFilterNotebooks": {
+    "description": "日历筛选面板的日记本分组标题（只列出普通、非私密的日记本）。"
+  },
   "calendarFilterClear": "清除筛选",
   "@calendarFilterClear": {
     "description": "清除日历筛选条件的按钮。"
   },
-  "calendarFilterDescription": "日期格与统计只算符合条件的日记。同一类里任选其一即可，心情和标签都选时需同时满足。",
+  "calendarFilterDescription": "日期格与统计只算符合条件的日记。同一类里任选其一即可，选了多类时需同时满足。",
   "@calendarFilterDescription": {
     "description": "日历筛选面板的说明。"
   },
@@ -8871,6 +8875,27 @@
   "@notebookAddDiaries": {
     "description": "日记本头部卡片的按钮：从已有日记挑选加入。"
   },
+  "notebookExportAsBook": "导出成书",
+  "@notebookExportAsBook": {
+    "description": "日记本头部 ⋮ 菜单项：把整本日记本导出为带扉页、目录与章节标题的一份文档。"
+  },
+  "notebookBookExportedOn": "导出于 {date}",
+  "@notebookBookExportedOn": {
+    "description": "导出成书的扉页上的导出日期行。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryExportBookStructure": "书籍结构",
+  "@diaryExportBookStructure": {
+    "description": "导出成书时导出面板里的开关：是否写出扉页、目录与章节标题。"
+  },
+  "diaryExportBookStructureDescription": "扉页、目录与章节标题",
+  "@diaryExportBookStructureDescription": {
+    "description": "“书籍结构”开关下的一行说明。"
+  },
   "notebookContentsUnassignedDropHint": "拖到这里移出章节",
   "@notebookContentsUnassignedDropHint": {
     "description": "Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters."
@@ -9542,5 +9567,271 @@
   "notebookSaveRangeManual": "普通日记本",
   "@notebookSaveRangeManual": {
     "description": "“存为日记本”面板的选项：普通日记本。"
+  },
+  "notebookGoalLabel": "写作目标",
+  "@notebookGoalLabel": {
+    "description": "编辑页分组标题：写作目标。"
+  },
+  "notebookGoalEnable": "设置目标",
+  "@notebookGoalEnable": {
+    "description": "写作目标分组的开关。"
+  },
+  "notebookGoalEnableHint": "在日记本头部显示进度，不会发送提醒",
+  "@notebookGoalEnableHint": {
+    "description": "写作目标开关的说明。"
+  },
+  "notebookGoalDecrease": "少一篇",
+  "@notebookGoalDecrease": {
+    "description": "写作目标篇数减一按钮的提示。"
+  },
+  "notebookGoalIncrease": "多一篇",
+  "@notebookGoalIncrease": {
+    "description": "写作目标篇数加一按钮的提示。"
+  },
+  "notebookGoalPeriodDay": "每天",
+  "@notebookGoalPeriodDay": {
+    "description": "写作目标周期：每天。"
+  },
+  "notebookGoalPeriodWeek": "每周",
+  "@notebookGoalPeriodWeek": {
+    "description": "写作目标周期：每周。"
+  },
+  "notebookGoalPeriodMonth": "每月",
+  "@notebookGoalPeriodMonth": {
+    "description": "写作目标周期：每月。"
+  },
+  "notebookGoalSummaryDay": "每天写 {count} 篇",
+  "@notebookGoalSummaryDay": {
+    "description": "写作目标原话（每天）；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalSummaryWeek": "每周写 {count} 篇",
+  "@notebookGoalSummaryWeek": {
+    "description": "写作目标原话（每周）；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalSummaryMonth": "每月写 {count} 篇",
+  "@notebookGoalSummaryMonth": {
+    "description": "写作目标原话（每月）；count 为篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressDay": "今天 {current} / {target} 篇",
+  "@notebookGoalProgressDay": {
+    "description": "写作目标进度（每天）；current 为已写篇数，target 为目标篇数。",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressWeek": "本周 {current} / {target} 篇",
+  "@notebookGoalProgressWeek": {
+    "description": "写作目标进度（每周）；current 为已写篇数，target 为目标篇数。",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressMonth": "本月 {current} / {target} 篇",
+  "@notebookGoalProgressMonth": {
+    "description": "写作目标进度（每月）；current 为已写篇数，target 为目标篇数。",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalMetDay": "今天已完成 ✓",
+  "@notebookGoalMetDay": {
+    "description": "写作目标本周期已达成（每天）。"
+  },
+  "notebookGoalMetWeek": "本周已完成 ✓",
+  "@notebookGoalMetWeek": {
+    "description": "写作目标本周期已达成（每周）。"
+  },
+  "notebookGoalMetMonth": "本月已完成 ✓",
+  "@notebookGoalMetMonth": {
+    "description": "写作目标本周期已达成（每月）。"
+  },
+  "notebookGoalStreakDay": "连续达成 {count} 天",
+  "@notebookGoalStreakDay": {
+    "description": "写作目标连续达成的周期数（每天）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalStreakWeek": "连续达成 {count} 周",
+  "@notebookGoalStreakWeek": {
+    "description": "写作目标连续达成的周期数（每周）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalStreakMonth": "连续达成 {count} 个月",
+  "@notebookGoalStreakMonth": {
+    "description": "写作目标连续达成的周期数（每月）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsights": "统计",
+  "@notebookInsights": {
+    "description": "日记本头部卡片的按钮与统计页标题。"
+  },
+  "notebookInsightsEmpty": "这本还没有可统计的日记",
+  "@notebookInsightsEmpty": {
+    "description": "统计页空状态。"
+  },
+  "notebookInsightsEntries": "篇数",
+  "@notebookInsightsEntries": {
+    "description": "统计页总览：篇数。"
+  },
+  "notebookInsightsWords": "字数",
+  "@notebookInsightsWords": {
+    "description": "统计页总览：字数。"
+  },
+  "notebookInsightsRecordedDays": "记录天数",
+  "@notebookInsightsRecordedDays": {
+    "description": "统计页总览：有日记的天数。"
+  },
+  "notebookInsightsSpan": "时间跨度",
+  "@notebookInsightsSpan": {
+    "description": "统计页总览：第一篇到最后一篇的跨度。"
+  },
+  "notebookInsightsPhotos": "照片数",
+  "@notebookInsightsPhotos": {
+    "description": "统计页总览：封面与正文图片数。"
+  },
+  "notebookInsightsLongestStreak": "最长连续",
+  "@notebookInsightsLongestStreak": {
+    "description": "统计页总览：最长连续记录天数。"
+  },
+  "notebookInsightsDays": "{count} 天",
+  "@notebookInsightsDays": {
+    "description": "天数（时间跨度不满一个月、最长连续）。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanMonths": "{months} 个月",
+  "@notebookInsightsSpanMonths": {
+    "description": "时间跨度：月数。",
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanYears": "{years} 年",
+  "@notebookInsightsSpanYears": {
+    "description": "时间跨度：整年。",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanYearsMonths": "{years} 年 {months} 个月",
+  "@notebookInsightsSpanYearsMonths": {
+    "description": "时间跨度：年与月。",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsMoods": "心情分布",
+  "@notebookInsightsMoods": {
+    "description": "统计页区块标题：心情分布。"
+  },
+  "notebookInsightsMoodShare": "{count} 篇 · {percent}%",
+  "@notebookInsightsMoodShare": {
+    "description": "心情分布每行右侧：篇数与百分比。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsTopTags": "常用标签",
+  "@notebookInsightsTopTags": {
+    "description": "统计页区块标题：常用标签。"
+  },
+  "notebookInsightsRhythm": "写作节奏",
+  "@notebookInsightsRhythm": {
+    "description": "统计页区块标题：每月篇数柱状图。"
+  },
+  "notebookInsightsRhythmBar": "{month}：{count} 篇",
+  "@notebookInsightsRhythmBar": {
+    "description": "写作节奏读屏文字；month 为年月，count 为篇数。",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsGoalRecent": "最近 {total} 个周期达成 {met} 个",
+  "@notebookInsightsGoalRecent": {
+    "description": "写作目标圆点的读屏文字。",
+    "placeholders": {
+      "met": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsGoalRecentCaption": "最近 {count} 个周期",
+  "@notebookInsightsGoalRecentCaption": {
+    "description": "写作目标圆点旁的说明。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsRandom": "随机翻一篇",
+  "@notebookInsightsRandom": {
+    "description": "统计页按钮：随机打开本子里的一篇。"
   }
 }

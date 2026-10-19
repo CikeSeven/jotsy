@@ -192,6 +192,8 @@ class DataArchiveService {
     required BackupPayload payload,
     JournalImportSource? journalSource,
     int missingMediaCount = 0,
+    Map<JournalSkipReason, int> skippedNotes = const {},
+    int summaryOnlyCount = 0,
   }) async {
     final diaries = database.diaries;
     final localIds = {
@@ -224,6 +226,8 @@ class DataArchiveService {
           : null,
       journalSource: journalSource,
       missingMediaCount: missingMediaCount,
+      skippedNotes: skippedNotes,
+      summaryOnlyCount: summaryOnlyCount,
       anniversaryCount: payload.anniversaries.length,
       existingAnniversaryCount: payload.anniversaries
           .where((row) => localAnniversaryIds.contains(row.anniversaryId))

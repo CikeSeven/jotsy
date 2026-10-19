@@ -52,14 +52,46 @@ class CloudNote {
 /// 读取进度：已处理 [done] 篇，[total] 未知时为 null。
 typedef CloudProgress = void Function(int done, int? total);
 
+/// 一次读取中没能完整导入的笔记，由平台在 [CloudNoteProvider.fetchNotes]
+/// 里记下，导入预览据此逐项说明，免得笔记悄悄少了没人发现。
+class CloudReadIssues {
+  final Map<JournalSkipReason, int> _skipped = <JournalSkipReason, int>{};
+
+  /// 正文读不到、改用目录摘要作正文的篇数。
+  int summaryOnly = 0;
+
+  Map<JournalSkipReason, int> get skipped => Map.unmodifiable(_skipped);
+
+  /// 记下 [count] 篇因 [reason] 整篇跳过的笔记。
+  void skip(JournalSkipReason reason, [int count = 1]) {
+    if (count > 0) {
+      _skipped.update(reason, (value) => value + count, ifAbsent: () => count);
+    }
+  }
+
+  /// 某原因的计数至少为 [count]（平台另有统计、列表里未必列出时用）。
+  void atLeast(JournalSkipReason reason, int count) {
+    if (count > (_skipped[reason] ?? 0)) _skipped[reason] = count;
+  }
+
+  void reset() {
+    _skipped.clear();
+    summaryOnly = 0;
+  }
+}
+
 /// 一个平台的只读云端客户端（协议依据参考实现「笔记互迁」的 providers）。
 abstract interface class CloudNoteProvider {
   /// 真实的权限检查：读取账号信息，未登录时抛出
   /// [CloudNoteFailure.sessionExpired]；返回不透明的账号标识。
   Future<String> probe();
 
-  /// 读取全部笔记（不含回收站），分页与详情请求由平台实现。
+  /// 读取全部笔记（不含回收站），分页与详情请求由平台实现；整篇跳过的
+  /// 笔记与只读到摘要的笔记记在 [issues] 中。
   Future<List<CloudNote>> fetchNotes(CloudProgress onProgress);
+
+  /// [fetchNotes] 没能完整导入的笔记；[fetchCloudJournal] 每次读取前清零。
+  CloudReadIssues get issues;
 
   /// 下载附件原始字节。
   Future<List<int>> download(CloudAttachment attachment);
@@ -96,6 +128,7 @@ Future<JournalImportParseResult> fetchCloudJournal(
   JournalMediaStager media, {
   CloudProgress? onProgress,
 }) async {
+  provider.issues.reset();
   final notes = await provider.fetchNotes(onProgress ?? (_, _) {});
   final entries = <JournalImportEntry>[];
   for (final (index, note) in notes.indexed) {
@@ -110,7 +143,7 @@ Future<JournalImportParseResult> fetchCloudJournal(
           mime: attachment.mime,
         );
       } on CloudNoteException catch (error) {
-        if (_fatal(error.failure)) rethrow;
+        if (isFatalCloudFailure(error.failure)) rethrow;
         media.missingCount++;
       }
     }
@@ -145,10 +178,14 @@ Future<JournalImportParseResult> fetchCloudJournal(
   return JournalImportParseResult(
     entries: entries,
     missingMediaCount: media.missingCount,
+    skippedNotes: provider.issues.skipped,
+    summaryOnlyCount: provider.issues.summaryOnly,
   );
 }
 
-bool _fatal(CloudNoteFailure failure) => switch (failure) {
+/// 会让整次读取不完整的失败（登录失效、限流、断网、账号不支持），一律中止
+/// 读取；其他失败（单个文件被拒、服务端错误等）只影响当前这一项。
+bool isFatalCloudFailure(CloudNoteFailure failure) => switch (failure) {
   CloudNoteFailure.sessionExpired ||
   CloudNoteFailure.rateLimited ||
   CloudNoteFailure.network ||

@@ -6,6 +6,7 @@ import 'package:node_diary/core/services/journal_import_cloud_envelope.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_oppo.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/cloud_test_keys.dart';
 import '../../support/fake_cloud_http.dart';
@@ -158,6 +159,17 @@ void main() {
     expect(ops, contains('"align":"center"'));
     expect(ops, contains('{"insert":{"divider":"hr"}}'));
     expect(second.folder, isNull);
+    // 手写笔记的统计请求没有响应（404）时不影响读取，也不计跳过。
+    expect(provider.issues.skipped, isEmpty);
+
+    // 手写笔记不在列表里，按统计请求计入跳过。
+    _encryptedRoute(http, '/web/paint_note/v2/list', (request) {
+      expect(request['recordType'], 'paint_note_item_info');
+      expect(request['pageSize'], 1);
+      return {'records': [], 'totalCount': 3, 'hasMore': true};
+    });
+    await provider.fetchNotes((_, _) {});
+    expect(provider.issues.skipped, {JournalSkipReason.unsupported: 3});
   });
 
   test('a listing whose total disagrees is rejected', () async {

@@ -6,6 +6,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_envelope.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
 
 /// OPPO 笔记（云服务网页版 Connect v2）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/oppo.py`、`oppo_files.py`、`oppo_wire.py`）：
@@ -24,7 +25,7 @@ import 'journal_import_cloud_http.dart';
 ///   `GET …/file-download/<文件 ID>` 下载（不套信封）。参考实现只验证过
 ///   图片（`type == 0`），录音、文件等其他类型同样按文件 ID 下载，下载不到
 ///   的计入缺失，正文没有引用的追加在末尾；
-/// - 手写笔记是专有格式，不读取。
+/// - 手写笔记是专有格式，不读取，只经 `paint_note/v2/list` 统计篇数提示跳过。
 class OppoCloudProvider implements CloudNoteProvider {
   OppoCloudProvider(
     this.http, {
@@ -46,6 +47,9 @@ class OppoCloudProvider implements CloudNoteProvider {
   /// 只供测试替换厂商公钥（测试持有对应私钥以模拟服务端）。
   @visibleForTesting
   final RSAPublicKey? envelopeKey;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   static Object? _data(Object? payload) {
     if (payload is! Map ||
@@ -158,6 +162,7 @@ class OppoCloudProvider implements CloudNoteProvider {
         'oppo count',
       );
     }
+    issues.skip(JournalSkipReason.unsupported, await _handwrittenCount());
 
     final notes = <CloudNote>[];
     for (final (index, row) in rows.indexed) {
@@ -170,18 +175,53 @@ class OppoCloudProvider implements CloudNoteProvider {
       if (detail is Map && detail['recordId'] == id) {
         final note = _parseDetail(detail.cast<String, Object?>(), folders);
         if (note != null) notes.add(note);
+      } else {
+        issues.skip(JournalSkipReason.unreadable);
       }
       onProgress(index + 1, rows.length);
     }
     return notes;
   }
 
-  static CloudNote? _parseDetail(
+  /// 手写笔记是另一类记录，不在上面的列表里；按参考实现的统计请求取篇数，
+  /// 只用于提示跳过了多少。统计失败不影响读取（登录失效等仍然中止）。
+  Future<int> _handwrittenCount() async {
+    try {
+      final listing = await _encrypted('/web/paint_note/v2/list', {
+        'status': 0,
+        'pageNo': 1,
+        'pageSize': 1,
+        'recordType': 'paint_note_item_info',
+        'queryFields': [
+          {
+            'field': 'sysVersion',
+            'comparatorType': 'greater_than',
+            'value': '0',
+          },
+        ],
+        'sortFieldList': [
+          {'field': 'sysVersion', 'sortType': 'desc'},
+        ],
+      });
+      final count = listing is Map ? listing['totalCount'] : null;
+      return count is int && count > 0 ? count : 0;
+    } on CloudNoteException catch (error) {
+      if (isFatalCloudFailure(error.failure)) rethrow;
+      return 0;
+    }
+  }
+
+  /// 回收站中的笔记返回 null；结构认不出来的记入 [issues] 并返回 null。
+  CloudNote? _parseDetail(
     Map<String, Object?> detail,
     Map<String, String> folders,
   ) {
+    if (detail['status'] != 0) return null;
     final html = detail['rawText'];
-    if (html is! String || detail['status'] != 0) return null;
+    if (html is! String) {
+      issues.skip(JournalSkipReason.unreadable);
+      return null;
+    }
     final attachments = <CloudAttachment>[
       for (final item in (detail['attachments'] as List?) ?? const [])
         if (item is Map &&
@@ -197,7 +237,10 @@ class OppoCloudProvider implements CloudNoteProvider {
     ];
     final ids = {for (final item in attachments) item.id};
     final created = _time(detail['createTime']);
-    if (created == null) return null;
+    if (created == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      return null;
+    }
     return CloudNote(
       id: detail['recordId'] as String,
       title: detail['rawTitle'] is String ? detail['rawTitle'] as String : '',

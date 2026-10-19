@@ -5,6 +5,7 @@ import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_meizu.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -218,7 +219,7 @@ void main() {
         return jsonResponse({
           'returnCode': 200,
           'returnValue': {
-            'count': 3,
+            'count': 4,
             'content': [
               {
                 'uuid': '0f1e',
@@ -243,6 +244,12 @@ void main() {
                 'body': '[{"state":99,"text":"未知"}]',
                 'createTime': 1719990000000,
               },
+              {
+                'uuid': '3333',
+                'body': '',
+                'encrypt': 1,
+                'createTime': 1719990000000,
+              },
             ],
           },
         });
@@ -255,6 +262,7 @@ void main() {
       final unknown = JournalDeltaWriter();
       third.writeBody(unknown, (_) => null);
       expect(unknown.build().contentText, '未知');
+      expect(provider.issues.skipped, {JournalSkipReason.encrypted: 1});
       expect(first.title, '周末计划');
       expect(first.folder, '工作');
       expect(first.attachments.single.reference, '/file/a1b2c3d4.png');

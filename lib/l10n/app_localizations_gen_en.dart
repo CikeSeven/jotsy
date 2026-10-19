@@ -2203,6 +2203,56 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String backupImportSkippedEncrypted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count encrypted or locked notes can\'t be read and will be skipped',
+      one: '1 encrypted or locked note can\'t be read and will be skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportSkippedUnsupported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count handwritten notes, mind maps or other special notes will be skipped',
+      one: '1 handwritten note, mind map or other special note will be skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportSkippedUnreadable(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count notes are in a format that can\'t be recognized and will be skipped',
+      one:
+          '1 note is in a format that can\'t be recognized and will be skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String backupImportSummaryOnly(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'The bodies of $count notes couldn\'t be read; only their summaries will be imported',
+      one:
+          'The body of 1 note couldn\'t be read; only its summary will be imported',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get calendarDisplayOptionsTooltip => 'Calendar display';
 
   @override

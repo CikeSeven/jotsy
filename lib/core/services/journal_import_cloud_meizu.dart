@@ -4,6 +4,7 @@ import 'dart:math';
 import 'journal_import_cloud.dart';
 import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
 
 /// 魅族笔记（Flyme 云服务 notes.flyme.cn）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/meizu.py`、`meizu_files.py`、`meizu_groups.py`）：
@@ -29,6 +30,9 @@ class MeizuCloudProvider implements CloudNoteProvider {
   final CloudNoteHttp http;
   final CloudNoteTransport _api;
   final Future<void> Function(Duration)? _wait;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   Future<Map<String, Object?>> _call(
     String name, {
@@ -136,16 +140,22 @@ class MeizuCloudProvider implements CloudNoteProvider {
     return notes;
   }
 
-  /// 加密笔记与缺少正文或创建时间的条目返回 null。
-  static CloudNote? _parseEntry(
+  /// 加密笔记与缺少正文或创建时间的条目记入 [issues] 并返回 null。
+  CloudNote? _parseEntry(
     Map<String, Object?> entry,
     Map<String, String> folders,
   ) {
     final encrypt = entry['encrypt'];
-    if (encrypt != null && encrypt != 0 && encrypt != '0') return null;
+    if (encrypt != null && encrypt != 0 && encrypt != '0') {
+      issues.skip(JournalSkipReason.encrypted);
+      return null;
+    }
     final rawBody = entry['body'];
     final created = _time(entry['createTime']);
-    if (rawBody is! String || created == null) return null;
+    if (rawBody is! String || created == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      return null;
+    }
     final files = entry['files'] is Map
         ? (entry['files'] as Map).cast<Object?, Object?>()
         : const <Object?, Object?>{};

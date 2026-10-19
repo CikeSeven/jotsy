@@ -46,6 +46,8 @@ class BackupArchivePreview {
     this.soleDiaryTitle,
     this.journalSource,
     this.missingMediaCount = 0,
+    this.skippedNotes = const <JournalSkipReason, int>{},
+    this.summaryOnlyCount = 0,
     this.anniversaryCount = 0,
     this.existingAnniversaryCount = 0,
     this.localAnniversaryCount = 0,
@@ -75,6 +77,12 @@ class BackupArchivePreview {
 
   /// 导出中被引用、但文件不在包内而将被跳过的媒体数。
   final int missingMediaCount;
+
+  /// 其他应用的笔记中整篇跳过的篇数（按原因），见 [JournalSkipReason]。
+  final Map<JournalSkipReason, int> skippedNotes;
+
+  /// 其他应用的笔记中正文读不到、只导入了摘要的篇数。
+  final int summaryOnlyCount;
 
   /// 文件内的纪念日数（只有完整备份带纪念日）。
   final int anniversaryCount;

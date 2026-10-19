@@ -312,17 +312,14 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
           runSpacing: AppSpacing.m,
           children: <Widget>[
             for (final target in appTargets)
-              DiaryShareTargetButton(
-                label: diaryShareTargetLabel(l10n, target),
-                icon: _targetIcon(target),
-                glyph: target == DiaryShareTarget.xiaohongshu
-                    ? l10n.diaryShareTargetXiaohongshu
-                    : null,
+              DiaryShareTargetButton.forTarget(
+                l10n,
+                target,
                 onTap: tapFor(target),
               ),
-            DiaryShareTargetButton(
-              label: l10n.diaryShareTargetSystem,
-              icon: FontAwesomeIcons.shareFromSquare,
+            DiaryShareTargetButton.forTarget(
+              l10n,
+              DiaryShareTarget.system,
               onTap: tapFor(DiaryShareTarget.system),
             ),
             DiaryShareTargetButton(
@@ -358,19 +355,4 @@ class _DiaryShareSheetState extends State<DiaryShareSheet> {
       ],
     );
   }
-}
-
-FaIconData? _targetIcon(DiaryShareTarget target) {
-  return switch (target) {
-    DiaryShareTarget.weibo => FontAwesomeIcons.weibo,
-    DiaryShareTarget.wechat => FontAwesomeIcons.weixin,
-    // 朋友圈页的发布入口就是相机。
-    DiaryShareTarget.wechatMoments => FontAwesomeIcons.cameraRetro,
-    DiaryShareTarget.qq => FontAwesomeIcons.qq,
-    // QQ 空间的标志是一颗星。
-    DiaryShareTarget.qzone => FontAwesomeIcons.solidStar,
-    DiaryShareTarget.system => FontAwesomeIcons.shareFromSquare,
-    // 图标库没有小红书的图形，按钮里直接写名称。
-    DiaryShareTarget.xiaohongshu => null,
-  };
 }

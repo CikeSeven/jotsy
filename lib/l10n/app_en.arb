@@ -2058,7 +2058,7 @@
   },
   "imageViewerSaveToGallery": "Save to gallery",
   "@imageViewerSaveToGallery": {
-    "description": "Semantic label for the save-to-gallery action in the image viewer top bar."
+    "description": "Name of the save-to-gallery action in the image viewer long-press sheet and the in-text image menu."
   },
   "imageViewerSaving": "Saving…",
   "@imageViewerSaving": {
@@ -2097,6 +2097,18 @@
   "imageViewerDownloadFailed": "Failed to download image, please check your network and retry",
   "@imageViewerDownloadFailed": {
     "description": "Hint shown when downloading a remote image fails."
+  },
+  "imageViewerOpenDiary": "Open diary",
+  "@imageViewerOpenDiary": {
+    "description": "Action in the image viewer long-press sheet that opens the diary the image belongs to."
+  },
+  "imageViewerImageUnreadable": "Couldn't read this image to share it",
+  "@imageViewerImageUnreadable": {
+    "description": "Hint shown when sharing from the image viewer but the image file is missing or unreadable."
+  },
+  "imageViewerMoreActions": "More actions",
+  "@imageViewerMoreActions": {
+    "description": "Screen reader long-press hint on an image in the image viewer: opens the share / save actions sheet."
   },
   "diaryToolbarInsertCurrentTime": "Insert current time",
   "@diaryToolbarInsertCurrentTime": {

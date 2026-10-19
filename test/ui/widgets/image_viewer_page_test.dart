@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/widgets/image_viewer_actions_sheet.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -128,6 +129,101 @@ void main() {
 
     expect(find.byType(ImageViewerPage), findsNothing);
     expect(find.text('open'), findsOneWidget);
+  });
+
+  for (final brightness in Brightness.values) {
+    testWidgets(
+      'long pressing an image opens the share and save sheet in $brightness',
+      (tester) async {
+        await tester.pumpWidget(_host(brightness));
+        await tester.pumpAndSettle();
+        final l10n = tester.element(find.byType(ImageViewerPage)).l10n;
+
+        // 顶栏只剩返回与页码：保存与分享都收进了长按面板。
+        expect(
+          find.descendant(
+            of: find.byType(ImageViewerPage),
+            matching: find.byType(IconButton),
+          ),
+          findsOneWidget,
+        );
+        expect(find.byTooltip(l10n.imageViewerSaveToGallery), findsNothing);
+        expect(find.byTooltip(l10n.commonShare), findsNothing);
+
+        await tester.longPress(find.byType(PageView));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(ImageViewerActionsSheet), findsOneWidget);
+        expect(find.text(l10n.diaryShareTargetsSection), findsOneWidget);
+        // 测试环境没有已安装的应用，只剩始终可用的“更多应用”。
+        expect(find.text(l10n.diaryShareTargetSystem), findsOneWidget);
+        expect(find.text(l10n.imageViewerSaveToGallery), findsOneWidget);
+        // 入口没给“打开日记”的处理（预览页、编辑页看图），面板里就没有这项。
+        expect(find.text(l10n.imageViewerOpenDiary), findsNothing);
+        expect(tester.takeException(), isNull);
+
+        // 关掉面板什么也不做，看图页还在原处。
+        await tester.tapAt(const Offset(20, 120));
+        await tester.pumpAndSettle();
+        expect(find.byType(ImageViewerActionsSheet), findsNothing);
+        expect(find.byType(ImageViewerPage), findsOneWidget);
+      },
+    );
+  }
+
+  testWidgets('open diary hands the long-pressed image\'s diary to the entry', (
+    tester,
+  ) async {
+    final opened = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: expressiveTestTheme(Brightness.light),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => openImageViewer(
+                  context,
+                  items: const <ImageViewerItem>[
+                    ImageViewerItem(
+                      source: '/missing/first.jpg',
+                      diaryId: 'd1',
+                    ),
+                    ImageViewerItem(source: '/missing/second.jpg'),
+                  ],
+                  initialIndex: 0,
+                  onOpenDiary: opened.add,
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    final l10n = tester.element(find.byType(ImageViewerPage)).l10n;
+
+    await tester.longPress(find.byType(PageView));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.imageViewerOpenDiary));
+    await tester.pumpAndSettle();
+
+    expect(opened, <String>['d1']);
+    expect(find.byType(ImageViewerActionsSheet), findsNothing);
+    // 预览页由入口叠在看图页之上，看图页本身不关闭。
+    expect(find.byType(ImageViewerPage), findsOneWidget);
+
+    // 第二张图没有所属日记：即使入口能打开日记，也不给这一项。
+    await tester.fling(find.byType(PageView), const Offset(-300, 0), 1000);
+    await tester.pumpAndSettle();
+    await tester.longPress(find.byType(PageView));
+    await tester.pumpAndSettle();
+    expect(find.byType(ImageViewerActionsSheet), findsOneWidget);
+    expect(find.text(l10n.imageViewerOpenDiary), findsNothing);
   });
 
   testWidgets('vertical drags pan instead of closing while zoomed', (

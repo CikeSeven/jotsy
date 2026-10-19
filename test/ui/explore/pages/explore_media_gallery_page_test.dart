@@ -61,6 +61,9 @@ void main() {
           '/second.jpg',
         ]);
         expect(viewer.initialIndex, 2);
+        // 每张图带上所在日记，看图页长按面板可以直接打开它。
+        expect(viewer.items.map((item) => item.diaryId).toSet(), {'diary-1'});
+        expect(viewer.onOpenDiary, isNotNull);
         // 页码数字单独滚动切换，可见文本拆成两段；读屏仍读整句页码。
         final semantics = tester.ensureSemantics();
         expect(find.bySemanticsLabel('3 / 3'), findsOneWidget);

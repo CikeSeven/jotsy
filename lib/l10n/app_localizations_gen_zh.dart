@@ -1479,6 +1479,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get imageViewerDownloadFailed => '图片下载失败，请检查网络后重试';
 
   @override
+  String get imageViewerOpenDiary => '打开日记';
+
+  @override
+  String get imageViewerImageUnreadable => '读取不到这张图片，无法分享';
+
+  @override
+  String get imageViewerMoreActions => '更多操作';
+
+  @override
   String get diaryToolbarInsertCurrentTime => '插入当前时间';
 
   @override

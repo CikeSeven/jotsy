@@ -45,38 +45,22 @@ void main() {
         ),
       );
     });
-
-    test('空源分享时抛 invalidSource', () async {
-      await expectLater(
-        service.shareImage(''),
-        throwsA(
-          isA<ImageExportException>().having(
-            (ImageExportException e) => e.type,
-            'type',
-            ImageExportErrorType.invalidSource,
-          ),
-        ),
-      );
-    });
   });
 
   group('远程图片下载缓存', () {
     const pathProviderChannel = MethodChannel(
       'plugins.flutter.io/path_provider',
     );
-    const shareChannel = MethodChannel('dev.fluttercommunity.plus/share');
     const service = ImageExportService();
     const imageHost = 'image.test';
 
     late Directory tempDir;
     late HttpServer server;
     var requestCount = 0;
-    final sharedPaths = <String>[];
 
     setUp(() async {
       ImageExportService.debugClearRemoteImageCache();
       requestCount = 0;
-      sharedPaths.clear();
       tempDir = await Directory.systemTemp.createTemp(
         'jotsy_image_export_test_',
       );
@@ -86,13 +70,6 @@ void main() {
               return tempDir.path;
             }
             return null;
-          });
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(shareChannel, (call) async {
-            final arguments = call.arguments as Map<Object?, Object?>;
-            final paths = arguments['paths'] as List<Object?>;
-            sharedPaths.add(paths.single! as String);
-            return 'success';
           });
       server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       HttpOverrides.global = _RedirectingHttpOverrides(
@@ -105,8 +82,6 @@ void main() {
       HttpOverrides.global = null;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(pathProviderChannel, null);
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(shareChannel, null);
       ImageExportService.debugClearRemoteImageCache();
       await server.close(force: true);
       if (await tempDir.exists()) {
@@ -114,7 +89,7 @@ void main() {
       }
     });
 
-    test('短时间分享同一远程图片复用临时文件且只下载一次', () async {
+    test('短时间内再次取同一远程图片复用临时文件且只下载一次', () async {
       unawaited(
         server.forEach((request) async {
           requestCount += 1;
@@ -125,16 +100,19 @@ void main() {
         }),
       );
 
-      await service.shareImage('https://$imageHost/a.png');
-      await service.shareImage('https://$imageHost/a.png');
+      final first = await service.downloadRemoteImage(
+        'https://$imageHost/a.png',
+      );
+      final second = await service.downloadRemoteImage(
+        'https://$imageHost/a.png',
+      );
 
       expect(requestCount, 1);
-      expect(sharedPaths, hasLength(2));
-      expect(sharedPaths[0], sharedPaths[1]);
-      expect(await File(sharedPaths.first).readAsBytes(), <int>[1, 2, 3, 4]);
+      expect(second.path, first.path);
+      expect(await first.readAsBytes(), <int>[1, 2, 3, 4]);
     });
 
-    test('并发分享同一远程图片复用同一次下载', () async {
+    test('并发取同一远程图片复用同一次下载', () async {
       unawaited(
         server.forEach((request) async {
           requestCount += 1;
@@ -145,18 +123,17 @@ void main() {
         }),
       );
 
-      await Future.wait(<Future<void>>[
-        service.shareImage('https://$imageHost/concurrent.webp'),
-        service.shareImage('https://$imageHost/concurrent.webp'),
+      final files = await Future.wait(<Future<File>>[
+        service.downloadRemoteImage('https://$imageHost/concurrent.webp'),
+        service.downloadRemoteImage('https://$imageHost/concurrent.webp'),
       ]);
 
       expect(requestCount, 1);
-      expect(sharedPaths, hasLength(2));
-      expect(sharedPaths[0], sharedPaths[1]);
-      expect(await File(sharedPaths.first).readAsBytes(), <int>[9, 8, 7]);
+      expect(files[1].path, files[0].path);
+      expect(await files.first.readAsBytes(), <int>[9, 8, 7]);
     });
 
-    test('超过大小上限的响应不落地分享', () async {
+    test('超过大小上限的响应不落地', () async {
       unawaited(
         server.forEach((request) async {
           requestCount += 1;
@@ -172,7 +149,7 @@ void main() {
       );
 
       await expectLater(
-        service.shareImage('https://$imageHost/huge.jpg'),
+        service.downloadRemoteImage('https://$imageHost/huge.jpg'),
         throwsA(
           isA<ImageExportException>().having(
             (ImageExportException e) => e.type,
@@ -182,10 +159,10 @@ void main() {
         ),
       );
       expect(requestCount, 1);
-      expect(sharedPaths, isEmpty);
+      expect(await _cachedImages(tempDir), isEmpty);
     });
 
-    test('非图片响应不落地分享', () async {
+    test('非图片响应不落地', () async {
       unawaited(
         server.forEach((request) async {
           requestCount += 1;
@@ -196,7 +173,7 @@ void main() {
       );
 
       await expectLater(
-        service.shareImage('https://$imageHost/not-image.txt'),
+        service.downloadRemoteImage('https://$imageHost/not-image.txt'),
         throwsA(
           isA<ImageExportException>().having(
             (ImageExportException e) => e.type,
@@ -206,10 +183,14 @@ void main() {
         ),
       );
       expect(requestCount, 1);
-      expect(sharedPaths, isEmpty);
+      expect(await _cachedImages(tempDir), isEmpty);
     });
   });
 }
+
+/// 临时目录里落地的下载文件（失败的下载必须清理掉半截文件）。
+Future<List<FileSystemEntity>> _cachedImages(Directory directory) =>
+    directory.list().toList();
 
 class _RedirectingHttpOverrides extends HttpOverrides {
   _RedirectingHttpOverrides({required this.host, required this.serverPort});

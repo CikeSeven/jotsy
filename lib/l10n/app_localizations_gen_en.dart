@@ -7685,4 +7685,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookInsightsRandom => 'Open a random entry';
+
+  @override
+  String get diaryColorPanelDefaultColor => 'Default color';
+
+  @override
+  String get diaryColorPanelNoBackground => 'No background';
+
+  @override
+  String get diaryColorPanelCustom => 'Custom';
+
+  @override
+  String get diaryColorPanelEnterCode => 'Enter color code';
+
+  @override
+  String get diaryColorPanelHexHint => 'RRGGBB';
+
+  @override
+  String get diaryColorPanelApply => 'Apply';
+
+  @override
+  String get diaryColorRed => 'Red';
+
+  @override
+  String get diaryColorOrange => 'Orange';
+
+  @override
+  String get diaryColorYellow => 'Yellow';
+
+  @override
+  String get diaryColorGreen => 'Green';
+
+  @override
+  String get diaryColorTeal => 'Teal';
+
+  @override
+  String get diaryColorBlue => 'Blue';
+
+  @override
+  String get diaryColorIndigo => 'Indigo';
+
+  @override
+  String get diaryColorPurple => 'Purple';
+
+  @override
+  String get diaryColorPink => 'Pink';
+
+  @override
+  String get diaryColorBrown => 'Brown';
+
+  @override
+  String get diaryColorGray => 'Gray';
 }

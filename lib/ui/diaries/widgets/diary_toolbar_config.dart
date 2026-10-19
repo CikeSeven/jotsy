@@ -58,6 +58,7 @@ bool isDiaryToolbarItemActive(
 }
 
 /// 仅负责 Quill 单项工具配置；文件选择与复制由媒体导入控制器处理。
+/// 文字颜色与背景颜色不经这里（见 `DiaryToolbarColorButton`）。
 quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
   BuildContext context,
   DiaryToolbarItem item,
@@ -125,8 +126,6 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
   final showUnderline = item == DiaryToolbarItem.underline;
   final showStrikeThrough = item == DiaryToolbarItem.strikeThrough;
   final showInlineCode = item == DiaryToolbarItem.inlineCode;
-  final showTextColor = item == DiaryToolbarItem.textColor;
-  final showBackgroundColor = item == DiaryToolbarItem.backgroundColor;
   final showClearFormat = item == DiaryToolbarItem.clearFormat;
   final showHeaderStyle = false;
   final showOrderedList = item == DiaryToolbarItem.orderedList;
@@ -174,12 +173,6 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
     ),
     inlineCode: quill.QuillToolbarToggleStyleButtonOptions(
       iconData: FontAwesomeIcons.code.data,
-    ),
-    color: quill.QuillToolbarColorButtonOptions(
-      iconData: FontAwesomeIcons.palette.data,
-    ),
-    backgroundColor: quill.QuillToolbarColorButtonOptions(
-      iconData: FontAwesomeIcons.highlighter.data,
     ),
     clearFormat: quill.QuillToolbarClearFormatButtonOptions(
       iconData: FontAwesomeIcons.eraser.data,
@@ -274,8 +267,10 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
     showLineHeightButton: false,
     showStrikeThrough: showStrikeThrough,
     showInlineCode: showInlineCode,
-    showColorButton: showTextColor,
-    showBackgroundColorButton: showBackgroundColor,
+    // 文字颜色 / 背景颜色由 DiaryToolbarColorButton 渲染，展开卡片内的颜色
+    // 面板；Quill 自带的取色对话框是新路由，会抢走正文焦点、收起键盘。
+    showColorButton: false,
+    showBackgroundColorButton: false,
     showClearFormat: showClearFormat,
     showAlignmentButtons: false,
     showLeftAlignment: false,

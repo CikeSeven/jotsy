@@ -9878,5 +9878,73 @@
   "notebookInsightsRandom": "随机翻一篇",
   "@notebookInsightsRandom": {
     "description": "统计页按钮：随机打开本子里的一篇。"
+  },
+  "diaryColorPanelDefaultColor": "默认颜色",
+  "@diaryColorPanelDefaultColor": {
+    "description": "Editor toolbar color panel: swatch that clears the text color back to the default ink."
+  },
+  "diaryColorPanelNoBackground": "无背景色",
+  "@diaryColorPanelNoBackground": {
+    "description": "Editor toolbar color panel: swatch that removes the background (highlight) color."
+  },
+  "diaryColorPanelCustom": "自定义",
+  "@diaryColorPanelCustom": {
+    "description": "Editor toolbar color panel: color code chip label when the selection has no color or a color without a readable code."
+  },
+  "diaryColorPanelEnterCode": "输入颜色代码",
+  "@diaryColorPanelEnterCode": {
+    "description": "Editor toolbar color panel: tooltip of the chip that opens the hex color code input."
+  },
+  "diaryColorPanelHexHint": "RRGGBB",
+  "@diaryColorPanelHexHint": {
+    "description": "Editor toolbar color panel: hint of the hex color code field (six hex digits after #)."
+  },
+  "diaryColorPanelApply": "应用",
+  "@diaryColorPanelApply": {
+    "description": "Editor toolbar color panel: button that applies the typed hex color code."
+  },
+  "diaryColorRed": "红",
+  "@diaryColorRed": {
+    "description": "Name of the red preset color in the editor color panel."
+  },
+  "diaryColorOrange": "橙",
+  "@diaryColorOrange": {
+    "description": "Name of the orange preset color in the editor color panel."
+  },
+  "diaryColorYellow": "黄",
+  "@diaryColorYellow": {
+    "description": "Name of the yellow preset color in the editor color panel."
+  },
+  "diaryColorGreen": "绿",
+  "@diaryColorGreen": {
+    "description": "Name of the green preset color in the editor color panel."
+  },
+  "diaryColorTeal": "青",
+  "@diaryColorTeal": {
+    "description": "Name of the teal preset color in the editor color panel."
+  },
+  "diaryColorBlue": "蓝",
+  "@diaryColorBlue": {
+    "description": "Name of the blue preset color in the editor color panel."
+  },
+  "diaryColorIndigo": "靛",
+  "@diaryColorIndigo": {
+    "description": "Name of the indigo preset color in the editor color panel."
+  },
+  "diaryColorPurple": "紫",
+  "@diaryColorPurple": {
+    "description": "Name of the purple preset color in the editor color panel."
+  },
+  "diaryColorPink": "粉",
+  "@diaryColorPink": {
+    "description": "Name of the pink preset color in the editor color panel."
+  },
+  "diaryColorBrown": "棕",
+  "@diaryColorBrown": {
+    "description": "Name of the brown preset color in the editor color panel."
+  },
+  "diaryColorGray": "灰",
+  "@diaryColorGray": {
+    "description": "Name of the gray preset color in the editor color panel."
   }
 }

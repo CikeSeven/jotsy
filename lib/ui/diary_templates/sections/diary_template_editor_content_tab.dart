@@ -51,6 +51,13 @@ class _DiaryTemplateEditorContentTabState
     extends ConsumerState<DiaryTemplateEditorContentTab> {
   final FocusNode _titleFocus = FocusNode();
   final FocusNode _bodyFocus = FocusNode();
+  // 包住悬浮工具栏，自身不可获得焦点：颜色面板的颜色代码输入框拿到焦点时
+  // 正文失焦，工具栏仍须留着，否则输入框随之卸载。
+  final FocusNode _toolbarFocus = FocusNode(
+    debugLabel: 'template-floating-toolbar',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
   final ScrollController _bodyScroll = ScrollController();
   bool _lastFocusedBody = true;
 
@@ -59,12 +66,13 @@ class _DiaryTemplateEditorContentTabState
     super.initState();
     _titleFocus.addListener(_trackFocus);
     _bodyFocus.addListener(_trackFocus);
+    _toolbarFocus.addListener(_trackFocus);
   }
 
   void _trackFocus() {
     if (_titleFocus.hasFocus) _lastFocusedBody = false;
     if (_bodyFocus.hasFocus) _lastFocusedBody = true;
-    // 工具栏只在正文有焦点时出现。
+    // 工具栏只在正文（或工具栏里的输入框）有焦点时出现。
     setState(() {});
   }
 
@@ -72,6 +80,7 @@ class _DiaryTemplateEditorContentTabState
   void dispose() {
     _titleFocus.dispose();
     _bodyFocus.dispose();
+    _toolbarFocus.dispose();
     _bodyScroll.dispose();
     super.dispose();
   }
@@ -130,7 +139,9 @@ class _DiaryTemplateEditorContentTabState
     final titleStyle = appearance.titleStyle(theme.textTheme.headlineSmall);
     final order = _toolbarOrder();
     final showToolbar =
-        widget.keyboardVisible && _bodyFocus.hasFocus && order.isNotEmpty;
+        widget.keyboardVisible &&
+        (_bodyFocus.hasFocus || _toolbarFocus.hasFocus) &&
+        order.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -208,10 +219,13 @@ class _DiaryTemplateEditorContentTabState
               AppSpacing.s,
             ),
             child: DiaryFloatingToolbarSurface(
-              child: DiaryFloatingToolbar(
-                controller: widget.controller.body,
-                order: order,
-                maxPanelExtent: MediaQuery.sizeOf(context).height / 3,
+              child: Focus(
+                focusNode: _toolbarFocus,
+                child: DiaryFloatingToolbar(
+                  controller: widget.controller.body,
+                  order: order,
+                  maxPanelExtent: MediaQuery.sizeOf(context).height / 3,
+                ),
               ),
             ),
           ),

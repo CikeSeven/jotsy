@@ -6869,4 +6869,55 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notebookInsightsRandom => '随机翻一篇';
+
+  @override
+  String get diaryColorPanelDefaultColor => '默认颜色';
+
+  @override
+  String get diaryColorPanelNoBackground => '无背景色';
+
+  @override
+  String get diaryColorPanelCustom => '自定义';
+
+  @override
+  String get diaryColorPanelEnterCode => '输入颜色代码';
+
+  @override
+  String get diaryColorPanelHexHint => 'RRGGBB';
+
+  @override
+  String get diaryColorPanelApply => '应用';
+
+  @override
+  String get diaryColorRed => '红';
+
+  @override
+  String get diaryColorOrange => '橙';
+
+  @override
+  String get diaryColorYellow => '黄';
+
+  @override
+  String get diaryColorGreen => '绿';
+
+  @override
+  String get diaryColorTeal => '青';
+
+  @override
+  String get diaryColorBlue => '蓝';
+
+  @override
+  String get diaryColorIndigo => '靛';
+
+  @override
+  String get diaryColorPurple => '紫';
+
+  @override
+  String get diaryColorPink => '粉';
+
+  @override
+  String get diaryColorBrown => '棕';
+
+  @override
+  String get diaryColorGray => '灰';
 }

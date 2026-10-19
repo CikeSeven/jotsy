@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../app/theme/app_spacing.dart';
@@ -10,6 +9,7 @@ import '../viewmodels/diary_card_resolved_style.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
 import '../widgets/diary_swipe_action_item.dart';
+import '../widgets/diary_waterfall_sliver.dart';
 import 'diary_head_section.dart';
 import '../../widgets/expressive_entrance.dart';
 import '../../widgets/launch_reveal.dart';
@@ -150,33 +150,21 @@ class DiariesListSection extends StatelessWidget {
 
     // 瀑布流模式：多列卡片，卡片包含封面（如有）和摘要。
     if (isWaterfall) {
-      final waterfallLayoutSignature = Object.hash(
-        _waterfallLayoutSignature(diaries),
-        resolved.columns,
-      );
-      return SliverPadding(
-        key: ValueKey<int>(waterfallLayoutSignature),
-        padding: EdgeInsets.symmetric(horizontal: modeStyle.sideMargin),
-        sliver: SliverMasonryGrid.count(
-          crossAxisCount: resolved.columns,
-          mainAxisSpacing: modeStyle.cardGap,
-          crossAxisSpacing: modeStyle.cardGap,
-          childCount: diaries.length,
-          itemBuilder: (BuildContext context, int index) {
-            final diary = diaries[index];
-            return KeyedSubtree(
-              key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
-              child: LaunchReveal(
-                slot: LaunchRevealSlot.content(index),
-                child: _buildDiaryItem(
-                  context,
-                  diary: diary,
-                  resolved: resolved,
-                ),
-              ),
-            );
-          },
-        ),
+      return DiaryWaterfallSliver(
+        diaries: diaries,
+        columns: resolved.columns,
+        sideMargin: modeStyle.sideMargin,
+        cardGap: modeStyle.cardGap,
+        itemBuilder: (BuildContext context, int index) {
+          final diary = diaries[index];
+          return KeyedSubtree(
+            key: ValueKey<String>('waterfall_${diary.diary.diaryId}'),
+            child: LaunchReveal(
+              slot: LaunchRevealSlot.content(index),
+              child: _buildDiaryItem(context, diary: diary, resolved: resolved),
+            ),
+          );
+        },
       );
     }
 
@@ -207,35 +195,6 @@ class DiariesListSection extends StatelessWidget {
         );
       }, childCount: diaries.length),
     );
-  }
-
-  /// 根据当前瀑布流数据顺序生成稳定签名。
-  /// 当条目排序变化（如编辑后更新时间变化）时，触发瀑布流 sliver 重建，避免旧布局残留空位。
-  ///
-  /// 性能说明：签名计算是 O(n) 遍历，列表较长时每帧重算会拖累滚动。
-  /// 这里用静态单槽 memo 缓存“上一次列表弱引用 → 签名”：父级未替换 diaries 列表实例时
-  /// （`identical` 命中）直接复用结果。父级每次重建若都生成新列表，则退化为原始计算，无副作用。
-  /// 使用弱引用，避免离开归档/搜索页后签名缓存仍把整份日记正文留在内存。
-  static WeakReference<List<DiaryWithTags>>? _lastSignatureSource;
-  static int _lastSignatureValue = 0;
-
-  int _waterfallLayoutSignature(List<DiaryWithTags> items) {
-    if (identical(items, _lastSignatureSource?.target)) {
-      return _lastSignatureValue;
-    }
-    final value = _buildWaterfallLayoutSignature(items);
-    _lastSignatureSource = WeakReference(items);
-    _lastSignatureValue = value;
-    return value;
-  }
-
-  int _buildWaterfallLayoutSignature(List<DiaryWithTags> items) {
-    var hash = 17;
-    for (final item in items) {
-      hash = 37 * hash + item.diary.diaryId.hashCode;
-      hash = 37 * hash + item.diary.updatedAt.millisecondsSinceEpoch.hashCode;
-    }
-    return hash;
   }
 
   Widget _buildDiaryItem(

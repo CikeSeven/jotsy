@@ -2768,7 +2768,7 @@ abstract class AppLocalizations {
   /// **'Couldn\'t read this image to share it'**
   String get imageViewerImageUnreadable;
 
-  /// Screen reader long-press hint on an image in the image viewer: opens the share / save actions sheet.
+  /// Tooltip of the image viewer top-bar more button, also the screen reader long-press hint on an image: opens the share / save actions sheet.
   ///
   /// In en, this message translates to:
   /// **'More actions'**

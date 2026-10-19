@@ -249,6 +249,11 @@ class DiaryShareTargetButton extends StatelessWidget {
            ? diaryShareTargetLabel(l10n, target)
            : null;
 
+  /// 按钮宽度（含名称）与其中圆形的直径；按钮在圆形两侧各宽出一截，给
+  /// 名称留位置。看图页长按面板据此让圆形与面板其他内容的边缘对齐。
+  static const double width = 68;
+  static const double circleSize = 52;
+
   final String label;
   final FaIconData? icon;
   final String? glyph;
@@ -279,7 +284,7 @@ class DiaryShareTargetButton extends StatelessWidget {
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
           child: SizedBox(
-            width: 68,
+            width: width,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
@@ -290,7 +295,7 @@ class DiaryShareTargetButton extends StatelessWidget {
                   child: InkWell(
                     onTap: onTap,
                     child: SizedBox.square(
-                      dimension: 52,
+                      dimension: circleSize,
                       child: Center(
                         child: icon != null
                             ? FaIcon(icon, size: 22, color: foreground)

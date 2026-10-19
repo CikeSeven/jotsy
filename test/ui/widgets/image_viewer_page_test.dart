@@ -139,14 +139,15 @@ void main() {
         await tester.pumpAndSettle();
         final l10n = tester.element(find.byType(ImageViewerPage)).l10n;
 
-        // 顶栏只剩返回与页码：保存与分享都收进了长按面板。
+        // 顶栏只剩返回、页码与 ⋮：保存与分享都收进了操作面板。
         expect(
           find.descendant(
             of: find.byType(ImageViewerPage),
             matching: find.byType(IconButton),
           ),
-          findsOneWidget,
+          findsNWidgets(2),
         );
+        expect(find.byTooltip(l10n.imageViewerMoreActions), findsOneWidget);
         expect(find.byTooltip(l10n.imageViewerSaveToGallery), findsNothing);
         expect(find.byTooltip(l10n.commonShare), findsNothing);
 
@@ -170,6 +171,40 @@ void main() {
       },
     );
   }
+
+  testWidgets('the top-bar more button opens the same sheet for the page', (
+    tester,
+  ) async {
+    final opened = <String>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: expressiveTestTheme(Brightness.dark),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ImageViewerPage(
+          items: const <ImageViewerItem>[
+            ImageViewerItem(source: '/missing/first.jpg', diaryId: 'd1'),
+            ImageViewerItem(source: '/missing/second.jpg', diaryId: 'd2'),
+          ],
+          initialIndex: 1,
+          onOpenDiary: opened.add,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final l10n = tester.element(find.byType(ImageViewerPage)).l10n;
+
+    await tester.tap(find.byTooltip(l10n.imageViewerMoreActions));
+    await tester.pumpAndSettle();
+    expect(find.byType(ImageViewerActionsSheet), findsOneWidget);
+    expect(find.text(l10n.imageViewerSaveToGallery), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    // 面板作用于当前停着的那一张。
+    await tester.tap(find.text(l10n.imageViewerOpenDiary));
+    await tester.pumpAndSettle();
+    expect(opened, <String>['d2']);
+  });
 
   testWidgets('open diary hands the long-pressed image\'s diary to the entry', (
     tester,

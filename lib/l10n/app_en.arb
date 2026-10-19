@@ -2108,7 +2108,7 @@
   },
   "imageViewerMoreActions": "More actions",
   "@imageViewerMoreActions": {
-    "description": "Screen reader long-press hint on an image in the image viewer: opens the share / save actions sheet."
+    "description": "Tooltip of the image viewer top-bar more button, also the screen reader long-press hint on an image: opens the share / save actions sheet."
   },
   "diaryToolbarInsertCurrentTime": "Insert current time",
   "@diaryToolbarInsertCurrentTime": {

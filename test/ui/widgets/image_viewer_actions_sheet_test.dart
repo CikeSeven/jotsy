@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_share_target.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_share_widgets.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_sheet_controls.dart';
 import 'package:node_diary/ui/widgets/image_viewer_actions_sheet.dart';
 
 import '../../support/expressive_test_theme.dart';
@@ -95,6 +97,75 @@ void main() {
         );
       },
     );
+  }
+
+  for (final width in <double>[360, 411]) {
+    testWidgets('title, share circles and action icons share one edge at '
+        '${width.toInt()}dp', (tester) async {
+      tester.view
+        ..physicalSize = Size(width * 3, 2400)
+        ..devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      const installed = <DiaryShareTarget>{
+        DiaryShareTarget.weibo,
+        DiaryShareTarget.xiaohongshu,
+        DiaryShareTarget.wechat,
+        DiaryShareTarget.wechatMoments,
+        DiaryShareTarget.qq,
+      };
+      await tester.pumpWidget(
+        _host(
+          Brightness.light,
+          installed: Future<Set<DiaryShareTarget>>.value(installed),
+          initial: installed,
+          canOpenDiary: true,
+          results: <ImageViewerAction?>[],
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      Rect circleOf(int index) => tester.getRect(
+        find
+            .descendant(
+              of: find.byType(DiaryShareTargetButton).at(index),
+              matching: find.byType(InkWell),
+            )
+            .first,
+      );
+      final sheet = tester.getRect(find.byType(ImageViewerActionsSheet));
+      final titleIcon = tester.getRect(
+        find.descendant(
+          of: find.byType(DiarySheetSectionHeader),
+          matching: find.byType(FaIcon),
+        ),
+      );
+      final saveIcon = tester.getRect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is FaIcon && widget.icon == FontAwesomeIcons.download.data,
+        ),
+      );
+      final chevron = tester.getRect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is FaIcon &&
+              widget.icon == FontAwesomeIcons.angleRight.data,
+        ),
+      );
+      // 左边线：标题图标、首列圆形、分组里的行图标。
+      expect(titleIcon.left - sheet.left, closeTo(32, 0.5));
+      expect(circleOf(0).left, closeTo(titleIcon.left, 0.5));
+      expect(saveIcon.left, closeTo(titleIcon.left, 0.5));
+      // 第一行排满：末列圆形与行尾箭头落在右边线上；下一行与上一行成列。
+      final perRow = width < 400 ? 4 : 5;
+      final lastInRow = circleOf(perRow - 1);
+      expect(sheet.right - lastInRow.right, closeTo(32, 0.6));
+      expect(chevron.right, closeTo(lastInRow.right, 0.6));
+      expect(circleOf(perRow).top, greaterThan(lastInRow.bottom));
+      expect(circleOf(perRow).left, closeTo(circleOf(0).left, 0.5));
+      expect(tester.takeException(), isNull);
+    });
   }
 
   testWidgets('installed apps join more apps once detection finishes', (

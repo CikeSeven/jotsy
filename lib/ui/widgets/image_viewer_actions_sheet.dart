@@ -31,12 +31,15 @@ final class ImageViewerOpenDiaryAction extends ImageViewerAction {
   const ImageViewerOpenDiaryAction();
 }
 
-/// 打开看图页的长按面板，返回用户选中的动作；关闭面板返回 null。
+/// 打开看图页的操作面板（长按图片与顶栏 ⋮ 共用），返回用户选中的动作；
+/// 关闭面板返回 null。
 ///
 /// 自上而下：“分享到”一组目标按钮（已安装的应用 + 末尾始终可用的“更多
 /// 应用”，与日记分享面板同一套按钮与安装检测）→ 动作分组（保存到相册；
-/// [canOpenDiary] 时再加“打开日记”）。面板只负责挑选，保存与分享由看图页在
-/// 动作等待遮罩下执行，结果提示落在看图页上。
+/// [canOpenDiary] 时再加“打开日记”）。分组标题的图标、首列圆形与分组里的
+/// 行图标落在同一条竖线上，末列圆形与行尾箭头右缘对齐（见
+/// `ImageViewerActionsSheet._contentInset`）。面板只负责挑选，保存与分享由
+/// 看图页在动作等待遮罩下执行，结果提示落在看图页上。
 ///
 /// [installedTargets] 为看图页打开时就开始的安装检测；[initialTargets] 为
 /// 检测已完成时的结果（通常长按前就已完成），首帧即可排好全部目标，不会先
@@ -75,6 +78,18 @@ class ImageViewerActionsSheet extends StatelessWidget {
   final Set<DiaryShareTarget>? initialTargets;
   final bool canOpenDiary;
 
+  /// 动作分组到面板边缘的距离。
+  static const double _groupInset = AppSpacing.l;
+
+  /// 面板内容的左右边线：动作分组的边距 + 分组里行的内边距。分组标题与
+  /// 圆形都对齐到这里，和分组里的行图标、行尾箭头成一列。
+  static const double _contentInset = _groupInset + _ActionRow.padding;
+
+  /// 分享按钮比圆形宽，名称从圆形两侧各伸出这么多；网格少留这一截，圆形
+  /// 才落在 [_contentInset] 上。
+  static const double _labelOverhang =
+      (DiaryShareTargetButton.width - DiaryShareTargetButton.circleSize) / 2;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -83,61 +98,69 @@ class ImageViewerActionsSheet extends StatelessWidget {
       top: false,
       // 横屏或矮屏放不下两行目标与动作分组时面板内滚动。
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.l,
-          0,
-          AppSpacing.l,
-          AppSpacing.l,
-        ),
+        padding: const EdgeInsets.only(bottom: AppSpacing.l),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            DiarySheetSectionHeader(
-              icon: FontAwesomeIcons.shareNodes,
-              label: l10n.diaryShareTargetsSection,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _contentInset),
+              child: DiarySheetSectionHeader(
+                icon: FontAwesomeIcons.shareNodes,
+                label: l10n.diaryShareTargetsSection,
+              ),
             ),
             const SizedBox(height: AppSpacing.m),
-            FutureBuilder<Set<DiaryShareTarget>>(
-              future: installedTargets,
-              initialData: initialTargets,
-              builder: (context, snapshot) {
-                final installed = snapshot.data ?? const <DiaryShareTarget>{};
-                // 检测完成前只有“更多应用”；其他应用出现时面板平滑长高。
-                return AnimatedSize(
-                  duration: ExpressiveMotion.durationNonZero(
-                    context,
-                    ExpressiveMotion.medium,
-                  ),
-                  curve: ExpressiveMotion.effects,
-                  alignment: Alignment.topCenter,
-                  child: _ShareTargetGrid(
-                    targets: <DiaryShareTarget>[
-                      ...DiaryShareTarget.appTargets.where(installed.contains),
-                      DiaryShareTarget.system,
-                    ],
-                    onSelected: (DiaryShareTarget target) =>
-                        choose(ImageViewerShareAction(target)),
-                  ),
-                );
-              },
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: _contentInset - _labelOverhang,
+              ),
+              child: FutureBuilder<Set<DiaryShareTarget>>(
+                future: installedTargets,
+                initialData: initialTargets,
+                builder: (context, snapshot) {
+                  final installed = snapshot.data ?? const <DiaryShareTarget>{};
+                  // 检测完成前只有“更多应用”；其他应用出现时面板平滑长高。
+                  return AnimatedSize(
+                    duration: ExpressiveMotion.durationNonZero(
+                      context,
+                      ExpressiveMotion.medium,
+                    ),
+                    curve: ExpressiveMotion.effects,
+                    alignment: Alignment.topCenter,
+                    child: _ShareTargetGrid(
+                      targets: <DiaryShareTarget>[
+                        ...DiaryShareTarget.appTargets.where(
+                          installed.contains,
+                        ),
+                        DiaryShareTarget.system,
+                      ],
+                      onSelected: (DiaryShareTarget target) =>
+                          choose(ImageViewerShareAction(target)),
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            _ActionGroup(
-              children: <Widget>[
-                _ActionRow(
-                  icon: FontAwesomeIcons.download,
-                  label: l10n.imageViewerSaveToGallery,
-                  onTap: () => choose(const ImageViewerSaveAction()),
-                ),
-                if (canOpenDiary)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: _groupInset),
+              child: _ActionGroup(
+                children: <Widget>[
                   _ActionRow(
-                    icon: FontAwesomeIcons.bookOpen,
-                    label: l10n.imageViewerOpenDiary,
-                    navigates: true,
-                    onTap: () => choose(const ImageViewerOpenDiaryAction()),
+                    icon: FontAwesomeIcons.download,
+                    label: l10n.imageViewerSaveToGallery,
+                    onTap: () => choose(const ImageViewerSaveAction()),
                   ),
-              ],
+                  if (canOpenDiary)
+                    _ActionRow(
+                      icon: FontAwesomeIcons.bookOpen,
+                      label: l10n.imageViewerOpenDiary,
+                      navigates: true,
+                      onTap: () => choose(const ImageViewerOpenDiaryAction()),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
@@ -146,13 +169,13 @@ class ImageViewerActionsSheet extends StatelessWidget {
   }
 }
 
-/// 分享目标按钮的网格：按可用宽度均分列（每格至少 [_minCellWidth]），按钮
-/// 在格内居中，换行后上下两行对齐成列；目标少时靠左排开，不会被拉散。
+/// 分享目标按钮的网格：一行放得下几个就放几个（按钮间至少 [_minSpacing]），
+/// 列间距均分剩余宽度，首末列按钮贴住网格两侧；换行后上下成列，目标少时
+/// 从左排起，不会被拉散。常见手机宽度下一行 4～5 个。
 class _ShareTargetGrid extends StatelessWidget {
   const _ShareTargetGrid({required this.targets, required this.onSelected});
 
-  /// 略宽于按钮本身（68），名称两侧留出呼吸感；常见手机宽度下一行 4～5 个。
-  static const double _minCellWidth = 72;
+  static const double _minSpacing = 4;
 
   final List<DiaryShareTarget> targets;
   final ValueChanged<DiaryShareTarget> onSelected;
@@ -160,26 +183,27 @@ class _ShareTargetGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    const buttonWidth = DiaryShareTargetButton.width;
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
+        final width = constraints.maxWidth;
         final columns = math.max(
           1,
-          (constraints.maxWidth / _minCellWidth).floor(),
+          ((width + _minSpacing) / (buttonWidth + _minSpacing)).floor(),
         );
-        final cellWidth = constraints.maxWidth / columns;
+        // 少算半个逻辑像素：间距恰好填满时浮点误差会让 Wrap 把末列挤到下一行。
+        final spacing = columns > 1
+            ? (width - 0.5 - columns * buttonWidth) / (columns - 1)
+            : 0.0;
         return Wrap(
+          spacing: spacing,
           runSpacing: AppSpacing.m,
           children: <Widget>[
             for (final target in targets)
-              SizedBox(
-                width: cellWidth,
-                child: Center(
-                  child: DiaryShareTargetButton.forTarget(
-                    l10n,
-                    target,
-                    onTap: () => onSelected(target),
-                  ),
-                ),
+              DiaryShareTargetButton.forTarget(
+                l10n,
+                target,
+                onTap: () => onSelected(target),
               ),
           ],
         );
@@ -215,7 +239,7 @@ class _ActionGroup extends StatelessWidget {
                 thickness: 0.6,
                 // 从文字起点开始，图标列不被切断。
                 indent: 56,
-                endIndent: AppSpacing.l,
+                endIndent: _ActionRow.padding,
                 color: colorScheme.outlineVariant.withValues(
                   alpha: isLight ? 0.35 : 0.18,
                 ),
@@ -238,6 +262,9 @@ class _ActionRow extends StatelessWidget {
     this.navigates = false,
   });
 
+  /// 行的左右内边距，也是面板内容边线到分组边缘的距离。
+  static const double padding = AppSpacing.l;
+
   final FaIconData icon;
   final String label;
   final VoidCallback onTap;
@@ -248,13 +275,15 @@ class _ActionRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       minTileHeight: 56,
-      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+      contentPadding: const EdgeInsets.symmetric(horizontal: padding),
       // 主题给列表行 16 圆角；分组里的行按压高亮要铺满整行，由分组裁出外圆角。
       shape: const RoundedRectangleBorder(),
       titleAlignment: ListTileTitleAlignment.center,
+      // 图标贴着内容边线（不在 24 宽的槽里居中），与分组标题、首列圆形对齐。
       leading: SizedBox(
         width: 24,
-        child: Center(
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
           child: FaIcon(icon, size: 18, color: colorScheme.primary),
         ),
       ),

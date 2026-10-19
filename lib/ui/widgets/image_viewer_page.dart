@@ -79,9 +79,10 @@ Future<void> openImageViewer(
 ///   操作面板”；当前页放大时禁用左右翻页与下拉关闭，拖动只用于平移查看细节；
 ///   长图按屏宽从顶部开始竖向滚动（见 [ImageViewerImagePage]），该页的竖向
 ///   拖动留给滚动，不响应下拉关闭；
-/// - 长按图片弹出操作面板（[showImageViewerActionsSheet]）：分享到已安装的
-///   应用或“更多应用”、保存到相册，图片带日记 id 且入口给了 [onOpenDiary]
-///   时还能打开所在日记；顶栏只有返回与页码，不再放保存 / 分享按钮；
+/// - 长按图片或点顶栏 ⋮ 弹出同一个操作面板（[showImageViewerActionsSheet]）：
+///   分享到已安装的应用或“更多应用”、保存到相册，图片带日记 id 且入口给了
+///   [onOpenDiary] 时还能打开所在日记；顶栏只有返回、页码与 ⋮，不再单独放
+///   保存 / 分享按钮；
 /// - 初始页可携带共享元素（[initialHero]）：从缩略图/正文图连续展开，返回时
 ///   飞回原处；翻到其他页后返回只做淡出；
 /// - 不承担数据加载、去重或业务归属判断，图片列表由调用方透传；
@@ -186,6 +187,19 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
             )
           : Text(l10n.autoT0052, style: titleStyle),
       centerTitle: true,
+      // ⋮ 与长按图片打开同一个面板：长按不易发现，读屏用户也更习惯点按钮。
+      actions: hasImages
+          ? <Widget>[
+              IconButton(
+                tooltip: l10n.imageViewerMoreActions,
+                onPressed: _export.isBusy
+                    ? null
+                    : () => unawaited(_openActions(_activeIndex)),
+                icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+              ),
+              const SizedBox(width: 4),
+            ]
+          : null,
     );
     final pages = hasImages
         ? PageView.builder(
@@ -259,18 +273,27 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
 
   void _handleExportChanged() => setState(() {});
 
-  /// 长按图片：给出长按反馈后弹出操作面板，面板关闭后在这里执行所选动作。
-  ///
-  /// 面板期间页面不会翻页（模态遮罩拦住了手势），所以执行时仍对应长按的那
-  /// 一张；忙碌时（上一次保存 / 分享未完成）忽略长按。
-  Future<void> _handleLongPress(int index) async {
-    if (_export.isBusy || index < 0 || index >= widget.items.length) {
+  /// 长按图片：先给长按反馈，再打开与顶栏 ⋮ 相同的操作面板。忙碌时（上一次
+  /// 保存 / 分享未完成）忽略长按，也不震动。
+  void _handleLongPress(int index) {
+    if (_export.isBusy) {
       return;
     }
     // Android 由 Feedback.forLongPress 给出系统长按震动；iOS 上它不震，补一次。
     unawaited(Feedback.forLongPress(context));
     if (Theme.of(context).platform == TargetPlatform.iOS) {
       unawaited(HapticFeedback.mediumImpact());
+    }
+    unawaited(_openActions(index));
+  }
+
+  /// 打开操作面板（长按图片与顶栏 ⋮ 共用），面板关闭后在这里执行所选动作。
+  ///
+  /// 面板期间页面不会翻页（模态遮罩拦住了手势），所以执行时仍对应打开面板
+  /// 时的那一张；忙碌时直接忽略。
+  Future<void> _openActions(int index) async {
+    if (_export.isBusy || index < 0 || index >= widget.items.length) {
+      return;
     }
     final item = widget.items[index];
     final diaryId = item.diaryId;
@@ -336,7 +359,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
     return Semantics(
       onLongPressHint: context.l10n.imageViewerMoreActions,
       child: GestureDetector(
-        onLongPress: () => unawaited(_handleLongPress(index)),
+        onLongPress: () => _handleLongPress(index),
         child: ImageViewerImagePage(
           source: widget.items[index].source,
           hero: index == _initialPage ? widget.initialHero : null,

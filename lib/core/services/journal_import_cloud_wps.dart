@@ -2,6 +2,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_cloud_wps_format.dart';
+import 'journal_import_models.dart';
 
 /// WPS 便签（note.wps.cn）的只读客户端，协议依据参考实现（笔记互迁
 /// `providers/wps.py`、`wps_files.py`）：
@@ -48,6 +49,9 @@ class WpsCloudProvider implements CloudNoteProvider {
   String? _uid;
   WpsCodec? _codec;
   WpsStorage? _storage;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   Future<Map<String, Object?>> _call(
     String method,
@@ -230,7 +234,10 @@ class WpsCloudProvider implements CloudNoteProvider {
     if (detail['valid'] == 2) return null;
     final codec = _codec!;
     final created = _time(row['createTime']);
-    if (created == null) return null;
+    if (created == null) {
+      issues.skip(JournalSkipReason.unreadable);
+      return null;
+    }
     final String body;
     try {
       final raw = detail['body'] is String ? detail['body'] as String : '';
@@ -240,11 +247,14 @@ class WpsCloudProvider implements CloudNoteProvider {
         case 1:
           body = await _longBody(codec.decrypt(raw));
         default:
+          issues.skip(JournalSkipReason.unreadable);
           return null;
       }
     } on FormatException {
+      issues.skip(JournalSkipReason.unreadable);
       return null;
     } on ArgumentError {
+      issues.skip(JournalSkipReason.unreadable);
       return null;
     }
     final media = <WpsMedia>[];

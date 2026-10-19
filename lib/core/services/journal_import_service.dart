@@ -138,6 +138,8 @@ class JournalImportService {
         payload: payload,
         journalSource: source,
         missingMediaCount: parsed.missingMediaCount,
+        skippedNotes: parsed.skippedNotes,
+        summaryOnlyCount: parsed.summaryOnlyCount,
       );
       return JournalImportSession._(documents, staging, payload, preview);
     } catch (_) {

@@ -8,6 +8,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_envelope.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
 
 /// vivo 笔记（云服务网页版 pc.vivo.com.cn）的只读客户端，协议依据参考
 /// 实现（笔记互迁 `providers/vivo.py`、`vivo_wire.py`）：
@@ -40,6 +41,9 @@ class VivoCloudProvider implements CloudNoteProvider {
   final CloudNoteHttp http;
   final CloudNoteTransport _api;
   final Future<void> Function(Duration)? _wait;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   /// 只供测试替换厂商公钥（测试持有对应私钥以模拟服务端）。
   @visibleForTesting
@@ -108,7 +112,8 @@ class VivoCloudProvider implements CloudNoteProvider {
     return 'vivo:$id';
   }
 
-  Future<int> _statistics() async {
+  /// 笔记总数与其中加密的篇数（后者缺失时为 0）。
+  Future<({int total, int encrypted})> _statistics() async {
     final stats = await _call(
       'POST',
       '/statistics/note',
@@ -121,13 +126,14 @@ class VivoCloudProvider implements CloudNoteProvider {
         'vivo statistics',
       );
     }
-    return total;
+    final encrypted = (stats as Map)['encryptedNotes'];
+    return (total: total, encrypted: encrypted is int ? encrypted : 0);
   }
 
   @override
   Future<List<CloudNote>> fetchNotes(CloudProgress onProgress) async {
     if (_userId == null) await probe();
-    final total = await _statistics();
+    final (:total, :encrypted) = await _statistics();
     final books = await _call(
       'POST',
       '/noteBook/getList',
@@ -205,6 +211,8 @@ class VivoCloudProvider implements CloudNoteProvider {
       if (note != null) notes.add(note);
       onProgress(index + 1, rows.length);
     }
+    // 目录里未必列出加密笔记，以平台统计为下限。
+    issues.atLeast(JournalSkipReason.encrypted, encrypted);
     return notes;
   }
 
@@ -213,23 +221,29 @@ class VivoCloudProvider implements CloudNoteProvider {
     Map<String, String> folders,
   ) async {
     final guid = row['guid'] as String;
-    if (!const [null, 0].contains(row['encryptType']) ||
-        row['deleted'] != 1 ||
-        row['type'] != 1) {
+    CloudNote? skip(JournalSkipReason reason) {
+      issues.skip(reason);
       return null;
     }
+
+    // vivo 以 1 表示有效、0 表示已删除（与其他平台相反）。
+    if (row['deleted'] != 1) return null;
+    if (!const [null, 0].contains(row['encryptType'])) {
+      return skip(JournalSkipReason.encrypted);
+    }
+    if (row['type'] != 1) return skip(JournalSkipReason.unsupported);
     if (row['userId'] == null || '${row['userId']}' != _userId) {
       throw const CloudNoteException(CloudNoteFailure.sessionExpired);
     }
     final created = _time(row['createTime']);
-    if (created == null) return null;
+    if (created == null) return skip(JournalSkipReason.unreadable);
     final body = await _call(
       'POST',
       '/note/getContent/v2',
       data: {'guid': guid},
       encrypted: true,
     );
-    if (body is! String) return null;
+    if (body is! String) return skip(JournalSkipReason.unreadable);
 
     final attachments = <CloudAttachment>[];
     if (row['resources'] != null ||

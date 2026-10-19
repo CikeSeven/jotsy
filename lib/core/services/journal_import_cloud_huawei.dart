@@ -6,6 +6,7 @@ import 'package:html/dom.dart' as dom;
 import 'journal_import_cloud.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
 import 'journal_import_style.dart';
 
 /// 华为备忘录（云空间 cloud.huawei.com）的只读客户端，协议依据参考实现
@@ -51,6 +52,9 @@ class HuaweiCloudProvider implements CloudNoteProvider {
   final CloudNoteHttp http;
   final CloudNoteTransport _api;
   final Random _random;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   /// 最近一次响应头轮换下来的 CSRF 令牌（已编码）。
   String? _csrf;
@@ -160,8 +164,12 @@ class HuaweiCloudProvider implements CloudNoteProvider {
         throw const CloudNoteException(CloudNoteFailure.protocolChanged);
       }
       final kind = '${(row as Map)['kind'] ?? 'note'}';
-      // 只有 note 的格式已核实；newnote/task 等专有类型不读取。
-      if (kind == 'note') rows.add((guid: guid, kind: kind));
+      // 只有 note 的格式已核实；其他类型（如待办 task）不读取，计入跳过。
+      if (kind == 'note') {
+        rows.add((guid: guid, kind: kind));
+      } else {
+        issues.skip(JournalSkipReason.unsupported);
+      }
     }
     onProgress(0, rows.length);
 
@@ -212,22 +220,29 @@ class HuaweiCloudProvider implements CloudNoteProvider {
     return folders;
   }
 
+  /// 回收站中的笔记返回 null；结构认不出来的记入 [issues] 并返回 null。
   CloudNote? _parseDetail(
     Map<String, Object?> info,
     Map<String, String> folders,
   ) {
+    CloudNote? unreadable() {
+      issues.skip(JournalSkipReason.unreadable);
+      return null;
+    }
+
     final Object? data;
     try {
       data = info['data'] is String ? jsonDecode(info['data'] as String) : null;
     } on FormatException {
-      return null;
+      return unreadable();
     }
     final content = data is Map ? data['content'] : null;
-    if (content is! Map) return null;
+    if (content is! Map) return unreadable();
+    if ((content['delete_flag'] ?? 0) != 0) return null;
     final html = content['html_content'];
-    if (html is! String || (content['delete_flag'] ?? 0) != 0) return null;
+    if (html is! String) return unreadable();
     final created = _time(content['created']);
-    if (created == null) return null;
+    if (created == null) return unreadable();
 
     var title = content['title'] is String
         ? (content['title'] as String).split('\n').first

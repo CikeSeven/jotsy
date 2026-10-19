@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/journal_import_cloud_honor.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 import 'package:node_diary/core/services/journal_import_media.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
 
 import '../../support/fake_cloud_http.dart';
@@ -333,6 +334,51 @@ void main() {
         expect(file['attachment'], contains('季度报告.pdf'));
       },
     );
+  });
+
+  test('counts locked, handwritten and undated notes as skipped', () async {
+    final details = <String, Map<String, Object?>>{
+      'locked': {'type': 2, 'lock_status': 1},
+      'ink': {'type': 3},
+      'trash': {'type': 2, 'delete_flag': 1},
+      'undated': {'type': 2},
+    };
+    http.json('POST', '$_api/notepad/note/initDataBase/getFolderList', {
+      'code': 0,
+      'data': <Object?>[],
+    });
+    http.json('GET', '$_api/notepad/note/count', {
+      'code': 0,
+      'data': {'total': details.length},
+    });
+    http.json('POST', '$_api/notepad/note/util/getNoteList', {
+      'code': 0,
+      'data': [
+        for (final id in details.keys) {'uuid': id},
+      ],
+    });
+    http.on('POST', '$_api/notepad/noteDetail', (request) {
+      final id = ((request.json! as Map)['noteIds'] as List).single as String;
+      return jsonResponse({
+        'code': 0,
+        'data': [
+          {
+            'uuid': id,
+            'html_content': '<p>x</p>',
+            if (id != 'undated') 'create_time': 1720000000000,
+            ...details[id]!,
+          },
+        ],
+      });
+    });
+
+    expect(await provider.fetchNotes((_, _) {}), isEmpty);
+    // 回收站中的不算跳过。
+    expect(provider.issues.skipped, {
+      JournalSkipReason.encrypted: 1,
+      JournalSkipReason.unsupported: 1,
+      JournalSkipReason.unreadable: 1,
+    });
   });
 
   test('a note list that disagrees with the count is rejected', () async {

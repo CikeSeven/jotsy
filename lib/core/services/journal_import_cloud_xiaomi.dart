@@ -4,6 +4,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_blocks.dart';
 import 'journal_import_cloud_http.dart';
 import 'journal_import_cloud_xiaomi_markup.dart';
+import 'journal_import_models.dart';
 
 /// 小米笔记（i.mi.com）的只读客户端，协议依据参考实现（笔记互迁
 /// `providers/xiaomi.py`、`xiaomi_files.py`）：
@@ -30,9 +31,8 @@ class XiaomiCloudProvider implements CloudNoteProvider {
   final CloudNoteTransport _api;
   final Future<void> Function(Duration)? _wait;
 
-  /// 账号开启端到端加密时，所有笔记都带 `encryptInfo`、无法读取；全部被
-  /// 跳过时据此提示“账号已加密”，而不是“没有日记”。
-  int _encryptedSkipped = 0;
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   Future<Map<String, Object?>> _data(
     String path, {
@@ -123,10 +123,15 @@ class XiaomiCloudProvider implements CloudNoteProvider {
       if (entry is Map && _id(entry['id']) == id) {
         final note = _parseEntry(entry.cast<String, Object?>(), folders);
         if (note != null) notes.add(note);
+      } else {
+        issues.skip(JournalSkipReason.unreadable);
       }
       onProgress(index + 1, ids.length);
     }
-    if (notes.isEmpty && _encryptedSkipped > 0) {
+    // 账号开启端到端加密时，所有笔记都带 `encryptInfo`、无法读取；全部被
+    // 跳过时提示“账号已加密”，而不是“没有日记”。
+    if (notes.isEmpty &&
+        (issues.skipped[JournalSkipReason.encrypted] ?? 0) > 0) {
       throw const CloudNoteException(CloudNoteFailure.unsupportedAccount);
     }
     return notes;
@@ -146,29 +151,36 @@ class XiaomiCloudProvider implements CloudNoteProvider {
     }
   }
 
-  /// 不支持的笔记返回 null（端到端加密、思维导图等）。
+  /// 读不了的笔记记入 [issues] 并返回 null（端到端加密、思维导图等专有
+  /// 类型、结构认不出来）。
   CloudNote? _parseEntry(
     Map<String, Object?> entry,
     Map<String, String> folders,
   ) {
+    CloudNote? skip(JournalSkipReason reason) {
+      issues.skip(reason);
+      return null;
+    }
+
     final content = entry['content'];
-    if (content is! String) return null;
+    if (content is! String) return skip(JournalSkipReason.unreadable);
     if (entry['encryptInfo'] case final info?
         when info != false && info != '' && info != 0) {
-      _encryptedSkipped++;
-      return null;
+      return skip(JournalSkipReason.encrypted);
     }
     final Object? extra;
     try {
       final raw = entry['extraInfo'];
       extra = raw is String && raw.isNotEmpty ? jsonDecode(raw) : const {};
     } on FormatException {
-      return null;
+      return skip(JournalSkipReason.unreadable);
     }
-    if (extra is! Map) return null;
-    if ((extra['note_content_type'] ?? 'common') != 'common') return null;
+    if (extra is! Map) return skip(JournalSkipReason.unreadable);
+    if ((extra['note_content_type'] ?? 'common') != 'common') {
+      return skip(JournalSkipReason.unsupported);
+    }
     final created = _time(entry['createDate']);
-    if (created == null) return null;
+    if (created == null) return skip(JournalSkipReason.unreadable);
 
     final markup = parseXiaomiMarkup(content);
     final attachments = <CloudAttachment>[];

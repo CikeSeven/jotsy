@@ -7,6 +7,7 @@ import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi_markup.dart';
 import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
 
@@ -319,6 +320,51 @@ void main() {
       ]);
       expect(http.requests.last.url.queryParameters, isEmpty);
       expect(progress, [(1, null), (2, null), (1, 2), (2, 2)]);
+      // 回收站里的不算跳过，加密的算。
+      expect(provider.issues.skipped, {JournalSkipReason.encrypted: 1});
+    });
+
+    test('counts mind maps and unreadable entries as skipped', () async {
+      http.json('GET', 'i.mi.com/note/full/page', {
+        'code': 0,
+        'data': {
+          'entries': [
+            {'id': 'mind', 'status': 'normal'},
+            {'id': 'undated', 'status': 'normal'},
+            {'id': 'mismatch', 'status': 'normal'},
+          ],
+          'lastPage': true,
+        },
+      });
+      http.json('GET', 'i.mi.com/note/note/mind/', {
+        'code': 0,
+        'data': {
+          'entry': {
+            'id': 'mind',
+            'createDate': 1720000000000,
+            'extraInfo': '{"note_content_type":"mind"}',
+            'content': '{}',
+          },
+        },
+      });
+      http.json('GET', 'i.mi.com/note/note/undated/', {
+        'code': 0,
+        'data': {
+          'entry': {'id': 'undated', 'content': '正文'},
+        },
+      });
+      http.json('GET', 'i.mi.com/note/note/mismatch/', {
+        'code': 0,
+        'data': {
+          'entry': {'id': 'other', 'content': ''},
+        },
+      });
+
+      expect(await provider.fetchNotes((_, _) {}), isEmpty);
+      expect(provider.issues.skipped, {
+        JournalSkipReason.unsupported: 1,
+        JournalSkipReason.unreadable: 2,
+      });
     });
 
     test('keeps notes whose images use the legacy ☺ marker', () async {

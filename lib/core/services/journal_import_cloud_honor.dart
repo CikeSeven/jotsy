@@ -6,6 +6,7 @@ import 'journal_import_cloud.dart';
 import 'journal_import_cloud_honor_html.dart';
 import 'journal_import_cloud_html.dart';
 import 'journal_import_cloud_http.dart';
+import 'journal_import_models.dart';
 
 /// 荣耀笔记（新荣耀账号，cloud.honor.com）的只读客户端，协议依据参考实现
 /// （笔记互迁 `providers/honor.py`、`honor_html.py`、`honor_files.py`、
@@ -43,6 +44,9 @@ class HonorCloudProvider implements CloudNoteProvider {
   final Future<void> Function(Duration)? _wait;
   final Random _random;
   CloudNoteTransport? _files;
+
+  @override
+  final CloudReadIssues issues = CloudReadIssues();
 
   Map<String, String> _headers() {
     final csrf = http.cookie('hc_CSRF_Token');
@@ -144,20 +148,26 @@ class HonorCloudProvider implements CloudNoteProvider {
     return notes;
   }
 
-  /// 手写、证件等专有类型、上锁与回收站中的笔记返回 null。
-  static CloudNote? _parseEntry(
+  /// 回收站中的笔记返回 null；上锁的、手写与证件等专有类型、结构认不
+  /// 出来的记入 [issues] 并返回 null。
+  CloudNote? _parseEntry(
     Map<String, Object?> entry,
     Map<String, String> folders,
   ) {
-    final html = entry['html_content'];
-    if (html is! String ||
-        entry['type'] != 2 ||
-        (entry['lock_status'] ?? 0) != 0 ||
-        (entry['delete_flag'] ?? 0) != 0) {
+    CloudNote? skip(JournalSkipReason reason) {
+      issues.skip(reason);
       return null;
     }
+
+    if ((entry['delete_flag'] ?? 0) != 0) return null;
+    if ((entry['lock_status'] ?? 0) != 0) {
+      return skip(JournalSkipReason.encrypted);
+    }
+    if (entry['type'] != 2) return skip(JournalSkipReason.unsupported);
+    final html = entry['html_content'];
+    if (html is! String) return skip(JournalSkipReason.unreadable);
     final created = _time(entry['create_time']);
-    if (created == null) return null;
+    if (created == null) return skip(JournalSkipReason.unreadable);
     final index = indexHonorHtml(html);
     return CloudNote(
       id: '${entry['uuid']}',

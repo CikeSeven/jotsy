@@ -75,3 +75,74 @@ String? notebookVisibilityDescription(
   NotebookVisibility.hidden => l10n.notebookPrivacyHiddenHint,
   NotebookVisibility.locked => l10n.notebookPrivacyLockedHint,
 };
+
+/// 写作目标周期的按钮文字：每天 / 每周 / 每月。
+String notebookGoalPeriodLabel(
+  AppLocalizations l10n,
+  NotebookGoalPeriod period,
+) => switch (period) {
+  NotebookGoalPeriod.day => l10n.notebookGoalPeriodDay,
+  NotebookGoalPeriod.week => l10n.notebookGoalPeriodWeek,
+  NotebookGoalPeriod.month => l10n.notebookGoalPeriodMonth,
+};
+
+/// 目标原话：“每周写 3 篇”。
+String notebookGoalSummary(
+  AppLocalizations l10n,
+  NotebookGoalPeriod period,
+  int target,
+) => switch (period) {
+  NotebookGoalPeriod.day => l10n.notebookGoalSummaryDay(target),
+  NotebookGoalPeriod.week => l10n.notebookGoalSummaryWeek(target),
+  NotebookGoalPeriod.month => l10n.notebookGoalSummaryMonth(target),
+};
+
+/// 当前周期的进度：“本周 2 / 3 篇”，已达成时“本周已完成 ✓”。
+String notebookGoalProgressLabel(
+  AppLocalizations l10n,
+  NotebookGoalPeriod period, {
+  required int current,
+  required int target,
+}) {
+  if (current >= target) {
+    return switch (period) {
+      NotebookGoalPeriod.day => l10n.notebookGoalMetDay,
+      NotebookGoalPeriod.week => l10n.notebookGoalMetWeek,
+      NotebookGoalPeriod.month => l10n.notebookGoalMetMonth,
+    };
+  }
+  return switch (period) {
+    NotebookGoalPeriod.day => l10n.notebookGoalProgressDay(current, target),
+    NotebookGoalPeriod.week => l10n.notebookGoalProgressWeek(current, target),
+    NotebookGoalPeriod.month => l10n.notebookGoalProgressMonth(current, target),
+  };
+}
+
+/// 连续达成：“连续达成 4 周”；为 0 时 null（不写）。
+String? notebookGoalStreakLabel(
+  AppLocalizations l10n,
+  NotebookGoalPeriod period,
+  int streak,
+) {
+  if (streak <= 0) return null;
+  return switch (period) {
+    NotebookGoalPeriod.day => l10n.notebookGoalStreakDay(streak),
+    NotebookGoalPeriod.week => l10n.notebookGoalStreakWeek(streak),
+    NotebookGoalPeriod.month => l10n.notebookGoalStreakMonth(streak),
+  };
+}
+
+/// 头部卡片的目标行：“本周 2 / 3 篇 · 连续达成 4 周”。
+String notebookGoalLine(
+  AppLocalizations l10n,
+  NotebookGoalPeriod period, {
+  required int current,
+  required int target,
+  required int streak,
+}) {
+  final streakLabel = notebookGoalStreakLabel(l10n, period, streak);
+  return <String>[
+    notebookGoalProgressLabel(l10n, period, current: current, target: target),
+    ?streakLabel,
+  ].join(' · ');
+}

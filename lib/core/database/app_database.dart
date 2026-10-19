@@ -34,6 +34,7 @@ part 'app_database_template_ops.dart';
 part 'app_database_notebook_schema.dart';
 part 'app_database_notebook_ops.dart';
 part 'app_database_notebook_entry_ops.dart';
+part 'app_database_notebook_stats_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -59,6 +60,7 @@ class AppDatabase extends _$AppDatabase
         _AppDatabaseDraftOps,
         _AppDatabaseTemplateOps,
         _AppDatabaseNotebookOps,
+        _AppDatabaseNotebookStatsOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 

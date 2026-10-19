@@ -22,6 +22,7 @@ typedef _NotebookDraft = ({
   NotebookSort sort,
   String? templateId,
   NotebookRuleSet rules,
+  NotebookGoal? goal,
 });
 
 /// 日记本编辑页的表单状态与保存（新建与编辑共用）。
@@ -31,13 +32,14 @@ typedef _NotebookDraft = ({
 ///
 /// - 名称与简介是 [TextEditingController]，其余字段经 setter 修改并通知；
 /// - [dirty] 比较当前值与打开时（或上次保存后）的快照，决定返回时是否确认；
-/// - 编辑时以原 payload 为底 `copyWith`，章节、写作目标这些本页不编辑的
-///   字段原样保留；新建时以 [NotebookEditorController.new] 的 `initialPayload`
+/// - 编辑时以原 payload 为底 `copyWith`，章节这类本页不编辑的字段原样保留；新建时以 [NotebookEditorController.new] 的 `initialPayload`
 ///   为底（日历、搜索的快捷新建预填规则）；
 /// - 智能规则（[rules]）也是表单的一部分：参与改动比较；智能日记本至少要有
 ///   一条规则才能保存（空规则什么都不匹配）；保存为普通日记本时不写规则；
 /// - 智能日记本不能私密：类型选了“智能”时私密选项隐藏，保存一律写 normal
 ///   （数据库层也会兜底），切回“普通”时恢复之前的选择；
+/// - 写作目标只属于普通日记本：开关关闭时周期与篇数仍记在表单里（再打开时
+///   恢复），保存时不写；智能日记本保存时一律清除目标；
 /// - 选封面只拷贝新图到封面私有目录，被替换或移除的旧封面不在这里删除——
 ///   它可能仍被已保存的数据引用，由按引用回收的清理服务处理。
 class NotebookEditorController extends ChangeNotifier {
@@ -60,6 +62,10 @@ class NotebookEditorController extends ChangeNotifier {
     _sort = payload.sort;
     _templateId = payload.templateId;
     _rules = NotebookRuleSet.decode(payload.rules);
+    final goal = payload.goal;
+    _goalEnabled = goal != null;
+    _goalPeriod = goal?.period ?? NotebookGoalPeriod.week;
+    _goalTarget = goal?.target ?? defaultGoalTarget;
     _initial = _draft;
     name.addListener(notifyListeners);
     description.addListener(notifyListeners);
@@ -158,6 +164,35 @@ class NotebookEditorController extends ChangeNotifier {
     addRule(rule);
   }
 
+  /// 打开目标开关时的默认篇数（“每周写 3 篇”）。
+  static const int defaultGoalTarget = 3;
+
+  late bool _goalEnabled;
+
+  /// “设置目标”开关。
+  bool get goalEnabled => _goalEnabled;
+  set goalEnabled(bool value) => _set(() => _goalEnabled = value);
+
+  late NotebookGoalPeriod _goalPeriod;
+  NotebookGoalPeriod get goalPeriod => _goalPeriod;
+  set goalPeriod(NotebookGoalPeriod value) => _set(() => _goalPeriod = value);
+
+  late int _goalTarget;
+  int get goalTarget => _goalTarget;
+
+  /// 篇数夹到 [NotebookGoal.minTarget]..[NotebookGoal.maxTarget]。
+  set goalTarget(int value) => _set(
+    () => _goalTarget = value.clamp(
+      NotebookGoal.minTarget,
+      NotebookGoal.maxTarget,
+    ),
+  );
+
+  /// 当前表单的目标：开关关闭或智能日记本时为 null。
+  NotebookGoal? get goal => _goalEnabled && !isSmart
+      ? NotebookGoal(period: _goalPeriod, target: _goalTarget)
+      : null;
+
   bool _saving = false;
   bool get saving => _saving;
 
@@ -184,6 +219,7 @@ class NotebookEditorController extends ChangeNotifier {
     sort: _sort,
     templateId: _templateId,
     rules: _rules,
+    goal: goal,
   );
 
   /// 实际写入的可见性：智能日记本一律 normal。
@@ -204,6 +240,8 @@ class NotebookEditorController extends ChangeNotifier {
       clearTemplateId: _templateId == null,
       rules: isSmart ? _rules.encode() : null,
       clearRules: !isSmart,
+      goal: goal,
+      clearGoal: goal == null,
     );
   }
 

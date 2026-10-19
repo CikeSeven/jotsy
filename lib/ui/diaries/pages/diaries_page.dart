@@ -31,6 +31,7 @@ import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/sections/notebook_action_flows.dart';
 import '../../notebooks/pages/notebook_add_diaries_page.dart';
 import '../../notebooks/pages/notebook_contents_page.dart';
+import '../../notebooks/pages/notebook_insights_page.dart';
 import '../../notebooks/sections/notebook_action_sheets.dart';
 import '../../notebooks/sections/notebook_picker_sheet.dart';
 import '../../notebooks/sections/notebook_shelf_sheet.dart';
@@ -518,6 +519,8 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   : () => unawaited(
                                       _scopeController.openContents(),
                                     ),
+                              onOpenInsights: () =>
+                                  unawaited(_scopeController.openInsights()),
                               selectedChapterId:
                                   scopeResolution.state.chapterId,
                               unassignedChapterOnly:

@@ -36,7 +36,7 @@ class ExplorePageController {
       l10n.autoT0196,
     ];
     final stats = _buildStats(diaries, now: now);
-    final onThisDayDiaries = _pickOnThisDayList(diaries, now: now, l10n: l10n);
+    final onThisDayDiaries = pickOnThisDayList(diaries, now: now, l10n: l10n);
     final fallbackPrompt = fallbackPrompts[now.day % fallbackPrompts.length];
 
     final trends = const ExploreTrendBuilder().build(
@@ -44,7 +44,7 @@ class ExplorePageController {
       now: now,
       moodOptions: moodOptions,
     );
-    final tagUsages = _buildTagCloud(diaries, orderedTagIds: orderedTagIds);
+    final tagUsages = buildTagUsages(diaries, orderedTagIds: orderedTagIds);
     final mediaItems = _buildMediaGallery(diaries);
 
     return ExploreViewData(
@@ -104,12 +104,12 @@ class ExplorePageController {
     );
   }
 
-  /// 选择“那年今日”候选列表：
+  /// 选择“那年今日”候选列表（日记本统计页对本子里的日记复用同一规则）：
   /// - 同月同日；
   /// - 年份早于当前年；
   /// - 按创建时间倒序，最近年份优先；
   /// - 默认最多展示 12 条，避免轮播过长影响浏览体验。
-  List<ExploreOnThisDayItem> _pickOnThisDayList(
+  List<ExploreOnThisDayItem> pickOnThisDayList(
     List<ExploreDiaryOverview> diaries, {
     required DateTime now,
     required AppLocalizations l10n,
@@ -158,12 +158,12 @@ class ExplorePageController {
     return l10n.formatFullDate(localCreated);
   }
 
-  /// 标签频次统计 + 最近关联日记定位。
+  /// 标签频次统计 + 最近关联日记定位（日记本统计页复用后再按次数取前几个）。
   ///
   /// 排序策略：
   /// - 优先遵循用户在“标签管理”中配置的顺序；
   /// - 若存在未命中顺序表的标签，则放在后面并按名称升序兜底。
-  List<ExploreTagUsage> _buildTagCloud(
+  List<ExploreTagUsage> buildTagUsages(
     List<ExploreDiaryOverview> diaries, {
     required List<int> orderedTagIds,
   }) {

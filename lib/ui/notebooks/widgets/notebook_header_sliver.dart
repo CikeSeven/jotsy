@@ -7,6 +7,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../sections/notebook_action_sheets.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_chapter_chips.dart';
+import 'notebook_goal_row.dart';
 import 'notebook_header_actions.dart';
 import 'notebook_header_card.dart';
 
@@ -23,6 +24,7 @@ class NotebookHeaderSliver extends StatelessWidget {
     this.horizontalMargin = AppSpacing.l,
     this.onAddDiaries,
     this.onOpenContents,
+    this.onOpenInsights,
     this.selectedChapterId,
     this.unassignedChapterOnly = false,
     this.onSelectChapter,
@@ -40,6 +42,9 @@ class NotebookHeaderSliver extends StatelessWidget {
 
   /// “目录”；只对普通日记本显示，null 时不显示。
   final VoidCallback? onOpenContents;
+
+  /// “统计”；普通与智能日记本都显示，null 时不显示。
+  final VoidCallback? onOpenInsights;
 
   /// 首页当前的章节筛选（章节胶囊的选中态）。
   final String? selectedChapterId;
@@ -79,11 +84,21 @@ class NotebookHeaderSliver extends StatelessWidget {
                   onAction: onAction,
                   horizontalMargin: horizontalMargin,
                   extras: <Widget>[
-                    if (current.isManual &&
-                        (onAddDiaries != null || onOpenContents != null))
+                    // 写作目标（只有设了目标的普通日记本）：点按打开编辑页。
+                    if (current.isManual && current.payload.goal != null)
+                      NotebookGoalRow(
+                        notebook: current,
+                        onTap: () => onAction(NotebookAction.edit),
+                      ),
+                    if (onOpenInsights != null ||
+                        (current.isManual &&
+                            (onAddDiaries != null || onOpenContents != null)))
                       NotebookHeaderActions(
-                        onAddDiaries: onAddDiaries,
-                        onOpenContents: onOpenContents,
+                        onAddDiaries: current.isManual ? onAddDiaries : null,
+                        onOpenContents: current.isManual
+                            ? onOpenContents
+                            : null,
+                        onOpenInsights: onOpenInsights,
                       ),
                   ],
                   // 章节胶囊放在最下方，紧挨着它筛选的列表；横向滚动区铺到

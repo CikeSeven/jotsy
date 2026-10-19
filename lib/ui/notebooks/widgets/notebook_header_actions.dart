@@ -6,24 +6,27 @@ import '../../../app/theme/app_spacing.dart';
 
 /// 首页日记本头部卡片的操作行：一排小号的浅色按钮，窄屏时折行。
 ///
-/// “添加日记”（从已有日记挑选，见 `NotebookAddDiariesPage`）与“目录”
-/// （`NotebookContentsPage`）；统计等后续入口按顺序加在同一个 [Wrap] 里。
-/// 回调为 null 的按钮不显示。
+/// “添加日记”（从已有日记挑选，见 `NotebookAddDiariesPage`）、“目录”
+/// （`NotebookContentsPage`）与“统计”（`NotebookInsightsPage`，智能日记本也
+/// 有）。回调为 null 的按钮不显示。
 class NotebookHeaderActions extends StatelessWidget {
   const NotebookHeaderActions({
     super.key,
     required this.onAddDiaries,
     this.onOpenContents,
+    this.onOpenInsights,
   });
 
   final VoidCallback? onAddDiaries;
   final VoidCallback? onOpenContents;
+  final VoidCallback? onOpenInsights;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final onAddDiaries = this.onAddDiaries;
     final onOpenContents = this.onOpenContents;
+    final onOpenInsights = this.onOpenInsights;
     // 小号按钮：紧凑密度、缩小内边距，仍保留 40dp 的可点高度。
     final style = FilledButton.styleFrom(
       visualDensity: VisualDensity.compact,
@@ -51,6 +54,13 @@ class NotebookHeaderActions extends StatelessWidget {
               onPressed: onOpenContents,
               icon: const FaIcon(FontAwesomeIcons.listUl, size: 12),
               label: Text(l10n.notebookContents),
+            ),
+          if (onOpenInsights != null)
+            FilledButton.tonalIcon(
+              style: style,
+              onPressed: onOpenInsights,
+              icon: const FaIcon(FontAwesomeIcons.chartSimple, size: 12),
+              label: Text(l10n.notebookInsights),
             ),
         ],
       ),

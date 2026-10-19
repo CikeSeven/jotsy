@@ -24,6 +24,7 @@ import '../sections/notebook_chapter_dialogs.dart';
 import '../sections/notebook_contents_rows.dart';
 import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_view.dart';
+import '../widgets/notebook_page_title.dart';
 
 /// 普通日记本的目录页（首页头部卡片“目录”）。
 ///
@@ -86,7 +87,7 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
       child: Scaffold(
         backgroundColor: scheme.surface,
         appBar: AppTopBar(
-          title: _TitleWithSubtitle(
+          title: NotebookPageTitle(
             title: l10n.notebookContents,
             subtitle: notebook?.name,
           ),
@@ -439,36 +440,6 @@ class _NotebookContentsPageState extends ConsumerState<NotebookContentsPage> {
           child: child,
         ),
       ),
-    );
-  }
-}
-
-/// 顶栏标题：“目录” + 下方一行日记本名称。
-class _TitleWithSubtitle extends StatelessWidget {
-  const _TitleWithSubtitle({required this.title, this.subtitle});
-
-  final String title;
-  final String? subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final subtitle = this.subtitle;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        if (subtitle != null)
-          Text(
-            subtitle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-      ],
     );
   }
 }

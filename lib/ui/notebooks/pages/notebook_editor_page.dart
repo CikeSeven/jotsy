@@ -17,13 +17,15 @@ import '../../widgets/unsaved_changes_dialog.dart';
 import '../controllers/notebook_editor_controller.dart';
 import '../sections/notebook_editor_appearance.dart';
 import '../sections/notebook_editor_behavior.dart';
+import '../sections/notebook_editor_goal.dart';
 import '../sections/notebook_editor_rules.dart';
 import '../viewmodels/notebook_view.dart';
 
 /// 日记本编辑页：新建与编辑共用。
 ///
 /// 自上而下：实时预览、名称与简介、图标、颜色、封面图、类型（仅新建）、
-/// 规则（仅智能日记本）、隐私（仅普通日记本）、默认排序、新建时套用的模板。表单状态在
+/// 规则（仅智能日记本）、隐私与写作目标（仅普通日记本）、默认排序、新建时
+/// 套用的模板。表单状态在
 /// [NotebookEditorController]，页面只负责组合、导航与提示。保存成功后带着
 /// 日记本 id 返回；有未保存改动时返回先确认（与其他编辑页同一个对话框）。
 class NotebookEditorPage extends ConsumerStatefulWidget {
@@ -250,6 +252,8 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
         if (!editor.isSmart) ...<Widget>[
           gap,
           NotebookEditorPrivacySection(controller: editor),
+          gap,
+          NotebookEditorGoalSection(controller: editor),
         ],
         gap,
         NotebookEditorSortSection(controller: editor),

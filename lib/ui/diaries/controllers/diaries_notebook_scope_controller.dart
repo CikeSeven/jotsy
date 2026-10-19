@@ -200,6 +200,18 @@ class DiariesNotebookScopeController {
     ).push(NotebookContentsPage.route(notebookId: notebook.id));
   }
 
+  /// 头部卡片“统计”：打开这本的统计页（普通与智能日记本都有）。已在这本的
+  /// 解锁范围里，不再验证。
+  Future<void> openInsights() async {
+    final notebook = resolution.notebook;
+    if (notebook == null) {
+      return;
+    }
+    await Navigator.of(
+      _state.context,
+    ).push(NotebookInsightsPage.route(notebookId: notebook.id));
+  }
+
   /// 视图选项里改本子的排序：先按新排序过渡显示，再写回本子；写入失败时
   /// 退回原排序并提示。
   void changeNotebookSort(NotebookSort sort) {

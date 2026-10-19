@@ -15,9 +15,12 @@ import 'journal_import_models.dart';
 /// - 分组 `get/notegroup`；笔记分首页、各分组、提醒三类范围分页读取（每页
 ///   50，少于 50 即结束），按 `noteId` 去重；
 /// - 正文 `get/notebody`：`bodyType` 0 内联，1 为 S3 对象中的长正文（原始
-///   密文字节）；`valid == 2` 在回收站，跳过；格式见 [decodeWpsBody]；
+///   密文字节）；`valid == 2` 在回收站，跳过；格式见 [decodeWpsBody]；正文
+///   读不出来（解密失败、长正文对象读不到、未知的存放方式）时改用目录里的
+///   摘要作正文，计入 [CloudReadIssues.summaryOnly]，不丢掉整篇；
 /// - 图片/录音的对象键为 32 位十六进制，经 `/s3/requestdownload` 取得临时
-///   凭据后用 SigV4 签名直接从 S3 下载（不带账号 Cookie）。
+///   凭据后用 SigV4 签名直接从 S3 下载（不带账号 Cookie）；凭据过期被拒时
+///   换一份重试一次。
 class WpsCloudProvider implements CloudNoteProvider {
   WpsCloudProvider(
     this.http, {
@@ -238,33 +241,26 @@ class WpsCloudProvider implements CloudNoteProvider {
       issues.skip(JournalSkipReason.unreadable);
       return null;
     }
-    final String body;
-    try {
-      final raw = detail['body'] is String ? detail['body'] as String : '';
-      switch (detail['bodyType']) {
-        case 0:
-          body = codec.decrypt(raw);
-        case 1:
-          body = await _longBody(codec.decrypt(raw));
-        default:
-          issues.skip(JournalSkipReason.unreadable);
-          return null;
-      }
-    } on FormatException {
-      issues.skip(JournalSkipReason.unreadable);
-      return null;
-    } on ArgumentError {
-      issues.skip(JournalSkipReason.unreadable);
-      return null;
-    }
-    final media = <WpsMedia>[];
-    final blocks = decodeWpsBody(body, onMedia: media.add);
     String field(String name) {
       try {
         return row[name] is String ? codec.decrypt(row[name] as String) : '';
       } on Object {
         return '';
       }
+    }
+
+    final media = <WpsMedia>[];
+    final body = await _body(detail, codec);
+    final List<CloudBlock> blocks;
+    if (body != null) {
+      blocks = decodeWpsBody(body, onMedia: media.add);
+    } else {
+      // 摘要是纯文本，不按正文语法解析（免得字面的 * ~ 被当成样式）。
+      issues.summaryOnly++;
+      blocks = [
+        for (final line in field('summary').split('\n'))
+          CloudBlock.paragraph([if (line.isNotEmpty) CloudSpan(line)]),
+      ];
     }
 
     final title = field('title').trim().isNotEmpty
@@ -288,6 +284,26 @@ class WpsCloudProvider implements CloudNoteProvider {
     );
   }
 
+  /// 正文原文；读不出来时返回 null，由调用方改用摘要。登录失效、断网等
+  /// 会让整次读取不完整的错误照常抛出。
+  Future<String?> _body(Map<String, Object?> detail, WpsCodec codec) async {
+    try {
+      final raw = detail['body'] is String ? detail['body'] as String : '';
+      return switch (detail['bodyType']) {
+        0 => codec.decrypt(raw),
+        1 => await _longBody(codec.decrypt(raw)),
+        _ => null,
+      };
+    } on CloudNoteException catch (error) {
+      if (isFatalCloudFailure(error.failure)) rethrow;
+      return null;
+    } on FormatException {
+      return null;
+    } on ArgumentError {
+      return null;
+    }
+  }
+
   /// 长正文：对象键须在本账号前缀下且为 `<32 位十六进制>.encrypted`，对象
   /// 内容是原始密文字节。
   Future<String> _longBody(String key) async {
@@ -298,8 +314,25 @@ class WpsCloudProvider implements CloudNoteProvider {
         ).hasMatch(key.substring(storage.keyPrefix.length))) {
       throw const FormatException('wps long body key');
     }
-    final bytes = await _object(storage, key);
-    return _codec!.decryptBytes(bytes);
+    return _codec!.decryptBytes(await _s3Object((_) => key));
+  }
+
+  /// 读 S3 对象。临时凭据会过期（AWS 对过期令牌回 400 `ExpiredToken`，签名
+  /// 不符回 403），大账号读到后面就会碰上：被拒时换一份凭据重试一次，仍被
+  /// 拒才算这一项读不到。[keyOf] 按凭据给出的前缀拼出对象键。
+  Future<List<int>> _s3Object(String Function(WpsStorage storage) keyOf) async {
+    final storage = await _ensureStorage();
+    try {
+      return await _object(storage, keyOf(storage));
+    } on CloudNoteException catch (error) {
+      if (error.failure != CloudNoteFailure.rejected &&
+          error.failure != CloudNoteFailure.forbidden) {
+        rethrow;
+      }
+      _storage = null;
+      final fresh = await _ensureStorage();
+      return _object(fresh, keyOf(fresh));
+    }
   }
 
   Future<WpsStorage> _ensureStorage() async => _storage ??= WpsStorage.parse(
@@ -337,8 +370,7 @@ class WpsCloudProvider implements CloudNoteProvider {
     if (key is! String || !RegExp(r'^[a-fA-F0-9]{32}$').hasMatch(key)) {
       throw const CloudNoteException(CloudNoteFailure.rejected, 'wps key');
     }
-    final storage = await _ensureStorage();
-    return _object(storage, '${storage.keyPrefix}$key');
+    return _s3Object((storage) => '${storage.keyPrefix}$key');
   }
 
   static DateTime? _time(Object? value) => value is num && value > 0

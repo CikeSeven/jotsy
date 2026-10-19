@@ -166,6 +166,7 @@
 
 ## 9. 提交与变更管理
 - 必须：使用 Conventional Commit（如 `feat:`、`fix:`、`refactor:`、`docs:`、`test:`）。
+- 必须：提交的作者与提交者署名只使用 `CikeSeven <llyllydyx@163.com>`（代理提交前在仓库内设好 `git config user.name` / `user.email`），提交说明不加 `Co-Authored-By` 等其他署名。
 - 必须：保持提交单一目的，禁止夹带无关改动。
 - 必须：提交说明至少包含“改了什么 + 为什么 + 影响范围”。
 - 禁止：擅自回退用户已有改动或执行破坏性 git 操作（如 `git reset --hard`）。

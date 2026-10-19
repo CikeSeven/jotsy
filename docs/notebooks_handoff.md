@@ -1,10 +1,11 @@
 # 日记本（Notebooks）功能交接
 
-分支：`feat/notebooks`（基于 main `4f70c02`）。代码部分全部完成，并已逐个审查提交。只剩“文档与规范同步”一项没做。
-最后一次本地验证（`450a53a`）：
+分支：`feat/notebooks`（基于 main `4f70c02`，已在 `d3e736f` 合入 main `07d260e`）。代码与文档同步都已完成，只剩下文“后续可选项”。
+合入 main 时解决了导入解析器的冲突：来源日记本 / 文件夹仍经 `JournalImportEntry.notebooks` 报告；main 新增的纯文本笔记同样记作日记本；落地时被截断的名称存进 `import.originalNotebooks`。
+最后一次本地验证（`d3e736f`）：
 - `dart format --set-exit-if-changed`、`flutter analyze`、`dart run tool/check_arb.dart` 全部通过；
 - 重跑 `flutter gen-l10n` 和 build_runner 后工作区无变化；
-- 全量 `flutter test` 2673 通过、1 跳过。
+- 全量 `flutter test` 2743 通过、1 跳过。
 
 ## 已确认的产品决定
 - **归属**：一篇日记可以同时收进多本（相册模型）。移出日记本不会删除日记。在某一本里多选时，可以“移动到…”另一本。
@@ -26,8 +27,10 @@
 | 7d83ce8 | 日历按日记本筛选 |
 | 232af33 | 统计页与写作目标 |
 | 450a53a | 导出成书，头部卡片 ⋮ 菜单里的“导出成书” |
+| d3e736f | 合入 main（云笔记跳过报告、保留第三方正文与媒体），解决导入解析器冲突 |
+| docs 提交 | AGENTS.md 日记本规则、DESIGN.md §5.16、中英文 README |
 
-## 剩余工作：文档与规范同步（只改文档）
+## 文档与规范同步（已完成，以下为当时的清单）
 只改 `AGENTS.md`、`DESIGN.md`、README，不动 `docs/` 官网和 release notes。写之前先读代码，按实际实现写，提到的每个标识符都要先 grep 确认存在。
 
 1. **`AGENTS.md`**
@@ -75,7 +78,7 @@
   - 导出成书的 PDF 和 Word 实际排版；
   - 发布面板高度没改（470dp），多了日记本一行后，下面几行需要往下滚才能看到。
 - **官网与版本说明**（`docs/index.html`、`docs/releases/`）：发版时再写。
-- **开 PR**：等文档同步完成后再开。
+- **开 PR**：文档已同步，可以开；合并前删除本交接文档。
 
 ## 代码导航（入口）
 - 数据层：

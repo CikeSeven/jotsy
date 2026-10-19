@@ -163,16 +163,6 @@ String sanitizeDiaryHexInput(String input) => input
     .replaceAll(RegExp('[^0-9a-fA-F]'), '')
     .toUpperCase();
 
-/// 输入的颜色（不透明）落到正文时用哪个值：RGB 与当前颜色相同则沿用当前的
-/// 透明度——确认一个没改过的半透明高亮时，不能把它变成不透明；否则不透明。
-Color resolveDiaryHexInputColor(Color input, Color? current) {
-  if (current != null &&
-      (current.toARGB32() & 0xFFFFFF) == (input.toARGB32() & 0xFFFFFF)) {
-    return current;
-  }
-  return input.withAlpha(0xFF);
-}
-
 /// 这篇日记里用过、但不是预设的颜色（按文档顺序去重，读不懂的值跳过）。
 ///
 /// 遍历整篇 Delta，只在面板打开、切换目标与应用颜色代码后调用一次，不在
@@ -197,8 +187,9 @@ List<Color> collectDiaryDocumentColors(
 /// 色块网格的列数、行数与实际放得下的自定义颜色数。
 ///
 /// 规则：列数按 40dp 一格取整并夹在 [minColumns, maxColumns]；第一格是默认 /
-/// 无背景，随后 11 个预设，再用这篇日记里的自定义颜色填满至多两行，多出的
-/// 不显示。纯计算，面板高度由此直接得出，不必等测量。
+/// 无背景，随后 11 个预设，再用自定义颜色（最近用过的在前，再接这篇日记里
+/// 用过的）填满至多两行，多出的不显示。纯计算，面板高度由此直接得出，不必
+/// 等测量。
 class DiaryColorGridLayout {
   const DiaryColorGridLayout._({
     required this.columns,

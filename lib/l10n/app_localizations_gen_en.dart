@@ -7702,7 +7702,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryColorPanelHexHint => 'RRGGBB';
 
   @override
-  String get diaryColorPanelApply => 'Apply';
+  String get diaryColorPanelSwatches => 'Swatches';
+
+  @override
+  String get diaryColorPanelSaturationValue => 'Saturation and brightness';
+
+  @override
+  String get diaryColorPanelHue => 'Hue';
+
+  @override
+  String get diaryColorPanelOpacity => 'Opacity';
 
   @override
   String get diaryColorRed => 'Red';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_json.dart';
@@ -138,6 +139,54 @@ void main() {
       expect(toolbar.order, isNot(contains(item)));
     }
     expect(toolbar.order, contains(DiaryToolbarItem.checkList));
+    await h.unmount();
+  });
+
+  testWidgets('the color code input survives the keyboard closing briefly', (
+    tester,
+  ) async {
+    final h = await openEditor(tester);
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    addTearDown(tester.view.resetViewInsets);
+    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.pumpAndSettle();
+    // 默认顺序里颜色工具排在后面，收在「更多」里。
+    expect(find.byTooltip('文字颜色'), findsNothing);
+    await tester.tap(find.byTooltip('更多工具'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('文字颜色'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('自定义'));
+    await tester.pumpAndSettle();
+    final hexField = find.descendant(
+      of: find.byType(DiaryColorHexField),
+      matching: find.byType(TextField),
+    );
+    await tester.tap(hexField);
+    await tester.pumpAndSettle();
+
+    FocusNode hexFocus() => tester.widget<TextField>(hexField).focusNode!;
+    expect(hexFocus().hasFocus, isTrue);
+
+    // 换键盘时键盘高度短暂归零：工具栏与输入框都留着。
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    expect(hexField, findsOneWidget);
+    expect(hexFocus().hasFocus, isTrue);
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    expect(hexField, findsOneWidget);
+    expect(hexFocus().hasFocus, isTrue);
+
+    // 按“完成”应用后回到正文，键盘收起时工具栏照旧隐藏。
+    await tester.enterText(hexField, '3A7BD5');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(hexFocus().hasFocus, isFalse);
+    tester.view.viewInsets = FakeViewPadding.zero;
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryFloatingToolbar), findsNothing);
     await h.unmount();
   });
 }

@@ -618,6 +618,65 @@ void main() {
     );
   });
 
+  group('SettingsService diary recent colors', () {
+    const key = 'app.settings.diary_recent_colors';
+    const raw = '{"text":["#FF3A7BD5"],"background":[]}';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json, notifies and clears it with null', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryRecentColorsRaw, isNull);
+      final seen = <String?>[];
+      settings.diaryRecentColorsRawNotifier.addListener(
+        () => seen.add(settings.diaryRecentColorsRawNotifier.value),
+      );
+
+      await settings.setDiaryRecentColorsRaw(' $raw ');
+      expect(settings.diaryRecentColorsRaw, raw);
+      expect((await SettingsService.create()).diaryRecentColorsRaw, raw);
+
+      await settings.setDiaryRecentColorsRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(key), isFalse);
+      expect(seen, <String?>[raw, null]);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 7});
+      final settings = await SettingsService.create();
+      expect(settings.diaryRecentColorsRaw, isNull);
+    });
+
+    test(
+      'backups carry the colors and older backups keep the local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryRecentColorsRaw(raw);
+        expect(BackupSettings.capture(settings)['diaryRecentColorsRaw'], raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryRecentColorsRaw, raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryRecentColorsRaw': <String, dynamic>{
+            'text': <String>['#FF112233'],
+          },
+        });
+        expect(settings.diaryRecentColorsRaw, '{"text":["#FF112233"]}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryRecentColorsRaw': null,
+        });
+        expect(settings.diaryRecentColorsRaw, isNull);
+      },
+    );
+  });
+
   group('SettingsService diary export options', () {
     const key = 'app.settings.diary_export_options';
 

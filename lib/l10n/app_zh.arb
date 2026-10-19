@@ -9889,19 +9889,31 @@
   },
   "diaryColorPanelCustom": "自定义",
   "@diaryColorPanelCustom": {
-    "description": "Editor toolbar color panel: color code chip label when the selection has no color or a color without a readable code."
+    "description": "Editor toolbar color panel: tab label of the free color picker page (spectrum, hue, opacity and color code)."
   },
   "diaryColorPanelEnterCode": "输入颜色代码",
   "@diaryColorPanelEnterCode": {
-    "description": "Editor toolbar color panel: tooltip of the chip that opens the hex color code input."
+    "description": "Editor toolbar color panel: accessibility label of the hex color code field on the custom page."
   },
   "diaryColorPanelHexHint": "RRGGBB",
   "@diaryColorPanelHexHint": {
     "description": "Editor toolbar color panel: hint of the hex color code field (six hex digits after #)."
   },
-  "diaryColorPanelApply": "应用",
-  "@diaryColorPanelApply": {
-    "description": "Editor toolbar color panel: button that applies the typed hex color code."
+  "diaryColorPanelSwatches": "色板",
+  "@diaryColorPanelSwatches": {
+    "description": "Editor toolbar color panel: tab label of the page with the default, preset and recently used colors."
+  },
+  "diaryColorPanelSaturationValue": "饱和度与亮度",
+  "@diaryColorPanelSaturationValue": {
+    "description": "Editor toolbar color panel: accessibility label of the 2D saturation (horizontal) and brightness (vertical) area."
+  },
+  "diaryColorPanelHue": "色相",
+  "@diaryColorPanelHue": {
+    "description": "Editor toolbar color panel: accessibility label of the vertical hue slider."
+  },
+  "diaryColorPanelOpacity": "不透明度",
+  "@diaryColorPanelOpacity": {
+    "description": "Editor toolbar color panel: accessibility label of the vertical opacity slider (background color only)."
   },
   "diaryColorRed": "红",
   "@diaryColorRed": {

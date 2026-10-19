@@ -12536,13 +12536,13 @@ abstract class AppLocalizations {
   /// **'No background'**
   String get diaryColorPanelNoBackground;
 
-  /// Editor toolbar color panel: color code chip label when the selection has no color or a color without a readable code.
+  /// Editor toolbar color panel: tab label of the free color picker page (spectrum, hue, opacity and color code).
   ///
   /// In en, this message translates to:
   /// **'Custom'**
   String get diaryColorPanelCustom;
 
-  /// Editor toolbar color panel: tooltip of the chip that opens the hex color code input.
+  /// Editor toolbar color panel: accessibility label of the hex color code field on the custom page.
   ///
   /// In en, this message translates to:
   /// **'Enter color code'**
@@ -12554,11 +12554,29 @@ abstract class AppLocalizations {
   /// **'RRGGBB'**
   String get diaryColorPanelHexHint;
 
-  /// Editor toolbar color panel: button that applies the typed hex color code.
+  /// Editor toolbar color panel: tab label of the page with the default, preset and recently used colors.
   ///
   /// In en, this message translates to:
-  /// **'Apply'**
-  String get diaryColorPanelApply;
+  /// **'Swatches'**
+  String get diaryColorPanelSwatches;
+
+  /// Editor toolbar color panel: accessibility label of the 2D saturation (horizontal) and brightness (vertical) area.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturation and brightness'**
+  String get diaryColorPanelSaturationValue;
+
+  /// Editor toolbar color panel: accessibility label of the vertical hue slider.
+  ///
+  /// In en, this message translates to:
+  /// **'Hue'**
+  String get diaryColorPanelHue;
+
+  /// Editor toolbar color panel: accessibility label of the vertical opacity slider (background color only).
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity'**
+  String get diaryColorPanelOpacity;
 
   /// Name of the red preset color in the editor color panel.
   ///

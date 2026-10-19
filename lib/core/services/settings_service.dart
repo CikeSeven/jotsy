@@ -72,6 +72,7 @@ class SettingsService {
     required String? diaryCardStyleRaw,
     required String? diaryPreviewStyleRaw,
     required String? diaryTemplatePrefsRaw,
+    required String? diaryRecentColorsRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
@@ -109,6 +110,9 @@ class SettingsService {
        ),
        diaryTemplatePrefsRawNotifier = ValueNotifier<String?>(
          diaryTemplatePrefsRaw,
+       ),
+       diaryRecentColorsRawNotifier = ValueNotifier<String?>(
+         diaryRecentColorsRaw,
        );
 
   final SharedPreferences _prefs;
@@ -149,6 +153,10 @@ class SettingsService {
   /// 用户模板本身存在数据库 `diary_templates` 表里。
   final ValueNotifier<String?> diaryTemplatePrefsRawNotifier;
 
+  /// 编辑器颜色面板最近用过的自定义颜色（单个 JSON 字符串，文字色与背景色
+  /// 各一组）；解析与上限由日记模块（`DiaryRecentColors`）负责。
+  final ValueNotifier<String?> diaryRecentColorsRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
@@ -179,6 +187,7 @@ class SettingsService {
   static const _keyDiaryCardStyle = 'app.settings.diary_card_style';
   static const _keyDiaryPreviewStyle = 'app.settings.diary_preview_style';
   static const _keyDiaryTemplatePrefs = 'app.settings.diary_template_prefs';
+  static const _keyDiaryRecentColors = 'app.settings.diary_recent_colors';
   static const _keyDiaryShareOptions = 'app.settings.diary_share_options';
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
 
@@ -240,6 +249,7 @@ class SettingsService {
     final storedDiaryCardStyle = prefs.get(_keyDiaryCardStyle);
     final storedDiaryPreviewStyle = prefs.get(_keyDiaryPreviewStyle);
     final storedDiaryTemplatePrefs = prefs.get(_keyDiaryTemplatePrefs);
+    final storedDiaryRecentColors = prefs.get(_keyDiaryRecentColors);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -269,6 +279,9 @@ class SettingsService {
           : null,
       diaryTemplatePrefsRaw: storedDiaryTemplatePrefs is String
           ? storedDiaryTemplatePrefs
+          : null,
+      diaryRecentColorsRaw: storedDiaryRecentColors is String
+          ? storedDiaryRecentColors
           : null,
     );
   }
@@ -326,6 +339,8 @@ class SettingsService {
   String? get diaryCardStyleRaw => diaryCardStyleRawNotifier.value;
   String? get diaryPreviewStyleRaw => diaryPreviewStyleRawNotifier.value;
   String? get diaryTemplatePrefsRaw => diaryTemplatePrefsRawNotifier.value;
+
+  String? get diaryRecentColorsRaw => diaryRecentColorsRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -483,6 +498,18 @@ class SettingsService {
     await _writePreference(
       _prefs.setString(_keyDiaryTemplatePrefs, normalized),
     );
+  }
+
+  /// 保存颜色面板最近用过的自定义颜色；空值移除该键（没有最近颜色）。
+  Future<void> setDiaryRecentColorsRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      diaryRecentColorsRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyDiaryRecentColors));
+      return;
+    }
+    diaryRecentColorsRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyDiaryRecentColors, normalized));
   }
 
   Future<void> setDiaryCardTagLimit(int value) async {

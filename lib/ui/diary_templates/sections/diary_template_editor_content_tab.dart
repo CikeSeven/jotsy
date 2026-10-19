@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
+import '../../diaries/providers/diary_recent_colors_provider.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
 import '../../diaries/viewmodels/diary_quill_styles.dart';
 import '../../diaries/widgets/diary_floating_toolbar_surface.dart';
@@ -138,9 +139,11 @@ class _DiaryTemplateEditorContentTabState
     final appearance = ref.watch(diaryTextAppearanceProvider);
     final titleStyle = appearance.titleStyle(theme.textTheme.headlineSmall);
     final order = _toolbarOrder();
+    // 焦点在工具栏内（颜色代码输入框）时不看键盘：交接焦点时输入法可能先收起
+    // 再弹出，键盘短暂消失也不能卸载工具栏（与日记编辑页同一口径）。
     final showToolbar =
-        widget.keyboardVisible &&
-        (_bodyFocus.hasFocus || _toolbarFocus.hasFocus) &&
+        ((widget.keyboardVisible && _bodyFocus.hasFocus) ||
+            _toolbarFocus.hasFocus) &&
         order.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -225,6 +228,10 @@ class _DiaryTemplateEditorContentTabState
                   controller: widget.controller.body,
                   order: order,
                   maxPanelExtent: MediaQuery.sizeOf(context).height / 3,
+                  recentColors: ref.watch(diaryRecentColorsProvider),
+                  onCustomColorUsed: ref
+                      .read(diaryRecentColorsProvider.notifier)
+                      .record,
                 ),
               ),
             ),

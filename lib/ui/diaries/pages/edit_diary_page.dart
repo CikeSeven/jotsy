@@ -39,6 +39,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.da
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
+import 'package:node_diary/ui/diaries/providers/diary_recent_colors_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
@@ -750,9 +751,12 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    // 焦点在工具栏内（颜色代码输入框）时不看键盘高度：焦点从正文交给输入框
+    // 时，输入法可能先收起再弹出（如小米对可见密码类输入框换成系统安全
+    // 键盘），键盘高度会短暂归零；此时卸载工具栏会连同面板与输入框一起丢掉。
     final rawShowFloatingToolbar =
         _isMobileRuntime &&
-        keyboardInset > 0 &&
+        (keyboardInset > 0 || _toolbarFocusNode.hasFocus) &&
         _isEditingNoteText &&
         !_isEditPanelExpanded;
     final showEditMetaPanel = _isEditEntry;
@@ -1145,6 +1149,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       onMediaPressed: (kind) => unawaited(_controller.importMedia(kind)),
       onPanelExtentChanged: _handleToolbarPanelExtentChanged,
       maxPanelExtent: maxPanelExtent,
+      recentColors: ref.watch(diaryRecentColorsProvider),
+      onCustomColorUsed: ref.read(diaryRecentColorsProvider.notifier).record,
     );
   }
 

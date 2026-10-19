@@ -2049,6 +2049,26 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String backupImportSkippedEncrypted(int count) {
+    return '$count 篇加密或上锁的笔记读不到，将跳过';
+  }
+
+  @override
+  String backupImportSkippedUnsupported(int count) {
+    return '$count 篇手写、思维导图等专有格式的笔记将跳过';
+  }
+
+  @override
+  String backupImportSkippedUnreadable(int count) {
+    return '$count 篇笔记的格式无法识别，将跳过';
+  }
+
+  @override
+  String backupImportSummaryOnly(int count) {
+    return '$count 篇笔记的正文没能读取，只导入摘要';
+  }
+
+  @override
   String get calendarDisplayOptionsTooltip => '调整日历';
 
   @override

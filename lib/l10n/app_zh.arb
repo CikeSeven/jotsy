@@ -2910,6 +2910,42 @@
       }
     }
   },
+  "backupImportSkippedEncrypted": "{count} 篇加密或上锁的笔记读不到，将跳过",
+  "@backupImportSkippedEncrypted": {
+    "description": "其他应用的笔记中因加密或上锁读不到正文、整篇跳过的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportSkippedUnsupported": "{count} 篇手写、思维导图等专有格式的笔记将跳过",
+  "@backupImportSkippedUnsupported": {
+    "description": "其他应用的笔记中手写、思维导图等专有类型、整篇跳过的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportSkippedUnreadable": "{count} 篇笔记的格式无法识别，将跳过",
+  "@backupImportSkippedUnreadable": {
+    "description": "其他应用的笔记中缺少正文或时间、结构认不出来而整篇跳过的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportSummaryOnly": "{count} 篇笔记的正文没能读取，只导入摘要",
+  "@backupImportSummaryOnly": {
+    "description": "其他应用的笔记中正文读不到、改用目录摘要作正文导入的篇数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "calendarDisplayOptionsTooltip": "调整日历",
   "@calendarDisplayOptionsTooltip": {
     "description": "日历页头部打开显示选项面板的按钮提示。"

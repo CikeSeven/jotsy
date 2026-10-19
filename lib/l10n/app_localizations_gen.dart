@@ -3794,6 +3794,30 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 media file is missing from the export and will be skipped} other{{count} media files are missing from the export and will be skipped}}'**
   String backupImportMissingMedia(int count);
 
+  /// How many notes from another app are encrypted or locked, cannot be read and will be skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 encrypted or locked note can\'t be read and will be skipped} other{{count} encrypted or locked notes can\'t be read and will be skipped}}'**
+  String backupImportSkippedEncrypted(int count);
+
+  /// How many notes from another app are handwriting, mind maps or other proprietary types and will be skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 handwritten note, mind map or other special note will be skipped} other{{count} handwritten notes, mind maps or other special notes will be skipped}}'**
+  String backupImportSkippedUnsupported(int count);
+
+  /// How many notes from another app lack a body or date or have an unrecognized structure and will be skipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 note is in a format that can\'t be recognized and will be skipped} other{{count} notes are in a format that can\'t be recognized and will be skipped}}'**
+  String backupImportSkippedUnreadable(int count);
+
+  /// How many notes from another app will be imported with only their list summary because the body could not be read.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The body of 1 note couldn\'t be read; only its summary will be imported} other{The bodies of {count} notes couldn\'t be read; only their summaries will be imported}}'**
+  String backupImportSummaryOnly(int count);
+
   /// Tooltip of the calendar header button that opens the display options sheet.
   ///
   /// In en, this message translates to:

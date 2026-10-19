@@ -111,6 +111,10 @@ void main() {
       tables['diaryTags'] = [
         {'diaryId': 0, 'tagId': 0},
       ];
+      // 日记本关联同样跟着日记的本地 id 走，否则会被当作悬空关联丢弃。
+      for (final row in tables['diaryNotebooks'] as List) {
+        (row as Map)['diaryId'] = 0;
+      }
       final files = {
         for (final entry in fixture.originalMedia.entries)
           p.relative(entry.key, from: fixture.documents.path): entry.value,

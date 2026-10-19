@@ -3409,11 +3409,15 @@
   "@calendarFilterTitle": {
     "description": "Title of the calendar filter sheet."
   },
+  "calendarFilterNotebooks": "Notebooks",
+  "@calendarFilterNotebooks": {
+    "description": "Notebook group title in the calendar filter sheet (only regular, non-private notebooks are listed)."
+  },
   "calendarFilterClear": "Clear filter",
   "@calendarFilterClear": {
     "description": "Button that clears the calendar filter."
   },
-  "calendarFilterDescription": "Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.",
+  "calendarFilterDescription": "Dates and stats only count matching entries. Any choice within a group matches; when several groups are set, an entry must match all of them.",
   "@calendarFilterDescription": {
     "description": "Explains the calendar filter."
   },
@@ -7264,6 +7268,33 @@
       }
     }
   },
+  "backupOverwriteAllNotebooks": "{count, plural, =1{1 notebook} other{{count} notebooks}}",
+  "@backupOverwriteAllNotebooks": {
+    "description": "Bullet in the replace-everything warning: notebooks on this device that will be deleted (their diaries are counted as diaries).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportNotebookMergeResult": "{added, plural, =1{Notebooks: 1 added} other{Notebooks: {added} added}}",
+  "@backupImportNotebookMergeResult": {
+    "description": "Extra line of the merge import result: notebooks added (existing ones are not counted).",
+    "placeholders": {
+      "added": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportModeOverwriteNotebooksExtra": "{count, plural, =1{Also replaces the name, cover, chapters and other settings of 1 existing notebook} other{Also replaces the name, cover, chapters and other settings of {count} existing notebooks}}",
+  "@backupImportModeOverwriteNotebooksExtra": {
+    "description": "Extra line of the “merge and overwrite existing” description: notebooks also on this device whose settings will be replaced (the local shelf order is kept).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diaryTemplateDailyName": "Daily journal",
   "@diaryTemplateDailyName": {
     "description": "Name of the built-in “Daily journal” diary template."
@@ -8360,5 +8391,1492 @@
   "diaryTemplateNeedsBlankEntry": "Templates can only be applied to a blank entry",
   "@diaryTemplateNeedsBlankEntry": {
     "description": "Hint when \"Choose a template\" is tapped after the user has written in the title or body."
+  },
+  "notebookTitle": "Notebooks",
+  "@notebookTitle": {
+    "description": "Title of the notebooks feature: shelf sheet, management page and settings entry."
+  },
+  "notebookSettingsSubtitle": "Organize, reorder and merge your notebooks",
+  "@notebookSettingsSubtitle": {
+    "description": "Subtitle of the Notebooks entry on the settings home."
+  },
+  "notebookNew": "New notebook",
+  "@notebookNew": {
+    "description": "Create a notebook: editor title, buttons and the shelf's new tile."
+  },
+  "notebookEditTitle": "Edit notebook",
+  "@notebookEditTitle": {
+    "description": "Editor page title when editing an existing notebook."
+  },
+  "notebookManage": "Manage",
+  "@notebookManage": {
+    "description": "Shelf sheet header button that opens the notebook management page."
+  },
+  "notebookAllDiaries": "All entries",
+  "@notebookAllDiaries": {
+    "description": "Shelf sheet row that returns to all entries."
+  },
+  "notebookSectionPinned": "Pinned",
+  "@notebookSectionPinned": {
+    "description": "Shelf sheet group: pinned notebooks."
+  },
+  "notebookSectionMine": "My notebooks",
+  "@notebookSectionMine": {
+    "description": "Shelf and management group: regular notebooks."
+  },
+  "notebookSectionSmart": "Smart notebooks",
+  "@notebookSectionSmart": {
+    "description": "Shelf and management group: rule-based notebooks."
+  },
+  "notebookSectionClosed": "Closed",
+  "@notebookSectionClosed": {
+    "description": "Shelf and management group: closed notebooks (collapsed on the shelf by default)."
+  },
+  "notebookEntryCount": "{count, plural, =1{1 entry} other{{count} entries}}",
+  "@notebookEntryCount": {
+    "description": "Number of entries in a notebook.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSemanticsSeparator": ", ",
+  "@notebookSemanticsSeparator": {
+    "description": "Separator between name, count and state in a notebook cover's screen-reader label."
+  },
+  "notebookEmptyHint": "Collect entries from different topics and times into one notebook",
+  "@notebookEmptyHint": {
+    "description": "Empty state text when there are no notebooks yet."
+  },
+  "notebookMissing": "This notebook no longer exists",
+  "@notebookMissing": {
+    "description": "Shown when the notebook being edited has been deleted."
+  },
+  "notebookNameLabel": "Name",
+  "@notebookNameLabel": {
+    "description": "Label of the notebook name field."
+  },
+  "notebookNameHint": "e.g. Travel",
+  "@notebookNameHint": {
+    "description": "Placeholder of the notebook name field; also the preview cover's sample name while empty."
+  },
+  "notebookDescriptionLabel": "Description",
+  "@notebookDescriptionLabel": {
+    "description": "Label of the notebook description field."
+  },
+  "notebookDescriptionHint": "Describe this notebook in a sentence (optional)",
+  "@notebookDescriptionHint": {
+    "description": "Placeholder of the notebook description field."
+  },
+  "notebookIconLabel": "Icon",
+  "@notebookIconLabel": {
+    "description": "Title of the notebook icon picker."
+  },
+  "notebookIconMore": "More icons",
+  "@notebookIconMore": {
+    "description": "Quick-create dialog button that shows all icons."
+  },
+  "notebookIconLess": "Show less",
+  "@notebookIconLess": {
+    "description": "Quick-create dialog button that collapses the icon grid."
+  },
+  "notebookColorLabel": "Color",
+  "@notebookColorLabel": {
+    "description": "Title of the notebook color picker."
+  },
+  "notebookColorFollowTheme": "Follow theme",
+  "@notebookColorFollowTheme": {
+    "description": "Notebook color option: no color, follow the app theme."
+  },
+  "notebookCoverLabel": "Cover image",
+  "@notebookCoverLabel": {
+    "description": "Title of the notebook cover image group."
+  },
+  "notebookCoverPick": "Choose image",
+  "@notebookCoverPick": {
+    "description": "Button that picks a cover image for the notebook."
+  },
+  "notebookCoverRemove": "Remove",
+  "@notebookCoverRemove": {
+    "description": "Button that removes the notebook cover image."
+  },
+  "notebookTypeLabel": "Type",
+  "@notebookTypeLabel": {
+    "description": "Title of the notebook type group when creating a notebook."
+  },
+  "notebookTypeManual": "Regular",
+  "@notebookTypeManual": {
+    "description": "Notebook type: entries are added by hand."
+  },
+  "notebookTypeSmart": "Smart",
+  "@notebookTypeSmart": {
+    "description": "Notebook type: entries are collected by rules."
+  },
+  "notebookTypeManualHint": "Pick the entries to add yourself",
+  "@notebookTypeManualHint": {
+    "description": "One-line description of the regular notebook type."
+  },
+  "notebookTypeSmartHint": "Automatically collects entries that match your conditions",
+  "@notebookTypeSmartHint": {
+    "description": "One-line description of the smart notebook type."
+  },
+  "notebookPrivacyLabel": "Privacy",
+  "@notebookPrivacyLabel": {
+    "description": "Title of the notebook privacy group."
+  },
+  "notebookPrivacyNormal": "Normal",
+  "@notebookPrivacyNormal": {
+    "description": "Privacy option: entries still appear in All entries."
+  },
+  "notebookPrivacyHidden": "Hide from All entries",
+  "@notebookPrivacyHidden": {
+    "description": "Privacy option: entries do not appear in All entries."
+  },
+  "notebookPrivacyHiddenHint": "Only visible inside this notebook",
+  "@notebookPrivacyHiddenHint": {
+    "description": "Description of the hide-from-All-entries option."
+  },
+  "notebookPrivacyLocked": "Lock",
+  "@notebookPrivacyLocked": {
+    "description": "Privacy option: opening the notebook needs authentication."
+  },
+  "notebookPrivacyLockedHint": "Verify your identity to open, and hide from All entries",
+  "@notebookPrivacyLockedHint": {
+    "description": "Description of the lock option."
+  },
+  "notebookSortLabel": "Default order",
+  "@notebookSortLabel": {
+    "description": "Title of the default entry order group."
+  },
+  "notebookSortCreatedDesc": "Date published, newest first",
+  "@notebookSortCreatedDesc": {
+    "description": "Order option: by publish date, newest first."
+  },
+  "notebookSortCreatedAsc": "Date published, oldest first",
+  "@notebookSortCreatedAsc": {
+    "description": "Order option: by publish date, oldest first."
+  },
+  "notebookSortCreatedAscHint": "Reads like a book",
+  "@notebookSortCreatedAscHint": {
+    "description": "Description of the oldest-first order."
+  },
+  "notebookSortUpdatedDesc": "Recently edited",
+  "@notebookSortUpdatedDesc": {
+    "description": "Order option: most recently edited first."
+  },
+  "notebookSortBook": "Book order",
+  "@notebookSortBook": {
+    "description": "Order option: the order arranged in the table of contents."
+  },
+  "notebookSortBookHint": "Arranged by hand in the table of contents",
+  "@notebookSortBookHint": {
+    "description": "Description of the book order."
+  },
+  "notebookTemplateLabel": "Template for new entries",
+  "@notebookTemplateLabel": {
+    "description": "Template applied to new entries in the notebook: editor row and picker title."
+  },
+  "notebookTemplateNone": "None",
+  "@notebookTemplateNone": {
+    "description": "No default template for the notebook."
+  },
+  "notebookSaveFailed": "Couldn't save. Please try again",
+  "@notebookSaveFailed": {
+    "description": "Shown when saving a notebook fails."
+  },
+  "notebookActionFailed": "Something went wrong. Please try again",
+  "@notebookActionFailed": {
+    "description": "Shown when a notebook action (pin, close, reorder, delete, merge) fails."
+  },
+  "notebookMoreActions": "More actions",
+  "@notebookMoreActions": {
+    "description": "Tooltip of the more-actions button on a management row."
+  },
+  "notebookDragHandle": "Drag to reorder",
+  "@notebookDragHandle": {
+    "description": "Screen-reader label of the drag handle on the management page."
+  },
+  "notebookStatePinned": "Pinned",
+  "@notebookStatePinned": {
+    "description": "Notebook state: pinned (management row subtitle)."
+  },
+  "notebookStateSmart": "Smart",
+  "@notebookStateSmart": {
+    "description": "Notebook state: smart notebook (subtitle and screen reader)."
+  },
+  "notebookStateHidden": "Hidden",
+  "@notebookStateHidden": {
+    "description": "Notebook state: hidden from All entries."
+  },
+  "notebookStateLocked": "Locked",
+  "@notebookStateLocked": {
+    "description": "Notebook state: locked."
+  },
+  "notebookStateClosed": "Closed",
+  "@notebookStateClosed": {
+    "description": "Notebook state: closed."
+  },
+  "notebookActionPin": "Pin",
+  "@notebookActionPin": {
+    "description": "Notebook action: pin."
+  },
+  "notebookActionUnpin": "Unpin",
+  "@notebookActionUnpin": {
+    "description": "Notebook action: unpin."
+  },
+  "notebookActionClose": "Close",
+  "@notebookActionClose": {
+    "description": "Notebook action: close (finished, rarely used)."
+  },
+  "notebookActionCloseHint": "Moves to Closed on the shelf and no longer appears when adding entries",
+  "@notebookActionCloseHint": {
+    "description": "Description of the close action."
+  },
+  "notebookActionReopen": "Reopen",
+  "@notebookActionReopen": {
+    "description": "Notebook action: reopen a closed notebook."
+  },
+  "notebookActionMerge": "Merge into…",
+  "@notebookActionMerge": {
+    "description": "Notebook action: merge this notebook into another."
+  },
+  "notebookActionConvert": "Convert to regular notebook",
+  "@notebookActionConvert": {
+    "description": "Smart notebook action: convert to a regular notebook."
+  },
+  "notebookActionConvertHint": "Adds the entries that match now; stops updating automatically",
+  "@notebookActionConvertHint": {
+    "description": "Description of converting to a regular notebook."
+  },
+  "notebookMergeSheetTitle": "Merge into which notebook",
+  "@notebookMergeSheetTitle": {
+    "description": "Title of the merge target sheet."
+  },
+  "notebookMergeEmpty": "There is no other regular notebook to merge into",
+  "@notebookMergeEmpty": {
+    "description": "Shown when there is no merge target."
+  },
+  "notebookMergeConfirmTitle": "Merge notebooks",
+  "@notebookMergeConfirmTitle": {
+    "description": "Title of the merge confirmation dialog."
+  },
+  "notebookMergeConfirm": "Move {count, plural, =1{1 entry} other{{count} entries}} from \"{source}\" into \"{target}\" and delete \"{source}\"?",
+  "@notebookMergeConfirm": {
+    "description": "Body of the merge confirmation dialog.",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMergeAction": "Merge",
+  "@notebookMergeAction": {
+    "description": "Confirm button of the merge dialog."
+  },
+  "notebookMerged": "Merged into \"{target}\"",
+  "@notebookMerged": {
+    "description": "Shown after merging.",
+    "placeholders": {
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookDeleteTitle": "Delete \"{name}\"?",
+  "@notebookDeleteTitle": {
+    "description": "Title of the delete notebook dialog.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookDeleteKeepDiaries": "Delete notebook only",
+  "@notebookDeleteKeepDiaries": {
+    "description": "Delete option: delete only the notebook, keep the entries."
+  },
+  "notebookDeleteKeepDiariesHint": "{count, plural, =1{1 entry stays} other{{count} entries stay}} in All entries",
+  "@notebookDeleteKeepDiariesHint": {
+    "description": "Description of the delete-notebook-only option.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookDeleteWithDiaries": "Also move entries to trash",
+  "@notebookDeleteWithDiaries": {
+    "description": "Delete option: also move the notebook's entries to trash."
+  },
+  "notebookDeleteWithDiariesHint": "You can restore them from trash",
+  "@notebookDeleteWithDiariesHint": {
+    "description": "Description of the also-trash-entries option."
+  },
+  "notebookDeleteSmartHint": "Your entries are not affected",
+  "@notebookDeleteSmartHint": {
+    "description": "Shown when deleting a smart notebook."
+  },
+  "notebookDeleted": "Deleted \"{name}\"",
+  "@notebookDeleted": {
+    "description": "Undo message after deleting a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSwitcherSemantics": "Switch notebook, current: {name}",
+  "@notebookSwitcherSemantics": {
+    "description": "Screen reader label of the notebook switcher chip at the start of the home tag bar.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookScopeDeleted": "Notebook deleted",
+  "@notebookScopeDeleted": {
+    "description": "Hint shown when the notebook open on the home page was deleted or merged and the list returns to all diaries."
+  },
+  "notebookSearchIn": "Search in \"{name}\"",
+  "@notebookSearchIn": {
+    "description": "Search bar placeholder on the home page while inside a notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSearchRemoveScope": "Remove notebook condition: {name}",
+  "@notebookSearchRemoveScope": {
+    "description": "Screen reader label of the remove button on the search page's notebook condition chip.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaWords": "{words} words",
+  "@notebookMetaWords": {
+    "description": "Total word count in the notebook header meta line (already formatted with grouping, e.g. 21,345).",
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaSpan": "{start} – {end}",
+  "@notebookMetaSpan": {
+    "description": "Time span in the notebook header meta line: month of the first to the last entry.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookMetaSpanOngoing": "{start} – now",
+  "@notebookMetaSpanOngoing": {
+    "description": "Time span in the notebook header meta line when the latest entry is from the current month.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookHeaderSmartBadge": "Smart notebook",
+  "@notebookHeaderSmartBadge": {
+    "description": "Capsule on the notebook header card marking a smart notebook."
+  },
+  "notebookHeaderPrivateBadge": "Only shown in this notebook",
+  "@notebookHeaderPrivateBadge": {
+    "description": "Capsule on the notebook header card marking a private (hidden or locked) notebook."
+  },
+  "notebookEmptyTitle": "This notebook is empty",
+  "@notebookEmptyTitle": {
+    "description": "Empty state title on the home page inside a notebook with no entries."
+  },
+  "notebookEmptyCreateHint": "Tap New below to write the first entry",
+  "@notebookEmptyCreateHint": {
+    "description": "Explanation under the empty state of a notebook on the home page."
+  },
+  "notebookViewSortSection": "Sort in this notebook",
+  "@notebookViewSortSection": {
+    "description": "Sort section title of the view options sheet while inside a notebook."
+  },
+  "notebookViewOptionsEntry": "Switch notebook",
+  "@notebookViewOptionsEntry": {
+    "description": "Entry in the view options sheet that opens the notebook shelf."
+  },
+  "notebookViewOptionsEntrySubtitle": "Show only one notebook's entries, or create one",
+  "@notebookViewOptionsEntrySubtitle": {
+    "description": "Subtitle of the notebook shelf entry in the view options sheet."
+  },
+  "notebookUnlockReason": "Unlock \"{name}\"",
+  "@notebookUnlockReason": {
+    "description": "Reason shown on the system authentication prompt when opening a locked notebook.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookLockUnsupportedTitle": "Can't open locked notebook",
+  "@notebookLockUnsupportedTitle": {
+    "description": "Dialog title when a locked notebook can't be opened because the device has no screen lock."
+  },
+  "notebookLockUnsupportedMessage": "This device has no screen lock, so your identity can't be verified and locked notebooks can't be opened. Set a screen lock in system settings to open them.",
+  "@notebookLockUnsupportedMessage": {
+    "description": "Explanation when opening a locked notebook on a device without a screen lock."
+  },
+  "notebookLockUnsupportedAction": "Got it",
+  "@notebookLockUnsupportedAction": {
+    "description": "Dialog button that opens the notebook settings when a locked notebook can't be verified."
+  },
+  "notebookLockedTitle": "\"{name}\" is locked",
+  "@notebookLockedTitle": {
+    "description": "Title of the overlay covering a locked notebook when returning to the app.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookLockedSubtitle": "Verify your identity again after leaving the app",
+  "@notebookLockedSubtitle": {
+    "description": "Subtitle of the locked notebook overlay."
+  },
+  "notebookLockUnlock": "Unlock",
+  "@notebookLockUnlock": {
+    "description": "Unlock button on the locked notebook overlay."
+  },
+  "notebookLockBackToAll": "Back to all diaries",
+  "@notebookLockBackToAll": {
+    "description": "Button on the locked notebook overlay that leaves the notebook and returns to all diaries."
+  },
+  "notebookPrivateDiaryPlaceholder": "Entry in a private notebook",
+  "@notebookPrivateDiaryPlaceholder": {
+    "description": "Placeholder shown in the recycle bin instead of the title of an entry from a private notebook."
+  },
+  "notebookAnniversaryLinkPrivate": "The linked entry is in a private notebook",
+  "@notebookAnniversaryLinkPrivate": {
+    "description": "Shown on an anniversary when its linked entry is in a hidden or locked notebook."
+  },
+  "backupImportFolderModeTitle": "Original notebooks / folders",
+  "@backupImportFolderModeTitle": {
+    "description": "Header of a section in the import options sheet: what the other app's notebooks or folders become after import."
+  },
+  "backupImportFolderModeNotebooks": "Notebooks",
+  "@backupImportFolderModeNotebooks": {
+    "description": "Folder mode segment: create notebooks."
+  },
+  "backupImportFolderModeTags": "Tags",
+  "@backupImportFolderModeTags": {
+    "description": "Folder mode segment: turn them into tags with the same names (previous behaviour)."
+  },
+  "backupImportFolderModeBoth": "Both",
+  "@backupImportFolderModeBoth": {
+    "description": "Folder mode segment: create both notebooks and tags."
+  },
+  "backupImportFolderModeNotebooksHint": "{count, plural, =1{Turns the source notebook / folder into a notebook; one with the same name joins your existing notebook} other{Turns the {count} source notebooks / folders into notebooks; ones with the same name join your existing notebooks}}",
+  "@backupImportFolderModeNotebooksHint": {
+    "description": "Explanation when “Notebooks” is selected; count is the number of distinct source notebooks / folders.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backupImportFolderModeTagsHint": "As before, they become tags with the same names",
+  "@backupImportFolderModeTagsHint": {
+    "description": "Explanation when “Tags” is selected."
+  },
+  "backupImportFolderModeBothHint": "Creates notebooks and tags with the same names",
+  "@backupImportFolderModeBothHint": {
+    "description": "Explanation when “Both” is selected."
+  },
+  "notebookEmptyManualHint": "Write the first entry, or pick a few existing ones",
+  "@notebookEmptyManualHint": {
+    "description": "Hint under an empty manual notebook (two buttons follow)."
+  },
+  "notebookEmptyWriteFirst": "Write the first entry",
+  "@notebookEmptyWriteFirst": {
+    "description": "Empty-notebook button: write straight into this notebook."
+  },
+  "notebookEmptyPickExisting": "Pick existing entries",
+  "@notebookEmptyPickExisting": {
+    "description": "Empty-notebook button: open the add-entries page."
+  },
+  "notebookAddDiaries": "Add entries",
+  "@notebookAddDiaries": {
+    "description": "Notebook header button: pick existing entries to add."
+  },
+  "notebookExportAsBook": "Export as book",
+  "@notebookExportAsBook": {
+    "description": "Notebook header overflow menu item: export the whole notebook as one document with a title page, contents and chapter headings."
+  },
+  "notebookBookExportedOn": "Exported on {date}",
+  "@notebookBookExportedOn": {
+    "description": "Export date line on the title page of a notebook exported as a book.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryExportBookStructure": "Book structure",
+  "@diaryExportBookStructure": {
+    "description": "Export sheet switch shown when exporting a notebook as a book: whether to write a title page, contents and chapter headings."
+  },
+  "diaryExportBookStructureDescription": "Title page, contents and chapter headings",
+  "@diaryExportBookStructureDescription": {
+    "description": "One-line description under the Book structure switch."
+  },
+  "notebookContentsUnassignedDropHint": "Drag here to take entries out of chapters",
+  "@notebookContentsUnassignedDropHint": {
+    "description": "Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters."
+  },
+  "notebookChapterAll": "All",
+  "@notebookChapterAll": {
+    "description": "Chapter chip in the notebook header: show every chapter."
+  },
+  "notebookChapterUnassigned": "No chapter",
+  "@notebookChapterUnassigned": {
+    "description": "Chapter chip / contents header for entries not in any chapter."
+  },
+  "notebookChapterChip": "{title} · {count}",
+  "@notebookChapterChip": {
+    "description": "Chapter chip label: chapter title and its number of entries.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContents": "Contents",
+  "@notebookContents": {
+    "description": "Notebook contents page title and the header card button that opens it."
+  },
+  "notebookContentsNewChapter": "New chapter",
+  "@notebookContentsNewChapter": {
+    "description": "Contents page top-bar action and dialog title: add a chapter."
+  },
+  "notebookContentsSelect": "Select",
+  "@notebookContentsSelect": {
+    "description": "Contents page top-bar action: enter multi-select mode."
+  },
+  "notebookContentsSelectDone": "Done selecting",
+  "@notebookContentsSelectDone": {
+    "description": "Contents page top-bar action: leave multi-select mode."
+  },
+  "notebookContentsSelectedCount": "{count, plural, =1{1 selected} other{{count} selected}}",
+  "@notebookContentsSelectedCount": {
+    "description": "Contents page multi-select bar: number of selected entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContentsNoChapterHint": "Add chapters to split this notebook into parts",
+  "@notebookContentsNoChapterHint": {
+    "description": "Contents page banner when the notebook has no chapters."
+  },
+  "notebookContentsEmpty": "No entries in this notebook yet",
+  "@notebookContentsEmpty": {
+    "description": "Contents page empty state."
+  },
+  "notebookContentsArchived": "Archived",
+  "@notebookContentsArchived": {
+    "description": "Semantics label of the archived glyph on a contents row."
+  },
+  "notebookContentsSealed": "Sealed time capsule",
+  "@notebookContentsSealed": {
+    "description": "Semantics label of the lock glyph on a contents row."
+  },
+  "notebookContentsDragHandle": "Drag to reorder",
+  "@notebookContentsDragHandle": {
+    "description": "Semantics label of the drag handle on a contents row."
+  },
+  "notebookContentsChapterActions": "Chapter actions",
+  "@notebookContentsChapterActions": {
+    "description": "Tooltip of the chapter header menu on the contents page."
+  },
+  "notebookChapterRename": "Rename",
+  "@notebookChapterRename": {
+    "description": "Chapter menu item: rename the chapter."
+  },
+  "notebookChapterRenameTitle": "Rename chapter",
+  "@notebookChapterRenameTitle": {
+    "description": "Title of the rename chapter dialog."
+  },
+  "notebookChapterMoveUp": "Move up",
+  "@notebookChapterMoveUp": {
+    "description": "Chapter menu item: move the chapter one place up."
+  },
+  "notebookChapterMoveDown": "Move down",
+  "@notebookChapterMoveDown": {
+    "description": "Chapter menu item: move the chapter one place down."
+  },
+  "notebookChapterTitleLabel": "Chapter name",
+  "@notebookChapterTitleLabel": {
+    "description": "Label of the chapter name field."
+  },
+  "notebookChapterTitleHint": "e.g. Tokyo",
+  "@notebookChapterTitleHint": {
+    "description": "Hint of the chapter name field."
+  },
+  "notebookChapterDeleteConfirm": "{count, plural, =1{Delete chapter \"{title}\"? Its 1 entry goes back to No chapter; no entries are deleted.} other{Delete chapter \"{title}\"? Its {count} entries go back to No chapter; no entries are deleted.}}",
+  "@notebookChapterDeleteConfirm": {
+    "description": "Confirmation for deleting a chapter.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookContentsMoveToChapter": "Move to chapter…",
+  "@notebookContentsMoveToChapter": {
+    "description": "Contents multi-select action: move the selected entries to a chapter."
+  },
+  "notebookContentsMoveSheetTitle": "Move to chapter",
+  "@notebookContentsMoveSheetTitle": {
+    "description": "Title of the chapter picker sheet."
+  },
+  "notebookContentsMoved": "{count, plural, =1{Moved 1 entry to \"{title}\"} other{Moved {count} entries to \"{title}\"}}",
+  "@notebookContentsMoved": {
+    "description": "Hint after moving entries to a chapter; title is the chapter (or No chapter).",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookPickerTitle": "Add to notebook",
+  "@notebookPickerTitle": {
+    "description": "Notebook picker title; also the multi-select and preview \"More\" entry."
+  },
+  "notebookPickerEmpty": "No notebooks to add to yet",
+  "@notebookPickerEmpty": {
+    "description": "Shown in the notebook picker when there is no notebook to choose."
+  },
+  "notebookPickerDone": "Done",
+  "@notebookPickerDone": {
+    "description": "Submit button at the bottom of the notebook picker."
+  },
+  "notebookPickerPrivateHint": "Added to \"{name}\". These entries now only show in that notebook",
+  "@notebookPickerPrivateHint": {
+    "description": "Hint after adding entries to a hidden or locked notebook; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookSelectionMore": "More actions",
+  "@notebookSelectionMore": {
+    "description": "Tooltip of the multi-select bar \"more\" button."
+  },
+  "notebookRemoveFromCurrent": "Remove from this notebook",
+  "@notebookRemoveFromCurrent": {
+    "description": "Multi-select menu item: remove the selected entries from the current notebook."
+  },
+  "notebookMoveTo": "Move to…",
+  "@notebookMoveTo": {
+    "description": "Multi-select menu item and picker title: move to another notebook."
+  },
+  "notebookAddedToCount": "{count, plural, =1{Added to 1 notebook} other{Added to {count} notebooks}}",
+  "@notebookAddedToCount": {
+    "description": "Hint after adding entries to notebooks; count is the number of notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookMembershipUpdated": "Notebooks updated",
+  "@notebookMembershipUpdated": {
+    "description": "Hint after changing notebook membership (including removals)."
+  },
+  "notebookRemovedFrom": "{count, plural, =1{Removed 1 entry from \"{name}\"} other{Removed {count} entries from \"{name}\"}}",
+  "@notebookRemovedFrom": {
+    "description": "Hint after removing entries from a notebook; name is the notebook, count the number of entries.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookMovedTo": "{count, plural, =1{Moved 1 entry to \"{name}\"} other{Moved {count} entries to \"{name}\"}}",
+  "@notebookMovedTo": {
+    "description": "Hint after moving entries; name is the target notebook, count the number of entries.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookPublishNone": "Not in a notebook",
+  "@notebookPublishNone": {
+    "description": "Placeholder of the publish panel notebook row when none is selected."
+  },
+  "notebookWriteInto": "Write in {name}",
+  "@notebookWriteInto": {
+    "description": "Home create button label inside a notebook; name is the (shortened) notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookAddPageTitle": "Add to \"{name}\"",
+  "@notebookAddPageTitle": {
+    "description": "Add-entries page title; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookAddPageDone": "Done ({count})",
+  "@notebookAddPageDone": {
+    "description": "Add-entries page done button; count is the number selected.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookAddSearchHint": "Search entries",
+  "@notebookAddSearchHint": {
+    "description": "Search field placeholder on the add-entries page."
+  },
+  "notebookAddFilterAll": "All",
+  "@notebookAddFilterAll": {
+    "description": "Add-entries filter: any time."
+  },
+  "notebookAddFilterRecent": "Last 30 days",
+  "@notebookAddFilterRecent": {
+    "description": "Add-entries filter: written in the last 30 days."
+  },
+  "notebookAddFilterThisYear": "This year",
+  "@notebookAddFilterThisYear": {
+    "description": "Add-entries filter: written this year."
+  },
+  "notebookAddAlreadyIn": "Already in this notebook",
+  "@notebookAddAlreadyIn": {
+    "description": "Add-entries page note for entries already in the notebook."
+  },
+  "notebookAddedCount": "{count, plural, =1{Added 1 entry} other{Added {count} entries}}",
+  "@notebookAddedCount": {
+    "description": "Hint after adding entries; count is the number added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookAddEmpty": "No matching entries",
+  "@notebookAddEmpty": {
+    "description": "Shown on the add-entries page when nothing matches."
+  },
+  "notebookPreviewNone": "Not in any notebook yet",
+  "@notebookPreviewNone": {
+    "description": "Preview \"More\" subtitle when the entry is in no notebook."
+  },
+  "notebookListSeparator": ", ",
+  "@notebookListSeparator": {
+    "description": "Separator between notebook names in a list."
+  },
+  "notebookOpenNotebook": "Open \"{name}\"",
+  "@notebookOpenNotebook": {
+    "description": "Screen-reader hint of a notebook capsule on the preview page; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRulesTitle": "Rules",
+  "@notebookRulesTitle": {
+    "description": "Title of the rules section on the smart notebook editor."
+  },
+  "notebookRulesMatchAll": "Match all",
+  "@notebookRulesMatchAll": {
+    "description": "How rules combine: every rule must match."
+  },
+  "notebookRulesMatchAny": "Match any",
+  "@notebookRulesMatchAny": {
+    "description": "How rules combine: any rule may match."
+  },
+  "notebookRulesMatchCount": "{count, plural, =1{Matches 1 entry} other{Matches {count} entries}}",
+  "@notebookRulesMatchCount": {
+    "description": "Live number of entries matching the draft rules; count is the number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRulesNeedOne": "Add at least one rule to save",
+  "@notebookRulesNeedOne": {
+    "description": "Shown while a smart notebook has no rules yet (save is disabled)."
+  },
+  "notebookRulesLimit": "Up to {max} rules",
+  "@notebookRulesLimit": {
+    "description": "Shown instead of \"Add rule\" at the limit; max is the limit.",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRulesExamples": "Start from an example",
+  "@notebookRulesExamples": {
+    "description": "Heading above the example chips when there are no rules yet."
+  },
+  "notebookRuleExampleRecent": "Last 30 days",
+  "@notebookRuleExampleRecent": {
+    "description": "Example rule: entries from the last 30 days."
+  },
+  "notebookRuleExampleThisMonth": "This month every year",
+  "@notebookRuleExampleThisMonth": {
+    "description": "Example rule: entries from this month in any year."
+  },
+  "notebookRuleExampleImages": "Entries with photos",
+  "@notebookRuleExampleImages": {
+    "description": "Example rule: entries with images."
+  },
+  "notebookRuleExamplePinned": "Pinned entries",
+  "@notebookRuleExamplePinned": {
+    "description": "Example rule: pinned entries."
+  },
+  "notebookRuleAdd": "Add rule",
+  "@notebookRuleAdd": {
+    "description": "Entry to add a rule; also the rule type sheet title."
+  },
+  "notebookRuleRemove": "Remove rule",
+  "@notebookRuleRemove": {
+    "description": "Tooltip of the remove button on a rule row."
+  },
+  "notebookRuleDone": "Done",
+  "@notebookRuleDone": {
+    "description": "Done button of a rule editor sheet."
+  },
+  "notebookRuleTypeTags": "Tags",
+  "@notebookRuleTypeTags": {
+    "description": "Rule type: tags."
+  },
+  "notebookRuleTypeTagsHint": "Has, or lacks, certain tags",
+  "@notebookRuleTypeTagsHint": {
+    "description": "Description of the tags rule."
+  },
+  "notebookRuleTypeMood": "Mood",
+  "@notebookRuleTypeMood": {
+    "description": "Rule type: mood."
+  },
+  "notebookRuleTypeMoodHint": "Mood is one of these",
+  "@notebookRuleTypeMoodHint": {
+    "description": "Description of the mood rule."
+  },
+  "notebookRuleTypeWeather": "Weather",
+  "@notebookRuleTypeWeather": {
+    "description": "Rule type: weather."
+  },
+  "notebookRuleTypeWeatherHint": "Weather contains some text",
+  "@notebookRuleTypeWeatherHint": {
+    "description": "Description of the weather rule."
+  },
+  "notebookRuleTypeLocation": "Location",
+  "@notebookRuleTypeLocation": {
+    "description": "Rule type: location."
+  },
+  "notebookRuleTypeLocationHint": "Location contains some text",
+  "@notebookRuleTypeLocationHint": {
+    "description": "Description of the location rule."
+  },
+  "notebookRuleTypeKeyword": "Keyword",
+  "@notebookRuleTypeKeyword": {
+    "description": "Rule type: keyword."
+  },
+  "notebookRuleTypeKeywordHint": "Title or text contains some words",
+  "@notebookRuleTypeKeywordHint": {
+    "description": "Description of the keyword rule."
+  },
+  "notebookRuleTypeDate": "Date",
+  "@notebookRuleTypeDate": {
+    "description": "Rule type: date."
+  },
+  "notebookRuleTypeDateHint": "A date range, recent days or a time every year",
+  "@notebookRuleTypeDateHint": {
+    "description": "Description of the date rule."
+  },
+  "notebookRuleTypeMedia": "Media",
+  "@notebookRuleTypeMedia": {
+    "description": "Rule type: images, recordings, videos or attachments in the text."
+  },
+  "notebookRuleTypeMediaHint": "Has photos, recordings, videos or attachments",
+  "@notebookRuleTypeMediaHint": {
+    "description": "Description of the media rule."
+  },
+  "notebookRuleTypeFlag": "Cover & pin",
+  "@notebookRuleTypeFlag": {
+    "description": "Rule type: has a cover or is pinned."
+  },
+  "notebookRuleTypeFlagHint": "Has a cover or is pinned",
+  "@notebookRuleTypeFlagHint": {
+    "description": "Description of the cover & pin rule."
+  },
+  "notebookRuleTagAny": "Any of",
+  "@notebookRuleTagAny": {
+    "description": "Tags rule: has any of the tags."
+  },
+  "notebookRuleTagAll": "All of",
+  "@notebookRuleTagAll": {
+    "description": "Tags rule: has all of the tags."
+  },
+  "notebookRuleTagNone": "None of",
+  "@notebookRuleTagNone": {
+    "description": "Tags rule: has none of the tags."
+  },
+  "notebookRuleNoTags": "No tags yet",
+  "@notebookRuleNoTags": {
+    "description": "Shown in the tags rule sheet when there are no tags."
+  },
+  "notebookRuleWeatherHint": "e.g. rain",
+  "@notebookRuleWeatherHint": {
+    "description": "Placeholder of the weather rule field."
+  },
+  "notebookRuleLocationHint": "e.g. Kyoto",
+  "@notebookRuleLocationHint": {
+    "description": "Placeholder of the location rule field."
+  },
+  "notebookRuleKeywordHint": "Words in the title or text",
+  "@notebookRuleKeywordHint": {
+    "description": "Placeholder of the keyword rule field."
+  },
+  "notebookRuleDateBetween": "Date range",
+  "@notebookRuleDateBetween": {
+    "description": "Date rule: a fixed range of dates."
+  },
+  "notebookRuleDateLastDays": "Recent days",
+  "@notebookRuleDateLastDays": {
+    "description": "Date rule: the last N days."
+  },
+  "notebookRuleDateThisYear": "This year",
+  "@notebookRuleDateThisYear": {
+    "description": "Date rule: this year."
+  },
+  "notebookRuleDateMonth": "A month every year",
+  "@notebookRuleDateMonth": {
+    "description": "Date rule: one month in every year."
+  },
+  "notebookRuleDateToday": "This day every year",
+  "@notebookRuleDateToday": {
+    "description": "Date rule: the same month and day as today, any year."
+  },
+  "notebookRuleDateTodayHint": "Entries from this month and day in any year",
+  "@notebookRuleDateTodayHint": {
+    "description": "Description of \"This day every year\"."
+  },
+  "notebookRuleDaysValue": "{days, plural, =1{1 day} other{{days} days}}",
+  "@notebookRuleDaysValue": {
+    "description": "Number of days of the recent-days rule; days is the number.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRuleDaysDecrease": "One day fewer",
+  "@notebookRuleDaysDecrease": {
+    "description": "Tooltip of the minus button of the recent-days rule."
+  },
+  "notebookRuleDaysIncrease": "One day more",
+  "@notebookRuleDaysIncrease": {
+    "description": "Tooltip of the plus button of the recent-days rule."
+  },
+  "notebookRuleMediaImage": "Has photos",
+  "@notebookRuleMediaImage": {
+    "description": "Media rule: has images."
+  },
+  "notebookRuleMediaAudio": "Has recordings",
+  "@notebookRuleMediaAudio": {
+    "description": "Media rule: has recordings."
+  },
+  "notebookRuleMediaVideo": "Has videos",
+  "@notebookRuleMediaVideo": {
+    "description": "Media rule: has videos."
+  },
+  "notebookRuleMediaAttachment": "Has attachments",
+  "@notebookRuleMediaAttachment": {
+    "description": "Media rule: has attachments."
+  },
+  "notebookRuleFlagCover": "Has a cover",
+  "@notebookRuleFlagCover": {
+    "description": "Flag rule: has a cover."
+  },
+  "notebookRuleFlagPinned": "Pinned",
+  "@notebookRuleFlagPinned": {
+    "description": "Flag rule: pinned."
+  },
+  "notebookRuleSummaryTagsAny": "Tags, any of: {tags}",
+  "@notebookRuleSummaryTagsAny": {
+    "description": "One-line summary of a tags rule; tags is the list of #tag names.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryTagsAll": "Tags, all of: {tags}",
+  "@notebookRuleSummaryTagsAll": {
+    "description": "One-line summary of an all-of tags rule; tags is the tag list.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryTagsNone": "Tags, none of: {tags}",
+  "@notebookRuleSummaryTagsNone": {
+    "description": "One-line summary of a none-of tags rule; tags is the tag list.",
+    "placeholders": {
+      "tags": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryMood": "Mood: {moods}",
+  "@notebookRuleSummaryMood": {
+    "description": "One-line summary of a mood rule; moods are the chosen moods.",
+    "placeholders": {
+      "moods": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryWeather": "Weather contains \"{text}\"",
+  "@notebookRuleSummaryWeather": {
+    "description": "One-line summary of a weather rule; text is the text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryLocation": "Location contains \"{text}\"",
+  "@notebookRuleSummaryLocation": {
+    "description": "One-line summary of a location rule; text is the text.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryKeyword": "Title or text contains \"{text}\"",
+  "@notebookRuleSummaryKeyword": {
+    "description": "One-line summary of a keyword rule; text is the keyword.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryRange": "{start} – {end}",
+  "@notebookRuleSummaryRange": {
+    "description": "A date range (fixed-range rule summary and the default name of a notebook made from a range); start and end are the dates.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryLastDays": "{days, plural, =1{Today} other{Last {days} days}}",
+  "@notebookRuleSummaryLastDays": {
+    "description": "Summary of a recent-days rule; days is the number.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookRuleSummaryMonth": "{monthName} every year",
+  "@notebookRuleSummaryMonth": {
+    "description": "Summary of a month-every-year rule; month is the number, monthName the month name.",
+    "placeholders": {
+      "month": {
+        "type": "int"
+      },
+      "monthName": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleSummaryToday": "This day every year ({date})",
+  "@notebookRuleSummaryToday": {
+    "description": "Summary of a this-day-every-year rule; date is today's month and day.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookRuleUnknown": "Unrecognized rule (from a newer version)",
+  "@notebookRuleUnknown": {
+    "description": "Summary of a rule this version cannot read; it is kept and matches nothing."
+  },
+  "notebookConvertTitle": "Convert \"{name}\" to a regular notebook?",
+  "@notebookConvertTitle": {
+    "description": "Title of the convert-to-regular confirmation; name is the notebook name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notebookConvertMessage": "{count, plural, =1{The 1 entry that matches now will be added (archived entries excluded), and the notebook will stop updating automatically.} other{The {count} entries that match now will be added (archived entries excluded), and the notebook will stop updating automatically.}}",
+  "@notebookConvertMessage": {
+    "description": "Body of the convert-to-regular confirmation; count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookConvertAction": "Convert",
+  "@notebookConvertAction": {
+    "description": "Confirm button of the convert-to-regular dialog."
+  },
+  "notebookConverted": "{count, plural, =1{Converted; 1 entry added} other{Converted; {count} entries added}}",
+  "@notebookConverted": {
+    "description": "Shown after converting; count is the number of entries added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSaveRange": "Save as notebook",
+  "@notebookSaveRange": {
+    "description": "Button in the calendar range header: save the range as a notebook."
+  },
+  "notebookSaveRangeSmartHint": "Entries in these dates; ones you backfill later join automatically",
+  "@notebookSaveRangeSmartHint": {
+    "description": "Description of the smart option in the save-range sheet."
+  },
+  "notebookSaveRangeManualHint": "{count, plural, =1{Add the 1 entry there now} other{Add the {count} entries there now}}",
+  "@notebookSaveRangeManualHint": {
+    "description": "Description of the regular option in the save-range sheet; count is the number.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookSaveSearchAsSmart": "Save as smart notebook",
+  "@notebookSaveSearchAsSmart": {
+    "description": "Search page button: save the keyword and tag conditions as a smart notebook."
+  },
+  "notebookSaveRangeSmart": "Smart notebook",
+  "@notebookSaveRangeSmart": {
+    "description": "Option in the save-range sheet: smart notebook."
+  },
+  "notebookSaveRangeManual": "Regular notebook",
+  "@notebookSaveRangeManual": {
+    "description": "Option in the save-range sheet: regular notebook."
+  },
+  "notebookGoalLabel": "Writing goal",
+  "@notebookGoalLabel": {
+    "description": "Editor group title: writing goal."
+  },
+  "notebookGoalEnable": "Set a goal",
+  "@notebookGoalEnable": {
+    "description": "Switch in the writing-goal group."
+  },
+  "notebookGoalEnableHint": "Shows progress on the notebook header. No reminders.",
+  "@notebookGoalEnableHint": {
+    "description": "Subtitle of the writing-goal switch."
+  },
+  "notebookGoalDecrease": "One fewer",
+  "@notebookGoalDecrease": {
+    "description": "Tooltip of the goal count minus button."
+  },
+  "notebookGoalIncrease": "One more",
+  "@notebookGoalIncrease": {
+    "description": "Tooltip of the goal count plus button."
+  },
+  "notebookGoalPeriodDay": "Daily",
+  "@notebookGoalPeriodDay": {
+    "description": "Writing goal period: daily."
+  },
+  "notebookGoalPeriodWeek": "Weekly",
+  "@notebookGoalPeriodWeek": {
+    "description": "Writing goal period: weekly."
+  },
+  "notebookGoalPeriodMonth": "Monthly",
+  "@notebookGoalPeriodMonth": {
+    "description": "Writing goal period: monthly."
+  },
+  "notebookGoalSummaryDay": "{count, plural, =1{1 entry a day} other{{count} entries a day}}",
+  "@notebookGoalSummaryDay": {
+    "description": "Goal sentence (daily); count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalSummaryWeek": "{count, plural, =1{1 entry a week} other{{count} entries a week}}",
+  "@notebookGoalSummaryWeek": {
+    "description": "Goal sentence (weekly); count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalSummaryMonth": "{count, plural, =1{1 entry a month} other{{count} entries a month}}",
+  "@notebookGoalSummaryMonth": {
+    "description": "Goal sentence (monthly); count is the number of entries.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressDay": "Today {current} / {target}",
+  "@notebookGoalProgressDay": {
+    "description": "Goal progress (daily); current is entries written, target is the goal.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressWeek": "This week {current} / {target}",
+  "@notebookGoalProgressWeek": {
+    "description": "Goal progress (weekly); current is entries written, target is the goal.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalProgressMonth": "This month {current} / {target}",
+  "@notebookGoalProgressMonth": {
+    "description": "Goal progress (monthly); current is entries written, target is the goal.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalMetDay": "Done for today ✓",
+  "@notebookGoalMetDay": {
+    "description": "Goal met for the current period (daily)."
+  },
+  "notebookGoalMetWeek": "Done this week ✓",
+  "@notebookGoalMetWeek": {
+    "description": "Goal met for the current period (weekly)."
+  },
+  "notebookGoalMetMonth": "Done this month ✓",
+  "@notebookGoalMetMonth": {
+    "description": "Goal met for the current period (monthly)."
+  },
+  "notebookGoalStreakDay": "{count, plural, =1{1-day streak} other{{count}-day streak}}",
+  "@notebookGoalStreakDay": {
+    "description": "Number of consecutive periods the goal was met (daily).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalStreakWeek": "{count, plural, =1{1-week streak} other{{count}-week streak}}",
+  "@notebookGoalStreakWeek": {
+    "description": "Number of consecutive periods the goal was met (weekly).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookGoalStreakMonth": "{count, plural, =1{1-month streak} other{{count}-month streak}}",
+  "@notebookGoalStreakMonth": {
+    "description": "Number of consecutive periods the goal was met (monthly).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsights": "Stats",
+  "@notebookInsights": {
+    "description": "Notebook header button and title of the stats page."
+  },
+  "notebookInsightsEmpty": "No entries to count in this notebook yet",
+  "@notebookInsightsEmpty": {
+    "description": "Empty state of the notebook stats page."
+  },
+  "notebookInsightsEntries": "Entries",
+  "@notebookInsightsEntries": {
+    "description": "Stats overview tile: entries."
+  },
+  "notebookInsightsWords": "Words",
+  "@notebookInsightsWords": {
+    "description": "Stats overview tile: words."
+  },
+  "notebookInsightsRecordedDays": "Days written",
+  "@notebookInsightsRecordedDays": {
+    "description": "Stats overview tile: number of days with entries."
+  },
+  "notebookInsightsSpan": "Time span",
+  "@notebookInsightsSpan": {
+    "description": "Stats overview tile: span from the first to the last entry."
+  },
+  "notebookInsightsPhotos": "Photos",
+  "@notebookInsightsPhotos": {
+    "description": "Stats overview tile: number of cover and inline images."
+  },
+  "notebookInsightsLongestStreak": "Longest streak",
+  "@notebookInsightsLongestStreak": {
+    "description": "Stats overview tile: longest run of consecutive days."
+  },
+  "notebookInsightsDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@notebookInsightsDays": {
+    "description": "A number of days (short time span, longest streak).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanMonths": "{months, plural, =1{1 month} other{{months} months}}",
+  "@notebookInsightsSpanMonths": {
+    "description": "Time span: months.",
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanYears": "{years, plural, =1{1 year} other{{years} years}}",
+  "@notebookInsightsSpanYears": {
+    "description": "Time span: whole years.",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsSpanYearsMonths": "{years} yr {months} mo",
+  "@notebookInsightsSpanYearsMonths": {
+    "description": "Time span: years and months (compact).",
+    "placeholders": {
+      "years": {
+        "type": "int"
+      },
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsMoods": "Moods",
+  "@notebookInsightsMoods": {
+    "description": "Stats section title: mood distribution."
+  },
+  "notebookInsightsMoodShare": "{count} · {percent}%",
+  "@notebookInsightsMoodShare": {
+    "description": "Right side of a mood row: count and percentage.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsTopTags": "Top tags",
+  "@notebookInsightsTopTags": {
+    "description": "Stats section title: most used tags."
+  },
+  "notebookInsightsRhythm": "Writing rhythm",
+  "@notebookInsightsRhythm": {
+    "description": "Stats section title: entries-per-month chart."
+  },
+  "notebookInsightsRhythmBar": "{month}: {count}",
+  "@notebookInsightsRhythmBar": {
+    "description": "Screen-reader text of a rhythm bar; month is the month, count the entries.",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsGoalRecent": "Met in {met} of the last {total} periods",
+  "@notebookInsightsGoalRecent": {
+    "description": "Screen-reader text of the goal dots.",
+    "placeholders": {
+      "met": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsGoalRecentCaption": "Last {count} periods",
+  "@notebookInsightsGoalRecentCaption": {
+    "description": "Caption next to the goal dots.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notebookInsightsRandom": "Open a random entry",
+  "@notebookInsightsRandom": {
+    "description": "Stats page button: open a random entry of this notebook."
   }
 }

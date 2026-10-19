@@ -7,17 +7,18 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:node_diary/app/app_bootstrap_home.dart';
 import 'package:node_diary/app/app_lock_layer.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/device_auth_service.dart';
 import 'package:node_diary/ui/diaries/providers/diary_filters.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/notebooks/widgets/notebook_lock_layer.dart';
 
 import '../core/services/settings_service.dart';
 import '../l10n/app_localizations.dart';
@@ -54,7 +55,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
   Color? _cachedThemeSeedColor;
   (ThemeData, ThemeData)? _cachedThemes;
   late final HomeHintVisibilityController _homeHintVisibilityController;
-  final LocalAuthentication _localAuthentication = LocalAuthentication();
   Timer? _loaderShowTimer;
   Timer? _loaderMinVisibleTimer;
   bool _loaderShown = false;
@@ -298,7 +298,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
                 unlocking: _unlockingApp,
                 onTapUnlock: _handleManualUnlockTap,
               ),
-              child: scaledChild,
+              // 上锁日记本的重新上锁层在应用锁之下：两者同时盖着时先解应用锁。
+              child: NotebookLockLayer(child: scaledChild),
             ),
           ),
         );
@@ -403,7 +404,8 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       });
     }
 
-    final supportsAuth = await _supportsLocalAuth();
+    final deviceAuth = ref.read(deviceAuthServiceProvider);
+    final supportsAuth = await deviceAuth.isSupported();
     if (!mounted) {
       return;
     }
@@ -419,17 +421,9 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       return;
     }
 
-    bool authenticated = false;
-    try {
-      authenticated = await _localAuthentication.authenticate(
-        localizedReason: _bootstrapL10n(settingsService).appLockAuthReason,
-        biometricOnly: false,
-        sensitiveTransaction: true,
-        persistAcrossBackgrounding: true,
-      );
-    } catch (_) {
-      authenticated = false;
-    }
+    final authenticated = await deviceAuth.authenticate(
+      reason: _bootstrapL10n(settingsService).appLockAuthReason,
+    );
 
     if (!mounted) {
       return;
@@ -438,18 +432,6 @@ class _NodeDiaryAppState extends ConsumerState<NodeDiaryApp> {
       _unlockingApp = false;
       _appLocked = !authenticated;
     });
-  }
-
-  Future<bool> _supportsLocalAuth() async {
-    try {
-      final deviceSupported = await _localAuthentication.isDeviceSupported();
-      if (deviceSupported) {
-        return true;
-      }
-      return await _localAuthentication.canCheckBiometrics;
-    } catch (_) {
-      return false;
-    }
   }
 }
 

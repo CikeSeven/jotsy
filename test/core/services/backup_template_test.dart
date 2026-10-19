@@ -102,7 +102,7 @@ void main() {
   test('payload rebuilds keep templates', () async {
     final payload = await fixture.capturePayload();
     final tables = payload['database'] as Map;
-    // 悬空的标签关联触发 _withRestorableTagRelations 重建载荷。
+    // 悬空的标签关联触发 _withRestorableRelations 重建载荷。
     (tables['diaryTags'] as List).add({'diaryId': 999, 'tagId': 999});
     final decoded = BackupPayload.decode(jsonEncode(payload));
     expect(decoded.diaryTemplates, hasLength(1));

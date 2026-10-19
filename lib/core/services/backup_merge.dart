@@ -7,6 +7,7 @@ import '../database/app_database.dart';
 import 'backup_constants.dart';
 import 'backup_import_models.dart';
 import 'backup_media_paths.dart';
+import 'backup_notebook_merge.dart';
 import 'backup_payload.dart';
 
 /// 合并导入：把已解压、已校验的备份或日记包并入本机数据，不删除本机任何
@@ -22,6 +23,13 @@ import 'backup_payload.dart';
 /// - 日记模板按 templateId 匹配：两种合并方式都只新增本机没有的模板，接在
 ///   “我的模板”最后，**从不覆盖**本机已有的模板——模板是写作习惯的配置，
 ///   本机那份往往是刻意改过的；只有覆盖全部恢复才整表换掉；
+/// - 日记本按 notebookId 匹配（[BackupNotebookMerge]）：本机没有的新增，接在
+///   书架最后；本机已有的，合并保留本机定义，合并并覆盖替换名称、类型、
+///   可见性、载荷、置顶与合上状态（书架顺序保留本机的）。成员关系只随实际
+///   写入的日记走：新增的日记带上文件里的成员关系；被替换的日记在文件带来
+///   的日记本里与文件一致，本机独有日记本里的成员关系保留；跳过的日记不动。
+///   章节只认目标日记本现有的章节，否则归到“未分章”；写进本机原有日记本的
+///   排到末尾，写进新增日记本的保留文件中的位置；智能日记本从不写关联行；
 /// - 媒体：只搬运实际写入的日记引用到的文件，统一放进各托管目录下的新批次
 ///   子目录（`<托管目录>/import_…/<原相对路径>`），不覆盖、不移动本机已有
 ///   文件；
@@ -96,6 +104,13 @@ class BackupMerge {
       );
       (exists ? replacements : inserts).add(rebound);
     }
+    // 日记本封面同样要在搬运文件前改写路径，才会登记进 boundFiles。
+    final notebooks = await BackupNotebookMerge.prepare(
+      db: db,
+      payload: payload,
+      mode: mode,
+      paths: paths,
+    );
 
     for (final entry in paths.boundFiles.entries) {
       final target = File(entry.value);
@@ -142,6 +157,12 @@ class BackupMerge {
       );
     });
 
+    final addedNotebooks = await notebooks.write(
+      db,
+      diaryIds: diaryIds,
+      replacedDiaryIds: {for (final diary in replacements) diary.id},
+    );
+
     final anniversaries = await _mergeAnniversaries(
       db,
       payload.anniversaries,
@@ -158,6 +179,7 @@ class BackupMerge {
       replacedAnniversaries: anniversaries.replaced,
       skippedAnniversaries: anniversaries.skipped,
       addedTemplates: addedTemplates,
+      addedNotebooks: addedNotebooks,
     );
   }
 

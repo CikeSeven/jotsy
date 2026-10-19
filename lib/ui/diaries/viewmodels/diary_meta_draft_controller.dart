@@ -65,6 +65,18 @@ class DiaryMetaDraftController extends ChangeNotifier
     _set(_value.copyWith(tagIds: Set<int>.unmodifiable(tagIds)));
   }
 
+  /// 勾选或取消一本日记本；新勾选的排在最后（摘要按勾选先后显示）。
+  void setNotebookSelected(String notebookId, bool selected) {
+    if (_value.notebookIds.contains(notebookId) == selected) return;
+    final notebookIds = selected
+        ? <String>{..._value.notebookIds, notebookId}
+        : <String>{
+            for (final id in _value.notebookIds)
+              if (id != notebookId) id,
+          };
+    _set(_value.copyWith(notebookIds: Set<String>.unmodifiable(notebookIds)));
+  }
+
   void setMood(String? mood) =>
       _set(_value.copyWith(moodEmoji: normalizeOptionalText(mood)));
 

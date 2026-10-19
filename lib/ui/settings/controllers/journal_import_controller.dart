@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/app_service.dart';
 import '../../../core/services/diary_media_storage_service.dart';
@@ -12,6 +13,7 @@ import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/color_palette_families.dart';
 import '../pages/cloud_notes_login_page.dart';
+import '../widgets/backup_import_folder_section.dart';
 import '../widgets/journal_import_source_labels.dart';
 import '../widgets/journal_import_source_sheet.dart';
 import 'backup_import_flow.dart';
@@ -77,6 +79,7 @@ class JournalImportController {
           filePath: path,
           moodOptions: settings.moodOptions,
           tagColors: journalImportTagColors,
+          folderMode: _host.ref.read(journalImportFolderModeProvider),
         ),
       );
     } finally {
@@ -122,6 +125,7 @@ class JournalImportController {
           ),
           moodOptions: settings.moodOptions,
           tagColors: journalImportTagColors,
+          folderMode: _host.ref.read(journalImportFolderModeProvider),
         ),
       );
     } finally {
@@ -155,16 +159,38 @@ class JournalImportController {
       }
       if (!context.mounted) return;
 
-      final mode = await chooseBackupImportMode(context, session.preview);
+      // 只有解析出来源日记本 / 文件夹时才询问落地方式；切换方式只按已解析的
+      // 条目重建载荷（会话里缓存），不重新解析。
+      final folderChoice = session.hasSourceFolders
+          ? BackupImportFolderChoice(
+              folderCount: session.sourceFolderCount,
+              previewFor: session.previewFor,
+              initial: session.folderMode,
+            )
+          : null;
+      final mode = await chooseBackupImportMode(
+        context,
+        session.preview,
+        folderChoice: folderChoice,
+      );
       if (!context.mounted) return;
       if (mode == null) {
         _host.showSnack(l10n.dataMgmtImportCanceled);
         return;
       }
+      if (folderChoice != null) {
+        _host.ref
+            .read(journalImportFolderModeProvider.notifier)
+            .remember(folderChoice.selected);
+      }
 
       _host.setBusy(true, l10n.dataMgmtBusyImport);
       try {
-        final result = await session.apply(database: database, mode: mode);
+        final result = await session.apply(
+          database: database,
+          mode: mode,
+          folderMode: folderChoice?.selected,
+        );
         if (context.mounted) {
           _host.showSnack(
             describeBackupImportResult(
@@ -207,6 +233,22 @@ class JournalImportController {
     }
     return l10n.dataMgmtImportFailed('$error');
   }
+}
+
+/// 本次运行里上一次选的来源日记本 / 文件夹落地方式，下次导入时默认选中它。
+///
+/// 这是每次导入的选择，不是设置：只记在内存里，重启回到默认的“日记本”，
+/// 不另加设置键（AGENTS.md §6 禁止零散设置键）。
+final journalImportFolderModeProvider =
+    NotifierProvider<JournalImportFolderModeMemory, JournalImportFolderMode>(
+      JournalImportFolderModeMemory.new,
+    );
+
+class JournalImportFolderModeMemory extends Notifier<JournalImportFolderMode> {
+  @override
+  JournalImportFolderMode build() => JournalImportFolderMode.notebooks;
+
+  void remember(JournalImportFolderMode mode) => state = mode;
 }
 
 /// 导入新建标签的颜色：各色系的中间色依次轮换，与标签色板一致。

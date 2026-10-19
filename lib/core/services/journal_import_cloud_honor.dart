@@ -37,7 +37,7 @@ class HonorCloudProvider implements CloudNoteProvider {
 
   static const String origin = 'https://cloud.honor.com';
 
-  /// 未分组笔记所在的默认文件夹，不作为标签。
+  /// 未分组笔记所在的默认文件夹，不记为所在日记本。
   static const String _defaultFolder = r'eda801b5$0e24$4835$9288$cad0a537274a';
 
   final CloudNoteHttp http;

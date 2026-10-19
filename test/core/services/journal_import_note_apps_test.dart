@@ -180,8 +180,9 @@ void main() {
       expect(entry.title, 'Plain');
       expect(entry.contentText, 'Hello HTML');
       expect(entry.createdAt, DateTime.utc(2025).toLocal());
-      // 两篇分属两个笔记本，但被锁的那篇不导入，只剩一个笔记本，不加标签。
+      // 两篇分属两个笔记本，但被锁的那篇不导入，只剩一个笔记本，不记笔记本。
       expect(entry.tags, isEmpty);
+      expect(entry.notebooks, isEmpty);
       expect(result.skippedNotes, {JournalSkipReason.encrypted: 2});
     });
 
@@ -270,7 +271,8 @@ Arrived **early**.
       final kyoto = byKey['Vault/Travel/Kyoto.md']!;
       expect(kyoto.title, 'Day 1');
       expect(kyoto.createdAt, DateTime.utc(2026, 3, 14, 1, 23, 45).toLocal());
-      expect(kyoto.tags, ['travel', 'japan', 'Travel']);
+      expect(kyoto.tags, ['travel', 'japan']);
+      expect(kyoto.notebooks, ['Travel']);
       expect((kyoto.latitude, kyoto.longitude), (35.0116, 135.7681));
       expect(kyoto.contentText, 'Arrived early.\n\nand my list');
       final [photo, pdf] = embeds(kyoto);
@@ -281,11 +283,27 @@ Arrived **early**.
       expect(daily.title, 'Morning');
       expect(daily.contentText, 'line one\nline two');
       expect(daily.createdAt, DateTime(2024, 1, 15));
-      expect(daily.tags, ['Daily']);
+      expect(daily.tags, isEmpty);
+      expect(daily.notebooks, ['Daily']);
       final run = byKey['Vault/Daily/2024-01-16 0830 Run.md']!;
       expect(run.title, 'Run');
       expect(run.createdAt, DateTime(2024, 1, 16, 8, 30));
       expect(result.missingMediaCount, 0);
+    });
+
+    test('plain .txt notes record their top folder as a notebook too', () {
+      write('Vault/Travel/Kyoto.md', 'temple');
+      write('Vault/Daily/2024-01-15 Walk.txt', 'park');
+
+      final result = parseMarkdownFilesExport(extracted(), media);
+
+      final byKey = {for (final e in result.entries) e.sourceKey: e};
+      final walk = byKey['Vault/Daily/2024-01-15 Walk.txt']!;
+      expect(walk.title, 'Walk');
+      expect(walk.contentText, 'park');
+      expect(walk.tags, isEmpty);
+      expect(walk.notebooks, ['Daily']);
+      expect(byKey['Vault/Travel/Kyoto.md']!.notebooks, ['Travel']);
     });
 
     test('reads a single picked .md file', () {

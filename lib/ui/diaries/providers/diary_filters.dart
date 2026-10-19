@@ -43,12 +43,17 @@ class DiaryPageQuery {
     required this.requiredTagIds,
     required this.limit,
     required this.sortMode,
+    this.scope = DiaryListScope.all,
   });
 
   final String keyword;
   final List<int> requiredTagIds;
   final int limit;
   final DiarySortMode sortMode;
+
+  /// 查询范围（全部日记或某本日记本），参与相等比较：切换日记本即换一个
+  /// provider 实例，不会命中别的范围的缓存。
+  final DiaryListScope scope;
 
   @override
   bool operator ==(Object other) {
@@ -61,6 +66,7 @@ class DiaryPageQuery {
     if (keyword != other.keyword ||
         limit != other.limit ||
         sortMode != other.sortMode ||
+        scope != other.scope ||
         requiredTagIds.length != other.requiredTagIds.length) {
       return false;
     }
@@ -73,8 +79,13 @@ class DiaryPageQuery {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(keyword, limit, sortMode, Object.hashAll(requiredTagIds));
+  int get hashCode => Object.hash(
+    keyword,
+    limit,
+    sortMode,
+    scope,
+    Object.hashAll(requiredTagIds),
+  );
 }
 
 /// 日记筛选状态控制器。
@@ -153,6 +164,7 @@ final pagedDiariesProvider = StreamProvider.autoDispose
             requiredTagIds: query.requiredTagIds,
             limit: fetchLimit,
             sortMode: query.sortMode,
+            scope: query.scope,
           )
           .map((items) {
             final hasMore = items.length > query.limit;
@@ -177,6 +189,7 @@ const int diaryFirstPageSize = 20;
 /// 直接丢弃，首页还要再查一次并先闪加载指示再硬切成列表。
 /// 只依赖设置服务（加载后实例稳定）：之后的筛选、排序变化不会让它切换到
 /// 新实例，门控一旦放行就保持放行；仍开启标签记忆的用户首帧后会再换一次查询。
+/// 范围固定为全部日记：应用总是从“全部日记”启动。
 final startupDiariesProvider = Provider<AsyncValue<PagedDiariesResult>>((
   Ref ref,
 ) {
@@ -209,11 +222,15 @@ class SearchDiaryQuery {
   SearchDiaryQuery({
     String keyword = '',
     Iterable<int> requiredTagIds = const <int>[],
+    this.scope = DiaryListScope.all,
   }) : keyword = keyword.trim(),
        requiredTagIds = _normalizeTagIds(requiredTagIds);
 
   final String keyword;
   final List<int> requiredTagIds;
+
+  /// 搜索范围：在日记本里搜索时只搜这本（私密规则同列表）。
+  final DiaryListScope scope;
 
   bool get hasAnyCondition => keyword.isNotEmpty || requiredTagIds.isNotEmpty;
 
@@ -231,6 +248,7 @@ class SearchDiaryQuery {
       return false;
     }
     if (keyword != other.keyword ||
+        scope != other.scope ||
         requiredTagIds.length != other.requiredTagIds.length) {
       return false;
     }
@@ -243,7 +261,8 @@ class SearchDiaryQuery {
   }
 
   @override
-  int get hashCode => Object.hash(keyword, Object.hashAll(requiredTagIds));
+  int get hashCode =>
+      Object.hash(keyword, scope, Object.hashAll(requiredTagIds));
 }
 
 /// 搜索页独立数据源（关键词 + 标签条件）。
@@ -265,6 +284,7 @@ final searchDiariesProvider = StreamProvider.autoDispose
             requiredTagIds: query.requiredTagIds,
             limit: fetchLimit,
             sortMode: query.sortMode,
+            scope: query.scope,
           )
           .map((items) {
             final hasMore = items.length > query.limit;

@@ -9,7 +9,7 @@ import '../../../app/theme/expressive_motion.dart';
 ///
 /// 负责 smooth_sheets 与内部分页状态同步，集中管理：
 /// - 展开/收起吸附进度；
-/// - 主页与标签页切换；
+/// - 主页与子页（标签、时间胶囊、日记本）切换；
 /// - 返回键场景下的内页回退与收起判断。
 class PublishPanelCoordinator {
   PublishPanelCoordinator({
@@ -61,14 +61,15 @@ class PublishPanelCoordinator {
   /// 当前展开进度（0=收起，1=展开）。
   double progress = 0;
 
-  /// 当前内页索引（0=主页面，1=标签页，2=时间胶囊页）。
+  /// 当前内页索引（0=主页面，1=标签页，2=时间胶囊页，3=日记本页）。
   int contentPageIndex = 0;
 
   /// 当前页的展开高度：设计高度，但不超过可用高度上限，也不低于收起高度
   /// 加最小详情区。
   double get activeExpandedHeight {
     final designed = switch (contentPageIndex) {
-      1 => tagExpandedHeight,
+      // 日记本页与标签页同为勾选列表，用同一高度。
+      1 || 3 => tagExpandedHeight,
       2 => capsuleExpandedHeight,
       _ => mainExpandedHeight,
     };
@@ -118,6 +119,11 @@ class PublishPanelCoordinator {
   /// 打开标签管理子页。
   Future<void> openTagPage() async {
     await _openInnerPage(1);
+  }
+
+  /// 打开日记本子页。
+  Future<void> openNotebookPage() async {
+    await _openInnerPage(3);
   }
 
   /// 打开时间胶囊设置页。

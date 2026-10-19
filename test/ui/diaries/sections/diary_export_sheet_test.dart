@@ -14,6 +14,7 @@ Future<DiaryExportRequest? Function()> _open(
   DiaryExportOptions options = DiaryExportOptions.defaults,
   List<DiaryExportOptions>? changes,
   Brightness brightness = Brightness.light,
+  bool isBook = false,
 }) async {
   DiaryExportRequest? result;
   await tester.pumpWidget(
@@ -31,6 +32,7 @@ Future<DiaryExportRequest? Function()> _open(
                 diaryCount: count,
                 initialOptions: options,
                 onOptionsChanged: (next) => changes?.add(next),
+                isBook: isBook,
               );
             },
             child: const Text('open'),
@@ -161,5 +163,67 @@ void main() {
     await tester.tap(find.text('分享'));
     await tester.pumpAndSettle();
     expect(shared()!.action, DiaryExportAction.share);
+  });
+
+  testWidgets('a book shows the book structure switch instead of the order', (
+    tester,
+  ) async {
+    final changes = <DiaryExportOptions>[];
+    final result = await _open(tester, isBook: true, changes: changes);
+
+    // PDF：开关默认打开，带一行说明；书序决定先后，不显示排序。
+    expect(find.text('书籍结构'), findsOneWidget);
+    expect(find.text('扉页、目录与章节标题'), findsOneWidget);
+    expect(find.text('从旧到新'), findsNothing);
+    expect(
+      tester
+          .widget<SwitchListTile>(find.widgetWithText(SwitchListTile, '书籍结构'))
+          .value,
+      isTrue,
+    );
+
+    // 表格与日记文件不写结构，开关隐藏。
+    await tester.scrollUntilVisible(
+      find.text('表格（CSV）'),
+      80,
+      scrollable: _sheetScrollable(),
+    );
+    await tester.tap(find.text('表格（CSV）'));
+    await tester.pumpAndSettle();
+    expect(find.text('书籍结构'), findsNothing);
+    expect(find.text('从旧到新'), findsNothing);
+    await tester.tap(find.text('Jotsy 日记文件'));
+    await tester.pumpAndSettle();
+    expect(find.text('书籍结构'), findsNothing);
+
+    await tester.tap(find.text('网页'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('书籍结构'),
+      80,
+      scrollable: _sheetScrollable(),
+    );
+    await tester.tap(find.text('书籍结构'));
+    await tester.pumpAndSettle();
+    // 开关只对本次有效，不写进导出选项。
+    expect(changes.last.format, DiaryExportFormat.html);
+
+    await tester.scrollUntilVisible(
+      find.text('保存到文件'),
+      80,
+      scrollable: _sheetScrollable(),
+    );
+    await tester.tap(find.text('保存到文件'));
+    await tester.pumpAndSettle();
+    final request = result()!;
+    expect(request.options.format, DiaryExportFormat.html);
+    expect(request.bookStructure, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('without a book the switch never appears', (tester) async {
+    await _open(tester);
+    expect(find.text('书籍结构'), findsNothing);
+    expect(find.text('从旧到新'), findsOneWidget);
   });
 }

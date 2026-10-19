@@ -6,8 +6,11 @@ import 'package:node_diary/utils/optional_text.dart';
 
 /// 日记元数据面板的草稿值（不可变）。
 ///
-/// 发布页与编辑页的底部面板编辑同一组字段：封面、标签、此时此地（地点 +
-/// 地址层级 + 坐标）、天气、心情、精力，以及（仅发布页）时间胶囊。两页
+/// 发布页与编辑页的底部面板编辑同一组字段：封面、标签、所在日记本、此时此地
+/// （地点 + 地址层级 + 坐标）、天气、心情、精力，以及（仅发布页）时间胶囊。
+///
+/// 所在日记本（[notebookIds]）不在 metadata 里，而是日记与日记本的关联表；
+/// 编辑页只在用户改过时才写回（见 `EditDiarySnapshot.notebookIds`）。两页
 /// 以前各自用十几个状态字段镜像这组值；收拢为一个值对象后：
 /// - 草稿往返（编辑页 ↔ 发布页）经 [fromNewDiaryDraft] / [applyTo] 一处换算；
 /// - 写 metadata 经 PublishMetadataComposer.composeDraft，读 metadata 经
@@ -21,6 +24,7 @@ class DiaryMetaDraft {
   const DiaryMetaDraft({
     this.cover,
     this.tagIds = const <int>{},
+    this.notebookIds = const <String>{},
     this.location,
     this.locationAddressComponent,
     this.locationLatitude,
@@ -42,6 +46,7 @@ class DiaryMetaDraft {
     return DiaryMetaDraft(
       cover: normalizeOptionalText(draft.cover),
       tagIds: Set<int>.unmodifiable(draft.selectedTagIds),
+      notebookIds: Set<String>.unmodifiable(draft.notebookIds),
       location: normalizeOptionalText(draft.location),
       locationAddressComponent: draft.locationAddressComponent,
       locationLatitude: draft.locationLatitude,
@@ -67,6 +72,9 @@ class DiaryMetaDraft {
 
   final String? cover;
   final Set<int> tagIds;
+
+  /// 所在的日记本（业务 id），按加入的先后（摘要里先显示先选的）。
+  final Set<String> notebookIds;
   final String? location;
 
   /// 自动定位得到的地址组件，用于按层级重组地点文案与层级菜单预览。
@@ -96,6 +104,7 @@ class DiaryMetaDraft {
     return base.copyWith(
       cover: cover,
       selectedTagIds: <int>{...tagIds},
+      notebookIds: notebookIds.toList(growable: false),
       location: location,
       locationAddressComponent: locationAddressComponent,
       locationLatitude: locationLatitude,
@@ -117,6 +126,7 @@ class DiaryMetaDraft {
   DiaryMetaDraft copyWith({
     Object? cover = _unchanged,
     Set<int>? tagIds,
+    Set<String>? notebookIds,
     Object? location = _unchanged,
     Object? locationAddressComponent = _unchanged,
     Object? locationLatitude = _unchanged,
@@ -134,6 +144,7 @@ class DiaryMetaDraft {
     return DiaryMetaDraft(
       cover: pick<String>(cover, this.cover),
       tagIds: tagIds ?? this.tagIds,
+      notebookIds: notebookIds ?? this.notebookIds,
       location: pick<String>(location, this.location),
       locationAddressComponent: pick<Map<String, Object?>>(
         locationAddressComponent,
@@ -160,6 +171,7 @@ class DiaryMetaDraft {
       other is DiaryMetaDraft &&
       other.cover == cover &&
       setEquals(other.tagIds, tagIds) &&
+      setEquals(other.notebookIds, notebookIds) &&
       other.location == location &&
       identical(other.locationAddressComponent, locationAddressComponent) &&
       other.locationLatitude == locationLatitude &&
@@ -176,6 +188,7 @@ class DiaryMetaDraft {
   int get hashCode => Object.hash(
     cover,
     Object.hashAllUnordered(tagIds),
+    Object.hashAllUnordered(notebookIds),
     location,
     identityHashCode(locationAddressComponent),
     locationLatitude,

@@ -5,6 +5,7 @@ import '../../../core/database/content_codec.dart';
 import '../../../utils/text_stats.dart';
 import '../models/diary_context_info.dart';
 import 'diary_export_blocks.dart';
+import 'diary_export_book.dart';
 
 /// 一篇待导出日记的全部素材，从详情解析一次，各写出器只读不改。
 ///
@@ -140,6 +141,7 @@ class DiaryExportLabels {
     required this.formatDateTime,
     required this.formatDate,
     required this.exportedBy,
+    this.book,
   });
 
   final String untitled;
@@ -167,6 +169,10 @@ class DiaryExportLabels {
 
   /// HTML 页脚与 Word 文档属性中的“由 Jotsy 导出”。
   final String exportedBy;
+
+  /// 导出成书的文案（目录、未分章、扉页统计与导出日期）；只导出日记、不成书
+  /// 的调用方可以不给，成书时由导出控制器检查。
+  final DiaryExportBookLabels? book;
 
   String titleOf(DiaryExportEntry entry) =>
       entry.title.isEmpty ? untitled : entry.title;

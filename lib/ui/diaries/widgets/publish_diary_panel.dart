@@ -9,6 +9,8 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
@@ -16,6 +18,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
 import 'publish_panel/publish_capsule_picker_page.dart';
+import 'publish_panel/publish_notebook_tiles.dart';
 import 'publish_panel/publish_panel_chrome.dart';
 import 'publish_panel/publish_panel_main_page.dart';
 import 'publish_panel/publish_panel_summary_bar.dart';
@@ -31,8 +34,8 @@ export 'publish_panel/publish_panel_main_page.dart' show PublishTimeOption;
 /// [onProgressChanged]。
 ///
 /// 交互：收起态更窄、位置更高；支持上划与点击展开；上划过程中尺寸连续
-/// 变化，松手后吸附到展开/收起。内部 PageView 承载主页、标签页、胶囊页，
-/// 只允许代码切页。
+/// 变化，松手后吸附到展开/收起。内部 PageView 承载主页、标签页、胶囊页与
+/// 日记本页，只允许代码切页。
 class PublishDiaryPanel extends ConsumerStatefulWidget {
   const PublishDiaryPanel({
     super.key,
@@ -318,6 +321,9 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
   Widget _buildContent(BuildContext context) {
     final l10n = context.l10n;
     final tags = ref.watch(tagListProvider);
+    // 只订阅日记本表；篇数（会随日记写入重查）由日记本子页自己订阅，子页
+    // 不可见时不构建，编辑页自动保存不会牵动这条查询。
+    final notebooks = ref.watch(notebooksProvider).value;
     final moodOptions = ref
         .watch(moodOptionsProvider)
         .maybeWhen(
@@ -350,6 +356,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             collapsedContent: PublishPanelSummaryBar(
               draft: widget.draft,
               tags: tags.asData?.value ?? const [],
+              notebooks: notebooks ?? const <NotebookView>[],
               busy: widget.busy,
               onPublish: widget.onPublish,
             ),
@@ -365,6 +372,8 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             onOpenTags: _panelCoordinator.openTagPage,
             onOpenCapsule: _openCapsulePage,
             onPublish: widget.onPublish,
+            notebooks: notebooks ?? const <NotebookView>[],
+            onOpenNotebooks: _panelCoordinator.openNotebookPage,
           ),
         ),
         PublishPanelPageScaffold(
@@ -389,6 +398,15 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
               _popInnerPage();
             },
             onCancel: _popInnerPage,
+          ),
+        ),
+        PublishPanelPageScaffold(
+          progress: _progress,
+          headerHeight: _collapsedHeight,
+          header: subHeader(l10n.notebookPickerTitle),
+          content: PublishNotebookPickerPage(
+            draft: widget.draft,
+            notebooks: notebooks,
           ),
         ),
       ],

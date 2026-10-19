@@ -87,6 +87,15 @@ class BackupTestFixture {
       name: 'current template',
       payload: '{"name":"current template"}',
     );
+    final notebookId = await database.createNotebook(
+      name: 'current notebook',
+      payload: NotebookPayload(
+        chapters: [NotebookChapter(id: 'current-chapter', title: 'chapter')],
+      ),
+    );
+    await database.addDiariesToNotebook(notebookId, [
+      diaryId,
+    ], chapterId: 'current-chapter');
     await database.createAnniversary(
       title: 'current anniversary',
       baseDate: DateTime(2020, 5, 23),
@@ -174,6 +183,17 @@ class BackupTestFixture {
     final template = await database.select(database.diaryTemplates).getSingle();
     expect(template.templateId, 'current-template');
     expect(template.payload, '{"name":"current template"}');
+    final notebook = await database.select(database.notebooks).getSingle();
+    expect(notebook.name, 'current notebook');
+    final membership = await database
+        .select(database.diaryNotebooks)
+        .getSingle();
+    expect(membership.notebookId, notebook.id);
+    expect(
+      membership.diaryId,
+      (await database.select(database.diaries).getSingle()).id,
+    );
+    expect(membership.chapterId, 'current-chapter');
     for (final entry in originalMedia.entries) {
       expect(await File(entry.key).readAsBytes(), entry.value);
     }

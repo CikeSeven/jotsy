@@ -10,6 +10,9 @@ import '../../../../core/database/content_codec.dart';
 import '../../../../core/services/app_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
+import '../../../notebooks/controllers/notebook_navigation.dart';
+import '../../../notebooks/providers/notebook_providers.dart';
+import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
@@ -316,6 +319,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       moodEmoji: viewData.moodEmoji,
       firstTagColor: detail.tags.isEmpty ? null : detail.tags.first.color,
     );
+    final notebooks =
+        ref.watch(diaryNotebooksProvider(widget.diaryId)).value ??
+        const <NotebookView>[];
     return DiaryPreviewSurface(
       resolved: resolved,
       scrollController: _scrollController,
@@ -333,6 +339,9 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           coverPlaceholder: widget.coverHero?.placeholder,
           staticCover: _export.staticCover,
           paging: widget.paging,
+          notebooks: notebooks,
+          onOpenNotebook: (NotebookView notebook) =>
+              unawaited(openNotebookFromAnywhere(context, ref, notebook)),
           onOpenImage: _openImageViewer,
           actions: DiaryPreviewActions(
             onOpenTypography: () => showDiaryTypographySheet(context),
@@ -351,6 +360,7 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
               detail: detail,
               background: resolved.background,
               onDelete: _deleteDiary,
+              notebooks: notebooks,
             ),
           ),
         ),

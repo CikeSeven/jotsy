@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -9,6 +10,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'diary_export_blocks.dart';
+import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
@@ -52,6 +54,16 @@ class DiaryPdfFonts {
 /// 排版库生成文档时要同时持有全部图片；图片总量超过 [maxImageBytes] 时
 /// 抛出 [DiaryExportTooLargeException]，请用户缩小范围或关闭图片，而不是
 /// 让应用因内存不足被系统结束。
+///
+/// 导出成书（`book` 不为 null）时文档分三部分：扉页（单页：封面、书名、
+/// 简介、统计行与导出日期，封面同样计入图片总量）、目录、正文（每章另起
+/// 一页，以章节标题开头）。章节与各篇标题同时是 PDF 书签与命名目标，目录
+/// 每行可点按跳转，并带真实页码：
+/// - 页码只有正文绘制时才确定（`MultiPage` 排版时放不下的组件会挪到下一页
+///   重排，排版阶段记下的页码不可靠），所以由 [_BookAnchor] 在绘制时记下；
+/// - pdf 库按 `addPage` 的先后绘制，目录因此最后加入、以 `index` 插在扉页
+///   之后：正文先绘制、页码已记下，目录绘制时再填（[pw.DelayedWidget]）。
+///   页码与页脚同一套编号（扉页算第 1 页）。
 class DiaryPdfWriter {
   const DiaryPdfWriter._();
 
@@ -65,6 +77,9 @@ class DiaryPdfWriter {
     marginAll: 2.0 * PdfPageFormat.cm,
   );
 
+  /// 扉页封面的最大高度：书名、简介与统计行要留在同一页。
+  static const double _maxCoverHeight = 11.0 * PdfPageFormat.cm;
+
   static Future<DiaryExportOutput> write(
     List<DiaryExportEntry> entries, {
     required DiaryExportOptions options,
@@ -73,6 +88,7 @@ class DiaryPdfWriter {
     required DiaryPdfFonts fonts,
     required String documentTitle,
     TextDirection textDirection = TextDirection.ltr,
+    DiaryExportBookLayout? book,
   }) async {
     final theme = pw.ThemeData.withFont(
       base: fonts.regular,
@@ -82,66 +98,357 @@ class DiaryPdfWriter {
       fontFallback: <pw.Font>[fonts.regular],
     );
     final images = <Uint8List>[];
-    final content = <pw.Widget>[];
-    for (var i = 0; i < entries.length; i++) {
-      if (i > 0) {
-        content
-          ..add(pw.SizedBox(height: 20))
-          ..add(pw.Divider(color: PdfColors.grey400, thickness: 0.5))
-          ..add(pw.SizedBox(height: 16));
-      }
-      final entry = entries[i];
-      content.addAll(
-        await _header(
-          entry,
-          options: options,
-          labels: labels,
-          media: media,
-          images: images,
-        ),
-      );
-      final body = await prepareBody(
-        entry,
-        includeImages: options.includeMedia,
-        labels: labels,
-        media: media,
-        images: images,
-      );
-      if (body != null) {
-        content.addAll(
-          await _renderBody(
-            body,
-            theme: theme,
-            fonts: fonts,
-            images: images,
-            textDirection: textDirection,
-          ),
-        );
-      }
-    }
-
     final document = pw.Document(
       theme: theme,
       title: documentTitle,
       creator: 'Jotsy',
       producer: 'Jotsy',
     );
+    if (book != null) {
+      await _writeBook(
+        document,
+        book,
+        options: options,
+        labels: labels,
+        media: media,
+        fonts: fonts,
+        theme: theme,
+        images: images,
+        textDirection: textDirection,
+      );
+      return DiaryExportOutput.single(await document.save());
+    }
+
+    final content = <pw.Widget>[];
+    for (var i = 0; i < entries.length; i++) {
+      if (i > 0) {
+        content.addAll(_entrySeparator());
+      }
+      content.addAll(
+        await _entryWidgets(
+          entries[i],
+          options: options,
+          labels: labels,
+          media: media,
+          fonts: fonts,
+          theme: theme,
+          images: images,
+          textDirection: textDirection,
+        ),
+      );
+    }
     document.addPage(
       pw.MultiPage(
         pageFormat: _pageFormat,
         theme: theme,
         maxPages: 100000,
-        footer: (pw.Context context) => pw.Align(
-          alignment: pw.Alignment.centerRight,
-          child: pw.Text(
-            '${context.pageNumber} / ${context.pagesCount}',
-            style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
-          ),
-        ),
+        footer: _footer,
         build: (pw.Context context) => content,
       ),
     );
     return DiaryExportOutput.single(await document.save());
+  }
+
+  static pw.Widget _footer(pw.Context context) => pw.Align(
+    alignment: pw.Alignment.centerRight,
+    child: pw.Text(
+      '${context.pageNumber} / ${context.pagesCount}',
+      style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+    ),
+  );
+
+  /// 篇与篇之间的细分隔线。
+  static List<pw.Widget> _entrySeparator() => <pw.Widget>[
+    pw.SizedBox(height: 20),
+    pw.Divider(color: PdfColors.grey400, thickness: 0.5),
+    pw.SizedBox(height: 16),
+  ];
+
+  /// 一篇日记的抬头与正文；[wrapTitle] 给标题套上书签锚点（成书时）。
+  static Future<List<pw.Widget>> _entryWidgets(
+    DiaryExportEntry entry, {
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required DiaryExportMediaLibrary media,
+    required DiaryPdfFonts fonts,
+    required pw.ThemeData theme,
+    required List<Uint8List> images,
+    required TextDirection textDirection,
+    pw.Widget Function(pw.Widget title)? wrapTitle,
+  }) async {
+    final widgets = await _header(
+      entry,
+      options: options,
+      labels: labels,
+      media: media,
+      images: images,
+      wrapTitle: wrapTitle,
+    );
+    final body = await prepareBody(
+      entry,
+      includeImages: options.includeMedia,
+      labels: labels,
+      media: media,
+      images: images,
+    );
+    if (body != null) {
+      widgets.addAll(
+        await _renderBody(
+          body,
+          theme: theme,
+          fonts: fonts,
+          images: images,
+          textDirection: textDirection,
+        ),
+      );
+    }
+    return widgets;
+  }
+
+  /// 成书：扉页 → 目录 → 正文（见类注释里的页码与绘制顺序）。
+  static Future<void> _writeBook(
+    pw.Document document,
+    DiaryExportBookLayout book, {
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required DiaryExportMediaLibrary media,
+    required DiaryPdfFonts fonts,
+    required pw.ThemeData theme,
+    required List<Uint8List> images,
+    required TextDirection textDirection,
+  }) async {
+    // 锚点 → 页码：正文绘制时由 _BookAnchor 写入，目录绘制时读取。
+    final pages = <String, int>{};
+    Uint8List? cover;
+    if (options.includeMedia && book.coverPath != null) {
+      final bytes = await media.bytesOf(book.coverPath!);
+      if (bytes != null && ExportImageInfo.read(bytes) != null) {
+        _addImage(images, bytes);
+        cover = bytes;
+      }
+    }
+
+    final content = <pw.Widget>[];
+    final entryLevel = book.hasChapterHeadings ? 1 : 0;
+    for (var s = 0; s < book.sections.length; s++) {
+      final section = book.sections[s];
+      final title = section.title;
+      if (title != null) {
+        // 正文本身从新的一页开始，之后每章另起一页。
+        if (s > 0) {
+          content.add(pw.NewPage());
+        }
+        content.add(
+          _BookAnchor(
+            name: section.anchor,
+            title: title,
+            level: 0,
+            pages: pages,
+            child: pw.Padding(
+              padding: const pw.EdgeInsets.only(bottom: 20),
+              child: pw.Text(
+                title,
+                style: pw.TextStyle(
+                  fontSize: 26,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+      for (var i = 0; i < section.entries.length; i++) {
+        final entry = section.entries[i];
+        if (i > 0) {
+          content.addAll(_entrySeparator());
+        }
+        content.addAll(
+          await _entryWidgets(
+            entry,
+            options: options,
+            labels: labels,
+            media: media,
+            fonts: fonts,
+            theme: theme,
+            images: images,
+            textDirection: textDirection,
+            wrapTitle: (pw.Widget child) => _BookAnchor(
+              name: book.anchorOf(entry),
+              title: labels.titleOf(entry),
+              level: entryLevel,
+              pages: pages,
+              child: child,
+            ),
+          ),
+        );
+      }
+    }
+
+    document
+      ..addPage(
+        pw.Page(
+          pageFormat: _pageFormat,
+          theme: theme,
+          build: (pw.Context context) => _titlePage(book, cover),
+        ),
+      )
+      ..addPage(
+        pw.MultiPage(
+          pageFormat: _pageFormat,
+          theme: theme,
+          maxPages: 100000,
+          footer: _footer,
+          build: (pw.Context context) => content,
+        ),
+      )
+      // 最后加入、插在扉页之后：绘制排在正文之后，页码已经记下。
+      ..addPage(
+        pw.MultiPage(
+          pageFormat: _pageFormat,
+          theme: theme,
+          maxPages: 100000,
+          footer: _footer,
+          build: (pw.Context context) => _contents(book, labels, pages),
+        ),
+        index: 1,
+      );
+  }
+
+  static pw.Widget _titlePage(DiaryExportBookLayout book, Uint8List? cover) {
+    final info = cover == null ? null : ExportImageInfo.read(cover);
+    pw.Widget? coverImage;
+    if (cover != null && info != null && info.width > 0 && info.height > 0) {
+      final scale = math.min(
+        _pageFormat.availableWidth / info.width,
+        _maxCoverHeight / info.height,
+      );
+      coverImage = pw.ClipRRect(
+        horizontalRadius: 8,
+        verticalRadius: 8,
+        child: pw.Image(
+          pw.MemoryImage(cover),
+          width: info.width * scale,
+          height: info.height * scale,
+          fit: pw.BoxFit.contain,
+        ),
+      );
+    }
+    const muted = pw.TextStyle(fontSize: 11, color: PdfColors.grey700);
+    return pw.Center(
+      child: pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
+        children: <pw.Widget>[
+          if (coverImage != null) ...<pw.Widget>[
+            coverImage,
+            pw.SizedBox(height: 28),
+          ],
+          pw.Text(
+            book.title,
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold),
+          ),
+          if (book.description != null) ...<pw.Widget>[
+            pw.SizedBox(height: 12),
+            pw.Text(
+              book.description!,
+              textAlign: pw.TextAlign.center,
+              style: const pw.TextStyle(fontSize: 13, color: PdfColors.grey700),
+            ),
+          ],
+          pw.SizedBox(height: 20),
+          if (book.summaryLine.isNotEmpty)
+            pw.Text(
+              book.summaryLine,
+              textAlign: pw.TextAlign.center,
+              style: muted,
+            ),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            book.exportedLine,
+            textAlign: pw.TextAlign.center,
+            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static List<pw.Widget> _contents(
+    DiaryExportBookLayout book,
+    DiaryExportLabels labels,
+    Map<String, int> pages,
+  ) {
+    final widgets = <pw.Widget>[
+      pw.Padding(
+        padding: const pw.EdgeInsets.only(bottom: 16),
+        child: pw.Text(
+          book.contentsTitle,
+          style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
+        ),
+      ),
+    ];
+    final indent = book.hasChapterHeadings ? 16.0 : 0.0;
+    for (final section in book.sections) {
+      if (section.title != null) {
+        widgets.add(
+          _contentsRow(
+            section.title!,
+            section.anchor,
+            pages,
+            style: pw.TextStyle(fontSize: 12.5, fontWeight: pw.FontWeight.bold),
+            top: widgets.length > 1 ? 10 : 0,
+          ),
+        );
+      }
+      for (final entry in section.entries) {
+        widgets.add(
+          _contentsRow(
+            '${labels.formatDate(entry.createdAt.toLocal())}  '
+            '${labels.titleOf(entry)}',
+            book.anchorOf(entry),
+            pages,
+            style: const pw.TextStyle(fontSize: 11),
+            indent: indent,
+          ),
+        );
+      }
+    }
+    return widgets;
+  }
+
+  /// 目录的一行：点按跳到 [anchor]，右侧是它所在的页码。
+  static pw.Widget _contentsRow(
+    String text,
+    String anchor,
+    Map<String, int> pages, {
+    required pw.TextStyle style,
+    double indent = 0,
+    double top = 0,
+  }) {
+    return pw.Link(
+      destination: anchor,
+      child: pw.Padding(
+        padding: pw.EdgeInsets.only(left: indent, top: top + 3, bottom: 3),
+        child: pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: <pw.Widget>[
+            pw.Expanded(child: pw.Text(text, style: style)),
+            pw.SizedBox(width: 12),
+            // 排版时页码还不知道，先占一格；绘制时（正文已绘制完）再取。
+            pw.SizedBox(
+              width: 36,
+              child: pw.DelayedWidget(
+                build: (pw.Context context) => pw.Text(
+                  pages[anchor]?.toString() ?? ' ',
+                  style: style,
+                  textAlign: pw.TextAlign.right,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   static Future<List<pw.Widget>> _header(
@@ -150,13 +457,15 @@ class DiaryPdfWriter {
     required DiaryExportLabels labels,
     required DiaryExportMediaLibrary media,
     required List<Uint8List> images,
+    pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     const muted = pw.TextStyle(fontSize: 10.5, color: PdfColors.grey700);
+    final title = pw.Text(
+      labels.titleOf(entry),
+      style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+    );
     final widgets = <pw.Widget>[
-      pw.Text(
-        labels.titleOf(entry),
-        style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
-      ),
+      wrapTitle == null ? title : wrapTitle(title),
       pw.SizedBox(height: 4),
       pw.Text(labels.formatDateTime(entry.createdAt.toLocal()), style: muted),
     ];
@@ -339,5 +648,25 @@ class DiaryPdfWriter {
       },
     );
     return captured;
+  }
+}
+
+/// 成书的章节与篇标题：PDF 书签（大纲）+ 命名目标，并在绘制时记下自己所在
+/// 的页码供目录使用（见 [DiaryPdfWriter] 的类注释）。
+class _BookAnchor extends pw.Outline {
+  _BookAnchor({
+    required super.name,
+    required super.title,
+    required super.level,
+    required this.pages,
+    required pw.Widget super.child,
+  });
+
+  final Map<String, int> pages;
+
+  @override
+  void paint(pw.Context context) {
+    super.paint(context);
+    pages[name] = context.pageNumber;
   }
 }

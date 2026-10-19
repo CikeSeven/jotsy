@@ -8,6 +8,7 @@ import '../../../core/services/journal_import_models.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/expressive_choice_tile.dart';
 import '../../widgets/expressive_state_blend.dart';
+import 'backup_import_folder_section.dart';
 import 'journal_import_source_labels.dart';
 
 /// 打开导入方式面板：概述导入文件并返回所选 [BackupImportMode]，取消返回 null。
@@ -16,9 +17,14 @@ import 'journal_import_source_labels.dart';
 /// 随之从“导入”换成 error 色的“继续”——它只进入下一步，覆盖仍要经严重警告
 /// 确认。只有合并一种方式（文件里没有本机已存在的日记，且不是完整备份）时
 /// 不显示单选列表，只说明合并的效果。
+///
+/// 传入 [folderChoice]（其他应用的导出带有来源日记本 / 文件夹时）才多出
+/// “原来的日记本 / 文件夹”一节，所选方式写回 [folderChoice]，概要与说明
+/// 按该方式的预检结果显示；不传时面板与以前完全相同。
 Future<BackupImportMode?> showBackupImportOptionsSheet(
   BuildContext context, {
   required BackupArchivePreview preview,
+  BackupImportFolderChoice? folderChoice,
 }) {
   return showModalBottomSheet<BackupImportMode>(
     context: context,
@@ -32,15 +38,20 @@ Future<BackupImportMode?> showBackupImportOptionsSheet(
         ? AnimationStyle.noAnimation
         : null,
     builder: (BuildContext sheetContext) =>
-        BackupImportOptionsSheet(preview: preview),
+        BackupImportOptionsSheet(preview: preview, folderChoice: folderChoice),
   );
 }
 
 /// 导入方式面板内容；选中态只在面板内维护，确认时随路由结果返回。
 class BackupImportOptionsSheet extends StatefulWidget {
-  const BackupImportOptionsSheet({super.key, required this.preview});
+  const BackupImportOptionsSheet({
+    super.key,
+    required this.preview,
+    this.folderChoice,
+  });
 
   final BackupArchivePreview preview;
+  final BackupImportFolderChoice? folderChoice;
 
   @override
   State<BackupImportOptionsSheet> createState() =>
@@ -55,7 +66,8 @@ class _BackupImportOptionsSheetState extends State<BackupImportOptionsSheet> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final preview = widget.preview;
+    final folderChoice = widget.folderChoice;
+    final preview = folderChoice?.preview ?? widget.preview;
     final modes = preview.availableModes;
     final overwrites = _mode.overwritesLocalData;
     return SafeArea(
@@ -86,6 +98,13 @@ class _BackupImportOptionsSheetState extends State<BackupImportOptionsSheet> {
             ),
             const SizedBox(height: AppSpacing.m),
             _ArchiveSummary(preview: preview),
+            if (folderChoice != null)
+              BackupImportFolderSection(
+                folderCount: folderChoice.folderCount,
+                selected: folderChoice.selected,
+                onChanged: (mode) =>
+                    setState(() => folderChoice.selected = mode),
+              ),
             const SizedBox(height: AppSpacing.l),
             if (modes.length > 1)
               for (final mode in modes)
@@ -156,6 +175,22 @@ String _modeLabel(AppLocalizations l10n, BackupImportMode mode) {
 }
 
 String _modeDescription(
+  AppLocalizations l10n,
+  BackupImportMode mode,
+  BackupArchivePreview preview,
+) {
+  final description = _baseModeDescription(l10n, mode, preview);
+  // 同一个日记本的定义也会被替换（名称、封面、章节等），在说明末尾补一行；
+  // 日记本重复本身不决定是否提供这种方式。
+  if (mode == BackupImportMode.mergeOverwrite &&
+      preview.existingNotebookCount > 0) {
+    return '$description\n'
+        '${l10n.backupImportModeOverwriteNotebooksExtra(preview.existingNotebookCount)}';
+  }
+  return description;
+}
+
+String _baseModeDescription(
   AppLocalizations l10n,
   BackupImportMode mode,
   BackupArchivePreview preview,

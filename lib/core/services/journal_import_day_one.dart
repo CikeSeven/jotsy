@@ -19,7 +19,9 @@ import 'journal_import_support.dart';
 /// `dayone-moment:/video/<id>` 等）嵌在原位置；正文没引用到的媒体追加在末尾。
 ///
 /// 映射：uuid → 稳定键；creationDate/modifiedDate（UTC）→ 本地发表/更新时间；
-/// 首行 Markdown 标题 → 标题；tags → 标签（多个日记本时再加日记本名）；
+/// 首行 Markdown 标题 → 标题；tags → 标签；多个日记本时
+/// 记下所在日记本名（[JournalImportEntry.notebooks]，只有一本时全收在一本里
+/// 没有区分意义，不记）；
 /// location/weather → 位置与天气；isPinned → 置顶。Day One 没有心情。
 JournalImportParseResult parseDayOneExport(
   JournalImportInput input,
@@ -63,7 +65,7 @@ JournalImportParseResult parseDayOneExport(
         media,
         keys,
         root: journal.root,
-        journalTag: journals.length > 1 ? journal.name : null,
+        journal: journals.length > 1 ? journal.name : null,
       );
       if (entry != null) {
         entries.add(entry);
@@ -95,7 +97,7 @@ JournalImportEntry? _parseEntry(
   JournalMediaStager media,
   JournalKeyRegistry keys, {
   required String root,
-  String? journalTag,
+  String? journal,
 }) {
   final createdAt = parseJournalDateTime(raw['creationDate']);
   if (createdAt == null) return null;
@@ -195,7 +197,8 @@ JournalImportEntry? _parseEntry(
     contentText: content.contentText,
     createdAt: createdAt,
     updatedAt: parseJournalDateTime(raw['modifiedDate']),
-    tags: [...journalStringList(raw['tags']), ?journalTag],
+    tags: journalStringList(raw['tags']),
+    notebooks: [?journal],
     weather: weather is Map
         ? journalWeatherText(
             journalString(weather['conditionsDescription']),

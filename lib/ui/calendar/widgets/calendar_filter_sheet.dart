@@ -8,10 +8,13 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../diaries/widgets/tag_filter_chip.dart';
+import '../../notebooks/providers/notebook_providers.dart';
+import '../../notebooks/viewmodels/notebook_view.dart';
+import '../../notebooks/widgets/notebook_cover_parts.dart';
 import '../models/calendar_marker_filter.dart';
 import 'calendar_options_controls.dart';
 
-/// 打开日历筛选面板（按心情或标签）。
+/// 打开日历筛选面板（按心情、标签或日记本）。
 ///
 /// 与显示选项面板同一套交互：点选即生效、面板保持打开，浅遮罩下能看到
 /// 网格随筛选变化；下拉或点遮罩关闭。筛选是页面临时状态，由页面经
@@ -39,11 +42,12 @@ Future<void> showCalendarFilterSheet(
   );
 }
 
-/// 日历筛选面板内容：心情与标签两组可多选的胶囊。
+/// 日历筛选面板内容：心情、标签与日记本三组可多选的胶囊。
 ///
 /// 选中态由面板自己维护（初值取打开时的筛选）：面板是独立路由，打开期间
-/// 筛选只能经由面板修改。标签列表直接 watch [tagListProvider]，面板打开
-/// 时新建或删除的标签也能及时反映。
+/// 筛选只能经由面板修改。标签与日记本列表直接 watch [tagListProvider] /
+/// [notebooksProvider]，面板打开时新建或删除的也能及时反映。日记本只列
+/// [calendarFilterNotebooks] 认可的（普通、非私密），一本都没有时整组隐藏。
 class CalendarFilterSheet extends ConsumerStatefulWidget {
   const CalendarFilterSheet({
     super.key,
@@ -78,6 +82,9 @@ class _CalendarFilterSheetState extends ConsumerState<CalendarFilterSheet> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final tags = ref.watch(tagListProvider).asData?.value ?? const <Tag>[];
+    final notebooks = calendarFilterNotebooks(
+      ref.watch(notebooksProvider).asData?.value ?? const <NotebookView>[],
+    );
     final filter = _filter;
     return SafeArea(
       top: false,
@@ -168,6 +175,26 @@ class _CalendarFilterSheetState extends ConsumerState<CalendarFilterSheet> {
                     _buildTagChip(theme, tag, filter.tagIds.contains(tag.id)),
                 ],
               ),
+            if (notebooks.isNotEmpty) ...<Widget>[
+              const SizedBox(height: AppSpacing.l),
+              CalendarOptionsSectionHeader(
+                icon: FontAwesomeIcons.book,
+                label: l10n.calendarFilterNotebooks,
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.s,
+                children: <Widget>[
+                  for (final notebook in notebooks)
+                    _buildNotebookChip(
+                      colorScheme,
+                      notebook,
+                      filter.notebookIds.contains(notebook.id),
+                    ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -216,6 +243,42 @@ class _CalendarFilterSheetState extends ConsumerState<CalendarFilterSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       animateBorder: true,
       onTap: () => _update(_filter.toggleTag(tag.id)),
+    );
+  }
+
+  /// 日记本胶囊：本子图标 + 名字，配色取本子的强调色（与书架封面同源），
+  /// 选中时为容器色实底。已合上的本子排在最后并略微变淡：它们仍装着日记，
+  /// 可以筛选，只是不常用。
+  Widget _buildNotebookChip(
+    ColorScheme colorScheme,
+    NotebookView notebook,
+    bool selected,
+  ) {
+    final accent = notebookAccentColors(notebook.color, colorScheme);
+    final isLight = colorScheme.brightness == Brightness.light;
+    final chip = TagFilterChip(
+      label: notebook.name,
+      leading: FaIcon(notebook.icon.data, size: 11),
+      selected: selected,
+      selectedColor: accent.container,
+      selectedForegroundColor: accent.onContainer,
+      selectedBorderColor: accent.onContainer,
+      unselectedColor: accent.container.withValues(alpha: isLight ? 0.4 : 0.5),
+      unselectedForegroundColor: colorScheme.onSurface,
+      unselectedBorderColor: accent.onContainer.withValues(
+        alpha: isLight ? 0.18 : 0.28,
+      ),
+      radius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      animateBorder: true,
+      onTap: () => _update(_filter.toggleNotebook(notebook.id)),
+    );
+    if (!notebook.isClosed) {
+      return chip;
+    }
+    return Semantics(
+      value: context.l10n.notebookStateClosed,
+      child: Opacity(opacity: 0.6, child: chip),
     );
   }
 }

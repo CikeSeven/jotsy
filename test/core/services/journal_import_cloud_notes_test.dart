@@ -154,16 +154,20 @@ void main() {
       expect(result.missingMediaCount, 0);
     });
 
-    test('tags notes with the notebook when several are packed', () {
+    test('records the notebook when several are packed', () {
       write('Work.enex', _enex());
       write('Home.enex', _enex());
 
       final result = parseEvernoteExport(extracted(), media);
 
-      expect(result.entries.map((entry) => entry.tags.last).toSet(), {
+      expect(result.entries.map((entry) => entry.notebooks.single).toSet(), {
         'Home',
         'Work',
       });
+      expect(
+        result.entries.expand((entry) => entry.tags),
+        isNot(anyOf(contains('Home'), contains('Work'))),
+      );
       expect(
         result.entries.map((entry) => entry.sourceKey).toSet(),
         hasLength(4),

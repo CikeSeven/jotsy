@@ -6,7 +6,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
-import '../../widgets/expressive_icon_swap.dart';
+import '../../widgets/expressive_menu/expressive_menu.dart';
 
 /// 日记列表布局模式。
 enum DiaryLayoutMode { list, waterfall }
@@ -16,7 +16,9 @@ enum DiaryLayoutMode { list, waterfall }
 /// 布局职责：
 /// - 普通态：搜索条占满左侧，右侧为草稿箱（有草稿时带份数角标）、归档列表
 ///   与视图选项入口；
-/// - 多选态：左侧为已选数量，右侧为批量操作（取消、置顶、归档、导出、删除）。
+/// - 多选态：取消 · 已选数量 · 收进日记本 · 归档 · 删除 · 更多（置顶或取消
+///   置顶、导出；在普通日记本里另有“从本日记本移出”“移动到…”，不超过 4 项，
+///   用弹出菜单）。
 class DiaryHeadSection extends StatelessWidget {
   // ==================== 头部过渡动画常量 ====================
   static const double _headerContentHeight = 52;
@@ -32,11 +34,15 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onArchiveSelected,
     required this.onExportSelected,
     required this.onDeleteSelected,
+    required this.onAddToNotebookSelected,
+    this.onRemoveFromNotebookSelected,
+    this.onMoveToNotebookSelected,
     required this.onOpenArchived,
     required this.onOpenDrafts,
     required this.draftCount,
     required this.onOpenViewOptions,
     required this.onOpenSearchPage,
+    this.searchHint,
   });
 
   final bool isSelectionMode;
@@ -47,6 +53,14 @@ class DiaryHeadSection extends StatelessWidget {
   final VoidCallback onArchiveSelected;
   final VoidCallback onExportSelected;
   final VoidCallback onDeleteSelected;
+
+  /// 收进日记本（三态选择器）。
+  final VoidCallback onAddToNotebookSelected;
+
+  /// 从当前日记本移出 / 移动到另一本：只在普通日记本里提供，否则为 null，
+  /// 菜单里不出现这两项。
+  final VoidCallback? onRemoveFromNotebookSelected;
+  final VoidCallback? onMoveToNotebookSelected;
   final VoidCallback onOpenArchived;
   final VoidCallback onOpenDrafts;
 
@@ -56,6 +70,9 @@ class DiaryHeadSection extends StatelessWidget {
   /// 打开视图选项面板（排序与布局），面板由页面控制器负责呈现。
   final VoidCallback onOpenViewOptions;
   final VoidCallback onOpenSearchPage;
+
+  /// 搜索条占位文字；null 时用默认文案（在日记本里时为“在「旅行」中搜索”）。
+  final String? searchHint;
 
   @override
   Widget build(BuildContext context) {
@@ -96,61 +113,92 @@ class DiaryHeadSection extends StatelessWidget {
     );
   }
 
-  /// 多选态：已选数量 + 批量操作按钮组。
+  /// 多选态：取消 + 已选数量 + 常用批量操作，其余收进“更多”菜单。
+  ///
+  /// 与改版前同样是 5 个图标按钮 + 数量，320dp 宽也放得下；数量文字放不下
+  /// 时按比例缩小而不是省略（“已选择 1…”读不出数量）。
   Widget _buildSelectionRow(BuildContext context) {
+    final l10n = context.l10n;
+    final colorScheme = Theme.of(context).colorScheme;
+    final onRemove = onRemoveFromNotebookSelected;
+    final onMove = onMoveToNotebookSelected;
     return Row(
       key: const ValueKey<String>('head_selection'),
       children: [
-        Expanded(
-          child: Text(
-            context.l10n.autoT0099(selectedCount.toString()),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
         IconButton(
-          tooltip: context.l10n.commonCancel,
+          tooltip: l10n.commonCancel,
           onPressed: onCancelSelection,
           icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
         ),
-        IconButton(
-          tooltip: isPinActionUnpin
-              ? context.l10n.diaryUnpinSelected
-              : context.l10n.diaryPinSelected,
-          onPressed: onPinSelected,
-          // 选中项全部已置顶时变为“取消置顶”：图标缩放淡入切换，而不是硬切。
-          icon: ExpressiveIconSwap(
-            switchKey: isPinActionUnpin,
-            child: FaIcon(
-              isPinActionUnpin
-                  ? FontAwesomeIcons.thumbtackSlash
-                  : FontAwesomeIcons.thumbtack,
-              size: 18,
+        Expanded(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: AlignmentDirectional.centerStart,
+            child: Text(
+              l10n.autoT0099(selectedCount.toString()),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+              ),
+              maxLines: 1,
             ),
           ),
         ),
         IconButton(
-          tooltip: context.l10n.autoT0140,
+          tooltip: l10n.notebookPickerTitle,
+          onPressed: onAddToNotebookSelected,
+          icon: const FaIcon(FontAwesomeIcons.bookBookmark, size: 18),
+        ),
+        IconButton(
+          tooltip: l10n.autoT0140,
           onPressed: onArchiveSelected,
           icon: const FaIcon(FontAwesomeIcons.boxArchive, size: 18),
         ),
         IconButton(
-          tooltip: context.l10n.diaryExportSelected,
-          onPressed: onExportSelected,
-          icon: const FaIcon(FontAwesomeIcons.fileExport, size: 18),
-        ),
-        IconButton(
-          tooltip: context.l10n.commonDelete,
+          tooltip: l10n.commonDelete,
           onPressed: onDeleteSelected,
           icon: FaIcon(
             FontAwesomeIcons.trashCan,
             size: 18,
-            color: Theme.of(context).colorScheme.error,
+            color: colorScheme.error,
           ),
+        ),
+        ExpressiveMenuButton(
+          tooltip: l10n.notebookSelectionMore,
+          icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
+          items: <Widget>[
+            // 选中项全部已置顶时为“取消置顶”。
+            ExpressiveMenuItem(
+              leadingIcon: FaIcon(
+                isPinActionUnpin
+                    ? FontAwesomeIcons.thumbtackSlash
+                    : FontAwesomeIcons.thumbtack,
+              ),
+              onPressed: onPinSelected,
+              child: Text(
+                isPinActionUnpin
+                    ? l10n.diaryUnpinSelected
+                    : l10n.diaryPinSelected,
+              ),
+            ),
+            ExpressiveMenuItem(
+              leadingIcon: const FaIcon(FontAwesomeIcons.fileExport),
+              onPressed: onExportSelected,
+              child: Text(l10n.diaryExportSelected),
+            ),
+            if (onRemove != null)
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.folderMinus),
+                onPressed: onRemove,
+                child: Text(l10n.notebookRemoveFromCurrent),
+              ),
+            if (onMove != null)
+              ExpressiveMenuItem(
+                leadingIcon: const FaIcon(FontAwesomeIcons.rightLeft),
+                onPressed: onMove,
+                child: Text(l10n.notebookMoveTo),
+              ),
+          ],
         ),
       ],
     );
@@ -166,6 +214,7 @@ class DiaryHeadSection extends StatelessWidget {
             key: const ValueKey<String>('search_preview'),
             height: _searchPreviewHeight,
             onTap: onOpenSearchPage,
+            hint: searchHint,
           ),
         ),
         const SizedBox(width: AppSpacing.s),
@@ -181,10 +230,16 @@ class DiaryHeadSection extends StatelessWidget {
 }
 
 class _SearchPreview extends StatelessWidget {
-  const _SearchPreview({super.key, required this.height, required this.onTap});
+  const _SearchPreview({
+    super.key,
+    required this.height,
+    required this.onTap,
+    this.hint,
+  });
 
   final double height;
   final VoidCallback onTap;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +276,7 @@ class _SearchPreview extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    context.l10n.diarySearchPreviewHint,
+                    hint ?? context.l10n.diarySearchPreviewHint,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(

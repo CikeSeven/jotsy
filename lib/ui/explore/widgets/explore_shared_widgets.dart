@@ -101,11 +101,16 @@ class ExploreStatTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.format,
   });
 
   final FaIconData icon;
   final String label;
   final int value;
+
+  /// 数字的写法（如千分位、“3 年 2 个月”）；递增过程中的每个中间值同样经它
+  /// 格式化。null 时写整数。
+  final String Function(int value)? format;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +137,7 @@ class ExploreStatTile extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Semantics(
-          label: '$value',
+          label: format?.call(value) ?? '$value',
           child: ExcludeSemantics(
             child: TweenAnimationBuilder<double>(
               tween: Tween<double>(begin: 0, end: value.toDouble()),
@@ -143,7 +148,11 @@ class ExploreStatTile extends StatelessWidget {
               curve: ExpressiveMotion.effects,
               builder: (BuildContext context, double animated, Widget? _) {
                 return Text(
-                  '${animated.round()}',
+                  format?.call(animated.round()) ?? '${animated.round()}',
+                  // 格式化后的文字（“3 年 2 个月”）可能比纯数字长，窄屏下
+                  // 收成一行省略，不把格子撑高。
+                  maxLines: format == null ? null : 1,
+                  overflow: format == null ? null : TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.w800,

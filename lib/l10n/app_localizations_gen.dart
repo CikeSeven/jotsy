@@ -4382,6 +4382,12 @@ abstract class AppLocalizations {
   /// **'Filter calendar'**
   String get calendarFilterTitle;
 
+  /// Notebook group title in the calendar filter sheet (only regular, non-private notebooks are listed).
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get calendarFilterNotebooks;
+
   /// Button that clears the calendar filter.
   ///
   /// In en, this message translates to:
@@ -4391,7 +4397,7 @@ abstract class AppLocalizations {
   /// Explains the calendar filter.
   ///
   /// In en, this message translates to:
-  /// **'Dates and stats only count matching entries. Any choice within a group matches; when both mood and tags are set, an entry must match both.'**
+  /// **'Dates and stats only count matching entries. Any choice within a group matches; when several groups are set, an entry must match all of them.'**
   String get calendarFilterDescription;
 
   /// Mood group title in the calendar filter sheet.
@@ -9422,6 +9428,24 @@ abstract class AppLocalizations {
   /// **'{added, plural, =1{Templates: 1 added} other{Templates: {added} added}}'**
   String backupImportTemplateMergeResult(int added);
 
+  /// Bullet in the replace-everything warning: notebooks on this device that will be deleted (their diaries are counted as diaries).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 notebook} other{{count} notebooks}}'**
+  String backupOverwriteAllNotebooks(int count);
+
+  /// Extra line of the merge import result: notebooks added (existing ones are not counted).
+  ///
+  /// In en, this message translates to:
+  /// **'{added, plural, =1{Notebooks: 1 added} other{Notebooks: {added} added}}'**
+  String backupImportNotebookMergeResult(int added);
+
+  /// Extra line of the “merge and overwrite existing” description: notebooks also on this device whose settings will be replaced (the local shelf order is kept).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Also replaces the name, cover, chapters and other settings of 1 existing notebook} other{Also replaces the name, cover, chapters and other settings of {count} existing notebooks}}'**
+  String backupImportModeOverwriteNotebooksExtra(int count);
+
   /// Name of the built-in “Daily journal” diary template.
   ///
   /// In en, this message translates to:
@@ -10825,6 +10849,1680 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Templates can only be applied to a blank entry'**
   String get diaryTemplateNeedsBlankEntry;
+
+  /// Title of the notebooks feature: shelf sheet, management page and settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get notebookTitle;
+
+  /// Subtitle of the Notebooks entry on the settings home.
+  ///
+  /// In en, this message translates to:
+  /// **'Organize, reorder and merge your notebooks'**
+  String get notebookSettingsSubtitle;
+
+  /// Create a notebook: editor title, buttons and the shelf's new tile.
+  ///
+  /// In en, this message translates to:
+  /// **'New notebook'**
+  String get notebookNew;
+
+  /// Editor page title when editing an existing notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit notebook'**
+  String get notebookEditTitle;
+
+  /// Shelf sheet header button that opens the notebook management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage'**
+  String get notebookManage;
+
+  /// Shelf sheet row that returns to all entries.
+  ///
+  /// In en, this message translates to:
+  /// **'All entries'**
+  String get notebookAllDiaries;
+
+  /// Shelf sheet group: pinned notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get notebookSectionPinned;
+
+  /// Shelf and management group: regular notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'My notebooks'**
+  String get notebookSectionMine;
+
+  /// Shelf and management group: rule-based notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart notebooks'**
+  String get notebookSectionSmart;
+
+  /// Shelf and management group: closed notebooks (collapsed on the shelf by default).
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get notebookSectionClosed;
+
+  /// Number of entries in a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String notebookEntryCount(int count);
+
+  /// Separator between name, count and state in a notebook cover's screen-reader label.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get notebookSemanticsSeparator;
+
+  /// Empty state text when there are no notebooks yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect entries from different topics and times into one notebook'**
+  String get notebookEmptyHint;
+
+  /// Shown when the notebook being edited has been deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'This notebook no longer exists'**
+  String get notebookMissing;
+
+  /// Label of the notebook name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get notebookNameLabel;
+
+  /// Placeholder of the notebook name field; also the preview cover's sample name while empty.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Travel'**
+  String get notebookNameHint;
+
+  /// Label of the notebook description field.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get notebookDescriptionLabel;
+
+  /// Placeholder of the notebook description field.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe this notebook in a sentence (optional)'**
+  String get notebookDescriptionHint;
+
+  /// Title of the notebook icon picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get notebookIconLabel;
+
+  /// Quick-create dialog button that shows all icons.
+  ///
+  /// In en, this message translates to:
+  /// **'More icons'**
+  String get notebookIconMore;
+
+  /// Quick-create dialog button that collapses the icon grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get notebookIconLess;
+
+  /// Title of the notebook color picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get notebookColorLabel;
+
+  /// Notebook color option: no color, follow the app theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow theme'**
+  String get notebookColorFollowTheme;
+
+  /// Title of the notebook cover image group.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover image'**
+  String get notebookCoverLabel;
+
+  /// Button that picks a cover image for the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose image'**
+  String get notebookCoverPick;
+
+  /// Button that removes the notebook cover image.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get notebookCoverRemove;
+
+  /// Title of the notebook type group when creating a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get notebookTypeLabel;
+
+  /// Notebook type: entries are added by hand.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular'**
+  String get notebookTypeManual;
+
+  /// Notebook type: entries are collected by rules.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart'**
+  String get notebookTypeSmart;
+
+  /// One-line description of the regular notebook type.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the entries to add yourself'**
+  String get notebookTypeManualHint;
+
+  /// One-line description of the smart notebook type.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically collects entries that match your conditions'**
+  String get notebookTypeSmartHint;
+
+  /// Title of the notebook privacy group.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get notebookPrivacyLabel;
+
+  /// Privacy option: entries still appear in All entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get notebookPrivacyNormal;
+
+  /// Privacy option: entries do not appear in All entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide from All entries'**
+  String get notebookPrivacyHidden;
+
+  /// Description of the hide-from-All-entries option.
+  ///
+  /// In en, this message translates to:
+  /// **'Only visible inside this notebook'**
+  String get notebookPrivacyHiddenHint;
+
+  /// Privacy option: opening the notebook needs authentication.
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get notebookPrivacyLocked;
+
+  /// Description of the lock option.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to open, and hide from All entries'**
+  String get notebookPrivacyLockedHint;
+
+  /// Title of the default entry order group.
+  ///
+  /// In en, this message translates to:
+  /// **'Default order'**
+  String get notebookSortLabel;
+
+  /// Order option: by publish date, newest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Date published, newest first'**
+  String get notebookSortCreatedDesc;
+
+  /// Order option: by publish date, oldest first.
+  ///
+  /// In en, this message translates to:
+  /// **'Date published, oldest first'**
+  String get notebookSortCreatedAsc;
+
+  /// Description of the oldest-first order.
+  ///
+  /// In en, this message translates to:
+  /// **'Reads like a book'**
+  String get notebookSortCreatedAscHint;
+
+  /// Order option: most recently edited first.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently edited'**
+  String get notebookSortUpdatedDesc;
+
+  /// Order option: the order arranged in the table of contents.
+  ///
+  /// In en, this message translates to:
+  /// **'Book order'**
+  String get notebookSortBook;
+
+  /// Description of the book order.
+  ///
+  /// In en, this message translates to:
+  /// **'Arranged by hand in the table of contents'**
+  String get notebookSortBookHint;
+
+  /// Template applied to new entries in the notebook: editor row and picker title.
+  ///
+  /// In en, this message translates to:
+  /// **'Template for new entries'**
+  String get notebookTemplateLabel;
+
+  /// No default template for the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get notebookTemplateNone;
+
+  /// Shown when saving a notebook fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save. Please try again'**
+  String get notebookSaveFailed;
+
+  /// Shown when a notebook action (pin, close, reorder, delete, merge) fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again'**
+  String get notebookActionFailed;
+
+  /// Tooltip of the more-actions button on a management row.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get notebookMoreActions;
+
+  /// Screen-reader label of the drag handle on the management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get notebookDragHandle;
+
+  /// Notebook state: pinned (management row subtitle).
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get notebookStatePinned;
+
+  /// Notebook state: smart notebook (subtitle and screen reader).
+  ///
+  /// In en, this message translates to:
+  /// **'Smart'**
+  String get notebookStateSmart;
+
+  /// Notebook state: hidden from All entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get notebookStateHidden;
+
+  /// Notebook state: locked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get notebookStateLocked;
+
+  /// Notebook state: closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get notebookStateClosed;
+
+  /// Notebook action: pin.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin'**
+  String get notebookActionPin;
+
+  /// Notebook action: unpin.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get notebookActionUnpin;
+
+  /// Notebook action: close (finished, rarely used).
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get notebookActionClose;
+
+  /// Description of the close action.
+  ///
+  /// In en, this message translates to:
+  /// **'Moves to Closed on the shelf and no longer appears when adding entries'**
+  String get notebookActionCloseHint;
+
+  /// Notebook action: reopen a closed notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen'**
+  String get notebookActionReopen;
+
+  /// Notebook action: merge this notebook into another.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into…'**
+  String get notebookActionMerge;
+
+  /// Smart notebook action: convert to a regular notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to regular notebook'**
+  String get notebookActionConvert;
+
+  /// Description of converting to a regular notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Adds the entries that match now; stops updating automatically'**
+  String get notebookActionConvertHint;
+
+  /// Title of the merge target sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge into which notebook'**
+  String get notebookMergeSheetTitle;
+
+  /// Shown when there is no merge target.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no other regular notebook to merge into'**
+  String get notebookMergeEmpty;
+
+  /// Title of the merge confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge notebooks'**
+  String get notebookMergeConfirmTitle;
+
+  /// Body of the merge confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Move {count, plural, =1{1 entry} other{{count} entries}} from \"{source}\" into \"{target}\" and delete \"{source}\"?'**
+  String notebookMergeConfirm(String source, int count, String target);
+
+  /// Confirm button of the merge dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge'**
+  String get notebookMergeAction;
+
+  /// Shown after merging.
+  ///
+  /// In en, this message translates to:
+  /// **'Merged into \"{target}\"'**
+  String notebookMerged(String target);
+
+  /// Title of the delete notebook dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String notebookDeleteTitle(String name);
+
+  /// Delete option: delete only the notebook, keep the entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete notebook only'**
+  String get notebookDeleteKeepDiaries;
+
+  /// Description of the delete-notebook-only option.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry stays} other{{count} entries stay}} in All entries'**
+  String notebookDeleteKeepDiariesHint(int count);
+
+  /// Delete option: also move the notebook's entries to trash.
+  ///
+  /// In en, this message translates to:
+  /// **'Also move entries to trash'**
+  String get notebookDeleteWithDiaries;
+
+  /// Description of the also-trash-entries option.
+  ///
+  /// In en, this message translates to:
+  /// **'You can restore them from trash'**
+  String get notebookDeleteWithDiariesHint;
+
+  /// Shown when deleting a smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Your entries are not affected'**
+  String get notebookDeleteSmartHint;
+
+  /// Undo message after deleting a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted \"{name}\"'**
+  String notebookDeleted(String name);
+
+  /// Screen reader label of the notebook switcher chip at the start of the home tag bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch notebook, current: {name}'**
+  String notebookSwitcherSemantics(String name);
+
+  /// Hint shown when the notebook open on the home page was deleted or merged and the list returns to all diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook deleted'**
+  String get notebookScopeDeleted;
+
+  /// Search bar placeholder on the home page while inside a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in \"{name}\"'**
+  String notebookSearchIn(String name);
+
+  /// Screen reader label of the remove button on the search page's notebook condition chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove notebook condition: {name}'**
+  String notebookSearchRemoveScope(String name);
+
+  /// Total word count in the notebook header meta line (already formatted with grouping, e.g. 21,345).
+  ///
+  /// In en, this message translates to:
+  /// **'{words} words'**
+  String notebookMetaWords(String words);
+
+  /// Time span in the notebook header meta line: month of the first to the last entry.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String notebookMetaSpan(String start, String end);
+
+  /// Time span in the notebook header meta line when the latest entry is from the current month.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – now'**
+  String notebookMetaSpanOngoing(String start);
+
+  /// Capsule on the notebook header card marking a smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart notebook'**
+  String get notebookHeaderSmartBadge;
+
+  /// Capsule on the notebook header card marking a private (hidden or locked) notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Only shown in this notebook'**
+  String get notebookHeaderPrivateBadge;
+
+  /// Empty state title on the home page inside a notebook with no entries.
+  ///
+  /// In en, this message translates to:
+  /// **'This notebook is empty'**
+  String get notebookEmptyTitle;
+
+  /// Explanation under the empty state of a notebook on the home page.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap New below to write the first entry'**
+  String get notebookEmptyCreateHint;
+
+  /// Sort section title of the view options sheet while inside a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort in this notebook'**
+  String get notebookViewSortSection;
+
+  /// Entry in the view options sheet that opens the notebook shelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch notebook'**
+  String get notebookViewOptionsEntry;
+
+  /// Subtitle of the notebook shelf entry in the view options sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Show only one notebook\'s entries, or create one'**
+  String get notebookViewOptionsEntrySubtitle;
+
+  /// Reason shown on the system authentication prompt when opening a locked notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock \"{name}\"'**
+  String notebookUnlockReason(String name);
+
+  /// Dialog title when a locked notebook can't be opened because the device has no screen lock.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t open locked notebook'**
+  String get notebookLockUnsupportedTitle;
+
+  /// Explanation when opening a locked notebook on a device without a screen lock.
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no screen lock, so your identity can\'t be verified and locked notebooks can\'t be opened. Set a screen lock in system settings to open them.'**
+  String get notebookLockUnsupportedMessage;
+
+  /// Dialog button that opens the notebook settings when a locked notebook can't be verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get notebookLockUnsupportedAction;
+
+  /// Title of the overlay covering a locked notebook when returning to the app.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" is locked'**
+  String notebookLockedTitle(String name);
+
+  /// Subtitle of the locked notebook overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity again after leaving the app'**
+  String get notebookLockedSubtitle;
+
+  /// Unlock button on the locked notebook overlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get notebookLockUnlock;
+
+  /// Button on the locked notebook overlay that leaves the notebook and returns to all diaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to all diaries'**
+  String get notebookLockBackToAll;
+
+  /// Placeholder shown in the recycle bin instead of the title of an entry from a private notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry in a private notebook'**
+  String get notebookPrivateDiaryPlaceholder;
+
+  /// Shown on an anniversary when its linked entry is in a hidden or locked notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'The linked entry is in a private notebook'**
+  String get notebookAnniversaryLinkPrivate;
+
+  /// Header of a section in the import options sheet: what the other app's notebooks or folders become after import.
+  ///
+  /// In en, this message translates to:
+  /// **'Original notebooks / folders'**
+  String get backupImportFolderModeTitle;
+
+  /// Folder mode segment: create notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks'**
+  String get backupImportFolderModeNotebooks;
+
+  /// Folder mode segment: turn them into tags with the same names (previous behaviour).
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get backupImportFolderModeTags;
+
+  /// Folder mode segment: create both notebooks and tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get backupImportFolderModeBoth;
+
+  /// Explanation when “Notebooks” is selected; count is the number of distinct source notebooks / folders.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Turns the source notebook / folder into a notebook; one with the same name joins your existing notebook} other{Turns the {count} source notebooks / folders into notebooks; ones with the same name join your existing notebooks}}'**
+  String backupImportFolderModeNotebooksHint(int count);
+
+  /// Explanation when “Tags” is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'As before, they become tags with the same names'**
+  String get backupImportFolderModeTagsHint;
+
+  /// Explanation when “Both” is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Creates notebooks and tags with the same names'**
+  String get backupImportFolderModeBothHint;
+
+  /// Hint under an empty manual notebook (two buttons follow).
+  ///
+  /// In en, this message translates to:
+  /// **'Write the first entry, or pick a few existing ones'**
+  String get notebookEmptyManualHint;
+
+  /// Empty-notebook button: write straight into this notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the first entry'**
+  String get notebookEmptyWriteFirst;
+
+  /// Empty-notebook button: open the add-entries page.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick existing entries'**
+  String get notebookEmptyPickExisting;
+
+  /// Notebook header button: pick existing entries to add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add entries'**
+  String get notebookAddDiaries;
+
+  /// Notebook header overflow menu item: export the whole notebook as one document with a title page, contents and chapter headings.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as book'**
+  String get notebookExportAsBook;
+
+  /// Export date line on the title page of a notebook exported as a book.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported on {date}'**
+  String notebookBookExportedOn(String date);
+
+  /// Export sheet switch shown when exporting a notebook as a book: whether to write a title page, contents and chapter headings.
+  ///
+  /// In en, this message translates to:
+  /// **'Book structure'**
+  String get diaryExportBookStructure;
+
+  /// One-line description under the Book structure switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Title page, contents and chapter headings'**
+  String get diaryExportBookStructureDescription;
+
+  /// Contents page: muted hint under an empty No chapter header, which is the drop zone for taking entries out of chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag here to take entries out of chapters'**
+  String get notebookContentsUnassignedDropHint;
+
+  /// Chapter chip in the notebook header: show every chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notebookChapterAll;
+
+  /// Chapter chip / contents header for entries not in any chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'No chapter'**
+  String get notebookChapterUnassigned;
+
+  /// Chapter chip label: chapter title and its number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} · {count}'**
+  String notebookChapterChip(String title, int count);
+
+  /// Notebook contents page title and the header card button that opens it.
+  ///
+  /// In en, this message translates to:
+  /// **'Contents'**
+  String get notebookContents;
+
+  /// Contents page top-bar action and dialog title: add a chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'New chapter'**
+  String get notebookContentsNewChapter;
+
+  /// Contents page top-bar action: enter multi-select mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get notebookContentsSelect;
+
+  /// Contents page top-bar action: leave multi-select mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Done selecting'**
+  String get notebookContentsSelectDone;
+
+  /// Contents page multi-select bar: number of selected entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 selected} other{{count} selected}}'**
+  String notebookContentsSelectedCount(int count);
+
+  /// Contents page banner when the notebook has no chapters.
+  ///
+  /// In en, this message translates to:
+  /// **'Add chapters to split this notebook into parts'**
+  String get notebookContentsNoChapterHint;
+
+  /// Contents page empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries in this notebook yet'**
+  String get notebookContentsEmpty;
+
+  /// Semantics label of the archived glyph on a contents row.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get notebookContentsArchived;
+
+  /// Semantics label of the lock glyph on a contents row.
+  ///
+  /// In en, this message translates to:
+  /// **'Sealed time capsule'**
+  String get notebookContentsSealed;
+
+  /// Semantics label of the drag handle on a contents row.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder'**
+  String get notebookContentsDragHandle;
+
+  /// Tooltip of the chapter header menu on the contents page.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter actions'**
+  String get notebookContentsChapterActions;
+
+  /// Chapter menu item: rename the chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get notebookChapterRename;
+
+  /// Title of the rename chapter dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename chapter'**
+  String get notebookChapterRenameTitle;
+
+  /// Chapter menu item: move the chapter one place up.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get notebookChapterMoveUp;
+
+  /// Chapter menu item: move the chapter one place down.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get notebookChapterMoveDown;
+
+  /// Label of the chapter name field.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter name'**
+  String get notebookChapterTitleLabel;
+
+  /// Hint of the chapter name field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Tokyo'**
+  String get notebookChapterTitleHint;
+
+  /// Confirmation for deleting a chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete chapter \"{title}\"? Its 1 entry goes back to No chapter; no entries are deleted.} other{Delete chapter \"{title}\"? Its {count} entries go back to No chapter; no entries are deleted.}}'**
+  String notebookChapterDeleteConfirm(String title, int count);
+
+  /// Contents multi-select action: move the selected entries to a chapter.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to chapter…'**
+  String get notebookContentsMoveToChapter;
+
+  /// Title of the chapter picker sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to chapter'**
+  String get notebookContentsMoveSheetTitle;
+
+  /// Hint after moving entries to a chapter; title is the chapter (or No chapter).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moved 1 entry to \"{title}\"} other{Moved {count} entries to \"{title}\"}}'**
+  String notebookContentsMoved(String title, int count);
+
+  /// Notebook picker title; also the multi-select and preview "More" entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to notebook'**
+  String get notebookPickerTitle;
+
+  /// Shown in the notebook picker when there is no notebook to choose.
+  ///
+  /// In en, this message translates to:
+  /// **'No notebooks to add to yet'**
+  String get notebookPickerEmpty;
+
+  /// Submit button at the bottom of the notebook picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get notebookPickerDone;
+
+  /// Hint after adding entries to a hidden or locked notebook; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to \"{name}\". These entries now only show in that notebook'**
+  String notebookPickerPrivateHint(String name);
+
+  /// Tooltip of the multi-select bar "more" button.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get notebookSelectionMore;
+
+  /// Multi-select menu item: remove the selected entries from the current notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from this notebook'**
+  String get notebookRemoveFromCurrent;
+
+  /// Multi-select menu item and picker title: move to another notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to…'**
+  String get notebookMoveTo;
+
+  /// Hint after adding entries to notebooks; count is the number of notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added to 1 notebook} other{Added to {count} notebooks}}'**
+  String notebookAddedToCount(int count);
+
+  /// Hint after changing notebook membership (including removals).
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks updated'**
+  String get notebookMembershipUpdated;
+
+  /// Hint after removing entries from a notebook; name is the notebook, count the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Removed 1 entry from \"{name}\"} other{Removed {count} entries from \"{name}\"}}'**
+  String notebookRemovedFrom(String name, int count);
+
+  /// Hint after moving entries; name is the target notebook, count the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Moved 1 entry to \"{name}\"} other{Moved {count} entries to \"{name}\"}}'**
+  String notebookMovedTo(String name, int count);
+
+  /// Placeholder of the publish panel notebook row when none is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in a notebook'**
+  String get notebookPublishNone;
+
+  /// Home create button label inside a notebook; name is the (shortened) notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Write in {name}'**
+  String notebookWriteInto(String name);
+
+  /// Add-entries page title; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to \"{name}\"'**
+  String notebookAddPageTitle(String name);
+
+  /// Add-entries page done button; count is the number selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Done ({count})'**
+  String notebookAddPageDone(int count);
+
+  /// Search field placeholder on the add-entries page.
+  ///
+  /// In en, this message translates to:
+  /// **'Search entries'**
+  String get notebookAddSearchHint;
+
+  /// Add-entries filter: any time.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notebookAddFilterAll;
+
+  /// Add-entries filter: written in the last 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get notebookAddFilterRecent;
+
+  /// Add-entries filter: written this year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get notebookAddFilterThisYear;
+
+  /// Add-entries page note for entries already in the notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in this notebook'**
+  String get notebookAddAlreadyIn;
+
+  /// Hint after adding entries; count is the number added.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Added 1 entry} other{Added {count} entries}}'**
+  String notebookAddedCount(int count);
+
+  /// Shown on the add-entries page when nothing matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching entries'**
+  String get notebookAddEmpty;
+
+  /// Preview "More" subtitle when the entry is in no notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in any notebook yet'**
+  String get notebookPreviewNone;
+
+  /// Separator between notebook names in a list.
+  ///
+  /// In en, this message translates to:
+  /// **', '**
+  String get notebookListSeparator;
+
+  /// Screen-reader hint of a notebook capsule on the preview page; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Open \"{name}\"'**
+  String notebookOpenNotebook(String name);
+
+  /// Title of the rules section on the smart notebook editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules'**
+  String get notebookRulesTitle;
+
+  /// How rules combine: every rule must match.
+  ///
+  /// In en, this message translates to:
+  /// **'Match all'**
+  String get notebookRulesMatchAll;
+
+  /// How rules combine: any rule may match.
+  ///
+  /// In en, this message translates to:
+  /// **'Match any'**
+  String get notebookRulesMatchAny;
+
+  /// Live number of entries matching the draft rules; count is the number.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Matches 1 entry} other{Matches {count} entries}}'**
+  String notebookRulesMatchCount(int count);
+
+  /// Shown while a smart notebook has no rules yet (save is disabled).
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one rule to save'**
+  String get notebookRulesNeedOne;
+
+  /// Shown instead of "Add rule" at the limit; max is the limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {max} rules'**
+  String notebookRulesLimit(int max);
+
+  /// Heading above the example chips when there are no rules yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Start from an example'**
+  String get notebookRulesExamples;
+
+  /// Example rule: entries from the last 30 days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get notebookRuleExampleRecent;
+
+  /// Example rule: entries from this month in any year.
+  ///
+  /// In en, this message translates to:
+  /// **'This month every year'**
+  String get notebookRuleExampleThisMonth;
+
+  /// Example rule: entries with images.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries with photos'**
+  String get notebookRuleExampleImages;
+
+  /// Example rule: pinned entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned entries'**
+  String get notebookRuleExamplePinned;
+
+  /// Entry to add a rule; also the rule type sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rule'**
+  String get notebookRuleAdd;
+
+  /// Tooltip of the remove button on a rule row.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove rule'**
+  String get notebookRuleRemove;
+
+  /// Done button of a rule editor sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get notebookRuleDone;
+
+  /// Rule type: tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get notebookRuleTypeTags;
+
+  /// Description of the tags rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Has, or lacks, certain tags'**
+  String get notebookRuleTypeTagsHint;
+
+  /// Rule type: mood.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood'**
+  String get notebookRuleTypeMood;
+
+  /// Description of the mood rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood is one of these'**
+  String get notebookRuleTypeMoodHint;
+
+  /// Rule type: weather.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get notebookRuleTypeWeather;
+
+  /// Description of the weather rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather contains some text'**
+  String get notebookRuleTypeWeatherHint;
+
+  /// Rule type: location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get notebookRuleTypeLocation;
+
+  /// Description of the location rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Location contains some text'**
+  String get notebookRuleTypeLocationHint;
+
+  /// Rule type: keyword.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyword'**
+  String get notebookRuleTypeKeyword;
+
+  /// Description of the keyword rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Title or text contains some words'**
+  String get notebookRuleTypeKeywordHint;
+
+  /// Rule type: date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get notebookRuleTypeDate;
+
+  /// Description of the date rule.
+  ///
+  /// In en, this message translates to:
+  /// **'A date range, recent days or a time every year'**
+  String get notebookRuleTypeDateHint;
+
+  /// Rule type: images, recordings, videos or attachments in the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Media'**
+  String get notebookRuleTypeMedia;
+
+  /// Description of the media rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Has photos, recordings, videos or attachments'**
+  String get notebookRuleTypeMediaHint;
+
+  /// Rule type: has a cover or is pinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Cover & pin'**
+  String get notebookRuleTypeFlag;
+
+  /// Description of the cover & pin rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Has a cover or is pinned'**
+  String get notebookRuleTypeFlagHint;
+
+  /// Tags rule: has any of the tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Any of'**
+  String get notebookRuleTagAny;
+
+  /// Tags rule: has all of the tags.
+  ///
+  /// In en, this message translates to:
+  /// **'All of'**
+  String get notebookRuleTagAll;
+
+  /// Tags rule: has none of the tags.
+  ///
+  /// In en, this message translates to:
+  /// **'None of'**
+  String get notebookRuleTagNone;
+
+  /// Shown in the tags rule sheet when there are no tags.
+  ///
+  /// In en, this message translates to:
+  /// **'No tags yet'**
+  String get notebookRuleNoTags;
+
+  /// Placeholder of the weather rule field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. rain'**
+  String get notebookRuleWeatherHint;
+
+  /// Placeholder of the location rule field.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Kyoto'**
+  String get notebookRuleLocationHint;
+
+  /// Placeholder of the keyword rule field.
+  ///
+  /// In en, this message translates to:
+  /// **'Words in the title or text'**
+  String get notebookRuleKeywordHint;
+
+  /// Date rule: a fixed range of dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get notebookRuleDateBetween;
+
+  /// Date rule: the last N days.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent days'**
+  String get notebookRuleDateLastDays;
+
+  /// Date rule: this year.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get notebookRuleDateThisYear;
+
+  /// Date rule: one month in every year.
+  ///
+  /// In en, this message translates to:
+  /// **'A month every year'**
+  String get notebookRuleDateMonth;
+
+  /// Date rule: the same month and day as today, any year.
+  ///
+  /// In en, this message translates to:
+  /// **'This day every year'**
+  String get notebookRuleDateToday;
+
+  /// Description of "This day every year".
+  ///
+  /// In en, this message translates to:
+  /// **'Entries from this month and day in any year'**
+  String get notebookRuleDateTodayHint;
+
+  /// Number of days of the recent-days rule; days is the number.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1 day} other{{days} days}}'**
+  String notebookRuleDaysValue(int days);
+
+  /// Tooltip of the minus button of the recent-days rule.
+  ///
+  /// In en, this message translates to:
+  /// **'One day fewer'**
+  String get notebookRuleDaysDecrease;
+
+  /// Tooltip of the plus button of the recent-days rule.
+  ///
+  /// In en, this message translates to:
+  /// **'One day more'**
+  String get notebookRuleDaysIncrease;
+
+  /// Media rule: has images.
+  ///
+  /// In en, this message translates to:
+  /// **'Has photos'**
+  String get notebookRuleMediaImage;
+
+  /// Media rule: has recordings.
+  ///
+  /// In en, this message translates to:
+  /// **'Has recordings'**
+  String get notebookRuleMediaAudio;
+
+  /// Media rule: has videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Has videos'**
+  String get notebookRuleMediaVideo;
+
+  /// Media rule: has attachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Has attachments'**
+  String get notebookRuleMediaAttachment;
+
+  /// Flag rule: has a cover.
+  ///
+  /// In en, this message translates to:
+  /// **'Has a cover'**
+  String get notebookRuleFlagCover;
+
+  /// Flag rule: pinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get notebookRuleFlagPinned;
+
+  /// One-line summary of a tags rule; tags is the list of #tag names.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags, any of: {tags}'**
+  String notebookRuleSummaryTagsAny(String tags);
+
+  /// One-line summary of an all-of tags rule; tags is the tag list.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags, all of: {tags}'**
+  String notebookRuleSummaryTagsAll(String tags);
+
+  /// One-line summary of a none-of tags rule; tags is the tag list.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags, none of: {tags}'**
+  String notebookRuleSummaryTagsNone(String tags);
+
+  /// One-line summary of a mood rule; moods are the chosen moods.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood: {moods}'**
+  String notebookRuleSummaryMood(String moods);
+
+  /// One-line summary of a weather rule; text is the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather contains \"{text}\"'**
+  String notebookRuleSummaryWeather(String text);
+
+  /// One-line summary of a location rule; text is the text.
+  ///
+  /// In en, this message translates to:
+  /// **'Location contains \"{text}\"'**
+  String notebookRuleSummaryLocation(String text);
+
+  /// One-line summary of a keyword rule; text is the keyword.
+  ///
+  /// In en, this message translates to:
+  /// **'Title or text contains \"{text}\"'**
+  String notebookRuleSummaryKeyword(String text);
+
+  /// A date range (fixed-range rule summary and the default name of a notebook made from a range); start and end are the dates.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String notebookRuleSummaryRange(String start, String end);
+
+  /// Summary of a recent-days rule; days is the number.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{Today} other{Last {days} days}}'**
+  String notebookRuleSummaryLastDays(int days);
+
+  /// Summary of a month-every-year rule; month is the number, monthName the month name.
+  ///
+  /// In en, this message translates to:
+  /// **'{monthName} every year'**
+  String notebookRuleSummaryMonth(int month, String monthName);
+
+  /// Summary of a this-day-every-year rule; date is today's month and day.
+  ///
+  /// In en, this message translates to:
+  /// **'This day every year ({date})'**
+  String notebookRuleSummaryToday(String date);
+
+  /// Summary of a rule this version cannot read; it is kept and matches nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Unrecognized rule (from a newer version)'**
+  String get notebookRuleUnknown;
+
+  /// Title of the convert-to-regular confirmation; name is the notebook name.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert \"{name}\" to a regular notebook?'**
+  String notebookConvertTitle(String name);
+
+  /// Body of the convert-to-regular confirmation; count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{The 1 entry that matches now will be added (archived entries excluded), and the notebook will stop updating automatically.} other{The {count} entries that match now will be added (archived entries excluded), and the notebook will stop updating automatically.}}'**
+  String notebookConvertMessage(int count);
+
+  /// Confirm button of the convert-to-regular dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert'**
+  String get notebookConvertAction;
+
+  /// Shown after converting; count is the number of entries added.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Converted; 1 entry added} other{Converted; {count} entries added}}'**
+  String notebookConverted(int count);
+
+  /// Button in the calendar range header: save the range as a notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as notebook'**
+  String get notebookSaveRange;
+
+  /// Description of the smart option in the save-range sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries in these dates; ones you backfill later join automatically'**
+  String get notebookSaveRangeSmartHint;
+
+  /// Description of the regular option in the save-range sheet; count is the number.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add the 1 entry there now} other{Add the {count} entries there now}}'**
+  String notebookSaveRangeManualHint(int count);
+
+  /// Search page button: save the keyword and tag conditions as a smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as smart notebook'**
+  String get notebookSaveSearchAsSmart;
+
+  /// Option in the save-range sheet: smart notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart notebook'**
+  String get notebookSaveRangeSmart;
+
+  /// Option in the save-range sheet: regular notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Regular notebook'**
+  String get notebookSaveRangeManual;
+
+  /// Editor group title: writing goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing goal'**
+  String get notebookGoalLabel;
+
+  /// Switch in the writing-goal group.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a goal'**
+  String get notebookGoalEnable;
+
+  /// Subtitle of the writing-goal switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows progress on the notebook header. No reminders.'**
+  String get notebookGoalEnableHint;
+
+  /// Tooltip of the goal count minus button.
+  ///
+  /// In en, this message translates to:
+  /// **'One fewer'**
+  String get notebookGoalDecrease;
+
+  /// Tooltip of the goal count plus button.
+  ///
+  /// In en, this message translates to:
+  /// **'One more'**
+  String get notebookGoalIncrease;
+
+  /// Writing goal period: daily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get notebookGoalPeriodDay;
+
+  /// Writing goal period: weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get notebookGoalPeriodWeek;
+
+  /// Writing goal period: monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get notebookGoalPeriodMonth;
+
+  /// Goal sentence (daily); count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry a day} other{{count} entries a day}}'**
+  String notebookGoalSummaryDay(int count);
+
+  /// Goal sentence (weekly); count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry a week} other{{count} entries a week}}'**
+  String notebookGoalSummaryWeek(int count);
+
+  /// Goal sentence (monthly); count is the number of entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry a month} other{{count} entries a month}}'**
+  String notebookGoalSummaryMonth(int count);
+
+  /// Goal progress (daily); current is entries written, target is the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'Today {current} / {target}'**
+  String notebookGoalProgressDay(int current, int target);
+
+  /// Goal progress (weekly); current is entries written, target is the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'This week {current} / {target}'**
+  String notebookGoalProgressWeek(int current, int target);
+
+  /// Goal progress (monthly); current is entries written, target is the goal.
+  ///
+  /// In en, this message translates to:
+  /// **'This month {current} / {target}'**
+  String notebookGoalProgressMonth(int current, int target);
+
+  /// Goal met for the current period (daily).
+  ///
+  /// In en, this message translates to:
+  /// **'Done for today ✓'**
+  String get notebookGoalMetDay;
+
+  /// Goal met for the current period (weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'Done this week ✓'**
+  String get notebookGoalMetWeek;
+
+  /// Goal met for the current period (monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'Done this month ✓'**
+  String get notebookGoalMetMonth;
+
+  /// Number of consecutive periods the goal was met (daily).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-day streak} other{{count}-day streak}}'**
+  String notebookGoalStreakDay(int count);
+
+  /// Number of consecutive periods the goal was met (weekly).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-week streak} other{{count}-week streak}}'**
+  String notebookGoalStreakWeek(int count);
+
+  /// Number of consecutive periods the goal was met (monthly).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1-month streak} other{{count}-month streak}}'**
+  String notebookGoalStreakMonth(int count);
+
+  /// Notebook header button and title of the stats page.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get notebookInsights;
+
+  /// Empty state of the notebook stats page.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries to count in this notebook yet'**
+  String get notebookInsightsEmpty;
+
+  /// Stats overview tile: entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get notebookInsightsEntries;
+
+  /// Stats overview tile: words.
+  ///
+  /// In en, this message translates to:
+  /// **'Words'**
+  String get notebookInsightsWords;
+
+  /// Stats overview tile: number of days with entries.
+  ///
+  /// In en, this message translates to:
+  /// **'Days written'**
+  String get notebookInsightsRecordedDays;
+
+  /// Stats overview tile: span from the first to the last entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Time span'**
+  String get notebookInsightsSpan;
+
+  /// Stats overview tile: number of cover and inline images.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos'**
+  String get notebookInsightsPhotos;
+
+  /// Stats overview tile: longest run of consecutive days.
+  ///
+  /// In en, this message translates to:
+  /// **'Longest streak'**
+  String get notebookInsightsLongestStreak;
+
+  /// A number of days (short time span, longest streak).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String notebookInsightsDays(int count);
+
+  /// Time span: months.
+  ///
+  /// In en, this message translates to:
+  /// **'{months, plural, =1{1 month} other{{months} months}}'**
+  String notebookInsightsSpanMonths(int months);
+
+  /// Time span: whole years.
+  ///
+  /// In en, this message translates to:
+  /// **'{years, plural, =1{1 year} other{{years} years}}'**
+  String notebookInsightsSpanYears(int years);
+
+  /// Time span: years and months (compact).
+  ///
+  /// In en, this message translates to:
+  /// **'{years} yr {months} mo'**
+  String notebookInsightsSpanYearsMonths(int years, int months);
+
+  /// Stats section title: mood distribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Moods'**
+  String get notebookInsightsMoods;
+
+  /// Right side of a mood row: count and percentage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} · {percent}%'**
+  String notebookInsightsMoodShare(int count, int percent);
+
+  /// Stats section title: most used tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Top tags'**
+  String get notebookInsightsTopTags;
+
+  /// Stats section title: entries-per-month chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Writing rhythm'**
+  String get notebookInsightsRhythm;
+
+  /// Screen-reader text of a rhythm bar; month is the month, count the entries.
+  ///
+  /// In en, this message translates to:
+  /// **'{month}: {count}'**
+  String notebookInsightsRhythmBar(String month, int count);
+
+  /// Screen-reader text of the goal dots.
+  ///
+  /// In en, this message translates to:
+  /// **'Met in {met} of the last {total} periods'**
+  String notebookInsightsGoalRecent(int met, int total);
+
+  /// Caption next to the goal dots.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {count} periods'**
+  String notebookInsightsGoalRecentCaption(int count);
+
+  /// Stats page button: open a random entry of this notebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Open a random entry'**
+  String get notebookInsightsRandom;
 }
 
 class _AppLocalizationsDelegate

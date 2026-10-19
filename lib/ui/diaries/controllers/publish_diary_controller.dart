@@ -124,6 +124,9 @@ class PublishDiaryController {
         ),
         capsuleUnlockAt: schedule?.normalizedUnlockAt,
         capsuleLockedAt: lockedAt,
+        // 同一事务里收进所选日记本；在日记本里按章节新建时带上章节。
+        notebookIds: draft.notebookIds.toList(),
+        notebookChapterIds: initialDraft.notebookChapterIds,
       );
       _setPhase(schedule == null ? PublishPhase.done : PublishPhase.sealing);
       return diaryId;

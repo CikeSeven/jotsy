@@ -15,7 +15,8 @@ import 'settings_service.dart';
 /// 修改，已保存的日记也还指向旧文件；复制粘贴还会让多篇日记共用同一文件。
 /// 所以编辑期只改文档，文件统一在这里回收：
 /// - 引用来源：全部日记（含归档、回收站、时间胶囊）的正文/封面/metadata，
-///   以及新建日记草稿；
+///   新建日记草稿，以及日记本载荷（封面放在 `diary_covers/`，只被日记本
+///   引用）；
 /// - 宽限期：[gracePeriod] 内写入的文件一律保留，覆盖“刚导入还没保存”的会话；
 /// - 触发：启动后延迟一次（[scheduleStartupSweep]）、回收站彻底删除后一次。
 ///   请求串行执行，后一次一定读取到前一次之后的引用快照。
@@ -90,6 +91,11 @@ class DiaryMediaCleanupService {
     final draftRows = await (_database.selectOnly(
       drafts,
     )..addColumns([drafts.payload])).get();
+    // 日记本封面只出现在 notebooks.payload 的 JSON 里，整份载荷作为来源。
+    final notebooks = _database.notebooks;
+    final notebookRows = await (_database.selectOnly(
+      notebooks,
+    )..addColumns([notebooks.payload])).get();
     final settings = await _settings();
     return DiaryMediaSweepRequest(
       documentsPath: (await _documentsDirectory()).path,
@@ -101,6 +107,7 @@ class DiaryMediaCleanupService {
           row.read(diaries.metadata),
         ],
         for (final row in draftRows) row.read(drafts.payload),
+        for (final row in notebookRows) row.read(notebooks.payload),
         // 旧版本的单份草稿迁进草稿箱前仍算引用（迁移成功后此键清空）。
         settings.createDiaryDraftRaw,
       ],

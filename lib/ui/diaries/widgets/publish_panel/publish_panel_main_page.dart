@@ -4,11 +4,13 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 import 'publish_context_fields.dart';
 import 'publish_cover_tile.dart';
 import 'publish_mood_energy_sections.dart';
+import 'publish_notebook_tiles.dart';
 import 'publish_panel_chrome.dart';
 import 'publish_panel_entry_tiles.dart';
 
@@ -21,7 +23,7 @@ class PublishTimeOption {
   final VoidCallback? onPick;
 }
 
-/// 面板主页内容，自上而下：封面 → 标签 → 此时此地 → 发表时间 → 时间胶囊 →
+/// 面板主页内容，自上而下：封面 → 标签 → 日记本 → 此时此地 → 发表时间 → 时间胶囊 →
 /// 心情 → 精力；发表按钮固定在底部，不随内容滚动，展开后不用滚到底就能
 /// 发表。
 ///
@@ -40,6 +42,8 @@ class PublishPanelMainPage extends StatelessWidget {
     required this.onOpenTags,
     required this.onOpenCapsule,
     required this.onPublish,
+    this.notebooks = const <NotebookView>[],
+    this.onOpenNotebooks,
   });
 
   final DiaryMetaDraftController draft;
@@ -52,6 +56,12 @@ class PublishPanelMainPage extends StatelessWidget {
   final VoidCallback onOpenTags;
   final VoidCallback onOpenCapsule;
 
+  /// 书架上的日记本（解析草稿里的日记本 id）。
+  final List<NotebookView> notebooks;
+
+  /// 打开日记本子页；null 时不显示日记本行。
+  final VoidCallback? onOpenNotebooks;
+
   /// 编辑已发布日记时为 null（自动保存，没有发表按钮）。
   final VoidCallback? onPublish;
 
@@ -59,6 +69,7 @@ class PublishPanelMainPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final publishTime = this.publishTime;
     final onPublish = this.onPublish;
+    final onOpenNotebooks = this.onOpenNotebooks;
     const gap = SizedBox(height: 14);
     final content = SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -72,6 +83,14 @@ class PublishPanelMainPage extends StatelessWidget {
             tags: tags.asData?.value ?? const <Tag>[],
             onOpen: onOpenTags,
           ),
+          if (onOpenNotebooks != null) ...<Widget>[
+            gap,
+            PublishNotebookTile(
+              draft: draft,
+              notebooks: notebooks,
+              onOpen: onOpenNotebooks,
+            ),
+          ],
           gap,
           PublishContextFields(draft: draft, actions: actions, busy: busy),
           if (publishTime != null) ...<Widget>[

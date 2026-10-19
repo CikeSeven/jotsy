@@ -5,6 +5,7 @@ import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/controllers/backup_import_flow.dart';
+import 'package:node_diary/ui/settings/widgets/backup_import_folder_section.dart';
 import 'package:node_diary/ui/settings/widgets/backup_overwrite_warning_dialog.dart';
 import 'package:node_diary/ui/widgets/expressive_choice_tile.dart';
 
@@ -40,6 +41,18 @@ const _dayOneExport = BackupArchivePreview(
   missingMediaCount: 3,
 );
 
+/// 本机有日记本、文件里也带着其中两本的完整备份。
+const _backupWithNotebooks = BackupArchivePreview(
+  kind: BackupArchiveKind.fullBackup,
+  diaryCount: 30,
+  tagCount: 6,
+  existingDiaryCount: 3,
+  localDiaryCount: 12,
+  localTagCount: 4,
+  localNotebookCount: 5,
+  existingNotebookCount: 2,
+);
+
 const _cloudNotes = BackupArchivePreview(
   kind: BackupArchiveKind.journalExport,
   journalSource: JournalImportSource.wpsNotes,
@@ -68,6 +81,7 @@ Future<_FlowResult> _startFlow(
   BackupArchivePreview preview, {
   Brightness brightness = Brightness.light,
   Size size = const Size(390, 844),
+  BackupImportFolderChoice? folderChoice,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -84,7 +98,11 @@ Future<_FlowResult> _startFlow(
           body: Center(
             child: TextButton(
               onPressed: () async {
-                result.mode = await chooseBackupImportMode(context, preview);
+                result.mode = await chooseBackupImportMode(
+                  context,
+                  preview,
+                  folderChoice: folderChoice,
+                );
                 result.finished = true;
               },
               child: const Text('start'),
@@ -182,6 +200,43 @@ void main() {
       expect(result.mode, BackupImportMode.replaceAll);
     },
   );
+
+  testWidgets('the replace-everything warning lists local notebooks only '
+      'when there are any', (tester) async {
+    await _startFlow(tester, _backupWithNotebooks);
+    await tester.tap(find.text('覆盖全部数据'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('继续'));
+    await tester.pumpAndSettle();
+    expect(find.text('5 个日记本'), findsOneWidget);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('a backup without local notebooks adds no notebook line', (
+    tester,
+  ) async {
+    await _startFlow(tester, _fullBackup);
+    await tester.tap(find.text('覆盖全部数据'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('继续'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('日记本'), findsNothing);
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('overwriting existing items says notebook settings are '
+      'replaced too', (tester) async {
+    await _startFlow(tester, _backupWithNotebooks);
+    expect(
+      find.text(
+        '添加新日记，并用文件中的版本替换本机已存在的 3 篇日记\n'
+        '同时替换本机已存在的 2 个日记本的名称、封面与章节等设置',
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('acknowledging early still waits for the countdown', (
     tester,
@@ -322,6 +377,93 @@ void main() {
     });
   }
 
+  group('source folders', () {
+    const folderTitle = '原来的日记本 / 文件夹';
+
+    /// 三种落地方式的预检：标签数与已存在的日记本数随方式变化。
+    BackupArchivePreview previewFor(JournalImportFolderMode mode) =>
+        BackupArchivePreview(
+          kind: BackupArchiveKind.journalExport,
+          journalSource: JournalImportSource.evernote,
+          diaryCount: 40,
+          tagCount: mode == JournalImportFolderMode.notebooks ? 5 : 8,
+          existingDiaryCount: 2,
+          localDiaryCount: 12,
+          localTagCount: 4,
+          existingNotebookCount: mode == JournalImportFolderMode.tags ? 0 : 1,
+        );
+
+    BackupImportFolderChoice choice() => BackupImportFolderChoice(
+      folderCount: 3,
+      previewFor: previewFor,
+      initial: JournalImportFolderMode.notebooks,
+    );
+
+    for (final preview in [_diaryFile, _fullBackup, _dayOneExport]) {
+      testWidgets('no section without a folder choice (${preview.kind.name})', (
+        tester,
+      ) async {
+        await _startFlow(tester, preview);
+        expect(find.text(folderTitle), findsNothing);
+        expect(find.text('日记本'), findsNothing);
+      });
+    }
+
+    testWidgets('shows the folder count and follows the selected segment', (
+      tester,
+    ) async {
+      final folders = choice();
+      final result = await _startFlow(
+        tester,
+        folders.preview,
+        folderChoice: folders,
+      );
+
+      expect(find.text(folderTitle), findsOneWidget);
+      expect(find.text('按来源的 3 个笔记本 / 文件夹建成日记本，同名的并入本机已有的'), findsOneWidget);
+      expect(find.text('40 篇日记 · 5 个标签'), findsOneWidget);
+      expect(find.textContaining('1 个日记本'), findsOneWidget);
+
+      await tester.tap(find.text('标签'));
+      await tester.pumpAndSettle();
+      expect(find.text('像以前一样，变成同名标签'), findsOneWidget);
+      // 概要与覆盖说明换成“标签”方式的预检结果。
+      expect(find.text('40 篇日记 · 8 个标签'), findsOneWidget);
+      expect(find.textContaining('1 个日记本'), findsNothing);
+
+      await tester.tap(find.text('两者'));
+      await tester.pumpAndSettle();
+      expect(find.text('同时建日记本和同名标签'), findsOneWidget);
+
+      await tester.tap(find.text('导入'));
+      await tester.pumpAndSettle();
+      expect(result.mode, BackupImportMode.merge);
+      expect(folders.selected, JournalImportFolderMode.both);
+    });
+
+    for (final brightness in Brightness.values) {
+      testWidgets('the folder section fits a 320dp phone in $brightness', (
+        tester,
+      ) async {
+        final folders = choice();
+        await _startFlow(
+          tester,
+          folders.preview,
+          folderChoice: folders,
+          brightness: brightness,
+          size: const Size(320, 640),
+        );
+        expect(tester.takeException(), isNull);
+        // 三段在窄屏下仍横排在同一行。
+        final notebooks = tester.getCenter(find.text('日记本'));
+        expect(tester.getCenter(find.text('两者')).dy, notebooks.dy);
+        await tester.tap(find.text('两者'));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
   test('describes import results by mode', () async {
     final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
     String describe(
@@ -383,5 +525,29 @@ void main() {
     );
     expect(describe(BackupImportMode.merge, 0, 0, 0), '导入完成：新增 1 篇日记');
     expect(describe(BackupImportMode.replaceAll, 5, 0, 0), 'restored');
+  });
+
+  test('adds a notebook line when merging added notebooks', () async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('zh'));
+    String describe(BackupImportMode mode, int added) =>
+        describeBackupImportResult(
+          l10n,
+          BackupImportResult(
+            mode: mode,
+            addedDiaries: 1,
+            replacedDiaries: 0,
+            skippedDiaries: 0,
+            addedNotebooks: added,
+          ),
+          replaceAllMessage: 'restored',
+        );
+
+    expect(describe(BackupImportMode.merge, 2), '导入完成：新增 1 篇日记\n日记本：新增 2 个');
+    expect(
+      describe(BackupImportMode.mergeOverwrite, 1),
+      '导入完成：新增 1 篇，覆盖 0 篇日记\n日记本：新增 1 个',
+    );
+    expect(describe(BackupImportMode.merge, 0), '导入完成：新增 1 篇日记');
+    expect(describe(BackupImportMode.replaceAll, 3), 'restored');
   });
 }

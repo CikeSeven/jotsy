@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/content_codec.dart';
+import 'package:node_diary/core/database/notebook_payload.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_service.dart';
@@ -159,6 +160,209 @@ void main() {
       expect(texts, containsAll(['Edited in Day One', 'No media']));
     },
   );
+
+  /// 两个日记本的 Day One 导出：只有一本时不记日记本，所以至少要两本。
+  /// [withUnreadable] 时 Travel 里再夹两条读不出来的条目（不是对象、缺创建
+  /// 时间），解析会按“无法识别”跳过它们。
+  Future<File> dayOneTwoJournalsZip({bool withUnreadable = false}) {
+    final archive = Archive();
+    for (final (name, keys) in [
+      ('Travel', ['T1', 'T2']),
+      ('Work', ['W1']),
+    ]) {
+      final bytes = utf8.encode(
+        jsonEncode({
+          'entries': [
+            for (final (index, key) in keys.indexed)
+              {
+                'uuid': key,
+                'creationDate': '2024-05-0${index + 1}T08:00:00Z',
+                'text': key,
+              },
+            if (withUnreadable && name == 'Travel') ...[
+              'not an entry',
+              {'uuid': 'NO-DATE', 'text': 'undated'},
+            ],
+          ],
+        }),
+      );
+      archive.addFile(ArchiveFile('$name.json', bytes.length, bytes));
+    }
+    final file = File(p.join(fixture.temporary.path, 'journals.zip'));
+    return file.writeAsBytes(ZipEncoder().encode(archive)!);
+  }
+
+  Future<void> importJournals(BackupImportMode mode) async {
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.dayOne,
+      filePath: (await dayOneTwoJournalsZip()).path,
+    );
+    try {
+      await session.apply(database: fixture.database, mode: mode);
+    } finally {
+      await session.dispose();
+    }
+  }
+
+  test(
+    'keeps source journals as notebooks and re-imports into the same ones',
+    () async {
+      final db = fixture.database;
+      await importJournals(BackupImportMode.merge);
+
+      final notebooks = await db.getNotebooks();
+      expect(notebooks.map((row) => row.name).toSet(), {'Travel', 'Work'});
+      final travel = notebooks.firstWhere((row) => row.name == 'Travel');
+      Future<List<String>> members(String notebookId) async {
+        final rows = await db.select(db.diaryNotebooks).get();
+        final notebook = await db.getNotebook(notebookId);
+        final diaries = {
+          for (final diary in await db.select(db.diaries).get())
+            diary.id: diary.contentText,
+        };
+        return [
+          for (final row in rows..sort((a, b) => a.position - b.position))
+            if (row.notebookId == notebook!.id) diaries[row.diaryId]!,
+        ];
+      }
+
+      expect(await members(travel.notebookId), ['T1', 'T2']);
+      // 默认落成日记本，不再把日记本名加成标签。
+      expect(await db.select(db.tags).get(), isEmpty);
+
+      // 用户之后给这本换了图标与颜色、改了名字。
+      await db.updateNotebook(
+        travel.notebookId,
+        name: 'Trips',
+        payload: NotebookPayload(icon: 'plane', color: 0xFF123456),
+      );
+      final edited = await db.getNotebook(travel.notebookId);
+
+      final again = await JournalImportService.prepare(
+        database: db,
+        source: JournalImportSource.dayOne,
+        filePath: (await dayOneTwoJournalsZip()).path,
+      );
+      expect(again.preview.existingNotebookCount, 2);
+      await again.apply(database: db, mode: BackupImportMode.mergeOverwrite);
+      await again.dispose();
+
+      // 覆盖导入用的是本机那一行的原样拷贝：名称、图标、颜色都保留。
+      expect(await db.getNotebook(travel.notebookId), edited);
+      expect(await db.getNotebooks(), hasLength(2));
+      expect(await members(travel.notebookId), ['T1', 'T2']);
+      expect(await db.select(db.diaryNotebooks).get(), hasLength(3));
+    },
+  );
+
+  test('tags mode lands source journals as tags only', () async {
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.dayOne,
+      filePath: (await dayOneTwoJournalsZip()).path,
+      folderMode: JournalImportFolderMode.tags,
+    );
+    await session.apply(
+      database: fixture.database,
+      mode: BackupImportMode.merge,
+    );
+    await session.dispose();
+
+    expect(await fixture.database.getNotebooks(), isEmpty);
+    final tags = await fixture.database.select(fixture.database.tags).get();
+    expect(tags.map((tag) => tag.name).toSet(), {'Travel', 'Work'});
+  });
+
+  test('a session without source folders offers no folder choice', () async {
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.dayOne,
+      filePath: (await dayOneZip()).path,
+    );
+    addTearDown(session.dispose);
+    expect(session.hasSourceFolders, isFalse);
+    expect(session.sourceFolderCount, 0);
+    expect(
+      session.previewFor(JournalImportFolderMode.tags).tagCount,
+      session.preview.tagCount,
+    );
+  });
+
+  test('every folder mode previews the notes the parse skipped', () async {
+    final session = await JournalImportService.prepare(
+      database: fixture.database,
+      source: JournalImportSource.dayOne,
+      filePath: (await dayOneTwoJournalsZip(withUnreadable: true)).path,
+    );
+    addTearDown(session.dispose);
+    expect(session.hasSourceFolders, isTrue);
+    // 跳过的篇数来自解析，与来源文件夹落成什么无关：切换方式后预览照样说明。
+    for (final mode in JournalImportFolderMode.values) {
+      final preview = session.previewFor(mode);
+      expect(preview.diaryCount, 3, reason: mode.name);
+      expect(preview.skippedNotes, {
+        JournalSkipReason.unreadable: 2,
+      }, reason: mode.name);
+    }
+  });
+
+  group('the folder mode chosen after parsing', () {
+    final expectations = {
+      JournalImportFolderMode.notebooks: (
+        notebooks: {'Travel', 'Work'},
+        tags: <String>{},
+      ),
+      JournalImportFolderMode.tags: (
+        notebooks: <String>{},
+        tags: {'Travel', 'Work'},
+      ),
+      JournalImportFolderMode.both: (
+        notebooks: {'Travel', 'Work'},
+        tags: {'Travel', 'Work'},
+      ),
+    };
+    for (final MapEntry(key: mode, value: expected) in expectations.entries) {
+      test('${mode.name} is what gets written', () async {
+        final db = fixture.database;
+        final session = await JournalImportService.prepare(
+          database: db,
+          source: JournalImportSource.dayOne,
+          filePath: (await dayOneTwoJournalsZip()).path,
+        );
+        expect(session.hasSourceFolders, isTrue);
+        expect(session.sourceFolderCount, 2);
+        expect(session.folderMode, JournalImportFolderMode.notebooks);
+        // 预检按方式预先算好：标签数跟着方式变。
+        expect(session.previewFor(mode).tagCount, expected.tags.length);
+        // 同一方式的载荷只建一次。
+        expect(
+          identical(session.payloadFor(mode), session.payloadFor(mode)),
+          isTrue,
+        );
+
+        await session.apply(
+          database: db,
+          mode: BackupImportMode.merge,
+          folderMode: mode,
+        );
+        await session.dispose();
+
+        expect(
+          (await db.getNotebooks()).map((row) => row.name).toSet(),
+          expected.notebooks,
+        );
+        expect(
+          (await db.select(db.tags).get()).map((tag) => tag.name).toSet(),
+          expected.tags,
+        );
+        expect(
+          await db.select(db.diaryNotebooks).get(),
+          hasLength(expected.notebooks.isEmpty ? 0 : 3),
+        );
+      });
+    }
+  });
 
   test('maps Daylio moods onto the user mood scale', () async {
     final csv = File(p.join(fixture.temporary.path, 'daylio.csv'))

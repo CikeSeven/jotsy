@@ -24,6 +24,7 @@ import 'journal_import_markdown_files.dart';
 import 'journal_import_media.dart';
 import 'journal_import_memos.dart';
 import 'journal_import_models.dart';
+import 'journal_import_notebooks.dart';
 import 'journal_import_payload.dart';
 import 'journal_import_support.dart';
 import 'settings_service.dart';
@@ -37,6 +38,9 @@ import 'settings_service.dart';
 ///    [prepareCloud] 改为从云端读取笔记、下载附件，其余相同；
 /// 2. [JournalImportSession.apply]：在备份服务的串行队列中经 BackupMerge
 ///    合并导入（事务写表、媒体搬进新批次目录、失败整体回滚）。
+///
+/// 来源里的日记本 / 文件夹按 `folderMode` 落成日记本（默认）、标签或两者，
+/// 见 [buildJournalImportPayload]。
 ///
 /// 暂存区与文档目录同一文件系统，媒体搬运只需 rename。会话结束（导入完成
 /// 或取消）必须调用 [JournalImportSession.dispose] 删除暂存区；进程意外退出
@@ -55,6 +59,7 @@ class JournalImportService {
     required String filePath,
     List<String> moodOptions = SettingsService.defaultMoodOptions,
     List<int> tagColors = const <int>[],
+    JournalImportFolderMode folderMode = JournalImportFolderMode.notebooks,
   }) async {
     if (!await File(filePath).exists()) {
       throw FileSystemException('导入文件不存在', filePath);
@@ -64,6 +69,7 @@ class JournalImportService {
       source: source,
       moodOptions: moodOptions,
       tagColors: tagColors,
+      folderMode: folderMode,
       parse: (staging) async {
         String? extracted;
         if (await _isZip(filePath)) {
@@ -93,12 +99,14 @@ class JournalImportService {
     CloudProgress? onProgress,
     List<String> moodOptions = SettingsService.defaultMoodOptions,
     List<int> tagColors = const <int>[],
+    JournalImportFolderMode folderMode = JournalImportFolderMode.notebooks,
   }) {
     return _prepare(
       database: database,
       source: source,
       moodOptions: moodOptions,
       tagColors: tagColors,
+      folderMode: folderMode,
       parse: (staging) => fetchCloudJournal(
         provider,
         JournalMediaStager(staging.path),
@@ -114,6 +122,7 @@ class JournalImportService {
     required JournalImportSource source,
     required List<String> moodOptions,
     required List<int> tagColors,
+    required JournalImportFolderMode folderMode,
     required Future<JournalImportParseResult> Function(Directory staging) parse,
   }) async {
     // 创建目录和登记存活状态属于同一个临界区。并发准备时，不能让另一
@@ -137,23 +146,48 @@ class JournalImportService {
           skippedNotes: parsed.skippedNotes,
         );
       }
-      final payload = buildJournalImportPayload(
-        source,
-        parsed.entries,
-        moodOptions: moodOptions,
-        tagColors: tagColors,
+      // 本机日记本只在这里读一次：载荷生成保持纯函数，复用本机同名 / 上次
+      // 导入建的日记本所需的信息由此传入。预检到确认之间用户若又改了日记本，
+      // 合并按 notebookId 处理，最坏只是多建一本或沿用旧定义，不会写坏数据。
+      final existingNotebooks = await database.getNotebooks();
+      // 三种落地方式共用同一个时间，切换方式后重建的载荷除差异部分外完全相同。
+      final now = DateTime.now();
+      final folderCount = journalImportFolderCount(parsed.entries);
+      final session = JournalImportSession._(
+        documents,
+        staging,
+        (mode) => buildJournalImportPayload(
+          source,
+          parsed.entries,
+          moodOptions: moodOptions,
+          tagColors: tagColors,
+          folderMode: mode,
+          existingNotebooks: existingNotebooks,
+          now: now,
+        ),
+        folderMode: folderMode,
+        sourceFolderCount: folderCount,
       );
-      final preview = await DataArchiveService.previewPayload(
-        database: database,
-        kind: BackupArchiveKind.journalExport,
-        payload: payload,
-        journalSource: source,
-        missingMediaCount: parsed.missingMediaCount,
-        skippedNotes: parsed.skippedNotes,
-        summaryOnlyCount: parsed.summaryOnlyCount,
-        partialContentCount: parsed.partialContentCount,
-      );
-      return JournalImportSession._(documents, staging, payload, preview);
+      // 预检统计（标签数、已存在的日记本数）随落地方式变化，且要读库，在这里
+      // 一次算好：导入方式面板切换时同步取用，不再等待也不重新解析。没有来源
+      // 文件夹时三种方式的载荷相同，只算一份。跳过 / 只有摘要 / 部分内容的
+      // 篇数来自解析，与落地方式无关，每种方式的预检都带上。
+      for (final mode
+          in folderCount > 0
+              ? JournalImportFolderMode.values
+              : <JournalImportFolderMode>[folderMode]) {
+        session._previews[mode] = await DataArchiveService.previewPayload(
+          database: database,
+          kind: BackupArchiveKind.journalExport,
+          payload: session.payloadFor(mode),
+          journalSource: source,
+          missingMediaCount: parsed.missingMediaCount,
+          skippedNotes: parsed.skippedNotes,
+          summaryOnlyCount: parsed.summaryOnlyCount,
+          partialContentCount: parsed.partialContentCount,
+        );
+      }
+      return session;
     } catch (_) {
       await _discard(staging);
       rethrow;
@@ -207,27 +241,54 @@ class JournalImportService {
 
 /// 一次已解析、待确认的导入。[apply] 至多调用一次；无论是否导入，结束时
 /// 都要调用 [dispose]。
+///
+/// 会话保留解析出的条目：来源日记本 / 文件夹的落地方式
+/// （[JournalImportFolderMode]）可以在确认前改选，[payloadFor] 由条目重建
+/// 载荷（纯计算，按方式缓存），不重新解析文件或读取云端。
 class JournalImportSession {
   JournalImportSession._(
     this._documents,
     this._staging,
-    this._payload,
-    this.preview,
-  );
+    this._build, {
+    required this.folderMode,
+    required this.sourceFolderCount,
+  });
 
   final Directory _documents;
   final Directory _staging;
-  final BackupPayload _payload;
-  final BackupArchivePreview preview;
+  final BackupPayload Function(JournalImportFolderMode mode) _build;
+  final Map<JournalImportFolderMode, BackupPayload> _payloads = {};
+  final Map<JournalImportFolderMode, BackupArchivePreview> _previews = {};
+
+  /// 准备时指定的落地方式，[preview] 与不传方式的 [apply] 按它进行。
+  final JournalImportFolderMode folderMode;
+
+  /// 条目里出现的来源日记本 / 文件夹个数（按规整后的名称去重）。
+  final int sourceFolderCount;
   bool _applied = false;
   bool _disposed = false;
   Future<BackupImportResult>? _application;
   Future<void>? _disposal;
 
-  /// 按 [mode] 合并导入；其他应用的导出不支持覆盖全部数据。
+  /// 是否有来源日记本 / 文件夹，没有时三种落地方式没有区别，界面不必询问。
+  bool get hasSourceFolders => sourceFolderCount > 0;
+
+  BackupArchivePreview get preview => previewFor(folderMode);
+
+  /// [mode] 下的预检结果；没有来源文件夹时各方式相同。
+  BackupArchivePreview previewFor(JournalImportFolderMode mode) =>
+      _previews[mode] ?? _previews[folderMode]!;
+
+  /// [mode] 下要写入的载荷。
+  BackupPayload payloadFor(JournalImportFolderMode mode) =>
+      _payloads[mode] ??= _build(mode);
+
+  /// 按 [mode] 合并导入，来源文件夹按 [folderMode]（缺省为准备时指定的方式）
+  /// 落地；其他应用的导出不支持覆盖全部数据。
   Future<BackupImportResult> apply({
     required AppDatabase database,
     required BackupImportMode mode,
+    JournalImportFolderMode? folderMode,
   }) {
     if (mode == BackupImportMode.replaceAll) {
       throw ArgumentError.value(mode, 'mode', '其他应用的导出只能合并导入');
@@ -235,11 +296,12 @@ class JournalImportSession {
     if (_applied) throw StateError('导入会话已执行过');
     if (_disposed) throw StateError('导入会话已释放');
     _applied = true;
+    final payload = payloadFor(folderMode ?? this.folderMode);
     return _application = DataArchiveService.runSerialized(
       () => BackupMerge(
         documents: _documents,
         staging: _staging,
-      ).apply(database: database, payload: _payload, mode: mode),
+      ).apply(database: database, payload: payload, mode: mode),
     );
   }
 

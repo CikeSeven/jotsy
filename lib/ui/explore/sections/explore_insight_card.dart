@@ -55,7 +55,7 @@ class ExploreInsightCard extends StatelessWidget {
                               colorScheme,
                               isDark,
                             ),
-                            _staggered(reveal, index, moodWeights30.length),
+                            staggered(reveal, index, moodWeights30.length),
                           ),
                           borderRadius: BorderRadius.circular(5),
                         ),
@@ -73,7 +73,7 @@ class ExploreInsightCard extends StatelessWidget {
                           child: _buildEnergyBar(
                             colorScheme,
                             energyValues7[index],
-                            _staggered(reveal, index, energyValues7.length),
+                            staggered(reveal, index, energyValues7.length),
                           ),
                         ),
                       ),
@@ -113,8 +113,9 @@ class ExploreInsightCard extends StatelessWidget {
   }
 
   /// 第 [index] 项在共享进度 [reveal] 下的局部进度：各项依次起步（总时长的前
-  /// 40% 内错开），各自用 60% 的时长走完 effects 曲线。
-  static double _staggered(double reveal, int index, int count) {
+  /// 40% 内错开），各自用 60% 的时长走完 effects 曲线。日记本统计页的柱状图
+  /// 与心情条复用同一节奏（DESIGN §4.3）。
+  static double staggered(double reveal, int index, int count) {
     final start = count <= 1 ? 0.0 : 0.4 * index / (count - 1);
     final local = ((reveal - start) / 0.6).clamp(0.0, 1.0);
     return ExpressiveMotion.effects.transform(local);

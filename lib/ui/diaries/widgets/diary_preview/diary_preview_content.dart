@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../models/diary_preview_style/diary_preview_behavior.dart';
 import '../../models/diary_preview_style/diary_preview_style.dart';
@@ -72,6 +73,8 @@ class DiaryPreviewContent extends ConsumerWidget {
     this.staticCover = false,
     this.extraBottomPadding = 0,
     this.paging,
+    this.notebooks = const <NotebookView>[],
+    this.onOpenNotebook,
   });
 
   final DiaryWithTags detail;
@@ -100,6 +103,12 @@ class DiaryPreviewContent extends ConsumerWidget {
   /// 在翻页顺序里的位置；单篇打开时为 null。
   final DiaryPreviewPaging? paging;
 
+  /// 这篇所在的普通日记本（信息栏胶囊）；设置页预览不传。
+  final List<NotebookView> notebooks;
+
+  /// 点按日记本胶囊：回到首页打开那本。
+  final ValueChanged<NotebookView>? onOpenNotebook;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
@@ -119,9 +128,20 @@ class DiaryPreviewContent extends ConsumerWidget {
         : _explicitCover(diary);
     final title = _titleText(l10n, diary, style.title);
     final meta = style.meta;
-    final hasMeta = DiaryPreviewMeta.hasContent(detail, viewData, meta);
+    final hasMeta = DiaryPreviewMeta.hasContent(
+      detail,
+      viewData,
+      meta,
+      notebooks: notebooks,
+    );
     final metaWidget = hasMeta
-        ? DiaryPreviewMeta(detail: detail, viewData: viewData, style: meta)
+        ? DiaryPreviewMeta(
+            detail: detail,
+            viewData: viewData,
+            style: meta,
+            notebooks: notebooks,
+            onOpenNotebook: onOpenNotebook,
+          )
         : null;
     final controller = this.controller;
     final editedLabel = style.body.showLastEdited

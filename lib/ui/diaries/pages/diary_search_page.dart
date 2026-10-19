@@ -13,10 +13,12 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
+import '../../notebooks/controllers/notebook_quick_create_flows.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_head_section.dart';
+import '../widgets/search_scope_condition_chip.dart';
 import 'diary_preview_page.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/route_entrance_waiter.dart';
@@ -33,15 +35,27 @@ class DiarySearchPage extends ConsumerStatefulWidget {
     super.key,
     this.initialKeyword = '',
     this.initialTagIds = const <int>{},
+    this.scope = DiaryListScope.all,
+    this.scopeLabel,
+    this.scopeIcon,
   });
 
   final String initialKeyword;
   final Set<int> initialTagIds;
 
+  /// 搜索范围：从日记本里打开时为这本，搜索条前显示可移除的日记本条件
+  /// （[scopeLabel] + [scopeIcon]）；移除后在全部日记中搜索。
+  final DiaryListScope scope;
+  final String? scopeLabel;
+  final FaIconData? scopeIcon;
+
   /// 构建覆盖式搜索页路由，保持与日记列表入口一致的体感。
   static Route<void> buildRoute({
     String initialKeyword = '',
     Set<int> initialTagIds = const <int>{},
+    DiaryListScope scope = DiaryListScope.all,
+    String? scopeLabel,
+    FaIconData? scopeIcon,
   }) {
     // 不透明路由：转场期间下层仍会绘制，完成后下层转为 offstage，不再在
     // 搜索期间持续绘制整屏日记列表（并暂停其 ticker）。
@@ -52,6 +66,9 @@ class DiarySearchPage extends ConsumerStatefulWidget {
         return DiarySearchPage(
           initialKeyword: initialKeyword,
           initialTagIds: initialTagIds,
+          scope: scope,
+          scopeLabel: scopeLabel,
+          scopeIcon: scopeIcon,
         );
       },
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -86,8 +103,11 @@ class DiarySearchPage extends ConsumerStatefulWidget {
   ConsumerState<DiarySearchPage> createState() => _DiarySearchPageState();
 }
 
+/// 关键词输入的防抖（非动画计时）：搜索页与日记本“添加日记”页共用。
+const Duration diarySearchDebounce = Duration(milliseconds: 200);
+
 class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
-  static const Duration _searchDebounceDuration = Duration(milliseconds: 200);
+  static const Duration _searchDebounceDuration = diarySearchDebounce;
   static const double _headerContentHeight = 64;
   static const int _diaryPageSize = 20;
   static const double _loadMoreTriggerExtent = 420;
@@ -103,6 +123,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
   String _searchInput = '';
   String _effectiveSearchKeyword = '';
   late final Set<int> _selectedTagIds;
+  late DiaryListScope _scope = widget.scope;
   int _visibleDiaryLimit = _diaryPageSize;
   bool _hasMoreDiaries = false;
   bool _isPagingCooldown = false;
@@ -161,6 +182,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     final query = SearchDiaryQuery(
       keyword: _effectiveSearchKeyword,
       requiredTagIds: _selectedTagIds,
+      scope: _scope,
     );
     _syncPagingStateWithQuery(query);
     if (!query.hasAnyCondition) {
@@ -173,6 +195,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       requiredTagIds: query.requiredTagIds,
       limit: _visibleDiaryLimit,
       sortMode: DiarySortMode.updatedDesc,
+      scope: query.scope,
     );
     final diariesAsync = query.hasAnyCondition
         ? ref.watch(searchDiariesProvider(pageQuery))
@@ -326,10 +349,17 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                       autofocus: _searchAutofocusEnabled,
                       hasSearchText: _searchInput.trim().isNotEmpty,
                       selectedTags: selectedTags,
+                      scopeChip: _buildScopeChip(),
                       onExitSearch: _closePage,
                       onClearSearch: _clearSearchInPlace,
                       onSearchChanged: _onSearchChanged,
                       onRemoveTagCondition: _removeTagCondition,
+                      onRemoveScopeCondition: _hasScopeCondition
+                          ? _removeScopeCondition
+                          : null,
+                      onSaveAsNotebook: _saveAsNotebookAction(
+                        tagListAsync.value,
+                      ),
                     ),
                   ),
                   Container(
@@ -376,6 +406,34 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
     _searchFocusNode.requestFocus();
   }
 
+  bool get _hasScopeCondition =>
+      _scope != DiaryListScope.all && widget.scopeLabel != null;
+
+  /// 日记本条件胶囊；在全部日记中搜索时为 null。
+  Widget? _buildScopeChip() {
+    final label = widget.scopeLabel;
+    if (!_hasScopeCondition || label == null) {
+      return null;
+    }
+    return SearchScopeConditionChip(
+      icon: widget.scopeIcon ?? FontAwesomeIcons.book,
+      label: label,
+      onRemove: _removeScopeCondition,
+    );
+  }
+
+  /// 移除日记本条件：改为在全部日记中搜索（不影响首页所在的范围）。
+  void _removeScopeCondition() {
+    if (_scope == DiaryListScope.all) {
+      return;
+    }
+    setState(() {
+      _scope = DiaryListScope.all;
+      _visibleDiaryLimit = _diaryPageSize;
+      _isPagingCooldown = false;
+    });
+  }
+
   /// 移除单个标签搜索条件（仅影响搜索页本地状态，不回写主页筛选）。
   void _removeTagCondition(int tagId) {
     if (!_selectedTagIds.contains(tagId)) {
@@ -386,6 +444,27 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
       _visibleDiaryLimit = _diaryPageSize;
       _isPagingCooldown = false;
     });
+  }
+
+  /// “存为智能日记本”：有关键词或标签条件时可用，规则为关键词 + 标签（全部
+  /// 都含）。标签列表尚未加载时不可用（拿不到标签名）。日记本范围不进规则：
+  /// 智能日记本没有“在某本里”的条件。
+  VoidCallback? _saveAsNotebookAction(List<Tag>? tags) {
+    if (tags == null ||
+        (_effectiveSearchKeyword.isEmpty && _selectedTagIds.isEmpty)) {
+      return null;
+    }
+    final tagNames = <String>[
+      for (final tag in tags)
+        if (_selectedTagIds.contains(tag.id)) tag.name,
+    ];
+    return () => unawaited(
+      runSaveSearchAsSmartNotebook(
+        context,
+        keyword: _effectiveSearchKeyword,
+        tagNames: tagNames,
+      ),
+    );
   }
 
   void _closePage() {
@@ -404,6 +483,7 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
               keyword: query.keyword,
               requiredTagIds: query.requiredTagIds,
               sortMode: query.sortMode,
+              scope: query.scope,
             )
           : null,
     );
@@ -432,7 +512,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   /// 条件变更时重置分页窗口，避免沿用旧查询的加载进度。
   void _syncPagingStateWithQuery(SearchDiaryQuery query) {
-    final signature = '${query.keyword}|${query.requiredTagIds.join(",")}';
+    final signature =
+        '${query.keyword}|${query.requiredTagIds.join(",")}|${query.scope}';
     if (_pagingSignature == signature) {
       return;
     }
@@ -464,7 +545,8 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
 /// 搜索页顶部输入条。
 ///
-/// 保持与主页搜索态同风格：左侧返回、中央输入、右侧按需清空按钮。
+/// 保持与主页搜索态同风格：左侧返回、中央输入、右侧按需清空按钮；有搜索
+/// 条件时最右侧多一个“存为智能日记本”。
 class _SearchInputBar extends StatelessWidget {
   const _SearchInputBar({
     required this.searchController,
@@ -472,10 +554,13 @@ class _SearchInputBar extends StatelessWidget {
     required this.autofocus,
     required this.hasSearchText,
     required this.selectedTags,
+    required this.scopeChip,
     required this.onExitSearch,
     required this.onClearSearch,
     required this.onSearchChanged,
     required this.onRemoveTagCondition,
+    this.onRemoveScopeCondition,
+    this.onSaveAsNotebook,
   });
 
   final TextEditingController searchController;
@@ -483,10 +568,19 @@ class _SearchInputBar extends StatelessWidget {
   final bool autofocus;
   final bool hasSearchText;
   final List<Tag> selectedTags;
+
+  /// 日记本条件胶囊，排在标签条件前；null 时没有。
+  final Widget? scopeChip;
   final VoidCallback onExitSearch;
   final VoidCallback onClearSearch;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<int> onRemoveTagCondition;
+
+  /// 退格删到日记本条件时移除它；没有日记本条件时为 null。
+  final VoidCallback? onRemoveScopeCondition;
+
+  /// 存为智能日记本；没有搜索条件时为 null（不显示按钮）。
+  final VoidCallback? onSaveAsNotebook;
 
   @override
   Widget build(BuildContext context) {
@@ -515,7 +609,7 @@ class _SearchInputBar extends StatelessWidget {
               icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
             ),
             Expanded(
-              child: selectedTags.isEmpty
+              child: selectedTags.isEmpty && scopeChip == null
                   ? TextField(
                       controller: searchController,
                       focusNode: searchFocusNode,
@@ -538,6 +632,10 @@ class _SearchInputBar extends StatelessWidget {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: <Widget>[
+                          if (scopeChip case final chip?) ...[
+                            chip,
+                            const SizedBox(width: 6),
+                          ],
                           for (final tag in selectedTags) ...[
                             _TagConditionChip(
                               tag: tag,
@@ -560,6 +658,13 @@ class _SearchInputBar extends StatelessWidget {
                                     isInputEmpty &&
                                     selectedTags.isNotEmpty) {
                                   onRemoveTagCondition(selectedTags.last.id);
+                                  return KeyEventResult.handled;
+                                }
+                                final removeScope = onRemoveScopeCondition;
+                                if (isBackspace &&
+                                    isInputEmpty &&
+                                    removeScope != null) {
+                                  removeScope();
                                   return KeyEventResult.handled;
                                 }
                                 return KeyEventResult.ignored;
@@ -612,6 +717,18 @@ class _SearchInputBar extends StatelessWidget {
                       width: 40,
                     ),
             ),
+            if (onSaveAsNotebook case final onSave?)
+              IconButton(
+                key: const ValueKey<String>('search_save_as_notebook'),
+                tooltip: context.l10n.notebookSaveSearchAsSmart,
+                splashRadius: 18,
+                onPressed: onSave,
+                icon: FaIcon(
+                  FontAwesomeIcons.wandMagicSparkles,
+                  size: 16,
+                  color: colorScheme.primary,
+                ),
+              ),
           ],
         ),
       ),

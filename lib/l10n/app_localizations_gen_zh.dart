@@ -2382,11 +2382,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get calendarFilterTitle => '筛选日历';
 
   @override
+  String get calendarFilterNotebooks => '日记本';
+
+  @override
   String get calendarFilterClear => '清除筛选';
 
   @override
   String get calendarFilterDescription =>
-      '日期格与统计只算符合条件的日记。同一类里任选其一即可，心情和标签都选时需同时满足。';
+      '日期格与统计只算符合条件的日记。同一类里任选其一即可，选了多类时需同时满足。';
 
   @override
   String get calendarFilterMoods => '心情';
@@ -5125,6 +5128,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String backupOverwriteAllNotebooks(int count) {
+    return '$count 个日记本';
+  }
+
+  @override
+  String backupImportNotebookMergeResult(int added) {
+    return '日记本：新增 $added 个';
+  }
+
+  @override
+  String backupImportModeOverwriteNotebooksExtra(int count) {
+    return '同时替换本机已存在的 $count 个日记本的名称、封面与章节等设置';
+  }
+
+  @override
   String get diaryTemplateDailyName => '每日记录';
 
   @override
@@ -5885,4 +5903,970 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryTemplateNeedsBlankEntry => '已经开始写了，模板只能套用在空白日记上';
+
+  @override
+  String get notebookTitle => '日记本';
+
+  @override
+  String get notebookSettingsSubtitle => '整理、排序、合并你的日记本';
+
+  @override
+  String get notebookNew => '新建日记本';
+
+  @override
+  String get notebookEditTitle => '编辑日记本';
+
+  @override
+  String get notebookManage => '管理';
+
+  @override
+  String get notebookAllDiaries => '全部日记';
+
+  @override
+  String get notebookSectionPinned => '置顶';
+
+  @override
+  String get notebookSectionMine => '我的日记本';
+
+  @override
+  String get notebookSectionSmart => '智能日记本';
+
+  @override
+  String get notebookSectionClosed => '已合上';
+
+  @override
+  String notebookEntryCount(int count) {
+    return '$count 篇';
+  }
+
+  @override
+  String get notebookSemanticsSeparator => '，';
+
+  @override
+  String get notebookEmptyHint => '把不同主题、不同时间的日记收进同一本';
+
+  @override
+  String get notebookMissing => '这本日记本已不存在';
+
+  @override
+  String get notebookNameLabel => '名称';
+
+  @override
+  String get notebookNameHint => '例如：旅行';
+
+  @override
+  String get notebookDescriptionLabel => '简介';
+
+  @override
+  String get notebookDescriptionHint => '用一句话介绍这本（可选）';
+
+  @override
+  String get notebookIconLabel => '图标';
+
+  @override
+  String get notebookIconMore => '更多图标';
+
+  @override
+  String get notebookIconLess => '收起';
+
+  @override
+  String get notebookColorLabel => '颜色';
+
+  @override
+  String get notebookColorFollowTheme => '跟随主题';
+
+  @override
+  String get notebookCoverLabel => '封面图';
+
+  @override
+  String get notebookCoverPick => '选择图片';
+
+  @override
+  String get notebookCoverRemove => '移除';
+
+  @override
+  String get notebookTypeLabel => '类型';
+
+  @override
+  String get notebookTypeManual => '普通';
+
+  @override
+  String get notebookTypeSmart => '智能';
+
+  @override
+  String get notebookTypeManualHint => '自己挑选要收进来的日记';
+
+  @override
+  String get notebookTypeSmartHint => '按条件自动收录符合的日记';
+
+  @override
+  String get notebookPrivacyLabel => '隐私';
+
+  @override
+  String get notebookPrivacyNormal => '正常';
+
+  @override
+  String get notebookPrivacyHidden => '不在全部日记中显示';
+
+  @override
+  String get notebookPrivacyHiddenHint => '只在这本里看到';
+
+  @override
+  String get notebookPrivacyLocked => '上锁';
+
+  @override
+  String get notebookPrivacyLockedHint => '打开时验证身份，并且不在全部日记中显示';
+
+  @override
+  String get notebookSortLabel => '默认排序';
+
+  @override
+  String get notebookSortCreatedDesc => '发表时间 新→旧';
+
+  @override
+  String get notebookSortCreatedAsc => '发表时间 旧→新';
+
+  @override
+  String get notebookSortCreatedAscHint => '适合读成一本书';
+
+  @override
+  String get notebookSortUpdatedDesc => '最近编辑';
+
+  @override
+  String get notebookSortBook => '书序';
+
+  @override
+  String get notebookSortBookHint => '按目录手动排列';
+
+  @override
+  String get notebookTemplateLabel => '新建时套用模板';
+
+  @override
+  String get notebookTemplateNone => '不套用';
+
+  @override
+  String get notebookSaveFailed => '保存失败，请重试';
+
+  @override
+  String get notebookActionFailed => '操作失败，请重试';
+
+  @override
+  String get notebookMoreActions => '更多操作';
+
+  @override
+  String get notebookDragHandle => '拖动排序';
+
+  @override
+  String get notebookStatePinned => '置顶';
+
+  @override
+  String get notebookStateSmart => '智能';
+
+  @override
+  String get notebookStateHidden => '隐藏';
+
+  @override
+  String get notebookStateLocked => '上锁';
+
+  @override
+  String get notebookStateClosed => '已合上';
+
+  @override
+  String get notebookActionPin => '置顶';
+
+  @override
+  String get notebookActionUnpin => '取消置顶';
+
+  @override
+  String get notebookActionClose => '合上';
+
+  @override
+  String get notebookActionCloseHint => '合上后收进书架的“已合上”，不再出现在收录选择里';
+
+  @override
+  String get notebookActionReopen => '重新打开';
+
+  @override
+  String get notebookActionMerge => '合并到…';
+
+  @override
+  String get notebookActionConvert => '转为普通日记本';
+
+  @override
+  String get notebookActionConvertHint => '收进现在符合条件的日记，之后不再自动更新';
+
+  @override
+  String get notebookMergeSheetTitle => '合并到哪一本';
+
+  @override
+  String get notebookMergeEmpty => '没有其他普通日记本可以并入';
+
+  @override
+  String get notebookMergeConfirmTitle => '合并日记本';
+
+  @override
+  String notebookMergeConfirm(String source, int count, String target) {
+    return '把「$source」的 $count 篇日记并入「$target」并删除「$source」？';
+  }
+
+  @override
+  String get notebookMergeAction => '合并';
+
+  @override
+  String notebookMerged(String target) {
+    return '已并入「$target」';
+  }
+
+  @override
+  String notebookDeleteTitle(String name) {
+    return '删除「$name」？';
+  }
+
+  @override
+  String get notebookDeleteKeepDiaries => '只删除日记本';
+
+  @override
+  String notebookDeleteKeepDiariesHint(int count) {
+    return '$count 篇日记仍在全部日记里';
+  }
+
+  @override
+  String get notebookDeleteWithDiaries => '连同日记移到回收站';
+
+  @override
+  String get notebookDeleteWithDiariesHint => '可在回收站恢复';
+
+  @override
+  String get notebookDeleteSmartHint => '日记不会受影响';
+
+  @override
+  String notebookDeleted(String name) {
+    return '已删除「$name」';
+  }
+
+  @override
+  String notebookSwitcherSemantics(String name) {
+    return '切换日记本，当前：$name';
+  }
+
+  @override
+  String get notebookScopeDeleted => '日记本已删除';
+
+  @override
+  String notebookSearchIn(String name) {
+    return '在「$name」中搜索';
+  }
+
+  @override
+  String notebookSearchRemoveScope(String name) {
+    return '移除日记本条件：$name';
+  }
+
+  @override
+  String notebookMetaWords(String words) {
+    return '$words 字';
+  }
+
+  @override
+  String notebookMetaSpan(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String notebookMetaSpanOngoing(String start) {
+    return '$start – 至今';
+  }
+
+  @override
+  String get notebookHeaderSmartBadge => '智能日记本';
+
+  @override
+  String get notebookHeaderPrivateBadge => '仅在本日记本中显示';
+
+  @override
+  String get notebookEmptyTitle => '这本还空着';
+
+  @override
+  String get notebookEmptyCreateHint => '点下方的新建，写下第一篇';
+
+  @override
+  String get notebookViewSortSection => '本日记本的排序';
+
+  @override
+  String get notebookViewOptionsEntry => '切换日记本';
+
+  @override
+  String get notebookViewOptionsEntrySubtitle => '只看某一本里的日记，或新建一本';
+
+  @override
+  String notebookUnlockReason(String name) {
+    return '解锁「$name」';
+  }
+
+  @override
+  String get notebookLockUnsupportedTitle => '无法打开上锁的日记本';
+
+  @override
+  String get notebookLockUnsupportedMessage =>
+      '这台设备没有设置锁屏密码，无法验证身份，上锁的日记本暂时打不开。在系统设置里设置锁屏密码后就能打开。';
+
+  @override
+  String get notebookLockUnsupportedAction => '知道了';
+
+  @override
+  String notebookLockedTitle(String name) {
+    return '「$name」已上锁';
+  }
+
+  @override
+  String get notebookLockedSubtitle => '离开应用后需要重新验证身份';
+
+  @override
+  String get notebookLockUnlock => '解锁';
+
+  @override
+  String get notebookLockBackToAll => '回到全部日记';
+
+  @override
+  String get notebookPrivateDiaryPlaceholder => '私密日记本中的日记';
+
+  @override
+  String get notebookAnniversaryLinkPrivate => '关联的日记在私密日记本中';
+
+  @override
+  String get backupImportFolderModeTitle => '原来的日记本 / 文件夹';
+
+  @override
+  String get backupImportFolderModeNotebooks => '日记本';
+
+  @override
+  String get backupImportFolderModeTags => '标签';
+
+  @override
+  String get backupImportFolderModeBoth => '两者';
+
+  @override
+  String backupImportFolderModeNotebooksHint(int count) {
+    return '按来源的 $count 个笔记本 / 文件夹建成日记本，同名的并入本机已有的';
+  }
+
+  @override
+  String get backupImportFolderModeTagsHint => '像以前一样，变成同名标签';
+
+  @override
+  String get backupImportFolderModeBothHint => '同时建日记本和同名标签';
+
+  @override
+  String get notebookEmptyManualHint => '写下第一篇，或从已有日记里挑几篇放进来';
+
+  @override
+  String get notebookEmptyWriteFirst => '写第一篇';
+
+  @override
+  String get notebookEmptyPickExisting => '从已有日记挑选';
+
+  @override
+  String get notebookAddDiaries => '添加日记';
+
+  @override
+  String get notebookExportAsBook => '导出成书';
+
+  @override
+  String notebookBookExportedOn(String date) {
+    return '导出于 $date';
+  }
+
+  @override
+  String get diaryExportBookStructure => '书籍结构';
+
+  @override
+  String get diaryExportBookStructureDescription => '扉页、目录与章节标题';
+
+  @override
+  String get notebookContentsUnassignedDropHint => '拖到这里移出章节';
+
+  @override
+  String get notebookChapterAll => '全部';
+
+  @override
+  String get notebookChapterUnassigned => '未分章';
+
+  @override
+  String notebookChapterChip(String title, int count) {
+    return '$title · $count';
+  }
+
+  @override
+  String get notebookContents => '目录';
+
+  @override
+  String get notebookContentsNewChapter => '新章节';
+
+  @override
+  String get notebookContentsSelect => '多选';
+
+  @override
+  String get notebookContentsSelectDone => '退出多选';
+
+  @override
+  String notebookContentsSelectedCount(int count) {
+    return '已选 $count 篇';
+  }
+
+  @override
+  String get notebookContentsNoChapterHint => '添加章节，把日记分成几部分';
+
+  @override
+  String get notebookContentsEmpty => '这本还没有日记';
+
+  @override
+  String get notebookContentsArchived => '已归档';
+
+  @override
+  String get notebookContentsSealed => '未解封的时间胶囊';
+
+  @override
+  String get notebookContentsDragHandle => '拖动排序';
+
+  @override
+  String get notebookContentsChapterActions => '章节操作';
+
+  @override
+  String get notebookChapterRename => '重命名';
+
+  @override
+  String get notebookChapterRenameTitle => '重命名章节';
+
+  @override
+  String get notebookChapterMoveUp => '上移';
+
+  @override
+  String get notebookChapterMoveDown => '下移';
+
+  @override
+  String get notebookChapterTitleLabel => '章节名称';
+
+  @override
+  String get notebookChapterTitleHint => '例如：东京';
+
+  @override
+  String notebookChapterDeleteConfirm(String title, int count) {
+    return '删除章节「$title」？其中的 $count 篇回到未分章，日记不会被删除';
+  }
+
+  @override
+  String get notebookContentsMoveToChapter => '移到章节…';
+
+  @override
+  String get notebookContentsMoveSheetTitle => '移到章节';
+
+  @override
+  String notebookContentsMoved(String title, int count) {
+    return '已将 $count 篇移到「$title」';
+  }
+
+  @override
+  String get notebookPickerTitle => '收进日记本';
+
+  @override
+  String get notebookPickerEmpty => '还没有可以收进的日记本';
+
+  @override
+  String get notebookPickerDone => '完成';
+
+  @override
+  String notebookPickerPrivateHint(String name) {
+    return '已收进「$name」，这些日记只在该日记本中显示';
+  }
+
+  @override
+  String get notebookSelectionMore => '更多操作';
+
+  @override
+  String get notebookRemoveFromCurrent => '从本日记本移出';
+
+  @override
+  String get notebookMoveTo => '移动到…';
+
+  @override
+  String notebookAddedToCount(int count) {
+    return '已收进 $count 本日记本';
+  }
+
+  @override
+  String get notebookMembershipUpdated => '已更新日记本';
+
+  @override
+  String notebookRemovedFrom(String name, int count) {
+    return '已从「$name」移出 $count 篇';
+  }
+
+  @override
+  String notebookMovedTo(String name, int count) {
+    return '已将 $count 篇移到「$name」';
+  }
+
+  @override
+  String get notebookPublishNone => '不收进日记本';
+
+  @override
+  String notebookWriteInto(String name) {
+    return '写进「$name」';
+  }
+
+  @override
+  String notebookAddPageTitle(String name) {
+    return '添加到「$name」';
+  }
+
+  @override
+  String notebookAddPageDone(int count) {
+    return '完成 ($count)';
+  }
+
+  @override
+  String get notebookAddSearchHint => '搜索日记';
+
+  @override
+  String get notebookAddFilterAll => '全部';
+
+  @override
+  String get notebookAddFilterRecent => '最近 30 天';
+
+  @override
+  String get notebookAddFilterThisYear => '今年';
+
+  @override
+  String get notebookAddAlreadyIn => '已在本子里';
+
+  @override
+  String notebookAddedCount(int count) {
+    return '已添加 $count 篇';
+  }
+
+  @override
+  String get notebookAddEmpty => '没有符合条件的日记';
+
+  @override
+  String get notebookPreviewNone => '还没有收进日记本';
+
+  @override
+  String get notebookListSeparator => '、';
+
+  @override
+  String notebookOpenNotebook(String name) {
+    return '打开「$name」';
+  }
+
+  @override
+  String get notebookRulesTitle => '条件';
+
+  @override
+  String get notebookRulesMatchAll => '全部满足';
+
+  @override
+  String get notebookRulesMatchAny => '任一满足';
+
+  @override
+  String notebookRulesMatchCount(int count) {
+    return '符合条件：$count 篇';
+  }
+
+  @override
+  String get notebookRulesNeedOne => '至少添加一个条件才能保存';
+
+  @override
+  String notebookRulesLimit(int max) {
+    return '最多 $max 个条件';
+  }
+
+  @override
+  String get notebookRulesExamples => '从示例开始';
+
+  @override
+  String get notebookRuleExampleRecent => '最近 30 天';
+
+  @override
+  String get notebookRuleExampleThisMonth => '每年这个月';
+
+  @override
+  String get notebookRuleExampleImages => '有图片的日记';
+
+  @override
+  String get notebookRuleExamplePinned => '置顶的日记';
+
+  @override
+  String get notebookRuleAdd => '添加条件';
+
+  @override
+  String get notebookRuleRemove => '移除条件';
+
+  @override
+  String get notebookRuleDone => '完成';
+
+  @override
+  String get notebookRuleTypeTags => '标签';
+
+  @override
+  String get notebookRuleTypeTagsHint => '带有或不带某些标签';
+
+  @override
+  String get notebookRuleTypeMood => '心情';
+
+  @override
+  String get notebookRuleTypeMoodHint => '心情是其中之一';
+
+  @override
+  String get notebookRuleTypeWeather => '天气';
+
+  @override
+  String get notebookRuleTypeWeatherHint => '天气包含某段文字';
+
+  @override
+  String get notebookRuleTypeLocation => '地点';
+
+  @override
+  String get notebookRuleTypeLocationHint => '地点包含某段文字';
+
+  @override
+  String get notebookRuleTypeKeyword => '关键词';
+
+  @override
+  String get notebookRuleTypeKeywordHint => '标题或正文包含某段文字';
+
+  @override
+  String get notebookRuleTypeDate => '日期';
+
+  @override
+  String get notebookRuleTypeDateHint => '一段日期、最近几天或每年的某个时候';
+
+  @override
+  String get notebookRuleTypeMedia => '图片与附件';
+
+  @override
+  String get notebookRuleTypeMediaHint => '正文里有图片、录音、视频或附件';
+
+  @override
+  String get notebookRuleTypeFlag => '封面与置顶';
+
+  @override
+  String get notebookRuleTypeFlagHint => '有封面或已置顶';
+
+  @override
+  String get notebookRuleTagAny => '含任一';
+
+  @override
+  String get notebookRuleTagAll => '全部都含';
+
+  @override
+  String get notebookRuleTagNone => '都不含';
+
+  @override
+  String get notebookRuleNoTags => '还没有标签';
+
+  @override
+  String get notebookRuleWeatherHint => '如：雨';
+
+  @override
+  String get notebookRuleLocationHint => '如：京都';
+
+  @override
+  String get notebookRuleKeywordHint => '标题或正文里的文字';
+
+  @override
+  String get notebookRuleDateBetween => '固定区间';
+
+  @override
+  String get notebookRuleDateLastDays => '最近几天';
+
+  @override
+  String get notebookRuleDateThisYear => '今年';
+
+  @override
+  String get notebookRuleDateMonth => '每年某月';
+
+  @override
+  String get notebookRuleDateToday => '每年的今天';
+
+  @override
+  String get notebookRuleDateTodayHint => '与今天同月同日的日记';
+
+  @override
+  String notebookRuleDaysValue(int days) {
+    return '$days 天';
+  }
+
+  @override
+  String get notebookRuleDaysDecrease => '减少一天';
+
+  @override
+  String get notebookRuleDaysIncrease => '增加一天';
+
+  @override
+  String get notebookRuleMediaImage => '有图片';
+
+  @override
+  String get notebookRuleMediaAudio => '有录音';
+
+  @override
+  String get notebookRuleMediaVideo => '有视频';
+
+  @override
+  String get notebookRuleMediaAttachment => '有附件';
+
+  @override
+  String get notebookRuleFlagCover => '有封面';
+
+  @override
+  String get notebookRuleFlagPinned => '已置顶';
+
+  @override
+  String notebookRuleSummaryTagsAny(String tags) {
+    return '标签含任一：$tags';
+  }
+
+  @override
+  String notebookRuleSummaryTagsAll(String tags) {
+    return '标签全部都含：$tags';
+  }
+
+  @override
+  String notebookRuleSummaryTagsNone(String tags) {
+    return '标签都不含：$tags';
+  }
+
+  @override
+  String notebookRuleSummaryMood(String moods) {
+    return '心情：$moods';
+  }
+
+  @override
+  String notebookRuleSummaryWeather(String text) {
+    return '天气包含“$text”';
+  }
+
+  @override
+  String notebookRuleSummaryLocation(String text) {
+    return '地点包含“$text”';
+  }
+
+  @override
+  String notebookRuleSummaryKeyword(String text) {
+    return '标题或正文包含“$text”';
+  }
+
+  @override
+  String notebookRuleSummaryRange(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String notebookRuleSummaryLastDays(int days) {
+    return '最近 $days 天';
+  }
+
+  @override
+  String notebookRuleSummaryMonth(int month, String monthName) {
+    return '每年 $month 月';
+  }
+
+  @override
+  String notebookRuleSummaryToday(String date) {
+    return '每年的今天（$date）';
+  }
+
+  @override
+  String get notebookRuleUnknown => '无法识别的条件（来自更新的版本）';
+
+  @override
+  String notebookConvertTitle(String name) {
+    return '把「$name」转为普通日记本？';
+  }
+
+  @override
+  String notebookConvertMessage(int count) {
+    return '现在符合条件的 $count 篇日记会收进来（不含归档的），以后不再按条件自动更新。';
+  }
+
+  @override
+  String get notebookConvertAction => '转换';
+
+  @override
+  String notebookConverted(int count) {
+    return '已转为普通日记本，收进 $count 篇';
+  }
+
+  @override
+  String get notebookSaveRange => '存为日记本';
+
+  @override
+  String get notebookSaveRangeSmartHint => '这段日期里的日记，之后补写的也会自动收进来';
+
+  @override
+  String notebookSaveRangeManualHint(int count) {
+    return '收进现在这 $count 篇';
+  }
+
+  @override
+  String get notebookSaveSearchAsSmart => '存为智能日记本';
+
+  @override
+  String get notebookSaveRangeSmart => '智能日记本';
+
+  @override
+  String get notebookSaveRangeManual => '普通日记本';
+
+  @override
+  String get notebookGoalLabel => '写作目标';
+
+  @override
+  String get notebookGoalEnable => '设置目标';
+
+  @override
+  String get notebookGoalEnableHint => '在日记本头部显示进度，不会发送提醒';
+
+  @override
+  String get notebookGoalDecrease => '少一篇';
+
+  @override
+  String get notebookGoalIncrease => '多一篇';
+
+  @override
+  String get notebookGoalPeriodDay => '每天';
+
+  @override
+  String get notebookGoalPeriodWeek => '每周';
+
+  @override
+  String get notebookGoalPeriodMonth => '每月';
+
+  @override
+  String notebookGoalSummaryDay(int count) {
+    return '每天写 $count 篇';
+  }
+
+  @override
+  String notebookGoalSummaryWeek(int count) {
+    return '每周写 $count 篇';
+  }
+
+  @override
+  String notebookGoalSummaryMonth(int count) {
+    return '每月写 $count 篇';
+  }
+
+  @override
+  String notebookGoalProgressDay(int current, int target) {
+    return '今天 $current / $target 篇';
+  }
+
+  @override
+  String notebookGoalProgressWeek(int current, int target) {
+    return '本周 $current / $target 篇';
+  }
+
+  @override
+  String notebookGoalProgressMonth(int current, int target) {
+    return '本月 $current / $target 篇';
+  }
+
+  @override
+  String get notebookGoalMetDay => '今天已完成 ✓';
+
+  @override
+  String get notebookGoalMetWeek => '本周已完成 ✓';
+
+  @override
+  String get notebookGoalMetMonth => '本月已完成 ✓';
+
+  @override
+  String notebookGoalStreakDay(int count) {
+    return '连续达成 $count 天';
+  }
+
+  @override
+  String notebookGoalStreakWeek(int count) {
+    return '连续达成 $count 周';
+  }
+
+  @override
+  String notebookGoalStreakMonth(int count) {
+    return '连续达成 $count 个月';
+  }
+
+  @override
+  String get notebookInsights => '统计';
+
+  @override
+  String get notebookInsightsEmpty => '这本还没有可统计的日记';
+
+  @override
+  String get notebookInsightsEntries => '篇数';
+
+  @override
+  String get notebookInsightsWords => '字数';
+
+  @override
+  String get notebookInsightsRecordedDays => '记录天数';
+
+  @override
+  String get notebookInsightsSpan => '时间跨度';
+
+  @override
+  String get notebookInsightsPhotos => '照片数';
+
+  @override
+  String get notebookInsightsLongestStreak => '最长连续';
+
+  @override
+  String notebookInsightsDays(int count) {
+    return '$count 天';
+  }
+
+  @override
+  String notebookInsightsSpanMonths(int months) {
+    return '$months 个月';
+  }
+
+  @override
+  String notebookInsightsSpanYears(int years) {
+    return '$years 年';
+  }
+
+  @override
+  String notebookInsightsSpanYearsMonths(int years, int months) {
+    return '$years 年 $months 个月';
+  }
+
+  @override
+  String get notebookInsightsMoods => '心情分布';
+
+  @override
+  String notebookInsightsMoodShare(int count, int percent) {
+    return '$count 篇 · $percent%';
+  }
+
+  @override
+  String get notebookInsightsTopTags => '常用标签';
+
+  @override
+  String get notebookInsightsRhythm => '写作节奏';
+
+  @override
+  String notebookInsightsRhythmBar(String month, int count) {
+    return '$month：$count 篇';
+  }
+
+  @override
+  String notebookInsightsGoalRecent(int met, int total) {
+    return '最近 $total 个周期达成 $met 个';
+  }
+
+  @override
+  String notebookInsightsGoalRecentCaption(int count) {
+    return '最近 $count 个周期';
+  }
+
+  @override
+  String get notebookInsightsRandom => '随机翻一篇';
 }

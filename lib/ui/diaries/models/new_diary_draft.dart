@@ -20,7 +20,12 @@ typedef NewDiaryDraftSnapshot = ({
 /// 作用：
 /// - 作为“编辑页 <-> 发布页”之间的状态载体；
 /// - 作为草稿箱（`diary_drafts` 表 `payload` 列）持久化的数据结构；
-/// - 统一承载发布上下文（封面、标签、位置、天气、心情、精力等）。
+/// - 统一承载发布上下文（封面、标签、所在日记本、位置、天气、心情、精力等）。
+///
+/// 日记本：[notebookIds] 为要收进的日记本（业务 id，按勾选先后）；
+/// [notebookChapterIds] 为在日记本里按章节新建时的章节（日记本 id → 章节
+/// id），发布时只对仍勾选的本子生效。两者都随草稿保存，旧草稿没有这两项时
+/// 为空。
 class NewDiaryDraft {
   static const Object _fieldNotChanged = Object();
 
@@ -32,6 +37,8 @@ class NewDiaryDraft {
     this.cover,
     this.metadataJson = '{}',
     this.selectedTagIds = const <int>{},
+    this.notebookIds = const <String>[],
+    this.notebookChapterIds = const <String, String>{},
     this.location,
     this.locationAddressComponent,
     this.locationLatitude,
@@ -53,6 +60,8 @@ class NewDiaryDraft {
   final String? cover;
   final String metadataJson;
   final Set<int> selectedTagIds;
+  final List<String> notebookIds;
+  final Map<String, String> notebookChapterIds;
   final String? location;
   final Map<String, Object?>? locationAddressComponent;
   final double? locationLatitude;
@@ -91,6 +100,22 @@ class NewDiaryDraft {
     final tagIds = rawTagIds is List<Object?>
         ? rawTagIds.whereType<num>().map((num value) => value.toInt()).toSet()
         : const <int>{};
+    final rawNotebookIds = json['notebookIds'];
+    final notebookIds = rawNotebookIds is List<Object?>
+        ? rawNotebookIds
+              .whereType<String>()
+              .where((String id) => id.isNotEmpty)
+              .toSet()
+              .toList(growable: false)
+        : const <String>[];
+    final rawChapters = json['notebookChapterIds'];
+    final notebookChapterIds = rawChapters is Map
+        ? <String, String>{
+            for (final entry in rawChapters.entries)
+              if (entry.key is String && entry.value is String)
+                entry.key as String: entry.value as String,
+          }
+        : const <String, String>{};
 
     return NewDiaryDraft(
       title: (json['title'] as String?) ?? '',
@@ -100,6 +125,8 @@ class NewDiaryDraft {
       cover: json['cover'] as String?,
       metadataJson: (json['metadataJson'] as String?) ?? '{}',
       selectedTagIds: tagIds,
+      notebookIds: notebookIds,
+      notebookChapterIds: notebookChapterIds,
       location: json['location'] as String?,
       locationAddressComponent: parseJsonObjectMap(
         json['locationAddressComponent'],
@@ -129,6 +156,8 @@ class NewDiaryDraft {
       'cover': cover,
       'metadataJson': metadataJson,
       'selectedTagIds': selectedTagIds.toList()..sort(),
+      'notebookIds': notebookIds,
+      'notebookChapterIds': notebookChapterIds,
       'location': location,
       'locationAddressComponent': locationAddressComponent,
       'locationLatitude': locationLatitude,
@@ -157,6 +186,8 @@ class NewDiaryDraft {
     Object? cover = _fieldNotChanged,
     String? metadataJson,
     Set<int>? selectedTagIds,
+    List<String>? notebookIds,
+    Map<String, String>? notebookChapterIds,
     Object? location = _fieldNotChanged,
     Object? locationAddressComponent = _fieldNotChanged,
     Object? locationLatitude = _fieldNotChanged,
@@ -181,6 +212,8 @@ class NewDiaryDraft {
       cover: identical(cover, _fieldNotChanged) ? this.cover : cover as String?,
       metadataJson: metadataJson ?? this.metadataJson,
       selectedTagIds: selectedTagIds ?? this.selectedTagIds,
+      notebookIds: notebookIds ?? this.notebookIds,
+      notebookChapterIds: notebookChapterIds ?? this.notebookChapterIds,
       location: identical(location, _fieldNotChanged)
           ? this.location
           : location as String?,

@@ -54,13 +54,21 @@ class ExploreContentExtractor {
   }
 
   /// 封面优先，随后按正文顺序收集全部图片；同一来源只保留一次。
-  List<String> resolveMediaSources(Diary diary) {
+  List<String> resolveMediaSources(Diary diary) =>
+      resolveMediaSourcesFrom(cover: diary.cover, content: diary.content);
+
+  /// 同 [resolveMediaSources]，输入为封面与正文原文（不必持有整篇日记，
+  /// 如日记本统计页只查这两列）。
+  List<String> resolveMediaSourcesFrom({
+    required String? cover,
+    required String content,
+  }) {
     final sources = <String>{};
-    final cover = diary.cover?.trim();
-    if (cover != null && cover.isNotEmpty) {
-      sources.add(cover);
+    final trimmedCover = cover?.trim();
+    if (trimmedCover != null && trimmedCover.isNotEmpty) {
+      sources.add(trimmedCover);
     }
-    final raw = diary.content.trim();
+    final raw = content.trim();
     if (raw.isNotEmpty) {
       try {
         _collectImagesFromNode(jsonDecode(raw), sources);

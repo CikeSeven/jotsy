@@ -300,7 +300,8 @@ void main() {
         final entry = result.entries.single;
         expect(entry.sourceKey, 'n1');
         expect(entry.title, 'Trip');
-        expect(entry.tags, ['Travel']);
+        expect(entry.tags, isEmpty);
+        expect(entry.notebooks, ['Travel']);
         expect(entry.updatedAt, DateTime(2024, 5, 2));
         final images = [
           for (final op in jsonDecode(entry.contentJson) as List)

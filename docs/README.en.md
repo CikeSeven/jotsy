@@ -66,6 +66,7 @@ Jotsy is meant to be a plain, honest place to write. Open it and start typing: n
 
 - List or waterfall layout, sorted by date updated, date published or title.
 - Filter by tags (optionally remembered for next time), and combine tag conditions with a title or content search.
+- **Notebooks**: gather entries into notebooks. One entry can sit in several notebooks, and removing it from one never deletes it. Switch notebooks from the first chip in the home tag bar. Split a notebook into chapters and arrange it by hand from its table of contents, set a writing goal, see its stats, and export the whole notebook as a book with a title page and contents, as PDF, Word, a web page, Markdown or plain text. Smart notebooks collect entries automatically by tags, mood, date and other conditions. A notebook can also be kept out of All entries, or locked so it asks for your screen lock or biometrics when opened.
 - Pin, archive (just swipe left), and act on many entries at once. Deleted entries go to the recycle bin, with instant undo.
 - Swipe left or right on an entry's detail page to move to the previous or next one, in the order of the list you came from.
 - One word count everywhere: each Chinese character counts as one, English words and numbers count by word. Tap the count on the detail page to see paragraphs, images and estimated reading time.

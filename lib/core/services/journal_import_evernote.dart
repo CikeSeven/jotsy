@@ -24,7 +24,8 @@ import 'journal_import_support.dart';
 /// 都会还原；加密片段无法解密，原始密文与提示保留在 metadata 并在预览说明。
 ///
 /// ENEX 不含笔记 ID 与笔记本名：稳定键由笔记本文件名、创建时间与标题组成；
-/// 多个笔记本一起导入时以文件名作为标签区分。大文件按笔记分块读取，不把
+/// 多个笔记本一起导入时记下文件名作为所在笔记本（[JournalImportEntry.notebooks]），
+/// 只导入一个文件时不记。大文件按笔记分块读取，不把
 /// 整个文件一次读入内存。
 JournalImportParseResult parseEvernoteExport(
   JournalImportInput input,
@@ -51,7 +52,7 @@ JournalImportParseResult parseEvernoteExport(
             media,
             keys,
             notebook: notebook,
-            tagNotebook: files.length > 1,
+            keepNotebook: files.length > 1,
             fallbackTime: file.lastModifiedSync(),
             encrypted: encrypted,
           ),
@@ -79,7 +80,7 @@ JournalImportEntry _parseNote(
   JournalMediaStager media,
   JournalKeyRegistry keys, {
   required String notebook,
-  required bool tagNotebook,
+  required bool keepNotebook,
   required DateTime fallbackTime,
   required List<Map<String, String>> encrypted,
 }) {
@@ -121,8 +122,8 @@ JournalImportEntry _parseNote(
     tags: [
       for (final tag in note.findElements('tag'))
         if (tag.innerText.trim() case final name when name.isNotEmpty) name,
-      if (tagNotebook && notebook.isNotEmpty) notebook,
     ],
+    notebooks: [if (keepNotebook && notebook.isNotEmpty) notebook],
     location: journalString(attributes?.getElement('place-name')?.innerText),
     latitude: hasCoordinate ? latitude : null,
     longitude: hasCoordinate ? longitude : null,

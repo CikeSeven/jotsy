@@ -17,9 +17,12 @@ import 'tag_filter_layout.dart';
 /// 日记页顶部标签筛选栏。
 ///
 /// 结构：
-/// - 左侧纯 `X` 清空筛选按钮（带缩放 + 旋转反馈）；
+/// - 可选的前置项 [leading]（日记本切换胶囊），排在最前，收起与展开两种
+///   排列里都在；
+/// - 纯 `X` 清空筛选按钮（带缩放 + 旋转反馈）；
 /// - 一个标签都没有时整栏只剩这个 `X`，点了也无事可做，于是整栏收起淡出；
-///   仍有选中的筛选（例如记住的筛选指向已删除的标签）时保留，好让用户清除；
+///   仍有选中的筛选（例如记住的筛选指向已删除的标签）或 [keepVisible]
+///   （有日记本可切换）时保留；
 /// - 收起时横向滚动，展开高度随实际行数变化，最多五行并独立滚动；
 /// - 卡片尺寸和主题样式在两种排列中一致；
 /// - 标签区域的拖动不移交给日记滚动或 Home 切页。
@@ -37,6 +40,9 @@ class DiaryTagFilterBar extends StatefulWidget {
     required this.onVerticalDragUpdate,
     required this.onVerticalDragEnd,
     required this.onCollapse,
+    this.leading,
+    this.leadingWidth = 0,
+    this.keepVisible = false,
   });
 
   static const int maxExpandedRows = 5;
@@ -75,6 +81,15 @@ class DiaryTagFilterBar extends StatefulWidget {
   final ValueChanged<double> onVerticalDragEnd;
   final VoidCallback onCollapse;
 
+  /// 排在清除按钮前面的前置项；高度与标签胶囊相同。
+  final Widget? leading;
+
+  /// [leading] 的固有宽度：展开成多行时按它排版（收起时取实际宽度）。
+  final double leadingWidth;
+
+  /// 没有标签也没有已选筛选时仍然显示（给 [leading] 留位置）。
+  final bool keepVisible;
+
   @override
   State<DiaryTagFilterBar> createState() => _DiaryTagFilterBarState();
 }
@@ -108,7 +123,10 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
     // 显隐会推动下方列表，不能在一帧内出现/消失；ListItemPresence 结构恒定，
     // 切换时标签栏子树（滚动位置、清除按钮状态）不会被重新挂载。
     return ListItemPresence(
-      visible: widget.tags.isNotEmpty || widget.selectedTagFilterIds.isNotEmpty,
+      visible:
+          widget.tags.isNotEmpty ||
+          widget.selectedTagFilterIds.isNotEmpty ||
+          widget.keepVisible,
       appearing: false,
       duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
       child: _buildBar(collapsedTags),
@@ -128,6 +146,7 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
           selectedTagIds: widget.selectedTagFilterIds,
           width: _contentWidth,
           spacing: AppSpacing.s,
+          leadingWidth: widget.leading == null ? 0 : widget.leadingWidth,
         );
         _expandedRowsExtent = layout.visibleRowsExtent(
           rowHeight: _chipExtent,
@@ -226,9 +245,11 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
       key: const PageStorageKey<String>('diary_tag_filter_horizontal'),
       controller: _horizontalController,
       scrollDirection: Axis.horizontal,
-      itemCount: widget.tags.length + 1,
+      itemCount: widget.tags.length + 1 + (widget.leading == null ? 0 : 1),
       separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
-      itemBuilder: (BuildContext context, int index) => _buildTagItem(index),
+      // 有前置项时整体后移一位：-1 为前置项，0 为清除按钮。
+      itemBuilder: (BuildContext context, int index) =>
+          _buildTagItem(widget.leading == null ? index : index - 1),
     );
   }
 
@@ -263,6 +284,11 @@ class _DiaryTagFilterBarState extends State<DiaryTagFilterBar> {
   Widget _buildTagItem(int index) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = widget.selectedTagFilterIds.isNotEmpty;
+    if (index < 0) {
+      return Center(
+        child: SizedBox(height: _chipExtent, child: widget.leading),
+      );
+    }
     if (index == 0) {
       return TagFilterClearButton(
         key: _clearKey,

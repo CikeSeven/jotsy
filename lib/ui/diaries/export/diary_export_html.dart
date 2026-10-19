@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'diary_export_blocks.dart';
+import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
@@ -13,6 +14,12 @@ import 'diary_export_media.dart';
 /// 录音、视频、附件写成一行名称（体积大，不适合内嵌）。只收浏览器能
 /// 显示的图片格式（读文件头识别），HEIC 等略过。样式内联，跟随系统亮色 /
 /// 暗色；正文标题从 h2 起，h1 留给日记标题。
+///
+/// 导出成书（`book` 不为 null）时，页面开头是扉页（封面、书名、简介、统计行
+/// 与导出日期）与目录 `<nav>`（章节与各篇链接到锚点），每章是带
+/// `<h1 id="chapter-n">` 的 `<section>`，每篇 `<article id="entry-n">` 的标题
+/// 降为 h2、正文标题顺延到 h3 起；打印时扉页、目录与每章各自另起一页。封面
+/// 与日记图片走同一条媒体链路（单篇内嵌、多篇打包），不写设备路径。
 class DiaryHtmlWriter {
   const DiaryHtmlWriter._();
 
@@ -25,39 +32,48 @@ class DiaryHtmlWriter {
     required DiaryExportMediaLibrary media,
     required String documentTitle,
     required String languageTag,
+    DiaryExportBookLayout? book,
   }) async {
     final bundle = entries.length > 1;
     // 来源 → img 的 src（data URI，或打包时的相对路径）。
     final images = <String, String>{};
     final mediaFiles = <DiaryExportBundleFile>[];
+
+    Future<void> collect(String source) async {
+      if (images.containsKey(source)) {
+        return;
+      }
+      final file = await media.resolve(source);
+      // 读不出格式（如 HEIC）的图片浏览器多半也显示不了，略过。
+      final info = file == null ? null : await media.imageInfoOf(source);
+      if (file == null || info == null) {
+        return;
+      }
+      if (bundle) {
+        final index = (mediaFiles.length + 1).toString().padLeft(4, '0');
+        final path = 'media/$index${info.extension}';
+        images[source] = path;
+        mediaFiles.add(
+          file.file != null
+              ? DiaryExportBundleFile.file(path, file.file!)
+              : DiaryExportBundleFile.bytes(path, file.bytes!),
+        );
+      } else {
+        final bytes = await media.bytesOf(source);
+        if (bytes != null) {
+          images[source] =
+              'data:${info.mimeType};base64,${base64Encode(bytes)}';
+        }
+      }
+    }
+
     if (options.includeMedia) {
+      if (book?.coverPath != null) {
+        await collect(book!.coverPath!);
+      }
       for (final entry in entries) {
         for (final source in entry.imageSources) {
-          if (images.containsKey(source)) {
-            continue;
-          }
-          final file = await media.resolve(source);
-          // 读不出格式（如 HEIC）的图片浏览器多半也显示不了，略过。
-          final info = file == null ? null : await media.imageInfoOf(source);
-          if (file == null || info == null) {
-            continue;
-          }
-          if (bundle) {
-            final index = (mediaFiles.length + 1).toString().padLeft(4, '0');
-            final path = 'media/$index${info.extension}';
-            images[source] = path;
-            mediaFiles.add(
-              file.file != null
-                  ? DiaryExportBundleFile.file(path, file.file!)
-                  : DiaryExportBundleFile.bytes(path, file.bytes!),
-            );
-          } else {
-            final bytes = await media.bytesOf(source);
-            if (bytes != null) {
-              images[source] =
-                  'data:${info.mimeType};base64,${base64Encode(bytes)}';
-            }
-          }
+          await collect(source);
         }
       }
     }
@@ -70,9 +86,20 @@ class DiaryHtmlWriter {
       )
       ..write('<meta name="generator" content="Jotsy">\n')
       ..write('<title>${_text(documentTitle)}</title>\n')
-      ..write('<style>$_css</style>\n</head>\n<body>\n<main>\n');
-    for (final entry in entries) {
-      _writeEntry(out, entry, options: options, labels: labels, images: images);
+      ..write('<style>$_css${book == null ? '' : _bookCss}</style>\n')
+      ..write('</head>\n<body>\n<main>\n');
+    if (book != null) {
+      _writeBook(out, book, options: options, labels: labels, images: images);
+    } else {
+      for (final entry in entries) {
+        _writeEntry(
+          out,
+          entry,
+          options: options,
+          labels: labels,
+          images: images,
+        );
+      }
     }
     out
       ..write('<footer>${_text(labels.exportedBy)}</footer>\n')
@@ -87,16 +114,103 @@ class DiaryHtmlWriter {
     ]);
   }
 
+  static void _writeBook(
+    StringBuffer out,
+    DiaryExportBookLayout book, {
+    required DiaryExportOptions options,
+    required DiaryExportLabels labels,
+    required Map<String, String> images,
+  }) {
+    out.write('<section class="book-title">\n');
+    final cover = book.coverPath == null ? null : images[book.coverPath!];
+    if (cover != null) {
+      out.write(
+        '<figure class="book-cover"><img src="${_attr(cover)}" alt=""></figure>\n',
+      );
+    }
+    out.write('<h1>${_text(book.title)}</h1>\n');
+    if (book.description != null) {
+      out.write(
+        '<p class="book-description">${_text(book.description!)}</p>\n',
+      );
+    }
+    if (book.summaryLine.isNotEmpty) {
+      out.write('<p class="meta">${_text(book.summaryLine)}</p>\n');
+    }
+    out
+      ..write('<p class="meta">${_text(book.exportedLine)}</p>\n')
+      ..write('</section>\n')
+      ..write('<nav class="toc">\n<h2>${_text(book.contentsTitle)}</h2>\n');
+
+    void writeEntryLinks(List<DiaryExportEntry> entries) {
+      out.write('<ol class="toc-entries">');
+      for (final entry in entries) {
+        final created = entry.createdAt.toLocal();
+        out.write(
+          '<li><a href="#${book.anchorOf(entry)}">'
+          '<time datetime="${_attr(created.toIso8601String())}">'
+          '${_text(labels.formatDate(created))}</time> '
+          '${_text(labels.titleOf(entry))}</a></li>',
+        );
+      }
+      out.write('</ol>\n');
+    }
+
+    if (book.hasChapterHeadings) {
+      out.write('<ol class="toc-chapters">\n');
+      for (final section in book.sections) {
+        out.write(
+          '<li><a href="#${section.anchor}">${_text(section.title!)}</a>',
+        );
+        writeEntryLinks(section.entries);
+        out.write('</li>\n');
+      }
+      out.write('</ol>\n');
+    } else {
+      for (final section in book.sections) {
+        writeEntryLinks(section.entries);
+      }
+    }
+    out.write('</nav>\n');
+
+    for (final section in book.sections) {
+      final title = section.title;
+      out.write('<section class="chapter">\n');
+      if (title != null) {
+        out.write(
+          '<h1 class="chapter-title" id="${section.anchor}">'
+          '${_text(title)}</h1>\n',
+        );
+      }
+      for (final entry in section.entries) {
+        _writeEntry(
+          out,
+          entry,
+          options: options,
+          labels: labels,
+          images: images,
+          anchor: book.anchorOf(entry),
+          titleLevel: 2,
+        );
+      }
+      out.write('</section>\n');
+    }
+  }
+
+  /// 一篇日记；成书时带锚点 [anchor]，标题降为 h[titleLevel]，正文标题顺延。
   static void _writeEntry(
     StringBuffer out,
     DiaryExportEntry entry, {
     required DiaryExportOptions options,
     required DiaryExportLabels labels,
     required Map<String, String> images,
+    String? anchor,
+    int titleLevel = 1,
   }) {
     out
-      ..write('<article>\n<header>\n')
-      ..write('<h1>${_text(labels.titleOf(entry))}</h1>\n')
+      ..write(anchor == null ? '<article>\n' : '<article id="$anchor">\n')
+      ..write('<header>\n')
+      ..write('<h$titleLevel>${_text(labels.titleOf(entry))}</h$titleLevel>\n')
       ..write(
         '<p class="meta"><time datetime="${_attr(entry.createdAt.toLocal().toIso8601String())}">'
         '${_text(labels.formatDateTime(entry.createdAt.toLocal()))}</time></p>\n',
@@ -121,15 +235,23 @@ class DiaryHtmlWriter {
         '<figure class="cover"><img src="${_attr(cover)}" alt=""></figure>\n',
       );
     }
-    _writeBlocks(out, entry, labels: labels, images: images);
+    _writeBlocks(
+      out,
+      entry,
+      labels: labels,
+      images: images,
+      headingOffset: titleLevel,
+    );
     out.write('</article>\n');
   }
 
+  /// [headingOffset] 是日记标题的级别：正文标题从下一级起（最深到 h6）。
   static void _writeBlocks(
     StringBuffer out,
     DiaryExportEntry entry, {
     required DiaryExportLabels labels,
     required Map<String, String> images,
+    int headingOffset = 1,
   }) {
     final blocks = entry.blocks;
     var i = 0;
@@ -171,7 +293,10 @@ class DiaryHtmlWriter {
       }
       switch (block.kind) {
         case ExportBlockKind.heading:
-          final level = (block.level + 1).clamp(2, 6);
+          final level = (block.level + headingOffset).clamp(
+            headingOffset + 1,
+            6,
+          );
           out.write(
             '<h$level${_align(block)}>${_inlines(block.inlines)}</h$level>\n',
           );
@@ -331,5 +456,26 @@ a{color:var(--accent)}
 .attachment{color:var(--muted);font-size:14px;margin:4px 0}
 footer{color:var(--muted);font-size:12px;text-align:center}
 @media print{body{background:#fff}article{border:none;padding:0;break-inside:auto;page-break-after:always}footer{display:none}}
+''';
+
+  /// 成书附加的样式（只在成书时写出，普通导出的页面保持原样）。
+  static const String _bookCss = '''
+.book-title{text-align:center;padding:48px 8px 56px}
+.book-title h1{margin:0 0 12px;font-size:34px;line-height:1.3}
+.book-cover{margin:0 auto 32px;max-width:420px}
+.book-cover img{width:100%}
+.book-description{margin:0 auto 16px;max-width:520px;color:var(--muted);font-size:17px}
+.book-title .meta{margin:4px 0}
+.toc{background:var(--card);border:0.8px solid var(--line);border-radius:24px;padding:24px;margin:0 0 32px}
+.toc h2{margin:0 0 12px;font-size:22px}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc-chapters>li{margin:0 0 12px;font-weight:600}
+.toc-chapters .toc-entries{margin:4px 0 0 1.2em;font-weight:400}
+.toc-entries li{margin:2px 0}
+.toc a{text-decoration:none}
+.toc time{color:var(--muted);font-size:14px;margin-right:6px}
+.chapter-title{margin:40px 0 20px;font-size:30px;line-height:1.3}
+article>header h2{margin:0 0 4px;font-size:24px;line-height:1.35}
+@media print{.book-title,.toc{page-break-after:always}.toc{border:none;padding:0}.chapter{break-before:page}}
 ''';
 }

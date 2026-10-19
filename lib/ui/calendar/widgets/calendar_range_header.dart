@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../../utils/date_range_format.dart';
 import '../models/calendar_range_selection.dart';
 
-/// 范围统计的标题行：起止日期与天数，右侧为退出范围选择的按钮；尚未选定
-/// 终点时提示“点按另一天作为终点”。
+/// 范围统计的标题行：起止日期与天数，右侧为“存为日记本”与退出范围选择的
+/// 按钮；尚未选定终点时提示“点按另一天作为终点”（此时没有“存为日记本”）。
 ///
-/// 输入：当前范围、当前时刻与退出回调；无副作用。首尾跨年或不在今年时
+/// 输入：当前范围、当前时刻、退出回调与可选的存为日记本回调；无副作用。首尾跨年或不在今年时
 /// 日期带上年份，否则只写月日，窄屏上一行放得下。
 class CalendarRangeHeader extends StatelessWidget {
   const CalendarRangeHeader({
@@ -17,11 +17,15 @@ class CalendarRangeHeader extends StatelessWidget {
     required this.range,
     required this.now,
     required this.onExit,
+    this.onSaveAsNotebook,
   });
 
   final CalendarRangeSelection range;
   final DateTime now;
   final VoidCallback onExit;
+
+  /// 把这段日期存为日记本；null 时不显示按钮。只在首尾都选定后出现。
+  final VoidCallback? onSaveAsNotebook;
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +33,12 @@ class CalendarRangeHeader extends StatelessWidget {
     final theme = Theme.of(context);
     final first = range.first;
     final last = range.last;
-    final withYear = first.year != last.year || first.year != now.year;
-    final format = withYear
-        ? DateFormat.yMMMd(l10n.localeName)
-        : DateFormat.MMMd(l10n.localeName);
+    final format = dateRangeEndpointFormat(
+      l10n.localeName,
+      first: first,
+      last: last,
+      now: now,
+    );
     final title = range.isComplete
         ? l10n.calendarRangeTitle(
             format.format(first),
@@ -56,6 +62,12 @@ class CalendarRangeHeader extends StatelessWidget {
             ),
           ),
         ),
+        if (range.isComplete && onSaveAsNotebook != null)
+          TextButton(
+            style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+            onPressed: onSaveAsNotebook,
+            child: Text(l10n.notebookSaveRange),
+          ),
         IconButton(
           tooltip: l10n.calendarRangeExit,
           visualDensity: VisualDensity.compact,

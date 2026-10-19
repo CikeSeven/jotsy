@@ -18,7 +18,8 @@ import 'journal_import_support.dart';
 ///
 /// 映射：uid → 稳定键；date（UTC 毫秒）加 tz_offset（`±HH:MM`，写日记时
 /// 所在时区）→ 当时的墙钟时间；title/text（纯文本）→ 标题/正文；tags
-/// （`,uid1,uid2,`）与所在文件夹 → 标签；mood → 心情（有心情表时取其
+/// （`,uid1,uid2,`）→ 标签；所在文件夹 → 所在日记本
+/// （[JournalImportEntry.notebooks]）；mood → 心情（有心情表时取其
 /// weight，5 最好；旧版按 1 最好、5 最差的固定刻度）；地点 → 位置与坐标；
 /// 天气描述与温度（摄氏）→ 天气；照片按 position 放在正文之前（与 Diaro
 /// 的版式一致）。加密备份（`DiaroBackup.denc`）的密钥不公开，无法导入。
@@ -184,8 +185,8 @@ List<JournalImportEntry> _parseEntries(
           for (final tagUid in (row['tags'] ?? '').split(','))
             if (journalString(tags[tagUid.trim()]?['title']) case final name?)
               name,
-          ?folder,
         ],
+        notebooks: [?folder],
         moodLevel: _moodLevel(row['mood'], moods),
         weather: hasWeather
             ? journalWeatherText(

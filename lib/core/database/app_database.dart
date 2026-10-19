@@ -10,11 +10,18 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../utils/text_stats.dart';
 import 'content_codec.dart';
+import 'diary_list_scope.dart';
+import 'notebook_payload.dart';
+
+export 'diary_list_scope.dart';
+export 'notebook_payload.dart';
+export 'notebook_rules.dart';
 
 part 'app_database.g.dart';
 part 'app_database_schema.dart';
 part 'app_database_tag_ops.dart';
 part 'app_database_diary_writes.dart';
+part 'app_database_diary_scope_sql.dart';
 part 'app_database_diary_queries.dart';
 part 'app_database_diary_list_queries.dart';
 part 'app_database_migrations.dart';
@@ -24,6 +31,10 @@ part 'app_database_draft_schema.dart';
 part 'app_database_draft_ops.dart';
 part 'app_database_template_schema.dart';
 part 'app_database_template_ops.dart';
+part 'app_database_notebook_schema.dart';
+part 'app_database_notebook_ops.dart';
+part 'app_database_notebook_entry_ops.dart';
+part 'app_database_notebook_stats_ops.dart';
 
 @DriftDatabase(
   tables: <Type>[
@@ -33,17 +44,23 @@ part 'app_database_template_ops.dart';
     Anniversaries,
     DiaryDrafts,
     DiaryTemplates,
+    Notebooks,
+    DiaryNotebooks,
   ],
 )
 class AppDatabase extends _$AppDatabase
     with
         _AppDatabaseTagOps,
+        _AppDatabaseDiaryScopeSql,
         _AppDatabaseDiaryQueries,
         _AppDatabaseDiaryListQueries,
+        _AppDatabaseNotebookEntryOps,
         _AppDatabaseDiaryWrites,
         _AppDatabaseAnniversaryOps,
         _AppDatabaseDraftOps,
         _AppDatabaseTemplateOps,
+        _AppDatabaseNotebookOps,
+        _AppDatabaseNotebookStatsOps,
         _AppDatabaseMigrations {
   AppDatabase() : super(_openConnection());
 
@@ -52,12 +69,13 @@ class AppDatabase extends _$AppDatabase
   @visibleForTesting
   AppDatabase.forTesting(super.executor);
 
-  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿、模板写库时生成的同一种。
+  /// 新的业务唯一 id（UUID v4），与日记、纪念日、草稿、模板、日记本写库时生成的
+  /// 同一种。
   /// 供数据库之外需要先定好 id 的场合使用（如旧备份里的单份草稿转为草稿行）。
   static String newBusinessId() => _newBusinessUuid();
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +95,11 @@ class AppDatabase extends _$AppDatabase
       // v12 日记模板表同样独立，排在 v1 分支之前。
       if (from < 12) {
         await _migrateAddDiaryTemplates(m);
+      }
+      // v13 日记本表与关联表只引用日记的本地 id、不改日记表，同样排在 v1
+      // 分支之前。
+      if (from < 13) {
+        await _migrateAddNotebooks(m);
       }
       if (from < 2) {
         await _migrateDiariesAddBusinessId();

@@ -39,6 +39,14 @@ extension _CalendarPageRangeSection on _CalendarPageState {
         range: range,
         now: now,
         onExit: _controller.exitRange,
+        onSaveAsNotebook: () => unawaited(
+          runSaveDateRangeAsNotebook(
+            context,
+            ref,
+            first: range.first,
+            last: range.last,
+          ),
+        ),
       ),
     );
   }

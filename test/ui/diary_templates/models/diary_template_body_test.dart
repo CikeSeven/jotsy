@@ -96,6 +96,17 @@ void main() {
       );
     });
 
+    test('code block languages survive sanitizing', () {
+      final ops = sanitizeDiaryTemplateOps(<Object?>[
+        {'insert': 'print(1)'},
+        {
+          'insert': '\n',
+          'attributes': {'code-block': 'python'},
+        },
+      ]);
+      expect(ops.last['attributes'], {'code-block': 'python'});
+    });
+
     test('the result decodes into a Quill document', () {
       final ops = sanitizeDiaryTemplateOps(<Object?>[
         {'insert': '一行'},

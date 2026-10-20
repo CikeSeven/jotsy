@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../../../core/database/code_block_codec.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
@@ -285,13 +286,24 @@ class DiaryHtmlWriter {
         final end = _runEnd(
           blocks,
           i,
-          (ExportBlock b) => b.kind == ExportBlockKind.code,
+          // 语言不同的相邻代码行各成一个 <pre>，保留各自的语言 class。
+          (ExportBlock b) =>
+              b.kind == ExportBlockKind.code &&
+              b.codeLanguage == block.codeLanguage,
         );
         final code = blocks
             .sublist(i, end)
             .map((ExportBlock b) => _text(b.plainText))
             .join('\n');
-        out.write('<pre><code>$code</code></pre>\n');
+        // 沿用 highlight.js / Prism 的 `language-*` 约定；纯文本写
+        // `language-plaintext`，未指定不写 class（交给阅读端自动识别）。
+        final language = switch (block.codeLanguage) {
+          null => null,
+          kCodeBlockPlain => 'plaintext',
+          final id => id,
+        };
+        final classAttr = language == null ? '' : ' class="language-$language"';
+        out.write('<pre><code$classAttr>$code</code></pre>\n');
         i = end;
         continue;
       }

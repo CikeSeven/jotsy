@@ -98,15 +98,17 @@ class _DiaryTypographyPreviewState extends State<DiaryTypographyPreview> {
         IgnorePointer(
           child: DiaryQuillStylesBuilder(
             appearance: widget.appearance,
-            builder: (BuildContext context, quill.DefaultStyles styles) {
+            controller: _controller!,
+            builder: (BuildContext context, DiaryQuillLook look) {
               return quill.QuillEditor.basic(
                 controller: _controller!,
-                config: quill.QuillEditorConfig(
-                  autoFocus: false,
-                  scrollable: false,
-                  padding: EdgeInsets.zero,
-                  showCursor: false,
-                  customStyles: styles,
+                config: look.configure(
+                  const quill.QuillEditorConfig(
+                    autoFocus: false,
+                    scrollable: false,
+                    padding: EdgeInsets.zero,
+                    showCursor: false,
+                  ),
                 ),
               );
             },

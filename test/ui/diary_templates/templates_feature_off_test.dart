@@ -206,8 +206,9 @@ void main() {
       await pumpSection(h);
 
       expect(find.text(h.l10n.diaryTemplatesTitle), findsNothing);
-      // 同组只剩两项，之间只有一条分隔线（不留空占位多出来的那条）。
-      expect(editorGroupDividers(), findsOneWidget);
+      // 同组只剩三项（排版、代码块样式、当天照片），之间两条分隔线（不留空
+      // 占位多出来的那条）。
+      expect(editorGroupDividers(), findsNWidgets(2));
       await h.unmount();
     });
 
@@ -222,7 +223,7 @@ void main() {
       await h.settle();
       await tester.pumpAndSettle();
       expect(find.text(h.l10n.diaryTemplatesTitle), findsOneWidget);
-      expect(editorGroupDividers(), findsNWidgets(2));
+      expect(editorGroupDividers(), findsNWidgets(3));
       await h.unmount();
     });
   });

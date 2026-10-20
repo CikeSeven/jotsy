@@ -1278,7 +1278,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoT0188 => '用于给选中文本添加行内代码样式';
 
   @override
-  String get autoT0189 => '用于插入或切换为代码块';
+  String get autoT0189 => '转为代码块；在代码块里点按可选语言、复制或退出';
 
   @override
   String get autoT0190 => '该项会同时显示缩进增加/减少两个按钮';
@@ -7373,4 +7373,125 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleIndicatorFollowsSubtitle => '左右滑动切换页面时，选中指示器跟着手指移动';
+
+  @override
+  String get codeBlockPanelTitle => '代码块';
+
+  @override
+  String get codeBlockLanguageAuto => '自动识别';
+
+  @override
+  String codeBlockLanguageAutoDetected(String language) {
+    return '自动 · $language';
+  }
+
+  @override
+  String get codeBlockLanguageNone => '不指定';
+
+  @override
+  String get codeBlockLanguagePlain => '纯文本';
+
+  @override
+  String get codeBlockLabelGeneric => '代码';
+
+  @override
+  String get codeBlockCopy => '复制代码';
+
+  @override
+  String get codeBlockCopied => '已复制代码';
+
+  @override
+  String codeBlockCopySemantics(String language) {
+    return '复制 $language 代码';
+  }
+
+  @override
+  String get codeBlockExit => '退出代码块';
+
+  @override
+  String get codeBlockToText => '转为正文';
+
+  @override
+  String get codeBlockStyleTitle => '代码块样式';
+
+  @override
+  String get codeBlockStyleSubtitle => '配色主题、行号、字体与标题栏';
+
+  @override
+  String get codeBlockStyleTabTheme => '配色';
+
+  @override
+  String get codeBlockStyleTabDisplay => '显示';
+
+  @override
+  String get codeBlockStyleTabFont => '字体';
+
+  @override
+  String get codeBlockThemeFollowApp => '跟随应用';
+
+  @override
+  String get codeBlockBrightnessTitle => '明暗';
+
+  @override
+  String get codeBlockBrightnessSystem => '跟随主题';
+
+  @override
+  String get codeBlockBrightnessLight => '浅色';
+
+  @override
+  String get codeBlockBrightnessDark => '深色';
+
+  @override
+  String get codeBlockLineNumbersTitle => '显示行号';
+
+  @override
+  String get codeBlockLineNumbersSubtitle => '在每行代码左侧标出行号';
+
+  @override
+  String get codeBlockHeaderTitle => '显示标题栏';
+
+  @override
+  String get codeBlockHeaderSubtitle => '顶部显示语言名与复制按钮';
+
+  @override
+  String get codeBlockAutoDetectTitle => '自动识别语言';
+
+  @override
+  String get codeBlockAutoDetectSubtitle => '没有指定语言的代码块自动判断并高亮';
+
+  @override
+  String get codeBlockBorderTitle => '显示边框';
+
+  @override
+  String get codeBlockBorderSubtitle => '给代码块描一圈细边';
+
+  @override
+  String get codeBlockRadiusTitle => '圆角';
+
+  @override
+  String get codeBlockFontTitle => '代码字体';
+
+  @override
+  String get codeBlockFontMono => '系统等宽';
+
+  @override
+  String get codeBlockFontBody => '正文字体';
+
+  @override
+  String get codeBlockFontMissing =>
+      '所选字体的文件已不在本机，代码暂按系统等宽字体显示；可在正文字体与排版里重新导入，或改选其他字体。';
+
+  @override
+  String get codeBlockFontSizeTitle => '字号';
+
+  @override
+  String codeBlockFontSizeValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get codeBlockLineHeightTitle => '行距';
+
+  @override
+  String get codeBlockPreviewIntro => '代码块会按语言高亮，行内代码也跟随配色，例如 ';
 }

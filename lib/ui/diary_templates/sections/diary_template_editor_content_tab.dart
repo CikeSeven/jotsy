@@ -202,17 +202,20 @@ class _DiaryTemplateEditorContentTabState
             // 样式在编辑器位置（Scaffold 之下）生成，见 DiaryQuillStylesBuilder。
             child: DiaryQuillStylesBuilder(
               appearance: appearance,
-              builder: (BuildContext context, quill.DefaultStyles styles) =>
+              controller: widget.controller.body,
+              scrollController: _bodyScroll,
+              builder: (BuildContext context, DiaryQuillLook look) =>
                   quill.QuillEditor.basic(
                     controller: widget.controller.body,
                     focusNode: _bodyFocus,
                     scrollController: _bodyScroll,
-                    config: quill.QuillEditorConfig(
-                      autoFocus: false,
-                      placeholder: l10n.diaryTemplateEditorBodyHint,
-                      padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-                      customStyles: styles,
-                      embedBuilders: buildDiaryQuillEmbedBuilders(),
+                    config: look.configure(
+                      quill.QuillEditorConfig(
+                        autoFocus: false,
+                        placeholder: l10n.diaryTemplateEditorBodyHint,
+                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+                        embedBuilders: buildDiaryQuillEmbedBuilders(),
+                      ),
                     ),
                   ),
             ),

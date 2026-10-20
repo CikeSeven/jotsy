@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
+import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
+import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_theme.dart';
+import 'package:node_diary/ui/diaries/viewmodels/diary_code_block_look.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 
@@ -9,20 +12,29 @@ import '../../../support/expressive_test_theme.dart';
 
 Future<(quill.DefaultStyles, quill.DefaultStyles)> _buildStyles(
   WidgetTester tester,
-  DiaryTextAppearance appearance,
-) async {
+  DiaryTextAppearance appearance, {
+  DiaryCodeBlockStyle codeStyle = DiaryCodeBlockStyle.defaults,
+  Brightness brightness = Brightness.light,
+  ValueChanged<DiaryCodeBlockLook>? onLook,
+}) async {
   late quill.DefaultStyles defaults;
   late quill.DefaultStyles styles;
   // 与真实页面一样置于 Scaffold 下：Quill 的基础样式取自 DefaultTextStyle，
   // 由 Material 按主题正文样式提供。
   await tester.pumpWidget(
     MaterialApp(
-      theme: expressiveTestTheme(Brightness.light),
+      theme: expressiveTestTheme(brightness),
       home: Scaffold(
         body: Builder(
           builder: (BuildContext context) {
             defaults = quill.DefaultStyles.getInstance(context);
-            styles = buildDiaryQuillStyles(context, appearance);
+            final code = DiaryCodeBlockLook.resolve(
+              context,
+              style: codeStyle,
+              appearance: appearance,
+            );
+            onLook?.call(code);
+            styles = buildDiaryQuillStyles(context, appearance, code: code);
             return const SizedBox.shrink();
           },
         ),
@@ -67,11 +79,14 @@ void main() {
       defaults.indent!.lineSpacing.bottom + 12,
     );
 
-    // 列表不是段落，保持原有间距；代码块保留等宽字体。
+    // 列表不是段落，保持原有间距；代码块用系统等宽字体，字号按倍数缩放。
     expect(styles.lists!.style.fontSize, 20);
     expect(styles.lists!.lineSpacing, defaults.lists!.lineSpacing);
-    expect(styles.code!.style.fontFamily, defaults.code!.style.fontFamily);
-    expect(styles.code!.style.fontSize, 20);
+    expect(styles.code!.style.fontFamily, 'monospace');
+    expect(
+      styles.code!.style.fontSize,
+      20 * DiaryCodeBlockStyle.defaultFontScale,
+    );
 
     // 导入带来的行内字号三档按正文字号缩放。
     expect(styles.sizeSmall!.fontSize, 17);
@@ -92,6 +107,109 @@ void main() {
     expect(
       styles.paragraph!.verticalSpacing,
       defaults.paragraph!.verticalSpacing,
+    );
+  });
+
+  testWidgets('code blocks take the code style settings', (tester) async {
+    late DiaryCodeBlockLook look;
+    const appearance = DiaryTextAppearance(
+      typography: DiaryTypography(),
+      fontFamily: 'Imported',
+    );
+    final (_, styles) = await _buildStyles(
+      tester,
+      appearance,
+      codeStyle: DiaryCodeBlockStyle.defaults.copyWith(
+        fontScale: 1.2,
+        lineHeight: 1.8,
+        radius: 10,
+        border: true,
+      ),
+      onLook: (value) => look = value,
+    );
+
+    final code = styles.code!;
+    expect(code.style.fontFamily, 'monospace');
+    // 等宽字体缺中文字形时回落正文字体。
+    expect(code.style.fontFamilyFallback, contains('Imported'));
+    expect(code.style.fontSize, closeTo(16 * 1.2, 1e-9));
+    expect(code.style.height, 1.8);
+    expect(code.style.color, look.palette.foreground);
+    final decoration = code.decoration!;
+    expect(decoration.color, look.palette.background);
+    expect(decoration.border, isNotNull);
+    // 标题栏占上外边距，装饰只有下边两个圆角。
+    expect(
+      decoration.borderRadius,
+      const BorderRadius.vertical(bottom: Radius.circular(10)),
+    );
+    expect(
+      code.verticalSpacing.top,
+      DiaryCodeBlockLook.blockGap + DiaryCodeBlockLook.headerHeight,
+    );
+    expect(code.verticalSpacing.bottom, DiaryCodeBlockLook.blockGap);
+  });
+
+  testWidgets('without a header every corner is rounded and no border', (
+    tester,
+  ) async {
+    final (_, styles) = await _buildStyles(
+      tester,
+      const DiaryTextAppearance(typography: DiaryTypography()),
+      codeStyle: DiaryCodeBlockStyle.defaults.copyWith(header: false),
+    );
+
+    final decoration = styles.code!.decoration!;
+    expect(
+      decoration.borderRadius,
+      const BorderRadius.all(
+        Radius.circular(DiaryCodeBlockStyle.defaultRadius),
+      ),
+    );
+    expect(decoration.border, isNull);
+    expect(styles.code!.verticalSpacing.top, DiaryCodeBlockLook.blockGap);
+  });
+
+  testWidgets('inline code follows the page brightness, not forced dark', (
+    tester,
+  ) async {
+    late DiaryCodeBlockLook look;
+    final (_, styles) = await _buildStyles(
+      tester,
+      const DiaryTextAppearance(typography: DiaryTypography()),
+      codeStyle: DiaryCodeBlockStyle.defaults.copyWith(
+        theme: DiaryCodeThemeId.github,
+        brightness: DiaryCodeBrightness.dark,
+      ),
+      onLook: (value) => look = value,
+    );
+
+    final light = DiaryCodeThemes.palette(
+      DiaryCodeThemeId.github,
+      Brightness.light,
+      expressiveTestTheme(Brightness.light).colorScheme,
+    );
+    expect(look.palette.brightness, Brightness.dark);
+    expect(styles.code!.decoration!.color, look.palette.background);
+    final inline = styles.inlineCode!;
+    expect(inline.backgroundColor, light.inlineBackground);
+    expect(inline.style.color, light.inlineForeground);
+    expect(inline.style.fontFamily, 'monospace');
+    expect(
+      inline.style.fontSize,
+      closeTo(16 * DiaryCodeBlockStyle.defaultFontScale, 1e-9),
+    );
+  });
+
+  test('monospace family per platform', () {
+    expect(
+      DiaryCodeBlockLook.monospaceFamily(TargetPlatform.android),
+      'monospace',
+    );
+    expect(DiaryCodeBlockLook.monospaceFamily(TargetPlatform.iOS), 'Menlo');
+    expect(
+      DiaryCodeBlockLook.monospaceFamily(TargetPlatform.windows),
+      'Consolas',
     );
   });
 

@@ -2423,7 +2423,7 @@ abstract class AppLocalizations {
   /// Auto-generated metadata for autoT0189.
   ///
   /// In en, this message translates to:
-  /// **'Insert or switch to code block'**
+  /// **'Turn into a code block; inside one, tap to pick a language, copy or exit.'**
   String get autoT0189;
 
   /// Auto-generated metadata for autoT0190.
@@ -13477,6 +13477,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'When swiping between pages, the selection indicator moves with your finger'**
   String get homeBarStyleIndicatorFollowsSubtitle;
+
+  /// Title of the code block language panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Code block'**
+  String get codeBlockPanelTitle;
+
+  /// Code block language option: no language set, detect automatically.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto detect'**
+  String get codeBlockLanguageAuto;
+
+  /// Code block language label when auto-detected; language is the language name.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto · {language}'**
+  String codeBlockLanguageAutoDetected(String language);
+
+  /// First code block language chip when auto-detect is off: no language.
+  ///
+  /// In en, this message translates to:
+  /// **'Unspecified'**
+  String get codeBlockLanguageNone;
+
+  /// Code block language option: plain text without highlighting.
+  ///
+  /// In en, this message translates to:
+  /// **'Plain text'**
+  String get codeBlockLanguagePlain;
+
+  /// Code block header label when the language is unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Code'**
+  String get codeBlockLabelGeneric;
+
+  /// Tooltip of the code block copy button.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get codeBlockCopy;
+
+  /// Message shown after copying a code block.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied'**
+  String get codeBlockCopied;
+
+  /// Screen reader label of the code block copy button; language is the language name.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy {language} code'**
+  String codeBlockCopySemantics(String language);
+
+  /// Code block panel action: move the cursor out of the code block.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit code block'**
+  String get codeBlockExit;
+
+  /// Code block panel action: turn the code block back into normal text.
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to text'**
+  String get codeBlockToText;
+
+  /// Settings entry and page title: code block style.
+  ///
+  /// In en, this message translates to:
+  /// **'Code block style'**
+  String get codeBlockStyleTitle;
+
+  /// Subtitle of the code block style settings entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme, line numbers, font and header'**
+  String get codeBlockStyleSubtitle;
+
+  /// Code block style page tab: theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get codeBlockStyleTabTheme;
+
+  /// Code block style page tab: display.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get codeBlockStyleTabDisplay;
+
+  /// Code block style page tab: font.
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get codeBlockStyleTabFont;
+
+  /// Code block theme derived from the app colors.
+  ///
+  /// In en, this message translates to:
+  /// **'Match app'**
+  String get codeBlockThemeFollowApp;
+
+  /// Code block style: brightness option title.
+  ///
+  /// In en, this message translates to:
+  /// **'Brightness'**
+  String get codeBlockBrightnessTitle;
+
+  /// Code block brightness: follow the app theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow theme'**
+  String get codeBlockBrightnessSystem;
+
+  /// Code block brightness: always light.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get codeBlockBrightnessLight;
+
+  /// Code block brightness: always dark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get codeBlockBrightnessDark;
+
+  /// Code block style switch: line numbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Line numbers'**
+  String get codeBlockLineNumbersTitle;
+
+  /// Description of the line numbers switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Number each line of code'**
+  String get codeBlockLineNumbersSubtitle;
+
+  /// Code block style switch: header bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Header bar'**
+  String get codeBlockHeaderTitle;
+
+  /// Description of the header bar switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the language and a copy button on top'**
+  String get codeBlockHeaderSubtitle;
+
+  /// Code block style switch: detect language.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect language'**
+  String get codeBlockAutoDetectTitle;
+
+  /// Description of the detect language switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Guess the language of code blocks that don\'t have one'**
+  String get codeBlockAutoDetectSubtitle;
+
+  /// Code block style switch: border.
+  ///
+  /// In en, this message translates to:
+  /// **'Border'**
+  String get codeBlockBorderTitle;
+
+  /// Description of the border switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline code blocks with a thin border'**
+  String get codeBlockBorderSubtitle;
+
+  /// Code block style slider: corner radius.
+  ///
+  /// In en, this message translates to:
+  /// **'Corner radius'**
+  String get codeBlockRadiusTitle;
+
+  /// Code block style: code font title.
+  ///
+  /// In en, this message translates to:
+  /// **'Code font'**
+  String get codeBlockFontTitle;
+
+  /// Code font option: system monospace font.
+  ///
+  /// In en, this message translates to:
+  /// **'System monospace'**
+  String get codeBlockFontMono;
+
+  /// Code font option: use the body font.
+  ///
+  /// In en, this message translates to:
+  /// **'Body font'**
+  String get codeBlockFontBody;
+
+  /// Code block style: note under the font group when the selected imported font file is no longer on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected font file is no longer on this device, so code uses the system monospace font for now. Import it again in Body font & layout, or pick another font.'**
+  String get codeBlockFontMissing;
+
+  /// Code block style slider: font size.
+  ///
+  /// In en, this message translates to:
+  /// **'Font size'**
+  String get codeBlockFontSizeTitle;
+
+  /// Code block font size value; percent is relative to the body font size.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String codeBlockFontSizeValue(int percent);
+
+  /// Code block style slider: line height.
+  ///
+  /// In en, this message translates to:
+  /// **'Line height'**
+  String get codeBlockLineHeightTitle;
+
+  /// Intro text of the code block style preview; an inline code sample follows the trailing space.
+  ///
+  /// In en, this message translates to:
+  /// **'Code blocks are highlighted by language, and inline code follows the theme too, like '**
+  String get codeBlockPreviewIntro;
 }
 
 class _AppLocalizationsDelegate

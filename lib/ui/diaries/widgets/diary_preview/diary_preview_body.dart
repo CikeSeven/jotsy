@@ -63,20 +63,23 @@ class DiaryPreviewBody extends StatelessWidget {
     if (hasVisibleContent) {
       body = DiaryQuillStylesBuilder(
         appearance: appearance,
-        builder: (BuildContext context, quill.DefaultStyles styles) {
+        controller: controller,
+        builder: (BuildContext context, DiaryQuillLook look) {
           return quill.QuillEditor.basic(
             controller: controller,
-            config: quill.QuillEditorConfig(
-              autoFocus: false,
-              scrollable: false,
-              padding: EdgeInsets.zero,
-              showCursor: false,
-              checkBoxReadOnly: !todoToggle,
-              enableInteractiveSelection: textSelection,
-              customStyles: styles,
-              embedBuilders: buildDiaryQuillEmbedBuilders(
-                onImageOpen: onOpenImage,
-                foldLongImages: longImageMode == DiaryPreviewLongImageMode.fold,
+            config: look.configure(
+              quill.QuillEditorConfig(
+                autoFocus: false,
+                scrollable: false,
+                padding: EdgeInsets.zero,
+                showCursor: false,
+                checkBoxReadOnly: !todoToggle,
+                enableInteractiveSelection: textSelection,
+                embedBuilders: buildDiaryQuillEmbedBuilders(
+                  onImageOpen: onOpenImage,
+                  foldLongImages:
+                      longImageMode == DiaryPreviewLongImageMode.fold,
+                ),
               ),
             ),
           );

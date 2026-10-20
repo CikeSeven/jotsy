@@ -72,6 +72,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         await fixture.settings.setDiaryPreviewStyleRaw(
           '{"v":1,"current":{"page":{"paper":"ink"}}}',
         );
+        await fixture.settings.setDiaryCodeBlockStyleRaw('{"theme":"nord"}');
         await fixture.settings.setHomeBarStyleRaw(
           '{"v":1,"current":{"material":"glass"}}',
         );
@@ -101,6 +102,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['calendarDisplayOptionsRaw'] = '{"cellStyle":"photo"}';
         settings['diaryCardStyleRaw'] = '{"v":1,"saved":[]}';
         settings['diaryPreviewStyleRaw'] = '{"v":1,"current":{}}';
+        settings['diaryCodeBlockStyleRaw'] = '{"theme":"dracula"}';
         settings['homeBarStyleRaw'] = '{"v":1,"current":{"blurSigma":4}}';
         settings['diaryShareOptionsRaw'] = '{"title":true}';
         settings['diaryExportOptionsRaw'] = '{"format":"csv"}';
@@ -142,6 +144,11 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           fixture.settings.diaryPreviewStyleRaw,
           '{"v":1,"current":{"page":{"paper":"ink"}}}',
         );
+        expect(fixture.settings.diaryCodeBlockStyleRaw, '{"theme":"nord"}');
+        expect(
+          fixture.settings.diaryCodeBlockStyleRawNotifier.value,
+          '{"theme":"nord"}',
+        );
         expect(
           fixture.settings.homeBarStyleRaw,
           '{"v":1,"current":{"material":"glass"}}',
@@ -165,6 +172,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"v":1,"current":{"material":"glass"}}',
         );
         expect(recreated.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
+        expect(recreated.diaryCodeBlockStyleRaw, '{"theme":"nord"}');
         expect(recreated.appFeaturesRaw, '{"calendar":false}');
       },
     );

@@ -8,10 +8,11 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/snap_panel.dart';
 
-/// 样式编辑页（卡片样式、预览页样式）共用的页面外壳。
+/// 样式编辑页（卡片样式、预览页样式、代码块样式）共用的页面外壳。
 ///
 /// 上方实时预览，下方按标签页分组调整。窄屏时选项是一块可拖动的面板
-/// （[SnapPanel]），停在三档：上档盖住预览、只留顶部工具条；中档为默认，预览
+/// （[SnapPanel]），停在三档：上档盖住预览、只留顶部工具条（没有工具条的
+/// 页面只留标题栏）；中档为默认，预览
 /// 约占四成高度；下档只露出标签栏，预览占满其余空间。宽屏（≥720dp）时预览与
 /// 选项左右并排。右上角“重置”在已是默认样式时禁用。
 ///
@@ -26,7 +27,8 @@ class StyleEditorScaffold extends StatefulWidget {
     required this.onReset,
     required this.tabs,
     required this.tabViews,
-    required this.toolbarBuilder,
+    this.toolbarBuilder,
+    this.actionsBuilder,
     required this.previewBuilder,
   });
 
@@ -39,10 +41,15 @@ class StyleEditorScaffold extends StatefulWidget {
   final List<String> tabs;
   final List<Widget> Function() tabViews;
 
-  /// 窄屏时固定在预览上方的工具条（宽屏时由预览自己显示）。
-  /// 必须在监听回调内重新创建；复用同一个 Widget 会跳过重建，让选中态
-  /// 与捕获旧明暗值的按钮回调滞留到页面因其他交互重建时才刷新。
-  final WidgetBuilder toolbarBuilder;
+  /// 窄屏时固定在预览上方的工具条（宽屏时由预览自己显示）；为 null 时
+  /// 不占这一行。必须在监听回调内重新创建；复用同一个 Widget 会跳过重建，
+  /// 让选中态与捕获旧明暗值的按钮回调滞留到页面因其他交互重建时才刷新。
+  final WidgetBuilder? toolbarBuilder;
+
+  /// 标题栏里排在“重置”之前的操作按钮（如预览明暗）。工具条只有一两个
+  /// 按钮时放这里，不为它单独占一行、挤占预览。随 [listenable] 重建，理由
+  /// 同 [toolbarBuilder]。
+  final List<Widget> Function(BuildContext context)? actionsBuilder;
 
   /// 实时预览：[showToolbar] 为宽屏时自带工具条；[bottomPadding] 为窄屏时
   /// 被面板圆角压住的高度，预览末尾多留这段空白。
@@ -123,9 +130,15 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
         actions: <Widget>[
           ListenableBuilder(
             listenable: widget.listenable,
-            builder: (BuildContext context, Widget? child) => TextButton(
-              onPressed: widget.isDefault() ? null : widget.onReset,
-              child: Text(l10n.commonReset),
+            builder: (BuildContext context, Widget? child) => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ...?widget.actionsBuilder?.call(context),
+                TextButton(
+                  onPressed: widget.isDefault() ? null : widget.onReset,
+                  child: Text(l10n.commonReset),
+                ),
+              ],
             ),
           ),
         ],
@@ -170,7 +183,7 @@ class _StyleEditorScaffoldState extends State<StyleEditorScaffold>
               );
               return Column(
                 children: <Widget>[
-                  widget.toolbarBuilder(context),
+                  ?widget.toolbarBuilder?.call(context),
                   Expanded(
                     child: SnapPanel(
                       controller: _panel,

@@ -1320,7 +1320,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoT0188 => 'Apply inline code style to selected text';
 
   @override
-  String get autoT0189 => 'Insert or switch to code block';
+  String get autoT0189 =>
+      'Turn into a code block; inside one, tap to pick a language, copy or exit.';
 
   @override
   String get autoT0190 => 'Shows both indent increase/decrease buttons';
@@ -8228,4 +8229,129 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get homeBarStyleIndicatorFollowsSubtitle =>
       'When swiping between pages, the selection indicator moves with your finger';
+
+  @override
+  String get codeBlockPanelTitle => 'Code block';
+
+  @override
+  String get codeBlockLanguageAuto => 'Auto detect';
+
+  @override
+  String codeBlockLanguageAutoDetected(String language) {
+    return 'Auto · $language';
+  }
+
+  @override
+  String get codeBlockLanguageNone => 'Unspecified';
+
+  @override
+  String get codeBlockLanguagePlain => 'Plain text';
+
+  @override
+  String get codeBlockLabelGeneric => 'Code';
+
+  @override
+  String get codeBlockCopy => 'Copy code';
+
+  @override
+  String get codeBlockCopied => 'Code copied';
+
+  @override
+  String codeBlockCopySemantics(String language) {
+    return 'Copy $language code';
+  }
+
+  @override
+  String get codeBlockExit => 'Exit code block';
+
+  @override
+  String get codeBlockToText => 'Convert to text';
+
+  @override
+  String get codeBlockStyleTitle => 'Code block style';
+
+  @override
+  String get codeBlockStyleSubtitle => 'Theme, line numbers, font and header';
+
+  @override
+  String get codeBlockStyleTabTheme => 'Theme';
+
+  @override
+  String get codeBlockStyleTabDisplay => 'Display';
+
+  @override
+  String get codeBlockStyleTabFont => 'Font';
+
+  @override
+  String get codeBlockThemeFollowApp => 'Match app';
+
+  @override
+  String get codeBlockBrightnessTitle => 'Brightness';
+
+  @override
+  String get codeBlockBrightnessSystem => 'Follow theme';
+
+  @override
+  String get codeBlockBrightnessLight => 'Light';
+
+  @override
+  String get codeBlockBrightnessDark => 'Dark';
+
+  @override
+  String get codeBlockLineNumbersTitle => 'Line numbers';
+
+  @override
+  String get codeBlockLineNumbersSubtitle => 'Number each line of code';
+
+  @override
+  String get codeBlockHeaderTitle => 'Header bar';
+
+  @override
+  String get codeBlockHeaderSubtitle =>
+      'Show the language and a copy button on top';
+
+  @override
+  String get codeBlockAutoDetectTitle => 'Detect language';
+
+  @override
+  String get codeBlockAutoDetectSubtitle =>
+      'Guess the language of code blocks that don\'t have one';
+
+  @override
+  String get codeBlockBorderTitle => 'Border';
+
+  @override
+  String get codeBlockBorderSubtitle =>
+      'Outline code blocks with a thin border';
+
+  @override
+  String get codeBlockRadiusTitle => 'Corner radius';
+
+  @override
+  String get codeBlockFontTitle => 'Code font';
+
+  @override
+  String get codeBlockFontMono => 'System monospace';
+
+  @override
+  String get codeBlockFontBody => 'Body font';
+
+  @override
+  String get codeBlockFontMissing =>
+      'The selected font file is no longer on this device, so code uses the system monospace font for now. Import it again in Body font & layout, or pick another font.';
+
+  @override
+  String get codeBlockFontSizeTitle => 'Font size';
+
+  @override
+  String codeBlockFontSizeValue(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get codeBlockLineHeightTitle => 'Line height';
+
+  @override
+  String get codeBlockPreviewIntro =>
+      'Code blocks are highlighted by language, and inline code follows the theme too, like ';
 }

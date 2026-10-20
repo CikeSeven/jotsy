@@ -689,25 +689,27 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     // 样式在编辑器位置（Scaffold 之下）生成，见 [DiaryQuillStylesBuilder]。
     final editor = DiaryQuillStylesBuilder(
       appearance: appearance,
-      builder: (BuildContext context, quill.DefaultStyles styles) {
+      controller: _contentController,
+      builder: (BuildContext context, DiaryQuillLook look) {
         return quill.QuillEditor.basic(
           controller: _contentController,
           focusNode: _contentFocusNode,
           scrollController: _editorInnerScrollController,
           // 新建时不在构建期自动聚焦：键盘会与页面滑入同时弹出并逐帧挤压布局。
           // 改由 [RouteEntranceWaiter] 在转场结束后聚焦（见 initState）。
-          config: quill.QuillEditorConfig(
-            editorKey: _quillEditorKey,
-            autoFocus: false,
-            placeholder: placeholder,
-            scrollable: false,
-            onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-              _contentController,
-              getPosition(details.globalPosition),
+          config: look.configure(
+            quill.QuillEditorConfig(
+              editorKey: _quillEditorKey,
+              autoFocus: false,
+              placeholder: placeholder,
+              scrollable: false,
+              onTapUp: (details, getPosition) => isDiaryPlaybackTap(
+                _contentController,
+                getPosition(details.globalPosition),
+              ),
+              padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
+              embedBuilders: buildDiaryQuillEmbedBuilders(),
             ),
-            padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-            customStyles: styles,
-            embedBuilders: buildDiaryQuillEmbedBuilders(),
           ),
         );
       },

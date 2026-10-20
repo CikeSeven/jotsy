@@ -58,7 +58,8 @@ bool isDiaryToolbarItemActive(
 }
 
 /// 仅负责 Quill 单项工具配置；文件选择与复制由媒体导入控制器处理。
-/// 文字颜色与背景颜色不经这里（见 `DiaryToolbarColorButton`）。
+/// 文字颜色与背景颜色不经这里（见 `DiaryToolbarColorButton`），代码块也不经
+/// 这里（见 `DiaryToolbarCodeBlockButton`）。
 quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
   BuildContext context,
   DiaryToolbarItem item,
@@ -131,7 +132,6 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
   final showOrderedList = item == DiaryToolbarItem.orderedList;
   final showBulletList = item == DiaryToolbarItem.bulletList;
   final showCheckList = item == DiaryToolbarItem.checkList;
-  final showCodeBlock = item == DiaryToolbarItem.codeBlock;
   final showQuote = item == DiaryToolbarItem.quote;
   final showIndent = item == DiaryToolbarItem.indent;
   final showLink = item == DiaryToolbarItem.link;
@@ -185,9 +185,6 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
     ),
     toggleCheckList: quill.QuillToolbarToggleCheckListButtonOptions(
       iconData: FontAwesomeIcons.squareCheck.data,
-    ),
-    codeBlock: quill.QuillToolbarToggleStyleButtonOptions(
-      iconData: FontAwesomeIcons.fileCode.data,
     ),
     quote: quill.QuillToolbarToggleStyleButtonOptions(
       iconData: FontAwesomeIcons.quoteLeft.data,
@@ -281,7 +278,9 @@ quill.QuillSimpleToolbarConfig buildDiaryToolbarItemConfig(
     showListNumbers: showOrderedList,
     showListBullets: showBulletList,
     showListCheck: showCheckList,
-    showCodeBlock: showCodeBlock,
+    // 代码块由 DiaryToolbarCodeBlockButton 渲染：在代码块里点按展开卡片内的
+    // 代码块面板（选语言、复制、退出），而不是 Quill 自带的开关。
+    showCodeBlock: false,
     showQuote: showQuote,
     showIndent: showIndent,
     showLink: showLink,

@@ -75,16 +75,18 @@ class _PublishDiaryPreviewState extends ConsumerState<PublishDiaryPreview> {
           else
             DiaryQuillStylesBuilder(
               appearance: appearance,
-              builder: (BuildContext context, quill.DefaultStyles styles) =>
+              controller: _controller,
+              builder: (BuildContext context, DiaryQuillLook look) =>
                   quill.QuillEditor.basic(
                     controller: _controller,
-                    config: quill.QuillEditorConfig(
-                      autoFocus: false,
-                      scrollable: false,
-                      padding: EdgeInsets.zero,
-                      showCursor: false,
-                      customStyles: styles,
-                      embedBuilders: _embedBuilders,
+                    config: look.configure(
+                      quill.QuillEditorConfig(
+                        autoFocus: false,
+                        scrollable: false,
+                        padding: EdgeInsets.zero,
+                        showCursor: false,
+                        embedBuilders: _embedBuilders,
+                      ),
                     ),
                   ),
             ),

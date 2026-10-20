@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/audio_embed_codec.dart';
+import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/divider_embed_codec.dart';
 import '../../../core/database/file_embed_codec.dart';
 
@@ -69,6 +70,7 @@ class ExportBlock {
     this.mediaKind,
     this.mediaName,
     this.mediaDuration,
+    this.codeLanguage,
   });
 
   final ExportBlockKind kind;
@@ -91,6 +93,11 @@ class ExportBlock {
   /// 媒体显示名称（附件原文件名、录音名），不含设备路径。
   final String? mediaName;
   final Duration? mediaDuration;
+
+  /// 代码块明确指定的语言：已知 highlight.js id 或 [kCodeBlockPlain]；
+  /// 未指定（`code-block: true`）或非代码块为 null。写出器按它给围栏 /
+  /// `<code>` 标语言，并在语言变化处把相邻代码行分成两段。
+  final String? codeLanguage;
 
   String get plainText => inlines.map((ExportInline run) => run.text).join();
 
@@ -167,6 +174,9 @@ class ExportBlockParser {
             'justify' => ExportAlign.justify,
             _ => ExportAlign.start,
           },
+          codeLanguage: kind == ExportBlockKind.code
+              ? codeBlockExplicitLanguage(attrs['code-block'])
+              : null,
         ),
       );
     }

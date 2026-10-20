@@ -49,6 +49,12 @@ final _importedFontFamilyProvider = FutureProvider.family<String?, String>((
   }
 });
 
+/// 按字体 id 取导入字体的字族名（同上：不在清单或注册失败时为 null）。
+///
+/// 公开给正文以外同样可选导入字体的地方（如代码块字体），与正文共用同一份
+/// 缓存与注册结果，不重复读取字体文件。
+final diaryImportedFontFamilyProvider = _importedFontFamilyProvider;
+
 /// 当前正文的可渲染外观：编辑、预览、发布页与设置预览都从这里取样式。
 ///
 /// 导入字体首次注册期间（大字体约数百毫秒）先按内置字体排版，注册完成后

@@ -1,8 +1,11 @@
 import 'dart:convert';
 
 import '../../../core/database/code_block_codec.dart';
+import '../models/diary_code_block/diary_code_theme.dart';
+import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
+import 'diary_export_code.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
@@ -21,6 +24,10 @@ import 'diary_export_media.dart';
 /// `<h1 id="chapter-n">` 的 `<section>`，每篇 `<article id="entry-n">` 的标题
 /// 降为 h2、正文标题顺延到 h3 起；打印时扉页、目录与每章各自另起一页。封面
 /// 与日记图片走同一条媒体链路（单篇内嵌、多篇打包），不写设备路径。
+///
+/// 给了代码配色（[DiaryExportCodeTheme]）且正文里有代码块时，记号写成
+/// `<span class="hl-角色">`，颜色是 CSS 变量：浅色模式用纸面配色，深色模式
+/// 换成深色那套（固定明暗时只有一套）；代码块的底色与正文字色同样取配色。
 class DiaryHtmlWriter {
   const DiaryHtmlWriter._();
 
@@ -35,8 +42,19 @@ class DiaryHtmlWriter {
     required String languageTag,
     List<String> fontFamilies = const <String>[],
     DiaryExportBookLayout? book,
+    DiaryExportCodeTheme? code,
   }) async {
     final bundle = entries.length > 1;
+    // 没有代码块时不写高亮样式，页面与原来一样。
+    final codeTheme =
+        code != null &&
+            entries.any(
+              (DiaryExportEntry entry) => entry.blocks.any(
+                (ExportBlock block) => block.kind == ExportBlockKind.code,
+              ),
+            )
+        ? code
+        : null;
     // 来源 → img 的 src（data URI，或打包时的相对路径）。
     final images = <String, String>{};
     final mediaFiles = <DiaryExportBundleFile>[];
@@ -89,12 +107,20 @@ class DiaryHtmlWriter {
       ..write('<meta name="generator" content="Jotsy">\n')
       ..write('<title>${_text(documentTitle)}</title>\n')
       ..write(
-        '<style>$_css${_fontCss(fontFamilies)}'
+        '<style>$_css${codeTheme == null ? '' : _codeCss(codeTheme)}'
+        '${_fontCss(fontFamilies)}'
         '${book == null ? '' : _bookCss}</style>\n',
       )
       ..write('</head>\n<body>\n<main>\n');
     if (book != null) {
-      _writeBook(out, book, options: options, labels: labels, images: images);
+      _writeBook(
+        out,
+        book,
+        options: options,
+        labels: labels,
+        images: images,
+        code: codeTheme,
+      );
     } else {
       for (final entry in entries) {
         _writeEntry(
@@ -103,6 +129,7 @@ class DiaryHtmlWriter {
           options: options,
           labels: labels,
           images: images,
+          code: codeTheme,
         );
       }
     }
@@ -125,6 +152,7 @@ class DiaryHtmlWriter {
     required DiaryExportOptions options,
     required DiaryExportLabels labels,
     required Map<String, String> images,
+    DiaryExportCodeTheme? code,
   }) {
     out.write('<section class="book-title">\n');
     final cover = book.coverPath == null ? null : images[book.coverPath!];
@@ -194,6 +222,7 @@ class DiaryHtmlWriter {
           options: options,
           labels: labels,
           images: images,
+          code: code,
           anchor: book.anchorOf(entry),
           titleLevel: 2,
         );
@@ -209,6 +238,7 @@ class DiaryHtmlWriter {
     required DiaryExportOptions options,
     required DiaryExportLabels labels,
     required Map<String, String> images,
+    DiaryExportCodeTheme? code,
     String? anchor,
     int titleLevel = 1,
   }) {
@@ -245,6 +275,7 @@ class DiaryHtmlWriter {
       entry,
       labels: labels,
       images: images,
+      code: code,
       headingOffset: titleLevel,
     );
     out.write('</article>\n');
@@ -256,6 +287,7 @@ class DiaryHtmlWriter {
     DiaryExportEntry entry, {
     required DiaryExportLabels labels,
     required Map<String, String> images,
+    DiaryExportCodeTheme? code,
     int headingOffset = 1,
   }) {
     final blocks = entry.blocks;
@@ -291,10 +323,19 @@ class DiaryHtmlWriter {
               b.kind == ExportBlockKind.code &&
               b.codeLanguage == block.codeLanguage,
         );
-        final code = blocks
+        final lines = blocks
             .sublist(i, end)
-            .map((ExportBlock b) => _text(b.plainText))
-            .join('\n');
+            .map((ExportBlock b) => b.plainText)
+            .toList();
+        final html = code == null
+            ? lines.map(_text).join('\n')
+            : code
+                  .highlightLines(lines, block.codeLanguage)
+                  .map(
+                    (List<DiaryExportCodeRun> runs) =>
+                        runs.map(_codeRun).join(),
+                  )
+                  .join('\n');
         // 沿用 highlight.js / Prism 的 `language-*` 约定；纯文本写
         // `language-plaintext`，未指定不写 class（交给阅读端自动识别）。
         final language = switch (block.codeLanguage) {
@@ -303,7 +344,7 @@ class DiaryHtmlWriter {
           final id => id,
         };
         final classAttr = language == null ? '' : ' class="language-$language"';
-        out.write('<pre><code$classAttr>$code</code></pre>\n');
+        out.write('<pre><code$classAttr>$html</code></pre>\n');
         i = end;
         continue;
       }
@@ -435,6 +476,38 @@ class DiaryHtmlWriter {
         scheme == 'https' ||
         scheme == 'mailto' ||
         scheme == 'tel';
+  }
+
+  static String _codeRun(DiaryExportCodeRun run) {
+    final role = run.role;
+    final text = _text(run.text);
+    return role == null ? text : '<span class="hl-${role.name}">$text</span>';
+  }
+
+  /// 代码高亮的样式：配色写成 CSS 变量，深色模式换成 [DiaryExportCodeTheme.night]
+  /// （与纸面同一套时不写）；记号按角色的 class 取色，注释斜体。写在基础
+  /// 样式之后，覆盖 `pre` 的默认底色。
+  static String _codeCss(DiaryExportCodeTheme code) {
+    String variables(DiaryCodePalette palette) => <String>[
+      '--code-bg:${diaryColorRgbHex(palette.background)}',
+      '--code-fg:${diaryColorRgbHex(palette.foreground)}',
+      for (final role in DiaryCodeTokenRole.values)
+        '--hl-${role.name}:${diaryColorRgbHex(palette.tokens[role]!)}',
+    ].join(';');
+    final out = StringBuffer(':root{${variables(code.paper)}}\n');
+    if (!identical(code.night, code.paper)) {
+      out.write(
+        '@media (prefers-color-scheme:dark){:root{${variables(code.night)}}}\n',
+      );
+    }
+    out.write('pre{background:var(--code-bg);color:var(--code-fg)}\n');
+    for (final role in DiaryCodeTokenRole.values) {
+      out.write('.hl-${role.name}{color:var(--hl-${role.name})}');
+    }
+    if (code.italicFor(DiaryCodeTokenRole.comment)) {
+      out.write('.hl-comment{font-style:italic}');
+    }
+    return (out..write('\n')).toString();
   }
 
   /// 用户选了导入字体时把它的字族名排在字体栈最前（不内嵌字体文件：中文

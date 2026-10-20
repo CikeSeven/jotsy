@@ -14,6 +14,7 @@ import 'package:node_diary/ui/diaries/export/diary_export_naming.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_pdf.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_plain_text.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_text.dart';
+import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
@@ -750,6 +751,64 @@ void main() {
         images: <Uint8List>[],
       );
       expect(empty, isNull);
+    });
+
+    test('flattens translucent text backgrounds onto the white page so they '
+        'stay as light as in the app', () async {
+      Map<String, dynamic> styled(String text, Map<String, dynamic> attrs) =>
+          <String, dynamic>{'insert': text, 'attributes': attrs};
+      final entry = DiaryExportEntry.parse(
+        diaryId: 'c',
+        title: '',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        deltaOps: <dynamic>[
+          // 红字 + 浅红背景（预设背景只有 30% 不透明度）。
+          styled('红', <String, dynamic>{
+            'color': encodeDiaryColor(
+              DiaryColorPreset.red.colorFor(DiaryColorTarget.text),
+            ),
+            'background': encodeDiaryColor(
+              DiaryColorPreset.red.colorFor(DiaryColorTarget.background),
+            ),
+          }),
+          // 半透明文字叠在压平后的背景上。
+          styled('灰', <String, dynamic>{
+            'color': '#80000000',
+            'background': '#4DFF6369',
+          }),
+          styled('透明', <String, dynamic>{
+            'bold': true,
+            'background': '#00FF0000',
+          }),
+          styled('六位', <String, dynamic>{'background': '#ffd0d2'}),
+          styled('颜色名', <String, dynamic>{'color': 'red'}),
+          <String, dynamic>{'insert': '\n'},
+        ],
+      );
+      final original = jsonEncode(entry.deltaOps);
+      final body = await DiaryPdfWriter.prepareBody(
+        entry,
+        includeImages: false,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        images: <Uint8List>[],
+      );
+      final attrs = <Object?>[
+        for (final op in body!.toJson()) (op as Map)['attributes'],
+      ];
+      expect(attrs, <Object?>[
+        <String, dynamic>{'color': '#FFE5484D', 'background': '#FFFFD0D2'},
+        <String, dynamic>{'color': '#FF7F6868', 'background': '#FFFFD0D2'},
+        // 完全透明的背景等于没有背景。
+        <String, dynamic>{'bold': true},
+        <String, dynamic>{'background': '#FFFFD0D2'},
+        // 读不懂的写法原样交给插件。
+        <String, dynamic>{'color': 'red'},
+        null,
+      ]);
+      // 不改动调用方的正文。
+      expect(jsonEncode(entry.deltaOps), original);
     });
   });
 

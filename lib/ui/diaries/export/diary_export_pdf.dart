@@ -3,15 +3,17 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter/widgets.dart' show TextDirection;
+import 'package:flutter/widgets.dart' show Color, TextDirection;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/services/font_file_info.dart';
+import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
+import 'diary_export_code.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_font.dart';
 import 'diary_export_format.dart';
@@ -89,7 +91,12 @@ class DiaryPdfFonts {
 ///   `https://jotsy.export/<序号>.png` 的虚拟地址，由 `onDetectImageUrl`
 ///   按序号返回已读好的字节；
 /// - 录音、视频、附件它会把路径原样印出——改成名称说明，远程地址保留链接；
-/// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去。
+/// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去；
+/// - pdf 库填色时丢掉透明度，半透明的背景色会印成不透明的原色——文字色与
+///   背景色先按纸面压平成不透明色（[_flattenColorAttributes]）；
+/// - 它不认 `code-block` 的语言值，自带的高亮也不跟随用户的配色——给了代码
+///   配色（[DiaryExportCodeTheme]）时先把代码行按记号拆开、写上颜色，再把
+///   语言值改写为 `true`；代码块底色、正文字色与行号色同取这套配色。
 ///
 /// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。
 ///
@@ -131,6 +138,7 @@ class DiaryPdfWriter {
     required String documentTitle,
     TextDirection textDirection = TextDirection.ltr,
     DiaryExportBookLayout? book,
+    DiaryExportCodeTheme? code,
   }) async {
     final theme = pw.ThemeData.withFont(
       base: fonts.regular,
@@ -157,6 +165,7 @@ class DiaryPdfWriter {
         theme: theme,
         images: images,
         textDirection: textDirection,
+        code: code,
       );
       return DiaryExportOutput.single(await document.save());
     }
@@ -176,6 +185,7 @@ class DiaryPdfWriter {
           theme: theme,
           images: images,
           textDirection: textDirection,
+          code: code,
         ),
       );
     }
@@ -216,6 +226,7 @@ class DiaryPdfWriter {
     required pw.ThemeData theme,
     required List<Uint8List> images,
     required TextDirection textDirection,
+    DiaryExportCodeTheme? code,
     pw.Widget Function(pw.Widget title)? wrapTitle,
   }) async {
     final widgets = await _header(
@@ -232,6 +243,7 @@ class DiaryPdfWriter {
       labels: labels,
       media: media,
       images: images,
+      code: code,
     );
     if (body != null) {
       widgets.addAll(
@@ -241,6 +253,7 @@ class DiaryPdfWriter {
           fonts: fonts,
           images: images,
           textDirection: textDirection,
+          code: code,
         ),
       );
     }
@@ -258,6 +271,7 @@ class DiaryPdfWriter {
     required pw.ThemeData theme,
     required List<Uint8List> images,
     required TextDirection textDirection,
+    DiaryExportCodeTheme? code,
   }) async {
     // 锚点 → 页码：正文绘制时由 _BookAnchor 写入，目录绘制时读取。
     final pages = <String, int>{};
@@ -314,6 +328,7 @@ class DiaryPdfWriter {
             theme: theme,
             images: images,
             textDirection: textDirection,
+            code: code,
             wrapTitle: (pw.Widget child) => _BookAnchor(
               name: book.anchorOf(entry),
               title: labels.titleOf(entry),
@@ -552,7 +567,8 @@ class DiaryPdfWriter {
     return widgets;
   }
 
-  /// 改写正文 Delta（见类注释）；没有可见内容时返回 null。
+  /// 改写正文 Delta（见类注释）；没有可见内容时返回 null。给了 [code] 时
+  /// 先为代码行着色：要在下面把语言值改写为 `true` 之前，着色要用到语言。
   @visibleForTesting
   static Future<Delta?> prepareBody(
     DiaryExportEntry entry, {
@@ -560,15 +576,18 @@ class DiaryPdfWriter {
     required DiaryExportLabels labels,
     required DiaryExportMediaLibrary media,
     required List<Uint8List> images,
+    DiaryExportCodeTheme? code,
   }) async {
     final ops = <Map<String, dynamic>>[];
     var hasContent = false;
-    for (final raw in entry.deltaOps) {
+    final source = code?.colorDeltaCodeLines(entry.deltaOps) ?? entry.deltaOps;
+    for (final raw in source) {
       if (raw is! Map) {
         continue;
       }
       final op = Map<String, dynamic>.from(raw);
       _normalizeCodeBlockAttribute(op);
+      _flattenColorAttributes(op);
       final insert = op['insert'];
       if (insert is String) {
         hasContent = hasContent || insert.trim().isNotEmpty;
@@ -616,9 +635,9 @@ class DiaryPdfWriter {
   /// 把代码块的语言值（`'python'`、`'plain'` 等字符串）改写为 `true`。
   ///
   /// 为什么：flutter_quill_to_pdf 读 `code-block` 时按 `bool` 强转，遇到
-  /// 字符串会抛 TypeError，整份 PDF 导出失败；PDF 也不做语法高亮，丢掉语言
-  /// 不影响版面。只改非 bool 的值，`true` / `false` / 缺失原样保留；属性表
-  /// 拷贝一份再改，不动调用方的正文。
+  /// 字符串会抛 TypeError，整份 PDF 导出失败；语言在着色时已经用过（见
+  /// [prepareBody]），之后丢掉不影响版面。只改非 bool 的值，`true` /
+  /// `false` / 缺失原样保留；属性表拷贝一份再改，不动调用方的正文。
   static void _normalizeCodeBlockAttribute(Map<String, dynamic> op) {
     final attrs = op['attributes'];
     if (attrs is! Map) {
@@ -629,6 +648,46 @@ class DiaryPdfWriter {
       return;
     }
     op['attributes'] = Map<String, dynamic>.from(attrs)..['code-block'] = true;
+  }
+
+  /// PDF 的纸面颜色：页面不画背景，即白纸。
+  static const Color _paper = Color(0xFFFFFFFF);
+
+  /// 把文字色 / 背景色压平成叠在纸面上的不透明色。
+  ///
+  /// 为什么：pdf 库填色时只写 RGB、丢掉透明度。背景预设都是半透明的（如浅红
+  /// `#4DFF6369` 只有 30% 不透明度，叠在纸面上才是浅红），交给插件后会印成
+  /// 不透明的 `#FF6369`，几乎和同色系的红字一样深，字也看不清。应用里看到
+  /// 的是叠在纸面上的效果，这里按同样的方式预先混合：背景叠在白纸上，文字
+  /// 叠在压平后的背景（没有背景时是白纸）上；完全透明的背景等于没有背景，
+  /// 直接去掉。只处理 `#RRGGBB` / `#AARRGGBB`（[parseDiaryColorValue]），
+  /// 其他写法原样交给插件；属性表拷贝一份再改，不动调用方的正文。
+  static void _flattenColorAttributes(Map<String, dynamic> op) {
+    final attrs = op['attributes'];
+    if (attrs is! Map) {
+      return;
+    }
+    Color? parse(Object? value) =>
+        value is String ? parseDiaryColorValue(value) : null;
+    final background = parse(attrs['background']);
+    final text = parse(attrs['color']);
+    if (background == null && text == null) {
+      return;
+    }
+    final flattened = Map<String, dynamic>.from(attrs);
+    var under = _paper;
+    if (background != null) {
+      if (background.a == 0) {
+        flattened.remove('background');
+      } else {
+        under = Color.alphaBlend(background, _paper);
+        flattened['background'] = encodeDiaryColor(under);
+      }
+    }
+    if (text != null) {
+      flattened['color'] = encodeDiaryColor(Color.alphaBlend(text, under));
+    }
+    op['attributes'] = flattened;
   }
 
   static void _addImage(List<Uint8List> images, Uint8List bytes) {
@@ -671,16 +730,30 @@ class DiaryPdfWriter {
     required DiaryPdfFonts fonts,
     required List<Uint8List> images,
     required TextDirection textDirection,
+    DiaryExportCodeTheme? code,
   }) async {
     final captured = <pw.Widget>[];
+    final palette = code?.paper;
     final converter = PDFConverter(
       pageFormat: PDFPageFormat.a4,
       document: body,
       textDirection: textDirection,
       themeData: theme,
       codeBlockFont: fonts.bundled,
-      // 日记里的代码块只是等宽文字；语法高亮库还会把解析异常打到控制台。
-      // 插件把该参数标为实验性，变动时这里会编译失败，不会静默失效。
+      // 代码块的底色、正文字色与行号色取用户的代码块配色；记号的颜色已在
+      // prepareBody 里写成行内样式。没给配色时保持插件的默认样式。
+      codeBlockBackgroundColor: palette == null
+          ? null
+          : _pdfColor(palette.background),
+      codeBlockTextStyle: palette == null
+          ? null
+          : _codeTextStyle(fonts, palette.foreground),
+      codeBlockNumLinesTextStyle: palette == null
+          ? null
+          : _codeTextStyle(fonts, palette.lineNumber),
+      // 不用插件自带的高亮：它不跟随用户的配色，还会把解析异常打到控制台；
+      // 着色经 DiaryExportCodeTheme 与应用同源。插件把该参数标为实验性，
+      // 变动时这里会编译失败，不会静默失效。
       // ignore: experimental_member_use
       enableCodeBlockHighlighting: false,
       fallbacks: <pw.Font>[fonts.bundled],
@@ -710,6 +783,21 @@ class DiaryPdfWriter {
     );
     return captured;
   }
+
+  /// 代码行（与行号）的文字样式：字号、字距与行距沿用插件默认的代码样式
+  /// （传入这个参数会整份替换插件的默认值），只把颜色换成配色里的颜色。
+  static pw.TextStyle _codeTextStyle(DiaryPdfFonts fonts, Color color) =>
+      pw.TextStyle(
+        font: fonts.bundled,
+        fontSize: 10,
+        letterSpacing: 1.17,
+        lineSpacing: 1,
+        wordSpacing: 1,
+        color: _pdfColor(color),
+      );
+
+  /// 配色都是不透明色（pdf 库本来也不画透明度）。
+  static PdfColor _pdfColor(Color color) => PdfColor.fromInt(color.toARGB32());
 }
 
 /// 成书的章节与篇标题：PDF 书签（大纲）+ 命名目标，并在绘制时记下自己所在

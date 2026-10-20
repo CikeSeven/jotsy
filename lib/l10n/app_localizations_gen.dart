@@ -12697,6 +12697,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No tags match “{query}”'**
   String tagPickerSearchEmpty(String query);
+
+  /// Settings home and features page: title of the feature toggles page.
+  ///
+  /// In en, this message translates to:
+  /// **'Features'**
+  String get settingsFeaturesTitle;
+
+  /// Settings home: subtitle of the features entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the pages and features you use'**
+  String get settingsFeaturesSubtitle;
+
+  /// Features page: group title for pages (bottom bar tabs) that can be turned off.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get settingsFeaturesPagesGroup;
+
+  /// Features page: footer of the pages group.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn\'t affected.'**
+  String get settingsFeaturesPagesFooter;
+
+  /// Features page: subtitle of the calendar switch.
+  ///
+  /// In en, this message translates to:
+  /// **'View diaries by month, with lunar dates, holidays and anniversaries'**
+  String get settingsFeaturesCalendarSubtitle;
+
+  /// Features page: subtitle of the explore switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats, on this day, mood trends and photo wall'**
+  String get settingsFeaturesExploreSubtitle;
+
+  /// Features page: group title for diary features that can be turned off.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary features'**
+  String get settingsFeaturesFeaturesGroup;
+
+  /// Features page: footer of the diary features group.
+  ///
+  /// In en, this message translates to:
+  /// **'Turning a feature off hides its entries and options. Your data stays and returns when you turn it back on.'**
+  String get settingsFeaturesFeaturesFooter;
+
+  /// Features page: subtitle of the notebooks switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort diaries into notebooks, with chapters and book export'**
+  String get settingsFeaturesNotebooksSubtitle;
+
+  /// Features page: title of the anniversaries switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries'**
+  String get settingsFeaturesAnniversaries;
+
+  /// Features page: subtitle of the anniversaries switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Anniversaries and countdowns, marked on the calendar'**
+  String get settingsFeaturesAnniversariesSubtitle;
+
+  /// Features page: title of the diary templates switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary templates'**
+  String get settingsFeaturesTemplates;
+
+  /// Features page: subtitle of the diary templates switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Start new diaries from a ready-made format'**
+  String get settingsFeaturesTemplatesSubtitle;
+
+  /// Features page: title of the time capsules switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Time capsules'**
+  String get settingsFeaturesTimeCapsules;
+
+  /// Features page: subtitle of the time capsules switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Write to the future; opens only when it\'s due'**
+  String get settingsFeaturesTimeCapsulesSubtitle;
+
+  /// Features page: title of the confirmation shown when turning notebooks off with private notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off notebooks?'**
+  String get settingsFeaturesNotebooksOffTitle;
+
+  /// Features page: body of the turn-off-notebooks confirmation; count is the number of hidden or locked notebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{You have 1 hidden or locked notebook. Its diaries stay out of sight until you turn notebooks back on.} other{You have {count} hidden or locked notebooks. Their diaries stay out of sight until you turn notebooks back on.}}'**
+  String settingsFeaturesNotebooksOffMessage(int count);
+
+  /// Features page: confirm button of the turn-off-notebooks confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off'**
+  String get settingsFeaturesNotebooksOffConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -18,6 +18,7 @@ import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/diaries/widgets/time_capsule_seal_overlay.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_gate.dart';
@@ -70,6 +71,10 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
     _publisher = PublishDiaryController(
       initialDraft: widget.initialDraft,
       meta: _meta,
+      // 功能管理关闭的功能发布时忽略（见 PublishDiaryController）：草稿里
+      // 留下的胶囊不封存，留下的日记本不收进（面板已没有日记本行）。
+      timeCapsulesEnabled: () => ref.read(appFeaturesProvider).timeCapsules,
+      notebooksEnabled: () => ref.read(appFeaturesProvider).notebooks,
     );
     // 阶段只在发布时变化几次（idle → saving → sealing/done），整页重建以
     // 同步返回按钮、面板的“发布中”与封存遮罩。
@@ -159,6 +164,11 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 时间胶囊功能关闭时隐藏入口，数据保留：没有胶囊行，也不显示草稿里留下
+    // 的胶囊（摘要项、“封存”按钮、发表时间跟随胶囊）——发布时会忽略它。
+    final capsulesEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.timeCapsules),
+    );
     // 返回键策略：
     // 0) 发布进行中、封存中或已发布时忽略；
     // 1) 优先返回面板子页；
@@ -241,7 +251,8 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage> {
                             : null,
                         onPick: _pickPublishTime,
                       ),
-                      capsuleEnabled: true,
+                      capsuleEnabled: capsulesEnabled,
+                      showDraftCapsule: capsulesEnabled,
                       onPublish: _publish,
                       // 通过进度回调驱动正文区底部占位，维持滚动可见性。面板只在
                       // 非构建/布局阶段回调，此处可直接写入 ValueNotifier。

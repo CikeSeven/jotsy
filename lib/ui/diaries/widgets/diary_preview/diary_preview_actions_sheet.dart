@@ -15,6 +15,7 @@ import '../../../notebooks/providers/notebook_providers.dart';
 import '../../../notebooks/sections/notebook_picker_sheet.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
+import '../../../settings/providers/app_features_provider.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../models/publish_metadata_composer.dart';
 
@@ -34,6 +35,10 @@ Future<void> showDiaryPreviewMore(
   final database = ref.read(appDatabaseProvider);
   final l10n = context.l10n;
   final settings = ref.read(settingsServiceProvider).asData?.value;
+  // 日记本、纪念日、日记模板功能关闭时隐藏入口，数据保留：不给“收进
+  // 日记本”“设为纪念日”“另存为模板”。
+  final features = ref.read(appFeaturesProvider);
+  final notebooksEnabled = features.notebooks;
   return showDiaryPreviewActionsSheet(
     context,
     onShare: () => openDiaryPreviewShare(
@@ -47,24 +52,29 @@ Future<void> showDiaryPreviewMore(
     notebookSubtitle: notebooks.isEmpty
         ? l10n.notebookPreviewNone
         : notebooks.map((n) => n.name).join(l10n.notebookListSeparator),
-    onAddToNotebook: () =>
-        _addToNotebooks(context, ref, diaryId: detail.diary.diaryId),
-    onSetAsAnniversary: () => openAnniversaryEditor(
-      context,
-      database: database,
-      draft: AnniversaryDraft.fromDiary(detail.diary),
-    ),
-    onSaveAsTemplate: () {
-      final meta = PublishMetadataComposer.parse(detail.diary.metadata);
-      return openSaveAsTemplate(
-        context,
-        title: detail.diary.title,
-        contentDocJson: detail.diary.content,
-        tags: detail.tags,
-        mood: meta.moodEmoji,
-        energy: meta.energyLevel,
-      );
-    },
+    onAddToNotebook: notebooksEnabled
+        ? () => _addToNotebooks(context, ref, diaryId: detail.diary.diaryId)
+        : null,
+    onSetAsAnniversary: features.anniversariesEnabled
+        ? () => openAnniversaryEditor(
+            context,
+            database: database,
+            draft: AnniversaryDraft.fromDiary(detail.diary),
+          )
+        : null,
+    onSaveAsTemplate: features.templates
+        ? () {
+            final meta = PublishMetadataComposer.parse(detail.diary.metadata);
+            return openSaveAsTemplate(
+              context,
+              title: detail.diary.title,
+              contentDocJson: detail.diary.content,
+              tags: detail.tags,
+              mood: meta.moodEmoji,
+              energy: meta.energyLevel,
+            );
+          }
+        : null,
     onDelete: onDelete,
     onOpenStyle: settings == null
         ? null
@@ -144,7 +154,7 @@ Future<void> openDiaryPreviewShare(
 }
 
 /// 预览页“更多”面板：分享、导出、收进日记本、设为纪念日、存为模板、页面
-/// 样式与删除。
+/// 样式与删除。可选项的回调为 null 时不显示这一项（功能关闭或设置未就绪）。
 ///
 /// 每一项先关闭面板，再执行对应动作（分享面板里选了长图时，截图要等面板
 /// 完全退场，见 `DiaryPreviewExportController.openShareSheet`）。
@@ -152,8 +162,8 @@ Future<void> showDiaryPreviewActionsSheet(
   BuildContext context, {
   required Future<void> Function() onShare,
   required Future<void> Function() onExport,
-  required Future<void> Function() onSetAsAnniversary,
   required Future<void> Function() onDelete,
+  Future<void> Function()? onSetAsAnniversary,
   Future<void> Function()? onSaveAsTemplate,
   Future<void> Function()? onOpenStyle,
   Future<void> Function()? onAddToNotebook,
@@ -218,11 +228,12 @@ Future<void> showDiaryPreviewActionsSheet(
                         ),
                   action: onAddToNotebook,
                 ),
-              item(
-                icon: const FaIcon(FontAwesomeIcons.heart, size: 16),
-                title: Text(l10n.previewSetAsAnniversary),
-                action: onSetAsAnniversary,
-              ),
+              if (onSetAsAnniversary != null)
+                item(
+                  icon: const FaIcon(FontAwesomeIcons.heart, size: 16),
+                  title: Text(l10n.previewSetAsAnniversary),
+                  action: onSetAsAnniversary,
+                ),
               if (onSaveAsTemplate != null)
                 item(
                   icon: const FaIcon(FontAwesomeIcons.layerGroup, size: 16),

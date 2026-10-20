@@ -618,6 +618,84 @@ void main() {
     );
   });
 
+  group('SettingsService app features', () {
+    const key = 'app.settings.app_features';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.appFeaturesRaw, isNull);
+
+      await settings.setAppFeaturesRaw(' {"calendar":false} ');
+      expect(settings.appFeaturesRaw, '{"calendar":false}');
+      expect(
+        (await SettingsService.create()).appFeaturesRaw,
+        '{"calendar":false}',
+      );
+
+      await settings.setAppFeaturesRaw('  ');
+      expect(settings.appFeaturesRaw, isNull);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(key), isFalse);
+
+      await settings.setAppFeaturesRaw('{"explore":false}');
+      await settings.setAppFeaturesRaw(null);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 7});
+      final settings = await SettingsService.create();
+      expect(settings.appFeaturesRaw, isNull);
+    });
+
+    test('notifies listeners when the raw value changes', () async {
+      final settings = await SettingsService.create();
+      final seen = <String?>[];
+      settings.appFeaturesRawNotifier.addListener(
+        () => seen.add(settings.appFeaturesRawNotifier.value),
+      );
+
+      await settings.setAppFeaturesRaw('{"notebooks":false}');
+      await settings.setAppFeaturesRaw(null);
+
+      expect(seen, <String?>['{"notebooks":false}', null]);
+    });
+
+    test(
+      'backups carry the toggles and older backups keep the local ones',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setAppFeaturesRaw('{"templates":false}');
+
+        expect(
+          BackupSettings.capture(settings)['appFeaturesRaw'],
+          '{"templates":false}',
+        );
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.appFeaturesRaw, '{"templates":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'appFeaturesRaw': <String, dynamic>{'timeCapsules': false},
+        });
+        expect(settings.appFeaturesRaw, '{"timeCapsules":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'appFeaturesRaw': null,
+        });
+        expect(settings.appFeaturesRaw, isNull);
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.containsKey(key), isFalse);
+      },
+    );
+  });
+
   group('SettingsService diary recent colors', () {
     const key = 'app.settings.diary_recent_colors';
     const raw = '{"text":["#FF3A7BD5"],"background":[]}';

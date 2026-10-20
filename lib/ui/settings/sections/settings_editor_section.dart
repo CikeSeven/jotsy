@@ -15,17 +15,23 @@ import 'package:node_diary/ui/diary_templates/providers/diary_template_providers
 import 'package:node_diary/ui/settings/pages/diary_toolbar_order_page.dart';
 import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
 import 'package:node_diary/ui/settings/pages/mood_options_page.dart';
+import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 
 /// 设置页编辑器配置区块。
-class SettingsEditorSection extends StatelessWidget {
+class SettingsEditorSection extends ConsumerWidget {
   const SettingsEditorSection({super.key, required this.settingsAsync});
 
   final AsyncValue<SettingsService> settingsAsync;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // 日记模板功能关闭时隐藏入口，数据保留：不放进分组（分组按项数画分隔
+    // 线，放一个空占位会多出一条）。
+    final templatesEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.templates),
+    );
     return settingsAsync.when(
       data: (settingsService) {
         return ValueListenableBuilder<String?>(
@@ -73,7 +79,8 @@ class SettingsEditorSection extends StatelessWidget {
                                   title: l10n.settingsEditorGroup,
                                   children: <Widget>[
                                     const _DiaryTypographyTile(),
-                                    const _DiaryTemplatesTile(),
+                                    if (templatesEnabled)
+                                      const _DiaryTemplatesTile(),
                                     _DayPhotoSuggestionsSwitch(
                                       settings: settingsService,
                                     ),

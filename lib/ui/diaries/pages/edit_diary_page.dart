@@ -61,6 +61,7 @@ import 'package:node_diary/ui/diary_templates/providers/diary_template_providers
 import 'package:node_diary/ui/diary_templates/sections/diary_template_picker_sheet.dart';
 import 'package:node_diary/ui/diary_templates/widgets/diary_template_strip.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
+import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/settings/widgets/style_editor/style_editor_common.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
@@ -244,7 +245,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _dayPhotos = DiaryDayPhotosController(
       library: ref.read(dayPhotoLibraryProvider),
     );
-    final presetCapsule = widget.createCapsuleUnlockAt;
+    // 时间胶囊功能关闭时隐藏入口，数据保留：入口预设的解封日不再生效（兜底；
+    // 日历的“写时间胶囊”入口已隐藏，新建流程也已忽略它）。
+    final presetCapsule = ref.read(appFeaturesProvider).timeCapsules
+        ? widget.createCapsuleUnlockAt
+        : null;
     // 在日记本里新建空白日记：预先收进这本（用户仍可在发布页取消）。
     final presetNotebookId = _isCreateEntry && widget.createDraftId == null
         ? widget.createNotebookId
@@ -281,6 +286,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       port: _EditDiaryTemplatePort(this),
       database: _database,
       clock: _templateClock,
+      // 时间胶囊功能关闭时模板里的胶囊预设不套用（预设本身留在模板里）。
+      capsulesEnabled: () => ref.read(appFeaturesProvider).timeCapsules,
       onUsed: (templateId) async {
         final settings = await ref.read(settingsServiceProvider.future);
         await recordDiaryTemplateUse(settings, templateId);
@@ -654,6 +661,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     required double Function(double panelProgress) resolveBottomSpacer,
     required bool contentLocked,
     required DiaryTextAppearance appearance,
+    required bool templatesEnabled,
   }) {
     final quillEditor = _buildQuillEditor(context, appearance: appearance);
     return LayoutBuilder(
@@ -669,7 +677,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
               contentLocked: contentLocked,
               appearance: appearance,
             ),
-            if (_isCreateEntry)
+            if (_isCreateEntry && templatesEnabled)
               IgnorePointer(
                 ignoring: contentLocked,
                 child: DiaryTemplateStrip(
@@ -760,6 +768,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         _isEditingNoteText &&
         !_isEditPanelExpanded;
     final showEditMetaPanel = _isEditEntry;
+    // 日记模板功能关闭时隐藏入口，数据保留：没有建议条，顶栏菜单里没有
+    // “选择模板”与“另存为模板”（自动套用见 applyInitialTemplate）。
+    final templatesEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.templates),
+    );
     final settingsAsync = ref.watch(settingsServiceProvider);
     settingsAsync.whenData(_bindToolbarSettingsService);
     settingsAsync.whenData(_bindDayPhotoSettings);
@@ -873,7 +886,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 icon: const FaIcon(FontAwesomeIcons.ellipsisVertical, size: 18),
                 items: <Widget>[
                   // 只在新建空白日记里出现（编辑已有日记、续写草稿时没有）。
-                  if (_templates.enabled)
+                  if (_templates.enabled && templatesEnabled)
                     ExpressiveMenuItem(
                       leadingIcon: const FaIcon(
                         FontAwesomeIcons.wandMagicSparkles,
@@ -903,12 +916,13 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                             ),
                       child: Text(context.l10n.diaryDayPhotosMenu),
                     ),
-                  ExpressiveMenuItem(
-                    leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
-                    onPressed: () =>
-                        _onEditorMenuAction(_EditorMenuAction.saveAsTemplate),
-                    child: Text(context.l10n.diaryTemplateSaveAs),
-                  ),
+                  if (templatesEnabled)
+                    ExpressiveMenuItem(
+                      leadingIcon: const FaIcon(FontAwesomeIcons.layerGroup),
+                      onPressed: () =>
+                          _onEditorMenuAction(_EditorMenuAction.saveAsTemplate),
+                      child: Text(context.l10n.diaryTemplateSaveAs),
+                    ),
                   ExpressiveMenuItem(
                     leadingIcon: const FaIcon(FontAwesomeIcons.penNib),
                     onPressed: () =>
@@ -942,6 +956,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                   resolveBottomSpacer: resolveEditorBottomSpacer,
                   contentLocked: _isEditPanelExpanded || _recordingPanelOpen,
                   appearance: ref.watch(diaryTextAppearanceProvider),
+                  templatesEnabled: templatesEnabled,
                 ),
               ),
               if (showEditMetaPanel &&

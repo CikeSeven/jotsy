@@ -16,7 +16,7 @@
 │  │  └─ theme/                      # Expressive 控件/表面/动效 token、配色与 provider
 │  ├─ core/
 │  │  ├─ database/                   # Drift 数据库（schema / query / write / migration / 纪念日 ops / 草稿箱 ops / 模板 ops / 日记本 ops（本子、成员与书序、统计）/ 日记范围与私密排除 SQL / 智能日记本规则拆分）
-│  │  └─ services/                   # 跨模块服务（设置、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入、设备身份验证（应用锁与上锁日记本共用）、分享到其他应用、按日期读取相册照片、图片尺寸与长图分片、应用内更新（检查 / 镜像线路 / 下载校验 / 安装）等）
+│  │  └─ services/                   # 跨模块服务（设置、功能管理开关（AppFeatures）、定位、天气、封面存储、导入字体、备份与网盘备份、其他日记应用与云端笔记导入、设备身份验证（应用锁与上锁日记本共用）、分享到其他应用、按日期读取相册照片、图片尺寸与长图分片、应用内更新（检查 / 镜像线路 / 下载校验 / 安装）等）
 │  ├─ ui/
 │  │  ├─ diaries/                    # 日记主业务模块（已分层）
 │  │  │  ├─ pages/                   # 页面壳层（路由/生命周期/组合）
@@ -28,7 +28,7 @@
 │  │  ├─ anniversaries/              # 纪念日与倒数日（日期推算、编辑页；日历与预览页的入口复用它）
 │  │  ├─ diary_templates/            # 日记模板（模型与正文白名单、变量、推荐规则、内置模板、套用与撤销、建议条与模板面板、管理页与模板编辑页）
 │  │  ├─ notebooks/                  # 日记本（书架面板 / 编辑页 / 管理页、首页范围与头部卡片、选本面板、目录与章节、智能规则编辑、统计与写作目标、上锁验证与重锁遮罩、导出成书入口）
-│  │  ├─ home|calendar|explore|settings/  # home/providers/：首页之外的页面请求切回“日记”Tab（如预览页点日记本胶囊）
+│  │  ├─ home|calendar|explore|settings/  # home/providers/：首页之外的页面请求切回“日记”Tab（如预览页点日记本胶囊）；home/models/home_tab.dart：首页 Tab 身份与按功能开关推出的可见 Tab；settings/providers/：功能管理开关 appFeaturesProvider
 │  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载、看图页（含长按分享 / 保存 / 打开日记面板）、列表右侧字母索引条 alphabet_index_bar.dart 等；expressive_menu/：全应用共用的锚定弹出菜单；long_image/：长图判定、保持比例的解码尺寸、分片拼图与 cover 裁切对齐）
 │  ├─ l10n/                          # 国际化封装
 │  └─ utils/                         # 工具函数（pinyin/：由 Unihan 生成的汉字拼音表与名称 A–Z 索引 NameIndexKey）
@@ -119,6 +119,7 @@
 - 必须：官网在 `docs/`（GitHub Pages，域名见 `docs/CNAME`），保持纯静态 HTML / CSS / 原生 JS 模块，禁止引入构建步骤与外部 CDN（国内访问不稳）；视觉与 app 同源（Material 3 Expressive、无渐变），颜色只用 `--c-*` 色槽，80 种主题色配色在 `docs/assets/data/themes.json`（由 `kColorPaletteFamilies` 经 `ColorScheme.fromSeed(tonalSpot)` 导出，改色板或配色算法时重新导出）；中英文写在同一元素（中文为正文，英文在 `data-en` / `data-en-html` / `data-en-<属性>`），改文案两种语言一起改；下载线路与 `AppUpdateSource.builtInSources` 同步；`privacy.html` 是 OAuth 同意屏幕引用的地址，禁止改路径，应用的联网场景或权限变化时同步更新中英两份政策与生效日期。
 - 必须：所有 `SnackBar` 提示统一通过 `HomeHintVisibilityScope.showTrackedSnackBar` 触发，禁止直接调用 `ScaffoldMessenger.showSnackBar`，以确保 Home 页 FAB 上移联动在所有提示场景下保持一致。带按钮（`action`）的 SnackBar 必须显式 `persist: false`：Flutter 3.38 起带 action 的 SnackBar 默认常驻、到时不关，撤销窗口与 FAB 上移会一直不结束（`showTrackedSnackBar` 有断言兜底）；禁止另起计时器强制关闭。
 - 必须：设置页按语义分组组织一级信息架构（如“外观与语言 / 编辑器 / 数据与隐私 / 关于”）；一级页优先展示导航与低风险项。
+- 必须：功能管理（设置 → 功能管理，`AppFeaturesPage`）的开关只存于 `AppFeatures`（单个 JSON 设置键 `app.settings.app_features`，逐字段容错，随备份导出与失败回滚），经 `appFeaturesProvider` 读取、`saveAppFeatures` 写入，禁止另加零散的功能开关设置键。可关闭的有日历 Tab、探索 Tab（日记与设置始终保留）、日记本、纪念日、日记模板、时间胶囊，默认全部开启；关闭只隐藏该功能在应用里的全部入口、选项与自动行为，数据一律保留，重新开启即恢复。首页底栏由 `visibleHomeTabs` 按开关生成，当前页、FAB 与返回键一律按 `HomeTab` 身份判断，禁止再按固定下标；可见集合变化时保持当前 Tab（它被关闭时回到日记），被关闭 Tab 的页面随之销毁。纪念日依附日历：界面只读 `anniversariesEnabled`（`calendar && anniversaries`），日历关闭时一并关闭；功能管理页里纪念日开关放在日历下方，只在日历开启时显示。日记本关闭时：私密日记本中的日记继续被统一谓词排除（禁止为此放回全局列表），有私密本子时关闭前须先确认；首页停在某本时经页面自己的范围控制器回到全部日记（不 `popUntil`、不提示已删除）；导入其他应用时来源文件夹按标签落地；发布新日记不写草稿里的日记本成员。时间胶囊关闭时发布忽略草稿与模板预设里的胶囊，已有胶囊照常显示与解封；模板关闭时不显示建议条、不自动套用（含日记本默认模板）。新增可关闭的功能必须在 `AppFeatures` 登记并在功能管理页加开关，隐藏它在所有模块里的入口、设置项与自动行为，并补“关闭时入口不出现、开启时照常”的测试。视觉规范见 DESIGN.md §5.3。
 - 必须：高风险或高复杂设置项（如数据导入导出、应用锁、回收站）必须下沉到二级页面，不得在设置首页平铺堆叠。
 - 必须：亮色/暗色主题都保证文字和图标可读性，不允许出现暗色模式全黑图标等失配。
 - 必须：涉及颜色的 UI 改动必须同步适配暗色主题，禁止硬编码 `Colors.white/Colors.black` 作为固定背景或前景色；优先使用 `colorScheme` 语义色并在明暗主题分别验证。

@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/pages/appearance_language_page.dart';
 import 'package:node_diary/ui/settings/pages/about_page.dart';
+import 'package:node_diary/ui/settings/pages/app_features_page.dart';
 import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
@@ -12,6 +13,7 @@ import '../../notebooks/pages/notebooks_page.dart';
 import '../../widgets/page_header.dart';
 import '../../../app/theme/app_effects.dart';
 import '../controllers/app_update_controller.dart';
+import '../providers/app_features_provider.dart';
 import '../widgets/app_update_badge.dart';
 
 /// 设置页：按语义分组展示一级入口，降低首屏复杂度。
@@ -67,6 +69,21 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
+            const SizedBox(height: 12),
+            _SettingsDestination(
+              icon: FontAwesomeIcons.toggleOn,
+              title: l10n.settingsFeaturesTitle,
+              subtitle: l10n.settingsFeaturesSubtitle,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) {
+                      return const AppFeaturesPage();
+                    },
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 24),
             _SettingsDestination(
               icon: FontAwesomeIcons.tags,
@@ -83,21 +100,35 @@ class SettingsPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 12),
-            _SettingsDestination(
-              icon: FontAwesomeIcons.book,
-              title: l10n.notebookTitle,
-              subtitle: l10n.notebookSettingsSubtitle,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) {
-                      return const NotebooksPage();
-                    },
-                  ),
+            // 日记本功能关闭时连同其后的间距一起隐藏，避免出现双倍间隔。
+            Consumer(
+              builder: (BuildContext context, WidgetRef ref, Widget? child) {
+                final enabled = ref.watch(
+                  appFeaturesProvider.select((f) => f.notebooks),
+                );
+                if (!enabled) return const SizedBox.shrink();
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    _SettingsDestination(
+                      icon: FontAwesomeIcons.book,
+                      title: l10n.notebookTitle,
+                      subtitle: l10n.notebookSettingsSubtitle,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (BuildContext context) {
+                              return const NotebooksPage();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 );
               },
             ),
-            const SizedBox(height: 12),
             _SettingsDestination(
               icon: FontAwesomeIcons.shieldHalved,
               title: l10n.settingsDataPrivacy,

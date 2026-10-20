@@ -123,10 +123,10 @@ class _DiaryTemplatePickerPreviewState
                   color: colorScheme.onSurfaceVariant,
                 ),
               ),
-              if (widget.template.hasPresets) ...<Widget>[
-                const SizedBox(height: AppSpacing.m),
-                DiaryTemplatePresetSummary(template: widget.template),
-              ],
+              DiaryTemplatePresetSummary(
+                template: widget.template,
+                padding: const EdgeInsets.only(top: AppSpacing.m),
+              ),
               const SizedBox(height: AppSpacing.m),
               DecoratedBox(
                 decoration: BoxDecoration(

@@ -41,6 +41,7 @@ import '../../notebooks/widgets/notebook_chapter_divider.dart';
 import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../models/diary_card_style/diary_card_style.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../viewmodels/diary_view_preferences.dart';
@@ -233,7 +234,15 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     // 当前范围（全部日记 / 某本日记本）；全部日记时不订阅书架列表。
     final scopeResolution = ref.watch(homeNotebookScopeResolutionProvider);
     final currentNotebook = scopeResolution.notebook;
-    final hasNotebooks = ref.watch(hasNotebooksProvider);
+    // 日记本功能关闭时隐藏入口，数据保留：不订阅书架，标签栏不留切换胶囊。
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final hasNotebooks = notebooksEnabled && ref.watch(hasNotebooksProvider);
+    ref.listen<bool>(
+      appFeaturesProvider.select((features) => features.notebooks),
+      (_, bool enabled) => _scopeController.handleFeatureToggled(enabled),
+    );
     ref.listen<HomeNotebookScopeResolution>(
       homeNotebookScopeResolutionProvider,
       _scopeController.handleResolutionChanged,
@@ -298,8 +307,12 @@ class _DiariesPage extends ConsumerState<DiariesPage>
         );
         final hasMoreDiaries = _hasMoreDiaries;
         // 普通日记本里多选才有“移出 / 移动到”；头部卡片与列表卡片同一侧边距。
+        // 功能关闭的那一刻范围还没退回全部日记（见 handleFeatureToggled），
+        // 这里先不给本子里的操作。
         final manualNotebook =
-            currentNotebook != null && currentNotebook.isManual
+            notebooksEnabled &&
+                currentNotebook != null &&
+                currentNotebook.isManual
             ? currentNotebook
             : null;
         final cardStyle = ref.watch(diaryCardStyleProvider);
@@ -338,15 +351,21 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                 onVerticalDragUpdate: _handleTagFilterDragUpdate,
                 onVerticalDragEnd: _handleTagFilterDragEnd,
                 onCollapse: () => _animateTagFiltersTo(false),
-                leading: NotebookSwitcherChip(
-                  notebook: currentNotebook,
-                  onTap: () => unawaited(_scopeController.openShelf()),
-                ),
-                leadingWidth: NotebookSwitcherChip.measureWidth(
-                  context,
-                  currentNotebook,
-                ),
-                keepVisible: hasNotebooks || currentNotebook != null,
+                leading: notebooksEnabled
+                    ? NotebookSwitcherChip(
+                        notebook: currentNotebook,
+                        onTap: () => unawaited(_scopeController.openShelf()),
+                      )
+                    : null,
+                leadingWidth: notebooksEnabled
+                    ? NotebookSwitcherChip.measureWidth(
+                        context,
+                        currentNotebook,
+                      )
+                    : 0,
+                keepVisible:
+                    notebooksEnabled &&
+                    (hasNotebooks || currentNotebook != null),
               ),
             );
           },
@@ -460,10 +479,13 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                       onDeleteSelected: () => unawaited(
                                         _controller.deleteSelectedDiaries(),
                                       ),
-                                      onAddToNotebookSelected: () => unawaited(
-                                        _membershipController
-                                            .addSelectedToNotebooks(),
-                                      ),
+                                      // 日记本功能关闭时多选栏不给收录 / 移出 / 移动。
+                                      onAddToNotebookSelected: !notebooksEnabled
+                                          ? null
+                                          : () => unawaited(
+                                              _membershipController
+                                                  .addSelectedToNotebooks(),
+                                            ),
                                       onRemoveFromNotebookSelected:
                                           manualNotebook == null
                                           ? null

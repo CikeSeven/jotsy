@@ -13,9 +13,13 @@ extension _CalendarDisplayOptionsActions on _CalendarPageController {
 
   /// 打开调整面板；面板内每次修改即时保存，日历在遮罩后方同步重绘。
   Future<void> openDisplayOptions() {
+    // 时间胶囊、纪念日功能关闭时隐藏对应选项，数据保留。
+    final features = _state.ref.read(appFeaturesProvider);
     return showCalendarDisplayOptionsSheet(
       _state.context,
       options: _state._displayOptions,
+      showCapsuleBadgeOption: features.timeCapsules,
+      showAnniversariesOption: features.anniversariesEnabled,
       onChanged: (CalendarDisplayOptions next) {
         // 刚切到“上次的视图”时以当前格式为起点，否则会沿用很久以前的记录。
         final adjusted = next.defaultFormat == CalendarDefaultFormat.remember

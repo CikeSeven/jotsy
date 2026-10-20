@@ -27,6 +27,7 @@ class BackupSettings {
     'diaryRecentColorsRaw': settingsService.diaryRecentColorsRaw,
     'diaryShareOptionsRaw': settingsService.diaryShareOptionsRaw,
     'diaryExportOptionsRaw': settingsService.diaryExportOptionsRaw,
+    'appFeaturesRaw': settingsService.appFeaturesRaw,
     'diaryToolbarOrderRaw': settingsService.diaryToolbarOrderRaw,
     'diaryToolbarHiddenItemsRaw': settingsService.diaryToolbarHiddenItemsRaw,
     'diaryToolbarCurrentTimeFormatRaw':
@@ -185,6 +186,17 @@ class BackupSettings {
     if (settingsNode.containsKey('diaryExportOptionsRaw')) {
       final exportOptionsRaw = settingsNode['diaryExportOptionsRaw'];
       await settingsService.setDiaryExportOptionsRaw(switch (exportOptionsRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
+    }
+
+    // 功能管理同上：旧版备份没有时保留本机开关，显式 null 时恢复全部开启。
+    if (settingsNode.containsKey('appFeaturesRaw')) {
+      final appFeaturesRaw = settingsNode['appFeaturesRaw'];
+      await settingsService.setAppFeaturesRaw(switch (appFeaturesRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

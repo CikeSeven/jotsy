@@ -11,6 +11,7 @@ import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
+import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
@@ -45,6 +46,7 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
     this.busy = false,
     this.publishTime,
     this.capsuleEnabled = false,
+    this.showDraftCapsule = true,
     this.onPublish,
     this.onProgressChanged,
   });
@@ -61,6 +63,11 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
 
   /// 是否提供时间胶囊（只有发布新日记时）。
   final bool capsuleEnabled;
+
+  /// 是否显示草稿里已有的胶囊：收起栏的胶囊摘要、“封存”按钮文案与发表
+  /// 时间行的“跟随定时锁”。发布页在时间胶囊功能关闭时为 false——发布时会
+  /// 忽略胶囊，不能显示用户看不到、也不会生效的设置。
+  final bool showDraftCapsule;
 
   /// 编辑页自动保存时不传主操作，发布页仍显示发布按钮。
   final VoidCallback? onPublish;
@@ -323,7 +330,15 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
     final tags = ref.watch(tagListProvider);
     // 只订阅日记本表；篇数（会随日记写入重查）由日记本子页自己订阅，子页
     // 不可见时不构建，编辑页自动保存不会牵动这条查询。
-    final notebooks = ref.watch(notebooksProvider).value;
+    //
+    // 日记本功能关闭时隐藏入口，数据保留：不订阅书架，没有日记本行与摘要项；
+    // 草稿里已选的本子原样保存，编辑页照常写回成员关系（没改动就不写）。
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final notebooks = notebooksEnabled
+        ? ref.watch(notebooksProvider).value
+        : const <NotebookView>[];
     final moodOptions = ref
         .watch(moodOptionsProvider)
         .maybeWhen(
@@ -359,6 +374,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
               notebooks: notebooks ?? const <NotebookView>[],
               busy: widget.busy,
               onPublish: widget.onPublish,
+              showCapsule: widget.showDraftCapsule,
             ),
           ),
           content: PublishPanelMainPage(
@@ -369,11 +385,14 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             busy: widget.busy,
             publishTime: widget.publishTime,
             capsuleEnabled: widget.capsuleEnabled,
+            showDraftCapsule: widget.showDraftCapsule,
             onOpenTags: _panelCoordinator.openTagPage,
             onOpenCapsule: _openCapsulePage,
             onPublish: widget.onPublish,
             notebooks: notebooks ?? const <NotebookView>[],
-            onOpenNotebooks: _panelCoordinator.openNotebookPage,
+            onOpenNotebooks: notebooksEnabled
+                ? _panelCoordinator.openNotebookPage
+                : null,
           ),
         ),
         PublishPanelPageScaffold(

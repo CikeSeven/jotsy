@@ -571,6 +571,8 @@ class DiariesPageController {
   void openViewOptions() {
     final scope = _state._scopeController.resolution;
     final notebook = scope.notebook;
+    // 日记本功能关闭时隐藏入口，数据保留：没有书架入口与本子排序。
+    final notebooksEnabled = _state.ref.read(appFeaturesProvider).notebooks;
     unawaited(
       showDiaryViewOptionsSheet(
         _state.context,
@@ -579,9 +581,10 @@ class DiariesPageController {
         onSortModeChanged: _changeSortMode,
         onLayoutModeChanged: _changeLayoutMode,
         onOpenCardStyle: openCardStyleEditor,
-        onOpenNotebookShelf: () =>
-            unawaited(_state._scopeController.openShelf()),
-        notebookSort: scope.sort,
+        onOpenNotebookShelf: notebooksEnabled
+            ? () => unawaited(_state._scopeController.openShelf())
+            : null,
+        notebookSort: notebooksEnabled ? scope.sort : null,
         allowBookOrder: notebook != null && !notebook.isSmart,
         onNotebookSortChanged: _state._scopeController.changeNotebookSort,
       ),

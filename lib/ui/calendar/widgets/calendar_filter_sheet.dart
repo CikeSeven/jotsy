@@ -11,6 +11,7 @@ import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../notebooks/providers/notebook_providers.dart';
 import '../../notebooks/viewmodels/notebook_view.dart';
 import '../../notebooks/widgets/notebook_cover_parts.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../models/calendar_marker_filter.dart';
 import 'calendar_options_controls.dart';
 
@@ -82,9 +83,16 @@ class _CalendarFilterSheetState extends ConsumerState<CalendarFilterSheet> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final tags = ref.watch(tagListProvider).asData?.value ?? const <Tag>[];
-    final notebooks = calendarFilterNotebooks(
-      ref.watch(notebooksProvider).asData?.value ?? const <NotebookView>[],
+    // 日记本功能关闭时隐藏入口，数据保留：不订阅书架，日记本一组不出现。
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
     );
+    final notebooks = notebooksEnabled
+        ? calendarFilterNotebooks(
+            ref.watch(notebooksProvider).asData?.value ??
+                const <NotebookView>[],
+          )
+        : const <NotebookView>[];
     final filter = _filter;
     return SafeArea(
       top: false,

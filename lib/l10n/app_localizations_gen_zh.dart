@@ -6960,4 +6960,61 @@ class AppLocalizationsZh extends AppLocalizations {
   String tagPickerSearchEmpty(String query) {
     return '没有找到「$query」';
   }
+
+  @override
+  String get settingsFeaturesTitle => '功能管理';
+
+  @override
+  String get settingsFeaturesSubtitle => '选择要用的页面和功能';
+
+  @override
+  String get settingsFeaturesPagesGroup => '页面';
+
+  @override
+  String get settingsFeaturesPagesFooter => '日记和设置始终保留。关闭的页面不再出现在底部导航，数据不受影响。';
+
+  @override
+  String get settingsFeaturesCalendarSubtitle => '按月查看日记，含农历、节假日与纪念日';
+
+  @override
+  String get settingsFeaturesExploreSubtitle => '统计、那年今日、心情趋势与照片墙';
+
+  @override
+  String get settingsFeaturesFeaturesGroup => '功能';
+
+  @override
+  String get settingsFeaturesFeaturesFooter =>
+      '关闭后相关入口和选项都会隐藏，已有数据保留，重新开启即可恢复。';
+
+  @override
+  String get settingsFeaturesNotebooksSubtitle => '把日记收进不同的本子，分章节、导出成书';
+
+  @override
+  String get settingsFeaturesAnniversaries => '纪念日';
+
+  @override
+  String get settingsFeaturesAnniversariesSubtitle => '纪念日与倒数日，标在日历上';
+
+  @override
+  String get settingsFeaturesTemplates => '日记模板';
+
+  @override
+  String get settingsFeaturesTemplatesSubtitle => '新建日记时套用写好的格式';
+
+  @override
+  String get settingsFeaturesTimeCapsules => '时间胶囊';
+
+  @override
+  String get settingsFeaturesTimeCapsulesSubtitle => '写给未来，到期才能打开';
+
+  @override
+  String get settingsFeaturesNotebooksOffTitle => '关闭日记本？';
+
+  @override
+  String settingsFeaturesNotebooksOffMessage(int count) {
+    return '有 $count 本隐藏或上锁的日记本，关闭后其中的日记暂时看不到，重新开启日记本即可恢复。';
+  }
+
+  @override
+  String get settingsFeaturesNotebooksOffConfirm => '关闭';
 }

@@ -10004,5 +10004,82 @@
         "type": "String"
       }
     }
+  },
+  "settingsFeaturesTitle": "Features",
+  "@settingsFeaturesTitle": {
+    "description": "Settings home and features page: title of the feature toggles page."
+  },
+  "settingsFeaturesSubtitle": "Choose the pages and features you use",
+  "@settingsFeaturesSubtitle": {
+    "description": "Settings home: subtitle of the features entry."
+  },
+  "settingsFeaturesPagesGroup": "Pages",
+  "@settingsFeaturesPagesGroup": {
+    "description": "Features page: group title for pages (bottom bar tabs) that can be turned off."
+  },
+  "settingsFeaturesPagesFooter": "Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn't affected.",
+  "@settingsFeaturesPagesFooter": {
+    "description": "Features page: footer of the pages group."
+  },
+  "settingsFeaturesCalendarSubtitle": "View diaries by month, with lunar dates, holidays and anniversaries",
+  "@settingsFeaturesCalendarSubtitle": {
+    "description": "Features page: subtitle of the calendar switch."
+  },
+  "settingsFeaturesExploreSubtitle": "Stats, on this day, mood trends and photo wall",
+  "@settingsFeaturesExploreSubtitle": {
+    "description": "Features page: subtitle of the explore switch."
+  },
+  "settingsFeaturesFeaturesGroup": "Diary features",
+  "@settingsFeaturesFeaturesGroup": {
+    "description": "Features page: group title for diary features that can be turned off."
+  },
+  "settingsFeaturesFeaturesFooter": "Turning a feature off hides its entries and options. Your data stays and returns when you turn it back on.",
+  "@settingsFeaturesFeaturesFooter": {
+    "description": "Features page: footer of the diary features group."
+  },
+  "settingsFeaturesNotebooksSubtitle": "Sort diaries into notebooks, with chapters and book export",
+  "@settingsFeaturesNotebooksSubtitle": {
+    "description": "Features page: subtitle of the notebooks switch."
+  },
+  "settingsFeaturesAnniversaries": "Anniversaries",
+  "@settingsFeaturesAnniversaries": {
+    "description": "Features page: title of the anniversaries switch."
+  },
+  "settingsFeaturesAnniversariesSubtitle": "Anniversaries and countdowns, marked on the calendar",
+  "@settingsFeaturesAnniversariesSubtitle": {
+    "description": "Features page: subtitle of the anniversaries switch."
+  },
+  "settingsFeaturesTemplates": "Diary templates",
+  "@settingsFeaturesTemplates": {
+    "description": "Features page: title of the diary templates switch."
+  },
+  "settingsFeaturesTemplatesSubtitle": "Start new diaries from a ready-made format",
+  "@settingsFeaturesTemplatesSubtitle": {
+    "description": "Features page: subtitle of the diary templates switch."
+  },
+  "settingsFeaturesTimeCapsules": "Time capsules",
+  "@settingsFeaturesTimeCapsules": {
+    "description": "Features page: title of the time capsules switch."
+  },
+  "settingsFeaturesTimeCapsulesSubtitle": "Write to the future; opens only when it's due",
+  "@settingsFeaturesTimeCapsulesSubtitle": {
+    "description": "Features page: subtitle of the time capsules switch."
+  },
+  "settingsFeaturesNotebooksOffTitle": "Turn off notebooks?",
+  "@settingsFeaturesNotebooksOffTitle": {
+    "description": "Features page: title of the confirmation shown when turning notebooks off with private notebooks."
+  },
+  "settingsFeaturesNotebooksOffMessage": "{count, plural, =1{You have 1 hidden or locked notebook. Its diaries stay out of sight until you turn notebooks back on.} other{You have {count} hidden or locked notebooks. Their diaries stay out of sight until you turn notebooks back on.}}",
+  "@settingsFeaturesNotebooksOffMessage": {
+    "description": "Features page: body of the turn-off-notebooks confirmation; count is the number of hidden or locked notebooks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsFeaturesNotebooksOffConfirm": "Turn off",
+  "@settingsFeaturesNotebooksOffConfirm": {
+    "description": "Features page: confirm button of the turn-off-notebooks confirmation."
   }
 }

@@ -13,6 +13,7 @@ import '../../../home/widgets/home_hint_visibility_scope.dart';
 import '../../../notebooks/controllers/notebook_navigation.dart';
 import '../../../notebooks/providers/notebook_providers.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
+import '../../../settings/providers/app_features_provider.dart';
 import '../../../widgets/action_loading_overlay.dart';
 import '../../../widgets/app_top_bar.dart';
 import '../../../widgets/delayed_loading_indicator.dart';
@@ -319,9 +320,15 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       moodEmoji: viewData.moodEmoji,
       firstTagColor: detail.tags.isEmpty ? null : detail.tags.first.color,
     );
-    final notebooks =
-        ref.watch(diaryNotebooksProvider(widget.diaryId)).value ??
-        const <NotebookView>[];
+    // 日记本功能关闭时隐藏入口，数据保留：不订阅这篇所在的本子，信息栏
+    // 没有日记本胶囊（也不因它显示信息栏）。
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final notebooks = notebooksEnabled
+        ? ref.watch(diaryNotebooksProvider(widget.diaryId)).value ??
+              const <NotebookView>[]
+        : const <NotebookView>[];
     return DiaryPreviewSurface(
       resolved: resolved,
       scrollController: _scrollController,
@@ -340,8 +347,10 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
           staticCover: _export.staticCover,
           paging: widget.paging,
           notebooks: notebooks,
-          onOpenNotebook: (NotebookView notebook) =>
-              unawaited(openNotebookFromAnywhere(context, ref, notebook)),
+          onOpenNotebook: notebooksEnabled
+              ? (NotebookView notebook) =>
+                    unawaited(openNotebookFromAnywhere(context, ref, notebook))
+              : null,
           onOpenImage: _openImageViewer,
           actions: DiaryPreviewActions(
             onOpenTypography: () => showDiaryTypographySheet(context),

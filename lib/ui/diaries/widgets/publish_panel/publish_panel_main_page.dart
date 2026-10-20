@@ -39,6 +39,7 @@ class PublishPanelMainPage extends StatelessWidget {
     required this.busy,
     required this.publishTime,
     required this.capsuleEnabled,
+    this.showDraftCapsule = true,
     required this.onOpenTags,
     required this.onOpenCapsule,
     required this.onPublish,
@@ -53,6 +54,10 @@ class PublishPanelMainPage extends StatelessWidget {
   final bool busy;
   final PublishTimeOption? publishTime;
   final bool capsuleEnabled;
+
+  /// 是否显示草稿里已有的胶囊（“封存”按钮、发表时间跟随胶囊），见
+  /// `PublishDiaryPanel.showDraftCapsule`。
+  final bool showDraftCapsule;
   final VoidCallback onOpenTags;
   final VoidCallback onOpenCapsule;
 
@@ -99,6 +104,7 @@ class PublishPanelMainPage extends StatelessWidget {
               draft: draft,
               label: publishTime.label,
               onPick: publishTime.onPick,
+              followCapsule: showDraftCapsule,
             ),
           ],
           if (capsuleEnabled) ...<Widget>[
@@ -122,7 +128,7 @@ class PublishPanelMainPage extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
           child: ValueListenableSelector<DiaryMetaDraft, bool>(
             valueListenable: draft,
-            selector: (value) => value.capsule != null,
+            selector: (value) => showDraftCapsule && value.capsule != null,
             builder: (context, sealing, _) => PublishPanelActionButton(
               busy: busy,
               sealing: sealing,

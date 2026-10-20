@@ -11,20 +11,40 @@ class SettingsSwitchTile extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.subtitle,
+    this.nested = false,
   });
+
+  /// 从属开关（[nested]）的内容起点：比平级行多缩进一级。分组里它上方的
+  /// 分割线也从这里开始（见 `SettingsCardGroupDivider.indent`）。
+  static const double nestedIndent = 40;
 
   final String title;
   final String? subtitle;
   final bool value;
   final ValueChanged<bool>? onChanged;
 
+  /// 是否为上一行的从属开关（如功能管理里日历下方的纪念日）：内容缩进一级、
+  /// 标题字号与字重轻一档，一眼看出它挂在上一行之下，而不是并列的一项。
+  final bool nested;
+
   @override
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
     return SwitchListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      contentPadding: EdgeInsetsDirectional.only(
+        start: nested ? nestedIndent : 16,
+        end: 16,
+        top: 2,
+        bottom: 2,
+      ),
       value: value,
-      title: Text(title),
+      // 与 listTileTheme 的标题样式合并，只改字号与字重。
+      title: Text(
+        title,
+        style: nested
+            ? const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)
+            : null,
+      ),
       subtitle: subtitle == null ? null : Text(subtitle),
       onChanged: onChanged,
     );

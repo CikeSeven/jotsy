@@ -50,7 +50,14 @@ extension EditDiaryTemplateFlow on EditDiaryController {
   /// 模板，见 `DiaryTemplatePrefs.autoApplyCandidates`）逐个查库，套用第一个
   /// 仍存在的：规则指向的模板被删掉时自然落到下一个，而不是什么都不套。
   /// “此刻”与套用控制器用同一个时钟，时间段与变量里的时间不会错开。
+  ///
+  /// 日记模板功能关闭时什么也不套用（入口带来的、自动套用的都不套），新建
+  /// 空白日记就是空白；偏好与模板原样保留，重新开启即恢复。
   Future<void> applyInitialTemplate() async {
+    // 先等设置就绪：之前 appFeaturesProvider 给的是全部开启的默认值。
+    final settings = await _state.ref.read(settingsServiceProvider.future);
+    if (!_state.mounted) return;
+    if (!_state.ref.read(appFeaturesProvider).templates) return;
     final launch = _state.widget.createTemplate;
     if (launch != null) {
       await _applyTemplate(
@@ -60,8 +67,6 @@ extension EditDiaryTemplateFlow on EditDiaryController {
       );
       return;
     }
-    final settings = await _state.ref.read(settingsServiceProvider.future);
-    if (!_state.mounted) return;
     final candidates = DiaryTemplatePrefs.decode(settings.diaryTemplatePrefsRaw)
         .autoApplyCandidates(
           now: _state._templateClock(),

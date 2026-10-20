@@ -3,16 +3,17 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 
-/// 选中日期无日记时的空态引导区。
+/// 选中日期无日记时的空态引导区。[onAction] 为 null 时只显示文案，不留
+/// 按钮与它上方的间距。
 class CalendarDayEmptyState extends StatelessWidget {
   const CalendarDayEmptyState({
     super.key,
-    required this.onAction,
+    this.onAction,
     this.message,
     this.actionLabel,
   });
 
-  final VoidCallback onAction;
+  final VoidCallback? onAction;
   final String? message;
   final String? actionLabel;
 
@@ -49,11 +50,13 @@ class CalendarDayEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            const SizedBox(height: AppSpacing.l),
-            FilledButton.tonal(
-              onPressed: onAction,
-              child: Text(displayActionLabel),
-            ),
+            if (onAction != null) ...<Widget>[
+              const SizedBox(height: AppSpacing.l),
+              FilledButton.tonal(
+                onPressed: onAction,
+                child: Text(displayActionLabel),
+              ),
+            ],
           ],
         ),
       ),

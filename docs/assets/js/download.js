@@ -9,7 +9,9 @@
 //   两路结果版本相同时合并：下载次数、SHA-256 取自接口，英文更新说明取自清单。
 //
 // 累计下载只统计 .apk：jotsy-update.json 每台装了 app 的手机每 2 小时会自动拉一次，
-// SHA256SUMS.txt 也会被更新流程读取，算进去会让数字越来越虚高。
+// SHA256SUMS.txt 也会被更新流程读取，算进去会让数字越来越虚高。数字优先取接口的实时值；
+// 接口连不上或被限流（未登录每个 IP 每小时 60 次）时，取 download-stats.yml 每小时写进
+// 最新 Release 的 jotsy-downloads.json（同样经允许跨域的镜像读取），国内访客也看得到。
 //
 // 更新说明：最新版本比“更新”一节里写死的最新一条还新时，从更新说明的
 // “## 版本要点 / ## Highlights”一节（没有就取第一组列表）生成一张新卡片放在最前，
@@ -39,6 +41,7 @@ const CORS_PREFIXES = ['https://gh-proxy.com/', 'https://gh.llkk.cc/'];
 const ABIS = ['arm64-v8a', 'armeabi-v7a', 'x86_64'];
 const CACHE_KEY = 'jotsy.release.v2';
 const STARS_KEY = 'jotsy.stars.v1';
+const STATS_KEY = 'jotsy.downloads.v1';
 const ROUTE_KEY = 'jotsy.route';
 const CACHE_MS = 60 * 60 * 1000;
 
@@ -47,6 +50,7 @@ const $$ = (sel) => [...document.querySelectorAll(sel)];
 const staticTag = document.querySelector('[data-dl-version]')?.textContent.trim() || 'v0.7.0';
 
 let release = null; // { source, tag, date, assets: [{ name, abi, size, sha256, url }], downloads, notes: { zh, en } }
+let statsTotal = null; // jotsy-downloads.json 里的累计下载（每小时统计一次）
 let route = readRoute();
 let autoPick = null; // { id, ms, lang } | { failed: true, lang } | null（还没测）
 let probing = false;
@@ -141,6 +145,13 @@ async function fromManifest(prefix) {
       url: `${GH}/releases/download/${m.tag}/${a.name}`,
     })),
   };
+}
+
+/** 定时统计的累计下载（download-stats.yml 写入最新 Release），经允许跨域的镜像读取。 */
+async function fromStats(prefix) {
+  const s = await fetchJson(`${prefix}${GH}/releases/latest/download/jotsy-downloads.json`);
+  if (!s || !Number.isInteger(s.total) || s.total < 0) throw new Error('bad download stats');
+  return s.total;
 }
 
 function assetUrl(abi) {
@@ -269,11 +280,7 @@ function renderRelease() {
   const newer = compareTags(release.tag, staticTag) > 0;
   $$('[data-dl-version], [data-latest-version]').forEach((el) => (el.textContent = release.tag));
   $$('[data-dl-date]').forEach((el) => release.date && (el.textContent = release.date));
-  const total = document.querySelector('[data-dl-total]');
-  if (total && release.downloads) {
-    total.hidden = false;
-    total.querySelector('[data-dl-total-value]').textContent = t('downloads', { n: formatNumber(release.downloads) });
-  }
+  renderTotal();
   if (newer) {
     const pill = document.querySelector('[data-release-pill]');
     if (pill) {
@@ -288,6 +295,15 @@ function renderRelease() {
   renderTimeline();
   renderSha();
   renderLinks();
+}
+
+/** 累计下载：接口的实时值优先，没有时用每小时的统计文件；都没有就不显示。 */
+function renderTotal() {
+  const box = document.querySelector('[data-dl-total]');
+  const total = release?.downloads ?? statsTotal;
+  if (!box || !total) return;
+  box.hidden = false;
+  box.querySelector('[data-dl-total-value]').textContent = t('downloads', { n: formatNumber(total) });
 }
 
 /** “更新”一节：比写死的条目更新的版本，自动在最前补一条。 */
@@ -379,7 +395,9 @@ function loadRelease() {
   if (cached) {
     release = cached;
     renderRelease();
-    return;
+    // 缓存里已经有接口的数据（下载次数、SHA-256）才算完整；只有镜像清单时仍去请求接口，
+    // 否则接口一次没连上，这一小时里下载次数和校验值都补不回来
+    if (cached.source === 'api') return;
   }
   // 各路结果先到先渲染；同版本的后到结果合并进来（补下载次数、SHA-256、英文说明）
   const accept = (next) => {
@@ -388,11 +406,26 @@ function loadRelease() {
     session(CACHE_KEY, release);
     renderRelease();
   };
-  for (const attempt of [fromApi(), ...CORS_PREFIXES.map((p) => fromManifest(p))]) {
+  const attempts = cached ? [fromApi()] : [fromApi(), ...CORS_PREFIXES.map((p) => fromManifest(p))];
+  for (const attempt of attempts) {
     attempt.then(accept).catch(() => {
       /* 这一路失败不影响其他路；全部失败时保留 HTML 里的版本与直链 */
     });
   }
+}
+
+async function loadStats() {
+  let total = session(STATS_KEY);
+  if (total == null) {
+    try {
+      total = await Promise.any(CORS_PREFIXES.map((p) => fromStats(p)));
+      session(STATS_KEY, total);
+    } catch (e) {
+      return; // 镜像都读不到（或统计文件还没生成）时只依赖接口
+    }
+  }
+  statsTotal = total;
+  renderTotal();
 }
 
 async function loadStars() {
@@ -482,6 +515,7 @@ if (section) {
 const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1200));
 idle(() => {
   loadRelease();
+  loadStats();
   loadStars();
 });
 
@@ -489,5 +523,6 @@ onLangChange(() => {
   if (section && route === 'auto') pickRoute();
   renderRouteStatus();
   renderRelease();
+  renderTotal(); // 版本信息还没到、只有统计文件时 renderRelease 不会重画下载次数
   renderLinks();
 });

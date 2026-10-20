@@ -161,8 +161,7 @@ void main() {
       _expectWellFormed(js, result);
     });
 
-    test('an illegal lexeme only drops highlighting on its own line', () {
-      // `#x` 是 JS 语法定义里的非法记号：整块解析会被放弃。
+    test('modern private fields keep the whole block highlighted', () {
       const js =
           'class A {\n  #x = 1;\n  get() { return this.#x }\n}\n'
           'const y = 2;';
@@ -171,9 +170,25 @@ void main() {
       expect(_roleAt(js, result, 'const'), DiaryCodeTokenRole.keyword);
       expect(_roleAt(js, result, 'class'), DiaryCodeTokenRole.keyword);
       expect(_roleAt(js, result, '2'), DiaryCodeTokenRole.number);
-      // 仍被放弃的行按纯文本显示。
-      final badLine = js.indexOf('#x = 1;');
-      expect(result.overlapping(badLine, badLine + 7), isEmpty);
+      expect(_roleAt(js, result, '1'), DiaryCodeTokenRole.number);
+      expect(_roleAt(js, result, 'return'), DiaryCodeTokenRole.keyword);
+      expect(result.hasFullContext, isTrue);
+    });
+
+    test('private fields preserve multiline comments and source offsets', () {
+      const js =
+          'class Counter {\n  #count = 1;\n  /* 🌍 first\n'
+          '     second */\n  read() { return this.#count; }\n}';
+      final result = _highlighter.tokens(js, 'javascript');
+      _expectWellFormed(js, result);
+      expect(_roleAt(js, result, 'return'), DiaryCodeTokenRole.keyword);
+      final comment = result.tokens.singleWhere(
+        (token) => token.role == DiaryCodeTokenRole.comment,
+      );
+      expect(
+        js.substring(comment.start, comment.end),
+        '/* 🌍 first\n     second */',
+      );
     });
 
     test('an unterminated string keeps the rest of the block highlighted', () {
@@ -184,6 +199,18 @@ void main() {
       expect(_roleAt(dart, result, 'final'), DiaryCodeTokenRole.keyword);
       expect(_roleAt(dart, result, 'print'), isNotNull);
     });
+
+    test(
+      'unsupported syntax still falls back without dropping valid lines',
+      () {
+        const js = '# invalid syntax\nconst count = 42;';
+        final result = _highlighter.tokens(js, 'javascript');
+        _expectWellFormed(js, result);
+        expect(_roleAt(js, result, 'const'), DiaryCodeTokenRole.keyword);
+        expect(_roleAt(js, result, '42'), DiaryCodeTokenRole.number);
+        expect(result.hasFullContext, isFalse);
+      },
+    );
 
     test('fallback results are cached too', () {
       const dart = 'void main() {\n  final s = "abc\n}';

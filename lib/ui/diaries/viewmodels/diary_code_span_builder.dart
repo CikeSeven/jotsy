@@ -48,13 +48,19 @@ String? resolveDiaryCodeHighlightLanguage(
     block.style.attributes[quill.Attribute.codeBlock.key]?.value,
   );
   if (choice.isPlain) {
+    tracker.cancelPendingFor(block);
     return null;
   }
   final explicit = choice.languageId;
   if (explicit != null) {
+    tracker.cancelPendingFor(block);
     return explicit;
   }
-  return autoDetect ? tracker.languageFor(block, blockText) : null;
+  if (!autoDetect) {
+    tracker.cancelPendingFor(block);
+    return null;
+  }
+  return tracker.languageFor(block, blockText);
 }
 
 /// 代码块文字的 span 构建器；代码块以外的文字原样交给 quill 默认实现。
@@ -83,6 +89,16 @@ quill.TextSpanBuilder buildDiaryCodeSpanBuilder(
       if (cached != null && cached.epoch == epoch) {
         return cached.tokens;
       }
+    }
+    // 先看 Quill 的结构尺寸，超限块不拼接整份正文、不识别语言。否则即使
+    // 高亮器稍后拒绝，巨大粘贴仍会在每次按键/重建时复制整块文本。
+    if (block.length > DiaryCodeHighlighter.maxLength + 1 ||
+        block.childCount > DiaryCodeHighlighter.maxLines) {
+      tracker.cancelPendingFor(block);
+      if (epoch != null) {
+        memo[block] = _BlockFrame(epoch, DiaryCodeTokens.empty);
+      }
+      return DiaryCodeTokens.empty;
     }
     final text = diaryCodeBlockText(block);
     final language = resolveDiaryCodeHighlightLanguage(

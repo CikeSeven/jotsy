@@ -3,6 +3,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_code_language_tracker.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_theme.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
@@ -38,12 +39,13 @@ Future<DiaryQuillLook> _pump(
   WidgetTester tester,
   quill.QuillController controller, {
   DiaryCodeBlockStyle style = DiaryCodeBlockStyle.defaults,
+  Brightness brightness = Brightness.light,
 }) async {
   late DiaryQuillLook captured;
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
-        theme: expressiveTestTheme(Brightness.light),
+        theme: expressiveTestTheme(brightness),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           quill.FlutterQuillLocalizations.delegate,
         ],
@@ -102,6 +104,58 @@ Color? _keyword(DiaryQuillLook look) =>
     look.code.palette.tokens[DiaryCodeTokenRole.keyword];
 
 void main() {
+  for (final brightness in Brightness.values) {
+    testWidgets('typing short code refreshes automatic highlighting in '
+        '${brightness.name} mode', (tester) async {
+      final controller = _controller(_codeDocument(true, text: 'd'))
+        ..readOnly = false;
+      final look = await _pump(tester, controller, brightness: brightness);
+      var block = controller.document.root.children.first as quill.Block;
+      expect(look.tracker.lastDetected(block), isNull);
+
+      const python = 'def greet(name):';
+      controller.replaceText(
+        0,
+        1,
+        python,
+        const TextSelection.collapsed(offset: python.length),
+      );
+      await tester.pump();
+      expect(look.tracker.lastDetected(block), isNull);
+      await tester.pump(DiaryCodeLanguageTracker.debounce);
+      await tester.pump();
+      expect(look.tracker.lastDetected(block), 'python');
+      expect(
+        _renderedSpans(
+          tester,
+        ).singleWhere((span) => span.text == 'def').style?.color,
+        _keyword(look),
+      );
+
+      const typescript = 'const count: number = 42;';
+      controller.replaceText(
+        0,
+        python.length,
+        typescript,
+        const TextSelection.collapsed(offset: typescript.length),
+      );
+      await tester.pump();
+      block = controller.document.root.children.first as quill.Block;
+      expect(look.tracker.lastDetected(block), 'python');
+      await tester.pump(DiaryCodeLanguageTracker.debounce);
+      await tester.pump();
+      expect(look.tracker.lastDetected(block), 'typescript');
+      expect(
+        _renderedSpans(
+          tester,
+        ).singleWhere((span) => span.text == 'const').style?.color,
+        _keyword(look),
+      );
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+    });
+  }
+
   testWidgets('a python block colors its keywords with the palette', (
     tester,
   ) async {

@@ -16,7 +16,7 @@ import '../models/diary_code_block/diary_code_highlighter.dart';
 // - 自动识别看的是整块文本，边打字边识别时，半截代码经常在几种语言之间
 //   来回跳（`def` 还没写完像 Ruby，写完像 Python），每敲一个字整块颜色都
 //   跟着闪；
-// - 识别本身要把全部候选语言跑一遍，长代码块每次按键都同步识别会卡输入。
+// - 有界的语法特征扫描虽然便宜，连续输入仍只需合并识别一次，避免无谓唤醒。
 // 所以文本变了先沿用上一次的结果（不闪），停手 600ms 后再统一重识别，只在
 // 结果真的变了时才通知一次。第一次见到某个块（打开日记、粘贴进来）没有
 // 旧结果可用，同步识别一次，首帧就是正确的颜色。
@@ -71,8 +71,7 @@ class DiaryCodeLanguageTracker extends ChangeNotifier {
     if (detection.text == text) {
       if (detection.pendingText != null) {
         // 改回了识别时的文本：之前排队的重识别已无必要。
-        detection.pendingText = null;
-        _pending.remove(block);
+        cancelPendingFor(block);
       }
       return detection.id;
     }
@@ -90,6 +89,17 @@ class DiaryCodeLanguageTracker extends ChangeNotifier {
   /// 上一次识别出的语言；不触发识别。没见过该块时为 null。
   String? lastDetected(Block block) => _detections[block]?.id;
 
+  /// 切为手选/纯文本、关闭自动识别或超出渲染上限后，不再为这一块唤醒计时器。
+  /// 保留旧结果，切回自动时仍可立即显示；如果内容变过，再按正常流程排队。
+  void cancelPendingFor(Block block) {
+    _detections[block]?.pendingText = null;
+    _pending.remove(block);
+    if (_pending.isEmpty) {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
   void _redetect() {
     _timer = null;
     if (_disposed) {
@@ -97,6 +107,10 @@ class DiaryCodeLanguageTracker extends ChangeNotifier {
     }
     var changed = false;
     for (final block in _pending) {
+      if (block.parent == null) {
+        _detections[block]?.pendingText = null;
+        continue;
+      }
       final detection = _detections[block];
       final text = detection?.pendingText;
       if (detection == null || text == null) {

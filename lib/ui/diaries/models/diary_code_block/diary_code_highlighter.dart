@@ -2,101 +2,33 @@ import 'package:flutter/foundation.dart';
 import 'package:highlight/highlight_core.dart';
 
 import 'diary_code_language.dart';
-import 'diary_code_theme.dart';
+import 'diary_code_language_detector.dart';
+import 'diary_code_incremental_highlight.dart';
+import 'diary_code_tokens.dart';
 
-// 代码块语法高亮与语言识别（纯计算，不碰界面）。
+export 'diary_code_tokens.dart' show DiaryCodeToken, DiaryCodeTokens;
+
+// 代码块语言识别与高亮的统一入口（纯计算，不碰界面）。
 //
-// 输入：代码文本与语言 id（[kDiaryCodeLanguages] 之一）。
-// 输出：[DiaryCodeTokens]——按起点排好、互不重叠、只含需要着色的区间，偏移
-// 为 `text` 的 UTF-16 code unit 下标，渲染层可直接按区间切 TextSpan。
+// 输入：代码文本与支持的语言 id；输出：按 UTF-16 偏移排列的着色区间。
+// 识别用有界的语法特征扫描，不初始化语法引擎，也不轮流解析全部语言。
+// 高亮器自带 Highlight 实例，只注册支持的 22 种语言；不使用全语言全局实例。
 //
-// 高亮器自带一个 `Highlight` 实例，只注册应用支持的 22 种语言（首次使用
-// 时注册一次）：不用 `package:highlight` 的全局实例，避免自动识别在全部
-// 约 190 种语言里逐个试（慢且容易误判成冷门语言）。
+// 长块的小范围编辑先尝试复用上次完整快照；无法确认上下文独立时整块解析。
+// highlight 0.7.0 公开 parse 固定 ignoreIllegals:false，遇到未完成的语法可能
+// 直接返回原文：此时逐行容错，不让一行错误清掉整块颜色。JS/TS 私有字段
+// 在等长的解析副本中兼容，不改日记原文，也不改 PDF 导出共用的 Mode。
 //
-// highlight 0.7.0 产出的是嵌套节点树：带 className 的节点包住子节点，叶子
-// 节点的 value 依次拼起来等于原文（不做 HTML 转义，转义只在 toHtml 里）。
-// 展平时“最内层带角色的 className 胜出”：字符串里的转义、注释里的 doctag
-// 等内层记号要用它自己的颜色；没有角色的内层节点（`subst`、子语言包装等）
-// 继承外层角色，所以模板字符串插值里的普通文字仍是字符串色。
-// 例外：hljs 9 的 `class` / `function` 是整段声明的包装节点（含关键字、
-// 标题、参数与中间的标点空白），它们只提供上下文、不给自己的文字着色：
-// `class` 包装里的 `title` 记为类型名，`function` 包装里的记为函数名。否则
-// 声明里的括号、冒号与未识别的返回类型都会染成函数色。
-//
-// 非法记号：highlight 0.7.0 的公开 parse 固定 `ignoreIllegals: false`，遇到
-// 语言定义里的非法记号（JS 的 `#x` 私有字段、正在输入、还没闭合的字符串等）
-// 不抛异常，而是放弃整段、返回一个原文纯文本节点。若按此显示，用户每敲一个
-// 引号整块都会闪成纯文本。所以识别出“放弃”后改为逐行各自高亮：一行写错或
-// 没写完不连累其余行，仍放弃的行按纯文本显示；代价只是这时跨行结构（块注释、
-// 多行字符串）按行断开。不去改语言的 Mode 对象（如清掉 illegal）：它们是
-// 全局共享的，PDF 导出（flutter_quill_to_pdf）也在用。
-//
-// 上限与容错：超过 20000 个字符或 600 行的文本不高亮（返回空结果，按纯文本
-// 显示）；高亮库抛出的任何异常都吞掉并返回空结果 / null，绝不抛进界面。
-// 缓存：高亮结果按 (语言, 文本) 保留最近 48 份，识别结果按取样文本保留最近
-// 128 份（编辑时每次重建只有当前这一块会变，其余块直接命中）。
-
-/// 一段需要着色的区间 `[start, end)`。
-@immutable
-class DiaryCodeToken {
-  const DiaryCodeToken(this.start, this.end, this.role);
-
-  final int start;
-  final int end;
-  final DiaryCodeTokenRole role;
-
-  @override
-  bool operator ==(Object other) =>
-      other is DiaryCodeToken &&
-      other.start == start &&
-      other.end == end &&
-      other.role == role;
-
-  @override
-  int get hashCode => Object.hash(start, end, role);
-
-  @override
-  String toString() => 'DiaryCodeToken($start, $end, ${role.name})';
-}
-
-/// 一段文本的高亮结果。
-@immutable
-class DiaryCodeTokens {
-  const DiaryCodeTokens(this.tokens);
-
-  /// 不高亮（纯文本）。
-  static const DiaryCodeTokens empty = DiaryCodeTokens(<DiaryCodeToken>[]);
-
-  /// 按起点排好、互不重叠，只含着色区间；区间之间的空隙按正文色显示。
-  final List<DiaryCodeToken> tokens;
-
-  bool get isEmpty => tokens.isEmpty;
-
-  /// 与 `[start, end)` 相交的区间（二分查找起点）。
-  Iterable<DiaryCodeToken> overlapping(int start, int end) sync* {
-    if (start >= end) {
-      return;
-    }
-    var low = 0;
-    var high = tokens.length;
-    while (low < high) {
-      final mid = (low + high) >> 1;
-      if (tokens[mid].end <= start) {
-        low = mid + 1;
-      } else {
-        high = mid;
-      }
-    }
-    for (var i = low; i < tokens.length && tokens[i].start < end; i++) {
-      yield tokens[i];
-    }
-  }
-}
+// 超过 20000 字符或 600 行时显示纯文本；库异常不抛进界面。
+// 高亮缓存同时限制份数（48）和估算权重（1MiB）；取样缓存限制 128 份和
+// 32768 个 UTF-16 code unit。容量淘汰避免连续编辑长块留下大量历史快照。
 
 /// 语法高亮与语言识别；用 [instance]。
 class DiaryCodeHighlighter {
   DiaryCodeHighlighter._();
+
+  @visibleForTesting
+  factory DiaryCodeHighlighter.forTesting() => DiaryCodeHighlighter._();
 
   static final DiaryCodeHighlighter instance = DiaryCodeHighlighter._();
 
@@ -106,20 +38,19 @@ class DiaryCodeHighlighter {
   /// 超过这个行数不高亮。
   static const int maxLines = 600;
 
-  /// 识别语言时只看开头这么多字符。
+  /// 跳过开头说明注释后，语言识别最多取这么多字符。
   static const int detectSampleLength = 2000;
 
   static const int _tokensCacheSize = 48;
   static const int _detectCacheSize = 128;
-
-  // 识别结果的门槛：最高相关度至少 6，且领先第二名至少 2；否则宁可不识别
-  // （按纯文本显示），也不要把一段普通文字染成某种语言。
-  static const int _minRelevance = 6;
-  static const int _minLead = 2;
+  static const int _tokensCacheWeightLimit = 1024 * 1024;
+  static const int _detectCacheUnitsLimit = 32768;
 
   Highlight? _highlight;
   final Map<(String, String), DiaryCodeTokens> _tokensCache = {};
   final Map<String, String?> _detectCache = {};
+  int _tokensCacheWeight = 0;
+  int _detectCacheUnits = 0;
 
   Highlight get _engine {
     final existing = _highlight;
@@ -137,8 +68,8 @@ class DiaryCodeHighlighter {
   /// 返回 [DiaryCodeTokens.empty]。
   DiaryCodeTokens tokens(String text, String languageId) {
     if (text.isEmpty ||
-        diaryCodeLanguageById(languageId) == null ||
-        _exceedsLimits(text)) {
+        text.length > maxLength ||
+        diaryCodeLanguageById(languageId) == null) {
       return DiaryCodeTokens.empty;
     }
     final key = (languageId, text);
@@ -147,20 +78,29 @@ class DiaryCodeHighlighter {
       _tokensCache[key] = cached;
       return cached;
     }
-    final result = _computeTokens(text, languageId);
+    if (_exceedsLimits(text)) return DiaryCodeTokens.empty;
+    final result =
+        _incrementalTokens(text, languageId) ??
+        _computeTokens(text, languageId);
     _tokensCache[key] = result;
-    if (_tokensCache.length > _tokensCacheSize) {
-      _tokensCache.remove(_tokensCache.keys.first);
+    _tokensCacheWeight += _tokenWeight(text, result);
+    while (_tokensCache.length > _tokensCacheSize ||
+        _tokensCacheWeight > _tokensCacheWeightLimit) {
+      final oldest = _tokensCache.keys.first;
+      final removed = _tokensCache.remove(oldest)!;
+      _tokensCacheWeight -= _tokenWeight(oldest.$2, removed);
     }
     return result;
   }
 
-  /// 识别 [text] 的语言；只看开头 [detectSampleLength] 个字符，把握不够时
-  /// （相关度不足或与第二名太接近）返回 null。
+  /// 识别 [text] 的语言；只扫描有界的 [detectSampleLength] 字符样本。
+  /// 语法特征扫描不运行各语言的 parser，普通文本与缺乏证据的片段返回 null。
   String? detect(String text) {
-    final sample = text.length > detectSampleLength
-        ? text.substring(0, detectSampleLength)
-        : text;
+    final sample = DiaryCodeLanguageDetector.sample(
+      text,
+      maxLength: maxLength,
+      sampleLength: detectSampleLength,
+    );
     if (sample.trim().isEmpty) {
       return null;
     }
@@ -171,10 +111,42 @@ class DiaryCodeHighlighter {
     }
     final result = _computeDetect(sample);
     _detectCache[sample] = result;
-    if (_detectCache.length > _detectCacheSize) {
-      _detectCache.remove(_detectCache.keys.first);
+    _detectCacheUnits += sample.length;
+    while (_detectCache.length > _detectCacheSize ||
+        _detectCacheUnits > _detectCacheUnitsLimit) {
+      final oldest = _detectCache.keys.first;
+      _detectCache.remove(oldest);
+      _detectCacheUnits -= oldest.length;
     }
     return result;
+  }
+
+  // UTF-16 原文加上区间对象/列表引用的保守权重。只限份数会让 48 份长代码
+  // 编辑快照占用数 MB；同时按容量淘汰后，小块仍可多缓存，长块及时回收。
+  static int _tokenWeight(String text, DiaryCodeTokens tokens) =>
+      text.length * 2 + tokens.tokens.length * 48;
+
+  DiaryCodeTokens? _incrementalTokens(String text, String languageId) {
+    try {
+      MapEntry<(String, String), DiaryCodeTokens>? previous;
+      for (final entry in _tokensCache.entries) {
+        if (entry.key.$1 == languageId) previous = entry;
+      }
+      final incremental = previous == null
+          ? null
+          : incrementalDiaryCodeTokens(
+              language: languageId,
+              text: text,
+              previousText: previous.key.$2,
+              previous: previous.value,
+              parse: (segment, base) =>
+                  _parseSegment(segment, base, languageId),
+            );
+      return incremental;
+    } catch (_) {
+      // 增量只是一条加速路径：任何库边界异常都退回现有的整块容错解析。
+      return null;
+    }
   }
 
   bool _exceedsLimits(String text) {
@@ -192,17 +164,7 @@ class DiaryCodeHighlighter {
 
   String? _computeDetect(String sample) {
     try {
-      final result = _engine.parse(sample, autoDetection: true);
-      final language = result.language;
-      final relevance = result.relevance ?? 0;
-      if (language == null || diaryCodeLanguageById(language) == null) {
-        return null;
-      }
-      final second = result.secondBest?.relevance ?? 0;
-      if (relevance < _minRelevance || relevance - second < _minLead) {
-        return null;
-      }
-      return language;
+      return DiaryCodeLanguageDetector.detect(sample);
     } catch (error) {
       debugPrint('DiaryCodeHighlighter.detect failed: $error');
       return null;
@@ -235,7 +197,7 @@ class DiaryCodeHighlighter {
       }
       return tokens.isEmpty
           ? DiaryCodeTokens.empty
-          : DiaryCodeTokens(List.unmodifiable(tokens));
+          : DiaryCodeTokens(List.unmodifiable(tokens), hasFullContext: false);
     } catch (error) {
       debugPrint('DiaryCodeHighlighter.tokens failed: $error');
       return DiaryCodeTokens.empty;
@@ -254,9 +216,17 @@ class DiaryCodeHighlighter {
     String languageId, {
     bool wholeBlock = false,
   }) {
+    // 老语法库把合法的 JS 私有名 #field 当作非法字符。只在解析副本中用
+    // 同宽的 $field 占位，避免整块退出高亮；原文、复制内容及 UTF-16 偏移
+    // 完全保留，也不修改 PDF 导出共用的全局 Mode 定义。
+    final parserText =
+        (languageId == 'javascript' || languageId == 'typescript') &&
+            segment.contains('#')
+        ? segment.replaceAll(_privateName, r'$')
+        : segment;
     final Result result;
     try {
-      result = _engine.parse(segment, language: languageId);
+      result = _engine.parse(parserText, language: languageId);
     } catch (error) {
       if (wholeBlock) {
         rethrow;
@@ -264,18 +234,20 @@ class DiaryCodeHighlighter {
       return null;
     }
     final nodes = result.nodes;
-    if (nodes == null || _isBailOut(result, segment)) {
+    if (nodes == null || _isBailOut(result, parserText)) {
       return null;
     }
-    final flattener = _Flattener(base);
+    final flattener = DiaryCodeTokenFlattener(base);
     flattener.walk(nodes, null, false);
-    // 防御：叶子拼回去必须与原文一致，否则偏移会错位，宁可不高亮。
+    // 叶子必须无损拼回解析输入；兼容副本与原文等长，区间仍精确对应原文。
     if (flattener.offset != base + segment.length ||
-        flattener.source.toString() != segment) {
+        flattener.source.toString() != parserText) {
       return null;
     }
     return flattener.tokens;
   }
+
+  static final _privateName = RegExp(r'#(?=[A-Za-z_$])');
 
   /// highlight 0.7.0 在 `ignoreIllegals: false`（公开的 parse 只有这一种）
   /// 下遇到非法记号不抛异常，而是返回相关度 0、只有一个无 className、
@@ -293,70 +265,5 @@ class DiaryCodeHighlighter {
         node.children == null &&
         node.value == source &&
         source.trim().isNotEmpty;
-  }
-}
-
-/// 把 highlight 的节点树展平为着色区间。
-class _Flattener {
-  /// [offset] 从这段文本在原文中的起点开始（逐行回退时为行首）。
-  _Flattener(this.offset);
-
-  final List<DiaryCodeToken> tokens = [];
-  final StringBuffer source = StringBuffer();
-  int offset;
-
-  /// [inherited]：外层节点的角色；[inClass]：是否在 `class` 声明包装内。
-  void walk(List<Node> nodes, DiaryCodeTokenRole? inherited, bool inClass) {
-    for (final node in nodes) {
-      var role = inherited;
-      var childInClass = inClass;
-      final className = node.className;
-      // noPrefix 节点是子语言的包装（className 为语言名，如 xml 里的
-      // css），不代表记号，直接继承外层。
-      if (className != null && className.isNotEmpty && !node.noPrefix) {
-        if (className == 'class') {
-          childInClass = true;
-        } else if (className == 'function') {
-          childInClass = false;
-        } else {
-          final own = diaryCodeTokenRoleFor(className);
-          if (own == DiaryCodeTokenRole.function &&
-              inClass &&
-              className.startsWith('title')) {
-            role = DiaryCodeTokenRole.type;
-          } else if (own != null) {
-            role = own;
-          }
-        }
-      }
-      final value = node.value;
-      if (value != null) {
-        _emit(value, role);
-      }
-      final children = node.children;
-      if (children != null) {
-        walk(children, role, childInClass);
-      }
-    }
-  }
-
-  void _emit(String value, DiaryCodeTokenRole? role) {
-    if (value.isEmpty) {
-      return;
-    }
-    final start = offset;
-    offset += value.length;
-    source.write(value);
-    if (role == null) {
-      return;
-    }
-    if (tokens.isNotEmpty) {
-      final last = tokens.last;
-      if (last.end == start && last.role == role) {
-        tokens[tokens.length - 1] = DiaryCodeToken(last.start, offset, role);
-        return;
-      }
-    }
-    tokens.add(DiaryCodeToken(start, offset, role));
   }
 }

@@ -139,6 +139,25 @@ void main() {
     expect(tracker.lastDetected(block), 'python');
   });
 
+  testWidgets('manual choice drops pending work and auto can resume later', (
+    tester,
+  ) async {
+    final (block, tracker) = _setUp();
+    addTearDown(tracker.dispose);
+    var notifications = 0;
+    tracker.addListener(() => notifications++);
+    tracker.languageFor(block, _python);
+    tracker.languageFor(block, _json);
+    tracker.cancelPendingFor(block);
+    await tester.pump(DiaryCodeLanguageTracker.debounce);
+    expect(notifications, 0);
+    expect(tracker.lastDetected(block), 'python');
+    tracker.languageFor(block, _json);
+    await tester.pump(DiaryCodeLanguageTracker.debounce);
+    expect(notifications, 1);
+    expect(tracker.lastDetected(block), 'json');
+  });
+
   testWidgets('the last listener leaving drops the pending re-detection', (
     tester,
   ) async {

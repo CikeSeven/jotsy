@@ -10421,6 +10421,34 @@
   "@homeBarStyleBorderSubtitle": {
     "description": "导航栏样式设置：底栏描边开关的说明。"
   },
+  "homeBarStyleOutlineGroup": "描边",
+  "@homeBarStyleOutlineGroup": {
+    "description": "导航栏样式设置：材质页中描边分组的标题（底栏描边与顶栏分隔线）。"
+  },
+  "homeBarStyleLineColor": "颜色",
+  "@homeBarStyleLineColor": {
+    "description": "导航栏样式设置：描边 / 分隔线的颜色来源选择行。"
+  },
+  "homeBarStyleLineColorTheme": "默认",
+  "@homeBarStyleLineColorTheme": {
+    "description": "导航栏样式设置：描边颜色选项，使用主题的轮廓色。"
+  },
+  "homeBarStyleLineColorHighlight": "高光",
+  "@homeBarStyleLineColorHighlight": {
+    "description": "导航栏样式设置：描边颜色选项，像玻璃边缘反光的明亮颜色。"
+  },
+  "homeBarStyleLineColorPrimary": "主题色",
+  "@homeBarStyleLineColorPrimary": {
+    "description": "导航栏样式设置：描边颜色选项，使用主题色。"
+  },
+  "homeBarStyleLineCustomColor": "描边颜色",
+  "@homeBarStyleLineCustomColor": {
+    "description": "导航栏样式设置：自定义描边 / 分隔线颜色的取色行。"
+  },
+  "homeBarStyleLineWidth": "粗细",
+  "@homeBarStyleLineWidth": {
+    "description": "导航栏样式设置：描边 / 分隔线粗细滑块。"
+  },
   "homeBarStyleShadow": "阴影",
   "@homeBarStyleShadow": {
     "description": "导航栏样式设置：悬浮栏阴影开关。"

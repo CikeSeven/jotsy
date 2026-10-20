@@ -21,6 +21,8 @@ HomeBarResolvedStyle _style({
   double barHeight = 64,
   double cornerRadius = 32,
   bool shadow = true,
+  bool border = true,
+  HomeBarLineStyle borderLine = HomeBarLineStyle.borderDefaults,
   bool highContrast = false,
 }) => HomeBarResolvedStyle.resolve(
   HomeBarStyle(
@@ -28,6 +30,8 @@ HomeBarResolvedStyle _style({
     barHeight: barHeight,
     cornerRadius: cornerRadius,
     shadow: shadow,
+    border: border,
+    borderLine: borderLine,
   ),
   expressiveTestTheme(Brightness.light).colorScheme,
   highContrast: highContrast,
@@ -77,6 +81,43 @@ Finder get _pill => find.byType(GlassSurface);
 Finder get _buttonFinder => find.byType(HomeInlineCreateButton);
 
 void main() {
+  testWidgets('the pill outline follows the line style and its switch', (
+    tester,
+  ) async {
+    final style = _style(
+      borderLine: const HomeBarLineStyle(
+        color: HomeBarLineColor.primary,
+        opacity: 0.8,
+        width: 3,
+      ),
+    );
+    await _pump(tester, style: style, withInline: false);
+    final side = tester.widget<GlassSurface>(_pill).border!;
+    expect(side.width, 3);
+    expect(side.color, style.borderColor);
+    expect(
+      side.color,
+      expressiveTestTheme(
+        Brightness.light,
+      ).colorScheme.primary.withValues(alpha: 0.8),
+    );
+    // 画在 Material 的形状里、居内描边：粗线不会被外层的圆角裁切切掉。
+    final shape =
+        tester
+                .widget<Material>(
+                  find
+                      .descendant(of: _pill, matching: find.byType(Material))
+                      .first,
+                )
+                .shape!
+            as RoundedRectangleBorder;
+    expect(shape.side.width, 3);
+    expect(shape.side.strokeAlign, BorderSide.strokeAlignInside);
+
+    await _pump(tester, style: _style(border: false), withInline: false);
+    expect(tester.widget<GlassSurface>(_pill).border, isNull);
+  });
+
   testWidgets('the pill is a glass surface as tall as the bar', (tester) async {
     final style = _style();
     await _pump(tester, style: style, withInline: false);
@@ -85,6 +126,7 @@ void main() {
     expect(surface.fill, style.fill);
     expect(surface.blur, isTrue);
     expect(surface.border?.color, style.borderColor);
+    expect(surface.border?.width, 1.0);
     expect(surface.shadowColor, style.shadowColor);
     final backdrop = tester.widget<BackdropFilter>(
       find.descendant(of: _pill, matching: find.byType(BackdropFilter)),

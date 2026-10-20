@@ -37,12 +37,14 @@ HomeBarResolvedStyle _glass({
   bool top = true,
   bool border = true,
   bool hairline = false,
+  HomeBarLineStyle topBarLine = HomeBarLineStyle.topBarDefaults,
 }) => HomeBarResolvedStyle.resolve(
   HomeBarStyle(
     material: HomeBarMaterial.glass,
     glassTopBars: top,
     border: border,
     topBarHairline: hairline,
+    topBarLine: topBarLine,
   ),
   expressiveTestTheme(Brightness.light).colorScheme,
   highContrast: highContrast,
@@ -119,6 +121,45 @@ void main() {
     // 页面不允许这一片画线时（日记页刊头不是最下面一片），开关打开也不画。
     await _pump(tester, style: style, showHairline: false);
     expect(_hairline(tester), isNull);
+  });
+
+  testWidgets('the hairline width and color follow the top bar line style', (
+    tester,
+  ) async {
+    final defaults = _glass(hairline: true);
+    await _pump(tester, style: defaults);
+    final surface = tester.widget<GlassSurface>(_below(GlassSurface));
+    expect(surface.bottomHairlineWidth, 0.6);
+    expect(surface.bottomHairline, defaults.hairlineColor);
+
+    final custom = _glass(
+      hairline: true,
+      topBarLine: const HomeBarLineStyle(
+        color: HomeBarLineColor.highlight,
+        opacity: 0.9,
+        width: 1.8,
+      ),
+    );
+    await _pump(tester, style: custom);
+    final painted = tester.widget<DecoratedBox>(
+      find.descendant(
+        of: _below(GlassSurface),
+        matching: find.byWidgetPredicate(
+          (Widget w) =>
+              w is DecoratedBox && w.position == DecorationPosition.foreground,
+        ),
+      ),
+    );
+    final bottom =
+        ((painted.decoration as BoxDecoration).border! as Border).bottom;
+    expect(bottom.width, 1.8);
+    expect(bottom.color, custom.hairlineColor);
+    expect(
+      custom.hairlineColor,
+      expressiveTestTheme(
+        Brightness.light,
+      ).colorScheme.surfaceContainerLowest.withValues(alpha: 0.9),
+    );
   });
 
   testWidgets('glassTopBarsOf is false without a scope', (tester) async {

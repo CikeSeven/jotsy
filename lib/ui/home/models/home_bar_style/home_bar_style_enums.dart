@@ -23,3 +23,8 @@ enum HomeBarIndicator { capsule, block, none }
 /// 新建按钮（FAB）相对悬浮底栏的位置：[above] 浮在底栏上方（改版前的
 /// 样子）；[inline] 并排放在底栏右侧。只在玻璃材质下有意义。
 enum HomeBarFabPlacement { above, inline }
+
+/// 描边 / 分隔线的颜色来源：[theme] 跟随主题的 outlineVariant（改版前的
+/// 细线）；[highlight] 明亮的玻璃边缘高光；[primary] 主题色；[custom] 自定义色
+/// （未设颜色时按 [theme] 解读）。
+enum HomeBarLineColor { theme, highlight, primary, custom }

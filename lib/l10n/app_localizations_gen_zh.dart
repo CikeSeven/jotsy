@@ -7261,6 +7261,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStyleBorderSubtitle => '悬浮栏边缘的细线';
 
   @override
+  String get homeBarStyleOutlineGroup => '描边';
+
+  @override
+  String get homeBarStyleLineColor => '颜色';
+
+  @override
+  String get homeBarStyleLineColorTheme => '默认';
+
+  @override
+  String get homeBarStyleLineColorHighlight => '高光';
+
+  @override
+  String get homeBarStyleLineColorPrimary => '主题色';
+
+  @override
+  String get homeBarStyleLineCustomColor => '描边颜色';
+
+  @override
+  String get homeBarStyleLineWidth => '粗细';
+
+  @override
   String get homeBarStyleShadow => '阴影';
 
   @override

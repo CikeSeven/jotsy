@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../diaries/viewmodels/diary_card_colors.dart';
+import 'home_bar_line_colors.dart';
 import 'home_bar_style.dart';
 
 /// 把 [HomeBarStyle] 落到当前主题下可直接渲染的值。
@@ -44,7 +45,9 @@ class HomeBarResolvedStyle {
     required this.tint,
     required this.solidFill,
     required this.borderColor,
+    required this.borderWidth,
     required this.hairlineColor,
+    required this.hairlineWidth,
     required this.shadowColor,
     required this.indicatorColor,
     required this.selectedForeground,
@@ -100,8 +103,11 @@ class HomeBarResolvedStyle {
       indicator: style.indicator,
       tint: tint,
       solidFill: solidFill,
-      borderColor: scheme.outlineVariant.withValues(alpha: dark ? 0.5 : 0.6),
-      hairlineColor: scheme.outlineVariant.withValues(alpha: dark ? 0.2 : 0.35),
+      // 两条线的颜色来源、不透明度与粗细都可自定义，见 HomeBarLineColors。
+      borderColor: HomeBarLineColors.color(style.borderLine, scheme),
+      borderWidth: HomeBarLineColors.width(style.borderLine),
+      hairlineColor: HomeBarLineColors.color(style.topBarLine, scheme),
+      hairlineWidth: HomeBarLineColors.width(style.topBarLine),
       shadowColor: scheme.shadow.withValues(alpha: dark ? 0.32 : 0.12),
       indicatorColor: scheme.primary.withValues(alpha: dark ? 0.22 : 0.14),
       selectedForeground: selected,
@@ -155,11 +161,13 @@ class HomeBarResolvedStyle {
   /// 不透明的等效底色：高对比度时玻璃表面改用它。
   final Color solidFill;
 
-  /// 悬浮底栏的描边色。
+  /// 悬浮底栏的描边色（已带不透明度）与粗细。
   final Color borderColor;
+  final double borderWidth;
 
-  /// 玻璃顶栏底部的细分隔线颜色。
+  /// 玻璃顶栏底部的细分隔线颜色（已带不透明度）与粗细。
   final Color hairlineColor;
+  final double hairlineWidth;
   final Color shadowColor;
 
   /// 玻璃底栏选中指示器的颜色。
@@ -248,7 +256,9 @@ class HomeBarResolvedStyle {
         other.tint == tint &&
         other.solidFill == solidFill &&
         other.borderColor == borderColor &&
+        other.borderWidth == borderWidth &&
         other.hairlineColor == hairlineColor &&
+        other.hairlineWidth == hairlineWidth &&
         other.shadowColor == shadowColor &&
         other.indicatorColor == indicatorColor &&
         other.selectedForeground == selectedForeground &&
@@ -278,7 +288,9 @@ class HomeBarResolvedStyle {
     tint,
     solidFill,
     borderColor,
+    borderWidth,
     hairlineColor,
+    hairlineWidth,
     shadowColor,
     indicatorColor,
     selectedForeground,

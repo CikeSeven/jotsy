@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/viewmodels/diary_card_colors.dart';
 import '../../../home/models/home_bar_style/home_bar_style.dart';
@@ -14,6 +13,7 @@ import '../../widgets/style_editor/style_custom_color_tile.dart';
 import '../../widgets/style_editor/style_editor_common.dart';
 import 'home_bar_style_common.dart';
 import 'home_bar_style_labels.dart';
+import 'home_bar_style_outline_group.dart';
 
 /// “材质”标签页：实色 / 玻璃，以及只在玻璃下出现的玻璃参数。
 ///
@@ -40,37 +40,58 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
 
     return StyleEditorTabList(
       children: <Widget>[
-        SettingsCardGroup(
-          title: l10n.homeBarStyleTabMaterial,
-          footer: footer,
+        // 描边分组只在玻璃下出现，与材质分组合成列表里的同一项：两组之间
+        // 的间距放进 Reveal 一起展开收起，实色时列表底部不会多出一段空白。
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            SettingsCardGroup(
+              title: l10n.homeBarStyleTabMaterial,
+              footer: footer,
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: ExpressiveButtonGroup<HomeBarMaterial>(
-                    minSegmentWidth: 96,
-                    segments: <ButtonSegment<HomeBarMaterial>>[
-                      for (final material in HomeBarMaterial.values)
-                        ButtonSegment<HomeBarMaterial>(
-                          value: material,
-                          label: Text(homeBarMaterialLabel(l10n, material)),
-                        ),
-                    ],
-                    selected: <HomeBarMaterial>{style.material},
-                    // 经 withMaterial 换材质：图标与文字间距随之联动（玻璃栏
-                    // 更矮，默认间距会让文字贴住色块下沿），只替换默认值。
-                    onSelectionChanged: (Set<HomeBarMaterial> v) =>
-                        controller.commitWith((s) => s.withMaterial(v.single)),
-                  ),
-                ),
-                SettingsReveal(
-                  visible: isGlass,
-                  child: _GlassOptions(controller: controller),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ExpressiveButtonGroup<HomeBarMaterial>(
+                        minSegmentWidth: 96,
+                        segments: <ButtonSegment<HomeBarMaterial>>[
+                          for (final material in HomeBarMaterial.values)
+                            ButtonSegment<HomeBarMaterial>(
+                              value: material,
+                              label: Text(homeBarMaterialLabel(l10n, material)),
+                            ),
+                        ],
+                        selected: <HomeBarMaterial>{style.material},
+                        // 经 withMaterial 换材质：图标与文字间距随之联动（玻璃栏
+                        // 更矮，默认间距会让文字贴住色块下沿），只替换默认值。
+                        onSelectionChanged: (Set<HomeBarMaterial> v) =>
+                            controller.commitWith(
+                              (s) => s.withMaterial(v.single),
+                            ),
+                      ),
+                    ),
+                    SettingsReveal(
+                      visible: isGlass,
+                      child: _GlassOptions(controller: controller),
+                    ),
+                  ],
                 ),
               ],
+            ),
+            SettingsReveal(
+              visible: isGlass,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  const SizedBox(height: 16),
+                  HomeBarStyleOutlineGroup(controller: controller),
+                ],
+              ),
             ),
           ],
         ),
@@ -79,8 +100,9 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
   }
 }
 
-/// 玻璃参数（顶栏与顶栏分隔线、模糊、不透明度、色调、底栏描边、阴影），每行前一条缩进的
-/// 分割线，与上方的材质选择器隔开。
+/// 玻璃参数（顶栏、模糊、不透明度、色调、阴影），每行前一条缩进的分割线，
+/// 与上方的材质选择器隔开。描边与分隔线在单独的“描边”分组里
+/// （[HomeBarStyleOutlineGroup]）。
 class _GlassOptions extends StatelessWidget {
   const _GlassOptions({required this.controller});
 
@@ -88,17 +110,9 @@ class _GlassOptions extends StatelessWidget {
 
   /// 第一次切到自定义色调时的起始颜色：当前中性底色（浅色主题下的值，
   /// 去掉透明度），用户从“看起来没变”的颜色开始调，而不是一块突兀的色。
-  int _neutralLightBase(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.brightness == Brightness.light
-        ? theme.colorScheme
-        : SeededThemeCache.of(
-            Color(controller.settingsService.themeSeedColorValue),
-            Brightness.light,
-            reduceMotion: MediaQuery.disableAnimationsOf(context),
-          ).colorScheme;
-    return 0xFF000000 | (scheme.surfaceContainerLowest.toARGB32() & 0xFFFFFF);
-  }
+  int _neutralLightBase(BuildContext context) => homeBarOpaqueArgb(
+    homeBarLightScheme(context, controller).surfaceContainerLowest,
+  );
 
   void _setTint(BuildContext context, HomeBarTint tint) {
     final style = controller.style;
@@ -130,27 +144,6 @@ class _GlassOptions extends StatelessWidget {
           subtitle: l10n.homeBarStyleGlassTopBarsSubtitle,
           value: style.glassTopBars,
           onChanged: (bool v) => commit((s) => s.copyWith(glassTopBars: v)),
-        ),
-        // 顶栏分隔线是“顶栏也用玻璃”的从属项，只在它打开时展开；Reveal
-        // 本身始终占着这个位置，下面的行不会因它出现而错位复用、补播动画。
-        SettingsReveal(
-          visible: style.glassTopBars,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              settingsDeepNestedDivider,
-              SettingsSwitchTile(
-                nested: true,
-                deep: true,
-                title: l10n.homeBarStyleTopBarHairline,
-                subtitle: l10n.homeBarStyleTopBarHairlineSubtitle,
-                value: style.topBarHairline,
-                onChanged: (bool v) =>
-                    commit((s) => s.copyWith(topBarHairline: v)),
-              ),
-            ],
-          ),
         ),
         settingsNestedDivider,
         homeBarSlider(
@@ -200,7 +193,7 @@ class _GlassOptions extends StatelessWidget {
           ),
         ),
         // 自定义颜色紧跟在色调下方，与色调合在同一个位置固定的槽里，
-        // 下面的底栏描边、阴影不会因它的出现而错位复用。
+        // 下面的阴影不会因它的出现而错位复用。
         SettingsReveal(
           visible: isCustom,
           child: Column(
@@ -224,14 +217,6 @@ class _GlassOptions extends StatelessWidget {
               ),
             ],
           ),
-        ),
-        settingsNestedDivider,
-        SettingsSwitchTile(
-          nested: true,
-          title: l10n.homeBarStyleBorder,
-          subtitle: l10n.homeBarStyleBorderSubtitle,
-          value: style.border,
-          onChanged: (bool v) => commit((s) => s.copyWith(border: v)),
         ),
         settingsNestedDivider,
         SettingsSwitchTile(

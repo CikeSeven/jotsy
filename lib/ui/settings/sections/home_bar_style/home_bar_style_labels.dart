@@ -19,6 +19,15 @@ String homeBarPresetName(AppLocalizations l10n, HomeBarPreset preset) =>
       HomeBarPreset.compact => l10n.homeBarStylePresetCompact,
     };
 
+/// 描边颜色来源的标签；自定义沿用样式编辑页通用的“自定义”。
+String homeBarLineColorLabel(AppLocalizations l10n, HomeBarLineColor color) =>
+    switch (color) {
+      HomeBarLineColor.theme => l10n.homeBarStyleLineColorTheme,
+      HomeBarLineColor.highlight => l10n.homeBarStyleLineColorHighlight,
+      HomeBarLineColor.primary => l10n.homeBarStyleLineColorPrimary,
+      HomeBarLineColor.custom => l10n.styleEditorCustom,
+    };
+
 String _presetDescription(AppLocalizations l10n, HomeBarPreset preset) =>
     switch (preset) {
       HomeBarPreset.classic => l10n.homeBarStylePresetClassicDesc,

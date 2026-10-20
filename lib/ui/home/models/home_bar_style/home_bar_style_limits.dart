@@ -31,4 +31,11 @@ abstract final class HomeBarStyleLimits {
 
   /// 圆角块的内边距：再大块就撑满导航项，渲染时还会按栏高收窄。
   static const blockPadding = StyleRange(0, 16, 1);
+
+  /// 描边 / 分隔线的不透明度：低于 0.10 已几乎看不见，开关关掉即可。
+  static const lineOpacity = StyleRange(0.10, 1.00, 0.05);
+
+  /// 描边 / 分隔线的粗细：0.5 是能稳定画出的最细线，超过 3 就不再是“细线”，
+  /// 而是压在胶囊边缘、挤占内容的边框了。
+  static const lineWidth = StyleRange(0.5, 3.0, 0.1);
 }

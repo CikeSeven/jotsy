@@ -28,13 +28,14 @@ class GlassSurface extends StatelessWidget {
     this.blur = true,
     this.border,
     this.bottomHairline,
+    this.bottomHairlineWidth = hairlineWidth,
     this.shadowColor,
     this.progress = 1,
     this.grouped = false,
     required this.child,
   });
 
-  /// 底部细线的粗细（与实色栏顶部分隔线同一规格）。
+  /// 底部细线的默认粗细（与实色栏顶部分隔线同一规格）。
   static const double hairlineWidth = 0.6;
 
   /// 圆角；顶栏贴边铺满时为 [BorderRadius.zero]。
@@ -53,6 +54,9 @@ class GlassSurface extends StatelessWidget {
   /// 底部细线颜色（玻璃顶栏用）；null 不画。只适合直角表面：带圆角时细线
   /// 两端会被圆角裁掉。
   final Color? bottomHairline;
+
+  /// 底部细线的粗细；默认 [hairlineWidth]，玻璃顶栏按用户的设置传入。
+  final double bottomHairlineWidth;
 
   /// 外侧投影颜色；null 不画投影。
   final Color? shadowColor;
@@ -82,7 +86,7 @@ class GlassSurface extends StatelessWidget {
           border: Border(
             bottom: BorderSide(
               color: _scaled(hairline, t),
-              width: hairlineWidth,
+              width: bottomHairlineWidth,
             ),
           ),
         ),

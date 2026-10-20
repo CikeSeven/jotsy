@@ -8108,6 +8108,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'A thin line along the edge of the floating bar';
 
   @override
+  String get homeBarStyleOutlineGroup => 'Outlines';
+
+  @override
+  String get homeBarStyleLineColor => 'Color';
+
+  @override
+  String get homeBarStyleLineColorTheme => 'Default';
+
+  @override
+  String get homeBarStyleLineColorHighlight => 'Highlight';
+
+  @override
+  String get homeBarStyleLineColorPrimary => 'Accent';
+
+  @override
+  String get homeBarStyleLineCustomColor => 'Line color';
+
+  @override
+  String get homeBarStyleLineWidth => 'Width';
+
+  @override
   String get homeBarStyleShadow => 'Shadow';
 
   @override

@@ -10421,6 +10421,34 @@
   "@homeBarStyleBorderSubtitle": {
     "description": "Navigation bar style settings: subtitle of the bottom bar outline switch."
   },
+  "homeBarStyleOutlineGroup": "Outlines",
+  "@homeBarStyleOutlineGroup": {
+    "description": "Navigation bar style settings: title of the outline group on the material tab (bottom bar outline and top bar divider)."
+  },
+  "homeBarStyleLineColor": "Color",
+  "@homeBarStyleLineColor": {
+    "description": "Navigation bar style settings: color source row of an outline or divider."
+  },
+  "homeBarStyleLineColorTheme": "Default",
+  "@homeBarStyleLineColorTheme": {
+    "description": "Navigation bar style settings: outline color option using the theme's outline color."
+  },
+  "homeBarStyleLineColorHighlight": "Highlight",
+  "@homeBarStyleLineColorHighlight": {
+    "description": "Navigation bar style settings: outline color option, a bright color like light catching the edge of glass."
+  },
+  "homeBarStyleLineColorPrimary": "Accent",
+  "@homeBarStyleLineColorPrimary": {
+    "description": "Navigation bar style settings: outline color option using the theme's primary color."
+  },
+  "homeBarStyleLineCustomColor": "Line color",
+  "@homeBarStyleLineCustomColor": {
+    "description": "Navigation bar style settings: picker row for a custom outline or divider color."
+  },
+  "homeBarStyleLineWidth": "Width",
+  "@homeBarStyleLineWidth": {
+    "description": "Navigation bar style settings: outline or divider width slider."
+  },
   "homeBarStyleShadow": "Shadow",
   "@homeBarStyleShadow": {
     "description": "Navigation bar style settings: floating bar shadow switch."

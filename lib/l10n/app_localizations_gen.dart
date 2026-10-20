@@ -13250,6 +13250,48 @@ abstract class AppLocalizations {
   /// **'A thin line along the edge of the floating bar'**
   String get homeBarStyleBorderSubtitle;
 
+  /// Navigation bar style settings: title of the outline group on the material tab (bottom bar outline and top bar divider).
+  ///
+  /// In en, this message translates to:
+  /// **'Outlines'**
+  String get homeBarStyleOutlineGroup;
+
+  /// Navigation bar style settings: color source row of an outline or divider.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get homeBarStyleLineColor;
+
+  /// Navigation bar style settings: outline color option using the theme's outline color.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get homeBarStyleLineColorTheme;
+
+  /// Navigation bar style settings: outline color option, a bright color like light catching the edge of glass.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight'**
+  String get homeBarStyleLineColorHighlight;
+
+  /// Navigation bar style settings: outline color option using the theme's primary color.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent'**
+  String get homeBarStyleLineColorPrimary;
+
+  /// Navigation bar style settings: picker row for a custom outline or divider color.
+  ///
+  /// In en, this message translates to:
+  /// **'Line color'**
+  String get homeBarStyleLineCustomColor;
+
+  /// Navigation bar style settings: outline or divider width slider.
+  ///
+  /// In en, this message translates to:
+  /// **'Width'**
+  String get homeBarStyleLineWidth;
+
   /// Navigation bar style settings: floating bar shadow switch.
   ///
   /// In en, this message translates to:

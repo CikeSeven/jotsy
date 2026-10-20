@@ -67,7 +67,11 @@ class HomeFloatingBar extends StatelessWidget {
       fill: style.fill,
       blur: style.translucent,
       blurSigma: style.blurSigma,
-      border: style.border ? BorderSide(color: style.borderColor) : null,
+      // 描边由 Material 的形状画在裁切范围之内（BorderSide 默认居内），
+      // 加粗时向内长、不会被 ClipRRect 切掉，也不压到外侧投影。
+      border: style.border
+          ? BorderSide(color: style.borderColor, width: style.borderWidth)
+          : null,
       shadowColor: style.shadow ? style.shadowColor : null,
       progress: t,
       // 导航项在玻璃内部淡入：Opacity 在 BackdropFilter 之下，只作用于

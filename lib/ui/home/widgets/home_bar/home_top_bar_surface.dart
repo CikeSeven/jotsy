@@ -43,6 +43,7 @@ class HomeTopBarSurface extends StatelessWidget {
       bottomHairline: showHairline && style.topBarHairline
           ? style.hairlineColor
           : null,
+      bottomHairlineWidth: style.hairlineWidth,
       grouped: grouped,
       child: child,
     );

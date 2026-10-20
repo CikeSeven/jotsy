@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_presets.dart';
@@ -16,98 +14,7 @@ import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../support/expressive_test_theme.dart';
-
-Widget _app(
-  SettingsService settings,
-  Widget home, {
-  Brightness brightness = Brightness.light,
-  Locale locale = const Locale('zh'),
-}) {
-  return ProviderScope(
-    overrides: [settingsServiceProvider.overrideWith((ref) async => settings)],
-    child: MaterialApp(
-      theme: expressiveTestTheme(brightness),
-      locale: locale,
-      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-        ...AppLocalizations.localizationsDelegates,
-        quill.FlutterQuillLocalizations.delegate,
-      ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: home,
-    ),
-  );
-}
-
-Future<(SettingsService, AppLocalizations)> _pumpPage(
-  WidgetTester tester, {
-  Brightness brightness = Brightness.light,
-  Locale locale = const Locale('zh'),
-  Size size = const Size(400, 860),
-  HomeBarSettings? initial,
-}) async {
-  tester.view.physicalSize = size;
-  tester.view.devicePixelRatio = 1;
-  addTearDown(tester.view.reset);
-  SharedPreferences.setMockInitialValues(<String, Object>{
-    if (initial != null) 'app.settings.home_bar_style': initial.encode()!,
-  });
-  final settings = (await tester.runAsync(SettingsService.create))!;
-  await tester.pumpWidget(
-    _app(
-      settings,
-      HomeBarStylePage(settingsService: settings),
-      brightness: brightness,
-      locale: locale,
-    ),
-  );
-  await tester.pumpAndSettle();
-  final l10n = AppLocalizations.of(tester.element(find.byType(Scaffold).first));
-  return (settings, l10n);
-}
-
-HomeBarSettings _stored(SettingsService settings) =>
-    HomeBarSettings.decode(settings.homeBarStyleRaw);
-
-Future<void> _openTab(WidgetTester tester, String label) async {
-  final tab = find.widgetWithText(Tab, label);
-  await tester.ensureVisible(tab);
-  await tester.pumpAndSettle();
-  await tester.tap(tab);
-  await tester.pumpAndSettle();
-}
-
-/// 选项列表是懒构建的：目标还没进树时先在当前标签页里向下滚动。
-Future<void> _scrollTo(WidgetTester tester, Finder finder) async {
-  if (finder.evaluate().isEmpty) {
-    await tester.scrollUntilVisible(
-      finder,
-      120,
-      scrollable: find
-          .descendant(
-            of: find.byType(TabBarView),
-            matching: find.byWidgetPredicate(
-              (widget) =>
-                  widget is Scrollable &&
-                  widget.axisDirection == AxisDirection.down,
-            ),
-          )
-          .first,
-    );
-  }
-  await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
-}
-
-Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
-  await _scrollTo(tester, finder);
-  await tester.tap(finder);
-  await tester.pumpAndSettle();
-}
-
-/// 选项面板里的某个文字（不含上方预览）。
-Finder _inOptions(String text) =>
-    find.descendant(of: find.byType(TabBarView), matching: find.text(text));
+import '../../support/home_bar_style_page_harness.dart';
 
 Finder _materialOption(String label) => find.descendant(
   of: find.byType(ExpressiveButtonGroup<HomeBarMaterial>),
@@ -119,6 +26,15 @@ const _glassCustom = HomeBarSettings(
     material: HomeBarMaterial.glass,
     tint: HomeBarTint.custom,
     tintColor: 0xFF88AACC,
+    // 两条线都打开、底栏描边用自定义色：320dp 检查要覆盖描边分组展开最多的
+    // 样子（含二级的取色行）。
+    topBarHairline: true,
+    borderLine: HomeBarLineStyle(
+      color: HomeBarLineColor.custom,
+      customColor: 0xFF336699,
+      opacity: 0.6,
+      width: 1.0,
+    ),
   ),
 );
 
@@ -126,7 +42,7 @@ void main() {
   testWidgets('shows a miniature home preview above five option tabs', (
     tester,
   ) async {
-    final (_, l10n) = await _pumpPage(tester);
+    final (_, l10n) = await pumpHomeBarStylePage(tester);
     expect(find.byType(Tab), findsNWidgets(5));
     for (final label in <String>[
       l10n.homeBarStyleTabPresets,
@@ -152,82 +68,121 @@ void main() {
   testWidgets('choosing glass reveals the glass rows, solid hides them', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(tester);
-    await _openTab(tester, l10n.homeBarStyleTabMaterial);
-    expect(_inOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabMaterial);
+    expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
 
-    await _tapVisible(tester, _materialOption(l10n.homeBarStyleMaterialGlass));
-    expect(_stored(settings).current.material, HomeBarMaterial.glass);
+    await tapHomeBarOption(
+      tester,
+      _materialOption(l10n.homeBarStyleMaterialGlass),
+    );
+    expect(
+      storedHomeBarSettings(settings).current.material,
+      HomeBarMaterial.glass,
+    );
     // 切到玻璃时默认的图标文字间距随之收紧。
-    expect(_stored(settings).current.labelGap, HomeBarStyle.glassLabelGap);
-    expect(_inOptions(l10n.homeBarStyleGlassTopBars), findsOneWidget);
-    expect(_inOptions(l10n.homeBarStyleGlassFooter), findsOneWidget);
+    expect(
+      storedHomeBarSettings(settings).current.labelGap,
+      HomeBarStyle.glassLabelGap,
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsOneWidget);
+    expect(inHomeBarOptions(l10n.homeBarStyleGlassFooter), findsOneWidget);
     expect(find.byType(HomeFloatingBar), findsOneWidget);
 
     // 自定义色调：起始色是当前中性底色（不透明），颜色行随之展开。
-    await _tapVisible(tester, _inOptions(l10n.styleEditorCustom));
-    final custom = _stored(settings).current;
+    await tapHomeBarOption(
+      tester,
+      find.descendant(
+        of: find.byType(ExpressiveButtonGroup<HomeBarTint>),
+        matching: find.text(l10n.styleEditorCustom),
+      ),
+    );
+    final custom = storedHomeBarSettings(settings).current;
     expect(custom.tint, HomeBarTint.custom);
     expect(custom.tintColor, isNotNull);
     expect(custom.tintColor! >> 24, 0xFF);
-    expect(_inOptions(l10n.homeBarStyleTintColor), findsOneWidget);
+    expect(inHomeBarOptions(l10n.homeBarStyleTintColor), findsOneWidget);
 
-    await _tapVisible(tester, _materialOption(l10n.homeBarStyleMaterialSolid));
-    expect(_stored(settings).current.material, HomeBarMaterial.solid);
-    expect(_stored(settings).current.labelGap, 4);
-    expect(_inOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
-    expect(_inOptions(l10n.homeBarStyleTintColor), findsNothing);
+    await tapHomeBarOption(
+      tester,
+      _materialOption(l10n.homeBarStyleMaterialSolid),
+    );
+    expect(
+      storedHomeBarSettings(settings).current.material,
+      HomeBarMaterial.solid,
+    );
+    expect(storedHomeBarSettings(settings).current.labelGap, 4);
+    expect(inHomeBarOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
+    expect(inHomeBarOptions(l10n.homeBarStyleTintColor), findsNothing);
     expect(find.byType(BottomNav), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the top bar hairline is its own switch under glass top bars', (
+  testWidgets('the top bar hairline is its own switch in the outline group', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(
+    final (settings, l10n) = await pumpHomeBarStylePage(
       tester,
       initial: const HomeBarSettings(
         current: HomeBarStyle(material: HomeBarMaterial.glass),
       ),
     );
-    await _openTab(tester, l10n.homeBarStyleTabMaterial);
-    expect(_inOptions(l10n.homeBarStyleTopBarHairline), findsOneWidget);
-    // 挂在“顶栏也用玻璃”之下，要再缩进一级，不能与它并列。
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabMaterial);
+    await scrollToHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleTopBarHairline),
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleTopBarHairline), findsOneWidget);
+    // 与底栏描边并列在“描边”分组里（同一缩进），而不是挂在材质分组的
+    // “顶栏也用玻璃”之下。
     expect(
-      tester.getTopLeft(_inOptions(l10n.homeBarStyleTopBarHairline)).dx,
+      tester.getTopLeft(inHomeBarOptions(l10n.homeBarStyleTopBarHairline)).dx,
+      tester.getTopLeft(inHomeBarOptions(l10n.homeBarStyleBorder)).dx,
+    );
+    expect(
+      tester.getTopLeft(inHomeBarOptions(l10n.homeBarStyleTopBarHairline)).dy,
       greaterThan(
-        tester.getTopLeft(_inOptions(l10n.homeBarStyleGlassTopBars)).dx,
+        tester.getTopLeft(inHomeBarOptions(l10n.homeBarStyleOutlineGroup)).dy,
       ),
     );
 
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleTopBarHairline));
-    expect(_stored(settings).current.topBarHairline, isTrue);
-    expect(_stored(settings).current.border, isTrue);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleTopBarHairline),
+    );
+    expect(storedHomeBarSettings(settings).current.topBarHairline, isTrue);
+    expect(storedHomeBarSettings(settings).current.border, isTrue);
 
     // 底栏描边只写 border，不动顶栏分隔线。
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleBorder));
-    expect(_stored(settings).current.border, isFalse);
-    expect(_stored(settings).current.topBarHairline, isTrue);
+    await tapHomeBarOption(tester, inHomeBarOptions(l10n.homeBarStyleBorder));
+    expect(storedHomeBarSettings(settings).current.border, isFalse);
+    expect(storedHomeBarSettings(settings).current.topBarHairline, isTrue);
 
     // 顶栏不用玻璃时分隔线这一行收起。
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleGlassTopBars));
-    expect(_stored(settings).current.glassTopBars, isFalse);
-    expect(_inOptions(l10n.homeBarStyleTopBarHairline), findsNothing);
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleGlassTopBars));
-    expect(_inOptions(l10n.homeBarStyleTopBarHairline), findsOneWidget);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleGlassTopBars),
+    );
+    expect(storedHomeBarSettings(settings).current.glassTopBars, isFalse);
+    expect(inHomeBarOptions(l10n.homeBarStyleTopBarHairline), findsNothing);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleGlassTopBars),
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleTopBarHairline), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
   testWidgets('sliders preview while dragging and persist on release', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(tester);
-    await _openTab(tester, l10n.homeBarStyleTabItems);
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabItems);
     final finder = find.widgetWithText(
       SettingsSliderTile,
       l10n.homeBarStyleIconSize,
     );
-    await _scrollTo(tester, finder);
+    await scrollToHomeBarOption(tester, finder);
     final tile = tester.widget<SettingsSliderTile>(finder);
     tile.onChanged!(24);
     await tester.pump();
@@ -236,62 +191,98 @@ void main() {
 
     tile.onChangeEnd!(24);
     await tester.pumpAndSettle();
-    expect(_stored(settings).current.iconSize, 24);
+    expect(storedHomeBarSettings(settings).current.iconSize, 24);
   });
 
   testWidgets('spacing sliders follow the label mode and the indicator', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(tester);
-    await _openTab(tester, l10n.homeBarStyleTabItems);
-    expect(_inOptions(l10n.homeBarStyleItemsFooter), findsOneWidget);
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabItems);
+    expect(inHomeBarOptions(l10n.homeBarStyleItemsFooter), findsOneWidget);
     // 默认显示文字、胶囊指示器：有间距滑块，没有内边距滑块。
-    expect(_inOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
-    expect(_inOptions(l10n.homeBarStyleBlockPadding), findsNothing);
+    expect(inHomeBarOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
+    expect(inHomeBarOptions(l10n.homeBarStyleBlockPadding), findsNothing);
 
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleLabelsNever));
-    expect(_stored(settings).current.labelMode, HomeBarLabelMode.never);
-    expect(_inOptions(l10n.homeBarStyleLabelGap), findsNothing);
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleLabelsSelected));
-    expect(_inOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleLabelsNever),
+    );
+    expect(
+      storedHomeBarSettings(settings).current.labelMode,
+      HomeBarLabelMode.never,
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleLabelGap), findsNothing);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleLabelsSelected),
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
 
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleIndicatorBlock));
-    expect(_stored(settings).current.indicator, HomeBarIndicator.block);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleIndicatorBlock),
+    );
+    expect(
+      storedHomeBarSettings(settings).current.indicator,
+      HomeBarIndicator.block,
+    );
     final padding = find.widgetWithText(
       SettingsSliderTile,
       l10n.homeBarStyleBlockPadding,
     );
-    await _scrollTo(tester, padding);
+    await scrollToHomeBarOption(tester, padding);
     final tile = tester.widget<SettingsSliderTile>(padding);
     expect(tile.nested, isTrue);
     tile.onChanged!(10);
     await tester.pump();
-    expect(_stored(settings).current.blockPadding, 6);
+    expect(storedHomeBarSettings(settings).current.blockPadding, 6);
     tile.onChangeEnd!(10);
     await tester.pumpAndSettle();
-    expect(_stored(settings).current.blockPadding, 10);
+    expect(storedHomeBarSettings(settings).current.blockPadding, 10);
 
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleIndicatorNone));
-    expect(_inOptions(l10n.homeBarStyleBlockPadding), findsNothing);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleIndicatorNone),
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleBlockPadding), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
   testWidgets('the floating tab offers to switch to glass when solid', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(tester);
-    await _openTab(tester, l10n.homeBarStyleTabFloating);
-    expect(_inOptions(l10n.homeBarStyleFloatingSolidHint), findsOneWidget);
-    expect(_inOptions(l10n.homeBarStyleSizeGroup), findsNothing);
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabFloating);
+    expect(
+      inHomeBarOptions(l10n.homeBarStyleFloatingSolidHint),
+      findsOneWidget,
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleSizeGroup), findsNothing);
 
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleSwitchToGlass));
-    expect(_stored(settings).current.material, HomeBarMaterial.glass);
-    expect(_stored(settings).current.labelGap, HomeBarStyle.glassLabelGap);
-    expect(_inOptions(l10n.homeBarStyleFloatingSolidHint), findsNothing);
-    expect(_inOptions(l10n.homeBarStyleSizeGroup), findsOneWidget);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleSwitchToGlass),
+    );
+    expect(
+      storedHomeBarSettings(settings).current.material,
+      HomeBarMaterial.glass,
+    );
+    expect(
+      storedHomeBarSettings(settings).current.labelGap,
+      HomeBarStyle.glassLabelGap,
+    );
+    expect(inHomeBarOptions(l10n.homeBarStyleFloatingSolidHint), findsNothing);
+    expect(inHomeBarOptions(l10n.homeBarStyleSizeGroup), findsOneWidget);
 
-    await _tapVisible(tester, _inOptions(l10n.homeBarStyleFabInline));
-    expect(_stored(settings).current.fabPlacement, HomeBarFabPlacement.inline);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStyleFabInline),
+    );
+    expect(
+      storedHomeBarSettings(settings).current.fabPlacement,
+      HomeBarFabPlacement.inline,
+    );
     expect(find.byType(HomeInlineCreateButton), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
     expect(tester.takeException(), isNull);
@@ -300,9 +291,9 @@ void main() {
   testWidgets('the behavior tab hides hide-on-scroll while solid', (
     tester,
   ) async {
-    final (settings, l10n) = await _pumpPage(tester);
-    await _openTab(tester, l10n.homeBarStyleTabBehavior);
-    expect(_inOptions(l10n.homeBarStyleHideOnScroll), findsNothing);
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await openHomeBarStyleTab(tester, l10n.homeBarStyleTabBehavior);
+    expect(inHomeBarOptions(l10n.homeBarStyleHideOnScroll), findsNothing);
     expect(
       find.descendant(
         of: find.byType(TabBarView),
@@ -311,32 +302,41 @@ void main() {
       findsOneWidget,
     );
 
-    await _tapVisible(
+    await tapHomeBarOption(
       tester,
       find.widgetWithText(SwitchListTile, l10n.homeBarStyleIndicatorFollows),
     );
-    expect(_stored(settings).behavior.indicatorFollowsSwipe, isTrue);
-    expect(_stored(settings).current, HomeBarStyle.defaults);
+    expect(
+      storedHomeBarSettings(settings).behavior.indicatorFollowsSwipe,
+      isTrue,
+    );
+    expect(storedHomeBarSettings(settings).current, HomeBarStyle.defaults);
 
     await settings.setHomeBarStyleRaw(
-      _stored(settings)
+      storedHomeBarSettings(settings)
           .withCurrent(const HomeBarStyle(material: HomeBarMaterial.glass))
           .encode(),
     );
     await tester.pumpAndSettle();
-    await _tapVisible(
+    await tapHomeBarOption(
       tester,
       find.widgetWithText(SwitchListTile, l10n.homeBarStyleHideOnScroll),
     );
-    expect(_stored(settings).behavior.hideOnScroll, isTrue);
-    expect(_stored(settings).behavior.indicatorFollowsSwipe, isTrue);
+    expect(storedHomeBarSettings(settings).behavior.hideOnScroll, isTrue);
+    expect(
+      storedHomeBarSettings(settings).behavior.indicatorFollowsSwipe,
+      isTrue,
+    );
     expect(tester.takeException(), isNull);
   });
 
   testWidgets('a preset applies with an undo snackbar', (tester) async {
-    final (settings, l10n) = await _pumpPage(tester);
-    await _tapVisible(tester, _inOptions(l10n.homeBarStylePresetGlass));
-    expect(_stored(settings).current, HomeBarPreset.glass.style);
+    final (settings, l10n) = await pumpHomeBarStylePage(tester);
+    await tapHomeBarOption(
+      tester,
+      inHomeBarOptions(l10n.homeBarStylePresetGlass),
+    );
+    expect(storedHomeBarSettings(settings).current, HomeBarPreset.glass.style);
     expect(find.byType(HomeFloatingBar), findsOneWidget);
     expect(
       find.text(l10n.styleEditorApplied(l10n.homeBarStylePresetGlass)),
@@ -345,7 +345,7 @@ void main() {
 
     await tester.tap(find.text(l10n.commonUndo));
     await tester.pumpAndSettle();
-    expect(_stored(settings).current, HomeBarStyle.defaults);
+    expect(storedHomeBarSettings(settings).current, HomeBarStyle.defaults);
     expect(find.byType(BottomNav), findsOneWidget);
   });
 
@@ -355,7 +355,7 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final settings = (await tester.runAsync(SettingsService.create))!;
     await tester.pumpWidget(
-      _app(
+      homeBarStyleApp(
         settings,
         Scaffold(
           body: SettingsHomeBarStyleTile(
@@ -391,7 +391,7 @@ void main() {
     for (final glass in <bool>[false, true]) {
       testWidgets('every tab fits a 320dp screen in ${locale.languageCode}'
           '${glass ? ' with glass' : ''}', (tester) async {
-        final (_, l10n) = await _pumpPage(
+        final (_, l10n) = await pumpHomeBarStylePage(
           tester,
           locale: locale,
           size: const Size(320, 640),
@@ -404,7 +404,7 @@ void main() {
           l10n.homeBarStyleTabItems,
           l10n.homeBarStyleTabBehavior,
         ]) {
-          await _openTab(tester, label);
+          await openHomeBarStyleTab(tester, label);
           await tester.drag(find.byType(TabBarView), const Offset(0, -2000));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: label);

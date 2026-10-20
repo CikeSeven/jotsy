@@ -18,6 +18,7 @@ GlassSurface _surface({
   double blurSigma = 20,
   double progress = 1,
   Color? hairline,
+  double? hairlineWidth,
   Color? shadow,
   BorderSide? border,
   bool grouped = false,
@@ -27,6 +28,7 @@ GlassSurface _surface({
   blurSigma: blurSigma,
   progress: progress,
   bottomHairline: hairline,
+  bottomHairlineWidth: hairlineWidth ?? GlassSurface.hairlineWidth,
   shadowColor: shadow,
   border: border,
   grouped: grouped,
@@ -115,6 +117,33 @@ void main() {
     expect(bottom.width, GlassSurface.hairlineWidth);
     expect(bottom.color.a, closeTo(hairline.a * 0.5, 1e-9));
     expect((decoration.border! as Border).top, BorderSide.none);
+  });
+
+  testWidgets('the bottom hairline width defaults to the hairline spec', (
+    tester,
+  ) async {
+    const hairline = Color(0x59000000);
+    BorderSide bottom() =>
+        ((tester.widget<DecoratedBox>(_hairline).decoration as BoxDecoration)
+                    .border!
+                as Border)
+            .bottom;
+
+    // 不传粗细的调用方（菜单等）保持原来的 0.6。
+    await _pump(
+      tester,
+      const GlassSurface(
+        fill: _fill,
+        bottomHairline: hairline,
+        child: SizedBox.expand(key: _childKey),
+      ),
+    );
+    expect(bottom().width, GlassSurface.hairlineWidth);
+    expect(GlassSurface.hairlineWidth, 0.6);
+
+    await _pump(tester, _surface(hairline: hairline, hairlineWidth: 2.4));
+    expect(bottom().width, 2.4);
+    expect(bottom().color, hairline);
   });
 
   testWidgets('paints the outer shadow only with a shadow colour', (

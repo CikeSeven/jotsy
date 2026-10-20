@@ -32,7 +32,16 @@ HomeBarStyle _homeBarStyleFromJson(Object? raw) {
     tintColor: StyleJson.argb(json['tintColor']),
     tintColorDark: StyleJson.argb(json['tintColorDark']),
     border: StyleJson.boolean(json['border'], d.border),
+    // 两条线各是一个子对象，按各自的默认值逐字段容错（见 HomeBarLineStyle）。
+    borderLine: HomeBarLineStyle.fromJson(
+      json['borderLine'],
+      fallback: d.borderLine,
+    ),
     topBarHairline: StyleJson.boolean(json['topBarHairline'], d.topBarHairline),
+    topBarLine: HomeBarLineStyle.fromJson(
+      json['topBarLine'],
+      fallback: d.topBarLine,
+    ),
     shadow: StyleJson.boolean(json['shadow'], d.shadow),
     barHeight: StyleJson.number(
       json['barHeight'],
@@ -98,7 +107,9 @@ Map<String, Object> _homeBarStyleToJson(HomeBarStyle s) {
   StyleJson.putColor(json, 'tintColor', s.tintColor, d.tintColor);
   StyleJson.putColor(json, 'tintColorDark', s.tintColorDark, d.tintColorDark);
   StyleJson.put(json, 'border', s.border, d.border);
+  StyleJson.putObject(json, 'borderLine', s.borderLine.toJson(d.borderLine));
   StyleJson.put(json, 'topBarHairline', s.topBarHairline, d.topBarHairline);
+  StyleJson.putObject(json, 'topBarLine', s.topBarLine.toJson(d.topBarLine));
   StyleJson.put(json, 'shadow', s.shadow, d.shadow);
   StyleJson.put(json, 'barHeight', s.barHeight, d.barHeight);
   StyleJson.put(json, 'cornerRadius', s.cornerRadius, d.cornerRadius);

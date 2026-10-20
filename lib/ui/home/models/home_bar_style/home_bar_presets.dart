@@ -12,7 +12,8 @@ enum HomeBarPreset {
   /// 玻璃：默认参数的毛玻璃悬浮底栏，选中项用圆角块标出。
   glass,
 
-  /// 通透：更透、更模糊、不要投影，下方内容透得最清楚。
+  /// 通透：更透、更模糊、不要投影，下方内容透得最清楚；描边换成明亮的
+  /// 边缘高光，勾出玻璃的轮廓。
   clear,
 
   /// 磨砂：底色更浓，透出的内容只剩色块，文字最稳。
@@ -59,6 +60,13 @@ const _clear = HomeBarStyle(
   blurSigma: 28,
   tintOpacity: 0.45,
   shadow: false,
+  // 没有投影、底色又淡，灰色描边在浅色内容上几乎看不见；换成高光边缘，
+  // 像玻璃边缘反光一样勾出栏的轮廓。
+  borderLine: HomeBarLineStyle(
+    color: HomeBarLineColor.highlight,
+    opacity: 0.7,
+    width: 1.0,
+  ),
 );
 
 const _frosted = HomeBarStyle(

@@ -3,6 +3,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_toolbar_code_block_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_toolbar_color_button.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
@@ -160,13 +161,16 @@ void main() {
     // 足够宽时全部常驻，逐个核对按钮实际宽度；按钮样式或 Quill 内部间距一旦
     // 变化，常驻个数的计算就会和画面对不上。
     await _pumpToolbar(tester, controller: _controller(), screenWidth: 1200);
-    // 文字颜色 / 背景颜色是自绘按钮，其余仍是单项 Quill 工具栏。
+    // 文字颜色 / 背景颜色与代码块是自绘按钮，其余仍是单项 Quill 工具栏。
     const colorItems = <DiaryToolbarItem>{
       DiaryToolbarItem.textColor,
       DiaryToolbarItem.backgroundColor,
     };
     final quillItems = kDefaultDiaryToolbarOrder
-        .where((item) => !colorItems.contains(item))
+        .where(
+          (item) =>
+              !colorItems.contains(item) && item != DiaryToolbarItem.codeBlock,
+        )
         .toList();
     final toolbars = find.byType(quill.QuillSimpleToolbar);
     expect(toolbars, findsNWidgets(quillItems.length));
@@ -186,6 +190,10 @@ void main() {
         const Size.square(kDiaryToolbarButtonExtent),
       );
     }
+    expect(
+      tester.getSize(find.byType(DiaryToolbarCodeBlockButton)),
+      const Size.square(kDiaryToolbarButtonExtent),
+    );
     expect(find.byTooltip(_moreTooltip), findsNothing);
   });
 

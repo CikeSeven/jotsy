@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
 import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
+import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 import 'expressive_test_theme.dart';
 
 // 颜色面板测试的公共装配：正文编辑器 + 悬浮工具栏（颜色工具排在最前），
 // 记录路由推入与面板高度报告；我的颜色存在 [ColorPanelHarness.saved] 里，
-// 面板的改写立即生效（与 provider 一样作用在最新记录上）。
+// 面板的改写立即生效（与 provider 一样作用在最新记录上）。代码块面板测试
+// 复用同一套装配，代码块样式（自动识别开关）经 [pumpColorPanel] 的
+// `codeBlockStyle` 固定，不读设置。
 
 const String colorPanelTextTool = '文字颜色';
 const String colorPanelBackgroundTool = '背景颜色';
@@ -91,6 +96,7 @@ Future<ColorPanelHarness> pumpColorPanel(
   Locale locale = const Locale('zh'),
   DiarySavedColors savedColors = DiarySavedColors.empty,
   ColorPanelHarness? reuse,
+  DiaryCodeBlockStyle codeBlockStyle = DiaryCodeBlockStyle.defaults,
 }) async {
   tester.view.physicalSize = Size(screenWidth, 800);
   tester.view.devicePixelRatio = 1;
@@ -108,49 +114,68 @@ Future<ColorPanelHarness> pumpColorPanel(
     addTearDown(harness.saved.dispose);
   }
   await tester.pumpWidget(
-    MaterialApp(
-      theme: expressiveTestTheme(Brightness.light),
-      locale: locale,
-      navigatorObservers: <NavigatorObserver>[harness.routes],
-      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-        ...AppLocalizations.localizationsDelegates,
-        quill.FlutterQuillLocalizations.delegate,
+    ProviderScope(
+      overrides: [
+        diaryCodeBlockStyleProvider.overrideWith(
+          () => _FixedCodeBlockStyle(codeBlockStyle),
+        ),
       ],
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Column(
-          children: <Widget>[
-            Expanded(
-              child: quill.QuillEditor.basic(
-                controller: harness.controller,
-                focusNode: harness.editorFocus,
+      child: MaterialApp(
+        theme: expressiveTestTheme(Brightness.light),
+        locale: locale,
+        navigatorObservers: <NavigatorObserver>[harness.routes],
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          ...AppLocalizations.localizationsDelegates,
+          quill.FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Column(
+            children: <Widget>[
+              Expanded(
+                child: quill.QuillEditor.basic(
+                  controller: harness.controller,
+                  focusNode: harness.editorFocus,
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: kDiaryFloatingToolbarInset,
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: kDiaryFloatingToolbarInset,
+                ),
+                child: ValueListenableBuilder<DiarySavedColors>(
+                  valueListenable: harness.saved,
+                  builder:
+                      (
+                        BuildContext context,
+                        DiarySavedColors saved,
+                        Widget? _,
+                      ) => DiaryFloatingToolbar(
+                        controller: harness.controller,
+                        order: order,
+                        recordingOpen: recordingOpen,
+                        onPanelExtentChanged: harness.extents.add,
+                        savedColors: saved,
+                        onEditSavedColors: harness.edit,
+                      ),
+                ),
               ),
-              child: ValueListenableBuilder<DiarySavedColors>(
-                valueListenable: harness.saved,
-                builder:
-                    (BuildContext context, DiarySavedColors saved, Widget? _) =>
-                        DiaryFloatingToolbar(
-                          controller: harness.controller,
-                          order: order,
-                          recordingOpen: recordingOpen,
-                          onPanelExtentChanged: harness.extents.add,
-                          savedColors: saved,
-                          onEditSavedColors: harness.edit,
-                        ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ),
   );
   await tester.pumpAndSettle();
   return harness;
+}
+
+class _FixedCodeBlockStyle extends DiaryCodeBlockStyleNotifier {
+  _FixedCodeBlockStyle(this.style);
+
+  final DiaryCodeBlockStyle style;
+
+  @override
+  DiaryCodeBlockStyle build() => style;
 }
 
 Future<void> openTextColorPanel(WidgetTester tester) async {

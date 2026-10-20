@@ -86,9 +86,17 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
             !inMorePanel &&
             _panel == _ToolbarPanel.color &&
             _colorTarget == colorTarget &&
-            !_colorFromMore,
+            !_panelFromMore,
         tooltip: item.label(context.l10n),
         onPressed: () => _handleColorTool(colorTarget, fromMore: inMorePanel),
+      );
+    } else if (item == DiaryToolbarItem.codeBlock) {
+      tool = DiaryToolbarCodeBlockButton(
+        controller: widget.controller,
+        panelOpen:
+            !inMorePanel && _panel == _ToolbarPanel.code && !_panelFromMore,
+        tooltip: item.label(context.l10n),
+        onPressed: () => _handleCodeBlockTool(fromMore: inMorePanel),
       );
     } else {
       final mediaImportController = widget.mediaImportController;

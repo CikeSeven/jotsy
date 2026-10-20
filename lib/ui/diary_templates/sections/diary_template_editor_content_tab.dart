@@ -5,6 +5,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/app_service.dart';
+import '../../../core/services/settings_service.dart';
 import '../../diaries/providers/diary_saved_colors_provider.dart';
 import '../../diaries/providers/diary_typography_provider.dart';
 import '../../diaries/viewmodels/diary_quill_styles.dart';
@@ -16,8 +17,9 @@ import '../widgets/diary_template_variable_bar.dart';
 /// 模板编辑页的“内容”标签：标题格式、插入变量条与正文。
 ///
 /// 正文是独立的 Quill 编辑器（自带滚动），不走日记编辑页的光标跟随机制；
-/// 键盘弹起且正文有焦点时，底部显示与日记编辑页同一套悬浮工具栏，但去掉
-/// 图片、视频、附件、录音与插入时间——模板里不能有媒体，时间应当用变量。
+/// 键盘弹起且正文有焦点时（打开“始终显示工具栏”后一直），底部显示与日记
+/// 编辑页同一套悬浮工具栏，但去掉图片、视频、附件、录音与插入时间——模板
+/// 里不能有媒体，时间应当用变量。
 ///
 /// 变量插到最后一个获得焦点的输入框（标题或正文）的光标处；变量面板会抢走
 /// 焦点，插入后把焦点还回去。
@@ -118,8 +120,7 @@ class _DiaryTemplateEditorContentTabState
     _titleFocus.requestFocus();
   }
 
-  List<DiaryToolbarItem> _toolbarOrder() {
-    final settings = ref.watch(settingsServiceProvider).asData?.value;
+  List<DiaryToolbarItem> _toolbarOrder(SettingsService? settings) {
     final order = decodeDiaryToolbarOrder(settings?.diaryToolbarOrderRaw);
     final hidden = decodeDiaryToolbarHiddenItems(
       settings?.diaryToolbarHiddenItemsRaw,
@@ -138,11 +139,15 @@ class _DiaryTemplateEditorContentTabState
     final theme = Theme.of(context);
     final appearance = ref.watch(diaryTextAppearanceProvider);
     final titleStyle = appearance.titleStyle(theme.textTheme.headlineSmall);
-    final order = _toolbarOrder();
+    final settings = ref.watch(settingsServiceProvider).asData?.value;
+    final order = _toolbarOrder(settings);
     // 焦点在工具栏内（颜色代码输入框）时不看键盘：交接焦点时输入法可能先收起
-    // 再弹出，键盘短暂消失也不能卸载工具栏（与日记编辑页同一口径）。
+    // 再弹出，键盘短暂消失也不能卸载工具栏（与日记编辑页同一口径）。打开
+    // “始终显示工具栏”后不看键盘与焦点，接实体键盘时也能排版。
+    final alwaysVisible = settings?.isDiaryToolbarAlwaysVisible ?? false;
     final showToolbar =
-        ((widget.keyboardVisible && _bodyFocus.hasFocus) ||
+        (alwaysVisible ||
+            (widget.keyboardVisible && _bodyFocus.hasFocus) ||
             _toolbarFocus.hasFocus) &&
         order.isNotEmpty;
     return Column(

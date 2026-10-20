@@ -5542,6 +5542,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'When backfilling a past day, list that day\'s photos under the title. When off, open them from the editor\'s top-right menu.';
 
   @override
+  String get settingsToolbarAlwaysVisible => 'Always show toolbar';
+
+  @override
+  String get settingsToolbarAlwaysVisibleSubtitle =>
+      'Keep the toolbar at the bottom of the editor when the on-screen keyboard is hidden or you type on a physical keyboard.';
+
+  @override
   String get diaryDayPhotosSetCover => 'Set as cover';
 
   @override

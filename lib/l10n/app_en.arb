@@ -7110,6 +7110,14 @@
   "@settingsDayPhotoSuggestionsSubtitle": {
     "description": "Editor settings: description of the backfill photo suggestion switch."
   },
+  "settingsToolbarAlwaysVisible": "Always show toolbar",
+  "@settingsToolbarAlwaysVisible": {
+    "description": "Editor settings: title of the switch that keeps the floating toolbar at the bottom of the editor instead of showing it only with the on-screen keyboard."
+  },
+  "settingsToolbarAlwaysVisibleSubtitle": "Keep the toolbar at the bottom of the editor when the on-screen keyboard is hidden or you type on a physical keyboard.",
+  "@settingsToolbarAlwaysVisibleSubtitle": {
+    "description": "Editor settings: description of the always-visible toolbar switch."
+  },
   "diaryDayPhotosSetCover": "Set as cover",
   "@diaryDayPhotosSetCover": {
     "description": "Photos from this day: button and menu item that makes a photo the entry cover."

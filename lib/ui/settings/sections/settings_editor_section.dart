@@ -114,6 +114,9 @@ class SettingsEditorSection extends ConsumerWidget {
                                         );
                                       },
                                     ),
+                                    _ToolbarAlwaysVisibleSwitch(
+                                      settings: settingsService,
+                                    ),
                                     ListTile(
                                       title: Text(
                                         l10n.settingsMoodOptionsTitle,
@@ -247,6 +250,31 @@ class _DayPhotoSuggestionsSwitch extends StatelessWidget {
           title: Text(l10n.settingsDayPhotoSuggestions),
           subtitle: Text(l10n.settingsDayPhotoSuggestionsSubtitle),
           onChanged: settings.setDayPhotoSuggestionsEnabled,
+        );
+      },
+    );
+  }
+}
+
+/// “始终显示工具栏”开关：打开后编辑页（含模板编辑页）的悬浮工具栏不再随
+/// 软键盘出现与消失，接实体键盘、不弹软键盘时也能用工具栏排版。
+class _ToolbarAlwaysVisibleSwitch extends StatelessWidget {
+  const _ToolbarAlwaysVisibleSwitch({required this.settings});
+
+  final SettingsService settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return ValueListenableBuilder<bool>(
+      valueListenable: settings.diaryToolbarAlwaysVisibleNotifier,
+      builder: (BuildContext context, bool enabled, Widget? child) {
+        return SwitchListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          value: enabled,
+          title: Text(l10n.settingsToolbarAlwaysVisible),
+          subtitle: Text(l10n.settingsToolbarAlwaysVisibleSubtitle),
+          onChanged: settings.setDiaryToolbarAlwaysVisible,
         );
       },
     );

@@ -7110,6 +7110,14 @@
   "@settingsDayPhotoSuggestionsSubtitle": {
     "description": "编辑器设置：补写推荐照片开关的说明。"
   },
+  "settingsToolbarAlwaysVisible": "始终显示工具栏",
+  "@settingsToolbarAlwaysVisible": {
+    "description": "编辑器设置：让悬浮工具栏常驻编辑页底部、不随软键盘出现与消失的开关标题。"
+  },
+  "settingsToolbarAlwaysVisibleSubtitle": "收起软键盘或连接实体键盘时，工具栏仍留在编辑页底部",
+  "@settingsToolbarAlwaysVisibleSubtitle": {
+    "description": "编辑器设置：工具栏常显开关的说明。"
+  },
   "diaryDayPhotosSetCover": "设为封面",
   "@diaryDayPhotosSetCover": {
     "description": "这天拍的照片：把照片设为日记封面的按钮与菜单项。"

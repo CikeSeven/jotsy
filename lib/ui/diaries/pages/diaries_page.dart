@@ -331,13 +331,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             ? currentNotebook
             : null;
         final cardStyle = ref.watch(diaryCardStyleProvider);
-        final cardSideMargin = cardStyle
-            .mode(
-              _layoutMode == DiaryLayoutMode.waterfall
-                  ? DiaryCardMode.waterfall
-                  : DiaryCardMode.list,
-            )
-            .sideMargin;
+        // 与列表（DiariesListSection 经 DiaryCardResolvedStyle）同一份模式样式：
+        // resolved.modeStyle 就是 style.mode(mode)，边距与卡片间距两处一致。
+        final cardModeStyle = cardStyle.mode(
+          _layoutMode == DiaryLayoutMode.waterfall
+              ? DiaryCardMode.waterfall
+              : DiaryCardMode.list,
+        );
+        final cardSideMargin = cardModeStyle.sideMargin;
         final tagHeaderContent = tagsAsync.when(
           data: (tags) {
             final visibleTagFilters = _resolveTagFiltersForDisplay(
@@ -560,6 +561,24 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                 ),
                               ),
                               tagHeader,
+                              // 玻璃顶栏底缘有一条细线，静止时第一张卡片（或日记本
+                              // 头部卡片）贴着它显得挤；实色时同色无线、看不出来。
+                              // 只在玻璃时留一段与卡片间距相同的空白，让第一张卡片
+                              // 离细线与卡片彼此之间一样远。放成随内容滚走的普通
+                              // sliver，而不是加高固定的标签栏：滚动后不多占顶栏。
+                              // 实色时不插入，布局与改版前逐像素一致。卡片间距可调到
+                              // 0（卡片相接），此时仍至少留 8，不让卡片压在细线上。
+                              if (glassTopBars)
+                                SliverToBoxAdapter(
+                                  key: const ValueKey<String>(
+                                    'diaries_glass_top_gap',
+                                  ),
+                                  child: SizedBox(
+                                    height: cardModeStyle.cardGap < 8
+                                        ? 8
+                                        : cardModeStyle.cardGap,
+                                  ),
+                                ),
                               NotebookHeaderSliver(
                                 notebook: currentNotebook,
                                 horizontalMargin: cardSideMargin,

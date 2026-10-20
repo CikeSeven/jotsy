@@ -12,7 +12,9 @@ import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
+import 'package:node_diary/ui/diaries/models/diary_card_style/diary_card_style_enums.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
+import 'package:node_diary/ui/diaries/sections/diaries_list_section.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
 import 'package:node_diary/ui/diaries/widgets/diaries_header_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart';
@@ -26,11 +28,13 @@ import 'package:node_diary/ui/home/pages/home_page.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
+import 'package:node_diary/ui/widgets/page_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const double _screenWidth = 400;
@@ -226,6 +230,40 @@ double _trailingSpace(WidgetTester tester, Finder page) {
 /// 底栏槽位高度：玻璃时首页 body 读到的底部 padding。
 double _slotHeight(WidgetTester tester, Finder page) =>
     MediaQuery.paddingOf(tester.element(page)).bottom;
+
+/// 日记列表当前模式下的卡片间距（与列表读的是同一份样式）。
+double _listCardGap(WidgetTester tester) {
+  final section = tester.widget<DiariesListSection>(
+    find.byType(DiariesListSection),
+  );
+  return section.cardStyle
+      .mode(
+        section.layoutMode == DiaryLayoutMode.waterfall
+            ? DiaryCardMode.waterfall
+            : DiaryCardMode.list,
+      )
+      .cardGap;
+}
+
+/// 日记页标签栏（顶栏最下面一片）的底缘。
+double _tagBarBottom(WidgetTester tester) => tester
+    .getRect(
+      find
+          .ancestor(
+            of: find.byType(DiaryTagFilterBar),
+            matching: find.byType(HomeTopBarSurface),
+          )
+          .first,
+    )
+    .bottom;
+
+/// 设置页第一张入口卡片（外观与语言）。
+Finder _firstSettingsCard(WidgetTester tester) => find
+    .ancestor(
+      of: find.text(_l10n(tester).settingsAppearanceLanguage),
+      matching: find.byType(Card),
+    )
+    .first;
 
 void main() {
   testWidgets('the default style keeps the solid bar under the body', (
@@ -585,6 +623,46 @@ void main() {
       await _unmount(tester);
     });
 
+    testWidgets('the first card keeps the card gap below the hairline', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        diaryCount: 3,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_glass),
+      );
+      final gap = _listCardGap(tester);
+      expect(gap, greaterThan(0));
+      final tagBarBottom = _tagBarBottom(tester);
+      expect(tester.getRect(_tagBarGlass).bottom, tagBarBottom);
+      final firstCardTop = tester.getRect(find.byType(DiaryCard).first).top;
+      expect(firstCardTop, greaterThanOrEqualTo(tagBarBottom + gap - 0.01));
+      expect(firstCardTop, closeTo(tagBarBottom + gap, 0.01));
+
+      // 空白随内容滚走：上滑一点后，固定的标签栏不变高。
+      final tagBarHeight = tester.getRect(_tagBarGlass).height;
+      await tester.drag(_diariesList(), const Offset(0, -200));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(_tagBarGlass).height, tagBarHeight);
+      await _unmount(tester);
+    });
+
+    testWidgets('solid bars keep the first card flush with the tag bar', (
+      tester,
+    ) async {
+      await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
+      expect(
+        find.byKey(const ValueKey<String>('diaries_glass_top_gap')),
+        findsNothing,
+      );
+      expect(
+        tester.getRect(find.byType(DiaryCard).first).top,
+        closeTo(_tagBarBottom(tester), 0.01),
+      );
+      await _unmount(tester);
+    });
+
     testWidgets('solid bars keep the status bar inset and no glass', (
       tester,
     ) async {
@@ -598,6 +676,32 @@ void main() {
       );
       // 实色时仍由 SafeArea 让出状态栏：刊头从状态栏线以下开始。
       expect(tester.getTopLeft(find.byType(DiaryHeadSection)).dy, _statusBar);
+      await _unmount(tester);
+    });
+  });
+
+  group('settings tab first card', () {
+    testWidgets('glass leaves 12dp below the header hairline', (tester) async {
+      await _pumpHome(tester, statusBar: _statusBar, homeBarRaw: _raw(_glass));
+      await _openTab(tester, _l10n(tester).navSettings);
+      final headerBottom = tester.getRect(find.byType(PageHeader)).bottom;
+      expect(headerBottom, _statusBar + PageHeader.contentHeight);
+      expect(
+        tester.getRect(_firstSettingsCard(tester)).top,
+        closeTo(headerBottom + 12, 0.01),
+      );
+      await _unmount(tester);
+    });
+
+    testWidgets('solid keeps the first card flush with the header', (
+      tester,
+    ) async {
+      await _pumpHome(tester, statusBar: _statusBar);
+      await _openTab(tester, _l10n(tester).navSettings);
+      expect(
+        tester.getRect(_firstSettingsCard(tester)).top,
+        closeTo(tester.getRect(find.byType(PageHeader)).bottom, 0.01),
+      );
       await _unmount(tester);
     });
   });

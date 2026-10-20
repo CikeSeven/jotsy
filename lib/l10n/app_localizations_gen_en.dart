@@ -7819,10 +7819,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Anniversaries and countdowns, marked on the calendar';
 
   @override
-  String get settingsFeaturesAnniversariesLinked =>
-      'Off while the calendar is off';
-
-  @override
   String get settingsFeaturesTemplates => 'Diary templates';
 
   @override

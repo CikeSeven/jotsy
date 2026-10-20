@@ -10049,10 +10049,6 @@
   "@settingsFeaturesAnniversariesSubtitle": {
     "description": "功能管理页：纪念日开关的说明。"
   },
-  "settingsFeaturesAnniversariesLinked": "随日历一起关闭",
-  "@settingsFeaturesAnniversariesLinked": {
-    "description": "功能管理页：日历关闭时纪念日开关的说明（纪念日依附日历，不可单独开启）。"
-  },
   "settingsFeaturesTemplates": "日记模板",
   "@settingsFeaturesTemplates": {
     "description": "功能管理页：日记模板开关的标题。"

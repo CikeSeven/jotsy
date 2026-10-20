@@ -12764,12 +12764,6 @@ abstract class AppLocalizations {
   /// **'Anniversaries and countdowns, marked on the calendar'**
   String get settingsFeaturesAnniversariesSubtitle;
 
-  /// Features page: anniversaries switch subtitle while the calendar is off (anniversaries depend on it).
-  ///
-  /// In en, this message translates to:
-  /// **'Off while the calendar is off'**
-  String get settingsFeaturesAnniversariesLinked;
-
   /// Features page: title of the diary templates switch.
   ///
   /// In en, this message translates to:

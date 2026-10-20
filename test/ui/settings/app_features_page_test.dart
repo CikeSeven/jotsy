@@ -15,7 +15,7 @@ import '../../support/diary_drafts_harness.dart';
 import '../../support/expressive_test_theme.dart';
 import '../notebooks/notebook_test_support.dart';
 
-/// 功能管理页：每个开关立即写入设置；纪念日随日历联动；关闭日记本时若有
+/// 功能管理页：每个开关立即写入设置；纪念日在日历下方、随日历显隐；关闭日记本时若有
 /// 隐藏 / 上锁的本子先确认。
 void main() {
   Finder switchTile(String title) => find.widgetWithText(SwitchListTile, title);
@@ -64,35 +64,60 @@ void main() {
     await h.unmount();
   });
 
-  testWidgets(
-    'anniversaries follow the calendar and restore the stored value',
-    (tester) async {
-      final h = await DiaryDraftsHarness.create(tester);
-      await h.pump(const AppFeaturesPage());
-      final l10n = h.l10n;
+  testWidgets('anniversaries sit right below the calendar and write their '
+      'own value', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(const AppFeaturesPage());
+    final l10n = h.l10n;
 
-      await toggle(tester, l10n.navCalendar);
-      final linked = tile(tester, l10n.settingsFeaturesAnniversaries);
-      expect(linked.value, isFalse);
-      expect(linked.onChanged, isNull);
-      expect(find.text(l10n.settingsFeaturesAnniversariesLinked), findsOne);
-      // 联动关闭不改写用户自己的值。
-      expect(stored(h).anniversaries, isTrue);
+    // 「页面」组顺序：日历、纪念日、探索；「功能」组在其后。
+    final calendarY = tester.getTopLeft(switchTile(l10n.navCalendar)).dy;
+    final anniversaryY = tester
+        .getTopLeft(switchTile(l10n.settingsFeaturesAnniversaries))
+        .dy;
+    final exploreY = tester.getTopLeft(switchTile(l10n.navExplore)).dy;
+    final notebooksY = tester.getTopLeft(switchTile(l10n.notebookTitle)).dy;
+    expect(calendarY, lessThan(anniversaryY));
+    expect(anniversaryY, lessThan(exploreY));
+    expect(exploreY, lessThan(notebooksY));
 
-      await toggle(tester, l10n.navCalendar);
-      expect(tile(tester, l10n.settingsFeaturesAnniversaries).value, isTrue);
-      expect(find.text(l10n.settingsFeaturesAnniversariesSubtitle), findsOne);
+    final anniversaries = tile(tester, l10n.settingsFeaturesAnniversaries);
+    expect(anniversaries.value, isTrue);
+    expect(anniversaries.onChanged, isNotNull);
+    expect(find.text(l10n.settingsFeaturesAnniversariesSubtitle), findsOne);
 
-      // 先单独关掉纪念日，再关开日历：回来时仍是关。
-      await toggle(tester, l10n.settingsFeaturesAnniversaries);
-      await toggle(tester, l10n.navCalendar);
-      await toggle(tester, l10n.navCalendar);
-      final restored = tile(tester, l10n.settingsFeaturesAnniversaries);
-      expect(restored.value, isFalse);
-      expect(restored.onChanged, isNotNull);
-      await h.unmount();
-    },
-  );
+    await toggle(tester, l10n.settingsFeaturesAnniversaries);
+    expect(stored(h).anniversaries, isFalse);
+    expect(stored(h).calendar, isTrue);
+    await h.unmount();
+  });
+
+  testWidgets('anniversaries hide with the calendar and come back with the '
+      'stored value', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(const AppFeaturesPage());
+    final l10n = h.l10n;
+
+    await toggle(tester, l10n.navCalendar);
+    expect(switchTile(l10n.settingsFeaturesAnniversaries), findsNothing);
+    expect(find.text(l10n.settingsFeaturesAnniversariesSubtitle), findsNothing);
+    // 日历关闭不改写用户自己的值。
+    expect(stored(h).anniversaries, isTrue);
+
+    await toggle(tester, l10n.navCalendar);
+    expect(tile(tester, l10n.settingsFeaturesAnniversaries).value, isTrue);
+
+    // 先单独关掉纪念日，再关开日历：回来时仍是关，且可以拨动。
+    await toggle(tester, l10n.settingsFeaturesAnniversaries);
+    await toggle(tester, l10n.navCalendar);
+    expect(switchTile(l10n.settingsFeaturesAnniversaries), findsNothing);
+    await toggle(tester, l10n.navCalendar);
+    final restored = tile(tester, l10n.settingsFeaturesAnniversaries);
+    expect(restored.value, isFalse);
+    expect(restored.onChanged, isNotNull);
+    expect(stored(h).anniversaries, isFalse);
+    await h.unmount();
+  });
 
   testWidgets('turning notebooks off with a private notebook asks first', (
     tester,
@@ -147,10 +172,7 @@ void main() {
       tester.view.physicalSize = const Size(320, 900);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      SharedPreferences.setMockInitialValues(<String, Object>{
-        // 日历关闭，让最长的联动说明也参与布局。
-        'app.settings.app_features': '{"calendar":false}',
-      });
+      SharedPreferences.setMockInitialValues(<String, Object>{});
       final settings = await SettingsService.create();
       await tester.pumpWidget(
         ProviderScope(

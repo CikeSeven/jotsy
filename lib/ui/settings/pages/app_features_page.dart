@@ -1,5 +1,5 @@
-// 设置 → 功能管理：整体开关日历、探索两个页面，以及日记本、纪念日、
-// 日记模板、时间胶囊四项功能。
+// 设置 → 功能管理：整体开关日历、探索两个页面（纪念日随日历放在其下），
+// 以及日记本、日记模板、时间胶囊三项功能。
 //
 // 输入：`appFeaturesProvider`（当前开关）、`settingsServiceProvider`
 // （写入目标，未就绪时全部开关禁用）、`notebooksProvider`（只取私密本子
@@ -7,10 +7,10 @@
 // 输出 / 副作用：每次拨动立即经 `saveAppFeatures` 写入单个设置键，provider
 // 随设置 notifier 刷新，各处入口随之显隐；数据一律不动。
 //
-// 纪念日依附日历（列表只能从日历顶栏进入）：日历关闭时开关显示
-// `anniversariesEnabled`（即关）且禁用，说明换成“随日历一起关闭”；拨动纪念日
-// 只写用户自己的 `anniversaries` 值，所以日历重新开启时自动回到用户原来的
-// 选择，不需要额外记忆。
+// 纪念日依附日历（列表只能从日历顶栏进入），所以它的开关放在「页面」组里
+// 日历的正下方，只在日历开启时显示；日历关闭时整行不构建，不显示禁用态。
+// 拨动纪念日只写用户自己的 `anniversaries` 值（日历关闭不改写它），所以日历
+// 重新开启时这一行回到用户原来的选择，不需要额外记忆。
 //
 // 关闭日记本时的确认：私密（隐藏 / 上锁）本子里的日记被统一谓词从所有全局
 // 列表中排除，只在它所在的本子里出现；日记本关闭后本子入口全部隐藏，这些
@@ -79,6 +79,13 @@ class AppFeaturesPage extends ConsumerWidget {
                 value: features.calendar,
                 onChanged: writer((v) => features.copyWith(calendar: v)),
               ),
+              if (features.calendar)
+                SettingsSwitchTile(
+                  title: l10n.settingsFeaturesAnniversaries,
+                  subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
+                  value: features.anniversaries,
+                  onChanged: writer((v) => features.copyWith(anniversaries: v)),
+                ),
               SettingsSwitchTile(
                 title: l10n.navExplore,
                 subtitle: l10n.settingsFeaturesExploreSubtitle,
@@ -105,16 +112,6 @@ class AppFeaturesPage extends ConsumerWidget {
                         privateCount,
                         value,
                       ),
-              ),
-              SettingsSwitchTile(
-                title: l10n.settingsFeaturesAnniversaries,
-                subtitle: features.calendar
-                    ? l10n.settingsFeaturesAnniversariesSubtitle
-                    : l10n.settingsFeaturesAnniversariesLinked,
-                value: features.anniversariesEnabled,
-                onChanged: features.calendar
-                    ? writer((v) => features.copyWith(anniversaries: v))
-                    : null,
               ),
               SettingsSwitchTile(
                 title: l10n.settingsFeaturesTemplates,

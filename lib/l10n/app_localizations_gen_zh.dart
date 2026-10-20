@@ -6996,9 +6996,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsFeaturesAnniversariesSubtitle => '纪念日与倒数日，标在日历上';
 
   @override
-  String get settingsFeaturesAnniversariesLinked => '随日历一起关闭';
-
-  @override
   String get settingsFeaturesTemplates => '日记模板';
 
   @override

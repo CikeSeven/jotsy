@@ -10,9 +10,9 @@
     改文案时两种语言一起改。
   -->
   <title data-en="Jotsy · A private diary that lives on your phone">Jotsy · 一本只属于你的本地日记</title>
-  <meta name="description" content="Jotsy 是免费、开源、无广告、无需注册的 Android 本地日记：富文本与多媒体、心情与天气、农历日历与纪念日、网盘备份与多格式导出，数据只存在你的手机里。" data-en-content="Jotsy is a free, open-source Android diary with no ads and no account: rich text and media, mood and weather, a lunar calendar with anniversaries, cloud backup and export, and your data never leaves your phone.">
+  <meta name="description" content="Jotsy 是免费、开源、无广告、无需注册的 Android 本地日记：富文本与多媒体、日记本与模板、农历日历与纪念日、网盘备份与多格式导出，数据只存在你的手机里。" data-en-content="Jotsy is a free, open-source Android diary with no ads and no account: rich text and media, notebooks and templates, a lunar calendar with anniversaries, cloud backup and export, and your data never leaves your phone.">
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f6fafe">
+  <meta name="theme-color" content="#ffffff">
   <link rel="canonical" href="https://jotsy.sisct.xyz/">
   <link rel="alternate" hreflang="zh-CN" href="https://jotsy.sisct.xyz/">
   <link rel="alternate" hreflang="en" href="https://jotsy.sisct.xyz/?lang=en">
@@ -73,7 +73,6 @@
   </script>
   <link rel="modulepreload" href="assets/js/i18n.js">
   <link rel="modulepreload" href="assets/js/theme.js">
-  <link rel="modulepreload" href="assets/js/shapes.js">
   <script type="module" src="assets/js/site.js"></script>
 </head>
 <body>
@@ -87,16 +86,14 @@
       </a>
       <nav class="nav" aria-label="主导航" data-en-aria-label="Main">
         <a href="#features" data-en="Features">功能</a>
-        <a href="#personalize" data-en="Customize">个性化</a>
+        <a href="#personalize" data-en="Customize">定制</a>
         <a href="#privacy" data-en="Privacy">隐私</a>
-        <a href="#migrate" data-en="Import">搬家</a>
+        <a href="#updates" data-en="What's new">更新</a>
         <a href="#download" data-en="Download">下载</a>
-        <a href="#faq" data-en="FAQ">常见问题</a>
       </nav>
       <div class="header-actions">
         <button class="icon-btn lang-btn" type="button" data-lang-toggle aria-label="Switch to English" data-en-aria-label="切换到中文">
-          <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-language"></use></svg>
-          <span data-en="中文">EN</span>
+          <span data-en="中">EN</span>
         </button>
         <button class="icon-btn theme-btn" type="button" data-theme-toggle aria-label="切换明暗主题" data-en-aria-label="Switch light or dark theme">
           <svg class="i ic-system" aria-hidden="true"><use href="assets/img/icons.svg#i-circle-half-stroke"></use></svg>
@@ -117,13 +114,13 @@
 
   <div class="mobile-menu" id="mobile-menu" hidden>
     <nav aria-label="主导航" data-en-aria-label="Main">
-      <a href="#features"><span data-en="Features">功能</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg></a>
-      <a href="#personalize"><span data-en="Customize">个性化</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg></a>
-      <a href="#privacy"><span data-en="Privacy">隐私</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg></a>
-      <a href="#migrate"><span data-en="Import from other apps">从其他应用搬家</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg></a>
-      <a href="#updates"><span data-en="What's new">更新日志</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg></a>
-      <a href="#faq"><span data-en="FAQ">常见问题</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg></a>
-      <a href="https://github.com/CikeSeven/jotsy"><span>GitHub</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-arrow-up-right"></use></svg></a>
+      <a href="#features" data-en="Features">功能</a>
+      <a href="#personalize" data-en="Customize">定制</a>
+      <a href="#privacy" data-en="Privacy">隐私</a>
+      <a href="#data" data-en="Backup &amp; import">备份与导入</a>
+      <a href="#updates" data-en="What's new">更新日志</a>
+      <a href="#faq" data-en="FAQ">常见问题</a>
+      <a href="https://github.com/CikeSeven/jotsy">GitHub</a>
     </nav>
     <a class="btn btn--filled btn--lg" href="#download">
       <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
@@ -134,1035 +131,348 @@
   <main id="main">
     <!-- ============ 首屏 ============ -->
     <section class="hero" id="top">
-      <div class="container hero-grid">
-        <div class="hero-copy">
-          <a class="release-pill rise" style="--slot:0" href="#updates" data-release-pill>
-            <span class="release-pill__badge" data-en="New">新版本</span>
-            <span class="release-pill__text" data-release-text data-en="v0.6.1 · In-app updates, rebuilt">v0.6.1 · 应用内更新全面重做</span>
-            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg>
+      <div class="container hero-copy">
+        <a class="release-pill rise" href="#updates" data-release-pill>
+          <span class="release-pill__badge" data-en="New">新版本</span>
+          <span data-release-text data-en="v0.7.0 · Notebooks, templates and drafts">v0.7.0 · 日记本、模板与草稿箱</span>
+          <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-angle-right"></use></svg>
+        </a>
+        <h1 class="hero-title rise" style="--slot:1" data-en-html="A private diary&lt;br&gt;that stays with you">一本只属于你的<br>本地日记</h1>
+        <p class="hero-lead rise" style="--slot:2" data-en="Open it and write. No sign-in, no ads. Your words, photos and voice notes stay on your own phone.">打开就能写，不用登录，没有广告。文字、照片和录音，都只留在你自己的手机里。</p>
+        <div class="hero-cta rise" style="--slot:3">
+          <a class="btn btn--filled btn--lg" href="#download">
+            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
+            <span data-en="Get it free">免费下载</span>
           </a>
-          <h1 class="hero-title" data-en-html="A private diary&lt;br&gt;that &lt;span class=&quot;hl&quot;&gt;stays with you&lt;/span&gt;">一本只属于你的<br><span class="hl">本地日记</span></h1>
-          <p class="hero-lead" data-en="Open it and start writing: no sign-in, no ads. Your moods, ideas, meals and trips, along with photos, videos and voice notes, stay quietly on your own phone.">打开就能写，不用登录，没有广告。心情、灵感、一日三餐、出门旅行，连同照片、视频和录音，都安安静静地留在你自己的手机里。</p>
-          <div class="hero-cta rise" style="--slot:3">
-            <a class="btn btn--filled btn--lg" href="#download">
-              <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
-              <span data-en="Get it free for Android">免费下载 Android 版</span>
-            </a>
-            <a class="btn btn--outlined btn--lg" href="https://github.com/CikeSeven/jotsy">
-              <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg>
-              <span data-en="Source code">源代码</span>
-              <span class="star-count" data-stars hidden><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-star"></use></svg><span data-stars-value></span></span>
-            </a>
-          </div>
-          <ul class="hero-points rise" style="--slot:4">
-            <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-circle-check"></use></svg><span data-en="Free &amp; open source">开源免费</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-circle-check"></use></svg><span data-en="No ads">没有广告</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-circle-check"></use></svg><span data-en="No account">无需注册</span></li>
-            <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-circle-check"></use></svg><span data-en="Stays on your phone">数据只在本机</span></li>
-          </ul>
-          <p class="hero-meta rise" style="--slot:5"><span data-en="Latest">最新版本</span> <span data-latest-version>v0.6.1</span> · <span data-en="Android 7.0 or later">Android 7.0 及以上</span> · GPL-3.0</p>
+          <a class="btn btn--tonal btn--lg" href="https://github.com/CikeSeven/jotsy">
+            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg>
+            <span data-en="Source code">源代码</span>
+            <span class="star-count" data-stars hidden><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-star"></use></svg><span data-stars-value></span></span>
+          </a>
         </div>
-
-        <div class="hero-visual" data-hero role="img" aria-label="Jotsy 截图：日记详情、日记列表与日历" data-en-aria-label="Jotsy screenshots: diary detail, diary list and calendar">
-          <svg class="hero-shape rise-pop" style="--slot:2" viewBox="0 0 100 100" aria-hidden="true"><path data-morph d="M87 48.4Q87.4 50 87 51.6Q86.6 53.2 85.6 54.6Q84.6 56.1 83.5 57.4Q82.4 58.7 81.6 59.9Q80.8 61.2 80.6 62.7Q80.4 64.2 80.4 65.9Q80.4 67.6 80.2 69.3Q80.1 71.1 79.4 72.5Q78.6 74 77.3 75Q76 76 74.3 76.4Q72.6 76.8 70.9 77Q69.2 77.2 67.7 77.5Q66.1 77.8 64.8 78.6Q63.6 79.4 62.4 80.4Q61.2 81.5 59.9 82.5Q58.6 83.5 57 84.1Q55.4 84.6 53.7 84.6Q52.1 84.5 50.5 84Q49 83.4 47.5 82.8Q46 82.2 44.5 82.2Q42.9 82.1 41.3 82.4Q39.7 82.8 38 83Q36.4 83.3 34.8 83.1Q33.2 82.8 31.9 81.9Q30.6 81 29.8 79.6Q29 78.2 28.4 76.6Q27.8 75 27 73.7Q26.2 72.3 25 71.4Q23.8 70.4 22.4 69.5Q21 68.6 19.7 67.5Q18.4 66.4 17.6 64.9Q16.9 63.4 16.6 61.8Q16.4 60.2 16.6 58.6Q16.8 57 17.2 55.4Q17.6 53.8 17.6 52.3Q17.6 50.8 17.2 49.2Q16.8 47.7 16.6 46.1Q16.4 44.5 16.6 42.9Q16.9 41.3 17.6 39.8Q18.4 38.3 19.7 37.2Q21 36.1 22.4 35.2Q23.8 34.3 25 33.3Q26.2 32.4 27 31Q27.8 29.7 28.4 28.1Q29 26.5 29.8 25.1Q30.6 23.7 31.9 22.8Q33.2 21.9 34.8 21.6Q36.4 21.4 38 21.7Q39.7 21.9 41.3 22.3Q42.9 22.6 44.5 22.5Q46 22.5 47.5 21.9Q49 21.3 50.5 20.7Q52.1 20.2 53.7 20.1Q55.4 20.1 57 20.6Q58.6 21.2 59.9 22.2Q61.2 23.2 62.4 24.3Q63.6 25.3 64.8 26.1Q66.1 26.9 67.7 27.2Q69.2 27.5 70.9 27.7Q72.6 27.9 74.3 28.3Q76 28.7 77.3 29.7Q78.6 30.7 79.4 32.2Q80.1 33.6 80.2 35.4Q80.4 37.1 80.4 38.8Q80.4 40.5 80.6 42Q80.8 43.5 81.6 44.8Q82.4 46 83.5 47.3Q84.6 48.6 85.6 50.1Q86.6 51.5 87 53.1Z"/></svg>
-          <svg class="hero-shape hero-shape--small rise-pop" style="--slot:6" viewBox="0 0 100 100" aria-hidden="true"><path data-morph-small d="M50 8Q60 30 82 26Q72 46 92 58Q70 64 72 86Q54 74 38 92Q34 70 12 66Q28 50 14 32Q36 36 50 8Z"/></svg>
-          <div class="hero-phones">
-            <figure class="phone phone--left rise" style="--slot:5">
-              <div class="phone__screen"><img src="assets/img/screens/zh/preview.webp" data-en-src="assets/img/screens/en/preview.webp" width="720" height="1600" alt="" fetchpriority="low"></div>
-            </figure>
-            <figure class="phone phone--front">
-              <div class="phone__screen">
-                <picture>
-                  <source srcset="assets/img/screens/zh/dark.webp" data-en-srcset="assets/img/screens/en/dark.webp" media="(prefers-color-scheme: dark)" data-dark-source>
-                  <img src="assets/img/screens/zh/home.webp" data-en-src="assets/img/screens/en/home.webp" width="720" height="1600" alt="" fetchpriority="high">
-                </picture>
-              </div>
-            </figure>
-            <figure class="phone phone--right rise" style="--slot:7">
-              <div class="phone__screen"><img src="assets/img/screens/zh/calendar.webp" data-en-src="assets/img/screens/en/calendar.webp" width="720" height="1600" alt="" fetchpriority="low"></div>
-            </figure>
-          </div>
-          <div class="sticker sticker--mood rise-pop" style="--slot:8"><span class="emoji" aria-hidden="true">😊</span><span><span data-en="Feeling good">心情不错</span><small data-en="Energy: pretty good">精力不错</small></span></div>
-          <div class="sticker sticker--weather rise-pop" style="--slot:9"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-sun"></use></svg><span data-en="Sunny 18°C · Hangzhou">晴 18°C · 杭州</span></div>
-          <div class="sticker sticker--tag rise-pop" style="--slot:10"><span class="tag t-green" data-en="Travel">旅行</span><span class="tag t-blue" data-en="Life">生活</span></div>
-          <div class="sticker sticker--capsule rise-pop" style="--slot:11"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-hourglass"></use></svg><span><span data-en="Time capsule">时间胶囊</span><small data-en="Opens in 361 days">361 天后解封</small></span></div>
-          <div class="sticker sticker--memory rise-pop" style="--slot:12"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-clock-rotate-left"></use></svg><span data-en="1 year ago today">1 年前的今天</span></div>
-        </div>
+        <p class="hero-meta rise" style="--slot:4" data-en="Free &amp; open source · No ads · No account · Android 7.0+">开源免费 · 没有广告 · 无需注册 · Android 7.0+</p>
       </div>
-      <a class="scroll-cue" href="#stats" aria-label="继续浏览" data-en-aria-label="Scroll down"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-arrow-down"></use></svg></a>
-    </section>
 
-    <!-- ============ 数字条 ============ -->
-    <section class="stats" id="stats" aria-label="Jotsy 的数字" data-en-aria-label="Jotsy in numbers">
-      <div class="container">
-        <ul class="stats-grid">
-          <li class="stat reveal"><b data-count="23">23</b><span data-en="editing tools">种编辑工具</span></li>
-          <li class="stat reveal" style="--d:1"><b data-count="80">80</b><span data-en="theme colors">种主题色</span></li>
-          <li class="stat reveal" style="--d:2"><b data-count="16">16</b><span data-en="built-in card &amp; page styles">套卡片与阅读页风格</span></li>
-          <li class="stat reveal" style="--d:3"><b data-count="18">18</b><span data-en="apps to import from">款应用可导入</span></li>
-          <li class="stat reveal" style="--d:4"><b data-count="7">7</b><span data-en="export formats">种导出格式</span></li>
-          <li class="stat reveal" style="--d:5"><b>0</b><span data-en="ads, accounts or trackers">广告、账号与统计</span></li>
-        </ul>
+      <div class="hero-stage" role="img" aria-label="Jotsy 截图：日记详情、日记列表与日历" data-en-aria-label="Jotsy screenshots: diary detail, diary list and calendar">
+        <figure class="phone phone--side phone--left rise" style="--slot:5">
+          <img src="assets/img/screens/zh/preview.webp" data-en-src="assets/img/screens/en/preview.webp" width="720" height="1600" alt="" fetchpriority="low">
+        </figure>
+        <figure class="phone phone--hero rise" style="--slot:4">
+          <picture>
+            <source srcset="assets/img/screens/zh/dark.webp" data-en-srcset="assets/img/screens/en/dark.webp" media="(prefers-color-scheme: dark)" data-dark-source>
+            <img src="assets/img/screens/zh/home.webp" data-en-src="assets/img/screens/en/home.webp" width="720" height="1600" alt="" fetchpriority="high">
+          </picture>
+        </figure>
+        <figure class="phone phone--side phone--right rise" style="--slot:6">
+          <img src="assets/img/screens/zh/calendar.webp" data-en-src="assets/img/screens/en/calendar.webp" width="720" height="1600" alt="" fetchpriority="low">
+        </figure>
       </div>
     </section>
 
-    <!-- ============ 为什么选择 ============ -->
-    <section class="section" id="why">
+    <!-- ============ 功能：选项卡切换截图（site.js 的 [data-tabs]）；不自动轮播 ============ -->
+    <section class="section" id="features">
       <div class="container">
         <header class="section-head center reveal">
-          <p class="eyebrow" data-en="Why Jotsy">为什么选择 Jotsy</p>
-          <h2 class="display" data-en="A plain, honest place to write">一个纯粹的记录工具</h2>
-          <p class="lead" data-en="No account, no ads, no server. Jotsy does one thing: lets you write your days down with peace of mind.">没有账号，没有广告，也没有服务器。Jotsy 只做一件事：让你安心地把日子记下来。</p>
+          <p class="eyebrow" data-en="Features">功能</p>
+          <h2 class="display" data-en="Easy to write, lovely to read back">写下来，也读得回去</h2>
         </header>
 
-        <div class="bento">
-          <article class="bento-card bento-card--primary span-2 hover-spin reveal">
-            <div class="bento-split">
-              <div>
-                <span class="sicon plate-primary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-lock"></use></svg></span>
-                <h3 data-en="Private: it all stays on your device">私密：数据全部存在本机</h3>
-                <p data-en="No account and no server. Entries live in a SQLite database in the app's private folder, an app lock keeps prying eyes out, and backups can be locked with AES-256.">没有账号，也没有服务器，日记保存在应用私有目录下的 SQLite 数据库里。支持应用锁，备份可以设密码、用 AES-256 加密。</p>
-              </div>
-              <div class="vault" aria-hidden="true">
-                <span class="sicon vault-lock"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-shield-halved"></use></svg></span>
-                <span class="vault-tag vt-1"><svg class="i"><use href="assets/img/icons.svg#i-user-slash"></use></svg><span data-en="No account">无账号</span></span>
-                <span class="vault-tag vt-2"><svg class="i"><use href="assets/img/icons.svg#i-server"></use></svg><span data-en="No server">无服务器</span></span>
-                <span class="vault-tag vt-3"><svg class="i"><use href="assets/img/icons.svg#i-ban"></use></svg><span data-en="No ads">无广告</span></span>
-                <span class="vault-tag vt-4"><svg class="i"><use href="assets/img/icons.svg#i-key"></use></svg>AES-256</span>
-              </div>
-            </div>
-          </article>
+        <div class="features reveal" data-tabs>
+          <div class="ft-tabs" role="tablist" aria-label="功能" data-en-aria-label="Features">
+            <button class="ft-tab" type="button" role="tab" id="ft-write" aria-controls="fp-write" aria-selected="true" data-en="Write">写作</button>
+            <button class="ft-tab" type="button" role="tab" id="ft-notebooks" aria-controls="fp-notebooks" aria-selected="false" tabindex="-1" data-en="Notebooks">日记本</button>
+            <button class="ft-tab" type="button" role="tab" id="ft-calendar" aria-controls="fp-calendar" aria-selected="false" tabindex="-1" data-en="Calendar">日历</button>
+            <button class="ft-tab" type="button" role="tab" id="ft-recall" aria-controls="fp-recall" aria-selected="false" tabindex="-1" data-en="Look back">回顾</button>
+          </div>
 
-          <article class="bento-card hover-spin reveal" style="--d:1">
-            <span class="sicon shape-clover4"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-pen-nib"></use></svg></span>
-            <h3 data-en="Easy to write">好写</h3>
-            <p data-en="Rich text with photos, videos, attachments and voice notes. Backfilling an old day even brings up the photos you took that day.">富文本编辑，图片、视频、附件、录音随手插入；补写旧日记时，还能找到那天拍的照片。</p>
-            <div class="bento-visual mini-editor" aria-hidden="true">
-              <span class="mini-h" data-en="Things to do today">今天想做的事</span>
-              <span class="mini-todo"><span class="box"><svg class="i"><use href="assets/img/icons.svg#i-check"></use></svg></span><span data-en="Sort last week's photos">把上周的照片整理进日记</span></span>
-              <span class="mini-todo todo-open"><span class="box"></span><span data-en="Walk by the river tonight">晚上去河边散步</span></span>
-              <div class="mini-toolbar">
-                <span><svg class="i"><use href="assets/img/icons.svg#i-rotate-left"></use></svg></span>
-                <span><svg class="i"><use href="assets/img/icons.svg#i-microphone"></use></svg></span>
-                <span class="on"><svg class="i"><use href="assets/img/icons.svg#i-bold"></use></svg></span>
-                <span><svg class="i"><use href="assets/img/icons.svg#i-italic"></use></svg></span>
-                <span><svg class="i"><use href="assets/img/icons.svg#i-list-ul"></use></svg></span>
-                <span><svg class="i"><use href="assets/img/icons.svg#i-image"></use></svg></span>
-                <span><svg class="i"><use href="assets/img/icons.svg#i-ellipsis"></use></svg></span>
-              </div>
-            </div>
-          </article>
+          <div class="ft-stage" aria-hidden="true">
+            <figure class="phone phone--feature">
+              <img class="is-active" data-shot="ft-write" src="assets/img/screens/zh/editor.webp" data-en-src="assets/img/screens/en/editor.webp" width="720" height="1600" alt="" loading="lazy">
+              <img data-shot="ft-notebooks" src="assets/img/screens/zh/notebook.webp" data-en-src="assets/img/screens/en/notebook.webp" width="720" height="1600" alt="" loading="lazy">
+              <img data-shot="ft-calendar" src="assets/img/screens/zh/calendar.webp" data-en-src="assets/img/screens/en/calendar.webp" width="720" height="1600" alt="" loading="lazy">
+              <img data-shot="ft-recall" src="assets/img/screens/zh/explore.webp" data-en-src="assets/img/screens/en/explore.webp" width="720" height="1600" alt="" loading="lazy">
+            </figure>
+          </div>
 
-          <article class="bento-card hover-spin reveal">
-            <span class="sicon shape-sunny plate-tertiary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud-sun"></use></svg></span>
-            <h3 data-en="Full of context">有温度</h3>
-            <p data-en="Record mood, energy, weather and place with every entry.">每篇日记都能记下心情、精力、天气和地点。</p>
-            <div class="bento-visual" aria-hidden="true">
-              <div class="mood-row">
-                <span>😭</span><span>😢</span><span>😞</span><span>😕</span><span>😐</span>
-                <span>🙂</span><span class="on">😊</span><span>😄</span><span>😀</span><span>🤩</span>
-              </div>
-              <ul class="chip-row" style="margin-top:12px">
-                <li class="chip"><svg class="i"><use href="assets/img/icons.svg#i-sun"></use></svg><span data-en="Sunny 18°C">晴 18°C</span></li>
-                <li class="chip"><svg class="i"><use href="assets/img/icons.svg#i-location-dot"></use></svg><span data-en="West Lake, Hangzhou">杭州 · 西湖区</span></li>
-                <li class="chip"><span class="energy"><i></i><i></i><i></i><i style="opacity:.25"></i></span><span data-en="Pretty good">精力不错</span></li>
+          <div class="ft-copy">
+            <div class="ft-panel" role="tabpanel" id="fp-write" aria-labelledby="ft-write">
+              <h3 data-en="Write the way you think">想写什么，随手就写</h3>
+              <p data-en="Rich text, photos, videos and voice notes, with the toolbar right above the keyboard. Start from one of eight templates, and every new entry keeps its own draft that saves itself.">富文本、照片、视频和录音随手插入，工具栏就贴在键盘上方。可以从 8 个内置模板开始写，每篇新日记都有自己的草稿，自动保存，不怕丢稿。</p>
+              <ul class="keys">
+                <li data-en="23 editing tools">23 种编辑工具</li>
+                <li data-en="Diary templates">日记模板</li>
+                <li data-en="Drafts">草稿箱</li>
+                <li data-en="Mood, weather &amp; place">心情、天气与地点</li>
               </ul>
             </div>
-          </article>
-
-          <article class="bento-card span-2 hover-spin reveal" style="--d:1">
-            <span class="sicon shape-cookie4 plate-secondary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-calendar-days"></use></svg></span>
-            <h3 data-en="Easy to look back on">好回顾</h3>
-            <p data-en="A lunar calendar with public holidays, anniversaries and countdowns, a yearly heatmap, On this day and time capsules.">农历与节假日日历、纪念日与倒数日、年度热力图、那年今日、时间胶囊。</p>
-            <div class="bento-visual recall-row" aria-hidden="true">
-              <div class="mini-cal">
-                <span class="wd" data-en="M">一</span><span class="wd" data-en="T">二</span><span class="wd" data-en="W">三</span><span class="wd" data-en="T">四</span><span class="wd" data-en="F">五</span><span class="wd" data-en="S">六</span><span class="wd" data-en="S">日</span>
-                <span class="d out">28<small class="lunar">十八</small></span><span class="d out">29<small class="lunar">十九</small></span><span class="d out">30<small class="lunar">二十</small></span><span class="d">1<small class="lunar fest">国庆节</small><span class="mood">😄</span></span><span class="d">2<small class="lunar">廿二</small></span><span class="d">3<small class="lunar">廿三</small><span class="mood">🙂</span></span><span class="d">4<small class="lunar">廿四</small></span>
-                <span class="d">5<small class="lunar">廿五</small><span class="mood">🤩</span></span><span class="d">6<small class="lunar">廿六</small></span><span class="d">7<small class="lunar">廿七</small></span><span class="d">8<small class="lunar fest">寒露</small><span class="mood">😊</span></span><span class="d">9<small class="lunar">廿九</small></span><span class="d">10<small class="lunar fest">九月</small></span><span class="d">11<small class="lunar">初二</small><span class="mood">😄</span></span>
-                <span class="d">12<small class="lunar">初三</small></span><span class="d">13<small class="lunar">初四</small><span class="mood">😐</span></span><span class="d">14<small class="lunar">初五</small><span class="mood">🙂</span></span><span class="d">15<small class="lunar">初六</small><span class="mood">😊</span></span><span class="d today">16<small class="lunar">初七</small><span class="mood">😊</span></span><span class="d">17<small class="lunar">初八</small></span><span class="d">18<small class="lunar fest">重阳节</small></span>
-                <span class="d">19<small class="lunar">初十</small></span><span class="d">20<small class="lunar">十一</small></span><span class="d">21<small class="lunar">十二</small></span><span class="d">22<small class="lunar">十三</small></span><span class="d">23<small class="lunar fest">霜降</small></span><span class="d ann">24<small class="lunar">十五</small></span><span class="d">25<small class="lunar">十六</small></span>
-              </div>
-              <div class="memory-card">
-                <span class="pill" data-en="1 year ago today">1 年前的今天</span>
-                <img src="assets/img/samples/ginkgo.webp" width="480" height="360" alt="" loading="lazy">
-                <b data-en="Ginkgo avenue">银杏大道</b>
-                <span data-en="Took the long way home along Beishan Street. Ginkgo leaves covered the ground.">下班特意绕路去北山街，银杏叶铺了满地。</span>
-              </div>
+            <div class="ft-panel" role="tabpanel" id="fp-notebooks" aria-labelledby="ft-notebooks">
+              <h3 data-en="Notebooks, like real books">分本收纳，像一本本书</h3>
+              <p data-en="Put an entry in as many notebooks as you like. Add chapters, arrange the order, set a writing goal and export the whole notebook as a book. Private notebooks can be hidden or locked.">一篇日记可以同时放进几本。分章节、排书序、设写作目标，还能整本导出成带目录的书；私密的本子可以隐藏或上锁。</p>
+              <ul class="keys">
+                <li data-en="Smart notebooks">智能日记本</li>
+                <li data-en="Chapters &amp; book order">章节与书序</li>
+                <li data-en="Hide or lock">隐藏与上锁</li>
+                <li data-en="Export as a book">导出成书</li>
+              </ul>
             </div>
-          </article>
-
-          <article class="bento-card span-2 hover-spin reveal">
-            <span class="sicon shape-pentagon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-box-open"></use></svg></span>
-            <h3 data-en="No lock-in">不锁定</h3>
-            <p data-en="Full ZIP backups and cloud backup, export to PDF, Word, Markdown, web page, TXT or CSV, and move in from 18 other apps.">ZIP 完整备份、网盘备份，导出 PDF / Word / Markdown / 网页 / TXT / CSV，还能从 18 款应用搬过来。</p>
-            <div class="bento-visual" aria-hidden="true">
-              <div class="formats">
-                <span class="file"><svg class="i"><use href="assets/img/icons.svg#i-file-zipper"></use></svg>ZIP</span>
-                <span class="file" style="--fc:rgb(var(--c-error))"><svg class="i"><use href="assets/img/icons.svg#i-file-pdf"></use></svg>PDF</span>
-                <span class="file"><svg class="i"><use href="assets/img/icons.svg#i-file-word"></use></svg>DOCX</span>
-                <span class="file"><svg class="i"><use href="assets/img/icons.svg#i-markdown"></use></svg>MD</span>
-                <span class="file"><svg class="i"><use href="assets/img/icons.svg#i-file-code"></use></svg>HTML</span>
-                <span class="file"><svg class="i"><use href="assets/img/icons.svg#i-file-lines"></use></svg>TXT</span>
-                <span class="file"><svg class="i"><use href="assets/img/icons.svg#i-file-csv"></use></svg>CSV</span>
-              </div>
-              <div class="formats-note">
-                <span><svg class="i"><use href="assets/img/icons.svg#i-cloud-arrow-up"></use></svg><span data-en="WebDAV · S3 · 5 cloud drives">WebDAV · S3 · 5 款网盘</span></span>
-                <span><svg class="i"><use href="assets/img/icons.svg#i-truck-moving"></use></svg><span data-en="Import from 18 apps">从 18 款应用导入</span></span>
-              </div>
+            <div class="ft-panel" role="tabpanel" id="fp-calendar" aria-labelledby="ft-calendar">
+              <h3 data-en="Lunar dates, holidays and anniversaries">农历、节假日与纪念日</h3>
+              <p data-en="Lunar dates, solar terms, public holidays and each day's mood, all on one month. Anniversaries and countdowns can repeat every year by the solar or lunar calendar.">一张月历上看得到农历、节气、休班和每天的心情；纪念日与倒数日可以按公历或农历每年重复。</p>
+              <ul class="keys">
+                <li data-en="Year heatmap">年度热力图</li>
+                <li data-en="Stats for any date range">任意区间统计</li>
+                <li data-en="Photo calendar">照片日历</li>
+              </ul>
             </div>
-          </article>
-
-          <article class="bento-card bento-card--tertiary hover-spin reveal" style="--d:1">
-            <span class="sicon shape-clover8 plate-primary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-palette"></use></svg></span>
-            <h3 data-en="Make it yours">随你定</h3>
-            <p data-en="Material 3 Expressive design with 80 theme colors. Tap a color to repaint this whole page.">Material 3 Expressive 设计，80 种主题色。点一个颜色，整个网站跟着换。</p>
-            <div class="bento-visual dots" role="group" aria-label="试试主题色" data-en-aria-label="Try a theme color" data-family-dots></div>
-          </article>
+            <div class="ft-panel" role="tabpanel" id="fp-recall" aria-labelledby="ft-recall">
+              <h3 data-en="Let time do the remembering">时间会替你记得</h3>
+              <p data-en="On this day brings back the same date from past years, and your mood and energy trends show at a glance. Write a time capsule and it stays sealed until its day comes.">那年今日自动翻出往年的同一天，心情与精力的变化一目了然；写一颗时间胶囊，到了那天才能打开。</p>
+              <ul class="keys">
+                <li data-en="On this day">那年今日</li>
+                <li data-en="Time capsules">时间胶囊</li>
+                <li data-en="Media gallery">媒体画廊</li>
+                <li data-en="Tag cloud">标签云</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- ============ 功能章节 ============ -->
-    <div id="features">
-      <section class="section" style="padding-bottom:0">
-        <div class="container">
-          <header class="section-head center reveal">
-            <p class="eyebrow" data-en="Features">功能一览</p>
-            <h2 class="display" data-en="From the first line to a whole year">从写下第一行，到翻看一整年</h2>
-            <p class="lead" data-en="Writing, reading, calendars and memories: every part of Jotsy is built around the diary itself.">写作、阅读、日历与回忆，Jotsy 的每一处都围着“日记”本身打磨。</p>
-          </header>
-        </div>
-      </section>
+    <!-- ============ 定制：主题色（palette.js 驱动，换的是整个网页） ============ -->
+    <section class="section section--alt" id="personalize">
+      <div class="container split">
+        <div class="split-copy reveal">
+          <p class="eyebrow" data-en="Make it yours">定制</p>
+          <h2 class="display" data-en="80 theme colors. The whole app follows.">80 种主题色，整个应用跟着换</h2>
+          <p class="lead" data-en="Diary cards, the reading page and body fonts can be fine-tuned too. Don't need a feature? Switch it off in Feature management and the app shows only what you use.">日记卡片、阅读页和正文字体也都能细调。用不到的功能，可以在「功能管理」里关掉，界面只留下你要的。</p>
 
-      <!-- 01 写作 -->
-      <section class="chapter" id="write" data-story>
-        <div class="container chapter-grid">
-          <div class="chapter-media" aria-hidden="true">
-            <div class="story-stage">
-              <span class="sicon shape-cookie12"></span>
-              <div class="phone story-phone">
-                <div class="phone__screen">
-                  <img class="story-shot is-active" src="assets/img/screens/zh/editor.webp" data-en-src="assets/img/screens/en/editor.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/publish.webp" data-en-src="assets/img/screens/en/publish.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/preview.webp" data-en-src="assets/img/screens/en/preview.webp" width="720" height="1600" alt="" loading="lazy">
-                </div>
+          <div class="palette" data-palette>
+            <p class="palette-hint" data-en="Try it: this page changes too">试试看，这个网页也会跟着换色</p>
+            <div class="swatches swatches--families" role="radiogroup" aria-label="色系" data-en-aria-label="Color family" data-families></div>
+            <div class="swatches swatches--shades" role="radiogroup" aria-label="主题色" data-en-aria-label="Theme color" data-shades></div>
+            <div class="palette-foot">
+              <div class="seg" role="radiogroup" aria-label="明暗" data-en-aria-label="Appearance" data-mode-seg>
+                <button type="button" role="radio" aria-checked="true" data-value="system" data-en="Auto">跟随系统</button>
+                <button type="button" role="radio" aria-checked="false" data-value="light" data-en="Light">浅色</button>
+                <button type="button" role="radio" aria-checked="false" data-value="dark" data-en="Dark">深色</button>
               </div>
-              <ol class="story-dots"><li class="is-active"></li><li></li><li></li></ol>
+              <button class="text-btn" type="button" data-seed-reset data-en="Reset">恢复默认</button>
             </div>
-          </div>
-          <div class="chapter-steps">
-            <header class="chapter-head reveal">
-              <p class="eyebrow"><span class="num">01</span><span data-en="Writing">写作</span></p>
-              <h2 class="display" data-en-html="Rich text, media&lt;br&gt;and the here and now">富文本、多媒体<br>与“此时此地”</h2>
-              <p class="lead" data-en="Open it and write. The toolbar floats above the keyboard, so whatever you want to keep is one tap away.">打开就能写。工具栏悬浮在键盘上方，想记的东西随手就能放进去。</p>
-            </header>
-            <article class="story-step is-active">
-              <figure class="story-inline"><span class="sicon shape-cookie12"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/editor.webp" data-en-src="assets/img/screens/en/editor.webp" width="720" height="1600" alt="编辑日记页与悬浮工具栏" data-en-alt="The editor with its floating toolbar" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-pen-nib"></use></svg></span><span data-en="Rich text">富文本编辑</span></p>
-              <h3 data-en="23 editing tools, arranged the way you like">23 种编辑工具，顺序和显隐都能自定义</h3>
-              <p data-en="Headings, bold, italic, underline and strikethrough, text and background color, numbered, bulleted and checklists, quotes, code blocks, links, the current time and more. Tools that don't fit move into a More panel.">标题、加粗 / 斜体 / 下划线 / 删除线、文字颜色与背景色、有序 / 无序 / 待办清单、引用、代码块、链接、插入当前时间……放不下的工具收进「更多」面板。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-floppy-disk"></use></svg><span data-en="Drafts save automatically">自动保存草稿</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-sliders"></use></svg><span data-en="Reorder or hide tools">工具可排序、可隐藏</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-clock"></use></svg><span data-en="Editable publish time">发表时间可修改</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-cookie12"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/publish.webp" data-en-src="assets/img/screens/en/publish.webp" width="720" height="1600" alt="发布面板：天气、心情与精力" data-en-alt="Publish panel with weather, mood and energy" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-sunny plate-tertiary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-location-dot"></use></svg></span><span data-en="Here and now">此时此地</span></p>
-              <h3 data-en="Mood, energy, weather and place in one go">心情、精力、天气与地点，一并记下</h3>
-              <p data-en="Location and weather fill in automatically, or type them yourself, at city, district, street or house-number precision. Swap any of the 10 mood emojis in Settings and pick one of 5 energy levels.">自动定位并获取天气，也可以手动填写；地址精度可选城市、区县、街道或门牌号。10 个心情 Emoji 可以在设置里替换，精力分 5 档。</p>
-              <ul class="chip-row">
-                <li class="chip"><span aria-hidden="true">😊</span><span data-en="10 moods">10 个心情</span></li>
-                <li class="chip"><span class="energy" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span data-en="5 energy levels">5 档精力</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud-sun"></use></svg><span data-en="Weather follows location">定位后自动获取天气</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-cookie12"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/preview.webp" data-en-src="assets/img/screens/en/preview.webp" width="720" height="1600" alt="日记详情页" data-en-alt="Diary detail page" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-clover4 plate-secondary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-images"></use></svg></span><span data-en="Media">多媒体</span></p>
-              <h3 data-en="Photos, videos, voice notes and attachments">图片、视频、录音和附件，都能放进日记</h3>
-              <p data-en="Insert several photos or videos at once and attach files of any type. Pause and resume recordings, then scrub the waveform on playback. Long screenshots fold up and open at screen width. Backfilling a past day brings up the photos you took that day.">一次插入多张图片或多段视频，添加任意类型的附件；录音支持暂停与继续，回放时可以拖动波形。长截图这类长图会自动折叠，点开后按屏幕宽度阅读；补写过去某天时，还会列出那天拍的照片。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-microphone"></use></svg><span data-en="Waveform playback">录音波形</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-calendar-plus"></use></svg><span data-en="Photos from that day">这天拍的照片</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-paperclip"></use></svg><span data-en="Any attachment">任意附件</span></li>
-              </ul>
-            </article>
           </div>
         </div>
-      </section>
-
-      <!-- 02 浏览与阅读 -->
-      <section class="chapter chapter--flip" id="browse" data-story>
-        <div class="container chapter-grid">
-          <div class="chapter-media" aria-hidden="true">
-            <div class="story-stage">
-              <span class="sicon shape-clover8"></span>
-              <div class="phone story-phone">
-                <div class="phone__screen">
-                  <img class="story-shot is-active" src="assets/img/screens/zh/home.webp" data-en-src="assets/img/screens/en/home.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/waterfall.webp" data-en-src="assets/img/screens/en/waterfall.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/dark.webp" data-en-src="assets/img/screens/en/dark.webp" width="720" height="1600" alt="" loading="lazy">
-                </div>
-              </div>
-              <ol class="story-dots"><li class="is-active"></li><li></li><li></li></ol>
-            </div>
-          </div>
-          <div class="chapter-steps">
-            <header class="chapter-head reveal">
-              <p class="eyebrow"><span class="num">02</span><span data-en="Browse &amp; read">浏览与阅读</span></p>
-              <h2 class="display" data-en="Easy to find, pleasant to read">找得到，也读得舒服</h2>
-              <p class="lead" data-en="List or waterfall, filtered by tags and keywords. While reading, swipe sideways to the previous or next entry.">列表或瀑布流，按标签和关键词筛选；阅读时左右滑动，就能翻到上一篇、下一篇。</p>
-            </header>
-            <article class="story-step is-active">
-              <figure class="story-inline"><span class="sicon shape-clover8"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/home.webp" data-en-src="assets/img/screens/en/home.webp" width="720" height="1600" alt="日记列表视图" data-en-alt="Diary list view" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-list"></use></svg></span><span data-en="List view">列表视图</span></p>
-              <h3 data-en="List or waterfall, sorted your way">列表与瀑布流，按你的习惯排序</h3>
-              <p data-en="Sort by date updated, date published or title. Filter by tags, remembered for next time if you like, and combine tags with a title or content search.">可按更新时间、发表时间或标题排序；按标签筛选（可以记住上次的筛选），搜索标题和正文时也能叠加标签条件。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-search"></use></svg><span data-en="Search with tag filters">搜索可叠加标签</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-thumbtack"></use></svg><span data-en="Pin to top">置顶</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-clover8"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/waterfall.webp" data-en-src="assets/img/screens/en/waterfall.webp" width="720" height="1600" alt="瀑布流视图" data-en-alt="Waterfall view" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-pentagon plate-secondary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-box-archive"></use></svg></span><span data-en="Organize">整理</span></p>
-              <h3 data-en="Pin, archive, select many, and undo mistakes">置顶、归档、多选，删错了也能撤销</h3>
-              <p data-en="Swipe left to archive, with a light haptic tick past the threshold. Select several entries to act on them at once. Deleted entries go to the recycle bin, with instant undo.">左滑即可归档，越过阈值时轻震提示；多选后批量操作。删除的日记进入回收站，并且可以立即撤销。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-grid"></use></svg><span data-en="Waterfall layout">瀑布流布局</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-rotate-left"></use></svg><span data-en="Instant undo">立即撤销</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-clover8"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/dark.webp" data-en-src="assets/img/screens/en/dark.webp" width="720" height="1600" alt="暗色主题" data-en-alt="Dark theme" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-sunny plate-tertiary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-book-open"></use></svg></span><span data-en="Reading">阅读</span></p>
-              <h3 data-en="Swipe between entries, lovely in the dark too">左右滑动翻篇，暗色主题同样好看</h3>
-              <p data-en="Swipe on an entry to move through the list you came from. Word counts work the same everywhere: each Chinese character counts as one and English counts by word. Tap the count for paragraphs, images and reading time.">在日记详情页左右滑动，按进入时所在列表的顺序切换上一篇、下一篇。字数统一计算：每个汉字算 1 字，英文按单词计；点按字数还能看到段落、图片数量和预计阅读时间。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-moon"></use></svg><span data-en="Light &amp; dark themes">明暗主题</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-font"></use></svg><span data-en="Word-processor word counts">与 Word 一致的字数</span></li>
-              </ul>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- 03 日历 -->
-      <section class="chapter" id="calendar" data-story>
-        <div class="container chapter-grid">
-          <div class="chapter-media" aria-hidden="true">
-            <div class="story-stage">
-              <span class="sicon shape-sunny"></span>
-              <div class="phone story-phone">
-                <div class="phone__screen">
-                  <img class="story-shot is-active" src="assets/img/screens/zh/calendar.webp" data-en-src="assets/img/screens/en/calendar.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/calendar_photo.webp" data-en-src="assets/img/screens/en/calendar_photo.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/year.webp" data-en-src="assets/img/screens/en/year.webp" width="720" height="1600" alt="" loading="lazy">
-                </div>
-              </div>
-              <ol class="story-dots"><li class="is-active"></li><li></li><li></li></ol>
-            </div>
-          </div>
-          <div class="chapter-steps">
-            <header class="chapter-head reveal">
-              <p class="eyebrow"><span class="num">03</span><span data-en="Calendar">日历</span></p>
-              <h2 class="display" data-en="Lunar dates, holidays and anniversaries">农历、节假日与纪念日</h2>
-              <p class="lead" data-en="Every entry back on its day, alongside solar terms, festivals, days off and the anniversaries you care about.">把每一篇放回它所在的日子：节气、节日、休息日，还有你在乎的纪念日。</p>
-            </header>
-            <article class="story-step is-active">
-              <figure class="story-inline"><span class="sicon shape-sunny"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/calendar.webp" data-en-src="assets/img/screens/en/calendar.webp" width="720" height="1600" alt="农历、节气与心情日历" data-en-alt="Calendar with lunar dates, solar terms and moods" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-calendar-days"></use></svg></span><span data-en="Month view">月视图</span></p>
-              <h3 data-en="Lunar dates, solar terms and public holidays at a glance">农历、节气与法定节假日，一眼看全</h3>
-              <p data-en="Month and week views show lunar dates, solar terms and festivals, and mark Chinese public holidays and make-up workdays. Below the grid: this month's entries, days written, words, top mood and longest streak.">月视图和周视图都能显示农历、节气与节日，还会标出放假的“休”和调休上班的“班”。日历下方汇总本月的篇数、记录天数、字数、最常见心情和最长连续记录。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-moon"></use></svg><span data-en="Lunar calendar">农历与节气</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-umbrella-beach"></use></svg><span data-en="Days off &amp; workdays">休 / 班标记</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-sunny"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/calendar_photo.webp" data-en-src="assets/img/screens/en/calendar_photo.webp" width="720" height="1600" alt="照片样式的日历" data-en-alt="Calendar with photo day cells" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-heart plate-tertiary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-heart"></use></svg></span><span data-en="Day cells &amp; anniversaries">日期格与纪念日</span></p>
-              <h3 data-en="Five day-cell styles, anniversaries on the grid">5 种日期格样式，纪念日也在日历上</h3>
-              <p data-en="Show day cells as dots, moods, heat, photos or tags, and filter by mood or tag. Anniversaries and countdowns repeat by the solar or lunar calendar, show which anniversary it is or how many days are left, and gather what you wrote on that day in past years.">日期格可以是圆点、心情、热力、照片或标签，还能按心情或标签筛选。纪念日与倒数日可以按公历或农历每年重复，显示第几周年、还有几天，并汇总历年这一天写下的日记。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cake"></use></svg><span data-en="Solar or lunar repeats">公历或农历重复</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-filter"></use></svg><span data-en="Filter by mood or tag">按心情或标签筛选</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-sunny"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/year.webp" data-en-src="assets/img/screens/en/year.webp" width="720" height="1600" alt="年度心情热力图" data-en-alt="Yearly mood heatmap" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-cookie4 plate-secondary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chart-simple"></use></svg></span><span data-en="Year view">年视图</span></p>
-              <h3 data-en="A whole year of moods in one heatmap">一整年的心情，生成一张热力图</h3>
-              <p data-en="Pick a start and an end day to see stats for that range. The year view turns mood, entry count or length into a heatmap you can share as an image. Long-press any day to backfill an entry, seal a time capsule for the future or add an anniversary.">先选起点、再点终点，就能看这段日期的统计；年视图按心情、篇数或字数生成全年热力图，可以分享为图片。长按某一天，可以补写日记、给未来写一颗时间胶囊，或者添加纪念日。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-share-nodes"></use></svg><span data-en="Share as an image">分享为图片</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-hourglass"></use></svg><span data-en="Capsules for future days">给未来写胶囊</span></li>
-              </ul>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- 04 探索与回忆 -->
-      <section class="chapter chapter--flip" id="explore" data-story>
-        <div class="container chapter-grid">
-          <div class="chapter-media" aria-hidden="true">
-            <div class="story-stage">
-              <span class="sicon shape-burst"></span>
-              <div class="phone story-phone">
-                <div class="phone__screen">
-                  <img class="story-shot is-active" src="assets/img/screens/zh/explore.webp" data-en-src="assets/img/screens/en/explore.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/gallery.webp" data-en-src="assets/img/screens/en/gallery.webp" width="720" height="1600" alt="" loading="lazy">
-                  <img class="story-shot" src="assets/img/screens/zh/capsule.webp" data-en-src="assets/img/screens/en/capsule.webp" width="720" height="1600" alt="" loading="lazy">
-                </div>
-              </div>
-              <ol class="story-dots"><li class="is-active"></li><li></li><li></li></ol>
-            </div>
-          </div>
-          <div class="chapter-steps">
-            <header class="chapter-head reveal">
-              <p class="eyebrow"><span class="num">04</span><span data-en="Explore &amp; remember">探索与回忆</span></p>
-              <h2 class="display" data-en="Let time do the remembering">时间会替你记得</h2>
-              <p class="lead" data-en="Stats, trends, On this day and time capsules bring your words back at the right moment.">统计、趋势、那年今日和时间胶囊，让写下的东西在合适的时候回来找你。</p>
-            </header>
-            <article class="story-step is-active">
-              <figure class="story-inline"><span class="sicon shape-burst"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/explore.webp" data-en-src="assets/img/screens/en/explore.webp" width="720" height="1600" alt="探索页：统计、那年今日与趋势" data-en-alt="Explore: stats, On this day and trends" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-compass"></use></svg></span><span data-en="Explore">探索</span></p>
-              <h3 data-en="On this day, trends and a tag cloud">那年今日、趋势与标签云</h3>
-              <p data-en="Total entries, your current streak and this month's words at a glance. Entries from the same date in past years come back on their own, next to mood over 30 days, energy over 7 and your most used tags.">总记录数、连续打卡天数、本月字数一目了然；自动翻出往年同一天写下的日记；还能看到近 30 天的心情、近 7 天的精力和最常用的标签。</p>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-clock-rotate-left"></use></svg><span data-en="On this day">那年今日</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-tags"></use></svg><span data-en="Tag cloud">标签云</span></li>
-              </ul>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-burst"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/gallery.webp" data-en-src="assets/img/screens/en/gallery.webp" width="720" height="1600" alt="媒体画廊" data-en-alt="Media gallery" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-clover4 plate-secondary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-images"></use></svg></span><span data-en="Media gallery">媒体画廊</span></p>
-              <h3 data-en="Every photo on one wall">所有照片，汇成一面墙</h3>
-              <p data-en="Covers and inline images gather in one place to zoom, save or share, and they open right from where they sit, with double-tap zoom and pull down to close.">封面和正文里的图片汇集在一起，可以放大浏览、保存或分享；图片从原位展开，双击放大，下拉关闭。</p>
-            </article>
-            <article class="story-step">
-              <figure class="story-inline"><span class="sicon shape-burst"></span><div class="phone"><div class="phone__screen"><img src="assets/img/screens/zh/capsule.webp" data-en-src="assets/img/screens/en/capsule.webp" width="720" height="1600" alt="时间胶囊" data-en-alt="Time capsule" loading="lazy"></div></div></figure>
-              <p class="step-kicker"><span class="sicon shape-pill plate-tertiary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-envelope"></use></svg></span><span data-en="Time capsules">时间胶囊</span></p>
-              <h3 data-en="Letters to the future, sealed until their day">写给未来的日记，到期才能打开</h3>
-              <p data-en="A time capsule stays sealed until its unlock date. While it waits, neither its text nor its mood and tag colors give anything away.">时间胶囊会一直封存，到了解封日期才能打开；封存期间，正文、心情色与标签色都不会透露内容。</p>
-            </article>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <!-- ============ 外观实验室 ============ -->
-    <section class="section" id="personalize">
-      <div class="container">
-        <header class="section-head center reveal">
-          <p class="eyebrow"><span class="num">05</span><span data-en="Customize">个性化</span></p>
-          <h2 class="display" data-en="Make it yours">外观随你定</h2>
-          <p class="lead" data-en="80 theme colors, 8 diary card styles, 8 reading-page presets, and fine control over the body font and layout. The phone here is the real Jotsy layout rebuilt in your browser, so go ahead and play.">80 种主题色、8 种日记卡片风格、8 种阅读页预设，正文字体与排版也能细调。这台“手机”里就是在网页上复刻的 Jotsy 界面——动手试试。</p>
-        </header>
-
-        <div class="lab" data-lab>
-          <div class="lab-controls card reveal">
-            <div class="lab-tabs" role="tablist" aria-label="外观设置" data-en-aria-label="Appearance settings">
-              <button class="lab-tab" type="button" role="tab" id="tab-theme" aria-controls="panel-theme" aria-selected="true"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-palette"></use></svg><span data-en="Theme">主题色</span></button>
-              <button class="lab-tab" type="button" role="tab" id="tab-cards" aria-controls="panel-cards" aria-selected="false" tabindex="-1"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-layer-group"></use></svg><span data-en="Cards">卡片样式</span></button>
-              <button class="lab-tab" type="button" role="tab" id="tab-type" aria-controls="panel-type" aria-selected="false" tabindex="-1"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-font"></use></svg><span data-en="Body text">正文排版</span></button>
-            </div>
-
-            <div class="lab-panel" id="panel-theme" role="tabpanel" aria-labelledby="tab-theme">
-              <p class="lab-label" data-en="Appearance">明暗</p>
-              <div class="seg" role="radiogroup" aria-label="明暗" data-en-aria-label="Appearance" data-theme-seg>
-                <button type="button" role="radio" aria-checked="true" data-value="system"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-circle-half-stroke"></use></svg><span data-en="System">跟随系统</span></button>
-                <button type="button" role="radio" aria-checked="false" data-value="light"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-sun"></use></svg><span data-en="Light">浅色</span></button>
-                <button type="button" role="radio" aria-checked="false" data-value="dark"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-moon"></use></svg><span data-en="Dark">深色</span></button>
-              </div>
-              <p class="lab-label"><span data-en="Color family">色系</span></p>
-              <div class="swatches" role="radiogroup" aria-label="色系" data-en-aria-label="Color family" data-families></div>
-              <p class="lab-label"><span data-en="Shade">色调</span><code data-seed-hex>#1E6586</code></p>
-              <div class="swatches swatches--shades" role="radiogroup" aria-label="色调" data-en-aria-label="Shade" data-shades></div>
-              <p class="lab-note" data-en="Every palette comes from the same Material 3 algorithm Jotsy uses (tonal spot), so what you see here is what the app looks like. The whole site follows along.">每套配色都由与 Jotsy 相同的 Material 3 算法（tonal spot）生成，这里看到的就是 app 里的样子，整个网站也会跟着换色。</p>
-              <div class="lab-actions"><button class="btn btn--text btn--sm" type="button" data-seed-reset><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-rotate-left"></use></svg><span data-en="Reset to default">恢复默认</span></button></div>
-            </div>
-
-            <div class="lab-panel" id="panel-cards" role="tabpanel" aria-labelledby="tab-cards" hidden>
-              <p class="lab-label" data-en="Layout">布局</p>
-              <div class="seg" role="radiogroup" aria-label="布局" data-en-aria-label="Layout" data-layout-seg>
-                <button type="button" role="radio" aria-checked="true" data-value="list"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-list"></use></svg><span data-en="List">列表</span></button>
-                <button type="button" role="radio" aria-checked="false" data-value="waterfall"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-grid"></use></svg><span data-en="Waterfall">瀑布流</span></button>
-              </div>
-              <p class="lab-label" data-en="Built-in styles">内置风格</p>
-              <div class="preset-grid" role="radiogroup" aria-label="内置风格" data-en-aria-label="Built-in styles" data-presets>
-                <button class="preset" type="button" role="radio" aria-checked="true" data-value="classic"><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-list"></use></svg></span><span data-en="Classic">经典</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="compact"><span class="sicon shape-square"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-bars"></use></svg></span><span data-en="Compact">紧凑</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="magazine"><span class="sicon shape-gem"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-book-open"></use></svg></span><span data-en="Magazine">杂志</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="minimal"><span class="sicon shape-circle"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-feather"></use></svg></span><span data-en="Minimal">极简</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="gallery"><span class="sicon shape-clover4"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-images"></use></svg></span><span data-en="Gallery">画廊</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="sticky"><span class="sicon shape-pentagon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-note-sticky"></use></svg></span><span data-en="Sticky note">便签</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="journal"><span class="sicon shape-pill"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-book"></use></svg></span><span data-en="Journal">手账</span></button>
-                <button class="preset" type="button" role="radio" aria-checked="false" data-value="mood"><span class="sicon shape-sunny"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-face-smile"></use></svg></span><span data-en="Mood colors">心情色</span></button>
-              </div>
-              <p class="lab-note" data-en="Each style can be fine-tuned in the app: layout, cover, date, fonts, colors and texture. Save up to 12 of your own and share them with friends as style codes. The reading page has 8 presets of its own.">在 app 里每种风格还能逐项细调：布局、封面、日期、字体、色彩与质感；最多保存 12 份“我的样式”，也能复制成样式码分享给朋友。阅读页另有 8 种预设。</p>
-            </div>
-
-            <div class="lab-panel" id="panel-type" role="tabpanel" aria-labelledby="tab-type" hidden>
-              <p class="lab-label" data-en="Font">字体</p>
-              <div class="seg" role="radiogroup" aria-label="字体" data-en-aria-label="Font" data-font-seg>
-                <button type="button" role="radio" aria-checked="true" data-value="harmony">HarmonyOS Sans</button>
-                <button type="button" role="radio" aria-checked="false" data-value="system"><span data-en="System">系统字体</span></button>
-                <button type="button" role="radio" aria-checked="false" data-value="serif"><span data-en="Imported">导入字体</span></button>
-              </div>
-              <div class="slider">
-                <span class="slider-head"><label for="type-fs" data-en="Font size">字号</label><output for="type-fs" data-out="fs">16</output></span>
-                <span class="slider-ctl"><span class="slider-fill"></span><span class="slider-rest"></span><input type="range" min="10" max="32" step="1" value="16" data-type-prop="fs" id="type-fs"><span class="slider-thumb"></span></span>
-              </div>
-              <div class="slider">
-                <span class="slider-head"><label for="type-lh" data-en="Line height">行距</label><output for="type-lh" data-out="lh">1.55</output></span>
-                <span class="slider-ctl"><span class="slider-fill"></span><span class="slider-rest"></span><input type="range" min="1" max="3" step="0.05" value="1.55" data-type-prop="lh" id="type-lh"><span class="slider-thumb"></span></span>
-              </div>
-              <div class="slider">
-                <span class="slider-head"><label for="type-ls" data-en="Letter spacing">字间距</label><output for="type-ls" data-out="ls">0</output></span>
-                <span class="slider-ctl"><span class="slider-fill"></span><span class="slider-rest"></span><input type="range" min="-1" max="8" step="0.25" value="0" data-type-prop="ls" id="type-ls"><span class="slider-thumb"></span></span>
-              </div>
-              <div class="slider">
-                <span class="slider-head"><label for="type-ps" data-en="Paragraph spacing">段间距</label><output for="type-ps" data-out="ps">0</output></span>
-                <span class="slider-ctl"><span class="slider-fill"></span><span class="slider-rest"></span><input type="range" min="0" max="48" step="1" value="0" data-type-prop="ps" id="type-ps"><span class="slider-thumb"></span></span>
-              </div>
-              <p class="lab-note" data-en="Same ranges as the app. Changes apply to editing, reading and publishing alike, and you can import your own TTF, OTF or TTC fonts (shown here with a serif).">取值范围与 app 一致。编辑、阅读和发布页统一生效；也可以导入自己的 TTF / OTF / TTC 字体（这里用衬线体示意）。</p>
-              <div class="lab-actions"><button class="btn btn--text btn--sm" type="button" data-type-reset><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-rotate-left"></use></svg><span data-en="Reset to default">恢复默认</span></button></div>
-            </div>
-          </div>
-
-          <div class="lab-stage reveal" style="--d:1">
-            <span class="sicon" aria-hidden="true"></span>
-            <div class="phone phone--lab">
-              <div class="phone__screen">
-                <div class="app" data-app role="img" aria-label="Jotsy 界面复刻，随左侧设置实时变化" data-en-aria-label="A live replica of the Jotsy interface that follows these settings">
-                  <!-- 首页：日记列表 -->
-                  <div class="app-view" data-app-view="home" aria-hidden="true">
-                    <div class="app-status"><span>9:41</span><span class="app-status-icons"><i></i><i></i><i></i></span></div>
-                    <div class="app-top">
-                      <b class="app-logo">Jotsy</b>
-                      <span class="app-search"><svg class="i"><use href="assets/img/icons.svg#i-search"></use></svg><span data-en="Search title or content">搜索标题或内容</span></span>
-                      <svg class="i"><use href="assets/img/icons.svg#i-box-archive"></use></svg>
-                    </div>
-                    <div class="app-tags"><svg class="i"><use href="assets/img/icons.svg#i-xmark"></use></svg><span class="tag t-green" data-en="Travel">旅行</span><span class="tag t-blue" data-en="Life">生活</span><span class="tag t-pink" data-en="Reading">阅读</span><span class="tag t-orange" data-en="Food">美食</span></div>
-                    <div class="app-feed" data-feed data-layout="list" data-preset="classic">
-                      <div class="app-feed-inner">
-                        <article class="dcard is-pinned" data-band="3">
-                          <div class="dcard-cover"><img src="assets/img/samples/seaside.webp" width="480" height="360" alt="" loading="lazy"></div>
-                          <div class="dcard-body">
-                            <div class="dcard-eyebrow">
-                              <span class="dcard-date"><span class="short" data-en="Oct 16 · Fri">10月16日 · 周五</span><span class="full" data-en="Fri, Oct 16, 2026">2026年10月16日 · 周五</span><span class="time"> · 19:30</span></span>
-                              <span class="dcard-pin"><svg class="i"><use href="assets/img/icons.svg#i-thumbtack"></use></svg><span data-en="Pinned">置顶</span></span>
-                              <span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-sun"></use></svg>😊</span>
-                            </div>
-                            <h4 class="dcard-title" data-en="Sunset by the sea">海边的黄昏</h4>
-                            <div class="dcard-tags"><span class="tag t-green" data-en="Travel">旅行</span><span class="tag t-blue" data-en="Life">生活</span></div>
-                            <p class="dcard-text" data-en="Walked along the shore until dusk. The waves kept rolling in while the sky slid from orange to lilac.">傍晚沿着海岸走了很久，浪声一阵一阵，天色从橙色慢慢变成淡紫。</p>
-                            <div class="dcard-foot"><span class="ago" data-en="2 hr ago">2小时前</span><span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-sun"></use></svg>😊</span></div>
-                          </div>
-                        </article>
-                        <article class="dcard" data-band="4">
-                          <div class="dcard-cover">
-                            <img src="assets/img/samples/hiking.webp" width="480" height="360" alt="" loading="lazy">
-                            <div class="collage"><img src="assets/img/samples/hiking.webp" alt="" loading="lazy"><img src="assets/img/samples/seaside.webp" alt="" loading="lazy"><img src="assets/img/samples/cafe.webp" alt="" loading="lazy"></div>
-                          </div>
-                          <div class="dcard-body">
-                            <div class="dcard-eyebrow">
-                              <span class="dcard-date"><span class="short" data-en="Oct 15 · Thu">10月15日 · 周四</span><span class="full" data-en="Thu, Oct 15, 2026">2026年10月15日 · 周四</span><span class="time"> · 18:12</span></span>
-                              <span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-cloud-sun"></use></svg>🤩</span>
-                            </div>
-                            <h4 class="dcard-title" data-en="Weekend hike">周末去爬山</h4>
-                            <div class="dcard-tags"><span class="tag t-green" data-en="Travel">旅行</span></div>
-                            <p class="dcard-text" data-en="It was windy at the top. I took lots of photos and recorded the wind. My legs were shaking on the way down.">山顶风很大，拍了好多照片，还录下了一段风声。下山时腿已经开始发软。</p>
-                            <div class="dcard-foot"><span class="ago" data-en="1 day ago">1天前</span><span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-cloud-sun"></use></svg>🤩</span></div>
-                          </div>
-                        </article>
-                        <article class="dcard no-cover" data-band="2">
-                          <div class="dcard-cover is-empty"></div>
-                          <div class="dcard-fallback date-block"><b>13</b><span data-en="Tue">周二</span></div>
-                          <div class="dcard-fallback mood-tile">😐</div>
-                          <div class="dcard-body">
-                            <div class="dcard-eyebrow">
-                              <span class="dcard-date"><span class="short" data-en="Oct 13 · Tue">10月13日 · 周二</span><span class="full" data-en="Tue, Oct 13, 2026">2026年10月13日 · 周二</span><span class="time"> · 21:05</span></span>
-                              <span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-cloud-rain"></use></svg>😐</span>
-                            </div>
-                            <h4 class="dcard-title" data-en="A rainy workday spent reworking this week's plan at the cafe">一个下雨的工作日，在咖啡馆里重新整理了这周的计划</h4>
-                            <div class="dcard-tags"><span class="tag t-pink" data-en="Reading">阅读</span><span class="tag t-blue" data-en="Life">生活</span><span class="more">+1</span></div>
-                            <p class="dcard-text" data-en="Reworked this week's to-dos and jotted down a few ideas. Early night tonight.">把这周要做的事重新排了一遍，顺手记下几个想法。晚上早点休息。</p>
-                            <div class="dcard-foot"><span class="ago" data-en="3 days ago">3天前</span><span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-cloud-rain"></use></svg>😐</span></div>
-                          </div>
-                        </article>
-                        <article class="dcard no-cover" data-band="3">
-                          <div class="dcard-cover is-empty"></div>
-                          <div class="dcard-fallback date-block"><b>12</b><span data-en="Mon">周一</span></div>
-                          <div class="dcard-fallback mood-tile">😄</div>
-                          <div class="dcard-body">
-                            <div class="dcard-eyebrow">
-                              <span class="dcard-date"><span class="short" data-en="Oct 12 · Mon">10月12日 · 周一</span><span class="full" data-en="Mon, Oct 12, 2026">2026年10月12日 · 周一</span><span class="time"> · 18:40</span></span>
-                              <span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-sun"></use></svg>😄</span>
-                            </div>
-                            <h4 class="dcard-title is-untitled" data-en="Untitled">无标题</h4>
-                            <div class="dcard-tags"><span class="tag t-blue" data-en="Life">生活</span></div>
-                            <p class="dcard-text" data-en="Saw a ginger cat napping in the sun on the steps on my way home. Just watching it made me relax.">下班路上看见一只橘猫趴在台阶上晒太阳，眯着眼睛的样子让人也跟着放松下来。</p>
-                            <div class="dcard-foot"><span class="ago" data-en="4 days ago">4天前</span><span class="dcard-stamp"><svg class="i"><use href="assets/img/icons.svg#i-sun"></use></svg>😄</span></div>
-                          </div>
-                        </article>
-                      </div>
-                    </div>
-                    <span class="app-fab"><svg class="i"><use href="assets/img/icons.svg#i-plus"></use></svg><span data-en="New">新建</span></span>
-                    <div class="app-nav">
-                      <span class="on"><b><svg class="i"><use href="assets/img/icons.svg#i-list"></use></svg></b><span data-en="Diaries">日记</span></span>
-                      <span><b><svg class="i"><use href="assets/img/icons.svg#i-calendar-days"></use></svg></b><span data-en="Calendar">日历</span></span>
-                      <span><b><svg class="i"><use href="assets/img/icons.svg#i-compass"></use></svg></b><span data-en="Explore">探索</span></span>
-                      <span><b><svg class="i"><use href="assets/img/icons.svg#i-gear"></use></svg></b><span data-en="Settings">设置</span></span>
-                    </div>
-                  </div>
-
-                  <!-- 阅读页：正文排版 -->
-                  <div class="app-view" data-app-view="read" aria-hidden="true" hidden>
-                    <div class="app-status"><span>9:41</span><span class="app-status-icons"><i></i><i></i><i></i></span></div>
-                    <div class="app-appbar"><svg class="i"><use href="assets/img/icons.svg#i-angle-left"></use></svg><span data-en="Diary">日记</span><svg class="i"><use href="assets/img/icons.svg#i-pen-to-square"></use></svg></div>
-                    <div class="app-read">
-                      <img class="read-cover" src="assets/img/samples/latte.webp" width="720" height="800" alt="" loading="lazy">
-                      <div class="read-body">
-                        <h4 class="read-title" data-en="First latte of autumn">秋天的第一杯拿铁</h4>
-                        <div class="read-meta">
-                          <span><svg class="i"><use href="assets/img/icons.svg#i-clock"></use></svg><span data-en="Published 13 hr ago">发表于 13小时前</span></span>
-                          <span><svg class="i"><use href="assets/img/icons.svg#i-location-dot"></use></svg><span data-en="Hangzhou · West Lake">杭州 · 西湖区</span></span>
-                          <span><svg class="i"><use href="assets/img/icons.svg#i-sun"></use></svg><span data-en="Sunny 18°C">晴 18°C</span></span>
-                        </div>
-                        <div class="read-chips">
-                          <span><span data-en="Mood">心情</span> 😊</span>
-                          <span><span class="energy"><i></i><i></i><i></i><i style="opacity:.25"></i></span><span data-en="Pretty good">精力不错</span></span>
-                          <span class="tag t-blue" data-en="Daily">日常</span>
-                          <span class="tag t-pink" data-en="Ideas">灵感</span>
-                        </div>
-                        <div class="read-text" data-read-text>
-                          <p data-en="Woke up to sunlight through the window and made myself a latte. The foam art turned into a lopsided bear, but it tasted just right.">早上被窗外的阳光叫醒，给自己泡了一杯拿铁。奶泡没打好，拉花歪成了一只小熊，但味道刚刚好。</p>
-                          <h4 data-en="Things to do today">今天想做的事</h4>
-                          <ul>
-                            <li class="done" data-en="Sort last week's photos into the diary">把上周的照片整理进日记</li>
-                            <li class="done" data-en="Call Mom">给妈妈打个电话</li>
-                            <li data-en="Finish reading The Night Submarine">读完《夜晚的潜水艇》</li>
-                            <li data-en="Walk by the river tonight">晚上去河边散步</li>
-                          </ul>
-                          <blockquote data-en="It's fine to slow down. Life isn't a race.">慢一点也没关系，生活不是赶路。</blockquote>
-                          <p data-en="In the afternoon I moved the pothos on the balcony into a bigger pot and took a few photos. The evening light was soft, perfect for doing nothing at all.">下午把阳台的绿萝换了个大一点的盆，顺手拍了几张照片。傍晚的光线很软，适合什么都不做。</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="duo reveal" style="--d:1" aria-hidden="true">
+          <figure class="phone phone--duo phone--back">
+            <img src="assets/img/screens/zh/theme-b.webp" data-en-src="assets/img/screens/en/theme-b.webp" width="720" height="1600" alt="" loading="lazy">
+          </figure>
+          <figure class="phone phone--duo phone--front">
+            <img src="assets/img/screens/zh/theme-a.webp" data-en-src="assets/img/screens/en/theme-a.webp" width="720" height="1600" alt="" loading="lazy">
+          </figure>
         </div>
       </div>
     </section>
 
     <!-- ============ 隐私 ============ -->
-    <section class="section deep" id="privacy">
+    <section class="section band" id="privacy">
       <div class="container">
-        <header class="section-head center reveal">
-          <p class="eyebrow"><span class="num">06</span><span data-en="Privacy">隐私</span></p>
+        <header class="section-head reveal">
+          <p class="eyebrow" data-en="Privacy">隐私</p>
           <h2 class="display" data-en="Your diary stays on your phone">你的日记，只在你的手机里</h2>
-          <p class="lead" data-en="Jotsy has no accounts and no server of its own. Entries, photos, recordings, videos and attachments live in the app's private folder, and settings stay on the device too.">Jotsy 没有账号体系，也没有自己的服务器。日记、图片、录音、视频和附件都放在应用的私有目录里，设置也只保存在本机。</p>
+          <p class="lead" data-en="There's no account system and no server of ours. Entries, photos and settings are kept on the device.">没有账号体系，也没有自己的服务器。日记、照片和设置都只保存在本机。</p>
         </header>
-
-        <ul class="zero-row reveal">
-          <li><b>0</b><span data-en="accounts">账号</span></li>
-          <li><b>0</b><span data-en="servers">服务器</span></li>
-          <li><b>0</b><span data-en="ads">广告</span></li>
-          <li><b>0</b><span data-en="analytics SDKs">统计 SDK</span></li>
-        </ul>
-
-        <div class="pmap reveal">
-          <svg class="pmap-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            <path class="cut" d="M50 40 L50 12"/>
-            <path d="M50 58 L17 14"/>
-            <path d="M50 58 L83 14"/>
-            <path d="M50 72 L17 86"/>
-            <path d="M50 72 L83 86"/>
-          </svg>
-          <div class="pnode pnode--nosrv">
-            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-ban"></use></svg>
-            <span data-en-html="&lt;s&gt;Developer server&lt;/s&gt; doesn't exist"><s>开发者服务器</s> 不存在</span>
-          </div>
-          <div class="pnode pnode--loc">
-            <h3><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-location-dot"></use></svg><span data-en="Location &amp; weather">地点与天气</span></h3>
-            <dl>
-              <dt data-en="When">何时</dt><dd data-en="Only with auto location on; or type it in">开启自动获取时（也可手动填写）</dd>
-              <dt data-en="Talks to">访问</dt><dd data-en="AMap, QWeather">高德地图、和风天气</dd>
-              <dt data-en="Sends">发送</dt><dd data-en="Your current coordinates">当前坐标</dd>
-            </dl>
-          </div>
-          <div class="pnode pnode--backup">
-            <h3><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud-arrow-up"></use></svg><span data-en="Cloud backup">网盘备份</span></h3>
-            <dl>
-              <dt data-en="When">何时</dt><dd data-en="When you back up or restore">你备份或恢复时</dd>
-              <dt data-en="Talks to">访问</dt><dd data-en="Your own WebDAV, S3 or drive">你自己的 WebDAV、S3 或网盘</dd>
-              <dt data-en="Sends">发送</dt><dd data-en="The backup file, optionally encrypted">备份文件（可加密）</dd>
-            </dl>
-          </div>
-          <div class="pdevice">
-            <span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-mobile"></use></svg></span>
-            <h3 data-en="Your phone">你的手机</h3>
-            <ul>
-              <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-database"></use></svg><span data-en="Entries &amp; tags (SQLite)">日记与标签（SQLite）</span></li>
-              <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-images"></use></svg><span data-en="Photos, videos, recordings, files">图片、视频、录音与附件</span></li>
-              <li><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-key"></use></svg><span data-en="Settings &amp; drive credentials">设置与网盘凭据</span></li>
-            </ul>
-          </div>
-          <div class="pnode pnode--update">
-            <h3><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-arrows-rotate"></use></svg><span data-en="Updates">检查与下载更新</span></h3>
-            <dl>
-              <dt data-en="When">何时</dt><dd data-en="On open, at most every 2 hours; can be turned off">打开应用时，每 2 小时最多一次（可关闭）</dd>
-              <dt data-en="Talks to">访问</dt><dd data-en="GitHub Releases and mirrors">GitHub Releases 及其镜像</dd>
-              <dt data-en="Sends">发送</dt><dd data-en="No diary data">不含任何日记数据</dd>
-            </dl>
-          </div>
-          <div class="pnode pnode--import">
-            <h3><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud"></use></svg><span data-en="Cloud notes import">导入云端笔记</span></h3>
-            <dl>
-              <dt data-en="When">何时</dt><dd data-en="When you import from a phone maker or WPS">你从手机厂商或 WPS 导入时</dd>
-              <dt data-en="Talks to">访问</dt><dd data-en="The vendor's official website">对应厂商的官方网站</dd>
-              <dt data-en="Sends">发送</dt><dd data-en="Your sign-in there, cleared afterwards">你在官网完成的登录，用完即清除</dd>
-            </dl>
-          </div>
-        </div>
-
-        <div class="pfeatures">
-          <article class="pfeature reveal">
-            <span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-fingerprint"></use></svg></span>
-            <h3 data-en="App lock">应用锁</h3>
-            <p data-en="Unlock with biometrics or your screen lock. While locked, screen readers won't read your entries either.">用系统的生物识别或设备密码解锁；锁定时读屏也不会读出日记内容。</p>
-          </article>
-          <article class="pfeature reveal" style="--d:1">
-            <span class="sicon shape-clover4"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-key"></use></svg></span>
+        <ul class="pillars">
+          <li class="reveal">
+            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-user-slash"></use></svg>
+            <h3 data-en="No account, no server">无账号，无服务器</h3>
+            <p data-en="Nothing is collected, and there are no third-party analytics SDKs.">不收集任何数据，也不含任何第三方统计 SDK。</p>
+          </li>
+          <li class="reveal" style="--d:1">
+            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-fingerprint"></use></svg>
+            <h3 data-en="App lock &amp; private notebooks">应用锁与私密日记本</h3>
+            <p data-en="Unlock with your fingerprint, face or screen lock. Entries in a private notebook never show up anywhere else.">用指纹、面容或锁屏密码解锁；私密本子里的日记，不会出现在别的地方。</p>
+          </li>
+          <li class="reveal" style="--d:2">
+            <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-key"></use></svg>
             <h3 data-en="Encrypted backups">加密备份</h3>
-            <p data-en="A full backup is one ZIP with every entry and file, protected by a password with AES-256 if you like.">完整备份是一个 ZIP，包含全部日记与媒体，可以设密码，使用 AES-256 加密。</p>
-          </article>
-          <article class="pfeature reveal" style="--d:2">
-            <span class="sicon shape-pentagon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-shield-halved"></use></svg></span>
-            <h3 data-en="Merge or overwrite">合并或覆盖</h3>
-            <p data-en="Backups are checked read-only first, and overwriting local data asks for a clear second confirmation.">恢复前先只读预检；覆盖本机数据前，会有醒目的二次确认。</p>
-          </article>
-          <article class="pfeature reveal" style="--d:3">
-            <span class="sicon shape-sunny"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-eye-slash"></use></svg></span>
-            <h3 data-en="Asked only when needed">权限克制</h3>
-            <p data-en="Microphone, location and photo access are all optional and requested only when you use them. Your original photos are never changed.">麦克风、位置、相册都是可选的，用到时才申请；相册原图不会被改动。</p>
-          </article>
-        </div>
-
-        <div class="privacy-cta reveal">
-          <a class="btn btn--deep btn--lg" href="privacy.html"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-shield-halved"></use></svg><span data-en="Read the privacy policy">阅读完整隐私政策</span></a>
-          <a class="btn btn--deep-outline btn--lg" href="https://github.com/CikeSeven/jotsy"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-code"></use></svg><span data-en="Read the source">查看源代码</span></a>
-        </div>
+            <p data-en="A full backup can be protected with a password and AES-256 encryption.">完整备份可以设密码，使用 AES-256 加密。</p>
+          </li>
+        </ul>
+        <a class="more-link reveal" href="privacy.html" data-en="Read the full privacy policy">阅读完整隐私政策</a>
       </div>
     </section>
 
-    <!-- ============ 不锁定 ============ -->
+    <!-- ============ 数据：备份 / 导出 / 导入 ============ -->
     <section class="section" id="data">
       <div class="container">
         <header class="section-head reveal">
-          <p class="eyebrow"><span class="num">07</span><span data-en="No lock-in">不锁定</span></p>
-          <h2 class="display" data-en="Back up, export, share: your data goes where you go">备份、导出、分享，数据随你带走</h2>
-          <p class="lead" data-en="Jotsy never locks you in. Back up to storage you own, export to open formats, or share with a tap.">Jotsy 不会把你锁在里面：备份到你自己的网盘，导出成通用格式，或者一键分享给朋友。</p>
+          <p class="eyebrow" data-en="Your data">数据</p>
+          <h2 class="display" data-en="Your data goes where you go">数据随你带走</h2>
+          <p class="lead" data-en="Jotsy never locks you in.">Jotsy 不会把你锁在里面。</p>
         </header>
-        <div class="data-grid">
-          <article class="data-card data-card--backup card reveal">
-            <h3><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud-arrow-up"></use></svg></span><span data-en="Cloud backup">网盘备份</span></h3>
-            <p data-en="Your full backup ZIP goes to your own drive or server, where you can list, restore and delete it from inside the app. Credentials stay on the device and never go into backups.">完整备份 ZIP 上传到你自己的网盘或服务器，也能在应用里直接查看、恢复和删除。凭据只保存在本机，不会写进备份文件。</p>
-            <div class="provider-group">
-              <h4><span>WebDAV</span><span data-en="16 presets or any server">16 种预设，也可自填</span></h4>
-              <ul class="chip-row">
-                <li class="chip" data-en="Jianguoyun">坚果云</li><li class="chip">Nextcloud</li><li class="chip" data-en="Synology">群晖</li><li class="chip" data-en="QNAP">威联通</li><li class="chip">OpenList</li><li class="chip">Seafile</li><li class="chip">pCloud</li>
-              </ul>
-            </div>
-            <div class="provider-group">
-              <h4><span data-en="S3-compatible storage">S3 兼容对象存储</span><span data-en="20 presets">20 种预设</span></h4>
-              <ul class="chip-row">
-                <li class="chip" data-en="Aliyun OSS">阿里云 OSS</li><li class="chip" data-en="Tencent COS">腾讯云 COS</li><li class="chip" data-en="Qiniu Kodo">七牛云 Kodo</li><li class="chip">Cloudflare R2</li><li class="chip">Backblaze B2</li><li class="chip">AWS S3</li><li class="chip">MinIO</li>
-              </ul>
-            </div>
-            <div class="provider-group">
-              <h4><span data-en="Cloud drives">授权网盘</span><span data-en="Only Jotsy's own folder">只访问 Jotsy 自己的文件夹</span></h4>
-              <ul class="chip-row">
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-google-drive"></use></svg>Google Drive</li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-microsoft"></use></svg>OneDrive</li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-dropbox"></use></svg>Dropbox</li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud"></use></svg><span data-en="Baidu Netdisk">百度网盘</span></li>
-                <li class="chip"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-cloud"></use></svg><span data-en="Alipan">阿里云盘</span></li>
-              </ul>
-            </div>
-          </article>
-          <article class="data-card card reveal" style="--d:1">
-            <h3><span class="sicon shape-clover4 plate-secondary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-file-export"></use></svg></span><span data-en="Export">导出</span></h3>
-            <p data-en="Export one entry, a selection, or a date or tag range. Markdown comes with front matter, ready for Obsidian. Sealed time capsules are never exported.">单篇、多选，或按日期与标签批量导出；Markdown 带 front matter，可以直接放进 Obsidian。未解封的时间胶囊不会被导出。</p>
-            <div class="formats">
-              <span class="file" style="--fc:rgb(var(--c-error))"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-file-pdf"></use></svg>PDF</span>
-              <span class="file"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-file-word"></use></svg>DOCX</span>
-              <span class="file"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-markdown"></use></svg>MD</span>
-              <span class="file"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-file-code"></use></svg>HTML</span>
-              <span class="file"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-file-lines"></use></svg>TXT</span>
-              <span class="file"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-file-csv"></use></svg>CSV</span>
-              <span class="file"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-book"></use></svg><span data-en="DIARY">日记</span></span>
-            </div>
-          </article>
-          <article class="data-card card reveal" style="--d:2">
-            <h3><span class="sicon shape-sunny plate-tertiary"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-share-nodes"></use></svg></span><span data-en="Share">分享</span></h3>
-            <p data-en="Share as a long image, or straight to the apps you use. The text is copied for you and the diary's photos come along.">生成长图，或一键分享到常用应用：正文自动复制，日记里的图片也一起带上。</p>
-            <div class="share-row">
-              <span class="share-app"><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-image"></use></svg></span><span data-en="Long image">长图</span></span>
-              <span class="share-app"><span class="sicon shape-cookie12"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-weibo"></use></svg></span><span data-en="Weibo">微博</span></span>
-              <span class="share-app"><span class="sicon shape-clover4"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-book-open"></use></svg></span><span data-en="Xiaohongshu">小红书</span></span>
-              <span class="share-app"><span class="sicon shape-pentagon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-weixin"></use></svg></span><span data-en="WeChat">微信</span></span>
-              <span class="share-app"><span class="sicon shape-gem"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-camera"></use></svg></span><span data-en="Moments">朋友圈</span></span>
-              <span class="share-app"><span class="sicon shape-sunny"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-qq"></use></svg></span>QQ</span>
-              <span class="share-app"><span class="sicon shape-burst"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-star"></use></svg></span><span data-en="Qzone">QQ 空间</span></span>
-              <span class="share-app"><span class="sicon shape-circle plate-surface"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-ellipsis"></use></svg></span><span data-en="More">更多</span></span>
-            </div>
-          </article>
-        </div>
+        <ul class="trio">
+          <li class="reveal">
+            <h3 data-en="Cloud backup">网盘备份</h3>
+            <p data-en="Back up to your own cloud drive or server, and restore straight from it.">备份到你自己的网盘或服务器，也能直接从远端恢复。</p>
+            <p class="names" data-en="WebDAV · S3-compatible · Google Drive · OneDrive · Dropbox · Baidu · Aliyun Drive">WebDAV · S3 兼容存储 · Google Drive · OneDrive · Dropbox · 百度网盘 · 阿里云盘</p>
+          </li>
+          <li class="reveal" style="--d:1">
+            <h3 data-en="Export anywhere">多格式导出</h3>
+            <p data-en="Export one entry, a selection or a whole notebook. Markdown drops straight into Obsidian.">单篇、多选或整本导出；Markdown 可以直接放进 Obsidian。</p>
+            <p class="names" data-en="PDF · Word · Markdown · HTML · TXT · CSV">PDF · Word · Markdown · 网页 · TXT · CSV</p>
+          </li>
+          <li class="reveal" style="--d:2">
+            <h3 data-en="Move in from 18 apps">从 18 款应用搬过来</h3>
+            <p data-en="Preview before anything is written, then merge or replace. Colors, sizes and attachments come along.">写入前先预检，再选合并或覆盖；颜色、字号和附件都会保留。</p>
+            <p class="names" data-en="Day One · Journey · Diarium · Daylio · Evernote · Google Keep · phone-maker cloud notes…">Day One · Journey · Diarium · Daylio · 印象笔记 · Google Keep · 手机厂商云笔记…</p>
+            <a class="more-link" href="https://github.com/CikeSeven/jotsy#-从其他应用搬家" data-en-href="https://github.com/CikeSeven/jotsy/blob/main/docs/README.en.md#-moving-from-another-app" data-en="Supported apps">支持的应用与导出方法</a>
+          </li>
+        </ul>
       </div>
     </section>
 
-    <!-- ============ 搬家 ============ -->
-    <section class="section" id="migrate" style="padding-top:0">
-      <div class="container">
+    <!-- ============ 更新日志：比这里写死的版本更新的发布由 download.js 自动补在最前（data-tag 标出版本） ============ -->
+    <section class="section section--alt" id="updates">
+      <div class="container split split--top">
         <header class="section-head reveal">
-          <p class="eyebrow"><span class="num">08</span><span data-en="Import">搬家</span></p>
-          <h2 class="display" data-en="Moving in from another app">从其他应用搬过来</h2>
-          <p class="lead" data-en-html="Export from your old app, then pick the file in Jotsy under &lt;b&gt;Settings › Data &amp;amp; Privacy › Data Management › Import from other journal apps&lt;/b&gt;. Jotsy previews the contents first, and you choose to merge or overwrite.">先在原应用里导出数据，再到 Jotsy 的 <b>设置 › 数据与隐私 › 数据管理 › 从其他日记应用导入</b> 中选择文件。导入前会先预检内容，同样可以选择合并或覆盖。</p>
-        </header>
-
-        <ol class="migrate-steps reveal">
-          <li><span><b data-en="Export from the old app">在原应用里导出</b><span data-en="JSON, ZIP, ENEX, Markdown and more are recognized.">JSON、ZIP、ENEX、Markdown 等格式都能识别。</span></span></li>
-          <li><span><b data-en="Preview in Jotsy">在 Jotsy 里预检</b><span data-en="See what will come in before anything is written.">写入之前，先看清楚会导入哪些内容。</span></span></li>
-          <li><span><b data-en="Merge or overwrite">合并或覆盖</b><span data-en="Merging only adds what's missing; overwriting asks twice.">合并只添加本机没有的日记；覆盖会再三确认。</span></span></li>
-        </ol>
-
-        <div class="mgroups">
-          <div class="mgroup card reveal">
-            <h3><span data-en="Journaling apps">日记应用</span><span class="count">6</span></h3>
-            <ul class="app-list">
-              <li><span class="mono">D1</span><span><b>Day One</b><span data-en="Export as JSON (.zip)">导出为 JSON 格式（.zip）</span></span></li>
-              <li><span class="mono">J</span><span><b>Journey</b><span data-en="Export to ZIP (.zip)">导出为 ZIP（.zip）</span></span></li>
-              <li><span class="mono">Di</span><span><b>Diarium</b><span data-en="JSON export (.json) or backup file (.diary)">JSON 导出（.json）或备份文件（.diary）</span></span></li>
-              <li><span class="mono">Dy</span><span><b>Daylio</b><span data-en="Backup file (.daylio) or CSV export (.csv)">备份文件（.daylio）或导出的 CSV（.csv）</span></span></li>
-              <li><span class="mono"><svg class="i" style="width:18px;height:18px" aria-hidden="true"><use href="assets/img/icons.svg#i-apple"></use></svg></span><span><b data-en="Apple Journal">Apple 手记</b><span data-en="On iPhone: Settings › Apps › Journal › Export All (.zip)">在 iPhone「设置 › App › 手记」中导出所有条目（.zip）</span></span></li>
-              <li><span class="mono">Dr</span><span><b>Diaro</b><span data-en="Backup file (.zip, unencrypted)">备份文件（.zip，不能加密）</span></span></li>
-            </ul>
-          </div>
-          <div class="mgroup mgroup--notes card reveal" style="--d:1">
-            <h3><span data-en="Note apps">笔记应用</span><span class="count">5</span></h3>
-            <ul class="app-list">
-              <li><span class="mono">E</span><span><b data-en="Evernote">印象笔记 / Evernote</b><span data-en="Notebooks as ENEX (.enex, or several in a .zip)">导出笔记本为 ENEX（.enex，多个可打包成 .zip）</span></span></li>
-              <li><span class="mono">K</span><span><b>Google Keep</b><span data-en="Export Keep with Google Takeout (.zip)">在 Google Takeout 中导出 Keep（.zip）</span></span></li>
-              <li><span class="mono">Jo</span><span><b>Joplin</b><span data-en="Export as JEX (.jex)">导出为 JEX（.jex）</span></span></li>
-              <li><span class="mono">M</span><span><b>Memos</b><span data-en="Settings › Export &amp; Import, v0.31+ (.zip)">v0.31 起在「设置 › 导出与导入」中导出（.zip）</span></span></li>
-              <li><span class="mono"><svg class="i" style="width:20px;height:20px" aria-hidden="true"><use href="assets/img/icons.svg#i-markdown"></use></svg></span><span><b data-en="Markdown / plain text">Markdown / 纯文本</b><span data-en="Obsidian, Bear, Notion exports and more">Obsidian、Bear、Notion 等导出的 .md / .txt</span></span></li>
-            </ul>
-          </div>
-          <div class="mgroup mgroup--cloud card reveal" style="--d:2">
-            <h3><span data-en="Phone &amp; WPS cloud notes">手机与 WPS 云笔记</span><span class="count">7</span></h3>
-            <ul class="app-list">
-              <li><span class="mono" data-en="Mi">小米</span><span><b data-en="Xiaomi Notes">小米笔记</b></span></li>
-              <li><span class="mono" data-en="Hw">华为</span><span><b data-en="Huawei Notepad">华为备忘录</b></span></li>
-              <li><span class="mono">OP</span><span><b data-en="OPPO Notes">OPPO 笔记</b></span></li>
-              <li><span class="mono">vi</span><span><b data-en="vivo Notes">vivo 笔记</b></span></li>
-              <li><span class="mono" data-en="Ho">荣耀</span><span><b data-en="HONOR Notes">荣耀笔记</b></span></li>
-              <li><span class="mono" data-en="Mz">魅族</span><span><b data-en="Meizu Notes">魅族笔记</b></span></li>
-              <li><span class="mono">W</span><span><b data-en="WPS Notes">WPS 便签</b></span></li>
-            </ul>
-            <p class="mgroup-note" data-en="Sign in on the vendor's official site inside the app; Jotsy only reads your notes. The login cookies exist in memory for that import alone and are cleared when it ends.">在应用内打开厂商官网登录，Jotsy 只读取笔记内容。登录 Cookie 只存在于本次导入的内存中，导入结束即清除。</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 下载 ============ -->
-    <section class="section" id="download" style="padding-top:0">
-      <div class="container">
-        <div class="dl" data-download>
-          <div class="dl-main reveal">
-            <span class="sicon dl-deco" aria-hidden="true"></span>
-            <div class="dl-head">
-              <img class="dl-icon" src="assets/img/brand/icon-256.webp" width="84" height="84" alt="" loading="lazy">
-              <div>
-                <p class="eyebrow" data-en="Download Jotsy">下载 Jotsy</p>
-                <h2 class="display" data-en="Free. Start writing today.">免费下载，今天就开始写</h2>
-              </div>
-            </div>
-            <p class="lead" data-en="Jotsy is available for Android 7.0 and later. Once it's installed, new versions show up in the app and install with one tap.">目前提供 Android 版本，需要 Android 7.0 及以上。装好之后，新版本会在应用里提示，一键下载安装。</p>
-            <div class="dl-release" aria-live="polite">
-              <span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-tags"></use></svg><span data-dl-version>v0.6.1</span></span>
-              <span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-calendar-days"></use></svg><span data-dl-date>2026-10-17</span></span>
-              <span data-dl-total hidden><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><span data-dl-total-value></span></span>
-            </div>
-            <div class="dl-buttons">
-              <a class="btn btn--filled btn--lg" data-dl-abi="arm64-v8a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.6.1/jotsy-v0.6.1-arm64-v8a.apk">
-                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
-                <span class="btn-stack"><span data-en="Download APK">下载安装包</span><small><span data-en="arm64-v8a · recommended">arm64-v8a · 推荐</span> <span data-dl-size></span></small></span>
-              </a>
-              <a class="btn btn--outlined btn--lg" href="https://github.com/CikeSeven/jotsy/releases/latest" data-release-link>
-                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg>
-                <span>GitHub Releases</span>
-              </a>
-            </div>
-            <div class="dl-alt">
-              <a data-dl-abi="armeabi-v7a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.6.1/jotsy-v0.6.1-armeabi-v7a.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>armeabi-v7a <small data-en="older 32-bit phones">较老的 32 位手机</small> <small data-dl-size></small></a>
-              <a data-dl-abi="x86_64" href="https://github.com/CikeSeven/jotsy/releases/download/v0.6.1/jotsy-v0.6.1-x86_64.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg>x86_64 <small data-en="emulators">模拟器</small> <small data-dl-size></small></a>
-            </div>
-            <p class="os-note os-note--ios"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-apple"></use></svg><span data-en="There's no iOS version yet; only Android builds are released for now.">暂时没有 iOS 版，目前只发布 Android 版本。</span></p>
-            <div class="dl-line">
-              <label for="dl-route"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-route"></use></svg><span data-en="Download route">下载线路</span></label>
-              <span class="select">
-                <select id="dl-route" data-route>
-                  <option value="auto" data-en="Automatic (fastest)">自动选择（最快）</option>
-                  <option value="ghfast">ghfast.top</option>
-                  <option value="gh-proxy">gh-proxy.com</option>
-                  <option value="llkk">gh.llkk.cc</option>
-                  <option value="ghproxy-net">ghproxy.net</option>
-                  <option value="direct" data-en="GitHub direct">GitHub 直连</option>
-                </select>
-                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg>
-              </span>
-              <span class="line-status" data-route-status aria-live="polite" data-en="Mirrors are usually faster in mainland China.">国内网络一般走镜像更快。</span>
-            </div>
-            <p class="route-note" data-en="Mirrors are third-party public services. If integrity matters to you, download from GitHub directly or compare the SHA-256 below; in-app updates always verify the signature.">镜像为第三方公共服务。对完整性有要求时，可以选 GitHub 直连，或对照下方从 GitHub 读取的 SHA-256；装好后的应用内更新都会核对签名。</p>
-            <details class="dl-sha" data-sha hidden>
-              <summary><span data-en="SHA-256 checksums">SHA-256 校验值</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></summary>
-              <ul class="sha-list" data-sha-list></ul>
-            </details>
-          </div>
-          <aside class="dl-side">
-            <div class="qr-card card reveal" style="--d:1">
-              <div class="qr" aria-hidden="true"><svg viewBox="-1 -1 31 31" shape-rendering="crispEdges"><path d="M0 0h7v1h-7zM8 0h6v1h-6zM16 0h1v1h-1zM18 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h2v1h-2zM12 1h1v1h-1zM14 1h2v1h-2zM17 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h5v1h-5zM14 2h1v1h-1zM16 2h4v1h-4zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM10 3h3v1h-3zM14 3h2v1h-2zM18 3h3v1h-3zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM13 4h1v1h-1zM15 4h6v1h-6zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h3v1h-3zM14 5h1v1h-1zM18 5h2v1h-2zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM8 7h1v1h-1zM10 7h3v1h-3zM17 7h2v1h-2zM0 8h2v1h-2zM3 8h1v1h-1zM6 8h2v1h-2zM9 8h1v1h-1zM11 8h2v1h-2zM14 8h1v1h-1zM17 8h2v1h-2zM21 8h3v1h-3zM25 8h2v1h-2zM28 8h1v1h-1zM2 9h1v1h-1zM9 9h2v1h-2zM12 9h7v1h-7zM21 9h1v1h-1zM25 9h1v1h-1zM27 9h1v1h-1zM0 10h1v1h-1zM4 10h3v1h-3zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h2v1h-2zM17 10h3v1h-3zM22 10h2v1h-2zM27 10h1v1h-1zM1 11h2v1h-2zM5 11h1v1h-1zM7 11h2v1h-2zM12 11h1v1h-1zM15 11h1v1h-1zM18 11h5v1h-5zM25 11h1v1h-1zM27 11h2v1h-2zM0 12h2v1h-2zM4 12h1v1h-1zM6 12h3v1h-3zM11 12h2v1h-2zM16 12h3v1h-3zM21 12h1v1h-1zM25 12h4v1h-4zM2 13h1v1h-1zM4 13h1v1h-1zM7 13h2v1h-2zM11 13h1v1h-1zM13 13h1v1h-1zM15 13h1v1h-1zM17 13h1v1h-1zM20 13h3v1h-3zM25 13h1v1h-1zM27 13h2v1h-2zM1 14h2v1h-2zM5 14h4v1h-4zM10 14h2v1h-2zM14 14h1v1h-1zM21 14h1v1h-1zM24 14h3v1h-3zM28 14h1v1h-1zM0 15h3v1h-3zM9 15h3v1h-3zM15 15h1v1h-1zM17 15h2v1h-2zM23 15h1v1h-1zM25 15h1v1h-1zM27 15h2v1h-2zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM8 16h2v1h-2zM14 16h2v1h-2zM18 16h1v1h-1zM20 16h3v1h-3zM25 16h3v1h-3zM0 17h1v1h-1zM3 17h1v1h-1zM5 17h1v1h-1zM7 17h2v1h-2zM12 17h2v1h-2zM17 17h4v1h-4zM24 17h1v1h-1zM26 17h1v1h-1zM3 18h1v1h-1zM5 18h3v1h-3zM9 18h1v1h-1zM11 18h1v1h-1zM14 18h3v1h-3zM19 18h2v1h-2zM22 18h2v1h-2zM26 18h3v1h-3zM0 19h1v1h-1zM2 19h4v1h-4zM9 19h1v1h-1zM12 19h3v1h-3zM19 19h2v1h-2zM22 19h1v1h-1zM25 19h4v1h-4zM0 20h1v1h-1zM3 20h1v1h-1zM6 20h6v1h-6zM13 20h1v1h-1zM15 20h1v1h-1zM17 20h8v1h-8zM27 20h2v1h-2zM11 21h2v1h-2zM14 21h7v1h-7zM24 21h2v1h-2zM27 21h2v1h-2zM0 22h7v1h-7zM8 22h4v1h-4zM13 22h1v1h-1zM15 22h1v1h-1zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM9 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM17 23h2v1h-2zM20 23h1v1h-1zM24 23h3v1h-3zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h2v1h-2zM15 24h2v1h-2zM19 24h7v1h-7zM28 24h1v1h-1zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h1v1h-1zM12 25h1v1h-1zM16 25h2v1h-2zM20 25h4v1h-4zM25 25h1v1h-1zM27 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM10 26h1v1h-1zM12 26h3v1h-3zM17 26h5v1h-5zM24 26h1v1h-1zM26 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h1v1h-1zM10 27h1v1h-1zM13 27h5v1h-5zM21 27h4v1h-4zM27 27h2v1h-2zM0 28h7v1h-7zM8 28h2v1h-2zM11 28h1v1h-1zM13 28h2v1h-2zM21 28h1v1h-1zM23 28h1v1h-1zM25 28h2v1h-2z"/></svg></div>
-              <div><b data-en="Scan to download on your phone">用手机扫码下载</b><span data-en="Opens this page on your phone so you can grab the APK directly.">在手机上打开这个页面，直接下载安装包。</span></div>
-            </div>
-            <div class="steps-card card reveal" style="--d:2">
-              <h3 data-en="Three steps to install">安装只需三步</h3>
-              <ol class="steps">
-                <li><span><b data-en="Download the APK">下载安装包</b><span data-en="Almost every phone needs arm64-v8a.">绝大多数手机选 arm64-v8a。</span></span></li>
-                <li><span><b data-en="Allow the install">允许安装</b><span data-en="Let your browser or file manager install unknown apps when asked.">按提示允许浏览器或文件管理器“安装未知应用”。</span></span></li>
-                <li><span><b data-en="Updates come to you">之后自动更新</b><span data-en="New versions are offered and installed inside the app.">新版本会在应用内提示，一键下载安装。</span></span></li>
-              </ol>
-            </div>
-          </aside>
-        </div>
-        <div class="dl-foot">
-          <span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-certificate"></use></svg><span data-en="APKs are built and signed by GitHub Actions from the public source, with SHA256SUMS.txt alongside.">安装包由 GitHub Actions 从公开源码构建并签名，附 SHA256SUMS.txt 校验文件。</span></span>
-          <a href="https://github.com/CikeSeven/jotsy/releases" data-en="All releases →">查看全部版本 →</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ 更新日志：比这里写死的卡片更新的版本由 download.js 从更新说明自动补一张（data-tag 标出版本） ============ -->
-    <section class="section" id="updates" style="padding-top:0">
-      <div class="container">
-        <header class="section-head reveal">
-          <p class="eyebrow"><span class="num">09</span><span data-en="What's new">持续更新</span></p>
+          <p class="eyebrow" data-en="What's new">更新</p>
           <h2 class="display" data-en="Getting better all the time">一直在变得更好</h2>
-          <p class="lead" data-en="Every release ships with notes in Chinese and English, and new versions show up right inside the app.">每个版本都附中英文更新说明；装好之后，新版本会直接在应用里提示。</p>
+          <p class="lead" data-en="Every release comes with notes in Chinese and English, and new versions show up right inside the app.">每个版本都附中英文更新说明；装好之后，新版本会直接在应用里提示。</p>
+          <a class="more-link" href="https://github.com/CikeSeven/jotsy/releases" data-en="All releases">查看全部版本</a>
         </header>
-        <p class="lead" data-newer-release hidden style="margin-bottom:16px"></p>
-        <ol class="timeline" data-timeline>
-          <li class="release card reveal" data-tag="v0.6.1">
-            <span class="badge" data-release-badge data-en="Latest">最新</span>
-            <header><h3>v0.6.1</h3><time datetime="2026-10-17">2026-10-17</time></header>
-            <ul>
-              <li data-en="In-app updates, rebuilt: download, verify and install inside the app, with the fastest route picked and dropped downloads resumed.">应用内更新全面重做：在应用内下载、校验并安装，多条线路测速择优、断线续传。</li>
-              <li data-en="Faster with big libraries: paging in time order is about 10× faster with 10,000 entries.">日记多了也更快：一万篇日记下，按时间排序翻页快约 10 倍。</li>
-              <li data-en="Fixed HONOR cloud notes import stopping while downloading images.">修复荣耀云笔记导入在下载图片时中断的问题。</li>
-            </ul>
-            <a href="https://github.com/CikeSeven/jotsy/releases/tag/v0.6.1" data-en="Full release notes →">完整更新说明 →</a>
-          </li>
-          <li class="release card reveal" style="--d:1" data-tag="v0.6.0">
-            <header><h3>v0.6.0</h3><time datetime="2026-10-17">2026-10-17</time></header>
-            <ul>
-              <li data-en="Cloud backup to WebDAV, S3-compatible storage and major cloud drives.">网盘备份：WebDAV、S3 兼容对象存储与主流网盘。</li>
-              <li data-en="Import from 18 apps, including cloud notes from six phone makers and WPS.">从 18 款应用导入，包括 6 家手机厂商与 WPS 的云端笔记。</li>
-              <li data-en="A richer calendar with anniversaries, deep customization of cards, reading page and body text, plus sharing and export.">日历全面升级并加入纪念日；卡片、阅读页与正文排版可深度定制；新增分享与多格式导出。</li>
-            </ul>
-            <a href="https://github.com/CikeSeven/jotsy/releases/tag/v0.6.0" data-en="Full release notes →">完整更新说明 →</a>
-          </li>
-          <li class="release card reveal" style="--d:2" data-tag="v0.5.1">
-            <header><h3>v0.5.1</h3><time datetime="2026-10-08">2026-10-08</time></header>
-            <ul>
-              <li data-en="Voice recording and playback with pause and resume, renaming and a seekable waveform.">录音与播放：暂停续录、重命名、拖动波形。</li>
-              <li data-en="Videos, file attachments and inserting several images at once.">插入视频与文件附件，多选图片批量插入。</li>
-              <li data-en="A refreshed Material 3 Expressive interface.">焕新 Material 3 Expressive 界面。</li>
-            </ul>
-            <a href="https://github.com/CikeSeven/jotsy/releases/tag/v0.5.1" data-en="Full release notes →">完整更新说明 →</a>
-          </li>
-        </ol>
+        <div>
+          <p class="newer-release" data-newer-release hidden></p>
+          <ol class="releases" data-timeline>
+            <li class="release reveal" data-tag="v0.7.0">
+              <header><h3>v0.7.0</h3><span class="badge" data-release-badge data-en="Latest">最新</span><time datetime="2026-10-20">2026-10-20</time></header>
+              <ul>
+                <li data-en="Notebooks: chapters and book order, smart notebooks, hiding and locking, and export as a book.">日记本：章节与书序、智能日记本、隐藏与上锁，还能整本导出成书。</li>
+                <li data-en="Templates and drafts: eight built-in templates that can apply by time of day, and a separate draft for every new entry.">日记模板与草稿箱：8 个内置模板，可按时间段自动套用；每次新建都是一份独立草稿。</li>
+                <li data-en="Feature management and a new color panel: switch off what you don't use, and pick any color right in the toolbar.">功能管理与新的颜色面板：不用的功能可以关掉，在工具栏里就能自由取色。</li>
+              </ul>
+              <a href="https://github.com/CikeSeven/jotsy/releases/tag/v0.7.0" data-en="Full release notes →">完整更新说明 →</a>
+            </li>
+            <li class="release reveal" data-tag="v0.6.1">
+              <header><h3>v0.6.1</h3><time datetime="2026-10-17">2026-10-17</time></header>
+              <ul>
+                <li data-en="In-app updates, rebuilt: download, verify and install inside the app, with the fastest route picked and dropped downloads resumed.">应用内更新全面重做：在应用内下载、校验并安装，多条线路测速择优、断线续传。</li>
+                <li data-en="Faster with big libraries: paging in time order is about 10× faster with 10,000 entries.">日记多了也更快：一万篇日记下，按时间排序翻页快约 10 倍。</li>
+              </ul>
+              <a href="https://github.com/CikeSeven/jotsy/releases/tag/v0.6.1" data-en="Full release notes →">完整更新说明 →</a>
+            </li>
+            <li class="release reveal" data-tag="v0.6.0">
+              <header><h3>v0.6.0</h3><time datetime="2026-10-17">2026-10-17</time></header>
+              <ul>
+                <li data-en="Cloud backup to WebDAV, S3-compatible storage and major cloud drives.">网盘备份：WebDAV、S3 兼容对象存储与主流网盘。</li>
+                <li data-en="Import from 18 apps, including cloud notes from six phone makers and WPS.">从 18 款应用导入，包括 6 家手机厂商与 WPS 的云端笔记。</li>
+                <li data-en="A richer calendar with anniversaries, plus deep customization of cards, the reading page and body text.">日历全面升级并加入纪念日；卡片、阅读页与正文排版可深度定制。</li>
+              </ul>
+              <a href="https://github.com/CikeSeven/jotsy/releases/tag/v0.6.0" data-en="Full release notes →">完整更新说明 →</a>
+            </li>
+          </ol>
+        </div>
       </div>
     </section>
 
     <!-- ============ 常见问题 ============ -->
-    <section class="section" id="faq" style="padding-top:0">
-      <div class="container faq-grid">
+    <section class="section" id="faq">
+      <div class="container split split--top">
         <header class="section-head reveal">
-          <p class="eyebrow"><span class="num">10</span><span data-en="FAQ">常见问题</span></p>
+          <p class="eyebrow" data-en="FAQ">常见问题</p>
           <h2 class="display" data-en="Questions, answered">你可能想问</h2>
           <p class="lead" data-en-html="Didn't find your answer? Open an &lt;a href=&quot;https://github.com/CikeSeven/jotsy/issues&quot;&gt;issue&lt;/a&gt; or join the QQ group 678136434.">没找到答案？欢迎提交 <a href="https://github.com/CikeSeven/jotsy/issues">Issue</a>，或者加入 QQ 交流群 678136434。</p>
         </header>
         <div class="faq-list">
           <details class="faq reveal">
-            <summary><span data-en="How do I move my diary to a new phone?">换手机了，日记怎么迁移？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
+            <summary><span data-en="How do I move my diary to a new phone?">换手机了，日记怎么迁移？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body"><p data-en-html="On the old phone, go to &lt;b&gt;Data Management › Export Data&lt;/b&gt; to create a backup ZIP. Copy it to the new phone and restore it with &lt;b&gt;Import Data&lt;/b&gt;, or pass it between the two with cloud backup.">在旧手机的 <b>数据管理 › 导出数据</b> 中生成备份 ZIP，传到新手机后用 <b>导入数据</b> 恢复即可；也可以用网盘备份在两台设备之间中转。</p></div>
           </details>
           <details class="faq reveal">
-            <summary><span data-en="Will uninstalling the app delete my data?">卸载应用会丢数据吗？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
+            <summary><span data-en="Will uninstalling the app delete my data?">卸载应用会丢数据吗？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body"><p data-en="Yes. Your data only lives on the device, so uninstalling the app or clearing its data removes it. Export backups regularly, or set up cloud backup.">会。数据只存在本机，卸载或清除应用数据都会把它删掉。建议定期导出备份，或者使用网盘备份。</p></div>
           </details>
           <details class="faq reveal">
-            <summary><span data-en="Which APK should I download?">该下载哪个安装包？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
+            <summary><span data-en="Which APK should I download?">该下载哪个安装包？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body"><p data-en="Almost every modern phone needs arm64-v8a. Older 32-bit devices need armeabi-v7a, and x86_64 is for emulators. If you're not sure, pick arm64-v8a.">绝大多数手机选 arm64-v8a；较老的 32 位设备选 armeabi-v7a；x86_64 用于模拟器。不确定时选 arm64-v8a。</p></div>
           </details>
           <details class="faq reveal">
-            <summary><span data-en="Is the APK safe? How do updates work?">安装包安全吗？以后怎么更新？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
+            <summary><span data-en="Is the APK safe? How do updates work?">安装包安全吗？以后怎么更新？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body">
               <p data-en="Release APKs are built and signed by GitHub Actions from the public source code, and each release includes SHA256SUMS.txt so you can check what you downloaded.">安装包由 GitHub Actions 从公开的源代码构建并签名，每个版本都附带 SHA256SUMS.txt，可以核对下载的文件。</p>
               <p data-en="Once installed, Jotsy offers new versions inside the app and installs them directly: it picks the fastest route, resumes dropped downloads, and checks the size, SHA-256, package name and signature before installing.">装好之后，Jotsy 会在应用内提示新版本并直接安装：自动选择最快的线路、断线续传，安装前核对大小、SHA-256、包名与签名。</p>
             </div>
           </details>
           <details class="faq reveal">
-            <summary><span data-en="Is it really free?">真的免费吗？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
+            <summary><span data-en="Is it really free?">真的免费吗？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body"><p data-en="Yes. Jotsy is open source under GPL-3.0 and free to use, with no ads and no third-party analytics SDKs. All of its source code is on GitHub.">是的。Jotsy 以 GPL-3.0 协议开源，免费使用，没有广告，也不包含任何第三方统计 SDK；全部源代码都在 GitHub 上。</p></div>
           </details>
           <details class="faq reveal">
-            <summary><span data-en="Why can't I get the weather or my location?">为什么获取不到天气和定位？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
-            <div class="faq-body"><p data-en="Make sure location permission is granted and you're online. Either way, you can always type the place and weather in yourself.">请确认已经授予位置权限，并且网络正常。即使获取不到，也可以手动填写地点和天气。</p></div>
-          </details>
-          <details class="faq reveal">
-            <summary><span data-en="Is there an iOS version?">有 iOS 版吗？</span><span class="sicon"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></span></summary>
+            <summary><span data-en="Is there an iOS version?">有 iOS 版吗？</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-plus"></use></svg></summary>
             <div class="faq-body"><p data-en="Not yet. Only Android builds (Android 7.0 or later) are released for now.">暂时没有，目前只发布 Android 版本（Android 7.0 及以上）。</p></div>
           </details>
         </div>
       </div>
     </section>
 
-    <!-- ============ 结尾号召 ============ -->
-    <section class="section" style="padding-top:0">
+    <!-- ============ 下载（兼作结尾号召） ============ -->
+    <section class="section section--alt" id="download">
       <div class="container">
-        <div class="cta-band reveal">
-          <span class="sicon" aria-hidden="true"></span>
-          <span class="sicon" aria-hidden="true"></span>
-          <h2 class="display" data-en="Today is worth writing down">今天，也值得被记下来</h2>
-          <p data-en="Free, open source and ad-free. Open it and write; your diary belongs to you alone.">免费、开源、没有广告。打开就能写，你的日记只属于你。</p>
-          <div class="btn-row">
-            <a class="btn btn--filled btn--lg" href="#download"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg><span data-en="Get it free for Android">免费下载 Android 版</span></a>
-            <a class="btn btn--outlined btn--lg" href="https://github.com/CikeSeven/jotsy"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-star"></use></svg><span data-en="Star on GitHub">在 GitHub 点个 Star</span></a>
+        <div class="dl" data-download>
+          <div class="dl-main reveal">
+            <img class="dl-icon" src="assets/img/brand/icon-256.webp" width="96" height="96" alt="" loading="lazy">
+            <h2 class="display" data-en="Today is worth writing down">今天，也值得被记下来</h2>
+            <p class="lead" data-en="Free for Android 7.0 and later. Once it's installed, new versions show up in the app and install with one tap.">免费下载 Android 版，需要 Android 7.0 及以上。装好之后，新版本会在应用里提示，一键安装。</p>
+            <p class="dl-release" aria-live="polite">
+              <span data-dl-version>v0.7.0</span>
+              <span data-dl-date>2026-10-20</span>
+              <span data-dl-total hidden><span data-dl-total-value></span></span>
+            </p>
+            <div class="dl-buttons">
+              <a class="btn btn--filled btn--xl" data-dl-abi="arm64-v8a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-arm64-v8a.apk">
+                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-android"></use></svg>
+                <span class="btn-stack"><span data-en="Download APK">下载安装包</span><small><span data-en="arm64-v8a · recommended">arm64-v8a · 推荐</span> <span data-dl-size></span></small></span>
+              </a>
+              <a class="btn btn--tonal btn--xl" href="https://github.com/CikeSeven/jotsy/releases/latest">
+                <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-github"></use></svg>
+                <span>GitHub Releases</span>
+              </a>
+            </div>
+            <p class="os-note os-note--ios"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-apple"></use></svg><span data-en="There's no iOS version yet; only Android builds are released for now.">暂时没有 iOS 版，目前只发布 Android 版本。</span></p>
+
+            <details class="dl-more">
+              <summary><span data-en="Other builds and download routes">其他安装包与下载线路</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg></summary>
+              <div class="dl-more__body">
+                <div class="dl-alt">
+                  <a data-dl-abi="armeabi-v7a" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-armeabi-v7a.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b>armeabi-v7a</b><small data-en="older 32-bit phones">较老的 32 位手机</small><small data-dl-size></small></a>
+                  <a data-dl-abi="x86_64" href="https://github.com/CikeSeven/jotsy/releases/download/v0.7.0/jotsy-v0.7.0-x86_64.apk"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-download"></use></svg><b>x86_64</b><small data-en="emulators">模拟器</small><small data-dl-size></small></a>
+                </div>
+                <div class="dl-line">
+                  <label for="dl-route" data-en="Download route">下载线路</label>
+                  <span class="select">
+                    <select id="dl-route" data-route>
+                      <option value="auto" data-en="Automatic (fastest)">自动选择（最快）</option>
+                      <option value="ghfast">ghfast.top</option>
+                      <option value="gh-proxy">gh-proxy.com</option>
+                      <option value="llkk">gh.llkk.cc</option>
+                      <option value="ghproxy-net">ghproxy.net</option>
+                      <option value="direct" data-en="GitHub direct">GitHub 直连</option>
+                    </select>
+                    <svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-chevron-down"></use></svg>
+                  </span>
+                  <span class="line-status" data-route-status aria-live="polite" data-en="Mirrors are usually faster in mainland China.">国内网络一般走镜像更快。</span>
+                </div>
+                <p class="route-note" data-en="Mirrors are third-party public services. If integrity matters to you, download from GitHub directly or compare the SHA-256 below; in-app updates always verify the signature.">镜像为第三方公共服务。对完整性有要求时，可以选 GitHub 直连，或对照下方从 GitHub 读取的 SHA-256；装好后的应用内更新都会核对签名。</p>
+                <div class="dl-sha" data-sha hidden>
+                  <p data-en="SHA-256 checksums">SHA-256 校验值</p>
+                  <ul class="sha-list" data-sha-list></ul>
+                </div>
+              </div>
+            </details>
           </div>
-          <div class="community">
-            <button type="button" data-copy="678136434" data-copied="QQ 群号已复制" data-en-data-copied="QQ group number copied"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-qq"></use></svg><span data-en="QQ group 678136434">QQ 交流群 678136434</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-copy"></use></svg></button>
-            <a href="https://github.com/CikeSeven/jotsy/issues"><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-bug"></use></svg><span data-en="Report a bug or idea">反馈问题与建议</span></a>
-          </div>
+
+          <aside class="qr-card reveal" style="--d:1">
+            <div class="qr" aria-hidden="true"><svg viewBox="-1 -1 31 31" shape-rendering="crispEdges"><path d="M0 0h7v1h-7zM8 0h6v1h-6zM16 0h1v1h-1zM18 0h1v1h-1zM22 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM9 1h2v1h-2zM12 1h1v1h-1zM14 1h2v1h-2zM17 1h1v1h-1zM20 1h1v1h-1zM22 1h1v1h-1zM28 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h5v1h-5zM14 2h1v1h-1zM16 2h4v1h-4zM22 2h1v1h-1zM24 2h3v1h-3zM28 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h1v1h-1zM10 3h3v1h-3zM14 3h2v1h-2zM18 3h3v1h-3zM22 3h1v1h-1zM24 3h3v1h-3zM28 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM9 4h1v1h-1zM13 4h1v1h-1zM15 4h6v1h-6zM22 4h1v1h-1zM24 4h3v1h-3zM28 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h3v1h-3zM14 5h1v1h-1zM18 5h2v1h-2zM22 5h1v1h-1zM28 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h7v1h-7zM8 7h1v1h-1zM10 7h3v1h-3zM17 7h2v1h-2zM0 8h2v1h-2zM3 8h1v1h-1zM6 8h2v1h-2zM9 8h1v1h-1zM11 8h2v1h-2zM14 8h1v1h-1zM17 8h2v1h-2zM21 8h3v1h-3zM25 8h2v1h-2zM28 8h1v1h-1zM2 9h1v1h-1zM9 9h2v1h-2zM12 9h7v1h-7zM21 9h1v1h-1zM25 9h1v1h-1zM27 9h1v1h-1zM0 10h1v1h-1zM4 10h3v1h-3zM10 10h1v1h-1zM12 10h1v1h-1zM14 10h2v1h-2zM17 10h3v1h-3zM22 10h2v1h-2zM27 10h1v1h-1zM1 11h2v1h-2zM5 11h1v1h-1zM7 11h2v1h-2zM12 11h1v1h-1zM15 11h1v1h-1zM18 11h5v1h-5zM25 11h1v1h-1zM27 11h2v1h-2zM0 12h2v1h-2zM4 12h1v1h-1zM6 12h3v1h-3zM11 12h2v1h-2zM16 12h3v1h-3zM21 12h1v1h-1zM25 12h4v1h-4zM2 13h1v1h-1zM4 13h1v1h-1zM7 13h2v1h-2zM11 13h1v1h-1zM13 13h1v1h-1zM15 13h1v1h-1zM17 13h1v1h-1zM20 13h3v1h-3zM25 13h1v1h-1zM27 13h2v1h-2zM1 14h2v1h-2zM5 14h4v1h-4zM10 14h2v1h-2zM14 14h1v1h-1zM21 14h1v1h-1zM24 14h3v1h-3zM28 14h1v1h-1zM0 15h3v1h-3zM9 15h3v1h-3zM15 15h1v1h-1zM17 15h2v1h-2zM23 15h1v1h-1zM25 15h1v1h-1zM27 15h2v1h-2zM0 16h1v1h-1zM3 16h1v1h-1zM6 16h1v1h-1zM8 16h2v1h-2zM14 16h2v1h-2zM18 16h1v1h-1zM20 16h3v1h-3zM25 16h3v1h-3zM0 17h1v1h-1zM3 17h1v1h-1zM5 17h1v1h-1zM7 17h2v1h-2zM12 17h2v1h-2zM17 17h4v1h-4zM24 17h1v1h-1zM26 17h1v1h-1zM3 18h1v1h-1zM5 18h3v1h-3zM9 18h1v1h-1zM11 18h1v1h-1zM14 18h3v1h-3zM19 18h2v1h-2zM22 18h2v1h-2zM26 18h3v1h-3zM0 19h1v1h-1zM2 19h4v1h-4zM9 19h1v1h-1zM12 19h3v1h-3zM19 19h2v1h-2zM22 19h1v1h-1zM25 19h4v1h-4zM0 20h1v1h-1zM3 20h1v1h-1zM6 20h6v1h-6zM13 20h1v1h-1zM15 20h1v1h-1zM17 20h8v1h-8zM27 20h2v1h-2zM11 21h2v1h-2zM14 21h7v1h-7zM24 21h2v1h-2zM27 21h2v1h-2zM0 22h7v1h-7zM8 22h4v1h-4zM13 22h1v1h-1zM15 22h1v1h-1zM19 22h2v1h-2zM22 22h1v1h-1zM24 22h1v1h-1zM27 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM9 23h1v1h-1zM12 23h1v1h-1zM15 23h1v1h-1zM17 23h2v1h-2zM20 23h1v1h-1zM24 23h3v1h-3zM28 23h1v1h-1zM0 24h1v1h-1zM2 24h3v1h-3zM6 24h1v1h-1zM9 24h2v1h-2zM15 24h2v1h-2zM19 24h7v1h-7zM28 24h1v1h-1zM0 25h1v1h-1zM2 25h3v1h-3zM6 25h1v1h-1zM8 25h1v1h-1zM12 25h1v1h-1zM16 25h2v1h-2zM20 25h4v1h-4zM25 25h1v1h-1zM27 25h1v1h-1zM0 26h1v1h-1zM2 26h3v1h-3zM6 26h1v1h-1zM10 26h1v1h-1zM12 26h3v1h-3zM17 26h5v1h-5zM24 26h1v1h-1zM26 26h1v1h-1zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h1v1h-1zM10 27h1v1h-1zM13 27h5v1h-5zM21 27h4v1h-4zM27 27h2v1h-2zM0 28h7v1h-7zM8 28h2v1h-2zM11 28h1v1h-1zM13 28h2v1h-2zM21 28h1v1h-1zM23 28h1v1h-1zM25 28h2v1h-2z"/></svg></div>
+            <p><b data-en="Scan to download">用手机扫码下载</b><span data-en="Opens this page on your phone.">在手机上打开这个页面</span></p>
+          </aside>
         </div>
       </div>
     </section>
@@ -1170,45 +480,24 @@
 
   <footer class="site-footer">
     <div class="container">
-      <div class="footer-grid">
+      <div class="footer-top">
         <div class="footer-brand">
           <a class="brand" href="#top">
             <span class="brand-mark"><svg viewBox="0 0 80 92" aria-hidden="true"><use href="assets/img/icons.svg#i-brand"></use></svg></span>
             <span>Jotsy</span>
           </a>
-          <p data-en="A private diary that lives on your phone. Free, open source, no ads, no account.">一本只属于你的本地日记。免费 · 开源 · 无广告 · 无需注册。</p>
-          <div class="footer-tools">
-            <div class="seg" role="radiogroup" aria-label="语言" data-en-aria-label="Language" data-lang-seg>
-              <button type="button" role="radio" aria-checked="true" data-value="zh">中文</button>
-              <button type="button" role="radio" aria-checked="false" data-value="en">English</button>
-            </div>
-          </div>
+          <p data-en="A private diary that lives on your phone.">一本只属于你的本地日记。</p>
         </div>
-        <div class="footer-col">
-          <h2 data-en="Product">产品</h2>
-          <ul>
-            <li><a href="#features" data-en="Features">功能一览</a></li>
-            <li><a href="#personalize" data-en="Customize">外观随你定</a></li>
-            <li><a href="#privacy" data-en="Privacy">隐私</a></li>
-            <li><a href="#download" data-en="Download">下载</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h2 data-en="Resources">资源</h2>
-          <ul>
-            <li><a href="https://github.com/CikeSeven/jotsy" data-en="Source code">源代码</a></li>
-            <li><a href="https://github.com/CikeSeven/jotsy/releases" data-en="Releases">版本发布</a></li>
-            <li><a href="#updates" data-en="What's new">更新日志</a></li>
-            <li><a href="privacy.html" data-en="Privacy policy">隐私政策</a></li>
-          </ul>
-        </div>
-        <div class="footer-col">
-          <h2 data-en="Community">社区</h2>
-          <ul>
-            <li><a href="https://github.com/CikeSeven/jotsy/issues" data-en="Issues &amp; ideas">问题与建议</a></li>
-            <li><a href="https://github.com/CikeSeven/jotsy/pulls" data-en="Contribute">参与开发</a></li>
-            <li><span data-en="QQ group 678136434">QQ 群 678136434</span></li>
-          </ul>
+        <nav class="footer-links" aria-label="页脚" data-en-aria-label="Footer">
+          <a href="https://github.com/CikeSeven/jotsy" data-en="Source code">源代码</a>
+          <a href="#updates" data-en="What's new">更新日志</a>
+          <a href="privacy.html" data-en="Privacy policy">隐私政策</a>
+          <a href="https://github.com/CikeSeven/jotsy/issues" data-en="Feedback">问题反馈</a>
+          <button type="button" data-copy="678136434" data-copied="QQ 群号已复制" data-en-data-copied="QQ group number copied"><span data-en="QQ group 678136434">QQ 群 678136434</span><svg class="i" aria-hidden="true"><use href="assets/img/icons.svg#i-copy"></use></svg></button>
+        </nav>
+        <div class="seg seg--sm" role="radiogroup" aria-label="语言" data-en-aria-label="Language" data-lang-seg>
+          <button type="button" role="radio" aria-checked="true" data-value="zh">中文</button>
+          <button type="button" role="radio" aria-checked="false" data-value="en">English</button>
         </div>
       </div>
       <div class="footer-bottom">

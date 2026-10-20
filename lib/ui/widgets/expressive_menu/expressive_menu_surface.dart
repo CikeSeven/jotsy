@@ -1,9 +1,8 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/expressive_motion.dart';
+import '../glass/glass_surface.dart';
 
 /// 菜单的玻璃表面（参照 phase 的 FrostedSurface）：半透明底色 + 背景模糊 +
 /// 细描边 + 只画在外侧的柔和投影，28 圆角。
@@ -15,7 +14,7 @@ import '../../../app/theme/expressive_motion.dart';
 ///   不把整块表面放进 FadeTransition：背景模糊要采样菜单下面的页面，放进整体
 ///   透明度层后只能采到透明层自己，展开途中会先闪一下没有模糊的底。
 /// - 投影只画在表面外侧：底色半透明，普通 BoxShadow / elevation 会从底下透出来，
-///   把菜单中间压暗。
+///   把菜单中间压暗。表面本身的画法见 [GlassSurface]。
 /// - 减少动画或高对比度时退回不透明底色、不做模糊，保证文字稳定可读。
 class ExpressiveMenuSurface extends StatelessWidget {
   const ExpressiveMenuSurface({
@@ -71,78 +70,15 @@ class ExpressiveMenuSurface extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final solid = solidOf(context);
     final tint = tintOf(colors);
-    final fill = solid ? Color.alphaBlend(tint, colors.surface) : tint;
-    final border = borderOf(colors);
-    final shadow = shadowOf(colors);
-    final surface = Material(
-      type: MaterialType.canvas,
-      color: fill.withValues(alpha: fill.a * progress),
-      surfaceTintColor: Colors.transparent,
-      // 进度已经逐帧给出颜色与描边，关掉 Material 自己的颜色补间，免得拖尾。
-      animationDuration: Duration.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: borderRadius,
-        side: BorderSide(color: border.withValues(alpha: border.a * progress)),
-      ),
-      clipBehavior: Clip.antiAlias,
+    return GlassSurface(
+      borderRadius: borderRadius,
+      fill: solid ? Color.alphaBlend(tint, colors.surface) : tint,
+      blurSigma: blurSigma,
+      blur: !solid,
+      border: BorderSide(color: borderOf(colors)),
+      shadowColor: shadowOf(colors),
+      progress: progress,
       child: child,
     );
-    return CustomPaint(
-      painter: _OuterShadowPainter(
-        color: shadow.withValues(alpha: shadow.a * progress),
-      ),
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        // 始终保留 BackdropFilter 节点、只切换 enabled：增删节点会让菜单内容
-        // 整棵重建，丢掉焦点与滚动位置。
-        child: BackdropFilter(
-          enabled: !solid && progress > 0,
-          filter: ImageFilter.blur(
-            sigmaX: blurSigma * progress,
-            sigmaY: blurSigma * progress,
-          ),
-          child: surface,
-        ),
-      ),
-    );
   }
-}
-
-/// 画在圆角矩形外侧、略向下偏移的投影；表面内部挖空，不压暗半透明底色。
-class _OuterShadowPainter extends CustomPainter {
-  const _OuterShadowPainter({required this.color});
-
-  static const Offset offset = Offset(0, 6);
-  static const double blur = 18;
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (color.a == 0) return;
-    final bounds = Offset.zero & size;
-    final shape = ExpressiveMenuSurface.borderRadius.toRRect(bounds);
-    // 偶奇填充：外框减去表面本身，只留下外侧。
-    final outside = Path()
-      ..fillType = PathFillType.evenOdd
-      ..addRect(bounds.inflate(blur * 2 + offset.distance))
-      ..addRRect(shape);
-    canvas
-      ..save()
-      ..clipPath(outside)
-      ..drawRRect(
-        shape.shift(offset),
-        Paint()
-          ..color = color
-          ..maskFilter = MaskFilter.blur(
-            BlurStyle.normal,
-            Shadow.convertRadiusToSigma(blur),
-          ),
-      )
-      ..restore();
-  }
-
-  @override
-  bool shouldRepaint(_OuterShadowPainter oldDelegate) =>
-      color != oldDelegate.color;
 }

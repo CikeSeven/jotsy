@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../diaries/viewmodels/diary_card_colors.dart';
+import '../settings_option_tiles.dart';
 import 'style_color_dialog.dart';
 
 /// 一个自定义颜色（浅色 / 深色两态）的设置行：右侧色块显示当前明暗下的实际
@@ -14,10 +15,20 @@ class StyleCustomColorTile extends StatelessWidget {
     required this.role,
     required this.onChanged,
     this.subtitle,
+    this.nested = false,
+    this.deep = false,
   });
 
   final String title;
   final String? subtitle;
+
+  /// 是否为上一行的从属项：与 `SettingsSwitchTile.nested` 相同的缩进与标题
+  /// 字阶。
+  final bool nested;
+
+  /// 是否为二级从属行（只在 [nested] 时生效），见
+  /// `SettingsSwitchTile.deepNestedIndent`。
+  final bool deep;
   final int light;
   final int? dark;
   final DiaryCardColorRole role;
@@ -51,8 +62,16 @@ class StyleCustomColorTile extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final subtitle = this.subtitle;
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text(title),
+      contentPadding: EdgeInsetsDirectional.fromSTEB(
+        SettingsSwitchTile.indentFor(nested: nested, deep: deep),
+        4,
+        16,
+        4,
+      ),
+      title: Text(
+        title,
+        style: nested ? SettingsSwitchTile.nestedTitleStyle : null,
+      ),
       subtitle: subtitle == null ? null : Text(subtitle),
       trailing: Container(
         width: 28,

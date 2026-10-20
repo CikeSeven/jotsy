@@ -11,8 +11,17 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/home/controllers/home_bar_scroll_hider.dart';
+import 'package:node_diary/ui/home/controllers/page_position_listenable.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/models/home_tab.dart';
+import 'package:node_diary/ui/home/providers/home_bar_settings_provider.dart';
 import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_bottom_bar.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
@@ -26,6 +35,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/bottom_nav.dart';
 import '../../widgets/launch_reveal.dart';
 part '../controllers/home_page_controller.dart';
+part 'home_page_chrome.dart';
 
 /// 主框架页：承载底部 Tab 导航（日记 / 日历 / 探索 / 设置）。
 ///
@@ -94,6 +104,23 @@ class _HomePageState extends ConsumerState<HomePage> {
   final Map<HomeTab, ScrollController> _tabScrollControllers =
       <HomeTab, ScrollController>{};
 
+  /// PageView 小数页码的监听包装，开启“指示器跟随滑动”时交给底栏。
+  late final PagePositionListenable _pagePosition;
+
+  /// 玻璃底栏是否因“滚动时隐藏”而收起。
+  ///
+  /// 生命周期：只在玻璃材质且开启该行为时由 [_handleScrollForBar] 置为
+  /// true；以下时机一律放回 false（并清空 [_barScrollHider] 的累计量）：
+  /// - 切 Tab 开始或页码变化：新页面的滚动位置与收起时无关，导航必须可见；
+  /// - 首页出现提示（SnackBar）：提示叠在底栏上方，底栏收起会让提示悬空；
+  /// - 关闭该行为或离开玻璃材质：在 build 中直接复位，实色栏没有隐藏态。
+  bool _barHiddenByScroll = false;
+
+  /// 最近一次 build 时“滚动时隐藏底栏”是否生效（玻璃材质且开启该行为）；
+  /// 滚动回调在 build 之外，读这里而不是重新解析样式。
+  bool _barHideOnScrollEnabled = false;
+  final HomeBarScrollHider _barScrollHider = HomeBarScrollHider();
+
   @override
   void initState() {
     super.initState();
@@ -109,6 +136,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       _VisibleTabRange(_currentIndex, _currentIndex),
     );
     _controller.pageController.addListener(_syncVisibleTabs);
+    _pagePosition = PagePositionListenable(
+      _controller.pageController,
+      () => _currentIndex,
+    );
+    widget.homeHintVisibleListenable.addListener(_handleHomeHintVisibility);
     _updateAutoChecker = AppUpdateAutoChecker(() async {
       if (mounted) {
         await runAutoUpdateCheck(context, ref);
@@ -127,6 +159,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.homeHintVisibleListenable !=
         widget.homeHintVisibleListenable) {
+      oldWidget.homeHintVisibleListenable.removeListener(
+        _handleHomeHintVisibility,
+      );
+      widget.homeHintVisibleListenable.addListener(_handleHomeHintVisibility);
       _tabPageConfigRevision.value++;
     }
     _controller.handleWidgetUpdate(oldWidget);
@@ -135,6 +171,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     _updateAutoChecker.dispose();
+    widget.homeHintVisibleListenable.removeListener(_handleHomeHintVisibility);
+    _pagePosition.dispose();
     _controller.pageController.removeListener(_syncVisibleTabs);
     _visibleTabs.dispose();
     _controller.dispose();
@@ -159,9 +197,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       return _tabSwitchGeneration;
     }
     _tabSwitchGeneration++;
+    _barScrollHider.reset();
     setState(() {
       _targetIndex = targetIndex;
       _isTabSwitching = true;
+      _barHiddenByScroll = false;
     });
     return _tabSwitchGeneration;
   }
@@ -186,11 +226,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (!_isValidTabIndex(index)) {
       return;
     }
+    _barScrollHider.reset();
     setState(() {
       _currentIndex = index;
       if (!_isTabSwitching) {
         _targetIndex = index;
       }
+      _barHiddenByScroll = false;
     });
   }
 
@@ -269,6 +311,22 @@ class _HomePageState extends ConsumerState<HomePage> {
         BottomNavItem(label: tab.label(l10n), icon: tab.icon),
     ];
 
+    // 首页栏外观：主题、高对比度或用户样式变化时解析一次，经
+    // HomeChromeScope 交给底栏与各 Tab 的顶栏。
+    final barStyle = HomeBarResolvedStyle.resolve(
+      ref.watch(homeBarStyleProvider),
+      baseTheme.colorScheme,
+      highContrast: MediaQuery.highContrastOf(context),
+    );
+    final barBehavior = ref.watch(homeBarBehaviorProvider);
+    // 关闭“滚动时隐藏”或离开玻璃材质时直接复位隐藏态（正在 build，随后的
+    // 组装读的就是新值，不需要 setState）；重新开启后从显示状态开始。
+    _barHideOnScrollEnabled = barStyle.isGlass && barBehavior.hideOnScroll;
+    if (!_barHideOnScrollEnabled && _barHiddenByScroll) {
+      _barHiddenByScroll = false;
+      _barScrollHider.reset();
+    }
+
     // 别的页面请求回到日记 Tab（预览页里点日记本胶囊）。
     ref.listen<int>(homeDiariesTabRequestProvider, (_, _) {
       unawaited(_controller.switchToDiariesTab());
@@ -282,6 +340,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         baseTheme: baseTheme,
         snackBarTheme: snackBarTheme,
         navItems: navItems,
+        barStyle: barStyle,
+        barBehavior: barBehavior,
       );
     }
 
@@ -298,6 +358,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               baseTheme: baseTheme,
               snackBarTheme: snackBarTheme,
               navItems: navItems,
+              barStyle: barStyle,
+              barBehavior: barBehavior,
             );
           },
     );
@@ -307,34 +369,84 @@ class _HomePageState extends ConsumerState<HomePage> {
     required ThemeData baseTheme,
     required SnackBarThemeData snackBarTheme,
     required List<BottomNavItem> navItems,
+    required HomeBarResolvedStyle barStyle,
+    required HomeBarBehavior barBehavior,
   }) {
-    return Theme(
-      data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
-      child: PopScope(
-        // 目标 tab 会在点击时立即更新，返回键跟随目标态而不是动画前旧页。
-        canPop: _effectiveTab == HomeTab.diaries,
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) {
-            return;
-          }
-          // 其他 tab 按返回时先切回日记页，避免直接退出应用。
-          unawaited(_controller.switchToDiariesTab());
-        },
-        child: Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          resizeToAvoidBottomInset: false,
-          body: Stack(children: [_buildPageView(), _buildGlobalCreateFab()]),
-          bottomNavigationBar: LaunchReveal(
-            slot: LaunchRevealSlot.navigation,
-            child: BottomNav(
-              items: navItems,
-              selectedIndex: _effectiveIndex,
-              onTap: _controller.onTap,
+    // 并排新建按钮只属于玻璃底栏；其余情况保留浮在底栏上方的全局 FAB。
+    final inlineCreate =
+        barStyle.isGlass && barStyle.fabPlacement == HomeBarFabPlacement.inline;
+    // 包在 Scaffold 之上：各 Tab 页面（Scaffold 的 body）也要读到栏的外观。
+    return HomeChromeScope(
+      style: barStyle,
+      behavior: barBehavior,
+      child: Theme(
+        data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
+        child: PopScope(
+          // 目标 tab 会在点击时立即更新，返回键跟随目标态而不是动画前旧页。
+          canPop: _effectiveTab == HomeTab.diaries,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) {
+              return;
+            }
+            // 其他 tab 按返回时先切回日记页，避免直接退出应用。
+            unawaited(_controller.switchToDiariesTab());
+          },
+          child: Scaffold(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            resizeToAvoidBottomInset: false,
+            // 玻璃底栏悬浮在内容之上：内容延伸到屏幕底部，从胶囊下方透出。
+            extendBody: barStyle.isGlass,
+            body: Stack(
+              children: [
+                // 监听器始终挂着（关闭时直接放行）：按开关增删这一层会让整个
+                // PageView 连同保活的 Tab 页面重新挂载。
+                NotificationListener<ScrollNotification>(
+                  onNotification: _handleScrollForBar,
+                  child: _buildPageView(),
+                ),
+                if (!inlineCreate) _buildGlobalCreateFab(barStyle),
+              ],
+            ),
+            bottomNavigationBar: _buildBottomBar(
+              navItems: navItems,
+              barStyle: barStyle,
+              barBehavior: barBehavior,
+              inlineCreate: inlineCreate,
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// 首页内容的纵向滚动 → 底栏显隐（判定规则见 [HomeBarScrollHider]）。
+  /// 只读不拦截：始终返回 false，通知继续向上冒泡。
+  bool _handleScrollForBar(ScrollNotification notification) {
+    if (!_barHideOnScrollEnabled) {
+      return false;
+    }
+    final hidden = _barScrollHider.handle(notification);
+    if (hidden != null) {
+      _setBarHiddenByScroll(hidden);
+    }
+    return false;
+  }
+
+  /// 只在值变化时 setState，滚动中每帧的通知不会引起多余的重建。
+  void _setBarHiddenByScroll(bool hidden) {
+    if (!mounted || _barHiddenByScroll == hidden) {
+      return;
+    }
+    setState(() => _barHiddenByScroll = hidden);
+  }
+
+  /// 首页出现提示时让底栏回来：提示排在底栏槽位上方，底栏收起会让提示
+  /// 悬在半空。
+  void _handleHomeHintVisibility() {
+    if (widget.homeHintVisibleListenable.value) {
+      _barScrollHider.reset();
+      _setBarHiddenByScroll(false);
+    }
   }
 
   Widget _buildPageView() {
@@ -404,88 +516,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     // 日记页尚未注册入口（如首帧之前）：走同一条新建流程，不绕过草稿面板。
     await runDiaryCreateEntryFlow(context, ref);
-  }
-
-  /// “新建”FAB 只属于日记页：日历页的日期长按菜单已能在任意一天写日记或
-  /// 时间胶囊，再叠一个 FAB 会挡住当天日记列表的末尾。
-  Widget _buildGlobalCreateFab() {
-    final shouldShow =
-        _effectiveTab == HomeTab.diaries && _diariesFabVisibleByScroll;
-    final fabBaseBottomOffset = _fabBottomGapAboveNav;
-
-    final hintExtent = HomeHintVisibilityScope.maybeController(
-      context,
-    )?.hintExtentNotifier;
-    return ListenableBuilder(
-      listenable: Listenable.merge(<Listenable?>[
-        widget.homeHintVisibleListenable,
-        hintExtent,
-      ]),
-      builder: (context, child) {
-        final homeHintVisible = widget.homeHintVisibleListenable.value;
-        // 上移量取“实测提示高度 + 间隙”与默认值的较大者：双行提示或大字号
-        // 时 SnackBar 更高，固定 60dp 会让 FAB 压在提示上。
-        final measuredLift =
-            (hintExtent?.value ?? 0) + _fabGapAboveHint - fabBaseBottomOffset;
-        final fabBottomOffset =
-            fabBaseBottomOffset +
-            (homeHintVisible
-                ? math.max(_fabLiftOffsetWhenHintVisible, measuredLift)
-                : 0);
-        return AnimatedPositioned(
-          duration: ExpressiveMotion.duration(context, _fabLiftDuration),
-          curve: _fabLiftCurve,
-          right: AppSpacing.xl,
-          bottom: fabBottomOffset,
-          child: IgnorePointer(
-            ignoring: !shouldShow || !_canUseGlobalCreateFab,
-            child: AnimatedSlide(
-              duration: ExpressiveMotion.duration(
-                context,
-                _fabVisibilityDuration,
-              ),
-              curve: ExpressiveMotion.spatial,
-              offset: shouldShow ? Offset.zero : const Offset(0, 1.6),
-              child: AnimatedOpacity(
-                duration: ExpressiveMotion.duration(
-                  context,
-                  _fabVisibilityDuration,
-                ),
-                curve: _fabVisibilityCurve,
-                opacity: shouldShow ? 1 : 0,
-                child: LaunchReveal(
-                  slot: LaunchRevealSlot.action,
-                  // 只有按钮文字随日记页的范围变化：在普通日记本里为
-                  // “写进「旅行」”，新建的日记预先收进这本。
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final notebook = ref
-                          .watch(homeNotebookScopeResolutionProvider)
-                          .notebook;
-                      return FloatingActionButton.extended(
-                        onPressed: () {
-                          unawaited(_openCreateFromGlobalFab());
-                        },
-                        icon: const FaIcon(FontAwesomeIcons.plus, size: 20),
-                        label: Text(
-                          notebook != null && notebook.isManual
-                              ? context.l10n.notebookWriteInto(
-                                  shortNotebookName(notebook.name),
-                                )
-                              : context.l10n.commonNew,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 }
 

@@ -8,7 +8,9 @@ import 'package:node_diary/ui/settings/pages/app_features_page.dart';
 import 'package:node_diary/ui/settings/pages/data_privacy_page.dart';
 import 'package:node_diary/ui/settings/pages/editor_settings_page.dart';
 import 'package:node_diary/ui/settings/pages/tag_management_page.dart';
+import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../notebooks/pages/notebooks_page.dart';
 import '../../widgets/page_header.dart';
 import '../../../app/theme/app_effects.dart';
@@ -25,9 +27,16 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    // 玻璃顶栏底缘有细线，第一张卡片紧贴它显得挤（实色时同色无线、看不出
+    // 来），玻璃时多留 12，与探索页、日历页标题下的间距一致；实色时不变。
+    final glassTopGap = HomeChromeScope.glassTopBarsOf(context)
+        ? AppSpacing.m
+        : 0.0;
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
-    const listBottomPadding = 8.0;
+    // 玻璃底栏悬浮在内容之上时，底部 padding 是底栏槽位高度（实色时为 0）：
+    // 列表滚到胶囊下方，末尾多留这一段让最后一项完整露出。
+    final listBottomPadding = 8.0 + MediaQuery.paddingOf(context).bottom;
     final pageBgColor =
         pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
 
@@ -36,7 +45,7 @@ class SettingsPage extends StatelessWidget {
         Positioned.fill(child: ColoredBox(color: pageBgColor)),
         ListView(
           padding: EdgeInsets.only(
-            top: headerHeight,
+            top: headerHeight + glassTopGap,
             bottom: listBottomPadding,
           ),
           children: <Widget>[

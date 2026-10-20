@@ -6,6 +6,7 @@ import '../../../app/theme/app_radii.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../../app/theme/expressive_surfaces.dart';
+import '../../home/widgets/home_bar/home_chrome_scope.dart';
 import '../../widgets/expressive_menu/expressive_menu.dart';
 
 /// 日记列表布局模式。
@@ -247,14 +248,24 @@ class _SearchPreview extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isLight = colorScheme.brightness == Brightness.light;
 
+    // 玻璃顶栏上不透明的卡片色会挖出一块实心色块、遮住后面透出的内容；
+    // 改成在玻璃上轻轻压一层前景色，保留描边勾出胶囊轮廓。
+    final glassTopBars = HomeChromeScope.glassTopBarsOf(context);
+    final Color fill;
+    if (glassTopBars) {
+      fill = colorScheme.onSurface.withValues(alpha: isLight ? 0.05 : 0.08);
+    } else {
+      fill = isLight
+          ? ExpressiveSurfaces.cardColor(colorScheme)
+          : colorScheme.surfaceContainerHigh;
+    }
+
     // 未进入搜索页时展示的“可点击搜索预览条”，采用 Expressive 柔和胶囊风格。
     return Container(
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadii.nav),
-        color: isLight
-            ? ExpressiveSurfaces.cardColor(colorScheme)
-            : colorScheme.surfaceContainerHigh,
+        color: fill,
         border: Border.all(
           color: ExpressiveSurfaces.cardBorderColor(colorScheme),
           width: 0.8,

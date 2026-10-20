@@ -5,6 +5,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_card_style_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_diary_preview_style_tile.dart';
+import 'package:node_diary/ui/settings/sections/settings_home_bar_style_tile.dart';
 import 'package:node_diary/ui/settings/sections/settings_theme_section.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
@@ -102,6 +103,7 @@ class AppearanceLanguagePage extends ConsumerWidget {
           const SizedBox(height: 16),
           SettingsCardGroup(
             children: <Widget>[
+              SettingsHomeBarStyleTile(settingsAsync: settingsAsync),
               SettingsDiaryCardStyleTile(settingsAsync: settingsAsync),
               SettingsDiaryPreviewStyleTile(settingsAsync: settingsAsync),
               settingsAsync.when(

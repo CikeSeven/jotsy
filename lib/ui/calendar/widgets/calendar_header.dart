@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 
 /// 日历的 Expressive 双行页头。月份控制单独成行，避免窄屏或英文标题
 /// 与居中的月份导航重叠。仅组合 UI，月份切换与选日仍由调用方负责。
+///
+/// 底由 [HomeTopBarSurface] 画（含状态栏区域）：实色时与原来的 surface 色块
+/// 一致；首页顶栏用玻璃时换成玻璃，日历内容从页头后透出并被模糊。
 class CalendarHeader extends StatelessWidget {
   const CalendarHeader({
     super.key,
@@ -62,8 +66,8 @@ class CalendarHeader extends StatelessWidget {
       top: 0,
       left: 0,
       right: 0,
-      child: ColoredBox(
-        color: theme.colorScheme.surface,
+      child: HomeTopBarSurface(
+        solidColor: theme.colorScheme.surface,
         child: Padding(
           padding: EdgeInsets.fromLTRB(
             16,

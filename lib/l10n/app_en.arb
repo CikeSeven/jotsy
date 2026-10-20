@@ -10266,5 +10266,311 @@
         "type": "String"
       }
     }
+  },
+  "homeBarStyleTitle": "Navigation bar style",
+  "@homeBarStyleTitle": {
+    "description": "Navigation bar style settings: page title and appearance entry title."
+  },
+  "homeBarStyleEntrySubtitle": "Current: {name}",
+  "@homeBarStyleEntrySubtitle": {
+    "description": "Navigation bar style settings: entry subtitle with the current preset, saved style name or material plus “custom”.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBarStyleCustomName": "{material} (custom)",
+  "@homeBarStyleCustomName": {
+    "description": "Navigation bar style settings: display name when the look matches no preset or saved style; material is “Solid” or “Glass”.",
+    "placeholders": {
+      "material": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBarStyleTabPresets": "Presets",
+  "@homeBarStyleTabPresets": {
+    "description": "Navigation bar style settings: presets tab."
+  },
+  "homeBarStyleTabMaterial": "Material",
+  "@homeBarStyleTabMaterial": {
+    "description": "Navigation bar style settings: material tab and group title."
+  },
+  "homeBarStyleTabFloating": "Floating bar",
+  "@homeBarStyleTabFloating": {
+    "description": "Navigation bar style settings: floating bar tab."
+  },
+  "homeBarStyleTabItems": "Items",
+  "@homeBarStyleTabItems": {
+    "description": "Navigation bar style settings: navigation items tab."
+  },
+  "homeBarStyleTabBehavior": "Behavior",
+  "@homeBarStyleTabBehavior": {
+    "description": "Navigation bar style settings: behavior tab."
+  },
+  "homeBarStylePresetClassic": "Classic",
+  "@homeBarStylePresetClassic": {
+    "description": "Navigation bar style preset: classic (solid) name."
+  },
+  "homeBarStylePresetClassicDesc": "The solid bottom bar from before the redesign",
+  "@homeBarStylePresetClassicDesc": {
+    "description": "Navigation bar style preset: classic description."
+  },
+  "homeBarStylePresetGlass": "Glass",
+  "@homeBarStylePresetGlass": {
+    "description": "Navigation bar style preset: glass name."
+  },
+  "homeBarStylePresetGlassDesc": "A frosted floating bar with a filled selection",
+  "@homeBarStylePresetGlassDesc": {
+    "description": "Navigation bar style preset: glass description."
+  },
+  "homeBarStylePresetClear": "Clear",
+  "@homeBarStylePresetClear": {
+    "description": "Navigation bar style preset: clear name."
+  },
+  "homeBarStylePresetClearDesc": "Clearer glass without a shadow",
+  "@homeBarStylePresetClearDesc": {
+    "description": "Navigation bar style preset: clear description."
+  },
+  "homeBarStylePresetFrosted": "Misty",
+  "@homeBarStylePresetFrosted": {
+    "description": "Navigation bar style preset: frosted (misty) name."
+  },
+  "homeBarStylePresetFrostedDesc": "Heavier frost for the clearest labels",
+  "@homeBarStylePresetFrostedDesc": {
+    "description": "Navigation bar style preset: frosted description."
+  },
+  "homeBarStylePresetTinted": "Tinted",
+  "@homeBarStylePresetTinted": {
+    "description": "Navigation bar style preset: tinted name."
+  },
+  "homeBarStylePresetTintedDesc": "Glass with a hint of the theme color",
+  "@homeBarStylePresetTintedDesc": {
+    "description": "Navigation bar style preset: tinted description."
+  },
+  "homeBarStylePresetCompact": "Compact",
+  "@homeBarStylePresetCompact": {
+    "description": "Navigation bar style preset: compact name."
+  },
+  "homeBarStylePresetCompactDesc": "A shorter floating bar with icons only",
+  "@homeBarStylePresetCompactDesc": {
+    "description": "Navigation bar style preset: compact description."
+  },
+  "homeBarStyleMaterialSolid": "Solid",
+  "@homeBarStyleMaterialSolid": {
+    "description": "Navigation bar style settings: solid material option."
+  },
+  "homeBarStyleMaterialGlass": "Glass",
+  "@homeBarStyleMaterialGlass": {
+    "description": "Navigation bar style settings: glass material option."
+  },
+  "homeBarStyleGlassFooter": "With glass, the bottom bar floats over the page, and content scrolling beneath it shows through blurred.",
+  "@homeBarStyleGlassFooter": {
+    "description": "Navigation bar style settings: material group footer when glass is selected."
+  },
+  "homeBarStyleHighContrastNote": "High contrast is on in system settings, so the glass shows as opaque for now.",
+  "@homeBarStyleHighContrastNote": {
+    "description": "Navigation bar style settings: note appended to the material footer while system high contrast is on."
+  },
+  "homeBarStyleGlassTopBars": "Glass top bars too",
+  "@homeBarStyleGlassTopBars": {
+    "description": "Navigation bar style settings: switch for using glass on the top bars too."
+  },
+  "homeBarStyleGlassTopBarsSubtitle": "The Diaries, Calendar, Explore and Settings top bars turn frosted as well",
+  "@homeBarStyleGlassTopBarsSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the glass top bars switch."
+  },
+  "homeBarStyleTopBarHairline": "Top bar divider",
+  "@homeBarStyleTopBarHairline": {
+    "description": "Navigation bar style settings: switch for the thin divider under the glass top bars; shown only while glass top bars are on."
+  },
+  "homeBarStyleTopBarHairlineSubtitle": "A thin line along the bottom of the glass top bars",
+  "@homeBarStyleTopBarHairlineSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the top bar divider switch."
+  },
+  "homeBarStyleBlur": "Blur",
+  "@homeBarStyleBlur": {
+    "description": "Navigation bar style settings: glass blur slider."
+  },
+  "homeBarStyleOpacity": "Opacity",
+  "@homeBarStyleOpacity": {
+    "description": "Navigation bar style settings: glass tint opacity slider."
+  },
+  "homeBarStyleTint": "Tint",
+  "@homeBarStyleTint": {
+    "description": "Navigation bar style settings: glass tint choice."
+  },
+  "homeBarStyleTintNeutral": "Neutral",
+  "@homeBarStyleTintNeutral": {
+    "description": "Navigation bar style settings: neutral tint option."
+  },
+  "homeBarStyleTintTheme": "Theme",
+  "@homeBarStyleTintTheme": {
+    "description": "Navigation bar style settings: theme color tint option."
+  },
+  "homeBarStyleTintColor": "Glass color",
+  "@homeBarStyleTintColor": {
+    "description": "Navigation bar style settings: glass color row for the custom tint."
+  },
+  "homeBarStyleBorder": "Bottom bar outline",
+  "@homeBarStyleBorder": {
+    "description": "Navigation bar style settings: outline switch of the floating glass bottom bar."
+  },
+  "homeBarStyleBorderSubtitle": "A thin line along the edge of the floating bar",
+  "@homeBarStyleBorderSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the bottom bar outline switch."
+  },
+  "homeBarStyleOutlineGroup": "Outlines",
+  "@homeBarStyleOutlineGroup": {
+    "description": "Navigation bar style settings: title of the outline group on the material tab (bottom bar outline and top bar divider)."
+  },
+  "homeBarStyleLineColor": "Color",
+  "@homeBarStyleLineColor": {
+    "description": "Navigation bar style settings: color source row of an outline or divider."
+  },
+  "homeBarStyleLineColorTheme": "Default",
+  "@homeBarStyleLineColorTheme": {
+    "description": "Navigation bar style settings: outline color option using the theme's outline color."
+  },
+  "homeBarStyleLineColorHighlight": "Highlight",
+  "@homeBarStyleLineColorHighlight": {
+    "description": "Navigation bar style settings: outline color option, a bright color like light catching the edge of glass."
+  },
+  "homeBarStyleLineColorPrimary": "Accent",
+  "@homeBarStyleLineColorPrimary": {
+    "description": "Navigation bar style settings: outline color option using the theme's primary color."
+  },
+  "homeBarStyleLineCustomColor": "Line color",
+  "@homeBarStyleLineCustomColor": {
+    "description": "Navigation bar style settings: picker row for a custom outline or divider color."
+  },
+  "homeBarStyleLineWidth": "Width",
+  "@homeBarStyleLineWidth": {
+    "description": "Navigation bar style settings: outline or divider width slider."
+  },
+  "homeBarStyleShadow": "Shadow",
+  "@homeBarStyleShadow": {
+    "description": "Navigation bar style settings: floating bar shadow switch."
+  },
+  "homeBarStyleShadowSubtitle": "A soft shadow beneath the floating bar",
+  "@homeBarStyleShadowSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the shadow switch."
+  },
+  "homeBarStyleFloatingSolidHint": "The floating bar is only used with the glass material.",
+  "@homeBarStyleFloatingSolidHint": {
+    "description": "Navigation bar style settings: floating bar tab hint while the material is solid."
+  },
+  "homeBarStyleSwitchToGlass": "Switch to glass",
+  "@homeBarStyleSwitchToGlass": {
+    "description": "Navigation bar style settings: button in the floating bar tab that switches to the glass material."
+  },
+  "homeBarStyleSizeGroup": "Size",
+  "@homeBarStyleSizeGroup": {
+    "description": "Navigation bar style settings: floating bar size group title."
+  },
+  "homeBarStyleHeight": "Height",
+  "@homeBarStyleHeight": {
+    "description": "Navigation bar style settings: floating bar height slider."
+  },
+  "homeBarStyleCornerRadius": "Corner radius",
+  "@homeBarStyleCornerRadius": {
+    "description": "Navigation bar style settings: floating bar corner radius slider."
+  },
+  "homeBarStyleSideMargin": "Side margins",
+  "@homeBarStyleSideMargin": {
+    "description": "Navigation bar style settings: slider for the floating bar's distance from the screen sides."
+  },
+  "homeBarStyleBottomGap": "Distance from bottom",
+  "@homeBarStyleBottomGap": {
+    "description": "Navigation bar style settings: slider for the floating bar's distance from the screen bottom."
+  },
+  "homeBarStyleFabGroup": "New button",
+  "@homeBarStyleFabGroup": {
+    "description": "Navigation bar style settings: new button placement group title."
+  },
+  "homeBarStyleFabAbove": "Above the bar",
+  "@homeBarStyleFabAbove": {
+    "description": "Navigation bar style settings: new button placed above the floating bar."
+  },
+  "homeBarStyleFabInline": "Beside the bar",
+  "@homeBarStyleFabInline": {
+    "description": "Navigation bar style settings: new button placed beside the floating bar."
+  },
+  "homeBarStyleFabFooter": "Only shown on the Diaries page; beside the bar it shows just the icon.",
+  "@homeBarStyleFabFooter": {
+    "description": "Navigation bar style settings: new button group footer."
+  },
+  "homeBarStyleLabels": "Labels",
+  "@homeBarStyleLabels": {
+    "description": "Navigation bar style settings: navigation item label mode."
+  },
+  "homeBarStyleLabelsAlways": "Always",
+  "@homeBarStyleLabelsAlways": {
+    "description": "Navigation bar style settings: labels always shown."
+  },
+  "homeBarStyleLabelsSelected": "Selected only",
+  "@homeBarStyleLabelsSelected": {
+    "description": "Navigation bar style settings: only the selected item shows its label."
+  },
+  "homeBarStyleLabelsNever": "Hidden",
+  "@homeBarStyleLabelsNever": {
+    "description": "Navigation bar style settings: labels hidden."
+  },
+  "homeBarStyleIconSize": "Icon size",
+  "@homeBarStyleIconSize": {
+    "description": "Navigation bar style settings: navigation item icon size slider."
+  },
+  "homeBarStyleLabelGap": "Icon to label spacing",
+  "@homeBarStyleLabelGap": {
+    "description": "Navigation bar style settings: slider for the distance between a navigation item icon and its label."
+  },
+  "homeBarStyleIndicator": "Selection indicator",
+  "@homeBarStyleIndicator": {
+    "description": "Navigation bar style settings: selection indicator style."
+  },
+  "homeBarStyleIndicatorCapsule": "Capsule",
+  "@homeBarStyleIndicatorCapsule": {
+    "description": "Navigation bar style settings: capsule indicator."
+  },
+  "homeBarStyleIndicatorBlock": "Block",
+  "@homeBarStyleIndicatorBlock": {
+    "description": "Navigation bar style settings: block indicator covering the selected item."
+  },
+  "homeBarStyleIndicatorNone": "None",
+  "@homeBarStyleIndicatorNone": {
+    "description": "Navigation bar style settings: no indicator."
+  },
+  "homeBarStyleBlockPadding": "Block padding",
+  "@homeBarStyleBlockPadding": {
+    "description": "Navigation bar style settings: slider for the space between the block indicator and the icon and label; shown only for the block indicator."
+  },
+  "homeBarStyleItemsFooter": "Switching to glass tightens the icon to label spacing a little.",
+  "@homeBarStyleItemsFooter": {
+    "description": "Navigation bar style settings: navigation items group footer explaining that the spacing follows the material."
+  },
+  "homeBarStyleBehaviorFooter": "Behavior doesn't change with presets or style codes.",
+  "@homeBarStyleBehaviorFooter": {
+    "description": "Navigation bar style settings: behavior group footer."
+  },
+  "homeBarStyleHideOnScroll": "Hide the bar when scrolling down",
+  "@homeBarStyleHideOnScroll": {
+    "description": "Navigation bar style settings: switch for hiding the bottom bar when scrolling down."
+  },
+  "homeBarStyleHideOnScrollSubtitle": "Makes room while you scroll down, and comes back when you scroll up or reach the top",
+  "@homeBarStyleHideOnScrollSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the hide-on-scroll switch."
+  },
+  "homeBarStyleHideOnScrollSolidHint": "Hiding on scroll is only available with the floating glass bar.",
+  "@homeBarStyleHideOnScrollSolidHint": {
+    "description": "Navigation bar style settings: footer shown instead of the hide-on-scroll switch while the material is solid."
+  },
+  "homeBarStyleIndicatorFollows": "Indicator follows swipes",
+  "@homeBarStyleIndicatorFollows": {
+    "description": "Navigation bar style settings: switch for the indicator following swipes."
+  },
+  "homeBarStyleIndicatorFollowsSubtitle": "When swiping between pages, the selection indicator moves with your finger",
+  "@homeBarStyleIndicatorFollowsSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the indicator-follows-swipes switch."
   }
 }

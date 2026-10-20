@@ -6,6 +6,8 @@ import 'package:loading_indicator_m3e/loading_indicator_m3e.dart' as m3e;
 import 'package:node_diary/app/theme/expressive_controls.dart';
 import 'package:node_diary/app/theme/theme.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_nav_bar.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
@@ -219,10 +221,17 @@ void main() {
         ),
       ),
     );
+    // 越界的选中项夹到最后一项：语义上只有它是“已选中”。
+    final semantics = tester.ensureSemantics();
     expect(
-      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-      1,
+      tester.getSemantics(find.byType(HomeNavDestination).last),
+      isSemantics(isSelected: true, label: 'Settings\nTab 2 of 2'),
     );
+    expect(
+      tester.getSemantics(find.byType(HomeNavDestination).first),
+      isSemantics(isSelected: false),
+    );
+    semantics.dispose();
     await tester.tap(find.text('Diaries'));
     expect(tapped, 0);
     await tester.pumpWidget(
@@ -230,7 +239,7 @@ void main() {
         child: BottomNav(items: const [], selectedIndex: -1, onTap: (_) {}),
       ),
     );
-    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(HomeNavBar), findsNothing);
     await tester.pumpWidget(
       _app(
         child: BottomNav(

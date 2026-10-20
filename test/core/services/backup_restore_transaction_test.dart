@@ -73,6 +73,9 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"v":1,"current":{"page":{"paper":"ink"}}}',
         );
         await fixture.settings.setDiaryCodeBlockStyleRaw('{"theme":"nord"}');
+        await fixture.settings.setHomeBarStyleRaw(
+          '{"v":1,"current":{"material":"glass"}}',
+        );
         await fixture.settings.setDiaryShareOptionsRaw('{"title":false}');
         await fixture.settings.setDiaryExportOptionsRaw('{"format":"word"}');
         await fixture.settings.setDiaryTemplatePrefsRaw(
@@ -100,6 +103,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['diaryCardStyleRaw'] = '{"v":1,"saved":[]}';
         settings['diaryPreviewStyleRaw'] = '{"v":1,"current":{}}';
         settings['diaryCodeBlockStyleRaw'] = '{"theme":"dracula"}';
+        settings['homeBarStyleRaw'] = '{"v":1,"current":{"blurSigma":4}}';
         settings['diaryShareOptionsRaw'] = '{"title":true}';
         settings['diaryExportOptionsRaw'] = '{"format":"csv"}';
         settings['diaryTemplatePrefsRaw'] = '{"v":1,"auto":"builtin.daily"}';
@@ -145,6 +149,10 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           fixture.settings.diaryCodeBlockStyleRawNotifier.value,
           '{"theme":"nord"}',
         );
+        expect(
+          fixture.settings.homeBarStyleRaw,
+          '{"v":1,"current":{"material":"glass"}}',
+        );
         expect(fixture.settings.diaryShareOptionsRaw, '{"title":false}');
         expect(fixture.settings.diaryExportOptionsRaw, '{"format":"word"}');
         expect(fixture.settings.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
@@ -158,6 +166,10 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         expect(
           recreated.diaryPreviewStyleRaw,
           '{"v":1,"current":{"page":{"paper":"ink"}}}',
+        );
+        expect(
+          recreated.homeBarStyleRaw,
+          '{"v":1,"current":{"material":"glass"}}',
         );
         expect(recreated.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
         expect(recreated.diaryCodeBlockStyleRaw, '{"theme":"nord"}');

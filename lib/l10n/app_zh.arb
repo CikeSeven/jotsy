@@ -10267,6 +10267,312 @@
       }
     }
   },
+  "homeBarStyleTitle": "导航栏样式",
+  "@homeBarStyleTitle": {
+    "description": "导航栏样式设置页：页面标题与外观页入口标题。"
+  },
+  "homeBarStyleEntrySubtitle": "当前：{name}",
+  "@homeBarStyleEntrySubtitle": {
+    "description": "导航栏样式设置：入口副标题，显示当前预设、我的样式名或材质加“自定义”。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBarStyleCustomName": "{material}（自定义）",
+  "@homeBarStyleCustomName": {
+    "description": "导航栏样式设置：当前外观不是任何预设或我的样式时的显示名；material 为“实色”或“玻璃”。",
+    "placeholders": {
+      "material": {
+        "type": "String"
+      }
+    }
+  },
+  "homeBarStyleTabPresets": "预设",
+  "@homeBarStyleTabPresets": {
+    "description": "导航栏样式设置页：预设标签页。"
+  },
+  "homeBarStyleTabMaterial": "材质",
+  "@homeBarStyleTabMaterial": {
+    "description": "导航栏样式设置页：材质标签页与分组标题。"
+  },
+  "homeBarStyleTabFloating": "悬浮栏",
+  "@homeBarStyleTabFloating": {
+    "description": "导航栏样式设置页：悬浮栏标签页。"
+  },
+  "homeBarStyleTabItems": "导航项",
+  "@homeBarStyleTabItems": {
+    "description": "导航栏样式设置页：导航项标签页。"
+  },
+  "homeBarStyleTabBehavior": "行为",
+  "@homeBarStyleTabBehavior": {
+    "description": "导航栏样式设置页：行为标签页。"
+  },
+  "homeBarStylePresetClassic": "经典",
+  "@homeBarStylePresetClassic": {
+    "description": "导航栏样式预设：经典（实色）名称。"
+  },
+  "homeBarStylePresetClassicDesc": "改版前的实色底栏",
+  "@homeBarStylePresetClassicDesc": {
+    "description": "导航栏样式预设：经典的说明。"
+  },
+  "homeBarStylePresetGlass": "玻璃",
+  "@homeBarStylePresetGlass": {
+    "description": "导航栏样式预设：玻璃名称。"
+  },
+  "homeBarStylePresetGlassDesc": "磨砂悬浮栏，选中项用色块",
+  "@homeBarStylePresetGlassDesc": {
+    "description": "导航栏样式预设：玻璃的说明。"
+  },
+  "homeBarStylePresetClear": "通透",
+  "@homeBarStylePresetClear": {
+    "description": "导航栏样式预设：通透名称。"
+  },
+  "homeBarStylePresetClearDesc": "更通透的玻璃，不加阴影",
+  "@homeBarStylePresetClearDesc": {
+    "description": "导航栏样式预设：通透的说明。"
+  },
+  "homeBarStylePresetFrosted": "浓雾",
+  "@homeBarStylePresetFrosted": {
+    "description": "导航栏样式预设：浓雾名称。"
+  },
+  "homeBarStylePresetFrostedDesc": "更浓的磨砂，文字最清楚",
+  "@homeBarStylePresetFrostedDesc": {
+    "description": "导航栏样式预设：浓雾的说明。"
+  },
+  "homeBarStylePresetTinted": "主题色",
+  "@homeBarStylePresetTinted": {
+    "description": "导航栏样式预设：主题色名称。"
+  },
+  "homeBarStylePresetTintedDesc": "玻璃里带一点主题色",
+  "@homeBarStylePresetTintedDesc": {
+    "description": "导航栏样式预设：主题色的说明。"
+  },
+  "homeBarStylePresetCompact": "紧凑",
+  "@homeBarStylePresetCompact": {
+    "description": "导航栏样式预设：紧凑名称。"
+  },
+  "homeBarStylePresetCompactDesc": "更矮的悬浮栏，只有图标",
+  "@homeBarStylePresetCompactDesc": {
+    "description": "导航栏样式预设：紧凑的说明。"
+  },
+  "homeBarStyleMaterialSolid": "实色",
+  "@homeBarStyleMaterialSolid": {
+    "description": "导航栏样式设置：实色材质选项。"
+  },
+  "homeBarStyleMaterialGlass": "玻璃",
+  "@homeBarStyleMaterialGlass": {
+    "description": "导航栏样式设置：玻璃材质选项。"
+  },
+  "homeBarStyleGlassFooter": "玻璃材质下底栏悬浮在页面上，内容从栏下滚过时透出模糊。",
+  "@homeBarStyleGlassFooter": {
+    "description": "导航栏样式设置：选中玻璃材质时材质分组的附注。"
+  },
+  "homeBarStyleHighContrastNote": "系统开启了高对比度，玻璃暂时显示为不透明。",
+  "@homeBarStyleHighContrastNote": {
+    "description": "导航栏样式设置：系统开启高对比度时追加在材质附注后的说明。"
+  },
+  "homeBarStyleGlassTopBars": "顶栏也用玻璃",
+  "@homeBarStyleGlassTopBars": {
+    "description": "导航栏样式设置：顶栏是否也用玻璃的开关。"
+  },
+  "homeBarStyleGlassTopBarsSubtitle": "日记、日历、探索、设置的顶栏一起变成磨砂",
+  "@homeBarStyleGlassTopBarsSubtitle": {
+    "description": "导航栏样式设置：顶栏玻璃开关的说明。"
+  },
+  "homeBarStyleTopBarHairline": "顶栏分隔线",
+  "@homeBarStyleTopBarHairline": {
+    "description": "导航栏样式设置：玻璃顶栏底部分隔线的开关，只在顶栏也用玻璃时出现。"
+  },
+  "homeBarStyleTopBarHairlineSubtitle": "玻璃顶栏底部的细线",
+  "@homeBarStyleTopBarHairlineSubtitle": {
+    "description": "导航栏样式设置：顶栏分隔线开关的说明。"
+  },
+  "homeBarStyleBlur": "模糊强度",
+  "@homeBarStyleBlur": {
+    "description": "导航栏样式设置：玻璃模糊强度滑块。"
+  },
+  "homeBarStyleOpacity": "不透明度",
+  "@homeBarStyleOpacity": {
+    "description": "导航栏样式设置：玻璃底色不透明度滑块。"
+  },
+  "homeBarStyleTint": "色调",
+  "@homeBarStyleTint": {
+    "description": "导航栏样式设置：玻璃底色方案选择。"
+  },
+  "homeBarStyleTintNeutral": "中性",
+  "@homeBarStyleTintNeutral": {
+    "description": "导航栏样式设置：中性色调选项。"
+  },
+  "homeBarStyleTintTheme": "主题色",
+  "@homeBarStyleTintTheme": {
+    "description": "导航栏样式设置：主题色调选项。"
+  },
+  "homeBarStyleTintColor": "玻璃颜色",
+  "@homeBarStyleTintColor": {
+    "description": "导航栏样式设置：自定义色调时的玻璃颜色行。"
+  },
+  "homeBarStyleBorder": "底栏描边",
+  "@homeBarStyleBorder": {
+    "description": "导航栏样式设置：悬浮玻璃底栏的描边开关。"
+  },
+  "homeBarStyleBorderSubtitle": "悬浮栏边缘的细线",
+  "@homeBarStyleBorderSubtitle": {
+    "description": "导航栏样式设置：底栏描边开关的说明。"
+  },
+  "homeBarStyleOutlineGroup": "描边",
+  "@homeBarStyleOutlineGroup": {
+    "description": "导航栏样式设置：材质页中描边分组的标题（底栏描边与顶栏分隔线）。"
+  },
+  "homeBarStyleLineColor": "颜色",
+  "@homeBarStyleLineColor": {
+    "description": "导航栏样式设置：描边 / 分隔线的颜色来源选择行。"
+  },
+  "homeBarStyleLineColorTheme": "默认",
+  "@homeBarStyleLineColorTheme": {
+    "description": "导航栏样式设置：描边颜色选项，使用主题的轮廓色。"
+  },
+  "homeBarStyleLineColorHighlight": "高光",
+  "@homeBarStyleLineColorHighlight": {
+    "description": "导航栏样式设置：描边颜色选项，像玻璃边缘反光的明亮颜色。"
+  },
+  "homeBarStyleLineColorPrimary": "主题色",
+  "@homeBarStyleLineColorPrimary": {
+    "description": "导航栏样式设置：描边颜色选项，使用主题色。"
+  },
+  "homeBarStyleLineCustomColor": "描边颜色",
+  "@homeBarStyleLineCustomColor": {
+    "description": "导航栏样式设置：自定义描边 / 分隔线颜色的取色行。"
+  },
+  "homeBarStyleLineWidth": "粗细",
+  "@homeBarStyleLineWidth": {
+    "description": "导航栏样式设置：描边 / 分隔线粗细滑块。"
+  },
+  "homeBarStyleShadow": "阴影",
+  "@homeBarStyleShadow": {
+    "description": "导航栏样式设置：悬浮栏阴影开关。"
+  },
+  "homeBarStyleShadowSubtitle": "悬浮栏下方的柔和投影",
+  "@homeBarStyleShadowSubtitle": {
+    "description": "导航栏样式设置：阴影开关的说明。"
+  },
+  "homeBarStyleFloatingSolidHint": "悬浮栏只在玻璃材质下使用。",
+  "@homeBarStyleFloatingSolidHint": {
+    "description": "导航栏样式设置：实色材质时悬浮栏标签页的说明。"
+  },
+  "homeBarStyleSwitchToGlass": "切换到玻璃",
+  "@homeBarStyleSwitchToGlass": {
+    "description": "导航栏样式设置：悬浮栏标签页里切换到玻璃材质的按钮。"
+  },
+  "homeBarStyleSizeGroup": "尺寸",
+  "@homeBarStyleSizeGroup": {
+    "description": "导航栏样式设置：悬浮栏尺寸分组标题。"
+  },
+  "homeBarStyleHeight": "高度",
+  "@homeBarStyleHeight": {
+    "description": "导航栏样式设置：悬浮栏高度滑块。"
+  },
+  "homeBarStyleCornerRadius": "圆角",
+  "@homeBarStyleCornerRadius": {
+    "description": "导航栏样式设置：悬浮栏圆角滑块。"
+  },
+  "homeBarStyleSideMargin": "两侧边距",
+  "@homeBarStyleSideMargin": {
+    "description": "导航栏样式设置：悬浮栏与屏幕两侧距离滑块。"
+  },
+  "homeBarStyleBottomGap": "离底距离",
+  "@homeBarStyleBottomGap": {
+    "description": "导航栏样式设置：悬浮栏与屏幕底部距离滑块。"
+  },
+  "homeBarStyleFabGroup": "新建按钮",
+  "@homeBarStyleFabGroup": {
+    "description": "导航栏样式设置：新建按钮位置分组标题。"
+  },
+  "homeBarStyleFabAbove": "栏上方",
+  "@homeBarStyleFabAbove": {
+    "description": "导航栏样式设置：新建按钮放在悬浮栏上方。"
+  },
+  "homeBarStyleFabInline": "栏右侧",
+  "@homeBarStyleFabInline": {
+    "description": "导航栏样式设置：新建按钮放在悬浮栏右侧。"
+  },
+  "homeBarStyleFabFooter": "只在日记页出现；放在栏右侧时只显示图标。",
+  "@homeBarStyleFabFooter": {
+    "description": "导航栏样式设置：新建按钮分组的附注。"
+  },
+  "homeBarStyleLabels": "文字",
+  "@homeBarStyleLabels": {
+    "description": "导航栏样式设置：导航项文字显示方式。"
+  },
+  "homeBarStyleLabelsAlways": "始终显示",
+  "@homeBarStyleLabelsAlways": {
+    "description": "导航栏样式设置：导航项文字始终显示。"
+  },
+  "homeBarStyleLabelsSelected": "仅选中项",
+  "@homeBarStyleLabelsSelected": {
+    "description": "导航栏样式设置：只有选中项显示文字。"
+  },
+  "homeBarStyleLabelsNever": "不显示",
+  "@homeBarStyleLabelsNever": {
+    "description": "导航栏样式设置：导航项不显示文字。"
+  },
+  "homeBarStyleIconSize": "图标大小",
+  "@homeBarStyleIconSize": {
+    "description": "导航栏样式设置：导航项图标大小滑块。"
+  },
+  "homeBarStyleLabelGap": "图标与文字间距",
+  "@homeBarStyleLabelGap": {
+    "description": "导航栏样式设置：导航项图标与文字之间距离的滑块。"
+  },
+  "homeBarStyleIndicator": "选中指示器",
+  "@homeBarStyleIndicator": {
+    "description": "导航栏样式设置：选中指示器样式。"
+  },
+  "homeBarStyleIndicatorCapsule": "胶囊",
+  "@homeBarStyleIndicatorCapsule": {
+    "description": "导航栏样式设置：胶囊指示器。"
+  },
+  "homeBarStyleIndicatorBlock": "色块",
+  "@homeBarStyleIndicatorBlock": {
+    "description": "导航栏样式设置：盖住选中项的色块指示器。"
+  },
+  "homeBarStyleIndicatorNone": "无",
+  "@homeBarStyleIndicatorNone": {
+    "description": "导航栏样式设置：不画指示器。"
+  },
+  "homeBarStyleBlockPadding": "色块内边距",
+  "@homeBarStyleBlockPadding": {
+    "description": "导航栏样式设置：色块指示器与图标、文字之间留白的滑块，只在选了色块时出现。"
+  },
+  "homeBarStyleItemsFooter": "切换到玻璃时，图标与文字间距会自动收紧一些。",
+  "@homeBarStyleItemsFooter": {
+    "description": "导航栏样式设置：导航项分组的附注，说明换材质时间距的联动。"
+  },
+  "homeBarStyleBehaviorFooter": "行为不随预设和样式码改变。",
+  "@homeBarStyleBehaviorFooter": {
+    "description": "导航栏样式设置：行为分组的附注。"
+  },
+  "homeBarStyleHideOnScroll": "下滑时收起底栏",
+  "@homeBarStyleHideOnScroll": {
+    "description": "导航栏样式设置：下滑收起底栏的开关。"
+  },
+  "homeBarStyleHideOnScrollSubtitle": "往下浏览时让出空间，往上滑或回到顶部时出现",
+  "@homeBarStyleHideOnScrollSubtitle": {
+    "description": "导航栏样式设置：下滑收起开关的说明。"
+  },
+  "homeBarStyleHideOnScrollSolidHint": "下滑收起只在玻璃悬浮栏下可用。",
+  "@homeBarStyleHideOnScrollSolidHint": {
+    "description": "导航栏样式设置：实色材质时代替下滑收起开关的附注。"
+  },
+  "homeBarStyleIndicatorFollows": "指示器跟随滑动",
+  "@homeBarStyleIndicatorFollows": {
+    "description": "导航栏样式设置：指示器跟随滑动的开关。"
+  },
+  "homeBarStyleIndicatorFollowsSubtitle": "左右滑动切换页面时，选中指示器跟着手指移动",
+  "@homeBarStyleIndicatorFollowsSubtitle": {
+    "description": "导航栏样式设置：指示器跟随滑动开关的说明。"
+  },
   "codeBlockPanelTitle": "代码块",
   "@codeBlockPanelTitle": {
     "description": "代码块语言面板的标题。"

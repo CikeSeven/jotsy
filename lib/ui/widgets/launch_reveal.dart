@@ -71,26 +71,52 @@ class LaunchRevealSlot {
       LaunchReveal.duration.inMicroseconds;
 }
 
+/// [LaunchReveal.builder] 的构建函数：[opacity] 为该槽位当前（已过 effects
+/// 曲线）的不透明度，由调用方自行用在不能放进 Opacity 的地方。
+typedef LaunchRevealBuilder =
+    Widget Function(BuildContext context, double opacity, Widget? child);
+
 /// 让区块按 [slot] 加入启动编排：透明度走 effects 淡入，位移与缩放走
 /// spatial 微弹簧落位。
 ///
 /// 没有 [LaunchRevealScope]（其他路由、单独挂载的测试）时原样返回子树。
 /// 有 scope 时包装结构恒定为 Opacity → Transform，编排结束后三者都是恒等值，
 /// 不会因为编排结束而改变子树结构、触发卡片重新挂载。
+///
+/// [LaunchReveal.builder] 是不套 Opacity 的变体：位移与缩放相同，透明度
+/// 交给调用方。给毛玻璃表面用——背景模糊放进 Opacity 后只能采到透明层
+/// 自己，显现途中会先闪一下没有模糊的底；玻璃改经 `GlassSurface.progress`
+/// 按比例显现。有 scope 时结构恒定为 Transform → builder 的结果；没有 scope
+/// 时直接返回 `builder(context, 1, child)`，不加任何包装。
 class LaunchReveal extends StatelessWidget {
-  const LaunchReveal({super.key, required this.slot, required this.child});
+  const LaunchReveal({
+    super.key,
+    required this.slot,
+    required Widget this.child,
+  }) : builder = null;
+
+  /// 不套 Opacity 的变体，见类注释。[child] 原样传给 [builder]，不随进度
+  /// 重建。
+  const LaunchReveal.builder({
+    super.key,
+    required this.slot,
+    required LaunchRevealBuilder this.builder,
+    this.child,
+  });
 
   /// 整段编排时长。
   static const Duration duration = ExpressiveMotion.long;
 
   final LaunchRevealSlot slot;
-  final Widget child;
+  final Widget? child;
+  final LaunchRevealBuilder? builder;
 
   @override
   Widget build(BuildContext context) {
     final progress = LaunchRevealScope.maybeOf(context);
+    final build = builder;
     if (progress == null) {
-      return child;
+      return build == null ? child! : build(context, 1, child);
     }
     return AnimatedBuilder(
       animation: progress,
@@ -102,16 +128,15 @@ class LaunchReveal extends StatelessWidget {
         );
         // Curve.transform 在 0 与 1 处精确返回端点，落定后位移为 0、缩放为 1。
         final settle = ExpressiveMotion.spatial.transform(t);
-        return Opacity(
-          opacity: ExpressiveMotion.effects.transform(t),
-          child: Transform.translate(
-            offset: Offset(0, slot.rise * (1 - settle)),
-            child: Transform.scale(
-              scale: slot.scaleFrom + (1 - slot.scaleFrom) * settle,
-              child: child,
-            ),
+        final opacity = ExpressiveMotion.effects.transform(t);
+        final moved = Transform.translate(
+          offset: Offset(0, slot.rise * (1 - settle)),
+          child: Transform.scale(
+            scale: slot.scaleFrom + (1 - slot.scaleFrom) * settle,
+            child: build == null ? child : build(context, opacity, child),
           ),
         );
+        return build == null ? Opacity(opacity: opacity, child: moved) : moved;
       },
     );
   }

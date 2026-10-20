@@ -98,6 +98,9 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     final moodOptionsRaw = moodOptions.join('\u{1F}');
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
+    // 玻璃底栏悬浮在内容之上时为底栏槽位高度（实色时为 0）：内容滚到胶囊
+    // 下方，末尾多留这一段让最后一块完整露出。
+    final floatingBarInset = MediaQuery.paddingOf(context).bottom;
 
     final pageBgColor =
         widget.pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
@@ -107,6 +110,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
         Positioned.fill(child: ColoredBox(color: pageBgColor)),
         SafeArea(
           top: false,
+          bottom: false,
           child: CustomScrollView(
             slivers: <Widget>[
               SliverToBoxAdapter(
@@ -191,7 +195,9 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(child: SizedBox(height: 12)),
+              SliverToBoxAdapter(
+                child: SizedBox(height: 12 + floatingBarInset),
+              ),
             ],
           ),
         ),

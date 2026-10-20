@@ -2,23 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/calendar/widgets/calendar_header.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_presets.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
+import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 
-Widget _host(String title, DateTime month) => MaterialApp(
+Widget _host(String title, DateTime month, {bool glass = false}) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
-  home: Scaffold(
-    body: Stack(
-      children: <Widget>[
-        CalendarHeader(
-          title: title,
-          month: month,
-          onJumpToToday: () {},
-          onPreviousMonth: () {},
-          onNextMonth: () {},
-          onPickDate: () {},
+  home: Builder(
+    builder: (context) {
+      final page = Scaffold(
+        body: Stack(
+          children: <Widget>[
+            CalendarHeader(
+              title: title,
+              month: month,
+              onJumpToToday: () {},
+              onPreviousMonth: () {},
+              onNextMonth: () {},
+              onPickDate: () {},
+            ),
+          ],
         ),
-      ],
-    ),
+      );
+      if (!glass) {
+        return page;
+      }
+      // 与首页相同：玻璃预设的 HomeChromeScope 包在页面之上。
+      return HomeChromeScope(
+        style: HomeBarResolvedStyle.resolve(
+          HomeBarPreset.glass.style,
+          Theme.of(context).colorScheme,
+        ),
+        child: page,
+      );
+    },
   ),
 );
 
@@ -98,5 +117,43 @@ void main() {
     await tester.tap(find.byTooltip(l10n.anniversaryListTitle));
     expect(opened, 1);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('without a home scope the header stays a plain surface block', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host('Oct 2026', DateTime(2026, 10)));
+    expect(find.byType(BackdropFilter), findsNothing);
+    expect(find.byType(GlassSurface), findsNothing);
+    final box = tester.widget<ColoredBox>(
+      find
+          .descendant(
+            of: find.byType(CalendarHeader),
+            matching: find.byType(ColoredBox),
+          )
+          .first,
+    );
+    expect(
+      box.color,
+      Theme.of(tester.element(find.byType(CalendarHeader))).colorScheme.surface,
+    );
+  });
+
+  testWidgets('glass top bars blur behind the header at the same layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host('Oct 2026', DateTime(2026, 10)));
+    final solidTitle = tester.getRect(find.text('Oct 2026'));
+    final solidHeight = tester.getSize(find.byType(CalendarHeader)).height;
+
+    await tester.pumpWidget(_host('Oct 2026', DateTime(2026, 10), glass: true));
+    final backdrop = find.descendant(
+      of: find.byType(CalendarHeader),
+      matching: find.byType(BackdropFilter),
+    );
+    expect(backdrop, findsOneWidget);
+    expect(tester.widget<BackdropFilter>(backdrop).enabled, isTrue);
+    expect(tester.getRect(find.text('Oct 2026')), solidTitle);
+    expect(tester.getSize(find.byType(CalendarHeader)).height, solidHeight);
   });
 }

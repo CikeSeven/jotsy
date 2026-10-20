@@ -24,6 +24,7 @@ class BackupSettings {
     'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
     'diaryPreviewStyleRaw': settingsService.diaryPreviewStyleRaw,
     'diaryCodeBlockStyleRaw': settingsService.diaryCodeBlockStyleRaw,
+    'homeBarStyleRaw': settingsService.homeBarStyleRaw,
     'diaryTemplatePrefsRaw': settingsService.diaryTemplatePrefsRaw,
     // 我的颜色：字段名沿用早先的“最近颜色”，新旧版本的备份互相认得。
     'diaryRecentColorsRaw': settingsService.diarySavedColorsRaw,
@@ -162,6 +163,17 @@ class BackupSettings {
           _ => null,
         },
       );
+    }
+
+    // 首页栏样式同上：旧版备份没有时保留本机样式，显式 null 时恢复默认。
+    if (settingsNode.containsKey('homeBarStyleRaw')) {
+      final homeBarStyleRaw = settingsNode['homeBarStyleRaw'];
+      await settingsService.setHomeBarStyleRaw(switch (homeBarStyleRaw) {
+        null => null,
+        String value => value,
+        Map<dynamic, dynamic> value => jsonEncode(value),
+        _ => null,
+      });
     }
 
     // 模板偏好同上：旧版备份没有时保留本机偏好，显式 null 时恢复默认。

@@ -10381,6 +10381,14 @@
   "@homeBarStyleGlassTopBarsSubtitle": {
     "description": "Navigation bar style settings: subtitle of the glass top bars switch."
   },
+  "homeBarStyleTopBarHairline": "Top bar divider",
+  "@homeBarStyleTopBarHairline": {
+    "description": "Navigation bar style settings: switch for the thin divider under the glass top bars; shown only while glass top bars are on."
+  },
+  "homeBarStyleTopBarHairlineSubtitle": "A thin line along the bottom of the glass top bars",
+  "@homeBarStyleTopBarHairlineSubtitle": {
+    "description": "Navigation bar style settings: subtitle of the top bar divider switch."
+  },
   "homeBarStyleBlur": "Blur",
   "@homeBarStyleBlur": {
     "description": "Navigation bar style settings: glass blur slider."
@@ -10405,13 +10413,13 @@
   "@homeBarStyleTintColor": {
     "description": "Navigation bar style settings: glass color row for the custom tint."
   },
-  "homeBarStyleBorder": "Outline",
+  "homeBarStyleBorder": "Bottom bar outline",
   "@homeBarStyleBorder": {
-    "description": "Navigation bar style settings: glass outline switch."
+    "description": "Navigation bar style settings: outline switch of the floating glass bottom bar."
   },
-  "homeBarStyleBorderSubtitle": "A thin line along the edge of the glass",
+  "homeBarStyleBorderSubtitle": "A thin line along the edge of the floating bar",
   "@homeBarStyleBorderSubtitle": {
-    "description": "Navigation bar style settings: subtitle of the outline switch."
+    "description": "Navigation bar style settings: subtitle of the bottom bar outline switch."
   },
   "homeBarStyleShadow": "Shadow",
   "@homeBarStyleShadow": {

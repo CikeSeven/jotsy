@@ -8076,6 +8076,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The Diaries, Calendar, Explore and Settings top bars turn frosted as well';
 
   @override
+  String get homeBarStyleTopBarHairline => 'Top bar divider';
+
+  @override
+  String get homeBarStyleTopBarHairlineSubtitle =>
+      'A thin line along the bottom of the glass top bars';
+
+  @override
   String get homeBarStyleBlur => 'Blur';
 
   @override
@@ -8094,11 +8101,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBarStyleTintColor => 'Glass color';
 
   @override
-  String get homeBarStyleBorder => 'Outline';
+  String get homeBarStyleBorder => 'Bottom bar outline';
 
   @override
   String get homeBarStyleBorderSubtitle =>
-      'A thin line along the edge of the glass';
+      'A thin line along the edge of the floating bar';
 
   @override
   String get homeBarStyleShadow => 'Shadow';

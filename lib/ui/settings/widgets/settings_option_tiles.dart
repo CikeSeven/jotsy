@@ -12,11 +12,21 @@ class SettingsSwitchTile extends StatelessWidget {
     required this.onChanged,
     this.subtitle,
     this.nested = false,
+    this.deep = false,
   });
 
   /// 从属行（[nested]）的内容起点：比平级行多缩进一级。分组里它上方的
   /// 分割线也从这里开始（见 `SettingsCardGroupDivider.indent`）。
   static const double nestedIndent = 40;
+
+  /// 二级从属行（[deep]）的内容起点：挂在一个从属行之下的选项（如导航栏
+  /// 样式里“顶栏也用玻璃”下的“顶栏分隔线”）再缩进一级，否则与它所依附
+  /// 的行同一缩进，看起来是并列的两项。
+  static const double deepNestedIndent = 64;
+
+  /// 从属行的内容起点：二级从属行更深一级。
+  static double indentFor({required bool nested, bool deep = false}) =>
+      !nested ? 16 : (deep ? deepNestedIndent : nestedIndent);
 
   /// 从属行的标题样式：与 listTileTheme 的标题样式合并，只改字号与字重。
   /// 开关、滑块、选择器与颜色行共用，同一组从属行读起来是同一层级。
@@ -34,12 +44,15 @@ class SettingsSwitchTile extends StatelessWidget {
   /// 标题字号与字重轻一档，一眼看出它挂在上一行之下，而不是并列的一项。
   final bool nested;
 
+  /// 是否为二级从属行（只在 [nested] 时生效），见 [deepNestedIndent]。
+  final bool deep;
+
   @override
   Widget build(BuildContext context) {
     final subtitle = this.subtitle;
     return SwitchListTile(
       contentPadding: EdgeInsetsDirectional.only(
-        start: nested ? nestedIndent : 16,
+        start: indentFor(nested: nested, deep: deep),
         end: 16,
         top: 2,
         bottom: 2,

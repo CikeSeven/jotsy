@@ -36,6 +36,7 @@ class HomeBarResolvedStyle {
     required this.labelGap,
     required this.blockPadding,
     required this.border,
+    required this.topBarHairline,
     required this.shadow,
     required this.fabPlacement,
     required this.labelMode,
@@ -91,6 +92,8 @@ class HomeBarResolvedStyle {
       // 描边、投影与并排的 FAB 只属于悬浮玻璃底栏；实色栏贴底铺满，
       // 这里直接给出“是否画”，渲染层不必再判断材质。
       border: isGlass && style.border,
+      // 顶栏分隔线有自己的开关，不跟底栏描边走；glassTopBars 已隐含玻璃材质。
+      topBarHairline: isGlass && style.glassTopBars && style.topBarHairline,
       shadow: isGlass && style.shadow,
       fabPlacement: isGlass ? style.fabPlacement : HomeBarFabPlacement.above,
       labelMode: style.labelMode,
@@ -136,6 +139,10 @@ class HomeBarResolvedStyle {
   /// 悬浮底栏是否画描边 / 投影（只在玻璃生效时可能为 true）。
   final bool border;
   final bool shadow;
+
+  /// 玻璃顶栏是否画底部细分隔线（顶栏不用玻璃时恒为 false）。与 [border]
+  /// 无关，见 `HomeBarStyle.topBarHairline`。
+  final bool topBarHairline;
 
   /// FAB 位置；实色栏一律为 above。
   final HomeBarFabPlacement fabPlacement;
@@ -233,6 +240,7 @@ class HomeBarResolvedStyle {
         other.labelGap == labelGap &&
         other.blockPadding == blockPadding &&
         other.border == border &&
+        other.topBarHairline == topBarHairline &&
         other.shadow == shadow &&
         other.fabPlacement == fabPlacement &&
         other.labelMode == labelMode &&
@@ -262,6 +270,7 @@ class HomeBarResolvedStyle {
     labelGap,
     blockPadding,
     border,
+    topBarHairline,
     shadow,
     fabPlacement,
     labelMode,

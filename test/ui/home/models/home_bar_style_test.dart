@@ -16,6 +16,7 @@ void main() {
       expect(d.tintColor, isNull);
       expect(d.tintColorDark, isNull);
       expect(d.border, isTrue);
+      expect(d.topBarHairline, isFalse);
       expect(d.shadow, isTrue);
       expect(d.barHeight, 64);
       expect(d.cornerRadius, 32);
@@ -49,6 +50,7 @@ void main() {
         'tintColor': 0xFF336699,
         'tintColorDark': 'nope',
         'border': false,
+        'topBarHairline': 'on',
         'shadow': 0,
         'barHeight': 70,
         'cornerRadius': null,
@@ -63,6 +65,7 @@ void main() {
       expect(style.tintColor, 0xFF336699);
       expect(style.tintColorDark, isNull);
       expect(style.border, isFalse);
+      expect(style.topBarHairline, isFalse);
       expect(style.shadow, isTrue);
       expect(style.barHeight, 70);
       expect(style.cornerRadius, 32);
@@ -180,6 +183,7 @@ void main() {
         tintColor: 0xFF224466,
         tintColorDark: 0xFF101820,
         border: false,
+        topBarHairline: true,
         shadow: false,
         barHeight: 72,
         cornerRadius: 12,
@@ -197,6 +201,14 @@ void main() {
       );
       expect(decoded, style);
       expect(decoded.hashCode, style.hashCode);
+    });
+
+    test('writes the top bar hairline only when it is turned on', () {
+      const style = HomeBarStyle(topBarHairline: true);
+      expect(style.toJson(), <String, Object>{'topBarHairline': true});
+      expect(HomeBarStyle.fromJson(style.toJson()), style);
+      expect(style, isNot(HomeBarStyle.defaults));
+      expect(HomeBarStyle.defaults.copyWith(topBarHairline: true), style);
     });
 
     test('omits default spacing and writes changed spacing', () {

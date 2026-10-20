@@ -7231,6 +7231,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStyleGlassTopBarsSubtitle => '日记、日历、探索、设置的顶栏一起变成磨砂';
 
   @override
+  String get homeBarStyleTopBarHairline => '顶栏分隔线';
+
+  @override
+  String get homeBarStyleTopBarHairlineSubtitle => '玻璃顶栏底部的细线';
+
+  @override
   String get homeBarStyleBlur => '模糊强度';
 
   @override
@@ -7249,10 +7255,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStyleTintColor => '玻璃颜色';
 
   @override
-  String get homeBarStyleBorder => '描边';
+  String get homeBarStyleBorder => '底栏描边';
 
   @override
-  String get homeBarStyleBorderSubtitle => '玻璃边缘的细线';
+  String get homeBarStyleBorderSubtitle => '悬浮栏边缘的细线';
 
   @override
   String get homeBarStyleShadow => '阴影';

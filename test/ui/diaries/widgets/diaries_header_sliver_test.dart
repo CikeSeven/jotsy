@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/widgets/diaries_header_sliver.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_presets.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style.dart';
+import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
@@ -67,12 +68,16 @@ const double _glassHeight = 68;
 /// 与日记页玻璃顶栏相同的组合：玻璃预设的 [HomeChromeScope]、页面不让出
 /// 状态栏、刊头并进状态栏高度，标签栏是最下面一片玻璃，两片共用一个
 /// [BackdropGroup]。
-Widget _glassHost(ScrollController controller, {required bool pinned}) {
+Widget _glassHost(
+  ScrollController controller, {
+  required bool pinned,
+  HomeBarStyle? style,
+}) {
   return MaterialApp(
     home: Builder(
       builder: (context) => HomeChromeScope(
         style: HomeBarResolvedStyle.resolve(
-          HomeBarPreset.glass.style,
+          style ?? HomeBarPreset.glass.style,
           Theme.of(context).colorScheme,
         ),
         child: Scaffold(
@@ -282,7 +287,7 @@ void main() {
       expect(_tagsTop(tester), _statusBar);
     });
 
-    testWidgets('both slices share one backdrop and only the tags get a line', (
+    testWidgets('both slices share one backdrop and draw no line by default', (
       tester,
     ) async {
       final controller = ScrollController();
@@ -296,6 +301,29 @@ void main() {
       final key = filters.first.backdropKey;
       expect(key, isNotNull);
       expect(filters.last.backdropKey, same(key));
+      expect(
+        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
+        isNull,
+      );
+      expect(tester.widget<GlassSurface>(_tagsGlass).bottomHairline, isNull);
+    });
+
+    testWidgets('with the hairline on, only the tags get a line', (
+      tester,
+    ) async {
+      final controller = ScrollController();
+      addTearDown(controller.dispose);
+      // 底栏描边关掉也不影响：顶栏分隔线只看自己的开关。
+      await tester.pumpWidget(
+        _glassHost(
+          controller,
+          pinned: false,
+          style: HomeBarPreset.glass.style.copyWith(
+            topBarHairline: true,
+            border: false,
+          ),
+        ),
+      );
       expect(
         tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
         isNull,

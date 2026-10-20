@@ -55,3 +55,8 @@ class SettingsReveal extends StatelessWidget {
 const Widget settingsNestedDivider = SettingsCardGroupDivider(
   indent: SettingsSwitchTile.nestedIndent,
 );
+
+/// 二级从属行上方的分割线：起点与二级从属行（`deep: true`）的内容对齐。
+const Widget settingsDeepNestedDivider = SettingsCardGroupDivider(
+  indent: SettingsSwitchTile.deepNestedIndent,
+);

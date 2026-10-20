@@ -4,14 +4,23 @@ import 'package:node_diary/ui/home/models/home_bar_style/home_bar_resolved_style
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_chrome_scope.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
+import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 
 import '../../../../support/expressive_test_theme.dart';
 
 const _solid = Color(0xFFF4F1EC);
 const _content = SizedBox(height: 56, width: double.infinity);
 
-Future<void> _pump(WidgetTester tester, {HomeBarResolvedStyle? style}) {
-  Widget surface = const HomeTopBarSurface(solidColor: _solid, child: _content);
+Future<void> _pump(
+  WidgetTester tester, {
+  HomeBarResolvedStyle? style,
+  bool showHairline = true,
+}) {
+  Widget surface = HomeTopBarSurface(
+    solidColor: _solid,
+    showHairline: showHairline,
+    child: _content,
+  );
   if (style != null) {
     surface = HomeChromeScope(style: style, child: surface);
   }
@@ -23,12 +32,24 @@ Future<void> _pump(WidgetTester tester, {HomeBarResolvedStyle? style}) {
   );
 }
 
-HomeBarResolvedStyle _glass({bool highContrast = false, bool top = true}) =>
-    HomeBarResolvedStyle.resolve(
-      HomeBarStyle(material: HomeBarMaterial.glass, glassTopBars: top),
-      expressiveTestTheme(Brightness.light).colorScheme,
-      highContrast: highContrast,
-    );
+HomeBarResolvedStyle _glass({
+  bool highContrast = false,
+  bool top = true,
+  bool border = true,
+  bool hairline = false,
+}) => HomeBarResolvedStyle.resolve(
+  HomeBarStyle(
+    material: HomeBarMaterial.glass,
+    glassTopBars: top,
+    border: border,
+    topBarHairline: hairline,
+  ),
+  expressiveTestTheme(Brightness.light).colorScheme,
+  highContrast: highContrast,
+);
+
+Color? _hairline(WidgetTester tester) =>
+    tester.widget<GlassSurface>(_below(GlassSurface)).bottomHairline;
 
 Finder _below(Type type) => find.descendant(
   of: find.byType(HomeTopBarSurface),
@@ -81,6 +102,23 @@ void main() {
     final fill = tester.widget<Material>(_below(Material).first).color!;
     expect(fill, style.solidFill);
     expect(fill.a, 1);
+  });
+
+  testWidgets('the default glass top bar draws no hairline', (tester) async {
+    await _pump(tester, style: _glass());
+    expect(_hairline(tester), isNull);
+  });
+
+  testWidgets('the top bar hairline follows its own switch, not the border', (
+    tester,
+  ) async {
+    final style = _glass(hairline: true, border: false);
+    await _pump(tester, style: style);
+    expect(_hairline(tester), style.hairlineColor);
+
+    // 页面不允许这一片画线时（日记页刊头不是最下面一片），开关打开也不画。
+    await _pump(tester, style: style, showHairline: false);
+    expect(_hairline(tester), isNull);
   });
 
   testWidgets('glassTopBarsOf is false without a scope', (tester) async {

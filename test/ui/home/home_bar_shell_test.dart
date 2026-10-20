@@ -591,7 +591,7 @@ void main() {
       await _unmount(tester);
     });
 
-    testWidgets('both slices share one backdrop and one bottom line', (
+    testWidgets('both slices share one backdrop and draw no line by default', (
       tester,
     ) async {
       await _pumpHome(
@@ -612,6 +612,24 @@ void main() {
       expect(filters.every((filter) => filter.enabled), isTrue);
       expect(filters.first.backdropKey, isNotNull);
       expect(filters.last.backdropKey, same(filters.first.backdropKey));
+      expect(
+        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
+        isNull,
+      );
+      expect(tester.widget<GlassSurface>(_tagBarGlass).bottomHairline, isNull);
+      await _unmount(tester);
+    });
+
+    testWidgets('the top bar hairline lands on the tag bar only', (
+      tester,
+    ) async {
+      // 关掉底栏描边也不影响顶栏分隔线：两者是独立开关。
+      await _pumpHome(
+        tester,
+        diaryCount: 3,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_glass.copyWith(topBarHairline: true, border: false)),
+      );
       expect(
         tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
         isNull,

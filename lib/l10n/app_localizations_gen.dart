@@ -13190,6 +13190,18 @@ abstract class AppLocalizations {
   /// **'The Diaries, Calendar, Explore and Settings top bars turn frosted as well'**
   String get homeBarStyleGlassTopBarsSubtitle;
 
+  /// Navigation bar style settings: switch for the thin divider under the glass top bars; shown only while glass top bars are on.
+  ///
+  /// In en, this message translates to:
+  /// **'Top bar divider'**
+  String get homeBarStyleTopBarHairline;
+
+  /// Navigation bar style settings: subtitle of the top bar divider switch.
+  ///
+  /// In en, this message translates to:
+  /// **'A thin line along the bottom of the glass top bars'**
+  String get homeBarStyleTopBarHairlineSubtitle;
+
   /// Navigation bar style settings: glass blur slider.
   ///
   /// In en, this message translates to:
@@ -13226,16 +13238,16 @@ abstract class AppLocalizations {
   /// **'Glass color'**
   String get homeBarStyleTintColor;
 
-  /// Navigation bar style settings: glass outline switch.
+  /// Navigation bar style settings: outline switch of the floating glass bottom bar.
   ///
   /// In en, this message translates to:
-  /// **'Outline'**
+  /// **'Bottom bar outline'**
   String get homeBarStyleBorder;
 
-  /// Navigation bar style settings: subtitle of the outline switch.
+  /// Navigation bar style settings: subtitle of the bottom bar outline switch.
   ///
   /// In en, this message translates to:
-  /// **'A thin line along the edge of the glass'**
+  /// **'A thin line along the edge of the floating bar'**
   String get homeBarStyleBorderSubtitle;
 
   /// Navigation bar style settings: floating bar shadow switch.

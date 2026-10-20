@@ -18,7 +18,8 @@ part 'home_bar_style_json.dart';
 ///
 /// 字段分三组：
 /// - 材质与玻璃：[material]、[glassTopBars]、[blurSigma]、[tintOpacity]、
-///   [tint]、[tintColor]、[tintColorDark]、[border]；只在玻璃材质下生效；
+///   [tint]、[tintColor]、[tintColorDark]、[border]、[topBarHairline]；只在
+///   玻璃材质下生效；
 /// - 悬浮底栏几何：[shadow]、[barHeight]、[cornerRadius]、[sideMargin]、
 ///   [bottomGap]、[fabPlacement]；实色底栏贴底铺满，不用这些；
 /// - 导航项：[labelMode]、[iconSize]、[labelGap]、[indicator]、
@@ -40,6 +41,7 @@ class HomeBarStyle {
     this.tintColor,
     this.tintColorDark,
     this.border = true,
+    this.topBarHairline = false,
     this.shadow = true,
     this.barHeight = 64,
     this.cornerRadius = 32,
@@ -80,8 +82,14 @@ class HomeBarStyle {
   /// 深色主题底色；为 null 时由 [tintColor] 推导。
   final int? tintColorDark;
 
-  /// 悬浮底栏与玻璃顶栏的细描边：在与底色相近的内容上勾出栏的边界。
+  /// 悬浮底栏的细描边：在与底色相近的内容上勾出栏的边界。只管底栏，
+  /// 顶栏的分隔线另由 [topBarHairline] 控制。
   final bool border;
+
+  /// 玻璃顶栏底部的细分隔线。与 [border] 分开、默认关闭：顶栏贴着屏幕
+  /// 上沿铺满，靠模糊与底色已能和内容区分开，常驻的细线反而显得割裂；
+  /// 想要清晰边界的用户可以单独打开，不必连带改动底栏描边。
+  final bool topBarHairline;
 
   /// 悬浮底栏的投影（只用于悬浮底栏）。
   final bool shadow;
@@ -132,6 +140,7 @@ class HomeBarStyle {
     ValueGetter<int?>? tintColor,
     ValueGetter<int?>? tintColorDark,
     bool? border,
+    bool? topBarHairline,
     bool? shadow,
     double? barHeight,
     double? cornerRadius,
@@ -155,6 +164,7 @@ class HomeBarStyle {
           ? this.tintColorDark
           : tintColorDark(),
       border: border ?? this.border,
+      topBarHairline: topBarHairline ?? this.topBarHairline,
       shadow: shadow ?? this.shadow,
       barHeight: barHeight ?? this.barHeight,
       cornerRadius: cornerRadius ?? this.cornerRadius,
@@ -180,6 +190,7 @@ class HomeBarStyle {
         other.tintColor == tintColor &&
         other.tintColorDark == tintColorDark &&
         other.border == border &&
+        other.topBarHairline == topBarHairline &&
         other.shadow == shadow &&
         other.barHeight == barHeight &&
         other.cornerRadius == cornerRadius &&
@@ -203,6 +214,7 @@ class HomeBarStyle {
     tintColor,
     tintColorDark,
     border,
+    topBarHairline,
     shadow,
     barHeight,
     cornerRadius,

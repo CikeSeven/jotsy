@@ -22,7 +22,8 @@ class HomeTopBarSurface extends StatelessWidget {
   /// 实色时的底色（页面原来画的颜色，如 surface 或日记页的页面底色）。
   final Color solidColor;
 
-  /// 玻璃时是否画底部细线（还要用户开着描边）。
+  /// 玻璃时是否允许画底部细线（还要用户打开顶栏分隔线）；日记页的多段
+  /// 顶栏只让最下面一段画。
   final bool showHairline;
 
   /// 是否与同一 BackdropGroup 下的其他玻璃共用背景（见 [GlassSurface.grouped]）。
@@ -39,7 +40,9 @@ class HomeTopBarSurface extends StatelessWidget {
       fill: style.fill,
       blur: style.translucent,
       blurSigma: style.blurSigma,
-      bottomHairline: showHairline && style.border ? style.hairlineColor : null,
+      bottomHairline: showHairline && style.topBarHairline
+          ? style.hairlineColor
+          : null,
       grouped: grouped,
       child: child,
     );

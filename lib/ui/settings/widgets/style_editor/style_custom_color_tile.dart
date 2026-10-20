@@ -16,6 +16,7 @@ class StyleCustomColorTile extends StatelessWidget {
     required this.onChanged,
     this.subtitle,
     this.nested = false,
+    this.deep = false,
   });
 
   final String title;
@@ -24,6 +25,10 @@ class StyleCustomColorTile extends StatelessWidget {
   /// 是否为上一行的从属项：与 `SettingsSwitchTile.nested` 相同的缩进与标题
   /// 字阶。
   final bool nested;
+
+  /// 是否为二级从属行（只在 [nested] 时生效），见
+  /// `SettingsSwitchTile.deepNestedIndent`。
+  final bool deep;
   final int light;
   final int? dark;
   final DiaryCardColorRole role;
@@ -58,7 +63,7 @@ class StyleCustomColorTile extends StatelessWidget {
     final subtitle = this.subtitle;
     return ListTile(
       contentPadding: EdgeInsetsDirectional.fromSTEB(
-        nested ? SettingsSwitchTile.nestedIndent : 16,
+        SettingsSwitchTile.indentFor(nested: nested, deep: deep),
         4,
         16,
         4,

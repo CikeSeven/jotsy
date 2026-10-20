@@ -79,7 +79,7 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
   }
 }
 
-/// 玻璃参数（顶栏、模糊、不透明度、色调、描边、阴影），每行前一条缩进的
+/// 玻璃参数（顶栏与顶栏分隔线、模糊、不透明度、色调、底栏描边、阴影），每行前一条缩进的
 /// 分割线，与上方的材质选择器隔开。
 class _GlassOptions extends StatelessWidget {
   const _GlassOptions({required this.controller});
@@ -131,6 +131,27 @@ class _GlassOptions extends StatelessWidget {
           value: style.glassTopBars,
           onChanged: (bool v) => commit((s) => s.copyWith(glassTopBars: v)),
         ),
+        // 顶栏分隔线是“顶栏也用玻璃”的从属项，只在它打开时展开；Reveal
+        // 本身始终占着这个位置，下面的行不会因它出现而错位复用、补播动画。
+        SettingsReveal(
+          visible: style.glassTopBars,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              settingsDeepNestedDivider,
+              SettingsSwitchTile(
+                nested: true,
+                deep: true,
+                title: l10n.homeBarStyleTopBarHairline,
+                subtitle: l10n.homeBarStyleTopBarHairlineSubtitle,
+                value: style.topBarHairline,
+                onChanged: (bool v) =>
+                    commit((s) => s.copyWith(topBarHairline: v)),
+              ),
+            ],
+          ),
+        ),
         settingsNestedDivider,
         homeBarSlider(
           nested: true,
@@ -179,16 +200,17 @@ class _GlassOptions extends StatelessWidget {
           ),
         ),
         // 自定义颜色紧跟在色调下方，与色调合在同一个位置固定的槽里，
-        // 下面的描边、阴影不会因它的出现而错位复用。
+        // 下面的底栏描边、阴影不会因它的出现而错位复用。
         SettingsReveal(
           visible: isCustom,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              settingsNestedDivider,
+              settingsDeepNestedDivider,
               StyleCustomColorTile(
                 nested: true,
+                deep: true,
                 title: l10n.homeBarStyleTintColor,
                 light: style.tintColor ?? _neutralLightBase(context),
                 dark: style.tintColorDark,

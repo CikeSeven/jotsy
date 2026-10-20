@@ -10381,6 +10381,14 @@
   "@homeBarStyleGlassTopBarsSubtitle": {
     "description": "导航栏样式设置：顶栏玻璃开关的说明。"
   },
+  "homeBarStyleTopBarHairline": "顶栏分隔线",
+  "@homeBarStyleTopBarHairline": {
+    "description": "导航栏样式设置：玻璃顶栏底部分隔线的开关，只在顶栏也用玻璃时出现。"
+  },
+  "homeBarStyleTopBarHairlineSubtitle": "玻璃顶栏底部的细线",
+  "@homeBarStyleTopBarHairlineSubtitle": {
+    "description": "导航栏样式设置：顶栏分隔线开关的说明。"
+  },
   "homeBarStyleBlur": "模糊强度",
   "@homeBarStyleBlur": {
     "description": "导航栏样式设置：玻璃模糊强度滑块。"
@@ -10405,13 +10413,13 @@
   "@homeBarStyleTintColor": {
     "description": "导航栏样式设置：自定义色调时的玻璃颜色行。"
   },
-  "homeBarStyleBorder": "描边",
+  "homeBarStyleBorder": "底栏描边",
   "@homeBarStyleBorder": {
-    "description": "导航栏样式设置：玻璃描边开关。"
+    "description": "导航栏样式设置：悬浮玻璃底栏的描边开关。"
   },
-  "homeBarStyleBorderSubtitle": "玻璃边缘的细线",
+  "homeBarStyleBorderSubtitle": "悬浮栏边缘的细线",
   "@homeBarStyleBorderSubtitle": {
-    "description": "导航栏样式设置：描边开关的说明。"
+    "description": "导航栏样式设置：底栏描边开关的说明。"
   },
   "homeBarStyleShadow": "阴影",
   "@homeBarStyleShadow": {

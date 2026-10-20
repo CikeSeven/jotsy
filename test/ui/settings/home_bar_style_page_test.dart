@@ -181,6 +181,43 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the top bar hairline is its own switch under glass top bars', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(
+      tester,
+      initial: const HomeBarSettings(
+        current: HomeBarStyle(material: HomeBarMaterial.glass),
+      ),
+    );
+    await _openTab(tester, l10n.homeBarStyleTabMaterial);
+    expect(_inOptions(l10n.homeBarStyleTopBarHairline), findsOneWidget);
+    // 挂在“顶栏也用玻璃”之下，要再缩进一级，不能与它并列。
+    expect(
+      tester.getTopLeft(_inOptions(l10n.homeBarStyleTopBarHairline)).dx,
+      greaterThan(
+        tester.getTopLeft(_inOptions(l10n.homeBarStyleGlassTopBars)).dx,
+      ),
+    );
+
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleTopBarHairline));
+    expect(_stored(settings).current.topBarHairline, isTrue);
+    expect(_stored(settings).current.border, isTrue);
+
+    // 底栏描边只写 border，不动顶栏分隔线。
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleBorder));
+    expect(_stored(settings).current.border, isFalse);
+    expect(_stored(settings).current.topBarHairline, isTrue);
+
+    // 顶栏不用玻璃时分隔线这一行收起。
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleGlassTopBars));
+    expect(_stored(settings).current.glassTopBars, isFalse);
+    expect(_inOptions(l10n.homeBarStyleTopBarHairline), findsNothing);
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleGlassTopBars));
+    expect(_inOptions(l10n.homeBarStyleTopBarHairline), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('sliders preview while dragging and persist on release', (
     tester,
   ) async {

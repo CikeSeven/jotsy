@@ -1,4 +1,4 @@
-// 小工具：提示条与复制到剪贴板（site.js / lab.js / download.js 共用）。
+// 小工具：提示条与复制到剪贴板（site.js / palette.js / download.js 共用）。
 
 let toastTimer = 0;
 

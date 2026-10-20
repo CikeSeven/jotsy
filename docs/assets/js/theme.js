@@ -70,7 +70,8 @@ function notify() {
 
 /** 地址栏颜色与首屏暗色截图跟随当前明暗。 */
 function syncDocument() {
-  const surface = getComputedStyle(root).getPropertyValue('--c-surface').trim();
+  // 页面底色是 --c-page（亮色为最浅表面），地址栏颜色跟它一致
+  const surface = getComputedStyle(root).getPropertyValue('--c-surface-lowest').trim();
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta && surface) meta.setAttribute('content', `rgb(${surface.split(/\s+/).join(',')})`);
   const mode = getMode();

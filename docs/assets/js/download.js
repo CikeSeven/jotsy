@@ -11,7 +11,7 @@
 // 累计下载只统计 .apk：jotsy-update.json 每台装了 app 的手机每 2 小时会自动拉一次，
 // SHA256SUMS.txt 也会被更新流程读取，算进去会让数字越来越虚高。
 //
-// 更新说明：最新版本比“持续更新”里写死的最新一张卡片还新时，从更新说明的
+// 更新说明：最新版本比“更新”一节里写死的最新一条还新时，从更新说明的
 // “## 版本要点 / ## Highlights”一节（没有就取第一组列表）生成一张新卡片放在最前，
 // 首屏版本标签也换成该版本的第一条要点；当前语言没有说明时只显示一行“已发布”提示。
 //
@@ -44,7 +44,7 @@ const CACHE_MS = 60 * 60 * 1000;
 
 const section = document.querySelector('[data-download]');
 const $$ = (sel) => [...document.querySelectorAll(sel)];
-const staticTag = document.querySelector('[data-dl-version]')?.textContent.trim() || 'v0.6.1';
+const staticTag = document.querySelector('[data-dl-version]')?.textContent.trim() || 'v0.7.0';
 
 let release = null; // { source, tag, date, assets: [{ name, abi, size, sha256, url }], downloads, notes: { zh, en } }
 let route = readRoute();
@@ -290,7 +290,7 @@ function renderRelease() {
   renderLinks();
 }
 
-/** “持续更新”：比写死的卡片更新的版本，自动在最前补一张卡片。 */
+/** “更新”一节：比写死的条目更新的版本，自动在最前补一条。 */
 function renderTimeline() {
   const list = document.querySelector('[data-timeline]');
   if (!list || !release) return;
@@ -325,19 +325,20 @@ function renderTimeline() {
   });
   cards[cards.length - 1].hidden = true; // 始终只摆三张
 
+  // 结构与 index.html 里写死的 li.release 一致：header（版本号、“最新”、日期）+ 要点 + 链接
   const card = document.createElement('li');
-  card.className = 'release card';
+  card.className = 'release';
   card.dataset.autoRelease = '';
-  const badge = document.createElement('span');
-  badge.className = 'badge';
-  badge.textContent = t('latest');
   const header = document.createElement('header');
   const title = document.createElement('h3');
   title.textContent = release.tag;
+  const badge = document.createElement('span');
+  badge.className = 'badge';
+  badge.textContent = t('latest');
   const time = document.createElement('time');
   time.dateTime = release.date;
   time.textContent = release.date;
-  header.append(title, time);
+  header.append(title, badge, time);
   const ul = document.createElement('ul');
   for (const item of items) {
     const li = document.createElement('li');
@@ -347,7 +348,7 @@ function renderTimeline() {
   const more = document.createElement('a');
   more.href = releaseUrl;
   more.textContent = t('fullNotes');
-  card.append(badge, header, ul, more);
+  card.append(header, ul, more);
   list.prepend(card);
 }
 

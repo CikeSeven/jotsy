@@ -14,6 +14,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../notebooks/controllers/notebook_quick_create_flows.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../providers/diary_filters.dart';
 import '../sections/diaries_list_section.dart';
@@ -359,6 +360,11 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
                           : null,
                       onSaveAsNotebook: _saveAsNotebookAction(
                         tagListAsync.value,
+                        notebooksEnabled: ref.watch(
+                          appFeaturesProvider.select(
+                            (features) => features.notebooks,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -448,9 +454,13 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
 
   /// “存为智能日记本”：有关键词或标签条件时可用，规则为关键词 + 标签（全部
   /// 都含）。标签列表尚未加载时不可用（拿不到标签名）。日记本范围不进规则：
-  /// 智能日记本没有“在某本里”的条件。
-  VoidCallback? _saveAsNotebookAction(List<Tag>? tags) {
-    if (tags == null ||
+  /// 智能日记本没有“在某本里”的条件。日记本功能关闭时隐藏入口，数据保留。
+  VoidCallback? _saveAsNotebookAction(
+    List<Tag>? tags, {
+    required bool notebooksEnabled,
+  }) {
+    if (!notebooksEnabled ||
+        tags == null ||
         (_effectiveSearchKeyword.isEmpty && _selectedTagIds.isEmpty)) {
       return null;
     }

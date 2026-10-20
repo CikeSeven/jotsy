@@ -11,6 +11,7 @@ import 'package:node_diary/ui/diaries/controllers/publish_panel_coordinator.dart
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
+import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:smooth_sheets/smooth_sheets.dart';
 
 import '../../../app/theme/app_effects.dart';
@@ -323,7 +324,15 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
     final tags = ref.watch(tagListProvider);
     // 只订阅日记本表；篇数（会随日记写入重查）由日记本子页自己订阅，子页
     // 不可见时不构建，编辑页自动保存不会牵动这条查询。
-    final notebooks = ref.watch(notebooksProvider).value;
+    //
+    // 日记本功能关闭时隐藏入口，数据保留：不订阅书架，没有日记本行与摘要项；
+    // 草稿里已选的本子原样保存，编辑页照常写回成员关系（没改动就不写）。
+    final notebooksEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.notebooks),
+    );
+    final notebooks = notebooksEnabled
+        ? ref.watch(notebooksProvider).value
+        : const <NotebookView>[];
     final moodOptions = ref
         .watch(moodOptionsProvider)
         .maybeWhen(
@@ -373,7 +382,9 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             onOpenCapsule: _openCapsulePage,
             onPublish: widget.onPublish,
             notebooks: notebooks ?? const <NotebookView>[],
-            onOpenNotebooks: _panelCoordinator.openNotebookPage,
+            onOpenNotebooks: notebooksEnabled
+                ? _panelCoordinator.openNotebookPage
+                : null,
           ),
         ),
         PublishPanelPageScaffold(

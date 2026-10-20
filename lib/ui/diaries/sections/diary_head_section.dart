@@ -34,7 +34,7 @@ class DiaryHeadSection extends StatelessWidget {
     required this.onArchiveSelected,
     required this.onExportSelected,
     required this.onDeleteSelected,
-    required this.onAddToNotebookSelected,
+    this.onAddToNotebookSelected,
     this.onRemoveFromNotebookSelected,
     this.onMoveToNotebookSelected,
     required this.onOpenArchived,
@@ -54,8 +54,8 @@ class DiaryHeadSection extends StatelessWidget {
   final VoidCallback onExportSelected;
   final VoidCallback onDeleteSelected;
 
-  /// 收进日记本（三态选择器）。
-  final VoidCallback onAddToNotebookSelected;
+  /// 收进日记本（三态选择器）；为 null 时（日记本功能关闭）不显示这个按钮。
+  final VoidCallback? onAddToNotebookSelected;
 
   /// 从当前日记本移出 / 移动到另一本：只在普通日记本里提供，否则为 null，
   /// 菜单里不出现这两项。
@@ -144,11 +144,12 @@ class DiaryHeadSection extends StatelessWidget {
             ),
           ),
         ),
-        IconButton(
-          tooltip: l10n.notebookPickerTitle,
-          onPressed: onAddToNotebookSelected,
-          icon: const FaIcon(FontAwesomeIcons.bookBookmark, size: 18),
-        ),
+        if (onAddToNotebookSelected case final onAddToNotebook?)
+          IconButton(
+            tooltip: l10n.notebookPickerTitle,
+            onPressed: onAddToNotebook,
+            icon: const FaIcon(FontAwesomeIcons.bookBookmark, size: 18),
+          ),
         IconButton(
           tooltip: l10n.autoT0140,
           onPressed: onArchiveSelected,

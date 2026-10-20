@@ -39,14 +39,20 @@ extension _CalendarPageRangeSection on _CalendarPageState {
         range: range,
         now: now,
         onExit: _controller.exitRange,
-        onSaveAsNotebook: () => unawaited(
-          runSaveDateRangeAsNotebook(
-            context,
-            ref,
-            first: range.first,
-            last: range.last,
-          ),
-        ),
+        // 日记本功能关闭时隐藏入口，数据保留：没有“存为日记本”。
+        onSaveAsNotebook:
+            ref.watch(
+              appFeaturesProvider.select((features) => features.notebooks),
+            )
+            ? () => unawaited(
+                runSaveDateRangeAsNotebook(
+                  context,
+                  ref,
+                  first: range.first,
+                  last: range.last,
+                ),
+              )
+            : null,
       ),
     );
   }

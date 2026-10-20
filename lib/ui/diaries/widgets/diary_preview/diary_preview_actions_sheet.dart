@@ -15,6 +15,7 @@ import '../../../notebooks/providers/notebook_providers.dart';
 import '../../../notebooks/sections/notebook_picker_sheet.dart';
 import '../../../notebooks/viewmodels/notebook_view.dart';
 import '../../../settings/pages/diary_preview_style_page.dart';
+import '../../../settings/providers/app_features_provider.dart';
 import '../../controllers/diary_preview_export_controller.dart';
 import '../../models/publish_metadata_composer.dart';
 
@@ -34,6 +35,8 @@ Future<void> showDiaryPreviewMore(
   final database = ref.read(appDatabaseProvider);
   final l10n = context.l10n;
   final settings = ref.read(settingsServiceProvider).asData?.value;
+  // 日记本功能关闭时隐藏入口，数据保留：不给“收进日记本”。
+  final notebooksEnabled = ref.read(appFeaturesProvider).notebooks;
   return showDiaryPreviewActionsSheet(
     context,
     onShare: () => openDiaryPreviewShare(
@@ -47,8 +50,9 @@ Future<void> showDiaryPreviewMore(
     notebookSubtitle: notebooks.isEmpty
         ? l10n.notebookPreviewNone
         : notebooks.map((n) => n.name).join(l10n.notebookListSeparator),
-    onAddToNotebook: () =>
-        _addToNotebooks(context, ref, diaryId: detail.diary.diaryId),
+    onAddToNotebook: notebooksEnabled
+        ? () => _addToNotebooks(context, ref, diaryId: detail.diary.diaryId)
+        : null,
     onSetAsAnniversary: () => openAnniversaryEditor(
       context,
       database: database,

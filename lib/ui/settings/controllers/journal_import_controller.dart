@@ -13,6 +13,7 @@ import '../../../core/services/settings_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../widgets/color_palette_families.dart';
 import '../pages/cloud_notes_login_page.dart';
+import '../providers/app_features_provider.dart';
 import '../widgets/backup_import_folder_section.dart';
 import '../widgets/journal_import_source_labels.dart';
 import '../widgets/journal_import_source_sheet.dart';
@@ -79,7 +80,7 @@ class JournalImportController {
           filePath: path,
           moodOptions: settings.moodOptions,
           tagColors: journalImportTagColors,
-          folderMode: _host.ref.read(journalImportFolderModeProvider),
+          folderMode: _folderModeForImport(),
         ),
       );
     } finally {
@@ -125,13 +126,22 @@ class JournalImportController {
           ),
           moodOptions: settings.moodOptions,
           tagColors: journalImportTagColors,
-          folderMode: _host.ref.read(journalImportFolderModeProvider),
+          folderMode: _folderModeForImport(),
         ),
       );
     } finally {
       await login.close();
     }
   }
+
+  bool get _notebooksEnabled => _host.ref.read(appFeaturesProvider).notebooks;
+
+  /// 本次导入里来源日记本 / 文件夹的落地方式：平时为上次选的方式；日记本
+  /// 功能关闭时隐藏入口，数据保留——来源文件夹名一律落成标签（不新建
+  /// 日记本），也不改写记住的选择，重新开启后仍默认上次的方式。
+  JournalImportFolderMode _folderModeForImport() => _notebooksEnabled
+      ? _host.ref.read(journalImportFolderModeProvider)
+      : JournalImportFolderMode.tags;
 
   /// 预检 → 选择导入方式 → 合并导入；会话无论结果如何都会被释放。
   Future<void> _run(
@@ -160,8 +170,9 @@ class JournalImportController {
       if (!context.mounted) return;
 
       // 只有解析出来源日记本 / 文件夹时才询问落地方式；切换方式只按已解析的
-      // 条目重建载荷（会话里缓存），不重新解析。
-      final folderChoice = session.hasSourceFolders
+      // 条目重建载荷（会话里缓存），不重新解析。日记本功能关闭时不询问，
+      // 会话已按标签准备（见 [_folderModeForImport]）。
+      final folderChoice = session.hasSourceFolders && _notebooksEnabled
           ? BackupImportFolderChoice(
               folderCount: session.sourceFolderCount,
               previewFor: session.previewFor,

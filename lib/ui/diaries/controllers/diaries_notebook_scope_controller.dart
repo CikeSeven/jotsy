@@ -87,6 +87,26 @@ class DiariesNotebookScopeController {
     _switchScope(null, _notifier.showAll);
   }
 
+  /// 功能管理里关掉日记本时，首页若停在某本里就回到全部日记（日记本功能
+  /// 关闭时隐藏入口，数据保留）。
+  ///
+  /// 此刻用户正在首页之上的设置页里，所以必须走页面自己的 [showAll]：它先
+  /// 记下预期的范围，[handleScopeIdChanged] 便不会把它当成外部改动去
+  /// `popUntil` 关掉设置页；范围本身回到全部日记，不经“本子不见了”的解析，
+  /// 也就不会误报“日记本已删除”。新范围不带 relocked，重锁遮罩随之失效。
+  /// 放到微任务里执行：监听回调里不直接改 provider。重新开启时不恢复原来的
+  /// 本子（范围本就不跨重启记忆）。
+  void handleFeatureToggled(bool enabled) {
+    if (enabled) {
+      return;
+    }
+    scheduleMicrotask(() {
+      if (_state.mounted) {
+        showAll();
+      }
+    });
+  }
+
   void _switchScope(String? notebookId, VoidCallback mutation) {
     _expectedNotebookId = notebookId;
     if (_state._selectedDiaryIds.isNotEmpty) {

@@ -3,13 +3,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter/widgets.dart' show TextDirection;
+import 'package:flutter/widgets.dart' show Color, TextDirection;
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_quill_to_pdf/flutter_quill_to_pdf.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/services/font_file_info.dart';
+import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
@@ -89,7 +90,9 @@ class DiaryPdfFonts {
 ///   `https://jotsy.export/<序号>.png` 的虚拟地址，由 `onDetectImageUrl`
 ///   按序号返回已读好的字节；
 /// - 录音、视频、附件它会把路径原样印出——改成名称说明，远程地址保留链接；
-/// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去。
+/// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去；
+/// - pdf 库填色时丢掉透明度，半透明的背景色会印成不透明的原色——文字色与
+///   背景色先按纸面压平成不透明色（[_flattenColorAttributes]）。
 ///
 /// 心情 emoji 不写进 PDF：内置字体没有 emoji 字形，会印成方框。
 ///
@@ -569,6 +572,7 @@ class DiaryPdfWriter {
       }
       final op = Map<String, dynamic>.from(raw);
       _normalizeCodeBlockAttribute(op);
+      _flattenColorAttributes(op);
       final insert = op['insert'];
       if (insert is String) {
         hasContent = hasContent || insert.trim().isNotEmpty;
@@ -629,6 +633,46 @@ class DiaryPdfWriter {
       return;
     }
     op['attributes'] = Map<String, dynamic>.from(attrs)..['code-block'] = true;
+  }
+
+  /// PDF 的纸面颜色：页面不画背景，即白纸。
+  static const Color _paper = Color(0xFFFFFFFF);
+
+  /// 把文字色 / 背景色压平成叠在纸面上的不透明色。
+  ///
+  /// 为什么：pdf 库填色时只写 RGB、丢掉透明度。背景预设都是半透明的（如浅红
+  /// `#4DFF6369` 只有 30% 不透明度，叠在纸面上才是浅红），交给插件后会印成
+  /// 不透明的 `#FF6369`，几乎和同色系的红字一样深，字也看不清。应用里看到
+  /// 的是叠在纸面上的效果，这里按同样的方式预先混合：背景叠在白纸上，文字
+  /// 叠在压平后的背景（没有背景时是白纸）上；完全透明的背景等于没有背景，
+  /// 直接去掉。只处理 `#RRGGBB` / `#AARRGGBB`（[parseDiaryColorValue]），
+  /// 其他写法原样交给插件；属性表拷贝一份再改，不动调用方的正文。
+  static void _flattenColorAttributes(Map<String, dynamic> op) {
+    final attrs = op['attributes'];
+    if (attrs is! Map) {
+      return;
+    }
+    Color? parse(Object? value) =>
+        value is String ? parseDiaryColorValue(value) : null;
+    final background = parse(attrs['background']);
+    final text = parse(attrs['color']);
+    if (background == null && text == null) {
+      return;
+    }
+    final flattened = Map<String, dynamic>.from(attrs);
+    var under = _paper;
+    if (background != null) {
+      if (background.a == 0) {
+        flattened.remove('background');
+      } else {
+        under = Color.alphaBlend(background, _paper);
+        flattened['background'] = encodeDiaryColor(under);
+      }
+    }
+    if (text != null) {
+      flattened['color'] = encodeDiaryColor(Color.alphaBlend(text, under));
+    }
+    op['attributes'] = flattened;
   }
 
   static void _addImage(List<Uint8List> images, Uint8List bytes) {

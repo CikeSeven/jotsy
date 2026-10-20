@@ -162,10 +162,10 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
 
-    expect(settings.diaryRecentColorsRaw, contains('#FF0080FF'));
+    expect(settings.diarySavedColorsRaw, contains('#FF0080FF'));
     await tester.tap(find.text('色板'));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('颜色 #0080FF'), findsOneWidget);
+    expect(find.bySemanticsLabel('我的颜色 #0080FF'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await unmount(tester);
   });

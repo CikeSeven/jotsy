@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_spectrum.dart';
@@ -9,7 +10,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_spec
 import '../../../support/diary_color_panel_harness.dart';
 
 /// 颜色面板的「自定义」页：拖动只预览、松手写入一次；色相 / 不透明度条；
-/// 颜色代码用普通文字键盘、组字时不改写；焦点交接；跟随选区的颜色。
+/// 颜色代码用普通文字键盘、组字时不改写；焦点交接；跟随选区的颜色；写入的
+/// 颜色存进我的颜色（同一次调色只留最后一个）。
 void main() {
   setUpAll(loadColorPanelFonts);
 
@@ -26,8 +28,13 @@ void main() {
     WidgetTester tester, {
     quill.QuillController? controller,
     String tool = colorPanelTextTool,
+    DiarySavedColors savedColors = DiarySavedColors.empty,
   }) async {
-    final harness = await pumpColorPanel(tester, controller: controller);
+    final harness = await pumpColorPanel(
+      tester,
+      controller: controller,
+      savedColors: savedColors,
+    );
     harness.editorFocus.requestFocus();
     await tester.pump();
     await tester.tap(find.byTooltip(tool));
@@ -57,16 +64,14 @@ void main() {
     await tester.pump();
     expect(colorPanelAttributesAt(harness.controller, 0), isNull);
     expect(hexText(tester), '0080FF');
-    expect(harness.usedColors, isEmpty);
+    expect(harness.saved.value.isEmpty, isTrue);
 
     await gesture.up();
     await tester.pumpAndSettle();
     expect(colorPanelAttributesAt(harness.controller, 0), <String, dynamic>{
       'color': '#FF0080FF',
     });
-    expect(harness.usedColors, <(DiaryColorTarget, Color)>[
-      (DiaryColorTarget.text, const Color(0xFF0080FF)),
-    ]);
+    expect(harness.saved.value.text, <Color>[const Color(0xFF0080FF)]);
     // 一次拖动只是一步撤销。
     harness.controller.undo();
     await tester.pumpAndSettle();
@@ -109,7 +114,8 @@ void main() {
     expect(colorPanelAttributesAt(harness.controller, 0), <String, dynamic>{
       'background': '#FF5B9BFF',
     });
-    expect(harness.usedColors.single.$1, DiaryColorTarget.background);
+    expect(harness.saved.value.background, <Color>[const Color(0xFF5B9BFF)]);
+    expect(harness.saved.value.text, isEmpty);
 
     // 文字色没有不透明度条。
     await tester.tap(find.byTooltip(colorPanelTextTool));
@@ -166,7 +172,7 @@ void main() {
       'color': '#FF3A7BD5',
     });
     expect(harness.editorFocus.hasFocus, isTrue);
-    expect(harness.usedColors.single.$2, const Color(0xFF3A7BD5));
+    expect(harness.saved.value.text, <Color>[const Color(0xFF3A7BD5)]);
   });
 
   testWidgets('a code applied at a collapsed caret colors the next text', (
@@ -320,6 +326,104 @@ void main() {
       );
       expect(result.text, '3A7BD5');
       expect(result.selection, const TextSelection.collapsed(offset: 6));
+    });
+  });
+
+  group('saving into my colors', () {
+    Future<void> tapArea(WidgetTester tester, Offset fraction) async {
+      final area = tester.getRect(find.byType(DiaryColorSaturationValueArea));
+      await tapAt(
+        tester,
+        area.topLeft +
+            Offset(
+              (area.width - 2) * fraction.dx + 1,
+              (area.height - 2) * fraction.dy + 1,
+            ),
+      );
+    }
+
+    testWidgets('tuning the same text keeps only the last color', (
+      tester,
+    ) async {
+      final harness = await openCustom(
+        tester,
+        savedColors: const DiarySavedColors(text: <Color>[Color(0xFF112233)]),
+      );
+
+      await tapArea(tester, const Offset(1, 0));
+      await tapArea(tester, const Offset(0.5, 0.5));
+      await tapArea(tester, const Offset(0.8, 0.2));
+
+      final applied = parseDiaryColorValue(
+        colorPanelAttributesAt(harness.controller, 0)!['color'] as String,
+      )!;
+      // 中间色都被替换掉，已有的颜色留在原位。
+      expect(harness.saved.value.text, <Color>[
+        applied,
+        const Color(0xFF112233),
+      ]);
+      expect(find.text('已保存'), findsOneWidget);
+    });
+
+    testWidgets('coloring other text saves another color', (tester) async {
+      final harness = await openCustom(tester);
+
+      await tapArea(tester, const Offset(1, 0));
+      final first = harness.saved.value.text.single;
+      harness.controller.updateSelection(
+        const TextSelection(baseOffset: 2, extentOffset: 4),
+        quill.ChangeSource.local,
+      );
+      await tester.pumpAndSettle();
+      await tapArea(tester, const Offset(0.4, 0.6));
+
+      expect(harness.saved.value.text, hasLength(2));
+      expect(harness.saved.value.text.last, first);
+      expect(
+        colorPanelAttributesAt(harness.controller, 2)!['color'],
+        encodeDiaryColor(harness.saved.value.text.first),
+      );
+    });
+
+    testWidgets('a color already saved is neither repeated nor moved', (
+      tester,
+    ) async {
+      const saved = DiarySavedColors(
+        text: <Color>[Color(0xFF112233), Color(0xFF3A7BD5)],
+      );
+      final harness = await openCustom(tester, savedColors: saved);
+      expect(find.text('已保存'), findsNothing);
+
+      await tester.tap(hexField);
+      await tester.pumpAndSettle();
+      await tester.enterText(hexField, '3A7BD5');
+      await tester.pump();
+      // 输入中预览就认得出已保存的颜色。
+      expect(find.text('已保存'), findsOneWidget);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(harness.saved.value, saved);
+
+      // 接着在同一段文字上调色：已存的那个不被替换，新颜色另存在最前。
+      await tapArea(tester, const Offset(1, 0));
+      expect(harness.saved.value.text, hasLength(3));
+      expect(harness.saved.value.text.sublist(1), saved.text);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a saved color shows on the swatches page right away', (
+      tester,
+    ) async {
+      final harness = await openCustom(tester);
+      await tapArea(tester, const Offset(1, 0));
+      final color = harness.saved.value.text.single;
+
+      await tester.tap(find.text('色板'));
+      await tester.pumpAndSettle();
+      expect(
+        find.bySemanticsLabel('我的颜色 ${diaryColorRgbHex(color)}'),
+        findsOneWidget,
+      );
     });
   });
 }

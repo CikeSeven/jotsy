@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_preview.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_spectrum.dart';
 
 /// 自定义取色页的高度：饱和度 / 亮度面与竖条同高，右侧预览 + 颜色代码。
@@ -25,7 +26,11 @@ const double _kDefaultBackgroundAlpha = 0x4D / 0xFF;
 ///
 /// - 输入：正文控制器、目标、选区当前颜色 [current]（由面板随选区刷新）；
 /// - 输出：拖动中只改面板里的预览，松手才经 `formatSelection` 写入正文
-///   （每次松手一步撤销），随后 [onColorUsed] 让工具栏记入最近颜色；
+///   （每次松手一步撤销），随后经 [onSave] 存进我的颜色；
+/// - 保存按“一次调色”合并：在同一个选区上接连松手 / 应用代码，后一次替换
+///   前一次存下的颜色（`replacing`），调色途中的中间色不会一个个堆进我的
+///   颜色；选区变了（给另一段文字上色）、换了目标或离开这一页就算新的一次。
+///   已经存过的颜色不重复保存、也不挪位置。预览下方的“已保存”随之出现；
 /// - 同步：选区颜色变化（移动光标、撤销）时色谱跟过去；拖动中或正在输入
 ///   代码时不跟，以免抢走手上的操作。刚写入的颜色经 8 位取整后再读回来，
 ///   与 [_syncedArgb] 相同就不重新换算，圆点不会被取整拖动；
@@ -44,7 +49,8 @@ class DiaryColorCustomPicker extends StatefulWidget {
     required this.target,
     required this.current,
     required this.active,
-    required this.onColorUsed,
+    required this.savedColors,
+    required this.onSave,
   });
 
   final quill.QuillController controller;
@@ -53,7 +59,12 @@ class DiaryColorCustomPicker extends StatefulWidget {
 
   /// 面板是否仍展开着；收起时正在输入的代码作废，焦点立即还给正文。
   final bool active;
-  final ValueChanged<Color> onColorUsed;
+
+  /// 当前目标的我的颜色：判断写入的颜色是否新存进去，以及预览的“已保存”。
+  final List<Color> savedColors;
+
+  /// 保存一次写入的颜色；`replacing` 为这次调色先前存下、应被替换的颜色。
+  final void Function(Color color, Color? replacing) onSave;
 
   @override
   State<DiaryColorCustomPicker> createState() => _DiaryColorCustomPickerState();
@@ -76,6 +87,11 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
   /// 开始输入代码前面板上的颜色：放弃输入时回到这里（选区没有颜色可同步时
   /// 不会停在输入到一半的预览色上）。应用代码后清空。
   HSVColor? _hsvBeforeHex;
+
+  /// 这次调色新存进我的颜色的那一个，以及当时的选区：再在同一选区上写入时
+  /// 替换它。新的一次调色（选区变化、换目标）不替换。
+  Color? _sessionColor;
+  TextSelection? _sessionSelection;
 
   bool get _isBackground => widget.target == DiaryColorTarget.background;
 
@@ -100,6 +116,8 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
     if (oldWidget.active && !widget.active) _leaveHex(restoreFocus: true);
     if (oldWidget.target != widget.target) {
       _leaveHex(restoreFocus: true);
+      _sessionColor = null;
+      _sessionSelection = null;
       _syncedArgb = null;
       _alpha = _kDefaultBackgroundAlpha;
       _syncFrom(widget.current);
@@ -154,7 +172,27 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
     if (widget.current.matches(color)) return;
     _syncedArgb = color.toARGB32();
     widget.controller.formatSelection(widget.target.attributeFor(color));
-    widget.onColorUsed(color);
+    _save(color);
+  }
+
+  /// 存进我的颜色，同一次调色替换先前存下的那一个（见类注释）。
+  void _save(Color color) {
+    final selection = widget.controller.selection;
+    final previous = _sessionColor;
+    final replacing = previous != null && selection == _sessionSelection
+        ? previous
+        : null;
+    final isNew =
+        DiaryColorPreset.match(color, widget.target) == null &&
+        !widget.savedColors.any((Color saved) => sameDiaryColor(saved, color));
+    widget.onSave(color, replacing);
+    // 新存进去的、或替换后仍是同一个颜色时，下一次在这里替换它；颜色本来就
+    // 存过（或是预设）时这次调色到此为止，下一次另存。
+    _sessionColor =
+        isNew || (replacing != null && sameDiaryColor(replacing, color))
+        ? color
+        : null;
+    _sessionSelection = selection;
   }
 
   void _handleChangeStart() {
@@ -281,7 +319,13 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Expanded(
-                  child: _ColorPreview(color: color, target: widget.target),
+                  child: DiaryColorPreview(
+                    color: color,
+                    target: widget.target,
+                    saved: widget.savedColors.any(
+                      (Color saved) => sameDiaryColor(saved, color),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 SizedBox(
@@ -300,50 +344,6 @@ class _DiaryColorCustomPickerState extends State<DiaryColorCustomPicker> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// 所见即所得的预览：文字色写出“Aa”，背景色在纸面上叠出高亮、上面是正文
-/// 墨色的“Aa”。
-class _ColorPreview extends StatelessWidget {
-  const _ColorPreview({required this.color, required this.target});
-
-  final Color color;
-  final DiaryColorTarget target;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final background = target == DiaryColorTarget.background;
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-      side: BorderSide(color: colors.outlineVariant),
-    );
-    return ExcludeSemantics(
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          color: background ? colors.surface : colors.surfaceContainerHigh,
-          shape: shape,
-        ),
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            color: background ? color : null,
-            shape: shape,
-          ),
-          child: Center(
-            child: Text(
-              'Aa',
-              style: TextStyle(
-                fontSize: 26,
-                height: 1,
-                fontWeight: FontWeight.w700,
-                color: background ? colors.onSurface : color,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

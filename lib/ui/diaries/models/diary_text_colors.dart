@@ -9,7 +9,6 @@
 /// 写法，比较与去重才不会因大小写或位数不同而失效。
 library;
 
-import 'dart:math' as math;
 import 'dart:ui' show Color;
 
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -165,8 +164,8 @@ String sanitizeDiaryHexInput(String input) => input
 
 /// 这篇日记里用过、但不是预设的颜色（按文档顺序去重，读不懂的值跳过）。
 ///
-/// 遍历整篇 Delta，只在面板打开、切换目标与应用颜色代码后调用一次，不在
-/// 每次构建或按键时计算。
+/// 遍历整篇 Delta，只在面板打开、切换目标与回到色板时调用一次，不在每次
+/// 构建或按键时计算。
 List<Color> collectDiaryDocumentColors(
   quill.Document document,
   DiaryColorTarget target,
@@ -184,48 +183,45 @@ List<Color> collectDiaryDocumentColors(
   return result;
 }
 
-/// 色块网格的列数、行数与实际放得下的自定义颜色数。
+/// 色板页的排布：列数、预设占几行，以及下方“我的颜色”一行。
 ///
 /// 规则：列数按 40dp 一格取整并夹在 [minColumns, maxColumns]；第一格是默认 /
-/// 无背景，随后 11 个预设，再用自定义颜色（最近用过的在前，再接这篇日记里
-/// 用过的）填满至多两行，多出的不显示。纯计算，面板高度由此直接得出，不必
-/// 等测量。
+/// 无背景，随后 11 个预设，按列数折行；预设之下隔 [stripGap] 是固定一行的
+/// “我的颜色”（首格新建、末格管理，中间横向滚动），存多少都不改变高度。纯
+/// 计算，面板高度由此直接得出，不必等测量；与保存了几个颜色无关，切换目标
+/// 时面板不会跳动。
 class DiaryColorGridLayout {
   const DiaryColorGridLayout._({
     required this.columns,
-    required this.rows,
-    required this.customCount,
+    required this.presetRows,
   });
 
-  factory DiaryColorGridLayout.resolve({
-    required double innerWidth,
-    required int usedColorCount,
-  }) {
+  factory DiaryColorGridLayout.resolve({required double innerWidth}) {
     final columns = (innerWidth / cellHeight).floor().clamp(
       minColumns,
       maxColumns,
     );
-    final fixed = 1 + DiaryColorPreset.values.length;
-    final capacity = math.max(fixed, maxRows * columns);
-    final customCount = math.min(usedColorCount, capacity - fixed);
-    final rows = ((fixed + customCount) / columns).ceil();
     return DiaryColorGridLayout._(
       columns: columns,
-      rows: rows,
-      customCount: customCount,
+      presetRows: (presetCellCount / columns).ceil(),
     );
   }
 
   static const double cellHeight = 40;
   static const int minColumns = 6;
   static const int maxColumns = 16;
-  static const int maxRows = 2;
+
+  /// 预设与“我的颜色”之间的间距（中间画一道细分隔线）。
+  static const double stripGap = 8;
+
+  /// 默认 / 无背景 + 11 个预设。
+  static final int presetCellCount = 1 + DiaryColorPreset.values.length;
 
   final int columns;
-  final int rows;
+  final int presetRows;
 
-  /// 实际显示的自定义颜色个数（取文档顺序的前几个）。
-  final int customCount;
+  double get presetHeight => presetRows * cellHeight;
 
-  double get height => rows * cellHeight;
+  /// 色板页总高：预设 + 间距 + 我的颜色一行。
+  double get height => presetHeight + stripGap + cellHeight;
 }

@@ -28,16 +28,34 @@ extension DiaryColorPresetLabel on DiaryColorPreset {
   };
 }
 
+/// 管理“我的颜色”时色块右上角的小角标。
+enum DiaryColorSwatchBadge {
+  none,
+
+  /// 移除：我的颜色。
+  remove,
+
+  /// 收藏：本篇用过、还没保存的颜色。
+  keep,
+}
+
+/// 角标直径：叠在 36dp 选中环的右上角，压住色块边缘一点。
+const double _kBadgeSize = 15;
+
 /// 颜色面板里的一格色块（含第一格的“默认 / 无背景”）。
 ///
 /// - 输入：色块颜色 [color]（null 表示默认 / 无背景）、目标、选中态、点按回调；
+///   “我的颜色”一行另有长按（进入管理）与管理角标 [badge]，那里不挂长按
+///   提示（[tooltip] 为 false），以免与长按进入管理抢同一个手势；
 /// - 文字目标画实心圆，选中时加勾；背景目标让半透明色叠在卡片上，并在中间写
 ///   一个 onSurface 的“A”，就是高亮后正文的样子（所见即所得）；
 /// - “默认”格：文字目标是 onSurface 实心圆（正文实际的默认墨色），背景目标是
 ///   空心圆加一道斜线；
 /// - 切换目标时色块原地补间到新颜色（`medium` + effects），“A”与斜线随之淡入
 ///   淡出；选中环缩放淡入（`fast`，缩放 spatial、透明度 effects / exit），按下
-///   时色块弹性缩小。普通点按不震动（DESIGN §4.3）。
+///   时色块弹性缩小。普通点按不震动（DESIGN §4.3）；
+/// - 有角标时不画选中环（管理中点按是移除 / 收藏，不是套用）；角标缩放淡入
+///   （`fast` + spatial）。
 class DiaryColorSwatch extends StatefulWidget {
   const DiaryColorSwatch({
     super.key,
@@ -46,6 +64,9 @@ class DiaryColorSwatch extends StatefulWidget {
     required this.selected,
     required this.label,
     required this.onTap,
+    this.onLongPress,
+    this.badge = DiaryColorSwatchBadge.none,
+    this.tooltip = true,
   });
 
   final Color? color;
@@ -53,6 +74,9 @@ class DiaryColorSwatch extends StatefulWidget {
   final bool selected;
   final String label;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+  final DiaryColorSwatchBadge badge;
+  final bool tooltip;
 
   @override
   State<DiaryColorSwatch> createState() => _DiaryColorSwatchState();
@@ -66,7 +90,8 @@ class _DiaryColorSwatchState extends State<DiaryColorSwatch> {
     final colors = Theme.of(context).colorScheme;
     final isDefault = widget.color == null;
     final background = widget.target == DiaryColorTarget.background;
-    final selected = widget.selected;
+    final badge = widget.badge;
+    final selected = widget.selected && badge == DiaryColorSwatchBadge.none;
     // 默认格：文字目标填正文默认墨色，背景目标为透明（空心）。
     final fill = isDefault
         ? (background
@@ -139,64 +164,68 @@ class _DiaryColorSwatchState extends State<DiaryColorSwatch> {
       },
     );
 
-    return Tooltip(
-      message: widget.label,
-      child: Semantics(
-        button: true,
-        selected: selected,
-        label: widget.label,
-        excludeSemantics: true,
-        child: InkResponse(
-          onTap: widget.onTap,
-          onHighlightChanged: (bool highlighted) {
-            if (highlighted != _pressed) {
-              setState(() => _pressed = highlighted);
-            }
-          },
-          radius: _kRingSize / 2,
-          child: Center(
-            child: SizedBox.square(
-              dimension: _kRingSize,
-              child: Stack(
-                alignment: Alignment.center,
-                children: <Widget>[
-                  AnimatedOpacity(
-                    opacity: selected ? 1 : 0,
+    final cell = Semantics(
+      button: true,
+      selected: selected,
+      label: widget.label,
+      excludeSemantics: true,
+      child: InkResponse(
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
+        onHighlightChanged: (bool highlighted) {
+          if (highlighted != _pressed) {
+            setState(() => _pressed = highlighted);
+          }
+        },
+        radius: _kRingSize / 2,
+        child: Center(
+          child: SizedBox.square(
+            dimension: _kRingSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                AnimatedOpacity(
+                  opacity: selected ? 1 : 0,
+                  duration: fast,
+                  curve: selected
+                      ? ExpressiveMotion.effects
+                      : ExpressiveMotion.exit,
+                  child: AnimatedScale(
+                    scale: selected ? 1 : 0.8,
                     duration: fast,
                     curve: selected
-                        ? ExpressiveMotion.effects
+                        ? ExpressiveMotion.spatial
                         : ExpressiveMotion.exit,
-                    child: AnimatedScale(
-                      scale: selected ? 1 : 0.8,
-                      duration: fast,
-                      curve: selected
-                          ? ExpressiveMotion.spatial
-                          : ExpressiveMotion.exit,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: colors.onSurface,
-                            width: _kRingWidth,
-                          ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: colors.onSurface,
+                          width: _kRingWidth,
                         ),
-                        child: const SizedBox.square(dimension: _kRingSize),
                       ),
+                      child: const SizedBox.square(dimension: _kRingSize),
                     ),
                   ),
-                  AnimatedScale(
-                    scale: _pressed ? 0.88 : 1,
-                    duration: fast,
-                    curve: ExpressiveMotion.spatial,
-                    child: swatch,
-                  ),
-                ],
-              ),
+                ),
+                AnimatedScale(
+                  scale: _pressed ? 0.88 : 1,
+                  duration: fast,
+                  curve: ExpressiveMotion.spatial,
+                  child: swatch,
+                ),
+                PositionedDirectional(
+                  top: 0,
+                  end: 0,
+                  child: _SwatchBadge(badge: badge),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+    return widget.tooltip ? Tooltip(message: widget.label, child: cell) : cell;
   }
 
   /// 勾选画在任意颜色上，对比色只能由色块明度决定（与 ColorSwatchButton 同一
@@ -205,6 +234,51 @@ class _DiaryColorSwatchState extends State<DiaryColorSwatch> {
       ThemeData.estimateBrightnessForColor(swatch) == Brightness.dark
       ? Colors.white
       : Colors.black87;
+}
+
+/// 管理时的角标：移除为 error 色“×”，收藏为 primary 色“+”；换角标或收起时
+/// 缩放淡出，最后一次的图形保留到淡出结束。
+class _SwatchBadge extends StatelessWidget {
+  const _SwatchBadge({required this.badge});
+
+  final DiaryColorSwatchBadge badge;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final (Color fill, Color ink, FaIconData icon)? style = switch (badge) {
+      DiaryColorSwatchBadge.none => null,
+      DiaryColorSwatchBadge.remove => (
+        colors.error,
+        colors.onError,
+        FontAwesomeIcons.xmark,
+      ),
+      DiaryColorSwatchBadge.keep => (
+        colors.primary,
+        colors.onPrimary,
+        FontAwesomeIcons.plus,
+      ),
+    };
+    return ExpressiveIconSwap(
+      switchKey: badge,
+      child: style == null
+          ? const SizedBox.square(dimension: _kBadgeSize)
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                color: style.$1,
+                shape: BoxShape.circle,
+                // 与卡片表面同色的描边，把角标从色块上“切”出来。
+                border: Border.all(color: colors.surface, width: 1.5),
+              ),
+              child: SizedBox.square(
+                dimension: _kBadgeSize,
+                child: Center(
+                  child: FaIcon(style.$3, size: 8, color: style.$2),
+                ),
+              ),
+            ),
+    );
+  }
 }
 
 /// “无背景色”格子里的斜线：从右上到左下，两端收在圆内。

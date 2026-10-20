@@ -6919,7 +6919,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryColorGreen => '绿';
 
   @override
-  String get diaryColorTeal => '青';
+  String get diaryColorTeal => '蓝绿';
 
   @override
   String get diaryColorBlue => '蓝';
@@ -6938,6 +6938,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryColorGray => '灰';
+
+  @override
+  String get diaryColorPanelMaterial => '色系';
+
+  @override
+  String get diaryColorDeepPurple => '深紫';
+
+  @override
+  String get diaryColorLightBlue => '浅蓝';
+
+  @override
+  String get diaryColorCyan => '青';
+
+  @override
+  String get diaryColorLightGreen => '浅绿';
+
+  @override
+  String get diaryColorLime => '青柠';
+
+  @override
+  String get diaryColorAmber => '琥珀';
+
+  @override
+  String get diaryColorDeepOrange => '深橙';
+
+  @override
+  String get diaryColorBlueGray => '蓝灰';
+
+  @override
+  String get diaryColorWhite => '白';
+
+  @override
+  String get diaryColorBlack => '黑';
+
+  @override
+  String diaryColorShade(String family, String tone) {
+    return '$family $tone';
+  }
+
+  @override
+  String diaryColorPanelFamily(String family) {
+    return '$family色系';
+  }
 
   @override
   String get tagPickerSearchHint => '搜索标签';
@@ -7062,4 +7105,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get supportDeveloperWeChatUnavailable => '没能打开微信，请手动打开微信后扫码。';
+
+  @override
+  String get diaryColorPanelNewColor => '新建颜色';
+
+  @override
+  String get diaryColorPanelManageColors => '管理我的颜色';
+
+  @override
+  String get diaryColorPanelManageDone => '完成';
+
+  @override
+  String get diaryColorPanelSavedEmpty => '在「自定义」调出的颜色会保存在这里';
+
+  @override
+  String get diaryColorPanelSavedMark => '已保存';
+
+  @override
+  String diaryColorPanelSavedColor(String color) {
+    return '我的颜色 $color';
+  }
+
+  @override
+  String diaryColorPanelDocumentColor(String color) {
+    return '本篇用过的颜色 $color';
+  }
+
+  @override
+  String diaryColorPanelRemoveColor(String color) {
+    return '移除 $color';
+  }
+
+  @override
+  String diaryColorPanelKeepColor(String color) {
+    return '保存 $color 到我的颜色';
+  }
 }

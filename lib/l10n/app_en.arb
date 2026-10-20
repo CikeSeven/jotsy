@@ -9913,7 +9913,7 @@
   },
   "diaryColorPanelSwatches": "Swatches",
   "@diaryColorPanelSwatches": {
-    "description": "Editor toolbar color panel: tab label of the page with the default, preset and recently used colors."
+    "description": "Editor toolbar color panel: tab label of the page with the default and preset colors and My colors."
   },
   "diaryColorPanelSaturationValue": "Saturation and brightness",
   "@diaryColorPanelSaturationValue": {
@@ -9929,47 +9929,112 @@
   },
   "diaryColorRed": "Red",
   "@diaryColorRed": {
-    "description": "Name of the red preset color in the editor color panel."
+    "description": "Name of the red color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorOrange": "Orange",
   "@diaryColorOrange": {
-    "description": "Name of the orange preset color in the editor color panel."
+    "description": "Name of the orange color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorYellow": "Yellow",
   "@diaryColorYellow": {
-    "description": "Name of the yellow preset color in the editor color panel."
+    "description": "Name of the yellow color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorGreen": "Green",
   "@diaryColorGreen": {
-    "description": "Name of the green preset color in the editor color panel."
+    "description": "Name of the green color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorTeal": "Teal",
   "@diaryColorTeal": {
-    "description": "Name of the teal preset color in the editor color panel."
+    "description": "Name of the teal color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorBlue": "Blue",
   "@diaryColorBlue": {
-    "description": "Name of the blue preset color in the editor color panel."
+    "description": "Name of the blue color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorIndigo": "Indigo",
   "@diaryColorIndigo": {
-    "description": "Name of the indigo preset color in the editor color panel."
+    "description": "Name of the indigo color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorPurple": "Purple",
   "@diaryColorPurple": {
-    "description": "Name of the purple preset color in the editor color panel."
+    "description": "Name of the purple color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorPink": "Pink",
   "@diaryColorPink": {
-    "description": "Name of the pink preset color in the editor color panel."
+    "description": "Name of the pink color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorBrown": "Brown",
   "@diaryColorBrown": {
-    "description": "Name of the brown preset color in the editor color panel."
+    "description": "Name of the brown color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorGray": "Gray",
   "@diaryColorGray": {
-    "description": "Name of the gray preset color in the editor color panel."
+    "description": "Name of the gray color in the editor color panel (preset swatch and Material color family)."
+  },
+  "diaryColorPanelMaterial": "Material",
+  "@diaryColorPanelMaterial": {
+    "description": "Editor toolbar color panel: tab label of the page with the Material color palette (color families and their shades)."
+  },
+  "diaryColorDeepPurple": "Deep purple",
+  "@diaryColorDeepPurple": {
+    "description": "Name of the deep purple Material color family in the editor color panel."
+  },
+  "diaryColorLightBlue": "Light blue",
+  "@diaryColorLightBlue": {
+    "description": "Name of the light blue Material color family in the editor color panel."
+  },
+  "diaryColorCyan": "Cyan",
+  "@diaryColorCyan": {
+    "description": "Name of the cyan Material color family in the editor color panel."
+  },
+  "diaryColorLightGreen": "Light green",
+  "@diaryColorLightGreen": {
+    "description": "Name of the light green Material color family in the editor color panel."
+  },
+  "diaryColorLime": "Lime",
+  "@diaryColorLime": {
+    "description": "Name of the lime Material color family in the editor color panel."
+  },
+  "diaryColorAmber": "Amber",
+  "@diaryColorAmber": {
+    "description": "Name of the amber Material color family in the editor color panel."
+  },
+  "diaryColorDeepOrange": "Deep orange",
+  "@diaryColorDeepOrange": {
+    "description": "Name of the deep orange Material color family in the editor color panel."
+  },
+  "diaryColorBlueGray": "Blue gray",
+  "@diaryColorBlueGray": {
+    "description": "Name of the blue gray Material color family in the editor color panel."
+  },
+  "diaryColorWhite": "White",
+  "@diaryColorWhite": {
+    "description": "Name of the pure white swatch at the light end of the gray Material color family."
+  },
+  "diaryColorBlack": "Black",
+  "@diaryColorBlack": {
+    "description": "Name of the pure black swatch at the dark end of the gray Material color family."
+  },
+  "diaryColorShade": "{family} {tone}",
+  "@diaryColorShade": {
+    "description": "Editor toolbar color panel: accessibility label and tooltip of a Material shade swatch, e.g. Red 500 or Blue A200; family is a color name, tone the Material shade name.",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      },
+      "tone": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelFamily": "{family} shades",
+  "@diaryColorPanelFamily": {
+    "description": "Editor toolbar color panel: accessibility label and tooltip of a color family dot in the family row of the Material page; family is a color name.",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
   },
   "tagPickerSearchHint": "Search tags",
   "@tagPickerSearchHint": {
@@ -10137,5 +10202,61 @@
   "supportDeveloperWeChatUnavailable": "Couldn't open WeChat. Open it yourself and scan the code.",
   "@supportDeveloperWeChatUnavailable": {
     "description": "Tip sheet: shown under the buttons when WeChat can't be opened."
+  },
+  "diaryColorPanelNewColor": "New color",
+  "@diaryColorPanelNewColor": {
+    "description": "Editor toolbar color panel: plus cell at the start of the My colors row; opens the custom page to mix a color."
+  },
+  "diaryColorPanelManageColors": "Manage my colors",
+  "@diaryColorPanelManageColors": {
+    "description": "Editor toolbar color panel: button at the end of the My colors row that enters manage mode (remove or keep colors)."
+  },
+  "diaryColorPanelManageDone": "Done",
+  "@diaryColorPanelManageDone": {
+    "description": "Editor toolbar color panel: the same button while managing My colors; tapping it leaves manage mode."
+  },
+  "diaryColorPanelSavedEmpty": "Colors you mix in Custom are kept here",
+  "@diaryColorPanelSavedEmpty": {
+    "description": "Editor toolbar color panel: hint in the My colors row while no color has been saved yet."
+  },
+  "diaryColorPanelSavedMark": "Saved",
+  "@diaryColorPanelSavedMark": {
+    "description": "Editor toolbar color panel, custom page: small caption under the preview when the current color is already in My colors."
+  },
+  "diaryColorPanelSavedColor": "My color {color}",
+  "@diaryColorPanelSavedColor": {
+    "description": "Editor toolbar color panel: accessibility label of a saved color swatch; color is #RRGGBB.",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelDocumentColor": "Used in this entry {color}",
+  "@diaryColorPanelDocumentColor": {
+    "description": "Editor toolbar color panel: accessibility label of a swatch for a color used in this entry but not saved; color is #RRGGBB.",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelRemoveColor": "Remove {color}",
+  "@diaryColorPanelRemoveColor": {
+    "description": "Editor toolbar color panel: accessibility label of a saved swatch in manage mode (tap removes it); color is #RRGGBB.",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelKeepColor": "Save {color} to my colors",
+  "@diaryColorPanelKeepColor": {
+    "description": "Editor toolbar color panel: accessibility label of a color used in this entry in manage mode (tap saves it); color is #RRGGBB.",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -9913,7 +9913,7 @@
   },
   "diaryColorPanelSwatches": "色板",
   "@diaryColorPanelSwatches": {
-    "description": "Editor toolbar color panel: tab label of the page with the default, preset and recently used colors."
+    "description": "编辑器颜色面板：默认、预设颜色与“我的颜色”所在页的页签名。"
   },
   "diaryColorPanelSaturationValue": "饱和度与亮度",
   "@diaryColorPanelSaturationValue": {
@@ -9929,47 +9929,112 @@
   },
   "diaryColorRed": "红",
   "@diaryColorRed": {
-    "description": "Name of the red preset color in the editor color panel."
+    "description": "Name of the red color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorOrange": "橙",
   "@diaryColorOrange": {
-    "description": "Name of the orange preset color in the editor color panel."
+    "description": "Name of the orange color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorYellow": "黄",
   "@diaryColorYellow": {
-    "description": "Name of the yellow preset color in the editor color panel."
+    "description": "Name of the yellow color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorGreen": "绿",
   "@diaryColorGreen": {
-    "description": "Name of the green preset color in the editor color panel."
+    "description": "Name of the green color in the editor color panel (preset swatch and Material color family)."
   },
-  "diaryColorTeal": "青",
+  "diaryColorTeal": "蓝绿",
   "@diaryColorTeal": {
-    "description": "Name of the teal preset color in the editor color panel."
+    "description": "Name of the teal color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorBlue": "蓝",
   "@diaryColorBlue": {
-    "description": "Name of the blue preset color in the editor color panel."
+    "description": "Name of the blue color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorIndigo": "靛",
   "@diaryColorIndigo": {
-    "description": "Name of the indigo preset color in the editor color panel."
+    "description": "Name of the indigo color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorPurple": "紫",
   "@diaryColorPurple": {
-    "description": "Name of the purple preset color in the editor color panel."
+    "description": "Name of the purple color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorPink": "粉",
   "@diaryColorPink": {
-    "description": "Name of the pink preset color in the editor color panel."
+    "description": "Name of the pink color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorBrown": "棕",
   "@diaryColorBrown": {
-    "description": "Name of the brown preset color in the editor color panel."
+    "description": "Name of the brown color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorGray": "灰",
   "@diaryColorGray": {
-    "description": "Name of the gray preset color in the editor color panel."
+    "description": "Name of the gray color in the editor color panel (preset swatch and Material color family)."
+  },
+  "diaryColorPanelMaterial": "色系",
+  "@diaryColorPanelMaterial": {
+    "description": "编辑器颜色面板：Material 色板（各色系及其深浅色阶）所在页的页签名。"
+  },
+  "diaryColorDeepPurple": "深紫",
+  "@diaryColorDeepPurple": {
+    "description": "编辑器颜色面板：Material 深紫色系的名称。"
+  },
+  "diaryColorLightBlue": "浅蓝",
+  "@diaryColorLightBlue": {
+    "description": "编辑器颜色面板：Material 浅蓝色系的名称。"
+  },
+  "diaryColorCyan": "青",
+  "@diaryColorCyan": {
+    "description": "编辑器颜色面板：Material 青色系的名称。"
+  },
+  "diaryColorLightGreen": "浅绿",
+  "@diaryColorLightGreen": {
+    "description": "编辑器颜色面板：Material 浅绿色系的名称。"
+  },
+  "diaryColorLime": "青柠",
+  "@diaryColorLime": {
+    "description": "编辑器颜色面板：Material 青柠色系的名称。"
+  },
+  "diaryColorAmber": "琥珀",
+  "@diaryColorAmber": {
+    "description": "编辑器颜色面板：Material 琥珀色系的名称。"
+  },
+  "diaryColorDeepOrange": "深橙",
+  "@diaryColorDeepOrange": {
+    "description": "编辑器颜色面板：Material 深橙色系的名称。"
+  },
+  "diaryColorBlueGray": "蓝灰",
+  "@diaryColorBlueGray": {
+    "description": "编辑器颜色面板：Material 蓝灰色系的名称。"
+  },
+  "diaryColorWhite": "白",
+  "@diaryColorWhite": {
+    "description": "编辑器颜色面板：灰色系最浅一端的纯白色块名称。"
+  },
+  "diaryColorBlack": "黑",
+  "@diaryColorBlack": {
+    "description": "编辑器颜色面板：灰色系最深一端的纯黑色块名称。"
+  },
+  "diaryColorShade": "{family} {tone}",
+  "@diaryColorShade": {
+    "description": "编辑器颜色面板：Material 色阶色块的读屏标签与长按提示，如“红 500”“蓝 A200”；family 为颜色名，tone 为色阶名。",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      },
+      "tone": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelFamily": "{family}色系",
+  "@diaryColorPanelFamily": {
+    "description": "编辑器颜色面板：色系页底部一行色系圆点的读屏标签与长按提示；family 为颜色名。",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
   },
   "tagPickerSearchHint": "搜索标签",
   "@tagPickerSearchHint": {
@@ -10137,5 +10202,61 @@
   "supportDeveloperWeChatUnavailable": "没能打开微信，请手动打开微信后扫码。",
   "@supportDeveloperWeChatUnavailable": {
     "description": "打赏面板：拉起微信失败时按钮下方的说明。"
+  },
+  "diaryColorPanelNewColor": "新建颜色",
+  "@diaryColorPanelNewColor": {
+    "description": "编辑器颜色面板：“我的颜色”一行首格的加号，点按转到自定义页调色。"
+  },
+  "diaryColorPanelManageColors": "管理我的颜色",
+  "@diaryColorPanelManageColors": {
+    "description": "编辑器颜色面板：“我的颜色”一行末格的按钮，进入管理（移除或收藏颜色）。"
+  },
+  "diaryColorPanelManageDone": "完成",
+  "@diaryColorPanelManageDone": {
+    "description": "编辑器颜色面板：管理我的颜色时末格按钮的名称，点按退出管理。"
+  },
+  "diaryColorPanelSavedEmpty": "在「自定义」调出的颜色会保存在这里",
+  "@diaryColorPanelSavedEmpty": {
+    "description": "编辑器颜色面板：还没有我的颜色时，色板页“我的颜色”一行的说明。"
+  },
+  "diaryColorPanelSavedMark": "已保存",
+  "@diaryColorPanelSavedMark": {
+    "description": "编辑器颜色面板自定义页：当前颜色已在我的颜色里时，预览下方的小字。"
+  },
+  "diaryColorPanelSavedColor": "我的颜色 {color}",
+  "@diaryColorPanelSavedColor": {
+    "description": "编辑器颜色面板：我的颜色色块的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelDocumentColor": "本篇用过的颜色 {color}",
+  "@diaryColorPanelDocumentColor": {
+    "description": "编辑器颜色面板：本篇日记用过、但没保存的颜色色块的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelRemoveColor": "移除 {color}",
+  "@diaryColorPanelRemoveColor": {
+    "description": "编辑器颜色面板：管理我的颜色时，点按色块即移除它的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelKeepColor": "保存 {color} 到我的颜色",
+  "@diaryColorPanelKeepColor": {
+    "description": "编辑器颜色面板：管理时，点按本篇用过的颜色即保存它的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
   }
 }

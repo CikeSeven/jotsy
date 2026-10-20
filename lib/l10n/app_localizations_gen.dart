@@ -12572,7 +12572,7 @@ abstract class AppLocalizations {
   /// **'RRGGBB'**
   String get diaryColorPanelHexHint;
 
-  /// Editor toolbar color panel: tab label of the page with the default, preset and recently used colors.
+  /// Editor toolbar color panel: tab label of the page with the default and preset colors and My colors.
   ///
   /// In en, this message translates to:
   /// **'Swatches'**
@@ -12596,71 +12596,149 @@ abstract class AppLocalizations {
   /// **'Opacity'**
   String get diaryColorPanelOpacity;
 
-  /// Name of the red preset color in the editor color panel.
+  /// Name of the red color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Red'**
   String get diaryColorRed;
 
-  /// Name of the orange preset color in the editor color panel.
+  /// Name of the orange color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Orange'**
   String get diaryColorOrange;
 
-  /// Name of the yellow preset color in the editor color panel.
+  /// Name of the yellow color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Yellow'**
   String get diaryColorYellow;
 
-  /// Name of the green preset color in the editor color panel.
+  /// Name of the green color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Green'**
   String get diaryColorGreen;
 
-  /// Name of the teal preset color in the editor color panel.
+  /// Name of the teal color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Teal'**
   String get diaryColorTeal;
 
-  /// Name of the blue preset color in the editor color panel.
+  /// Name of the blue color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Blue'**
   String get diaryColorBlue;
 
-  /// Name of the indigo preset color in the editor color panel.
+  /// Name of the indigo color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Indigo'**
   String get diaryColorIndigo;
 
-  /// Name of the purple preset color in the editor color panel.
+  /// Name of the purple color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Purple'**
   String get diaryColorPurple;
 
-  /// Name of the pink preset color in the editor color panel.
+  /// Name of the pink color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Pink'**
   String get diaryColorPink;
 
-  /// Name of the brown preset color in the editor color panel.
+  /// Name of the brown color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Brown'**
   String get diaryColorBrown;
 
-  /// Name of the gray preset color in the editor color panel.
+  /// Name of the gray color in the editor color panel (preset swatch and Material color family).
   ///
   /// In en, this message translates to:
   /// **'Gray'**
   String get diaryColorGray;
+
+  /// Editor toolbar color panel: tab label of the page with the Material color palette (color families and their shades).
+  ///
+  /// In en, this message translates to:
+  /// **'Material'**
+  String get diaryColorPanelMaterial;
+
+  /// Name of the deep purple Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep purple'**
+  String get diaryColorDeepPurple;
+
+  /// Name of the light blue Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Light blue'**
+  String get diaryColorLightBlue;
+
+  /// Name of the cyan Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cyan'**
+  String get diaryColorCyan;
+
+  /// Name of the light green Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Light green'**
+  String get diaryColorLightGreen;
+
+  /// Name of the lime Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Lime'**
+  String get diaryColorLime;
+
+  /// Name of the amber Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get diaryColorAmber;
+
+  /// Name of the deep orange Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep orange'**
+  String get diaryColorDeepOrange;
+
+  /// Name of the blue gray Material color family in the editor color panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue gray'**
+  String get diaryColorBlueGray;
+
+  /// Name of the pure white swatch at the light end of the gray Material color family.
+  ///
+  /// In en, this message translates to:
+  /// **'White'**
+  String get diaryColorWhite;
+
+  /// Name of the pure black swatch at the dark end of the gray Material color family.
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get diaryColorBlack;
+
+  /// Editor toolbar color panel: accessibility label and tooltip of a Material shade swatch, e.g. Red 500 or Blue A200; family is a color name, tone the Material shade name.
+  ///
+  /// In en, this message translates to:
+  /// **'{family} {tone}'**
+  String diaryColorShade(String family, String tone);
+
+  /// Editor toolbar color panel: accessibility label and tooltip of a color family dot in the family row of the Material page; family is a color name.
+  ///
+  /// In en, this message translates to:
+  /// **'{family} shades'**
+  String diaryColorPanelFamily(String family);
 
   /// Publish panel tag page: placeholder of the search field.
   ///
@@ -12889,6 +12967,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t open WeChat. Open it yourself and scan the code.'**
   String get supportDeveloperWeChatUnavailable;
+
+  /// Editor toolbar color panel: plus cell at the start of the My colors row; opens the custom page to mix a color.
+  ///
+  /// In en, this message translates to:
+  /// **'New color'**
+  String get diaryColorPanelNewColor;
+
+  /// Editor toolbar color panel: button at the end of the My colors row that enters manage mode (remove or keep colors).
+  ///
+  /// In en, this message translates to:
+  /// **'Manage my colors'**
+  String get diaryColorPanelManageColors;
+
+  /// Editor toolbar color panel: the same button while managing My colors; tapping it leaves manage mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryColorPanelManageDone;
+
+  /// Editor toolbar color panel: hint in the My colors row while no color has been saved yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors you mix in Custom are kept here'**
+  String get diaryColorPanelSavedEmpty;
+
+  /// Editor toolbar color panel, custom page: small caption under the preview when the current color is already in My colors.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get diaryColorPanelSavedMark;
+
+  /// Editor toolbar color panel: accessibility label of a saved color swatch; color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'My color {color}'**
+  String diaryColorPanelSavedColor(String color);
+
+  /// Editor toolbar color panel: accessibility label of a swatch for a color used in this entry but not saved; color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'Used in this entry {color}'**
+  String diaryColorPanelDocumentColor(String color);
+
+  /// Editor toolbar color panel: accessibility label of a saved swatch in manage mode (tap removes it); color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {color}'**
+  String diaryColorPanelRemoveColor(String color);
+
+  /// Editor toolbar color panel: accessibility label of a color used in this entry in manage mode (tap saves it); color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {color} to my colors'**
+  String diaryColorPanelKeepColor(String color);
 }
 
 class _AppLocalizationsDelegate

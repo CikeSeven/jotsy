@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/diaries/models/diary_recent_colors.dart';
+import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_custom_picker.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_material_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 import '../../../support/diary_color_panel_harness.dart';
 
-/// 颜色面板：卡片内展开、色板写入、目标切换、色板 / 自定义页签与高度报告、
-/// 最近颜色的排列、窄屏表头与减少动画。自定义页的取色行为见
-/// diary_color_custom_picker_test.dart。
+/// 颜色面板：卡片内展开、色板写入、目标切换、色板 / 色系 / 自定义页签与高度
+/// 报告、窄屏表头与减少动画。色系页见 diary_color_material_page_test.dart，
+/// 自定义页的取色行为见 diary_color_custom_picker_test.dart，我的颜色一行见
+/// diary_color_saved_strip_test.dart。
 void main() {
   setUpAll(loadColorPanelFonts);
 
@@ -50,9 +52,9 @@ void main() {
     expect(colorPanelAttributesAt(harness.controller, 0), <String, dynamic>{
       'color': '#FFE5484D',
     });
-    // 面板保持打开，便于继续调整；色板颜色不记入最近颜色。
+    // 面板保持打开，便于继续调整；预设不存进我的颜色。
     expect(find.byType(DiaryColorPanel), findsOneWidget);
-    expect(harness.usedColors, isEmpty);
+    expect(harness.edits, 0);
   });
 
   testWidgets('the default swatch clears the text color', (tester) async {
@@ -93,10 +95,11 @@ void main() {
     });
   });
 
-  testWidgets('switching targets re-reports the extent when the grid changes', (
+  testWidgets('the panel height does not depend on how many colors exist', (
     tester,
   ) async {
-    // 宽屏 16 列：预设占一行；文字色另有 5 种自定义颜色，第二行才放得下。
+    // 宽屏 16 列：文字色有 5 种本篇颜色和 2 种我的颜色，背景色一个都没有；
+    // 两种目标的面板一样高。
     final controller = colorPanelController('abcdef');
     for (var i = 0; i < 5; i++) {
       controller.formatText(i, 1, quill.ColorAttribute('#FF12345${i + 1}'));
@@ -105,18 +108,23 @@ void main() {
       tester,
       controller: controller,
       screenWidth: 1200,
+      savedColors: const DiarySavedColors(
+        text: <Color>[Color(0xFF112233), Color(0xFF445566)],
+      ),
     );
     await openTextColorPanel(tester);
     final textExtent = harness.extents.last;
+    final reports = harness.extents.length;
 
     await tester.tap(find.byTooltip(colorPanelBackgroundTool));
     await tester.pumpAndSettle();
 
     expect(find.byType(DiaryColorPanel), findsOneWidget);
-    expect(harness.extents.last, textExtent - DiaryColorGridLayout.cellHeight);
+    expect(harness.extents.last, textExtent);
+    expect(harness.extents, hasLength(reports));
     expect(
       tester.getSize(find.byType(DiaryFloatingToolbar)).height,
-      kDiaryToolbarBarHeight + harness.extents.last,
+      kDiaryToolbarBarHeight + textExtent,
     );
     expect(tester.takeException(), isNull);
   });
@@ -131,14 +139,14 @@ void main() {
     await tester.tap(find.text('自定义'));
     await tester.pumpAndSettle();
 
-    // 360dp 下色板两行（80dp），自定义页 128dp。
+    // 360dp 下预设两行 + 我的颜色一行，与自定义页同高：换页时面板不跳。
     expect(find.byType(DiaryColorCustomPicker), findsOneWidget);
     expect(find.byTooltip('红'), findsNothing);
+    expect(swatchesExtent, greaterThan(0));
+    expect(harness.extents.last, swatchesExtent);
     expect(
-      harness.extents.last,
-      swatchesExtent +
-          kDiaryColorCustomPickerHeight -
-          2 * DiaryColorGridLayout.cellHeight,
+      DiaryColorGridLayout.resolve(innerWidth: 320).height,
+      kDiaryColorCustomPickerHeight,
     );
     expect(
       tester.getSize(find.byType(DiaryFloatingToolbar)).height,
@@ -159,39 +167,6 @@ void main() {
     expect(find.byTooltip('红'), findsOneWidget);
     expect(harness.extents.last, swatchesExtent);
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('recent colors come after the presets, newest first', (
-    tester,
-  ) async {
-    final controller = colorPanelController();
-    controller.formatText(0, 1, const quill.ColorAttribute('#FF778899'));
-    // 最近颜色里也有这篇用过的颜色：只出现一次，排在最近颜色的位置。
-    controller.formatText(1, 1, const quill.ColorAttribute('#FF445566'));
-    await pumpColorPanel(
-      tester,
-      controller: controller,
-      recentColors: const DiaryRecentColors(
-        text: <Color>[Color(0xFF112233), Color(0xFF445566)],
-        background: <Color>[Color(0x4DABCDEF)],
-      ),
-    );
-    await openTextColorPanel(tester);
-
-    final order = <String>['颜色 #112233', '颜色 #445566', '颜色 #778899'];
-    for (final label in order) {
-      expect(find.byTooltip(label), findsOneWidget, reason: label);
-    }
-    double x(String label) => tester.getCenter(find.byTooltip(label)).dx;
-    // 同一行内从左到右（360dp 每行 8 格：预设之后的第二行）。
-    expect(x(order[0]), lessThan(x(order[1])));
-    expect(x(order[1]), lessThan(x(order[2])));
-    expect(find.byTooltip('颜色 #ABCDEF'), findsNothing);
-
-    await tester.tap(find.byTooltip(colorPanelBackgroundTool));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('颜色 #ABCDEF'), findsOneWidget);
-    expect(find.byTooltip(order[0]), findsNothing);
   });
 
   testWidgets('tapping the same tool again closes the panel', (tester) async {
@@ -267,8 +242,13 @@ void main() {
             expect(find.byTooltip(colorPanelMoreTooltip), findsNothing);
           }
           await openTextColorPanel(tester);
-          if (mode == DiaryColorPanelMode.custom) {
-            await tester.tap(find.text('自定义'));
+          final tab = switch (mode) {
+            DiaryColorPanelMode.swatches => null,
+            DiaryColorPanelMode.material => '色系',
+            DiaryColorPanelMode.custom => '自定义',
+          };
+          if (tab != null) {
+            await tester.tap(find.text(tab));
             await tester.pumpAndSettle();
           }
 
@@ -284,7 +264,7 @@ void main() {
     }
   }
 
-  testWidgets('a 320dp English header fits the title and both tabs', (
+  testWidgets('a 320dp English header fits the title and all three tabs', (
     tester,
   ) async {
     await pumpColorPanel(tester, screenWidth: 320, locale: const Locale('en'));
@@ -292,37 +272,84 @@ void main() {
     await tester.pumpAndSettle();
 
     final panel = find.byType(DiaryColorPanel);
+    // 三个页签优先完整显示；标题放不下时换成工具栏同款图标（荧光笔），名称
+    // 留给长按提示与读屏，不显示半截的省略文字。
+    expect(
+      find.descendant(of: panel, matching: find.text('Background color')),
+      findsNothing,
+    );
     final title = find.descendant(
       of: panel,
-      matching: find.text('Background color'),
+      matching: find.byTooltip('Background color'),
     );
-    // 标题单行（窄屏英文可能省略），页签始终完整。
-    expect(tester.getSize(title).height, lessThanOrEqualTo(40));
-    for (final tab in <String>['Swatches', 'Custom']) {
+    expect(title, findsOneWidget);
+    expect(find.bySemanticsLabel('Background color'), findsWidgets);
+    for (final tab in <String>['Swatches', 'Material', 'Custom']) {
       final label = find.descendant(of: panel, matching: find.text(tab));
       expect(
         tester.renderObject<RenderParagraph>(label).didExceedMaxLines,
         isFalse,
         reason: tab,
       );
-      // 页签在 40dp 表头里，不越出面板右缘。
+      // 页签在 40dp 表头里，不越出面板右缘，字与按钮几乎不缩小。
       expect(
         tester.getRect(label).right,
         lessThanOrEqualTo(tester.getRect(panel).right),
       );
+      expect(
+        tester.getRect(label).width / tester.getSize(label).width,
+        greaterThan(0.95),
+        reason: tab,
+      );
     }
-    // 标题起点对齐第一个色块圆的左缘。
+    // 标题（图标）起点对齐第一个色块圆的左缘。
     final firstSwatch = find.byTooltip('No background');
     expect(
       tester.getTopLeft(title).dx,
       closeTo(tester.getCenter(firstSwatch).dx - 14, 0.5),
     );
 
-    // 320dp 的背景色自定义页（多一条不透明度条）同样放得下。
+    // 320dp 的色系页（色阶 7 格各 40dp）与背景色自定义页（多一条不透明度
+    // 条）同样放得下。
+    await tester.tap(find.text('Material'));
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryColorMaterialPage), findsOneWidget);
+    expect(find.byTooltip('Red A700'), findsOneWidget);
+    expect(
+      tester.getRect(find.byTooltip('Red A700')).right,
+      lessThanOrEqualTo(tester.getRect(panel).right),
+    );
     await tester.tap(find.text('Custom'));
     await tester.pumpAndSettle();
     expect(find.byType(DiaryColorCustomPicker), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the title is written out whenever it fits', (tester) async {
+    // 320dp 中文：标题与三个页签都完整显示，页签不缩小。
+    await pumpColorPanel(tester, screenWidth: 320);
+    await tester.tap(find.byTooltip(colorPanelBackgroundTool));
+    await tester.pumpAndSettle();
+
+    final panel = find.byType(DiaryColorPanel);
+    final title = find.descendant(of: panel, matching: find.text('背景颜色'));
+    expect(title, findsOneWidget);
+    expect(
+      tester.renderObject<RenderParagraph>(title).didExceedMaxLines,
+      isFalse,
+    );
+    for (final tab in <String>['色板', '色系', '自定义']) {
+      final label = find.descendant(of: panel, matching: find.text(tab));
+      expect(
+        tester.getRect(label).width,
+        closeTo(tester.getSize(label).width, 0.01),
+        reason: tab,
+      );
+    }
+    expect(
+      tester.getRect(title).right,
+      lessThan(tester.getRect(find.text('色板')).left),
+    );
   });
 
   testWidgets(

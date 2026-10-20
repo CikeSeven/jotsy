@@ -130,38 +130,21 @@ void main() {
 
   group('DiaryColorGridLayout', () {
     test('a phone fits the presets in two rows of eight', () {
-      final grid = DiaryColorGridLayout.resolve(
-        innerWidth: 320,
-        usedColorCount: 0,
-      );
+      final grid = DiaryColorGridLayout.resolve(innerWidth: 320);
       expect(grid.columns, 8);
-      expect(grid.rows, 2);
-      expect(grid.customCount, 0);
-    });
-
-    test('custom colors fill at most two rows', () {
-      final grid = DiaryColorGridLayout.resolve(
-        innerWidth: 320,
-        usedColorCount: 9,
-      );
-      expect(grid.customCount, 4);
-      expect(grid.rows, 2);
+      expect(grid.presetRows, 2);
+      // 预设两行 + 分隔 + 我的颜色一行，与自定义页同高。
+      expect(grid.height, 128);
     });
 
     test('columns are clamped between 6 and 16', () {
-      expect(
-        DiaryColorGridLayout.resolve(
-          innerWidth: 200,
-          usedColorCount: 3,
-        ).columns,
-        6,
-      );
-      final wide = DiaryColorGridLayout.resolve(
-        innerWidth: 1000,
-        usedColorCount: 0,
-      );
+      final narrow = DiaryColorGridLayout.resolve(innerWidth: 200);
+      expect(narrow.columns, 6);
+      expect(narrow.presetRows, 2);
+      final wide = DiaryColorGridLayout.resolve(innerWidth: 1000);
       expect(wide.columns, 16);
-      expect(wide.rows, 1);
+      expect(wide.presetRows, 1);
+      expect(wide.height, 88);
     });
   });
 }

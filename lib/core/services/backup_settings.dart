@@ -24,7 +24,8 @@ class BackupSettings {
     'diaryCardStyleRaw': settingsService.diaryCardStyleRaw,
     'diaryPreviewStyleRaw': settingsService.diaryPreviewStyleRaw,
     'diaryTemplatePrefsRaw': settingsService.diaryTemplatePrefsRaw,
-    'diaryRecentColorsRaw': settingsService.diaryRecentColorsRaw,
+    // 我的颜色：字段名沿用早先的“最近颜色”，新旧版本的备份互相认得。
+    'diaryRecentColorsRaw': settingsService.diarySavedColorsRaw,
     'diaryShareOptionsRaw': settingsService.diaryShareOptionsRaw,
     'diaryExportOptionsRaw': settingsService.diaryExportOptionsRaw,
     'appFeaturesRaw': settingsService.appFeaturesRaw,
@@ -160,10 +161,10 @@ class BackupSettings {
       });
     }
 
-    // 旧版备份没有最近颜色时保留本机的；值按 JSON 字符串交给日记模块解析。
+    // 旧版备份没有我的颜色时保留本机的；值按 JSON 字符串交给日记模块解析。
     if (settingsNode.containsKey('diaryRecentColorsRaw')) {
-      final recentColorsRaw = settingsNode['diaryRecentColorsRaw'];
-      await settingsService.setDiaryRecentColorsRaw(switch (recentColorsRaw) {
+      final savedColorsRaw = settingsNode['diaryRecentColorsRaw'];
+      await settingsService.setDiarySavedColorsRaw(switch (savedColorsRaw) {
         null => null,
         String value => value,
         Map<dynamic, dynamic> value => jsonEncode(value),

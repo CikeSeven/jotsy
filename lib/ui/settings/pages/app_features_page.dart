@@ -91,6 +91,7 @@ class AppFeaturesPage extends ConsumerWidget {
                     child: SettingsSwitchTile(
                       title: l10n.settingsFeaturesAnniversaries,
                       subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
+                      nested: true,
                       value: features.anniversaries,
                       onChanged: writer(
                         (v) => features.copyWith(anniversaries: v),
@@ -212,8 +213,8 @@ class AppFeaturesPage extends ConsumerWidget {
   }
 }
 
-/// 从属行：[expanded] 为 true 时在所属项下方展开（分割线 + [child]），为
-/// false 时收起。
+/// 从属行：[expanded] 为 true 时在所属项下方展开（缩进的分割线 + [child]，
+/// [child] 应是 `nested` 的开关行），为 false 时收起。
 ///
 /// 用 AnimatedSwitcher 而不是 AnimatedSize：收起时旧内容要留在原处，随高度
 /// 一起收拢淡出，而不是先消失再收高度。每次展开都重新构建 [child]，开关直接
@@ -248,7 +249,12 @@ class _ExpandableRow extends StatelessWidget {
           ? Column(
               key: const ValueKey<bool>(true),
               mainAxisSize: MainAxisSize.min,
-              children: <Widget>[const SettingsCardGroupDivider(), child],
+              children: <Widget>[
+                const SettingsCardGroupDivider(
+                  indent: SettingsSwitchTile.nestedIndent,
+                ),
+                child,
+              ],
             )
           : const SizedBox.shrink(key: ValueKey<bool>(false)),
     );

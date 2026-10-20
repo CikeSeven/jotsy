@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/notebooks/providers/notebook_providers.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/settings/pages/app_features_page.dart';
+import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
@@ -80,6 +81,17 @@ void main() {
     expect(calendarY, lessThan(anniversaryY));
     expect(anniversaryY, lessThan(exploreY));
     expect(exploreY, lessThan(notebooksY));
+
+    // 视觉上从属于日历：标题比日历、探索都缩进一级。
+    final calendarTitleX = tester.getTopLeft(find.text(l10n.navCalendar)).dx;
+    final anniversaryTitleX = tester
+        .getTopLeft(find.text(l10n.settingsFeaturesAnniversaries))
+        .dx;
+    expect(tester.getTopLeft(find.text(l10n.navExplore)).dx, calendarTitleX);
+    expect(
+      anniversaryTitleX - calendarTitleX,
+      SettingsSwitchTile.nestedIndent - 16,
+    );
 
     final anniversaries = tile(tester, l10n.settingsFeaturesAnniversaries);
     expect(anniversaries.value, isTrue);

@@ -72,6 +72,7 @@ class SettingsService {
     required String? calendarDisplayOptionsRaw,
     required String? diaryCardStyleRaw,
     required String? diaryPreviewStyleRaw,
+    required String? diaryCodeBlockStyleRaw,
     required String? diaryTemplatePrefsRaw,
     required String? diarySavedColorsRaw,
     required String? appFeaturesRaw,
@@ -112,6 +113,9 @@ class SettingsService {
        diaryCardStyleRawNotifier = ValueNotifier<String?>(diaryCardStyleRaw),
        diaryPreviewStyleRawNotifier = ValueNotifier<String?>(
          diaryPreviewStyleRaw,
+       ),
+       diaryCodeBlockStyleRawNotifier = ValueNotifier<String?>(
+         diaryCodeBlockStyleRaw,
        ),
        diaryTemplatePrefsRawNotifier = ValueNotifier<String?>(
          diaryTemplatePrefsRaw,
@@ -157,6 +161,10 @@ class SettingsService {
   /// 日记预览页设置（单个 JSON 字符串：当前样式 + 已保存的样式 + 阅读行为）；
   /// 解析与默认值由日记模块负责，服务层只保存原文。
   final ValueNotifier<String?> diaryPreviewStyleRawNotifier;
+
+  /// 正文代码块样式（单个 JSON 字符串：配色、明暗、行号、标题栏、字体等）；
+  /// 解析与默认值由日记模块（`DiaryCodeBlockStyle`）负责，服务层只保存原文。
+  final ValueNotifier<String?> diaryCodeBlockStyleRawNotifier;
 
   /// 日记模板偏好（单个 JSON 字符串：建议条开关、自动套用的模板、隐藏的
   /// 内置模板、最近使用）；解析与默认值由模板模块负责，服务层只保存原文。
@@ -204,6 +212,7 @@ class SettingsService {
       'app.settings.calendar_display_options';
   static const _keyDiaryCardStyle = 'app.settings.diary_card_style';
   static const _keyDiaryPreviewStyle = 'app.settings.diary_preview_style';
+  static const _keyDiaryCodeBlockStyle = 'app.settings.diary_code_block_style';
   static const _keyDiaryTemplatePrefs = 'app.settings.diary_template_prefs';
   // 键名沿用早先“最近颜色”的叫法，已有记录原样成为我的颜色。
   static const _keyDiarySavedColors = 'app.settings.diary_recent_colors';
@@ -270,6 +279,7 @@ class SettingsService {
     // 就按默认样式展示，不能让它阻断启动。
     final storedDiaryCardStyle = prefs.get(_keyDiaryCardStyle);
     final storedDiaryPreviewStyle = prefs.get(_keyDiaryPreviewStyle);
+    final storedDiaryCodeBlockStyle = prefs.get(_keyDiaryCodeBlockStyle);
     final storedDiaryTemplatePrefs = prefs.get(_keyDiaryTemplatePrefs);
     final storedDiarySavedColors = prefs.get(_keyDiarySavedColors);
     final storedAppFeatures = prefs.get(_keyAppFeatures);
@@ -302,6 +312,9 @@ class SettingsService {
           : null,
       diaryPreviewStyleRaw: storedDiaryPreviewStyle is String
           ? storedDiaryPreviewStyle
+          : null,
+      diaryCodeBlockStyleRaw: storedDiaryCodeBlockStyle is String
+          ? storedDiaryCodeBlockStyle
           : null,
       diaryTemplatePrefsRaw: storedDiaryTemplatePrefs is String
           ? storedDiaryTemplatePrefs
@@ -365,6 +378,7 @@ class SettingsService {
       calendarDisplayOptionsRawNotifier.value;
   String? get diaryCardStyleRaw => diaryCardStyleRawNotifier.value;
   String? get diaryPreviewStyleRaw => diaryPreviewStyleRawNotifier.value;
+  String? get diaryCodeBlockStyleRaw => diaryCodeBlockStyleRawNotifier.value;
   String? get diaryTemplatePrefsRaw => diaryTemplatePrefsRawNotifier.value;
 
   String? get diarySavedColorsRaw => diarySavedColorsRawNotifier.value;
@@ -522,6 +536,20 @@ class SettingsService {
     }
     diaryPreviewStyleRawNotifier.value = normalized;
     await _writePreference(_prefs.setString(_keyDiaryPreviewStyle, normalized));
+  }
+
+  /// 保存正文代码块样式；空值移除该键，回到默认样式。
+  Future<void> setDiaryCodeBlockStyleRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      diaryCodeBlockStyleRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyDiaryCodeBlockStyle));
+      return;
+    }
+    diaryCodeBlockStyleRawNotifier.value = normalized;
+    await _writePreference(
+      _prefs.setString(_keyDiaryCodeBlockStyle, normalized),
+    );
   }
 
   /// 保存日记模板偏好；空值移除该键，回到默认（显示建议条、不自动套用）。

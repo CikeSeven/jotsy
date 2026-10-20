@@ -495,6 +495,95 @@ void main() {
     );
   });
 
+  group('SettingsService diary code block style', () {
+    const key = 'app.settings.diary_code_block_style';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.diaryCodeBlockStyleRaw, isNull);
+
+      await settings.setDiaryCodeBlockStyleRaw('  {"theme":"nord"}  ');
+      expect(settings.diaryCodeBlockStyleRaw, '{"theme":"nord"}');
+      expect(settings.diaryCodeBlockStyleRawNotifier.value, '{"theme":"nord"}');
+      expect(
+        (await SettingsService.create()).diaryCodeBlockStyleRaw,
+        '{"theme":"nord"}',
+      );
+
+      await settings.setDiaryCodeBlockStyleRaw(null);
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.diaryCodeBlockStyleRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.diaryCodeBlockStyleRaw, isNull);
+    });
+
+    test(
+      'backups carry the style and older backups keep the local one',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryCodeBlockStyleRaw('{"lineNumbers":false}');
+
+        final captured = BackupSettings.capture(settings);
+        expect(captured['diaryCodeBlockStyleRaw'], '{"lineNumbers":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.diaryCodeBlockStyleRaw, '{"lineNumbers":false}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCodeBlockStyleRaw': <String, dynamic>{'theme': 'dracula'},
+        });
+        expect(settings.diaryCodeBlockStyleRaw, '{"theme":"dracula"}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'diaryCodeBlockStyleRaw': null,
+        });
+        expect(settings.diaryCodeBlockStyleRaw, isNull);
+      },
+    );
+
+    test(
+      'a backup snapshot rolls back both the key and the notifier',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setDiaryCodeBlockStyleRaw('{"border":true}');
+        final snapshot = settings.captureBackupSnapshot();
+
+        await settings.setDiaryCodeBlockStyleRaw('{"theme":"nord"}');
+        await snapshot.restore();
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString(key), '{"border":true}');
+        expect(
+          settings.diaryCodeBlockStyleRawNotifier.value,
+          '{"border":true}',
+        );
+      },
+    );
+
+    test('a snapshot taken without the key removes it again', () async {
+      final settings = await SettingsService.create();
+      final snapshot = settings.captureBackupSnapshot();
+
+      await settings.setDiaryCodeBlockStyleRaw('{"theme":"nord"}');
+      await snapshot.restore();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey(key), isFalse);
+      expect(settings.diaryCodeBlockStyleRaw, isNull);
+    });
+  });
+
   group('SettingsService diary template prefs', () {
     const key = 'app.settings.diary_template_prefs';
 

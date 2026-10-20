@@ -1794,7 +1794,7 @@
   "@autoT0188": {
     "description": "Auto-generated metadata for autoT0188."
   },
-  "autoT0189": "用于插入或切换为代码块",
+  "autoT0189": "转为代码块；在代码块里点按可选语言、复制或退出",
   "@autoT0189": {
     "description": "Auto-generated metadata for autoT0189."
   },
@@ -10266,5 +10266,168 @@
         "type": "String"
       }
     }
+  },
+  "codeBlockPanelTitle": "代码块",
+  "@codeBlockPanelTitle": {
+    "description": "代码块语言面板的标题。"
+  },
+  "codeBlockLanguageAuto": "自动识别",
+  "@codeBlockLanguageAuto": {
+    "description": "代码块语言选项：未指定语言、自动识别。"
+  },
+  "codeBlockLanguageAutoDetected": "自动 · {language}",
+  "@codeBlockLanguageAutoDetected": {
+    "description": "代码块语言：自动识别出的语言；language 为语言名。",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "codeBlockLanguageNone": "不指定",
+  "@codeBlockLanguageNone": {
+    "description": "代码块语言选项：自动识别关闭时的第一项，不指定语言。"
+  },
+  "codeBlockLanguagePlain": "纯文本",
+  "@codeBlockLanguagePlain": {
+    "description": "代码块语言选项：按纯文本显示、不高亮。"
+  },
+  "codeBlockLabelGeneric": "代码",
+  "@codeBlockLabelGeneric": {
+    "description": "代码块标题栏在语言未知时显示的名称。"
+  },
+  "codeBlockCopy": "复制代码",
+  "@codeBlockCopy": {
+    "description": "代码块的复制按钮提示。"
+  },
+  "codeBlockCopied": "已复制代码",
+  "@codeBlockCopied": {
+    "description": "复制代码块后的提示。"
+  },
+  "codeBlockCopySemantics": "复制 {language} 代码",
+  "@codeBlockCopySemantics": {
+    "description": "代码块复制按钮的读屏标签；language 为语言名。",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "codeBlockExit": "退出代码块",
+  "@codeBlockExit": {
+    "description": "代码块面板动作：把光标移出代码块。"
+  },
+  "codeBlockToText": "转为正文",
+  "@codeBlockToText": {
+    "description": "代码块面板动作：把代码块转回普通段落。"
+  },
+  "codeBlockStyleTitle": "代码块样式",
+  "@codeBlockStyleTitle": {
+    "description": "设置项与页面标题：代码块样式。"
+  },
+  "codeBlockStyleSubtitle": "配色主题、行号、字体与标题栏",
+  "@codeBlockStyleSubtitle": {
+    "description": "代码块样式设置项的副标题。"
+  },
+  "codeBlockStyleTabTheme": "配色",
+  "@codeBlockStyleTabTheme": {
+    "description": "代码块样式页的标签：配色。"
+  },
+  "codeBlockStyleTabDisplay": "显示",
+  "@codeBlockStyleTabDisplay": {
+    "description": "代码块样式页的标签：显示。"
+  },
+  "codeBlockStyleTabFont": "字体",
+  "@codeBlockStyleTabFont": {
+    "description": "代码块样式页的标签：字体。"
+  },
+  "codeBlockThemeFollowApp": "跟随应用",
+  "@codeBlockThemeFollowApp": {
+    "description": "代码块配色主题：由应用配色推出。"
+  },
+  "codeBlockBrightnessTitle": "明暗",
+  "@codeBlockBrightnessTitle": {
+    "description": "代码块样式：明暗选项的标题。"
+  },
+  "codeBlockBrightnessSystem": "跟随主题",
+  "@codeBlockBrightnessSystem": {
+    "description": "代码块明暗：跟随应用主题。"
+  },
+  "codeBlockBrightnessLight": "浅色",
+  "@codeBlockBrightnessLight": {
+    "description": "代码块明暗：固定浅色。"
+  },
+  "codeBlockBrightnessDark": "深色",
+  "@codeBlockBrightnessDark": {
+    "description": "代码块明暗：固定深色。"
+  },
+  "codeBlockLineNumbersTitle": "显示行号",
+  "@codeBlockLineNumbersTitle": {
+    "description": "代码块样式开关：显示行号。"
+  },
+  "codeBlockLineNumbersSubtitle": "在每行代码左侧标出行号",
+  "@codeBlockLineNumbersSubtitle": {
+    "description": "显示行号开关的说明。"
+  },
+  "codeBlockHeaderTitle": "显示标题栏",
+  "@codeBlockHeaderTitle": {
+    "description": "代码块样式开关：显示标题栏。"
+  },
+  "codeBlockHeaderSubtitle": "顶部显示语言名与复制按钮",
+  "@codeBlockHeaderSubtitle": {
+    "description": "显示标题栏开关的说明。"
+  },
+  "codeBlockAutoDetectTitle": "自动识别语言",
+  "@codeBlockAutoDetectTitle": {
+    "description": "代码块样式开关：自动识别语言。"
+  },
+  "codeBlockAutoDetectSubtitle": "没有指定语言的代码块自动判断并高亮",
+  "@codeBlockAutoDetectSubtitle": {
+    "description": "自动识别语言开关的说明。"
+  },
+  "codeBlockBorderTitle": "显示边框",
+  "@codeBlockBorderTitle": {
+    "description": "代码块样式开关：显示边框。"
+  },
+  "codeBlockBorderSubtitle": "给代码块描一圈细边",
+  "@codeBlockBorderSubtitle": {
+    "description": "显示边框开关的说明。"
+  },
+  "codeBlockRadiusTitle": "圆角",
+  "@codeBlockRadiusTitle": {
+    "description": "代码块样式滑块：圆角。"
+  },
+  "codeBlockFontTitle": "代码字体",
+  "@codeBlockFontTitle": {
+    "description": "代码块样式：代码字体的标题。"
+  },
+  "codeBlockFontMono": "系统等宽",
+  "@codeBlockFontMono": {
+    "description": "代码字体选项：系统等宽字体。"
+  },
+  "codeBlockFontBody": "正文字体",
+  "@codeBlockFontBody": {
+    "description": "代码字体选项：跟随正文字体。"
+  },
+  "codeBlockFontSizeTitle": "字号",
+  "@codeBlockFontSizeTitle": {
+    "description": "代码块样式滑块：字号。"
+  },
+  "codeBlockFontSizeValue": "{percent}%",
+  "@codeBlockFontSizeValue": {
+    "description": "代码块字号滑块的数值；percent 为相对正文字号的百分比。",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "codeBlockLineHeightTitle": "行距",
+  "@codeBlockLineHeightTitle": {
+    "description": "代码块样式滑块：行距。"
+  },
+  "codeBlockPreviewIntro": "代码块会按语言高亮，行内代码也跟随配色，例如 ",
+  "@codeBlockPreviewIntro": {
+    "description": "代码块样式页预览的引导文字，末尾空格后接一段行内代码示例。"
   }
 }

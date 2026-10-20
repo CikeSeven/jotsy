@@ -1794,7 +1794,7 @@
   "@autoT0188": {
     "description": "Auto-generated metadata for autoT0188."
   },
-  "autoT0189": "Insert or switch to code block",
+  "autoT0189": "Turn into a code block; inside one, tap to pick a language, copy or exit.",
   "@autoT0189": {
     "description": "Auto-generated metadata for autoT0189."
   },
@@ -10266,5 +10266,168 @@
         "type": "String"
       }
     }
+  },
+  "codeBlockPanelTitle": "Code block",
+  "@codeBlockPanelTitle": {
+    "description": "Title of the code block language panel."
+  },
+  "codeBlockLanguageAuto": "Auto detect",
+  "@codeBlockLanguageAuto": {
+    "description": "Code block language option: no language set, detect automatically."
+  },
+  "codeBlockLanguageAutoDetected": "Auto · {language}",
+  "@codeBlockLanguageAutoDetected": {
+    "description": "Code block language label when auto-detected; language is the language name.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "codeBlockLanguageNone": "Unspecified",
+  "@codeBlockLanguageNone": {
+    "description": "First code block language chip when auto-detect is off: no language."
+  },
+  "codeBlockLanguagePlain": "Plain text",
+  "@codeBlockLanguagePlain": {
+    "description": "Code block language option: plain text without highlighting."
+  },
+  "codeBlockLabelGeneric": "Code",
+  "@codeBlockLabelGeneric": {
+    "description": "Code block header label when the language is unknown."
+  },
+  "codeBlockCopy": "Copy code",
+  "@codeBlockCopy": {
+    "description": "Tooltip of the code block copy button."
+  },
+  "codeBlockCopied": "Code copied",
+  "@codeBlockCopied": {
+    "description": "Message shown after copying a code block."
+  },
+  "codeBlockCopySemantics": "Copy {language} code",
+  "@codeBlockCopySemantics": {
+    "description": "Screen reader label of the code block copy button; language is the language name.",
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "codeBlockExit": "Exit code block",
+  "@codeBlockExit": {
+    "description": "Code block panel action: move the cursor out of the code block."
+  },
+  "codeBlockToText": "Convert to text",
+  "@codeBlockToText": {
+    "description": "Code block panel action: turn the code block back into normal text."
+  },
+  "codeBlockStyleTitle": "Code block style",
+  "@codeBlockStyleTitle": {
+    "description": "Settings entry and page title: code block style."
+  },
+  "codeBlockStyleSubtitle": "Theme, line numbers, font and header",
+  "@codeBlockStyleSubtitle": {
+    "description": "Subtitle of the code block style settings entry."
+  },
+  "codeBlockStyleTabTheme": "Theme",
+  "@codeBlockStyleTabTheme": {
+    "description": "Code block style page tab: theme."
+  },
+  "codeBlockStyleTabDisplay": "Display",
+  "@codeBlockStyleTabDisplay": {
+    "description": "Code block style page tab: display."
+  },
+  "codeBlockStyleTabFont": "Font",
+  "@codeBlockStyleTabFont": {
+    "description": "Code block style page tab: font."
+  },
+  "codeBlockThemeFollowApp": "Match app",
+  "@codeBlockThemeFollowApp": {
+    "description": "Code block theme derived from the app colors."
+  },
+  "codeBlockBrightnessTitle": "Brightness",
+  "@codeBlockBrightnessTitle": {
+    "description": "Code block style: brightness option title."
+  },
+  "codeBlockBrightnessSystem": "Follow theme",
+  "@codeBlockBrightnessSystem": {
+    "description": "Code block brightness: follow the app theme."
+  },
+  "codeBlockBrightnessLight": "Light",
+  "@codeBlockBrightnessLight": {
+    "description": "Code block brightness: always light."
+  },
+  "codeBlockBrightnessDark": "Dark",
+  "@codeBlockBrightnessDark": {
+    "description": "Code block brightness: always dark."
+  },
+  "codeBlockLineNumbersTitle": "Line numbers",
+  "@codeBlockLineNumbersTitle": {
+    "description": "Code block style switch: line numbers."
+  },
+  "codeBlockLineNumbersSubtitle": "Number each line of code",
+  "@codeBlockLineNumbersSubtitle": {
+    "description": "Description of the line numbers switch."
+  },
+  "codeBlockHeaderTitle": "Header bar",
+  "@codeBlockHeaderTitle": {
+    "description": "Code block style switch: header bar."
+  },
+  "codeBlockHeaderSubtitle": "Show the language and a copy button on top",
+  "@codeBlockHeaderSubtitle": {
+    "description": "Description of the header bar switch."
+  },
+  "codeBlockAutoDetectTitle": "Detect language",
+  "@codeBlockAutoDetectTitle": {
+    "description": "Code block style switch: detect language."
+  },
+  "codeBlockAutoDetectSubtitle": "Guess the language of code blocks that don't have one",
+  "@codeBlockAutoDetectSubtitle": {
+    "description": "Description of the detect language switch."
+  },
+  "codeBlockBorderTitle": "Border",
+  "@codeBlockBorderTitle": {
+    "description": "Code block style switch: border."
+  },
+  "codeBlockBorderSubtitle": "Outline code blocks with a thin border",
+  "@codeBlockBorderSubtitle": {
+    "description": "Description of the border switch."
+  },
+  "codeBlockRadiusTitle": "Corner radius",
+  "@codeBlockRadiusTitle": {
+    "description": "Code block style slider: corner radius."
+  },
+  "codeBlockFontTitle": "Code font",
+  "@codeBlockFontTitle": {
+    "description": "Code block style: code font title."
+  },
+  "codeBlockFontMono": "System monospace",
+  "@codeBlockFontMono": {
+    "description": "Code font option: system monospace font."
+  },
+  "codeBlockFontBody": "Body font",
+  "@codeBlockFontBody": {
+    "description": "Code font option: use the body font."
+  },
+  "codeBlockFontSizeTitle": "Font size",
+  "@codeBlockFontSizeTitle": {
+    "description": "Code block style slider: font size."
+  },
+  "codeBlockFontSizeValue": "{percent}%",
+  "@codeBlockFontSizeValue": {
+    "description": "Code block font size value; percent is relative to the body font size.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "codeBlockLineHeightTitle": "Line height",
+  "@codeBlockLineHeightTitle": {
+    "description": "Code block style slider: line height."
+  },
+  "codeBlockPreviewIntro": "Code blocks are highlighted by language, and inline code follows the theme too, like ",
+  "@codeBlockPreviewIntro": {
+    "description": "Intro text of the code block style preview; an inline code sample follows the trailing space."
   }
 }

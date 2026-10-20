@@ -73,6 +73,7 @@ class SettingsService {
     required String? diaryPreviewStyleRaw,
     required String? diaryTemplatePrefsRaw,
     required String? diaryRecentColorsRaw,
+    required String? appFeaturesRaw,
   }) : themeModeNotifier = ValueNotifier<ThemeMode>(mode),
        themeSeedColorNotifier = ValueNotifier<Color>(themeSeedColor),
        homeTabSwitchCurveNotifier = ValueNotifier<HomeTabSwitchCurveType>(
@@ -113,7 +114,8 @@ class SettingsService {
        ),
        diaryRecentColorsRawNotifier = ValueNotifier<String?>(
          diaryRecentColorsRaw,
-       );
+       ),
+       appFeaturesRawNotifier = ValueNotifier<String?>(appFeaturesRaw);
 
   final SharedPreferences _prefs;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -157,6 +159,12 @@ class SettingsService {
   /// 各一组）；解析与上限由日记模块（`DiaryRecentColors`）负责。
   final ValueNotifier<String?> diaryRecentColorsRawNotifier;
 
+  /// 功能管理（单个 JSON 字符串：日历、探索、日记本、纪念日、模板、时间胶囊
+  /// 各自是否开启）；解析与默认值由 `AppFeatures` 负责，服务层只保存原文。
+  /// 用 notifier 是因为首页底栏与各处入口要在开关变化（含备份恢复与失败
+  /// 回滚）时立即重建。
+  final ValueNotifier<String?> appFeaturesRawNotifier;
+
   static const _keyThemeMode = 'app.settings.theme_mode';
   static const _keyThemeSeedColorValue = 'app.settings.theme_seed_color_value';
   static const _keyHomeTabSwitchCurve = 'app.settings.home_tab_switch_curve';
@@ -190,6 +198,7 @@ class SettingsService {
   static const _keyDiaryRecentColors = 'app.settings.diary_recent_colors';
   static const _keyDiaryShareOptions = 'app.settings.diary_share_options';
   static const _keyDiaryExportOptions = 'app.settings.diary_export_options';
+  static const _keyAppFeatures = 'app.settings.app_features';
 
   static const _keyTagOrder = 'app.settings.tag_order';
   static const _keyTagPickerSort = 'app.settings.tag_picker_sort';
@@ -251,6 +260,7 @@ class SettingsService {
     final storedDiaryPreviewStyle = prefs.get(_keyDiaryPreviewStyle);
     final storedDiaryTemplatePrefs = prefs.get(_keyDiaryTemplatePrefs);
     final storedDiaryRecentColors = prefs.get(_keyDiaryRecentColors);
+    final storedAppFeatures = prefs.get(_keyAppFeatures);
     return SettingsService._(
       prefs: prefs,
       mode: mode,
@@ -284,6 +294,7 @@ class SettingsService {
       diaryRecentColorsRaw: storedDiaryRecentColors is String
           ? storedDiaryRecentColors
           : null,
+      appFeaturesRaw: storedAppFeatures is String ? storedAppFeatures : null,
     );
   }
 
@@ -342,6 +353,7 @@ class SettingsService {
   String? get diaryTemplatePrefsRaw => diaryTemplatePrefsRawNotifier.value;
 
   String? get diaryRecentColorsRaw => diaryRecentColorsRawNotifier.value;
+  String? get appFeaturesRaw => appFeaturesRawNotifier.value;
   List<String> get moodOptions =>
       decodeMoodOptions(moodOptionsRawNotifier.value);
   int get diaryCardTagLimit => diaryCardTagLimitNotifier.value;
@@ -507,6 +519,18 @@ class SettingsService {
     await _writePreference(
       _prefs.setString(_keyDiaryTemplatePrefs, normalized),
     );
+  }
+
+  /// 保存功能管理开关；空值移除该键，回到默认（全部功能开启）。
+  Future<void> setAppFeaturesRaw(String? value) async {
+    final normalized = value?.trim();
+    if (normalized == null || normalized.isEmpty) {
+      appFeaturesRawNotifier.value = null;
+      await _writePreference(_prefs.remove(_keyAppFeatures));
+      return;
+    }
+    appFeaturesRawNotifier.value = normalized;
+    await _writePreference(_prefs.setString(_keyAppFeatures, normalized));
   }
 
   /// 保存颜色面板最近用过的自定义颜色；空值移除该键（没有最近颜色）。

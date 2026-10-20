@@ -77,6 +77,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         await fixture.settings.setDiaryTemplatePrefsRaw(
           '{"v":1,"strip":false}',
         );
+        await fixture.settings.setAppFeaturesRaw('{"calendar":false}');
         // 升级前还没迁移的旧版单份草稿：覆盖恢复会清掉它，失败时须原样回滚。
         await fixture.settings.setCreateDiaryDraftRaw(
           '{"title":"legacy draft"}',
@@ -100,6 +101,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         settings['diaryShareOptionsRaw'] = '{"title":true}';
         settings['diaryExportOptionsRaw'] = '{"format":"csv"}';
         settings['diaryTemplatePrefsRaw'] = '{"v":1,"auto":"builtin.daily"}';
+        settings['appFeaturesRaw'] = '{"explore":false}';
         final row =
             ((incoming['database'] as Map)['diaries'] as List).single as Map;
         row['title'] = 'incoming diary';
@@ -139,6 +141,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
         expect(fixture.settings.diaryShareOptionsRaw, '{"title":false}');
         expect(fixture.settings.diaryExportOptionsRaw, '{"format":"word"}');
         expect(fixture.settings.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
+        expect(fixture.settings.appFeaturesRaw, '{"calendar":false}');
         expect(await store.getAll(), before);
         final recreated = await SettingsService.create();
         expect(recreated.themeModeNotifier.value, ThemeMode.light);
@@ -150,6 +153,7 @@ BEGIN SELECT RAISE(ABORT, 'forced restore failure'); END;
           '{"v":1,"current":{"page":{"paper":"ink"}}}',
         );
         expect(recreated.diaryTemplatePrefsRaw, '{"v":1,"strip":false}');
+        expect(recreated.appFeaturesRaw, '{"calendar":false}');
       },
     );
   }

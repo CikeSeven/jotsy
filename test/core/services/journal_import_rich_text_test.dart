@@ -19,6 +19,14 @@ List<Object?> _markdown(String markdown, {JournalEmbedResolver? resolve}) {
   return jsonDecode(writer.build().contentJson) as List<Object?>;
 }
 
+/// 各代码行的 `code-block` 值，按出现顺序。
+List<Object?> _codeBlockValues(List<Object?> ops) => [
+  for (final op in ops.cast<Map<String, Object?>>())
+    if (op['attributes'] case final Map<String, Object?> attrs
+        when attrs.containsKey('code-block'))
+      attrs['code-block'],
+];
+
 void main() {
   group('JournalHtmlConverter', () {
     test('keeps Journey paragraphs and blank lines, trims the edges', () {
@@ -257,6 +265,21 @@ void main() {
       ]);
     });
 
+    test('pre blocks keep a recognised language from class or data attrs', () {
+      expect(
+        _codeBlockValues(
+          _html(
+            '<pre><code class="hljs language-js">a</code></pre>'
+            '<pre class="lang-py">b</pre>'
+            '<pre data-lang="text">c</pre>'
+            '<pre><code class="language-weird">d</code></pre>'
+            '<pre>e</pre>',
+          ),
+        ),
+        ['javascript', 'python', 'plain', true, true],
+      );
+    });
+
     test('produces an editable empty document for empty input', () {
       expect(_html('<p></p>  '), [
         {'insert': '\n'},
@@ -310,6 +333,18 @@ void main() {
           'attributes': {'code-block': true},
         },
       ]);
+    });
+
+    test('fence info strings become the code block language', () {
+      expect(
+        _codeBlockValues(
+          _markdown(
+            '```py\na\n```\n~~~ Dart extra\nb\n~~~\n```weird\nc\n```\n'
+            '```\nd\n```\n```text\ne\n```\n```{.python}\nf\n```',
+          ),
+        ),
+        ['python', 'dart', true, true, 'plain', true],
+      );
     });
 
     test('parses inline formatting and Day One escapes', () {

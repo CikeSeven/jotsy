@@ -1,6 +1,7 @@
 import 'package:html/parser.dart' as html_parser;
 import 'package:markdown/markdown.dart' as md;
 
+import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
 import 'journal_import_delta_writer.dart';
 import 'journal_import_html_style.dart';
@@ -57,7 +58,9 @@ class JournalMarkdownConverter {
   /// 列表各级的缩进宽度，用于把任意缩进风格（2/4 空格、Tab）换算成层级。
   final List<int> _listIndents = <int>[];
 
-  static final RegExp _fence = RegExp(r'^\s*(`{3,}|~{3,})');
+  /// 开始围栏：第 2 组为信息串的第一个词（语言标记）。`{.python}` 这类
+  /// 属性写法不识别，按未指定处理。
+  static final RegExp _fence = RegExp(r'^\s*(`{3,}|~{3,})[ \t]*([^\s`{]*)');
   static final RegExp _heading = RegExp(r'^ {0,3}(#{1,6})\s+(.*?)(\s+#+)?\s*$');
   static final RegExp _rule = RegExp(r'^ {0,3}([-*_])(\s*\1){2,}\s*$');
   static final RegExp _quote = RegExp(r'^ {0,3}>\s?(.*)$');
@@ -73,6 +76,9 @@ class JournalMarkdownConverter {
         .split('\n');
     final definitions = collectJournalMarkdownReferences(lines, _inlineParser);
     String? fence;
+    // 当前围栏的 `code-block` 值：认得的语言 id、`plain` 或 true（未指定 /
+    // 认不出，见 normalizeCodeLanguageTag）。
+    Object codeBlock = true;
     for (final (index, line) in lines.indexed) {
       if (definitions.contains(index)) continue;
       if (fence != null) {
@@ -80,13 +86,14 @@ class JournalMarkdownConverter {
           fence = null;
         } else {
           writer.text(line);
-          writer.endLine(const {'code-block': true});
+          writer.endLine({'code-block': codeBlock});
         }
         continue;
       }
       final fenceMatch = _fence.firstMatch(line);
       if (fenceMatch != null) {
         fence = fenceMatch.group(1)!.substring(0, 3);
+        codeBlock = normalizeCodeLanguageTag(fenceMatch.group(2)) ?? true;
         continue;
       }
       _appendLine(line);

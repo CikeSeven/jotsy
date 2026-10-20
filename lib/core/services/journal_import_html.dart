@@ -1,6 +1,7 @@
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 
+import '../database/code_block_codec.dart';
 import '../database/divider_embed_codec.dart';
 import 'journal_import_delta_writer.dart';
 import 'journal_import_html_style.dart';
@@ -173,7 +174,12 @@ class JournalHtmlConverter {
           _aligned(node, block).withAttribute('blockquote', true),
         );
       case 'pre':
-        _visitBlock(node, inline, block, block.preformattedBlock());
+        _visitBlock(
+          node,
+          inline,
+          block,
+          block.preformattedBlock(_preLanguage(node)),
+        );
       case 'td' || 'th':
         _visitChildren(node, inline, block);
         writer.text(' ', inline);
@@ -300,6 +306,32 @@ class JournalHtmlConverter {
     }
     return null;
   }
+
+  /// `<pre>` 的代码语言，作为 `code-block` 的值：依次看 `<pre>` 与它的
+  /// 第一个 `<code>` 子元素上的 `language-*` / `lang-*` class（highlight.js、
+  /// Prism 与多数 Markdown 渲染器的约定）和 `data-lang` / `data-language`
+  /// 属性，经 [normalizeCodeLanguageTag] 规整；都没有或认不出时为 true。
+  static Object _preLanguage(dom.Element pre) {
+    final code = pre.children
+        .where((dom.Element child) => child.localName == 'code')
+        .firstOrNull;
+    for (final element in [pre, ?code]) {
+      final candidates = <String?>[
+        for (final token in element.classes)
+          if (token.startsWith('language-'))
+            token.substring('language-'.length)
+          else if (token.startsWith('lang-'))
+            token.substring('lang-'.length),
+        element.attributes['data-lang'],
+        element.attributes['data-language'],
+      ];
+      for (final candidate in candidates) {
+        final language = normalizeCodeLanguageTag(candidate);
+        if (language != null) return language;
+      }
+    }
+    return true;
+  }
 }
 
 /// 块级上下文：当前行要带的块属性，以及列表嵌套信息。
@@ -364,12 +396,13 @@ class _Block {
     preformatted: preformatted,
   );
 
-  /// 代码块不带对齐：编辑器里代码块按原样左对齐显示。
-  _Block preformattedBlock() => _Block(
+  /// 代码块不带对齐：编辑器里代码块按原样左对齐显示。[codeBlock] 为
+  /// `code-block` 的值（语言 id、`plain` 或 true）。
+  _Block preformattedBlock([Object codeBlock = true]) => _Block(
     attributes: {
       for (final entry in attributes.entries)
         if (entry.key != 'align') entry.key: entry.value,
-      'code-block': true,
+      'code-block': codeBlock,
     },
     listType: listType,
     listDepth: listDepth,

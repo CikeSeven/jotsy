@@ -172,6 +172,189 @@ void main() {
     });
   });
 
+  group('code block languages', () {
+    Map<String, dynamic> codeLine(String text, Object value) =>
+        <String, dynamic>{
+          'insert': '$text\n',
+          'attributes': <String, dynamic>{'code-block': value},
+        };
+
+    DiaryExportEntry codeEntry(List<dynamic> ops) => DiaryExportEntry.parse(
+      diaryId: 'code',
+      title: '代码',
+      createdAt: DateTime(2026, 4, 3),
+      updatedAt: DateTime(2026, 4, 3),
+      deltaOps: <dynamic>[
+        <String, dynamic>{'insert': '前\n'},
+        ...ops,
+      ],
+    );
+
+    final options = DiaryExportOptions.defaults.copyWith(
+      includeMeta: false,
+      includeMedia: false,
+    );
+
+    Future<String> markdownOf(List<dynamic> ops) async {
+      final output = await DiaryMarkdownWriter.write(
+        <DiaryExportEntry>[codeEntry(ops)],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+      );
+      return utf8.decode(output.bytes!);
+    }
+
+    Future<String> htmlOf(List<dynamic> ops) async {
+      final output = await DiaryHtmlWriter.write(
+        <DiaryExportEntry>[codeEntry(ops)],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '代码',
+        languageTag: 'zh',
+      );
+      return utf8.decode(output.bytes!);
+    }
+
+    test('blocks carry the explicit language, plain, or null for auto', () {
+      final blocks = codeEntry(<dynamic>[
+        codeLine('a', 'python'),
+        codeLine('b', 'plain'),
+        codeLine('c', true),
+        codeLine('d', 'weird'),
+      ]).blocks;
+      expect(blocks.skip(1).map((ExportBlock b) => b.kind).toSet(), {
+        ExportBlockKind.code,
+      });
+      expect(blocks.map((ExportBlock b) => b.codeLanguage), <String?>[
+        null,
+        'python',
+        'plain',
+        null,
+        null,
+      ]);
+    });
+
+    test('markdown fences carry the language, text for plain, '
+        'nothing for auto', () async {
+      final markdown = await markdownOf(<dynamic>[
+        codeLine('x = 1', 'python'),
+        codeLine('y = 2', 'python'),
+        codeLine('raw', 'plain'),
+        codeLine('auto', true),
+      ]);
+      expect(
+        markdown,
+        contains(
+          '```python\nx = 1\ny = 2\n```\n\n'
+          '```text\nraw\n```\n\n'
+          '```\nauto\n```',
+        ),
+      );
+    });
+
+    test(
+      'a language change splits adjacent code lines into two fences',
+      () async {
+        final markdown = await markdownOf(<dynamic>[
+          codeLine('let a', 'javascript'),
+          codeLine('fn b', 'rust'),
+        ]);
+        expect(
+          markdown,
+          contains('```javascript\nlet a\n```\n\n```rust\nfn b\n```'),
+        );
+      },
+    );
+
+    test('code containing backticks gets a longer fence', () async {
+      final markdown = await markdownOf(<dynamic>[
+        codeLine('```', 'markdown'),
+        codeLine('a ```` b', 'markdown'),
+      ]);
+      expect(markdown, contains('`````markdown\n```\na ```` b\n`````'));
+    });
+
+    test(
+      'html marks code with language classes and splits on change',
+      () async {
+        final html = await htmlOf(<dynamic>[
+          codeLine('x = 1', 'python'),
+          codeLine('raw', 'plain'),
+          codeLine('auto', true),
+        ]);
+        expect(
+          html,
+          contains(
+            '<pre><code class="language-python">x = 1</code></pre>\n'
+            '<pre><code class="language-plaintext">raw</code></pre>\n'
+            '<pre><code>auto</code></pre>',
+          ),
+        );
+      },
+    );
+
+    test('pdf body rewrites language values to true so the renderer '
+        'does not crash', () async {
+      final entry = codeEntry(<dynamic>[
+        codeLine('x = 1', 'python'),
+        codeLine('raw', 'plain'),
+        codeLine('auto', true),
+        <String, dynamic>{
+          'insert': 'off\n',
+          'attributes': <String, dynamic>{'code-block': false},
+        },
+      ]);
+      final original = jsonEncode(entry.deltaOps);
+      final body = await DiaryPdfWriter.prepareBody(
+        entry,
+        includeImages: false,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        images: <Uint8List>[],
+      );
+      final values = body!
+          .toJson()
+          .map((dynamic op) => (op as Map)['attributes'])
+          .whereType<Map>()
+          .map((Map attrs) => attrs['code-block'])
+          .toList();
+      expect(values, <Object?>[true, true, true, false]);
+      // 不改动调用方的正文。
+      expect(jsonEncode(entry.deltaOps), original);
+
+      final fonts = await DiaryPdfFonts.load();
+      final output = await DiaryPdfWriter.write(
+        <DiaryExportEntry>[entry],
+        options: DiaryExportOptions.defaults,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        fonts: fonts,
+        documentTitle: 'Jotsy',
+      );
+      expect(ascii.decode(output.bytes!.sublist(0, 5)), '%PDF-');
+    });
+
+    test('docx and plain text still treat language blocks as code', () async {
+      final entry = codeEntry(<dynamic>[codeLine('x = 1', 'python')]);
+      expect(ExportPlainText.render(entry.blocks), contains('x = 1'));
+      final docx = await DiaryDocxWriter.write(
+        <DiaryExportEntry>[entry],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '代码',
+        languageTag: 'zh-CN',
+        now: DateTime.utc(2026, 10, 16),
+      );
+      final parts = {for (final f in docx.files!) f.path: f};
+      final document = utf8.decode(parts['word/document.xml']!.bytes!);
+      expect(document, contains('w:val="CodeBlock"'));
+      expect(document, contains('x = 1'));
+    });
+  });
+
   group('ExportImageInfo', () {
     test('reads pixel sizes from common headers', () {
       ExportImageInfo? info(String data) =>

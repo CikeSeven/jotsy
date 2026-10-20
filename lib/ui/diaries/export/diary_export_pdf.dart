@@ -568,6 +568,7 @@ class DiaryPdfWriter {
         continue;
       }
       final op = Map<String, dynamic>.from(raw);
+      _normalizeCodeBlockAttribute(op);
       final insert = op['insert'];
       if (insert is String) {
         hasContent = hasContent || insert.trim().isNotEmpty;
@@ -610,6 +611,24 @@ class DiaryPdfWriter {
       ops.add(<String, dynamic>{'insert': '\n'});
     }
     return Delta.fromJson(ops);
+  }
+
+  /// 把代码块的语言值（`'python'`、`'plain'` 等字符串）改写为 `true`。
+  ///
+  /// 为什么：flutter_quill_to_pdf 读 `code-block` 时按 `bool` 强转，遇到
+  /// 字符串会抛 TypeError，整份 PDF 导出失败；PDF 也不做语法高亮，丢掉语言
+  /// 不影响版面。只改非 bool 的值，`true` / `false` / 缺失原样保留；属性表
+  /// 拷贝一份再改，不动调用方的正文。
+  static void _normalizeCodeBlockAttribute(Map<String, dynamic> op) {
+    final attrs = op['attributes'];
+    if (attrs is! Map) {
+      return;
+    }
+    final value = attrs['code-block'];
+    if (value == null || value is bool) {
+      return;
+    }
+    op['attributes'] = Map<String, dynamic>.from(attrs)..['code-block'] = true;
   }
 
   static void _addImage(List<Uint8List> images, Uint8List bytes) {

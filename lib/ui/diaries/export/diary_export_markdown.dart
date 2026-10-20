@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:path/path.dart' as p;
 
+import '../../../core/database/code_block_codec.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
 import 'diary_export_entry.dart';
@@ -264,6 +265,9 @@ class DiaryMarkdownWriter {
     final sections = <String>[];
     final group = <String>[];
     String? groupKind;
+    // 代码组的语言：相邻代码行只在语言相同时并成一个围栏，语言不同的
+    // 两段各写一个围栏，保留各自的语言标记。
+    String? groupLanguage;
 
     void flush() {
       if (group.isEmpty) {
@@ -271,17 +275,19 @@ class DiaryMarkdownWriter {
       }
       sections.add(
         groupKind == 'code'
-            ? '```\n${group.join('\n')}\n```'
+            ? _codeFence(group.join('\n'), groupLanguage)
             : group.join('\n'),
       );
       group.clear();
       groupKind = null;
+      groupLanguage = null;
     }
 
-    void addTo(String kind, String line) {
-      if (groupKind != kind) {
+    void addTo(String kind, String line, {String? language}) {
+      if (groupKind != kind || groupLanguage != language) {
         flush();
         groupKind = kind;
+        groupLanguage = language;
       }
       group.add(line);
     }
@@ -316,7 +322,7 @@ class DiaryMarkdownWriter {
         case ExportBlockKind.quote:
           addTo('quote', '> ${_inlines(block.inlines)}');
         case ExportBlockKind.code:
-          addTo('code', block.plainText);
+          addTo('code', block.plainText, language: block.codeLanguage);
         case ExportBlockKind.image:
           flush();
           if (block.source == entry.cover) {
@@ -373,6 +379,25 @@ class DiaryMarkdownWriter {
       out.write(text);
     }
     return out.toString();
+  }
+
+  /// 围栏代码块：信息串为语言 id，纯文本写 `text`，未指定不写；围栏长度
+  /// 取代码里最长的连续反引号 + 1（至少三个），代码含 ``` 时也不会提前闭合。
+  static String _codeFence(String code, String? language) {
+    var longest = 0;
+    for (final match in RegExp('`+').allMatches(code)) {
+      final length = match.end - match.start;
+      if (length > longest) {
+        longest = length;
+      }
+    }
+    final fence = '`' * (longest + 1 < 3 ? 3 : longest + 1);
+    final info = switch (language) {
+      null => '',
+      kCodeBlockPlain => 'text',
+      _ => language,
+    };
+    return '$fence$info\n$code\n$fence';
   }
 
   static String _code(String text) {

@@ -1,17 +1,19 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../app/theme/expressive_motion.dart';
+import '../home/models/home_bar_style/home_bar_resolved_style.dart';
+import '../home/models/home_bar_style/home_bar_style.dart';
+import '../home/widgets/home_bar/home_nav_bar.dart';
 
-/// 底部导航栏单项配置。
-class BottomNavItem {
-  const BottomNavItem({required this.label, required this.icon});
+export '../home/widgets/home_bar/home_nav_bar.dart' show BottomNavItem;
 
-  final String label;
-  final FaIconData icon;
-}
-
-/// Expressive 导航：保留原生目的地语义/键盘导航，选中图标独立弹入胶囊。
+/// 实色首页底栏：贴底铺满，主题底色 + 顶部 0.6 细线，内部为 [HomeNavBar]。
+///
+/// 默认样式下与改版前的 Material `NavigationBar` 逐像素一致（像素基线见
+/// test/ui/home/widgets/home_bar/home_nav_bar_pixel_test.dart）。导航项的选项
+/// （文字模式、图标大小、指示器、跟随滑动）取自 [style]；栏高固定 80，
+/// 悬浮几何与玻璃材质不在这里（玻璃悬浮底栏另有组件）。
 class BottomNav extends StatelessWidget {
   static const double navHeight = 80.0;
   static const double navBottomInset = 0.0;
@@ -23,15 +25,23 @@ class BottomNav extends StatelessWidget {
     required this.items,
     required this.selectedIndex,
     required this.onTap,
+    this.style,
+    this.position,
   });
 
   final List<BottomNavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onTap;
 
+  /// 已解析的首页栏样式；null 时按默认样式在当前主题下解析。
+  final HomeBarResolvedStyle? style;
+
+  /// 页面位置；非空时选中指示器跟随滑动（见 [HomeNavBar.position]）。
+  final ValueListenable<double>? position;
+
   @override
   Widget build(BuildContext context) {
-    // NavigationBar 本身要求至少两个目的地；空态与单项配置不交给它断言。
+    // 空态与单项配置不交给导航行（等分的一行只有一项时没有意义）。
     if (items.isEmpty) return const SizedBox.shrink();
     if (items.length == 1) {
       return SafeArea(
@@ -58,10 +68,6 @@ class BottomNav extends StatelessWidget {
     final navBackgroundColor =
         theme.navigationBarTheme.backgroundColor ??
         colorScheme.surfaceContainer;
-    final maxIndex = items.length - 1;
-    final clampedIndex = selectedIndex < 0
-        ? 0
-        : (selectedIndex > maxIndex ? maxIndex : selectedIndex);
 
     return Container(
       decoration: BoxDecoration(
@@ -77,32 +83,22 @@ class BottomNav extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: navHorizontalInset),
-        child: NavigationBar(
-          animationDuration: ExpressiveMotion.duration(context),
-          height: navHeight,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          selectedIndex: clampedIndex,
-          onDestinationSelected: onTap,
-          indicatorColor: colorScheme.secondaryContainer,
-          backgroundColor: Colors.transparent,
-          destinations: [
-            for (var index = 0; index < items.length; index++)
-              NavigationDestination(
-                icon: AnimatedScale(
-                  scale: clampedIndex == index ? 1.12 : 1,
-                  duration: ExpressiveMotion.duration(context),
-                  curve: ExpressiveMotion.spatial,
-                  child: FaIcon(
-                    items[index].icon,
-                    size: navIconSize,
-                    color: clampedIndex == index
-                        ? colorScheme.onSecondaryContainer
-                        : colorScheme.onSurfaceVariant,
-                  ),
+        // 与 NavigationBar 自带的 SafeArea 相同：四边都避让（底栏所在的
+        // Scaffold 已去掉顶部内边距），手势条高度加在栏下方。
+        child: SafeArea(
+          child: HomeNavBar(
+            items: items,
+            selectedIndex: selectedIndex,
+            onTap: onTap,
+            style:
+                style ??
+                HomeBarResolvedStyle.resolve(
+                  HomeBarStyle.defaults,
+                  colorScheme,
                 ),
-                label: items[index].label,
-              ),
-          ],
+            height: navHeight,
+            position: position,
+          ),
         ),
       ),
     );

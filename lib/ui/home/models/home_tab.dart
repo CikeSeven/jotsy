@@ -36,7 +36,7 @@ enum HomeTab {
 /// 按功能开关推出可见的 Tab（保持 [HomeTab] 的声明顺序）。
 ///
 /// 日记与设置始终可见：日记是应用的主体，设置是重新打开功能的唯一入口；
-/// 因此结果至少有两项，底栏始终能交给 NavigationBar（它要求至少两个目的地）。
+/// 因此结果至少有两项，底栏始终是正常的导航行（不会落到单项兜底）。
 List<HomeTab> visibleHomeTabs(AppFeatures features) => <HomeTab>[
   HomeTab.diaries,
   if (features.calendar) HomeTab.calendar,

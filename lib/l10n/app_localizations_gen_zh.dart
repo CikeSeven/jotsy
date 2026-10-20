@@ -7252,6 +7252,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get codeBlockFontBody => '正文字体';
 
   @override
+  String get codeBlockFontMissing =>
+      '所选字体的文件已不在本机，代码暂按系统等宽字体显示；可在正文字体与排版里重新导入，或改选其他字体。';
+
+  @override
   String get codeBlockFontSizeTitle => '字号';
 
   @override

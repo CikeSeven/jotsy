@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../app/theme/expressive_surfaces.dart';
@@ -10,6 +9,7 @@ import '../../../diaries/sections/diaries_list_section.dart';
 import '../../../diaries/sections/diary_head_section.dart';
 import '../../../widgets/expressive_button_group.dart';
 import '../../controllers/diary_card_style_editor_controller.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// 卡片样式的实时预览：顶部工具条（[DiaryCardStylePreviewToolbar]）切换列表/
 /// 瀑布流与预览明暗，下方用真实的 [DiariesListSection] 渲染示例日记，与日记
@@ -144,9 +144,6 @@ class DiaryCardStylePreviewToolbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final brightness =
-        controller.previewBrightness ?? Theme.of(context).brightness;
-    final isLight = brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Row(
@@ -172,18 +169,7 @@ class DiaryCardStylePreviewToolbar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          IconButton.filledTonal(
-            tooltip: isLight
-                ? l10n.styleEditorPreviewDark
-                : l10n.styleEditorPreviewLight,
-            onPressed: () => controller.previewBrightness = isLight
-                ? Brightness.dark
-                : Brightness.light,
-            icon: FaIcon(
-              isLight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
-              size: 16,
-            ),
-          ),
+          StylePreviewBrightnessButton(controller: controller),
         ],
       ),
     );

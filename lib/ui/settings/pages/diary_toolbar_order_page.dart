@@ -13,6 +13,7 @@ import '../../widgets/triple_bar_drag_handle.dart';
 import '../../widgets/unsaved_changes_dialog.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../widgets/diary_toolbar_overflow_divider.dart';
+import 'diary_code_block_style_page.dart';
 
 /// 日记编辑器工具栏排序页（拖拽调整顺序）。
 ///
@@ -178,6 +179,14 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
     switch (item) {
       case DiaryToolbarItem.currentTime:
         await _openCurrentTimeFormatDialog();
+      case DiaryToolbarItem.codeBlock:
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (BuildContext context) => DiaryCodeBlockStylePage(
+              settingsService: widget.settingsService,
+            ),
+          ),
+        );
       case _:
         return;
     }
@@ -200,7 +209,7 @@ class _DiaryToolbarOrderPageState extends State<DiaryToolbarOrderPage> {
 
   bool _hasToolSettings(DiaryToolbarItem item) {
     return switch (item) {
-      DiaryToolbarItem.currentTime => true,
+      DiaryToolbarItem.currentTime || DiaryToolbarItem.codeBlock => true,
       _ => false,
     };
   }

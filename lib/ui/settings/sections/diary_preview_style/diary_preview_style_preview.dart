@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
@@ -16,6 +15,7 @@ import '../../../diaries/widgets/diary_preview/diary_preview_content.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_neighbors.dart';
 import '../../../diaries/widgets/diary_preview/diary_preview_surface.dart';
 import '../../controllers/diary_preview_style_editor_controller.dart';
+import '../../widgets/style_editor/style_editor_common.dart';
 
 /// 设置页的实时预览：用正式页面同一套组件（[DiaryPreviewSurface] +
 /// [DiaryPreviewContent]）渲染几篇内存示例，放进与正式页面相同的翻页器
@@ -189,9 +189,6 @@ class DiaryPreviewStylePreviewToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final scheme = Theme.of(context).colorScheme;
-    final brightness =
-        controller.previewBrightness ?? Theme.of(context).brightness;
-    final isLight = brightness == Brightness.light;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       child: Row(
@@ -228,18 +225,7 @@ class DiaryPreviewStylePreviewToolbar extends StatelessWidget {
               },
             ),
           ),
-          IconButton.filledTonal(
-            tooltip: isLight
-                ? l10n.styleEditorPreviewDark
-                : l10n.styleEditorPreviewLight,
-            onPressed: () => controller.previewBrightness = isLight
-                ? Brightness.dark
-                : Brightness.light,
-            icon: FaIcon(
-              isLight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
-              size: 16,
-            ),
-          ),
+          StylePreviewBrightnessButton(controller: controller),
         ],
       ),
     );

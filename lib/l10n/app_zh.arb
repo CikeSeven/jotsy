@@ -10409,6 +10409,10 @@
   "@codeBlockFontBody": {
     "description": "代码字体选项：跟随正文字体。"
   },
+  "codeBlockFontMissing": "所选字体的文件已不在本机，代码暂按系统等宽字体显示；可在正文字体与排版里重新导入，或改选其他字体。",
+  "@codeBlockFontMissing": {
+    "description": "代码块样式：所选导入字体的文件已不在本机时，字体分组下方的说明。"
+  },
   "codeBlockFontSizeTitle": "字号",
   "@codeBlockFontSizeTitle": {
     "description": "代码块样式滑块：字号。"

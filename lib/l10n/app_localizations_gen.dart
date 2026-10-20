@@ -13232,6 +13232,12 @@ abstract class AppLocalizations {
   /// **'Body font'**
   String get codeBlockFontBody;
 
+  /// Code block style: note under the font group when the selected imported font file is no longer on this device.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected font file is no longer on this device, so code uses the system monospace font for now. Import it again in Body font & layout, or pick another font.'**
+  String get codeBlockFontMissing;
+
   /// Code block style slider: font size.
   ///
   /// In en, this message translates to:

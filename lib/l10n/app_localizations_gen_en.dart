@@ -8093,6 +8093,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get codeBlockFontBody => 'Body font';
 
   @override
+  String get codeBlockFontMissing =>
+      'The selected font file is no longer on this device, so code uses the system monospace font for now. Import it again in Body font & layout, or pick another font.';
+
+  @override
   String get codeBlockFontSizeTitle => 'Font size';
 
   @override

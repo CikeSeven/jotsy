@@ -10409,6 +10409,10 @@
   "@codeBlockFontBody": {
     "description": "Code font option: use the body font."
   },
+  "codeBlockFontMissing": "The selected font file is no longer on this device, so code uses the system monospace font for now. Import it again in Body font & layout, or pick another font.",
+  "@codeBlockFontMissing": {
+    "description": "Code block style: note under the font group when the selected imported font file is no longer on this device."
+  },
   "codeBlockFontSizeTitle": "Font size",
   "@codeBlockFontSizeTitle": {
     "description": "Code block style slider: font size."

@@ -17,6 +17,7 @@ import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
 import 'package:node_diary/ui/settings/pages/mood_options_page.dart';
 import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
+import 'settings_code_block_style_tile.dart';
 
 /// 设置页编辑器配置区块。
 class SettingsEditorSection extends ConsumerWidget {
@@ -79,6 +80,9 @@ class SettingsEditorSection extends ConsumerWidget {
                                   title: l10n.settingsEditorGroup,
                                   children: <Widget>[
                                     const _DiaryTypographyTile(),
+                                    SettingsCodeBlockStyleTile(
+                                      settingsService: settingsService,
+                                    ),
                                     if (templatesEnabled)
                                       const _DiaryTemplatesTile(),
                                     _DayPhotoSuggestionsSwitch(

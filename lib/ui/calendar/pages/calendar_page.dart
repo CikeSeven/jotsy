@@ -53,6 +53,7 @@ import '../widgets/calendar_display_options_sheet.dart';
 import '../widgets/calendar_filter_bar.dart';
 import '../widgets/calendar_filter_sheet.dart';
 import '../widgets/calendar_header.dart';
+import '../widgets/calendar_header_sliver.dart';
 import '../widgets/calendar_month_grid.dart';
 import '../widgets/calendar_month_summary.dart';
 import '../widgets/calendar_on_this_day_strip.dart';
@@ -78,8 +79,9 @@ part '../controllers/calendar_filter_actions.dart';
 /// 日历页（上历下表）。
 ///
 /// 页面职责（只做装配）：
-/// - 组合页头、日历卡片（月/周网格或年视图 + 概览）、选中日标题、当天日记
-///   （时间线或卡片）与那年今日；区块构建见 calendar_page_sections.dart；
+/// - 组合页头（固定在顶部，下滑时月份行收起、只留标题栏）、日历卡片（月/周
+///   网格或年视图 + 概览）、选中日标题、当天日记（时间线或卡片）与那年
+///   今日；区块构建见 calendar_page_sections.dart；
 /// - 监听打点/当日日记/心情配置/显示选项，翻月期间保留上一份数据；
 /// - 不注册 Home 的“新建”FAB：在某天写日记走长按日期菜单或当天的空状态。
 ///
@@ -181,8 +183,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final headerHeight =
-        MediaQuery.paddingOf(context).top + CalendarHeader.contentHeight;
     // 玻璃底栏悬浮在内容之上（首页 Scaffold extendBody）时，这里的底部
     // padding 是底栏槽位高度：列表照常滚到胶囊下方，末尾多留这一段，最后
     // 一项才能完整滚到胶囊上方。实色底栏时 Scaffold 已扣掉，为 0。
@@ -284,7 +284,33 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             bottom: false,
             child: CustomScrollView(
               slivers: <Widget>[
-                SliverToBoxAdapter(child: SizedBox(height: headerHeight)),
+                // 页头固定在顶部，月份行随下滑收起、只留标题栏，见
+                // CalendarHeaderSliver。
+                CalendarHeaderSliver(
+                  builder: (_, double collapsedExtent) => CalendarHeader(
+                    title: _controller.focusedMonthTitle,
+                    month: _focusedMonth,
+                    onJumpToToday: _controller.jumpToToday,
+                    onPreviousMonth: _controller.goToPreviousMonth,
+                    onNextMonth: _controller.goToNextMonth,
+                    onPickDate: _controller.onTitlePressed,
+                    onOpenDisplayOptions: () =>
+                        unawaited(_controller.openDisplayOptions()),
+                    onOpenFilter: () => unawaited(_controller.openFilter()),
+                    onOpenAnniversaries: anniversariesEnabled
+                        ? () => unawaited(openAnniversaryList(context))
+                        : null,
+                    filterActive: _filter.isActive,
+                    titleTooltip: _yearMode
+                        ? l10n.autoT0177
+                        : l10n.calendarYearViewTooltip,
+                    previousTooltip: _yearMode
+                        ? l10n.calendarPreviousYear
+                        : null,
+                    nextTooltip: _yearMode ? l10n.calendarNextYear : null,
+                    collapsedExtent: collapsedExtent,
+                  ),
+                ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(
@@ -347,26 +373,6 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
                 ),
               ],
             ),
-          ),
-          CalendarHeader(
-            title: _controller.focusedMonthTitle,
-            month: _focusedMonth,
-            onJumpToToday: _controller.jumpToToday,
-            onPreviousMonth: _controller.goToPreviousMonth,
-            onNextMonth: _controller.goToNextMonth,
-            onPickDate: _controller.onTitlePressed,
-            onOpenDisplayOptions: () =>
-                unawaited(_controller.openDisplayOptions()),
-            onOpenFilter: () => unawaited(_controller.openFilter()),
-            onOpenAnniversaries: anniversariesEnabled
-                ? () => unawaited(openAnniversaryList(context))
-                : null,
-            filterActive: _filter.isActive,
-            titleTooltip: _yearMode
-                ? l10n.autoT0177
-                : l10n.calendarYearViewTooltip,
-            previousTooltip: _yearMode ? l10n.calendarPreviousYear : null,
-            nextTooltip: _yearMode ? l10n.calendarNextYear : null,
           ),
           // 导出只能在年视图发起：遮罩只在年视图挂载，月/周视图不多挂一个
           // 常驻的加载指示器。

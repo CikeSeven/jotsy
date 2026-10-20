@@ -81,12 +81,27 @@ void main() {
           blurSigma: 99,
           tintOpacity: 0.1,
           iconSize: 3,
+          labelGap: 30,
+          blockPadding: -2,
         ),
         _light,
       );
       expect(resolved.blurSigma, HomeBarStyleLimits.blurSigma.max);
       expect(resolved.tintOpacity, HomeBarStyleLimits.tintOpacity.min);
       expect(resolved.iconSize, HomeBarStyleLimits.iconSize.min);
+      expect(resolved.labelGap, HomeBarStyleLimits.labelGap.max);
+      expect(resolved.blockPadding, 0);
+    });
+
+    test('spacing passes through and takes part in equality', () {
+      final a = _resolve(glass.copyWith(labelGap: 5, blockPadding: 9), _light);
+      expect(a.labelGap, 5);
+      expect(a.blockPadding, 9);
+      final b = _resolve(glass.copyWith(labelGap: 5, blockPadding: 9), _light);
+      expect(a, b);
+      expect(a.hashCode, b.hashCode);
+      expect(a == _resolve(glass.copyWith(labelGap: 6), _light), isFalse);
+      expect(a == _resolve(glass.copyWith(blockPadding: 8), _light), isFalse);
     });
   });
 

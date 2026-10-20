@@ -7309,6 +7309,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get homeBarStyleIconSize => '图标大小';
 
   @override
+  String get homeBarStyleLabelGap => '图标与文字间距';
+
+  @override
   String get homeBarStyleIndicator => '选中指示器';
 
   @override
@@ -7319,6 +7322,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get homeBarStyleIndicatorNone => '无';
+
+  @override
+  String get homeBarStyleBlockPadding => '色块内边距';
+
+  @override
+  String get homeBarStyleItemsFooter => '切换到玻璃时，图标与文字间距会自动收紧一些。';
 
   @override
   String get homeBarStyleBehaviorFooter => '行为不随预设和样式码改变。';

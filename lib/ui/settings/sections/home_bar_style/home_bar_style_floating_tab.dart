@@ -65,8 +65,10 @@ class _SolidHint extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               FilledButton.tonal(
+                // 与材质页的选择器同一条换材质路径（withMaterial），两处
+                // 切到玻璃得到的间距一致，预设标记也才对得上。
                 onPressed: () => controller.commitWith(
-                  (s) => s.copyWith(material: HomeBarMaterial.glass),
+                  (s) => s.withMaterial(HomeBarMaterial.glass),
                 ),
                 child: Text(l10n.homeBarStyleSwitchToGlass),
               ),

@@ -117,6 +117,24 @@ void main() {
         expect(preset.style.material, HomeBarMaterial.glass);
       }
     });
+
+    test('glass-based presets use the tighter glass label gap', () {
+      expect(HomeBarPreset.classic.style.labelGap, 4);
+      for (final preset in HomeBarPreset.values.skip(1)) {
+        expect(preset.style.labelGap, HomeBarStyle.glassLabelGap);
+        expect(HomeBarPreset.matching(preset.style), preset);
+      }
+    });
+
+    test('switching the classic bar to glass with a block is the glass '
+        'preset', () {
+      expect(
+        HomeBarStyle.defaults
+            .withMaterial(HomeBarMaterial.glass)
+            .copyWith(indicator: HomeBarIndicator.block),
+        HomeBarPreset.glass.style,
+      );
+    });
   });
 
   group('HomeBarStyleCode', () {

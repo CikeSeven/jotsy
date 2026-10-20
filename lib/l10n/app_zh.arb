@@ -10485,6 +10485,10 @@
   "@homeBarStyleIconSize": {
     "description": "导航栏样式设置：导航项图标大小滑块。"
   },
+  "homeBarStyleLabelGap": "图标与文字间距",
+  "@homeBarStyleLabelGap": {
+    "description": "导航栏样式设置：导航项图标与文字之间距离的滑块。"
+  },
   "homeBarStyleIndicator": "选中指示器",
   "@homeBarStyleIndicator": {
     "description": "导航栏样式设置：选中指示器样式。"
@@ -10500,6 +10504,14 @@
   "homeBarStyleIndicatorNone": "无",
   "@homeBarStyleIndicatorNone": {
     "description": "导航栏样式设置：不画指示器。"
+  },
+  "homeBarStyleBlockPadding": "色块内边距",
+  "@homeBarStyleBlockPadding": {
+    "description": "导航栏样式设置：色块指示器与图标、文字之间留白的滑块，只在选了色块时出现。"
+  },
+  "homeBarStyleItemsFooter": "切换到玻璃时，图标与文字间距会自动收紧一些。",
+  "@homeBarStyleItemsFooter": {
+    "description": "导航栏样式设置：导航项分组的附注，说明换材质时间距的联动。"
   },
   "homeBarStyleBehaviorFooter": "行为不随预设和样式码改变。",
   "@homeBarStyleBehaviorFooter": {

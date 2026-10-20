@@ -33,6 +33,8 @@ class HomeBarResolvedStyle {
     required this.sideMargin,
     required this.bottomGap,
     required this.iconSize,
+    required this.labelGap,
+    required this.blockPadding,
     required this.border,
     required this.shadow,
     required this.fabPlacement,
@@ -84,6 +86,8 @@ class HomeBarResolvedStyle {
       sideMargin: HomeBarStyleLimits.sideMargin.clamp(style.sideMargin),
       bottomGap: HomeBarStyleLimits.bottomGap.clamp(style.bottomGap),
       iconSize: HomeBarStyleLimits.iconSize.clamp(style.iconSize),
+      labelGap: HomeBarStyleLimits.labelGap.clamp(style.labelGap),
+      blockPadding: HomeBarStyleLimits.blockPadding.clamp(style.blockPadding),
       // 描边、投影与并排的 FAB 只属于悬浮玻璃底栏；实色栏贴底铺满，
       // 这里直接给出“是否画”，渲染层不必再判断材质。
       border: isGlass && style.border,
@@ -123,6 +127,11 @@ class HomeBarResolvedStyle {
   final double sideMargin;
   final double bottomGap;
   final double iconSize;
+
+  /// 文字与图标框的间距、圆角块的内边距（已夹到取值范围内；栏太矮放不下
+  /// 时布局还会再收窄，见 HomeNavDestinationLayout）。
+  final double labelGap;
+  final double blockPadding;
 
   /// 悬浮底栏是否画描边 / 投影（只在玻璃生效时可能为 true）。
   final bool border;
@@ -221,6 +230,8 @@ class HomeBarResolvedStyle {
         other.sideMargin == sideMargin &&
         other.bottomGap == bottomGap &&
         other.iconSize == iconSize &&
+        other.labelGap == labelGap &&
+        other.blockPadding == blockPadding &&
         other.border == border &&
         other.shadow == shadow &&
         other.fabPlacement == fabPlacement &&
@@ -248,6 +259,8 @@ class HomeBarResolvedStyle {
     sideMargin,
     bottomGap,
     iconSize,
+    labelGap,
+    blockPadding,
     border,
     shadow,
     fabPlacement,

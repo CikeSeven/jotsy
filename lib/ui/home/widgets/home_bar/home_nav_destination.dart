@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../models/home_bar_style/home_bar_style.dart';
+import 'home_nav_block.dart';
 import 'home_nav_indicator.dart';
 import 'home_nav_layout.dart';
 
@@ -31,7 +32,11 @@ class HomeNavDestination extends StatefulWidget {
     required this.labelMode,
     required this.iconSize,
     required this.indicator,
-    required this.blockRadius,
+    required this.labelGap,
+    required this.blockPadding,
+    required this.cornerRadius,
+    required this.barHeight,
+    required this.metrics,
     required this.colors,
     required this.onTap,
   });
@@ -49,7 +54,17 @@ class HomeNavDestination extends StatefulWidget {
   final HomeBarLabelMode labelMode;
   final double iconSize;
   final HomeBarIndicator indicator;
-  final double blockRadius;
+
+  /// 文字与图标框的间距、圆角块的内边距（见 HomeBarStyle 同名字段）。
+  final double labelGap;
+  final double blockPadding;
+
+  /// 栏的圆角与高度：圆角块按它们推算同心圆角（见 [HomeNavBlockBorder]）。
+  final double cornerRadius;
+  final double barHeight;
+
+  /// 同一栏共享的内容尺寸，跟随滑动时推算相邻一项的块大小。
+  final HomeNavContentMetrics metrics;
   final HomeNavColors colors;
   final VoidCallback onTap;
 
@@ -60,6 +75,11 @@ class HomeNavDestination extends StatefulWidget {
 class _HomeNavDestinationState extends State<HomeNavDestination> {
   /// 图标框（胶囊大小）的 key：胶囊样式的水波纹按它的位置画。
   final GlobalKey _iconKey = GlobalKey();
+
+  /// 本项圆角块占位的 key：圆角块与无指示器的水波纹按它的位置画。块的
+  /// 大小要到布局时才知道（随文字宽度、内边距与文字显现变化），由布局
+  /// delegate 把占位摆到块的位置。
+  final GlobalKey _blockKey = GlobalKey();
 
   /// 选中程度 [t]（0~1）下的颜色；端点直接取原色，保证默认样式逐像素不变。
   static Color _mixColor(Color from, Color to, double t) =>
@@ -94,20 +114,21 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
     };
   }
 
-  ShapeBorder get _rippleShape => widget.indicator == HomeBarIndicator.capsule
+  bool get _isCapsule => widget.indicator == HomeBarIndicator.capsule;
+
+  ShapeBorder get _rippleShape => _isCapsule
       ? const StadiumBorder()
-      : RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(widget.blockRadius),
+      : HomeNavBlockBorder(
+          cornerRadius: widget.cornerRadius,
+          barHeight: widget.barHeight,
         );
 
+  /// 胶囊的水波纹画在图标框上；圆角块与“无指示器”都裁成本项圆角块的形状。
   Rect _rippleRect(RenderBox referenceBox) {
-    if (widget.indicator != HomeBarIndicator.capsule) {
-      // 圆角块与“无指示器”的水波纹都裁成圆角块的形状。
-      return HomeNavGeometry.blockRect(referenceBox.size);
-    }
-    final iconBox = _iconKey.currentContext!.findRenderObject()! as RenderBox;
-    final iconRect = iconBox.localToGlobal(Offset.zero) & iconBox.size;
-    return referenceBox.globalToLocal(iconRect.topLeft) & iconBox.size;
+    final key = _isCapsule ? _iconKey : _blockKey;
+    final box = key.currentContext!.findRenderObject()! as RenderBox;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    return referenceBox.globalToLocal(rect.topLeft) & box.size;
   }
 
   @override
@@ -132,28 +153,38 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
         ),
       );
     });
+    // 间距不再包在文字外（M3 用 Padding），由布局 delegate 加上：栏太矮
+    // 时 delegate 要先收窄间距，文字才不越出栏。
     final label = _tracked(
-      (double t) => Padding(
-        padding: const EdgeInsets.only(top: HomeNavGeometry.labelGap),
-        // 与 M3 相同：文字最多放大到 1.3 倍，大字体下栏的层级不变；
-        // 再长就省略，窄屏不溢出。
-        child: MediaQuery.withClampedTextScaling(
-          maxScaleFactor: 1.3,
-          child: Text(
-            widget.label,
-            style: _mixStyle(colors.unselectedLabel, colors.selectedLabel, t),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+      // 与 M3 相同：文字最多放大到 1.3 倍，大字体下栏的层级不变；
+      // 再长就省略，窄屏不溢出。
+      (double t) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.3,
+        child: Text(
+          widget.label,
+          style: _mixStyle(colors.unselectedLabel, colors.selectedLabel, t),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );
+    // 胶囊样式的图标框至少是胶囊大小（与 M3 把指示器放进图标 Stack 时的
+    // 尺寸相同）；圆角块与无指示器时收紧到图标大小加放大余量，圆角块才能
+    // 贴着内容、按内边距包住它，而不是被 32dp 的胶囊框撑开。
+    final slot = _isCapsule
+        ? const Size(
+            HomeNavGeometry.capsuleWidth,
+            HomeNavGeometry.capsuleHeight,
+          )
+        : Size.square(HomeNavGeometry.iconSlot(iconSize));
     final labelReveal = _labelReveal;
     final layout = CustomMultiChildLayout(
       delegate: HomeNavDestinationLayout(
         labelReveal: labelReveal,
         indicator: widget.indicator,
         textDirection: Directionality.of(context),
+        labelGap: widget.labelGap,
+        blockPadding: widget.blockPadding,
         follow: position == null
             ? null
             : HomeNavFollow(
@@ -161,9 +192,15 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
                 index: widget.index,
                 count: widget.count,
                 labelMode: widget.labelMode,
+                metrics: widget.metrics,
               ),
       ),
       children: <Widget>[
+        if (!_isCapsule)
+          LayoutId(
+            id: HomeNavDestinationLayout.blockSlotId,
+            child: SizedBox(key: _blockKey),
+          ),
         if (widget.indicator != HomeBarIndicator.none)
           LayoutId(
             id: HomeNavDestinationLayout.indicatorId,
@@ -180,15 +217,10 @@ class _HomeNavDestinationState extends State<HomeNavDestination> {
           id: HomeNavDestinationLayout.iconId,
           child: KeyedSubtree(
             key: _iconKey,
-            // 图标框至少是胶囊大小：三种指示器下图标与文字的位置一致，
-            // 也与 M3 把指示器放进图标 Stack 时的尺寸相同。
             child: Stack(
               alignment: Alignment.center,
               children: <Widget>[
-                const SizedBox(
-                  width: HomeNavGeometry.capsuleWidth,
-                  height: HomeNavGeometry.capsuleHeight,
-                ),
+                SizedBox.fromSize(size: slot),
                 icon,
               ],
             ),

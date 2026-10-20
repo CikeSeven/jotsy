@@ -60,8 +60,10 @@ class HomeBarStyleMaterialTab extends StatelessWidget {
                         ),
                     ],
                     selected: <HomeBarMaterial>{style.material},
-                    onSelectionChanged: (Set<HomeBarMaterial> v) => controller
-                        .commitWith((s) => s.copyWith(material: v.single)),
+                    // 经 withMaterial 换材质：图标与文字间距随之联动（玻璃栏
+                    // 更矮，默认间距会让文字贴住色块下沿），只替换默认值。
+                    onSelectionChanged: (Set<HomeBarMaterial> v) =>
+                        controller.commitWith((s) => s.withMaterial(v.single)),
                   ),
                 ),
                 SettingsReveal(

@@ -13346,6 +13346,12 @@ abstract class AppLocalizations {
   /// **'Icon size'**
   String get homeBarStyleIconSize;
 
+  /// Navigation bar style settings: slider for the distance between a navigation item icon and its label.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon to label spacing'**
+  String get homeBarStyleLabelGap;
+
   /// Navigation bar style settings: selection indicator style.
   ///
   /// In en, this message translates to:
@@ -13369,6 +13375,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'None'**
   String get homeBarStyleIndicatorNone;
+
+  /// Navigation bar style settings: slider for the space between the block indicator and the icon and label; shown only for the block indicator.
+  ///
+  /// In en, this message translates to:
+  /// **'Block padding'**
+  String get homeBarStyleBlockPadding;
+
+  /// Navigation bar style settings: navigation items group footer explaining that the spacing follows the material.
+  ///
+  /// In en, this message translates to:
+  /// **'Switching to glass tightens the icon to label spacing a little.'**
+  String get homeBarStyleItemsFooter;
 
   /// Navigation bar style settings: behavior group footer.
   ///

@@ -8158,6 +8158,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBarStyleIconSize => 'Icon size';
 
   @override
+  String get homeBarStyleLabelGap => 'Icon to label spacing';
+
+  @override
   String get homeBarStyleIndicator => 'Selection indicator';
 
   @override
@@ -8168,6 +8171,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeBarStyleIndicatorNone => 'None';
+
+  @override
+  String get homeBarStyleBlockPadding => 'Block padding';
+
+  @override
+  String get homeBarStyleItemsFooter =>
+      'Switching to glass tightens the icon to label spacing a little.';
 
   @override
   String get homeBarStyleBehaviorFooter =>

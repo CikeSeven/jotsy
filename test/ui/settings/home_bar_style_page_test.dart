@@ -158,6 +158,8 @@ void main() {
 
     await _tapVisible(tester, _materialOption(l10n.homeBarStyleMaterialGlass));
     expect(_stored(settings).current.material, HomeBarMaterial.glass);
+    // 切到玻璃时默认的图标文字间距随之收紧。
+    expect(_stored(settings).current.labelGap, HomeBarStyle.glassLabelGap);
     expect(_inOptions(l10n.homeBarStyleGlassTopBars), findsOneWidget);
     expect(_inOptions(l10n.homeBarStyleGlassFooter), findsOneWidget);
     expect(find.byType(HomeFloatingBar), findsOneWidget);
@@ -172,6 +174,7 @@ void main() {
 
     await _tapVisible(tester, _materialOption(l10n.homeBarStyleMaterialSolid));
     expect(_stored(settings).current.material, HomeBarMaterial.solid);
+    expect(_stored(settings).current.labelGap, 4);
     expect(_inOptions(l10n.homeBarStyleGlassTopBars), findsNothing);
     expect(_inOptions(l10n.homeBarStyleTintColor), findsNothing);
     expect(find.byType(BottomNav), findsOneWidget);
@@ -199,6 +202,43 @@ void main() {
     expect(_stored(settings).current.iconSize, 24);
   });
 
+  testWidgets('spacing sliders follow the label mode and the indicator', (
+    tester,
+  ) async {
+    final (settings, l10n) = await _pumpPage(tester);
+    await _openTab(tester, l10n.homeBarStyleTabItems);
+    expect(_inOptions(l10n.homeBarStyleItemsFooter), findsOneWidget);
+    // 默认显示文字、胶囊指示器：有间距滑块，没有内边距滑块。
+    expect(_inOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
+    expect(_inOptions(l10n.homeBarStyleBlockPadding), findsNothing);
+
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleLabelsNever));
+    expect(_stored(settings).current.labelMode, HomeBarLabelMode.never);
+    expect(_inOptions(l10n.homeBarStyleLabelGap), findsNothing);
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleLabelsSelected));
+    expect(_inOptions(l10n.homeBarStyleLabelGap), findsOneWidget);
+
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleIndicatorBlock));
+    expect(_stored(settings).current.indicator, HomeBarIndicator.block);
+    final padding = find.widgetWithText(
+      SettingsSliderTile,
+      l10n.homeBarStyleBlockPadding,
+    );
+    await _scrollTo(tester, padding);
+    final tile = tester.widget<SettingsSliderTile>(padding);
+    expect(tile.nested, isTrue);
+    tile.onChanged!(10);
+    await tester.pump();
+    expect(_stored(settings).current.blockPadding, 6);
+    tile.onChangeEnd!(10);
+    await tester.pumpAndSettle();
+    expect(_stored(settings).current.blockPadding, 10);
+
+    await _tapVisible(tester, _inOptions(l10n.homeBarStyleIndicatorNone));
+    expect(_inOptions(l10n.homeBarStyleBlockPadding), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the floating tab offers to switch to glass when solid', (
     tester,
   ) async {
@@ -209,6 +249,7 @@ void main() {
 
     await _tapVisible(tester, _inOptions(l10n.homeBarStyleSwitchToGlass));
     expect(_stored(settings).current.material, HomeBarMaterial.glass);
+    expect(_stored(settings).current.labelGap, HomeBarStyle.glassLabelGap);
     expect(_inOptions(l10n.homeBarStyleFloatingSolidHint), findsNothing);
     expect(_inOptions(l10n.homeBarStyleSizeGroup), findsOneWidget);
 

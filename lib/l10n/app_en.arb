@@ -10485,6 +10485,10 @@
   "@homeBarStyleIconSize": {
     "description": "Navigation bar style settings: navigation item icon size slider."
   },
+  "homeBarStyleLabelGap": "Icon to label spacing",
+  "@homeBarStyleLabelGap": {
+    "description": "Navigation bar style settings: slider for the distance between a navigation item icon and its label."
+  },
   "homeBarStyleIndicator": "Selection indicator",
   "@homeBarStyleIndicator": {
     "description": "Navigation bar style settings: selection indicator style."
@@ -10500,6 +10504,14 @@
   "homeBarStyleIndicatorNone": "None",
   "@homeBarStyleIndicatorNone": {
     "description": "Navigation bar style settings: no indicator."
+  },
+  "homeBarStyleBlockPadding": "Block padding",
+  "@homeBarStyleBlockPadding": {
+    "description": "Navigation bar style settings: slider for the space between the block indicator and the icon and label; shown only for the block indicator."
+  },
+  "homeBarStyleItemsFooter": "Switching to glass tightens the icon to label spacing a little.",
+  "@homeBarStyleItemsFooter": {
+    "description": "Navigation bar style settings: navigation items group footer explaining that the spacing follows the material."
   },
   "homeBarStyleBehaviorFooter": "Behavior doesn't change with presets or style codes.",
   "@homeBarStyleBehaviorFooter": {

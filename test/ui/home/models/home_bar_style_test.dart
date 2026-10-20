@@ -25,6 +25,8 @@ void main() {
       expect(d.labelMode, HomeBarLabelMode.always);
       expect(d.iconSize, 20);
       expect(d.indicator, HomeBarIndicator.capsule);
+      expect(d.labelGap, 4);
+      expect(d.blockPadding, 6);
       expect(d.isDefault, isTrue);
       expect(d.toJson(), isEmpty);
     });
@@ -77,6 +79,8 @@ void main() {
         'sideMargin': 99,
         'bottomGap': 99,
         'iconSize': 99,
+        'labelGap': 40,
+        'blockPadding': 40,
       });
       expect(high.blurSigma, HomeBarStyleLimits.blurSigma.max);
       expect(high.tintOpacity, HomeBarStyleLimits.tintOpacity.max);
@@ -85,17 +89,23 @@ void main() {
       expect(high.sideMargin, HomeBarStyleLimits.sideMargin.max);
       expect(high.bottomGap, HomeBarStyleLimits.bottomGap.max);
       expect(high.iconSize, HomeBarStyleLimits.iconSize.max);
+      expect(high.labelGap, 12);
+      expect(high.blockPadding, 16);
 
       final low = HomeBarStyle.fromJson(<String, Object?>{
         'blurSigma': -5,
         'tintOpacity': 0,
         'barHeight': 1,
         'iconSize': 1,
+        'labelGap': -3,
+        'blockPadding': -3,
       });
       expect(low.blurSigma, 0);
       expect(low.tintOpacity, HomeBarStyleLimits.tintOpacity.min);
       expect(low.barHeight, HomeBarStyleLimits.barHeight.min);
       expect(low.iconSize, HomeBarStyleLimits.iconSize.min);
+      expect(low.labelGap, 0);
+      expect(low.blockPadding, 0);
 
       final nan = HomeBarStyle.fromJson(<String, Object?>{
         'blurSigma': double.nan,
@@ -103,6 +113,15 @@ void main() {
       });
       expect(nan.blurSigma, HomeBarStyle.defaults.blurSigma);
       expect(nan.barHeight, HomeBarStyle.defaults.barHeight);
+    });
+
+    test('decodes label gap and block padding tolerantly', () {
+      final style = HomeBarStyle.fromJson(<String, Object?>{
+        'labelGap': 7,
+        'blockPadding': 'wide',
+      });
+      expect(style.labelGap, 7);
+      expect(style.blockPadding, 6);
     });
 
     test('falls back on unknown enum names', () {
@@ -170,6 +189,8 @@ void main() {
         labelMode: HomeBarLabelMode.never,
         iconSize: 26,
         indicator: HomeBarIndicator.none,
+        labelGap: 9,
+        blockPadding: 11,
       );
       final decoded = HomeBarStyle.fromJson(
         jsonDecode(jsonEncode(style.toJson())),
@@ -178,10 +199,52 @@ void main() {
       expect(decoded.hashCode, style.hashCode);
     });
 
+    test('omits default spacing and writes changed spacing', () {
+      expect(
+        const HomeBarStyle(labelGap: 4, blockPadding: 6).toJson(),
+        isEmpty,
+      );
+      expect(
+        const HomeBarStyle(labelGap: 2, blockPadding: 10).toJson(),
+        <String, Object>{'labelGap': 2.0, 'blockPadding': 10.0},
+      );
+    });
+
     test('copyWith can clear a custom color', () {
       const style = HomeBarStyle(tintColor: 0xFF123456);
       expect(style.copyWith().tintColor, 0xFF123456);
       expect(style.copyWith(tintColor: () => null).tintColor, isNull);
+    });
+  });
+
+  group('HomeBarStyle.withMaterial', () {
+    test('tightens the default label gap for glass and restores it', () {
+      final glass = HomeBarStyle.defaults.withMaterial(HomeBarMaterial.glass);
+      expect(glass.material, HomeBarMaterial.glass);
+      expect(glass.labelGap, HomeBarStyle.glassLabelGap);
+      final solid = glass.withMaterial(HomeBarMaterial.solid);
+      expect(solid.labelGap, 4);
+      expect(solid, HomeBarStyle.defaults);
+    });
+
+    test('keeps a label gap the user chose', () {
+      const custom = HomeBarStyle(labelGap: 7, blockPadding: 3);
+      final glass = custom.withMaterial(HomeBarMaterial.glass);
+      expect(glass.labelGap, 7);
+      expect(glass.blockPadding, 3);
+      expect(glass.withMaterial(HomeBarMaterial.solid).labelGap, 7);
+    });
+
+    test('re-selecting the same material changes nothing', () {
+      const glass = HomeBarStyle(
+        material: HomeBarMaterial.glass,
+        labelGap: HomeBarStyle.glassLabelGap,
+      );
+      expect(glass.withMaterial(HomeBarMaterial.glass), glass);
+      expect(
+        HomeBarStyle.defaults.withMaterial(HomeBarMaterial.solid),
+        HomeBarStyle.defaults,
+      );
     });
   });
 

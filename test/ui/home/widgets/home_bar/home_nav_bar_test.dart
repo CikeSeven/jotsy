@@ -198,31 +198,6 @@ void main() {
     expect(_indicatorScaleX(tester, 0), 0);
   });
 
-  testWidgets('block indicator covers the cell inset by 6', (tester) async {
-    final style = _style(indicator: HomeBarIndicator.block);
-    await _pump(tester, style: style, selected: 2);
-    // 400 宽 4 项：每格 100，块宽 88、高 80 − 12。
-    final cell = tester.getRect(_destination(2));
-    final rect = tester.getRect(_indicator(2));
-    expect(rect.size, const Size(88, 68));
-    expect(rect.center, offsetMoreOrLessEquals(cell.center));
-    final ink = tester.widget<Ink>(
-      find.descendant(of: _indicator(2), matching: find.byType(Ink)),
-    );
-    final shape =
-        (ink.decoration! as ShapeDecoration).shape as RoundedRectangleBorder;
-    // 圆角 = min(栏圆角 32 − 6, 块高 68 / 2)。
-    expect(shape.borderRadius, BorderRadius.circular(26));
-
-    // 宽格子里块宽封顶 96。
-    await _pump(tester, style: style, selected: 2, width: 800);
-    expect(tester.getSize(_indicator(2)), const Size(96, 68));
-
-    // 矮栏：块高 56 − 12，圆角取块高一半。
-    await _pump(tester, style: style, selected: 2, height: 56);
-    expect(tester.getSize(_indicator(2)), const Size(88, 44));
-  });
-
   testWidgets('no indicator draws no fill', (tester) async {
     await _pump(tester, style: _style(indicator: HomeBarIndicator.none));
     expect(find.byType(HomeNavIndicator), findsNothing);

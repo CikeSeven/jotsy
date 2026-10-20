@@ -73,6 +73,16 @@ HomeBarStyle _homeBarStyleFromJson(Object? raw) {
       json['indicator'],
       d.indicator,
     ),
+    labelGap: StyleJson.number(
+      json['labelGap'],
+      d.labelGap,
+      HomeBarStyleLimits.labelGap,
+    ),
+    blockPadding: StyleJson.number(
+      json['blockPadding'],
+      d.blockPadding,
+      HomeBarStyleLimits.blockPadding,
+    ),
   );
 }
 
@@ -96,5 +106,7 @@ Map<String, Object> _homeBarStyleToJson(HomeBarStyle s) {
   StyleJson.putEnum(json, 'labelMode', s.labelMode, d.labelMode);
   StyleJson.put(json, 'iconSize', s.iconSize, d.iconSize);
   StyleJson.putEnum(json, 'indicator', s.indicator, d.indicator);
+  StyleJson.put(json, 'labelGap', s.labelGap, d.labelGap);
+  StyleJson.put(json, 'blockPadding', s.blockPadding, d.blockPadding);
   return json;
 }

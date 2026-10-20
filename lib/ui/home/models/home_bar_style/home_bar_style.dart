@@ -21,7 +21,8 @@ part 'home_bar_style_json.dart';
 ///   [tint]、[tintColor]、[tintColorDark]、[border]；只在玻璃材质下生效；
 /// - 悬浮底栏几何：[shadow]、[barHeight]、[cornerRadius]、[sideMargin]、
 ///   [bottomGap]、[fabPlacement]；实色底栏贴底铺满，不用这些；
-/// - 导航项：[labelMode]、[iconSize]、[indicator]；两种材质都适用。
+/// - 导航项：[labelMode]、[iconSize]、[labelGap]、[indicator]、
+///   [blockPadding]；两种材质都适用。
 ///
 /// 兼容策略：
 /// - 默认值即改版前写死的实色栏，未自定义的用户看不到变化；
@@ -48,9 +49,15 @@ class HomeBarStyle {
     this.labelMode = HomeBarLabelMode.always,
     this.iconSize = 20,
     this.indicator = HomeBarIndicator.capsule,
+    this.labelGap = 4,
+    this.blockPadding = 6,
   });
 
   static const HomeBarStyle defaults = HomeBarStyle();
+
+  /// 玻璃材质下推荐的图标与文字间距：玻璃悬浮栏默认只有 64 高，圆角块
+  /// 还要在内容四周留出内边距，M3 的 4dp 间距会让文字贴住块的下沿。
+  static const double glassLabelGap = 2;
 
   /// 从已解码的 JSON 构造；不是对象时返回默认样式。
   factory HomeBarStyle.fromJson(Object? raw) => _homeBarStyleFromJson(raw);
@@ -87,10 +94,32 @@ class HomeBarStyle {
   final double iconSize;
   final HomeBarIndicator indicator;
 
+  /// 文字与图标框之间的距离（与 M3 `labelPadding.top` 同义）；默认 4 即 M3，
+  /// 实色栏才能与改版前逐像素一致。
+  final double labelGap;
+
+  /// 圆角块指示器在内容（图标框 + 文字）四周留出的内边距；只对
+  /// [HomeBarIndicator.block] 生效，块放不下时渲染层会先收窄它。
+  final double blockPadding;
+
   bool get isDefault => this == defaults;
 
   /// 稀疏 JSON：默认样式编码为空对象。
   Map<String, Object> toJson() => _homeBarStyleToJson(this);
+
+  /// 换材质，并联动图标与文字间距：玻璃栏更矮、又常配圆角块，默认的 4dp
+  /// 会让内容撑满块，所以切到玻璃时把仍是实色默认值的间距收紧到
+  /// [glassLabelGap]，切回实色时把仍是玻璃默认值的间距还原。用户调过的
+  /// 其他值一律保留——联动只替换“没人动过”的默认值，不覆盖用户的选择。
+  HomeBarStyle withMaterial(HomeBarMaterial material) {
+    var gap = labelGap;
+    if (material == HomeBarMaterial.glass && gap == defaults.labelGap) {
+      gap = glassLabelGap;
+    } else if (material == HomeBarMaterial.solid && gap == glassLabelGap) {
+      gap = defaults.labelGap;
+    }
+    return copyWith(material: material, labelGap: gap);
+  }
 
   /// 可空颜色用 [ValueGetter] 传入，才能区分“不改”（不传）与“清除”
   /// （`() => null`）。
@@ -112,6 +141,8 @@ class HomeBarStyle {
     HomeBarLabelMode? labelMode,
     double? iconSize,
     HomeBarIndicator? indicator,
+    double? labelGap,
+    double? blockPadding,
   }) {
     return HomeBarStyle(
       material: material ?? this.material,
@@ -133,6 +164,8 @@ class HomeBarStyle {
       labelMode: labelMode ?? this.labelMode,
       iconSize: iconSize ?? this.iconSize,
       indicator: indicator ?? this.indicator,
+      labelGap: labelGap ?? this.labelGap,
+      blockPadding: blockPadding ?? this.blockPadding,
     );
   }
 
@@ -155,7 +188,9 @@ class HomeBarStyle {
         other.fabPlacement == fabPlacement &&
         other.labelMode == labelMode &&
         other.iconSize == iconSize &&
-        other.indicator == indicator;
+        other.indicator == indicator &&
+        other.labelGap == labelGap &&
+        other.blockPadding == blockPadding;
   }
 
   @override
@@ -177,5 +212,7 @@ class HomeBarStyle {
     labelMode,
     iconSize,
     indicator,
+    labelGap,
+    blockPadding,
   );
 }

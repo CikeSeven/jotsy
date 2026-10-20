@@ -6,8 +6,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../app/theme/expressive_motion.dart';
 import '../../models/home_bar_style/home_bar_resolved_style.dart';
+import 'home_nav_block.dart';
 import 'home_nav_destination.dart';
-import 'home_nav_layout.dart';
 
 /// 底部导航栏单项配置。
 class BottomNavItem {
@@ -33,7 +33,7 @@ class BottomNavItem {
 ///   onSurfaceVariant、指示器 secondaryContainer，文字取 navigationBarTheme）；
 /// - [position] 非空时指示器跟着页面的小数位置在相邻两项间连续移动；
 ///   语义上的“已选中”始终按 [selectedIndex]。
-class HomeNavBar extends StatelessWidget {
+class HomeNavBar extends StatefulWidget {
   const HomeNavBar({
     super.key,
     required this.items,
@@ -56,9 +56,20 @@ class HomeNavBar extends StatelessWidget {
   /// 页面位置（如 PageController.page）；null 时指示器只在选中变化时动画。
   final ValueListenable<double>? position;
 
-  int get _clampedIndex => selectedIndex.clamp(0, items.length - 1);
+  @override
+  State<HomeNavBar> createState() => _HomeNavBarState();
+}
+
+/// 有状态只为持有各项共享的内容尺寸（跟随滑动时推算相邻一项的圆角块
+/// 大小，见 [HomeNavContentMetrics]），它要跨帧保留。
+class _HomeNavBarState extends State<HomeNavBar> {
+  final HomeNavContentMetrics _metrics = HomeNavContentMetrics();
+
+  int get _clampedIndex =>
+      widget.selectedIndex.clamp(0, widget.items.length - 1);
 
   HomeNavColors _colors(ThemeData theme) {
+    final style = widget.style;
     final scheme = theme.colorScheme;
     final labelTheme = theme.navigationBarTheme.labelTextStyle;
     final base = theme.textTheme.labelMedium ?? const TextStyle();
@@ -91,14 +102,13 @@ class HomeNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final style = widget.style;
+    final items = widget.items;
+    final position = widget.position;
     final colors = _colors(Theme.of(context));
-    final barHeight = height ?? style.barHeight;
+    final barHeight = widget.height ?? style.barHeight;
     final selected = _clampedIndex;
     final duration = ExpressiveMotion.duration(context);
-    final blockRadius = HomeNavGeometry.blockRadius(
-      style.cornerRadius,
-      barHeight,
-    );
     // 透明 Material 承载指示器（Ink）与水波纹，底色由外层负责。
     return Material(
       type: MaterialType.transparency,
@@ -136,9 +146,13 @@ class HomeNavBar extends StatelessWidget {
                               labelMode: style.labelMode,
                               iconSize: style.iconSize,
                               indicator: style.indicator,
-                              blockRadius: blockRadius,
+                              labelGap: style.labelGap,
+                              blockPadding: style.blockPadding,
+                              cornerRadius: style.cornerRadius,
+                              barHeight: barHeight,
+                              metrics: _metrics,
                               colors: colors,
-                              onTap: () => onTap(i),
+                              onTap: () => widget.onTap(i),
                             ),
                       ),
                     ),

@@ -25,4 +25,10 @@ abstract final class HomeBarStyleLimits {
 
   /// 底栏图标大小（两种材质都适用）。
   static const iconSize = StyleRange(16, 28, 1);
+
+  /// 图标与文字的间距：0 时文字紧贴图标框，12 已足够疏朗，再大就像两行。
+  static const labelGap = StyleRange(0, 12, 1);
+
+  /// 圆角块的内边距：再大块就撑满导航项，渲染时还会按栏高收窄。
+  static const blockPadding = StyleRange(0, 16, 1);
 }

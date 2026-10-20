@@ -44,13 +44,17 @@ enum HomeBarPreset {
   }
 }
 
+// 玻璃系预设的间距与 HomeBarStyle.withMaterial 切到玻璃时的结果一致：
+// 从经典栏切到玻璃、再选圆角块，得到的正是“玻璃”预设，预设标记才能对上。
 const _glass = HomeBarStyle(
   material: HomeBarMaterial.glass,
+  labelGap: HomeBarStyle.glassLabelGap,
   indicator: HomeBarIndicator.block,
 );
 
 const _clear = HomeBarStyle(
   material: HomeBarMaterial.glass,
+  labelGap: HomeBarStyle.glassLabelGap,
   indicator: HomeBarIndicator.block,
   blurSigma: 28,
   tintOpacity: 0.45,
@@ -59,6 +63,7 @@ const _clear = HomeBarStyle(
 
 const _frosted = HomeBarStyle(
   material: HomeBarMaterial.glass,
+  labelGap: HomeBarStyle.glassLabelGap,
   indicator: HomeBarIndicator.block,
   blurSigma: 32,
   tintOpacity: 0.88,
@@ -66,12 +71,14 @@ const _frosted = HomeBarStyle(
 
 const _tinted = HomeBarStyle(
   material: HomeBarMaterial.glass,
+  labelGap: HomeBarStyle.glassLabelGap,
   indicator: HomeBarIndicator.block,
   tint: HomeBarTint.theme,
 );
 
 const _compact = HomeBarStyle(
   material: HomeBarMaterial.glass,
+  labelGap: HomeBarStyle.glassLabelGap,
   barHeight: 56,
   cornerRadius: 16,
   sideMargin: 24,

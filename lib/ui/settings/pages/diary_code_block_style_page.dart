@@ -74,13 +74,14 @@ class _DiaryCodeBlockStylePageState extends State<DiaryCodeBlockStylePage> {
         DiaryCodeBlockStyleDisplayTab(controller: _controller),
         DiaryCodeBlockStyleFontTab(controller: _controller),
       ],
-      toolbarBuilder: (_) =>
-          DiaryCodeBlockStylePreviewToolbar(controller: _controller),
+      // 预览只有一个明暗按钮，放进标题栏，不单独占一行挤占预览。
+      actionsBuilder: (_) => <Widget>[
+        StylePreviewBrightnessButton(controller: _controller, inAppBar: true),
+      ],
       previewBuilder:
           ({required bool showToolbar, required double bottomPadding}) =>
               DiaryCodeBlockStylePreview(
                 controller: _controller,
-                showToolbar: showToolbar,
                 bottomPadding: bottomPadding,
               ),
     );

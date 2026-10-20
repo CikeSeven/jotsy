@@ -12,9 +12,17 @@ import '../../controllers/style_draft_controller.dart';
 /// 预览工具条右端的明暗切换：只换预览的明暗（[StyleDraftController.
 /// previewBrightness]），不改应用主题；图标显示点按后会切到的那一种。
 class StylePreviewBrightnessButton extends StatelessWidget {
-  const StylePreviewBrightnessButton({super.key, required this.controller});
+  const StylePreviewBrightnessButton({
+    super.key,
+    required this.controller,
+    this.inAppBar = false,
+  });
 
   final StyleDraftController<Object?, Object?> controller;
+
+  /// 放在标题栏里（`StyleEditorScaffold.actionsBuilder`）：用标题栏的普通
+  /// 图标按钮，图标 18 与返回键一致；否则是预览工具条上的色调按钮。
+  final bool inAppBar;
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +30,24 @@ class StylePreviewBrightnessButton extends StatelessWidget {
     final brightness =
         controller.previewBrightness ?? Theme.of(context).brightness;
     final isLight = brightness == Brightness.light;
+    final tooltip = isLight
+        ? l10n.styleEditorPreviewDark
+        : l10n.styleEditorPreviewLight;
+    void toggle() => controller.previewBrightness = isLight
+        ? Brightness.dark
+        : Brightness.light;
+    final icon = isLight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun;
+    if (inAppBar) {
+      return IconButton(
+        tooltip: tooltip,
+        onPressed: toggle,
+        icon: FaIcon(icon, size: 18),
+      );
+    }
     return IconButton.filledTonal(
-      tooltip: isLight
-          ? l10n.styleEditorPreviewDark
-          : l10n.styleEditorPreviewLight,
-      onPressed: () => controller.previewBrightness = isLight
-          ? Brightness.dark
-          : Brightness.light,
-      icon: FaIcon(
-        isLight ? FontAwesomeIcons.moon : FontAwesomeIcons.sun,
-        size: 16,
-      ),
+      tooltip: tooltip,
+      onPressed: toggle,
+      icon: FaIcon(icon, size: 16),
     );
   }
 }

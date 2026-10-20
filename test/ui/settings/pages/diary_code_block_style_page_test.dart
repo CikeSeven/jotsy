@@ -14,6 +14,7 @@ import 'package:node_diary/ui/settings/sections/diary_code_block_style/diary_cod
 import 'package:node_diary/ui/settings/sections/diary_code_block_style/diary_code_theme_card.dart';
 import 'package:node_diary/ui/settings/sections/settings_editor_section.dart';
 import 'package:node_diary/ui/settings/widgets/settings_option_tiles.dart';
+import 'package:node_diary/ui/widgets/app_top_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/diary_drafts_harness.dart';
@@ -145,6 +146,28 @@ void main() {
     await tester.pumpAndSettle();
     expect(_stored(settings).brightness, DiaryCodeBrightness.dark);
   });
+
+  testWidgets(
+    'the preview brightness button sits in the app bar and only switches the preview',
+    (tester) async {
+      final settings = await _pump(tester);
+      final toggle = find.byTooltip(_l10n.styleEditorPreviewDark);
+      // 在标题栏里，与“重置”同一行，不为它单独占一行挤占预览。
+      expect(
+        find.descendant(of: find.byType(AppTopBar), matching: toggle),
+        findsOneWidget,
+      );
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(find.byTooltip(_l10n.styleEditorPreviewLight), findsOneWidget);
+      // 预览明暗只影响预览，不写入设置。
+      expect(settings.diaryCodeBlockStyleRaw, isNull);
+      final previewTheme = Theme.of(
+        tester.element(find.byType(quill.QuillEditor)),
+      );
+      expect(previewTheme.brightness, Brightness.dark);
+    },
+  );
 
   testWidgets('toggling line numbers persists', (tester) async {
     final settings = await _pump(tester);

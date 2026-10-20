@@ -1,9 +1,12 @@
+import 'dart:ui' show Color;
+
 import 'package:flutter/foundation.dart';
 
 import '../../../core/database/audio_embed_codec.dart';
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/divider_embed_codec.dart';
 import '../../../core/database/file_embed_codec.dart';
+import '../models/diary_text_colors.dart';
 
 /// 正文 Delta 的块级中间表示，供 Markdown / HTML / Word / 纯文本写出器共用。
 ///
@@ -14,7 +17,8 @@ import '../../../core/database/file_embed_codec.dart';
 /// - 图片单独成块（[ExportBlockKind.image]），录音 / 视频 / 附件成块
 ///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；分隔线成块
 ///   （[ExportBlockKind.divider]）；
-/// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接。
+/// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接，
+///   以及文字色与背景色（Markdown、纯文本与 CSV 没有写法，照常略过）。
 /// 纯函数，无 IO。
 enum ExportBlockKind {
   paragraph,
@@ -44,6 +48,8 @@ class ExportInline {
     this.strike = false,
     this.code = false,
     this.link,
+    this.color,
+    this.background,
   });
 
   final String text;
@@ -55,6 +61,12 @@ class ExportInline {
 
   /// 去掉首尾空白后的链接地址；没有链接为 null。
   final String? link;
+
+  /// 文字色与背景色，保留透明度：不支持透明度的格式（Word）由写出器经
+  /// [flattenDiaryColors] 叠到纸面上。没设、读不懂（只认 `#RRGGBB` /
+  /// `#AARRGGBB`）或完全透明的背景为 null。
+  final Color? color;
+  final Color? background;
 }
 
 @immutable
@@ -216,6 +228,9 @@ class ExportBlockParser {
   static ExportInline _inline(String text, Map<String, dynamic> attrs) {
     final link = attrs['link'];
     final url = link is String ? link.trim() : '';
+    Color? color(Object? value) =>
+        value is String ? parseDiaryColorValue(value) : null;
+    final background = color(attrs['background']);
     return ExportInline(
       text,
       bold: attrs['bold'] == true,
@@ -224,6 +239,8 @@ class ExportBlockParser {
       strike: attrs['strike'] == true,
       code: attrs['code'] == true,
       link: url.isEmpty ? null : url,
+      color: color(attrs['color']),
+      background: background == null || background.a == 0 ? null : background,
     );
   }
 

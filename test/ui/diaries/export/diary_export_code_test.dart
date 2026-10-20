@@ -156,6 +156,42 @@ void main() {
       expect(runs[3]!.single.role, DiaryCodeTokenRole.comment);
     });
 
+    test('highlightBlocks splits tokens where user colors change and keeps '
+        'them', () {
+      final blocks = codeEntry(<dynamic>[
+        <String, dynamic>{
+          'insert': 'ret',
+          'attributes': <String, dynamic>{
+            'color': '#FF112233',
+            'background': '#4DFF6369',
+          },
+        },
+        <String, dynamic>{'insert': 'urn 1'},
+        <String, dynamic>{
+          'insert': '\n',
+          'attributes': <String, dynamic>{'code-block': 'python'},
+        },
+        codeLine('return 2', 'python'),
+      ]).blocks;
+      final runs = code.highlightBlocks(blocks);
+      // 一个记号被用户颜色切成两段，角色不变。
+      expect(describe(<List<DiaryExportCodeRun>>[runs[1]!]).single, <String>[
+        'ret@keyword',
+        'urn@keyword',
+        ' @-',
+        '1@number',
+      ]);
+      expect(runs[1]!.first.color, const Color(0xFF112233));
+      expect(runs[1]!.first.background, const Color(0x4DFF6369));
+      expect(runs[1]![1].color, isNull);
+      // 没设颜色的行保持原来的片段。
+      expect(describe(<List<DiaryExportCodeRun>>[runs[2]!]).single, <String>[
+        'return@keyword',
+        ' @-',
+        '2@number',
+      ]);
+    });
+
     test('colorDeltaCodeLines colors code text, keeps user colors and '
         'everything else, and never mutates the diary', () {
       final ops = <dynamic>[
@@ -299,6 +335,64 @@ void main() {
       final fg = diaryColorRgbHex(code.paper.foreground).substring(1);
       expect(styles, contains('w:fill="$fill"'));
       expect(styles, contains('<w:color w:val="$fg"/>'));
+    });
+
+    test('Word and HTML keep user colors on code over token colors', () async {
+      final colored = codeEntry(<dynamic>[
+        <String, dynamic>{
+          'insert': 'def',
+          'attributes': <String, dynamic>{
+            'color': '#FF112233',
+            'background': '#4DFF6369',
+          },
+        },
+        <String, dynamic>{'insert': ' f():'},
+        lineEnd('python'),
+      ]);
+      final docx = await DiaryDocxWriter.write(
+        <DiaryExportEntry>[colored],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '代码',
+        languageTag: 'zh-CN',
+        now: DateTime.utc(2026, 10, 20),
+        code: code,
+      );
+      final document = utf8.decode(
+        docx.files!.firstWhere((f) => f.path == 'word/document.xml').bytes!,
+      );
+      XmlDocument.parse(document);
+      // 背景叠在代码底色上（Word 的颜色没有透明度）。
+      final fill = diaryColorRgbHex(
+        Color.alphaBlend(const Color(0x4DFF6369), code.paper.background),
+      ).substring(1);
+      expect(
+        document,
+        contains(
+          '<w:r><w:rPr><w:color w:val="112233"/>'
+          '<w:shd w:val="clear" w:color="auto" w:fill="$fill"/></w:rPr>'
+          '<w:t xml:space="preserve">def</w:t></w:r>',
+        ),
+      );
+
+      final output = await DiaryHtmlWriter.write(
+        <DiaryExportEntry>[colored],
+        options: options,
+        labels: testExportLabels,
+        media: DiaryExportMediaLibrary(),
+        documentTitle: '代码',
+        languageTag: 'zh',
+        code: code,
+      );
+      expect(
+        utf8.decode(output.bytes!),
+        contains(
+          '<span class="hl-keyword" style="color:#112233;'
+          'background-color:rgba(255,99,105,0.302)">def</span> '
+          '<span class="hl-function">f</span>',
+        ),
+      );
     });
 
     test('HTML wraps tokens in spans with light and dark variables', () async {

@@ -19,6 +19,11 @@ import 'diary_export_media.dart';
 /// （WebP、HEIC）写成一行“[图片]”。给了代码配色（[DiaryExportCodeTheme]）
 /// 时代码段落的底色与正文字色取纸面配色，记号按角色写成带颜色的 run。
 ///
+/// 正文的文字色与背景色写成 run 的 `w:color` 与 `w:shd`。Word 的颜色没有
+/// 透明度，半透明的颜色（背景预设都是）先叠到纸面上再写（[flattenDiaryColors]）：
+/// 正文叠在白纸上，代码块里的叠在代码底色上；代码里设过文字色的片段保留
+/// 原色、不取记号色，与应用一致。
+///
 /// 产物是交给控制器打包的文件列表（容器扩展名 `.docx`）：图片按原文件
 /// 流式写入，识别尺寸只读文件头，导出几百张照片也不会整份读进内存。
 ///
@@ -43,6 +48,9 @@ class DiaryDocxWriter {
 
   /// 按 96 DPI 把像素换算成 EMU（1 英寸 = 914400 EMU）。
   static const int _emuPerPixel = 9525;
+
+  /// 纸面颜色：文档不设页面背景，即白纸。
+  static const Color _paper = Color(0xFFFFFFFF);
 
   static Future<DiaryExportOutput> write(
     List<DiaryExportEntry> entries, {
@@ -306,17 +314,7 @@ class DiaryDocxWriter {
             style: 'CodeBlock',
             runs: runs == null
                 ? <String>[b.run(block.plainText)]
-                : <String>[
-                    for (final run in runs)
-                      b.run(
-                        run.text,
-                        italic: code!.italicFor(run.role),
-                        // 无角色的文字用 CodeBlock 样式里的正文字色。
-                        color: run.role == null
-                            ? null
-                            : _hex(code.paper.tokens[run.role]!),
-                      ),
-                  ],
+                : <String>[for (final run in runs) _codeRun(b, run, code!)],
           );
         case ExportBlockKind.bullet ||
             ExportBlockKind.ordered ||
@@ -341,6 +339,25 @@ class DiaryDocxWriter {
           );
       }
     }
+  }
+
+  /// 一段代码：用户设过的文字色优先于记号色，颜色叠在代码底色上；没设
+  /// 颜色的无角色文字用 CodeBlock 样式里的正文字色。
+  static String _codeRun(
+    _DocxBuilder b,
+    DiaryExportCodeRun run,
+    DiaryExportCodeTheme code,
+  ) {
+    final palette = code.paper;
+    final own = _flatColors(run.color, run.background, palette.background);
+    return b.run(
+      run.text,
+      italic: code.italicFor(run.role),
+      color:
+          own.color ??
+          (run.role == null ? null : _hex(palette.tokens[run.role]!)),
+      background: own.fill,
+    );
   }
 
   static String _coreProps(String title, DateTime now) {
@@ -493,9 +510,10 @@ class _DocxBuilder {
     bool strike = false,
     String? characterStyle,
     String? color,
+    String? background,
   }) {
     final rPr = StringBuffer();
-    // CT_RPr 顺序：rStyle → b → i → strike → color → u。
+    // CT_RPr 顺序：rStyle → b → i → strike → color → u → shd。
     if (characterStyle != null) {
       rPr.write('<w:rStyle w:val="$characterStyle"/>');
     }
@@ -504,6 +522,11 @@ class _DocxBuilder {
     if (strike) rPr.write('<w:strike/>');
     if (color != null) rPr.write('<w:color w:val="$color"/>');
     if (underline) rPr.write('<w:u w:val="single"/>');
+    // 用 shd 而不是 highlight：highlight 只有 16 种固定颜色。直接格式覆盖
+    // 字符样式，行内代码的浅灰底与链接色都让位于用户设的颜色。
+    if (background != null) {
+      rPr.write('<w:shd w:val="clear" w:color="auto" w:fill="$background"/>');
+    }
     final props = rPr.isEmpty ? '' : '<w:rPr>$rPr</w:rPr>';
     final parts = text.split('\t');
     final content = StringBuffer();
@@ -518,23 +541,30 @@ class _DocxBuilder {
 
   List<String> inlines(List<ExportInline> runs) {
     return <String>[
-      for (final inline in runs)
-        _withLink(
-          inline.link,
-          run(
-            inline.text,
-            bold: inline.bold,
-            italic: inline.italic,
-            underline: inline.underline && inline.link == null,
-            strike: inline.strike,
-            characterStyle: inline.link != null
-                ? 'Hyperlink'
-                : inline.code
-                ? 'InlineCode'
-                : null,
-          ),
-        ),
+      for (final inline in runs) _withLink(inline.link, _inline(inline)),
     ];
+  }
+
+  String _inline(ExportInline inline) {
+    final colors = _flatColors(
+      inline.color,
+      inline.background,
+      DiaryDocxWriter._paper,
+    );
+    return run(
+      inline.text,
+      bold: inline.bold,
+      italic: inline.italic,
+      underline: inline.underline && inline.link == null,
+      strike: inline.strike,
+      characterStyle: inline.link != null
+          ? 'Hyperlink'
+          : inline.code
+          ? 'InlineCode'
+          : null,
+      color: colors.color,
+      background: colors.fill,
+    );
   }
 
   /// 文档内链接：跳到名为 [bookmark] 的书签（成书目录用）。
@@ -656,6 +686,23 @@ class _DocxBuilder {
 
 /// Word 的颜色值：不带 `#` 的 `RRGGBB`。
 String _hex(Color color) => diaryColorRgbHex(color).substring(1);
+
+/// 文字色与背景色叠到纸面 [paper] 上后的 Word 颜色值；没设的为 null。
+({String? color, String? fill}) _flatColors(
+  Color? text,
+  Color? background,
+  Color paper,
+) {
+  final flat = flattenDiaryColors(
+    text: text,
+    background: background,
+    paper: paper,
+  );
+  return (
+    color: flat.text == null ? null : _hex(flat.text!),
+    fill: flat.background == null ? null : _hex(flat.background!),
+  );
+}
 
 /// XML 文本转义，并去掉 XML 1.0 不允许的控制字符（正文里偶见的 \u0000
 /// 之类会让 Word 拒绝打开整个文件）。

@@ -91,6 +91,34 @@ void main() {
     });
   });
 
+  group('flattenDiaryColors', () {
+    const white = Color(0xFFFFFFFF);
+
+    test('lays the background on the paper and the text on that', () {
+      final flat = flattenDiaryColors(
+        text: const Color(0x80000000),
+        background: const Color(0x4DFF6369),
+        paper: white,
+      );
+      // 混合结果是浮点分量，按写入正文的 ARGB 比较。
+      expect(encodeDiaryColor(flat.background!), '#FFFFD0D2');
+      expect(encodeDiaryColor(flat.text!), '#FF7F6868');
+    });
+
+    test('a fully transparent background is no background', () {
+      final flat = flattenDiaryColors(
+        text: const Color(0xFFE5484D),
+        background: const Color(0x00FF0000),
+        paper: white,
+      );
+      expect(flat.background, isNull);
+      expect(encodeDiaryColor(flat.text!), '#FFE5484D');
+      final none = flattenDiaryColors(paper: white);
+      expect(none.text, isNull);
+      expect(none.background, isNull);
+    });
+  });
+
   test('the yellow highlight preset is the imported highlight color', () {
     expect(
       encodeDiaryColor(

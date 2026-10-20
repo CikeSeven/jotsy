@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show Color;
 
 import '../../../core/database/code_block_codec.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
@@ -28,6 +29,10 @@ import 'diary_export_media.dart';
 /// 给了代码配色（[DiaryExportCodeTheme]）且正文里有代码块时，记号写成
 /// `<span class="hl-角色">`，颜色是 CSS 变量：浅色模式用纸面配色，深色模式
 /// 换成深色那套（固定明暗时只有一套）；代码块的底色与正文字色同样取配色。
+///
+/// 正文的文字色与背景色写成内联 `style`，按原值带透明度写出：半透明背景
+/// 叠在卡片上，与应用里叠在纸面上一样；亮暗模式都不换色，也与应用一致。
+/// 代码里设过文字色的片段保留原色、不取记号色。
 class DiaryHtmlWriter {
   const DiaryHtmlWriter._();
 
@@ -291,6 +296,7 @@ class DiaryHtmlWriter {
     int headingOffset = 1,
   }) {
     final blocks = entry.blocks;
+    final codeRuns = code?.highlightBlocks(blocks);
     var i = 0;
     while (i < blocks.length) {
       final block = blocks[i];
@@ -323,19 +329,13 @@ class DiaryHtmlWriter {
               b.kind == ExportBlockKind.code &&
               b.codeLanguage == block.codeLanguage,
         );
-        final lines = blocks
-            .sublist(i, end)
-            .map((ExportBlock b) => b.plainText)
-            .toList();
-        final html = code == null
-            ? lines.map(_text).join('\n')
-            : code
-                  .highlightLines(lines, block.codeLanguage)
-                  .map(
-                    (List<DiaryExportCodeRun> runs) =>
-                        runs.map(_codeRun).join(),
-                  )
-                  .join('\n');
+        // highlightBlocks 与这里按同样的口径（语言相同的相邻代码行）分块着色。
+        final html = <String>[
+          for (var j = i; j < end; j++)
+            codeRuns == null
+                ? _text(blocks[j].plainText)
+                : codeRuns[j]!.map(_codeRun).join(),
+        ].join('\n');
         // 沿用 highlight.js / Prism 的 `language-*` 约定；纯文本写
         // `language-plaintext`，未指定不写 class（交给阅读端自动识别）。
         final language = switch (block.codeLanguage) {
@@ -454,11 +454,22 @@ class DiaryHtmlWriter {
     final out = StringBuffer();
     for (final run in runs) {
       var html = _text(run.text);
-      if (run.code) html = '<code>$html</code>';
+      final colors = _colorStyle(run.color, run.background);
+      // 颜色写在下划线 / 删除线外层，线与文字同色（与应用一致）；写在链接
+      // 里层，盖过链接色。行内代码直接写在 <code> 上，否则代码自带的底色
+      // 会盖住用户的背景色。
+      if (run.code) {
+        html = colors == null
+            ? '<code>$html</code>'
+            : '<code style="$colors">$html</code>';
+      }
       if (run.bold) html = '<strong>$html</strong>';
       if (run.italic) html = '<em>$html</em>';
       if (run.underline) html = '<u>$html</u>';
       if (run.strike) html = '<s>$html</s>';
+      if (colors != null && !run.code) {
+        html = '<span style="$colors">$html</span>';
+      }
       final link = run.link;
       if (link != null && _isSafeLink(link)) {
         html = '<a href="${_attr(link)}">$html</a>';
@@ -478,10 +489,39 @@ class DiaryHtmlWriter {
         scheme == 'tel';
   }
 
+  /// 记号的 class 与用户颜色写在同一个 span 上：内联样式优先于 class，
+  /// 设过文字色的片段保留原色，注释的斜体照旧。
   static String _codeRun(DiaryExportCodeRun run) {
     final role = run.role;
+    final colors = _colorStyle(run.color, run.background);
     final text = _text(run.text);
-    return role == null ? text : '<span class="hl-${role.name}">$text</span>';
+    final attributes =
+        '${role == null ? '' : ' class="hl-${role.name}"'}'
+        '${colors == null ? '' : ' style="$colors"'}';
+    return attributes.isEmpty ? text : '<span$attributes>$text</span>';
+  }
+
+  /// 文字色与背景色的内联样式；都没设时为 null。
+  static String? _colorStyle(Color? color, Color? background) {
+    if (color == null && background == null) {
+      return null;
+    }
+    return <String>[
+      if (color != null) 'color:${_cssColor(color)}',
+      if (background != null) 'background-color:${_cssColor(background)}',
+    ].join(';');
+  }
+
+  /// 不透明写 `#RRGGBB`，半透明写 `rgba()`（比 `#RRGGBBAA` 兼容更旧的
+  /// 浏览器；Jotsy 导入网页时两种都认）。
+  static String _cssColor(Color color) {
+    final argb = color.toARGB32();
+    final alpha = argb >>> 24;
+    if (alpha == 0xFF) {
+      return diaryColorRgbHex(color);
+    }
+    return 'rgba(${(argb >> 16) & 0xFF},${(argb >> 8) & 0xFF},${argb & 0xFF},'
+        '${(alpha / 255).toStringAsFixed(3)})';
   }
 
   /// 代码高亮的样式：配色写成 CSS 变量，深色模式换成 [DiaryExportCodeTheme.night]

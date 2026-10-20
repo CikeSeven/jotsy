@@ -137,6 +137,29 @@ Color? parseDiaryColorValue(String? value) {
   return Color(digits.length == 6 ? 0xFF000000 | argb : argb);
 }
 
+/// 把文字色 / 背景色压平成叠在纸面 [paper] 上的不透明色，供不支持透明度的
+/// 导出格式（PDF、Word）使用。
+///
+/// 为什么：这两种格式填色时只认 RGB。背景预设都是半透明的（如浅红
+/// `#4DFF6369` 只有 30% 不透明度，叠在纸面上才是浅红），直接丢掉透明度会
+/// 印成不透明的 `#FF6369`，几乎和同色系的红字一样深，字也看不清。应用里
+/// 看到的是叠在纸面上的效果，这里按同样的方式预先混合：背景叠在纸面上，
+/// 文字叠在压平后的背景（没有背景时是纸面）上；完全透明的背景等于没有
+/// 背景，结果里为 null。
+({Color? text, Color? background}) flattenDiaryColors({
+  Color? text,
+  Color? background,
+  required Color paper,
+}) {
+  final flatBackground = background == null || background.a == 0
+      ? null
+      : Color.alphaBlend(background, paper);
+  return (
+    text: text == null ? null : Color.alphaBlend(text, flatBackground ?? paper),
+    background: flatBackground,
+  );
+}
+
 final RegExp _whitespace = RegExp(r'\s');
 final RegExp _inputPrefix = RegExp(r'^(#|0[xX])');
 final RegExp _hexDigits = RegExp(r'^[0-9a-fA-F]+$');

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' show Color;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_blocks.dart';
@@ -551,6 +552,137 @@ void main() {
         final extent = document.findAllElements('wp:extent').single;
         expect(extent.getAttribute('cx'), '${4 * 9525}');
         expect(extent.getAttribute('cy'), '${2 * 9525}');
+      },
+    );
+  });
+
+  group('text colors', () {
+    Map<String, dynamic> styled(String text, Map<String, dynamic> attrs) =>
+        <String, dynamic>{'insert': text, 'attributes': attrs};
+    final red = encodeDiaryColor(
+      DiaryColorPreset.red.colorFor(DiaryColorTarget.text),
+    );
+    final redHighlight = encodeDiaryColor(
+      DiaryColorPreset.red.colorFor(DiaryColorTarget.background),
+    );
+    final entry = DiaryExportEntry.parse(
+      diaryId: 'colors',
+      title: '颜色',
+      createdAt: DateTime(2026, 4, 3),
+      updatedAt: DateTime(2026, 4, 3),
+      deltaOps: <dynamic>[
+        // 红字 + 浅红背景（预设背景只有 30% 不透明度）。
+        styled('红', <String, dynamic>{
+          'color': red,
+          'background': redHighlight,
+        }),
+        styled('下', <String, dynamic>{'color': '#FF112233', 'underline': true}),
+        styled('码', <String, dynamic>{'code': true, 'background': '#FFFFF59D'}),
+        styled('链', <String, dynamic>{
+          'link': 'https://example.com',
+          'color': '#FF112233',
+        }),
+        styled('透明', <String, dynamic>{'background': '#00FF0000'}),
+        styled('颜色名', <String, dynamic>{'color': 'red'}),
+        <String, dynamic>{'insert': '\n'},
+      ],
+    );
+    final options = DiaryExportOptions.defaults.copyWith(
+      includeMeta: false,
+      includeMedia: false,
+    );
+
+    test('the parser keeps readable colors with their opacity', () {
+      final runs = entry.blocks.single.inlines;
+      expect(runs[0].color, const Color(0xFFE5484D));
+      expect(runs[0].background, const Color(0x4DFF6369));
+      expect(runs[1].color, const Color(0xFF112233));
+      expect(runs[1].background, isNull);
+      // 完全透明的背景等于没有背景；读不懂的写法略过。
+      expect(runs[4].background, isNull);
+      expect(runs[5].color, isNull);
+    });
+
+    test(
+      'Word writes run colors and shading flattened onto white paper',
+      () async {
+        final output = await DiaryDocxWriter.write(
+          <DiaryExportEntry>[entry],
+          options: options,
+          labels: testExportLabels,
+          media: DiaryExportMediaLibrary(),
+          documentTitle: '颜色',
+          languageTag: 'zh-CN',
+          now: DateTime.utc(2026, 10, 20),
+        );
+        final xml = utf8.decode(
+          output.files!.firstWhere((f) => f.path == 'word/document.xml').bytes!,
+        );
+        // Word 对 rPr 子元素的顺序很严格：先能解析，再逐个核对。
+        XmlDocument.parse(xml);
+        String shd(String fill) =>
+            '<w:shd w:val="clear" w:color="auto" w:fill="$fill"/>';
+        expect(
+          xml,
+          contains(
+            '<w:rPr><w:color w:val="E5484D"/>${shd('FFD0D2')}</w:rPr>'
+            '<w:t xml:space="preserve">红</w:t>',
+          ),
+        );
+        expect(
+          xml,
+          contains(
+            '<w:rPr><w:color w:val="112233"/><w:u w:val="single"/></w:rPr>'
+            '<w:t xml:space="preserve">下</w:t>',
+          ),
+        );
+        // 直接格式覆盖字符样式：行内代码的浅灰底、链接色让位于用户颜色。
+        expect(
+          xml,
+          contains(
+            '<w:rPr><w:rStyle w:val="InlineCode"/>${shd('FFF59D')}</w:rPr>'
+            '<w:t xml:space="preserve">码</w:t>',
+          ),
+        );
+        expect(
+          xml,
+          contains(
+            '<w:rPr><w:rStyle w:val="Hyperlink"/><w:color w:val="112233"/>'
+            '</w:rPr><w:t xml:space="preserve">链</w:t>',
+          ),
+        );
+        expect(xml, contains('<w:r><w:t xml:space="preserve">透明</w:t></w:r>'));
+        expect(xml, contains('<w:r><w:t xml:space="preserve">颜色名</w:t></w:r>'));
+      },
+    );
+
+    test(
+      'HTML writes colors inline, keeping translucency like the app',
+      () async {
+        final output = await DiaryHtmlWriter.write(
+          <DiaryExportEntry>[entry],
+          options: options,
+          labels: testExportLabels,
+          media: DiaryExportMediaLibrary(),
+          documentTitle: '颜色',
+          languageTag: 'zh',
+        );
+        final html = utf8.decode(output.bytes!);
+        expect(
+          html,
+          contains(
+            '<p><span style="color:#E5484D;'
+            'background-color:rgba(255,99,105,0.302)">红</span>'
+            // 颜色在下划线外层，线与文字同色。
+            '<span style="color:#112233"><u>下</u></span>'
+            // 行内代码的颜色写在 <code> 上，盖过它自带的底色。
+            '<code style="background-color:#FFF59D">码</code>'
+            // 颜色在链接里层，盖过链接色。
+            '<a href="https://example.com">'
+            '<span style="color:#112233">链</span></a>'
+            '透明颜色名</p>',
+          ),
+        );
       },
     );
   });

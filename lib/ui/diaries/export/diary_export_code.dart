@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show Brightness, ColorScheme;
+import 'package:flutter/material.dart' show Brightness, Color, ColorScheme;
 import 'package:flutter_quill/quill_delta.dart';
 
 import '../../../core/database/code_block_codec.dart';
@@ -14,10 +14,15 @@ import 'diary_export_blocks.dart';
 /// 一段同色的代码文字；[role] 为 null 时用配色的正文字色。
 @immutable
 class DiaryExportCodeRun {
-  const DiaryExportCodeRun(this.text, [this.role]);
+  const DiaryExportCodeRun(this.text, [this.role, this.color, this.background]);
 
   final String text;
   final DiaryCodeTokenRole? role;
+
+  /// 用户在这段代码上设过的文字色与背景色（[ExportInline] 的口径，保留
+  /// 透明度）；文字色优先于记号色，与应用里一致。
+  final Color? color;
+  final Color? background;
 }
 
 /// 导出文件里的代码高亮，PDF、Word 与网页共用（Markdown 只在围栏上写语言，
@@ -121,7 +126,8 @@ class DiaryExportCodeTheme {
 
   /// [blocks] 里每个代码行的着色片段，下标与 [blocks] 对应，非代码块为
   /// null。语言相同的相邻代码行合成一块着色（与网页、Markdown 分段的口径
-  /// 一致）。
+  /// 一致）；用户设过颜色的文字按行内片段的边界切开，带上它的文字色与
+  /// 背景色（Word、网页用；PDF 走 [colorDeltaCodeLines]）。
   List<List<DiaryExportCodeRun>?> highlightBlocks(List<ExportBlock> blocks) {
     final result = List<List<DiaryExportCodeRun>?>.filled(blocks.length, null);
     var start = 0;
@@ -140,8 +146,53 @@ class DiaryExportCodeTheme {
       final lines = highlightLines(<String>[
         for (var i = start; i < end; i++) blocks[i].plainText,
       ], language);
-      result.setRange(start, end, lines);
+      for (var i = start; i < end; i++) {
+        result[i] = _withInlineColors(lines[i - start], blocks[i].inlines);
+      }
       start = end;
+    }
+    return result;
+  }
+
+  /// 把一行的着色片段 [runs] 按行内片段 [inlines] 的边界切开，带上各自的
+  /// 文字色与背景色；整行都没设颜色时原样返回。两者拼接后都是同一行原文
+  /// （[highlightLines] 的约定），按长度对齐即可。
+  static List<DiaryExportCodeRun> _withInlineColors(
+    List<DiaryExportCodeRun> runs,
+    List<ExportInline> inlines,
+  ) {
+    if (!inlines.any(
+      (ExportInline inline) =>
+          inline.color != null || inline.background != null,
+    )) {
+      return runs;
+    }
+    final result = <DiaryExportCodeRun>[];
+    var inlineIndex = 0;
+    var inlineOffset = 0;
+    for (final run in runs) {
+      var position = 0;
+      while (position < run.text.length && inlineIndex < inlines.length) {
+        final inline = inlines[inlineIndex];
+        final length = math.min(
+          run.text.length - position,
+          inline.text.length - inlineOffset,
+        );
+        result.add(
+          DiaryExportCodeRun(
+            run.text.substring(position, position + length),
+            run.role,
+            inline.color,
+            inline.background,
+          ),
+        );
+        position += length;
+        inlineOffset += length;
+        if (inlineOffset == inline.text.length) {
+          inlineIndex++;
+          inlineOffset = 0;
+        }
+      }
     }
     return result;
   }

@@ -653,15 +653,10 @@ class DiaryPdfWriter {
   /// PDF 的纸面颜色：页面不画背景，即白纸。
   static const Color _paper = Color(0xFFFFFFFF);
 
-  /// 把文字色 / 背景色压平成叠在纸面上的不透明色。
-  ///
-  /// 为什么：pdf 库填色时只写 RGB、丢掉透明度。背景预设都是半透明的（如浅红
-  /// `#4DFF6369` 只有 30% 不透明度，叠在纸面上才是浅红），交给插件后会印成
-  /// 不透明的 `#FF6369`，几乎和同色系的红字一样深，字也看不清。应用里看到
-  /// 的是叠在纸面上的效果，这里按同样的方式预先混合：背景叠在白纸上，文字
-  /// 叠在压平后的背景（没有背景时是白纸）上；完全透明的背景等于没有背景，
-  /// 直接去掉。只处理 `#RRGGBB` / `#AARRGGBB`（[parseDiaryColorValue]），
-  /// 其他写法原样交给插件；属性表拷贝一份再改，不动调用方的正文。
+  /// 把文字色 / 背景色压平成叠在白纸上的不透明色（pdf 库填色时只写 RGB、
+  /// 丢掉透明度，见 [flattenDiaryColors]）；完全透明的背景直接去掉。只处理
+  /// `#RRGGBB` / `#AARRGGBB`（[parseDiaryColorValue]），其他写法原样交给
+  /// 插件；属性表拷贝一份再改，不动调用方的正文。
   static void _flattenColorAttributes(Map<String, dynamic> op) {
     final attrs = op['attributes'];
     if (attrs is! Map) {
@@ -674,18 +669,21 @@ class DiaryPdfWriter {
     if (background == null && text == null) {
       return;
     }
+    final flat = flattenDiaryColors(
+      text: text,
+      background: background,
+      paper: _paper,
+    );
     final flattened = Map<String, dynamic>.from(attrs);
-    var under = _paper;
     if (background != null) {
-      if (background.a == 0) {
+      if (flat.background == null) {
         flattened.remove('background');
       } else {
-        under = Color.alphaBlend(background, _paper);
-        flattened['background'] = encodeDiaryColor(under);
+        flattened['background'] = encodeDiaryColor(flat.background!);
       }
     }
-    if (text != null) {
-      flattened['color'] = encodeDiaryColor(Color.alphaBlend(text, under));
+    if (flat.text != null) {
+      flattened['color'] = encodeDiaryColor(flat.text!);
     }
     op['attributes'] = flattened;
   }

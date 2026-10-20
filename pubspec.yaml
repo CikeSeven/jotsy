@@ -52,8 +52,10 @@ dependencies:
   video_player: ^2.11.1
   # 以下均为已有传递依赖的显式声明，用于导入其他日记应用的导出：
   # html 解析 HTML 正文，markdown 解析 Day One 的行内语法，crypto 生成稳定
-  # 的导入日记 ID，sqlite3 只读打开 Diarium 的 .diary 备份。
+  # 的导入日记 ID，sqlite3 只读打开 Diarium 的 .diary 备份；highlight 为正文
+  # 代码块做语法高亮与语言识别（只注册应用支持的语言）。
   crypto: ^3.0.7
+  highlight: ^0.7.0
   html: ^0.15.6
   markdown: ^7.3.0
   sqlite3: ^3.2.0

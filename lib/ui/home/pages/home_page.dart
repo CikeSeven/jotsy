@@ -11,11 +11,13 @@ import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_create_entry_flow.dart';
 import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/home/models/home_tab.dart';
 import 'package:node_diary/ui/home/providers/home_tab_request_provider.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
 import 'package:node_diary/ui/notebooks/providers/home_notebook_scope_provider.dart';
 import 'package:node_diary/ui/home/widgets/keep_alive_page.dart';
 import 'package:node_diary/ui/settings/controllers/app_update_auto_check.dart';
+import 'package:node_diary/ui/settings/providers/app_features_provider.dart';
 import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 
@@ -25,7 +27,11 @@ import '../../widgets/bottom_nav.dart';
 import '../../widgets/launch_reveal.dart';
 part '../controllers/home_page_controller.dart';
 
-/// 主框架页：承载底部四栏导航（日记/日历/探索/设置）。
+/// 主框架页：承载底部 Tab 导航（日记 / 日历 / 探索 / 设置）。
+///
+/// 日历与探索可在设置 → 功能管理中关闭，底栏随之变为 2–4 项（见
+/// [visibleHomeTabs]）；当前页、目标页、FAB 与返回键一律按 [HomeTab] 身份判断，
+/// 可见集合变化时由 `_HomePageController.syncVisibleTabs` 重新对齐下标。
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({
     super.key,
@@ -52,41 +58,41 @@ class _HomePageState extends ConsumerState<HomePage> {
   static const double _fabLiftOffsetWhenHintVisible = 60;
   // FAB 与提示上沿之间保留的间隙。
   static const double _fabGapAboveHint = 6;
-  static const int _tabCount = 4;
 
   /// 冷启动与回到前台时自动检查更新（时机与间隔见 [AppUpdateAutoChecker]）。
   late final AppUpdateAutoChecker _updateAutoChecker;
 
-  // 页面切换状态。
+  // 页面切换状态。下标都是在 [_tabs] 中的位置；[_tabs] 变化时由
+  // `_HomePageController.syncVisibleTabs` 换算到新列表。
+  late List<HomeTab> _tabs;
   int _currentIndex = 0;
   int _targetIndex = 0;
   int _tabSwitchGeneration = 0;
   bool _isTabSwitching = false;
   String? _shownStartupNotice;
 
-  /// “新建”FAB 只属于日记页：日历页的日期长按菜单已能在任意一天写日记或
-  /// 时间胶囊，再叠一个 FAB 会挡住当天日记列表的末尾。
-  static const int _createTabIndex = 0;
-
   Future<void> Function()? _diariesCreateAction;
   bool _diariesFabVisibleByScroll = true;
   late final ValueNotifier<int> _tabPageConfigRevision;
   late final ValueChanged<Future<void> Function()?> _diariesCreateActionChanged;
   late final ValueChanged<bool> _diariesFabVisibilityChanged;
-  late final List<Widget> _pages;
   late final _HomePageController _controller;
+
+  /// 各 Tab 的页面，第一次出现在可见列表里时才创建；Tab 被关闭时移除，
+  /// 页面随之销毁（不再监听数据库），重新开启时重新创建。
+  final Map<HomeTab, Widget> _pages = <HomeTab, Widget>{};
 
   /// 当前（含滑动途中）可见的 Tab 区间，驱动各页的 TickerMode。
   late final ValueNotifier<_VisibleTabRange> _visibleTabs;
 
   /// 每个 Tab 独立的主滚动控制器，由 [_buildTabPage] 以 PrimaryScrollController
-  /// 下发给该 Tab 的主列表。
+  /// 下发给该 Tab 的主列表；随页面按需创建，Tab 被关闭时在页面卸载后释放。
   ///
-  /// 四个 Tab 被 KeepAlivePage 同时保活，若都继承路由级 PrimaryScrollController，
-  /// 同一个控制器会同时挂上 4 个滚动位置：“重复点击当前 Tab 回到顶部”会把所有
+  /// 各 Tab 被 KeepAlivePage 同时保活，若都继承路由级 PrimaryScrollController，
+  /// 同一个控制器会同时挂上多个滚动位置：“重复点击当前 Tab 回到顶部”会把所有
   /// Tab 一起滚动，读取 offset 也会断言。
-  final List<ScrollController> _tabScrollControllers =
-      List<ScrollController>.generate(_tabCount, (_) => ScrollController());
+  final Map<HomeTab, ScrollController> _tabScrollControllers =
+      <HomeTab, ScrollController>{};
 
   @override
   void initState() {
@@ -94,7 +100,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     _tabPageConfigRevision = ValueNotifier<int>(0);
     _diariesCreateActionChanged = (action) => _diariesCreateAction = action;
     _diariesFabVisibilityChanged = _handleFabVisibilityChanged;
-    _pages = _buildStablePages();
+    // settings 在首页构建前已就绪（启动门槛），首帧即是真实的开关，不会先
+    // 出现四个 Tab 再收起。
+    _tabs = visibleHomeTabs(ref.read(appFeaturesProvider));
     _controller = _HomePageController(this);
     _controller.init();
     _visibleTabs = ValueNotifier<_VisibleTabRange>(
@@ -130,7 +138,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     _controller.pageController.removeListener(_syncVisibleTabs);
     _visibleTabs.dispose();
     _controller.dispose();
-    for (final controller in _tabScrollControllers) {
+    for (final controller in _tabScrollControllers.values) {
       controller.dispose();
     }
     _tabPageConfigRevision.dispose();
@@ -139,9 +147,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   int get _effectiveIndex => _targetIndex;
 
+  /// 目标 Tab（点击时立即更新，不等切页动画结束）。
+  HomeTab get _effectiveTab => _tabs[_effectiveIndex];
+
   bool get _canUseGlobalCreateFab => !_isTabSwitching;
 
-  bool _isValidTabIndex(int index) => index >= 0 && index < _pages.length;
+  bool _isValidTabIndex(int index) => index >= 0 && index < _tabs.length;
 
   int _beginTabSwitch(int targetIndex) {
     if (!mounted || !_isValidTabIndex(targetIndex)) {
@@ -162,7 +173,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final pageController = _controller.pageController;
     final page = pageController.hasClients ? pageController.page : null;
     final settledIndex = (page?.round() ?? fallbackIndex)
-        .clamp(0, _pages.length - 1)
+        .clamp(0, _tabs.length - 1)
         .toInt();
     setState(() {
       _currentIndex = settledIndex;
@@ -183,41 +194,34 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
   }
 
-  List<Widget> _buildStablePages() {
-    final pages = <Widget>[
-      _buildTabPage(
-        0,
-        (context) => DiariesPage(
-          key: const PageStorageKey<String>('tab_diaries'),
-          pageBackgroundColor: Theme.of(context).colorScheme.surface,
-          onCreateActionChanged: _diariesCreateActionChanged,
-          onFabVisibilityChanged: _diariesFabVisibilityChanged,
-        ),
+  /// 取 [tab] 的页面，第一次用到时创建并缓存。
+  Widget _pageFor(HomeTab tab) {
+    return _pages.putIfAbsent(
+      tab,
+      () => _buildTabPage(
+        tab,
+        (context) => switch (tab) {
+          HomeTab.diaries => DiariesPage(
+            key: const PageStorageKey<String>('tab_diaries'),
+            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+            onCreateActionChanged: _diariesCreateActionChanged,
+            onFabVisibilityChanged: _diariesFabVisibilityChanged,
+          ),
+          HomeTab.calendar => CalendarPage(
+            key: const PageStorageKey<String>('tab_calendar'),
+            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          ),
+          HomeTab.explore => ExplorePage(
+            key: const PageStorageKey<String>('tab_explore'),
+            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          ),
+          HomeTab.settings => SettingsPage(
+            key: const PageStorageKey<String>('tab_settings'),
+            pageBackgroundColor: Theme.of(context).colorScheme.surface,
+          ),
+        },
       ),
-      _buildTabPage(
-        1,
-        (context) => CalendarPage(
-          key: const PageStorageKey<String>('tab_calendar'),
-          pageBackgroundColor: Theme.of(context).colorScheme.surface,
-        ),
-      ),
-      _buildTabPage(
-        2,
-        (context) => ExplorePage(
-          key: const PageStorageKey<String>('tab_explore'),
-          pageBackgroundColor: Theme.of(context).colorScheme.surface,
-        ),
-      ),
-      _buildTabPage(
-        3,
-        (context) => SettingsPage(
-          key: const PageStorageKey<String>('tab_settings'),
-          pageBackgroundColor: Theme.of(context).colorScheme.surface,
-        ),
-      ),
-    ];
-    assert(pages.length == _tabCount);
-    return pages;
+    );
   }
 
   /// 保活 + 独立主滚动控制器 + 配置变更时重建。
@@ -225,10 +229,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   /// 所有平台都让主列表继承该控制器（默认只有移动端继承），桌面端同样支持
   /// 回到顶部；主列表会对子树下发 PrimaryScrollController.none，内层纵向列表
   /// 不会误挂到这个控制器上。
-  Widget _buildTabPage(int index, WidgetBuilder builder) {
+  Widget _buildTabPage(HomeTab tab, WidgetBuilder builder) {
     return KeepAlivePage(
       child: PrimaryScrollController(
-        controller: _tabScrollControllers[index],
+        controller: _tabScrollControllers.putIfAbsent(
+          tab,
+          ScrollController.new,
+        ),
         automaticallyInheritForPlatforms: TargetPlatform.values.toSet(),
         child: ValueListenableBuilder<int>(
           valueListenable: _tabPageConfigRevision,
@@ -251,23 +258,15 @@ class _HomePageState extends ConsumerState<HomePage> {
         snackBarBottomInset,
       ),
     );
-    final navItems = [
-      BottomNavItem(
-        label: context.l10n.navDiaries,
-        icon: FontAwesomeIcons.solidRectangleList,
-      ),
-      BottomNavItem(
-        label: context.l10n.navCalendar,
-        icon: FontAwesomeIcons.solidCalendar,
-      ),
-      BottomNavItem(
-        label: context.l10n.navExplore,
-        icon: FontAwesomeIcons.solidCompass,
-      ),
-      BottomNavItem(
-        label: context.l10n.navSettings,
-        icon: FontAwesomeIcons.gear,
-      ),
+    // 功能管理开关变化（设置页写入、备份恢复）时在这里对齐可见 Tab，
+    // 必须早于下面按 [_tabs] 组装底栏与页面。
+    _controller.syncVisibleTabs(
+      visibleHomeTabs(ref.watch(appFeaturesProvider)),
+    );
+    final l10n = context.l10n;
+    final navItems = <BottomNavItem>[
+      for (final tab in _tabs)
+        BottomNavItem(label: tab.label(l10n), icon: tab.icon),
     ];
 
     // 别的页面请求回到日记 Tab（预览页里点日记本胶囊）。
@@ -313,7 +312,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       data: baseTheme.copyWith(snackBarTheme: snackBarTheme),
       child: PopScope(
         // 目标 tab 会在点击时立即更新，返回键跟随目标态而不是动画前旧页。
-        canPop: _effectiveIndex == 0,
+        canPop: _effectiveTab == HomeTab.diaries,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) {
             return;
@@ -349,17 +348,22 @@ class _HomePageState extends ConsumerState<HomePage> {
               : const PageScrollPhysics(),
           onPageChanged: _handlePageChanged,
           children: <Widget>[
-            for (var index = 0; index < _pages.length; index++)
+            for (var index = 0; index < _tabs.length; index++)
               // 被保活但不可见的 Tab 静音 ticker：其中仍在播放或循环的动画
               // （加载指示、入场动画等）不再在后台逐帧出帧；切回来时从当前
               // 时刻续上。滑动途中两侧页面都启用，不会冻结半露出的内容。
-              // 同理关闭不可见 Tab 的 Hero：四个 Tab 同属一个路由，否则从日历
+              // 同理关闭不可见 Tab 的 Hero：各 Tab 同属一个路由，否则从日历
               // 打开预览时，会从后台日记列表里同一篇的封面飞出来。
+              //
+              // 最外层以 Tab 身份为 key：关闭日历 / 探索后其余 Tab 的下标会
+              // 前移，PageView 的列表代理按 key 把已有页面搬到新下标，保活的
+              // 页面状态（滚动位置、筛选等）不会因为换了位置而重建。
               TickerMode(
+                key: ValueKey<HomeTab>(_tabs[index]),
                 enabled: visible.contains(index),
                 child: HeroMode(
                   enabled: visible.contains(index),
-                  child: _pages[index],
+                  child: _pageFor(_tabs[index]),
                 ),
               ),
           ],
@@ -389,7 +393,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _openCreateFromGlobalFab() async {
-    if (!_canUseGlobalCreateFab || _effectiveIndex != _createTabIndex) {
+    if (!_canUseGlobalCreateFab || _effectiveTab != HomeTab.diaries) {
       return;
     }
     final action = _diariesCreateAction;
@@ -402,9 +406,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     await runDiaryCreateEntryFlow(context, ref);
   }
 
+  /// “新建”FAB 只属于日记页：日历页的日期长按菜单已能在任意一天写日记或
+  /// 时间胶囊，再叠一个 FAB 会挡住当天日记列表的末尾。
   Widget _buildGlobalCreateFab() {
     final shouldShow =
-        _effectiveIndex == _createTabIndex && _diariesFabVisibleByScroll;
+        _effectiveTab == HomeTab.diaries && _diariesFabVisibleByScroll;
     final fabBaseBottomOffset = _fabBottomGapAboveNav;
 
     final hintExtent = HomeHintVisibilityScope.maybeController(

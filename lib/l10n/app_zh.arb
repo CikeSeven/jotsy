@@ -10081,5 +10081,61 @@
   "settingsFeaturesNotebooksOffConfirm": "关闭",
   "@settingsFeaturesNotebooksOffConfirm": {
     "description": "功能管理页：关闭日记本确认弹窗的确认按钮。"
+  },
+  "supportDeveloperTitle": "支持开发者",
+  "@supportDeveloperTitle": {
+    "description": "关于页“支持开发者”入口与打赏面板的标题。"
+  },
+  "supportDeveloperEntrySubtitle": "微信、支付宝自愿打赏",
+  "@supportDeveloperEntrySubtitle": {
+    "description": "关于页“支持开发者”入口的副标题。"
+  },
+  "supportDeveloperIntro": "Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎打赏支持；打赏完全自愿，不会解锁任何功能。",
+  "@supportDeveloperIntro": {
+    "description": "打赏面板标题下的说明。"
+  },
+  "supportDeveloperWeChat": "微信",
+  "@supportDeveloperWeChat": {
+    "description": "打赏面板渠道切换：微信。"
+  },
+  "supportDeveloperAlipay": "支付宝",
+  "@supportDeveloperAlipay": {
+    "description": "打赏面板渠道切换：支付宝。"
+  },
+  "supportDeveloperWeChatCodeLabel": "微信赞赏码",
+  "@supportDeveloperWeChatCodeLabel": {
+    "description": "打赏面板微信赞赏码图片的无障碍说明。"
+  },
+  "supportDeveloperAlipayCodeLabel": "支付宝收款码",
+  "@supportDeveloperAlipayCodeLabel": {
+    "description": "打赏面板支付宝收款码图片的无障碍说明。"
+  },
+  "supportDeveloperWeChatHint": "先把赞赏码保存到相册，再打开微信「扫一扫」，点右上角的相册选这张图。",
+  "@supportDeveloperWeChatHint": {
+    "description": "打赏面板微信页：收款码下方的付款步骤说明（微信不能从其他应用直接拉起付款）。"
+  },
+  "supportDeveloperAlipayHint": "点下方按钮直接进入支付宝付款；也可以保存收款码，在支付宝「扫一扫」里从相册选择。",
+  "@supportDeveloperAlipayHint": {
+    "description": "打赏面板支付宝页：收款码下方的付款方式说明。"
+  },
+  "supportDeveloperSaveCode": "保存到相册",
+  "@supportDeveloperSaveCode": {
+    "description": "打赏面板按钮：把当前收款码保存到相册。"
+  },
+  "supportDeveloperOpenWeChat": "打开微信",
+  "@supportDeveloperOpenWeChat": {
+    "description": "打赏面板微信页按钮：打开微信。"
+  },
+  "supportDeveloperOpenAlipay": "打开支付宝付款",
+  "@supportDeveloperOpenAlipay": {
+    "description": "打赏面板支付宝页主按钮：跳到支付宝付款页。"
+  },
+  "supportDeveloperAlipayUnavailable": "没能打开支付宝。可以保存收款码，用装有支付宝的手机扫码。",
+  "@supportDeveloperAlipayUnavailable": {
+    "description": "打赏面板：拉起支付宝失败（如未安装）时按钮下方的说明。"
+  },
+  "supportDeveloperWeChatUnavailable": "没能打开微信，请手动打开微信后扫码。",
+  "@supportDeveloperWeChatUnavailable": {
+    "description": "打赏面板：拉起微信失败时按钮下方的说明。"
   }
 }

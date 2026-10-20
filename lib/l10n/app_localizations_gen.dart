@@ -12805,6 +12805,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Turn off'**
   String get settingsFeaturesNotebooksOffConfirm;
+
+  /// Title of the About page entry and the tip sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Support the developer'**
+  String get supportDeveloperTitle;
+
+  /// Subtitle of the support entry on the About page.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a tip via WeChat or Alipay'**
+  String get supportDeveloperEntrySubtitle;
+
+  /// Explanation under the tip sheet title.
+  ///
+  /// In en, this message translates to:
+  /// **'Jotsy is free, open source and ad-free. If it helps you, you\'re welcome to leave a tip. Tips are entirely voluntary and don\'t unlock anything.'**
+  String get supportDeveloperIntro;
+
+  /// Tip sheet channel switch: WeChat.
+  ///
+  /// In en, this message translates to:
+  /// **'WeChat'**
+  String get supportDeveloperWeChat;
+
+  /// Tip sheet channel switch: Alipay.
+  ///
+  /// In en, this message translates to:
+  /// **'Alipay'**
+  String get supportDeveloperAlipay;
+
+  /// Accessibility label of the WeChat tip code image.
+  ///
+  /// In en, this message translates to:
+  /// **'WeChat tip code'**
+  String get supportDeveloperWeChatCodeLabel;
+
+  /// Accessibility label of the Alipay payment code image.
+  ///
+  /// In en, this message translates to:
+  /// **'Alipay payment code'**
+  String get supportDeveloperAlipayCodeLabel;
+
+  /// Tip sheet, WeChat tab: payment steps under the code (WeChat can't be opened straight to payment from other apps).
+  ///
+  /// In en, this message translates to:
+  /// **'Save the code to your photos, then open Scan in WeChat and pick it from the album in the top-right corner.'**
+  String get supportDeveloperWeChatHint;
+
+  /// Tip sheet, Alipay tab: payment options under the code.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the button below to pay in Alipay directly, or save the code and pick it from your photos in Alipay\'s Scan.'**
+  String get supportDeveloperAlipayHint;
+
+  /// Tip sheet button: save the current code to the photo library.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to photos'**
+  String get supportDeveloperSaveCode;
+
+  /// Tip sheet WeChat tab button: open WeChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open WeChat'**
+  String get supportDeveloperOpenWeChat;
+
+  /// Tip sheet Alipay tab primary button: go to the Alipay payment page.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay in Alipay'**
+  String get supportDeveloperOpenAlipay;
+
+  /// Tip sheet: shown under the buttons when Alipay can't be opened (e.g. not installed).
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open Alipay. Save the code and scan it with a phone that has Alipay.'**
+  String get supportDeveloperAlipayUnavailable;
+
+  /// Tip sheet: shown under the buttons when WeChat can't be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open WeChat. Open it yourself and scan the code.'**
+  String get supportDeveloperWeChatUnavailable;
 }
 
 class _AppLocalizationsDelegate

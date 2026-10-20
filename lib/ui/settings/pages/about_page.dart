@@ -15,6 +15,7 @@ import '../controllers/app_update_controller.dart';
 import '../models/app_update_state.dart';
 import '../widgets/app_update_badge.dart';
 import '../widgets/external_link.dart';
+import '../widgets/support_developer_sheet.dart';
 import 'app_update_page.dart';
 
 /// 关于页面：以阅读化卡片布局展示应用信息、核心入口与协议信息。
@@ -203,6 +204,13 @@ class _AboutPageState extends ConsumerState<AboutPage> {
                             title: l10n.aboutQqFeedbackGroup,
                             subtitle: l10n.aboutQqFeedbackGroupSubtitle,
                             onTap: () => _copyQqFeedbackGroup(context),
+                          ),
+                          const Divider(height: 1),
+                          _AboutActionTile(
+                            icon: FontAwesomeIcons.mugHot,
+                            title: l10n.supportDeveloperTitle,
+                            subtitle: l10n.supportDeveloperEntrySubtitle,
+                            onTap: () => showSupportDeveloperSheet(context),
                           ),
                           const Divider(height: 1),
                           _AboutActionTile(

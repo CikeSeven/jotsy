@@ -7850,4 +7850,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsFeaturesNotebooksOffConfirm => 'Turn off';
+
+  @override
+  String get supportDeveloperTitle => 'Support the developer';
+
+  @override
+  String get supportDeveloperEntrySubtitle =>
+      'Leave a tip via WeChat or Alipay';
+
+  @override
+  String get supportDeveloperIntro =>
+      'Jotsy is free, open source and ad-free. If it helps you, you\'re welcome to leave a tip. Tips are entirely voluntary and don\'t unlock anything.';
+
+  @override
+  String get supportDeveloperWeChat => 'WeChat';
+
+  @override
+  String get supportDeveloperAlipay => 'Alipay';
+
+  @override
+  String get supportDeveloperWeChatCodeLabel => 'WeChat tip code';
+
+  @override
+  String get supportDeveloperAlipayCodeLabel => 'Alipay payment code';
+
+  @override
+  String get supportDeveloperWeChatHint =>
+      'Save the code to your photos, then open Scan in WeChat and pick it from the album in the top-right corner.';
+
+  @override
+  String get supportDeveloperAlipayHint =>
+      'Tap the button below to pay in Alipay directly, or save the code and pick it from your photos in Alipay\'s Scan.';
+
+  @override
+  String get supportDeveloperSaveCode => 'Save to photos';
+
+  @override
+  String get supportDeveloperOpenWeChat => 'Open WeChat';
+
+  @override
+  String get supportDeveloperOpenAlipay => 'Pay in Alipay';
+
+  @override
+  String get supportDeveloperAlipayUnavailable =>
+      'Couldn\'t open Alipay. Save the code and scan it with a phone that has Alipay.';
+
+  @override
+  String get supportDeveloperWeChatUnavailable =>
+      'Couldn\'t open WeChat. Open it yourself and scan the code.';
 }

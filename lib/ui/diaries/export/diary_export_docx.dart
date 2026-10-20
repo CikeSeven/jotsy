@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'dart:ui' show Color;
 
+import '../models/diary_code_block/diary_code_theme.dart';
+import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
 import 'diary_export_book.dart';
+import 'diary_export_code.dart';
 import 'diary_export_entry.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
@@ -12,7 +16,8 @@ import 'diary_export_media.dart';
 /// 一页；正文块映射为段落样式（标题、引用、代码），列表用带悬挂缩进的
 /// 前缀符号（Word 的自动编号需要额外的 numbering 部件，前缀在任何编辑器
 /// 里都显示一致）；图片按原比例缩放到版心宽度内嵌入，Word 不支持的格式
-/// （WebP、HEIC）写成一行“[图片]”。
+/// （WebP、HEIC）写成一行“[图片]”。给了代码配色（[DiaryExportCodeTheme]）
+/// 时代码段落的底色与正文字色取纸面配色，记号按角色写成带颜色的 run。
 ///
 /// 产物是交给控制器打包的文件列表（容器扩展名 `.docx`）：图片按原文件
 /// 流式写入，识别尺寸只读文件头，导出几百张照片也不会整份读进内存。
@@ -49,6 +54,7 @@ class DiaryDocxWriter {
     List<String> fontFamilies = const <String>[],
     DateTime? now,
     DiaryExportBookLayout? book,
+    DiaryExportCodeTheme? code,
   }) async {
     final builder = _DocxBuilder();
     if (book != null) {
@@ -58,6 +64,7 @@ class DiaryDocxWriter {
         options: options,
         labels: labels,
         media: media,
+        code: code,
       );
     } else {
       for (var i = 0; i < entries.length; i++) {
@@ -68,6 +75,7 @@ class DiaryDocxWriter {
           options: options,
           labels: labels,
           media: media,
+          code: code,
         );
       }
     }
@@ -91,6 +99,7 @@ class DiaryDocxWriter {
             book: book == null
                 ? null
                 : (chapterHeadings: book.hasChapterHeadings),
+            code: code?.paper,
           ),
         ),
         text('word/document.xml', builder.document()),
@@ -117,6 +126,7 @@ class DiaryDocxWriter {
     required DiaryExportOptions options,
     required DiaryExportLabels labels,
     required DiaryExportMediaLibrary media,
+    DiaryExportCodeTheme? code,
   }) async {
     final hasCover =
         options.includeMedia &&
@@ -193,6 +203,7 @@ class DiaryDocxWriter {
           options: options,
           labels: labels,
           media: media,
+          code: code,
           titleStyle: 'BookEntry',
           bookmark: _bookmark(book.anchorOf(entry)),
         );
@@ -226,6 +237,7 @@ class DiaryDocxWriter {
     required DiaryExportOptions options,
     required DiaryExportLabels labels,
     required DiaryExportMediaLibrary media,
+    DiaryExportCodeTheme? code,
     String titleStyle = 'Title',
     String? bookmark,
   }) async {
@@ -260,7 +272,8 @@ class DiaryDocxWriter {
     if (entry.cover != null) {
       await image(entry.cover!);
     }
-    for (final block in entry.blocks) {
+    final codeRuns = code?.highlightBlocks(entry.blocks);
+    for (final (index, block) in entry.blocks.indexed) {
       switch (block.kind) {
         case ExportBlockKind.image:
           if (block.source == entry.cover) {
@@ -288,9 +301,22 @@ class DiaryDocxWriter {
         case ExportBlockKind.quote:
           b.paragraph(style: 'Quote', runs: b.inlines(block.inlines));
         case ExportBlockKind.code:
+          final runs = codeRuns?[index];
           b.paragraph(
             style: 'CodeBlock',
-            runs: <String>[b.run(block.plainText)],
+            runs: runs == null
+                ? <String>[b.run(block.plainText)]
+                : <String>[
+                    for (final run in runs)
+                      b.run(
+                        run.text,
+                        italic: code!.italicFor(run.role),
+                        // 无角色的文字用 CodeBlock 样式里的正文字色。
+                        color: run.role == null
+                            ? null
+                            : _hex(code.paper.tokens[run.role]!),
+                      ),
+                  ],
           );
         case ExportBlockKind.bullet ||
             ExportBlockKind.ordered ||
@@ -368,14 +394,31 @@ class DiaryDocxWriter {
   ///
   /// 成书时（[book] 不为 null）另加扉页、目录、章节与篇标题的样式，正文
   /// 标题的大纲级别顺延到章、篇之下（有章节标题时顺延两级，否则一级）。
+  ///
+  /// 给了代码配色 [code] 时，代码段落的底色与正文字色取它；没给时为浅灰底、
+  /// 默认字色。
   static String _styles(
     String languageTag, {
     required List<String> fontFamilies,
     ({bool chapterHeadings})? book,
+    DiaryCodePalette? code,
   }) {
     final font = fontFamilies.isEmpty ? null : _xml(fontFamilies.first);
     final entryLevel = book == null ? 0 : (book.chapterHeadings ? 1 : 0);
     final shift = book == null ? 0 : entryLevel + 1;
+    final codeFill = code == null ? 'F1F3F4' : _hex(code.background);
+    // 与底色同色的边框只用来留内边距：相邻代码段落的边框相同，Word 把它们
+    // 合成一个框，整块代码四周留白，文字不贴着底色边缘。CT_PPr 顺序：
+    // pBdr → shd → spacing。
+    String codeEdge(String side, int space) =>
+        '<w:$side w:val="single" w:sz="4" w:space="$space" w:color="$codeFill"/>';
+    final codeBorder =
+        '<w:pBdr>${codeEdge('top', 4)}${codeEdge('left', 6)}'
+        '${codeEdge('bottom', 4)}${codeEdge('right', 6)}</w:pBdr>';
+    // CT_RPr 顺序：rFonts → color → sz。
+    final codeColor = code == null
+        ? ''
+        : '<w:color w:val="${_hex(code.foreground)}"/>';
     String style(
       String id,
       String name, {
@@ -407,7 +450,7 @@ class DiaryDocxWriter {
         '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
         '${style('Quote', 'Quote', pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
         '${style('Divider', 'Divider', pPr: '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="C7CCD1"/></w:pBdr>')}'
-        '${style('CodeBlock', 'Code Block', pPr: '<w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
+        '${style('CodeBlock', 'Code Block', pPr: '$codeBorder<w:shd w:val="clear" w:color="auto" w:fill="$codeFill"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>$codeColor<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
         '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
         '${style('Hyperlink', 'Hyperlink', type: 'character', rPr: '<w:color w:val="1E6586"/><w:u w:val="single"/>')}'
         '${book == null ? '' : _bookStyles(style, entryLevel: entryLevel)}'
@@ -449,15 +492,17 @@ class _DocxBuilder {
     bool underline = false,
     bool strike = false,
     String? characterStyle,
+    String? color,
   }) {
     final rPr = StringBuffer();
-    // CT_RPr 顺序：rStyle → b → i → strike → u。
+    // CT_RPr 顺序：rStyle → b → i → strike → color → u。
     if (characterStyle != null) {
       rPr.write('<w:rStyle w:val="$characterStyle"/>');
     }
     if (bold) rPr.write('<w:b/><w:bCs/>');
     if (italic) rPr.write('<w:i/><w:iCs/>');
     if (strike) rPr.write('<w:strike/>');
+    if (color != null) rPr.write('<w:color w:val="$color"/>');
     if (underline) rPr.write('<w:u w:val="single"/>');
     final props = rPr.isEmpty ? '' : '<w:rPr>$rPr</w:rPr>';
     final parts = text.split('\t');
@@ -608,6 +653,9 @@ class _DocxBuilder {
       '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
       '${_relationships.join()}</Relationships>';
 }
+
+/// Word 的颜色值：不带 `#` 的 `RRGGBB`。
+String _hex(Color color) => diaryColorRgbHex(color).substring(1);
 
 /// XML 文本转义，并去掉 XML 1.0 不允许的控制字符（正文里偶见的 \u0000
 /// 之类会让 Word 拒绝打开整个文件）。

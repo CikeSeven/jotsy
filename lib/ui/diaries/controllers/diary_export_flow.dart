@@ -9,8 +9,10 @@ import '../../../core/services/app_service.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/backup_password_dialog.dart';
 import '../export/diary_export_book.dart';
+import '../export/diary_export_code.dart';
 import '../export/diary_export_font.dart';
 import '../export/diary_export_format.dart';
+import '../providers/diary_code_block_style_provider.dart';
 import '../providers/diary_typography_provider.dart';
 import '../sections/diary_export_sheet.dart';
 import '../viewmodels/diary_export_messages.dart';
@@ -91,6 +93,11 @@ Future<void> runDiaryExportFlow(
   final labels = buildDiaryExportLabels(l10n);
   final languageTag = Localizations.localeOf(context).toLanguageTag();
   final textDirection = Directionality.of(context);
+  // 代码高亮跟随代码块样式；“跟随应用”主题按当前应用配色推出。
+  final code = DiaryExportCodeTheme.resolve(
+    ref.read(diaryCodeBlockStyleProvider),
+    Theme.of(context).colorScheme,
+  );
 
   void hint(String message) {
     if (context.mounted) {
@@ -112,6 +119,7 @@ Future<void> runDiaryExportFlow(
         password: password,
         book: book,
         bookStructure: request.bookStructure,
+        code: code,
       ),
     );
   } on DiaryExportEmptyException catch (error) {

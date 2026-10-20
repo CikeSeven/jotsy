@@ -203,6 +203,7 @@ class _DiaryTemplateEditorContentTabState
             child: DiaryQuillStylesBuilder(
               appearance: appearance,
               controller: widget.controller.body,
+              scrollController: _bodyScroll,
               builder: (BuildContext context, DiaryQuillLook look) =>
                   quill.QuillEditor.basic(
                     controller: widget.controller.body,

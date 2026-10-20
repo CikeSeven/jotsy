@@ -7,6 +7,7 @@ import '../controllers/diary_code_language_tracker.dart';
 import '../models/diary_code_block/diary_code_block_style.dart';
 import '../providers/diary_code_block_style_provider.dart';
 import '../providers/diary_typography_provider.dart';
+import '../widgets/diary_code_block/diary_code_block_chrome.dart';
 import 'diary_code_block_look.dart';
 import 'diary_code_span_builder.dart';
 import 'diary_text_appearance.dart';
@@ -62,6 +63,10 @@ class DiaryQuillLook {
 /// （按控制器、主题与正文外观判断是否复用），代码块设置不在它的缓存键里，
 /// 也能即时生效。构建时顺带给 [controller] 挂上代码块的回车处理
 /// （`attachDiaryCodeBlockEditing`，重复挂载无副作用、只读时不接管）。
+///
+/// [builder] 返回的编辑器外包一层代码块标题栏（`DiaryCodeBlockChrome`，
+/// 语言名 + 复制按钮，随代码块样式设置开关）；编辑页、预览页、发布页、
+/// 模板编辑页与设置预览都经这里，因此写、读、发布时标题栏一致。
 class DiaryQuillStylesBuilder extends ConsumerStatefulWidget {
   const DiaryQuillStylesBuilder({
     super.key,
@@ -69,6 +74,7 @@ class DiaryQuillStylesBuilder extends ConsumerStatefulWidget {
     required this.controller,
     required this.builder,
     this.codeBlockStyle,
+    this.scrollController,
   });
 
   final DiaryTextAppearance appearance;
@@ -78,6 +84,11 @@ class DiaryQuillStylesBuilder extends ConsumerStatefulWidget {
   /// 覆盖代码块样式（设置页的实时预览用草稿）；null 时读已保存的设置
   /// `diaryCodeBlockStyleProvider`。
   final DiaryCodeBlockStyle? codeBlockStyle;
+
+  /// 编辑器自带滚动视图（`scrollable: true`）时传入同一个滚动控制器：代码块
+  /// 标题栏随滚动重画，并把从标题栏开始的竖向拖动交给它。不可滚动的编辑器
+  /// 不传（页面滚动视图会自己处理）。
+  final ScrollController? scrollController;
 
   @override
   ConsumerState<DiaryQuillStylesBuilder> createState() =>
@@ -145,12 +156,20 @@ class _DiaryQuillStylesBuilderState
       appearance: widget.appearance,
       importedFontFamily: importedFamily,
     );
-    return widget.builder(
-      context,
-      DiaryQuillLook(
-        styles: buildDiaryQuillStyles(context, widget.appearance, code: code),
-        code: code,
-        tracker: _tracker,
+    // 标题栏关闭时也保留这一层（只是不画也不拦点按）：开关切换时编辑器的
+    // 父链不变，QuillEditor 不会被重建。
+    return DiaryCodeBlockChrome(
+      look: code,
+      controller: widget.controller,
+      tracker: _tracker,
+      scrollController: widget.scrollController,
+      child: widget.builder(
+        context,
+        DiaryQuillLook(
+          styles: buildDiaryQuillStyles(context, widget.appearance, code: code),
+          code: code,
+          tracker: _tracker,
+        ),
       ),
     );
   }

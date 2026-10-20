@@ -97,11 +97,13 @@ class DiaryCodeBlockLook {
 
     final radius = Radius.circular(style.radius);
     final headerExtent = style.header ? headerHeight : 0.0;
+    final borderSide = BorderSide(color: palette.border, width: 0.8);
     final blockStyle = quill.DefaultTextBlockStyle(
       codeTextStyle,
       quill.HorizontalSpacing.zero,
       // 上外边距里留出标题栏的位置（标题栏由代码块装饰层另画），装饰只画
-      // 内容区，因此有标题栏时只有下边两个角是圆的，与标题栏拼成一整块。
+      // 内容区，因此有标题栏时只有下边两个角是圆的，与标题栏拼成一整块；
+      // 边框也只画左右下三边，上边由标题栏的边框接上，两者之间不画分隔线。
       quill.VerticalSpacing(blockGap + headerExtent, blockGap),
       quill.VerticalSpacing.zero,
       BoxDecoration(
@@ -109,9 +111,11 @@ class DiaryCodeBlockLook {
         borderRadius: style.header
             ? BorderRadius.vertical(bottom: radius)
             : BorderRadius.all(radius),
-        border: style.border
-            ? Border.all(color: palette.border, width: 0.8)
-            : null,
+        border: !style.border
+            ? null
+            : style.header
+            ? Border(left: borderSide, right: borderSide, bottom: borderSide)
+            : Border.fromBorderSide(borderSide),
       ),
     );
 

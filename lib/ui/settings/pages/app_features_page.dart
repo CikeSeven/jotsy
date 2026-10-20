@@ -23,7 +23,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
-import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/notebook_payload.dart';
 import '../../../core/services/app_features.dart';
 import '../../../core/services/app_service.dart';
@@ -33,6 +32,7 @@ import '../../notebooks/viewmodels/notebook_view.dart';
 import '../providers/app_features_provider.dart';
 import '../widgets/settings_card_group.dart';
 import '../widgets/settings_option_tiles.dart';
+import '../widgets/settings_reveal.dart';
 
 /// 功能管理二级页。
 class AppFeaturesPage extends ConsumerWidget {
@@ -86,16 +86,22 @@ class AppFeaturesPage extends ConsumerWidget {
                     value: features.calendar,
                     onChanged: writer((v) => features.copyWith(calendar: v)),
                   ),
-                  _ExpandableRow(
-                    expanded: features.calendar,
-                    child: SettingsSwitchTile(
-                      title: l10n.settingsFeaturesAnniversaries,
-                      subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
-                      nested: true,
-                      value: features.anniversaries,
-                      onChanged: writer(
-                        (v) => features.copyWith(anniversaries: v),
-                      ),
+                  SettingsReveal(
+                    visible: features.calendar,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        settingsNestedDivider,
+                        SettingsSwitchTile(
+                          title: l10n.settingsFeaturesAnniversaries,
+                          subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
+                          nested: true,
+                          value: features.anniversaries,
+                          onChanged: writer(
+                            (v) => features.copyWith(anniversaries: v),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -209,54 +215,6 @@ class AppFeaturesPage extends ConsumerWidget {
           ],
         );
       },
-    );
-  }
-}
-
-/// 从属行：[expanded] 为 true 时在所属项下方展开（缩进的分割线 + [child]，
-/// [child] 应是 `nested` 的开关行），为 false 时收起。
-///
-/// 用 AnimatedSwitcher 而不是 AnimatedSize：收起时旧内容要留在原处，随高度
-/// 一起收拢淡出，而不是先消失再收高度。每次展开都重新构建 [child]，开关直接
-/// 以当前值出现，不会补播一次拨动动画。时长经 [ExpressiveMotion.duration]，
-/// 系统减少动态效果时直接显隐。
-class _ExpandableRow extends StatelessWidget {
-  const _ExpandableRow({required this.expanded, required this.child});
-
-  final bool expanded;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
-      switchInCurve: ExpressiveMotion.effects,
-      switchOutCurve: ExpressiveMotion.exit,
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return SizeTransition(
-          sizeFactor: animation,
-          alignment: Alignment.topCenter,
-          child: FadeTransition(opacity: animation, child: child),
-        );
-      },
-      layoutBuilder: (Widget? current, List<Widget> previous) {
-        return Stack(
-          alignment: Alignment.topCenter,
-          children: <Widget>[...previous, ?current],
-        );
-      },
-      child: expanded
-          ? Column(
-              key: const ValueKey<bool>(true),
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const SettingsCardGroupDivider(
-                  indent: SettingsSwitchTile.nestedIndent,
-                ),
-                child,
-              ],
-            )
-          : const SizedBox.shrink(key: ValueKey<bool>(false)),
     );
   }
 }

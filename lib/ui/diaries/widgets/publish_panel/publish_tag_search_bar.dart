@@ -189,19 +189,10 @@ class _SortMenuButtonState extends State<_SortMenuButton> {
     final l10n = context.l10n;
     final colorScheme = Theme.of(context).colorScheme;
     Widget item(TagPickerSort value, String label) {
-      final selected = value == widget.sort;
       return ExpressiveMenuItem(
-        // 当前方式用 primary 文字与行尾对勾标出。
-        style: selected
-            ? ButtonStyle(
-                foregroundColor: WidgetStatePropertyAll(colorScheme.primary),
-                iconColor: WidgetStatePropertyAll(colorScheme.primary),
-              )
-            : null,
+        // 当前方式用菜单项的选中态（主色容器底 + 行尾对勾）标出。
+        selected: value == widget.sort,
         leadingIcon: FaIcon(_iconOf(value)),
-        trailingIcon: selected
-            ? const FaIcon(FontAwesomeIcons.check, size: 14)
-            : null,
         onPressed: () => widget.onSortChanged(value),
         child: Text(label),
       );

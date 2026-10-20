@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_radii.dart';
+import 'expressive_menu_surface.dart';
 
 /// 菜单可以占用的区域：安全区（扣掉系统栏、键盘与显示特征）再留 8dp 边距，
 /// 以及面板的最大宽度（所在屏幕宽度 − 32）。
@@ -46,12 +46,12 @@ class ExpressiveMenuArea {
   }
 }
 
-/// 菜单表面：surfaceContainer、无着色、elevation 2、28 圆角、内边距 8；
-/// 宽度取内容固有宽度（最小 176，最大 [maxWidth]），高度超出可用区域时内部滚动。
+/// 菜单面板：玻璃表面 [ExpressiveMenuSurface]、内边距 8；宽度取内容固有宽度
+/// （最小 176，最大 [maxWidth]），高度超出可用区域时内部滚动。
 class ExpressiveMenuPanel extends StatelessWidget {
   const ExpressiveMenuPanel({
     super.key,
-    required this.opacity,
+    required this.reveal,
     required this.scrollController,
     required this.showScrollbar,
     required this.maxWidth,
@@ -61,7 +61,8 @@ class ExpressiveMenuPanel extends StatelessWidget {
   static const double minWidth = 176;
   static const double padding = 8;
 
-  final Animation<double> opacity;
+  /// 展开进度：驱动表面的底色、描边、模糊与内容淡入。
+  final Animation<double> reveal;
   final ScrollController scrollController;
   final bool showScrollbar;
   final double maxWidth;
@@ -69,7 +70,6 @@ class ExpressiveMenuPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final content = Padding(
       padding: const EdgeInsets.all(padding),
       child: ScrollConfiguration(
@@ -91,28 +91,15 @@ class ExpressiveMenuPanel extends StatelessWidget {
         ),
       ),
     );
-    return FadeTransition(
-      opacity: opacity,
-      alwaysIncludeSemantics: true,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: math.min(minWidth, maxWidth),
-          maxWidth: maxWidth,
-        ),
-        // 按最终尺寸布局，缩放只发生在绘制阶段，文字不会逐帧重排。
-        child: RepaintBoundary(
-          child: IntrinsicWidth(
-            child: Material(
-              color: colors.surfaceContainer,
-              surfaceTintColor: Colors.transparent,
-              elevation: 2,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(AppRadii.nav)),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: content,
-            ),
-          ),
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: math.min(minWidth, maxWidth),
+        maxWidth: maxWidth,
+      ),
+      // 按最终尺寸布局，缩放只发生在绘制阶段，文字不会逐帧重排。
+      child: RepaintBoundary(
+        child: IntrinsicWidth(
+          child: ExpressiveMenuSurface(reveal: reveal, child: content),
         ),
       ),
     );

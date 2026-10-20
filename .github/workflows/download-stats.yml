@@ -1,0 +1,55 @@
+name: Download stats
+
+# 官网“累计下载”的数据源。官网原本只能从 GitHub 接口读下载次数，可国内访客常连不上
+# api.github.com，未登录调用每个 IP 每小时也只有 60 次，所以常常显示不出来。这里每小时
+# 用仓库自带的令牌统计一次，写成 jotsy-downloads.json 附件放进最新的 Release；官网和
+# 读应用内更新清单一样，经允许跨域的镜像读取它（docs/assets/js/download.js）。
+# 口径与官网一致：只统计 .apk（jotsy-update.json 每台装了 app 的手机每 2 小时会拉一次，
+# 算进去会虚高），不含草稿。应用内更新只认 .apk 附件，多一个 JSON 不影响它。
+on:
+  schedule:
+    # 每小时一次；避开整点（GitHub 的定时任务在整点最拥挤，容易被推迟）
+    - cron: '23 * * * *'
+  # 发布构建结束后立即补一次，新版本的 Release 上马上就有统计文件
+  workflow_run:
+    workflows: [Release APK]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# 前后两次统计不并行，也不取消正在跑的那次：--clobber 是先删后传，中途取消会让附件暂时消失
+concurrency:
+  group: download-stats
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update download count
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    # 只有这个 job 需要写 Release 附件；不读取任何其他 secrets
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Count APK downloads
+        run: |
+          total="$(gh api --paginate --slurp "repos/$REPO/releases?per_page=100" \
+            | jq '[.[][] | select(.draft | not) | .assets[] | select(.name | endswith(".apk")) | .download_count] | add // 0')"
+          if ! [[ "$total" =~ ^[0-9]+$ ]]; then
+            echo "::error::Unexpected download total: $total"
+            exit 1
+          fi
+          jq -n --argjson total "$total" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{schema: 1, total: $total, updatedAt: $at}' > jotsy-downloads.json
+          cat jotsy-downloads.json
+
+      - name: Upload to the latest release
+        run: |
+          tag="$(gh release view --repo "$REPO" --json tagName --jq .tagName)"
+          gh release upload "$tag" jotsy-downloads.json --repo "$REPO" --clobber
+          echo "Uploaded to $tag"

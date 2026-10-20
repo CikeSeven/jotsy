@@ -183,6 +183,17 @@ Not yet. Only Android builds are released for now.
 - Found a bug or have an idea? Open an [issue](https://github.com/CikeSeven/jotsy/issues)
 - QQ group: 678136434
 
+## ☕ Support the developer
+
+Jotsy is free, open source and ad-free. If it helps you, you're welcome to leave a tip. Tips are entirely voluntary and don't unlock anything. For now only WeChat and Alipay are supported. Starring the repo helps too.
+
+<table>
+  <tr>
+    <td align="center"><img src="../assets/img/support/wechat.png" width="200" alt="WeChat tip code"/><br/><sub>Scan with WeChat</sub></td>
+    <td align="center"><img src="../assets/img/support/alipay.png" width="200" alt="Alipay payment code"/><br/><sub>Scan with Alipay</sub></td>
+  </tr>
+</table>
+
 ## 📄 License
 
 Jotsy is released under the [GPL-3.0](../LICENSE) license.

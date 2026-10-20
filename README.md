@@ -183,6 +183,17 @@ Jotsy 没有账号体系，也没有自己的服务器。日记保存在应用�
 - 遇到 Bug 或想提建议，欢迎提交 [Issue](https://github.com/CikeSeven/jotsy/issues)
 - QQ 交流群：678136434
 
+## ☕ 支持开发者
+
+Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎扫码打赏支持开发者；打赏完全自愿，不会解锁任何功能。给项目点个 Star 也是很大的鼓励。
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/img/support/wechat.png" width="200" alt="微信赞赏码"/><br/><sub>微信扫一扫</sub></td>
+    <td align="center"><img src="assets/img/support/alipay.png" width="200" alt="支付宝收款码"/><br/><sub>支付宝扫一扫</sub></td>
+  </tr>
+</table>
+
 ## 📄 开源许可
 
 Jotsy 以 [GPL-3.0](LICENSE) 协议开源。

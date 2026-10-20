@@ -8,7 +8,7 @@
 // 随设置 notifier 刷新，各处入口随之显隐；数据一律不动。
 //
 // 纪念日依附日历（列表只能从日历顶栏进入），所以它的开关放在「页面」组里
-// 日历的正下方，只在日历开启时显示；日历关闭时整行不构建，不显示禁用态。
+// 日历的正下方，只在日历开启时展开显示，关闭时收起（不显示禁用态）。
 // 拨动纪念日只写用户自己的 `anniversaries` 值（日历关闭不改写它），所以日历
 // 重新开启时这一行回到用户原来的选择，不需要额外记忆。
 //
@@ -23,6 +23,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/widgets/app_top_bar.dart';
 
+import '../../../app/theme/expressive_motion.dart';
 import '../../../core/database/notebook_payload.dart';
 import '../../../core/services/app_features.dart';
 import '../../../core/services/app_service.dart';
@@ -73,19 +74,31 @@ class AppFeaturesPage extends ConsumerWidget {
             title: l10n.settingsFeaturesPagesGroup,
             footer: l10n.settingsFeaturesPagesFooter,
             children: <Widget>[
-              SettingsSwitchTile(
-                title: l10n.navCalendar,
-                subtitle: l10n.settingsFeaturesCalendarSubtitle,
-                value: features.calendar,
-                onChanged: writer((v) => features.copyWith(calendar: v)),
+              // 日历与其下的纪念日合成分组里的一项：分组按位置复用子项，若把
+              // 纪念日作为单独一项增删，后面“探索”那一行的开关状态会被它
+              // 接手，从探索的值播一遍开关动画。
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  SettingsSwitchTile(
+                    title: l10n.navCalendar,
+                    subtitle: l10n.settingsFeaturesCalendarSubtitle,
+                    value: features.calendar,
+                    onChanged: writer((v) => features.copyWith(calendar: v)),
+                  ),
+                  _ExpandableRow(
+                    expanded: features.calendar,
+                    child: SettingsSwitchTile(
+                      title: l10n.settingsFeaturesAnniversaries,
+                      subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
+                      value: features.anniversaries,
+                      onChanged: writer(
+                        (v) => features.copyWith(anniversaries: v),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              if (features.calendar)
-                SettingsSwitchTile(
-                  title: l10n.settingsFeaturesAnniversaries,
-                  subtitle: l10n.settingsFeaturesAnniversariesSubtitle,
-                  value: features.anniversaries,
-                  onChanged: writer((v) => features.copyWith(anniversaries: v)),
-                ),
               SettingsSwitchTile(
                 title: l10n.navExplore,
                 subtitle: l10n.settingsFeaturesExploreSubtitle,
@@ -195,6 +208,49 @@ class AppFeaturesPage extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// 从属行：[expanded] 为 true 时在所属项下方展开（分割线 + [child]），为
+/// false 时收起。
+///
+/// 用 AnimatedSwitcher 而不是 AnimatedSize：收起时旧内容要留在原处，随高度
+/// 一起收拢淡出，而不是先消失再收高度。每次展开都重新构建 [child]，开关直接
+/// 以当前值出现，不会补播一次拨动动画。时长经 [ExpressiveMotion.duration]，
+/// 系统减少动态效果时直接显隐。
+class _ExpandableRow extends StatelessWidget {
+  const _ExpandableRow({required this.expanded, required this.child});
+
+  final bool expanded;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: ExpressiveMotion.duration(context, ExpressiveMotion.medium),
+      switchInCurve: ExpressiveMotion.effects,
+      switchOutCurve: ExpressiveMotion.exit,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return SizeTransition(
+          sizeFactor: animation,
+          alignment: Alignment.topCenter,
+          child: FadeTransition(opacity: animation, child: child),
+        );
+      },
+      layoutBuilder: (Widget? current, List<Widget> previous) {
+        return Stack(
+          alignment: Alignment.topCenter,
+          children: <Widget>[...previous, ?current],
+        );
+      },
+      child: expanded
+          ? Column(
+              key: const ValueKey<bool>(true),
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[const SettingsCardGroupDivider(), child],
+            )
+          : const SizedBox.shrink(key: ValueKey<bool>(false)),
     );
   }
 }

@@ -119,6 +119,64 @@ void main() {
     await h.unmount();
   });
 
+  testWidgets('anniversaries slide in and out with the calendar without '
+      'taking over the explore row', (tester) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.pump(const AppFeaturesPage());
+    final l10n = h.l10n;
+    Finder rowClip() => find.ancestor(
+      of: switchTile(l10n.settingsFeaturesAnniversaries),
+      matching: find.byType(SizeTransition),
+    );
+
+    // 探索关着时打开日历：纪念日一行若按位置接手探索那一行，开关会从“关”
+    // 播一遍拨动动画；探索那一行必须还是原来的 element。
+    await toggle(tester, l10n.navExplore);
+    await toggle(tester, l10n.navCalendar);
+    final exploreElement = tester.element(switchTile(l10n.navExplore));
+    final exploreSwitch = tester.state(
+      find
+          .descendant(
+            of: switchTile(l10n.navExplore),
+            matching: find.byWidgetPredicate((w) => w is StatefulWidget),
+          )
+          .first,
+    );
+
+    await tester.tap(switchTile(l10n.navCalendar));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    // 展开途中：已在树上、高度还没到整行。
+    final fullHeight = tester
+        .getSize(switchTile(l10n.settingsFeaturesAnniversaries))
+        .height;
+    expect(tester.getSize(rowClip()).height, lessThan(fullHeight));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(rowClip()).height, greaterThanOrEqualTo(fullHeight));
+    expect(tile(tester, l10n.settingsFeaturesAnniversaries).value, isTrue);
+    expect(tester.element(switchTile(l10n.navExplore)), same(exploreElement));
+    expect(
+      tester.state(
+        find
+            .descendant(
+              of: switchTile(l10n.navExplore),
+              matching: find.byWidgetPredicate((w) => w is StatefulWidget),
+            )
+            .first,
+      ),
+      same(exploreSwitch),
+    );
+
+    // 收起途中仍在原处淡出，结束后移除。
+    await tester.tap(switchTile(l10n.navCalendar));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(switchTile(l10n.settingsFeaturesAnniversaries), findsOne);
+    await tester.pumpAndSettle();
+    expect(switchTile(l10n.settingsFeaturesAnniversaries), findsNothing);
+    await h.unmount();
+  });
+
   testWidgets('turning notebooks off with a private notebook asks first', (
     tester,
   ) async {

@@ -32,7 +32,6 @@ class SettingsCardGroup extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final isLight = colorScheme.brightness == Brightness.light;
 
     return Padding(
       padding: padding,
@@ -73,16 +72,7 @@ class SettingsCardGroup extends StatelessWidget {
                   for (var i = 0; i < children.length; i++) ...[
                     children[i],
                     if (i < children.length - 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Divider(
-                          height: 1,
-                          thickness: 0.6,
-                          color: colorScheme.outlineVariant.withValues(
-                            alpha: isLight ? 0.35 : 0.18,
-                          ),
-                        ),
-                      ),
+                      const SettingsCardGroupDivider(),
                   ],
                 ],
               ),
@@ -100,6 +90,30 @@ class SettingsCardGroup extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// 分组卡片内两项之间的微缩进分割线。
+///
+/// [SettingsCardGroup] 在相邻子项之间自动插入；子项内部自带的从属行（如
+/// 功能管理里日历下方的纪念日）也用它，与分组里的分割线一致。
+class SettingsCardGroupDivider extends StatelessWidget {
+  const SettingsCardGroupDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isLight = colorScheme.brightness == Brightness.light;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Divider(
+        height: 1,
+        thickness: 0.6,
+        color: colorScheme.outlineVariant.withValues(
+          alpha: isLight ? 0.35 : 0.18,
+        ),
       ),
     );
   }

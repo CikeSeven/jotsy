@@ -27,7 +27,9 @@ class SettingsPage extends StatelessWidget {
     final l10n = context.l10n;
     final headerHeight =
         MediaQuery.paddingOf(context).top + PageHeader.contentHeight;
-    const listBottomPadding = 8.0;
+    // 玻璃底栏悬浮在内容之上时，底部 padding 是底栏槽位高度（实色时为 0）：
+    // 列表滚到胶囊下方，末尾多留这一段让最后一项完整露出。
+    final listBottomPadding = 8.0 + MediaQuery.paddingOf(context).bottom;
     final pageBgColor =
         pageBackgroundColor ?? Theme.of(context).colorScheme.surface;
 

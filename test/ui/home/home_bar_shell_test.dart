@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -10,7 +11,14 @@ import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/calendar/pages/calendar_page.dart';
 import 'package:node_diary/ui/diaries/pages/diaries_page.dart';
+import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
+import 'package:node_diary/ui/diaries/widgets/diaries_header_sliver.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_card/diary_card.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
+import 'package:node_diary/ui/explore/pages/explore_page.dart';
+import 'package:node_diary/ui/explore/sections/explore_content_section.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_behavior.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_settings.dart';
 import 'package:node_diary/ui/home/models/home_bar_style/home_bar_style.dart';
@@ -20,6 +28,7 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_floating_bar.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_destination.dart';
 import 'package:node_diary/ui/home/widgets/home_bar/home_nav_indicator.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
+import 'package:node_diary/ui/settings/pages/settings_page.dart';
 import 'package:node_diary/ui/widgets/bottom_nav.dart';
 import 'package:node_diary/ui/widgets/glass/glass_surface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,11 +52,16 @@ Future<SettingsService> _mountApp(
   WidgetTester tester, {
   String? homeBarRaw,
   int diaryCount = 0,
+  double statusBar = 0,
+  double width = _screenWidth,
 }) async {
-  tester.view.physicalSize = const Size(_screenWidth, _screenHeight);
+  tester.view.physicalSize = Size(width, _screenHeight);
   tester.view.devicePixelRatio = 1;
-  tester.view.viewPadding = const FakeViewPadding(bottom: _gestureInset);
-  tester.view.padding = const FakeViewPadding(bottom: _gestureInset);
+  tester.view.viewPadding = FakeViewPadding(
+    top: statusBar,
+    bottom: _gestureInset,
+  );
+  tester.view.padding = FakeViewPadding(top: statusBar, bottom: _gestureInset);
   addTearDown(tester.view.reset);
   SharedPreferences.setMockInitialValues(<String, Object>{
     'app.settings.home_bar_style': ?homeBarRaw,
@@ -82,11 +96,15 @@ Future<SettingsService> _pumpHome(
   WidgetTester tester, {
   String? homeBarRaw,
   int diaryCount = 0,
+  double statusBar = 0,
+  double width = _screenWidth,
 }) async {
   final settings = await _mountApp(
     tester,
     homeBarRaw: homeBarRaw,
     diaryCount: diaryCount,
+    statusBar: statusBar,
+    width: width,
   );
   await tester.pump(const Duration(milliseconds: 1500));
   await tester.pumpAndSettle();
@@ -139,6 +157,75 @@ Finder _diariesList() => find
       matching: find.byType(Scrollable, skipOffstage: false),
     )
     .first;
+
+/// 模拟的状态栏高度（玻璃顶栏测试用）。
+const double _statusBar = 24;
+
+/// 日记页刊头可收起部分的高度（与 `_headerCollapsibleHeight` 一致）。
+const double _mastheadHeight = 56;
+
+Finder get _mastheadGlass => find
+    .descendant(
+      of: find.byType(DiariesHeaderSliver),
+      matching: find.byType(GlassSurface),
+    )
+    .first;
+
+Finder get _tagBarGlass => find
+    .ancestor(
+      of: find.byType(DiaryTagFilterBar),
+      matching: find.byType(GlassSurface),
+    )
+    .first;
+
+/// 切到底栏上 [label] 对应的 Tab。
+Future<void> _openTab(WidgetTester tester, String label) async {
+  await tester.tap(
+    find.descendant(of: find.byType(HomeBottomBar), matching: find.text(label)),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// [page] 里的主纵向滚动视图。
+Finder _mainScrollable(Finder page) => find
+    .descendant(
+      of: page,
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Scrollable && widget.axisDirection == AxisDirection.down,
+      ),
+    )
+    .first;
+
+/// 把 [page] 的主滚动视图滚到底（分页加载会续上内容，所以滚两轮）。
+Future<void> _scrollToEnd(WidgetTester tester, Finder page) async {
+  for (var round = 0; round < 2; round++) {
+    final position = tester
+        .state<ScrollableState>(_mainScrollable(page))
+        .position;
+    position.jumpTo(position.maxScrollExtent);
+    await tester.pumpAndSettle();
+  }
+}
+
+/// [page] 主滚动视图末尾的留白：最后一个 sliver 是占位盒子（日记 / 日历 /
+/// 探索）或列表的 SliverPadding（设置）。
+double _trailingSpace(WidgetTester tester, Finder page) {
+  final viewport = tester.renderObject<RenderViewport>(
+    find
+        .descendant(of: _mainScrollable(page), matching: find.byType(Viewport))
+        .first,
+  );
+  final last = viewport.lastChild;
+  if (last is RenderSliverPadding) {
+    return last.resolvedPadding!.bottom;
+  }
+  return (last! as RenderSliverToBoxAdapter).child!.size.height;
+}
+
+/// 底栏槽位高度：玻璃时首页 body 读到的底部 padding。
+double _slotHeight(WidgetTester tester, Finder page) =>
+    MediaQuery.paddingOf(tester.element(page)).bottom;
 
 void main() {
   testWidgets('the default style keeps the solid bar under the body', (
@@ -391,5 +478,196 @@ void main() {
     expect(_homeScaffold(tester).extendBody, isFalse);
     expect(tester.takeException(), isNull);
     await _unmount(tester);
+  });
+
+  group('glass top bars on the diaries tab', () {
+    testWidgets('the masthead glass covers the status bar at rest', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        diaryCount: 18,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_glass),
+      );
+      final masthead = tester.getRect(_mastheadGlass);
+      expect(masthead.top, 0);
+      expect(masthead.height, _statusBar + _mastheadHeight);
+      expect(tester.getTopLeft(find.byType(DiaryHeadSection)).dy, _statusBar);
+      expect(tester.getRect(_tagBarGlass).top, masthead.bottom);
+      await _unmount(tester);
+    });
+
+    testWidgets('scrolling collapses the masthead to the status strip', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        diaryCount: 18,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_glass),
+      );
+      await tester.drag(_diariesList(), const Offset(0, -600));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(_mastheadGlass).top, 0);
+      expect(tester.getRect(_mastheadGlass).height, _statusBar);
+      expect(tester.getRect(_tagBarGlass).top, _statusBar);
+
+      // 浮动刊头：上滑要逐帧推进才会露出（见 diaries_sort_test）。
+      final gesture = await tester.startGesture(
+        tester.getCenter(_diariesList()),
+      );
+      for (var step = 0; step < 4; step++) {
+        await gesture.moveBy(const Offset(0, 40));
+        await tester.pump();
+      }
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(
+        tester.getRect(_mastheadGlass).height,
+        _statusBar + _mastheadHeight,
+      );
+      expect(tester.getRect(_tagBarGlass).top, _statusBar + _mastheadHeight);
+      await _unmount(tester);
+    });
+
+    testWidgets('selection mode keeps the whole masthead visible', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        diaryCount: 18,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_glass),
+      );
+      await tester.longPress(find.byType(DiaryCard).first);
+      await tester.pumpAndSettle();
+      await tester.drag(_diariesList(), const Offset(0, -600));
+      await tester.pumpAndSettle();
+      expect(tester.getRect(_mastheadGlass).top, 0);
+      expect(
+        tester.getRect(_mastheadGlass).height,
+        _statusBar + _mastheadHeight,
+      );
+      expect(tester.getRect(_tagBarGlass).top, _statusBar + _mastheadHeight);
+      await _unmount(tester);
+    });
+
+    testWidgets('both slices share one backdrop and one bottom line', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        diaryCount: 3,
+        statusBar: _statusBar,
+        homeBarRaw: _raw(_glass),
+      );
+      final filters = tester
+          .renderObjectList<RenderBackdropFilter>(
+            find.descendant(
+              of: find.byType(DiariesPage),
+              matching: find.byType(BackdropFilter),
+            ),
+          )
+          .toList();
+      expect(filters, hasLength(2));
+      expect(filters.every((filter) => filter.enabled), isTrue);
+      expect(filters.first.backdropKey, isNotNull);
+      expect(filters.last.backdropKey, same(filters.first.backdropKey));
+      expect(
+        tester.widget<GlassSurface>(_mastheadGlass).bottomHairline,
+        isNull,
+      );
+      expect(
+        tester.widget<GlassSurface>(_tagBarGlass).bottomHairline,
+        isNotNull,
+      );
+      await _unmount(tester);
+    });
+
+    testWidgets('solid bars keep the status bar inset and no glass', (
+      tester,
+    ) async {
+      await _pumpHome(tester, diaryCount: 3, statusBar: _statusBar);
+      expect(
+        find.descendant(
+          of: find.byType(DiariesPage),
+          matching: find.byType(GlassSurface),
+        ),
+        findsNothing,
+      );
+      // 实色时仍由 SafeArea 让出状态栏：刊头从状态栏线以下开始。
+      expect(tester.getTopLeft(find.byType(DiaryHeadSection)).dy, _statusBar);
+      await _unmount(tester);
+    });
+  });
+
+  group('content scrolls fully above the floating pill', () {
+    // 日历页在 400dp 宽的测试字体下本就有一处横向溢出（与底栏无关），
+    // 这组只关心纵向留白，用宽一点的屏幕避开它。
+    const wide = 480.0;
+
+    testWidgets('glass: every tab pads its end by the bar slot', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        diaryCount: 18,
+        homeBarRaw: _raw(_glass),
+        width: wide,
+      );
+      final l10n = _l10n(tester);
+      final pillTop = tester.getRect(_pill).top;
+
+      final diaries = find.byType(DiariesPage);
+      final slot = _slotHeight(tester, diaries);
+      expect(slot, greaterThan(0));
+      expect(_trailingSpace(tester, diaries), 12 + slot);
+      // 列表一直延伸到屏幕底部（从胶囊下方透出）。
+      expect(tester.getRect(_diariesList()).bottom, _screenHeight);
+      await _scrollToEnd(tester, diaries);
+      final lastCard = find.byType(DiaryCard).last;
+      expect(tester.getRect(lastCard).bottom, lessThanOrEqualTo(pillTop));
+
+      await _openTab(tester, l10n.navCalendar);
+      final calendar = find.byType(CalendarPage);
+      expect(_slotHeight(tester, calendar), slot);
+      expect(_trailingSpace(tester, calendar), 12 + slot);
+
+      await _openTab(tester, l10n.navExplore);
+      final explore = find.byType(ExplorePage);
+      expect(_trailingSpace(tester, explore), 12 + slot);
+      await _scrollToEnd(tester, explore);
+      expect(
+        tester.getRect(find.byType(ExploreContentSection)).bottom,
+        lessThanOrEqualTo(pillTop),
+      );
+
+      await _openTab(tester, l10n.navSettings);
+      final settings = find.byType(SettingsPage);
+      expect(_trailingSpace(tester, settings), 8 + slot);
+      await _scrollToEnd(tester, settings);
+      expect(
+        tester.getRect(find.text(l10n.settingsAbout)).bottom,
+        lessThanOrEqualTo(pillTop),
+      );
+      await _unmount(tester);
+    });
+
+    testWidgets('solid: the trailing space stays as before', (tester) async {
+      await _pumpHome(tester, diaryCount: 18, width: wide);
+      final l10n = _l10n(tester);
+      final diaries = find.byType(DiariesPage);
+      expect(_slotHeight(tester, diaries), 0);
+      expect(_trailingSpace(tester, diaries), 12);
+
+      await _openTab(tester, l10n.navCalendar);
+      expect(_trailingSpace(tester, find.byType(CalendarPage)), 12);
+      await _openTab(tester, l10n.navExplore);
+      expect(_trailingSpace(tester, find.byType(ExplorePage)), 12);
+      await _openTab(tester, l10n.navSettings);
+      expect(_trailingSpace(tester, find.byType(SettingsPage)), 8);
+      await _unmount(tester);
+    });
   });
 }

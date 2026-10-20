@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_spacing.dart';
+import '../home/widgets/home_bar/home_top_bar_surface.dart';
 
+/// 探索与设置页的顶栏：铺到状态栏的标题栏，作为页面 Stack 的直接子项叠在
+/// 内容之上（因此根节点必须是 [Positioned]）。
+///
+/// 底由 [HomeTopBarSurface] 画：实色时与原来的 surface 色块完全一致；首页
+/// 顶栏用玻璃时换成玻璃，下方滚动的内容从顶栏后透出并被模糊。
 class PageHeader extends StatelessWidget {
   const PageHeader({super.key, required this.title});
 
@@ -19,8 +25,8 @@ class PageHeader extends StatelessWidget {
       top: 0,
       left: 0,
       right: 0,
-      child: ColoredBox(
-        color: colorScheme.surface,
+      child: HomeTopBarSurface(
+        solidColor: colorScheme.surface,
         child: Column(
           children: [
             SizedBox(height: topSafeInset),

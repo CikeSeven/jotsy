@@ -495,6 +495,72 @@ void main() {
     );
   });
 
+  group('SettingsService home bar style', () {
+    const key = 'app.settings.home_bar_style';
+    const raw = '{"v":1,"current":{"material":"glass"}}';
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+    });
+
+    test('persists the raw json and clears it with null or blank', () async {
+      final settings = await SettingsService.create();
+      expect(settings.homeBarStyleRaw, isNull);
+
+      await settings.setHomeBarStyleRaw('  $raw  ');
+      expect(settings.homeBarStyleRaw, raw);
+      expect(settings.homeBarStyleRawNotifier.value, raw);
+      expect((await SettingsService.create()).homeBarStyleRaw, raw);
+
+      await settings.setHomeBarStyleRaw('   ');
+      final prefs = await SharedPreferences.getInstance();
+      expect(settings.homeBarStyleRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+
+      await settings.setHomeBarStyleRaw(raw);
+      await settings.setHomeBarStyleRaw(null);
+      expect(settings.homeBarStyleRaw, isNull);
+      expect(prefs.containsKey(key), isFalse);
+    });
+
+    test('tolerates a stored value of the wrong type', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{key: 3});
+      final settings = await SettingsService.create();
+      expect(settings.homeBarStyleRaw, isNull);
+    });
+
+    test(
+      'backups carry the style, older backups keep the local one, maps are re-encoded and null resets',
+      () async {
+        final settings = await SettingsService.create();
+        await settings.setHomeBarStyleRaw(raw);
+
+        final captured = BackupSettings.capture(settings);
+        expect(captured['homeBarStyleRaw'], raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'themeMode': 'dark',
+        });
+        expect(settings.homeBarStyleRaw, raw);
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'homeBarStyleRaw': '{"v":1,"current":{"iconSize":24}}',
+        });
+        expect(settings.homeBarStyleRaw, '{"v":1,"current":{"iconSize":24}}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'homeBarStyleRaw': <String, dynamic>{'v': 1},
+        });
+        expect(settings.homeBarStyleRaw, '{"v":1}');
+
+        await BackupSettings.restore(settings, <String, dynamic>{
+          'homeBarStyleRaw': null,
+        });
+        expect(settings.homeBarStyleRaw, isNull);
+      },
+    );
+  });
+
   group('SettingsService diary template prefs', () {
     const key = 'app.settings.diary_template_prefs';
 

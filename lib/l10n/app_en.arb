@@ -10081,5 +10081,61 @@
   "settingsFeaturesNotebooksOffConfirm": "Turn off",
   "@settingsFeaturesNotebooksOffConfirm": {
     "description": "Features page: confirm button of the turn-off-notebooks confirmation."
+  },
+  "supportDeveloperTitle": "Support the developer",
+  "@supportDeveloperTitle": {
+    "description": "Title of the About page entry and the tip sheet."
+  },
+  "supportDeveloperEntrySubtitle": "Leave a tip via WeChat or Alipay",
+  "@supportDeveloperEntrySubtitle": {
+    "description": "Subtitle of the support entry on the About page."
+  },
+  "supportDeveloperIntro": "Jotsy is free, open source and ad-free. If it helps you, you're welcome to leave a tip. Tips are entirely voluntary and don't unlock anything.",
+  "@supportDeveloperIntro": {
+    "description": "Explanation under the tip sheet title."
+  },
+  "supportDeveloperWeChat": "WeChat",
+  "@supportDeveloperWeChat": {
+    "description": "Tip sheet channel switch: WeChat."
+  },
+  "supportDeveloperAlipay": "Alipay",
+  "@supportDeveloperAlipay": {
+    "description": "Tip sheet channel switch: Alipay."
+  },
+  "supportDeveloperWeChatCodeLabel": "WeChat tip code",
+  "@supportDeveloperWeChatCodeLabel": {
+    "description": "Accessibility label of the WeChat tip code image."
+  },
+  "supportDeveloperAlipayCodeLabel": "Alipay payment code",
+  "@supportDeveloperAlipayCodeLabel": {
+    "description": "Accessibility label of the Alipay payment code image."
+  },
+  "supportDeveloperWeChatHint": "Save the code to your photos, then open Scan in WeChat and pick it from the album in the top-right corner.",
+  "@supportDeveloperWeChatHint": {
+    "description": "Tip sheet, WeChat tab: payment steps under the code (WeChat can't be opened straight to payment from other apps)."
+  },
+  "supportDeveloperAlipayHint": "Tap the button below to pay in Alipay directly, or save the code and pick it from your photos in Alipay's Scan.",
+  "@supportDeveloperAlipayHint": {
+    "description": "Tip sheet, Alipay tab: payment options under the code."
+  },
+  "supportDeveloperSaveCode": "Save to photos",
+  "@supportDeveloperSaveCode": {
+    "description": "Tip sheet button: save the current code to the photo library."
+  },
+  "supportDeveloperOpenWeChat": "Open WeChat",
+  "@supportDeveloperOpenWeChat": {
+    "description": "Tip sheet WeChat tab button: open WeChat."
+  },
+  "supportDeveloperOpenAlipay": "Pay in Alipay",
+  "@supportDeveloperOpenAlipay": {
+    "description": "Tip sheet Alipay tab primary button: go to the Alipay payment page."
+  },
+  "supportDeveloperAlipayUnavailable": "Couldn't open Alipay. Save the code and scan it with a phone that has Alipay.",
+  "@supportDeveloperAlipayUnavailable": {
+    "description": "Tip sheet: shown under the buttons when Alipay can't be opened (e.g. not installed)."
+  },
+  "supportDeveloperWeChatUnavailable": "Couldn't open WeChat. Open it yourself and scan the code.",
+  "@supportDeveloperWeChatUnavailable": {
+    "description": "Tip sheet: shown under the buttons when WeChat can't be opened."
   }
 }

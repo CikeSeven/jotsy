@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:gal/gal.dart';
 import 'package:meta/meta.dart';
@@ -43,6 +44,7 @@ class ImageExportException implements Exception {
 ///
 /// 职责边界：
 /// - 输入：一个媒体 `source`，可能是应用私有目录下的本地文件路径，也可能是 http(s) URL；
+///   或内存中的图片字节（[saveBytesToGallery]，如打赏面板的内置收款码）；
 /// - 输出：把该图片保存到系统相册；网络图片经 [downloadRemoteImage] 落成本地
 ///   文件，供分享链路（`DiaryShareController`）暂存后交给目标应用；
 /// - 副作用：网络图片会先流式下载到应用临时目录（[getTemporaryDirectory]）再处理，
@@ -108,15 +110,7 @@ class ImageExportService {
     } on ImageExportException {
       rethrow;
     } on GalException catch (error) {
-      // gal 在权限相关失败时也会抛 GalException，做一次细分映射。
-      final isAccessDenied = error.type == GalExceptionType.accessDenied;
-      throw ImageExportException(
-        type: isAccessDenied
-            ? ImageExportErrorType.permissionDenied
-            : ImageExportErrorType.unknown,
-        message: 'gal putImage failed: ${error.type}',
-        cause: error,
-      );
+      throw _galFailure(error, 'gal putImage');
     } catch (error) {
       throw ImageExportException(
         type: ImageExportErrorType.unknown,
@@ -124,6 +118,48 @@ class ImageExportService {
         cause: error,
       );
     }
+  }
+
+  /// 把内存中的图片（如应用内置的收款码）保存到系统相册。
+  ///
+  /// 文件名为 [name]，扩展名由 gal 按内容识别；相册里已有同名图片时系统自动
+  /// 加序号，不覆盖旧图。权限处理与失败分类同 [saveToGallery]。
+  Future<void> saveBytesToGallery(
+    Uint8List bytes, {
+    required String name,
+  }) async {
+    if (bytes.isEmpty) {
+      throw const ImageExportException(
+        type: ImageExportErrorType.invalidSource,
+        message: 'empty image bytes',
+      );
+    }
+
+    await _ensureGalleryAccess();
+
+    try {
+      await Gal.putImageBytes(bytes, name: name);
+    } on GalException catch (error) {
+      throw _galFailure(error, 'gal putImageBytes');
+    } catch (error) {
+      throw ImageExportException(
+        type: ImageExportErrorType.unknown,
+        message: 'save bytes to gallery failed',
+        cause: error,
+      );
+    }
+  }
+
+  /// gal 在权限相关失败时也会抛 [GalException]，做一次细分映射。
+  ImageExportException _galFailure(GalException error, String operation) {
+    final isAccessDenied = error.type == GalExceptionType.accessDenied;
+    return ImageExportException(
+      type: isAccessDenied
+          ? ImageExportErrorType.permissionDenied
+          : ImageExportErrorType.unknown,
+      message: '$operation failed: ${error.type}',
+      cause: error,
+    );
   }
 
   /// 把网络图片下载到应用临时目录并返回本地文件（短时间内复用同一份缓存），

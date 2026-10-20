@@ -7017,4 +7017,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsFeaturesNotebooksOffConfirm => '关闭';
+
+  @override
+  String get supportDeveloperTitle => '支持开发者';
+
+  @override
+  String get supportDeveloperEntrySubtitle => '微信、支付宝自愿打赏';
+
+  @override
+  String get supportDeveloperIntro =>
+      'Jotsy 免费开源，没有广告。如果它对你有帮助，欢迎打赏支持；打赏完全自愿，不会解锁任何功能。';
+
+  @override
+  String get supportDeveloperWeChat => '微信';
+
+  @override
+  String get supportDeveloperAlipay => '支付宝';
+
+  @override
+  String get supportDeveloperWeChatCodeLabel => '微信赞赏码';
+
+  @override
+  String get supportDeveloperAlipayCodeLabel => '支付宝收款码';
+
+  @override
+  String get supportDeveloperWeChatHint => '先把赞赏码保存到相册，再打开微信「扫一扫」，点右上角的相册选这张图。';
+
+  @override
+  String get supportDeveloperAlipayHint =>
+      '点下方按钮直接进入支付宝付款；也可以保存收款码，在支付宝「扫一扫」里从相册选择。';
+
+  @override
+  String get supportDeveloperSaveCode => '保存到相册';
+
+  @override
+  String get supportDeveloperOpenWeChat => '打开微信';
+
+  @override
+  String get supportDeveloperOpenAlipay => '打开支付宝付款';
+
+  @override
+  String get supportDeveloperAlipayUnavailable =>
+      '没能打开支付宝。可以保存收款码，用装有支付宝的手机扫码。';
+
+  @override
+  String get supportDeveloperWeChatUnavailable => '没能打开微信，请手动打开微信后扫码。';
 }

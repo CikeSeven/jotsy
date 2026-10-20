@@ -9929,47 +9929,112 @@
   },
   "diaryColorRed": "红",
   "@diaryColorRed": {
-    "description": "Name of the red preset color in the editor color panel."
+    "description": "Name of the red color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorOrange": "橙",
   "@diaryColorOrange": {
-    "description": "Name of the orange preset color in the editor color panel."
+    "description": "Name of the orange color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorYellow": "黄",
   "@diaryColorYellow": {
-    "description": "Name of the yellow preset color in the editor color panel."
+    "description": "Name of the yellow color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorGreen": "绿",
   "@diaryColorGreen": {
-    "description": "Name of the green preset color in the editor color panel."
+    "description": "Name of the green color in the editor color panel (preset swatch and Material color family)."
   },
-  "diaryColorTeal": "青",
+  "diaryColorTeal": "蓝绿",
   "@diaryColorTeal": {
-    "description": "Name of the teal preset color in the editor color panel."
+    "description": "Name of the teal color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorBlue": "蓝",
   "@diaryColorBlue": {
-    "description": "Name of the blue preset color in the editor color panel."
+    "description": "Name of the blue color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorIndigo": "靛",
   "@diaryColorIndigo": {
-    "description": "Name of the indigo preset color in the editor color panel."
+    "description": "Name of the indigo color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorPurple": "紫",
   "@diaryColorPurple": {
-    "description": "Name of the purple preset color in the editor color panel."
+    "description": "Name of the purple color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorPink": "粉",
   "@diaryColorPink": {
-    "description": "Name of the pink preset color in the editor color panel."
+    "description": "Name of the pink color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorBrown": "棕",
   "@diaryColorBrown": {
-    "description": "Name of the brown preset color in the editor color panel."
+    "description": "Name of the brown color in the editor color panel (preset swatch and Material color family)."
   },
   "diaryColorGray": "灰",
   "@diaryColorGray": {
-    "description": "Name of the gray preset color in the editor color panel."
+    "description": "Name of the gray color in the editor color panel (preset swatch and Material color family)."
+  },
+  "diaryColorPanelMaterial": "色系",
+  "@diaryColorPanelMaterial": {
+    "description": "编辑器颜色面板：Material 色板（各色系及其深浅色阶）所在页的页签名。"
+  },
+  "diaryColorDeepPurple": "深紫",
+  "@diaryColorDeepPurple": {
+    "description": "编辑器颜色面板：Material 深紫色系的名称。"
+  },
+  "diaryColorLightBlue": "浅蓝",
+  "@diaryColorLightBlue": {
+    "description": "编辑器颜色面板：Material 浅蓝色系的名称。"
+  },
+  "diaryColorCyan": "青",
+  "@diaryColorCyan": {
+    "description": "编辑器颜色面板：Material 青色系的名称。"
+  },
+  "diaryColorLightGreen": "浅绿",
+  "@diaryColorLightGreen": {
+    "description": "编辑器颜色面板：Material 浅绿色系的名称。"
+  },
+  "diaryColorLime": "青柠",
+  "@diaryColorLime": {
+    "description": "编辑器颜色面板：Material 青柠色系的名称。"
+  },
+  "diaryColorAmber": "琥珀",
+  "@diaryColorAmber": {
+    "description": "编辑器颜色面板：Material 琥珀色系的名称。"
+  },
+  "diaryColorDeepOrange": "深橙",
+  "@diaryColorDeepOrange": {
+    "description": "编辑器颜色面板：Material 深橙色系的名称。"
+  },
+  "diaryColorBlueGray": "蓝灰",
+  "@diaryColorBlueGray": {
+    "description": "编辑器颜色面板：Material 蓝灰色系的名称。"
+  },
+  "diaryColorWhite": "白",
+  "@diaryColorWhite": {
+    "description": "编辑器颜色面板：灰色系最浅一端的纯白色块名称。"
+  },
+  "diaryColorBlack": "黑",
+  "@diaryColorBlack": {
+    "description": "编辑器颜色面板：灰色系最深一端的纯黑色块名称。"
+  },
+  "diaryColorShade": "{family} {tone}",
+  "@diaryColorShade": {
+    "description": "编辑器颜色面板：Material 色阶色块的读屏标签与长按提示，如“红 500”“蓝 A200”；family 为颜色名，tone 为色阶名。",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      },
+      "tone": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelFamily": "{family}色系",
+  "@diaryColorPanelFamily": {
+    "description": "编辑器颜色面板：色系页底部一行色系圆点的读屏标签与长按提示；family 为颜色名。",
+    "placeholders": {
+      "family": {
+        "type": "String"
+      }
+    }
   },
   "tagPickerSearchHint": "搜索标签",
   "@tagPickerSearchHint": {

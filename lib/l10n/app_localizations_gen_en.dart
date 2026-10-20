@@ -7757,6 +7757,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryColorGray => 'Gray';
 
   @override
+  String get diaryColorPanelMaterial => 'Material';
+
+  @override
+  String get diaryColorDeepPurple => 'Deep purple';
+
+  @override
+  String get diaryColorLightBlue => 'Light blue';
+
+  @override
+  String get diaryColorCyan => 'Cyan';
+
+  @override
+  String get diaryColorLightGreen => 'Light green';
+
+  @override
+  String get diaryColorLime => 'Lime';
+
+  @override
+  String get diaryColorAmber => 'Amber';
+
+  @override
+  String get diaryColorDeepOrange => 'Deep orange';
+
+  @override
+  String get diaryColorBlueGray => 'Blue gray';
+
+  @override
+  String get diaryColorWhite => 'White';
+
+  @override
+  String get diaryColorBlack => 'Black';
+
+  @override
+  String diaryColorShade(String family, String tone) {
+    return '$family $tone';
+  }
+
+  @override
+  String diaryColorPanelFamily(String family) {
+    return '$family shades';
+  }
+
+  @override
   String get tagPickerSearchHint => 'Search tags';
 
   @override

@@ -58,11 +58,15 @@ class _CalendarPageController {
   Future<void> onDayLongPressed(DateTime day) async {
     final normalizedDay = DateUtils.dateOnly(day);
     unawaited(Feedback.forLongPress(_state.context));
+    // 时间胶囊、纪念日功能关闭时隐藏入口，数据保留。
+    final features = _state.ref.read(appFeaturesProvider);
     final action = await showCalendarDayActionsSheet(
       _state.context,
       day: normalizedDay,
       now: DateTime.now(),
       isSelected: isSameDay(normalizedDay, _state._selectedDay),
+      showCapsule: features.timeCapsules,
+      showAnniversary: features.anniversariesEnabled,
     );
     if (action == null || !_state.mounted) {
       return;

@@ -26,11 +26,17 @@ enum CalendarDayAction {
 
 /// 长按日期弹出的快捷操作面板：标题为日期，下方为可执行的操作；返回所选
 /// 操作，取消返回 null。只负责选择，执行由页面控制器完成。
+///
+/// [showCapsule] / [showAnniversary] 为 false 时隐藏对应操作（时间胶囊、
+/// 纪念日功能关闭时隐藏入口，数据保留）；“写日记”与“范围”始终保留，面板
+/// 不会为空。
 Future<CalendarDayAction?> showCalendarDayActionsSheet(
   BuildContext context, {
   required DateTime day,
   required DateTime now,
   required bool isSelected,
+  bool showCapsule = true,
+  bool showAnniversary = true,
 }) {
   final today = DateUtils.dateOnly(now);
   final isFuture = DateUtils.dateOnly(day).isAfter(today);
@@ -104,21 +110,22 @@ Future<CalendarDayAction?> showCalendarDayActionsSheet(
                 FontAwesomeIcons.penToSquare,
                 l10n.calendarDayActionWrite,
               ),
-              if (isFuture)
+              if (isFuture && showCapsule)
                 action(
                   CalendarDayAction.capsule,
                   FontAwesomeIcons.hourglassHalf,
                   l10n.calendarDayActionCapsule,
                   description: l10n.calendarDayActionCapsuleDescription,
                 ),
-              action(
-                CalendarDayAction.anniversary,
-                FontAwesomeIcons.heart,
-                l10n.calendarDayActionAnniversary,
-                description: isFuture
-                    ? l10n.calendarDayActionCountdownDescription
-                    : l10n.calendarDayActionAnniversaryDescription,
-              ),
+              if (showAnniversary)
+                action(
+                  CalendarDayAction.anniversary,
+                  FontAwesomeIcons.heart,
+                  l10n.calendarDayActionAnniversary,
+                  description: isFuture
+                      ? l10n.calendarDayActionCountdownDescription
+                      : l10n.calendarDayActionAnniversaryDescription,
+                ),
               action(
                 CalendarDayAction.range,
                 FontAwesomeIcons.arrowsLeftRight,

@@ -16,6 +16,7 @@ import '../../support/anniversary_fixtures.dart';
 import '../../support/calendar_test_harness.dart';
 
 const _optionsKey = 'app.settings.calendar_display_options';
+const _featuresKey = 'app.settings.app_features';
 
 void main() {
   final today = DateUtils.dateOnly(DateTime.now());
@@ -145,5 +146,66 @@ void main() {
       ),
       findsNothing,
     );
+  });
+
+  group('with the anniversaries feature off', () {
+    const featuresOff = <String, Object>{
+      _featuresKey: '{"anniversaries":false}',
+    };
+
+    testWidgets('the grid has no marks and there is no day card', (
+      tester,
+    ) async {
+      await pumpCalendarPage(
+        tester,
+        anniversaries: <Anniversary>[together],
+        prefs: featuresOff,
+      );
+      expect(
+        tester.widget<CalendarDayCell>(cellOn(today.day)).anniversary,
+        isNull,
+      );
+      expect(find.byType(CalendarAnniversarySection), findsNothing);
+    });
+
+    testWidgets('the header has no anniversaries button', (tester) async {
+      await pumpCalendarPage(tester, prefs: featuresOff);
+      final l10n = tester.element(find.byType(CalendarPage)).l10n;
+      expect(find.byTooltip(l10n.anniversaryListTitle), findsNothing);
+    });
+
+    testWidgets('long-pressing a day offers no anniversary action', (
+      tester,
+    ) async {
+      await pumpCalendarPage(tester, prefs: featuresOff);
+      final l10n = tester.element(find.byType(CalendarPage)).l10n;
+      await tester.longPress(cellOn(otherDay));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.calendarDayActionWrite), findsOneWidget);
+      expect(find.text(l10n.calendarDayActionRange), findsOneWidget);
+      expect(find.text(l10n.calendarDayActionAnniversary), findsNothing);
+    });
+
+    testWidgets('the display options have no anniversaries row', (
+      tester,
+    ) async {
+      await pumpCalendarPage(tester, prefs: featuresOff);
+      final l10n = tester.element(find.byType(CalendarPage)).l10n;
+      await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.calendarShowOnThisDay), findsOneWidget);
+      expect(find.text(l10n.calendarShowAnniversaries), findsNothing);
+    });
+  });
+
+  testWidgets('with the feature on, the header button and option are there', (
+    tester,
+  ) async {
+    await pumpCalendarPage(tester);
+    final l10n = tester.element(find.byType(CalendarPage)).l10n;
+    expect(find.byTooltip(l10n.anniversaryListTitle), findsOneWidget);
+    await tester.tap(find.byTooltip(l10n.calendarDisplayOptionsTooltip));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.calendarShowAnniversaries), findsOneWidget);
   });
 }

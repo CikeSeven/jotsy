@@ -16,10 +16,16 @@ import 'calendar_options_controls.dart';
 /// 页面经 [onChanged] 保存；下拉或点遮罩关闭。遮罩比默认浅、面板高度不
 /// 放开（默认上限 9/16 屏高，内部滚动）：日历网格在页面上方，调整时能透过
 /// 遮罩直接看到格子样式的变化。
+///
+/// [showCapsuleBadgeOption] / [showAnniversariesOption] 为 false 时隐藏
+/// “胶囊角标”“显示纪念日”两行（时间胶囊、纪念日功能关闭时隐藏入口，数据
+/// 保留）；已存的选项值不变，胶囊角标照常按它绘制。
 Future<void> showCalendarDisplayOptionsSheet(
   BuildContext context, {
   required CalendarDisplayOptions options,
   required ValueChanged<CalendarDisplayOptions> onChanged,
+  bool showCapsuleBadgeOption = true,
+  bool showAnniversariesOption = true,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -33,6 +39,8 @@ Future<void> showCalendarDisplayOptionsSheet(
     builder: (BuildContext sheetContext) => CalendarDisplayOptionsSheet(
       initialOptions: options,
       onChanged: onChanged,
+      showCapsuleBadgeOption: showCapsuleBadgeOption,
+      showAnniversariesOption: showAnniversariesOption,
     ),
   );
 }
@@ -46,10 +54,18 @@ class CalendarDisplayOptionsSheet extends StatefulWidget {
     super.key,
     required this.initialOptions,
     required this.onChanged,
+    this.showCapsuleBadgeOption = true,
+    this.showAnniversariesOption = true,
   });
 
   final CalendarDisplayOptions initialOptions;
   final ValueChanged<CalendarDisplayOptions> onChanged;
+
+  /// 是否显示“胶囊角标”一行（时间胶囊功能关闭时为 false）。
+  final bool showCapsuleBadgeOption;
+
+  /// 是否显示“显示纪念日”一行（纪念日功能关闭时为 false）。
+  final bool showAnniversariesOption;
 
   @override
   State<CalendarDisplayOptionsSheet> createState() =>
@@ -153,12 +169,13 @@ class _CalendarDisplayOptionsSheetState
               onChanged: (bool value) =>
                   _update(options.copyWith(showCountBadge: value)),
             ),
-            CalendarOptionSwitch(
-              label: l10n.calendarBadgeCapsule,
-              value: options.showCapsuleBadge,
-              onChanged: (bool value) =>
-                  _update(options.copyWith(showCapsuleBadge: value)),
-            ),
+            if (widget.showCapsuleBadgeOption)
+              CalendarOptionSwitch(
+                label: l10n.calendarBadgeCapsule,
+                value: options.showCapsuleBadge,
+                onChanged: (bool value) =>
+                    _update(options.copyWith(showCapsuleBadge: value)),
+              ),
             CalendarOptionSwitch(
               label: l10n.calendarBadgeWeather,
               value: options.showWeatherBadge,
@@ -270,13 +287,14 @@ class _CalendarDisplayOptionsSheetState
               onChanged: (bool value) =>
                   _update(options.copyWith(showOnThisDay: value)),
             ),
-            CalendarOptionSwitch(
-              label: l10n.calendarShowAnniversaries,
-              description: l10n.calendarShowAnniversariesDescription,
-              value: options.showAnniversaries,
-              onChanged: (bool value) =>
-                  _update(options.copyWith(showAnniversaries: value)),
-            ),
+            if (widget.showAnniversariesOption)
+              CalendarOptionSwitch(
+                label: l10n.calendarShowAnniversaries,
+                description: l10n.calendarShowAnniversariesDescription,
+                value: options.showAnniversaries,
+                onChanged: (bool value) =>
+                    _update(options.copyWith(showAnniversaries: value)),
+              ),
           ],
         ),
       ),

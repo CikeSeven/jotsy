@@ -60,4 +60,47 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(Duration.zero);
   });
+
+  // 功能管理：纪念日 / 日记模板关闭时，“更多”里对应的一项隐藏（数据保留）。
+  for (final (label, features, anniversary, template)
+      in <(String, String?, bool, bool)>[
+        ('everything on', null, true, true),
+        ('anniversaries off', '{"anniversaries":false}', false, true),
+        ('templates off', '{"templates":false}', true, false),
+      ]) {
+    testWidgets('the More menu with $label', (tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'app.settings.app_features': ?features,
+      });
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [appDatabaseProvider.overrideWithValue(database)],
+          child: MaterialApp(
+            theme: expressiveTestTheme(Brightness.light),
+            locale: const Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: DiaryPreviewPage(diaryId: diaryId),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final l10n = tester.element(find.byType(DiaryPreviewPage)).l10n;
+
+      await tester.tap(find.byTooltip('更多'));
+      await tester.pumpAndSettle();
+      expect(find.text(l10n.previewExport), findsOneWidget);
+      expect(
+        find.text(l10n.previewSetAsAnniversary),
+        anniversary ? findsOneWidget : findsNothing,
+      );
+      expect(
+        find.text(l10n.diaryTemplateSaveAs),
+        template ? findsOneWidget : findsNothing,
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(Duration.zero);
+    });
+  }
 }

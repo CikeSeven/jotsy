@@ -256,7 +256,11 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
       }
     }
     // 纪念日索引随列表整体重建；关闭显示时不订阅，网格与卡片都不画。
-    final anniversaryIndex = options.showAnniversaries
+    // 纪念日功能关闭时隐藏入口，数据保留：同样不订阅，顶栏也不放纪念日按钮。
+    final anniversariesEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.anniversariesEnabled),
+    );
+    final anniversaryIndex = options.showAnniversaries && anniversariesEnabled
         ? ref.watch(anniversaryCalendarIndexProvider)
         : AnniversaryCalendarIndex.empty;
     final day = _resolveDayContent(
@@ -347,7 +351,9 @@ class _CalendarPageState extends ConsumerState<CalendarPage> {
             onOpenDisplayOptions: () =>
                 unawaited(_controller.openDisplayOptions()),
             onOpenFilter: () => unawaited(_controller.openFilter()),
-            onOpenAnniversaries: () => unawaited(openAnniversaryList(context)),
+            onOpenAnniversaries: anniversariesEnabled
+                ? () => unawaited(openAnniversaryList(context))
+                : null,
             filterActive: _filter.isActive,
             titleTooltip: _yearMode
                 ? l10n.autoT0177

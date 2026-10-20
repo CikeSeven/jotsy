@@ -268,6 +268,10 @@ extension _CalendarPageSections on _CalendarPageState {
     if (day.diaries.isEmpty) {
       final today = DateUtils.dateOnly(DateTime.now());
       final isFutureDay = _selectedDay.isAfter(today);
+      // 时间胶囊功能关闭时隐藏入口，数据保留：未来日期只留文案、不放按钮。
+      final capsulesEnabled = ref.watch(
+        appFeaturesProvider.select((features) => features.timeCapsules),
+      );
       return <Widget>[
         SliverToBoxAdapter(
           child: _buildDayContentTransition(
@@ -278,13 +282,15 @@ extension _CalendarPageSections on _CalendarPageState {
                 'empty_${_selectedDay.millisecondsSinceEpoch}_$isFutureDay',
               ),
               // 未来日期：写一封在这天解封的时间胶囊；回到今天在页头。
-              onAction: isFutureDay
+              onAction: !isFutureDay
+                  ? _openCreateForSelectedDay
+                  : capsulesEnabled
                   ? () => unawaited(
                       _controller.openCreateEditorWithDraftPrompt(
                         capsuleUnlockAt: _selectedDay,
                       ),
                     )
-                  : _openCreateForSelectedDay,
+                  : null,
               message: isFutureDay ? l10n.autoT0211 : l10n.autoT0182,
               actionLabel: isFutureDay
                   ? l10n.calendarFutureCapsuleAction

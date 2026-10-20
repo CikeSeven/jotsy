@@ -22,6 +22,7 @@ class PublishPanelSummaryBar extends StatelessWidget {
     required this.busy,
     required this.onPublish,
     this.notebooks = const <NotebookView>[],
+    this.showCapsule = true,
   });
 
   /// 摘要区（不含按钮），测试与拖拽起点用它定位。
@@ -35,6 +36,10 @@ class PublishPanelSummaryBar extends StatelessWidget {
 
   /// 书架上的日记本：把草稿里的日记本 id 解析成名称与图标。
   final List<NotebookView> notebooks;
+
+  /// 是否显示草稿里的胶囊（摘要项与“封存”文案），见
+  /// `PublishDiaryPanel.showDraftCapsule`。
+  final bool showCapsule;
   final bool busy;
 
   /// 编辑已发布日记时为 null：只有摘要，没有按钮。
@@ -46,7 +51,12 @@ class PublishPanelSummaryBar extends StatelessWidget {
     return ValueListenableBuilder<DiaryMetaDraft>(
       valueListenable: draft,
       builder: (context, value, _) {
-        final items = publishPanelSummary(value, tags, notebooks: notebooks);
+        final items = publishPanelSummary(
+          value,
+          tags,
+          notebooks: notebooks,
+          includeCapsule: showCapsule,
+        );
         return Row(
           children: <Widget>[
             Expanded(
@@ -59,7 +69,7 @@ class PublishPanelSummaryBar extends StatelessWidget {
               const SizedBox(width: 8),
               ValueListenableSelector<DiaryMetaDraft, bool>(
                 valueListenable: draft,
-                selector: (value) => value.capsule != null,
+                selector: (value) => showCapsule && value.capsule != null,
                 builder: (context, sealing, _) => FilledButton(
                   key: actionKey,
                   style: FilledButton.styleFrom(

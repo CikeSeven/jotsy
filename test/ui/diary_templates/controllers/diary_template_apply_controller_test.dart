@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations_gen.dart';
+import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/diary_templates/controllers/diary_template_apply_controller.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
@@ -233,5 +234,49 @@ void main() {
     await choose(work, source: DiaryTemplateApplySource.auto);
     await choose(reading);
     expect(used, <String>['user.reading']);
+  });
+
+  group('capsule preset', () {
+    const sealed = DiaryTemplate(
+      id: 'user.sealed',
+      name: '给未来',
+      titlePattern: '写给一个月后',
+      bodyJson: '[{"insert":"你好\\n"}]',
+      capsule: TimeCapsulePreset.month,
+    );
+
+    test('with time capsules on the preset sets a capsule', () async {
+      await choose(sealed);
+      expect(meta.value.capsule, isNotNull);
+    });
+
+    test(
+      'with time capsules off the preset is ignored, the rest applies',
+      () async {
+        final offMeta = DiaryMetaDraftController();
+        final offPort = _FakePort(offMeta);
+        final off = DiaryTemplateApplyController(
+          enabled: true,
+          port: offPort,
+          database: database,
+          onUsed: (_) async {},
+          capsulesEnabled: () => false,
+        );
+        addTearDown(() {
+          off.dispose();
+          offMeta.dispose();
+        });
+        final applied = await off.apply(
+          const DiaryTemplateSelection(sealed),
+          source: DiaryTemplateApplySource.picker,
+        );
+
+        expect(applied, isNotNull);
+        expect(offPort.title, '写给一个月后');
+        expect(offMeta.value.capsule, isNull);
+        // 模板本身的预设原样保留。
+        expect(applied!.template.capsule, TimeCapsulePreset.month);
+      },
+    );
   });
 }

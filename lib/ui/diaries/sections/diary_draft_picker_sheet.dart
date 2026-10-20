@@ -39,10 +39,12 @@ final class DiaryDraftPickTemplate extends DiaryDraftPick {
 /// `runDiaryCreateEntryFlow` 决定；下滑或点空白处关闭返回 null，什么也不做。
 ///
 /// [recent] 已按最近编辑排序、最多 [maxRecent] 份；[total] 为草稿总数。
+/// [showFromTemplate] 为 false（日记模板功能关闭）时没有“从模板新建”。
 Future<DiaryDraftPick?> showDiaryDraftPickerSheet(
   BuildContext context, {
   required List<DiaryDraftListItem> recent,
   required int total,
+  bool showFromTemplate = true,
 }) {
   return showModalBottomSheet<DiaryDraftPick>(
     context: context,
@@ -54,7 +56,11 @@ Future<DiaryDraftPick?> showDiaryDraftPickerSheet(
         ? AnimationStyle.noAnimation
         : null,
     builder: (BuildContext sheetContext) {
-      return _DiaryDraftPickerBody(recent: recent, total: total);
+      return _DiaryDraftPickerBody(
+        recent: recent,
+        total: total,
+        showFromTemplate: showFromTemplate,
+      );
     },
   );
 }
@@ -63,10 +69,15 @@ Future<DiaryDraftPick?> showDiaryDraftPickerSheet(
 const int maxRecentDraftsInPicker = 3;
 
 class _DiaryDraftPickerBody extends StatelessWidget {
-  const _DiaryDraftPickerBody({required this.recent, required this.total});
+  const _DiaryDraftPickerBody({
+    required this.recent,
+    required this.total,
+    required this.showFromTemplate,
+  });
 
   final List<DiaryDraftListItem> recent;
   final int total;
+  final bool showFromTemplate;
 
   @override
   Widget build(BuildContext context) {
@@ -129,22 +140,23 @@ class _DiaryDraftPickerBody extends StatelessWidget {
               trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
               onTap: () => navigator.pop(const DiaryDraftPickAll()),
             ),
-            ListTile(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            if (showFromTemplate)
+              ListTile(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                ),
+                leading: FaIcon(
+                  FontAwesomeIcons.layerGroup,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
+                title: Text(l10n.diaryDraftPickerFromTemplate),
+                trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
+                onTap: () => navigator.pop(const DiaryDraftPickTemplate()),
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xs,
-              ),
-              leading: FaIcon(
-                FontAwesomeIcons.layerGroup,
-                size: 16,
-                color: theme.colorScheme.primary,
-              ),
-              title: Text(l10n.diaryDraftPickerFromTemplate),
-              trailing: const FaIcon(FontAwesomeIcons.angleRight, size: 14),
-              onTap: () => navigator.pop(const DiaryDraftPickTemplate()),
-            ),
             const SizedBox(height: AppSpacing.s),
             FilledButton.icon(
               onPressed: () => navigator.pop(const DiaryDraftPickBlank()),

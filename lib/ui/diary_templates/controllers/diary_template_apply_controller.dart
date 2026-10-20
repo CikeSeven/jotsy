@@ -47,13 +47,21 @@ class DiaryTemplateApplyController extends ChangeNotifier {
     required this._database,
     required this._onUsed,
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now;
+    bool Function()? capsulesEnabled,
+  }) : _clock = clock ?? DateTime.now,
+       _capsulesEnabled = capsulesEnabled ?? _alwaysEnabled;
 
   final bool enabled;
   final DiaryTemplateEditorPort _port;
   final AppDatabase _database;
   final Future<void> Function(String templateId) _onUsed;
   final DateTime Function() _clock;
+
+  /// 时间胶囊功能是否开启，套用时现读：关闭时模板的胶囊预设不套用（预设
+  /// 留在模板里，重新开启后照常生效），免得经看不到的设置封存日记。
+  final bool Function() _capsulesEnabled;
+
+  static bool _alwaysEnabled() => true;
 
   bool _dismissed = false;
   bool _touched = false;
@@ -238,7 +246,7 @@ class DiaryTemplateApplyController extends ChangeNotifier {
       meta.setEnergy(energy.toDouble());
     }
     final capsule = application.capsule;
-    if (capsule != null && before.capsule == null) {
+    if (capsule != null && before.capsule == null && _capsulesEnabled()) {
       meta.setCapsule(
         TimeCapsuleSchedule(
           unlockAt: TimeCapsuleSchedule.normalizeUnlockAt(

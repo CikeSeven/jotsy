@@ -53,10 +53,12 @@ final class PublishSummaryPlace extends PublishSummaryItem {
 ///
 /// [tags] 是全部标签，用来把已选 id 解析成名称与颜色；已删除的标签不显示。
 /// [notebooks] 是书架上的日记本，同样只显示仍存在的（按勾选先后取第一本）。
+/// [includeCapsule] 为 false（时间胶囊功能关闭，发布时忽略胶囊）时不列胶囊。
 List<PublishSummaryItem> publishPanelSummary(
   DiaryMetaDraft draft,
   List<Tag> tags, {
   List<NotebookView> notebooks = const <NotebookView>[],
+  bool includeCapsule = true,
 }) {
   final selectedTags = tags
       .where((tag) => draft.tagIds.contains(tag.id))
@@ -66,7 +68,7 @@ List<PublishSummaryItem> publishPanelSummary(
   final weather = draft.weather;
   final location = draft.location;
   return <PublishSummaryItem>[
-    if (draft.capsule != null) const PublishSummaryCapsule(),
+    if (includeCapsule && draft.capsule != null) const PublishSummaryCapsule(),
     if (mood != null) PublishSummaryMood(mood),
     if (weather != null)
       PublishSummaryWeather(iconCode: draft.weatherIconCode, text: weather),

@@ -8,6 +8,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/app_service.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../settings/widgets/style_editor/style_editor_common.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
@@ -188,12 +189,17 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
           ),
       ],
     );
+    // 日记模板功能关闭时隐藏入口，数据保留：没有“默认模板”一项，这本已设的
+    // 模板 id 照常随保存写回（编辑器不改动它）。
+    final templatesEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.templates),
+    );
     final Widget body;
     if (editor != null) {
       body = ListenableBuilder(
         listenable: editor,
         builder: (BuildContext context, Widget? child) =>
-            _buildForm(context, editor),
+            _buildForm(context, editor, templatesEnabled: templatesEnabled),
       );
     } else if (_missing) {
       body = EmptyHint(
@@ -223,7 +229,11 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
     );
   }
 
-  Widget _buildForm(BuildContext context, NotebookEditorController editor) {
+  Widget _buildForm(
+    BuildContext context,
+    NotebookEditorController editor, {
+    required bool templatesEnabled,
+  }) {
     const gap = SizedBox(height: AppSpacing.xxl);
     return ListView(
       padding: EdgeInsets.fromLTRB(
@@ -257,8 +267,10 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
         ],
         gap,
         NotebookEditorSortSection(controller: editor),
-        gap,
-        NotebookEditorTemplateSection(controller: editor),
+        if (templatesEnabled) ...<Widget>[
+          gap,
+          NotebookEditorTemplateSection(controller: editor),
+        ],
       ],
     );
   }

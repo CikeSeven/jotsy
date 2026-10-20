@@ -67,18 +67,21 @@ class PublishTagTile extends StatelessWidget {
 ///
 /// 设置了时间胶囊时日记按解封时刻发表（见
 /// TimeCapsuleSchedule.resolveDiaryCreatedAt），这一行改为说明“跟随定时锁”
-/// 并停用，而不是让用户选一个不会生效的时间。
+/// 并停用，而不是让用户选一个不会生效的时间。[followCapsule] 为 false
+/// （时间胶囊功能关闭，发布时忽略胶囊）时不看胶囊，照常可选。
 class PublishTimeTile extends StatelessWidget {
   const PublishTimeTile({
     super.key,
     required this.draft,
     required this.label,
     required this.onPick,
+    this.followCapsule = true,
   });
 
   final DiaryMetaDraftController draft;
   final String? label;
   final VoidCallback? onPick;
+  final bool followCapsule;
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +89,7 @@ class PublishTimeTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return ValueListenableSelector<DiaryMetaDraft, TimeCapsuleSchedule?>(
       valueListenable: draft,
-      selector: (value) => value.capsule,
+      selector: (value) => followCapsule ? value.capsule : null,
       builder: (context, capsule, _) {
         final text = capsule != null
             ? l10n.publishTimeFollowsCapsule(capsuleUnlockText(l10n, capsule))

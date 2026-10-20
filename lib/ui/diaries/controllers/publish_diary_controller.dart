@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:node_diary/core/database/app_database.dart';
+import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/publish_time.dart';
@@ -27,16 +28,36 @@ enum PublishValidation { ok, capsuleUnlockPassed }
 /// 输出：[phase]、[explicitPublishAt] 两个可监听状态，[submit] 返回新日记
 /// id，[returnDraft] 给出返回编辑页时带回的草稿。
 /// 副作用：只有 [submit] 写数据库。提示、触觉、封存动画、路由由页面负责。
+///
+/// 功能管理里关闭的功能（`timeCapsulesEnabled`、`notebooksEnabled`，校验与
+/// 写库时现读）在发布时一律忽略，按普通日记发布：草稿可能来自关闭之前、
+/// 日历或模板的预设，日记绝不能经用户已经看不到的设置被封存、或收进看不到
+/// 的本子（私密本里的日记会从所有列表消失）。只影响写库（[submit]）与校验
+/// （[validate]）；面板草稿与带回编辑页的草稿（[returnDraft]）原样保留，
+/// 重新开启后照常生效。
 class PublishDiaryController {
   PublishDiaryController({
     required this.initialDraft,
     required this.meta,
+    bool Function()? timeCapsulesEnabled,
+    bool Function()? notebooksEnabled,
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now;
+  }) : _timeCapsulesEnabled = timeCapsulesEnabled ?? _alwaysEnabled,
+       _notebooksEnabled = notebooksEnabled ?? _alwaysEnabled,
+       _clock = clock ?? DateTime.now;
 
   final NewDiaryDraft initialDraft;
   final DiaryMetaDraftController meta;
+
+  /// 时间胶囊功能是否开启；关闭时忽略草稿里的胶囊：不校验解封时间、不封存，
+  /// `capsuleUnlockAt` / `capsuleLockedAt` 留空。
+  final bool Function() _timeCapsulesEnabled;
+
+  /// 日记本功能是否开启；关闭时新日记不收进任何本子（也不带章节）。
+  final bool Function() _notebooksEnabled;
   final DateTime Function() _clock;
+
+  static bool _alwaysEnabled() => true;
 
   final ValueNotifier<PublishPhase> phase = ValueNotifier<PublishPhase>(
     PublishPhase.idle,
@@ -79,18 +100,31 @@ class PublishDiaryController {
   /// 发布前校验：解封时间必须仍在未来。日期精度选了今天、或恢复的草稿里
   /// 那天已过，写入的就是一个立即解封的胶囊。
   PublishValidation validate() {
-    final capsule = meta.value.capsule;
+    final capsule = _publishedMeta.capsule;
     if (capsule != null && !capsule.isUnlockInFuture(_clock())) {
       return PublishValidation.capsuleUnlockPassed;
     }
     return PublishValidation.ok;
   }
 
-  /// 组装 metadata；[generatedAt] 同时作为胶囊的封存时刻。
-  String buildMetadataJson({DateTime? generatedAt}) {
+  /// 实际发布的面板草稿：关闭的功能留下的胶囊与日记本去掉（见类注释）。
+  DiaryMetaDraft get _publishedMeta {
+    var draft = meta.value;
+    if (!_timeCapsulesEnabled() && draft.capsule != null) {
+      draft = draft.copyWith(capsule: null);
+    }
+    if (!_notebooksEnabled() && draft.notebookIds.isNotEmpty) {
+      draft = draft.copyWith(notebookIds: const <String>{});
+    }
+    return draft;
+  }
+
+  /// 组装 metadata；[generatedAt] 同时作为胶囊的封存时刻。[draft] 默认为
+  /// 面板草稿原样（带回编辑页用），写库时传 [_publishedMeta]。
+  String buildMetadataJson({DateTime? generatedAt, DiaryMetaDraft? draft}) {
     final lockedAt = generatedAt ?? _clock();
     return PublishMetadataComposer.composeDraft(
-      draft: meta.value,
+      draft: draft ?? meta.value,
       contentText: initialDraft.contentText,
       generatedAt: lockedAt,
       capsuleLockedAt: lockedAt,
@@ -106,8 +140,9 @@ class PublishDiaryController {
     if (!canLeave) {
       throw StateError('Publishing is already in progress.');
     }
-    final draft = meta.value;
+    final draft = _publishedMeta;
     final schedule = draft.capsule;
+    final notebooksEnabled = _notebooksEnabled();
     _setPhase(PublishPhase.saving);
     try {
       final lockedAt = schedule == null ? null : _clock();
@@ -116,7 +151,7 @@ class PublishDiaryController {
         contentDocJson: initialDraft.contentDocJson,
         contentText: initialDraft.contentText,
         cover: draft.cover,
-        metadataJson: buildMetadataJson(generatedAt: lockedAt),
+        metadataJson: buildMetadataJson(generatedAt: lockedAt, draft: draft),
         tagIds: draft.tagIds.toList(),
         createdAtOverride: TimeCapsuleSchedule.resolveDiaryCreatedAt(
           schedule: schedule,
@@ -126,7 +161,9 @@ class PublishDiaryController {
         capsuleLockedAt: lockedAt,
         // 同一事务里收进所选日记本；在日记本里按章节新建时带上章节。
         notebookIds: draft.notebookIds.toList(),
-        notebookChapterIds: initialDraft.notebookChapterIds,
+        notebookChapterIds: notebooksEnabled
+            ? initialDraft.notebookChapterIds
+            : const <String, String>{},
       );
       _setPhase(schedule == null ? PublishPhase.done : PublishPhase.sealing);
       return diaryId;

@@ -8,6 +8,7 @@ import '../../../core/services/settings_service.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../diaries/models/time_capsule.dart';
 import '../../diaries/widgets/publish_panel/publish_mood_energy_sections.dart';
+import '../../settings/providers/app_features_provider.dart';
 import '../../widgets/expressive_button_group.dart';
 import '../controllers/diary_template_editor_controller.dart';
 import '../models/diary_template_recommend.dart';
@@ -17,6 +18,9 @@ import '../widgets/diary_template_weekday_chips.dart';
 
 /// 套用时一并设置：标签、心情、精力与时间胶囊。心情、精力直接复用发布面板
 /// 的区块（操作的是编辑页私有的元数据草稿），与发布时看到的一致。
+///
+/// 时间胶囊功能关闭时隐藏入口，数据保留：没有胶囊一行，模板里已存的胶囊
+/// 预设原样保存（套用时也不生效，见 `DiaryTemplateApplyController`）。
 class DiaryTemplateEditorPresets extends ConsumerWidget {
   const DiaryTemplateEditorPresets({super.key, required this.controller});
 
@@ -29,6 +33,9 @@ class DiaryTemplateEditorPresets extends ConsumerWidget {
     final moodOptions =
         ref.watch(moodOptionsProvider).asData?.value ??
         SettingsService.defaultMoodOptions;
+    final capsulesEnabled = ref.watch(
+      appFeaturesProvider.select((features) => features.timeCapsules),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
@@ -51,39 +58,41 @@ class DiaryTemplateEditorPresets extends ConsumerWidget {
         PublishMoodSection(draft: controller.meta, moodOptions: moodOptions),
         const SizedBox(height: AppSpacing.l),
         PublishEnergySection(draft: controller.meta),
-        const SizedBox(height: AppSpacing.l),
-        CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorCapsule),
-        ExpressiveButtonGroup<_CapsuleChoice>(
-          minSegmentWidth: 72,
-          segments: <ButtonSegment<_CapsuleChoice>>[
-            for (final choice in _CapsuleChoice.values)
-              ButtonSegment<_CapsuleChoice>(
-                value: choice,
-                label: Text(
-                  choice.preset == null
-                      ? l10n.diaryTemplateEditorNone
-                      : diaryTemplateCapsuleLabel(l10n, choice.preset!),
+        if (capsulesEnabled) ...<Widget>[
+          const SizedBox(height: AppSpacing.l),
+          CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorCapsule),
+          ExpressiveButtonGroup<_CapsuleChoice>(
+            minSegmentWidth: 72,
+            segments: <ButtonSegment<_CapsuleChoice>>[
+              for (final choice in _CapsuleChoice.values)
+                ButtonSegment<_CapsuleChoice>(
+                  value: choice,
+                  label: Text(
+                    choice.preset == null
+                        ? l10n.diaryTemplateEditorNone
+                        : diaryTemplateCapsuleLabel(l10n, choice.preset!),
+                  ),
                 ),
-              ),
-          ],
-          selected: <_CapsuleChoice>{_CapsuleChoice.of(controller.capsule)},
-          onSelectionChanged: (selection) =>
-              controller.capsule = selection.first.preset,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xs,
-            AppSpacing.s,
-            AppSpacing.xs,
-            0,
+            ],
+            selected: <_CapsuleChoice>{_CapsuleChoice.of(controller.capsule)},
+            onSelectionChanged: (selection) =>
+                controller.capsule = selection.first.preset,
           ),
-          child: Text(
-            l10n.diaryTemplateEditorCapsuleHint,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xs,
+              AppSpacing.s,
+              AppSpacing.xs,
+              0,
+            ),
+            child: Text(
+              l10n.diaryTemplateEditorCapsuleHint,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

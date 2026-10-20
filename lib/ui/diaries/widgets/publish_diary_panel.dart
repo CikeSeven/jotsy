@@ -46,6 +46,7 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
     this.busy = false,
     this.publishTime,
     this.capsuleEnabled = false,
+    this.showDraftCapsule = true,
     this.onPublish,
     this.onProgressChanged,
   });
@@ -62,6 +63,11 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
 
   /// 是否提供时间胶囊（只有发布新日记时）。
   final bool capsuleEnabled;
+
+  /// 是否显示草稿里已有的胶囊：收起栏的胶囊摘要、“封存”按钮文案与发表
+  /// 时间行的“跟随定时锁”。发布页在时间胶囊功能关闭时为 false——发布时会
+  /// 忽略胶囊，不能显示用户看不到、也不会生效的设置。
+  final bool showDraftCapsule;
 
   /// 编辑页自动保存时不传主操作，发布页仍显示发布按钮。
   final VoidCallback? onPublish;
@@ -368,6 +374,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
               notebooks: notebooks ?? const <NotebookView>[],
               busy: widget.busy,
               onPublish: widget.onPublish,
+              showCapsule: widget.showDraftCapsule,
             ),
           ),
           content: PublishPanelMainPage(
@@ -378,6 +385,7 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             busy: widget.busy,
             publishTime: widget.publishTime,
             capsuleEnabled: widget.capsuleEnabled,
+            showDraftCapsule: widget.showDraftCapsule,
             onOpenTags: _panelCoordinator.openTagPage,
             onOpenCapsule: _openCapsulePage,
             onPublish: widget.onPublish,

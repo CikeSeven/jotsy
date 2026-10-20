@@ -12572,7 +12572,7 @@ abstract class AppLocalizations {
   /// **'RRGGBB'**
   String get diaryColorPanelHexHint;
 
-  /// Editor toolbar color panel: tab label of the page with the default, preset and recently used colors.
+  /// Editor toolbar color panel: tab label of the page with the default and preset colors and My colors.
   ///
   /// In en, this message translates to:
   /// **'Swatches'**
@@ -12889,6 +12889,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t open WeChat. Open it yourself and scan the code.'**
   String get supportDeveloperWeChatUnavailable;
+
+  /// Editor toolbar color panel: plus cell at the start of the My colors row; opens the custom page to mix a color.
+  ///
+  /// In en, this message translates to:
+  /// **'New color'**
+  String get diaryColorPanelNewColor;
+
+  /// Editor toolbar color panel: button at the end of the My colors row that enters manage mode (remove or keep colors).
+  ///
+  /// In en, this message translates to:
+  /// **'Manage my colors'**
+  String get diaryColorPanelManageColors;
+
+  /// Editor toolbar color panel: the same button while managing My colors; tapping it leaves manage mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryColorPanelManageDone;
+
+  /// Editor toolbar color panel: hint in the My colors row while no color has been saved yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors you mix in Custom are kept here'**
+  String get diaryColorPanelSavedEmpty;
+
+  /// Editor toolbar color panel, custom page: small caption under the preview when the current color is already in My colors.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get diaryColorPanelSavedMark;
+
+  /// Editor toolbar color panel: accessibility label of a saved color swatch; color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'My color {color}'**
+  String diaryColorPanelSavedColor(String color);
+
+  /// Editor toolbar color panel: accessibility label of a swatch for a color used in this entry but not saved; color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'Used in this entry {color}'**
+  String diaryColorPanelDocumentColor(String color);
+
+  /// Editor toolbar color panel: accessibility label of a saved swatch in manage mode (tap removes it); color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {color}'**
+  String diaryColorPanelRemoveColor(String color);
+
+  /// Editor toolbar color panel: accessibility label of a color used in this entry in manage mode (tap saves it); color is #RRGGBB.
+  ///
+  /// In en, this message translates to:
+  /// **'Save {color} to my colors'**
+  String diaryColorPanelKeepColor(String color);
 }
 
 class _AppLocalizationsDelegate

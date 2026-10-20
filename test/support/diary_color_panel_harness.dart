@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/models/diary_recent_colors.dart';
-import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
+import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 import 'expressive_test_theme.dart';
 
 // 颜色面板测试的公共装配：正文编辑器 + 悬浮工具栏（颜色工具排在最前），
-// 记录路由推入、面板高度报告与自定义取色回调。
+// 记录路由推入与面板高度报告；我的颜色存在 [ColorPanelHarness.saved] 里，
+// 面板的改写立即生效（与 provider 一样作用在最新记录上）。
 
 const String colorPanelTextTool = '文字颜色';
 const String colorPanelBackgroundTool = '背景颜色';
@@ -34,14 +34,26 @@ class ColorPanelRouteCounter extends NavigatorObserver {
 }
 
 class ColorPanelHarness {
-  ColorPanelHarness(this.controller, this.editorFocus, this.routes);
+  ColorPanelHarness(
+    this.controller,
+    this.editorFocus,
+    this.routes,
+    DiarySavedColors saved,
+  ) : saved = ValueNotifier<DiarySavedColors>(saved);
 
   final quill.QuillController controller;
   final FocusNode editorFocus;
   final ColorPanelRouteCounter routes;
   final List<double> extents = <double>[];
-  final List<(DiaryColorTarget, Color)> usedColors =
-      <(DiaryColorTarget, Color)>[];
+  final ValueNotifier<DiarySavedColors> saved;
+
+  /// 面板经 `onEditSavedColors` 改写了几次（含没有变化的）。
+  int edits = 0;
+
+  void edit(DiarySavedColorsEdit change) {
+    edits++;
+    saved.value = change(saved.value);
+  }
 }
 
 /// 正文为 [text] 并全选的控制器。
@@ -77,7 +89,7 @@ Future<ColorPanelHarness> pumpColorPanel(
   List<DiaryToolbarItem> order = colorFirstToolbarOrder,
   bool recordingOpen = false,
   Locale locale = const Locale('zh'),
-  DiaryRecentColors recentColors = DiaryRecentColors.empty,
+  DiarySavedColors savedColors = DiarySavedColors.empty,
   ColorPanelHarness? reuse,
 }) async {
   tester.view.physicalSize = Size(screenWidth, 800);
@@ -89,8 +101,12 @@ Future<ColorPanelHarness> pumpColorPanel(
         controller ?? colorPanelController(),
         FocusNode(),
         ColorPanelRouteCounter(),
+        savedColors,
       );
-  if (reuse == null) addTearDown(harness.editorFocus.dispose);
+  if (reuse == null) {
+    addTearDown(harness.editorFocus.dispose);
+    addTearDown(harness.saved.dispose);
+  }
   await tester.pumpWidget(
     MaterialApp(
       theme: expressiveTestTheme(Brightness.light),
@@ -114,14 +130,18 @@ Future<ColorPanelHarness> pumpColorPanel(
               padding: const EdgeInsets.symmetric(
                 horizontal: kDiaryFloatingToolbarInset,
               ),
-              child: DiaryFloatingToolbar(
-                controller: harness.controller,
-                order: order,
-                recordingOpen: recordingOpen,
-                onPanelExtentChanged: harness.extents.add,
-                recentColors: recentColors,
-                onCustomColorUsed: (DiaryColorTarget target, Color color) =>
-                    harness.usedColors.add((target, color)),
+              child: ValueListenableBuilder<DiarySavedColors>(
+                valueListenable: harness.saved,
+                builder:
+                    (BuildContext context, DiarySavedColors saved, Widget? _) =>
+                        DiaryFloatingToolbar(
+                          controller: harness.controller,
+                          order: order,
+                          recordingOpen: recordingOpen,
+                          onPanelExtentChanged: harness.extents.add,
+                          savedColors: saved,
+                          onEditSavedColors: harness.edit,
+                        ),
               ),
             ),
           ],

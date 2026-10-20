@@ -4,7 +4,7 @@ import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
-import 'package:node_diary/ui/diaries/models/diary_recent_colors.dart';
+import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_layout.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
@@ -41,7 +41,7 @@ enum _ToolbarPanel { none, more, color }
 /// - 面板之间切换（更多 ↔ 颜色）时外层展开系数保持 1，高度由 AnimatedSize
 ///   补间、内容交叉淡入，新的目标高度立即报告（变高时编辑页随即揭示光标）；
 /// - 颜色面板的页签（[_colorMode]：色板 / 自定义）记在这里，本次挂载内切换
-///   目标、收起再打开都沿用；两页高度不同，切换同样立即报告新高度。
+///   目标、收起再打开都沿用；两页高度不同时（宽屏），切换同样立即报告新高度。
 class DiaryFloatingToolbar extends StatefulWidget {
   const DiaryFloatingToolbar({
     super.key,
@@ -55,8 +55,8 @@ class DiaryFloatingToolbar extends StatefulWidget {
     this.onMediaPressed,
     this.onPanelExtentChanged,
     this.maxPanelExtent = double.infinity,
-    this.recentColors = DiaryRecentColors.empty,
-    this.onCustomColorUsed,
+    this.savedColors = DiarySavedColors.empty,
+    this.onEditSavedColors,
   });
 
   final quill.QuillController controller;
@@ -77,11 +77,12 @@ class DiaryFloatingToolbar extends StatefulWidget {
   /// 面板（含分隔线）最多占多高，超出部分在面板内纵向滚动。
   final double maxPanelExtent;
 
-  /// 跨日记记住的最近自定义颜色：色板里排在预设后面、本篇用过的颜色之前。
-  final DiaryRecentColors recentColors;
+  /// 跨日记保存的“我的颜色”：色板页预设下方一行，排在本篇用过的颜色之前。
+  final DiarySavedColors savedColors;
 
-  /// 自定义页写入一个颜色后回调，由编辑页记入最近颜色。
-  final void Function(DiaryColorTarget target, Color color)? onCustomColorUsed;
+  /// 改写我的颜色（自定义页保存、色板里移除或收藏），由编辑页交给 provider
+  /// 在最新记录上执行；为 null 时面板里的改动不保存。
+  final ValueChanged<DiarySavedColorsEdit>? onEditSavedColors;
 
   @override
   State<DiaryFloatingToolbar> createState() => _DiaryFloatingToolbarState();
@@ -109,10 +110,9 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
   bool _colorFromMore = false;
   DiaryColorPanelMode _colorMode = DiaryColorPanelMode.swatches;
 
-  /// 色板里接在预设后面的自定义颜色：最近用过的在前，再接这篇日记里用过的
-  /// 非预设颜色。只在打开颜色面板、切换目标、回到色板与最近颜色变化时整理，
-  /// 不随每次输入重算。
-  List<Color> _usedColors = const <Color>[];
+  /// 这篇日记里用过的非预设颜色（我的颜色一行接在已保存的后面）。只在打开
+  /// 颜色面板、切换目标与回到色板时扫描，不随每次输入重算。
+  List<Color> _documentColors = const <Color>[];
 
   /// 最近一次构建时的排布与宽度：点按发生在构建之外，要立即算出新面板的
   /// 目标高度报告给编辑页。
@@ -134,9 +134,6 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
       _panel = _ToolbarPanel.none;
       _panelController.value = 0;
     }
-    // 自定义页记下新颜色后，编辑页传来新的最近颜色；色板行数可能随之变化，
-    // 本次构建会报告新高度。
-    if (widget.recentColors != oldWidget.recentColors) _scanUsedColors();
   }
 
   @override
@@ -178,7 +175,7 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     final rescan = _panel != _ToolbarPanel.color || _colorTarget != target;
     _colorTarget = target;
     _colorFromMore = fromMore;
-    if (rescan) _scanUsedColors();
+    if (rescan) _scanDocumentColors();
     _setPanel(_ToolbarPanel.color);
   }
 
@@ -186,25 +183,21 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
     if (mode == _colorMode) return;
     setState(() {
       _colorMode = mode;
-      // 回到色板时把刚在自定义页用过的颜色排进来。
-      if (mode == DiaryColorPanelMode.swatches) _scanUsedColors();
+      // 回到色板时把刚在自定义页写进正文的颜色排进来。
+      if (mode == DiaryColorPanelMode.swatches) _scanDocumentColors();
     });
     _reportExtent(_targetExtent());
   }
 
-  void _handleCustomColorUsed(Color color) {
-    widget.onCustomColorUsed?.call(_colorTarget, color);
+  void _handleEditSavedColors(DiarySavedColorsEdit edit) {
+    widget.onEditSavedColors?.call(edit);
   }
 
-  void _scanUsedColors() {
-    final seen = <int>{};
-    _usedColors = <Color>[
-      for (final color in <Color>[
-        ...widget.recentColors.forTarget(_colorTarget),
-        ...collectDiaryDocumentColors(widget.controller.document, _colorTarget),
-      ])
-        if (seen.add(color.toARGB32())) color,
-    ];
+  void _scanDocumentColors() {
+    _documentColors = collectDiaryDocumentColors(
+      widget.controller.document,
+      _colorTarget,
+    );
   }
 
   void _setPanel(_ToolbarPanel next) {
@@ -244,7 +237,6 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
 
   DiaryColorGridLayout _colorGrid() => DiaryColorGridLayout.resolve(
     innerWidth: _width - 2 * kDiaryToolbarHorizontalPadding,
-    usedColorCount: _usedColors.length,
   );
 
   /// 面板内容实际占的高度（已按 [DiaryFloatingToolbar.maxPanelExtent] 夹住）。
@@ -359,10 +351,11 @@ class _DiaryFloatingToolbarState extends State<DiaryFloatingToolbar>
         mode: _colorMode,
         onModeChanged: _handleColorModeChanged,
         grid: _colorGrid(),
-        usedColors: _usedColors,
+        savedColors: widget.savedColors.forTarget(_colorTarget),
+        documentColors: _documentColors,
         bodyHeight: _bodyHeight(_ToolbarPanel.color),
         active: _panel == _ToolbarPanel.color,
-        onCustomColorUsed: _handleCustomColorUsed,
+        onEditSavedColors: _handleEditSavedColors,
       ),
       _ => DiaryToolbarMorePanel(
         rows: layout.overflowRows,

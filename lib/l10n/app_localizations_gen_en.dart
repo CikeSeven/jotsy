@@ -7898,4 +7898,40 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get supportDeveloperWeChatUnavailable =>
       'Couldn\'t open WeChat. Open it yourself and scan the code.';
+
+  @override
+  String get diaryColorPanelNewColor => 'New color';
+
+  @override
+  String get diaryColorPanelManageColors => 'Manage my colors';
+
+  @override
+  String get diaryColorPanelManageDone => 'Done';
+
+  @override
+  String get diaryColorPanelSavedEmpty =>
+      'Colors you mix in Custom are kept here';
+
+  @override
+  String get diaryColorPanelSavedMark => 'Saved';
+
+  @override
+  String diaryColorPanelSavedColor(String color) {
+    return 'My color $color';
+  }
+
+  @override
+  String diaryColorPanelDocumentColor(String color) {
+    return 'Used in this entry $color';
+  }
+
+  @override
+  String diaryColorPanelRemoveColor(String color) {
+    return 'Remove $color';
+  }
+
+  @override
+  String diaryColorPanelKeepColor(String color) {
+    return 'Save $color to my colors';
+  }
 }

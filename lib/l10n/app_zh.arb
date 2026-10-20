@@ -9913,7 +9913,7 @@
   },
   "diaryColorPanelSwatches": "色板",
   "@diaryColorPanelSwatches": {
-    "description": "Editor toolbar color panel: tab label of the page with the default, preset and recently used colors."
+    "description": "编辑器颜色面板：默认、预设颜色与“我的颜色”所在页的页签名。"
   },
   "diaryColorPanelSaturationValue": "饱和度与亮度",
   "@diaryColorPanelSaturationValue": {
@@ -10137,5 +10137,61 @@
   "supportDeveloperWeChatUnavailable": "没能打开微信，请手动打开微信后扫码。",
   "@supportDeveloperWeChatUnavailable": {
     "description": "打赏面板：拉起微信失败时按钮下方的说明。"
+  },
+  "diaryColorPanelNewColor": "新建颜色",
+  "@diaryColorPanelNewColor": {
+    "description": "编辑器颜色面板：“我的颜色”一行首格的加号，点按转到自定义页调色。"
+  },
+  "diaryColorPanelManageColors": "管理我的颜色",
+  "@diaryColorPanelManageColors": {
+    "description": "编辑器颜色面板：“我的颜色”一行末格的按钮，进入管理（移除或收藏颜色）。"
+  },
+  "diaryColorPanelManageDone": "完成",
+  "@diaryColorPanelManageDone": {
+    "description": "编辑器颜色面板：管理我的颜色时末格按钮的名称，点按退出管理。"
+  },
+  "diaryColorPanelSavedEmpty": "在「自定义」调出的颜色会保存在这里",
+  "@diaryColorPanelSavedEmpty": {
+    "description": "编辑器颜色面板：还没有我的颜色时，色板页“我的颜色”一行的说明。"
+  },
+  "diaryColorPanelSavedMark": "已保存",
+  "@diaryColorPanelSavedMark": {
+    "description": "编辑器颜色面板自定义页：当前颜色已在我的颜色里时，预览下方的小字。"
+  },
+  "diaryColorPanelSavedColor": "我的颜色 {color}",
+  "@diaryColorPanelSavedColor": {
+    "description": "编辑器颜色面板：我的颜色色块的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelDocumentColor": "本篇用过的颜色 {color}",
+  "@diaryColorPanelDocumentColor": {
+    "description": "编辑器颜色面板：本篇日记用过、但没保存的颜色色块的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelRemoveColor": "移除 {color}",
+  "@diaryColorPanelRemoveColor": {
+    "description": "编辑器颜色面板：管理我的颜色时，点按色块即移除它的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryColorPanelKeepColor": "保存 {color} 到我的颜色",
+  "@diaryColorPanelKeepColor": {
+    "description": "编辑器颜色面板：管理时，点按本篇用过的颜色即保存它的读屏标签；color 为 #RRGGBB。",
+    "placeholders": {
+      "color": {
+        "type": "String"
+      }
+    }
   }
 }

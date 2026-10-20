@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/diaries/models/diary_recent_colors.dart';
+import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_custom_picker.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
@@ -11,8 +11,8 @@ import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import '../../../support/diary_color_panel_harness.dart';
 
 /// 颜色面板：卡片内展开、色板写入、目标切换、色板 / 自定义页签与高度报告、
-/// 最近颜色的排列、窄屏表头与减少动画。自定义页的取色行为见
-/// diary_color_custom_picker_test.dart。
+/// 窄屏表头与减少动画。自定义页的取色行为见 diary_color_custom_picker_test.dart，
+/// 我的颜色一行见 diary_color_saved_strip_test.dart。
 void main() {
   setUpAll(loadColorPanelFonts);
 
@@ -50,9 +50,9 @@ void main() {
     expect(colorPanelAttributesAt(harness.controller, 0), <String, dynamic>{
       'color': '#FFE5484D',
     });
-    // 面板保持打开，便于继续调整；色板颜色不记入最近颜色。
+    // 面板保持打开，便于继续调整；预设不存进我的颜色。
     expect(find.byType(DiaryColorPanel), findsOneWidget);
-    expect(harness.usedColors, isEmpty);
+    expect(harness.edits, 0);
   });
 
   testWidgets('the default swatch clears the text color', (tester) async {
@@ -93,10 +93,11 @@ void main() {
     });
   });
 
-  testWidgets('switching targets re-reports the extent when the grid changes', (
+  testWidgets('the panel height does not depend on how many colors exist', (
     tester,
   ) async {
-    // 宽屏 16 列：预设占一行；文字色另有 5 种自定义颜色，第二行才放得下。
+    // 宽屏 16 列：文字色有 5 种本篇颜色和 2 种我的颜色，背景色一个都没有；
+    // 两种目标的面板一样高。
     final controller = colorPanelController('abcdef');
     for (var i = 0; i < 5; i++) {
       controller.formatText(i, 1, quill.ColorAttribute('#FF12345${i + 1}'));
@@ -105,18 +106,23 @@ void main() {
       tester,
       controller: controller,
       screenWidth: 1200,
+      savedColors: const DiarySavedColors(
+        text: <Color>[Color(0xFF112233), Color(0xFF445566)],
+      ),
     );
     await openTextColorPanel(tester);
     final textExtent = harness.extents.last;
+    final reports = harness.extents.length;
 
     await tester.tap(find.byTooltip(colorPanelBackgroundTool));
     await tester.pumpAndSettle();
 
     expect(find.byType(DiaryColorPanel), findsOneWidget);
-    expect(harness.extents.last, textExtent - DiaryColorGridLayout.cellHeight);
+    expect(harness.extents.last, textExtent);
+    expect(harness.extents, hasLength(reports));
     expect(
       tester.getSize(find.byType(DiaryFloatingToolbar)).height,
-      kDiaryToolbarBarHeight + harness.extents.last,
+      kDiaryToolbarBarHeight + textExtent,
     );
     expect(tester.takeException(), isNull);
   });
@@ -131,14 +137,14 @@ void main() {
     await tester.tap(find.text('自定义'));
     await tester.pumpAndSettle();
 
-    // 360dp 下色板两行（80dp），自定义页 128dp。
+    // 360dp 下预设两行 + 我的颜色一行，与自定义页同高：换页时面板不跳。
     expect(find.byType(DiaryColorCustomPicker), findsOneWidget);
     expect(find.byTooltip('红'), findsNothing);
+    expect(swatchesExtent, greaterThan(0));
+    expect(harness.extents.last, swatchesExtent);
     expect(
-      harness.extents.last,
-      swatchesExtent +
-          kDiaryColorCustomPickerHeight -
-          2 * DiaryColorGridLayout.cellHeight,
+      DiaryColorGridLayout.resolve(innerWidth: 320).height,
+      kDiaryColorCustomPickerHeight,
     );
     expect(
       tester.getSize(find.byType(DiaryFloatingToolbar)).height,
@@ -159,39 +165,6 @@ void main() {
     expect(find.byTooltip('红'), findsOneWidget);
     expect(harness.extents.last, swatchesExtent);
     expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('recent colors come after the presets, newest first', (
-    tester,
-  ) async {
-    final controller = colorPanelController();
-    controller.formatText(0, 1, const quill.ColorAttribute('#FF778899'));
-    // 最近颜色里也有这篇用过的颜色：只出现一次，排在最近颜色的位置。
-    controller.formatText(1, 1, const quill.ColorAttribute('#FF445566'));
-    await pumpColorPanel(
-      tester,
-      controller: controller,
-      recentColors: const DiaryRecentColors(
-        text: <Color>[Color(0xFF112233), Color(0xFF445566)],
-        background: <Color>[Color(0x4DABCDEF)],
-      ),
-    );
-    await openTextColorPanel(tester);
-
-    final order = <String>['颜色 #112233', '颜色 #445566', '颜色 #778899'];
-    for (final label in order) {
-      expect(find.byTooltip(label), findsOneWidget, reason: label);
-    }
-    double x(String label) => tester.getCenter(find.byTooltip(label)).dx;
-    // 同一行内从左到右（360dp 每行 8 格：预设之后的第二行）。
-    expect(x(order[0]), lessThan(x(order[1])));
-    expect(x(order[1]), lessThan(x(order[2])));
-    expect(find.byTooltip('颜色 #ABCDEF'), findsNothing);
-
-    await tester.tap(find.byTooltip(colorPanelBackgroundTool));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('颜色 #ABCDEF'), findsOneWidget);
-    expect(find.byTooltip(order[0]), findsNothing);
   });
 
   testWidgets('tapping the same tool again closes the panel', (tester) async {

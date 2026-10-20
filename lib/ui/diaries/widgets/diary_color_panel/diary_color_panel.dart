@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:node_diary/app/theme/expressive_motion.dart';
+import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_custom_picker.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_saved_strip.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_swatch_grid.dart';
 import 'package:node_diary/ui/widgets/expressive_button_group.dart';
 
-/// 颜色面板的两页：色板（默认 + 预设 + 最近与本篇用过的颜色）与自定义
-/// （色谱自由取色 + 颜色代码）。
+/// 颜色面板的两页：色板（默认 + 预设，下方一行我的颜色与本篇用过的颜色）
+/// 与自定义（色谱自由取色 + 颜色代码）。
 enum DiaryColorPanelMode { swatches, custom }
 
 /// 表头一行的高度：与工具栏 40dp 一格同高，放得下 36dp 的页签。
@@ -23,7 +26,9 @@ const double kDiaryColorPanelHeaderGap = 4;
 const double _kModeSwitchMaxWidthFactor = 0.62;
 
 /// 颜色面板内容的自然高度：表头 + 间距 + 当前页。工具栏据此直接算出面板
-/// 目标高度，不必等测量；切换页签时高度随之补间。
+/// 目标高度，不必等测量；与保存了几个颜色无关。两页在常见手机宽度下等高
+/// （预设两行 + 我的颜色一行 = 自定义页 128dp），切换页签时面板不跳；
+/// 宽屏预设只占一行时高度随之补间。
 double diaryColorPanelNaturalHeight(
   DiaryColorPanelMode mode,
   DiaryColorGridLayout grid,
@@ -37,12 +42,14 @@ double diaryColorPanelNaturalHeight(
 
 /// 悬浮工具栏卡片内的颜色面板：表头（目标标题 + 色板 / 自定义页签）与当前页。
 ///
-/// - 输入：正文控制器、当前目标与页签、网格排布与要显示的自定义颜色（最近
-///   用过的在前、再接本篇用过的，由工具栏在面板打开、切换目标与回到色板时
-///   整理，这里不扫描文档）；
+/// - 输入：正文控制器、当前目标与页签、网格排布、我的颜色 [savedColors]
+///   （当前目标的，随保存实时更新）与本篇用过的颜色 [documentColors]（由
+///   工具栏在面板打开、切换目标与回到色板时整理，这里不扫描文档）；
 /// - 输出：色块经 `controller.formatSelection` 写入 `#AARRGGBB` 或清除属性；
-///   自定义页写入后经 [onCustomColorUsed] 请工具栏记入最近颜色；切换页签经
-///   [onModeChanged] 交给工具栏（面板高度由工具栏计算并报告给编辑页）；
+///   我的颜色的增删（自定义页写入后保存、色板里移除或收藏）一律经
+///   [onEditSavedColors] 交给 provider 在最新记录上执行；切换页签经
+///   [onModeChanged] 交给工具栏（面板高度由工具栏计算并报告给编辑页），
+///   我的颜色一行的“+”也经它转到自定义页；
 /// - 面板里不放文字 / 背景切换：工具栏上的两个颜色按钮就是切换，点另一个时
 ///   面板保持打开、色块原地变色，表头标题随之交叉淡入；
 /// - 不走路由、对话框或底部面板：那些都会抢走正文焦点、收起键盘，而工具栏
@@ -55,10 +62,11 @@ class DiaryColorPanel extends StatelessWidget {
     required this.mode,
     required this.onModeChanged,
     required this.grid,
-    required this.usedColors,
+    required this.savedColors,
+    required this.documentColors,
     required this.bodyHeight,
     required this.active,
-    required this.onCustomColorUsed,
+    required this.onEditSavedColors,
   });
 
   final quill.QuillController controller;
@@ -67,8 +75,11 @@ class DiaryColorPanel extends StatelessWidget {
   final ValueChanged<DiaryColorPanelMode> onModeChanged;
   final DiaryColorGridLayout grid;
 
-  /// 色板里接在预设后面的自定义颜色，只显示前 [DiaryColorGridLayout.customCount] 个。
-  final List<Color> usedColors;
+  /// 当前目标的我的颜色（保存顺序，新的在前）。
+  final List<Color> savedColors;
+
+  /// 本篇用过的非预设颜色（文档顺序）；已保存的由我的颜色一行自行去掉。
+  final List<Color> documentColors;
 
   /// 工具栏给的内容高度；小于自然高度时面板内纵向滚动。
   final double bodyHeight;
@@ -76,7 +87,7 @@ class DiaryColorPanel extends StatelessWidget {
   /// 面板是否仍是工具栏当前展开的内容；收起或换成「更多」时为 false，
   /// 正在输入颜色代码的话立即放弃并交还焦点（不等收起动画播完）。
   final bool active;
-  final ValueChanged<Color> onCustomColorUsed;
+  final ValueChanged<DiarySavedColorsEdit> onEditSavedColors;
 
   /// 点色块：写入颜色（null 为清除）；与选区当前值相同则不动正文。
   void _applySwatch(Color? color, DiaryColorValue current) {
@@ -141,13 +152,7 @@ class DiaryColorPanel extends StatelessWidget {
             DiaryColorPanelMode.swatches,
           ),
           height: grid.height,
-          child: DiaryColorSwatchGrid(
-            target: target,
-            current: current,
-            grid: grid,
-            usedColors: usedColors,
-            onSelected: (Color? color) => _applySwatch(color, current),
-          ),
+          child: _buildSwatchesPage(context, current),
         ),
         DiaryColorPanelMode.custom => DiaryColorCustomPicker(
           key: const ValueKey<DiaryColorPanelMode>(DiaryColorPanelMode.custom),
@@ -155,8 +160,73 @@ class DiaryColorPanel extends StatelessWidget {
           target: target,
           current: current,
           active: active,
-          onColorUsed: onCustomColorUsed,
+          savedColors: savedColors,
+          onSave: (Color color, Color? replacing) => onEditSavedColors(
+            (DiarySavedColors saved) =>
+                saved.save(target, color, replacing: replacing),
+          ),
         ),
+      },
+    );
+  }
+
+  /// 色板页：预设网格，细分隔线（两端对齐色块圆的边缘），我的颜色一行。
+  /// 我的颜色一行按目标交叉淡入：两种目标的颜色各不相同，管理状态也随之
+  /// 结束。
+  Widget _buildSwatchesPage(BuildContext context, DiaryColorValue current) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final inset =
+            (constraints.maxWidth / grid.columns - kDiaryColorSwatchSize) / 2;
+        return Column(
+          children: <Widget>[
+            SizedBox(
+              height: grid.presetHeight,
+              child: DiaryColorSwatchGrid(
+                target: target,
+                current: current,
+                grid: grid,
+                onSelected: (Color? color) => _applySwatch(color, current),
+              ),
+            ),
+            Divider(
+              height: DiaryColorGridLayout.stripGap,
+              thickness: 0.8,
+              indent: inset,
+              endIndent: inset,
+              color: ExpressiveSurfaces.cardBorderColor(
+                Theme.of(context).colorScheme,
+              ),
+            ),
+            SizedBox(
+              height: DiaryColorGridLayout.cellHeight,
+              child: AnimatedSwitcher(
+                duration: ExpressiveMotion.duration(
+                  context,
+                  ExpressiveMotion.medium,
+                ),
+                switchInCurve: ExpressiveMotion.effects,
+                switchOutCurve: ExpressiveMotion.exit,
+                child: DiaryColorSavedStrip(
+                  key: ValueKey<DiaryColorTarget>(target),
+                  target: target,
+                  current: current,
+                  columns: grid.columns,
+                  saved: savedColors,
+                  document: documentColors,
+                  onSelected: (Color color) => _applySwatch(color, current),
+                  onCreate: () => onModeChanged(DiaryColorPanelMode.custom),
+                  onRemove: (Color color) => onEditSavedColors(
+                    (DiarySavedColors saved) => saved.remove(target, color),
+                  ),
+                  onKeep: (Color color) => onEditSavedColors(
+                    (DiarySavedColors saved) => saved.save(target, color),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
       },
     );
   }

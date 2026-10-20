@@ -39,7 +39,7 @@ import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.da
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
 import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
-import 'package:node_diary/ui/diaries/providers/diary_recent_colors_provider.dart';
+import 'package:node_diary/ui/diaries/providers/diary_saved_colors_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
@@ -1164,8 +1164,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       onMediaPressed: (kind) => unawaited(_controller.importMedia(kind)),
       onPanelExtentChanged: _handleToolbarPanelExtentChanged,
       maxPanelExtent: maxPanelExtent,
-      recentColors: ref.watch(diaryRecentColorsProvider),
-      onCustomColorUsed: ref.read(diaryRecentColorsProvider.notifier).record,
+      savedColors: ref.watch(diarySavedColorsProvider),
+      onEditSavedColors: ref.read(diarySavedColorsProvider.notifier).edit,
     );
   }
 

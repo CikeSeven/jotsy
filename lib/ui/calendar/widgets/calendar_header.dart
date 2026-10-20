@@ -9,6 +9,10 @@ import 'package:node_diary/ui/home/widgets/home_bar/home_top_bar_surface.dart';
 ///
 /// 底由 [HomeTopBarSurface] 画（含状态栏区域）：实色时与原来的 surface 色块
 /// 一致；首页顶栏用玻璃时换成玻璃，日历内容从页头后透出并被模糊。
+///
+/// 月份行可按 [collapsedExtent] 收起（页面里由 `CalendarHeaderSliver` 随滚动
+/// 给出）：标题栏不动，月份行整体上移、从标题栏下缘收进去，页头高度同步
+/// 减少；完全收起时只剩状态栏 + 标题栏。
 class CalendarHeader extends StatelessWidget {
   const CalendarHeader({
     super.key,
@@ -25,9 +29,17 @@ class CalendarHeader extends StatelessWidget {
     this.titleTooltip,
     this.previousTooltip,
     this.nextTooltip,
+    this.collapsedExtent = 0,
   });
 
-  static const double contentHeight = 112;
+  /// 标题栏（“日历” + 操作按钮）的高度，月份行收起后仍然保留。
+  static const double titleBarHeight = 64;
+
+  /// 月份行（上一页 / 标题 / 下一页）的高度，也是它最多能收起的高度。
+  static const double monthBarHeight = 48;
+
+  /// 完整展开时不含状态栏的内容高度。
+  static const double contentHeight = titleBarHeight + monthBarHeight;
 
   final String title;
 
@@ -58,98 +70,116 @@ class CalendarHeader extends StatelessWidget {
   final String? previousTooltip;
   final String? nextTooltip;
 
+  /// 月份行已被收起的高度：0 为完整显示，[monthBarHeight] 为只剩标题栏；
+  /// 超出范围的值会被夹取。
+  final double collapsedExtent;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: HomeTopBarSurface(
-        solidColor: theme.colorScheme.surface,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            MediaQuery.paddingOf(context).top,
-            16,
-            0,
-          ),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 64,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.autoT0183,
-                        style: theme.textTheme.headlineSmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+    final collapsed = collapsedExtent.clamp(0.0, monthBarHeight);
+    // 完全收起后月份行仍挂在树上（网格还露在下方时照样能左右翻月，月份标题
+    // 的滑动方向要接得上）。裁切到零高度后读屏与点按都会自动略过它，但键盘
+    // / 方向键的焦点遍历不看裁切，要另外排除，焦点才不会落到看不见的按钮上。
+    final monthBarHidden = collapsed >= monthBarHeight;
+    return HomeTopBarSurface(
+      solidColor: theme.colorScheme.surface,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          MediaQuery.paddingOf(context).top,
+          16,
+          0,
+        ),
+        child: Column(
+          // 高度由两行决定：放在页面 Stack 或 sliver 里都不会撑满。
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: titleBarHeight,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.autoT0183,
+                      style: theme.textTheme.headlineSmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (onOpenAnniversaries != null)
+                    IconButton(
+                      tooltip: l10n.anniversaryListTitle,
+                      onPressed: onOpenAnniversaries,
+                      icon: const FaIcon(FontAwesomeIcons.heart, size: 17),
+                    ),
+                  if (onOpenFilter != null)
+                    IconButton(
+                      tooltip: l10n.calendarFilterTooltip,
+                      isSelected: filterActive,
+                      onPressed: onOpenFilter,
+                      icon: Badge(
+                        isLabelVisible: filterActive,
+                        smallSize: 7,
+                        // 选中态图标已是 primary，圆点用 tertiary 才分得开。
+                        backgroundColor: theme.colorScheme.tertiary,
+                        child: const FaIcon(FontAwesomeIcons.filter, size: 17),
                       ),
                     ),
-                    if (onOpenAnniversaries != null)
-                      IconButton(
-                        tooltip: l10n.anniversaryListTitle,
-                        onPressed: onOpenAnniversaries,
-                        icon: const FaIcon(FontAwesomeIcons.heart, size: 17),
-                      ),
-                    if (onOpenFilter != null)
-                      IconButton(
-                        tooltip: l10n.calendarFilterTooltip,
-                        isSelected: filterActive,
-                        onPressed: onOpenFilter,
-                        icon: Badge(
-                          isLabelVisible: filterActive,
-                          smallSize: 7,
-                          // 选中态图标已是 primary，圆点用 tertiary 才分得开。
-                          backgroundColor: theme.colorScheme.tertiary,
-                          child: const FaIcon(
-                            FontAwesomeIcons.filter,
-                            size: 17,
+                  if (onOpenDisplayOptions != null) ...[
+                    IconButton(
+                      tooltip: l10n.calendarDisplayOptionsTooltip,
+                      onPressed: onOpenDisplayOptions,
+                      icon: const FaIcon(FontAwesomeIcons.sliders, size: 18),
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  IconButton.filledTonal(
+                    tooltip: l10n.autoT0180,
+                    onPressed: onJumpToToday,
+                    icon: const FaIcon(FontAwesomeIcons.calendarDay, size: 18),
+                  ),
+                ],
+              ),
+            ),
+            // 月份行始终按完整高度布局、底部对齐，只裁出还露着的那一段：
+            // 收起时整行上移，像被内容带着滚到标题栏下面，而不是被压扁。
+            SizedBox(
+              height: monthBarHeight - collapsed,
+              child: ClipRect(
+                child: OverflowBox(
+                  alignment: Alignment.bottomCenter,
+                  minHeight: monthBarHeight,
+                  maxHeight: monthBarHeight,
+                  child: ExcludeFocus(
+                    excluding: monthBarHidden,
+                    child: Row(
+                      children: [
+                        IconButton(
+                          tooltip: previousTooltip ?? l10n.autoT0184,
+                          onPressed: onPreviousMonth,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.angleLeft,
+                            size: 18,
                           ),
                         ),
-                      ),
-                    if (onOpenDisplayOptions != null) ...[
-                      IconButton(
-                        tooltip: l10n.calendarDisplayOptionsTooltip,
-                        onPressed: onOpenDisplayOptions,
-                        icon: const FaIcon(FontAwesomeIcons.sliders, size: 18),
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    IconButton.filledTonal(
-                      tooltip: l10n.autoT0180,
-                      onPressed: onJumpToToday,
-                      icon: const FaIcon(
-                        FontAwesomeIcons.calendarDay,
-                        size: 18,
-                      ),
+                        Expanded(child: _buildTitleButton()),
+                        IconButton(
+                          tooltip: nextTooltip ?? l10n.autoT0185,
+                          onPressed: onNextMonth,
+                          icon: const FaIcon(
+                            FontAwesomeIcons.angleRight,
+                            size: 18,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-              SizedBox(
-                height: 48,
-                child: Row(
-                  children: [
-                    IconButton(
-                      tooltip: previousTooltip ?? l10n.autoT0184,
-                      onPressed: onPreviousMonth,
-                      icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                    ),
-                    Expanded(child: _buildTitleButton()),
-                    IconButton(
-                      tooltip: nextTooltip ?? l10n.autoT0185,
-                      onPressed: onNextMonth,
-                      icon: const FaIcon(FontAwesomeIcons.angleRight, size: 18),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -10004,5 +10004,86 @@
         "type": "String"
       }
     }
+  },
+  "settingsFeaturesTitle": "功能管理",
+  "@settingsFeaturesTitle": {
+    "description": "设置首页与功能管理页：功能管理的标题。"
+  },
+  "settingsFeaturesSubtitle": "选择要用的页面和功能",
+  "@settingsFeaturesSubtitle": {
+    "description": "设置首页：功能管理入口的说明。"
+  },
+  "settingsFeaturesPagesGroup": "页面",
+  "@settingsFeaturesPagesGroup": {
+    "description": "功能管理页：可关闭的页面（底部导航 Tab）分组标题。"
+  },
+  "settingsFeaturesPagesFooter": "日记和设置始终保留。关闭的页面不再出现在底部导航，数据不受影响。",
+  "@settingsFeaturesPagesFooter": {
+    "description": "功能管理页：页面分组底部说明。"
+  },
+  "settingsFeaturesCalendarSubtitle": "按月查看日记，含农历、节假日与纪念日",
+  "@settingsFeaturesCalendarSubtitle": {
+    "description": "功能管理页：日历开关的说明。"
+  },
+  "settingsFeaturesExploreSubtitle": "统计、那年今日、心情趋势与照片墙",
+  "@settingsFeaturesExploreSubtitle": {
+    "description": "功能管理页：探索开关的说明。"
+  },
+  "settingsFeaturesFeaturesGroup": "功能",
+  "@settingsFeaturesFeaturesGroup": {
+    "description": "功能管理页：可关闭的日记功能分组标题。"
+  },
+  "settingsFeaturesFeaturesFooter": "关闭后相关入口和选项都会隐藏，已有数据保留，重新开启即可恢复。",
+  "@settingsFeaturesFeaturesFooter": {
+    "description": "功能管理页：功能分组底部说明。"
+  },
+  "settingsFeaturesNotebooksSubtitle": "把日记收进不同的本子，分章节、导出成书",
+  "@settingsFeaturesNotebooksSubtitle": {
+    "description": "功能管理页：日记本开关的说明。"
+  },
+  "settingsFeaturesAnniversaries": "纪念日",
+  "@settingsFeaturesAnniversaries": {
+    "description": "功能管理页：纪念日开关的标题。"
+  },
+  "settingsFeaturesAnniversariesSubtitle": "纪念日与倒数日，标在日历上",
+  "@settingsFeaturesAnniversariesSubtitle": {
+    "description": "功能管理页：纪念日开关的说明。"
+  },
+  "settingsFeaturesAnniversariesLinked": "随日历一起关闭",
+  "@settingsFeaturesAnniversariesLinked": {
+    "description": "功能管理页：日历关闭时纪念日开关的说明（纪念日依附日历，不可单独开启）。"
+  },
+  "settingsFeaturesTemplates": "日记模板",
+  "@settingsFeaturesTemplates": {
+    "description": "功能管理页：日记模板开关的标题。"
+  },
+  "settingsFeaturesTemplatesSubtitle": "新建日记时套用写好的格式",
+  "@settingsFeaturesTemplatesSubtitle": {
+    "description": "功能管理页：日记模板开关的说明。"
+  },
+  "settingsFeaturesTimeCapsules": "时间胶囊",
+  "@settingsFeaturesTimeCapsules": {
+    "description": "功能管理页：时间胶囊开关的标题。"
+  },
+  "settingsFeaturesTimeCapsulesSubtitle": "写给未来，到期才能打开",
+  "@settingsFeaturesTimeCapsulesSubtitle": {
+    "description": "功能管理页：时间胶囊开关的说明。"
+  },
+  "settingsFeaturesNotebooksOffTitle": "关闭日记本？",
+  "@settingsFeaturesNotebooksOffTitle": {
+    "description": "功能管理页：有私密日记本时关闭日记本的确认弹窗标题。"
+  },
+  "settingsFeaturesNotebooksOffMessage": "有 {count} 本隐藏或上锁的日记本，关闭后其中的日记暂时看不到，重新开启日记本即可恢复。",
+  "@settingsFeaturesNotebooksOffMessage": {
+    "description": "功能管理页：关闭日记本确认弹窗正文；count 为隐藏或上锁的日记本数。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsFeaturesNotebooksOffConfirm": "关闭",
+  "@settingsFeaturesNotebooksOffConfirm": {
+    "description": "功能管理页：关闭日记本确认弹窗的确认按钮。"
   }
 }

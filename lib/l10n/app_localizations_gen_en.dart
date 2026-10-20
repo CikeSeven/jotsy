@@ -7777,4 +7777,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String tagPickerSearchEmpty(String query) {
     return 'No tags match “$query”';
   }
+
+  @override
+  String get settingsFeaturesTitle => 'Features';
+
+  @override
+  String get settingsFeaturesSubtitle =>
+      'Choose the pages and features you use';
+
+  @override
+  String get settingsFeaturesPagesGroup => 'Pages';
+
+  @override
+  String get settingsFeaturesPagesFooter =>
+      'Diaries and Settings always stay. Pages you turn off leave the bottom bar; your data isn\'t affected.';
+
+  @override
+  String get settingsFeaturesCalendarSubtitle =>
+      'View diaries by month, with lunar dates, holidays and anniversaries';
+
+  @override
+  String get settingsFeaturesExploreSubtitle =>
+      'Stats, on this day, mood trends and photo wall';
+
+  @override
+  String get settingsFeaturesFeaturesGroup => 'Diary features';
+
+  @override
+  String get settingsFeaturesFeaturesFooter =>
+      'Turning a feature off hides its entries and options. Your data stays and returns when you turn it back on.';
+
+  @override
+  String get settingsFeaturesNotebooksSubtitle =>
+      'Sort diaries into notebooks, with chapters and book export';
+
+  @override
+  String get settingsFeaturesAnniversaries => 'Anniversaries';
+
+  @override
+  String get settingsFeaturesAnniversariesSubtitle =>
+      'Anniversaries and countdowns, marked on the calendar';
+
+  @override
+  String get settingsFeaturesAnniversariesLinked =>
+      'Off while the calendar is off';
+
+  @override
+  String get settingsFeaturesTemplates => 'Diary templates';
+
+  @override
+  String get settingsFeaturesTemplatesSubtitle =>
+      'Start new diaries from a ready-made format';
+
+  @override
+  String get settingsFeaturesTimeCapsules => 'Time capsules';
+
+  @override
+  String get settingsFeaturesTimeCapsulesSubtitle =>
+      'Write to the future; opens only when it\'s due';
+
+  @override
+  String get settingsFeaturesNotebooksOffTitle => 'Turn off notebooks?';
+
+  @override
+  String settingsFeaturesNotebooksOffMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'You have $count hidden or locked notebooks. Their diaries stay out of sight until you turn notebooks back on.',
+      one:
+          'You have 1 hidden or locked notebook. Its diaries stay out of sight until you turn notebooks back on.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsFeaturesNotebooksOffConfirm => 'Turn off';
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../app/theme/expressive_motion.dart';
 import 'expressive_menu_layout.dart';
 import 'expressive_menu_panel.dart';
+import 'expressive_menu_surface.dart';
 
 export 'expressive_menu_layout.dart' show ExpressiveMenuPlacement;
 
@@ -22,10 +23,12 @@ typedef ExpressiveMenuTriggerBuilder =
 /// 为 500ms，PopupMenuButton 是整页路由、从中心放大且不随锚点对齐；这里用
 /// 底层锚点自己掌握表面、动效与定位。
 ///
-/// - 表面：surfaceContainer、无着色、elevation 2、28 圆角、内边距 8；宽度取内容
-///   固有宽度，最小 176、最大为屏宽 − 32；高度受安全区限制，超出时内部滚动。
-/// - 动效：展开 0.96→1 缩放 + 淡入（fast / effects），收起反向（exit），从贴着
-///   锚点的角缩放；减少动画时瞬时开合。收起过程中不可交互。
+/// - 表面：玻璃表面 [ExpressiveMenuSurface]（半透明底 + 背景模糊 + 细描边 +
+///   外侧投影，28 圆角），内边距 8；宽度取内容固有宽度，最小 176、最大为
+///   屏宽 − 32；高度受安全区限制，超出时内部滚动。
+/// - 动效：展开 0.96→1 缩放，同时底色、描边、模糊由浅到深、内容淡入
+///   （fast / effects），收起反向（exit），从贴着锚点的角缩放；减少动画时瞬时
+///   开合。收起过程中不可交互。
 /// - 定位：见 [ExpressiveMenuPosition]，默认菜单结束边对齐锚点结束边、落在
 ///   锚点下方 4dp，下方放不下时翻到上方，并夹在安全区内（留 8dp 边距）。
 /// - 行为：点外部关闭且不穿透；系统返回 / 预测式返回先关菜单（打开期间在
@@ -298,7 +301,7 @@ class ExpressiveMenuAnchorState extends State<ExpressiveMenuAnchor>
                     skipTraversal: true,
                     child: _shortcuts(
                       ExpressiveMenuPanel(
-                        opacity: _progress,
+                        reveal: _progress,
                         scrollController: _scroll,
                         // 只在展开完成后显示滚动条，缩放过程中不闪现。
                         showScrollbar:

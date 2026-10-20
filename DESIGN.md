@@ -230,10 +230,10 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
   - 危险动作：右侧按钮使用 `colorScheme.error`。
   - 不可撤销的覆盖（导入覆盖本机数据）：严重警告弹窗——error 色警示图标、`errorContainer` 底色的后果说明块（逐项列出将被替换的数据与数量）、先备份的建议；确认键须勾选“我已了解”且 5 秒倒计时结束后才可点。其前一步的导入方式面板默认选中安全的“合并”，危险选项标题常驻 error 色、选中时底色为 `errorContainer`。
 - **弹出菜单（`ExpressiveMenuButton` / `ExpressiveMenuAnchor` / `ExpressiveMenuItem`）**：内容少的操作（约 4 项以内、单行文字的动作）用锚定弹出菜单；项目多、需要说明文字、预览或分组时用底部面板（如预览页“更多”、日记本管理页行尾“更多”）。编辑页顶栏、纪念日详情页“更多”（置顶 / 删除）、模板行、“我的样式”列表、定位精度选择、“这天拍的照片”长按设封面、日记页多选栏“更多”（置顶 / 导出 / 从本日记本移出 / 移动到…）、日记本头部卡片 ⋮（编辑 / 导出成书 / 合上或重新打开 / 删除）、书架面板长按一本（编辑 / 置顶 / 合上 / 删除，`start` 定位）、目录页章节行 ⋮（重命名 / 上移 / 下移 / 删除）与发布面板标签子页的排序（默认排序 / 按字母排序）都用它，禁止 `PopupMenuButton` / `showMenu` / SDK `MenuAnchor`。
-  - 表面：`surfaceContainer`、无着色、elevation 2、28 圆角、内边距 8；宽度取内容固有宽度，最小 176、最大屏宽 − 32，超高时内部滚动。
-  - 菜单项：最小高 48、左右内边距 16、图标与文字间距 12；前置 16px `FaIcon`（`onSurfaceVariant`）+ `bodyMedium` 文字（`onSurface`）；静止圆角 20、按下收紧到 12（`fast`）；`destructive` 文字与图标为 `error`。
+  - 表面：玻璃（`ExpressiveMenuSurface`，参照 phase 的磨砂浮层）——亮色 `surfaceContainerLowest` 82% / 暗色 `surfaceContainerHighest` 84% 半透明底 + 背景模糊 σ20 + `outlineVariant` 细描边（亮 60% / 暗 50%）+ 只画在外侧的柔和投影（`shadow` 亮 12% / 暗 32%，下移 6、模糊 18），28 圆角、内边距 8；宽度取内容固有宽度，最小 176、最大屏宽 − 32，超高时内部滚动。减少动画或高对比度时退回不透明底、不模糊。❌ 禁止改回 `surfaceContainer` + elevation：亮色下比白卡片还灰、暗色下与卡片同色，菜单显得又暗又沉；❌ 禁止把玻璃表面整体放进 `FadeTransition` / `Opacity`（背景模糊会采不到页面，展开时闪一下无模糊的底），也禁止用普通 `BoxShadow` / elevation（会从半透明底下透出、压暗菜单中间）。
+  - 菜单项：最小高 48、左右内边距 16、图标与文字间距 12；前置 16px `FaIcon`（`primary`）+ `bodyMedium` 文字（`onSurface`）；按下 / 聚焦叠色为强调色 12%、悬停 8%；静止圆角 20、按下收紧到 12（`fast`）；`destructive` 文字、图标与叠色为 `error`。单选 / 排序这类选择菜单给当前项传 `selected: true`：`primaryContainer` 底 + `onPrimaryContainer` 文字与图标、字重 600、行尾 14px 对勾、圆角 24（胶囊），其余项传 `false`（语义读出选中状态）。
   - 定位：默认 `ExpressiveMenuPlacement.end`（菜单结束边对齐触发控件结束边，适合顶栏与行尾 ⋮），`start` 用于行首文本入口；落在触发控件下方 4dp，放不下时翻到上方，夹在安全区内留 8dp。
-  - 动效：展开 0.96→1 缩放 + 淡入（`fast` / `effects`），收起反向（`exit`），从贴着触发控件的那个角缩放；减少动画时瞬时开合，收起途中不可交互。
+  - 动效：展开 0.96→1 缩放，同时底色、描边、投影与模糊强度随进度由浅到深、内容淡入（`fast` / `effects`），收起反向（`exit`），从贴着触发控件的那个角缩放；减少动画时瞬时开合，收起途中不可交互。
   - 行为：点外部关闭且不穿透；系统返回 / 预测式返回先关菜单；Esc 关闭、↑/↓ 移动焦点，关闭后焦点回到触发控件。
 - **注意：选项行的前导/尾随控件一律垂直居中**：单选圆点（`ExpressiveChoiceTile`）、勾选框、开关、来源图标头像与右侧 `angleRight` 箭头代表的是整个选项，必须相对整行垂直居中——标题下的说明不论一行还是折成多行都一样。说明可能折行的 `ListTile` 显式写 `titleAlignment: ListTileTitleAlignment.center`（不依赖主题默认值）。❌ 禁止用 `ListTileTitleAlignment.top` / `titleHeight` 或 `Row(crossAxisAlignment: CrossAxisAlignment.start)` 把这些控件对齐标题行：说明一折行，圆点就贴到选项上沿，与没有说明的选项错位（导入方式面板、导出格式列表与导入来源列表都曾因此显得“靠上”）。例外：正文式的信息块（如导入面板顶部的文件概要、列表项目符号 `•`）随首行排列。
 - **耗时等待操作**：

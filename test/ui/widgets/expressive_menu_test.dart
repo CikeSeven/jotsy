@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu.dart';
+import 'package:node_diary/ui/widgets/expressive_menu/expressive_menu_layout.dart';
 
 import '../../support/expressive_test_theme.dart';
 
@@ -83,6 +84,21 @@ Widget _alignedPage(
 );
 
 Finder get _trigger => find.byTooltip(_tooltip);
+
+/// 玻璃表面里单独淡入的内容层。
+Finder get _contentFade => find
+    .descendant(
+      of: find.byType(ExpressiveMenuSurface),
+      matching: find.byType(FadeTransition),
+    )
+    .first;
+
+BackdropFilter _blur(WidgetTester tester) => tester.widget<BackdropFilter>(
+  find.descendant(
+    of: find.byType(ExpressiveMenuSurface),
+    matching: find.byType(BackdropFilter),
+  ),
+);
 
 Finder get _panel => find
     .ancestor(
@@ -344,10 +360,11 @@ void main() {
       await tester.tap(_trigger);
       await tester.pump();
 
-      final fade = tester.widget<FadeTransition>(
-        find.ancestor(of: _panel, matching: find.byType(FadeTransition)).first,
-      );
+      final fade = tester.widget<FadeTransition>(_contentFade);
       expect(fade.opacity.value, 1);
+      // 减少动画时退回不透明底、不做模糊。
+      expect(tester.widget<Material>(_panel).color!.a, 1);
+      expect(_blur(tester).enabled, isFalse);
       final trigger = tester.getRect(_trigger);
       final panel = tester.getRect(_panel);
       expect(panel.right, moreOrLessEquals(trigger.right));
@@ -364,15 +381,120 @@ void main() {
     await tester.tap(_trigger);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 40));
-    final fade = tester.widget<FadeTransition>(
-      find.ancestor(of: _panel, matching: find.byType(FadeTransition)).first,
-    );
+    final fade = tester.widget<FadeTransition>(_contentFade);
     expect(fade.opacity.value, inExclusiveRange(0, 1));
+    // 底色随进度变深，而不是把整块玻璃放进透明度层：模糊始终能采到页面。
+    final colors = Theme.of(tester.element(_panel)).colorScheme;
+    final tint = ExpressiveMenuSurface.tintOf(colors);
+    expect(
+      tester.widget<Material>(_panel).color!.a,
+      inExclusiveRange(0, tint.a),
+    );
+    expect(_blur(tester).enabled, isTrue);
+    // 菜单浮层（定位层以下）到模糊层之间不能有透明度层。
+    expect(
+      find.ancestor(
+        of: find.byType(BackdropFilter),
+        matching: find.descendant(
+          of: find.byType(ExpressiveMenuPosition),
+          matching: find.byType(FadeTransition),
+        ),
+      ),
+      findsNothing,
+    );
     await tester.pumpAndSettle();
     expect(fade.opacity.value, 1);
+    expect(tester.widget<Material>(_panel).color, tint);
   });
 
-  testWidgets('a destructive item uses the error colour', (tester) async {
+  for (final brightness in Brightness.values) {
+    testWidgets('uses the bright glass tint in $brightness', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: expressiveTestTheme(brightness),
+          home: _topBarPage(),
+        ),
+      );
+      await openMenu(tester);
+      final colors = Theme.of(tester.element(_panel)).colorScheme;
+      final material = tester.widget<Material>(_panel);
+      expect(
+        material.color,
+        brightness == Brightness.light
+            ? colors.surfaceContainerLowest.withValues(alpha: 0.82)
+            : colors.surfaceContainerHighest.withValues(alpha: 0.84),
+      );
+      expect(material.elevation, 0);
+      final shape = material.shape! as RoundedRectangleBorder;
+      expect(shape.side.color, ExpressiveMenuSurface.borderOf(colors));
+    });
+  }
+
+  testWidgets('a selected item is filled and marked with a check', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        home: _topBarPage(
+          items: <Widget>[
+            ExpressiveMenuItem(
+              selected: true,
+              leadingIcon: const FaIcon(FontAwesomeIcons.arrowDownAZ),
+              onPressed: () {},
+              child: const Text('By name'),
+            ),
+            ExpressiveMenuItem(
+              selected: false,
+              leadingIcon: const FaIcon(FontAwesomeIcons.arrowDownWideShort),
+              onPressed: () {},
+              child: const Text('Custom'),
+            ),
+          ],
+        ),
+      ),
+    );
+    await openMenu(tester);
+    final colors = Theme.of(tester.element(find.text('By name'))).colorScheme;
+
+    final selected = find.widgetWithText(MenuItemButton, 'By name');
+    final other = find.widgetWithText(MenuItemButton, 'Custom');
+    final fill = tester.widget<Material>(
+      find.descendant(of: selected, matching: find.byType(Material)).first,
+    );
+    expect(fill.color, colors.primaryContainer);
+    expect(
+      tester.renderObject<RenderParagraph>(find.text('By name')).text.style,
+      isA<TextStyle>()
+          .having((s) => s.color, 'color', colors.onPrimaryContainer)
+          .having((s) => s.fontWeight, 'weight', FontWeight.w600),
+    );
+    expect(
+      find.descendant(
+        of: selected,
+        matching: find.byIcon(FontAwesomeIcons.check.data),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: other,
+        matching: find.byIcon(FontAwesomeIcons.check.data),
+      ),
+      findsNothing,
+    );
+    expect(
+      tester.getSemantics(selected),
+      isSemantics(isSelected: true, hasSelectedState: true),
+    );
+    expect(
+      tester.getSemantics(other),
+      isSemantics(isSelected: false, hasSelectedState: true),
+    );
+  });
+
+  testWidgets('a destructive item uses the error colour, others the accent', (
+    tester,
+  ) async {
     await tester.pumpWidget(_app(home: _topBarPage()));
     await openMenu(tester);
     final colors = Theme.of(tester.element(find.text('Delete'))).colorScheme;
@@ -386,10 +508,7 @@ void main() {
     final edit = tester.renderObject<RenderParagraph>(find.text('Edit'));
     expect(edit.text.style?.color, colors.onSurface);
     final editIcon = find.byIcon(FontAwesomeIcons.penToSquare.data);
-    expect(
-      IconTheme.of(tester.element(editIcon)).color,
-      colors.onSurfaceVariant,
-    );
+    expect(IconTheme.of(tester.element(editIcon)).color, colors.primary);
   });
 
   testWidgets('a disabled item ignores taps and uses the disabled colour', (

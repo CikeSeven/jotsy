@@ -192,16 +192,17 @@ class _PublishLocationPrecisionPickerState
     final selected = precision == widget.precision;
     final onChanged = widget.onChanged;
     final preview = DiaryLocationLabel.format(previewComponents, precision);
-    // 选中项只换容器色和字重，文字保持 onSurface：部分配色下
-    // onSecondaryContainer 偏浅，会让选中项看起来比其他项更弱。
+    // 选中项只换容器色（与菜单项选中态同为 primaryContainer）和字重，文字
+    // 保持 onSurface：部分配色下容器的 on 色偏浅，会让选中项看起来比其他项更弱。
     return Semantics(
       selected: selected,
       inMutuallyExclusiveGroup: true,
       child: ExpressiveMenuItem(
         onPressed: onChanged == null ? null : () => onChanged(precision),
-        // 层级选项保留自己的选中底色、主色勾与 16 圆角，覆盖菜单项默认样式。
+        // 层级选项带预览，保留自己的行首主色勾、内边距与 16 圆角，覆盖菜单项
+        // 默认样式（不用 selected：行尾不要对勾，语义由外层 Semantics 给出）。
         style: MenuItemButton.styleFrom(
-          backgroundColor: selected ? colors.secondaryContainer : null,
+          backgroundColor: selected ? colors.primaryContainer : null,
           foregroundColor: colors.onSurface,
           iconColor: colors.primary,
           minimumSize: const Size(0, 48),

@@ -10,13 +10,16 @@ import 'package:node_diary/ui/diary_templates/pages/diary_template_editor_page.d
 
 import '../../../support/diary_drafts_harness.dart';
 
-/// 模板编辑页：名称必填、插入变量、保存、未保存提醒、正文工具栏不含媒体。
+/// 模板编辑页：名称必填、插入变量、保存、未保存提醒、正文工具栏不含媒体、
+/// “始终显示工具栏”时不等软键盘。
 void main() {
   Future<DiaryDraftsHarness> openEditor(
     WidgetTester tester, {
     DiaryTemplate? template,
+    bool toolbarAlwaysVisible = false,
   }) async {
     final h = await DiaryDraftsHarness.create(tester);
+    await h.settings.setDiaryToolbarAlwaysVisible(toolbarAlwaysVisible);
     await h.pump(
       Builder(
         builder: (context) => Scaffold(
@@ -187,6 +190,19 @@ void main() {
     tester.view.viewInsets = FakeViewPadding.zero;
     await tester.pumpAndSettle();
     expect(find.byType(DiaryFloatingToolbar), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('the body toolbar stays without a keyboard when always shown', (
+    tester,
+  ) async {
+    final h = await openEditor(tester, toolbarAlwaysVisible: true);
+    // 没有软键盘、也还没点正文（接实体键盘时就是这样）：工具栏已经在底部。
+    expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
+
+    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.pumpAndSettle();
+    expect(find.byType(DiaryFloatingToolbar), findsOneWidget);
     await h.unmount();
   });
 }

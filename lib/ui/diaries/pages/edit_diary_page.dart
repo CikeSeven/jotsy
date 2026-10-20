@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -129,6 +130,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 键盘弹起时光标与悬浮工具栏之间留出的空隙：光标贴着工具栏时下一行没有
   // 余地、读起来像被压住。底部占位同样加上它，最后一行才能被顶到这么高。
   static const double _caretToolbarClearance = 40.0;
+  // 常显工具栏叠在元数据面板收起栏上方时，工具栏底边离 body 底边的距离：
+  // 收起栏占用的高度再隔 8dp。面板本身不避让系统导航条，这里同样不叠加。
+  static const double _toolbarStackedLift =
+      PublishDiaryPanel.collapsedFootprint + 8.0;
 
   // ==================== 文本输入与焦点控制 ====================
   final _titleController = TextEditingController();
@@ -155,6 +160,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   // 最近一次构建是否显示了悬浮工具栏：帧末的光标揭示据此取与这一帧布局一致
   // 的遮挡高度（见 [_editorBottomCover]）。
   bool _floatingToolbarShown = false;
+  // 同上，工具栏是否叠在元数据面板收起栏上方（见 [_toolbarStacksOnMetaPanel]）。
+  bool _floatingToolbarStacked = false;
   final DiaryRecordingController _recordingController =
       DiaryRecordingController();
   final DiaryMediaImportController _mediaImportController =
@@ -209,6 +216,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   late List<DiaryToolbarItem> _toolbarOrder;
   Set<DiaryToolbarItem> _toolbarHiddenItems = <DiaryToolbarItem>{};
   String? _toolbarCurrentTimeFormatPattern;
+  // 编辑器设置“始终显示工具栏”：打开后工具栏不再随软键盘出现与消失。
+  bool _toolbarAlwaysVisible = false;
   SettingsService? _boundToolbarSettingsService;
   VoidCallback? _toolbarSettingsListener;
   bool _recordingPanelOpen = false;
@@ -490,11 +499,21 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
 
   /// 正文滚动容器的底部占位，也就是视口底部被浮层盖住、光标要让开的部分：
   /// 悬浮工具栏（连同光标上方的空隙）/录音面板优先；否则编辑模式按元数据
-  /// 面板展开进度在 140~460 之间插值。
+  /// 面板展开进度在 140~460 之间插值。工具栏叠在收起栏上方时两者都要让开，
+  /// 拖动面板后取较高者，占位随面板连续增长。
   double _editorBottomSpacer(
     double panelProgress, {
     required bool showFloatingToolbar,
+    bool toolbarStacked = false,
   }) {
+    if (showFloatingToolbar && toolbarStacked) {
+      return math.max(
+        _toolbarStackedLift +
+            _floatingToolbarReservedSpace +
+            _caretToolbarClearance,
+        _metaPanelBottomSpacer(panelProgress),
+      );
+    }
     if (showFloatingToolbar) {
       return _recordingPanelOpen
           ? _recordingPanelReservedSpace
@@ -503,14 +522,36 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     if (!_isEditEntry) {
       return 16.0;
     }
-    return (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
+    return _metaPanelBottomSpacer(panelProgress);
   }
+
+  double _metaPanelBottomSpacer(double panelProgress) =>
+      (lerpDouble(140, 460, panelProgress) ?? 140) + 16;
+
+  /// 常显工具栏是否叠在元数据面板收起栏上方。
+  ///
+  /// 编辑模式里，工具栏与元数据面板原本互斥（键盘弹起显示工具栏、收起显示
+  /// 面板）。常显时若照旧互斥，键盘收起后面板就再也露不出来，所以键盘收起时
+  /// 两者同时显示，工具栏挪到收起栏上方。键盘弹起时仍只有工具栏（与默认
+  /// 一致）；焦点在工具栏内时不挪，免得颜色代码输入框交接焦点、键盘短暂归零
+  /// 时工具栏上下跳；录音面板打开时元数据面板照旧让位。
+  bool _toolbarStacksOnMetaPanel({
+    required bool showFloatingToolbar,
+    required double keyboardInset,
+  }) =>
+      _toolbarAlwaysVisible &&
+      showFloatingToolbar &&
+      _isEditEntry &&
+      keyboardInset == 0 &&
+      !_toolbarFocusNode.hasFocus &&
+      !_recordingPanelOpen;
 
   /// 此刻被浮层盖住的高度：底部占位再加「更多」面板展开时的额外让位。
   double _editorBottomCover() =>
       _editorBottomSpacer(
         _editPanelExpandProgress.value,
         showFloatingToolbar: _floatingToolbarShown,
+        toolbarStacked: _floatingToolbarStacked,
       ) +
       _toolbarPanelExtent.value;
 
@@ -554,6 +595,30 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
           FocusManager.instance.primaryFocus?.unfocus();
         }
         setState(() {});
+      },
+    );
+  }
+
+  /// 工具栏叠在收起栏上方时，元数据面板一被拖起或点开就会从下方盖上来：按
+  /// 展开进度淡出并停止接收点按，越过展开阈值后再整个卸载（见 build）。只有
+  /// 这一层随进度重建，工具栏本体作为缓存的 child 传入。
+  Widget _fadeWhileMetaPanelRises({
+    required bool stacked,
+    required Widget child,
+  }) {
+    // 面板长高约 60dp（进度 0.15）时已越过整条工具栏，淡出在此之前完成。
+    const fadeOutProgress = 0.15;
+    return ValueListenableBuilder<double>(
+      valueListenable: _editPanelExpandProgress,
+      child: child,
+      builder: (BuildContext context, double progress, Widget? child) {
+        final opacity = stacked
+            ? (1 - progress / fadeOutProgress).clamp(0.0, 1.0)
+            : 1.0;
+        return IgnorePointer(
+          ignoring: opacity < 1,
+          child: Opacity(opacity: opacity, child: child),
+        );
       },
     );
   }
@@ -759,14 +824,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
-    // 焦点在工具栏内（颜色代码输入框）时不看键盘高度：焦点从正文交给输入框
-    // 时，输入法可能先收起再弹出（如小米对可见密码类输入框换成系统安全
-    // 键盘），键盘高度会短暂归零；此时卸载工具栏会连同面板与输入框一起丢掉。
-    final rawShowFloatingToolbar =
-        _isMobileRuntime &&
-        (keyboardInset > 0 || _toolbarFocusNode.hasFocus) &&
-        _isEditingNoteText &&
-        !_isEditPanelExpanded;
     final showEditMetaPanel = _isEditEntry;
     // 日记模板功能关闭时隐藏入口，数据保留：没有建议条，顶栏菜单里没有
     // “选择模板”与“另存为模板”（自动套用见 applyInitialTemplate）。
@@ -774,8 +831,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       appFeaturesProvider.select((features) => features.templates),
     );
     final settingsAsync = ref.watch(settingsServiceProvider);
+    // 先绑定设置再判断显示条件：首次绑定在本次构建里同步读入“始终显示工具栏”。
     settingsAsync.whenData(_bindToolbarSettingsService);
     settingsAsync.whenData(_bindDayPhotoSettings);
+    // 默认随软键盘出现：编辑标题或正文且键盘弹起时显示。焦点在工具栏内（颜色
+    // 代码输入框）时不看键盘高度：焦点从正文交给输入框时，输入法可能先收起
+    // 再弹出，键盘高度会短暂归零；此时卸载工具栏会连同面板与输入框一起丢掉。
+    // 打开“始终显示工具栏”后不看键盘与焦点（接实体键盘时软键盘不弹出），
+    // 只在元数据面板展开时让位。
+    final rawShowFloatingToolbar =
+        _isMobileRuntime &&
+        !_isEditPanelExpanded &&
+        (_toolbarAlwaysVisible ||
+            ((keyboardInset > 0 || _toolbarFocusNode.hasFocus) &&
+                _isEditingNoteText));
     final enabledToolbarOrder = filterEnabledDiaryToolbarOrder(
       _toolbarOrder,
       _toolbarHiddenItems,
@@ -784,12 +853,18 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         enabledToolbarOrder.isNotEmpty &&
         (rawShowFloatingToolbar ||
             (_isMobileRuntime && _recordingPanelOpen && !_isEditPanelExpanded));
+    final toolbarStacked = _toolbarStacksOnMetaPanel(
+      showFloatingToolbar: showFloatingToolbar,
+      keyboardInset: keyboardInset,
+    );
     _floatingToolbarShown = showFloatingToolbar;
+    _floatingToolbarStacked = toolbarStacked;
     // 面板进度由 ValueNotifier 驱动，占位随之局部刷新，不触发整页重建。
     double resolveEditorBottomSpacer(double panelProgress) =>
         _editorBottomSpacer(
           panelProgress,
           showFloatingToolbar: showFloatingToolbar,
+          toolbarStacked: toolbarStacked,
         );
 
     final detailAsync = widget.diaryId == null
@@ -944,7 +1019,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 ),
             ],
           ),
-          // 底部键盘弹起时显示悬浮工具栏，并对正文底部做避让。
+          // 底部键盘弹起时（或打开了“始终显示工具栏”时）显示悬浮工具栏，并对
+          // 正文底部做避让。
           body: Stack(
             fit: StackFit.expand,
             children: <Widget>[
@@ -960,9 +1036,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 ),
               ),
               if (showEditMetaPanel &&
-                  (!showFloatingToolbar || _isEditPanelExpanded))
+                  (!showFloatingToolbar ||
+                      _isEditPanelExpanded ||
+                      toolbarStacked))
                 // 铺满 body、贴底对齐：面板据此拿到可用高度，矮屏时展开高度收缩。
+                // 两个浮层都带 key：常显时面板会插在已有的工具栏之前，按位置
+                // 匹配会把工具栏的 Element 交给面板，工具栏重建、丢掉「更多」
+                // 与颜色面板的状态并重播入场动画。
                 Positioned.fill(
+                  key: const ValueKey<String>('edit-meta-panel'),
                   left: 16,
                   right: 16,
                   child: Align(
@@ -973,57 +1055,81 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
                 ),
               if (showFloatingToolbar)
                 Positioned(
+                  key: const ValueKey<String>('edit-floating-toolbar'),
                   left: kDiaryFloatingToolbarInset,
                   right: kDiaryFloatingToolbarInset,
                   // Scaffold 已根据键盘缩小 body，高度不需要再叠加 keyboardInset。
                   bottom: 0,
                   child: LayoutBuilder(
-                    builder: (context, constraints) => ExpressiveEntrance(
-                      child: SafeArea(
-                        top: false,
-                        minimum: const EdgeInsets.only(bottom: 8),
-                        // 录音面板插入/移除时整列高度平滑变化，工具栏随之上移，
-                        // 不再瞬间跳到 300dp 之上。
-                        child: AnimatedSize(
-                          duration: ExpressiveMotion.durationNonZero(
-                            context,
-                            ExpressiveMotion.medium,
-                          ),
-                          curve: ExpressiveMotion.effects,
-                          alignment: Alignment.bottomCenter,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              DiaryFloatingToolbarSurface(
-                                child: Focus(
-                                  focusNode: _toolbarFocusNode,
-                                  // 焦点在正文与颜色代码输入框之间交接时，
-                                  // 按新的焦点重新判断工具栏是否显示。
-                                  onFocusChange: (_) => setState(() {}),
-                                  child: _buildFloatingToolbar(
-                                    enabledToolbarOrder,
-                                    // 面板最多铺满工具栏上方的整块正文区，
-                                    // 极矮的窗口里改为面板内滚动而不溢出。
-                                    maxPanelExtent:
-                                        constraints.maxHeight -
-                                        MediaQuery.paddingOf(
-                                          context,
-                                        ).bottom.clamp(8.0, double.infinity) -
-                                        kDiaryToolbarBarHeight,
-                                  ),
+                    builder: (context, constraints) {
+                      final safeBottom = math.max(
+                        MediaQuery.paddingOf(context).bottom,
+                        8.0,
+                      );
+                      // 叠在收起栏上方时在安全区之上再抬高到收起栏之上；键盘
+                      // 收起、弹起时随之平滑升降（effects 不越界，内边距不会
+                      // 被弹簧曲线插值成负数）。
+                      final stackedLift = toolbarStacked
+                          ? math.max(0.0, _toolbarStackedLift - safeBottom)
+                          : 0.0;
+                      return ExpressiveEntrance(
+                        child: SafeArea(
+                          top: false,
+                          minimum: const EdgeInsets.only(bottom: 8),
+                          child: AnimatedPadding(
+                            padding: EdgeInsets.only(bottom: stackedLift),
+                            duration: ExpressiveMotion.duration(
+                              context,
+                              ExpressiveMotion.medium,
+                            ),
+                            curve: ExpressiveMotion.effects,
+                            child: _fadeWhileMetaPanelRises(
+                              stacked: toolbarStacked,
+                              // 录音面板插入/移除时整列高度平滑变化，工具栏随之
+                              // 上移，不再瞬间跳到 300dp 之上。
+                              child: AnimatedSize(
+                                duration: ExpressiveMotion.durationNonZero(
+                                  context,
+                                  ExpressiveMotion.medium,
+                                ),
+                                curve: ExpressiveMotion.effects,
+                                alignment: Alignment.bottomCenter,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    DiaryFloatingToolbarSurface(
+                                      child: Focus(
+                                        focusNode: _toolbarFocusNode,
+                                        // 焦点在正文与颜色代码输入框之间交接
+                                        // 时，按新的焦点重新判断工具栏是否显示。
+                                        onFocusChange: (_) => setState(() {}),
+                                        child: _buildFloatingToolbar(
+                                          enabledToolbarOrder,
+                                          // 面板最多铺满工具栏上方的整块正文
+                                          // 区，极矮的窗口里改为面板内滚动而
+                                          // 不溢出。
+                                          maxPanelExtent:
+                                              constraints.maxHeight -
+                                              safeBottom -
+                                              stackedLift -
+                                              kDiaryToolbarBarHeight,
+                                        ),
+                                      ),
+                                    ),
+                                    if (_recordingPanelOpen) ...[
+                                      const SizedBox(height: 8),
+                                      ExpressiveEntrance(
+                                        child: _buildRecordingPanel(),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                               ),
-                              if (_recordingPanelOpen) ...[
-                                const SizedBox(height: 8),
-                                ExpressiveEntrance(
-                                  child: _buildRecordingPanel(),
-                                ),
-                              ],
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                 ),
               DiaryMediaImportOverlay(
@@ -1075,6 +1181,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     settingsService.diaryToolbarCurrentTimeFormatRawNotifier.addListener(
       _toolbarSettingsListener!,
     );
+    settingsService.diaryToolbarAlwaysVisibleNotifier.addListener(
+      _toolbarSettingsListener!,
+    );
     _applyToolbarSettings(settingsService, notify: false);
   }
 
@@ -1087,6 +1196,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         listener,
       );
       settingsService.diaryToolbarCurrentTimeFormatRawNotifier.removeListener(
+        listener,
+      );
+      settingsService.diaryToolbarAlwaysVisibleNotifier.removeListener(
         listener,
       );
     }
@@ -1106,17 +1218,20 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
     final nextCurrentTimeFormat =
         settingsService.diaryToolbarCurrentTimeFormatRaw;
-    if (_hasSameToolbarSettings(
-      nextOrder,
-      nextHiddenItems,
-      nextCurrentTimeFormat,
-    )) {
+    final nextAlwaysVisible = settingsService.isDiaryToolbarAlwaysVisible;
+    if (nextAlwaysVisible == _toolbarAlwaysVisible &&
+        _hasSameToolbarSettings(
+          nextOrder,
+          nextHiddenItems,
+          nextCurrentTimeFormat,
+        )) {
       return;
     }
     void apply() {
       _toolbarOrder = nextOrder;
       _toolbarHiddenItems = nextHiddenItems;
       _toolbarCurrentTimeFormatPattern = nextCurrentTimeFormat;
+      _toolbarAlwaysVisible = nextAlwaysVisible;
     }
 
     if (notify && mounted) {

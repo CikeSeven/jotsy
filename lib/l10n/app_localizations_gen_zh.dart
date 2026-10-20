@@ -5023,6 +5023,13 @@ class AppLocalizationsZh extends AppLocalizations {
       '补写过去某天的日记时，在标题下列出这天拍的照片；关闭后仍可从编辑页右上角菜单查看';
 
   @override
+  String get settingsToolbarAlwaysVisible => '始终显示工具栏';
+
+  @override
+  String get settingsToolbarAlwaysVisibleSubtitle =>
+      '收起软键盘或连接实体键盘时，工具栏仍留在编辑页底部';
+
+  @override
   String get diaryDayPhotosSetCover => '设为封面';
 
   @override

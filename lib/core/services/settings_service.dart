@@ -63,6 +63,7 @@ class SettingsService {
     required bool appLockEnabled,
     required bool tagFilterMemoryEnabled,
     required bool dayPhotoSuggestionsEnabled,
+    required bool diaryToolbarAlwaysVisible,
     required int diaryCardTagLimit,
     required String? diaryToolbarOrderRaw,
     required String? diaryToolbarHiddenItemsRaw,
@@ -90,6 +91,9 @@ class SettingsService {
        ),
        dayPhotoSuggestionsEnabledNotifier = ValueNotifier<bool>(
          dayPhotoSuggestionsEnabled,
+       ),
+       diaryToolbarAlwaysVisibleNotifier = ValueNotifier<bool>(
+         diaryToolbarAlwaysVisible,
        ),
        diaryCardTagLimitNotifier = ValueNotifier<int>(diaryCardTagLimit),
        diaryToolbarOrderRawNotifier = ValueNotifier<String?>(
@@ -132,6 +136,10 @@ class SettingsService {
   /// 补写过去某天的日记时，是否在编辑页列出相册里这天拍的照片（默认开）。
   /// 与相册权限一样属于本机偏好，不随备份导出。
   final ValueNotifier<bool> dayPhotoSuggestionsEnabledNotifier;
+
+  /// 编辑器悬浮工具栏是否常驻页面底部、不随软键盘出现与消失（默认关）。
+  /// 是否接实体键盘因设备而异，属于本机偏好，不随备份导出。
+  final ValueNotifier<bool> diaryToolbarAlwaysVisibleNotifier;
   final ValueNotifier<int> diaryCardTagLimitNotifier;
   final ValueNotifier<String?> diaryToolbarOrderRawNotifier;
   final ValueNotifier<String?> diaryToolbarHiddenItemsRawNotifier;
@@ -187,6 +195,8 @@ class SettingsService {
       'app.settings.tag_filter_memory_enabled';
   static const _keyDayPhotoSuggestionsEnabled =
       'app.settings.day_photo_suggestions_enabled';
+  static const _keyDiaryToolbarAlwaysVisible =
+      'app.settings.diary_toolbar_always_visible';
   static const _keyRememberedTagFilterIds =
       'app.settings.remembered_tag_filter_ids';
   static const _keyDiaryCardTagLimit = 'app.settings.diary_card_tag_limit';
@@ -245,6 +255,7 @@ class SettingsService {
     final tagFilterMemoryEnabled =
         prefs.getBool(_keyTagFilterMemoryEnabled) ?? false;
     final storedDayPhotoSuggestions = prefs.get(_keyDayPhotoSuggestionsEnabled);
+    final storedToolbarAlwaysVisible = prefs.get(_keyDiaryToolbarAlwaysVisible);
     final storedDiaryCardTagLimit = prefs.get(_keyDiaryCardTagLimit);
     final diaryCardTagLimit = _normalizeDiaryCardTagLimit(
       storedDiaryCardTagLimit is int
@@ -275,6 +286,9 @@ class SettingsService {
       dayPhotoSuggestionsEnabled: storedDayPhotoSuggestions is bool
           ? storedDayPhotoSuggestions
           : true,
+      diaryToolbarAlwaysVisible: storedToolbarAlwaysVisible is bool
+          ? storedToolbarAlwaysVisible
+          : false,
       diaryCardTagLimit: diaryCardTagLimit,
       diaryToolbarOrderRaw: prefs.getString(_keyDiaryToolbarOrder),
       diaryToolbarHiddenItemsRaw: prefs.getString(_keyDiaryToolbarHiddenItems),
@@ -370,6 +384,8 @@ class SettingsService {
   bool get isTagFilterMemoryEnabled => tagFilterMemoryEnabledNotifier.value;
   bool get isDayPhotoSuggestionsEnabled =>
       dayPhotoSuggestionsEnabledNotifier.value;
+  bool get isDiaryToolbarAlwaysVisible =>
+      diaryToolbarAlwaysVisibleNotifier.value;
   String? get rememberedTagFilterIdsRaw =>
       _prefs.getString(_keyRememberedTagFilterIds);
 
@@ -564,6 +580,13 @@ class SettingsService {
     dayPhotoSuggestionsEnabledNotifier.value = enabled;
     await _writePreference(
       _prefs.setBool(_keyDayPhotoSuggestionsEnabled, enabled),
+    );
+  }
+
+  Future<void> setDiaryToolbarAlwaysVisible(bool enabled) async {
+    diaryToolbarAlwaysVisibleNotifier.value = enabled;
+    await _writePreference(
+      _prefs.setBool(_keyDiaryToolbarAlwaysVisible, enabled),
     );
   }
 

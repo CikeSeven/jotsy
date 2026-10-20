@@ -9248,6 +9248,18 @@ abstract class AppLocalizations {
   /// **'When backfilling a past day, list that day\'s photos under the title. When off, open them from the editor\'s top-right menu.'**
   String get settingsDayPhotoSuggestionsSubtitle;
 
+  /// Editor settings: title of the switch that keeps the floating toolbar at the bottom of the editor instead of showing it only with the on-screen keyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Always show toolbar'**
+  String get settingsToolbarAlwaysVisible;
+
+  /// Editor settings: description of the always-visible toolbar switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the toolbar at the bottom of the editor when the on-screen keyboard is hidden or you type on a physical keyboard.'**
+  String get settingsToolbarAlwaysVisibleSubtitle;
+
   /// Photos from this day: button and menu item that makes a photo the entry cover.
   ///
   /// In en, this message translates to:

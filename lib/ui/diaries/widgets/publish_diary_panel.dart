@@ -73,6 +73,13 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
   final VoidCallback? onPublish;
   final ValueChanged<double>? onProgressChanged;
 
+  /// 收起态从宿主底边算起占用的高度（底部间隙 + 抬升 + 收起栏）。宿主要在
+  /// 收起栏上方再叠一层（如常显的悬浮工具栏）时，据此对齐，不必复制内部尺寸。
+  static const double collapsedFootprint =
+      _PublishDiaryPanelState._collapsedBottomGap +
+      _PublishDiaryPanelState._collapsedExtraLift +
+      _PublishDiaryPanelState._collapsedHeight;
+
   @override
   ConsumerState<PublishDiaryPanel> createState() => _PublishDiaryPanelState();
 }

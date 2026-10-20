@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/font_file_info.dart';
+import 'package:pdf/pdf.dart' show TtfParser;
 
 import '../../support/font_file_fixtures.dart';
 
@@ -103,5 +104,64 @@ void main() {
 
     expect(info, isNotNull);
     expect(info!.familyNameFor('en'), contains('HarmonyOS'));
+  });
+
+  group('extractTrueTypeFace', () {
+    late Uint8List bundled;
+    setUpAll(() async {
+      bundled = await File(
+        'assets/fonts/harmonyos_sans_sc/HarmonyOS_Sans_SC_Regular.ttf',
+      ).readAsBytes();
+    });
+
+    test('hands a plain TrueType font back without copying it', () {
+      expect(extractTrueTypeFace(bundled), same(bundled));
+    });
+
+    test('cuts the first face of a collection into a standalone font that '
+        'the PDF library can parse', () {
+      final face = extractTrueTypeFace(wrapInCollection(bundled));
+
+      expect(face, isNotNull);
+      expect(ByteData.sublistView(face!).getUint32(0), 0x00010000);
+      final original = TtfParser(ByteData.sublistView(bundled));
+      final extracted = TtfParser(ByteData.sublistView(face));
+      expect(extracted.fontName, original.fontName);
+      expect(extracted.numGlyphs, original.numGlyphs);
+      expect(extracted.glyphOffsets, original.glyphOffsets);
+      expect(
+        extracted.charToGlyphIndexMap['字'.runes.single],
+        original.charToGlyphIndexMap['字'.runes.single],
+      );
+    });
+
+    test('rewrites the legacy Mac "true" version to a standard one', () {
+      final legacy = Uint8List.fromList(bundled);
+      ByteData.sublistView(legacy).setUint32(0, 0x74727565);
+
+      final face = extractTrueTypeFace(legacy);
+
+      expect(ByteData.sublistView(face!).getUint32(0), 0x00010000);
+      expect(
+        TtfParser(ByteData.sublistView(face)).fontName,
+        TtfParser(ByteData.sublistView(bundled)).fontName,
+      );
+    });
+
+    test(
+      'rejects CFF outlines, missing TrueType tables and truncated files',
+      () {
+        // CFF 轮廓的 OpenType（OTTO）。
+        expect(extractTrueTypeFace(buildTestFont(version: 0x4F54544F)), isNull);
+        // 只有 name 表，没有 glyf / loca 等。
+        expect(extractTrueTypeFace(buildTestFont()), isNull);
+        // 表目录完整但表内容被截掉。
+        expect(
+          extractTrueTypeFace(Uint8List.sublistView(bundled, 0, 4096)),
+          isNull,
+        );
+        expect(extractTrueTypeFace(Uint8List(0)), isNull);
+      },
+    );
   });
 }

@@ -181,6 +181,23 @@ class DiaryFontStorageService {
     });
   }
 
+  /// 读出导入字体的文件内容（导出时嵌入 PDF、读取字族名）；字体不在清单里
+  /// 或文件已缺失时返回 null，调用方回落到内置字体。
+  Future<Uint8List?> readFontBytes(String fontId) async {
+    final directory = await _fontDirectory();
+    final font = (await _readManifest(
+      directory,
+    )).where((font) => font.id == fontId).firstOrNull;
+    if (font == null) {
+      return null;
+    }
+    try {
+      return await File(p.join(directory.path, font.fileName)).readAsBytes();
+    } on FileSystemException {
+      return null;
+    }
+  }
+
   /// 确保字体已向引擎注册并返回字族名；文件缺失或引擎拒绝时抛出，且不缓存
   /// 失败结果，重新导入后可再次尝试。
   Future<String> loadFontFamily(DiaryImportedFont font) {

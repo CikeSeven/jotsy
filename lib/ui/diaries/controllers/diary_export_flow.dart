@@ -9,7 +9,9 @@ import '../../../core/services/app_service.dart';
 import '../../widgets/action_loading_overlay.dart';
 import '../../widgets/backup_password_dialog.dart';
 import '../export/diary_export_book.dart';
+import '../export/diary_export_font.dart';
 import '../export/diary_export_format.dart';
+import '../providers/diary_typography_provider.dart';
 import '../sections/diary_export_sheet.dart';
 import '../viewmodels/diary_export_messages.dart';
 import 'diary_export_controller.dart';
@@ -77,9 +79,15 @@ Future<void> runDiaryExportFlow(
   }
 
   final database = ref.read(appDatabaseProvider);
+  // 正文字体跟随正文排版；字体文件在生成时（等待遮罩下）才读取。
+  final typography = ref.read(diaryTypographyProvider);
+  final fontStorage = ref.read(diaryFontStorageServiceProvider);
   final controller =
       createController?.call(database) ??
-      DiaryExportController(database: database);
+      DiaryExportController(
+        database: database,
+        loadBodyFont: () => DiaryExportFont.load(typography, fontStorage),
+      );
   final labels = buildDiaryExportLabels(l10n);
   final languageTag = Localizations.localeOf(context).toLanguageTag();
   final textDirection = Directionality.of(context);

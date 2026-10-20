@@ -32,6 +32,7 @@ class DiaryHtmlWriter {
     required DiaryExportMediaLibrary media,
     required String documentTitle,
     required String languageTag,
+    List<String> fontFamilies = const <String>[],
     DiaryExportBookLayout? book,
   }) async {
     final bundle = entries.length > 1;
@@ -86,7 +87,10 @@ class DiaryHtmlWriter {
       )
       ..write('<meta name="generator" content="Jotsy">\n')
       ..write('<title>${_text(documentTitle)}</title>\n')
-      ..write('<style>$_css${book == null ? '' : _bookCss}</style>\n')
+      ..write(
+        '<style>$_css${_fontCss(fontFamilies)}'
+        '${book == null ? '' : _bookCss}</style>\n',
+      )
       ..write('</head>\n<body>\n<main>\n');
     if (book != null) {
       _writeBook(out, book, options: options, labels: labels, images: images);
@@ -421,17 +425,46 @@ class DiaryHtmlWriter {
         scheme == 'tel';
   }
 
+  /// 用户选了导入字体时把它的字族名排在字体栈最前（不内嵌字体文件：中文
+  /// 字体动辄十几 MB），装有这款字体的设备按它显示，其余照旧。
+  static String _fontCss(List<String> fontFamilies) {
+    if (fontFamilies.isEmpty) {
+      return '';
+    }
+    return 'body{font-family:${fontFamilies.map(_cssString).join(',')},'
+        '$_fontStack}\n';
+  }
+
+  /// 写成 CSS 字符串。字族名来自用户导入的字体文件，引号、反斜杠、尖括号、
+  /// `&` 与控制字符一律转成十六进制转义，不能借名称闭合 `<style>`。
+  static String _cssString(String value) {
+    final out = StringBuffer('"');
+    for (final rune in value.runes) {
+      if (rune < 0x20 || rune == 0x7F || '"\\<>&'.runes.contains(rune)) {
+        out.write('\\${rune.toRadixString(16)} ');
+      } else {
+        out.writeCharCode(rune);
+      }
+    }
+    return (out..write('"')).toString();
+  }
+
   static String _text(String value) =>
       const HtmlEscape(HtmlEscapeMode.element).convert(value);
 
   static String _attr(String value) =>
       const HtmlEscape(HtmlEscapeMode.attribute).convert(value);
 
-  static const String _css = '''
+  static const String _fontStack =
+      '-apple-system,BlinkMacSystemFont,"HarmonyOS Sans SC","PingFang SC",'
+      '"Microsoft YaHei","Noto Sans CJK SC",sans-serif';
+
+  static const String _css =
+      '''
 :root{color-scheme:light dark;--bg:#f6fafe;--card:#ffffff;--text:#1a1c1e;--muted:#5f6368;--line:#d9dee4;--accent:#1e6586;--chip:#e3f0f7}
 @media (prefers-color-scheme:dark){:root{--bg:#111318;--card:#1a1c20;--text:#e3e2e6;--muted:#a8acb3;--line:#33373d;--accent:#8ccff1;--chip:#20323c}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 -apple-system,BlinkMacSystemFont,"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 $_fontStack}
 main{max-width:760px;margin:0 auto;padding:24px 16px 48px}
 article{background:var(--card);border:0.8px solid var(--line);border-radius:24px;padding:24px;margin:0 0 24px;overflow-wrap:anywhere}
 article>header h1{margin:0 0 4px;font-size:24px;line-height:1.35}

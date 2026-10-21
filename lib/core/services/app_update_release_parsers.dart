@@ -4,22 +4,37 @@ library;
 
 import 'app_update_models.dart';
 
-/// 解析 GitHub `releases/latest` 接口的返回。附件的 `digest` 字段
-/// （`sha256:...`）用于下载后校验。
-AppUpdateRelease? parseGitHubRelease(Object? json) {
+/// GitHub 接口返回的 Release 的 tag（须能解析为版本号）；返回的不是
+/// Release 时为 null。
+String? gitHubReleaseTag(Object? json) {
   if (json is! Map) {
     return null;
   }
   final tag = json['tag_name']?.toString().trim();
+  return AppVersion.tryParse(tag) == null ? null : tag;
+}
+
+/// 解析 GitHub `releases/latest` 接口的返回。附件的 `digest` 字段
+/// （`sha256:...`）用于下载后校验。
+///
+/// 附件里还没有校验文件时返回 null：它在全部安装包传完之后才上传（见
+/// `release-apk.yml`），没有它说明这个 Release 刚发布、安装包还没就绪，
+/// 与 [releaseFromChecksums] 同一口径。
+AppUpdateRelease? parseGitHubRelease(Object? json) {
+  final tag = gitHubReleaseTag(json);
   final version = AppVersion.tryParse(tag);
-  if (tag == null || version == null) {
+  if (tag == null || version == null || json is! Map) {
     return null;
   }
   final assets = <AppUpdateAsset>[];
+  var hasChecksums = false;
   final rawAssets = json['assets'];
   if (rawAssets is List) {
     for (final raw in rawAssets.whereType<Map>()) {
       final name = raw['name']?.toString() ?? '';
+      if (name == AppUpdateEndpoints.checksumsFileName) {
+        hasChecksums = true;
+      }
       if (!name.toLowerCase().endsWith('.apk')) {
         continue;
       }
@@ -34,7 +49,7 @@ AppUpdateRelease? parseGitHubRelease(Object? json) {
       );
     }
   }
-  if (assets.isEmpty) {
+  if (!hasChecksums || assets.isEmpty) {
     return null;
   }
   final body = cleanReleaseNotes(json['body']?.toString() ?? '');
@@ -51,8 +66,8 @@ AppUpdateRelease? parseGitHubRelease(Object? json) {
 /// （`sha256sum` 输出：`<64 位十六进制>  <文件名>`）得到安装包列表与校验值。
 ///
 /// 为什么不按命名规则直接推出地址：Release 发布后 `releases/latest` 立刻指向
-/// 新 tag，而签名安装包要等构建完成（数十分钟）才上传；校验文件与安装包同批
-/// 上传，读得到它才说明安装包已就绪，否则会提示一个下载必然 404 的版本。
+/// 新 tag，而签名安装包要等构建完成（数十分钟）才上传；校验文件在安装包全部
+/// 传完后才上传，读得到它才说明安装包已就绪，否则会提示一个下载必然 404 的版本。
 AppUpdateRelease? releaseFromChecksums(String tag, String checksums) {
   final version = AppVersion.tryParse(tag);
   if (version == null) {

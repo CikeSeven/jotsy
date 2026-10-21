@@ -66,9 +66,9 @@ void main() {
 
     expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
     expect(outcome.source.id, 'fast');
-    expect(outcome.release.version, AppVersion.tryParse('0.6.1+18'));
-    expect(outcome.release.notesFor('en'), '- English notes');
-    expect(outcome.release.assets.single.sha256, 'b' * 64);
+    expect(outcome.release!.version, AppVersion.tryParse('0.6.1+18'));
+    expect(outcome.release!.notesFor('en'), '- English notes');
+    expect(outcome.release!.assets.single.sha256, 'b' * 64);
     // 有清单时不再请求接口与跳转页。
     expect(
       server.requests.where(
@@ -97,6 +97,7 @@ void main() {
               'size': 42,
               'digest': 'sha256:${'c' * 64}',
             },
+            <String, Object?>{'name': 'SHA256SUMS.txt', 'size': 90},
           ],
         }),
       );
@@ -115,10 +116,10 @@ void main() {
 
       expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
       expect(outcome.source, AppUpdateSource.direct);
-      expect(outcome.release.assets.single.size, 42);
-      expect(outcome.release.assets.single.sha256, 'c' * 64);
-      expect(outcome.release.notesFor('en'), '- English');
-      expect(outcome.release.notesFor('zh'), '## 新增\n- 正文');
+      expect(outcome.release!.assets.single.size, 42);
+      expect(outcome.release!.assets.single.sha256, 'c' * 64);
+      expect(outcome.release!.notesFor('en'), '- English');
+      expect(outcome.release!.notesFor('zh'), '## 新增\n- 正文');
     },
   );
 
@@ -150,40 +151,108 @@ void main() {
       );
 
       expect(outcome.source.id, 'm2');
-      expect(outcome.release.tag, 'v0.6.1');
+      expect(outcome.release!.tag, 'v0.6.1');
       expect(
-        outcome.release.assetFor(const <String>['arm64-v8a'])!.name,
+        outcome.release!.assetFor(const <String>['arm64-v8a'])!.name,
         'jotsy-v0.6.1-arm64-v8a.apk',
       );
       expect(
-        outcome.release.assetFor(const <String>['arm64-v8a'])!.sha256,
+        outcome.release!.assetFor(const <String>['arm64-v8a'])!.sha256,
         'd' * 64,
       );
-      expect(outcome.release.notesFor('zh'), '- 中文');
+      expect(outcome.release!.notesFor('zh'), '- 中文');
     },
   );
 
-  test('ignores a new tag until its APKs and checksums are uploaded', () async {
-    server.route('m1', _manifestSuffix, FakeMirrorBehavior.notFound);
-    server.route('m2', _manifestSuffix, FakeMirrorBehavior.notFound);
-    server.route('api', _apiSuffix, FakeMirrorBehavior.badGateway);
-    server.redirect(
-      _latestSuffix,
-      '/m1/https://github.com/CikeSeven/jotsy/releases/tag/v0.6.2',
-    );
-    server.body(_latestSuffix, '');
-    server.route('m1', _latestSuffix, FakeMirrorBehavior.ok);
-    // 刚发布：tag 已在，校验文件与安装包还没上传。
-    server.route('m1', _sumsSuffix, FakeMirrorBehavior.notFound);
+  test(
+    'reports no update while a new tag has no checksums uploaded yet',
+    () async {
+      server.route('m1', _manifestSuffix, FakeMirrorBehavior.notFound);
+      server.route('m2', _manifestSuffix, FakeMirrorBehavior.notFound);
+      server.route('api', _apiSuffix, FakeMirrorBehavior.badGateway);
+      server.redirect(
+        _latestSuffix,
+        '/m1/https://github.com/CikeSeven/jotsy/releases/tag/v0.6.2',
+      );
+      server.body(_latestSuffix, '');
+      server.route('m1', _latestSuffix, FakeMirrorBehavior.ok);
+      // 刚发布：tag 已在，校验文件与安装包还没上传。
+      server.route('m1', _sumsSuffix, FakeMirrorBehavior.notFound);
 
-    await expectLater(
-      checker().fetchLatest(
+      final outcome = await checker().fetchLatest(
         sources: <AppUpdateSource>[mirror('m1'), mirror('m2')],
         languageCode: 'zh',
-      ),
-      throwsA(isA<AppUpdateException>()),
-    );
-  });
+      );
+
+      expect(outcome.release, isNull);
+      expect(outcome.source.id, 'm1');
+      // 没有可下载的版本，不再读取更新说明。
+      expect(server.requests.where((r) => r.path.startsWith('docs/')), isEmpty);
+    },
+  );
+
+  test(
+    'stops waiting once the API and a mirror both say the APKs are not ready',
+    () async {
+      server.route('m1', _manifestSuffix, FakeMirrorBehavior.notFound);
+      server.route('m2', _manifestSuffix, FakeMirrorBehavior.notFound);
+      // 安装包传了一部分，校验文件还没上传。
+      server.body(
+        _apiSuffix,
+        jsonEncode(<String, Object?>{
+          'tag_name': 'v0.6.2',
+          'assets': <Object?>[
+            <String, Object?>{'name': 'jotsy-v0.6.2-arm64-v8a.apk', 'size': 42},
+          ],
+        }),
+      );
+      server.route('api', _apiSuffix, FakeMirrorBehavior.ok);
+      server.redirect(
+        _latestSuffix,
+        '/m1/https://github.com/CikeSeven/jotsy/releases/tag/v0.6.2',
+      );
+      server.body(_latestSuffix, '');
+      server.route('m1', _latestSuffix, FakeMirrorBehavior.ok);
+      server.route('m1', _sumsSuffix, FakeMirrorBehavior.notFound);
+      server.route('m2', _latestSuffix, FakeMirrorBehavior.hang);
+
+      final stopwatch = Stopwatch()..start();
+      final outcome = await checker().fetchLatest(
+        sources: <AppUpdateSource>[mirror('m1'), mirror('m2')],
+        languageCode: 'zh',
+      );
+
+      expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
+      expect(outcome.release, isNull);
+    },
+  );
+
+  test(
+    'one mirror missing the checksums does not hide a ready release',
+    () async {
+      server.route('m1', _manifestSuffix, FakeMirrorBehavior.notFound);
+      server.route('m2', _manifestSuffix, FakeMirrorBehavior.notFound);
+      server.route('api', _apiSuffix, FakeMirrorBehavior.badGateway);
+      server.redirect(
+        _latestSuffix,
+        '/m1/https://github.com/CikeSeven/jotsy/releases/tag/v0.6.1',
+      );
+      server.body(_latestSuffix, '');
+      server.route('m1', _latestSuffix, FakeMirrorBehavior.ok);
+      server.route('m2', _latestSuffix, FakeMirrorBehavior.ok);
+      server.route('m1', _sumsSuffix, FakeMirrorBehavior.notFound);
+      server.body(_sumsSuffix, '${'d' * 64}  jotsy-v0.6.1-arm64-v8a.apk\n');
+      server.route('m2', _sumsSuffix, FakeMirrorBehavior.ok);
+
+      final outcome = await checker().fetchLatest(
+        sources: <AppUpdateSource>[mirror('m1'), mirror('m2')],
+        languageCode: 'zh',
+      );
+
+      expect(outcome.source.id, 'm2');
+      expect(outcome.release!.tag, 'v0.6.1');
+    },
+  );
 
   test('throws a network failure when no source answers', () async {
     server.route('m1', _manifestSuffix, FakeMirrorBehavior.badGateway);

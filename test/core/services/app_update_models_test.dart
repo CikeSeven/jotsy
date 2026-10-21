@@ -210,6 +210,21 @@ void main() {
     expect(release.notesFor('en'), '## 版本要点\n- 网盘备份');
   });
 
+  test('parseGitHubRelease waits until the checksums file is uploaded', () {
+    final uploading = <String, Object?>{
+      'tag_name': 'v0.6.1',
+      'assets': <Object?>[
+        <String, Object?>{'name': 'jotsy-v0.6.1-arm64-v8a.apk', 'size': 42},
+      ],
+    };
+    expect(gitHubReleaseTag(uploading), 'v0.6.1');
+    expect(parseGitHubRelease(uploading), isNull);
+    expect(
+      gitHubReleaseTag(<String, Object?>{'message': 'rate limit'}),
+      isNull,
+    );
+  });
+
   test('cleanReleaseNotes keeps inner headings and drops web-only lines', () {
     expect(
       cleanReleaseNotes(

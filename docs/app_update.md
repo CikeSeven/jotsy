@@ -11,7 +11,9 @@
 1. **清单**：`https://github.com/CikeSeven/jotsy/releases/latest/download/jotsy-update.json`（套各镜像前缀）。一个几 KB 的请求就拿到版本号（含构建号）、各 ABI 安装包的大小与 SHA-256、中英文更新说明。两条以上线路（或直连）回 404 即判定该版本没有清单，不等其余线路超时。
 2. **回退**（没有清单的旧版本，或所有镜像都不可用）：同时请求
    - GitHub 接口 `releases/latest`（直连；附件带 `digest` 校验值）；
-   - 各线路的 `releases/latest` 跳转页：从 Location 取 tag，再经同一线路读取 `releases/download/<tag>/SHA256SUMS.txt` 得到安装包列表与校验值。读不到校验文件说明安装包还没上传（发布后要等签名构建完成），此时不提示新版本。
+   - 各线路的 `releases/latest` 跳转页：从 Location 取 tag，再经同一线路读取 `releases/download/<tag>/SHA256SUMS.txt` 得到安装包列表与校验值。
+
+   两边都以校验文件为安装包已就绪的标志：Release 发布后 `releases/latest` 立刻指向新 tag，签名构建却要数十分钟才上传安装包。这期间接口里没有 `SHA256SUMS.txt`、跳转页的校验文件回 404，**按没有新版本处理**（显示“已是最新”，不报检查失败），等安装包能下载了才提示新版本。两条以上回答（或全部结束时有一条）如此才这样判定，单条镜像的 404 不足为凭。
 
    没有清单时，更新说明按界面语言读取仓库里的 `docs/releases/<tag>.md` / `<tag>.en.md`。
 
@@ -50,7 +52,7 @@
 
 1. 生成 `SHA256SUMS.txt`；
 2. 运行 `tool/write_update_manifest.dart` 生成 `jotsy-update.json`：版本取 `pubspec.yaml`（含构建号），说明取 `docs/releases/<tag>.md` 与 `<tag>.en.md`（中文缺失时用 Release 正文），并用应用自己的解析器读一遍，解析不了就让发布失败；
-3. 依次上传安装包、校验文件、清单（清单最后）。
+3. 分两步上传：先传安装包，全部传完后再传校验文件与清单。应用与官网读到它们即认为安装包已就绪，同一步里的文件并发上传、顺序没有保证，所以不能放在一步里。
 
 所以每个版本都应在 `docs/releases/` 下写好中英文说明；开头的 `# Release vX` 标题、语言切换行和 `**Full Changelog**` 行在应用里会被去掉。
 

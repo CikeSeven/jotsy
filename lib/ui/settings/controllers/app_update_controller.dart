@@ -135,7 +135,9 @@ class AppUpdateController extends Notifier<AppUpdateState> {
       final release = outcome.release;
       // 静默检查期间用户已经开始了别的操作（如点了下载）：不覆盖其状态。
       bool superseded() => silent && state.phase != previous.phase;
-      if (!release.version.isNewerThan(installed.version)) {
+      // release 为 null：最新的 Release 刚发布、安装包还没传完，等到能下载
+      // 才算新版本，此前与已是最新相同。
+      if (release == null || !release.version.isNewerThan(installed.version)) {
         if (!ref.mounted || superseded()) return;
         state = state.copyWith(
           phase: AppUpdatePhase.upToDate,

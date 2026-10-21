@@ -326,13 +326,22 @@ jobs:
             release-artifacts/jotsy-update.json
           if-no-files-found: error
 
-      - name: Upload APK to GitHub Release
+      # 应用（与官网）读到清单或校验文件即认为安装包已就绪，所以它们必须在
+      # 安装包全部传完后才出现。同一步里的多个文件会并发上传，顺序没有保证，
+      # 因此分成两步：先传安装包，再传校验文件与清单。
+      - name: Upload APKs to GitHub Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
-          # 清单放在最后：应用读到清单即认为安装包已就绪。
+          files: release-artifacts/*.apk
+          fail_on_unmatched_files: true
+          overwrite_files: true
+
+      - name: Upload checksums and update manifest to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
           files: |
-            release-artifacts/*.apk
             release-artifacts/SHA256SUMS.txt
             release-artifacts/jotsy-update.json
           fail_on_unmatched_files: true

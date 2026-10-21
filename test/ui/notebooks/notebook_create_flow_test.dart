@@ -9,6 +9,9 @@ import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_json.dart';
+import 'package:node_diary/ui/diary_templates/models/diary_template_prefs.dart';
 import 'package:node_diary/ui/home/pages/home_page.dart';
 
 import '../../support/diary_drafts_harness.dart';
@@ -65,6 +68,51 @@ void main() {
     expect(page.createNotebookId, travel);
     expect(page.createNotebookChapterId, 'c1');
     expect(page.createTemplate?.template.id, 'builtin.gratitude');
+    await h.unmount();
+  });
+
+  testWidgets('an edited built-in default brings the user\'s version', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    const edited = DiaryTemplate(id: 'builtin.gratitude', name: '我的感恩');
+    await tester.runAsync(
+      () => h.database.saveDiaryTemplate(
+        templateId: edited.id,
+        name: edited.name,
+        payload: DiaryTemplateJson.toPayload(edited),
+      ),
+    );
+    final travel = await h.notebook(
+      '旅行',
+      payload: NotebookPayload(templateId: 'builtin.gratitude'),
+    );
+    await pumpOpener(h, notebookId: travel);
+    await tapNew(h);
+
+    expect(editor(tester).createTemplate?.template.name, '我的感恩');
+    await h.unmount();
+  });
+
+  testWidgets('a deleted built-in default leaves the entry blank', (
+    tester,
+  ) async {
+    final h = await DiaryDraftsHarness.create(tester);
+    await h.settings.setDiaryTemplatePrefsRaw(
+      DiaryTemplatePrefs.defaults
+          .withHidden('builtin.gratitude', true)
+          .encode(),
+    );
+    final travel = await h.notebook(
+      '旅行',
+      payload: NotebookPayload(templateId: 'builtin.gratitude'),
+    );
+    await pumpOpener(h, notebookId: travel);
+    await tapNew(h);
+
+    final page = editor(tester);
+    expect(page.createNotebookId, travel);
+    expect(page.createTemplate, isNull);
     await h.unmount();
   });
 

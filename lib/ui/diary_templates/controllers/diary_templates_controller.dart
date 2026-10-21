@@ -19,8 +19,8 @@ typedef DiaryTemplateAutoRemoval = ({
   List<DiaryTemplateAutoRule> rules,
 });
 
-/// 删除一个模板留下的记录：撤销时原样写回这一行，并放回撤下的自动套用
-/// 设置（见 [DiaryTemplateAutoRemoval]）。
+/// 删除一个模板（或内置模板恢复默认）留下的记录：撤销时原样写回这一行，
+/// 并放回撤下的自动套用设置（见 [DiaryTemplateAutoRemoval]）。
 typedef DiaryTemplateDeletion = ({
   DiaryTemplateRow row,
   DiaryTemplateAutoRemoval auto,
@@ -33,16 +33,20 @@ typedef DiaryTemplateImport = ({
   String name,
 });
 
-/// 模板管理的读写：保存、复制、删除与撤销、排序、隐藏内置模板、偏好与
-/// 模板码。不构建 UI，确认与提示由页面负责。
+/// 模板管理的读写：保存、复制、删除与撤销、排序、内置模板的编辑 / 恢复
+/// 默认 / 删除与恢复、偏好与模板码。不构建 UI，确认与提示由页面负责。
 ///
-/// 每次写入用户模板后调用 [onTemplatesChanged]：新建编辑页的建议条读的是
+/// 内置模板：编辑后以同一个 id 存进数据库（替换默认内容，自动套用与最近
+/// 使用的指向不变），恢复默认即删掉这一行；删除只记进偏好的 `hidden`
+/// （默认内容不在库里，删无可删），恢复时移出即可，改过的内容一直留在库里。
+///
+/// 每次写入模板行后调用 [onTemplatesChanged]：新建编辑页的建议条读的是
 /// 一次性快照（见 `userDiaryTemplatesSnapshotProvider`），需要据此刷新。
 ///
 /// 偏好每次都从设置原文重新解码再写回，不依赖页面手里可能过时的值。删除
-/// 或隐藏一个模板时，一并清空指向它的默认模板与时间段规则——否则新建日记
-/// 会套用一个已经不在列表里的模板；撤销时只放回仍空着的默认模板与本机还
-/// 没有的规则（撤销前用户可能已经重新设置过）。
+/// 一个模板（含内置模板）时，一并清空指向它的默认模板与时间段规则——否则
+/// 新建日记会套用一个已经不在列表里的模板；撤销时只放回仍空着的默认模板与
+/// 本机还没有的规则（撤销前用户可能已经重新设置过）。
 class DiaryTemplatesController {
   DiaryTemplatesController({
     required this.database,
@@ -60,10 +64,10 @@ class DiaryTemplatesController {
   Future<void> _savePrefs(DiaryTemplatePrefs prefs) =>
       saveDiaryTemplatePrefs(settings, prefs);
 
-  /// 保存 [template]；内置模板或 id 为空时另存为新的用户模板。返回模板 id。
-  /// 正文在写入前再清洗一次，名称按长度上限截断。
+  /// 保存 [template]；id 为空时另存为新的用户模板，内置模板以原 id 保存为
+  /// 改过的版本。返回模板 id。正文在写入前再清洗一次，名称按长度上限截断。
   Future<String> save(DiaryTemplate template) async {
-    final isNew = template.id.isEmpty || template.isBuiltIn;
+    final isNew = template.id.isEmpty;
     final normalized = template.copyWith(
       name: normalizeDiaryTemplateLine(
         template.name,
@@ -82,7 +86,7 @@ class DiaryTemplatesController {
     return id;
   }
 
-  /// 复制为一个新的用户模板（内置模板“复制为我的模板”也走这里）。
+  /// 复制为一个新的用户模板（内置模板的“复制”也走这里）。
   Future<String> duplicate(DiaryTemplate template, {required String name}) =>
       save(template.copyWith(id: '', name: name));
 
@@ -97,6 +101,21 @@ class DiaryTemplatesController {
     return (row: row, auto: removed);
   }
 
+  /// 改过的内置模板恢复默认：删掉它在库里的行；没改过时返回 null。自动套用
+  /// 设置不动——id 没变，指向的仍是这个模板。
+  Future<DiaryTemplateDeletion?> resetBuiltIn(String templateId) async {
+    if (!templateId.startsWith(builtInDiaryTemplateIdPrefix)) return null;
+    final row = await database.getDiaryTemplate(templateId);
+    if (row == null) return null;
+    await database.deleteDiaryTemplates([templateId]);
+    onTemplatesChanged();
+    return (
+      row: row,
+      auto: (wasAuto: false, rules: const <DiaryTemplateAutoRule>[]),
+    );
+  }
+
+  /// 撤销删除或恢复默认：原样写回那一行。
   Future<void> restore(DiaryTemplateDeletion deletion) async {
     await database.restoreDiaryTemplates([deletion.row]);
     final prefs = _prefs;
@@ -114,29 +133,32 @@ class DiaryTemplatesController {
     onTemplatesChanged();
   }
 
-  /// 隐藏或重新显示内置模板；隐藏时返回一并撤下的自动套用设置（撤销用），
-  /// 重新显示时什么也不撤下。
-  Future<DiaryTemplateAutoRemoval> setHidden(
-    String templateId,
-    bool hidden,
-  ) async {
-    var prefs = _prefs.withHidden(templateId, hidden);
-    DiaryTemplateAutoRemoval removed = (
-      wasAuto: false,
-      rules: const <DiaryTemplateAutoRule>[],
+  /// 删除内置模板（记进偏好的 `hidden`），返回一并撤下的自动套用设置，
+  /// 撤销时交给 [undoDeleteBuiltIn]。
+  Future<DiaryTemplateAutoRemoval> deleteBuiltIn(String templateId) async {
+    final (prefs, removed) = _withoutAuto(
+      _prefs.withHidden(templateId, true),
+      templateId,
     );
-    if (hidden) (prefs, removed) = _withoutAuto(prefs, templateId);
     await _savePrefs(prefs);
     return removed;
   }
 
-  /// 撤销隐藏，并放回隐藏时撤下的自动套用设置。
-  Future<void> unhide(
+  /// 撤销删除内置模板，并放回删除时撤下的自动套用设置。
+  Future<void> undoDeleteBuiltIn(
     String templateId, {
     required DiaryTemplateAutoRemoval removed,
   }) async {
     final prefs = _prefs.withHidden(templateId, false);
     await _savePrefs(_withAutoRestored(prefs, templateId, removed));
+  }
+
+  /// 从“已删除的内置模板”里恢复：移出 `hidden`，不放回任何自动套用设置
+  /// （删除时撤下的设置只随撤销放回）。
+  Future<void> restoreBuiltIns(Iterable<String> templateIds) async {
+    final prefs = _prefs;
+    final next = templateIds.fold(prefs, (p, id) => p.withHidden(id, false));
+    if (next != prefs) await _savePrefs(next);
   }
 
   /// 去掉指向 [templateId] 的默认模板与时间段规则。

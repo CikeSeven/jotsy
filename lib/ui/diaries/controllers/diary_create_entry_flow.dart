@@ -79,7 +79,14 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   Future<DiaryCreateEntryResult> openBlank() async {
     final template = notebookId == null || !features.templates
         ? null
-        : await _notebookDefaultTemplate(database, context.l10n, notebookId);
+        : await _notebookDefaultTemplate(
+            database,
+            context.l10n,
+            notebookId,
+            deletedBuiltIns: ref
+                .read(diaryTemplatePrefsProvider)
+                .hiddenBuiltIns,
+          );
     if (!context.mounted) return dismissed;
     return openEditor(null, template: template);
   }
@@ -113,17 +120,24 @@ Future<DiaryCreateEntryResult> runDiaryCreateEntryFlow(
   }
 }
 
-/// 日记本的默认模板：这本不存在、没设模板或模板已被删除时为 null。
+/// 日记本的默认模板：这本不存在、没设模板或模板已被删除（含被删除的内置
+/// 模板 [deletedBuiltIns]）时为 null。
 Future<DiaryTemplateSelection?> _notebookDefaultTemplate(
   AppDatabase database,
   AppLocalizations l10n,
-  String notebookId,
-) async {
+  String notebookId, {
+  required Set<String> deletedBuiltIns,
+}) async {
   try {
     final row = await database.getNotebook(notebookId);
     final templateId = row?.parsedPayload.templateId;
     if (templateId == null) return null;
-    final template = await loadDiaryTemplate(database, l10n, templateId);
+    final template = await loadDiaryTemplate(
+      database,
+      l10n,
+      templateId,
+      deletedBuiltIns: deletedBuiltIns,
+    );
     return template == null ? null : DiaryTemplateSelection(template);
   } catch (error) {
     debugPrint('Loading notebook template failed: $error');

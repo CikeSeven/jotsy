@@ -9485,7 +9485,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Daily journal” template.
   ///
   /// In en, this message translates to:
-  /// **'What happened today and how you feel right now'**
+  /// **'Today\'s story, and how you feel right now'**
   String get diaryTemplateDailyDesc;
 
   /// Title pattern of the built-in “Daily journal” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9503,7 +9503,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Morning pages” template.
   ///
   /// In en, this message translates to:
-  /// **'Set the tone for the day with a page in the morning'**
+  /// **'A page at dawn to give the day a gentle direction'**
   String get diaryTemplateMorningDesc;
 
   /// Title pattern of the built-in “Morning pages” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9521,7 +9521,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Evening review” template.
   ///
   /// In en, this message translates to:
-  /// **'Look back on the day and plan tomorrow'**
+  /// **'Look back on the day and set up tomorrow'**
   String get diaryTemplateEveningDesc;
 
   /// Title pattern of the built-in “Evening review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9539,7 +9539,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Gratitude journal” template.
   ///
   /// In en, this message translates to:
-  /// **'Three things you\'re grateful for'**
+  /// **'Three small things you\'re grateful for'**
   String get diaryTemplateGratitudeDesc;
 
   /// Title pattern of the built-in “Gratitude journal” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9557,7 +9557,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Question of the day” template.
   ///
   /// In en, this message translates to:
-  /// **'One question a day to see yourself from a new angle'**
+  /// **'One question a day to see yourself anew'**
   String get diaryTemplateQuestionDesc;
 
   /// Title pattern of the built-in “Question of the day” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9575,7 +9575,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Weekly review” template.
   ///
   /// In en, this message translates to:
-  /// **'Highlights, wins and next week\'s plan'**
+  /// **'Gather the week\'s highlights and step lightly into the next'**
   String get diaryTemplateWeeklyDesc;
 
   /// Title pattern of the built-in “Weekly review” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9611,7 +9611,7 @@ abstract class AppLocalizations {
   /// One-line description of the built-in “Reading notes” template.
   ///
   /// In en, this message translates to:
-  /// **'Quotes and thoughts from what you read'**
+  /// **'Passages and thoughts from what you read'**
   String get diaryTemplateReadingDesc;
 
   /// Title pattern of the built-in “Reading notes” template. Placeholders receive variable tokens such as {{date}}, resolved when the template is applied.
@@ -9620,166 +9620,208 @@ abstract class AppLocalizations {
   /// **'Reading notes · {date}'**
   String diaryTemplateReadingTitle(String date);
 
-  /// Body line of a built-in diary template (Daily).
+  /// A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'What happened today'**
+  /// **'Today\'s story:'**
   String get diaryTemplateDailyHappened;
 
-  /// Body line of a built-in diary template (Daily).
+  /// A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'The moment that stayed with me'**
+  /// **'A moment that shone:'**
   String get diaryTemplateDailyMoment;
 
-  /// Body line of a built-in diary template (Daily).
+  /// A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'How I feel right now'**
+  /// **'How I feel right now:'**
   String get diaryTemplateDailyMood;
 
-  /// Body line of a built-in diary template (Morning). Placeholders receive template variable tokens.
+  /// A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Up at {time}.'**
+  /// **'One line for today:'**
+  String get diaryTemplateDailyWords;
+
+  /// A small note at the top of the built-in Morning diary template. The placeholders are filled with template variables; the English text leaves the solar term out because its names are Chinese only.
+  ///
+  /// In en, this message translates to:
+  /// **'Up at {time}'**
   String diaryTemplateMorningWake(String time, String term);
 
-  /// Body line of a built-in diary template (Morning).
+  /// A heading in the body of the built-in Morning diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Three things that matter most today'**
+  /// **'Three things that matter most today:'**
   String get diaryTemplateMorningTop3;
 
-  /// Body line of a built-in diary template (Morning).
+  /// A heading in the body of the built-in Morning diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Something I\'m looking forward to'**
+  /// **'Something small to look forward to:'**
   String get diaryTemplateMorningLookForward;
 
-  /// Body line of a built-in diary template (Morning).
+  /// A heading in the body of the built-in Morning diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'A line for today'**
+  /// **'A word for today:'**
   String get diaryTemplateMorningWords;
 
-  /// Body line of a built-in diary template (Evening).
+  /// A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Done today'**
+  /// **'What I got done:'**
   String get diaryTemplateEveningDone;
 
-  /// Body line of a built-in diary template (Evening).
+  /// A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'What went well'**
+  /// **'What went well:'**
   String get diaryTemplateEveningWentWell;
 
-  /// Body line of a built-in diary template (Evening).
+  /// A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'What could be better'**
+  /// **'What could be better:'**
   String get diaryTemplateEveningBetter;
 
-  /// Body line of a built-in diary template (Evening).
+  /// A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Plans for tomorrow'**
+  /// **'Plans for tomorrow:'**
   String get diaryTemplateEveningTomorrow;
 
-  /// Body line of a built-in diary template (Gratitude).
+  /// A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
+  ///
+  /// In en, this message translates to:
+  /// **'Before I sleep:'**
+  String get diaryTemplateEveningNight;
+
+  /// A heading in the body of the built-in Gratitude diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
   /// **'Three things I\'m grateful for today:'**
   String get diaryTemplateGratitudeThree;
 
-  /// Body line of a built-in diary template (Gratitude).
+  /// A heading in the body of the built-in Gratitude diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Someone I\'d like to thank'**
+  /// **'Someone I\'d like to thank:'**
   String get diaryTemplateGratitudeThanks;
 
-  /// Body line of a built-in diary template (Weekly).
+  /// A heading in the body of the built-in Gratitude diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Highlights of the week'**
+  /// **'And a thank-you to myself:'**
+  String get diaryTemplateGratitudeSelf;
+
+  /// A heading in the body of the built-in Question diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s question:'**
+  String get diaryTemplateQuestionPrompt;
+
+  /// A heading in the body of the built-in Question diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
+  ///
+  /// In en, this message translates to:
+  /// **'My answer:'**
+  String get diaryTemplateQuestionAnswer;
+
+  /// A small note at the top of the built-in Weekly diary template. The placeholders are filled with template variables.
+  ///
+  /// In en, this message translates to:
+  /// **'Week {week} · {progress} of the year behind us'**
+  String diaryTemplateWeeklyProgress(String week, String progress);
+
+  /// A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlights of the week:'**
   String get diaryTemplateWeeklyHighlights;
 
-  /// Body line of a built-in diary template (Weekly).
+  /// A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Done and learned'**
+  /// **'Wins and lessons:'**
   String get diaryTemplateWeeklyWins;
 
-  /// Body line of a built-in diary template (Weekly).
+  /// A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Still open'**
+  /// **'Still in progress:'**
   String get diaryTemplateWeeklyOpen;
 
-  /// Body line of a built-in diary template (Weekly).
+  /// A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Next week'**
+  /// **'Next week:'**
   String get diaryTemplateWeeklyNext;
 
-  /// Body line of a built-in diary template (Emotion).
+  /// A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'What happened'**
+  /// **'A note to next week\'s me:'**
+  String get diaryTemplateWeeklyNote;
+
+  /// A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened:'**
   String get diaryTemplateEmotionHappened;
 
-  /// Body line of a built-in diary template (Emotion).
+  /// A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'What I felt'**
+  /// **'What I felt:'**
   String get diaryTemplateEmotionFelt;
 
-  /// Body line of a built-in diary template (Emotion).
+  /// A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Where it comes from'**
+  /// **'Where it comes from:'**
   String get diaryTemplateEmotionSource;
 
-  /// Body line of a built-in diary template (Emotion).
+  /// A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'What I need'**
+  /// **'What I really need:'**
   String get diaryTemplateEmotionNeed;
 
-  /// Body line of a built-in diary template (Emotion).
+  /// A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'One small next step'**
+  /// **'One small step from here:'**
   String get diaryTemplateEmotionStep;
 
-  /// Body line of a built-in diary template (Reading).
+  /// A field label in the body of the built-in Reading diary template; the user fills it in after the colon on the same line. Keep the trailing colon.
   ///
   /// In en, this message translates to:
   /// **'Book: '**
   String get diaryTemplateReadingBook;
 
-  /// Body line of a built-in diary template (Reading).
+  /// A field label in the body of the built-in Reading diary template; the user fills it in after the colon on the same line. Keep the trailing colon.
   ///
   /// In en, this message translates to:
   /// **'Author: '**
   String get diaryTemplateReadingAuthor;
 
-  /// Body line of a built-in diary template (Reading).
+  /// A field label in the body of the built-in Reading diary template; the user fills it in after the colon on the same line. Keep the trailing colon.
   ///
   /// In en, this message translates to:
   /// **'Read up to: '**
   String get diaryTemplateReadingProgress;
 
-  /// Body line of a built-in diary template (Reading).
+  /// A heading in the body of the built-in Reading diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'Quotes'**
+  /// **'Passages:'**
   String get diaryTemplateReadingQuotes;
 
-  /// Body line of a built-in diary template (Reading).
+  /// A heading in the body of the built-in Reading diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color.
   ///
   /// In en, this message translates to:
-  /// **'My thoughts'**
+  /// **'My thoughts:'**
   String get diaryTemplateReadingThoughts;
 
   /// Tag name preset by a built-in diary template (created when missing).
@@ -10268,11 +10310,11 @@ abstract class AppLocalizations {
   /// **'Energy {level}/5'**
   String diaryTemplatePresetEnergy(int level);
 
-  /// Small badge on a built-in template the user has hidden from the picker.
+  /// Small badge on a built-in template whose content the user has edited (the menu can restore the original).
   ///
   /// In en, this message translates to:
-  /// **'Hidden'**
-  String get diaryTemplateHiddenBadge;
+  /// **'Edited'**
+  String get diaryTemplateEditedBadge;
 
   /// Draft picker: choose a template and start a new entry with it.
   ///
@@ -10499,7 +10541,7 @@ abstract class AppLocalizations {
   /// Empty state of the user's template list.
   ///
   /// In en, this message translates to:
-  /// **'No templates of your own yet. Create one with +, or copy a built-in one and change it.'**
+  /// **'No templates of your own yet. Create one with +, or edit a built-in one directly.'**
   String get diaryTemplatesMineEmpty;
 
   /// Tooltip of the button that creates a template.
@@ -10526,17 +10568,11 @@ abstract class AppLocalizations {
   /// **'Drag to reorder'**
   String get diaryTemplatesDragHandle;
 
-  /// Menu action: make a copy of the user's template.
+  /// Menu action: make a copy of the template among the user's own templates.
   ///
   /// In en, this message translates to:
   /// **'Duplicate'**
   String get diaryTemplatesDuplicate;
-
-  /// Action on a built-in template: copy it into the user's templates so it can be edited.
-  ///
-  /// In en, this message translates to:
-  /// **'Copy to my templates'**
-  String get diaryTemplatesCopyToMine;
 
   /// Menu action: copy the template as a shareable code.
   ///
@@ -10544,17 +10580,47 @@ abstract class AppLocalizations {
   /// **'Copy template code'**
   String get diaryTemplatesCopyCode;
 
-  /// Menu action: hide a built-in template from the picker.
+  /// Menu action: put an edited built-in template back to the content the app ships with.
   ///
   /// In en, this message translates to:
-  /// **'Hide'**
-  String get diaryTemplatesHide;
+  /// **'Restore original'**
+  String get diaryTemplatesResetBuiltIn;
 
-  /// Menu action: show a hidden built-in template again.
+  /// Row at the end of the built-in list that opens the sheet of deleted built-in templates.
   ///
   /// In en, this message translates to:
-  /// **'Show'**
-  String get diaryTemplatesShow;
+  /// **'Restore deleted built-ins'**
+  String get diaryTemplatesRestoreDeleted;
+
+  /// Count shown at the end of the “Restore deleted built-ins” row.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}'**
+  String diaryTemplatesRestoreDeletedCount(int count);
+
+  /// Title of the sheet listing deleted built-in templates.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted built-in templates'**
+  String get diaryTemplatesRestoreSheetTitle;
+
+  /// Hint under the title of the deleted built-in templates sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored templates go back to the built-in list, along with any edits made before deleting them.'**
+  String get diaryTemplatesRestoreSheetHint;
+
+  /// Button on each row of the deleted built-in templates sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get diaryTemplatesRestore;
+
+  /// Button in the deleted built-in templates sheet that restores all of them.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore all'**
+  String get diaryTemplatesRestoreAll;
 
   /// Name given to a duplicated template.
   ///
@@ -10568,11 +10634,23 @@ abstract class AppLocalizations {
   /// **'Deleted “{name}”'**
   String diaryTemplatesDeleted(String name);
 
-  /// Snackbar after hiding a built-in template, with Undo.
+  /// Snackbar after restoring an edited built-in template to its original content, with Undo.
   ///
   /// In en, this message translates to:
-  /// **'Hid “{name}”'**
-  String diaryTemplatesHiddenDone(String name);
+  /// **'Restored the original “{name}”'**
+  String diaryTemplatesResetDone(String name);
+
+  /// Snackbar after restoring one deleted built-in template.
+  ///
+  /// In en, this message translates to:
+  /// **'Restored “{name}”'**
+  String diaryTemplatesRestoredDone(String name);
+
+  /// Snackbar after restoring all deleted built-in templates at once.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Restored 1 built-in template} other{Restored {count} built-in templates}}'**
+  String diaryTemplatesRestoredAllDone(int count);
 
   /// Snackbar after copying a template code.
   ///

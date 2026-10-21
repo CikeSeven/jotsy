@@ -13,16 +13,8 @@ import '../../widgets/expressive_menu/expressive_menu.dart';
 import '../models/diary_template.dart';
 import '../widgets/diary_template_tile.dart';
 
-/// 模板行菜单里的操作。
-enum DiaryTemplateAction {
-  edit,
-  duplicate,
-  copyToMine,
-  copyCode,
-  hide,
-  show,
-  delete,
-}
+/// 模板行菜单里的操作。[reset] 只出现在改过的内置模板上。
+enum DiaryTemplateAction { edit, duplicate, copyCode, reset, delete }
 
 /// 模板管理页的分组标题（与设置分组标题同一字阶）。
 class DiaryTemplatesSectionHeader extends StatelessWidget {
@@ -181,18 +173,22 @@ class DiaryTemplatesMineSliver extends StatelessWidget {
   }
 }
 
-/// 内置模板：点按预览，菜单里复制为我的模板、复制模板码、隐藏或显示。
+/// 内置模板（不含已删除的）：与我的模板一样点按即编辑，菜单里编辑、复制、
+/// 复制模板码、恢复默认（只在改过时出现）与删除；不能拖动排序，始终按内置
+/// 顺序排列。
 class DiaryTemplatesBuiltInSliver extends StatelessWidget {
   const DiaryTemplatesBuiltInSliver({
     super.key,
     required this.templates,
-    required this.hiddenIds,
+    required this.editedIds,
     required this.onTap,
     required this.onAction,
   });
 
   final List<DiaryTemplate> templates;
-  final Set<String> hiddenIds;
+
+  /// 改过内容的内置模板，带“已修改”标记与“恢复默认”。
+  final Set<String> editedIds;
   final ValueChanged<DiaryTemplate> onTap;
   final void Function(DiaryTemplate template, DiaryTemplateAction action)
   onAction;
@@ -206,17 +202,19 @@ class DiaryTemplatesBuiltInSliver extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s),
         itemBuilder: (BuildContext context, int index) {
           final template = templates[index];
-          final hidden = hiddenIds.contains(template.id);
+          final edited = editedIds.contains(template.id);
           return DiaryTemplateTile(
             key: ValueKey<String>('template_builtin_${template.id}'),
             template: template,
-            hidden: hidden,
+            edited: edited,
             onTap: () => onTap(template),
             trailing: DiaryTemplateActionsButton(
               actions: <DiaryTemplateAction>[
-                DiaryTemplateAction.copyToMine,
+                DiaryTemplateAction.edit,
+                DiaryTemplateAction.duplicate,
                 DiaryTemplateAction.copyCode,
-                hidden ? DiaryTemplateAction.show : DiaryTemplateAction.hide,
+                if (edited) DiaryTemplateAction.reset,
+                DiaryTemplateAction.delete,
               ],
               onSelected: (action) => onAction(template, action),
             ),
@@ -245,19 +243,15 @@ class DiaryTemplateActionsButton extends StatelessWidget {
     String label(DiaryTemplateAction action) => switch (action) {
       DiaryTemplateAction.edit => l10n.commonEdit,
       DiaryTemplateAction.duplicate => l10n.diaryTemplatesDuplicate,
-      DiaryTemplateAction.copyToMine => l10n.diaryTemplatesCopyToMine,
       DiaryTemplateAction.copyCode => l10n.diaryTemplatesCopyCode,
-      DiaryTemplateAction.hide => l10n.diaryTemplatesHide,
-      DiaryTemplateAction.show => l10n.diaryTemplatesShow,
+      DiaryTemplateAction.reset => l10n.diaryTemplatesResetBuiltIn,
       DiaryTemplateAction.delete => l10n.commonDelete,
     };
     FaIconData icon(DiaryTemplateAction action) => switch (action) {
       DiaryTemplateAction.edit => FontAwesomeIcons.penToSquare,
       DiaryTemplateAction.duplicate => FontAwesomeIcons.copy,
-      DiaryTemplateAction.copyToMine => FontAwesomeIcons.layerGroup,
       DiaryTemplateAction.copyCode => FontAwesomeIcons.code,
-      DiaryTemplateAction.hide => FontAwesomeIcons.eyeSlash,
-      DiaryTemplateAction.show => FontAwesomeIcons.eye,
+      DiaryTemplateAction.reset => FontAwesomeIcons.rotateLeft,
       DiaryTemplateAction.delete => FontAwesomeIcons.trashCan,
     };
     return ExpressiveMenuButton(

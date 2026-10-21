@@ -7,18 +7,19 @@ import '../../../app/theme/expressive_surfaces.dart';
 import '../models/diary_template.dart';
 import 'diary_template_icon_badge.dart';
 
-/// 一个模板的列表行：图标徽章、名称、两行说明，以及“推荐”“已隐藏”标记。
+/// 一个模板的列表行：图标徽章、名称、两行说明，以及“推荐”“已修改”标记。
 /// 模板面板与模板管理页共用。
 ///
 /// 用行而不用网格：两列网格在 320dp 宽、1.3 倍字号下放不下名称与说明。
-/// [trailing] 放管理页的操作按钮；[hidden] 时整行弱化。只负责展示与回调。
+/// [trailing] 放管理页的操作按钮；[edited] 标出改过内容的内置模板。只负责
+/// 展示与回调。
 class DiaryTemplateTile extends StatelessWidget {
   const DiaryTemplateTile({
     super.key,
     required this.template,
     this.onTap,
     this.recommended = false,
-    this.hidden = false,
+    this.edited = false,
     this.leading,
     this.trailing,
   });
@@ -26,7 +27,7 @@ class DiaryTemplateTile extends StatelessWidget {
   final DiaryTemplate template;
   final VoidCallback? onTap;
   final bool recommended;
-  final bool hidden;
+  final bool edited;
 
   /// 放在图标前面（管理页的拖动手柄）。
   final Widget? leading;
@@ -72,9 +73,9 @@ class DiaryTemplateTile extends StatelessWidget {
                     ),
                     if (recommended)
                       DiaryTemplateBadge(label: l10n.diaryTemplateRecommended),
-                    if (hidden)
+                    if (edited)
                       DiaryTemplateBadge(
-                        label: l10n.diaryTemplateHiddenBadge,
+                        label: l10n.diaryTemplateEditedBadge,
                         muted: true,
                       ),
                   ],
@@ -97,20 +98,17 @@ class DiaryTemplateTile extends StatelessWidget {
         ],
       ),
     );
-    return Opacity(
-      opacity: hidden ? 0.6 : 1,
-      child: Material(
-        color: ExpressiveSurfaces.cardColor(colorScheme),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadii.input),
-          side: BorderSide(
-            color: ExpressiveSurfaces.cardBorderColor(colorScheme),
-            width: 0.8,
-          ),
+    return Material(
+      color: ExpressiveSurfaces.cardColor(colorScheme),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.input),
+        side: BorderSide(
+          color: ExpressiveSurfaces.cardBorderColor(colorScheme),
+          width: 0.8,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(onTap: onTap, child: content),
       ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(onTap: onTap, child: content),
     );
   }
 }

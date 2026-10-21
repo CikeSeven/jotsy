@@ -91,12 +91,35 @@ sealed class DiaryTemplateBlock {
   const DiaryTemplateBlock();
 }
 
-/// 小标题（默认二级）。
-final class TplHeading extends DiaryTemplateBlock {
-  const TplHeading(this.text, {this.level = 2});
+/// 小标题：与正文同字号的粗体行，带模板的强调色，开头可放一个符号
+/// [mark]（emoji）。也用作“书名：”这类在同一行接着填写的字段。
+///
+/// 不用 Quill 的标题级别：h2 有 30 号，一页模板会被几行大字撑满。
+///
+/// [text] 末尾的冒号（`：` / `:`）连同其后的空白编译成不带格式的字：Quill
+/// 在空行打字时会沿用上一行行尾文字的行内格式（`PreserveInlineStylesRule`），
+/// 小标题若以粗体彩色字结尾，下面空行里写的字也会变成粗体彩色。所以内置
+/// 模板的小标题都以冒号结尾（见 `built_in_diary_templates_test.dart`）。
+final class TplLabel extends DiaryTemplateBlock {
+  const TplLabel(this.text, {this.mark});
 
   final String text;
-  final int level;
+  final String? mark;
+}
+
+/// 小字注释：小一档的灰色字，如“07:30 醒来 · 霜降”。后面不能紧跟空行
+/// （同 [TplLabel] 的说明，空行里写的字会沿用小号灰字）。
+final class TplNote extends DiaryTemplateBlock {
+  const TplNote(this.text, {this.mark});
+
+  final String text;
+  final String? mark;
+}
+
+/// 两段之间的空行：小标题是正文字号，没有标题级别自带的上边距，靠它把
+/// 上一段（尤其是列表与引用）和下一个小标题隔开。写完后它仍是段间空行。
+final class TplGap extends DiaryTemplateBlock {
+  const TplGap();
 }
 
 /// 普通段落；不给文字就是一个空行，留给用户书写。
@@ -139,27 +162,60 @@ final class TplDivider extends DiaryTemplateBlock {
   const TplDivider();
 }
 
+/// 小标题末尾不带格式的冒号及其后的空白（见 [TplLabel]）。
+final RegExp _labelSuffix = RegExp(r'[:：]\s*$');
+
 /// 把块描述编译为 Delta 操作列表（已是白名单内的内容）。
+///
+/// [labelColor] 为小标题的文字色、[noteColor] 为小字注释的文字色（大写
+/// `#AARRGGBB`，见 `encodeDiaryColor`）；不给时不写颜色。
 ///
 /// 不复用导入用的 `JournalDeltaWriter`：它会裁掉首尾空行，而模板正是靠这些
 /// 空行给用户留出书写的位置。
 List<Map<String, Object?>> compileDiaryTemplateBlocks(
-  List<DiaryTemplateBlock> blocks,
-) {
+  List<DiaryTemplateBlock> blocks, {
+  String? labelColor,
+  String? noteColor,
+}) {
   final ops = <Map<String, Object?>>[];
-  void line(String text, [Map<String, Object?>? attributes]) {
-    final single = text.replaceAll(RegExp(r'[\r\n]+'), ' ');
-    if (single.isNotEmpty) ops.add(<String, Object?>{'insert': single});
+  String single(String text) => text.replaceAll(RegExp(r'[\r\n]+'), ' ');
+  String marked(String? mark, String text) =>
+      mark == null ? single(text) : '$mark ${single(text)}';
+  void segment(String text, [Map<String, Object?>? attributes]) {
+    if (text.isEmpty) return;
     ops.add(<String, Object?>{
-      'insert': '\n',
+      'insert': text,
       if (attributes != null) 'attributes': attributes,
     });
   }
 
+  void lineBreak([Map<String, Object?>? attributes]) =>
+      ops.add(<String, Object?>{
+        'insert': '\n',
+        if (attributes != null) 'attributes': attributes,
+      });
+
+  void line(String text, [Map<String, Object?>? attributes]) {
+    segment(single(text));
+    lineBreak(attributes);
+  }
+
   for (final block in blocks) {
     switch (block) {
-      case TplHeading(:final text, :final level):
-        line(text, <String, Object?>{'header': level});
+      case TplLabel(:final text, :final mark):
+        final full = marked(mark, text);
+        final suffix = _labelSuffix.firstMatch(full)?.group(0) ?? '';
+        segment(full.substring(0, full.length - suffix.length), {
+          'bold': true,
+          'color': ?labelColor,
+        });
+        segment(suffix);
+        lineBreak();
+      case TplNote(:final text, :final mark):
+        segment(marked(mark, text), {'size': 'small', 'color': ?noteColor});
+        lineBreak();
+      case TplGap():
+        lineBreak();
       case TplParagraph(:final text):
         line(text);
       case TplBullets(:final items):
@@ -180,7 +236,7 @@ List<Map<String, Object?>> compileDiaryTemplateBlocks(
         ops.add(<String, Object?>{
           'insert': Map<String, Object?>.of(diaryDividerEmbed),
         });
-        ops.add(<String, Object?>{'insert': '\n'});
+        lineBreak();
     }
   }
   return ops.isEmpty ? emptyDiaryTemplateOps : ops;

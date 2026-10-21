@@ -5162,7 +5162,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateDailyName => '每日记录';
 
   @override
-  String get diaryTemplateDailyDesc => '记下今天发生的事和此刻的心情';
+  String get diaryTemplateDailyDesc => '记下今天的故事，和此刻的心情';
 
   @override
   String diaryTemplateDailyTitle(String date, String weekday) {
@@ -5173,7 +5173,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateMorningName => '晨间日记';
 
   @override
-  String get diaryTemplateMorningDesc => '用一页清晨的文字给今天定个方向';
+  String get diaryTemplateMorningDesc => '在清晨写下一页，给今天一个温柔的方向';
 
   @override
   String diaryTemplateMorningTitle(String date) {
@@ -5184,7 +5184,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateEveningName => '晚间复盘';
 
   @override
-  String get diaryTemplateEveningDesc => '回顾今天的得失，安排好明天';
+  String get diaryTemplateEveningDesc => '回看今天的得与失，把明天安排妥当';
 
   @override
   String diaryTemplateEveningTitle(String date) {
@@ -5195,7 +5195,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateGratitudeName => '感恩日记';
 
   @override
-  String get diaryTemplateGratitudeDesc => '写下三件值得感谢的事';
+  String get diaryTemplateGratitudeDesc => '写下三件让你心怀感激的小事';
 
   @override
   String diaryTemplateGratitudeTitle(String date) {
@@ -5206,7 +5206,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateQuestionName => '每日一问';
 
   @override
-  String get diaryTemplateQuestionDesc => '每天一个问题，换个角度看自己';
+  String get diaryTemplateQuestionDesc => '每天一个问题，换个角度认识自己';
 
   @override
   String diaryTemplateQuestionTitle(String date) {
@@ -5217,7 +5217,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateWeeklyName => '周回顾';
 
   @override
-  String get diaryTemplateWeeklyDesc => '一周的亮点、收获和下周计划';
+  String get diaryTemplateWeeklyDesc => '收拢一周的亮点与收获，轻装走进下一周';
 
   @override
   String diaryTemplateWeeklyTitle(String date) {
@@ -5247,72 +5247,95 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateDailyHappened => '今天发生了什么';
+  String get diaryTemplateDailyHappened => '今天的故事：';
 
   @override
-  String get diaryTemplateDailyMoment => '印象最深的一刻';
+  String get diaryTemplateDailyMoment => '闪光的瞬间：';
 
   @override
-  String get diaryTemplateDailyMood => '此刻的心情';
+  String get diaryTemplateDailyMood => '此刻的心情：';
+
+  @override
+  String get diaryTemplateDailyWords => '写给今天的一句话：';
 
   @override
   String diaryTemplateMorningWake(String time, String term) {
-    return '$time 醒来，$term时节。';
+    return '$time 醒来 · $term';
   }
 
   @override
-  String get diaryTemplateMorningTop3 => '今天最重要的三件事';
+  String get diaryTemplateMorningTop3 => '今天最重要的三件事：';
 
   @override
-  String get diaryTemplateMorningLookForward => '我期待的事';
+  String get diaryTemplateMorningLookForward => '今天期待的小事：';
 
   @override
-  String get diaryTemplateMorningWords => '给今天的一句话';
+  String get diaryTemplateMorningWords => '给今天的一句话：';
 
   @override
-  String get diaryTemplateEveningDone => '今天完成了';
+  String get diaryTemplateEveningDone => '今天完成了：';
 
   @override
-  String get diaryTemplateEveningWentWell => '做得好的地方';
+  String get diaryTemplateEveningWentWell => '做得好的地方：';
 
   @override
-  String get diaryTemplateEveningBetter => '可以更好的地方';
+  String get diaryTemplateEveningBetter => '可以更好的地方：';
 
   @override
-  String get diaryTemplateEveningTomorrow => '明天的安排';
+  String get diaryTemplateEveningTomorrow => '明天的安排：';
+
+  @override
+  String get diaryTemplateEveningNight => '睡前想对自己说：';
 
   @override
   String get diaryTemplateGratitudeThree => '今天让我心怀感激的三件事：';
 
   @override
-  String get diaryTemplateGratitudeThanks => '想对谁说声谢谢';
+  String get diaryTemplateGratitudeThanks => '想对谁说声谢谢：';
 
   @override
-  String get diaryTemplateWeeklyHighlights => '本周亮点';
+  String get diaryTemplateGratitudeSelf => '也谢谢今天的自己：';
 
   @override
-  String get diaryTemplateWeeklyWins => '完成与收获';
+  String get diaryTemplateQuestionPrompt => '今日一问：';
 
   @override
-  String get diaryTemplateWeeklyOpen => '没做完的事';
+  String get diaryTemplateQuestionAnswer => '我的回答：';
 
   @override
-  String get diaryTemplateWeeklyNext => '下周想做的事';
+  String diaryTemplateWeeklyProgress(String week, String progress) {
+    return '第 $week 周 · 今年已走过 $progress';
+  }
 
   @override
-  String get diaryTemplateEmotionHappened => '发生了什么';
+  String get diaryTemplateWeeklyHighlights => '本周亮点：';
 
   @override
-  String get diaryTemplateEmotionFelt => '我感受到的情绪';
+  String get diaryTemplateWeeklyWins => '完成与收获：';
 
   @override
-  String get diaryTemplateEmotionSource => '它从哪里来';
+  String get diaryTemplateWeeklyOpen => '还没做完的事：';
 
   @override
-  String get diaryTemplateEmotionNeed => '我需要什么';
+  String get diaryTemplateWeeklyNext => '下周想做的事：';
 
   @override
-  String get diaryTemplateEmotionStep => '接下来能做的一件小事';
+  String get diaryTemplateWeeklyNote => '写给下周的自己：';
+
+  @override
+  String get diaryTemplateEmotionHappened => '发生了什么：';
+
+  @override
+  String get diaryTemplateEmotionFelt => '我感受到的情绪：';
+
+  @override
+  String get diaryTemplateEmotionSource => '它从哪里来：';
+
+  @override
+  String get diaryTemplateEmotionNeed => '我真正需要的是：';
+
+  @override
+  String get diaryTemplateEmotionStep => '接下来能做的一件小事：';
 
   @override
   String get diaryTemplateReadingBook => '书名：';
@@ -5324,10 +5347,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplateReadingProgress => '读到：';
 
   @override
-  String get diaryTemplateReadingQuotes => '摘录';
+  String get diaryTemplateReadingQuotes => '摘录：';
 
   @override
-  String get diaryTemplateReadingThoughts => '我的想法';
+  String get diaryTemplateReadingThoughts => '我的想法：';
 
   @override
   String get diaryTemplateTagGratitude => '感恩';
@@ -5583,7 +5606,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateHiddenBadge => '已隐藏';
+  String get diaryTemplateEditedBadge => '已修改';
 
   @override
   String get diaryDraftPickerFromTemplate => '从模板新建';
@@ -5715,7 +5738,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplatesBuiltInGroup => '内置模板';
 
   @override
-  String get diaryTemplatesMineEmpty => '还没有自己的模板。点右上角 + 新建，或复制一个内置模板来改。';
+  String get diaryTemplatesMineEmpty => '还没有自己的模板。点右上角 + 新建，内置模板也可以直接编辑。';
 
   @override
   String get diaryTemplatesNew => '新建模板';
@@ -5733,16 +5756,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryTemplatesDuplicate => '复制';
 
   @override
-  String get diaryTemplatesCopyToMine => '复制为我的模板';
-
-  @override
   String get diaryTemplatesCopyCode => '复制模板码';
 
   @override
-  String get diaryTemplatesHide => '隐藏';
+  String get diaryTemplatesResetBuiltIn => '恢复默认';
 
   @override
-  String get diaryTemplatesShow => '显示';
+  String get diaryTemplatesRestoreDeleted => '恢复已删除的内置模板';
+
+  @override
+  String diaryTemplatesRestoreDeletedCount(int count) {
+    return '$count 个';
+  }
+
+  @override
+  String get diaryTemplatesRestoreSheetTitle => '已删除的内置模板';
+
+  @override
+  String get diaryTemplatesRestoreSheetHint => '恢复后回到内置模板列表，删除前改过的内容也一并回来。';
+
+  @override
+  String get diaryTemplatesRestore => '恢复';
+
+  @override
+  String get diaryTemplatesRestoreAll => '全部恢复';
 
   @override
   String diaryTemplatesCopyName(String name) {
@@ -5755,8 +5792,18 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String diaryTemplatesHiddenDone(String name) {
-    return '已隐藏「$name」';
+  String diaryTemplatesResetDone(String name) {
+    return '已恢复「$name」的默认内容';
+  }
+
+  @override
+  String diaryTemplatesRestoredDone(String name) {
+    return '已恢复「$name」';
+  }
+
+  @override
+  String diaryTemplatesRestoredAllDone(int count) {
+    return '已恢复 $count 个内置模板';
   }
 
   @override

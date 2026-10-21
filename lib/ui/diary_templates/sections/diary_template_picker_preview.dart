@@ -26,16 +26,12 @@ class DiaryTemplatePickerPreview extends StatefulWidget {
     required this.diaryDate,
     required this.onBack,
     required this.onUse,
-    this.useLabel,
   });
 
   final DiaryTemplate template;
   final DateTime diaryDate;
   final VoidCallback onBack;
   final ValueChanged<DiaryTemplateSelection> onUse;
-
-  /// 主按钮文字；默认“使用这个模板”（管理页预览改为“复制为我的模板”）。
-  final String? useLabel;
 
   @override
   State<DiaryTemplatePickerPreview> createState() =>
@@ -177,7 +173,7 @@ class _DiaryTemplatePickerPreviewState
                       questionShift: _questionShift,
                     ),
                   ),
-                  child: Text(widget.useLabel ?? l10n.diaryTemplatePickerUse),
+                  child: Text(l10n.diaryTemplatePickerUse),
                 ),
               ),
             ],

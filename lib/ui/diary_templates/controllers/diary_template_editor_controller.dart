@@ -156,6 +156,9 @@ class DiaryTemplateEditorController extends ChangeNotifier {
 
   /// 保存；名称为空时不保存、标记 [nameMissing] 并返回 false。写入失败向上
   /// 抛出，由页面提示。
+  ///
+  /// 已有的模板没有改动时不写入、直接返回 true：内置模板一经保存就会在库里
+  /// 留下一份“改过的版本”（列表里标“已修改”），打开看一眼再点保存不该如此。
   Future<bool> save(DiaryTemplatesController templates) async {
     if (_saving) return false;
     if (name.text.trim().isEmpty) {
@@ -163,6 +166,7 @@ class DiaryTemplateEditorController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+    if (!isNew && !dirty) return true;
     _saving = true;
     notifyListeners();
     try {

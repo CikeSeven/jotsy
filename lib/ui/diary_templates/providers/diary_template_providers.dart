@@ -53,8 +53,9 @@ Future<void> saveDiaryTemplatePrefs(
   return settings.setDiaryTemplatePrefsRaw(prefs.encode());
 }
 
-/// 用户模板（手动排序），实时跟随数据库变化；模板管理页用它。payload 解析
-/// 不了的行跳过，不让一行坏数据拖垮整个模板列表。
+/// 数据库里的模板行（我的模板按手动排序，另有改过的内置模板），实时跟随
+/// 数据库变化；模板管理页用它。payload 解析不了的行跳过，不让一行坏数据
+/// 拖垮整个模板列表。
 final userDiaryTemplatesProvider = StreamProvider<List<DiaryTemplate>>((
   Ref ref,
 ) {
@@ -62,7 +63,7 @@ final userDiaryTemplatesProvider = StreamProvider<List<DiaryTemplate>>((
   return database.watchDiaryTemplates().map(_parseTemplateRows);
 });
 
-/// 用户模板的一次性读取，新建编辑页的建议条与模板面板用它。
+/// 模板行的一次性读取，新建编辑页的建议条与模板面板用它。
 ///
 /// 不挂 drift 的实时查询：编辑页随时会被打开、关闭，实时查询要在页面卸载
 /// 时注销，徒增开销；模板只在管理页里改变，管理页每次写入后 invalidate
@@ -110,24 +111,28 @@ List<DiaryTemplate> _parseTemplateRows(List<DiaryTemplateRow> rows) {
   );
 }
 
-/// 按 id 取一个模板（内置或用户模板），不存在或读不出时为 null。
+/// 按 id 取一个模板（内置或用户模板），不存在、读不出或是被删除的内置模板
+/// （[deletedBuiltIns]，即偏好里的 `hiddenBuiltIns`）时为 null。
 ///
-/// 供不在 widget 树里的流程使用（新建页自动套用）：不等用户模板的
-/// StreamProvider 首次推送，直接查库。
+/// 供不在 widget 树里的流程使用（新建页自动套用、日记本的默认模板）：不等
+/// 用户模板的 StreamProvider 首次推送，直接查库。内置模板先看数据库里有没有
+/// 用户改过的版本，没有才用编译出的默认内容（与 `DiaryTemplateLibrary` 同一
+/// 口径）。
 Future<DiaryTemplate?> loadDiaryTemplate(
   AppDatabase database,
   AppLocalizations l10n,
-  String id,
-) async {
-  if (id.startsWith(builtInDiaryTemplateIdPrefix)) {
-    return buildBuiltInDiaryTemplates(
-      l10n,
-    ).where((template) => template.id == id).firstOrNull;
-  }
+  String id, {
+  required Set<String> deletedBuiltIns,
+}) async {
+  if (deletedBuiltIns.contains(id)) return null;
   final row = await database.getDiaryTemplate(id);
-  return row == null
-      ? null
-      : DiaryTemplateJson.fromPayload(row.payload, id: row.templateId);
+  if (row != null) {
+    return DiaryTemplateJson.fromPayload(row.payload, id: row.templateId);
+  }
+  if (!id.startsWith(builtInDiaryTemplateIdPrefix)) return null;
+  return buildBuiltInDiaryTemplates(
+    l10n,
+  ).where((template) => template.id == id).firstOrNull;
 }
 
 /// 记一次“最近使用”。从设置里的原文重新解码再写回，不依赖 provider 的

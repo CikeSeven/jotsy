@@ -74,6 +74,25 @@ void main() {
     expect(state().hasUpdate, isFalse);
   });
 
+  test(
+    'reports up to date while the latest release is still uploading',
+    () async {
+      await setUpContainer();
+      service.outcome = const AppUpdateCheckOutcome(
+        null,
+        AppUpdateSource.direct,
+      );
+
+      await controller().check(languageCode: 'zh');
+
+      expect(state().phase, AppUpdatePhase.upToDate);
+      expect(state().failure, isNull);
+      expect(state().release, isNull);
+      expect(state().hasUpdate, isFalse);
+      expect(stored().lastCheckedAt, now);
+    },
+  );
+
   test('shows a check failure, but stays quiet for silent checks', () async {
     await setUpContainer();
     await controller().check(languageCode: 'zh', silent: true);

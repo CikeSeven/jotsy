@@ -11,7 +11,9 @@ import 'app_update_sources.dart';
 class AppUpdateCheckOutcome {
   const AppUpdateCheckOutcome(this.release, this.source);
 
-  final AppUpdateRelease release;
+  /// 可以下载的最新版本。为 null 表示最新的 Release 已发布、安装包还没
+  /// 传完（签名构建要数十分钟），按没有新版本处理。
+  final AppUpdateRelease? release;
 
   /// 读到版本信息的线路；经 GitHub 接口直连获得时为直连。
   final AppUpdateSource source;
@@ -27,6 +29,10 @@ class AppUpdateCheckOutcome {
 /// 2. 回退：同时请求 GitHub 接口（直连，附件带 digest）与各线路的
 ///    `releases/latest` 跳转（Location 里带 tag，再经同一线路读取该版本的
 ///    `SHA256SUMS.txt` 得到安装包与校验值，见 [releaseFromChecksums]）。
+///    两边都以校验文件为“安装包已就绪”的标志：Release 刚发布、校验文件还没
+///    上传时，两条以上回答（或全部结束时有一条）如此即返回不带版本的结果，
+///    按没有新版本处理，而不是检查失败；单条线路的这种回答不足为凭（可能是
+///    镜像异常），仍等其余线路。
 /// 没有清单时再按界面语言经各线路读取仓库里的 `docs/releases/<tag>.md`。
 ///
 /// 每个请求单独限时 [requestTimeout]；整个检查最坏约为两段超时之和。
@@ -67,8 +73,8 @@ class AppUpdateChecker {
       definitiveMissThreshold: sources.length < 2 ? 1 : 2,
       cancelToken: cancelToken,
     );
-    if (manifest != null) {
-      return manifest;
+    if (manifest.isOk) {
+      return manifest.value!;
     }
     cancelToken?.throwIfCancelled();
 
@@ -77,19 +83,27 @@ class AppUpdateChecker {
         _fetchApi,
         for (final source in sources) (token) => _fetchTag(source, token),
       ],
+      definitiveMissThreshold: 2,
       cancelToken: cancelToken,
     );
     cancelToken?.throwIfCancelled();
-    if (fallback == null) {
+    final found = fallback.value;
+    if (found == null) {
       throw const AppUpdateException(AppUpdateFailureKind.network);
     }
-    final release = await _withLocalizedNotes(
-      fallback.release,
-      languageCode: languageCode,
-      sources: sources,
-      cancelToken: cancelToken,
+    final release = found.release;
+    if (release == null) {
+      return found;
+    }
+    return AppUpdateCheckOutcome(
+      await _withLocalizedNotes(
+        release,
+        languageCode: languageCode,
+        sources: sources,
+        cancelToken: cancelToken,
+      ),
+      found.source,
     );
-    return AppUpdateCheckOutcome(release, fallback.source);
   }
 
   Future<_Attempt<AppUpdateCheckOutcome>> _fetchManifest(
@@ -125,11 +139,17 @@ class AppUpdateChecker {
       accept: 'application/vnd.github+json',
       cancelToken: token,
     );
-    final release = response.ok
-        ? parseGitHubRelease(_decodeJson(response.body))
-        : null;
+    final json = response.ok ? _decodeJson(response.body) : null;
+    if (gitHubReleaseTag(json) == null) {
+      // 限流、出错或返回的不是 Release。
+      return const _Attempt<AppUpdateCheckOutcome>.failed();
+    }
+    final release = parseGitHubRelease(json);
     return release == null
-        ? const _Attempt<AppUpdateCheckOutcome>.failed()
+        // 读到了最新的 Release，但安装包还没传完。
+        ? const _Attempt<AppUpdateCheckOutcome>.miss(
+            AppUpdateCheckOutcome(null, AppUpdateSource.direct),
+          )
         : _Attempt<AppUpdateCheckOutcome>.ok(
             AppUpdateCheckOutcome(release, AppUpdateSource.direct),
           );
@@ -161,6 +181,12 @@ class AppUpdateChecker {
       maxBytes: 64 << 10,
       cancelToken: token,
     );
+    if (checksums.statusCode == HttpStatus.notFound) {
+      // tag 已在、校验文件还没上传：安装包还没传完。
+      return _Attempt<AppUpdateCheckOutcome>.miss(
+        AppUpdateCheckOutcome(null, source),
+      );
+    }
     final release = checksums.ok
         ? releaseFromChecksums(tag, checksums.body)
         : null;
@@ -194,9 +220,9 @@ class AppUpdateChecker {
         ],
         cancelToken: cancelToken,
       );
-      if (notes != null) {
+      if (notes.isOk) {
         return release.copyWith(
-          notes: <String, String>{...release.notes, code: notes},
+          notes: <String, String>{...release.notes, code: notes.value!},
         );
       }
     }
@@ -228,32 +254,36 @@ class AppUpdateChecker {
         : _Attempt<String>.ok(cleaned);
   }
 
-  /// 同时发起 [attempts]，返回最先成功的结果；全部失败返回 null。
+  /// 同时发起 [attempts]，返回最先成功的一次；没有成功时，有过“确实不存在”
+  /// 就返回其中第一次，否则返回失败。
   ///
-  /// 收到 [definitiveMissThreshold] 个“确实不存在”（404）即提前结束，
-  /// 不再等其余线路超时；阈值为 null 时 404 与普通失败相同。结束时
-  /// 关闭所有仍在进行的连接。外部取消经 [cancelToken] 传入。
-  Future<T?> _race<T>(
+  /// 收到 [definitiveMissThreshold] 个“确实不存在”即提前结束，不再等其余
+  /// 线路超时；阈值为 null 时等全部结束。结束时关闭所有仍在进行的连接。
+  /// 外部取消经 [cancelToken] 传入，此时返回失败，由调用方检查取消。
+  Future<_Attempt<T>> _race<T>(
     List<Future<_Attempt<T>> Function(AppUpdateCancelToken token)> attempts, {
     int? definitiveMissThreshold,
     AppUpdateCancelToken? cancelToken,
   }) async {
     if (attempts.isEmpty) {
-      return null;
+      return _Attempt<T>.failed();
     }
     cancelToken?.throwIfCancelled();
     final group = AppUpdateCancelToken();
-    final completer = Completer<T?>();
+    final completer = Completer<_Attempt<T>>();
     var pending = attempts.length;
     var misses = 0;
+    _Attempt<T>? firstMiss;
 
-    void settle(T? value) {
+    void settle(_Attempt<T> result) {
       if (!completer.isCompleted) {
-        completer.complete(value);
+        completer.complete(result);
       }
     }
 
-    unawaited(cancelToken?.whenCancelled.then((_) => settle(null)));
+    unawaited(
+      cancelToken?.whenCancelled.then((_) => settle(_Attempt<T>.failed())),
+    );
 
     for (final attempt in attempts) {
       unawaited(
@@ -265,15 +295,16 @@ class AppUpdateChecker {
             .then((result) {
               pending--;
               if (result.isOk) {
-                settle(result.value);
+                settle(result);
                 return;
               }
               if (result.isMiss) {
                 misses++;
+                firstMiss ??= result;
               }
               final threshold = definitiveMissThreshold;
               if (pending == 0 || (threshold != null && misses >= threshold)) {
-                settle(null);
+                settle(firstMiss ?? _Attempt<T>.failed());
               }
             }),
       );
@@ -308,10 +339,11 @@ String? extractReleaseTag(String raw) {
   }
 }
 
-/// 一次尝试的结果：成功、确实不存在（404）或其他失败。
+/// 一次尝试的结果：成功、确实不存在（404；可附带结果，如“安装包还没传完”）
+/// 或其他失败。
 class _Attempt<T> {
   const _Attempt.ok(T this.value) : isOk = true, isMiss = false;
-  const _Attempt.miss() : value = null, isOk = false, isMiss = true;
+  const _Attempt.miss([this.value]) : isOk = false, isMiss = true;
   const _Attempt.failed() : value = null, isOk = false, isMiss = false;
 
   final T? value;

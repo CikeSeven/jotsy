@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui' show Color;
 
+import '../../../core/services/diary_typography.dart';
 import '../models/diary_code_block/diary_code_theme.dart';
 import '../models/diary_text_colors.dart';
 import 'diary_export_blocks.dart';
@@ -63,6 +64,7 @@ class DiaryDocxWriter {
     DateTime? now,
     DiaryExportBookLayout? book,
     DiaryExportCodeTheme? code,
+    DiaryTypography typography = const DiaryTypography(),
   }) async {
     final builder = _DocxBuilder();
     if (book != null) {
@@ -108,6 +110,7 @@ class DiaryDocxWriter {
                 ? null
                 : (chapterHeadings: book.hasChapterHeadings),
             code: code?.paper,
+            typography: typography.copyWith(),
           ),
         ),
         text('word/document.xml', builder.document()),
@@ -327,6 +330,7 @@ class DiaryDocxWriter {
             _ => '•',
           };
           b.paragraph(
+            style: 'DiaryList',
             indentTwips: 420 * (block.indent + 1),
             hangingTwips: 420,
             runs: <String>[b.run('$marker\t'), ...b.inlines(block.inlines)],
@@ -400,7 +404,7 @@ class DiaryDocxWriter {
       '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>'
       '</Relationships>';
 
-  /// 样式表：正文默认 11pt、1.5 倍行距；中文字体交给系统（东亚字体留空
+  /// 样式表：正文数值跟随 [typography]；中文字体交给系统（东亚字体留空
   /// 时 Word 按语言选择默认中文字体，Windows 与 macOS 都能正常显示）。
   ///
   /// 用户选了导入字体时（[fontFamilies] 不为空）默认字体的西文与东亚槽位都
@@ -417,6 +421,7 @@ class DiaryDocxWriter {
   static String _styles(
     String languageTag, {
     required List<String> fontFamilies,
+    required DiaryTypography typography,
     ({bool chapterHeadings})? book,
     DiaryCodePalette? code,
   }) {
@@ -424,6 +429,13 @@ class DiaryDocxWriter {
     final entryLevel = book == null ? 0 : (book.chapterHeadings ? 1 : 0);
     final shift = book == null ? 0 : entryLevel + 1;
     final codeFill = code == null ? 'F1F3F4' : _hex(code.background);
+    // 应用的逻辑像素按 96 DPI 换到纸面：1px = 0.75pt。Word 字号用半磅，
+    // 字间距 / 段后间距用 twip（1/20pt），倍数行距用 1/240 行。
+    final size = (typography.fontSize * 1.5).round();
+    final tracking = (typography.letterSpacing * 15).round();
+    final after = (typography.paragraphSpacing * 15).round();
+    final line = (typography.lineHeight * 240).round();
+    final headingTracking = '<w:spacing w:val="$tracking"/>';
     // 与底色同色的边框只用来留内边距：相邻代码段落的边框相同，Word 把它们
     // 合成一个框，整块代码四周留白，文字不贴着底色边缘。CT_PPr 顺序：
     // pBdr → shd → spacing。
@@ -442,7 +454,7 @@ class DiaryDocxWriter {
       String type = 'paragraph',
       String pPr = '',
       String rPr = '',
-      bool basedOnNormal = true,
+      bool basedOnNormal = false,
     }) =>
         '<w:style w:type="$type" w:styleId="$id"><w:name w:val="$name"/>'
         '${type == 'paragraph' && basedOnNormal ? '<w:basedOn w:val="Normal"/>' : ''}'
@@ -459,16 +471,22 @@ class DiaryDocxWriter {
         '<w:lang w:val="${_xml(languageTag)}" w:eastAsia="${_xml(languageTag)}"/></w:rPr></w:rPrDefault>'
         '<w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="360" w:lineRule="auto"/></w:pPr></w:pPrDefault>'
         '</w:docDefaults>'
-        '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>'
+        // 正文只在 Normal 上写排版数值；抬头、扉页、目录与代码块不继承
+        // Normal，继续使用各自的文档规格，避免放大正文时它们也被拉开。
+        '<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/>'
+        '<w:pPr><w:spacing w:after="$after" w:line="$line" w:lineRule="auto"/></w:pPr>'
+        '<w:rPr>$headingTracking<w:sz w:val="$size"/><w:szCs w:val="$size"/></w:rPr></w:style>'
         '${style('Title', 'Title', pPr: '<w:keepNext/><w:spacing w:after="60"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="40"/><w:szCs w:val="40"/>')}'
         '${style('DiaryMeta', 'Diary Meta', pPr: '<w:spacing w:after="60"/>', rPr: '<w:color w:val="6B7280"/><w:sz w:val="20"/><w:szCs w:val="20"/>')}'
-        '${style('Heading1', 'heading 1', pPr: '<w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${0 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="32"/><w:szCs w:val="32"/>')}'
-        '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="${1 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="28"/><w:szCs w:val="28"/>')}'
-        '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/><w:sz w:val="24"/><w:szCs w:val="24"/>')}'
-        '${style('Quote', 'Quote', pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
+        '${style('Heading1', 'heading 1', pPr: '<w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${0 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="32"/><w:szCs w:val="32"/>')}'
+        '${style('Heading2', 'heading 2', pPr: '<w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="${1 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="28"/><w:szCs w:val="28"/>')}'
+        '${style('Heading3', 'heading 3', pPr: '<w:keepNext/><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="${2 + shift}"/>', rPr: '<w:b/><w:bCs/>$headingTracking<w:sz w:val="24"/><w:szCs w:val="24"/>')}'
+        // 列表与引用跟随正文字号、行距、字距，但不追加段间距（与编辑器一致）。
+        '${style('DiaryList', 'Diary List', basedOnNormal: true, pPr: '<w:spacing w:after="120"/>')}'
+        '${style('Quote', 'Quote', basedOnNormal: true, pPr: '<w:pBdr><w:left w:val="single" w:sz="18" w:space="8" w:color="C7CCD1"/></w:pBdr><w:spacing w:after="120"/><w:ind w:left="360"/>', rPr: '<w:i/><w:iCs/><w:color w:val="5F6368"/>')}'
         '${style('Divider', 'Divider', pPr: '<w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="C7CCD1"/></w:pBdr>')}'
         '${style('CodeBlock', 'Code Block', pPr: '$codeBorder<w:shd w:val="clear" w:color="auto" w:fill="$codeFill"/><w:spacing w:after="0" w:line="276" w:lineRule="auto"/>', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>$codeColor<w:sz w:val="20"/><w:szCs w:val="20"/>')}'
-        '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
+        '${style('InlineCode', 'Inline Code', type: 'character', rPr: '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/><w:spacing w:val="0"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:shd w:val="clear" w:color="auto" w:fill="F1F3F4"/>')}'
         '${style('Hyperlink', 'Hyperlink', type: 'character', rPr: '<w:color w:val="1E6586"/><w:u w:val="single"/>')}'
         '${book == null ? '' : _bookStyles(style, entryLevel: entryLevel)}'
         '</w:styles>';

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/backup_constants.dart';
+import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_export_controller.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_font.dart';
 import 'package:node_diary/ui/diaries/export/diary_export_format.dart';
@@ -310,4 +311,33 @@ void main() {
     );
     expect(reads, 1);
   });
+
+  test(
+    'Word receives the typography snapshot through the export controller',
+    () async {
+      final a = await diary('排版', createdAt: DateTime(2026, 5, 1));
+      final artifact = await controller().build(
+        [a],
+        options: const DiaryExportOptions(format: DiaryExportFormat.word),
+        labels: testExportLabels,
+        languageTag: 'zh',
+        typography: const DiaryTypography(
+          fontSize: 20,
+          lineHeight: 2,
+          letterSpacing: 1,
+          paragraphSpacing: 16,
+        ),
+      );
+      final styles = ZipDecoder()
+          .decodeBytes(await artifact.file.readAsBytes())
+          .files
+          .singleWhere((f) => f.name == 'word/styles.xml');
+      final xml = utf8.decode(styles.content as List<int>);
+      expect(
+        xml,
+        contains('<w:spacing w:after="240" w:line="480" w:lineRule="auto"/>'),
+      );
+      expect(xml, contains('<w:spacing w:val="15"/><w:sz w:val="30"/>'));
+    },
+  );
 }

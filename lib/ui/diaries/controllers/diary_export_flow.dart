@@ -81,7 +81,7 @@ Future<void> runDiaryExportFlow(
   }
 
   final database = ref.read(appDatabaseProvider);
-  // 正文字体跟随正文排版；字体文件在生成时（等待遮罩下）才读取。
+  // 保存本次导出的正文排版快照；字体文件在生成时（等待遮罩下）才读取。
   final typography = ref.read(diaryTypographyProvider);
   final fontStorage = ref.read(diaryFontStorageServiceProvider);
   final controller =
@@ -120,6 +120,7 @@ Future<void> runDiaryExportFlow(
         book: book,
         bookStructure: request.bookStructure,
         code: code,
+        typography: typography,
       ),
     );
   } on DiaryExportEmptyException catch (error) {

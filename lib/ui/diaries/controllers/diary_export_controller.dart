@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/services/backup_file_save_service.dart';
 import '../../../core/services/data_archive_service.dart';
+import '../../../core/services/diary_typography.dart';
 import '../export/diary_export_book.dart';
 import '../export/diary_export_code.dart';
 import '../export/diary_export_docx.dart';
@@ -82,6 +83,8 @@ class DiaryExportEmptyException implements Exception {
 /// - 正文字体跟随正文排版：[loadBodyFont] 给出用户选的导入字体（见
 ///   [DiaryExportFont]），PDF 嵌入它，Word 与网页按字族名引用；只在这三种
 ///   格式下读取。没给或读不到时各格式保持原有字体。
+/// - Word 正文数值由 [build] 的 `typography` 快照给出，写出器只换算单位，
+///   不自行读取设置，避免生成途中混入另一份排版参数。
 /// - 代码高亮跟随代码块样式：[build] 的 `code` 交给 PDF、Word 与网页写出器；
 ///   没给时代码块只是等宽文字。
 class DiaryExportController {
@@ -131,6 +134,7 @@ class DiaryExportController {
     DiaryExportBook? book,
     bool bookStructure = true,
     DiaryExportCodeTheme? code,
+    DiaryTypography typography = const DiaryTypography(),
   }) async {
     final now = _now();
     var exportable = diaries.where((DiaryWithTags detail) {
@@ -211,6 +215,7 @@ class DiaryExportController {
           documentTitle: documentTitle,
           languageTag: languageTag,
           fontFamilies: await _bodyFontFamilies(),
+          typography: typography,
           now: now,
           book: layout,
           code: code,

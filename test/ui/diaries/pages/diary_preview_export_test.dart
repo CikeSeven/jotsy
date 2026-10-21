@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,8 +9,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/services/app_service.dart';
+import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
+import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
 import 'package:node_diary/ui/diaries/sections/diary_export_sheet.dart';
 import 'package:node_diary/ui/widgets/action_loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,10 +45,17 @@ void main() {
     await temp.delete(recursive: true);
   });
 
-  Future<void> openExportSheet(WidgetTester tester) async {
+  Future<void> openExportSheet(
+    WidgetTester tester, {
+    DiaryTypography? typography,
+  }) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [appDatabaseProvider.overrideWithValue(database)],
+        overrides: [
+          appDatabaseProvider.overrideWithValue(database),
+          if (typography != null)
+            diaryTypographyProvider.overrideWithValue(typography),
+        ],
         child: MaterialApp(
           theme: expressiveTestTheme(Brightness.light),
           locale: const Locale('zh'),
@@ -78,6 +89,45 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  List<String> recordShares(WidgetTester tester) {
+    final shared = <String>[];
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(pathProvider, (MethodCall call) async {
+      return call.method == 'getTemporaryDirectory' ? temp.path : null;
+    });
+    messenger.setMockMethodCallHandler(shareChannel, (MethodCall call) async {
+      final arguments = call.arguments as Map<Object?, Object?>;
+      shared.addAll((arguments['paths'] as List<Object?>).whereType<String>());
+      return 'success';
+    });
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(pathProvider, null);
+      messenger.setMockMethodCallHandler(shareChannel, null);
+    });
+    return shared;
+  }
+
+  Future<void> shareInSheet(WidgetTester tester, List<String> shared) async {
+    // 文件生成走真实 IO；同时推进虚拟帧时间，让生成结束后的遮罩淡出
+    // 定时器也能完成，才能交给系统分享（只有真实延时不会推进测试时钟）。
+    await tester.runAsync(() async {
+      await tapInSheet(tester, '分享');
+      for (var i = 0; i < 50 && shared.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        await tester.pump(const Duration(milliseconds: 20));
+      }
+    });
+    await tester.pumpAndSettle();
+    expect(
+      shared,
+      hasLength(1),
+      reason: tester
+          .widgetList<Text>(find.byType(Text))
+          .map((w) => w.data)
+          .join('\n'),
+    );
+  }
+
   testWidgets('a diary file asks for an optional password before exporting', (
     tester,
   ) async {
@@ -106,36 +156,11 @@ void main() {
   testWidgets(
     'plain text is generated and handed to the share sheet by file name',
     (tester) async {
-      final shared = <String>[];
-      final messenger = tester.binding.defaultBinaryMessenger;
-      messenger.setMockMethodCallHandler(pathProvider, (MethodCall call) async {
-        return call.method == 'getTemporaryDirectory' ? temp.path : null;
-      });
-      messenger.setMockMethodCallHandler(shareChannel, (MethodCall call) async {
-        final arguments = call.arguments as Map<Object?, Object?>;
-        shared.addAll(
-          (arguments['paths'] as List<Object?>).whereType<String>(),
-        );
-        return 'success';
-      });
-      addTearDown(() {
-        messenger.setMockMethodCallHandler(pathProvider, null);
-        messenger.setMockMethodCallHandler(shareChannel, null);
-      });
+      final shared = recordShares(tester);
 
       await openExportSheet(tester);
       await tapInSheet(tester, '纯文本');
-      // 文件生成走真实 IO，需要在 runAsync 里让它跑完。
-      await tester.runAsync(() async {
-        await tapInSheet(tester, '分享');
-        for (var i = 0; i < 50 && shared.isEmpty; i++) {
-          await Future<void>.delayed(const Duration(milliseconds: 20));
-          await tester.pump();
-        }
-      });
-      await tester.pumpAndSettle();
-
-      expect(shared, hasLength(1));
+      await shareInSheet(tester, shared);
       expect(shared.single, endsWith('2026-04-03 0900 春日小记.txt'));
       final text = await tester.runAsync(
         () => File(shared.single).readAsString(),
@@ -147,4 +172,37 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     },
   );
+
+  testWidgets('Word export uses the current body typography from the preview', (
+    tester,
+  ) async {
+    final shared = recordShares(tester);
+    await openExportSheet(
+      tester,
+      typography: const DiaryTypography(
+        fontSize: 20,
+        lineHeight: 2,
+        letterSpacing: 1,
+        paragraphSpacing: 16,
+      ),
+    );
+    await tapInSheet(tester, 'Word 文档');
+    await shareInSheet(tester, shared);
+    expect(shared.single, endsWith('.docx'));
+    final bytes = await tester.runAsync(
+      () => File(shared.single).readAsBytes(),
+    );
+    final styles = ZipDecoder()
+        .decodeBytes(bytes!)
+        .files
+        .singleWhere((f) => f.name == 'word/styles.xml');
+    final xml = utf8.decode(styles.content as List<int>);
+    expect(
+      xml,
+      contains('<w:spacing w:after="240" w:line="480" w:lineRule="auto"/>'),
+    );
+    expect(xml, contains('<w:spacing w:val="15"/><w:sz w:val="30"/>'));
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+  });
 }

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -18,6 +19,7 @@ import 'diary_export_entry.dart';
 import 'diary_export_font.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
+import 'diary_export_pdf_heading.dart';
 import 'diary_export_plain_text.dart';
 
 /// PDF 用的字体，生成时按实际字符做子集嵌入。字体文件各约 8MB 起，加载一次
@@ -94,6 +96,8 @@ class DiaryPdfFonts {
 /// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去；
 /// - pdf 库填色时丢掉透明度，半透明的背景色会印成不透明的原色——文字色与
 ///   背景色先按纸面压平成不透明色（[_flattenColorAttributes]）；
+/// - 标题默认样式会覆盖行内格式——标题经 [DiaryPdfHeading] 叠加样式，
+///   保留文字色、背景色、粗体与装饰；
 /// - 它不认 `code-block` 的语言值，自带的高亮也不跟随用户的配色——给了代码
 ///   配色（[DiaryExportCodeTheme]）时先把代码行按记号拆开、写上颜色，再把
 ///   语言值改写为 `true`；代码块底色、正文字色与行号色同取这套配色。
@@ -732,6 +736,15 @@ class DiaryPdfWriter {
   }) async {
     final captured = <pw.Widget>[];
     final palette = code?.paper;
+    // 在插件解析前保留标题片段：其解析器还会把相邻的非空属性表误当成
+    // 相同样式合并。按行文案排队保留原始块，重复标题依次取出；插件有时
+    // 把空标题当普通空行，不能依赖回调总次数与原始标题总数一致。
+    final headings = <String, Queue<ExportBlock>>{};
+    for (final block in ExportBlockParser.parse(body.toJson())) {
+      if (block.kind == ExportBlockKind.heading) {
+        (headings[block.plainText] ??= Queue<ExportBlock>()).add(block);
+      }
+    }
     final converter = PDFConverter(
       pageFormat: PDFPageFormat.a4,
       document: body,
@@ -771,6 +784,18 @@ class DiaryPdfWriter {
         boldItalicFontV: fonts.bold,
         fallbacks: <pw.Font>[fonts.bundled],
       ),
+      onDetectHeaderBlock: (line, attrs, [extra]) {
+        final text = line.toPlainText.replaceFirst(RegExp(r'\n$'), '');
+        return DiaryPdfHeading.build(
+          headings[text]!.removeFirst(),
+          theme: theme,
+          aligned: attrs?['align'] != null,
+          textDirection:
+              attrs?['direction'] == 'rtl' || textDirection == TextDirection.rtl
+              ? pw.TextDirection.rtl
+              : pw.TextDirection.ltr,
+        );
+      },
     );
     // 只借用插件把 Delta 转成块级组件；它生成的那份文档直接丢弃。
     await converter.createDocument(

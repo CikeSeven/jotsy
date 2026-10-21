@@ -152,6 +152,18 @@ abstract class AppLocalizations {
   /// **'Undo'**
   String get commonUndo;
 
+  /// 多选列表顶栏的全选按钮提示：选中列表里的全部条目。
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get commonSelectAll;
+
+  /// 多选列表已全部选中时，全选按钮的提示：取消选中全部条目。
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect all'**
+  String get commonDeselectAll;
+
   /// Auto-generated metadata for commonBack.
   ///
   /// In en, this message translates to:
@@ -2455,6 +2467,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Deleted at {p0}'**
   String autoT0194(String p0);
+
+  /// 回收站条目底行：日记的日期 + 删除时间（deletedAt 为完整短语，如“删除于 10月20日 14:30”）。
+  ///
+  /// In en, this message translates to:
+  /// **'{date} · {deletedAt}'**
+  String recycleBinEntryFooter(String date, String deletedAt);
 
   /// Auto-generated metadata for autoT0195.
   ///

@@ -29,7 +29,7 @@
 │  │  ├─ diary_templates/            # 日记模板（模型与正文白名单、变量、推荐规则、内置模板、套用与撤销、建议条与模板面板、管理页（含已删除内置模板的恢复面板）与模板编辑页）
 │  │  ├─ notebooks/                  # 日记本（书架面板 / 编辑页 / 管理页、首页范围与头部卡片、选本面板、目录与章节、智能规则编辑、统计与写作目标、上锁验证与重锁遮罩、导出成书入口）
 │  │  ├─ home|calendar|explore|settings/  # home/providers/：首页之外的页面请求切回“日记”Tab（如预览页点日记本胶囊）；home/models/home_tab.dart：首页 Tab 身份与按功能开关推出的可见 Tab；home/models/home_bar_style/：导航栏样式模型、行为、预设、样式码与解析；home/widgets/home_bar/：首页底栏（实色 / 玻璃悬浮栏）、导航项行、顶栏表面与 HomeChromeScope；home/providers/home_bar_settings_provider.dart：导航栏样式设置；settings/providers/：功能管理开关 appFeaturesProvider；settings/pages|sections|controllers/：含导航栏样式编辑页（home_bar_style_page.dart、sections/home_bar_style/、home_bar_style_editor_controller.dart）；settings/widgets/settings_reveal.dart：条件设置行的展开收起
-│  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载、看图页（含长按分享 / 保存 / 打开日记面板）、列表右侧字母索引条 alphabet_index_bar.dart 等；glass/：共用的磨砂玻璃表面 GlassSurface 与只画外侧的投影；expressive_menu/：全应用共用的锚定弹出菜单；long_image/：长图判定、保持比例的解码尺寸、分片拼图与 cover 裁切对齐）
+│  │  └─ widgets/                    # 跨 feature 公共 UI（导航、Expressive 选择组/加载、看图页（含长按分享 / 保存 / 打开日记面板）、列表右侧字母索引条 alphabet_index_bar.dart、多选顶栏的全选按钮 select_all_button.dart 等；glass/：共用的磨砂玻璃表面 GlassSurface 与只画外侧的投影；expressive_menu/：全应用共用的锚定弹出菜单；long_image/：长图判定、保持比例的解码尺寸、分片拼图与 cover 裁切对齐）
 │  ├─ l10n/                          # 国际化封装
 │  └─ utils/                         # 工具函数（pinyin/：由 Unihan 生成的汉字拼音表与名称 A–Z 索引 NameIndexKey）
 ├─ assets/                           # 静态资源
@@ -136,6 +136,7 @@
 - 例外：可访问性修复或平台组件约束导致偏离时，需在代码注释说明原因。
 
 ## 7. 命令与执行约束
+- 必须：代理与用户的一切沟通（回复、进度同步、提问与总结）使用简体中文；代码标识符、命令、路径与报错原文保持原样，不翻译。
 - 必须：代理在完成代码改动后执行 `dart format` 与 `flutter analyze`，并回传执行结果。
 - 例外：若本次改动可明确判定不会引入 Dart 编译或静态检查问题（如仅文档/注释/纯资源调整），可跳过 `dart format` 与 `flutter analyze`，并在回复中说明跳过原因。
 - 必须：高耗时构建/代码生成命令执行前说明目的与潜在耗时。

@@ -36,6 +36,14 @@
   "@commonUndo": {
     "description": "Auto-generated metadata for commonUndo."
   },
+  "commonSelectAll": "全选",
+  "@commonSelectAll": {
+    "description": "多选列表顶栏的全选按钮提示：选中列表里的全部条目。"
+  },
+  "commonDeselectAll": "取消全选",
+  "@commonDeselectAll": {
+    "description": "多选列表已全部选中时，全选按钮的提示：取消选中全部条目。"
+  },
   "commonBack": "返回",
   "@commonBack": {
     "description": "Auto-generated metadata for commonBack."
@@ -1837,6 +1845,18 @@
       }
     },
     "description": "Auto-generated metadata for autoT0194."
+  },
+  "recycleBinEntryFooter": "{date} · {deletedAt}",
+  "@recycleBinEntryFooter": {
+    "description": "回收站条目底行：日记的日期 + 删除时间（deletedAt 为完整短语，如“删除于 10月20日 14:30”）。",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "deletedAt": {
+        "type": "String"
+      }
+    }
   },
   "autoT0195": "确认删除标签 \"{p0}\" 吗？",
   "@autoT0195": {

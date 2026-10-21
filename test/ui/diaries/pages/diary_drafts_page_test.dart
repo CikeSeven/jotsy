@@ -150,6 +150,64 @@ void main() {
     await harness.unmount();
   });
 
+  testWidgets('select all picks every draft and toggles back', (tester) async {
+    final harness = await openPage(
+      tester,
+      drafts: [
+        ('一', DateTime(2026, 10, 1)),
+        ('二', DateTime(2026, 10, 2)),
+        ('三', DateTime(2026, 10, 3)),
+      ],
+    );
+    final l10n = harness.l10n;
+    // 不在多选时没有全选按钮：多选由长按进入。
+    expect(find.byTooltip(l10n.commonSelectAll), findsNothing);
+
+    await tester.longPress(tileOf('二'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(l10n.commonSelectAll));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.autoT0099('3')), findsOneWidget);
+    expect(
+      tester.widgetList<Checkbox>(find.byType(Checkbox)).map((c) => c.value),
+      everyElement(isTrue),
+    );
+
+    // 取消全选即退出多选。
+    await tester.tap(find.byTooltip(l10n.commonDeselectAll));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.diaryDraftsTitle), findsOneWidget);
+    expect(find.byType(Checkbox), findsNothing);
+    await harness.unmount();
+  });
+
+  testWidgets('select all then delete empties the drafts box', (tester) async {
+    final harness = await openPage(
+      tester,
+      drafts: [('甲', DateTime(2026, 10, 1)), ('乙', DateTime(2026, 10, 2))],
+    );
+    final l10n = harness.l10n;
+
+    await tester.longPress(tileOf('甲'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(l10n.commonSelectAll));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(l10n.commonDelete));
+    await tester.pumpAndSettle();
+    expect(find.text(l10n.diaryDraftsDeleteMessage(2)), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, l10n.commonDelete));
+    await tester.pumpAndSettle();
+    await harness.settle();
+    await tester.pumpAndSettle();
+
+    expect(await harness.drafts(), isEmpty);
+    expect(find.text(l10n.diaryDraftsDeleted(2)), findsOneWidget);
+    expect(find.text(l10n.diaryDraftsEmpty), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    await harness.unmount();
+  });
+
   testWidgets('back leaves selection mode before leaving the page', (
     tester,
   ) async {

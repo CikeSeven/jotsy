@@ -14,7 +14,9 @@ import '../../home/widgets/home_hint_visibility_scope.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../widgets/delayed_loading_indicator.dart';
 import '../../widgets/empty_hint.dart';
+import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/list_item_presence.dart';
+import '../../widgets/select_all_button.dart';
 import '../controllers/diary_drafts_controller.dart';
 import '../providers/diary_draft_providers.dart';
 import '../viewmodels/diary_draft_list_item.dart';
@@ -25,7 +27,8 @@ import 'edit_diary_page.dart';
 /// 草稿箱：还没发布的新建日记，最近编辑的在前。
 ///
 /// - 点按续写（打开新建模式的编辑页，发布后这一份自动删除）；
-/// - 左滑删除单份，长按进入多选、批量删除（先确认）；两种删除都带撤销；
+/// - 左滑删除单份，长按进入多选（顶栏可全选）、批量删除（先确认）；两种
+///   删除都带撤销；
 /// - 多选时系统返回先退出多选。
 ///
 /// 页面只做装配与选择、收起等界面状态；删除与撤销经 [DiaryDraftsController]。
@@ -56,9 +59,16 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
   /// 撤销后重新出现的条目，从 0 展开而不是直接冒出。
   final Set<String> _appearingIds = <String>{};
 
+  /// 本次构建列出、可以勾选的草稿（不含滑走与正在收起的），供“全选”使用；
+  /// 在 build 开头随数据流更新。
+  List<String> _selectableIds = const <String>[];
+
   bool _operating = false;
 
   bool get _isSelectionMode => _selectedIds.isNotEmpty;
+
+  bool get _allSelected =>
+      _selectableIds.isNotEmpty && _selectedIds.containsAll(_selectableIds);
 
   void _open(String draftId) {
     unawaited(
@@ -89,6 +99,18 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
   }
 
   void _clearSelection() => setState(_selectedIds.clear);
+
+  /// 全选 / 取消全选。多选态由“有选中项”推出，取消全选即退出多选。
+  void _toggleSelectAll() {
+    if (_operating) return;
+    setState(() {
+      if (_allSelected) {
+        _selectedIds.clear();
+      } else {
+        _selectedIds.addAll(_selectableIds);
+      }
+    });
+  }
 
   Future<void> _deleteSelected() async {
     if (!_isSelectionMode || _operating) return;
@@ -224,6 +246,11 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final draftsAsync = ref.watch(diaryDraftsProvider);
+    // 先按最新数据整理界面状态，顶栏的全选与列表看到的是同一份。
+    final drafts = draftsAsync.value;
+    final visible = drafts == null
+        ? const <DiaryDraftListItem>[]
+        : _resolveVisible(drafts);
 
     return PopScope(
       canPop: !_isSelectionMode,
@@ -231,18 +258,22 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
         if (!didPop) _clearSelection();
       },
       child: Scaffold(
+        // 进入/退出多选时返回键与操作按钮缩放淡入切换，而不是硬换。
         appBar: AppTopBar(
-          leading: _isSelectionMode
-              ? IconButton(
-                  tooltip: l10n.commonCancel,
-                  onPressed: _clearSelection,
-                  icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
-                )
-              : IconButton(
-                  tooltip: l10n.commonBack,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
-                ),
+          leading: ExpressiveIconSwap(
+            switchKey: _isSelectionMode,
+            child: _isSelectionMode
+                ? IconButton(
+                    tooltip: l10n.commonCancel,
+                    onPressed: _clearSelection,
+                    icon: const FaIcon(FontAwesomeIcons.xmark, size: 18),
+                  )
+                : IconButton(
+                    tooltip: l10n.commonBack,
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const FaIcon(FontAwesomeIcons.angleLeft, size: 18),
+                  ),
+          ),
           // 进入/退出多选、选择数量变化时标题淡入淡出，而不是硬切。
           title: AnimatedSwitcher(
             duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
@@ -256,37 +287,59 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
             ),
           ),
           actions: <Widget>[
-            if (_isSelectionMode)
-              IconButton(
-                tooltip: l10n.commonDelete,
-                onPressed: _operating ? null : _deleteSelected,
-                icon: FaIcon(
-                  FontAwesomeIcons.trashCan,
-                  size: 16,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
+            ExpressiveIconSwap(
+              switchKey: _isSelectionMode,
+              child: _isSelectionMode
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        SelectAllButton(
+                          allSelected: _allSelected,
+                          onPressed: _operating ? null : _toggleSelectAll,
+                        ),
+                        IconButton(
+                          tooltip: l10n.commonDelete,
+                          onPressed: _operating ? null : _deleteSelected,
+                          icon: FaIcon(
+                            FontAwesomeIcons.trashCan,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ],
         ),
         body: draftsAsync.when(
           loading: () => const DelayedLoadingIndicator(),
           error: (error, _) =>
               Center(child: Text(l10n.autoT0121(error.toString()))),
-          data: _buildList,
+          data: (_) => _buildList(visible),
         ),
       ),
     );
   }
 
-  Widget _buildList(List<DiaryDraftListItem> drafts) {
+  /// 数据流确认移除后清理界面状态，返回本次要列出的草稿（不含滑走的），
+  /// 并记下可勾选的 id；撤销写回的条目重新出现时不再算作滑走。
+  List<DiaryDraftListItem> _resolveVisible(List<DiaryDraftListItem> drafts) {
     final currentIds = <String>{for (final item in drafts) item.draftId};
-    // 数据流确认移除后清理界面状态；撤销写回的条目重新出现时不再算作滑走。
     _pendingHideIds.removeWhere((id) => !currentIds.contains(id));
     _sweptAwayIds.removeWhere((id) => !currentIds.contains(id));
     _selectedIds.removeWhere((id) => !currentIds.contains(id));
     final visible = drafts
         .where((item) => !_sweptAwayIds.contains(item.draftId))
         .toList(growable: false);
+    _selectableIds = <String>[
+      for (final item in visible)
+        if (!_pendingHideIds.contains(item.draftId)) item.draftId,
+    ];
+    return visible;
+  }
+
+  Widget _buildList(List<DiaryDraftListItem> visible) {
     final itemDuration = ExpressiveMotion.duration(
       context,
       ExpressiveMotion.medium,

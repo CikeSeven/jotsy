@@ -364,8 +364,8 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
 ### 5.14 草稿箱（`DiaryDraftsPage` / `showDiaryDraftPickerSheet`）
 - **入口**：首页顶栏搜索条右侧的草稿箱按钮（`filePen` 18），有草稿时带 `Badge` 角标显示份数：`primary` 底 + `onPrimary` 字（草稿是“还没写完”，不是警告，不用默认的错误色），0 份隐藏，超过 99 显示 99+；设置 → 数据与隐私（回收站上方）。首页顶栏不显示应用名，搜索条占满左侧，提示“在 Jotsy 中搜索”（搜索页输入框仍为“搜索标题或内容”）。
 - **草稿选择面板**：已有草稿时点“新建”（首页 FAB、空列表、日历、探索）弹出底部面板：拖动条 + 标题“继续写草稿”（20 w700）；最近编辑的 3 份草稿（紧凑行），点按即续写；“查看全部草稿（N）”行（`primary` 色 `filePen` + `angleRight`）；底部整宽填充按钮“新建空白”。下滑或点遮罩关闭，什么也不做；没有草稿时直接进空白编辑页。新建空白不删除任何草稿。
-- **草稿行**（`DiaryDraftTile`，面板与草稿箱页共用）：卡片表面 + 0.8dp 微边框、16dp 圆角，内边距 16（紧凑行竖向 12）。标题 `titleMedium` w600 单行（没写标题取正文第一行，都没有时为 `onSurfaceVariant` 色的“无标题”）；摘要 `bodyMedium` `onSurfaceVariant`，两行（紧凑行一行），不重复已当作标题的那一行；底行 `labelMedium`“编辑于 {时间} · N 字”（时间口径同“最后编辑于”，字数经 `TextStats`）。有封面或正文图片时右侧为 56dp（紧凑 44dp）正方缩略图、12dp 圆角，封面优先、否则取正文第一张图，cover 裁切（长图顶部对齐），只限宽度解码。多选时左侧出现勾选框，选中态底色补间到 `secondaryContainer`、描边到 `secondary`（`ExpressiveStateBlend`）。
-- **草稿箱页**：标准顶栏（`angleLeft` 18，标题“草稿箱”），最近编辑的在前，左右 16dp、行间 8dp。点按续写（新建模式编辑页，发布后这一份自动消失）；左滑删除（`DiarySwipeActionItem`，`errorContainer` 底 + `trashCan`）；长按进入多选（顶栏换成 ✕、“已选择 N 项”与 `error` 色删除按钮，删除前确认，弹窗右侧按钮 `error` 色）；两种删除都带 4 秒撤销提示条，多选时系统返回先退出多选。行收起与撤销后的展开经 `ListItemPresence`，删空后与空态（`EmptyHint`，`filePen`）交叉淡入。
+- **草稿行**（`DiaryDraftTile`，面板与草稿箱页共用；外观为与回收站共用的 `DiaryListRowCard`）：卡片表面 + 0.8dp 微边框、16dp 圆角，内边距 16（紧凑行竖向 12）。标题 `titleMedium` w600 单行（没写标题取正文第一行，都没有时为 `onSurfaceVariant` 色的“无标题”）；摘要 `bodyMedium` `onSurfaceVariant`，两行（紧凑行一行），不重复已当作标题的那一行；底行 `labelMedium`“编辑于 {时间} · N 字”（时间口径同“最后编辑于”，字数经 `TextStats`）。有封面或正文图片时右侧为 56dp（紧凑 44dp）正方缩略图、12dp 圆角，封面优先、否则取正文第一张图，cover 裁切（长图顶部对齐），只限宽度解码。多选时左侧勾选框横向展开出现（`AnimatedSize` `fast`，退出时收回，右侧文字随之平滑让位），选中态底色补间到 `secondaryContainer`、描边到 `secondary`（`ExpressiveStateBlend`）。
+- **草稿箱页**：标准顶栏（`angleLeft` 18，标题“草稿箱”），最近编辑的在前，左右 16dp、行间 8dp。点按续写（新建模式编辑页，发布后这一份自动消失）；左滑删除（`DiarySwipeActionItem`，`errorContainer` 底 + `trashCan`）；长按进入多选（返回键与操作按钮经 `ExpressiveIconSwap` 换成 ✕、“已选择 N 项”、全选按钮与 `error` 色删除按钮，删除前确认，弹窗右侧按钮 `error` 色；全选按钮为 `SelectAllButton`：没全选时是描边的 `squareCheck`“全选”，全选后换成 `primary` 色实心 `solidSquareCheck`“取消全选”，取消全选即退出多选）；两种删除都带 4 秒撤销提示条，多选时系统返回先退出多选。行收起与撤销后的展开经 `ListItemPresence`，删空后与空态（`EmptyHint`，`filePen`）交叉淡入。
 - **保存**：新建页自动保存、离开时静默补存，不弹提示；内容清空的草稿自动删除；只套用了模板、还没动过的内容不算草稿。
 - **从模板新建**：草稿选择面板“查看全部草稿”下方一行（`primary` 色 `layerGroup` + `angleRight`），打开模板面板，选好后进入已套用该模板的编辑页（不再弹撤销提示）；关掉模板面板什么也不做。
 
@@ -457,6 +457,12 @@ Expressive 设计系统强调有机、舒适的大圆角曲率（日记卡片与
   - **配色**：“明暗”`ExpressiveButtonGroup`（跟随主题 | 浅色 | 深色）；主题网格两列、间距 8，每格 16dp 圆角、`surfaceContainerHighest` 50% 底、内边距 10：上方 40dp 高、10dp 圆角的色条左右各半为浅色 / 深色代码底，各点三个 10dp 记号色点（关键字、字符串、函数），下方主题名（`titleSmall` w700）；选中时描边经 `ExpressiveStateBlend` 从 1dp `outlineVariant` 补间到 2dp `primary`，名称右侧淡入 16px `solidCircleCheck`。
   - **显示**：显示行号、显示标题栏、自动识别语言、显示边框四个开关（各带一行说明），圆角滑块。
   - **字体**：代码字体 `ChoiceChip`（系统等宽 / 正文字体 / 已导入的字体），字号与行距滑块；滑块拖动只改预览、松手才写入。
+
+### 5.21 回收站（`RecycleBinPage`）
+- **入口**：设置 → 数据与隐私（草稿箱下方）。标准顶栏（`angleLeft` 18，标题“回收站”），列表不为空时右侧为全选按钮（`SelectAllButton`，同草稿箱），回收站清空后随列表淡出。
+- **列表**：最近删除的在前，左右 16dp、行间 8dp，末尾让出系统导航条。行（`RecycleBinTile`）为与草稿行同款的 `DiaryListRowCard`，始终带勾选框，点按或长按切换勾选：标题（没写标题时为 `onSurfaceVariant` 色的“无标题”）、两行摘要、右侧 56dp 缩略图（封面优先，否则取正文第一张图），底行 `labelMedium`“{日记日期} · 删除于 {时间}”（日期同 `formatFullDate`，时间口径同“最后编辑于”）。私密日记本里的日记标题换成“私密日记本中的日记”并带 13px `lock`，不显示摘要、缩略图与日期，只留删除时间；未解封的时间胶囊带 `lock`，只显示标题与日期。
+- **多选**：有勾选时返回键换成 ✕、标题为“已选择 N 项”（数字变化时淡入淡出），系统返回先清空勾选；底部升起操作栏（`RecycleBinSelectionBar`）：`surfaceContainer` 底、左右 16 上下 12，两个等宽 `FilledButton.tonalIcon`——“恢复”（`arrowRotateLeft`）与 `errorContainer` / `onErrorContainer` 的“彻底删除”（`trashCan`）。操作栏出现时高度从 0 展开、内容贴着上缘一起升起并淡入（`medium`），消失时反向收起，列表随之平滑让位。
+- **恢复与彻底删除**：彻底删除先确认（弹窗右侧按钮 `error` 色），恢复不确认。提交时勾选清空（操作栏收起）与这些行的收起（`ListItemPresence`）同步播放，播完再写库；恢复不改编辑时间，日记回到原来的位置与日记本。结果以提示条告知（不带撤销）；写库失败的行重新展开并保持勾选，可直接重试。删空后与空态（`EmptyHint`，`trashCan`“回收站为空”）交叉淡入。
 
 ---
 

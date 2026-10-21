@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/archived_diaries_page.dart';
 import 'package:node_diary/ui/settings/pages/recycle_bin_page.dart';
+import 'package:node_diary/ui/settings/widgets/recycle_bin_tile.dart';
 import 'package:node_diary/ui/widgets/empty_hint.dart';
 import 'package:node_diary/ui/widgets/list_item_presence.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -117,9 +118,10 @@ void main() {
     );
     final fullHeight = _presenceHeight(tester);
 
-    await tester.tap(find.byType(Checkbox));
+    await tester.tap(find.byType(RecycleBinTile));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('恢复'));
+    // 勾选后底部升起操作栏。
+    await tester.tap(find.text('恢复'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
     expect(_presenceHeight(tester), lessThan(fullHeight));

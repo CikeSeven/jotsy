@@ -36,6 +36,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonUndo => '撤销';
 
   @override
+  String get commonSelectAll => '全选';
+
+  @override
+  String get commonDeselectAll => '取消全选';
+
+  @override
   String get commonBack => '返回';
 
   @override
@@ -1301,6 +1307,11 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String autoT0194(String p0) {
     return '删除于 $p0';
+  }
+
+  @override
+  String recycleBinEntryFooter(String date, String deletedAt) {
+    return '$date · $deletedAt';
   }
 
   @override

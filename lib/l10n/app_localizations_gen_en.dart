@@ -36,6 +36,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonUndo => 'Undo';
 
   @override
+  String get commonSelectAll => 'Select all';
+
+  @override
+  String get commonDeselectAll => 'Deselect all';
+
+  @override
   String get commonBack => 'Back';
 
   @override
@@ -1344,6 +1350,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String autoT0194(String p0) {
     return 'Deleted at $p0';
+  }
+
+  @override
+  String recycleBinEntryFooter(String date, String deletedAt) {
+    return '$date · $deletedAt';
   }
 
   @override

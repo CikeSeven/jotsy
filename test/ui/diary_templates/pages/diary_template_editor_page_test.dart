@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_toolbar_preferences.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_hex_input.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar.dart';
+import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diary_templates/models/built_in/diary_template_built_ins.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_json.dart';
 import 'package:node_diary/ui/diary_templates/pages/diary_template_editor_page.dart';
@@ -118,6 +120,28 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(AlertDialog), findsNothing);
     expect(find.byType(DiaryTemplateEditorPage), findsNothing);
+    await h.unmount();
+  });
+
+  testWidgets('saving an untouched built-in stores nothing, an edit stores '
+      'it under the same id', (tester) async {
+    final daily = buildBuiltInDiaryTemplates(
+      lookupAppLocalizations(const Locale('zh')),
+    ).first;
+    final h = await openEditor(tester, template: daily);
+    await tapSave(h);
+    expect(find.byType(DiaryTemplateEditorPage), findsNothing);
+    expect(await stored(h), isEmpty);
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(h.l10n.diaryTemplateEditorTabSettings));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).first, '我的每日');
+    await tapSave(h);
+    expect((await stored(h)).map((t) => (t.id, t.name)), [
+      ('builtin.daily', '我的每日'),
+    ]);
     await h.unmount();
   });
 

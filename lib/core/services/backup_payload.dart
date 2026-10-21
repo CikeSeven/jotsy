@@ -117,9 +117,6 @@ class BackupPayload {
                 ...row,
               });
             })
-            .where(
-              (row) => !row.templateId.startsWith(builtInDiaryTemplateIdPrefix),
-            )
             .toList(growable: false),
         notebooks: _optionalRows(database, 'notebooks')
             .map((row) {

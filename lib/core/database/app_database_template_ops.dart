@@ -6,7 +6,8 @@ part of 'app_database.dart';
 /// 业务 id。删除是硬删除，撤销由调用方持有被删的整行、经
 /// [restoreDiaryTemplates] 原样写回。
 mixin _AppDatabaseTemplateOps on _$AppDatabase {
-  /// 全部用户模板：按手动排序，同序时按本地 id，保证顺序稳定。
+  /// 全部模板行（我的模板与改过的内置模板）：按手动排序，同序时按本地 id，
+  /// 保证顺序稳定。
   Stream<List<DiaryTemplateRow>> watchDiaryTemplates() {
     return (select(diaryTemplates)..orderBy(_templateOrder)).watch();
   }
@@ -33,17 +34,14 @@ mixin _AppDatabaseTemplateOps on _$AppDatabase {
   ///
   /// [templateId] 为 null 时新建，排在现有模板之后；不为 null 时按它更新，
   /// 只刷新名称、payload 与 `updatedAt`，手动排序与创建时间保持不变。行已
-  /// 不存在（例如编辑途中经备份恢复被替换）时以同一 id 重新插入到最后。
+  /// 不存在（例如编辑途中经备份恢复被替换，或第一次保存改过的内置模板）时
+  /// 以同一 id 插入到最后。
   Future<String> saveDiaryTemplate({
     String? templateId,
     required String name,
     required String payload,
     DateTime? now,
   }) {
-    if (templateId != null &&
-        templateId.startsWith(builtInDiaryTemplateIdPrefix)) {
-      throw ArgumentError.value(templateId, 'templateId', '内置模板不能写入数据库');
-    }
     return transaction(() async {
       final id = templateId ?? _newBusinessUuid();
       final timestamp = now ?? DateTime.now();

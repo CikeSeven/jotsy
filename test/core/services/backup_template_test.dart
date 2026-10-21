@@ -11,8 +11,8 @@ import 'package:node_diary/ui/settings/controllers/backup_import_flow.dart';
 
 import '../../support/backup_test_fixture.dart';
 
-/// 日记模板随完整备份导出与覆盖恢复；两种合并只新增本机没有的模板，从不
-/// 替换本机已有的；日记包不带模板。
+/// 日记模板（含改过的内置模板）随完整备份导出与覆盖恢复；两种合并只新增
+/// 本机没有的模板，从不替换本机已有的；日记包不带模板。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late BackupTestFixture fixture;
@@ -75,7 +75,7 @@ void main() {
     expect(await templates(), isEmpty);
   });
 
-  test('built-in ids in a hand-edited backup are dropped', () async {
+  test('edited built-in templates travel with the backup', () async {
     final payload = await fixture.capturePayload();
     final rows = (payload['database'] as Map)['diaryTemplates'] as List;
     rows.add({
@@ -86,6 +86,7 @@ void main() {
     final decoded = BackupPayload.decode(jsonEncode(payload));
     expect(decoded.diaryTemplates.map((row) => row.templateId), [
       'current-template',
+      'builtin.daily',
     ]);
   });
 
@@ -164,6 +165,31 @@ void main() {
         },
       );
     }
+
+    test('an edited built-in in the file is added only where this device '
+        'has not edited it', () async {
+      await fixture.database.saveDiaryTemplate(
+        templateId: 'builtin.morning',
+        name: 'local morning',
+        payload: '{}',
+      );
+      final tables = payload['database'] as Map;
+      final row = Map<String, Object?>.from(
+        (tables['diaryTemplates'] as List).first as Map,
+      );
+      tables['diaryTemplates'] = <Object?>[
+        {...row, 'id': 97, 'templateId': 'builtin.morning', 'name': 'file'},
+        {...row, 'id': 96, 'templateId': 'builtin.daily', 'name': 'file daily'},
+      ];
+      final result = await importWith(payload, BackupImportMode.mergeOverwrite);
+
+      final names = {
+        for (final row in await templates()) row.templateId: row.name,
+      };
+      expect(names['builtin.morning'], 'local morning');
+      expect(names['builtin.daily'], 'file daily');
+      expect(result.addedTemplates, 1);
+    });
 
     test('the result message mentions added templates', () async {
       final result = await importWith(payload, BackupImportMode.merge);

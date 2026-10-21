@@ -122,21 +122,34 @@ void main() {
 
   group('blocks', () {
     test('each block kind compiles to the matching line attributes', () {
-      final ops = compileDiaryTemplateBlocks(const <DiaryTemplateBlock>[
-        TplHeading('小标题'),
-        TplParagraph(),
-        TplBullets(['甲', '']),
-        TplNumbered(['']),
-        TplChecklist(['']),
-        TplQuote('引用\n换行'),
-        TplDivider(),
-        TplParagraph('结尾'),
-      ]);
+      final ops = compileDiaryTemplateBlocks(
+        const <DiaryTemplateBlock>[
+          TplLabel('小标题：', mark: '📖'),
+          TplParagraph(),
+          TplGap(),
+          TplNote('小字'),
+          TplBullets(['甲', '']),
+          TplNumbered(['']),
+          TplChecklist(['']),
+          TplQuote('引用\n换行'),
+          TplDivider(),
+          TplParagraph('结尾'),
+        ],
+        labelColor: '#FF3B7BE8',
+        noteColor: '#FF7E848E',
+      );
       expect(ops, [
-        {'insert': '小标题'},
         {
-          'insert': '\n',
-          'attributes': {'header': 2},
+          'insert': '📖 小标题',
+          'attributes': {'bold': true, 'color': '#FF3B7BE8'},
+        },
+        {'insert': '：'},
+        {'insert': '\n'},
+        {'insert': '\n'},
+        {'insert': '\n'},
+        {
+          'insert': '小字',
+          'attributes': {'size': 'small', 'color': '#FF7E848E'},
         },
         {'insert': '\n'},
         {'insert': '甲'},
@@ -170,6 +183,26 @@ void main() {
       ]);
       // 编译结果本身已在白名单内。
       expect(sanitizeDiaryTemplateOps(ops), ops);
+    });
+
+    test('a label keeps its trailing colon and spaces unformatted', () {
+      final ops = compileDiaryTemplateBlocks(const <DiaryTemplateBlock>[
+        TplLabel('Book: '),
+        TplLabel('没有冒号'),
+      ]);
+      expect(ops, [
+        {
+          'insert': 'Book',
+          'attributes': {'bold': true},
+        },
+        {'insert': ': '},
+        {'insert': '\n'},
+        {
+          'insert': '没有冒号',
+          'attributes': {'bold': true},
+        },
+        {'insert': '\n'},
+      ]);
     });
   });
 

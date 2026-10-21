@@ -7319,7 +7319,7 @@
   "@diaryTemplateDailyName": {
     "description": "内置日记模板“每日记录”的名称。"
   },
-  "diaryTemplateDailyDesc": "记下今天发生的事和此刻的心情",
+  "diaryTemplateDailyDesc": "记下今天的故事，和此刻的心情",
   "@diaryTemplateDailyDesc": {
     "description": "内置模板“每日记录”的一行说明。"
   },
@@ -7339,7 +7339,7 @@
   "@diaryTemplateMorningName": {
     "description": "内置日记模板“晨间日记”的名称。"
   },
-  "diaryTemplateMorningDesc": "用一页清晨的文字给今天定个方向",
+  "diaryTemplateMorningDesc": "在清晨写下一页，给今天一个温柔的方向",
   "@diaryTemplateMorningDesc": {
     "description": "内置模板“晨间日记”的一行说明。"
   },
@@ -7356,7 +7356,7 @@
   "@diaryTemplateEveningName": {
     "description": "内置日记模板“晚间复盘”的名称。"
   },
-  "diaryTemplateEveningDesc": "回顾今天的得失，安排好明天",
+  "diaryTemplateEveningDesc": "回看今天的得与失，把明天安排妥当",
   "@diaryTemplateEveningDesc": {
     "description": "内置模板“晚间复盘”的一行说明。"
   },
@@ -7373,7 +7373,7 @@
   "@diaryTemplateGratitudeName": {
     "description": "内置日记模板“感恩日记”的名称。"
   },
-  "diaryTemplateGratitudeDesc": "写下三件值得感谢的事",
+  "diaryTemplateGratitudeDesc": "写下三件让你心怀感激的小事",
   "@diaryTemplateGratitudeDesc": {
     "description": "内置模板“感恩日记”的一行说明。"
   },
@@ -7390,7 +7390,7 @@
   "@diaryTemplateQuestionName": {
     "description": "内置日记模板“每日一问”的名称。"
   },
-  "diaryTemplateQuestionDesc": "每天一个问题，换个角度看自己",
+  "diaryTemplateQuestionDesc": "每天一个问题，换个角度认识自己",
   "@diaryTemplateQuestionDesc": {
     "description": "内置模板“每日一问”的一行说明。"
   },
@@ -7407,7 +7407,7 @@
   "@diaryTemplateWeeklyName": {
     "description": "内置日记模板“周回顾”的名称。"
   },
-  "diaryTemplateWeeklyDesc": "一周的亮点、收获和下周计划",
+  "diaryTemplateWeeklyDesc": "收拢一周的亮点与收获，轻装走进下一周",
   "@diaryTemplateWeeklyDesc": {
     "description": "内置模板“周回顾”的一行说明。"
   },
@@ -7454,21 +7454,25 @@
       }
     }
   },
-  "diaryTemplateDailyHappened": "今天发生了什么",
+  "diaryTemplateDailyHappened": "今天的故事：",
   "@diaryTemplateDailyHappened": {
-    "description": "内置日记模板（Daily）正文中的一行。"
+    "description": "内置日记模板（Daily）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateDailyMoment": "印象最深的一刻",
+  "diaryTemplateDailyMoment": "闪光的瞬间：",
   "@diaryTemplateDailyMoment": {
-    "description": "内置日记模板（Daily）正文中的一行。"
+    "description": "内置日记模板（Daily）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateDailyMood": "此刻的心情",
+  "diaryTemplateDailyMood": "此刻的心情：",
   "@diaryTemplateDailyMood": {
-    "description": "内置日记模板（Daily）正文中的一行。"
+    "description": "内置日记模板（Daily）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateMorningWake": "{time} 醒来，{term}时节。",
+  "diaryTemplateDailyWords": "写给今天的一句话：",
+  "@diaryTemplateDailyWords": {
+    "description": "内置日记模板（Daily）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
+  },
+  "diaryTemplateMorningWake": "{time} 醒来 · {term}",
   "@diaryTemplateMorningWake": {
-    "description": "内置日记模板（Morning）正文中的一行。占位符会填入模板变量。",
+    "description": "内置日记模板（Morning）正文开头的小字注释。占位符会填入模板变量。",
     "placeholders": {
       "time": {
         "type": "String"
@@ -7478,97 +7482,129 @@
       }
     }
   },
-  "diaryTemplateMorningTop3": "今天最重要的三件事",
+  "diaryTemplateMorningTop3": "今天最重要的三件事：",
   "@diaryTemplateMorningTop3": {
-    "description": "内置日记模板（Morning）正文中的一行。"
+    "description": "内置日记模板（Morning）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateMorningLookForward": "我期待的事",
+  "diaryTemplateMorningLookForward": "今天期待的小事：",
   "@diaryTemplateMorningLookForward": {
-    "description": "内置日记模板（Morning）正文中的一行。"
+    "description": "内置日记模板（Morning）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateMorningWords": "给今天的一句话",
+  "diaryTemplateMorningWords": "给今天的一句话：",
   "@diaryTemplateMorningWords": {
-    "description": "内置日记模板（Morning）正文中的一行。"
+    "description": "内置日记模板（Morning）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEveningDone": "今天完成了",
+  "diaryTemplateEveningDone": "今天完成了：",
   "@diaryTemplateEveningDone": {
-    "description": "内置日记模板（Evening）正文中的一行。"
+    "description": "内置日记模板（Evening）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEveningWentWell": "做得好的地方",
+  "diaryTemplateEveningWentWell": "做得好的地方：",
   "@diaryTemplateEveningWentWell": {
-    "description": "内置日记模板（Evening）正文中的一行。"
+    "description": "内置日记模板（Evening）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEveningBetter": "可以更好的地方",
+  "diaryTemplateEveningBetter": "可以更好的地方：",
   "@diaryTemplateEveningBetter": {
-    "description": "内置日记模板（Evening）正文中的一行。"
+    "description": "内置日记模板（Evening）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEveningTomorrow": "明天的安排",
+  "diaryTemplateEveningTomorrow": "明天的安排：",
   "@diaryTemplateEveningTomorrow": {
-    "description": "内置日记模板（Evening）正文中的一行。"
+    "description": "内置日记模板（Evening）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
+  },
+  "diaryTemplateEveningNight": "睡前想对自己说：",
+  "@diaryTemplateEveningNight": {
+    "description": "内置日记模板（Evening）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
   "diaryTemplateGratitudeThree": "今天让我心怀感激的三件事：",
   "@diaryTemplateGratitudeThree": {
-    "description": "内置日记模板（Gratitude）正文中的一行。"
+    "description": "内置日记模板（Gratitude）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateGratitudeThanks": "想对谁说声谢谢",
+  "diaryTemplateGratitudeThanks": "想对谁说声谢谢：",
   "@diaryTemplateGratitudeThanks": {
-    "description": "内置日记模板（Gratitude）正文中的一行。"
+    "description": "内置日记模板（Gratitude）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateWeeklyHighlights": "本周亮点",
+  "diaryTemplateGratitudeSelf": "也谢谢今天的自己：",
+  "@diaryTemplateGratitudeSelf": {
+    "description": "内置日记模板（Gratitude）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
+  },
+  "diaryTemplateQuestionPrompt": "今日一问：",
+  "@diaryTemplateQuestionPrompt": {
+    "description": "内置日记模板（Question）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
+  },
+  "diaryTemplateQuestionAnswer": "我的回答：",
+  "@diaryTemplateQuestionAnswer": {
+    "description": "内置日记模板（Question）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
+  },
+  "diaryTemplateWeeklyProgress": "第 {week} 周 · 今年已走过 {progress}",
+  "@diaryTemplateWeeklyProgress": {
+    "description": "内置日记模板（Weekly）正文开头的小字注释。占位符会填入模板变量。",
+    "placeholders": {
+      "week": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWeeklyHighlights": "本周亮点：",
   "@diaryTemplateWeeklyHighlights": {
-    "description": "内置日记模板（Weekly）正文中的一行。"
+    "description": "内置日记模板（Weekly）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateWeeklyWins": "完成与收获",
+  "diaryTemplateWeeklyWins": "完成与收获：",
   "@diaryTemplateWeeklyWins": {
-    "description": "内置日记模板（Weekly）正文中的一行。"
+    "description": "内置日记模板（Weekly）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateWeeklyOpen": "没做完的事",
+  "diaryTemplateWeeklyOpen": "还没做完的事：",
   "@diaryTemplateWeeklyOpen": {
-    "description": "内置日记模板（Weekly）正文中的一行。"
+    "description": "内置日记模板（Weekly）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateWeeklyNext": "下周想做的事",
+  "diaryTemplateWeeklyNext": "下周想做的事：",
   "@diaryTemplateWeeklyNext": {
-    "description": "内置日记模板（Weekly）正文中的一行。"
+    "description": "内置日记模板（Weekly）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEmotionHappened": "发生了什么",
+  "diaryTemplateWeeklyNote": "写给下周的自己：",
+  "@diaryTemplateWeeklyNote": {
+    "description": "内置日记模板（Weekly）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
+  },
+  "diaryTemplateEmotionHappened": "发生了什么：",
   "@diaryTemplateEmotionHappened": {
-    "description": "内置日记模板（Emotion）正文中的一行。"
+    "description": "内置日记模板（Emotion）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEmotionFelt": "我感受到的情绪",
+  "diaryTemplateEmotionFelt": "我感受到的情绪：",
   "@diaryTemplateEmotionFelt": {
-    "description": "内置日记模板（Emotion）正文中的一行。"
+    "description": "内置日记模板（Emotion）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEmotionSource": "它从哪里来",
+  "diaryTemplateEmotionSource": "它从哪里来：",
   "@diaryTemplateEmotionSource": {
-    "description": "内置日记模板（Emotion）正文中的一行。"
+    "description": "内置日记模板（Emotion）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEmotionNeed": "我需要什么",
+  "diaryTemplateEmotionNeed": "我真正需要的是：",
   "@diaryTemplateEmotionNeed": {
-    "description": "内置日记模板（Emotion）正文中的一行。"
+    "description": "内置日记模板（Emotion）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateEmotionStep": "接下来能做的一件小事",
+  "diaryTemplateEmotionStep": "接下来能做的一件小事：",
   "@diaryTemplateEmotionStep": {
-    "description": "内置日记模板（Emotion）正文中的一行。"
+    "description": "内置日记模板（Emotion）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
   "diaryTemplateReadingBook": "书名：",
   "@diaryTemplateReadingBook": {
-    "description": "内置日记模板（Reading）正文中的一行。"
+    "description": "内置日记模板（Reading）正文中的字段名，用户在冒号后同一行填写；末尾的冒号必须保留。"
   },
   "diaryTemplateReadingAuthor": "作者：",
   "@diaryTemplateReadingAuthor": {
-    "description": "内置日记模板（Reading）正文中的一行。"
+    "description": "内置日记模板（Reading）正文中的字段名，用户在冒号后同一行填写；末尾的冒号必须保留。"
   },
   "diaryTemplateReadingProgress": "读到：",
   "@diaryTemplateReadingProgress": {
-    "description": "内置日记模板（Reading）正文中的一行。"
+    "description": "内置日记模板（Reading）正文中的字段名，用户在冒号后同一行填写；末尾的冒号必须保留。"
   },
-  "diaryTemplateReadingQuotes": "摘录",
+  "diaryTemplateReadingQuotes": "摘录：",
   "@diaryTemplateReadingQuotes": {
-    "description": "内置日记模板（Reading）正文中的一行。"
+    "description": "内置日记模板（Reading）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
-  "diaryTemplateReadingThoughts": "我的想法",
+  "diaryTemplateReadingThoughts": "我的想法：",
   "@diaryTemplateReadingThoughts": {
-    "description": "内置日记模板（Reading）正文中的一行。"
+    "description": "内置日记模板（Reading）正文中的小标题，末尾的冒号必须保留：它不带格式，下面空行里写的字才不会沿用小标题的粗体与颜色。"
   },
   "diaryTemplateTagGratitude": "感恩",
   "@diaryTemplateTagGratitude": {
@@ -7919,9 +7955,9 @@
       }
     }
   },
-  "diaryTemplateHiddenBadge": "已隐藏",
-  "@diaryTemplateHiddenBadge": {
-    "description": "被用户隐藏的内置模板上的小标记。"
+  "diaryTemplateEditedBadge": "已修改",
+  "@diaryTemplateEditedBadge": {
+    "description": "改过内容的内置模板上的小标记（可在菜单里恢复默认）。"
   },
   "diaryDraftPickerFromTemplate": "从模板新建",
   "@diaryDraftPickerFromTemplate": {
@@ -8126,7 +8162,7 @@
   "@diaryTemplatesBuiltInGroup": {
     "description": "分组标题：应用自带的模板。"
   },
-  "diaryTemplatesMineEmpty": "还没有自己的模板。点右上角 + 新建，或复制一个内置模板来改。",
+  "diaryTemplatesMineEmpty": "还没有自己的模板。点右上角 + 新建，内置模板也可以直接编辑。",
   "@diaryTemplatesMineEmpty": {
     "description": "我的模板为空时的提示。"
   },
@@ -8148,23 +8184,44 @@
   },
   "diaryTemplatesDuplicate": "复制",
   "@diaryTemplatesDuplicate": {
-    "description": "菜单项：复制一份我的模板。"
-  },
-  "diaryTemplatesCopyToMine": "复制为我的模板",
-  "@diaryTemplatesCopyToMine": {
-    "description": "内置模板的操作：复制为我的模板以便修改。"
+    "description": "菜单项：把模板复制一份为我的模板。"
   },
   "diaryTemplatesCopyCode": "复制模板码",
   "@diaryTemplatesCopyCode": {
     "description": "菜单项：把模板复制为可分享的模板码。"
   },
-  "diaryTemplatesHide": "隐藏",
-  "@diaryTemplatesHide": {
-    "description": "菜单项：在模板面板中隐藏这个内置模板。"
+  "diaryTemplatesResetBuiltIn": "恢复默认",
+  "@diaryTemplatesResetBuiltIn": {
+    "description": "菜单项：改过的内置模板换回应用自带的内容。"
   },
-  "diaryTemplatesShow": "显示",
-  "@diaryTemplatesShow": {
-    "description": "菜单项：重新显示已隐藏的内置模板。"
+  "diaryTemplatesRestoreDeleted": "恢复已删除的内置模板",
+  "@diaryTemplatesRestoreDeleted": {
+    "description": "内置模板列表末尾的一行：打开已删除的内置模板面板。"
+  },
+  "diaryTemplatesRestoreDeletedCount": "{count} 个",
+  "@diaryTemplatesRestoreDeletedCount": {
+    "description": "“恢复已删除的内置模板”行右侧的数量。",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesRestoreSheetTitle": "已删除的内置模板",
+  "@diaryTemplatesRestoreSheetTitle": {
+    "description": "已删除的内置模板面板的标题。"
+  },
+  "diaryTemplatesRestoreSheetHint": "恢复后回到内置模板列表，删除前改过的内容也一并回来。",
+  "@diaryTemplatesRestoreSheetHint": {
+    "description": "已删除的内置模板面板标题下的说明。"
+  },
+  "diaryTemplatesRestore": "恢复",
+  "@diaryTemplatesRestore": {
+    "description": "已删除的内置模板面板里每一行的按钮。"
+  },
+  "diaryTemplatesRestoreAll": "全部恢复",
+  "@diaryTemplatesRestoreAll": {
+    "description": "已删除的内置模板面板的按钮：恢复全部。"
   },
   "diaryTemplatesCopyName": "{name} 副本",
   "@diaryTemplatesCopyName": {
@@ -8184,12 +8241,30 @@
       }
     }
   },
-  "diaryTemplatesHiddenDone": "已隐藏「{name}」",
-  "@diaryTemplatesHiddenDone": {
-    "description": "隐藏内置模板后的提示，带撤销。",
+  "diaryTemplatesResetDone": "已恢复「{name}」的默认内容",
+  "@diaryTemplatesResetDone": {
+    "description": "内置模板恢复默认后的提示，带撤销。",
     "placeholders": {
       "name": {
         "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesRestoredDone": "已恢复「{name}」",
+  "@diaryTemplatesRestoredDone": {
+    "description": "恢复一个已删除的内置模板后的提示。",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesRestoredAllDone": "已恢复 {count} 个内置模板",
+  "@diaryTemplatesRestoredAllDone": {
+    "description": "一次恢复全部已删除的内置模板后的提示。",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },

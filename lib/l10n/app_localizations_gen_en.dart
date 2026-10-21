@@ -5731,7 +5731,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateDailyDesc =>
-      'What happened today and how you feel right now';
+      'Today\'s story, and how you feel right now';
 
   @override
   String diaryTemplateDailyTitle(String date, String weekday) {
@@ -5743,7 +5743,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateMorningDesc =>
-      'Set the tone for the day with a page in the morning';
+      'A page at dawn to give the day a gentle direction';
 
   @override
   String diaryTemplateMorningTitle(String date) {
@@ -5755,7 +5755,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateEveningDesc =>
-      'Look back on the day and plan tomorrow';
+      'Look back on the day and set up tomorrow';
 
   @override
   String diaryTemplateEveningTitle(String date) {
@@ -5766,7 +5766,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateGratitudeName => 'Gratitude journal';
 
   @override
-  String get diaryTemplateGratitudeDesc => 'Three things you\'re grateful for';
+  String get diaryTemplateGratitudeDesc =>
+      'Three small things you\'re grateful for';
 
   @override
   String diaryTemplateGratitudeTitle(String date) {
@@ -5778,7 +5779,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateQuestionDesc =>
-      'One question a day to see yourself from a new angle';
+      'One question a day to see yourself anew';
 
   @override
   String diaryTemplateQuestionTitle(String date) {
@@ -5790,7 +5791,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateWeeklyDesc =>
-      'Highlights, wins and next week\'s plan';
+      'Gather the week\'s highlights and step lightly into the next';
 
   @override
   String diaryTemplateWeeklyTitle(String date) {
@@ -5814,7 +5815,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplateReadingDesc =>
-      'Quotes and thoughts from what you read';
+      'Passages and thoughts from what you read';
 
   @override
   String diaryTemplateReadingTitle(String date) {
@@ -5822,74 +5823,97 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateDailyHappened => 'What happened today';
+  String get diaryTemplateDailyHappened => 'Today\'s story:';
 
   @override
-  String get diaryTemplateDailyMoment => 'The moment that stayed with me';
+  String get diaryTemplateDailyMoment => 'A moment that shone:';
 
   @override
-  String get diaryTemplateDailyMood => 'How I feel right now';
+  String get diaryTemplateDailyMood => 'How I feel right now:';
+
+  @override
+  String get diaryTemplateDailyWords => 'One line for today:';
 
   @override
   String diaryTemplateMorningWake(String time, String term) {
-    return 'Up at $time.';
+    return 'Up at $time';
   }
 
   @override
-  String get diaryTemplateMorningTop3 => 'Three things that matter most today';
+  String get diaryTemplateMorningTop3 => 'Three things that matter most today:';
 
   @override
   String get diaryTemplateMorningLookForward =>
-      'Something I\'m looking forward to';
+      'Something small to look forward to:';
 
   @override
-  String get diaryTemplateMorningWords => 'A line for today';
+  String get diaryTemplateMorningWords => 'A word for today:';
 
   @override
-  String get diaryTemplateEveningDone => 'Done today';
+  String get diaryTemplateEveningDone => 'What I got done:';
 
   @override
-  String get diaryTemplateEveningWentWell => 'What went well';
+  String get diaryTemplateEveningWentWell => 'What went well:';
 
   @override
-  String get diaryTemplateEveningBetter => 'What could be better';
+  String get diaryTemplateEveningBetter => 'What could be better:';
 
   @override
-  String get diaryTemplateEveningTomorrow => 'Plans for tomorrow';
+  String get diaryTemplateEveningTomorrow => 'Plans for tomorrow:';
+
+  @override
+  String get diaryTemplateEveningNight => 'Before I sleep:';
 
   @override
   String get diaryTemplateGratitudeThree =>
       'Three things I\'m grateful for today:';
 
   @override
-  String get diaryTemplateGratitudeThanks => 'Someone I\'d like to thank';
+  String get diaryTemplateGratitudeThanks => 'Someone I\'d like to thank:';
 
   @override
-  String get diaryTemplateWeeklyHighlights => 'Highlights of the week';
+  String get diaryTemplateGratitudeSelf => 'And a thank-you to myself:';
 
   @override
-  String get diaryTemplateWeeklyWins => 'Done and learned';
+  String get diaryTemplateQuestionPrompt => 'Today\'s question:';
 
   @override
-  String get diaryTemplateWeeklyOpen => 'Still open';
+  String get diaryTemplateQuestionAnswer => 'My answer:';
 
   @override
-  String get diaryTemplateWeeklyNext => 'Next week';
+  String diaryTemplateWeeklyProgress(String week, String progress) {
+    return 'Week $week · $progress of the year behind us';
+  }
 
   @override
-  String get diaryTemplateEmotionHappened => 'What happened';
+  String get diaryTemplateWeeklyHighlights => 'Highlights of the week:';
 
   @override
-  String get diaryTemplateEmotionFelt => 'What I felt';
+  String get diaryTemplateWeeklyWins => 'Wins and lessons:';
 
   @override
-  String get diaryTemplateEmotionSource => 'Where it comes from';
+  String get diaryTemplateWeeklyOpen => 'Still in progress:';
 
   @override
-  String get diaryTemplateEmotionNeed => 'What I need';
+  String get diaryTemplateWeeklyNext => 'Next week:';
 
   @override
-  String get diaryTemplateEmotionStep => 'One small next step';
+  String get diaryTemplateWeeklyNote => 'A note to next week\'s me:';
+
+  @override
+  String get diaryTemplateEmotionHappened => 'What happened:';
+
+  @override
+  String get diaryTemplateEmotionFelt => 'What I felt:';
+
+  @override
+  String get diaryTemplateEmotionSource => 'Where it comes from:';
+
+  @override
+  String get diaryTemplateEmotionNeed => 'What I really need:';
+
+  @override
+  String get diaryTemplateEmotionStep => 'One small step from here:';
 
   @override
   String get diaryTemplateReadingBook => 'Book: ';
@@ -5901,10 +5925,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplateReadingProgress => 'Read up to: ';
 
   @override
-  String get diaryTemplateReadingQuotes => 'Quotes';
+  String get diaryTemplateReadingQuotes => 'Passages:';
 
   @override
-  String get diaryTemplateReadingThoughts => 'My thoughts';
+  String get diaryTemplateReadingThoughts => 'My thoughts:';
 
   @override
   String get diaryTemplateTagGratitude => 'Gratitude';
@@ -6190,7 +6214,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryTemplateHiddenBadge => 'Hidden';
+  String get diaryTemplateEditedBadge => 'Edited';
 
   @override
   String get diaryDraftPickerFromTemplate => 'Start from a template';
@@ -6339,7 +6363,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryTemplatesMineEmpty =>
-      'No templates of your own yet. Create one with +, or copy a built-in one and change it.';
+      'No templates of your own yet. Create one with +, or edit a built-in one directly.';
 
   @override
   String get diaryTemplatesNew => 'New template';
@@ -6357,16 +6381,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryTemplatesDuplicate => 'Duplicate';
 
   @override
-  String get diaryTemplatesCopyToMine => 'Copy to my templates';
-
-  @override
   String get diaryTemplatesCopyCode => 'Copy template code';
 
   @override
-  String get diaryTemplatesHide => 'Hide';
+  String get diaryTemplatesResetBuiltIn => 'Restore original';
 
   @override
-  String get diaryTemplatesShow => 'Show';
+  String get diaryTemplatesRestoreDeleted => 'Restore deleted built-ins';
+
+  @override
+  String diaryTemplatesRestoreDeletedCount(int count) {
+    return '$count';
+  }
+
+  @override
+  String get diaryTemplatesRestoreSheetTitle => 'Deleted built-in templates';
+
+  @override
+  String get diaryTemplatesRestoreSheetHint =>
+      'Restored templates go back to the built-in list, along with any edits made before deleting them.';
+
+  @override
+  String get diaryTemplatesRestore => 'Restore';
+
+  @override
+  String get diaryTemplatesRestoreAll => 'Restore all';
 
   @override
   String diaryTemplatesCopyName(String name) {
@@ -6379,8 +6418,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryTemplatesHiddenDone(String name) {
-    return 'Hid “$name”';
+  String diaryTemplatesResetDone(String name) {
+    return 'Restored the original “$name”';
+  }
+
+  @override
+  String diaryTemplatesRestoredDone(String name) {
+    return 'Restored “$name”';
+  }
+
+  @override
+  String diaryTemplatesRestoredAllDone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restored $count built-in templates',
+      one: 'Restored 1 built-in template',
+    );
+    return '$_temp0';
   }
 
   @override

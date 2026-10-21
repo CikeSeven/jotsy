@@ -36,7 +36,7 @@ void main() {
 
   final sunday8am = DateTime(2026, 10, 18, 8);
 
-  test('user templates come first and hidden built-ins are left out', () {
+  test('user templates come first and deleted built-ins are left out', () {
     expect(library().visible.map((t) => t.id), [
       'u1',
       'u2',
@@ -44,8 +44,40 @@ void main() {
       'builtin.morning',
       'builtin.sunday',
     ]);
-    expect(library().byId('builtin.hidden'), hidden);
+    expect(library().deletedBuiltIns, [hidden]);
+    expect(library().byId('builtin.hidden'), isNull);
     expect(library().byId('missing'), isNull);
+  });
+
+  test('an edited built-in replaces the default in place', () {
+    const edited = DiaryTemplate(id: 'builtin.morning', name: 'my morning');
+    final lib = DiaryTemplateLibrary(
+      builtIns: const [plain, morning, sundayMorning],
+      userTemplates: const [mine, edited, mine2],
+      prefs: DiaryTemplatePrefs.defaults,
+    );
+    expect(lib.userTemplates, [mine, mine2]);
+    expect(lib.builtIns, [plain, edited, sundayMorning]);
+    expect(lib.editedBuiltIns, {'builtin.morning'});
+    expect(lib.byId('builtin.morning'), edited);
+    expect(lib.visible.map((t) => t.id), [
+      'u1',
+      'u2',
+      'builtin.plain',
+      'builtin.morning',
+      'builtin.sunday',
+    ]);
+  });
+
+  test('a stored built-in id no version ships any more stays as mine', () {
+    const orphan = DiaryTemplate(id: 'builtin.gone', name: 'gone');
+    final lib = DiaryTemplateLibrary(
+      builtIns: const [plain],
+      userTemplates: const [orphan],
+      prefs: DiaryTemplatePrefs.defaults,
+    );
+    expect(lib.userTemplates, [orphan]);
+    expect(lib.editedBuiltIns, isEmpty);
   });
 
   test('recommended templates rank first, more specific ones higher', () {
@@ -77,17 +109,20 @@ void main() {
     ]);
   });
 
-  test(
-    'the auto template is found even when hidden, and null when deleted',
-    () {
-      final withAuto = DiaryTemplatePrefs.defaults
-          .withHidden('builtin.hidden', true)
-          .withAuto('builtin.hidden');
-      expect(library(withAuto).autoTemplate, hidden);
-      expect(
-        library(DiaryTemplatePrefs.defaults.withAuto('gone')).autoTemplate,
-        isNull,
-      );
-    },
-  );
+  test('the auto template is null once it is deleted', () {
+    expect(
+      library(
+        DiaryTemplatePrefs.defaults.withAuto('builtin.plain'),
+      ).autoTemplate,
+      plain,
+    );
+    final withAuto = DiaryTemplatePrefs.defaults
+        .withHidden('builtin.hidden', true)
+        .withAuto('builtin.hidden');
+    expect(library(withAuto).autoTemplate, isNull);
+    expect(
+      library(DiaryTemplatePrefs.defaults.withAuto('gone')).autoTemplate,
+      isNull,
+    );
+  });
 }

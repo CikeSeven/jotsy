@@ -7319,7 +7319,7 @@
   "@diaryTemplateDailyName": {
     "description": "Name of the built-in “Daily journal” diary template."
   },
-  "diaryTemplateDailyDesc": "What happened today and how you feel right now",
+  "diaryTemplateDailyDesc": "Today's story, and how you feel right now",
   "@diaryTemplateDailyDesc": {
     "description": "One-line description of the built-in “Daily journal” template."
   },
@@ -7339,7 +7339,7 @@
   "@diaryTemplateMorningName": {
     "description": "Name of the built-in “Morning pages” diary template."
   },
-  "diaryTemplateMorningDesc": "Set the tone for the day with a page in the morning",
+  "diaryTemplateMorningDesc": "A page at dawn to give the day a gentle direction",
   "@diaryTemplateMorningDesc": {
     "description": "One-line description of the built-in “Morning pages” template."
   },
@@ -7356,7 +7356,7 @@
   "@diaryTemplateEveningName": {
     "description": "Name of the built-in “Evening review” diary template."
   },
-  "diaryTemplateEveningDesc": "Look back on the day and plan tomorrow",
+  "diaryTemplateEveningDesc": "Look back on the day and set up tomorrow",
   "@diaryTemplateEveningDesc": {
     "description": "One-line description of the built-in “Evening review” template."
   },
@@ -7373,7 +7373,7 @@
   "@diaryTemplateGratitudeName": {
     "description": "Name of the built-in “Gratitude journal” diary template."
   },
-  "diaryTemplateGratitudeDesc": "Three things you're grateful for",
+  "diaryTemplateGratitudeDesc": "Three small things you're grateful for",
   "@diaryTemplateGratitudeDesc": {
     "description": "One-line description of the built-in “Gratitude journal” template."
   },
@@ -7390,7 +7390,7 @@
   "@diaryTemplateQuestionName": {
     "description": "Name of the built-in “Question of the day” diary template."
   },
-  "diaryTemplateQuestionDesc": "One question a day to see yourself from a new angle",
+  "diaryTemplateQuestionDesc": "One question a day to see yourself anew",
   "@diaryTemplateQuestionDesc": {
     "description": "One-line description of the built-in “Question of the day” template."
   },
@@ -7407,7 +7407,7 @@
   "@diaryTemplateWeeklyName": {
     "description": "Name of the built-in “Weekly review” diary template."
   },
-  "diaryTemplateWeeklyDesc": "Highlights, wins and next week's plan",
+  "diaryTemplateWeeklyDesc": "Gather the week's highlights and step lightly into the next",
   "@diaryTemplateWeeklyDesc": {
     "description": "One-line description of the built-in “Weekly review” template."
   },
@@ -7441,7 +7441,7 @@
   "@diaryTemplateReadingName": {
     "description": "Name of the built-in “Reading notes” diary template."
   },
-  "diaryTemplateReadingDesc": "Quotes and thoughts from what you read",
+  "diaryTemplateReadingDesc": "Passages and thoughts from what you read",
   "@diaryTemplateReadingDesc": {
     "description": "One-line description of the built-in “Reading notes” template."
   },
@@ -7454,21 +7454,25 @@
       }
     }
   },
-  "diaryTemplateDailyHappened": "What happened today",
+  "diaryTemplateDailyHappened": "Today's story:",
   "@diaryTemplateDailyHappened": {
-    "description": "Body line of a built-in diary template (Daily)."
+    "description": "A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateDailyMoment": "The moment that stayed with me",
+  "diaryTemplateDailyMoment": "A moment that shone:",
   "@diaryTemplateDailyMoment": {
-    "description": "Body line of a built-in diary template (Daily)."
+    "description": "A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateDailyMood": "How I feel right now",
+  "diaryTemplateDailyMood": "How I feel right now:",
   "@diaryTemplateDailyMood": {
-    "description": "Body line of a built-in diary template (Daily)."
+    "description": "A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateMorningWake": "Up at {time}.",
+  "diaryTemplateDailyWords": "One line for today:",
+  "@diaryTemplateDailyWords": {
+    "description": "A heading in the body of the built-in Daily diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
+  },
+  "diaryTemplateMorningWake": "Up at {time}",
   "@diaryTemplateMorningWake": {
-    "description": "Body line of a built-in diary template (Morning). Placeholders receive template variable tokens.",
+    "description": "A small note at the top of the built-in Morning diary template. The placeholders are filled with template variables; the English text leaves the solar term out because its names are Chinese only.",
     "placeholders": {
       "time": {
         "type": "String"
@@ -7478,97 +7482,129 @@
       }
     }
   },
-  "diaryTemplateMorningTop3": "Three things that matter most today",
+  "diaryTemplateMorningTop3": "Three things that matter most today:",
   "@diaryTemplateMorningTop3": {
-    "description": "Body line of a built-in diary template (Morning)."
+    "description": "A heading in the body of the built-in Morning diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateMorningLookForward": "Something I'm looking forward to",
+  "diaryTemplateMorningLookForward": "Something small to look forward to:",
   "@diaryTemplateMorningLookForward": {
-    "description": "Body line of a built-in diary template (Morning)."
+    "description": "A heading in the body of the built-in Morning diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateMorningWords": "A line for today",
+  "diaryTemplateMorningWords": "A word for today:",
   "@diaryTemplateMorningWords": {
-    "description": "Body line of a built-in diary template (Morning)."
+    "description": "A heading in the body of the built-in Morning diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEveningDone": "Done today",
+  "diaryTemplateEveningDone": "What I got done:",
   "@diaryTemplateEveningDone": {
-    "description": "Body line of a built-in diary template (Evening)."
+    "description": "A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEveningWentWell": "What went well",
+  "diaryTemplateEveningWentWell": "What went well:",
   "@diaryTemplateEveningWentWell": {
-    "description": "Body line of a built-in diary template (Evening)."
+    "description": "A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEveningBetter": "What could be better",
+  "diaryTemplateEveningBetter": "What could be better:",
   "@diaryTemplateEveningBetter": {
-    "description": "Body line of a built-in diary template (Evening)."
+    "description": "A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEveningTomorrow": "Plans for tomorrow",
+  "diaryTemplateEveningTomorrow": "Plans for tomorrow:",
   "@diaryTemplateEveningTomorrow": {
-    "description": "Body line of a built-in diary template (Evening)."
+    "description": "A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
+  },
+  "diaryTemplateEveningNight": "Before I sleep:",
+  "@diaryTemplateEveningNight": {
+    "description": "A heading in the body of the built-in Evening diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
   "diaryTemplateGratitudeThree": "Three things I'm grateful for today:",
   "@diaryTemplateGratitudeThree": {
-    "description": "Body line of a built-in diary template (Gratitude)."
+    "description": "A heading in the body of the built-in Gratitude diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateGratitudeThanks": "Someone I'd like to thank",
+  "diaryTemplateGratitudeThanks": "Someone I'd like to thank:",
   "@diaryTemplateGratitudeThanks": {
-    "description": "Body line of a built-in diary template (Gratitude)."
+    "description": "A heading in the body of the built-in Gratitude diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateWeeklyHighlights": "Highlights of the week",
+  "diaryTemplateGratitudeSelf": "And a thank-you to myself:",
+  "@diaryTemplateGratitudeSelf": {
+    "description": "A heading in the body of the built-in Gratitude diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
+  },
+  "diaryTemplateQuestionPrompt": "Today's question:",
+  "@diaryTemplateQuestionPrompt": {
+    "description": "A heading in the body of the built-in Question diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
+  },
+  "diaryTemplateQuestionAnswer": "My answer:",
+  "@diaryTemplateQuestionAnswer": {
+    "description": "A heading in the body of the built-in Question diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
+  },
+  "diaryTemplateWeeklyProgress": "Week {week} · {progress} of the year behind us",
+  "@diaryTemplateWeeklyProgress": {
+    "description": "A small note at the top of the built-in Weekly diary template. The placeholders are filled with template variables.",
+    "placeholders": {
+      "week": {
+        "type": "String"
+      },
+      "progress": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplateWeeklyHighlights": "Highlights of the week:",
   "@diaryTemplateWeeklyHighlights": {
-    "description": "Body line of a built-in diary template (Weekly)."
+    "description": "A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateWeeklyWins": "Done and learned",
+  "diaryTemplateWeeklyWins": "Wins and lessons:",
   "@diaryTemplateWeeklyWins": {
-    "description": "Body line of a built-in diary template (Weekly)."
+    "description": "A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateWeeklyOpen": "Still open",
+  "diaryTemplateWeeklyOpen": "Still in progress:",
   "@diaryTemplateWeeklyOpen": {
-    "description": "Body line of a built-in diary template (Weekly)."
+    "description": "A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateWeeklyNext": "Next week",
+  "diaryTemplateWeeklyNext": "Next week:",
   "@diaryTemplateWeeklyNext": {
-    "description": "Body line of a built-in diary template (Weekly)."
+    "description": "A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEmotionHappened": "What happened",
+  "diaryTemplateWeeklyNote": "A note to next week's me:",
+  "@diaryTemplateWeeklyNote": {
+    "description": "A heading in the body of the built-in Weekly diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
+  },
+  "diaryTemplateEmotionHappened": "What happened:",
   "@diaryTemplateEmotionHappened": {
-    "description": "Body line of a built-in diary template (Emotion)."
+    "description": "A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEmotionFelt": "What I felt",
+  "diaryTemplateEmotionFelt": "What I felt:",
   "@diaryTemplateEmotionFelt": {
-    "description": "Body line of a built-in diary template (Emotion)."
+    "description": "A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEmotionSource": "Where it comes from",
+  "diaryTemplateEmotionSource": "Where it comes from:",
   "@diaryTemplateEmotionSource": {
-    "description": "Body line of a built-in diary template (Emotion)."
+    "description": "A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEmotionNeed": "What I need",
+  "diaryTemplateEmotionNeed": "What I really need:",
   "@diaryTemplateEmotionNeed": {
-    "description": "Body line of a built-in diary template (Emotion)."
+    "description": "A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateEmotionStep": "One small next step",
+  "diaryTemplateEmotionStep": "One small step from here:",
   "@diaryTemplateEmotionStep": {
-    "description": "Body line of a built-in diary template (Emotion)."
+    "description": "A heading in the body of the built-in Emotion diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
   "diaryTemplateReadingBook": "Book: ",
   "@diaryTemplateReadingBook": {
-    "description": "Body line of a built-in diary template (Reading)."
+    "description": "A field label in the body of the built-in Reading diary template; the user fills it in after the colon on the same line. Keep the trailing colon."
   },
   "diaryTemplateReadingAuthor": "Author: ",
   "@diaryTemplateReadingAuthor": {
-    "description": "Body line of a built-in diary template (Reading)."
+    "description": "A field label in the body of the built-in Reading diary template; the user fills it in after the colon on the same line. Keep the trailing colon."
   },
   "diaryTemplateReadingProgress": "Read up to: ",
   "@diaryTemplateReadingProgress": {
-    "description": "Body line of a built-in diary template (Reading)."
+    "description": "A field label in the body of the built-in Reading diary template; the user fills it in after the colon on the same line. Keep the trailing colon."
   },
-  "diaryTemplateReadingQuotes": "Quotes",
+  "diaryTemplateReadingQuotes": "Passages:",
   "@diaryTemplateReadingQuotes": {
-    "description": "Body line of a built-in diary template (Reading)."
+    "description": "A heading in the body of the built-in Reading diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
-  "diaryTemplateReadingThoughts": "My thoughts",
+  "diaryTemplateReadingThoughts": "My thoughts:",
   "@diaryTemplateReadingThoughts": {
-    "description": "Body line of a built-in diary template (Reading)."
+    "description": "A heading in the body of the built-in Reading diary template. Keep the trailing colon: it is left unformatted so text typed on the empty line below does not pick up the heading's bold and color."
   },
   "diaryTemplateTagGratitude": "Gratitude",
   "@diaryTemplateTagGratitude": {
@@ -7919,9 +7955,9 @@
       }
     }
   },
-  "diaryTemplateHiddenBadge": "Hidden",
-  "@diaryTemplateHiddenBadge": {
-    "description": "Small badge on a built-in template the user has hidden from the picker."
+  "diaryTemplateEditedBadge": "Edited",
+  "@diaryTemplateEditedBadge": {
+    "description": "Small badge on a built-in template whose content the user has edited (the menu can restore the original)."
   },
   "diaryDraftPickerFromTemplate": "Start from a template",
   "@diaryDraftPickerFromTemplate": {
@@ -8126,7 +8162,7 @@
   "@diaryTemplatesBuiltInGroup": {
     "description": "Group title: templates that come with the app."
   },
-  "diaryTemplatesMineEmpty": "No templates of your own yet. Create one with +, or copy a built-in one and change it.",
+  "diaryTemplatesMineEmpty": "No templates of your own yet. Create one with +, or edit a built-in one directly.",
   "@diaryTemplatesMineEmpty": {
     "description": "Empty state of the user's template list."
   },
@@ -8148,23 +8184,44 @@
   },
   "diaryTemplatesDuplicate": "Duplicate",
   "@diaryTemplatesDuplicate": {
-    "description": "Menu action: make a copy of the user's template."
-  },
-  "diaryTemplatesCopyToMine": "Copy to my templates",
-  "@diaryTemplatesCopyToMine": {
-    "description": "Action on a built-in template: copy it into the user's templates so it can be edited."
+    "description": "Menu action: make a copy of the template among the user's own templates."
   },
   "diaryTemplatesCopyCode": "Copy template code",
   "@diaryTemplatesCopyCode": {
     "description": "Menu action: copy the template as a shareable code."
   },
-  "diaryTemplatesHide": "Hide",
-  "@diaryTemplatesHide": {
-    "description": "Menu action: hide a built-in template from the picker."
+  "diaryTemplatesResetBuiltIn": "Restore original",
+  "@diaryTemplatesResetBuiltIn": {
+    "description": "Menu action: put an edited built-in template back to the content the app ships with."
   },
-  "diaryTemplatesShow": "Show",
-  "@diaryTemplatesShow": {
-    "description": "Menu action: show a hidden built-in template again."
+  "diaryTemplatesRestoreDeleted": "Restore deleted built-ins",
+  "@diaryTemplatesRestoreDeleted": {
+    "description": "Row at the end of the built-in list that opens the sheet of deleted built-in templates."
+  },
+  "diaryTemplatesRestoreDeletedCount": "{count}",
+  "@diaryTemplatesRestoreDeletedCount": {
+    "description": "Count shown at the end of the “Restore deleted built-ins” row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryTemplatesRestoreSheetTitle": "Deleted built-in templates",
+  "@diaryTemplatesRestoreSheetTitle": {
+    "description": "Title of the sheet listing deleted built-in templates."
+  },
+  "diaryTemplatesRestoreSheetHint": "Restored templates go back to the built-in list, along with any edits made before deleting them.",
+  "@diaryTemplatesRestoreSheetHint": {
+    "description": "Hint under the title of the deleted built-in templates sheet."
+  },
+  "diaryTemplatesRestore": "Restore",
+  "@diaryTemplatesRestore": {
+    "description": "Button on each row of the deleted built-in templates sheet."
+  },
+  "diaryTemplatesRestoreAll": "Restore all",
+  "@diaryTemplatesRestoreAll": {
+    "description": "Button in the deleted built-in templates sheet that restores all of them."
   },
   "diaryTemplatesCopyName": "{name} copy",
   "@diaryTemplatesCopyName": {
@@ -8184,12 +8241,30 @@
       }
     }
   },
-  "diaryTemplatesHiddenDone": "Hid “{name}”",
-  "@diaryTemplatesHiddenDone": {
-    "description": "Snackbar after hiding a built-in template, with Undo.",
+  "diaryTemplatesResetDone": "Restored the original “{name}”",
+  "@diaryTemplatesResetDone": {
+    "description": "Snackbar after restoring an edited built-in template to its original content, with Undo.",
     "placeholders": {
       "name": {
         "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesRestoredDone": "Restored “{name}”",
+  "@diaryTemplatesRestoredDone": {
+    "description": "Snackbar after restoring one deleted built-in template.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryTemplatesRestoredAllDone": "{count, plural, =1{Restored 1 built-in template} other{Restored {count} built-in templates}}",
+  "@diaryTemplatesRestoredAllDone": {
+    "description": "Snackbar after restoring all deleted built-in templates at once.",
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   },

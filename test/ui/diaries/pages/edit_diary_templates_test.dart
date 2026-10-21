@@ -99,7 +99,7 @@ void main() {
     await tapSuggestion(h, '每日记录');
 
     expect(titleText(tester), todayDaily(DateTime.now()));
-    expect(bodyText(tester), contains('今天发生了什么'));
+    expect(bodyText(tester), contains('今天的故事'));
     expect(stripTitle(h), findsNothing);
     expect(find.text('已套用「每日记录」'), findsOneWidget);
 
@@ -109,7 +109,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(titleText(tester), isEmpty);
-    expect(bodyText(tester), isNot(contains('今天发生了什么')));
+    expect(bodyText(tester), isNot(contains('今天的故事')));
     expect(stripTitle(h), findsOneWidget);
     await h.unmount();
   });
@@ -146,7 +146,7 @@ void main() {
     await h.settle();
 
     expect(titleText(tester), '已经开始写了');
-    expect(bodyText(tester), contains('今天发生了什么'));
+    expect(bodyText(tester), contains('今天的故事'));
     await h.unmount();
   });
 

@@ -67,16 +67,17 @@ extension EditDiaryTemplateFlow on EditDiaryController {
       );
       return;
     }
-    final candidates = DiaryTemplatePrefs.decode(settings.diaryTemplatePrefsRaw)
-        .autoApplyCandidates(
-          now: _state._templateClock(),
-          diaryDate: _state._templateDiaryDate,
-        );
+    final prefs = DiaryTemplatePrefs.decode(settings.diaryTemplatePrefsRaw);
+    final candidates = prefs.autoApplyCandidates(
+      now: _state._templateClock(),
+      diaryDate: _state._templateDiaryDate,
+    );
     for (final id in candidates) {
       final template = await loadDiaryTemplate(
         _state._database,
         _state.context.l10n,
         id,
+        deletedBuiltIns: prefs.hiddenBuiltIns,
       );
       if (!_state.mounted) return;
       if (template == null) continue;

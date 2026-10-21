@@ -77,7 +77,7 @@ class DiaryTemplateIconBadge extends StatelessWidget {
   }
 }
 
-/// “推荐”“已隐藏”这类微胶囊：primary 低透明度底 + primary 小字。
+/// “推荐”“已修改”这类微胶囊：primary 低透明度底 + primary 小字。
 class DiaryTemplateBadge extends StatelessWidget {
   const DiaryTemplateBadge({
     super.key,
@@ -87,7 +87,7 @@ class DiaryTemplateBadge extends StatelessWidget {
 
   final String label;
 
-  /// 弱化（已隐藏）：用 onSurfaceVariant 代替 primary。
+  /// 弱化（已修改）：用 onSurfaceVariant 代替 primary。
   final bool muted;
 
   @override

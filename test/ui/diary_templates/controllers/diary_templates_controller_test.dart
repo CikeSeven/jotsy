@@ -88,18 +88,59 @@ void main() {
     expect(prefs().autoTemplateId, 'builtin.daily');
   });
 
+  test('editing a built-in saves it in place under the same id', () async {
+    final id = await controller.save(daily.copyWith(name: '我的每日'));
+    expect(id, 'builtin.daily');
+    expect((await stored()).map((t) => (t.id, t.name)), [
+      ('builtin.daily', '我的每日'),
+    ]);
+    // 再次保存仍是同一行。
+    await controller.save(daily.copyWith(name: '又改了'));
+    expect((await stored()).map((t) => t.name), ['又改了']);
+    expect(changes, 2);
+  });
+
+  test('restoring the original removes the edited row and undo puts it '
+      'back', () async {
+    expect(await controller.resetBuiltIn('builtin.daily'), isNull);
+    await controller.save(daily.copyWith(name: '我的每日'));
+    await controller.setAutoTemplate('builtin.daily');
+
+    final reset = (await controller.resetBuiltIn('builtin.daily'))!;
+    expect(await stored(), isEmpty);
+    expect(prefs().autoTemplateId, 'builtin.daily', reason: '指向的仍是同一个模板');
+
+    await controller.restore(reset);
+    expect((await stored()).single.name, '我的每日');
+    expect(prefs().autoTemplateId, 'builtin.daily');
+  });
+
   test(
-    'hiding the auto built-in clears it and unhiding brings it back',
+    'deleting the auto built-in clears it and undo brings it back',
     () async {
       await controller.setAutoTemplate('builtin.daily');
-      final removed = await controller.setHidden('builtin.daily', true);
+      final removed = await controller.deleteBuiltIn('builtin.daily');
       expect(removed.wasAuto, isTrue);
       expect(prefs().hiddenBuiltIns, {'builtin.daily'});
       expect(prefs().autoTemplateId, isNull);
 
-      await controller.unhide('builtin.daily', removed: removed);
+      await controller.undoDeleteBuiltIn('builtin.daily', removed: removed);
       expect(prefs().hiddenBuiltIns, isEmpty);
       expect(prefs().autoTemplateId, 'builtin.daily');
+    },
+  );
+
+  test(
+    'deleting an edited built-in keeps its edits for a later restore',
+    () async {
+      await controller.save(daily.copyWith(name: '我的每日'));
+      await controller.deleteBuiltIn('builtin.daily');
+      await controller.deleteBuiltIn('builtin.reading');
+      expect((await stored()).single.name, '我的每日');
+
+      await controller.restoreBuiltIns(['builtin.daily', 'builtin.reading']);
+      expect(prefs().hiddenBuiltIns, isEmpty);
+      expect((await stored()).single.name, '我的每日');
     },
   );
 
@@ -178,28 +219,33 @@ void main() {
   );
 
   test(
-    'hiding a built-in removes its rules and unhiding restores them',
+    'deleting a built-in removes its rules and undo restores them',
     () async {
       final dream = rule('builtin.dream', from: 300, to: 420);
       final daily = rule('builtin.daily');
       await controller.saveAutoRule(dream);
       await controller.saveAutoRule(daily);
 
-      final removed = await controller.setHidden('builtin.dream', true);
+      final removed = await controller.deleteBuiltIn('builtin.dream');
       expect(removed.wasAuto, isFalse);
       expect(removed.rules, [dream]);
       expect(prefs().autoRules, [daily]);
 
-      await controller.unhide('builtin.dream', removed: removed);
+      await controller.undoDeleteBuiltIn('builtin.dream', removed: removed);
       expect(prefs().hiddenBuiltIns, isEmpty);
-      expect(prefs().autoRules, [dream, daily]);
-
-      // 重新显示（非撤销）不撤下也不放回任何规则。
-      final shown = await controller.setHidden('builtin.dream', false);
-      expect(shown.rules, isEmpty);
       expect(prefs().autoRules, [dream, daily]);
     },
   );
+
+  test('restoring from the deleted list brings no rules back', () async {
+    final dream = rule('builtin.dream', from: 300, to: 420);
+    await controller.saveAutoRule(dream);
+    await controller.deleteBuiltIn('builtin.dream');
+
+    await controller.restoreBuiltIns(['builtin.dream']);
+    expect(prefs().hiddenBuiltIns, isEmpty);
+    expect(prefs().autoRules, isEmpty);
+  });
 
   test('template codes import as new templates and can be undone', () async {
     final code = encodeDiaryTemplateCode(daily)!;

@@ -7,7 +7,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
-import '../../../app/theme/expressive_motion.dart';
 import '../../../core/services/app_service.dart';
 import '../../../core/services/settings_service.dart';
 import '../../diaries/models/style_library/style_code.dart';
@@ -17,7 +16,7 @@ import '../../widgets/delayed_loading_indicator.dart';
 import '../controllers/diary_templates_controller.dart';
 import '../models/diary_template.dart';
 import '../providers/diary_template_providers.dart';
-import '../sections/diary_template_picker_preview.dart';
+import '../sections/diary_template_restore_sheet.dart';
 import '../sections/diary_templates_lists.dart';
 import '../sections/diary_templates_settings_group.dart';
 import 'diary_template_auto_apply_page.dart';
@@ -27,8 +26,9 @@ import 'diary_template_editor_page.dart';
 ///
 /// 自上而下：“新建日记时”的建议条开关与自动套用入口（时间段与默认模板在
 /// [DiaryTemplateAutoApplyPage]）、我的模板（拖动排序、编辑、
-/// 复制、复制模板码、删除可撤销）、内置模板（预览、复制为我的模板、复制
-/// 模板码、隐藏可撤销）。顶栏可从剪贴板导入模板码或新建模板。读写都经
+/// 复制、复制模板码、删除可撤销）、内置模板（点按即编辑、复制、复制模板码、
+/// 改过的可恢复默认、删除可撤销；删除的不再占位，列表末尾一行可把它们
+/// 恢复回来）。顶栏可从剪贴板导入模板码或新建模板。读写都经
 /// [DiaryTemplatesController]，页面只负责组合与提示。
 class DiaryTemplatesPage extends ConsumerStatefulWidget {
   const DiaryTemplatesPage({super.key});
@@ -74,6 +74,7 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
     final controller = createDiaryTemplatesController(ref, settings);
     final library = watchDiaryTemplateLibrary(ref, l10n, live: true).library;
     final mine = _ordered(library.userTemplates);
+    final deleted = library.deletedBuiltIns;
     return CustomScrollView(
       slivers: <Widget>[
         SliverToBoxAdapter(
@@ -103,7 +104,7 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
             templates: mine,
             onTap: _openEditor,
             onAction: (template, action) =>
-                _handleAction(controller, template, action),
+                _handleAction(controller, template, action, builtIn: false),
             onReorder: (oldIndex, newIndex) =>
                 _reorder(controller, mine, oldIndex, newIndex),
           ),
@@ -113,12 +114,30 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
           ),
         ),
         DiaryTemplatesBuiltInSliver(
-          templates: library.builtIns,
-          hiddenIds: library.prefs.hiddenBuiltIns,
-          onTap: (template) => _previewBuiltIn(controller, template),
+          templates: library.builtIns
+              .where((template) => !library.isDeleted(template))
+              .toList(growable: false),
+          editedIds: library.editedBuiltIns,
+          onTap: _openEditor,
           onAction: (template, action) =>
-              _handleAction(controller, template, action),
+              _handleAction(controller, template, action, builtIn: true),
         ),
+        if (deleted.isNotEmpty)
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.l,
+              AppSpacing.s,
+              AppSpacing.l,
+              0,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: DiaryTemplatesRestoreRow(
+                key: const ValueKey<String>('template_restore_row'),
+                count: deleted.length,
+                onTap: () => _restoreDeleted(controller, deleted),
+              ),
+            ),
+          ),
         SliverToBoxAdapter(
           child: SizedBox(
             height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
@@ -172,11 +191,13 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
       ? context.l10n.diaryTemplateUntitled
       : template.name;
 
+  /// [builtIn]：操作来自内置模板列表（删除记进偏好，而不是删数据库行）。
   Future<void> _handleAction(
     DiaryTemplatesController controller,
     DiaryTemplate template,
-    DiaryTemplateAction action,
-  ) async {
+    DiaryTemplateAction action, {
+    required bool builtIn,
+  }) async {
     final l10n = context.l10n;
     switch (action) {
       case DiaryTemplateAction.edit:
@@ -186,8 +207,6 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
           template,
           name: l10n.diaryTemplatesCopyName(_name(template)),
         );
-      case DiaryTemplateAction.copyToMine:
-        await _copyToMine(controller, template);
       case DiaryTemplateAction.copyCode:
         final code = controller.exportCode(template);
         if (code != null) {
@@ -200,19 +219,28 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
               ? l10n.diaryTemplatesCodeTooLong
               : l10n.diaryTemplatesCodeCopied,
         );
-      case DiaryTemplateAction.hide:
-        final removed = await controller.setHidden(template.id, true);
+      case DiaryTemplateAction.reset:
+        final reset = await controller.resetBuiltIn(template.id);
+        if (reset == null || !mounted) return;
+        unawaited(
+          showStyleEditorUndoSnackBar(
+            context,
+            message: l10n.diaryTemplatesResetDone(_name(template)),
+            onUndo: () => unawaited(controller.restore(reset)),
+          ),
+        );
+      case DiaryTemplateAction.delete when builtIn:
+        final removed = await controller.deleteBuiltIn(template.id);
         if (!mounted) return;
         unawaited(
           showStyleEditorUndoSnackBar(
             context,
-            message: l10n.diaryTemplatesHiddenDone(_name(template)),
-            onUndo: () =>
-                unawaited(controller.unhide(template.id, removed: removed)),
+            message: l10n.diaryTemplatesDeleted(_name(template)),
+            onUndo: () => unawaited(
+              controller.undoDeleteBuiltIn(template.id, removed: removed),
+            ),
           ),
         );
-      case DiaryTemplateAction.show:
-        await controller.setHidden(template.id, false);
       case DiaryTemplateAction.delete:
         final deletion = await controller.delete(template.id);
         if (deletion == null || !mounted) return;
@@ -226,42 +254,27 @@ class _DiaryTemplatesPageState extends ConsumerState<DiaryTemplatesPage> {
     }
   }
 
-  /// 内置模板复制为我的模板后直接打开编辑页：复制通常就是为了改。
-  Future<void> _copyToMine(
+  /// 从“已删除的内置模板”面板恢复一个或全部。恢复本身就能在列表里看到，
+  /// 提示只是确认，不带撤销（想再删照常删除即可）。
+  Future<void> _restoreDeleted(
     DiaryTemplatesController controller,
-    DiaryTemplate template,
-  ) async {
-    final name = _name(template);
-    final id = await controller.duplicate(template, name: name);
-    if (!mounted) return;
-    await _openEditor(template.copyWith(id: id, name: name));
-  }
-
-  Future<void> _previewBuiltIn(
-    DiaryTemplatesController controller,
-    DiaryTemplate template,
+    List<DiaryTemplate> deleted,
   ) async {
     final l10n = context.l10n;
-    final copy = await showModalBottomSheet<bool>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      isScrollControlled: true,
-      sheetAnimationStyle: ExpressiveMotion.reduceMotion(context)
-          ? AnimationStyle.noAnimation
-          : null,
-      builder: (BuildContext sheetContext) => FractionallySizedBox(
-        heightFactor: 0.85,
-        child: DiaryTemplatePickerPreview(
-          template: template,
-          diaryDate: DateTime.now(),
-          useLabel: l10n.diaryTemplatesCopyToMine,
-          onBack: () => Navigator.of(sheetContext).pop(false),
-          onUse: (_) => Navigator.of(sheetContext).pop(true),
-        ),
-      ),
+    final ids = await showDiaryTemplateRestoreSheet(
+      context,
+      templates: deleted,
     );
-    if (copy == true && mounted) await _copyToMine(controller, template);
+    if (ids == null || ids.isEmpty || !mounted) return;
+    await controller.restoreBuiltIns(ids);
+    if (!mounted) return;
+    final restored = deleted.where((t) => ids.contains(t.id)).toList();
+    showStyleEditorMessage(
+      context,
+      restored.length == 1
+          ? l10n.diaryTemplatesRestoredDone(_name(restored.single))
+          : l10n.diaryTemplatesRestoredAllDone(restored.length),
+    );
   }
 
   Future<void> _import(SettingsService settings) async {

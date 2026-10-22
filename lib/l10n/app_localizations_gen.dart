@@ -8492,7 +8492,7 @@ abstract class AppLocalizations {
   /// **'Couldn\'t publish the diary. Please try again.'**
   String get publishFailed;
 
-  /// Publish page: shown once the new diary has been saved, which happens as soon as the page opens.
+  /// Publish page app bar: status title shown (after a check icon) once the new diary has been saved, which happens as soon as the page opens.
   ///
   /// In en, this message translates to:
   /// **'Diary published'**

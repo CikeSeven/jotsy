@@ -55,7 +55,8 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
     expect(await tester.runAsync(database.countDiaryDrafts), 0);
-    expect(find.text(panel.l10n.publishSucceeded), findsOneWidget);
+    expect(_appBarTitle(panel.l10n.publishSucceeded), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
     expect(find.byType(PublishDiaryPage), findsOneWidget);
     expect(find.byType(EditDiaryPage, skipOffstage: false), findsOneWidget);
     expect(results, isEmpty);
@@ -129,12 +130,17 @@ void main() {
     expect(find.byType(PublishDiaryPage), findsOneWidget);
     expect(backButton().onPressed, isNull);
     expect(results, isEmpty);
+    // 写库完成前顶栏仍是“发表日记”，之后才换成“日记已发表”。
+    expect(_appBarTitle(l10n.autoT0138), findsOneWidget);
+    expect(_appBarTitle(l10n.publishSucceeded), findsNothing);
 
     database.gate.complete();
     await PublishPanelDriver(tester).waitUntilPublished();
     await tester.pumpAndSettle();
     expect(results, isEmpty);
     expect(backButton().onPressed, isNotNull);
+    expect(_appBarTitle(l10n.publishSucceeded), findsOneWidget);
+    expect(_appBarTitle(l10n.autoT0138), findsNothing);
 
     // 退场途中再按返回不会重复退场或发布。
     await tester.tap(backTooltip());
@@ -370,6 +376,15 @@ class _GatedDatabase extends AppDatabase {
     );
   }
 }
+
+/// 发布页顶栏里的文字。
+Finder _appBarTitle(String text) => find.descendant(
+  of: find.descendant(
+    of: find.byType(PublishDiaryPage),
+    matching: find.byType(AppBar),
+  ),
+  matching: find.text(text),
+);
 
 Future<void> _rejectDiaryInserts(AppDatabase database) =>
     database.customStatement('''

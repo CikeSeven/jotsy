@@ -128,7 +128,15 @@ void main() {
       diary.createdAt.isBefore(before.subtract(const Duration(seconds: 1))),
       isFalse,
     );
-    expect(find.text(driver.l10n.publishSucceeded), findsOneWidget);
+    // 成功不弹提示条：顶栏标题换成“日记已发表”。
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text(driver.l10n.publishSucceeded),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byType(SnackBar), findsNothing);
     // 面板显示的就是写进去的发表时间。
     expect(
       driver.publishTimeLabel,

@@ -16,6 +16,7 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dar
 import 'package:node_diary/ui/diaries/widgets/animated_publish_diary_cover_sliver.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
+import 'package:node_diary/ui/diaries/widgets/publish_status_title.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_time_picker.dart';
 import 'package:node_diary/ui/diaries/widgets/time_capsule_seal_overlay.dart';
 import 'package:node_diary/ui/home/widgets/home_hint_visibility_scope.dart';
@@ -27,9 +28,10 @@ import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 /// 日记发布页（预览优先，进入即发表）。
 ///
-/// 一打开就把日记写进库并提示“已发表”；之后底部面板里的封面、标签、此时
-/// 此地、发表时间、定时锁等改动像编辑页一样随改随存。返回时补存、（胶囊）
-/// 播放封存卡片，然后直接回到打开编辑页之前的页面（首页），不再回到编辑页。
+/// 一打开就把日记写进库，顶栏标题随即换成“✓ 日记已发表”；之后底部面板里
+/// 的封面、标签、此时此地、发表时间、定时锁等改动像编辑页一样随改随存。
+/// 返回时补存、（胶囊）播放封存卡片，然后直接回到打开编辑页之前的页面
+/// （首页），不再回到编辑页。
 /// 写库失败时提示并退回编辑页，草稿原样保留，可以再点“发布”重试。
 ///
 /// 页面只做装配：展示真实发布预览（封面 + 标题 + 富文本正文），承载底部
@@ -137,7 +139,11 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
   /// 只有已发表、且不在退场中时可以返回（见 [PublishPhase]）。
   bool get _leaveBlocked => !_publisher.canLeave;
 
-  /// 进入即发表：（去掉已过期的胶囊）→ 写库 → 通知打开者删除草稿 → 提示。
+  /// 进入即发表：（去掉已过期的胶囊）→ 写库 → 通知打开者删除草稿 → 顶栏
+  /// 换成“日记已发表”（阶段变化触发重建，见 [PublishStatusTitle]）并轻震。
+  ///
+  /// 成功不弹提示条：顶栏标题本身就是这篇日记的状态。只有已过期的胶囊被
+  /// 去掉时另给一条提示，说明为什么没有封存。
   ///
   /// 写库失败时提示并退回编辑页：草稿还在那里，可以再点“发布”重试。
   Future<void> _publish() async {
@@ -160,7 +166,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
     }
     // 不论本页是否还在都要删除草稿，否则日记与草稿并存，可能被再发一次。
     onPublished?.call(diaryId);
-    _hint(capsuleExpired ? l10n.publishCapsuleExpired : l10n.publishSucceeded);
+    if (!mounted) return;
+    unawaited(HapticFeedback.lightImpact());
+    if (capsuleExpired) _hint(l10n.publishCapsuleExpired);
   }
 
   /// 面板改动自动保存失败：提示通用文案（原始错误只进日志），快照保持未存，
@@ -204,9 +212,9 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
 
   /// 轻提示不等待关闭，避免把后续状态复位拖到提示消失之后。
   ///
-  /// 本页的提示浮在收起的面板上方：进入即发表的“已发表”每次都会出现，若
-  /// 照常贴底，会在提示期间盖住收起栏、点不到。[abovePanel] 为 false 时照常
-  /// 贴底（发表失败、随即退回编辑页时，提示显示在编辑页上）。
+  /// 本页的提示（保存失败、过期的胶囊）浮在收起的面板上方：若照常贴底，
+  /// 会在提示期间盖住收起栏、点不到。[abovePanel] 为 false 时照常贴底
+  /// （发表失败、随即退回编辑页时，提示显示在编辑页上）。
   void _hint(String message, {bool abovePanel = true}) {
     if (!mounted) return;
     unawaited(
@@ -256,7 +264,7 @@ class _PublishDiaryPageState extends ConsumerState<PublishDiaryPage>
       child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: AppTopBar(
-          title: Text(context.l10n.autoT0138),
+          title: PublishStatusTitle(published: _publisher.diaryId != null),
           leading: IconButton(
             tooltip: context.l10n.commonBack,
             onPressed: _leaveBlocked ? null : _leave,

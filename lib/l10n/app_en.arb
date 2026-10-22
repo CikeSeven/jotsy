@@ -6499,7 +6499,7 @@
   },
   "publishSucceeded": "Diary published",
   "@publishSucceeded": {
-    "description": "Publish page: shown once the new diary has been saved, which happens as soon as the page opens."
+    "description": "Publish page app bar: status title shown (after a check icon) once the new diary has been saved, which happens as soon as the page opens."
   },
   "publishCapsuleExpired": "The unlock time had passed, so the diary was published without a time lock.",
   "@publishCapsuleExpired": {

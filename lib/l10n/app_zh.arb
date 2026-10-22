@@ -6499,7 +6499,7 @@
   },
   "publishSucceeded": "日记已发表",
   "@publishSucceeded": {
-    "description": "发布页：进入发布页即写入新日记，写入成功后的提示。"
+    "description": "发布页顶栏：进入发布页即写入新日记，写入成功后标题换成的状态文字（前面带对勾）。"
   },
   "publishCapsuleExpired": "解封时间已经过去，已作为普通日记发表",
   "@publishCapsuleExpired": {

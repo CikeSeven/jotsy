@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import '../../../widgets/soft_keyboard_selection_keys.dart';
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_block_handle_layer.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
 
-/// 原生正文外围的交互层：平台选区菜单、软键盘扩选兼容与编辑态光标避让。
+/// 原生正文外围的交互层：平台选区菜单、软键盘扩选兼容、编辑态段落把手与
+/// 光标避让。
 /// 与块注册/主题解析分开，键盘约束变化时只更新这一层。
 class DiaryEditorInteractionLayer extends StatelessWidget {
   const DiaryEditorInteractionLayer({
@@ -18,6 +20,7 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
     required this.inlineHeight,
     required this.coveredHeight,
     required this.revealPath,
+    this.contentLeft = 0,
     this.focusNode,
   });
   final DiaryEditorController controller;
@@ -28,6 +31,9 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
   final double coveredHeight;
   final FocusNode? focusNode;
   final void Function(af.Path) revealPath;
+
+  /// 编辑器左内边距，段落把手画在这块边距里。
+  final double contentLeft;
   @override
   Widget build(BuildContext context) {
     final content = SoftKeyboardSelectionKeys(
@@ -62,14 +68,21 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
             : editor,
       ),
     );
-    return !shrinkWrap && !controller.readOnly
-        ? DiaryEditorViewport(
+    if (controller.readOnly) return content;
+    final handles = DiaryBlockHandleLayer(
+      controller: controller,
+      focusNode: focusNode,
+      contentLeft: contentLeft,
+      child: content,
+    );
+    return shrinkWrap
+        ? handles
+        : DiaryEditorViewport(
             controller: controller,
             focusNode: focusNode,
             coveredHeight: coveredHeight,
             revealPath: revealPath,
-            child: content,
-          )
-        : content;
+            child: handles,
+          );
   }
 }

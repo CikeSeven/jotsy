@@ -13814,12 +13814,6 @@ abstract class AppLocalizations {
   /// **'Remove link'**
   String get diaryEditorRemoveLink;
 
-  /// Search hint in the diary editor slash command menu.
-  ///
-  /// In en, this message translates to:
-  /// **'Search commands'**
-  String get diaryEditorCommandHint;
-
   /// Accessibility label for the diary editor paragraph drag handle.
   ///
   /// In en, this message translates to:
@@ -13885,6 +13879,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Image height'**
   String get diaryEditorImageHeight;
+
+  /// Slash command option that turns the block into a level-1 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 1'**
+  String get diaryEditorHeading1;
+
+  /// Slash command option that turns the block into a level-2 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 2'**
+  String get diaryEditorHeading2;
+
+  /// Slash command option that turns the block into a level-3 heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 3'**
+  String get diaryEditorHeading3;
+
+  /// Slash command group: paragraph, headings, quote and code block.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get diaryEditorCommandGroupText;
+
+  /// Slash command group: bulleted, numbered and to-do lists.
+  ///
+  /// In en, this message translates to:
+  /// **'Lists'**
+  String get diaryEditorCommandGroupList;
+
+  /// Slash command group: divider, image, video, attachment and recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert'**
+  String get diaryEditorCommandGroupInsert;
+
+  /// Shown in the slash command menu when the typed filter matches nothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching blocks'**
+  String get diaryEditorCommandEmpty;
+
+  /// Placeholder on the empty body line holding the caret, hinting at the slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Type / to insert a block'**
+  String get diaryEditorEmptyLineHint;
+
+  /// Footer of the slash command menu: typing after the slash filters the commands.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep typing to filter'**
+  String get diaryEditorCommandTypeToFilter;
 }
 
 class _AppLocalizationsDelegate

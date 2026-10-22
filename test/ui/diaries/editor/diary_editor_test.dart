@@ -23,6 +23,7 @@ void main() {
     bool inline = false,
     FocusNode? focusNode,
     Brightness brightness = Brightness.light,
+    EdgeInsets padding = EdgeInsets.zero,
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -51,6 +52,7 @@ void main() {
                     controller: controller,
                     appearance: appearance,
                     focusNode: focusNode,
+                    padding: padding,
                   ),
           ),
         ),
@@ -153,33 +155,66 @@ void main() {
     },
   );
   testWidgets(
-    'a paragraph handle moves its whole block and undo restores order',
+    'the caret block handle drags its whole block and undo restores order',
     (tester) async {
+      final focus = FocusNode();
       final controller = DiaryEditorController.fromContent(
         'first\nsecond\nthird',
       );
-      await pump(tester, controller);
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      // 与编辑页相同的 16dp 页边距：顶层块的把手落在边距里。
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      final handle = find.byType(LongPressDraggable<af.Node>);
+      // 没有焦点时不显示把手：阅读与浏览时正文左侧保持干净。
+      expect(handle, findsNothing);
+      focus.requestFocus();
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(handle, findsOneWidget);
       final blocks = find.byType(af.ParagraphBlockComponentWidget);
-      final source = find.byTooltip('拖动段落').first;
-      final start = tester.getCenter(source);
+      // 把手在第一段左侧、与它的首行同高，不占正文的宽度。
+      expect(
+        tester.getCenter(handle).dx,
+        lessThan(tester.getTopLeft(blocks.at(0)).dx),
+      );
+      expect(
+        (tester.getCenter(handle).dy - tester.getCenter(blocks.at(0)).dy).abs(),
+        lessThan(4),
+      );
+
+      final gesture = await tester.startGesture(tester.getCenter(handle));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
       final target = tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2);
-      final gesture = await tester.startGesture(start);
-      await tester.pump(kLongPressTimeout);
+      await gesture.moveTo(target - const Offset(0, 10));
+      await tester.pump();
       await gesture.moveTo(target);
       await tester.pump();
+      await tester.pump();
       await gesture.up();
-      await tester.pumpAndSettle();
+      await tester.pump();
       expect(controller.plainText, 'second\nthird\nfirst');
+      // 光标落在被移动块的末尾，可以接着写。
+      expect(
+        controller.selection,
+        af.Selection.collapsed(af.Position(path: [2], offset: 5)),
+      );
       controller.undo();
-      await tester.pumpAndSettle();
+      await tester.pump();
       expect(controller.plainText, 'first\nsecond\nthird');
       await tester.pumpWidget(const SizedBox.shrink());
       controller.dispose();
+      focus.dispose();
     },
   );
 
   testWidgets(
-    'soft keyboard triggers Markdown and searchable mobile slash commands',
+    'soft keyboard triggers Markdown and the inline slash command menu',
     (tester) async {
       final focus = FocusNode();
       final controller = DiaryEditorController.fromContent('');
@@ -206,20 +241,60 @@ void main() {
       expect(controller.document.nodeAtPath([0])!.type, 'heading');
       controller.setBlockType('paragraph');
       await tester.pump(const Duration(milliseconds: 20));
+      Future<void> type(String text) async {
+        tester.testTextInput.updateEditingValue(
+          TextEditingValue(
+            text: '$prefix$text',
+            selection: TextSelection.collapsed(
+              offset: prefix.length + text.length,
+            ),
+          ),
+        );
+        for (var i = 0; i < 4; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+      }
+
+      // `/` 打开内联菜单，焦点留在正文（键盘不收起）。
+      await type('/');
+      expect(find.text('一级标题'), findsOneWidget);
+      expect(focus.hasFocus, isTrue);
+      // 斜杠后接着输入的文字就是筛选词。
+      await type('/代码');
+      expect(find.text('一级标题'), findsNothing);
+      await tester.tap(find.textContaining('代码块'));
+      await tester.pump();
+      expect(controller.document.nodeAtPath([0])!.type, 'code');
+      // 执行时删掉 `/筛选词`。
+      expect(controller.plainText, isEmpty);
+      expect(focus.hasFocus, isTrue);
+
+      // 没有匹配项时以空格结束会话，已输入的文字原样保留。
+      controller.setBlockType('paragraph');
+      await tester.pump(const Duration(milliseconds: 20));
+      final again = tester.testTextInput.editingState!['text'] as String;
       tester.testTextInput.updateEditingValue(
         TextEditingValue(
-          text: '$prefix/',
-          selection: TextSelection.collapsed(offset: prefix.length + 1),
+          text: '$again/',
+          selection: TextSelection.collapsed(offset: again.length + 1),
         ),
       );
-      await tester.pumpAndSettle();
-      expect(find.text('插入区块'), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'code');
-      await tester.pump();
-      await tester.tap(find.byType(ListTile).first);
-      await tester.pumpAndSettle();
-      expect(controller.document.nodeAtPath([0])!.type, 'code');
-      expect(controller.plainText, isEmpty);
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.text('一级标题'), findsOneWidget);
+      tester.testTextInput.updateEditingValue(
+        TextEditingValue(
+          text: '$again/xyz ',
+          selection: TextSelection.collapsed(offset: again.length + 5),
+        ),
+      );
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      expect(find.text('一级标题'), findsNothing);
+      expect(
+        controller.document.nodeAtPath([0])!.delta!.toPlainText(),
+        '/xyz ',
+      );
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       controller.dispose();

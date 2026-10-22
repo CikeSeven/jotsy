@@ -10843,10 +10843,6 @@
   "@diaryEditorRemoveLink": {
     "description": "Clear the URL from the selected diary text."
   },
-  "diaryEditorCommandHint": "Search commands",
-  "@diaryEditorCommandHint": {
-    "description": "Search hint in the diary editor slash command menu."
-  },
   "diaryEditorDragBlock": "Drag block",
   "@diaryEditorDragBlock": {
     "description": "Accessibility label for the diary editor paragraph drag handle."
@@ -10886,5 +10882,23 @@
   "diaryEditorImageWidth": "Image width",
   "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
   "diaryEditorImageHeight": "Image height",
-  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."}
+  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorHeading1": "Heading 1",
+  "@diaryEditorHeading1": {"description": "Slash command option that turns the block into a level-1 heading."},
+  "diaryEditorHeading2": "Heading 2",
+  "@diaryEditorHeading2": {"description": "Slash command option that turns the block into a level-2 heading."},
+  "diaryEditorHeading3": "Heading 3",
+  "@diaryEditorHeading3": {"description": "Slash command option that turns the block into a level-3 heading."},
+  "diaryEditorCommandGroupText": "Text",
+  "@diaryEditorCommandGroupText": {"description": "Slash command group: paragraph, headings, quote and code block."},
+  "diaryEditorCommandGroupList": "Lists",
+  "@diaryEditorCommandGroupList": {"description": "Slash command group: bulleted, numbered and to-do lists."},
+  "diaryEditorCommandGroupInsert": "Insert",
+  "@diaryEditorCommandGroupInsert": {"description": "Slash command group: divider, image, video, attachment and recording."},
+  "diaryEditorCommandEmpty": "No matching blocks",
+  "@diaryEditorCommandEmpty": {"description": "Shown in the slash command menu when the typed filter matches nothing."},
+  "diaryEditorEmptyLineHint": "Type / to insert a block",
+  "@diaryEditorEmptyLineHint": {"description": "Placeholder on the empty body line holding the caret, hinting at the slash command menu."},
+  "diaryEditorCommandTypeToFilter": "Keep typing to filter",
+  "@diaryEditorCommandTypeToFilter": {"description": "Footer of the slash command menu: typing after the slash filters the commands."}
 }

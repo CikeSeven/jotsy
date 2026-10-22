@@ -185,16 +185,16 @@ class _DiaryTemplateEditorContentTabState
         ),
         DiaryTemplateVariableBar(onInsert: _insert),
         Expanded(
-          child: Padding(
+          // 边距交给编辑器本身：段落把手画在页面左边距里，边距包在外面
+          // 时把手只能压在文字上。
+          child: DiaryEditor(
+            controller: widget.controller.body,
+            appearance: appearance,
+            focusNode: _bodyFocus,
+            placeholder: l10n.diaryTemplateEditorBodyHint,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-            child: DiaryEditor(
-              controller: widget.controller.body,
-              appearance: appearance,
-              focusNode: _bodyFocus,
-              placeholder: l10n.diaryTemplateEditorBodyHint,
-              header: const SizedBox(height: 12),
-              footer: const SizedBox(height: 24),
-            ),
+            header: const SizedBox(height: 12),
+            footer: const SizedBox(height: 24),
           ),
         ),
         if (showToolbar)

@@ -10843,10 +10843,6 @@
   "@diaryEditorRemoveLink": {
     "description": "Clear the URL from the selected diary text."
   },
-  "diaryEditorCommandHint": "搜索命令",
-  "@diaryEditorCommandHint": {
-    "description": "Search hint in the diary editor slash command menu."
-  },
   "diaryEditorDragBlock": "拖动段落",
   "@diaryEditorDragBlock": {
     "description": "Accessibility label for the diary editor paragraph drag handle."
@@ -10886,5 +10882,23 @@
   "diaryEditorImageWidth": "图片宽度",
   "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
   "diaryEditorImageHeight": "图片高度",
-  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."}
+  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorHeading1": "一级标题",
+  "@diaryEditorHeading1": {"description": "正文 / 命令菜单里转为一级标题的选项。"},
+  "diaryEditorHeading2": "二级标题",
+  "@diaryEditorHeading2": {"description": "正文 / 命令菜单里转为二级标题的选项。"},
+  "diaryEditorHeading3": "三级标题",
+  "@diaryEditorHeading3": {"description": "正文 / 命令菜单里转为三级标题的选项。"},
+  "diaryEditorCommandGroupText": "文本",
+  "@diaryEditorCommandGroupText": {"description": "正文 / 命令菜单的分组：段落、标题、引用与代码块。"},
+  "diaryEditorCommandGroupList": "列表",
+  "@diaryEditorCommandGroupList": {"description": "正文 / 命令菜单的分组：无序、有序与待办列表。"},
+  "diaryEditorCommandGroupInsert": "插入",
+  "@diaryEditorCommandGroupInsert": {"description": "正文 / 命令菜单的分组：分隔线、图片、视频、附件与录音。"},
+  "diaryEditorCommandEmpty": "没有匹配的区块",
+  "@diaryEditorCommandEmpty": {"description": "正文 / 命令菜单里输入的筛选词没有匹配项时的提示。"},
+  "diaryEditorEmptyLineHint": "输入 / 插入区块",
+  "@diaryEditorEmptyLineHint": {"description": "正文中间光标所在空行的占位提示，提醒可以用 / 命令插入区块。"},
+  "diaryEditorCommandTypeToFilter": "继续输入即可筛选",
+  "@diaryEditorCommandTypeToFilter": {"description": "正文 / 命令菜单底部的说明：在 / 后接着输入文字会筛选命令。"}
 }

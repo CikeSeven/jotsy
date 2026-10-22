@@ -8429,9 +8429,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorRemoveLink => 'Remove link';
 
   @override
-  String get diaryEditorCommandHint => 'Search commands';
-
-  @override
   String get diaryEditorDragBlock => 'Drag block';
 
   @override
@@ -8463,4 +8460,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryEditorImageHeight => 'Image height';
+
+  @override
+  String get diaryEditorHeading1 => 'Heading 1';
+
+  @override
+  String get diaryEditorHeading2 => 'Heading 2';
+
+  @override
+  String get diaryEditorHeading3 => 'Heading 3';
+
+  @override
+  String get diaryEditorCommandGroupText => 'Text';
+
+  @override
+  String get diaryEditorCommandGroupList => 'Lists';
+
+  @override
+  String get diaryEditorCommandGroupInsert => 'Insert';
+
+  @override
+  String get diaryEditorCommandEmpty => 'No matching blocks';
+
+  @override
+  String get diaryEditorEmptyLineHint => 'Type / to insert a block';
+
+  @override
+  String get diaryEditorCommandTypeToFilter => 'Keep typing to filter';
 }

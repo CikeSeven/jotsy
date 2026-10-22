@@ -8,27 +8,47 @@ import '../../models/diary_toolbar_preferences.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_editor_insert.dart';
 
-/// 桌面选区菜单和手机命令面板共用同一份命令定义与事务。
+/// 命令菜单里的分组，按此顺序排列。
+enum DiaryBlockCommandGroup { text, list, insert }
+
+/// 桌面选区菜单和手机 `/` 菜单共用同一份命令定义与事务。
 class DiaryBlockCommand {
   const DiaryBlockCommand(
     this.type,
     this.label,
     this.icon,
     this.keywords, {
+    required this.group,
+    this.markdown,
+    this.attributes = const {},
     this.action,
   });
+
+  /// 目标块类型（转换类命令）或插入的内容类型。
   final String type;
   final String label;
   final FaIconData icon;
   final List<String> keywords;
+  final DiaryBlockCommandGroup group;
+
+  /// 对应的 Markdown 快捷输入（如 `##`、`-`），菜单行尾展示，顺带教用户
+  /// 下次直接输入；没有对应写法时为 null。
+  final String? markdown;
+
+  /// 转换时写入的块属性（标题级别等）。
+  final Map<String, Object> attributes;
   final VoidCallback? action;
-  bool matches(String query) =>
-      query.isEmpty ||
-      [
-        label,
-        type,
-        ...keywords,
-      ].any((value) => value.toLowerCase().contains(query.toLowerCase()));
+
+  bool matches(String query) {
+    if (query.isEmpty) return true;
+    final needle = query.toLowerCase();
+    return [
+      label,
+      type,
+      ?markdown,
+      ...keywords,
+    ].any((value) => value.toLowerCase().contains(needle));
+  }
 }
 
 List<DiaryBlockCommand> diaryBlockCommands(
@@ -40,55 +60,84 @@ List<DiaryBlockCommand> diaryBlockCommands(
     'paragraph',
     l10n.diaryEditorParagraph,
     FontAwesomeIcons.paragraph,
-    const ['text', '正文'],
+    const ['text', 'p', '正文', '段落'],
+    group: DiaryBlockCommandGroup.text,
   ),
-  DiaryBlockCommand('heading', l10n.autoT0017, FontAwesomeIcons.heading, const [
-    'heading',
-    'title',
-    '标题',
-  ]),
-  for (final item in [
-    DiaryToolbarItem.bulletList,
-    DiaryToolbarItem.orderedList,
-    DiaryToolbarItem.checkList,
-    DiaryToolbarItem.quote,
-    DiaryToolbarItem.codeBlock,
+  for (final (level, label) in [
+    (1, l10n.diaryEditorHeading1),
+    (2, l10n.diaryEditorHeading2),
+    (3, l10n.diaryEditorHeading3),
   ])
     DiaryBlockCommand(
-      switch (item) {
-        DiaryToolbarItem.bulletList => 'bulleted_list',
-        DiaryToolbarItem.orderedList => 'numbered_list',
-        DiaryToolbarItem.checkList => 'todo_list',
-        DiaryToolbarItem.quote => 'quote',
-        _ => 'code',
-      },
+      'heading',
+      label,
+      FontAwesomeIcons.heading,
+      ['heading', 'h$level', 'title', '标题'],
+      group: DiaryBlockCommandGroup.text,
+      markdown: '#' * level,
+      attributes: {'level': level},
+    ),
+  DiaryBlockCommand(
+    'quote',
+    DiaryToolbarItem.quote.label(l10n),
+    DiaryToolbarItem.quote.iconData,
+    const ['quote', 'blockquote', '引用'],
+    group: DiaryBlockCommandGroup.text,
+    markdown: '>',
+  ),
+  DiaryBlockCommand(
+    'code',
+    DiaryToolbarItem.codeBlock.label(l10n),
+    DiaryToolbarItem.codeBlock.iconData,
+    const ['code', 'codeblock', '代码'],
+    group: DiaryBlockCommandGroup.text,
+    markdown: '```',
+  ),
+  for (final (item, type, markdown) in [
+    (DiaryToolbarItem.bulletList, 'bulleted_list', '-'),
+    (DiaryToolbarItem.orderedList, 'numbered_list', '1.'),
+    (DiaryToolbarItem.checkList, 'todo_list', '[]'),
+  ])
+    DiaryBlockCommand(
+      type,
       item.label(l10n),
       item.iconData,
-      [item.storageKey],
+      [item.storageKey, 'list', '列表'],
+      group: DiaryBlockCommandGroup.list,
+      markdown: markdown,
+      attributes: {if (type == 'todo_list') 'checked': false},
     ),
   DiaryBlockCommand(
     'divider',
     l10n.diaryEditorDivider,
     FontAwesomeIcons.minus,
-    const ['hr', 'divider', '分隔线'],
+    const ['hr', 'divider', 'line', '分隔线', '分割线'],
+    group: DiaryBlockCommandGroup.insert,
+    markdown: '---',
   ),
   if (onMedia != null) ...[
-    DiaryBlockCommand('image', l10n.autoT0016, FontAwesomeIcons.image, const [
-      'photo',
-      '图片',
-    ], action: () => onMedia(DiaryMediaKind.image)),
+    DiaryBlockCommand(
+      'image',
+      l10n.autoT0016,
+      FontAwesomeIcons.image,
+      const ['image', 'photo', 'picture', '图片', '照片'],
+      group: DiaryBlockCommandGroup.insert,
+      action: () => onMedia(DiaryMediaKind.image),
+    ),
     DiaryBlockCommand(
       'video',
       l10n.diaryToolbarInsertVideo,
       FontAwesomeIcons.video,
-      const ['video', '视频'],
+      const ['video', 'movie', '视频'],
+      group: DiaryBlockCommandGroup.insert,
       action: () => onMedia(DiaryMediaKind.video),
     ),
     DiaryBlockCommand(
       'attachment',
       l10n.diaryToolbarInsertAttachment,
       FontAwesomeIcons.paperclip,
-      const ['file', '附件'],
+      const ['file', 'attachment', '附件', '文件'],
+      group: DiaryBlockCommandGroup.insert,
       action: () => onMedia(DiaryMediaKind.attachment),
     ),
   ],
@@ -97,10 +146,21 @@ List<DiaryBlockCommand> diaryBlockCommands(
       'audio',
       l10n.diaryToolbarRecording,
       FontAwesomeIcons.microphone,
-      const ['recording', '录音'],
+      const ['audio', 'recording', 'voice', '录音', '语音'],
+      group: DiaryBlockCommandGroup.insert,
       action: onRecording,
     ),
 ];
+
+/// 分组名称。
+String diaryBlockCommandGroupLabel(
+  AppLocalizations l10n,
+  DiaryBlockCommandGroup group,
+) => switch (group) {
+  DiaryBlockCommandGroup.text => l10n.diaryEditorCommandGroupText,
+  DiaryBlockCommandGroup.list => l10n.diaryEditorCommandGroupList,
+  DiaryBlockCommandGroup.insert => l10n.diaryEditorCommandGroupInsert,
+};
 
 void applyDiaryBlockCommand(
   DiaryEditorController controller,
@@ -114,12 +174,6 @@ void applyDiaryBlockCommand(
   if (command.type == 'divider') {
     insertDiaryEditorNodes(controller: controller, nodes: [af.dividerNode()]);
   } else {
-    controller.setBlockType(
-      command.type,
-      attributes: {
-        if (command.type == 'todo_list') 'checked': false,
-        if (command.type == 'heading') 'level': 1,
-      },
-    );
+    controller.setBlockType(command.type, attributes: command.attributes);
   }
 }

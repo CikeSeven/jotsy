@@ -1,6 +1,5 @@
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../widgets/image_viewer_hero.dart';
 import '../../controllers/diary_block_language_tracker.dart';
@@ -12,9 +11,10 @@ import 'diary_code_block_surface.dart';
 import 'diary_editor_styles.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
-import 'diary_block_drag_handle.dart';
+import 'diary_block_markers.dart';
 
-/// 原生块组件的单一注册点：共享排版、只读待办、代码外壳、媒体和拖动把手。
+/// 原生块组件的单一注册点：共享排版、行首标记（列表、待办、引用）、代码
+/// 外壳与媒体。段落把手不在块里，见 [DiaryBlockHandleLayer]。
 Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   BuildContext context, {
   required DiaryEditorController controller,
@@ -33,7 +33,15 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     context,
     appearance,
     placeholder: placeholder,
+    editable: !controller.readOnly,
   );
+  final colors = Theme.of(context).colorScheme;
+  final lineExtent = diaryMarkerLineExtent(
+    context,
+    fontSize: appearance.typography.fontSize,
+    lineHeight: appearance.typography.lineHeight,
+  );
+  final body = diaryEditorBodyStyle(context, appearance);
   final media = DiaryMediaBlockBuilder(
     controller: controller,
     onImageOpen: onImageOpen,
@@ -52,23 +60,38 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
     'page': page,
     'paragraph': af.ParagraphBlockComponentBuilder(configuration: text),
     'heading': af.HeadingBlockComponentBuilder(configuration: text),
-    'bulleted_list': af.BulletedListBlockComponentBuilder(configuration: text),
-    'numbered_list': af.NumberedListBlockComponentBuilder(configuration: text),
-    'quote': af.QuoteBlockComponentBuilder(configuration: text),
+    'bulleted_list': af.BulletedListBlockComponentBuilder(
+      configuration: text,
+      iconBuilder: (context, node) =>
+          DiaryBulletMarker(node: node, lineExtent: lineExtent),
+    ),
+    'numbered_list': af.NumberedListBlockComponentBuilder(
+      configuration: text,
+      iconBuilder: (context, node, _) => DiaryNumberMarker(
+        node: node,
+        lineExtent: lineExtent,
+        textStyle: body,
+      ),
+    ),
+    'quote': af.QuoteBlockComponentBuilder(
+      configuration: text,
+      iconBuilder: (context, node) => const DiaryQuoteBar(),
+    ),
     'todo_list': af.TodoListBlockComponentBuilder(
       configuration: text,
-      iconBuilder: (context, node, onCheck) => IconButton(
-        tooltip: DiaryToolbarItem.checkList.label(context.l10n),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints.tightFor(width: 24, height: 28),
-        icon: FaIcon(
-          node.attributes['checked'] == true
-              ? FontAwesomeIcons.squareCheck
-              : FontAwesomeIcons.square,
-          size: 16,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        onPressed: controller.readOnly && !todoToggle
+      // 勾选后文字转为次要色并划线，划线与文字同色、不抢眼。
+      textStyleBuilder: (checked) => checked
+          ? TextStyle(
+              color: colors.onSurfaceVariant,
+              decoration: TextDecoration.lineThrough,
+              decorationColor: colors.onSurfaceVariant,
+            )
+          : const TextStyle(),
+      iconBuilder: (context, node, onCheck) => DiaryTodoCheckbox(
+        checked: node.attributes['checked'] == true,
+        lineExtent: lineExtent,
+        semanticLabel: DiaryToolbarItem.checkList.label(context.l10n),
+        onToggle: controller.readOnly && !todoToggle
             ? null
             : () {
                 final transaction = controller.state.transaction
@@ -87,8 +110,11 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
         placeholderText: (_) => ' ',
       ),
     ),
+    // 独占一行的 1dp 细线，上下各留 12dp（DESIGN §3.2）。
     'divider': af.DividerBlockComponentBuilder(
-      lineColor: Theme.of(context).colorScheme.outlineVariant,
+      configuration: text.copyWith(padding: (_) => EdgeInsets.zero),
+      lineColor: colors.outlineVariant,
+      height: 24,
     ),
     for (final type in ['image', 'video', 'audio', 'attachment', 'quill_embed'])
       type: media,
@@ -96,18 +122,9 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   };
   return {
     for (final entry in builders.entries)
-      entry.key: entry.key == 'page'
-          ? entry.value
-          : controller.readOnly
-          ? (entry.key == 'code'
-                ? _CodeBuilder(entry.value, code, tracker)
-                : entry.value)
-          : DiaryDraggableBlockBuilder(
-              entry.key == 'code'
-                  ? _CodeBuilder(entry.value, code, tracker)
-                  : entry.value,
-              controller,
-            ),
+      entry.key: entry.key == 'code'
+          ? _CodeBuilder(entry.value, code, tracker)
+          : entry.value,
   };
 }
 

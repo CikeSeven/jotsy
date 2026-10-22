@@ -6,24 +6,23 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'diary_block_commands.dart';
-import 'diary_command_sheet.dart';
+import 'diary_slash_menu.dart';
 import '../../controllers/diary_editor_controller.dart';
 
-/// 显式覆盖上游仅桌面的 `/` 事件。手机面板的搜索字不进入正文，取消保留
-/// 用户输入的斜杠；执行时只删除仍在原节点上的触发字符，避免异步返回覆盖
-/// 已变动或已销毁的会话。
+/// 显式覆盖上游仅桌面的 `/` 事件：斜杠总是先写进正文。桌面用上游选区
+/// 菜单（实体键盘上下选择）；手机开启内联菜单会话（[DiarySlashMenuController]），
+/// 斜杠后接着输入的文字即筛选词，焦点与键盘不离开正文。
 af.CharacterShortcutEvent diarySlashCommand({
   required DiaryEditorController controller,
   required BuildContext context,
   required List<DiaryBlockCommand> commands,
-  FocusNode? focusNode,
+  required DiarySlashMenuController menu,
 }) {
-  var opened = false;
   return af.CharacterShortcutEvent(
     key: 'diary_slash_commands',
     character: '/',
     handler: (state) async {
-      if (opened || state.isDisposed) return false;
+      if (state.isDisposed) return false;
       final selection = state.selection;
       if (selection == null || !selection.isCollapsed) return false;
       final node = state.document.nodeAtPath(selection.end.path);
@@ -37,7 +36,7 @@ af.CharacterShortcutEvent diarySlashCommand({
       if (kIsWeb ||
           (platform != TargetPlatform.android &&
               platform != TargetPlatform.iOS)) {
-        final menu = af.SelectionMenu(
+        final selectionMenu = af.SelectionMenu(
           context: context,
           editorState: state,
           singleColumn: true,
@@ -60,35 +59,10 @@ af.CharacterShortcutEvent diarySlashCommand({
               ),
           ],
         );
-        unawaited(menu.show());
+        unawaited(selectionMenu.show());
         return true;
       }
-      opened = true;
-      final afterSlash = state.selection;
-      final command = await showModalBottomSheet<DiaryBlockCommand>(
-        context: context,
-        isScrollControlled: true,
-        showDragHandle: true,
-        builder: (_) => DiaryCommandSheet(commands: commands),
-      );
-      opened = false;
-      if (state.isDisposed || !context.mounted || node.parent == null) {
-        return true;
-      }
-      if (command != null &&
-          offset < (node.delta?.length ?? 0) &&
-          node.delta!.toPlainText()[offset] == '/') {
-        final transaction = state.transaction
-          ..deleteText(node, offset, 1)
-          ..afterSelection = af.Selection.collapsed(
-            af.Position(path: node.path, offset: offset),
-          );
-        controller.apply(transaction);
-        applyDiaryBlockCommand(controller, command);
-      } else if (afterSlash != null) {
-        controller.select(afterSlash);
-      }
-      focusNode?.requestFocus();
+      menu.open(node, offset, commands);
       return true;
     },
   );

@@ -7560,9 +7560,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorRemoveLink => '移除链接';
 
   @override
-  String get diaryEditorCommandHint => '搜索命令';
-
-  @override
   String get diaryEditorDragBlock => '拖动段落';
 
   @override
@@ -7594,4 +7591,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get diaryEditorImageHeight => '图片高度';
+
+  @override
+  String get diaryEditorHeading1 => '一级标题';
+
+  @override
+  String get diaryEditorHeading2 => '二级标题';
+
+  @override
+  String get diaryEditorHeading3 => '三级标题';
+
+  @override
+  String get diaryEditorCommandGroupText => '文本';
+
+  @override
+  String get diaryEditorCommandGroupList => '列表';
+
+  @override
+  String get diaryEditorCommandGroupInsert => '插入';
+
+  @override
+  String get diaryEditorCommandEmpty => '没有匹配的区块';
+
+  @override
+  String get diaryEditorEmptyLineHint => '输入 / 插入区块';
+
+  @override
+  String get diaryEditorCommandTypeToFilter => '继续输入即可筛选';
 }

@@ -17,6 +17,7 @@ import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_slash_commands.dart';
+import 'diary_slash_menu.dart';
 import 'diary_block_commands.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_editor_spans.dart';
@@ -88,6 +89,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   );
   late af.EditorScrollController _scroll;
   late DiaryBlockLanguageTracker _tracker;
+  late DiarySlashMenuController _slashMenu;
   @override
   void initState() {
     super.initState();
@@ -96,6 +98,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
 
   void _bind() {
     widget.controller.attachView();
+    _slashMenu = DiarySlashMenuController(widget.controller);
     widget.focusNode?.addListener(_onFocus);
     _scroll = af.EditorScrollController(
       editorState: widget.controller.state,
@@ -144,6 +147,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         old.scrollController != widget.scrollController ||
         old.focusNode != widget.focusNode) {
       _scroll.dispose();
+      _slashMenu.dispose();
       old.controller.detachView();
       old.focusNode?.removeListener(_onFocus);
       _tracker.removeListener(_rebuild);
@@ -155,6 +159,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
   void dispose() {
     widget.focusNode?.removeListener(_onFocus);
     _scroll.dispose();
+    _slashMenu.dispose();
     widget.controller.detachView();
     _tracker.removeListener(_rebuild);
     _headerSlot.dispose();
@@ -250,7 +255,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         diarySlashCommand(
           controller: controller,
           context: context,
-          focusNode: widget.focusNode,
+          menu: _slashMenu,
           commands: diaryBlockCommands(
             context.l10n,
             onMedia: widget.onMediaCommand,
@@ -332,7 +337,18 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
     return _decorateNative(editor);
   }
 
-  Widget _decorateNative(af.AppFlowyEditor editor) =>
+  Widget _decorateNative(af.AppFlowyEditor editor) {
+    final layer = _interactionLayer(editor);
+    return widget.controller.readOnly
+        ? layer
+        : DiarySlashMenuHost(
+            menu: _slashMenu,
+            coveredHeight: widget.autoScrollEdgeOffset,
+            child: layer,
+          );
+  }
+
+  Widget _interactionLayer(af.AppFlowyEditor editor) =>
       DiaryEditorInteractionLayer(
         controller: widget.controller,
         editor: editor,
@@ -341,6 +357,7 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         inlineHeight: _inlineHeight,
         focusNode: widget.focusNode,
         coveredHeight: widget.autoScrollEdgeOffset,
+        contentLeft: widget.padding.left,
         revealPath: (path) {
           if (path.isNotEmpty &&
               widget.controller.document.nodeAtPath(path) != null &&

@@ -13,6 +13,7 @@ import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_s
 import 'package:node_diary/ui/diaries/models/diary_preview_style/diary_preview_style.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/pages/locked_diary_page.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_markers.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_pager_view.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_preview/diary_preview_view.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
@@ -284,15 +285,8 @@ void main() {
         )
         .onTap!();
     tester
-        .widget<IconButton>(
-          find
-              .byWidgetPredicate(
-                (widget) =>
-                    widget is IconButton && widget.tooltip == l10n.autoT0020,
-              )
-              .first,
-        )
-        .onPressed!();
+        .widget<DiaryTodoCheckbox>(find.byType(DiaryTodoCheckbox).first)
+        .onToggle!();
     await tester.pump();
     for (final title in <String>['乙', '丙']) {
       final next = find.bySemanticsLabel(RegExp('^${l10n.diaryPreviewNext}'));

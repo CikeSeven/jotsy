@@ -13,6 +13,7 @@ import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_support.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqlite3/sqlite3.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 const _jpeg = [0xFF, 0xD8, 0xFF, 0xE0, 0, 0x10, 0x4A, 0x46];
 
@@ -45,7 +46,7 @@ void main() {
       JournalImportInput(filePath: export.path, extractedPath: export.path);
 
   List<Object?> ops(JournalImportEntry entry) =>
-      jsonDecode(entry.contentJson) as List<Object?>;
+      diaryContentQuillOps(entry.contentJson);
 
   Map<String, Object?> embedOf(JournalImportEntry entry, int index) =>
       (ops(entry).where((op) => (op as Map)['insert'] is Map).toList()[index]

@@ -8,6 +8,7 @@ import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 const _api = 'notes.flyme.cn/c/browser/note';
 
@@ -274,7 +275,7 @@ void main() {
         content.contentText,
         '周末计划\n😀加粗斜体 删除 高亮 链接\n已完成\n未完成\n第一项\n子项\n\n居中',
       );
-      final ops = (jsonDecode(content.contentJson) as List).cast<Map>();
+      final ops = (diaryContentQuillOps(content.contentJson)).cast<Map>();
       Map? attributesOf(String text) =>
           ops.firstWhere((op) => op['insert'] == text)['attributes'] as Map?;
       expect(attributesOf('加粗'), {'bold': true, 'underline': true});

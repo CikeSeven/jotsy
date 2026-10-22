@@ -145,19 +145,19 @@ void main() {
       (id) => id == '555' ? {'image': 'local.jpg'} : null,
     );
     final ops = writer.build().contentJson;
-    expect(ops, contains('"list":"checked"'));
+    expect(ops, contains('"checked":true'));
     expect(ops, contains('"italic":true'));
-    expect(ops, contains('"header":1'));
+    expect(ops, contains('"level":1'));
     expect(ops, contains('local.jpg'));
     // 对应不上附件的远程图片不保留。
     expect(ops, isNot(contains('https://x/y.jpg')));
     // 高亮类换成背景色，对齐与分隔线保留。
     expect(
       ops,
-      contains('{"insert":"黄","attributes":{"background":"#66FFE227"}}'),
+      contains('{"insert":"黄","attributes":{"bg_color":"#66FFE227"}}'),
     );
     expect(ops, contains('"align":"center"'));
-    expect(ops, contains('{"insert":{"divider":"hr"}}'));
+    expect(ops, contains('{"type":"divider"}'));
     expect(second.folder, isNull);
     // 手写笔记的统计请求没有响应（404）时不影响读取，也不计跳过。
     expect(provider.issues.skipped, isEmpty);

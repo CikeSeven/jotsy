@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:drift/native.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
@@ -12,6 +13,7 @@ import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -197,7 +199,7 @@ void main() {
         remote,
         missing,
       });
-      final inserts = (jsonDecode(diary.content) as List)
+      final inserts = diaryContentQuillOps(diary.content)
           .where((op) => op['insert'] is Map)
           .map((op) => op['insert'] as Map)
           .toList();
@@ -206,13 +208,15 @@ void main() {
       );
       expect(restored?.displayName, '会议 报告.pdf');
       expect(restored?.sizeBytes, 4);
-      expect(inserts[2]['file'], {
+      expect(jsonDecode(inserts[2]['attachment'] as String), {
         'url': restoredFile,
         'name': file.name,
         'size': 4,
         'custom': 'preserve this metadata',
       });
-      expect(inserts[3]['file'], restoredFile);
+      expect(jsonDecode(inserts[3]['attachment'] as String), {
+        'path': restoredFile,
+      });
       final draft =
           jsonDecode(
                 (await database.select(database.diaryDrafts).getSingle())
@@ -281,9 +285,8 @@ void main() {
       );
       final diary = await database.select(database.diaries).getSingle();
       final nodes =
-          ((jsonDecode(diary.content) as Map)['root'] as Map)['children']
-              as List;
-      expect(nodes[0]['attributes'], {
+          (jsonDecode(diary.content) as Map)['document']['children'] as List;
+      expect(nodes[0]['data'], {
         'url': p.join(documents.path, relativeVideo),
         'width': 320,
       });

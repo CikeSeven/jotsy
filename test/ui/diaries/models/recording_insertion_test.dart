@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';

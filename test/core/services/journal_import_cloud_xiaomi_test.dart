@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
@@ -10,6 +8,7 @@ import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 /// 块的简写：`kind[:属性]:文字`，便于对照参考实现测试中的期望。
 String _describe(CloudBlock block) {
@@ -402,7 +401,7 @@ void main() {
       final writer = JournalDeltaWriter();
       note.writeBody(writer, (id) => {'image': id});
       final inserts = [
-        for (final op in jsonDecode(writer.build().contentJson) as List)
+        for (final op in diaryContentQuillOps(writer.build().contentJson))
           (op as Map)['insert'],
       ];
       expect(inserts, [

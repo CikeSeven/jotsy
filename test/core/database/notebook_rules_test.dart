@@ -363,6 +363,17 @@ void main() {
         ]),
       );
       await diary(
+        'legacy delta audio',
+        content: jsonEncode([
+          {
+            'insert': {
+              'audio': jsonEncode({'path': '/m/old.m4a', 'durationMs': 100}),
+            },
+          },
+          {'insert': '\n'},
+        ]),
+      );
+      await diary(
         'legacy appflowy image',
         content: jsonEncode(<String, Object?>{
           'document': <String, Object?>{
@@ -389,7 +400,10 @@ void main() {
         'legacy appflowy image',
       });
       expect(await media(NotebookMediaKind.video), <String>{'video'});
-      expect(await media(NotebookMediaKind.audio), <String>{'audio'});
+      expect(await media(NotebookMediaKind.audio), <String>{
+        'audio',
+        'legacy delta audio',
+      });
       expect(await media(NotebookMediaKind.attachment), <String>{
         'attachment',
         'legacy file',

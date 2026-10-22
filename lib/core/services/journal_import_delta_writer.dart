@@ -1,13 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter_quill/quill_delta.dart';
+
+import '../database/diary_blocks/diary_blocks_codec.dart';
+import '../database/diary_blocks/diary_blocks_from_delta.dart';
 
 /// 根据正文中的媒体引用（图片 src、Day One 的 `dayone-moment://` 等）返回
 /// 本应用的嵌入数据，如 `{'image': 路径}`；无法解析或文件缺失时返回 null，
 /// 该引用被丢弃。
 typedef JournalEmbedResolver = Map<String, Object?>? Function(String source);
 
-/// 把导入正文组装成本应用的 Delta JSON 与纯文本镜像。
+/// 把导入正文组装成块文档 JSON 与纯文本镜像。
 ///
 /// 以“行”为单位积累：行内片段先缓存，行结束时才连同块级属性（标题、列表、
 /// 缩进、引用、代码块）一起写出。这样可以：
@@ -112,7 +113,7 @@ class JournalDeltaWriter {
     }
     if (delta.isEmpty) delta.insert('\n');
     return (
-      contentJson: jsonEncode(delta.toJson()),
+      contentJson: encodeDiaryBlocks(diaryBlocksFromQuillOps(delta.toJson())),
       contentText: plain.toString().trimRight(),
     );
   }

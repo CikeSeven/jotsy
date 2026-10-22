@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../../core/database/app_database.dart';
+import '../../../core/database/diary_blocks/diary_blocks_media.dart';
 
 /// 探索页内容提取器。
 ///
@@ -68,48 +69,7 @@ class ExploreContentExtractor {
     if (trimmedCover != null && trimmedCover.isNotEmpty) {
       sources.add(trimmedCover);
     }
-    final raw = content.trim();
-    if (raw.isNotEmpty) {
-      try {
-        _collectImagesFromNode(jsonDecode(raw), sources);
-      } on FormatException {
-        // 旧记录可能保存纯文本或损坏的 JSON，正文解析失败仍保留独立封面。
-      }
-    }
+    sources.addAll(extractDiaryImageSources(content));
     return sources.toList(growable: false);
-  }
-
-  void _collectImagesFromNode(Object? node, Set<String> sources) {
-    if (node is List) {
-      for (final item in node) {
-        _collectImagesFromNode(item, sources);
-      }
-      return;
-    }
-    if (node is! Map) {
-      return;
-    }
-
-    final insert = node['insert'];
-    if (insert is Map) {
-      final image = insert['image'];
-      if (image is String && image.trim().isNotEmpty) {
-        sources.add(image.trim());
-      }
-    }
-
-    if (node['type'] == 'image') {
-      final attributes = node['attributes'];
-      if (attributes is Map) {
-        final url = attributes['url'];
-        if (url is String && url.trim().isNotEmpty) {
-          sources.add(url.trim());
-        }
-      }
-    }
-
-    // 同时兼容 Quill Delta 和旧版 AppFlowy 的嵌套图片节点。
-    _collectImagesFromNode(node['children'], sources);
-    _collectImagesFromNode(node['root'], sources);
   }
 }

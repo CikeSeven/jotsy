@@ -5,6 +5,7 @@ import 'package:node_diary/core/services/journal_import_media.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_support.dart';
 import 'package:path/path.dart' as p;
+import 'diary_content_test_helpers.dart';
 
 /// 导入回归用的独立导出目录与暂存区；原文件位于暂存区内，复现生产环境中
 /// 附件被 rename 后仍被其他条目引用的情况。
@@ -43,7 +44,7 @@ class JournalImportFixture {
       JournalImportInput(filePath: export.path, extractedPath: export.path);
 
   static List<Map<String, Object?>> embeds(JournalImportEntry entry) => [
-    for (final op in jsonDecode(entry.contentJson) as List)
+    for (final op in diaryContentQuillOps(entry.contentJson))
       if ((op as Map)['insert'] case final Map<String, Object?> data) data,
   ];
 

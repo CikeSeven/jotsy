@@ -12,6 +12,7 @@ import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
 
 import '../../support/fake_cloud_http.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 const _api = 'cloud.honor.com/portal';
 const _note = '0123456789abcdef0123456789abcdef';
@@ -166,7 +167,7 @@ void main() {
     note.writeBody(writer, (id) => id == _preview ? {'image': 'p.png'} : null);
     final content = writer.build();
     expect(content.contentText, '购物清单\n加粗斜体划线链接\n已完成\n未完成\n第一项\n项目\n\n结尾');
-    final ops = (jsonDecode(content.contentJson) as List).cast<Map>();
+    final ops = (diaryContentQuillOps(content.contentJson)).cast<Map>();
     Map? attributesOf(String text) =>
         ops.firstWhere((op) => op['insert'] == text)['attributes'] as Map?;
     expect(attributesOf('斜体'), {'italic': true});
@@ -272,8 +273,9 @@ void main() {
           _ => null,
         },
       );
-      final ops = (jsonDecode(writer.build().contentJson) as List)
-          .cast<Map<String, Object?>>();
+      final ops = (diaryContentQuillOps(
+        writer.build().contentJson,
+      )).cast<Map<String, Object?>>();
       Map? attributesOf(String text) =>
           ops.firstWhere((op) => op['insert'] == text)['attributes'] as Map?;
       String describe(Map<String, Object?> op) {
@@ -318,8 +320,9 @@ void main() {
           provider,
           JournalMediaStager(temp.path),
         );
-        final ops = (jsonDecode(result.entries.single.contentJson) as List)
-            .cast<Map<String, Object?>>();
+        final ops = (diaryContentQuillOps(
+          result.entries.single.contentJson,
+        )).cast<Map<String, Object?>>();
         final embeds = [
           for (final op in ops)
             if (op['insert'] case final Map insert) insert.keys.single,

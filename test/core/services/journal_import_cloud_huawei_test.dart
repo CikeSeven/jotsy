@@ -9,6 +9,7 @@ import 'package:node_diary/core/services/journal_import_delta_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 const _host = 'cloud.huawei.com';
 const _image = 'synthetic-prefix_30_20_1720000000000.png';
@@ -193,15 +194,15 @@ void main() {
     expect(
       ops,
       contains(
-        '{"insert":"大红","attributes":{"color":"#FFFA2A2D","size":"huge"}}',
+        '{"insert":"大红","attributes":{"font_color":"#FFFA2A2D","size":"huge"}}',
       ),
     );
-    expect(ops, contains('"list":"checked"'));
-    expect(ops, contains('"list":"unchecked"'));
+    expect(ops, contains('"checked":true'));
+    expect(ops, contains('"checked":false'));
     expect(ops, contains('local.png'));
-    final combined = (jsonDecode(ops) as List).firstWhere(
-      (op) => (op as Map)['insert'] == '三合一',
-    );
+    final combined = (diaryContentQuillOps(
+      ops,
+    )).firstWhere((op) => (op as Map)['insert'] == '三合一');
     expect((combined as Map)['attributes'], {
       'bold': true,
       'italic': true,

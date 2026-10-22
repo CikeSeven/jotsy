@@ -17,6 +17,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.0.1"
+  appflowy_editor:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "01eccc6ee36bd07698bd80915289fe7070478cd2"
+      resolved-ref: "01eccc6ee36bd07698bd80915289fe7070478cd2"
+      url: "https://github.com/AppFlowy-IO/appflowy-editor.git"
+    source: git
+    version: "6.1.0"
   archive:
     dependency: "direct main"
     description:
@@ -313,6 +322,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.12"
+  device_info_plus:
+    dependency: transitive
+    description:
+      name: device_info_plus
+      sha256: b4fed1b2835da9d670d7bed7db79ae2a94b0f5ad6312268158a9b5479abbacdd
+      url: "https://pub.dev"
+    source: hosted
+    version: "12.4.0"
+  device_info_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: device_info_plus_platform_interface
+      sha256: e1ea89119e34903dca74b883d0dd78eb762814f97fb6c76f35e9ff74d261a18f
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.3"
   diff_match_patch:
     dependency: transitive
     description:
@@ -916,6 +941,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.11.0"
+  keyboard_height_plugin:
+    dependency: transitive
+    description:
+      name: keyboard_height_plugin
+      sha256: "3a51c8ebb43465ebe0b3bad17f3b6d945421e58011f3f5a08134afe69a3d775f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.5"
   leak_tracker:
     dependency: transitive
     description:
@@ -1060,6 +1093,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  nanoid:
+    dependency: transitive
+    description:
+      name: nanoid
+      sha256: be3f8752d9046c825df2f3914195151eb876f3ad64b9d833dd0b799b77b8759e
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   native_toolchain_c:
     dependency: transitive
     description:
@@ -1076,6 +1117,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  nested:
+    dependency: transitive
+    description:
+      name: nested
+      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   node_preamble:
     dependency: transitive
     description:
@@ -1276,6 +1325,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.6"
+  provider:
+    dependency: transitive
+    description:
+      name: provider
+      sha256: "4e82183fa20e5ca25703ead7e05de9e4cceed1fbd1eadc1ac3cb6f565a09f272"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.5+1"
   pub_semver:
     dependency: transitive
     description:
@@ -1444,6 +1501,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.1"
+  scroll_to_index:
+    dependency: transitive
+    description:
+      name: scroll_to_index
+      sha256: b707546e7500d9f070d63e5acf74fd437ec7eeeb68d3412ef7b0afada0b4f176
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   share_plus:
     dependency: "direct main"
     description:
@@ -1665,6 +1730,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  string_validator:
+    dependency: transitive
+    description:
+      name: string_validator
+      sha256: "240f4c98027dfbe8639c8271ef18cc9de735b47067aa15a720cfed9576a512b1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   sync_http:
     dependency: transitive
     description:
@@ -1737,6 +1810,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  universal_html:
+    dependency: transitive
+    description:
+      name: universal_html
+      sha256: c0bcae5c733c60f26c7dfc88b10b0fd27cbcc45cb7492311cdaa6067e21c9cd4
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
+  universal_io:
+    dependency: transitive
+    description:
+      name: universal_io
+      sha256: f63cbc48103236abf48e345e07a03ce5757ea86285ed313a6a032596ed9301e2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.1"
+  universal_platform:
+    dependency: transitive
+    description:
+      name: universal_platform
+      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   url_launcher:
     dependency: "direct main"
     description:
@@ -1985,6 +2082,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.15.0"
+  win32_registry:
+    dependency: transitive
+    description:
+      name: win32_registry
+      sha256: "6f1b564492d0147b330dd794fee8f512cec4977957f310f9951b5f9d83618dae"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   xdg_directories:
     dependency: transitive
     description:

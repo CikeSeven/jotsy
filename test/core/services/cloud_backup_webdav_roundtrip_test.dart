@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
-import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/diary_audio_storage_service.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
@@ -16,6 +16,7 @@ import 'package:path/path.dart' as p;
 
 import '../../support/backup_test_fixture.dart';
 import '../../support/webdav_test_server.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -181,7 +182,7 @@ void main() {
             item.value,
           );
         }
-        final first = (jsonDecode(restored.content) as List).first as Map;
+        final first = (diaryContentQuillOps(restored.content)).first as Map;
         final restoredAudio = DiaryAudioAttachment.tryDecode(
           (first['insert'] as Map)['audio'],
         )!;

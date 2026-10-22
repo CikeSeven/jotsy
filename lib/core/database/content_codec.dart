@@ -3,8 +3,14 @@ import 'dart:convert';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_quill/quill_delta.dart';
 
+import 'diary_blocks/diary_blocks_codec.dart';
+import 'diary_blocks/diary_blocks_from_delta.dart';
+import 'diary_blocks/diary_blocks_to_delta.dart';
 import 'file_embed_codec.dart';
-import 'legacy_content_codec.dart';
+
+/// 正文存储与仍使用 Quill 的界面之间的适配层。
+/// 历史格式只在读取时转换，保存统一写块文档；这里保留 Quill 对视频块边界
+/// 和末尾光标空行的兼容处理，不承担数据库迁移或媒体文件操作。
 
 /// 将纯文本转换为最小可用的 Delta JSON 结构。
 String plainTextToDeltaJson(String plainText) {
@@ -14,68 +20,27 @@ String plainTextToDeltaJson(String plainText) {
   ]);
 }
 
-/// 将 Delta JSON 还原为纯文本。
-String deltaJsonToPlainText(String deltaJson) {
-  try {
-    final decoded = jsonDecode(deltaJson);
-    if (decoded is List) {
-      final document = _documentFromDiaryDelta(List<dynamic>.from(decoded));
-      return _normalizePlainText(document.toPlainText());
-    }
-  } catch (_) {
-    // Fall through to legacy decode path.
-  }
-
-  try {
-    final decoded = jsonDecode(deltaJson);
-    if (decoded is! List) {
-      return deltaJson;
-    }
-
-    final buffer = StringBuffer();
-    for (final op in decoded) {
-      if (op is Map<String, dynamic>) {
-        final insert = op['insert'];
-        if (insert is String) {
-          buffer.write(insert);
-        }
-      }
-    }
-    return _normalizePlainText(buffer.toString());
-  } catch (_) {
-    return deltaJson;
-  }
-}
+/// 从任一代正文存储格式提取纯文本镜像。
+String diaryContentToPlainText(String content) =>
+    diaryBlocksPlainText(decodeStoredDiaryBlocks(content));
 
 /// 将正文存储内容解码为 Quill 文档。
 quill.Document decodeDiaryContentToDocument(String rawContent) {
-  final trimmed = rawContent.trim();
-  if (trimmed.isEmpty) {
-    return documentFromPlainText('');
-  }
-
   try {
-    final decoded = jsonDecode(trimmed);
-    if (decoded is List) {
-      return _ensureRenderableDocument(
-        _documentFromDiaryDelta(List<dynamic>.from(decoded)),
-      );
-    }
-    if (decoded is Map<String, dynamic>) {
-      return _ensureRenderableDocument(
-        _documentFromDiaryDelta(legacyDocumentToQuillDelta(decoded)),
-      );
-    }
+    return _documentFromDiaryDelta(
+      diaryBlocksToQuillOps(decodeStoredDiaryBlocks(rawContent)),
+    );
   } catch (_) {
-    // Fall through to plain text fallback.
+    // 手改的损坏属性可能不被 Quill 接受，至少保留可读文字以供修复。
+    return documentFromPlainText(diaryContentToPlainText(rawContent));
   }
-
-  return documentFromPlainText(deltaJsonToPlainText(rawContent));
 }
 
 /// 将富文本正文编码为持久化 JSON。
 String encodeDiaryDocumentToJson(quill.Document document) {
-  return jsonEncode(document.toDelta().toJson());
+  return encodeDiaryBlocks(
+    diaryBlocksFromQuillOps(document.toDelta().toJson()),
+  );
 }
 
 /// 从正文文档提取纯文本镜像，用于列表摘要和搜索。
@@ -97,34 +62,15 @@ bool diaryDocumentHasVisibleContent(quill.Document document) {
   return false;
 }
 
-/// Drafts can contain only an attachment, whose plain-text mirror is empty.
-/// Inspect actual Delta embeds rather than counting arbitrary JSON metadata.
-bool diaryContentHasEmbeddedContent(String rawContent) {
-  try {
-    final delta = jsonDecode(rawContent);
-    if (delta is! List) return false;
-    return delta.any(
-      (op) =>
-          op is Map && op['insert'] is Map && (op['insert'] as Map).isNotEmpty,
-    );
-  } on FormatException {
-    return false;
-  }
-}
+/// 只有媒体或分隔线的草稿也值得保留，不能只凭纯文本镜像判断。
+bool diaryContentHasEmbeddedContent(String rawContent) =>
+    diaryBlocksHaveEmbeds(decodeStoredDiaryBlocks(rawContent));
 
 /// 从纯文本构建一个最小可编辑文档。
 quill.Document documentFromPlainText(String plainText) {
   return quill.Document.fromJson(
     List<dynamic>.from(jsonDecode(plainTextToDeltaJson(plainText)) as List),
   );
-}
-
-quill.Document _ensureRenderableDocument(quill.Document document) {
-  final delta = document.toDelta().toJson();
-  if (delta.isNotEmpty) {
-    return document;
-  }
-  return documentFromPlainText('');
 }
 
 /// Quill 的 fromJson 会为尾部视频重复补换行，反复打开/保存会让正文持续增长。

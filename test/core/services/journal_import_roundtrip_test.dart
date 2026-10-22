@@ -13,6 +13,7 @@ import 'package:path/path.dart' as p;
 import '../../support/backup_test_fixture.dart';
 import '../../support/journal_export_samples.dart';
 import '../../support/journal_import_fixture.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -58,14 +59,14 @@ void main() {
             .get();
         final diary = rows.singleWhere((row) => row.diaryId != localId);
         expect(diary.contentText, contains('正文 😀'));
-        expect(diary.contentText, deltaJsonToPlainText(diary.content));
+        expect(diary.contentText, diaryContentToPlainText(diary.content));
         expect(
           (jsonDecode(diary.metadata) as Map)['import']['source'],
           source.name,
         );
-        final embeds = (jsonDecode(diary.content) as List).where(
-          (op) => (op as Map)['insert'] is Map,
-        );
+        final embeds = (diaryContentQuillOps(
+          diary.content,
+        )).where((op) => (op as Map)['insert'] is Map);
         final image =
             ((embeds.single as Map)['insert'] as Map)['image'] as String;
         expect(

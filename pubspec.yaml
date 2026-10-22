@@ -28,6 +28,13 @@ dependencies:
   intl: ^0.20.2
   flutter_staggered_grid_view: ^0.7.0
   flutter_quill: ^11.6.0
+  # 块编辑器（嵌套块、/ 菜单、Markdown 输入、拖动排序）。pub 上的 6.2.0 在
+  # Flutter ≥ 3.44 上编译不过（TextInputClient.onFocusReceived，上游 #1204），
+  # 修复只在 main 上，因此固定到 main 的提交。
+  appflowy_editor:
+    git:
+      url: https://github.com/AppFlowy-IO/appflowy-editor.git
+      ref: 01eccc6ee36bd07698bd80915289fe7070478cd2
   flutter_quill_extensions: ^11.0.0
   file_picker: ^10.3.10
   smooth_sheets: ^0.17.0

@@ -13,6 +13,7 @@ import 'package:node_diary/core/services/journal_import_style.dart';
 import 'package:path/path.dart' as p;
 
 import '../../support/fake_cloud_http.dart';
+import '../../support/diary_content_test_helpers.dart';
 
 /// 云端读取的公共层：传输层的重试与状态映射、Cookie 罐、读取流水线与
 /// 富文本块写入。
@@ -304,7 +305,7 @@ void main() {
         expect(entry.notebooks, ['Travel']);
         expect(entry.updatedAt, DateTime(2024, 5, 2));
         final images = [
-          for (final op in jsonDecode(entry.contentJson) as List)
+          for (final op in diaryContentQuillOps(entry.contentJson))
             if ((op as Map)['insert'] case {'image': final String path})
               p.basename(path),
         ];
@@ -408,7 +409,8 @@ void main() {
 
     expect(writer.lines, [
       'H | {"header":3}',
-      'item | {"list":"bullet","indent":1}',
+      // 标题不能承载子块，孤立的缩进列表规整到顶层。
+      'item | {"list":"bullet"}',
       'one | {"list":"ordered"}',
       'done | {"list":"checked"}',
       'a | {"blockquote":true}',
@@ -420,11 +422,11 @@ void main() {
       '苹果 3 | {}',
       'link js | {}',
     ]);
-    expect(writer.json, contains('"link":"https://a.b"'));
+    expect(writer.json, contains('"href":"https://a.b"'));
     expect(writer.json, isNot(contains('javascript')));
-    expect(writer.json, contains('{"insert":{"divider":"hr"}}'));
+    expect(writer.json, contains('{"type":"divider"}'));
     // 只知道“高亮”的文字写成统一的高亮背景色。
-    expect(writer.json, contains('"background":"$journalHighlightColor"'));
+    expect(writer.json, contains('"bg_color":"$journalHighlightColor"'));
   });
 }
 
@@ -480,7 +482,7 @@ class JournalDeltaWriterProbe {
   List<String> get lines {
     final result = <String>[];
     var text = StringBuffer();
-    for (final op in jsonDecode(json) as List) {
+    for (final op in diaryContentQuillOps(json)) {
       final insert = (op as Map)['insert'];
       if (insert is! String) continue;
       final attributes =

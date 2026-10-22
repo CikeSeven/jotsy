@@ -180,9 +180,9 @@ void main() {
     final content = writer.build();
     // 图片与分隔线各占一行。
     expect(content.contentText, 'before\n\ndone\npending\n\n手写\nafter');
-    expect(content.contentJson, contains('{"insert":{"divider":"hr"}}'));
-    expect(content.contentJson, contains('"list":"checked"'));
-    expect(content.contentJson, contains('"list":"unchecked"'));
+    expect(content.contentJson, contains('{"type":"divider"}'));
+    expect(content.contentJson, contains('"checked":true'));
+    expect(content.contentJson, contains('"checked":false'));
     expect(content.contentJson, contains('local.png'));
 
     // 自闭合写法：HTML5 解析把后文收进自定义标签，换成图片与分隔线时后文
@@ -200,7 +200,7 @@ void main() {
     final rebuilt = again.build();
     expect(rebuilt.contentText, 'before\n\nafter image\n\ntail');
     expect(rebuilt.contentJson, contains('local.png'));
-    expect(rebuilt.contentJson, contains('{"insert":{"divider":"hr"}}'));
+    expect(rebuilt.contentJson, contains('{"type":"divider"}'));
   });
 
   test('downloads originals cookie-free with the STS token', () async {

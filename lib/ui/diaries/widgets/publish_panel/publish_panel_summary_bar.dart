@@ -7,29 +7,23 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dar
 import 'package:node_diary/ui/diaries/viewmodels/publish_panel_summary.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
 import 'package:node_diary/ui/widgets/qweather_icon.dart';
-import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
-/// 面板收起时的摘要栏：已选的元数据一行概览 + （发布页）发表按钮。
+/// 面板收起时的摘要栏：已选的元数据一行概览。
 ///
-/// 收起态不再只是一句“上划展开”：用户不展开也能看到这篇日记会带着哪些
-/// 标签、心情、地点发出去，并直接发表。摘要排成一行富文本，空间不足时
-/// 末尾省略；点按摘要展开面板由外层表头负责。
+/// 收起态不再只是一句“上划展开”：用户不展开也能看到这篇日记带着哪些
+/// 标签、心情、地点。摘要排成一行富文本，空间不足时末尾省略；点按摘要
+/// 展开面板由外层表头负责。
 class PublishPanelSummaryBar extends StatelessWidget {
   const PublishPanelSummaryBar({
     super.key,
     required this.draft,
     required this.tags,
-    required this.busy,
-    required this.onPublish,
     this.notebooks = const <NotebookView>[],
     this.showCapsule = true,
   });
 
-  /// 摘要区（不含按钮），测试与拖拽起点用它定位。
+  /// 摘要区，测试与拖拽起点用它定位。
   static const Key summaryKey = ValueKey<String>('publish-panel-summary');
-
-  /// 收起栏上的发表按钮。
-  static const Key actionKey = ValueKey<String>('publish-panel-summary-action');
 
   final DiaryMetaDraftController draft;
   final List<Tag> tags;
@@ -37,61 +31,24 @@ class PublishPanelSummaryBar extends StatelessWidget {
   /// 书架上的日记本：把草稿里的日记本 id 解析成名称与图标。
   final List<NotebookView> notebooks;
 
-  /// 是否显示草稿里的胶囊（摘要项与“封存”文案），见
-  /// `PublishDiaryPanel.showDraftCapsule`。
+  /// 是否显示草稿里的胶囊摘要项，见 `PublishDiaryPanel.showDraftCapsule`。
   final bool showCapsule;
-  final bool busy;
-
-  /// 编辑已发布日记时为 null：只有摘要，没有按钮。
-  final VoidCallback? onPublish;
 
   @override
   Widget build(BuildContext context) {
-    final onPublish = this.onPublish;
     return ValueListenableBuilder<DiaryMetaDraft>(
       valueListenable: draft,
-      builder: (context, value, _) {
-        final items = publishPanelSummary(
-          value,
-          tags,
-          notebooks: notebooks,
-          includeCapsule: showCapsule,
-        );
-        return Row(
-          children: <Widget>[
-            Expanded(
-              child: KeyedSubtree(
-                key: summaryKey,
-                child: _SummaryLine(items: items),
-              ),
-            ),
-            if (onPublish != null) ...<Widget>[
-              const SizedBox(width: 8),
-              ValueListenableSelector<DiaryMetaDraft, bool>(
-                valueListenable: draft,
-                selector: (value) => showCapsule && value.capsule != null,
-                builder: (context, sealing, _) => FilledButton(
-                  key: actionKey,
-                  style: FilledButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    minimumSize: const Size(0, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  onPressed: busy ? null : onPublish,
-                  child: Text(
-                    sealing
-                        ? context.l10n.publishPanelSealShort
-                        : context.l10n.publishPanelPublishShort,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        );
-      },
+      builder: (context, value, _) => KeyedSubtree(
+        key: summaryKey,
+        child: _SummaryLine(
+          items: publishPanelSummary(
+            value,
+            tags,
+            notebooks: notebooks,
+            includeCapsule: showCapsule,
+          ),
+        ),
+      ),
     );
   }
 }

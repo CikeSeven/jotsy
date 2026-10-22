@@ -53,6 +53,7 @@ void main() {
     WidgetTester tester,
     WidgetBuilder builder, {
     Brightness brightness = Brightness.light,
+    bool settle = true,
   }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -89,20 +90,32 @@ void main() {
       ),
     );
     await tester.tap(find.text('Open route'));
-    await tester.pumpAndSettle();
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+    }
   }
 
+  PublishPanelDriver panel(WidgetTester tester) => PublishPanelDriver(tester);
+
+  /// 打开发布页，等进入即发表的写库完成，并让“已发表”提示条退场（展开
+  /// 的面板在它下面，点不到）。
   Future<void> openPublisher(
     WidgetTester tester, {
     NewDiaryDraft draft = _automaticDraft,
     Brightness brightness = Brightness.light,
-  }) => openRoute(
-    tester,
-    (_) => PublishDiaryPage(initialDraft: draft),
-    brightness: brightness,
-  );
-
-  PublishPanelDriver panel(WidgetTester tester) => PublishPanelDriver(tester);
+  }) async {
+    await openRoute(
+      tester,
+      (_) => PublishDiaryPage(initialDraft: draft),
+      brightness: brightness,
+      settle: false,
+    );
+    await panel(tester).waitUntilPublished();
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+  }
 
   Finder option(String text) => find.widgetWithText(MenuItemButton, text);
 
@@ -125,13 +138,17 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// 返回（先退出子页、收起面板，再补存退场），读出这篇日记保存下来的
+  /// 上下文字段。
   Future<Map> publishedContext(WidgetTester tester) async {
-    panel(tester).triggerPublish();
-    for (var i = 0; i < 20 && results.isEmpty; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-      await tester.pump();
+    for (var i = 0; i < 3 && results.isEmpty; i++) {
+      await tester.binding.handlePopRoute();
+      for (var j = 0; j < 10 && results.isEmpty; j++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump(const Duration(milliseconds: 50));
+      }
     }
     expect(results, hasLength(1));
     final saved = await tester.runAsync(
@@ -144,6 +161,8 @@ void main() {
   }
 
   Future<void> unmount(WidgetTester tester) async {
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpAndSettle();
   }
@@ -189,25 +208,24 @@ void main() {
     );
   }
 
-  testWidgets(
-    'returning to the editor preserves the selected level in the draft',
-    (tester) async {
-      await openPublisher(tester);
-      await choose(tester, 'City');
-      final l10n = tester.element(find.byType(PublishDiaryPage)).l10n;
-      await tester.tap(find.byTooltip(l10n.commonBack));
-      await tester.pumpAndSettle();
-      final returned = results.single! as NewDiaryDraft;
-      expect(returned.locationPrecision, DiaryLocationPrecision.city);
-      expect(returned.location, '北京市');
-      final restored = NewDiaryDraft.fromJson(returned.toJson());
-      await unmount(tester);
-      await openPublisher(tester, draft: restored);
-      expect(panel(tester).precision, DiaryLocationPrecision.city);
-      expect(panel(tester).locationText, '北京市');
-      await unmount(tester);
-    },
-  );
+  testWidgets('a level saved in the draft is published as is', (tester) async {
+    final restored = NewDiaryDraft.fromJson(
+      _automaticDraft
+          .copyWith(
+            location: '北京市',
+            locationPrecision: DiaryLocationPrecision.city,
+          )
+          .toJson(),
+    );
+    await openPublisher(tester, draft: restored);
+    expect(panel(tester).precision, DiaryLocationPrecision.city);
+    expect(panel(tester).locationText, '北京市');
+
+    final context = await publishedContext(tester);
+    expect(context['locationPrecision'], 'city');
+    expect(context['location'], '北京市');
+    await unmount(tester);
+  });
 
   testWidgets('a manually edited place keeps its text and its coordinates', (
     tester,
@@ -309,6 +327,8 @@ void main() {
     await tester.pump();
     final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
     await tester.tap(find.byTooltip(l10n.autoT0136));
+    await tester.pump();
+    await panel(tester).waitUntilPublished();
     await tester.pumpAndSettle();
     expect(panel(tester).precision, DiaryLocationPrecision.city);
     await unmount(tester);

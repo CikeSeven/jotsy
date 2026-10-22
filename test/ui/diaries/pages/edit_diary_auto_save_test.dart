@@ -94,7 +94,6 @@ void main() {
         await openEditor(tester, brightness: brightness);
         final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
         expect(find.byTooltip(l10n.commonSave), findsNothing);
-        expect(PublishPanelDriver(tester).hasPublishAction, isFalse);
 
         await tester.enterText(
           find.widgetWithText(TextField, 'Original title'),

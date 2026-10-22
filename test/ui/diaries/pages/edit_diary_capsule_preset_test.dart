@@ -16,7 +16,7 @@ import '../../../support/expressive_test_theme.dart';
 import '../../../support/publish_panel_driver.dart';
 
 /// 日历“写给这一天的时间胶囊”：编辑页带着预设解封日打开，发布后即为在
-/// 该日零点解封的胶囊，发表时间同为解封时间。
+/// 该日零点解封的胶囊，发表时间同为解封时间；从发布页返回时播放封存卡片。
 void main() {
   testWidgets(
     'a preset unlock day publishes a capsule for that day',
@@ -90,23 +90,31 @@ Future<void> _publishPresetCapsule(
   await tester.pump();
   final l10n = tester.element(find.byType(EditDiaryPage)).l10n;
   await tester.tap(find.byTooltip(l10n.autoT0136));
+  await tester.pump();
+  // 进入发布页即发表：日记一写进库就是胶囊。
+  await PublishPanelDriver(tester).waitUntilPublished();
   await tester.pumpAndSettle();
   expect(find.byType(PublishDiaryPage), findsOneWidget);
+  final published = (await tester.runAsync(
+    () => database.select(database.diaries).get(),
+  ))!.single;
+  expect(published.capsuleUnlockAt, unlockDay);
+  expect(results, isEmpty);
 
-  PublishPanelDriver(tester).triggerPublish();
-  // 写库是真实异步，胶囊还有封存动画：离开假时钟推进，直到结果回传。
+  // 返回时播放封存卡片再退场；补存是真实异步，离开假时钟推进。
+  await tester.binding.handlePopRoute();
   var pressedBack = false;
   for (var i = 0; i < 60 && results.isEmpty; i++) {
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 20)),
     );
     await tester.pump(const Duration(milliseconds: 50));
-    // 封存卡片停留期间日记已写库：返回键不能把草稿带回编辑页。
+    // 封存卡片停留期间再按返回：忽略，不会重复退场。
     if (pressBackWhileSealing &&
         !pressedBack &&
         find.text(l10n.timeCapsuleSealing).evaluate().isNotEmpty) {
       pressedBack = true;
-      // 封存中日记已写库：面板锁定，改动不会再保存。
+      // 封存中面板锁定，改动不会再保存。
       final lock = tester.widget<AbsorbPointer>(
         find
             .ancestor(
@@ -129,7 +137,9 @@ Future<void> _publishPresetCapsule(
   expect(stored?.diary.capsuleUnlockAt, unlockDay);
   expect(stored?.diary.capsuleLockedAt, isNotNull);
   expect(stored?.diary.createdAt, unlockDay);
+  expect(find.byType(EditDiaryPage, skipOffstage: false), findsNothing);
 
+  await tester.pump(const Duration(seconds: 5));
   await tester.pumpWidget(const SizedBox.shrink());
   await tester.pump(Duration.zero);
 }

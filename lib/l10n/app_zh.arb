@@ -2018,10 +2018,6 @@
   "@timeCapsuleUpdateUnlock": {
     "description": "Time capsule text for timeCapsuleUpdateUnlock."
   },
-  "timeCapsuleSealAction": "封存这篇日记",
-  "@timeCapsuleSealAction": {
-    "description": "Time capsule text for timeCapsuleSealAction."
-  },
   "timeCapsuleSealing": "正在封存此刻...",
   "@timeCapsuleSealing": {
     "description": "Time capsule text for timeCapsuleSealing."
@@ -6473,10 +6469,6 @@
   "@cloudBackupErrorPlatformUnavailable": {
     "description": "本机无法使用系统授权且没有备用方式。"
   },
-  "timeCapsuleUnlockPassed": "解封时间已经过去，请重新选择后再封存",
-  "@timeCapsuleUnlockPassed": {
-    "description": "发布页：发布时时间胶囊的解封时间已不在未来时的提示。"
-  },
   "weatherInvalidHost": "和风天气服务地址配置有误，请检查 qweather.api_host",
   "@weatherInvalidHost": {
     "description": "获取天气提示：配置的和风天气服务地址无效。"
@@ -6505,6 +6497,18 @@
   "@publishFailed": {
     "description": "发布页提示：写入新日记失败。"
   },
+  "publishSucceeded": "日记已发表",
+  "@publishSucceeded": {
+    "description": "发布页顶栏：进入发布页即写入新日记，写入成功后标题换成的状态文字（前面带对勾）。"
+  },
+  "publishCapsuleExpired": "解封时间已经过去，已作为普通日记发表",
+  "@publishCapsuleExpired": {
+    "description": "发布页：草稿里的时间胶囊解封时间已不在未来，去掉胶囊按普通日记发表后的提示。"
+  },
+  "publishSaveFailed": "保存失败，请重试",
+  "@publishSaveFailed": {
+    "description": "发布页：日记发表后，面板改动自动保存失败的提示。"
+  },
   "publishTimeFollowsCapsule": "跟随定时锁 · {time}",
   "@publishTimeFollowsCapsule": {
     "description": "发布面板：设置了定时锁时的发表时间行，日记按解封时间发表。",
@@ -6522,14 +6526,6 @@
   "publishPanelSummaryEmpty": "添加标签、心情、地点…",
   "@publishPanelSummaryEmpty": {
     "description": "发布面板收起栏：还没选择任何元数据时的提示。"
-  },
-  "publishPanelPublishShort": "发表",
-  "@publishPanelPublishShort": {
-    "description": "发布面板收起栏：发表按钮的短文案。"
-  },
-  "publishPanelSealShort": "封存",
-  "@publishPanelSealShort": {
-    "description": "发布面板收起栏：设置了定时锁时发表按钮的短文案。"
   },
   "previewShare": "分享",
   "@previewShare": {

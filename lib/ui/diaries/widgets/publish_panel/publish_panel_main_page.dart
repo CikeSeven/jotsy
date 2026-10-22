@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
-import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dart';
 import 'package:node_diary/ui/notebooks/viewmodels/notebook_view.dart';
-import 'package:node_diary/ui/widgets/value_listenable_selector.dart';
 
 import 'publish_context_fields.dart';
 import 'publish_cover_tile.dart';
 import 'publish_mood_energy_sections.dart';
 import 'publish_notebook_tiles.dart';
-import 'publish_panel_chrome.dart';
 import 'publish_panel_entry_tiles.dart';
 
 /// 面板上的“发表时间”行：[label] 为 null 时显示“自动获取当前时间”。
@@ -24,8 +21,7 @@ class PublishTimeOption {
 }
 
 /// 面板主页内容，自上而下：封面 → 标签 → 日记本 → 此时此地 → 发表时间 → 时间胶囊 →
-/// 心情 → 精力；发表按钮固定在底部，不随内容滚动，展开后不用滚到底就能
-/// 发表。
+/// 心情 → 精力。没有发表按钮：发布页进入即发表，与编辑页一样随改随存。
 ///
 /// 各区块各自监听草稿里自己的字段（见 ValueListenableSelector），拖动精力、
 /// 打字、选心情只重建对应区块。
@@ -42,7 +38,6 @@ class PublishPanelMainPage extends StatelessWidget {
     this.showDraftCapsule = true,
     required this.onOpenTags,
     required this.onOpenCapsule,
-    required this.onPublish,
     this.notebooks = const <NotebookView>[],
     this.onOpenNotebooks,
   });
@@ -67,16 +62,12 @@ class PublishPanelMainPage extends StatelessWidget {
   /// 打开日记本子页；null 时不显示日记本行。
   final VoidCallback? onOpenNotebooks;
 
-  /// 编辑已发布日记时为 null（自动保存，没有发表按钮）。
-  final VoidCallback? onPublish;
-
   @override
   Widget build(BuildContext context) {
     final publishTime = this.publishTime;
-    final onPublish = this.onPublish;
     final onOpenNotebooks = this.onOpenNotebooks;
     const gap = SizedBox(height: 14);
-    final content = SingleChildScrollView(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,26 +108,6 @@ class PublishPanelMainPage extends StatelessWidget {
           PublishEnergySection(draft: draft),
         ],
       ),
-    );
-    if (onPublish == null) {
-      return content;
-    }
-    return Column(
-      children: <Widget>[
-        Expanded(child: content),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-          child: ValueListenableSelector<DiaryMetaDraft, bool>(
-            valueListenable: draft,
-            selector: (value) => showDraftCapsule && value.capsule != null,
-            builder: (context, sealing, _) => PublishPanelActionButton(
-              busy: busy,
-              sealing: sealing,
-              onPressed: onPublish,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,7 +1,8 @@
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'diary_export_blocks.dart';
+import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_text_effects.dart';
 
 /// PDF 正文标题的局部适配：输入共用解析器读出的标题块（颜色已压平），
 /// 把行内样式叠到标题字阶上；不读取设置、不改写原正文。
@@ -17,6 +18,7 @@ class DiaryPdfHeading {
     required pw.ThemeData theme,
     required pw.TextDirection textDirection,
     required bool aligned,
+    required DiaryPdfTextEffects effects,
   }) {
     final base = switch (block.level) {
       1 => theme.header1,
@@ -56,51 +58,18 @@ class DiaryPdfHeading {
             overflow: pw.TextOverflow.span,
             text: pw.TextSpan(
               children: <pw.InlineSpan>[
-                for (final run in block.inlines) _span(run, base),
+                for (final run in block.inlines)
+                  buildDiaryPdfInline(
+                    run,
+                    base,
+                    effects: effects,
+                    bodyFontSize: theme.defaultTextStyle.fontSize ?? 12,
+                  ),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  static pw.TextSpan _span(ExportInline run, pw.TextStyle base) {
-    // 颜色已在 DiaryPdfWriter.prepareBody 中叠到白纸上；保留用户颜色，
-    // 未设颜色的链接与行内代码才使用插件原有的蓝色 / 灰底默认值。
-    final color = run.color != null
-        ? PdfColor.fromInt(run.color!.toARGB32())
-        : run.link != null
-        ? const PdfColor.fromInt(0x002AAB)
-        : run.code
-        ? PdfColors.black
-        : base.color;
-    final background = run.background != null
-        ? PdfColor.fromInt(run.background!.toARGB32())
-        : run.code
-        ? const PdfColor.fromInt(0xFFDBDBDB)
-        : null;
-    final style = base.copyWith(
-      fontWeight: run.bold ? pw.FontWeight.bold : null,
-      fontStyle: run.italic ? pw.FontStyle.italic : null,
-      color: color,
-      background: background == null
-          ? null
-          : pw.BoxDecoration(
-              color: background,
-              borderRadius: run.code ? pw.BorderRadius.circular(3) : null,
-            ),
-      decoration: pw.TextDecoration.combine(<pw.TextDecoration>[
-        if (run.underline || run.link != null) pw.TextDecoration.underline,
-        if (run.strike) pw.TextDecoration.lineThrough,
-      ]),
-      decorationStyle: pw.TextDecorationStyle.solid,
-      decorationColor: color,
-    );
-    return pw.TextSpan(
-      text: run.text,
-      style: style,
-      annotation: run.link == null ? null : pw.AnnotationUrl(run.link!),
     );
   }
 }

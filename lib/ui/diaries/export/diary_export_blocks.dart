@@ -18,7 +18,7 @@ import '../models/diary_text_colors.dart';
 ///   （[ExportBlockKind.media]），由写出器决定内嵌还是只写名称；分隔线成块
 ///   （[ExportBlockKind.divider]）；
 /// - 行内只保留可迁移的样式：粗体、斜体、下划线、删除线、行内代码、链接，
-///   以及文字色与背景色（Markdown、纯文本与 CSV 没有写法，照常略过）。
+///   以及字号、文字色与背景色（没有对应写法的格式照常略过）。
 /// 纯函数，无 IO。
 enum ExportBlockKind {
   paragraph,
@@ -50,7 +50,29 @@ class ExportInline {
     this.link,
     this.color,
     this.background,
+    this.size,
   });
+
+  factory ExportInline.fromAttributes(String text, Map<String, dynamic> attrs) {
+    final link = attrs['link'];
+    final url = link is String ? link.trim() : '';
+    Color? color(Object? value) =>
+        value is String ? parseDiaryColorValue(value) : null;
+    final background = color(attrs['background']);
+    final size = attrs['size'];
+    return ExportInline(
+      text,
+      bold: attrs['bold'] == true,
+      italic: attrs['italic'] == true,
+      underline: attrs['underline'] == true,
+      strike: attrs['strike'] == true,
+      code: attrs['code'] == true,
+      link: url.isEmpty ? null : url,
+      color: color(attrs['color']),
+      background: background == null || background.a == 0 ? null : background,
+      size: size is String || size is num ? size.toString() : null,
+    );
+  }
 
   final String text;
   final bool bold;
@@ -67,6 +89,9 @@ class ExportInline {
   /// `#AARRGGBB`）或完全透明的背景为 null。
   final Color? color;
   final Color? background;
+
+  /// Quill 行内字号：small / large / huge 或数字；由支持字号的写出器解析。
+  final String? size;
 }
 
 @immutable
@@ -205,7 +230,7 @@ class ExportBlockParser {
         final parts = insert.split('\n');
         for (var i = 0; i < parts.length; i++) {
           if (parts[i].isNotEmpty) {
-            line.add(_inline(parts[i], attrs));
+            line.add(ExportInline.fromAttributes(parts[i], attrs));
           }
           if (i < parts.length - 1) {
             flushLine(attrs);
@@ -223,25 +248,6 @@ class ExportBlockParser {
       flushLine(const <String, dynamic>{});
     }
     return List<ExportBlock>.unmodifiable(blocks);
-  }
-
-  static ExportInline _inline(String text, Map<String, dynamic> attrs) {
-    final link = attrs['link'];
-    final url = link is String ? link.trim() : '';
-    Color? color(Object? value) =>
-        value is String ? parseDiaryColorValue(value) : null;
-    final background = color(attrs['background']);
-    return ExportInline(
-      text,
-      bold: attrs['bold'] == true,
-      italic: attrs['italic'] == true,
-      underline: attrs['underline'] == true,
-      strike: attrs['strike'] == true,
-      code: attrs['code'] == true,
-      link: url.isEmpty ? null : url,
-      color: color(attrs['color']),
-      background: background == null || background.a == 0 ? null : background,
-    );
   }
 
   static ExportBlock? _embed(Map<dynamic, dynamic> insert) {

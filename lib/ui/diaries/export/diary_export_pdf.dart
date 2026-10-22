@@ -20,6 +20,8 @@ import 'diary_export_font.dart';
 import 'diary_export_format.dart';
 import 'diary_export_media.dart';
 import 'diary_export_pdf_heading.dart';
+import 'diary_export_pdf_inline.dart';
+import 'diary_export_pdf_text_effects.dart';
 import 'diary_export_plain_text.dart';
 
 /// PDF 用的字体，生成时按实际字符做子集嵌入。字体文件各约 8MB 起，加载一次
@@ -28,8 +30,8 @@ import 'diary_export_plain_text.dart';
 /// - 默认为内置 HarmonyOS Sans SC 常规与粗体；
 /// - 正文排版选了导入字体（[load] 给出 `bodyFont`）且 pdf 库能嵌入时，整份
 ///   文档（标题、信息行、正文、目录与页码）改用它。导入字体只有一个字重，
-///   粗体也用它：pdf 库不会像应用内的引擎那样合成粗体，换成内置粗体又会在
-///   同一段里混用两种字形；
+///   粗体也用它（正文经 [DiaryPdfTextEffects] 补粗），避免在同一段里混用
+///   两种字形；
 /// - [bundled] 始终是内置常规体：导入字体缺字时回落到它（如只含西文的字体
 ///   遇到中文），代码块也用它（应用内代码块同样不跟随正文字体）。
 class DiaryPdfFonts {
@@ -96,8 +98,10 @@ class DiaryPdfFonts {
 /// - 正文非空却解析不出段落时它会死循环——没有可见内容的正文不送进去；
 /// - pdf 库填色时丢掉透明度，半透明的背景色会印成不透明的原色——文字色与
 ///   背景色先按纸面压平成不透明色（[_flattenColorAttributes]）；
-/// - 标题默认样式会覆盖行内格式——标题经 [DiaryPdfHeading] 叠加样式，
-///   保留文字色、背景色、粗体与装饰；
+/// - 标题默认样式会覆盖行内格式，相邻的非空属性表也会被误合并——标题
+///   经 [DiaryPdfHeading] 叠加样式，其余文字经 [DiaryPdfInlineSource] 还原
+///   原始片段，保留颜色、字号、粗斜体与装饰；没有斜体字面的字体经
+///   [DiaryPdfTextEffects] 在绘制时倾斜，粗体另加轻描边以保证可辨；
 /// - 它不认 `code-block` 的语言值，自带的高亮也不跟随用户的配色——给了代码
 ///   配色（[DiaryExportCodeTheme]）时先把代码行按记号拆开、写上颜色，再把
 ///   语言值改写为 `true`；代码块底色、正文字色与行号色同取这套配色。
@@ -144,6 +148,11 @@ class DiaryPdfWriter {
     DiaryExportBookLayout? book,
     DiaryExportCodeTheme? code,
   }) async {
+    final textEffects = DiaryPdfTextEffects(
+      regular: fonts.regular,
+      bold: fonts.bold,
+      bundled: fonts.bundled,
+    );
     final theme = pw.ThemeData.withFont(
       base: fonts.regular,
       bold: fonts.bold,
@@ -167,6 +176,7 @@ class DiaryPdfWriter {
         media: media,
         fonts: fonts,
         theme: theme,
+        textEffects: textEffects,
         images: images,
         textDirection: textDirection,
         code: code,
@@ -187,6 +197,7 @@ class DiaryPdfWriter {
           media: media,
           fonts: fonts,
           theme: theme,
+          textEffects: textEffects,
           images: images,
           textDirection: textDirection,
           code: code,
@@ -228,6 +239,7 @@ class DiaryPdfWriter {
     required DiaryExportMediaLibrary media,
     required DiaryPdfFonts fonts,
     required pw.ThemeData theme,
+    required DiaryPdfTextEffects textEffects,
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
@@ -255,6 +267,7 @@ class DiaryPdfWriter {
           body,
           theme: theme,
           fonts: fonts,
+          effects: textEffects,
           images: images,
           textDirection: textDirection,
           code: code,
@@ -273,6 +286,7 @@ class DiaryPdfWriter {
     required DiaryExportMediaLibrary media,
     required DiaryPdfFonts fonts,
     required pw.ThemeData theme,
+    required DiaryPdfTextEffects textEffects,
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
@@ -330,6 +344,7 @@ class DiaryPdfWriter {
             media: media,
             fonts: fonts,
             theme: theme,
+            textEffects: textEffects,
             images: images,
             textDirection: textDirection,
             code: code,
@@ -730,12 +745,36 @@ class DiaryPdfWriter {
     Delta body, {
     required pw.ThemeData theme,
     required DiaryPdfFonts fonts,
+    required DiaryPdfTextEffects effects,
     required List<Uint8List> images,
     required TextDirection textDirection,
     DiaryExportCodeTheme? code,
   }) async {
     final captured = <pw.Widget>[];
     final palette = code?.paper;
+    final source = DiaryPdfInlineSource(body.toJson());
+    pw.TextSpan inline(
+      String text,
+      Map<String, dynamic>? attrs,
+      Object? extra,
+    ) {
+      final base = extra is Map && extra['currentStyle'] is pw.TextStyle
+          ? extra['currentStyle'] as pw.TextStyle
+          : theme.defaultTextStyle;
+      return pw.TextSpan(
+        children: <pw.InlineSpan>[
+          for (final run in source.take(text))
+            buildDiaryPdfInline(
+              run,
+              base,
+              effects: effects,
+              bodyFontSize: theme.defaultTextStyle.fontSize ?? 12,
+              isCodeBlock: attrs?['code-block'] == true,
+            ),
+        ],
+      );
+    }
+
     // 在插件解析前保留标题片段：其解析器还会把相邻的非空属性表误当成
     // 相同样式合并。按行文案排队保留原始块，重复标题依次取出；插件有时
     // 把空标题当普通空行，不能依赖回调总次数与原始标题总数一致。
@@ -786,16 +825,22 @@ class DiaryPdfWriter {
       ),
       onDetectHeaderBlock: (line, attrs, [extra]) {
         final text = line.toPlainText.replaceFirst(RegExp(r'\n$'), '');
+        source.take(text);
         return DiaryPdfHeading.build(
           headings[text]!.removeFirst(),
           theme: theme,
           aligned: attrs?['align'] != null,
+          effects: effects,
           textDirection:
               attrs?['direction'] == 'rtl' || textDirection == TextDirection.rtl
               ? pw.TextDirection.rtl
               : pw.TextDirection.ltr,
         );
       },
+      onDetectInlineRichTextStyles: (fragment, attrs, [extra]) =>
+          inline(fragment.data as String, attrs, extra),
+      onDetectCommonText: (fragment, attrs, [extra]) =>
+          inline(fragment.data as String, attrs, extra),
     );
     // 只借用插件把 Delta 转成块级组件；它生成的那份文档直接丢弃。
     await converter.createDocument(
@@ -804,7 +849,7 @@ class DiaryPdfWriter {
         return pw.Page(build: (pw.Context _) => pw.SizedBox());
       },
     );
-    return captured;
+    return captured.map(effects.wrap).toList();
   }
 
   /// 代码行（与行号）的文字样式：字号、字距与行距沿用插件默认的代码样式

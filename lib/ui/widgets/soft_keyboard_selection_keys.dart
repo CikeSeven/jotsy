@@ -18,7 +18,7 @@ import 'package:flutter/widgets.dart';
 /// 做法：被动监听 [RawKeyboard]，它在每条原生按键消息派发到焦点树之前收到
 /// 同一次按键的原始 Android 数据。某次按键来自软键盘、meta 带 Shift，而
 /// [HardwareKeyboard] 认为 Shift 没按下时，按框架 Android 文本快捷键表里
-/// “Shift + 该键”的 Intent 交给当前焦点（标题 TextField 或 Quill 正文）执行。
+/// “Shift + 该键”的 Intent 交给当前焦点（标题 TextField；块正文走原生选区命令）执行。
 ///
 /// - 输入：子树内获得焦点的可编辑文本收到的按键。
 /// - 输出：命中并执行时返回 handled，按键不再落到“移动光标”的快捷键；其余一律
@@ -26,9 +26,17 @@ import 'package:flutter/widgets.dart';
 /// - 副作用：只经焦点控件自己的 Action 改选区，不改文本；实体键盘的 Shift 有
 ///   真实按下事件，[HardwareKeyboard] 已能看到，不经这里。
 class SoftKeyboardSelectionKeys extends StatefulWidget {
-  const SoftKeyboardSelectionKeys({super.key, required this.child});
+  const SoftKeyboardSelectionKeys({
+    super.key,
+    required this.child,
+    this.onExtendSelection,
+  });
 
   final Widget child;
+
+  /// 原生块编辑器不使用 EditableText 的 Action；返回 true 表示已经按块选区
+  /// 处理。只在当前焦点属于该编辑器时返回 true，标题输入框继续走系统 Action。
+  final bool Function(LogicalKeyboardKey)? onExtendSelection;
 
   @override
   State<SoftKeyboardSelectionKeys> createState() =>
@@ -85,11 +93,13 @@ class _SoftKeyboardSelectionKeysState extends State<SoftKeyboardSelectionKeys> {
   void initState() {
     super.initState();
     RawKeyboard.instance.addListener(_recordRawEvent);
+    FocusManager.instance.addEarlyKeyEventHandler(_handleEarlyKey);
   }
 
   @override
   void dispose() {
     RawKeyboard.instance.removeListener(_recordRawEvent);
+    FocusManager.instance.removeEarlyKeyEventHandler(_handleEarlyKey);
     super.dispose();
   }
 
@@ -109,6 +119,18 @@ class _SoftKeyboardSelectionKeysState extends State<SoftKeyboardSelectionKeys> {
         (data.metaState & _otherModifiers) == 0;
   }
 
+  KeyEventResult _handleEarlyKey(KeyEvent event) {
+    if (!mounted ||
+        event is KeyUpEvent ||
+        HardwareKeyboard.instance.isShiftPressed ||
+        !_isSoftKeyboardShift(event)) {
+      return KeyEventResult.ignored;
+    }
+    return widget.onExtendSelection?.call(event.logicalKey) == true
+        ? KeyEventResult.handled
+        : KeyEventResult.ignored;
+  }
+
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) {
       return KeyEventResult.ignored;
@@ -122,7 +144,7 @@ class _SoftKeyboardSelectionKeysState extends State<SoftKeyboardSelectionKeys> {
       return KeyEventResult.ignored;
     }
     // 与 ShortcutManager 相同：从当前焦点向上找 Action，焦点控件自己的实现
-    // （EditableText / QuillRawEditor）负责按字符、按行或到行首尾扩选。
+    // （EditableText）负责按字符、按行或到行首尾扩选。
     final focusContext = primaryFocus?.context;
     if (focusContext == null) {
       return KeyEventResult.ignored;

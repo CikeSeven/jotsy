@@ -4,7 +4,7 @@ import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi.dart';
 import 'package:node_diary/core/services/journal_import_cloud_xiaomi_markup.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
@@ -398,7 +398,7 @@ void main() {
       expect(note.attachments.map((item) => (item.id, item.name)), [
         (fileId, '$fileId.jpg'),
       ]);
-      final writer = JournalDeltaWriter();
+      final writer = JournalBlockWriter();
       note.writeBody(writer, (id) => {'image': id});
       final inserts = [
         for (final op in diaryContentQuillOps(writer.build().contentJson))

@@ -13795,6 +13795,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Code blocks are highlighted by language, and inline code follows the theme too, like '**
   String get codeBlockPreviewIntro;
+
+  /// URL field in the diary editor link dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Link URL'**
+  String get diaryEditorLinkUrl;
+
+  /// Validation message for an invalid diary editor link.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid link URL'**
+  String get diaryEditorInvalidLink;
+
+  /// Clear the URL from the selected diary text.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove link'**
+  String get diaryEditorRemoveLink;
+
+  /// Search hint in the diary editor slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Search commands'**
+  String get diaryEditorCommandHint;
+
+  /// Accessibility label for the diary editor paragraph drag handle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag block'**
+  String get diaryEditorDragBlock;
+
+  /// Move the selected editor block above its previous sibling.
+  ///
+  /// In en, this message translates to:
+  /// **'Move block up'**
+  String get diaryEditorMoveBlockUp;
+
+  /// Move the selected editor block below its next sibling.
+  ///
+  /// In en, this message translates to:
+  /// **'Move block down'**
+  String get diaryEditorMoveBlockDown;
+
+  /// Plain paragraph option in the diary editor block menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Paragraph'**
+  String get diaryEditorParagraph;
+
+  /// Nest the selected diary editor blocks under the previous block.
+  ///
+  /// In en, this message translates to:
+  /// **'Indent'**
+  String get diaryEditorIndent;
+
+  /// Move selected diary editor blocks out one level.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdent'**
+  String get diaryEditorOutdent;
+
+  /// Title of the diary editor slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert block'**
+  String get diaryEditorSlashCommands;
+
+  /// Divider option in the diary editor slash command menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Divider'**
+  String get diaryEditorDivider;
+
+  /// Placeholder for a preserved editor block from an unsupported format.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported content'**
+  String get diaryEditorUnsupportedBlock;
+
+  /// Image dimension label in the diary image resize sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Image width'**
+  String get diaryEditorImageWidth;
+
+  /// Image dimension label in the diary image resize sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Image height'**
+  String get diaryEditorImageHeight;
 }
 
 class _AppLocalizationsDelegate

@@ -1,6 +1,6 @@
 import '../../../core/database/divider_embed_codec.dart';
 
-/// 模板正文（Quill Delta）的白名单清洗、内置模板的块描述与编译。
+/// 模板 v1 Delta 的兼容白名单、内置模板的块描述与编译。
 ///
 /// 模板会被分享（模板码）、随备份到另一台设备，也会从日记“另存为模板”，
 /// 正文里绝不能带图片、录音、视频、附件这类指向本机私有文件的嵌入。所以
@@ -94,12 +94,8 @@ sealed class DiaryTemplateBlock {
 /// 小标题：与正文同字号的粗体行，带模板的强调色，开头可放一个符号
 /// [mark]（emoji）。也用作“书名：”这类在同一行接着填写的字段。
 ///
-/// 不用 Quill 的标题级别：h2 有 30 号，一页模板会被几行大字撑满。
-///
-/// [text] 末尾的冒号（`：` / `:`）连同其后的空白编译成不带格式的字：Quill
-/// 在空行打字时会沿用上一行行尾文字的行内格式（`PreserveInlineStylesRule`），
-/// 小标题若以粗体彩色字结尾，下面空行里写的字也会变成粗体彩色。所以内置
-/// 模板的小标题都以冒号结尾（见 `built_in_diary_templates_test.dart`）。
+/// 小标题保持正文字号；末尾冒号与空白不带格式，用户在同一行继续填写时
+/// 使用普通正文样式。这个约定也保持历史 v1 模板的兼容性。
 final class TplLabel extends DiaryTemplateBlock {
   const TplLabel(this.text, {this.mark});
 
@@ -170,7 +166,7 @@ final RegExp _labelSuffix = RegExp(r'[:：]\s*$');
 /// [labelColor] 为小标题的文字色、[noteColor] 为小字注释的文字色（大写
 /// `#AARRGGBB`，见 `encodeDiaryColor`）；不给时不写颜色。
 ///
-/// 不复用导入用的 `JournalDeltaWriter`：它会裁掉首尾空行，而模板正是靠这些
+/// 不复用导入用的 `JournalBlockWriter`：它会裁掉首尾空行，而模板正是靠这些
 /// 空行给用户留出书写的位置。
 List<Map<String, Object?>> compileDiaryTemplateBlocks(
   List<DiaryTemplateBlock> blocks, {

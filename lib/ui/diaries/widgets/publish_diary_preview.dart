@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../controllers/diary_editor_controller.dart';
+import 'diary_editor/diary_editor.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
-import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 /// 发布页的标题与正文预览（只读），与编辑页、预览页同一套正文排版，所见即
 /// 发布后的样子。
@@ -25,24 +23,16 @@ class PublishDiaryPreview extends ConsumerStatefulWidget {
 }
 
 class _PublishDiaryPreviewState extends ConsumerState<PublishDiaryPreview> {
-  late final quill.QuillController _controller;
+  late final DiaryEditorController _controller;
   late final bool _hasVisibleContent;
-  late final List<quill.EmbedBuilder> _embedBuilders =
-      buildDiaryQuillEmbedBuilders();
-
   @override
   void initState() {
     super.initState();
-    // 正文不是合法 Delta 时解码器自己降级为纯文本，页面总能打开。
-    final document = decodeDiaryContentToDocument(widget.draft.contentDocJson);
-    _controller = quill.QuillController(
-      document: document,
-      selection: const TextSelection.collapsed(offset: 0),
+    _controller = DiaryEditorController.fromContent(
+      widget.draft.contentDocJson,
       readOnly: true,
     );
-    // 不能只看纯文本镜像（contentText），纯图片正文在镜像里会为空。统一按
-    // Quill 文档可见内容判断，图片/嵌入也算正文内容。
-    _hasVisibleContent = diaryDocumentHasVisibleContent(document);
+    _hasVisibleContent = _controller.hasContent;
   }
 
   @override
@@ -73,22 +63,10 @@ class _PublishDiaryPreviewState extends ConsumerState<PublishDiaryPreview> {
           if (!_hasVisibleContent)
             Text(context.l10n.autoT0139, style: theme.textTheme.bodyMedium)
           else
-            DiaryQuillStylesBuilder(
-              appearance: appearance,
+            DiaryEditor(
               controller: _controller,
-              builder: (BuildContext context, DiaryQuillLook look) =>
-                  quill.QuillEditor.basic(
-                    controller: _controller,
-                    config: look.configure(
-                      quill.QuillEditorConfig(
-                        autoFocus: false,
-                        scrollable: false,
-                        padding: EdgeInsets.zero,
-                        showCursor: false,
-                        embedBuilders: _embedBuilders,
-                      ),
-                    ),
-                  ),
+              appearance: appearance,
+              shrinkWrap: true,
             ),
         ],
       ),

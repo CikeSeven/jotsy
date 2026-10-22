@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../controllers/diary_editor_controller.dart' as editor;
+import '../widgets/diary_editor/diary_editor.dart';
+import '../widgets/diary_editor/diary_editor_caret.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -25,7 +27,6 @@ import 'package:node_diary/ui/diaries/models/time_capsule.dart';
 import 'package:node_diary/ui/diaries/models/edit_diary_snapshot.dart';
 import 'package:node_diary/ui/diaries/models/publish_metadata_composer.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
-import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_location_preference.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_meta_actions.dart';
 import 'package:node_diary/ui/diaries/models/diary_meta_draft.dart';
@@ -33,7 +34,6 @@ import 'package:node_diary/ui/diaries/viewmodels/diary_meta_draft_controller.dar
 import 'package:node_diary/ui/diaries/controllers/diary_recording_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/debounced_auto_save_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_media_import_controller.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_caret_follow_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_video_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_audio_player_controller.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_day_photos_controller.dart';
@@ -42,7 +42,6 @@ import 'package:node_diary/utils/optional_text.dart';
 import 'package:node_diary/ui/diaries/providers/diary_detail_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_saved_colors_provider.dart';
 import 'package:node_diary/ui/diaries/providers/diary_typography_provider.dart';
-import 'package:node_diary/ui/diaries/viewmodels/diary_quill_styles.dart';
 import 'package:node_diary/ui/diaries/viewmodels/diary_text_appearance.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_floating_toolbar_surface.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
@@ -148,15 +147,8 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     skipTraversal: true,
   );
   final RouteEntranceWaiter _routeEntranceWaiter = RouteEntranceWaiter();
-  final ScrollController _contentScrollController = ScrollController();
-  final ScrollController _editorInnerScrollController = ScrollController();
-  // 用于取光标矩形：「更多」面板展开时把光标滚到面板上方。
-  final GlobalKey<quill.EditorState> _quillEditorKey =
-      GlobalKey<quill.EditorState>();
   // 悬浮工具栏「更多」面板的目标高度（收起为 0），驱动正文末尾的额外留白。
   final ValueNotifier<double> _toolbarPanelExtent = ValueNotifier<double>(0);
-  // 打字、键盘扩选与软键盘弹起时把光标保持在底部浮层上方（正文不自带滚动）。
-  late final DiaryCaretFollowController _caretFollow;
   // 最近一次构建是否显示了悬浮工具栏：帧末的光标揭示据此取与这一帧布局一致
   // 的遮挡高度（见 [_editorBottomCover]）。
   bool _floatingToolbarShown = false;
@@ -178,7 +170,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   SettingsService? _dayPhotoSettings;
 
   // ==================== 发布上下文草稿字段 ====================
-  late quill.QuillController _contentController;
+  late editor.DiaryEditorController _contentController;
   String _metadataJson = '{}';
   // 封面、标签、此时此地、天气、心情、精力与（新建时预设的）胶囊：与发布页
   // 共用同一草稿模型与动作。编辑模式下草稿变化经 [_onMetaChanged] 自动保存；
@@ -208,11 +200,6 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   final ValueNotifier<double> _editPanelExpandProgress = ValueNotifier<double>(
     0,
   );
-  // 缓存 QuillEditor widget 实例：键盘动画期间页面会随 viewInsets 逐帧重建，
-  // LayoutBuilder 也会随 body 高度逐帧重跑；返回同一实例时 Element 直接跳过
-  // 更新，避免 QuillRawEditor 对整篇文档逐行重建子树。输入变化时才重建。
-  Widget? _cachedQuillEditor;
-  Object? _cachedQuillEditorInputs;
   late List<DiaryToolbarItem> _toolbarOrder;
   Set<DiaryToolbarItem> _toolbarHiddenItems = <DiaryToolbarItem>{};
   String? _toolbarCurrentTimeFormatPattern;
@@ -222,7 +209,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   VoidCallback? _toolbarSettingsListener;
   bool _recordingPanelOpen = false;
   int _recordingPanelGeneration = 0;
-  TextSelection? _recordingSelection;
+  editor.Selection? _recordingSelection;
 
   // ==================== 生命周期与保存状态 ====================
   bool _initialized = false;
@@ -302,17 +289,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         await recordDiaryTemplateUse(settings, templateId);
       },
     );
-    _contentController = quill.QuillController(
-      document: documentFromPlainText(''),
-      selection: const TextSelection.collapsed(offset: 0),
+    _contentController = editor.DiaryEditorController(
+      document: editor.diaryEditorDocument(''),
+      selection: editor.Selection.single(path: [0], startOffset: 0),
     );
-    _caretFollow = DiaryCaretFollowController(
-      editorKey: _quillEditorKey,
-      focusNode: _contentFocusNode,
-      coveredHeight: _editorBottomCover,
-      revealDuration: () =>
-          ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-    )..attach(_contentController);
     _toolbarOrder = List<DiaryToolbarItem>.from(kDefaultDiaryToolbarOrder);
     _controller = EditDiaryController(this);
     _mediaImportController.addListener(_onMediaImportChanged);
@@ -349,26 +329,15 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     _metaActions.dispose();
     _templates.dispose();
     _meta.dispose();
-    _caretFollow.dispose();
     _titleFocusNode.dispose();
     _contentFocusNode.dispose();
     _toolbarFocusNode.dispose();
-    _contentScrollController.dispose();
-    _editorInnerScrollController.dispose();
     _editPanelExpandProgress.dispose();
     _toolbarPanelExtent.dispose();
     _contentController.dispose();
     _recordingController.dispose();
     _unbindToolbarSettingsService();
     super.dispose();
-  }
-
-  @override
-  void didChangeMetrics() {
-    final view = mounted ? View.maybeOf(context) : null;
-    if (view != null) {
-      _caretFollow.handleKeyboardInset(view.viewInsets.bottom);
-    }
   }
 
   @override
@@ -386,12 +355,10 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
   }
 
   /// 当前正文纯文本（用于搜索、字数统计和空内容判断）。
-  String get _currentContentText =>
-      extractPlainTextFromDiaryDocument(_contentController.document);
+  String get _currentContentText => _contentController.plainText;
 
   /// 当前正文 Delta JSON（用于富文本持久化）。
-  String get _currentContentDocJson =>
-      encodeDiaryDocumentToJson(_contentController.document);
+  String get _currentContentDocJson => _contentController.contentJson;
 
   /// 模板变量按哪天展开、推荐按哪天判断：补写时是那一天，否则是今天。
   DateTime get _templateDiaryDate => _createDateOverride ?? _templateClock();
@@ -670,59 +637,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     );
   }
 
-  Widget _buildQuillEditor(
-    BuildContext context, {
-    required DiaryTextAppearance appearance,
-  }) {
-    final placeholder = context.l10n.autoT0133;
-    // QuillController 未覆写 ==，按实例比较；ThemeData 与正文外观为值比较。
-    final inputs = (
-      _contentController,
-      placeholder,
-      Theme.of(context),
-      appearance,
-    );
-    final cached = _cachedQuillEditor;
-    if (cached != null && _cachedQuillEditorInputs == inputs) {
-      return cached;
-    }
-    // 样式在编辑器位置（Scaffold 之下）生成，见 [DiaryQuillStylesBuilder]。
-    final editor = DiaryQuillStylesBuilder(
-      appearance: appearance,
-      controller: _contentController,
-      builder: (BuildContext context, DiaryQuillLook look) {
-        return quill.QuillEditor.basic(
-          controller: _contentController,
-          focusNode: _contentFocusNode,
-          scrollController: _editorInnerScrollController,
-          // 新建时不在构建期自动聚焦：键盘会与页面滑入同时弹出并逐帧挤压布局。
-          // 改由 [RouteEntranceWaiter] 在转场结束后聚焦（见 initState）。
-          config: look.configure(
-            quill.QuillEditorConfig(
-              editorKey: _quillEditorKey,
-              autoFocus: false,
-              placeholder: placeholder,
-              scrollable: false,
-              onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-                _contentController,
-                getPosition(details.globalPosition),
-              ),
-              padding: const EdgeInsets.fromLTRB(0, 12, 0, 24),
-              embedBuilders: buildDiaryQuillEmbedBuilders(),
-            ),
-          ),
-        );
-      },
-    );
-    _cachedQuillEditor = editor;
-    _cachedQuillEditorInputs = inputs;
-    return editor;
-  }
-
-  /// 主编辑区域：
-  /// - 标题与正文放在同一个滚动容器内，保证滚动体验连续；
-  /// - 键盘弹起时保持焦点，不因轻微滚动自动收起键盘；
-  /// - 标题字体与正文排版跟随“正文字体与排版”设置，修改后即时生效。
+  /// 标题、模板与照片建议和正文共用 AppFlowy 的滚动，不再嵌套页面滚动容器。
   Widget _buildEditor(
     BuildContext context, {
     required double Function(double panelProgress) resolveBottomSpacer,
@@ -730,80 +645,68 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     required DiaryTextAppearance appearance,
     required bool templatesEnabled,
   }) {
-    final quillEditor = _buildQuillEditor(context, appearance: appearance);
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final minEditorHeight = constraints.maxHeight > 420
-            ? constraints.maxHeight - 140
-            : 280.0;
-        final content = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            _buildTitleInput(
-              context,
-              contentLocked: contentLocked,
-              appearance: appearance,
+    final header = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTitleInput(
+            context,
+            contentLocked: contentLocked,
+            appearance: appearance,
+          ),
+          if (_isCreateEntry && templatesEnabled)
+            DiaryTemplateStrip(
+              controller: _templates,
+              diaryDate: _templateDiaryDate,
+              busy:
+                  _saving ||
+                  _recordingPanelOpen ||
+                  _mediaImportController.isBusy,
+              onApply: (template) =>
+                  unawaited(_controller.applyTemplateFromStrip(template)),
+              onOpenAll: () => unawaited(_controller.openTemplatePicker()),
             ),
-            if (_isCreateEntry && templatesEnabled)
-              IgnorePointer(
-                ignoring: contentLocked,
-                child: DiaryTemplateStrip(
-                  controller: _templates,
-                  diaryDate: _templateDiaryDate,
-                  busy:
-                      _saving ||
-                      _recordingPanelOpen ||
-                      _mediaImportController.isBusy,
-                  onApply: (template) =>
-                      unawaited(_controller.applyTemplateFromStrip(template)),
-                  onOpenAll: () => unawaited(_controller.openTemplatePicker()),
-                ),
-              ),
-            if (_isCreateEntry)
-              IgnorePointer(
-                ignoring: contentLocked,
-                child: DiaryDayPhotosStrip(
-                  controller: _dayPhotos,
-                  busy:
-                      _saving ||
-                      _recordingPanelOpen ||
-                      _mediaImportController.isBusy,
-                  onInsert: () => unawaited(_controller.insertDayPhotos()),
-                  onSetCover: (photo) =>
-                      unawaited(_controller.setDayPhotoCover(photo)),
-                  onClearCover: _controller.clearDayPhotoCover,
-                ),
-              ),
-            const SizedBox(height: 12),
-            ConstrainedBox(
-              // 标题与正文处在同一可滚动容器，整体滚动体验保持一致。
-              constraints: BoxConstraints(minHeight: minEditorHeight),
-              child: IgnorePointer(ignoring: contentLocked, child: quillEditor),
+          if (_isCreateEntry)
+            DiaryDayPhotosStrip(
+              controller: _dayPhotos,
+              busy:
+                  _saving ||
+                  _recordingPanelOpen ||
+                  _mediaImportController.isBusy,
+              onInsert: () => unawaited(_controller.insertDayPhotos()),
+              onSetCover: (photo) =>
+                  unawaited(_controller.setDayPhotoCover(photo)),
+              onClearCover: _controller.clearDayPhotoCover,
             ),
-            // 「更多」面板展开时额外让位，自身监听高度，不牵动整列重建。
+        ],
+      ),
+    );
+    return IgnorePointer(
+      ignoring: contentLocked,
+      child: DiaryEditor(
+        controller: _contentController,
+        appearance: appearance,
+        focusNode: _contentFocusNode,
+        onMediaCommand: (kind) => unawaited(_controller.importMedia(kind)),
+        onRecordingCommand: _toggleRecordingPanel,
+        placeholder: context.l10n.autoT0133,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        header: header,
+        autoScrollEdgeOffset: _editorBottomCover(),
+        footer: Column(
+          children: [
             DiaryToolbarPanelReserve(extent: _toolbarPanelExtent),
-          ],
-        );
-        // 底部占位随面板拖拽进度连续变化，仅重建滚动容器这一层。
-        return ValueListenableBuilder<double>(
-          valueListenable: _editPanelExpandProgress,
-          child: content,
-          builder: (BuildContext context, double progress, Widget? child) {
-            return SingleChildScrollView(
-              controller: _contentScrollController,
-              // 编辑态保持输入焦点，避免轻微滚动时键盘立即收起。
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
-              padding: EdgeInsets.fromLTRB(
-                16,
-                4,
-                16,
-                resolveBottomSpacer(progress),
+            ValueListenableBuilder<double>(
+              valueListenable: _editPanelExpandProgress,
+              builder: (context, progress, _) => SizedBox(
+                key: const ValueKey('diary-editor-page-reserve'),
+                height: resolveBottomSpacer(progress),
               ),
-              child: child,
-            );
-          },
-        );
-      },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -911,9 +814,9 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         if (!_initialized && detail != null) {
           _titleController.text = detail.diary.title;
           _controller.replaceContentController(
-            quill.QuillController(
-              document: decodeDiaryContentToDocument(detail.diary.content),
-              selection: const TextSelection.collapsed(offset: 0),
+            editor.DiaryEditorController(
+              document: editor.diaryEditorDocument(detail.diary.content),
+              selection: editor.Selection.single(path: [0], startOffset: 0),
             ),
           );
           try {
@@ -1142,7 +1045,7 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
         );
         // 根节点必须恒为 PopScope：若按 `_recordingPanelOpen` 在 Scaffold 与
         // PopScope(Scaffold) 之间切换，根 widget 类型变化会销毁整棵子树，
-        // 连带 QuillEditor、播放器与输入法连接一起重建。只用 canPop 表达差异。
+        // 连带 原生块编辑器、播放器与输入法连接一起重建。只用 canPop 表达差异。
         return PopScope(
           // 编辑模式返回时先补存最后一次输入，面板和录音仍优先收起。
           canPop: !_isEditEntry && !_recordingPanelOpen,
@@ -1300,12 +1203,11 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final selection = _contentController.selection;
-      if (!mounted || !selection.isValid) {
+      if (!mounted || selection == null) {
         return;
       }
-      revealDiaryCaretAbove(
-        _quillEditorKey,
-        position: selection.extent,
+      revealDiaryEditorCaretAbove(
+        _contentController,
         // 被遮住的高度 = 工具栏一排、底部留白与光标空隙（与平时的正文避让
         // 一致）+ 面板。
         coveredHeight: _editorBottomCover(),

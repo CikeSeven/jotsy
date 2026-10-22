@@ -4,7 +4,7 @@ import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as html_parser;
 import 'package:path/path.dart' as p;
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_files.dart';
 import 'journal_import_html.dart';
 import 'journal_import_media.dart';
@@ -133,7 +133,7 @@ JournalImportEntry _parsePage(
     return media.embedFile(path);
   }
 
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   String? location;
   for (final item in document.querySelectorAll('.assetGrid .gridItem')) {
     final type = item.classes

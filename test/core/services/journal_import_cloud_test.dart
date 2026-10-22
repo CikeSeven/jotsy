@@ -6,7 +6,7 @@ import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_blocks.dart';
 import 'package:node_diary/core/services/journal_import_cloud_cookie_jar.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_media.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
@@ -381,7 +381,7 @@ void main() {
   });
 
   test('writeCloudBlocks maps every block kind', () {
-    final writer = JournalDeltaWriterProbe();
+    final writer = JournalBlockWriterProbe();
     writeCloudBlocks(writer.writer, const [
       CloudBlock(CloudBlockKind.heading, level: 5, spans: [CloudSpan('H')]),
       CloudBlock(CloudBlockKind.list, level: 2, spans: [CloudSpan('item')]),
@@ -473,8 +473,8 @@ class _FakeProvider implements CloudNoteProvider {
 }
 
 /// 把写好的正文按行拆成（文字，块格式），便于断言。
-class JournalDeltaWriterProbe {
-  final JournalDeltaWriter writer = JournalDeltaWriter();
+class JournalBlockWriterProbe {
+  final JournalBlockWriter writer = JournalBlockWriter();
 
   String get json => writer.build().contentJson;
 

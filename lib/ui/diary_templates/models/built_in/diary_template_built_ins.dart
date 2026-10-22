@@ -14,7 +14,7 @@ import 'diary_template_built_in_support.dart';
 /// 排版：小标题是与正文同字号的粗体行，带模板强调色与一个 emoji 符号，以
 /// 不带格式的冒号结尾（原因见 [TplLabel]）；小字注释用灰色小一档的字；
 /// 小标题之间空一行（[TplGap]），分隔线把“记录”与“收尾的一句话”隔开。正文
-/// 里不用 Quill 的标题级别。
+/// 里不用 标题块。
 ///
 /// 结果按语言缓存：模板面板、建议条每次重建都会取它。
 List<DiaryTemplate> buildBuiltInDiaryTemplates(AppLocalizations l10n) {

@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 import '../../../core/database/app_database.dart';
-import '../../../core/database/content_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_codec.dart';
 
 /// 预览页待办勾选的自动保存。
 ///
@@ -32,7 +32,7 @@ class DiaryTodoAutoSaveController {
   static const Duration debounce = Duration(milliseconds: 260);
 
   final DiaryWithTags? Function() readDetail;
-  final quill.Document? Function() readDocument;
+  final af.Document? Function() readDocument;
   final AppDatabase Function() readDatabase;
   final VoidCallback onSaved;
 
@@ -56,7 +56,7 @@ class DiaryTodoAutoSaveController {
     if (detail == null || document == null) {
       return null;
     }
-    final contentDocJson = encodeDiaryDocumentToJson(document);
+    final contentDocJson = encodeDiaryBlocks(document.toJson());
     // 内容未变化直接跳过，减少无效写库。
     if (contentDocJson == detail.diary.content) {
       return null;
@@ -64,7 +64,7 @@ class DiaryTodoAutoSaveController {
     return _TodoSnapshot(
       diaryId: detail.diary.diaryId,
       contentDocJson: contentDocJson,
-      contentText: extractPlainTextFromDiaryDocument(document),
+      contentText: diaryBlocksPlainText(document.toJson()),
     );
   }
 

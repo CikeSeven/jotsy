@@ -1,108 +1,16 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/app_radii.dart';
 import 'package:node_diary/app/theme/expressive_surfaces.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_image_options_menu.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
 import 'package:node_diary/ui/widgets/expressive_image_frame.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 import 'package:node_diary/ui/widgets/long_image/long_image_source_builder.dart';
-
-/// 正文图片按独立块渲染，圆角、微边框与上下留白和视频/附件卡片保持同一节奏。
-///
-/// 上游 `QuillEditorImageEmbedBuilder` 把图片当作行内 WidgetSpan 放进文本行：
-/// 直角、贴着文字基线、没有段间距，点按弹出的菜单里“缩放”打开它自带的
-/// PhotoView 页面。这里整体接管：
-/// - 只读正文提供 [onImageOpen] 时点按直接进看图页：图片作为看图页的共享元素
-///   来源，点按瞬间抓取画面并交给回调，看图页从图片原位展开；
-/// - 其余情况（编辑页、发布页预览）点按弹出 [showDiaryImageOptions]：查看、
-///   调整大小、复制、保存到相册、删除（只读时没有调整大小与删除）；
-/// - 缩放菜单写入的宽高只作为上限，见 [diaryImageEmbedBounds]；比列宽窄的
-///   图片（缩小过或原图就小）靠行首对齐，所在行设了居中/居右时从之，见
-///   [diaryImageEmbedAlignment]；
-/// - 长图（高 ≥ 宽 × 3）默认折叠显示（[DiaryLongImageFold]）；[foldLongImages]
-///   为 false（预览页“长图显示：完整显示”）时按列宽完整展开
-///   （[DiaryLongImageFull]）。
-class DiaryImageEmbedBuilder extends quill.EmbedBuilder {
-  const DiaryImageEmbedBuilder({this.onImageOpen, this.foldLongImages = true});
-
-  final void Function(String imageSource, ImageViewerHero? hero)? onImageOpen;
-  final bool foldLongImages;
-
-  @override
-  String get key => quill.BlockEmbed.imageType;
-
-  /// 图片独占一行时走 EmbedProxy 块级布局；与文字同行的旧数据 Quill 仍按行内渲染。
-  @override
-  bool get expanded => true;
-
-  @override
-  Widget build(BuildContext context, quill.EmbedContext embedContext) {
-    final source = embedContext.node.value.data.toString();
-    final open = embedContext.readOnly ? onImageOpen : null;
-    // 标签按 embed 在文档中的位置区分：同一张图可能在正文里出现多次。
-    final heroTag = open == null
-        ? null
-        : ImageViewerHeroTag('diary_body', embedContext.node.documentOffset);
-    final image = Builder(
-      builder: (imageContext) => GestureDetector(
-        onTap: open == null
-            ? () => unawaited(
-                showDiaryImageOptions(
-                  imageContext,
-                  controller: embedContext.controller,
-                  node: embedContext.node,
-                  source: source,
-                  readOnly: embedContext.readOnly,
-                ),
-              )
-            : () => open(source, _captureHero(imageContext, heroTag!)),
-        child: DiaryEmbeddedImage(
-          source: source,
-          bounds: diaryImageEmbedBounds(embedContext.node),
-          heroTag: heroTag,
-          foldLongImages: foldLongImages,
-        ),
-      ),
-    );
-    if (embedContext.inline) return image;
-    // 比列宽窄的图片靠行首（与正文文字左缘对齐），不再一律居中；heightFactor
-    // 防止有界高度下 Align 撑满整行。
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Align(
-        alignment: diaryImageEmbedAlignment(embedContext.node),
-        heightFactor: 1,
-        child: image,
-      ),
-    );
-  }
-
-  /// 抓取看图页的飞入画面；图片没有建立来源 Hero 时（完整展开的长图）返回
-  /// null：那样的画面只是可见的某一段分片，垫在看图页顶部会错位。
-  static ImageViewerHero? _captureHero(BuildContext context, Object tag) {
-    var hasHero = false;
-    void visit(Element element) {
-      if (hasHero) return;
-      final widget = element.widget;
-      if (widget is Hero && widget.tag == tag) {
-        hasHero = true;
-        return;
-      }
-      element.visitChildElements(visit);
-    }
-
-    context.visitChildElements(visit);
-    return hasHero ? ImageViewerHero.capture(context, tag: tag) : null;
-  }
-}
 
 /// 正文图片本体。provider 按来源缓存在 State 中：编辑器每次改动都会重建
 /// 文本行，若每次构建新 provider，base64 图片会反复解码并闪烁。

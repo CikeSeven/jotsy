@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/seeded_theme_cache.dart';
 import '../../../../core/database/app_database.dart';
-import '../../../../core/database/content_codec.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../diaries/providers/diary_card_style_provider.dart';
 import '../../../diaries/providers/diary_preview_style_provider.dart';
@@ -115,9 +115,9 @@ class _SamplePage extends ConsumerStatefulWidget {
 }
 
 class _SamplePageState extends ConsumerState<_SamplePage> {
-  late final quill.QuillController _quill = quill.QuillController(
-    document: decodeDiaryContentToDocument(widget.detail.diary.content),
-    selection: const TextSelection.collapsed(offset: 0),
+  late final DiaryEditorController _body = DiaryEditorController(
+    document: diaryEditorDocument(widget.detail.diary.content),
+    selection: af.Selection.single(path: [0], startOffset: 0),
     readOnly: true,
   );
   final ScrollController _scroll = ScrollController();
@@ -127,7 +127,7 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
 
   @override
   void dispose() {
-    _quill.dispose();
+    _body.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -153,7 +153,7 @@ class _SamplePageState extends ConsumerState<_SamplePage> {
       content: DiaryPreviewContent(
         detail: detail,
         viewData: _viewData,
-        controller: _quill,
+        controller: _body,
         scrollController: _scroll,
         resolved: resolved,
         behavior: controller.behavior,

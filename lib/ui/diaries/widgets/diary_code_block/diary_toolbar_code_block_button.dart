@@ -1,23 +1,15 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_newline.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_editing.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_toolbar_config.dart';
 import 'package:node_diary/ui/widgets/expressive_state_blend.dart';
 
 /// 选区是否触及代码块（折叠选区看光标所在行）。工具栏据此决定点按代码块
 /// 工具是“转为代码块”还是打开代码块面板，面板开着时据此判断是否该收起。
-bool diarySelectionInCodeBlock(quill.QuillController controller) {
-  final selection = controller.selection;
-  return diaryCodeBlocksInRange(
-    controller.document,
-    selection.start,
-    selection.end,
-  ).isNotEmpty;
-}
-
 /// 悬浮工具栏上的「代码块」按钮。
 ///
 /// - 输入：正文控制器、面板是否正为它打开（[panelOpen]）、点按回调；
@@ -37,7 +29,7 @@ class DiaryToolbarCodeBlockButton extends StatelessWidget {
     required this.onPressed,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
   final bool panelOpen;
   final String tooltip;
   final VoidCallback onPressed;

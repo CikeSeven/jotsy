@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/database/notebook_payload.dart';
 import 'package:node_diary/core/services/backup_import_models.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
-import 'package:flutter_quill/quill_delta.dart';
+import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_codec.dart';

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../controllers/diary_editor_controller.dart';
+import '../controllers/diary_editor_insert.dart';
 import 'package:intl/intl.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
@@ -8,7 +11,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 /// 如果用户已选中文字，则替换选区；如果编辑器暂时没有有效选区，则插入到文档末尾。
 void insertDiaryToolbarCurrentTime(
   BuildContext context,
-  quill.QuillController controller, {
+  DiaryEditorController controller, {
   String? formatPattern,
 }) {
   final now = DateTime.now();
@@ -17,21 +20,7 @@ void insertDiaryToolbarCurrentTime(
     now,
     customPattern: formatPattern,
   );
-  final documentLength = controller.document.length;
-  final selection = controller.selection;
-  final start = selection.isValid
-      ? _clampQuillOffset(selection.start, documentLength)
-      : _clampQuillOffset(documentLength - 1, documentLength);
-  final end = selection.isValid
-      ? _clampQuillOffset(selection.end, documentLength)
-      : start;
-  final replaceLength = end - start;
-  controller.replaceText(
-    start,
-    replaceLength < 0 ? 0 : replaceLength,
-    insertedText,
-    TextSelection.collapsed(offset: start + insertedText.length),
-  );
+  unawaited(insertDiaryEditorText(controller, insertedText));
 }
 
 const String kDefaultDiaryToolbarCurrentTimeFormat = 'M月d日 HH:mm';
@@ -67,15 +56,4 @@ bool isValidDiaryToolbarCurrentTimeFormat(
   } catch (_) {
     return false;
   }
-}
-
-int _clampQuillOffset(int offset, int documentLength) {
-  final maxOffset = documentLength <= 0 ? 0 : documentLength - 1;
-  if (offset < 0) {
-    return maxOffset;
-  }
-  if (offset > maxOffset) {
-    return maxOffset;
-  }
-  return offset;
 }

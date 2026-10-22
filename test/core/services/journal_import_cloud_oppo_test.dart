@@ -5,7 +5,7 @@ import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_envelope.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_oppo.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/cloud_test_keys.dart';
@@ -139,7 +139,7 @@ void main() {
       ('555', 'file_abc'),
       ('556', 'rec'),
     ]);
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     first.writeBody(
       writer,
       (id) => id == '555' ? {'image': 'local.jpg'} : null,

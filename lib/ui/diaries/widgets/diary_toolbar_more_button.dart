@@ -1,7 +1,8 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -27,7 +28,7 @@ class DiaryToolbarMoreButton extends StatelessWidget {
     this.recordingOpen = false,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
 
   /// 收在面板里的工具，用于判断要不要亮圆点。
   final List<DiaryToolbarItem> overflow;
@@ -36,7 +37,7 @@ class DiaryToolbarMoreButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   bool _hasActiveOverflow() {
-    final attributes = controller.getSelectionStyle().attributes;
+    final attributes = controller.activeAttributes;
     return overflow.any(
       (DiaryToolbarItem item) =>
           isDiaryToolbarItemActive(item, attributes) ||

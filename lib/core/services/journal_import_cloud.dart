@@ -1,5 +1,5 @@
 import 'journal_import_cloud_http.dart';
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
 
@@ -46,7 +46,7 @@ class CloudNote {
   /// 落成日记本还是标签由 [JournalImportFolderMode] 决定。
   final String? folder;
   final List<CloudAttachment> attachments;
-  final void Function(JournalDeltaWriter writer, CloudEmbedResolver resolve)
+  final void Function(JournalBlockWriter writer, CloudEmbedResolver resolve)
   writeBody;
 }
 
@@ -139,7 +139,7 @@ Future<JournalImportParseResult> fetchCloudJournal(
       }
     }
     final used = <String>{};
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     note.writeBody(writer, (id) {
       final data = embeds[id];
       if (data != null) used.add(id);

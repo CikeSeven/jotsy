@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_files.dart';
 import 'journal_import_html.dart';
 import 'journal_import_markdown.dart';
@@ -98,7 +98,7 @@ JournalImportEntry _parseEntry(
     return data;
   }
 
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   final text = raw['text'] as String? ?? '';
   if (raw['type'] == 'html' ||
       (raw['type'] == null && looksLikeJournalHtml(text))) {

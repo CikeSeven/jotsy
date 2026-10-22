@@ -10830,5 +10830,61 @@
   "codeBlockPreviewIntro": "代码块会按语言高亮，行内代码也跟随配色，例如 ",
   "@codeBlockPreviewIntro": {
     "description": "代码块样式页预览的引导文字，末尾空格后接一段行内代码示例。"
-  }
+  },
+  "diaryEditorLinkUrl": "链接地址",
+  "@diaryEditorLinkUrl": {
+    "description": "URL field in the diary editor link dialog."
+  },
+  "diaryEditorInvalidLink": "请输入有效的链接地址",
+  "@diaryEditorInvalidLink": {
+    "description": "Validation message for an invalid diary editor link."
+  },
+  "diaryEditorRemoveLink": "移除链接",
+  "@diaryEditorRemoveLink": {
+    "description": "Clear the URL from the selected diary text."
+  },
+  "diaryEditorCommandHint": "搜索命令",
+  "@diaryEditorCommandHint": {
+    "description": "Search hint in the diary editor slash command menu."
+  },
+  "diaryEditorDragBlock": "拖动段落",
+  "@diaryEditorDragBlock": {
+    "description": "Accessibility label for the diary editor paragraph drag handle."
+  },
+  "diaryEditorMoveBlockUp": "上移段落",
+  "@diaryEditorMoveBlockUp": {
+    "description": "Move the selected editor block above its previous sibling."
+  },
+  "diaryEditorMoveBlockDown": "下移段落",
+  "@diaryEditorMoveBlockDown": {
+    "description": "Move the selected editor block below its next sibling."
+  },
+  "diaryEditorParagraph": "正文",
+  "@diaryEditorParagraph": {
+    "description": "Plain paragraph option in the diary editor block menu."
+  },
+  "diaryEditorIndent": "增加缩进",
+  "@diaryEditorIndent": {
+    "description": "Nest the selected diary editor blocks under the previous block."
+  },
+  "diaryEditorOutdent": "减少缩进",
+  "@diaryEditorOutdent": {
+    "description": "Move selected diary editor blocks out one level."
+  },
+  "diaryEditorSlashCommands": "插入区块",
+  "@diaryEditorSlashCommands": {
+    "description": "Title of the diary editor slash command menu."
+  },
+  "diaryEditorDivider": "分隔线",
+  "@diaryEditorDivider": {
+    "description": "Divider option in the diary editor slash command menu."
+  },
+  "diaryEditorUnsupportedBlock": "暂不支持的内容",
+  "@diaryEditorUnsupportedBlock": {
+    "description": "Placeholder for a preserved editor block from an unsupported format."
+  },
+  "diaryEditorImageWidth": "图片宽度",
+  "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorImageHeight": "图片高度",
+  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."}
 }

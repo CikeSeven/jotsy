@@ -1,6 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -45,7 +46,7 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
@@ -65,7 +66,7 @@ void main() {
   ) async {
     await pumpCreatePage(tester);
     final controller = tester
-        .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
+        .widget<DiaryEditor>(find.byType(DiaryEditor))
         .controller;
     controller.replaceText(
       0,
@@ -75,7 +76,7 @@ void main() {
     );
     controller.updateSelection(
       TextSelection.collapsed(offset: controller.document.length - 1),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
 
@@ -88,16 +89,7 @@ void main() {
     position.jumpTo(position.maxScrollExtent);
     await tester.pumpAndSettle();
 
-    final rawEditor = tester.state<quill.QuillRawEditorState>(
-      find.byType(quill.QuillRawEditor),
-    );
-    double caretBottom() {
-      final renderEditor = rawEditor.renderEditor;
-      final caret = renderEditor.getLocalRectForCaret(
-        controller.selection.extent,
-      );
-      return renderEditor.localToGlobal(caret.bottomLeft).dy;
-    }
+    double caretBottom() => controller.state.selectionRects().first.bottom;
 
     double toolbarTop() =>
         tester.getTopLeft(find.byType(DiaryFloatingToolbar)).dy;

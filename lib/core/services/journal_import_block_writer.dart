@@ -1,7 +1,5 @@
-import 'package:flutter_quill/quill_delta.dart';
-
 import '../database/diary_blocks/diary_blocks_codec.dart';
-import '../database/diary_blocks/diary_blocks_from_delta.dart';
+import 'journal_import_blocks.dart';
 
 /// 根据正文中的媒体引用（图片 src、Day One 的 `dayone-moment://` 等）返回
 /// 本应用的嵌入数据，如 `{'image': 路径}`；无法解析或文件缺失时返回 null，
@@ -19,8 +17,8 @@ typedef JournalEmbedResolver = Map<String, Object?>? Function(String source);
 ///
 /// 纯文本镜像与 Document.toPlainText 的规则一致：嵌入物不计文本，只留换行。
 /// 只是内存中的组装，不做 IO，可在后台 isolate 中使用。
-class JournalDeltaWriter {
-  JournalDeltaWriter({this.preserveWhitespace = false});
+class JournalBlockWriter {
+  JournalBlockWriter({this.preserveWhitespace = false});
 
   /// 纯文本导出中的缩进、空行和尾随空格也是正文，不按 HTML 排版清理。
   final bool preserveWhitespace;
@@ -85,36 +83,24 @@ class JournalDeltaWriter {
     while (!preserveWhitespace && end > start && _lines[end - 1].isBlank) {
       end--;
     }
-    final delta = Delta();
-    final plain = StringBuffer();
-    for (final line in _lines.sublist(start, end)) {
-      final embed = line.embed;
-      if (embed != null) {
-        delta.insert(embed);
-        delta.insert(
-          '\n',
-          line.blockAttributes.isEmpty ? null : line.blockAttributes,
-        );
-        plain.write('\n');
-        continue;
-      }
-      for (final segment in line.segments) {
-        delta.insert(
-          segment.text,
-          segment.attributes.isEmpty ? null : segment.attributes,
-        );
-        plain.write(segment.text);
-      }
-      delta.insert(
-        '\n',
-        line.blockAttributes.isEmpty ? null : line.blockAttributes,
-      );
-      plain.write('\n');
-    }
-    if (delta.isEmpty) delta.insert('\n');
+    final document = buildJournalImportBlocks([
+      for (final line in _lines.sublist(start, end))
+        (
+          delta: [
+            for (final segment in line.segments)
+              {
+                'insert': segment.text,
+                if (segment.attributes.isNotEmpty)
+                  'attributes': segment.attributes,
+              },
+          ],
+          attributes: line.blockAttributes,
+          embed: line.embed,
+        ),
+    ]);
     return (
-      contentJson: encodeDiaryBlocks(diaryBlocksFromQuillOps(delta.toJson())),
-      contentText: plain.toString().trimRight(),
+      contentJson: encodeDiaryBlocks(document),
+      contentText: diaryBlocksPlainText(document),
     );
   }
 
@@ -142,7 +128,7 @@ class JournalDeltaWriter {
 }
 
 /// 把纯文本按行写入 [writer]，保留空行。
-void appendJournalPlainText(JournalDeltaWriter writer, String text) {
+void appendJournalPlainText(JournalBlockWriter writer, String text) {
   var normalized = text.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
   // Delta 已要求最后一个换行。纯文本保留模式只补必要的终止符，不能把
   // 原有的终止换行当作额外空段落再写一次。

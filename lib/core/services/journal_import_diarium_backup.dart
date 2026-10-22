@@ -93,7 +93,7 @@ List<JournalImportEntry> _parseDatabase(
           issues.skip(JournalSkipReason.unreadable);
           continue;
         }
-        final writer = JournalDeltaWriter();
+        final writer = JournalBlockWriter();
         _appendBody(writer, journalString(row['Text']));
         if (mediaQuery != null) {
           for (final item in mediaQuery.select([id])) {

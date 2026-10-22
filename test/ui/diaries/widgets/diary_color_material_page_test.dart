@@ -1,7 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_material_page.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_color_panel/diary_color_panel.dart';
@@ -162,7 +162,7 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     final controller = colorPanelController();
-    controller.formatSelection(const quill.ColorAttribute('#FF4DB6AC'));
+    controller.formatSelection(const MapEntry('font_color', '#FF4DB6AC'));
     await pumpColorPanel(tester, controller: controller);
     await openMaterialPage(tester);
 
@@ -205,11 +205,11 @@ void main() {
     tester,
   ) async {
     final controller = colorPanelController('abcdef');
-    controller.formatText(0, 3, const quill.ColorAttribute('#FF4DB6AC'));
-    controller.formatText(3, 3, const quill.ColorAttribute('#FFFFE082'));
+    controller.formatText(0, 3, const MapEntry('font_color', '#FF4DB6AC'));
+    controller.formatText(3, 3, const MapEntry('font_color', '#FFFFE082'));
     controller.updateSelection(
       const TextSelection(baseOffset: 0, extentOffset: 2),
-      quill.ChangeSource.local,
+      'local',
     );
     await pumpColorPanel(tester, controller: controller);
     await openMaterialPage(tester);
@@ -217,7 +217,7 @@ void main() {
 
     controller.updateSelection(
       const TextSelection(baseOffset: 4, extentOffset: 5),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(swatch(tester, '琥珀 200').selected, isTrue);
@@ -226,7 +226,7 @@ void main() {
     controller.replaceText(6, 0, 'g', null);
     controller.updateSelection(
       const TextSelection(baseOffset: 6, extentOffset: 7),
-      quill.ChangeSource.local,
+      'local',
     );
     await tester.pumpAndSettle();
     expect(find.byTooltip('琥珀 200'), findsOneWidget);

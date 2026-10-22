@@ -171,8 +171,7 @@ class _EditDiaryTemplatePort implements DiaryTemplateEditorPort {
 
   @override
   bool get hasContent =>
-      title.trim().isNotEmpty ||
-      diaryDocumentHasVisibleContent(_state._contentController.document);
+      title.trim().isNotEmpty || _state._contentController.hasContent;
 
   @override
   DiaryMetaDraftController get meta => _state._meta;
@@ -191,16 +190,16 @@ class _EditDiaryTemplatePort implements DiaryTemplateEditorPort {
   @override
   String replaceContent({
     required String title,
-    required List<Map<String, Object?>> ops,
+    required Map<String, Object?> document,
     required int caret,
   }) {
-    final document = decodeDiaryContentToDocument(jsonEncode(ops));
+    final body = editor.diaryEditorDocument(jsonEncode(document));
     _state.setState(() {
       _state._titleController.text = title;
       _state._controller.replaceContentController(
-        quill.QuillController(
-          document: document,
-          selection: TextSelection.collapsed(offset: caret),
+        editor.DiaryEditorController(
+          document: body,
+          selection: editor.diaryEditorSelectionAtOffset(body, caret),
         ),
       );
     });

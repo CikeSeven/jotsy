@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_html.dart';
 import 'journal_import_joplin_archive.dart';
 import 'journal_import_markdown.dart';
@@ -131,7 +131,7 @@ JournalImportParseResult parseJoplinExport(
       );
     }
 
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     final body = note['body'] ?? '';
     if (note['markup_language'] == '2') {
       JournalHtmlConverter(

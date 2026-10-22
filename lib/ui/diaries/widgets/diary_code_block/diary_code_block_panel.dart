@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_code_block_editing.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_code_language_tracker.dart';
-import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_newline.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_editing.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_language_tracker.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_language.dart';
 import 'package:node_diary/ui/diaries/providers/diary_code_block_style_provider.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_code_block/diary_code_language_chips.dart';
@@ -45,7 +45,7 @@ const double kDiaryCodeBlockPanelHeight =
 ///   退出与转为正文改写正文后经 [onClose] 收起（从「更多」打开的回到
 ///   「更多」，由工具栏决定）；
 /// - 自动识别开关读 [diaryCodeBlockStyleProvider]，识别结果读同一控制器的
-///   [DiaryCodeLanguageTracker]（与正文高亮同一份），两者变化时只重建选项区；
+///   [DiaryBlockLanguageTracker]（与正文高亮同一份），两者变化时只重建选项区；
 /// - 不走路由、对话框或底部面板，按钮也不请求焦点：那些都会抢走正文焦点、
 ///   收起键盘，而工具栏跟着键盘显示，会连同面板一起消失。
 class DiaryCodeBlockPanel extends ConsumerWidget {
@@ -56,7 +56,7 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
     required this.onClose,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
   final double bodyHeight;
   final VoidCallback onClose;
 
@@ -65,7 +65,7 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
     final autoDetect = ref.watch(
       diaryCodeBlockStyleProvider.select((style) => style.autoDetect),
     );
-    final tracker = DiaryCodeLanguageTracker.of(controller);
+    final tracker = DiaryBlockLanguageTracker.of(controller);
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -113,7 +113,7 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
   Widget _buildChips(
     BuildContext context,
     bool autoDetect,
-    DiaryCodeLanguageTracker tracker,
+    DiaryBlockLanguageTracker tracker,
   ) {
     final l10n = context.l10n;
     final blocks = _touchedBlocks();
@@ -121,7 +121,7 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
     final choices = blocks
         .map(
           (block) => DiaryCodeLanguageChoice.fromAttributeValue(
-            block.style.attributes[quill.Attribute.codeBlock.key]?.value,
+            block.attributes['language'],
           ),
         )
         .toSet();
@@ -231,10 +231,7 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
 
   /// 复制光标所在的代码块（选区跨块时取第一块），面板保持打开。
   Future<void> _copy(BuildContext context) async {
-    final selection = controller.selection;
-    final block =
-        diaryCodeBlockAt(controller.document, selection.extentOffset) ??
-        _touchedBlocks().firstOrNull;
+    final block = _touchedBlocks().firstOrNull;
     if (block == null) return;
     await copyDiaryCodeBlock(block);
     if (!context.mounted) return;
@@ -248,12 +245,5 @@ class DiaryCodeBlockPanel extends ConsumerWidget {
     );
   }
 
-  List<quill.Block> _touchedBlocks() {
-    final selection = controller.selection;
-    return diaryCodeBlocksInRange(
-      controller.document,
-      selection.start,
-      selection.end,
-    );
-  }
+  List<editor.Node> _touchedBlocks() => selectedDiaryCodeBlocks(controller);
 }

@@ -1,12 +1,12 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/app_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -53,7 +53,7 @@ void main() {
           locale: const Locale('en'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: Builder(
@@ -75,9 +75,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  quill.QuillController contentController(WidgetTester tester) => tester
-      .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
-      .controller;
+  DiaryEditorController contentController(WidgetTester tester) =>
+      tester.widget<DiaryEditor>(find.byType(DiaryEditor)).controller;
 
   Future<DiaryWithTags> storedDiary(WidgetTester tester) async => (await tester
       .runAsync(() => database.getDiaryWithTagsByDiaryId(diaryId)))!;
@@ -106,7 +105,7 @@ void main() {
           'New body',
           const TextSelection.collapsed(offset: 8),
         );
-        content.formatText(0, 3, quill.Attribute.bold);
+        content.formatText(0, 3, const MapEntry('bold', true));
         await tester.pump(const Duration(milliseconds: 600));
 
         final saved = await storedDiary(tester);

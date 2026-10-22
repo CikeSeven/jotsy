@@ -1,6 +1,6 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_saved_colors.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
@@ -59,7 +59,7 @@ void main() {
 
   testWidgets('the default swatch clears the text color', (tester) async {
     final controller = colorPanelController();
-    controller.formatSelection(const quill.ColorAttribute('#FF3B7BE8'));
+    controller.formatSelection(const MapEntry('font_color', '#FF3B7BE8'));
     final harness = await pumpColorPanel(tester, controller: controller);
     await openTextColorPanel(tester);
 
@@ -102,7 +102,7 @@ void main() {
     // 两种目标的面板一样高。
     final controller = colorPanelController('abcdef');
     for (var i = 0; i < 5; i++) {
-      controller.formatText(i, 1, quill.ColorAttribute('#FF12345${i + 1}'));
+      controller.formatText(i, 1, MapEntry('font_color', '#FF12345${i + 1}'));
     }
     final harness = await pumpColorPanel(
       tester,

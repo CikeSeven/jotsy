@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show TextSelection;
-import 'package:flutter_quill/flutter_quill.dart' as quill;
-import 'package:flutter_quill/quill_delta.dart';
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import 'diary_editor_controller.dart';
+import 'diary_editor_insert.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/core/services/diary_media_storage_service.dart';
 import 'package:node_diary/core/services/diary_video_gallery_service.dart';
@@ -42,7 +42,7 @@ class DiaryMediaImportController extends ChangeNotifier {
   /// [picker] 替换本次的文件来源（如“这天拍的照片”已在页面里选好），
   /// 复制、插入、取消与失败回滚仍走同一条链路。
   Future<DiaryMediaImportOutcome> pickAndInsert({
-    required quill.QuillController controller,
+    required DiaryEditorController controller,
     required DiaryMediaKind kind,
     required bool Function() isCurrent,
     DiaryMediaPicker? picker,
@@ -52,27 +52,50 @@ class DiaryMediaImportController extends ChangeNotifier {
     if (kIsWeb) return DiaryMediaImportOutcome.unsupported;
     final generation = ++_generation;
     final document = controller.document;
-    var selection = controller.selection;
+    var selection = diaryEditorInsertionSelection(controller);
+    final anchors = [
+      _MediaAnchor(
+        document.nodeAtPath(selection.start.path)!,
+        selection.start.offset,
+      ),
+      _MediaAnchor(
+        document.nodeAtPath(selection.end.path)!,
+        selection.end.offset,
+      ),
+    ];
+    var anchorValid = true;
     bool canCommit() =>
         !_disposed &&
         generation == _generation &&
+        anchorValid &&
         isCurrent() &&
         identical(controller.document, document);
 
-    // 选择器打开及复制期间可能发生正文变更，让锚点随 Delta 移动，避免使用
-    // 打开系统选择器之前已经过时的字符偏移。提交自身的变更前取消监听。
-    final subscription = document.changes.listen((change) {
-      if (selection.isValid) {
-        selection = selection.copyWith(
-          baseOffset: change.change.transformPosition(selection.baseOffset),
-          extentOffset: change.change.transformPosition(selection.extentOffset),
-        );
+    // 保存“指向内容的锚点”，而不是追随任意后台事务的 afterSelection。
+    // 修改段前文字时按原生 Delta diff 移动偏移；段落移动时按节点 id 追踪。
+    // 锚点所在块被删除就取消导入，不能误插到替补该路径的另一段里。
+    final subscription = controller.state.transactionStream.listen((event) {
+      if (event.$1 != af.TransactionTime.after) return;
+      final nodes = {
+        for (final node in walkDiaryEditorNodes(document)) node.id: node,
+      };
+      for (final anchor in anchors) {
+        final node = nodes[anchor.node.id];
+        if (node == null) {
+          anchorValid = false;
+          return;
+        }
+        anchor.follow(node);
       }
+      selection = af.Selection(
+        start: anchors[0].position,
+        end: anchors[1].position,
+      );
     });
     final imported = <DiaryFileAttachment>[];
     List<PlatformFile>? files;
-    Delta? previousContent;
-    TextSelection? previousSelection;
+    String? previousContent;
+    af.Selection? previousSelection;
     _activeKind = kind;
     notifyListeners();
     try {
@@ -88,7 +111,7 @@ class DiaryMediaImportController extends ChangeNotifier {
       }
       await subscription.cancel();
       if (!canCommit()) return DiaryMediaImportOutcome.cancelled;
-      previousContent = document.toDelta();
+      previousContent = controller.contentJson;
       previousSelection = controller.selection;
       if (kind == DiaryMediaKind.image) {
         insertDiaryImages(
@@ -103,8 +126,15 @@ class DiaryMediaImportController extends ChangeNotifier {
           embeds: [
             for (final file in imported)
               kind == DiaryMediaKind.video
-                  ? quill.BlockEmbed.video(file.path)
-                  : quill.BlockEmbed(diaryAttachmentEmbedType, file.encode()),
+                  ? af.Node(type: 'video', attributes: {'url': file.path})
+                  : af.Node(
+                      type: diaryAttachmentEmbedType,
+                      attributes: {
+                        'path': file.path,
+                        if (file.name != null) 'name': file.name,
+                        if (file.sizeBytes != null) 'sizeBytes': file.sizeBytes,
+                      },
+                    ),
           ],
         );
       }
@@ -113,10 +143,9 @@ class DiaryMediaImportController extends ChangeNotifier {
     } catch (error, stackTrace) {
       final current = canCommit();
       if (previousContent != null && current) {
-        controller.document = quill.Document.fromDelta(previousContent);
-        controller.updateSelection(
-          previousSelection!,
-          quill.ChangeSource.local,
+        controller.restoreContent(
+          previousContent,
+          selection: previousSelection,
         );
       }
       debugPrint('Diary media import failed: $error\n$stackTrace');
@@ -181,5 +210,33 @@ class DiaryMediaImportController extends ChangeNotifier {
     _disposed = true;
     cancel();
     super.dispose();
+  }
+}
+
+class _MediaAnchor {
+  _MediaAnchor(this.node, this.offset) : delta = node.delta;
+  af.Node node;
+  int offset;
+  af.Delta? delta;
+  af.Position get position => af.Position(path: node.path, offset: offset);
+  void follow(af.Node next) {
+    final updated = next.delta;
+    if (delta != null && updated != null) {
+      var cursor = 0;
+      var shift = 0;
+      for (final op in delta!.diff(updated)) {
+        if (op is af.TextInsert) {
+          if (cursor <= offset) shift += op.length;
+        } else if (op is af.TextDelete) {
+          if (cursor < offset) shift -= op.length.clamp(0, offset - cursor);
+          cursor += op.length;
+        } else {
+          cursor += op.length;
+        }
+      }
+      offset = (offset + shift).clamp(0, updated.length);
+    }
+    node = next;
+    delta = updated;
   }
 }

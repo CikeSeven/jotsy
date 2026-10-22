@@ -1,8 +1,9 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:async';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -17,16 +18,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../support/expressive_test_theme.dart';
 
 /// 正文段落实际使用的 Quill 样式。
-quill.DefaultTextBlockStyle _paragraph(WidgetTester tester) => tester
-    .widget<quill.QuillEditor>(find.byType(quill.QuillEditor))
-    .config
-    .customStyles!
-    .paragraph!;
+({TextStyle style, ({double bottom}) verticalSpacing}) _paragraph(
+  WidgetTester tester,
+) {
+  final editor = tester.widget<DiaryEditor>(find.byType(DiaryEditor).first);
+  return (
+    style: editor.controller.state.editorStyle.textStyleConfiguration.text,
+    verticalSpacing: (bottom: editor.appearance.typography.paragraphSpacing),
+  );
+}
 
 /// 正文基础样式必须来自主题，而不是 MaterialApp 的兜底样式（红色等宽粗体，
 /// 页面 State 的 context 位于 Scaffold 之上时会取到它）。
 void _expectThemeBodyStyle(WidgetTester tester, TextStyle style) {
-  final theme = Theme.of(tester.element(find.byType(quill.QuillEditor)));
+  final theme = Theme.of(tester.element(find.byType(DiaryEditor)));
   expect(style.debugLabel, isNot(contains('fallback style')));
   expect(style.color, theme.textTheme.bodyMedium!.color);
   expect(style.fontWeight, isNot(FontWeight.w900));
@@ -60,7 +65,7 @@ void main() {
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: home,

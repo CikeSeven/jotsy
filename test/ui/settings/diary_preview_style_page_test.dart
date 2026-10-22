@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -33,7 +33,7 @@ Widget _app(SettingsService settings, Widget home, {AppDatabase? database}) {
       locale: const Locale('zh'),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         ...AppLocalizations.localizationsDelegates,
-        quill.FlutterQuillLocalizations.delegate,
+        quill.AppFlowyEditorLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       home: home,
@@ -61,7 +61,7 @@ Future<(SettingsService, AppLocalizations)> _pumpPage(
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: DiaryPreviewStylePage(settingsService: settings),

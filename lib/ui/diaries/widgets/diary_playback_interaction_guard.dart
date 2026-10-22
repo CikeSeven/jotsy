@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as af;
 
 /// 播放、拖动和弹窗期间临时释放编辑焦点，手势结束后恢复正文获取焦点的能力。
 /// 不清空选区；恢复 canRequestFocus 不会主动把键盘重新拉起。
@@ -17,24 +17,24 @@ class _DiaryPlaybackInteractionGuardState
   final _pointers = <int>{};
   FocusNode? _editorFocus;
   bool _couldRequestFocus = false;
-  quill.QuillController? _editorController;
-  TextSelection? _selection;
+  af.EditorState? _editorController;
+  af.Selection? _selection;
 
   void _onDown(PointerDownEvent event) {
     _pointers.add(event.pointer);
     if (_editorFocus != null) return;
-    final editor = context.findAncestorWidgetOfExactType<quill.QuillEditor>();
-    if (editor == null) return;
+    final editor = context.findAncestorWidgetOfExactType<af.AppFlowyEditor>();
+    if (editor == null || editor.focusNode == null) return;
     _editorFocus = editor.focusNode;
-    _editorController = editor.controller;
-    _selection = editor.controller.selection;
-    _couldRequestFocus = editor.focusNode.canRequestFocus;
-    editor.focusNode.canRequestFocus = false;
+    _editorController = editor.editorState;
+    _selection = editor.editorState.selection;
+    _couldRequestFocus = editor.focusNode!.canRequestFocus;
+    editor.focusNode!.canRequestFocus = false;
   }
 
   void _onEnd(PointerEvent event) {
     _pointers.remove(event.pointer);
-    // Quill 的透明识别器会在子控件之后收到 tapUp，需等整帧完成再恢复焦点。
+    // AppFlowy 的透明识别器会在子控件之后收到 tapUp，需等整帧完成再恢复焦点。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _pointers.isEmpty) _restore();
     });
@@ -48,17 +48,17 @@ class _DiaryPlaybackInteractionGuardState
     final selection = _selection;
     _selection = null;
     if (node?.context?.mounted ?? false) {
-      // 连续播放/暂停会被 Quill 当作双击选择词语。保留 tapDown 以维持其
+      // 连续播放/暂停会被 AppFlowy 当作双击选择词语。保留 tapDown 以维持其
       // 内部手势状态，再在同一帧末恢复原选区，防止播放器改变正文光标。
       if (restoreSelection &&
           controller != null &&
           selection != null &&
           controller.selection != selection) {
-        controller.ignoreFocusOnTextChange = true;
-        try {
-          controller.updateSelection(selection, quill.ChangeSource.local);
-        } finally {
-          controller.ignoreFocusOnTextChange = false;
+        if (!controller.isDisposed) {
+          controller.updateSelectionWithReason(
+            selection,
+            extraInfo: {af.selectionExtraInfoDoNotAttachTextService: true},
+          );
         }
       }
       node!.canRequestFocus = _couldRequestFocus;

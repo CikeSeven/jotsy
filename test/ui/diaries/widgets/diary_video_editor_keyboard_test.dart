@@ -1,13 +1,11 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/services/video_export_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_video_embed_builder.dart';
 
 import '../../../support/expressive_test_theme.dart';
 import '../../../support/fake_video_player.dart';
@@ -19,7 +17,7 @@ void main() {
       (tester) async {
         final focus = FocusNode();
         final player = FakeVideoPlayer();
-        final controller = quill.QuillController(
+        final controller = DiaryEditorController(
           document: decodeDiaryContentToDocument(
             jsonEncode([
               {
@@ -28,7 +26,7 @@ void main() {
               {'insert': '\n正文继续输入\n'},
             ]),
           ),
-          selection: const TextSelection.collapsed(offset: 2),
+          selection: quill.Selection.single(path: [1], startOffset: 0),
         );
         addTearDown(controller.dispose);
         addTearDown(focus.dispose);
@@ -39,29 +37,19 @@ void main() {
             locale: const Locale('zh'),
             localizationsDelegates: const [
               ...AppLocalizations.localizationsDelegates,
-              quill.FlutterQuillLocalizations.delegate,
+              quill.AppFlowyEditorLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: Center(
                 child: SizedBox(
                   width: 320,
-                  child: quill.QuillEditor.basic(
-                    focusNode: focus,
+                  child: nativeTestEditor(
                     controller: controller,
-                    config: quill.QuillEditorConfig(
-                      scrollable: false,
-                      onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-                        controller,
-                        getPosition(details.globalPosition),
-                      ),
-                      embedBuilders: [
-                        DiaryVideoEmbedBuilder(
-                          playerFactory: (_) => player,
-                          exportService: service,
-                        ),
-                      ],
-                    ),
+                    focusNode: focus,
+                    shrinkWrap: true,
+                    videoPlayerFactory: (_) => player,
+                    videoExportService: service,
                   ),
                 ),
               ),
@@ -107,7 +95,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.testTextInput.isVisible, isFalse);
         expect(focus.hasFocus, isFalse);
-        final editorRect = tester.getRect(find.byType(quill.QuillEditor));
+        final editorRect = tester.getRect(find.byType(DiaryEditor));
         await tester.tapAt(
           Offset(editorRect.left + 30, editorRect.bottom - 14),
         );
@@ -119,40 +107,6 @@ void main() {
       },
     );
   }
-
-  test(
-    'video tap guard excludes body and empty lines immediately after a video',
-    () {
-      final controller = quill.QuillController(
-        document: decodeDiaryContentToDocument(
-          jsonEncode([
-            {
-              'insert': {'video': '/video.mp4'},
-            },
-            {'insert': '\n\ntext\n'},
-          ]),
-        ),
-        selection: const TextSelection.collapsed(offset: 0),
-      );
-      addTearDown(controller.dispose);
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 0)),
-        isTrue,
-      );
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 1)),
-        isTrue,
-      );
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 2)),
-        isFalse,
-      );
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 3)),
-        isFalse,
-      );
-    },
-  );
 }
 
 class _KeyboardCheckExportService extends VideoExportService {

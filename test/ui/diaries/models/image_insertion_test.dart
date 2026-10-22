@@ -1,5 +1,5 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/image_insertion.dart';
 
@@ -8,7 +8,7 @@ void main() {
     test(
       'does nothing when imagePaths is empty or contains only whitespace',
       () {
-        final controller = quill.QuillController.basic();
+        final controller = DiaryEditorController();
         addTearDown(controller.dispose);
 
         insertDiaryImages(controller: controller, imagePaths: <String>[]);
@@ -25,7 +25,7 @@ void main() {
     test(
       'inserts single image into empty document with newline and cursor position',
       () {
-        final controller = quill.QuillController.basic();
+        final controller = DiaryEditorController();
         addTearDown(controller.dispose);
 
         insertDiaryImages(
@@ -46,14 +46,14 @@ void main() {
           isTrue,
         );
         // Cursor should be positioned right after the image embed and its newline
-        expect(controller.selection.baseOffset, 2);
+        expect(controller.flatSelection.baseOffset, 2);
       },
     );
 
     test(
       'inserts multiple images in sequential order, each on its own line',
       () {
-        final controller = quill.QuillController.basic();
+        final controller = DiaryEditorController();
         addTearDown(controller.dispose);
 
         final images = <String>[
@@ -77,19 +77,19 @@ void main() {
 
         expect(insertedImages, images);
         // Each image contributes 2 offsets (embed + newline)
-        expect(controller.selection.baseOffset, images.length * 2);
+        expect(controller.flatSelection.baseOffset, images.length * 2);
       },
     );
 
     test('breaks line first if cursor is preceded by non-newline text', () {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
 
-      controller.document.insert(0, 'Hello world');
+      controller.replaceText(0, 0, 'Hello world', null);
       // Place cursor at the end of 'Hello world' (offset 11)
       controller.updateSelection(
         const TextSelection.collapsed(offset: 11),
-        quill.ChangeSource.local,
+        'local',
       );
 
       insertDiaryImages(
@@ -103,16 +103,16 @@ void main() {
     });
 
     test('replaces selected text range before inserting images', () {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
 
-      controller.document.insert(0, 'Start [REPLACE_ME] End');
+      controller.replaceText(0, 0, 'Start [REPLACE_ME] End', null);
       // Select '[REPLACE_ME]'
       const start = 6;
       const end = 18;
       controller.updateSelection(
         const TextSelection(baseOffset: start, extentOffset: end),
-        quill.ChangeSource.local,
+        'local',
       );
 
       insertDiaryImages(

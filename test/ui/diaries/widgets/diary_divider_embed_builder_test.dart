@@ -1,8 +1,8 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 
 import '../../../support/expressive_test_theme.dart';
 
@@ -34,9 +34,9 @@ void main() {
       testWidgets('imported formats render ($brightness, readOnly=$readOnly)', (
         tester,
       ) async {
-        final controller = quill.QuillController(
-          document: quill.Document.fromJson(_importedOps),
-          selection: const TextSelection.collapsed(offset: 0),
+        final controller = DiaryEditorController(
+          document: documentFromLegacyDelta(_importedOps),
+          selection: quill.Selection.single(path: [0], startOffset: 0),
           readOnly: readOnly,
         );
         addTearDown(controller.dispose);
@@ -45,17 +45,10 @@ void main() {
             theme: expressiveTestTheme(brightness),
             localizationsDelegates: const [
               ...AppLocalizations.localizationsDelegates,
-              quill.FlutterQuillLocalizations.delegate,
+              quill.AppFlowyEditorLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: quill.QuillEditor.basic(
-                controller: controller,
-                config: quill.QuillEditorConfig(
-                  embedBuilders: buildDiaryQuillEmbedBuilders(),
-                ),
-              ),
-            ),
+            home: Scaffold(body: nativeTestEditor(controller: controller)),
           ),
         );
         await tester.pump();

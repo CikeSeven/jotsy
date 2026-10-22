@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show Brightness, Color, ColorScheme;
-import 'package:flutter_quill/quill_delta.dart';
+import 'package:dart_quill_delta/dart_quill_delta.dart';
 
 import '../../../core/database/code_block_codec.dart';
 import '../models/diary_code_block/diary_code_block_style.dart';
@@ -198,9 +198,7 @@ class DiaryExportCodeTheme {
   }
 
   /// PDF 用：把正文 Delta 里代码行的文字按着色片段拆开，记号片段写上纸面
-  /// 配色的不透明 `color`、注释另加 `italic`，由 flutter_quill_to_pdf 按
-  /// 行内样式渲染（插件自带的高亮不跟随用户的配色，且会把 highlight 的全部
-  /// 语言都跑一遍）。用户手动设过文字色的片段保留原色、只加注释的斜体，
+  /// 配色的不透明 `color`、注释另加 `italic`，交给 PDF 块写出器按行内样式渲染。用户手动设过文字色的片段保留原色、只加注释的斜体，
   /// 与应用里一致。
   ///
   /// 按行拆开时以换行所在的 op 的属性为行属性（Quill 把块属性挂在换行上）；

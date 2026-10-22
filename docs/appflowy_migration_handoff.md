@@ -1,138 +1,69 @@
-# 编辑器迁移到 AppFlowy Editor：交接文档
+# 编辑器迁移到 AppFlowy Editor：交接与验收
 
-更新时间：2026-10-22。状态：**第 2 阶段已完成，继续推进全部阶段；未装机**。
+更新时间：2026-10-22。状态：**全部迁移阶段已实现并通过本地自动化检查；未装机**。
 
-## 1. 目标与已定决策
+## 1. 已定决策与兼容边界
 
-- **目标**：日记正文编辑器从 flutter_quill 换成 AppFlowy Editor，以获得四项能力：
-  - Markdown 快捷输入（手机软键盘可触发）
-  - `/` 命令菜单
-  - 拖动段落
-  - 嵌套块
-- **用户决定**：用 AppFlowy Editor，不考虑复杂度。
-- **历史**：2026-03-09 项目曾从 appflowy_editor 6.2.0 换到 Quill（c85a2ad）。之前两次提交在调“编辑页滚动”（69d9e9b）和“图片选中”（1c621ca）。用户已不记得当时换掉的原因，表示不用管。原型阶段仍应重点验证滚动、光标跟随与图片选中。
-- **依赖**：`appflowy_editor` 用 git 依赖，固定到 main 的 `01eccc6ee36bd07698bd80915289fe7070478cd2`（2026-08-06）。
-  - 原因：pub 上的 6.2.0 在 Flutter ≥ 3.44 编译失败（`TextInputClient.onFocusReceived`，上游 issue #1204），修复只在 main 上。
-  - 项目 Flutter 为 3.47.5，已验证能编译并跑通 widget 测试。
-  - 许可证 MPL-2.0 / AGPL-3.0 双许可，与本项目 GPL-3.0 兼容。
-- **存储格式（已定）**：正文改存 AppFlowy 的 `Document.toJson()`，形如 `{"document":{"type":"page","children":[…]}}`。
-  - 旧的 Quill Delta 与更早的旧版节点文档，读取时统一转换。
-  - 不做一次性数据库迁移，按需转换：读任何格式都能打开，写一律写块文档。
+- 目标：彻底替换 flutter_quill，获得手机软键盘 Markdown 输入、`/` 命令、段落拖动与嵌套块。用户已明确本次完成全部阶段。
+- AppFlowy 使用固定 git 提交 `01eccc6ee36bd07698bd80915289fe7070478cd2`。pub 的 6.2.0 缺少 Flutter ≥ 3.44 的输入接口修复（上游 #1204）；项目 Flutter 版本仍只取 `.github/actions/setup-flutter/action.yml`。
+- 正文写 `Document.toJson()` 同构的 `{"document":{"type":"page","children":[…]}}`，节点 id 不落盘。没有一次性数据库 schema 迁移；历史 Delta、旧节点、纯文本在读取时兼容转换，写入统一块文档。
+- 已删除 flutter_quill、flutter_quill_extensions、flutter_quill_to_pdf 及其原生桥接依赖。`dart_quill_delta` 仅作为 PDF 准备与历史 Delta 的纯数据处理库，不提供编辑器或平台插件。
+- **降级风险仍存在**：基于迁移前 main 的包无法读新正文格式，读出空正文后再次编辑可能覆盖内容。装机前应先保留完整备份；尚未给旧 main 合入块文档只读兼容补丁。本次没有安装或改动设备数据。
 
-## 2. 工作树
+## 2. 各阶段结果
 
-- 路径：`.claude/worktrees/appflowy-editor`
-- 分支：`worktree-appflowy-editor`，基于 `origin/main` dd33df7
-- 已执行过 `flutter pub get`
+### 存储与媒体
 
-## 3. 已完成（全部未提交）
+- `core/database/diary_blocks/`：schema、兼容转换、纯文本、遍历、共用树构建器和媒体扫描/路径重绑。未知旧嵌入保存在 `quill_embed.data.value`，避免丢失。
+- `content_codec.dart` 只创建原生 AppFlowy Document，不再创建旧编辑文档。视频、附件等原生块无需旧编辑器的尾部换行修正。
+- 卡片封面/媒体概况、预览看图来源与探索页统一使用媒体工具；备份覆盖/合并/草稿恢复统一解码后重绑块数据，保留未知附件 metadata、录音波形、缺失路径与远程来源。
+- 智能日记本媒体 SQL 同时识别新块类型和旧 Delta；媒体清理继续使用原有保守引用扫描，不另写删除路径。
+- 修复历史代码行夹媒体时的丢失边界，并补转换回归。
 
-| 文件 | 内容 |
-|---|---|
-| `pubspec.yaml` / `pubspec.lock` | 加 appflowy_editor git 依赖（带注释说明为何固定提交） |
-| `macos/Flutter/GeneratedPluginRegistrant.swift` | pub get 自动生成的插件注册变更 |
-| `lib/core/database/diary_blocks/diary_blocks_schema.dart` | 块类型、data 键、行内属性键常量；Quill ↔ 块文档行内键映射表 |
-| `lib/core/database/diary_blocks/diary_blocks_from_delta.dart` | `diaryBlocksFromQuillOps`：Quill Delta → 块文档 |
-| `lib/core/database/diary_blocks/diary_blocks_to_delta.dart` | `diaryBlocksToQuillOps`：块文档 → 平铺 Delta 投影（嵌套写成 `indent`） |
-| `lib/core/database/diary_blocks/diary_blocks_walk.dart` | 容错读取节点字段、先序遍历（带深度） |
-| `lib/core/database/diary_blocks/diary_blocks_codec.dart` | 正文存储内容与块文档互转、纯文本、可见内容 / 嵌入判断 |
-| `lib/core/database/audio_embed_codec.dart` | `DiaryAudioAttachment.tryDecode` 改为同时接受 JSON 字符串和 Map（块文档的 `data`）。**刚改完，还没跑测试** |
-| `test/core/database/diary_blocks/diary_blocks_conversion_test.dart` | 13 个测试，**全部通过** |
-| `test/spike/appflowy_compile_test.dart` | 编译验证用的临时测试，**合并前删除** |
+### 编辑器、只读与交互
 
-`diaryBlocksFromQuillOps` 的转换规则：
+- 渲染统一为 `widgets/diary_editor/DiaryEditor`，原生会话/选区/事务在 `controllers/diary_editor_controller.dart`，插入、拖动和剪贴板动作同在 controllers。页面继续复用原草稿、自动保存、发布与元数据流程。
+- 编辑页标题、模板建议和当天照片放入原生 header，正文使用虚拟滚动；`DiaryEditorViewport` 按每帧实际光标/视口补足工具栏避让。原生 widget 缓存与页头/页尾独立槽避免键盘动画重建整篇正文。
+- 只读预览、发布预览、模板编辑和设置预览全部使用同一组件；阅读正文测量完整高度，纵向拖动转交外层页面，保留整页滚动。待办仍只经 `updateDiaryContent` 保存。
+- 图片沿用长图折叠/分片、按比例解码、共享元素与统一看图入口；视频、音频、附件复用既有播放器和卡片。图片缩放改用应用自己的面板，一次确认一次事务。
+- 工具栏保留顺序/隐藏偏好、颜色与代码卡片内面板、当前时间、链接、媒体和录音。颜色写 `font_color` / `bg_color`、大写 `#AARRGGBB`；焦点交接保留折叠光标的后续输入格式。
+- 手机 `/` 使用可搜索底部面板（上游直接忽略手机平台）；桌面复用上游选区菜单并按主题配置。执行命令清除触发字符，取消保留斜杠。
+- 每块编辑态有 24dp 把手沟槽，长按拖动整棵子树；落点为主题线，禁止拖入自身后代，点击把手可上移/下移。缩进/取消缩进改变真实父子关系，均支持撤销。
+- 实际手势测试修复了 Tooltip 长按抢手势、把手位于命中范围外和拖动落点锚点的问题。
+- 代码块沿用配色、高亮与 22 种语言的有界识别。标题/行号包在原生可选文字外；回车允许空行并自动缩进，连续第二个块尾空行退出；代码里的 Markdown 标记保留原文。
+- 原生控制器按挂载视图数量延迟释放底层 notifier，修复切换模板/翻页时旧组件尚未卸载的生命周期异常。
 
-- 行级属性的对应：
-  - `header` → `heading`（level）
-  - `list` → `bulleted_list` / `numbered_list` / `todo_list`（checked / unchecked 写进 `checked`）
-  - `blockquote` → `quote`
-  - 其他行 → `paragraph`
-  - `align` 原样保留
-- 连续且语言相同的 `code-block` 行合并为一个 `code` 块。语言写在 `data.language`；值为 `true` 时不写，表示自动识别。
-- `indent` 换算成子块：
-  - 不跳级；
-  - 只挂到能收子块的类型下（paragraph、三种列表、quote），标题、代码块和媒体不收子块。
-- 嵌入各自成块：
-  - `image`：data 为 url，另可带 width / height / style / align
-  - `video`：data 为 url
-  - `audio`：data 为 path / durationMs / name / waveform
-  - `attachment`：保留来源的全部字段；旧版 `file` 也转成它
-  - `divider`
-  - 认不出的嵌入存成 `quill_embed`，原值放在 `data.value`
-- 文字中间夹嵌入的行，拆成前、后两个块。
-- 输出的键序与编辑器 `Node.toJson` 一致（type、children、data）。
+### 模板、导入、导出与剪贴板
 
-测试已覆盖：
+- 模板正文改为块树，代码/载荷版本 v2，兼容读 v1 Delta；白名单按允许的节点与属性重建，保留嵌套，剔除媒体、额外路径 metadata 与本地文件链接。变量逐个原生文字片段替换，不再摊平子树。
+- 内置模板仍从 ARB 与块描述生成，用户模板仍用原 Drift 表和既有备份/合并策略；模板偏好没有新增设置键。
+- `JournalBlockWriter`（`journal_import_block_writer.dart`）直接组装原生块树，复用样式、媒体映射与树构建规则；第三方各解析器仍走原只读预检与备份写入路径。
+- 各导出格式/分享直接读取原生树和深度；PDF 使用 pdf 库按共用块模型绘制，保留标题、行内格式、代码颜色、字体、媒体说明、成书目录与书签。
+- 图片系统剪贴板由 pasteboard 接管。应用内复制的树快照只在内存保留，并核对系统文字/图片摘要；新复制的外部内容不会误用旧快照。系统图片粘贴复制进托管目录。
+- AGENTS.md、DESIGN.md、目录说明与源码约束测试已更新到原生组件。
 
-- 往返逐 op 一致：行内格式、标题与对齐、嵌套列表、多语言代码块、各类媒体
-- 规整：嵌入拆行、缩进不跳级
-- 四代存储格式都能解码
-- 纯文本镜像与 Quill `toPlainText` 一致
-- AppFlowy `Document.fromJson` 读入后 `toJson()` 逐字相同
+## 3. 验证与构建
 
-## 4. 第 2 阶段已完成：存储切换
+- 存储切换提交 `0131db6`：全量 3,521 项通过、2 项按原设定跳过（手动性能微基准）；后续原生迁移已持续运行专项与全量回归，最终结果见本节末项。
+- 新增/迁移测试覆盖原生保存/重开、四代格式、媒体备份、模板 v1/v2、嵌套变量与白名单、IME Markdown/斜杠、真实长按拖动/撤销、选区/颜色/光标、播放器键盘、只读滚动、待办翻页补存、自动保存、PDF 与剪贴板。
+- arm64 release 已构建通过（与 CI 同类的一次性验证签名，未装机）。上游 keyboard_height_plugin 固定 SDK 31，现只针对该插件跟随应用 compileSdk，不新增 Flutter 版本定义。
+- 本机 Maven 下载需要 Java IPv4，验证用 Gradle JVM 参数 `-Djava.net.preferIPv4Stack=true`，没有改项目网络地址或仓库配置。
+- `adb devices -l` 没有设备，因此中文输入法/麦克风/真实播放设备验收仍未执行。不能把 widget 测试视作这些实机项目的完成记录。
+- 最终检查：全量 `flutter test --no-pub` **3,471 通过、2 跳过**；`dart format --set-exit-if-changed lib test integration_test tool` 零改动；`flutter analyze --no-pub` 无问题；ARB 检查通过（2 种语言、2,298 条文案）；重跑 `flutter gen-l10n` / build_runner 后生成文件无额外变化；最终 `flutter build apk --release --target-platform android-arm64` 成功（53.9MB）。临时验证签名配置随后移除。
 
-- `content_codec.dart` 统一经块文档解码、投影到 Quill；保存一律输出块文档。纯文本入口改为 `diaryContentToPlainText`。
-- `diary_blocks_media.dart` 统一媒体扫描、图片顺序与路径重绑，卡片、预览、探索、备份均已接入。录音 / 文件路径提取已移入该文件。
-- 备份恢复先解码再重绑块数据，保留附件额外 metadata、录音波形与缺失 / 远程媒体引用；覆盖和合并均经原有暂存机制。
-- 导入写出器末尾输出块文档；智能日记本音频 SQL 同时识别块节点与旧 Delta。
-- 旧节点媒体转换保留 metadata，增加录音支持与坏字段容错；代码行夹媒体的边界已补回归，避免丢内容。
-- 单个嵌入的字段映射拆到 `diary_blocks_embed.dart`，行拆分 / 缩进转换仍在 `diary_blocks_from_delta.dart`。
-- 删除临时编译 spike；更新 ARB 以外的相关测试与 AGENTS.md 的存储规则。
-- 验证：全量 `flutter test` 3,521 项通过、2 项跳过（手动性能微基准）；随后代码行媒体修正的块文档 22 项测试通过。最终全量检查将在所有迁移完成后重跑。
-- 模板仍保持既有 Delta 白名单，旧数据库 schema 迁移未改，分别在后续阶段处理。
+## 4. 真机复现清单
 
-用户已明确本次范围：**继续全部阶段，直到彻底替换 Quill**。下一步是第 3 阶段。
+1. 在亮/暗主题新建：输入 `# `、`- `、`1. `、`[] `、引用、代码围栏与行内格式，确认软键盘可触发，撤销一步恢复。
+2. 输入 `/`，搜索并选择段落/列表/代码/媒体命令，再试取消；检查中文组字和键盘焦点。
+3. 长按段落把手拖到其他段落前后；把列表缩进成子块，拖动父块并撤销，确认子块和格式都保留。
+4. 长文末尾连续输入、点低处文字后弹键盘、展开更多/颜色/代码面板；光标应在浮层上方，调色或手动阅读滚动不拉回。
+5. 插入照片、长图、视频、录音和附件：检查选择、缩放、播放器/重命名不拉起正文键盘，查看大图与共享元素、复制/粘贴与撤销。
+6. 续写草稿、切后台、直接返回、发表、预览勾待办后立即翻走：检查补存、元数据和原归档/私密状态。
+7. 旧正文、旧备份、旧模板码、包含嵌套的新正文分别重开/备份恢复/导出；确认格式、路径、正文和子块一致。
 
-## 5. 后续阶段
+## 5. 后续维护参考
 
-1. **第 3 阶段：编辑器核心**
-   - 新建基于 AppFlowy 的编辑器组件，相当于现在的 `DiaryQuillStylesBuilder`：
-     - `EditorStyle` 由 `DiaryTextAppearance` 生成；
-     - 各类块的组件：段落、标题、列表、待办、引用、分隔线、图片（长图折叠、`boundedImageProvider`、点按菜单）、视频、录音、附件、代码块（高亮、标题栏、回车规则）。
-   - 替换编辑页 `edit_diary_page.dart`（1375 行）。
-   - 标题、模板建议条、“这天的照片”放进编辑器的 `header`，由 AppFlowy 管滚动，替代 `DiaryCaretFollowController`。
-2. **第 4 阶段：只读渲染**
-   - 用 `editable: false` 替换预览页、发布预览、模板编辑页、设置页里的各个预览。
-   - 预览页勾选待办：仍只经 `updateDiaryContent` 写库。
-3. **第 5 阶段：新功能与工具栏**
-   - Markdown 快捷输入：AppFlowy 自带，代码围栏、分隔线等需补充。
-   - `/` 菜单：用 AppFlowy 的 selection menu，样式改成 Expressive。
-   - 手机端拖动：AppFlowy 只提供桌面的拖放落点，需用 `blockWrapper` 自己做长按把手。
-   - 缩进 / 取消缩进（嵌套）。
-   - 颜色面板写 `font_color` / `bg_color`，值为大写 `#AARRGGBB`；AppFlowy 的 `tryToColor` 支持 `#` 开头。
-   - 代码块面板、链接、插入当前时间、录音、媒体导入。
-4. **第 6 阶段：其他模块直接读块文档**
-   - 导出块解析支持嵌套深度；分享、探索。
-   - 模板正文改为块文档，模板码升级到 v2 并兼容 v1。
-   - 导入写出器直接写块文档。
-5. **第 7 阶段：移除 Quill**
-   - PDF 导出现在依赖 `flutter_quill_to_pdf`：要么保留“投影成 Delta 再生成 PDF”，要么改写为自己的 PDF 写出器。
-   - 更新 AGENTS.md：目录树与大量 Quill 相关规则，例如代码块、颜色面板、光标跟随、`DiaryQuillStylesBuilder`。
-   - 更新 DESIGN.md 与源码检查类测试。
-
-规模参考：lib 里有 53 个文件直接 import flutter_quill（约 1.17 万行），约 51 个文件读写 Delta，61 个测试文件 import flutter_quill。
-
-## 6. 风险与注意
-
-- **降级读不了新格式（最重要）**
-  - 装了本分支的包之后，再装任何基于当前 main 的包，旧的解码器会把块文档当成“旧版节点文档”，读出空正文。用户若再编辑保存，内容会被覆盖。
-  - 本分支的包装机前必须先告诉用户。可选的缓解办法：先往 main 合一个小 PR，让现有解码器认识块文档（只读兼容）。
-- **AppFlowy 自身的问题**
-  - pub 已 10 个月没发版，会跟着 AppFlowy 主应用的 Flutter 版本走，以后升级 Flutter 可能再坏。
-  - 有未关闭的输入法问题（韩文、个别输入法字符顺序错乱）。中文输入法（搜狗、Gboard、小米）要在真机上测。
-- **AGENTS.md 规范仍然适用**：
-  - 提交署名只用 `CikeSeven <llyllydyx@163.com>`，提交说明和 PR 不加任何 Claude 署名；
-  - 改完代码跑 `dart format` 和 `flutter analyze`；
-  - 用 Conventional Commit。
-
-## 7. 参考位置
-
-- AppFlowy 源码：`~/.pub-cache/git/appflowy-editor-01eccc6ee36bd07698bd80915289fe7070478cd2/`
-  - 编辑器入口：`lib/src/editor/editor_component/service/editor.dart`
-  - 行内键：`lib/src/editor/block_component/rich_text/appflowy_rich_text_keys.dart`
-  - 输入法与快捷输入：`lib/src/editor/editor_component/service/ime/`、`lib/src/editor/editor_component/service/shortcuts/character/`
-  - 拖动示例：`example/lib/pages/drag_to_reorder_editor.dart`
-- 本项目：
-  - 现有正文编解码：`lib/core/database/content_codec.dart`、`legacy_content_codec.dart`
-  - 导出块模型：`lib/ui/diaries/export/diary_export_blocks.dart`
+- 工作树：`.claude/worktrees/appflowy-editor`，分支 `worktree-appflowy-editor`。
+- AppFlowy 源码：`~/.pub-cache/git/appflowy-editor-01eccc6ee36bd07698bd80915289fe7070478cd2/`。
+- 上游 IME 与快捷输入：`lib/src/editor/editor_component/service/ime/`、`service/shortcuts/character/`；未来升级重点复测中文组字、滚动、媒体点按、段落拖动和输入焦点。
+- 历史参考：项目 2026-03-09 曾从 AppFlowy 6.2.0 切换到 Quill（c85a2ad）；用户要求不再追究旧原因，但本轮已补滚动、选区与图片回归。

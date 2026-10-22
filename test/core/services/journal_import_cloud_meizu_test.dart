@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
 import 'package:node_diary/core/services/journal_import_cloud_meizu.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 
 import '../../support/fake_cloud_http.dart';
@@ -260,7 +260,7 @@ void main() {
 
       // 含未知区块的笔记照样导入，未知区块留下文字。
       final [first, second, third] = notes;
-      final unknown = JournalDeltaWriter();
+      final unknown = JournalBlockWriter();
       third.writeBody(unknown, (_) => null);
       expect(unknown.build().contentText, '未知');
       expect(provider.issues.skipped, {JournalSkipReason.encrypted: 1});
@@ -268,7 +268,7 @@ void main() {
       expect(first.folder, '工作');
       expect(first.attachments.single.reference, '/file/a1b2c3d4.png');
       expect(second.folder, isNull);
-      final writer = JournalDeltaWriter();
+      final writer = JournalBlockWriter();
       first.writeBody(writer, (id) => {'image': id});
       final content = writer.build();
       expect(

@@ -1,10 +1,9 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/core/database/file_embed_codec.dart';
 import 'package:node_diary/ui/diaries/models/media_insertion.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
@@ -19,12 +18,17 @@ void main() {
   test(
     'video-only content retains its block layout through repeated save and restore',
     () {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
       insertDiaryMediaBlocks(
         controller: controller,
         selection: controller.selection,
-        embeds: [quill.BlockEmbed.video('/documents/diary_videos/trip.mp4')],
+        embeds: [
+          quill.Node(
+            type: 'video',
+            attributes: {'url': '/documents/diary_videos/trip.mp4'},
+          ),
+        ],
       );
       final original = controller.document.toDelta().toJson();
       var content = encodeDiaryDocumentToJson(controller.document);
@@ -62,21 +66,30 @@ void main() {
   test(
     'multiple video and attachment blocks keep an editable trailing line',
     () {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
       insertDiaryMediaBlocks(
         controller: controller,
         selection: controller.selection,
         embeds: [
-          quill.BlockEmbed.video('/documents/diary_videos/first.mp4'),
-          quill.BlockEmbed(diaryAttachmentEmbedType, attachment.encode()),
-          quill.BlockEmbed.video('/documents/diary_videos/second.mp4'),
+          quill.Node(
+            type: 'video',
+            attributes: {'url': '/documents/diary_videos/first.mp4'},
+          ),
+          quill.Node(
+            type: 'attachment',
+            attributes: jsonDecode(attachment.encode()),
+          ),
+          quill.Node(
+            type: 'video',
+            attributes: {'url': '/documents/diary_videos/second.mp4'},
+          ),
         ],
       );
       final ops = controller.document.toDelta().toJson();
       expect(ops.where((op) => op['insert'] is Map), hasLength(3));
       expect(controller.document.toPlainText(), '\uFFFC\n\uFFFC\n\uFFFC\n\n');
-      expect(controller.selection.baseOffset, 6);
+      expect(controller.flatSelection.baseOffset, 6);
       controller.replaceText(6, 0, '继续写日记', null);
       expect(controller.document.toPlainText(), endsWith('继续写日记\n'));
     },
@@ -85,15 +98,21 @@ void main() {
   test(
     'media inserted into a selected paragraph preserves all existing prose',
     () {
-      final controller = quill.QuillController(
+      final controller = DiaryEditorController(
         document: documentFromPlainText('hello world'),
-        selection: const TextSelection(baseOffset: 0, extentOffset: 5),
+        selection: quill.Selection.single(
+          path: [0],
+          startOffset: 0,
+          endOffset: 5,
+        ),
       );
       addTearDown(controller.dispose);
       insertDiaryMediaBlocks(
         controller: controller,
         selection: controller.selection,
-        embeds: [quill.BlockEmbed.video('/video.mp4')],
+        embeds: [
+          quill.Node(type: 'video', attributes: {'url': '/video.mp4'}),
+        ],
       );
       expect(controller.document.toPlainText(), 'hello\n\uFFFC\n world\n');
     },
@@ -102,13 +121,16 @@ void main() {
   test(
     'attachment-only drafts survive serialization and empty text mirrors',
     () {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
       insertDiaryMediaBlocks(
         controller: controller,
-        selection: const TextSelection.collapsed(offset: -1),
+        selection: null,
         embeds: [
-          quill.BlockEmbed(diaryAttachmentEmbedType, attachment.encode()),
+          quill.Node(
+            type: 'attachment',
+            attributes: jsonDecode(attachment.encode()),
+          ),
         ],
       );
       final content = encodeDiaryDocumentToJson(controller.document);

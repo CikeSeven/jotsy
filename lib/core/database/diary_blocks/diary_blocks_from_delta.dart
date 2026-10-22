@@ -1,5 +1,6 @@
 import '../code_block_codec.dart';
 import 'diary_blocks_embed.dart';
+import 'diary_blocks_builder.dart';
 import 'diary_blocks_schema.dart';
 
 /// 把 Quill Delta（旧版正文、旧备份、导入器与模板的输出）转换为块文档。
@@ -21,28 +22,9 @@ import 'diary_blocks_schema.dart';
 ///   color / background → font_color / bg_color），其余原样保留。
 Map<String, Object?> diaryBlocksFromQuillOps(List<Object?> ops) {
   final lines = _splitLines(ops);
-  final root = <Map<String, Object?>>[];
-  // stack[d] 为最近一个深度 d 的块，新块按缩进挂到 stack[d-1] 之下。
-  final stack = <Map<String, Object?>>[];
-
-  void place(Map<String, Object?> node, int indent) {
-    var depth = indent.clamp(0, stack.length);
-    while (depth > 0 &&
-        !kDiaryContainerBlockTypes.contains(stack[depth - 1]['type'])) {
-      depth--;
-    }
-    if (depth == 0) {
-      root.add(node);
-    } else {
-      final parent = stack[depth - 1];
-      ((parent[kDiaryBlockChildrenKey] ??= <Map<String, Object?>>[])
-              as List<Map<String, Object?>>)
-          .add(node);
-    }
-    stack
-      ..length = depth
-      ..add(node);
-  }
+  final builder = DiaryBlocksBuilder();
+  void place(Map<String, Object?> node, int indent) =>
+      builder.add(node, indent);
 
   var i = 0;
   while (i < lines.length) {
@@ -111,33 +93,7 @@ Map<String, Object?> diaryBlocksFromQuillOps(List<Object?> ops) {
     i++;
   }
 
-  if (root.isEmpty) {
-    root.add(<String, Object?>{
-      kDiaryBlockTypeKey: kDiaryBlockParagraph,
-      kDiaryBlockDataKey: <String, Object?>{
-        kDiaryBlockDeltaKey: <Map<String, Object?>>[],
-      },
-    });
-  }
-  return <String, Object?>{
-    kDiaryBlocksDocumentKey: <String, Object?>{
-      kDiaryBlockTypeKey: kDiaryBlockPage,
-      kDiaryBlockChildrenKey: root.map(_editorKeyOrder).toList(),
-    },
-  };
-}
-
-/// 按编辑器 `Node.toJson` 的键序（type、children、data）重排节点：子块是
-/// 在节点建好之后才挂上的，不重排的话同一份文档转换一次与经编辑器保存一次
-/// 的 JSON 文字不同，按文字比较是否改动过的地方会误判。
-Map<String, Object?> _editorKeyOrder(Map<String, Object?> node) {
-  final children = node[kDiaryBlockChildrenKey];
-  return <String, Object?>{
-    kDiaryBlockTypeKey: node[kDiaryBlockTypeKey],
-    if (children is List<Map<String, Object?>>)
-      kDiaryBlockChildrenKey: children.map(_editorKeyOrder).toList(),
-    if (node[kDiaryBlockDataKey] case final data?) kDiaryBlockDataKey: data,
-  };
+  return builder.build();
 }
 
 /// 一行里的一个片段：文字（[text] 非空）或嵌入（[embed] 非空）。

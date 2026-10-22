@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_evernote_enml.dart';
 import 'journal_import_evernote_reader.dart';
 import 'journal_import_html.dart';
@@ -88,7 +88,7 @@ JournalImportEntry _parseNote(
   for (final resource in note.findElements('resource')) {
     resources.add(resource);
   }
-  final writer = JournalDeltaWriter();
+  final writer = JournalBlockWriter();
   final enml = note.getElement('content')?.innerText.trim() ?? '';
   final body = enmlToHtml(enml, note);
   JournalHtmlConverter(

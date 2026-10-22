@@ -7,7 +7,7 @@ import '../models/diary_template.dart';
 abstract interface class DiaryTemplateEditorPort {
   String get title;
 
-  /// 当前正文的 Delta JSON（与草稿里的 `contentDocJson` 同一种编码）。
+  /// 当前正文的块文档 JSON（与草稿里的 `contentDocJson` 同一种编码）。
   String get contentDocJson;
 
   /// 标题或正文里已有内容（含图片等嵌入）。
@@ -24,11 +24,11 @@ abstract interface class DiaryTemplateEditorPort {
   List<String> get moodOptions;
 
   /// 换上新的标题与正文，光标放到 [caret]；返回载入后的正文重新编码的
-  /// JSON——Quill 会合并相邻的同格式文字，与传入的 [ops] 未必逐字相同，
+  /// JSON——编辑器会规整相邻的同格式文字，与传入的 [document] 未必逐字相同，
   /// 之后判断“是否原样未动”必须拿载入后的编码比较。
   String replaceContent({
     required String title,
-    required List<Map<String, Object?>> ops,
+    required Map<String, Object?> document,
     required int caret,
   });
 }

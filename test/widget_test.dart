@@ -4,8 +4,8 @@ import 'package:node_diary/core/database/content_codec.dart';
 void main() {
   test('plain text and delta json codec should round-trip', () {
     const plainText = '今天下雨了\n心情还不错';
-    final deltaJson = plainTextToDeltaJson(plainText);
-    final restored = diaryContentToPlainText(deltaJson);
+    final contentJson = plainTextToContentJson(plainText);
+    final restored = diaryContentToPlainText(contentJson);
 
     expect(restored, plainText);
   });

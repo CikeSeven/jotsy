@@ -1,9 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../../../support/diary_content_test_helpers.dart';
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/diary_blocks/diary_blocks_media.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/ui/diaries/models/new_diary_draft.dart';
 import 'package:node_diary/ui/diaries/models/recording_insertion.dart';
 
@@ -16,9 +15,13 @@ void main() {
   test(
     'recording is an audio block and existing selected text is retained',
     () {
-      final controller = quill.QuillController(
+      final controller = DiaryEditorController(
         document: documentFromPlainText('hello world'),
-        selection: const TextSelection(baseOffset: 0, extentOffset: 5),
+        selection: quill.Selection.single(
+          path: [0],
+          startOffset: 0,
+          endOffset: 5,
+        ),
       );
       addTearDown(controller.dispose);
       insertDiaryRecording(
@@ -40,11 +43,11 @@ void main() {
   );
 
   test('audio-only draft is retained with an empty plain-text mirror', () {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
     insertDiaryRecording(
       controller: controller,
-      selection: const TextSelection.collapsed(offset: -1),
+      selection: null,
       recording: recording,
     );
     final raw = encodeDiaryDocumentToJson(controller.document);

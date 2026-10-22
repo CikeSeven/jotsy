@@ -1,7 +1,8 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart'
+    as editor;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/app/theme/expressive_motion.dart';
 import 'package:node_diary/ui/diaries/models/diary_text_colors.dart';
@@ -28,7 +29,7 @@ class DiaryToolbarColorButton extends StatelessWidget {
     required this.onPressed,
   });
 
-  final quill.QuillController controller;
+  final editor.DiaryEditorController controller;
   final DiaryColorTarget target;
   final bool selected;
   final String tooltip;
@@ -89,7 +90,7 @@ class DiaryToolbarColorButton extends StatelessWidget {
                       builder: (BuildContext context, Widget? child) =>
                           _ColorIndicatorBar(
                             color: DiaryColorValue.of(
-                              controller.getSelectionStyle().attributes,
+                              controller.selectionAttributes,
                               target,
                             ).color,
                           ),

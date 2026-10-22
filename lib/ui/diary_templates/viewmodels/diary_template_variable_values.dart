@@ -55,9 +55,6 @@ class DiaryTemplateVariableValues {
   String resolve(String text) =>
       resolveDiaryTemplateText(text, (variable) => _values[variable]);
 
-  List<Map<String, Object?>> resolveOps(List<Map<String, Object?>> ops) =>
-      resolveDiaryTemplateOps(ops, (variable) => _values[variable]);
-
   static int _dayOfYear(DateTime day) =>
       DateTime.utc(
         day.year,

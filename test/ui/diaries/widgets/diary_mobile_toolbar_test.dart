@@ -1,5 +1,6 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -27,7 +28,7 @@ void main() {
   testWidgets(
     'image video and attachment toolbar actions invoke the matching import flow',
     (tester) async {
-      final controller = quill.QuillController.basic();
+      final controller = DiaryEditorController();
       addTearDown(controller.dispose);
       final requested = <DiaryMediaKind>[];
       await tester.pumpWidget(
@@ -35,7 +36,7 @@ void main() {
           locale: const Locale('zh'),
           localizationsDelegates: const [
             ...AppLocalizations.localizationsDelegates,
-            quill.FlutterQuillLocalizations.delegate,
+            quill.AppFlowyEditorLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
@@ -106,7 +107,7 @@ void main() {
   testWidgets('recording toolbar action opens the recording panel', (
     tester,
   ) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
     var opened = false;
 
@@ -115,7 +116,7 @@ void main() {
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -143,7 +144,7 @@ void main() {
   testWidgets('current time toolbar button inserts formatted time', (
     tester,
   ) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -151,7 +152,7 @@ void main() {
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -179,7 +180,7 @@ void main() {
   });
 
   testWidgets('current time toolbar button uses custom format', (tester) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
@@ -187,7 +188,7 @@ void main() {
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -229,14 +230,14 @@ void main() {
   );
 
   testWidgets('floating toolbar hides unchecked tools', (tester) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
@@ -262,14 +263,14 @@ void main() {
   });
 
   testWidgets('floating toolbar renders image button', (tester) async {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     addTearDown(controller.dispose);
 
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(

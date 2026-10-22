@@ -1,7 +1,7 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/ui/diary_templates/models/diary_template_body.dart';
 
 void main() {

@@ -10830,5 +10830,61 @@
   "codeBlockPreviewIntro": "Code blocks are highlighted by language, and inline code follows the theme too, like ",
   "@codeBlockPreviewIntro": {
     "description": "Intro text of the code block style preview; an inline code sample follows the trailing space."
-  }
+  },
+  "diaryEditorLinkUrl": "Link URL",
+  "@diaryEditorLinkUrl": {
+    "description": "URL field in the diary editor link dialog."
+  },
+  "diaryEditorInvalidLink": "Enter a valid link URL",
+  "@diaryEditorInvalidLink": {
+    "description": "Validation message for an invalid diary editor link."
+  },
+  "diaryEditorRemoveLink": "Remove link",
+  "@diaryEditorRemoveLink": {
+    "description": "Clear the URL from the selected diary text."
+  },
+  "diaryEditorCommandHint": "Search commands",
+  "@diaryEditorCommandHint": {
+    "description": "Search hint in the diary editor slash command menu."
+  },
+  "diaryEditorDragBlock": "Drag block",
+  "@diaryEditorDragBlock": {
+    "description": "Accessibility label for the diary editor paragraph drag handle."
+  },
+  "diaryEditorMoveBlockUp": "Move block up",
+  "@diaryEditorMoveBlockUp": {
+    "description": "Move the selected editor block above its previous sibling."
+  },
+  "diaryEditorMoveBlockDown": "Move block down",
+  "@diaryEditorMoveBlockDown": {
+    "description": "Move the selected editor block below its next sibling."
+  },
+  "diaryEditorParagraph": "Paragraph",
+  "@diaryEditorParagraph": {
+    "description": "Plain paragraph option in the diary editor block menu."
+  },
+  "diaryEditorIndent": "Indent",
+  "@diaryEditorIndent": {
+    "description": "Nest the selected diary editor blocks under the previous block."
+  },
+  "diaryEditorOutdent": "Outdent",
+  "@diaryEditorOutdent": {
+    "description": "Move selected diary editor blocks out one level."
+  },
+  "diaryEditorSlashCommands": "Insert block",
+  "@diaryEditorSlashCommands": {
+    "description": "Title of the diary editor slash command menu."
+  },
+  "diaryEditorDivider": "Divider",
+  "@diaryEditorDivider": {
+    "description": "Divider option in the diary editor slash command menu."
+  },
+  "diaryEditorUnsupportedBlock": "Unsupported content",
+  "@diaryEditorUnsupportedBlock": {
+    "description": "Placeholder for a preserved editor block from an unsupported format."
+  },
+  "diaryEditorImageWidth": "Image width",
+  "@diaryEditorImageWidth": {"description": "Image dimension label in the diary image resize sheet."},
+  "diaryEditorImageHeight": "Image height",
+  "@diaryEditorImageHeight": {"description": "Image dimension label in the diary image resize sheet."}
 }

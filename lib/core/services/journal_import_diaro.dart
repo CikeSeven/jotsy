@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
-import 'journal_import_delta_writer.dart';
+import 'journal_import_block_writer.dart';
 import 'journal_import_files.dart';
 import 'journal_import_media.dart';
 import 'journal_import_models.dart';
@@ -135,7 +135,7 @@ List<JournalImportEntry> _parseEntries(
     }
     final uid = row['uid']?.trim() ?? '';
 
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     for (final attachment
         in (attachments[uid] ?? const <_Row>[]).toList()
           ..sort((a, b) => position(a).compareTo(position(b)))) {

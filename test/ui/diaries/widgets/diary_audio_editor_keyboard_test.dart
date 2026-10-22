@@ -1,13 +1,11 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/audio_embed_codec.dart';
-import 'package:node_diary/core/database/content_codec.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/models/diary_playback_gestures.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_audio_embed_builder.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_waveform_visualizer.dart';
 
 import '../../../support/expressive_test_theme.dart';
@@ -55,7 +53,7 @@ void main() {
         expect(focus.canRequestFocus, isTrue);
         expect(controller.selection, selection);
         expect(encodeDiaryDocumentToJson(controller.document), content);
-        final body = tester.getRect(find.byType(quill.QuillEditor));
+        final body = tester.getRect(find.byType(DiaryEditor));
         await tester.tapAt(Offset(body.left + 30, body.bottom - 14));
         await tester.pumpAndSettle();
         expect(focus.hasFocus, isTrue);
@@ -120,29 +118,9 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
-
-  test(
-    'audio block tap suppression does not consume its following editable line',
-    () {
-      final controller = _controller();
-      addTearDown(controller.dispose);
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 0)),
-        isTrue,
-      );
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 1)),
-        isTrue,
-      );
-      expect(
-        isDiaryPlaybackTap(controller, const TextPosition(offset: 2)),
-        isFalse,
-      );
-    },
-  );
 }
 
-quill.QuillController _controller() => quill.QuillController(
+DiaryEditorController _controller() => DiaryEditorController(
   document: decodeDiaryContentToDocument(
     jsonEncode([
       {
@@ -157,11 +135,11 @@ quill.QuillController _controller() => quill.QuillController(
       {'insert': '\n正文继续输入\n'},
     ]),
   ),
-  selection: const TextSelection.collapsed(offset: 2),
+  selection: quill.Selection.single(path: [1], startOffset: 0),
 );
 
 Widget _editor(
-  quill.QuillController controller,
+  DiaryEditorController controller,
   FocusNode focus,
   FakeAudioPlayer player,
   Brightness brightness,
@@ -170,24 +148,17 @@ Widget _editor(
   locale: const Locale('zh'),
   localizationsDelegates: const [
     ...AppLocalizations.localizationsDelegates,
-    quill.FlutterQuillLocalizations.delegate,
+    quill.AppFlowyEditorLocalizations.delegate,
   ],
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
     body: Center(
       child: SizedBox(
         width: 320,
-        child: quill.QuillEditor.basic(
+        child: nativeTestEditor(
           controller: controller,
           focusNode: focus,
-          config: quill.QuillEditorConfig(
-            scrollable: false,
-            onTapUp: (details, getPosition) => isDiaryPlaybackTap(
-              controller,
-              getPosition(details.globalPosition),
-            ),
-            embedBuilders: [DiaryAudioEmbedBuilder(player: player)],
-          ),
+          audioPlayer: player,
         ),
       ),
     ),

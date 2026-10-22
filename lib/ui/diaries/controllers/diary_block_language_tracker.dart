@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_quill/flutter_quill.dart' show Block, QuillController;
+import 'diary_editor_controller.dart';
 
 import '../models/diary_code_block/diary_code_highlighter.dart';
 
-// 未指定语言的代码块的自动识别结果，每个 QuillController 一份。
+// 未指定语言的代码块的自动识别结果，每个 DiaryEditorController 一份。
 //
-// 输入：渲染时传入的代码块（Block 节点）与它当前的纯文本。
+// 输入：渲染时传入的代码块（Node 节点）与它当前的纯文本。
 // 输出：该块用于高亮的语言 id（认不出时为 null）；识别结果变化时通知监听者
 // （正文样式构建器据此重建，标题栏与工具栏的语言名也读同一份）。
 // 副作用：一个 600ms 的防抖计时器（非动画计时）。
@@ -21,35 +21,35 @@ import '../models/diary_code_block/diary_code_highlighter.dart';
 // 结果真的变了时才通知一次。第一次见到某个块（打开日记、粘贴进来）没有
 // 旧结果可用，同步识别一次，首帧就是正确的颜色。
 //
-// 用 Expando 挂在控制器与 Block 上：编辑器、代码块标题栏与工具栏面板各自
+// 用 Expando 挂在控制器与 Node 上：编辑器、代码块标题栏与工具栏面板各自
 // 拿到同一份结果，块被删除或控制器释放后随之回收，不需要显式注销。
 
-/// 代码块语言自动识别的共享状态；用 [DiaryCodeLanguageTracker.of] 获取。
-class DiaryCodeLanguageTracker extends ChangeNotifier {
-  DiaryCodeLanguageTracker._();
+/// 代码块语言自动识别的共享状态；用 [DiaryBlockLanguageTracker.of] 获取。
+class DiaryBlockLanguageTracker extends ChangeNotifier {
+  DiaryBlockLanguageTracker._();
 
   /// 停手多久后重新识别（非动画计时，不走 ExpressiveMotion）。
   static const Duration debounce = Duration(milliseconds: 600);
 
-  static final Expando<DiaryCodeLanguageTracker> _trackers =
-      Expando<DiaryCodeLanguageTracker>('diaryCodeLanguageTracker');
+  static final Expando<DiaryBlockLanguageTracker> _trackers =
+      Expando<DiaryBlockLanguageTracker>('diaryCodeLanguageTracker');
 
   /// [controller] 的识别状态；首次调用时创建，之后同一控制器返回同一份
   /// （已被释放的会换一份新的）。
-  static DiaryCodeLanguageTracker of(QuillController controller) {
+  static DiaryBlockLanguageTracker of(DiaryEditorController controller) {
     final existing = _trackers[controller];
     if (existing != null && !existing._disposed) {
       return existing;
     }
-    return _trackers[controller] = DiaryCodeLanguageTracker._();
+    return _trackers[controller] = DiaryBlockLanguageTracker._();
   }
 
   final Expando<_Detection> _detections = Expando<_Detection>(
     'diaryCodeLanguageDetection',
   );
 
-  /// 等待重识别的块。按身份比较：Block 未覆写 ==，这里显式写明。
-  final Set<Block> _pending = Set<Block>.identity();
+  /// 等待重识别的块。按身份比较：Node 未覆写 ==，这里显式写明。
+  final Set<Node> _pending = Set<Node>.identity();
   Timer? _timer;
   bool _disposed = false;
 
@@ -59,7 +59,7 @@ class DiaryCodeLanguageTracker extends ChangeNotifier {
   /// - 文本与上次识别时相同：直接返回记住的结果；
   /// - 文本变了：返回上次的结果（不闪），并（重新）开始防抖计时，停手后
   ///   统一重识别。
-  String? languageFor(Block block, String text) {
+  String? languageFor(Node block, String text) {
     final detection = _detections[block];
     if (detection == null) {
       _detections[block] = _Detection(
@@ -87,11 +87,11 @@ class DiaryCodeLanguageTracker extends ChangeNotifier {
   }
 
   /// 上一次识别出的语言；不触发识别。没见过该块时为 null。
-  String? lastDetected(Block block) => _detections[block]?.id;
+  String? lastDetected(Node block) => _detections[block]?.id;
 
   /// 切为手选/纯文本、关闭自动识别或超出渲染上限后，不再为这一块唤醒计时器。
   /// 保留旧结果，切回自动时仍可立即显示；如果内容变过，再按正常流程排队。
-  void cancelPendingFor(Block block) {
+  void cancelPendingFor(Node block) {
     _detections[block]?.pendingText = null;
     _pending.remove(block);
     if (_pending.isEmpty) {

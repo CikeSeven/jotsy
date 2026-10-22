@@ -21,8 +21,7 @@ extension EditDiaryRecordingFlow on EditDiaryController {
 
   Future<void> finishRecording() async {
     final generation = _state._recordingPanelGeneration;
-    final selection =
-        _state._recordingSelection ?? const TextSelection.collapsed(offset: -1);
+    final selection = _state._recordingSelection;
     final recording = await _state._recordingController.finish();
     if (recording == null) return;
     if (!_state.mounted ||

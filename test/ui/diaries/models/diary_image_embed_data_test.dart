@@ -1,19 +1,12 @@
 import 'package:flutter/painting.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/ui/diaries/models/diary_image_embed_data.dart';
 
-quill.Leaf _imageNode(Map<String, dynamic>? attributes) {
-  final document = quill.Document.fromJson([
-    {
-      'insert': {'image': '/documents/diary_images/a.jpg'},
-      if (attributes != null) 'attributes': attributes,
-    },
-    {'insert': '\n'},
-  ]);
-  // 样式挂在 Embed 叶子上，与 EmbedContext.node 一致。
-  return document.querySegmentLeafNode(0).leaf!;
-}
+quill.Node _imageNode(Map<String, dynamic>? attributes) => quill.Node(
+  type: 'image',
+  attributes: {'url': '/documents/diary_images/a.jpg', ...?attributes},
+);
 
 void main() {
   test('image without size attributes is only bounded by layout', () {

@@ -1,7 +1,7 @@
-import 'package:flutter/services.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import '../../../support/diary_content_test_helpers.dart';
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:node_diary/ui/diaries/controllers/diary_code_language_tracker.dart';
+import 'package:node_diary/ui/diaries/controllers/diary_block_language_tracker.dart';
 
 const _python = '''
 import os
@@ -28,32 +28,32 @@ const _json = '''
 ''';
 
 /// 一个只含一个自动识别代码块的文档，返回该块与它的识别状态。
-(quill.Block, DiaryCodeLanguageTracker) _setUp() {
-  final document = quill.Document.fromJson(<Map<String, Object?>>[
+(quill.Node, DiaryBlockLanguageTracker) _setUp() {
+  final document = documentFromLegacyDelta(<Map<String, Object?>>[
     <String, Object?>{'insert': 'x'},
     <String, Object?>{
       'insert': '\n',
       'attributes': <String, Object?>{'code-block': true},
     },
   ]);
-  final controller = quill.QuillController(
+  final controller = DiaryEditorController(
     document: document,
-    selection: const TextSelection.collapsed(offset: 0),
+    selection: quill.Selection.single(path: [0], startOffset: 0),
   );
-  final block = document.root.children.first as quill.Block;
-  return (block, DiaryCodeLanguageTracker.of(controller));
+  final block = document.root.children.first;
+  return (block, DiaryBlockLanguageTracker.of(controller));
 }
 
 void main() {
   test('one tracker per controller', () {
-    final controller = quill.QuillController.basic();
+    final controller = DiaryEditorController();
     expect(
-      DiaryCodeLanguageTracker.of(controller),
-      same(DiaryCodeLanguageTracker.of(controller)),
+      DiaryBlockLanguageTracker.of(controller),
+      same(DiaryBlockLanguageTracker.of(controller)),
     );
     expect(
-      DiaryCodeLanguageTracker.of(controller),
-      isNot(same(DiaryCodeLanguageTracker.of(quill.QuillController.basic()))),
+      DiaryBlockLanguageTracker.of(controller),
+      isNot(same(DiaryBlockLanguageTracker.of(DiaryEditorController()))),
     );
   });
 
@@ -104,7 +104,7 @@ void main() {
 
     tracker.languageFor(block, _python);
     expect(tracker.languageFor(block, '$_python\nprint(1)\n'), 'python');
-    await tester.pump(DiaryCodeLanguageTracker.debounce);
+    await tester.pump(DiaryBlockLanguageTracker.debounce);
     expect(notifications, 0);
     expect(tracker.lastDetected(block), 'python');
   });
@@ -149,11 +149,11 @@ void main() {
     tracker.languageFor(block, _python);
     tracker.languageFor(block, _json);
     tracker.cancelPendingFor(block);
-    await tester.pump(DiaryCodeLanguageTracker.debounce);
+    await tester.pump(DiaryBlockLanguageTracker.debounce);
     expect(notifications, 0);
     expect(tracker.lastDetected(block), 'python');
     tracker.languageFor(block, _json);
-    await tester.pump(DiaryCodeLanguageTracker.debounce);
+    await tester.pump(DiaryBlockLanguageTracker.debounce);
     expect(notifications, 1);
     expect(tracker.lastDetected(block), 'json');
   });
@@ -175,7 +175,7 @@ void main() {
     // 再次显示时按新文本重新排队。
     tracker.addListener(listener);
     expect(tracker.languageFor(block, _json), 'python');
-    await tester.pump(DiaryCodeLanguageTracker.debounce);
+    await tester.pump(DiaryBlockLanguageTracker.debounce);
     expect(tracker.lastDetected(block), 'json');
   });
 }

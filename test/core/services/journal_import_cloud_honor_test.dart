@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/journal_import_cloud.dart';
 import 'package:node_diary/core/services/journal_import_cloud_honor.dart';
 import 'package:node_diary/core/services/journal_import_cloud_http.dart';
-import 'package:node_diary/core/services/journal_import_delta_writer.dart';
+import 'package:node_diary/core/services/journal_import_block_writer.dart';
 import 'package:node_diary/core/services/journal_import_media.dart';
 import 'package:node_diary/core/services/journal_import_models.dart';
 import 'package:node_diary/core/services/journal_import_style.dart';
@@ -163,7 +163,7 @@ void main() {
     final attachment = note.attachments.single;
     expect(attachment.id, _preview);
     expect(attachment.name, _original);
-    final writer = JournalDeltaWriter();
+    final writer = JournalBlockWriter();
     note.writeBody(writer, (id) => id == _preview ? {'image': 'p.png'} : null);
     final content = writer.build();
     expect(content.contentText, '购物清单\n加粗斜体划线链接\n已完成\n未完成\n第一项\n项目\n\n结尾');
@@ -262,7 +262,7 @@ void main() {
 
     test('keeps alignment, dividers, colours, sizes and highlights', () async {
       final note = (await provider.fetchNotes((_, _) {})).single;
-      final writer = JournalDeltaWriter();
+      final writer = JournalBlockWriter();
       note.writeBody(
         writer,
         (id) => switch (id) {

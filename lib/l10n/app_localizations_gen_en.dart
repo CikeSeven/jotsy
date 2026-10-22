@@ -8418,4 +8418,49 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get codeBlockPreviewIntro =>
       'Code blocks are highlighted by language, and inline code follows the theme too, like ';
+
+  @override
+  String get diaryEditorLinkUrl => 'Link URL';
+
+  @override
+  String get diaryEditorInvalidLink => 'Enter a valid link URL';
+
+  @override
+  String get diaryEditorRemoveLink => 'Remove link';
+
+  @override
+  String get diaryEditorCommandHint => 'Search commands';
+
+  @override
+  String get diaryEditorDragBlock => 'Drag block';
+
+  @override
+  String get diaryEditorMoveBlockUp => 'Move block up';
+
+  @override
+  String get diaryEditorMoveBlockDown => 'Move block down';
+
+  @override
+  String get diaryEditorParagraph => 'Paragraph';
+
+  @override
+  String get diaryEditorIndent => 'Indent';
+
+  @override
+  String get diaryEditorOutdent => 'Outdent';
+
+  @override
+  String get diaryEditorSlashCommands => 'Insert block';
+
+  @override
+  String get diaryEditorDivider => 'Divider';
+
+  @override
+  String get diaryEditorUnsupportedBlock => 'Unsupported content';
+
+  @override
+  String get diaryEditorImageWidth => 'Image width';
+
+  @override
+  String get diaryEditorImageHeight => 'Image height';
 }

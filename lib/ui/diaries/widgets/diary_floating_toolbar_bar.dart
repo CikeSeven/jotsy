@@ -100,22 +100,20 @@ extension _DiaryFloatingToolbarBar on _DiaryFloatingToolbarState {
       );
     } else {
       final mediaImportController = widget.mediaImportController;
-      tool = quill.QuillSimpleToolbar(
-        controller: widget.controller,
-        config: buildDiaryToolbarItemConfig(
-          context,
-          item,
-          widget.controller,
-          currentTimeFormatPattern: widget.currentTimeFormatPattern,
-          onRecordingPressed: widget.onRecordingPressed,
-          recordingOpen: widget.recordingOpen,
-          onMediaPressed: widget.onMediaPressed,
-          activeMediaKind: mediaImportController?.activeKind,
-          mediaImportBusy: mediaImportController?.isBusy ?? false,
-        ),
+      tool = buildDiaryToolbarItem(
+        context,
+        item,
+        widget.controller,
+        currentTimeFormatPattern: widget.currentTimeFormatPattern,
+        onRecordingPressed: widget.onRecordingPressed,
+        recordingOpen: widget.recordingOpen,
+        onMediaPressed: widget.onMediaPressed,
+        activeMediaKind: mediaImportController?.activeKind,
+        mediaImportBusy: mediaImportController?.isBusy ?? false,
       );
     }
     return SizedBox(
+      key: ValueKey('diary-toolbar-tool-${item.storageKey}'),
       width: diaryToolbarItemExtent(item),
       height: kDiaryToolbarButtonExtent,
       child: Center(child: tool),

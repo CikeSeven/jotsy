@@ -1,11 +1,10 @@
+import '../../support/diary_content_test_helpers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/core/services/diary_font_storage_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_typography_preview.dart';
 import 'package:node_diary/ui/settings/pages/diary_typography_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,14 +17,14 @@ const _wenKai = DiaryImportedFont(
 );
 
 /// 预览卡里正文实际使用的 Quill 段落样式。
-quill.DefaultTextBlockStyle _previewParagraph(WidgetTester tester) {
-  final editor = tester.widget<quill.QuillEditor>(
-    find.descendant(
-      of: find.byType(DiaryTypographyPreview),
-      matching: find.byType(quill.QuillEditor),
-    ),
+({TextStyle style, ({double bottom}) verticalSpacing}) _previewParagraph(
+  WidgetTester tester,
+) {
+  final editor = tester.widget<DiaryEditor>(find.byType(DiaryEditor).first);
+  return (
+    style: editor.controller.state.editorStyle.textStyleConfiguration.text,
+    verticalSpacing: (bottom: editor.appearance.typography.paragraphSpacing),
   );
-  return editor.config.customStyles!.paragraph!;
 }
 
 TextStyle _previewParagraphStyle(WidgetTester tester) =>

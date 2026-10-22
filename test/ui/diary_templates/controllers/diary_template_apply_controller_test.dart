@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:node_diary/core/database/diary_blocks/diary_blocks_to_delta.dart';
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -51,11 +52,11 @@ class _FakePort implements DiaryTemplateEditorPort {
   @override
   String replaceContent({
     required String title,
-    required List<Map<String, Object?>> ops,
+    required Map<String, Object?> document,
     required int caret,
   }) {
     this.title = title;
-    this.ops = ops;
+    ops = diaryBlocksToQuillOps(document);
     replacedTitles.add(title);
     return contentDocJson;
   }

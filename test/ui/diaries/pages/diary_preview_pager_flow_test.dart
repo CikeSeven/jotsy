@@ -1,6 +1,7 @@
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
@@ -93,7 +94,7 @@ Future<_Harness> _open(
         locale: const Locale('zh'),
         localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
-          quill.FlutterQuillLocalizations.delegate,
+          quill.AppFlowyEditorLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
@@ -277,17 +278,21 @@ void main() {
       ),
     );
     final l10n = _l10n(tester);
-    Finder checkboxPoint() => find.byWidgetPredicate(
-      (Widget widget) => widget.runtimeType.toString() == 'QuillCheckboxPoint',
-    );
-    // 直接调用点按回调：真实点按的水波纹会让页面在动画期间保活
-    // （InkWell 的 AutomaticKeepAlive），测试里就等不到回收。
     void press(Finder target) => tester
         .widget<InkWell>(
           find.descendant(of: target, matching: find.byType(InkWell)).first,
         )
         .onTap!();
-    press(checkboxPoint());
+    tester
+        .widget<IconButton>(
+          find
+              .byWidgetPredicate(
+                (widget) =>
+                    widget is IconButton && widget.tooltip == l10n.autoT0020,
+              )
+              .first,
+        )
+        .onPressed!();
     await tester.pump();
     for (final title in <String>['乙', '丙']) {
       final next = find.bySemanticsLabel(RegExp('^${l10n.diaryPreviewNext}'));
@@ -318,7 +323,17 @@ void main() {
     await _swipe(tester, forward: false);
     await _swipe(tester, forward: false);
     expect(find.text('甲'), findsOneWidget);
-    expect((tester.widget(checkboxPoint()) as dynamic).value, isTrue);
+    expect(
+      tester
+          .widget<DiaryEditor>(find.byType(DiaryEditor).first)
+          .controller
+          .document
+          .root
+          .children
+          .first
+          .attributes['checked'],
+      isTrue,
+    );
     await _unmount(tester);
   });
 

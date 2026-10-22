@@ -6,7 +6,10 @@ import '../../../core/database/audio_embed_codec.dart';
 import '../../../core/database/code_block_codec.dart';
 import '../../../core/database/divider_embed_codec.dart';
 import '../../../core/database/file_embed_codec.dart';
+import '../../../core/database/diary_blocks/diary_blocks_walk.dart';
 import '../models/diary_text_colors.dart';
+
+part 'diary_export_native_blocks.dart';
 
 /// 正文 Delta 的块级中间表示，供 Markdown / HTML / Word / 纯文本写出器共用。
 ///
@@ -54,21 +57,21 @@ class ExportInline {
   });
 
   factory ExportInline.fromAttributes(String text, Map<String, dynamic> attrs) {
-    final link = attrs['link'];
+    final link = attrs['href'] ?? attrs['link'];
     final url = link is String ? link.trim() : '';
     Color? color(Object? value) =>
         value is String ? parseDiaryColorValue(value) : null;
-    final background = color(attrs['background']);
+    final background = color(attrs['bg_color'] ?? attrs['background']);
     final size = attrs['size'];
     return ExportInline(
       text,
       bold: attrs['bold'] == true,
       italic: attrs['italic'] == true,
       underline: attrs['underline'] == true,
-      strike: attrs['strike'] == true,
+      strike: attrs['strikethrough'] == true || attrs['strike'] == true,
       code: attrs['code'] == true,
       link: url.isEmpty ? null : url,
-      color: color(attrs['color']),
+      color: color(attrs['font_color'] ?? attrs['color']),
       background: background == null || background.a == 0 ? null : background,
       size: size is String || size is num ? size.toString() : null,
     );
@@ -148,6 +151,10 @@ class ExportBlock {
 /// 解析 Delta ops 为块列表。
 class ExportBlockParser {
   const ExportBlockParser._();
+
+  /// 当前正文直接读树；平铺操作列表的 parse 仅供历史格式与导出准备使用。
+  static List<ExportBlock> parseDocument(Map<String, Object?> document) =>
+      _parseNativeBlocks(document);
 
   static List<ExportBlock> parse(List<dynamic> rawOps) {
     final blocks = <ExportBlock>[];

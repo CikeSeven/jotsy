@@ -64,7 +64,7 @@ class _DiaryTemplatePickerPreviewState
         questionShift: _questionShift,
       ),
     );
-    final bodyJson = jsonEncode(application.ops);
+    final bodyJson = jsonEncode(application.document);
     final name = widget.template.name.isEmpty
         ? l10n.diaryTemplateUntitled
         : widget.template.name;

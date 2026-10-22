@@ -10,11 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///   不硬编码黑白、不用渐变与旧加载圈；
 /// - 工具栏里的代码块面板、语言选项与按钮不开对话框、底部面板或路由（会抢走
 ///   正文焦点、收起键盘，工具栏随之消失）；
-/// - 只有 `attachDiaryCodeBlockEditing` 能改写 `QuillController.onReplaceText`，
-///   之后再赋值会把代码块的回车处理覆盖掉。
+/// - 原生代码回车先于默认换段处理，禁止重新引入旧编辑器依赖。
 void main() {
-  const editingFile =
-      'lib/ui/diaries/controllers/diary_code_block_editing.dart';
+  const editingFile = 'lib/ui/diaries/controllers/diary_block_editing.dart';
   const codeBlockDirs = <String>[
     'lib/ui/diaries/widgets/diary_code_block/',
     'lib/ui/diaries/models/diary_code_block/',
@@ -103,22 +101,22 @@ void main() {
     );
   });
 
-  test('only attachDiaryCodeBlockEditing assigns onReplaceText', () {
-    final assignment = RegExp(r'\bonReplaceText\s*(?:\?\?)?=(?!=)');
-    final others = libFiles.where(
-      (File file) => normalize(file.path) != editingFile,
-    );
+  test('native code editing is installed before default newline handling', () {
+    final editor = File(
+      'lib/ui/diaries/widgets/diary_editor/diary_editor.dart',
+    ).readAsStringSync();
+    final editing = File(editingFile).readAsStringSync();
+    expect(editor, contains('diaryBlockCharacterShortcuts()'));
     expect(
-      offenders(others, <String, RegExp>{'onReplaceText =': assignment}),
+      editing.indexOf("key: 'diary_code_newline'"),
+      lessThan(editing.indexOf('...af.standardCharacterShortcutEvents')),
+    );
+    expect(editing, contains('skipHistoryDebounce: true'));
+    expect(
+      offenders(libFiles, {
+        'Quill dependency': RegExp(r"package:flutter_quill"),
+      }),
       isEmpty,
-    );
-    // 自检：规则本身能认出那一处赋值，避免正则写错后永远放行。
-    expect(
-      offenders(
-        <File>[File(editingFile)],
-        <String, RegExp>{'onReplaceText =': assignment},
-      ),
-      isNotEmpty,
     );
   });
 }

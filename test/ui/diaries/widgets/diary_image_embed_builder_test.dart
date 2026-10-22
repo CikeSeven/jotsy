@@ -1,17 +1,17 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderImage;
-import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:appflowy_editor/appflowy_editor.dart' as quill;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/core/services/image_dimensions.dart';
 import 'package:node_diary/core/services/long_image_tile_service.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_image_embed_builder.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_embedded_image.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_long_image_fold.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import 'package:node_diary/ui/widgets/image_viewer_page.dart';
 import 'package:path/path.dart' as p;
@@ -65,7 +65,7 @@ class _FixedTiles extends LongImageTileService {
 
 Future<void> _pumpEditor(
   WidgetTester tester,
-  quill.QuillController controller, {
+  DiaryEditorController controller, {
   void Function(String imageSource, ImageViewerHero? hero)? onImageOpen,
   bool foldLongImages = true,
 }) async {
@@ -74,18 +74,14 @@ Future<void> _pumpEditor(
       locale: const Locale('zh'),
       localizationsDelegates: const [
         ...AppLocalizations.localizationsDelegates,
-        quill.FlutterQuillLocalizations.delegate,
+        quill.AppFlowyEditorLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
-        body: quill.QuillEditor.basic(
+        body: nativeTestEditor(
           controller: controller,
-          config: quill.QuillEditorConfig(
-            embedBuilders: buildDiaryQuillEmbedBuilders(
-              onImageOpen: onImageOpen,
-              foldLongImages: foldLongImages,
-            ),
-          ),
+          onImageOpen: onImageOpen,
+          foldLongImages: foldLongImages,
         ),
       ),
     ),
@@ -122,15 +118,15 @@ void main() {
     'resized image keeps its aspect ratio inside a start-aligned rounded block',
     (tester) async {
       final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
-      final controller = quill.QuillController(
-        document: quill.Document.fromJson([
+      final controller = DiaryEditorController(
+        document: documentFromLegacyDelta([
           {
             'insert': {'image': source},
             'attributes': {'style': 'width: 100.0; height: 600.0; '},
           },
           {'insert': '\n'},
         ]),
-        selection: const TextSelection.collapsed(offset: 0),
+        selection: quill.Selection.single(path: [0], startOffset: 0),
         readOnly: true,
       );
       addTearDown(controller.dispose);
@@ -155,7 +151,7 @@ void main() {
       // 缩小后贴着正文左缘（块级布局，不再居中悬在行中间）。
       expect(
         tester.getTopLeft(image).dx,
-        closeTo(tester.getTopLeft(find.byType(quill.QuillEditor)).dx, 0.5),
+        closeTo(tester.getTopLeft(find.byType(DiaryEditor)).dx, 0.5),
       );
       final clip = tester.widget<ClipRRect>(
         find.descendant(
@@ -184,14 +180,14 @@ void main() {
   testWidgets('missing image file shows a localized placeholder', (
     tester,
   ) async {
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': '/nonexistent/diary_images/missing.jpg'},
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);
@@ -204,8 +200,8 @@ void main() {
 
   testWidgets('a centered paragraph keeps its image centered', (tester) async {
     final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
           'attributes': {'style': 'width: 100.0; height: 600.0; '},
@@ -215,7 +211,7 @@ void main() {
           'attributes': {'align': 'center'},
         },
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);
@@ -229,7 +225,7 @@ void main() {
     // 导入的居中段落仍按段落对齐，只有未设对齐时才靠行首。
     expect(
       tester.getCenter(image).dx,
-      closeTo(tester.getCenter(find.byType(quill.QuillEditor)).dx, 0.5),
+      closeTo(tester.getCenter(find.byType(DiaryEditor)).dx, 0.5),
     );
     expect(tester.takeException(), isNull);
   });
@@ -240,14 +236,14 @@ void main() {
     ImageDimensions.debugReset();
     // 300×1500：高是宽的 5 倍，按原图宽 300 显示时折叠到 300×450。
     final source = (await tester.runAsync(() => _pngDataUri(300, 1500)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);
@@ -270,7 +266,7 @@ void main() {
     // 靠行首。
     expect(
       tester.getTopLeft(fold).dx,
-      closeTo(tester.getTopLeft(find.byType(quill.QuillEditor)).dx, 0.5),
+      closeTo(tester.getTopLeft(find.byType(DiaryEditor)).dx, 0.5),
     );
 
     await tester.tap(fold);
@@ -286,15 +282,15 @@ void main() {
     tester,
   ) async {
     final source = (await tester.runAsync(() => _pngDataUri(300, 1500)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
           'attributes': {'style': 'width: 120.0; height: 900.0; '},
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);
@@ -339,14 +335,14 @@ void main() {
         ],
       ),
     );
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);
@@ -369,15 +365,15 @@ void main() {
     tester,
   ) async {
     final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
           'attributes': {'style': 'width: 100.0; height: 600.0; '},
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
     );
     addTearDown(controller.dispose);
     await _pumpEditor(tester, controller);
@@ -393,7 +389,7 @@ void main() {
       controller.formatText(
         0,
         1,
-        quill.StyleAttribute('width: $width; height: 600.0; '),
+        MapEntry('style', 'width: $width; height: 600.0; '),
       );
       await tester.pump();
       expect(tester.widget<Image>(image).image, decodeKey);
@@ -410,8 +406,8 @@ void main() {
     tester,
   ) async {
     final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {'insert': '开头\n'},
         {
           'insert': {'image': source},
@@ -419,7 +415,7 @@ void main() {
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
     );
     addTearDown(controller.dispose);
     await _pumpEditor(tester, controller);
@@ -446,7 +442,7 @@ void main() {
     await tester.tap(find.text('删除'));
     await tester.pumpAndSettle();
     expect(find.byType(DiaryEmbeddedImage), findsNothing);
-    expect(controller.document.toPlainText(), '开头\n\n');
+    expect(controller.document.toPlainText(), '开头\n');
     expect(tester.takeException(), isNull);
   });
 
@@ -454,14 +450,14 @@ void main() {
     tester,
   ) async {
     final source = (await tester.runAsync(() => _pngDataUri(400, 200)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);
@@ -479,8 +475,8 @@ void main() {
 
   testWidgets('long images can show in full at column width', (tester) async {
     final source = (await tester.runAsync(() => _pngDataUri(300, 1500)))!;
-    final controller = quill.QuillController(
-      document: quill.Document.fromJson([
+    final controller = DiaryEditorController(
+      document: documentFromLegacyDelta([
         {
           'insert': {'image': source},
           // 上游滑条总会顺带写入一个屏幕高的高度：完整显示时不按它限高。
@@ -488,7 +484,7 @@ void main() {
         },
         {'insert': '\n'},
       ]),
-      selection: const TextSelection.collapsed(offset: 0),
+      selection: quill.Selection.single(path: [0], startOffset: 0),
       readOnly: true,
     );
     addTearDown(controller.dispose);

@@ -7549,4 +7549,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get codeBlockPreviewIntro => '代码块会按语言高亮，行内代码也跟随配色，例如 ';
+
+  @override
+  String get diaryEditorLinkUrl => '链接地址';
+
+  @override
+  String get diaryEditorInvalidLink => '请输入有效的链接地址';
+
+  @override
+  String get diaryEditorRemoveLink => '移除链接';
+
+  @override
+  String get diaryEditorCommandHint => '搜索命令';
+
+  @override
+  String get diaryEditorDragBlock => '拖动段落';
+
+  @override
+  String get diaryEditorMoveBlockUp => '上移段落';
+
+  @override
+  String get diaryEditorMoveBlockDown => '下移段落';
+
+  @override
+  String get diaryEditorParagraph => '正文';
+
+  @override
+  String get diaryEditorIndent => '增加缩进';
+
+  @override
+  String get diaryEditorOutdent => '减少缩进';
+
+  @override
+  String get diaryEditorSlashCommands => '插入区块';
+
+  @override
+  String get diaryEditorDivider => '分隔线';
+
+  @override
+  String get diaryEditorUnsupportedBlock => '暂不支持的内容';
+
+  @override
+  String get diaryEditorImageWidth => '图片宽度';
+
+  @override
+  String get diaryEditorImageHeight => '图片高度';
 }

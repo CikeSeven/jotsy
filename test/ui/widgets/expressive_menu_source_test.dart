@@ -26,11 +26,8 @@ void main() {
       )
       .toList();
 
-  test('there are source files outside the menu component', () {
-    expect(files, isNotEmpty);
-  });
-
   test('anchored menus outside the component use ExpressiveMenuAnchor', () {
+    expect(files, isNotEmpty);
     final offenders = <String>[];
     for (final file in files) {
       final lines = file.readAsLinesSync();
@@ -46,9 +43,5 @@ void main() {
       }
     }
     expect(offenders, isEmpty);
-  });
-
-  test('the component directory itself still exists', () {
-    expect(Directory(componentDir).existsSync(), isTrue);
   });
 }

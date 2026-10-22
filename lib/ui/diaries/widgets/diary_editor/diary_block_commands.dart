@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../../../core/services/diary_media_storage_service.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../utils/pinyin/name_index.dart';
 import '../../models/diary_toolbar_preferences.dart';
 import '../../controllers/diary_editor_controller.dart';
 import '../../controllers/diary_editor_insert.dart';
@@ -39,15 +40,26 @@ class DiaryBlockCommand {
   final Map<String, Object> attributes;
   final VoidCallback? action;
 
+  /// 筛选规则：
+  /// - 类型、关键词与 Markdown 写法按前缀匹配——单个字母若按包含匹配，
+  ///   `/h` 会因 paragraph、checkList 里有 h 而把正文、待办也列进来；
+  /// - 名称按包含匹配（中文名常从中间输入，如“代码”）；两个字符起再认
+  ///   拼音（[NameIndexKey]：全拼前缀与首字母，如 `/biaoti`、`/dmk`），
+  ///   软键盘不用切到中文输入法也能找到。单个字母不认拼音首字母，否则
+  ///   `/h` 会因“多行（duo hang）”命中代码块。
   bool matches(String query) {
     if (query.isEmpty) return true;
     final needle = query.toLowerCase();
-    return [
-      label,
+    if ([
       type,
       ?markdown,
       ...keywords,
-    ].any((value) => value.toLowerCase().contains(needle));
+    ].any((value) => value.toLowerCase().startsWith(needle))) {
+      return true;
+    }
+    if (label.toLowerCase().contains(needle)) return true;
+    return needle.length >= 2 &&
+        NameIndexKey.of(label).matches(normalizeNameQuery(query));
   }
 }
 

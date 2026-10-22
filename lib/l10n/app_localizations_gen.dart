@@ -2654,12 +2654,6 @@ abstract class AppLocalizations {
   /// **'Change unlock time'**
   String get timeCapsuleUpdateUnlock;
 
-  /// Time capsule text for timeCapsuleSealAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Seal diary'**
-  String get timeCapsuleSealAction;
-
   /// Time capsule text for timeCapsuleSealing.
   ///
   /// In en, this message translates to:
@@ -8456,12 +8450,6 @@ abstract class AppLocalizations {
   /// **'System account authorization is unavailable on this device (Google Play services required), and this build has no fallback'**
   String get cloudBackupErrorPlatformUnavailable;
 
-  /// Publish page: hint shown when the time capsule's unlock time is no longer in the future at publish time.
-  ///
-  /// In en, this message translates to:
-  /// **'The unlock time has passed. Choose a new one before sealing.'**
-  String get timeCapsuleUnlockPassed;
-
   /// Weather fetch hint: the configured QWeather API host is invalid.
   ///
   /// In en, this message translates to:
@@ -8504,6 +8492,24 @@ abstract class AppLocalizations {
   /// **'Couldn\'t publish the diary. Please try again.'**
   String get publishFailed;
 
+  /// Publish page: shown once the new diary has been saved, which happens as soon as the page opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Diary published'**
+  String get publishSucceeded;
+
+  /// Publish page: the draft time capsule unlock time was no longer in the future, so the diary was published as a regular one.
+  ///
+  /// In en, this message translates to:
+  /// **'The unlock time had passed, so the diary was published without a time lock.'**
+  String get publishCapsuleExpired;
+
+  /// Publish page: autosaving a panel change of the just-published diary failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save your changes. Please try again.'**
+  String get publishSaveFailed;
+
   /// Publish panel: the publish time row while a time lock is set; the diary is dated at the unlock time.
   ///
   /// In en, this message translates to:
@@ -8521,18 +8527,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add tags, mood, place…'**
   String get publishPanelSummaryEmpty;
-
-  /// Publish panel collapsed bar: short label of the publish button.
-  ///
-  /// In en, this message translates to:
-  /// **'Publish'**
-  String get publishPanelPublishShort;
-
-  /// Publish panel collapsed bar: short label of the publish button when a time lock is set.
-  ///
-  /// In en, this message translates to:
-  /// **'Seal'**
-  String get publishPanelSealShort;
 
   /// Preview page action sheet entry that opens the share sheet.
   ///

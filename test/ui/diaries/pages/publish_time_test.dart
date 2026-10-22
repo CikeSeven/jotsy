@@ -14,10 +14,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../support/expressive_test_theme.dart';
 import '../../../support/publish_panel_driver.dart';
 
-/// 发布页的时间规则：
-/// - 发表时间不能冻结在“打开发布页那一刻”：没选过就只带回打开者的请求值，
-///   发表时再现算；选过才带回、写入所选时间；
-/// - 时间胶囊的解封时间到发布时必须仍在未来。
+/// 发布页的时间规则（进入即发表）：
+/// - 发表时间是写库那一刻；打开者带来的请求值（日历的按日新建）照常生效；
+/// - 之后在面板里改选的时间随自动保存写回这篇日记，原样确认不算修改；
+/// - 解封时间已过的胶囊不封存，按普通日记发表并提示。
 void main() {
   late AppDatabase database;
   late SettingsService settings;
@@ -81,43 +81,72 @@ void main() {
       ),
     );
     await tester.tap(find.text('Open route'));
+    await tester.pump();
+    await PublishPanelDriver(tester).waitUntilPublished();
     await tester.pumpAndSettle();
   }
 
-  Future<NewDiaryDraft> goBack(WidgetTester tester) async {
+  Future<Diary> onlyDiary(WidgetTester tester) async {
+    final diaries = await tester.runAsync(
+      () => database.select(database.diaries).get(),
+    );
+    expect(diaries, hasLength(1));
+    return diaries!.single;
+  }
+
+  /// 返回：补存是真实异步，等到发布页退场、新日记 id 回传。
+  Future<String> goBack(WidgetTester tester) async {
     await tester.binding.handlePopRoute();
+    for (var i = 0; i < 20 && results.isEmpty; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+    }
     await tester.pumpAndSettle();
     expect(results, hasLength(1));
-    return results.single! as NewDiaryDraft;
+    return results.single! as String;
   }
 
   Future<void> unmount(WidgetTester tester) async {
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(Duration.zero);
   }
 
-  testWidgets(
-    'an untouched publish time stays automatic through a round trip',
-    (tester) async {
-      await openPublisher(tester);
-      // 没有请求值也没选过：面板显示“自动获取当前时间”。
-      expect(PublishPanelDriver(tester).publishTimeLabel, isNull);
+  testWidgets('opening the page publishes the diary right away', (
+    tester,
+  ) async {
+    final before = DateTime.now();
+    await openPublisher(tester);
+    final driver = PublishPanelDriver(tester);
 
-      final draft = await goBack(tester);
-      expect(draft.createdAtOverride, isNull);
-      await unmount(tester);
-    },
-  );
+    final diary = await onlyDiary(tester);
+    expect(diary.title, 'A walk');
+    expect(
+      diary.createdAt.isBefore(before.subtract(const Duration(seconds: 1))),
+      isFalse,
+    );
+    expect(find.text(driver.l10n.publishSucceeded), findsOneWidget);
+    // 面板显示的就是写进去的发表时间。
+    expect(
+      driver.publishTimeLabel,
+      driver.l10n.formatDateTimeMinute(diary.createdAt),
+    );
+    // 已经发表：留在本页，返回时才退场。
+    expect(results, isEmpty);
+    expect(find.byType(PublishDiaryPage), findsOneWidget);
 
-  testWidgets('a calendar day comes back unchanged', (tester) async {
-    final day = DateTime(2025, 3, 15);
-    await openPublisher(tester, createdAtOverride: day);
-    final label = PublishPanelDriver(tester).publishTimeLabel;
-    expect(label, isNotNull);
-    expect(label, contains('2025'));
+    expect(await goBack(tester), diary.diaryId);
+    await unmount(tester);
+  });
 
-    final draft = await goBack(tester);
-    expect(draft.createdAtOverride, day);
+  testWidgets('a calendar day keeps the day', (tester) async {
+    await openPublisher(tester, createdAtOverride: DateTime(2025, 3, 15));
+    final diary = await onlyDiary(tester);
+    expect(DateUtils.dateOnly(diary.createdAt), DateTime(2025, 3, 15));
+    expect(PublishPanelDriver(tester).publishTimeLabel, contains('2025'));
     await unmount(tester);
   });
 
@@ -136,10 +165,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('confirming the same minute keeps the requested time', (
+  testWidgets('confirming the same minute leaves the diary alone', (
     tester,
   ) async {
     await openPublisher(tester, createdAtOverride: requested);
+    final published = await onlyDiary(tester);
+    expect(published.createdAt, requested);
+
     PublishPanelDriver(tester).pickPublishTime();
     await tester.pumpAndSettle();
     await tester.tap(find.text('OK'));
@@ -147,12 +179,14 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    final draft = await goBack(tester);
-    expect(draft.createdAtOverride, requested);
+    await goBack(tester);
+    final diary = await onlyDiary(tester);
+    expect(diary.createdAt, requested);
+    expect(diary.updatedAt, published.updatedAt);
     await unmount(tester);
   });
 
-  testWidgets('a picked time is carried back to the editor', (tester) async {
+  testWidgets('a picked time is saved to the published diary', (tester) async {
     await openPublisher(tester, createdAtOverride: requested);
     final driver = PublishPanelDriver(tester);
     expect(
@@ -163,59 +197,27 @@ void main() {
     await pickMarch10(tester);
     expect(driver.publishTimeLabel, driver.l10n.formatDateTimeMinute(picked));
 
-    final draft = await goBack(tester);
-    expect(draft.createdAtOverride, picked);
-    await unmount(tester);
-  });
-
-  testWidgets('a picked time is what the diary is published with', (
-    tester,
-  ) async {
-    await openPublisher(tester, createdAtOverride: requested);
-    await pickMarch10(tester);
-
-    PublishPanelDriver(tester).triggerPublish();
-    for (var i = 0; i < 20 && results.isEmpty; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-      await tester.pump();
-    }
-    expect(results, hasLength(1));
-    final stored = await tester.runAsync(
-      () => database.getDiaryWithTagsByDiaryId(results.single! as String),
-    );
-    expect(stored?.diary.createdAt, picked);
-    await tester.pumpAndSettle();
+    await goBack(tester);
+    expect((await onlyDiary(tester)).createdAt, picked);
     await unmount(tester);
   });
 
   // 例如“写给某天的胶囊”草稿在那天过后才恢复发布。
-  testWidgets('a capsule whose unlock day has passed is not sealed', (
+  testWidgets('a capsule whose unlock day has passed is published unsealed', (
     tester,
   ) async {
     final yesterday = DateUtils.dateOnly(
       DateTime.now(),
     ).subtract(const Duration(days: 1));
     await openPublisher(tester, capsuleUnlockAt: yesterday);
-    final l10n = PublishPanelDriver(tester).l10n;
+    final driver = PublishPanelDriver(tester);
 
-    PublishPanelDriver(tester).triggerPublish();
-    for (var i = 0; i < 5; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 20)),
-      );
-      await tester.pump();
-    }
-    expect(find.text(l10n.timeCapsuleUnlockPassed), findsOneWidget);
-    expect(find.byType(PublishDiaryPage), findsOneWidget);
-    expect(results, isEmpty);
-    final diaries = await tester.runAsync(
-      () => database.select(database.diaries).get(),
-    );
-    expect(diaries, isEmpty);
-    await tester.pump(const Duration(seconds: 5));
-    await tester.pumpAndSettle();
+    expect(find.text(driver.l10n.publishCapsuleExpired), findsOneWidget);
+    final diary = await onlyDiary(tester);
+    expect(diary.capsuleUnlockAt, isNull);
+    expect(diary.capsuleLockedAt, isNull);
+    // 面板里的胶囊也一并去掉，可以重新设置。
+    expect(driver.draft.value.capsule, isNull);
     await unmount(tester);
   });
 }

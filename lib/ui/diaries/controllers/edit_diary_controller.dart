@@ -295,54 +295,50 @@ class EditDiaryController {
     Navigator.of(_state.context).pop(true);
   }
 
-  /// 发布成功、发布页即将退场时调用：删除这份草稿，并把编辑页静默移出路由栈。
+  /// 发布页写库成功时调用：删除这份草稿（见 [_deletePublishedDraft]）。
+  ///
+  /// 发布页进入即发表，此后编辑页还留在它下面，直到发布页退场
+  /// （[_leaveAfterPublish]）；草稿自动保存已关闭，切后台与销毁时的补存都
+  /// 不会把草稿写回来。草稿清理不依赖页面状态，页面被移除后继续完成。
+  void _handlePublished(String diaryId) {
+    unawaited(_deletePublishedDraft());
+  }
+
+  /// 发布页即将退场时调用：把编辑页静默移出路由栈，返回直接回到列表。
   ///
   /// 必须赶在发布页退场之前：导航器只允许在上层路由静止且不透明时立即移除
   /// 下层路由，若等发布页开始退场再移除，会被推迟到退场结束——编辑页先露出
-  /// 再瞬间消失。此前的做法是发布页退场后编辑页再 pop 一次，两段退场叠在
-  /// 一起。现在发布页滑走时露出的直接是列表；新日记 id 作为编辑页的结果交给
-  /// 打开者，列表据此播放新卡片的出现动画。草稿清理不依赖页面状态，页面被
-  /// 移除后继续完成。
-  void _handlePublished(String diaryId) {
-    unawaited(_deletePublishedDraft());
+  /// 再瞬间消失。也不在写库成功时就移除：那时新日记 id 就会交给打开者，列表
+  /// 的新卡片出现动画会在发布页底下提前播完。现在发布页滑走时露出的直接是
+  /// 列表；新日记 id 作为编辑页的结果交给打开者，列表据此播放新卡片的出现
+  /// 动画。
+  void _leaveAfterPublish(String diaryId) {
     final route = ModalRoute.of(_state.context);
     if (route != null && route.isActive) {
       Navigator.of(_state.context).removeRoute(route, diaryId);
     }
   }
 
-  /// 跳转到发布页，并在返回后回写发布页修改过的草稿上下文。
+  /// 发布：打开发布页，发布页一打开就写库（见 PublishDiaryPage）。
+  ///
+  /// 发表成功后编辑页由发布页退场时移出路由栈，不会再回到这里；写库失败时
+  /// 发布页提示并退回本页，草稿原样保留，可以再次发布。
   Future<void> openPublishPage() async {
     if (!validateDraft()) {
       return;
     }
 
-    final result = await Navigator.of(_state.context).push<Object>(
+    await Navigator.of(_state.context).push<Object>(
       MaterialPageRoute<Object>(
         builder: (BuildContext context) {
           return PublishDiaryPage(
             onPublished: _handlePublished,
+            onLeave: _leaveAfterPublish,
             initialDraft: _state._currentCreateDraft,
           );
         },
       ),
     );
-
-    if (!_state.mounted) {
-      return;
-    }
-
-    if (result is NewDiaryDraft) {
-      _state.setState(() {
-        _state._createDateOverride =
-            result.createdAtOverride ?? _state._createDateOverride;
-        _state._metadataJson = result.metadataJson;
-        _state._meta.restore(DiaryMetaDraft.fromNewDiaryDraft(result));
-      });
-      // 发布页可能改了发表日期：补写的那天随之变化。
-      _state._syncDayPhotos();
-      scheduleCreateDraftAutoSave();
-    }
   }
 
   String _buildMetadataJsonForEdit({DateTime? generatedAt}) {

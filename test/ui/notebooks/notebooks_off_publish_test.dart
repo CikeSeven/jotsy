@@ -55,7 +55,11 @@ void main() {
     expect(await database.getDiaryNotebookIds(id), isEmpty);
     expect(await database.getActiveDiaryIds(), <String>[id]);
     expect(meta.value.notebookIds, <String>{hidden}, reason: '面板草稿不改');
-    expect(controller.returnDraft().notebookIds, <String>[hidden]);
+
+    // 发表后的自动保存同样不写成员关系。
+    meta.setMood('🙂');
+    expect(await controller.flush(), isTrue);
+    expect(await database.getDiaryNotebookIds(id), isEmpty);
   });
 
   test(
@@ -72,4 +76,22 @@ void main() {
       );
     },
   );
+
+  test('notebooks on: a notebook picked after publishing keeps the chapter '
+      'the diary was started in', () async {
+    final (controller, meta) = await publisher(notebooks: true);
+    final id = await controller.submit(database);
+    Future<String?> chapterOf() async => (await database.getNotebookContents(
+      hidden,
+    )).singleWhere((entry) => entry.diaryId == id).chapterId;
+    expect(await chapterOf(), 'c1');
+
+    // 取消再选回：仍落回在本子里新建时的章节。
+    meta.setNotebookSelected(hidden, false);
+    expect(await controller.flush(), isTrue);
+    expect(await database.getDiaryNotebookIds(id), isEmpty);
+    meta.setNotebookSelected(hidden, true);
+    expect(await controller.flush(), isTrue);
+    expect(await chapterOf(), 'c1');
+  });
 }

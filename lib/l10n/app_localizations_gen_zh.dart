@@ -1421,9 +1421,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timeCapsuleUpdateUnlock => '调整解封时间';
 
   @override
-  String get timeCapsuleSealAction => '封存这篇日记';
-
-  @override
   String get timeCapsuleSealing => '正在封存此刻...';
 
   @override
@@ -4581,9 +4578,6 @@ class AppLocalizationsZh extends AppLocalizations {
       '本机无法使用系统账号授权（需要 Google Play 服务），此版本也没有配置备用的授权方式';
 
   @override
-  String get timeCapsuleUnlockPassed => '解封时间已经过去，请重新选择后再封存';
-
-  @override
   String get weatherInvalidHost => '和风天气服务地址配置有误，请检查 qweather.api_host';
 
   @override
@@ -4605,6 +4599,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get publishFailed => '发表失败，请重试';
 
   @override
+  String get publishSucceeded => '日记已发表';
+
+  @override
+  String get publishCapsuleExpired => '解封时间已经过去，已作为普通日记发表';
+
+  @override
+  String get publishSaveFailed => '保存失败，请重试';
+
+  @override
   String publishTimeFollowsCapsule(String time) {
     return '跟随定时锁 · $time';
   }
@@ -4614,12 +4617,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get publishPanelSummaryEmpty => '添加标签、心情、地点…';
-
-  @override
-  String get publishPanelPublishShort => '发表';
-
-  @override
-  String get publishPanelSealShort => '封存';
 
   @override
   String get previewShare => '分享';

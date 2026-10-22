@@ -1470,9 +1470,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timeCapsuleUpdateUnlock => 'Change unlock time';
 
   @override
-  String get timeCapsuleSealAction => 'Seal diary';
-
-  @override
   String get timeCapsuleSealing => 'Sealing this moment...';
 
   @override
@@ -5060,10 +5057,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'System account authorization is unavailable on this device (Google Play services required), and this build has no fallback';
 
   @override
-  String get timeCapsuleUnlockPassed =>
-      'The unlock time has passed. Choose a new one before sealing.';
-
-  @override
   String get weatherInvalidHost =>
       'The weather service host is set up incorrectly. Check qweather.api_host.';
 
@@ -5091,6 +5084,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get publishFailed => 'Couldn\'t publish the diary. Please try again.';
 
   @override
+  String get publishSucceeded => 'Diary published';
+
+  @override
+  String get publishCapsuleExpired =>
+      'The unlock time had passed, so the diary was published without a time lock.';
+
+  @override
+  String get publishSaveFailed =>
+      'Couldn\'t save your changes. Please try again.';
+
+  @override
   String publishTimeFollowsCapsule(String time) {
     return 'Follows the time lock · $time';
   }
@@ -5100,12 +5104,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get publishPanelSummaryEmpty => 'Add tags, mood, place…';
-
-  @override
-  String get publishPanelPublishShort => 'Publish';
-
-  @override
-  String get publishPanelSealShort => 'Seal';
 
   @override
   String get previewShare => 'Share';

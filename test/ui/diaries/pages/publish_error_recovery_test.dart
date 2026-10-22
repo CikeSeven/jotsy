@@ -92,13 +92,23 @@ void main() {
     locationLongitude: 116.480881,
   );
 
-  testWidgets('a weather error releases the publish page weather button', (
-    tester,
-  ) async {
+  /// 打开发布页，等进入即发表完成，并让“已发表”提示条播完退场，后面的
+  /// 提示条才是本次操作的结果。
+  Future<void> openPublisher(WidgetTester tester) async {
     await openRoute(
       tester,
       (_) => const PublishDiaryPage(initialDraft: locatedDraft),
     );
+    await PublishPanelDriver(tester).waitUntilPublished();
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
+  }
+
+  testWidgets('a weather error releases the publish page weather button', (
+    tester,
+  ) async {
+    await openPublisher(tester);
     final panel = PublishPanelDriver(tester);
 
     panel.resolveWeather();
@@ -111,26 +121,24 @@ void main() {
     await unmount(tester);
   });
 
-  testWidgets('a failed publish re-enables publishing right away', (
+  testWidgets('a failed save on leaving keeps the page and unlocks it', (
     tester,
   ) async {
-    await openRoute(
-      tester,
-      (_) => const PublishDiaryPage(initialDraft: locatedDraft),
-    );
+    await openPublisher(tester);
     await tester.runAsync(
       () => database.customStatement('''
-        CREATE TRIGGER reject_diary_insert BEFORE INSERT ON diaries
+        CREATE TRIGGER reject_diary_update BEFORE UPDATE ON diaries
         BEGIN SELECT RAISE(ABORT, 'disk unavailable'); END;
       '''),
     );
     final panel = PublishPanelDriver(tester);
 
-    panel.triggerPublish();
+    panel.setMood('🙂');
+    await tester.binding.handlePopRoute();
     await waitForSnackBar(tester);
-    expect(panel.saving, isFalse);
+    expect(panel.busy, isFalse);
     // 原始异常（SQL 错误）只写调试日志，界面给可读的本地化提示。
-    expect(find.text(panel.l10n.publishFailed), findsOneWidget);
+    expect(find.text(panel.l10n.publishSaveFailed), findsOneWidget);
     expect(find.textContaining('disk unavailable'), findsNothing);
     expect(find.byType(PublishDiaryPage), findsOneWidget);
     await unmount(tester);

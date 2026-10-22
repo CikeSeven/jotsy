@@ -43,10 +43,6 @@ class PublishPanelDriver {
   /// 收起态摘要栏（点按展开、也是拖拽起点）。
   Finder get collapsedHeader => find.byKey(PublishPanelSummaryBar.summaryKey);
 
-  /// 收起栏上的发表按钮（编辑页没有）。
-  Finder get collapsedPublishButton =>
-      find.byKey(PublishPanelSummaryBar.actionKey);
-
   /// 展开态表头。
   Finder get expandedHeader => find.text(l10n.autoT0159);
 
@@ -58,13 +54,20 @@ class PublishPanelDriver {
     await tester.pumpAndSettle();
   }
 
-  /// 面板是否带“发表”主操作（编辑页自动保存时没有）。
-  bool get hasPublishAction => _panel.onPublish != null;
+  /// 面板是否锁住（发布页写库前后、退场中，编辑页保存中）。
+  bool get busy => _panel.busy;
 
-  /// 直接触发发表，不依赖按钮当前是否在可视区域内。
-  void triggerPublish() => _panel.onPublish!();
-
-  bool get saving => _panel.busy;
+  /// 发布页进入即发表：等写库完成、面板解锁。写库是真实异步，离开假时钟
+  /// 推进；期间每次推进 50ms，路由转场随之播完。
+  Future<void> waitUntilPublished() async {
+    for (var i = 0; i < 30 && (panelFinder.evaluate().isEmpty || busy); i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(busy, isFalse, reason: 'the diary should be published by now');
+  }
 
   // ==================== 此时此地 ====================
 
@@ -150,8 +153,6 @@ Widget publishPanelHost({
   PublishTimeOption? publishTime,
   bool keyboardLayout = false,
   List<Tag> tags = const <Tag>[],
-  bool publishAction = true,
-  VoidCallback? onPublish,
   Brightness brightness = Brightness.light,
   String locale = 'en',
   double textScale = 1,
@@ -189,7 +190,6 @@ Widget publishPanelHost({
           capsuleEnabled: capsuleEnabled,
           publishTime: publishTime,
           keyboardLayout: keyboardLayout,
-          onPublish: publishAction ? (onPublish ?? () {}) : null,
         ),
       ),
     ),
@@ -215,14 +215,12 @@ class _PanelHost extends ConsumerStatefulWidget {
     required this.capsuleEnabled,
     required this.publishTime,
     required this.keyboardLayout,
-    required this.onPublish,
   });
 
   final DiaryMetaDraftController? draft;
   final bool capsuleEnabled;
   final PublishTimeOption? publishTime;
   final bool keyboardLayout;
-  final VoidCallback? onPublish;
 
   @override
   ConsumerState<_PanelHost> createState() => _PanelHostState();
@@ -258,7 +256,6 @@ class _PanelHostState extends ConsumerState<_PanelHost> {
       actions: _actions,
       capsuleEnabled: widget.capsuleEnabled,
       publishTime: widget.publishTime,
-      onPublish: widget.onPublish,
     );
     return Stack(
       fit: widget.keyboardLayout ? StackFit.expand : StackFit.loose,

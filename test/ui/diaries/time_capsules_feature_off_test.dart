@@ -72,6 +72,7 @@ void main() {
       expect(diary.capsuleLockedAt, isNull);
       expect(diary.createdAt, now, reason: '按发表时刻，而不是解封日');
       expect((jsonDecode(diary.metadata) as Map).containsKey('capsule'), false);
+      expect(await controller.finish(), isTrue);
       expect(controller.phase.value, PublishPhase.done, reason: '不播封存卡片');
       // 面板草稿原样保留。
       expect(meta.value.capsule, isNotNull);
@@ -93,18 +94,27 @@ void main() {
       expect(on.validate(), PublishValidation.capsuleUnlockPassed);
     });
 
-    test('capsules off: going back to the editor keeps the capsule in the '
-        'draft', () {
-      meta.setCapsule(
-        TimeCapsuleSchedule(
-          unlockAt: DateTime(2027, 1, 1),
-          precision: TimeCapsulePrecision.date,
-        ),
-      );
-      final controller = publisher(capsules: false);
-      addTearDown(controller.dispose);
-      expect(controller.returnDraft().capsuleUnlockAt, DateTime(2027, 1, 1));
-    });
+    test(
+      'capsules off: later panel changes still do not seal the diary',
+      () async {
+        meta.setCapsule(
+          TimeCapsuleSchedule(
+            unlockAt: DateTime(2027, 1, 1),
+            precision: TimeCapsulePrecision.date,
+          ),
+        );
+        final controller = publisher(capsules: false);
+        addTearDown(controller.dispose);
+        final id = await controller.submit(database);
+        meta.setMood('🙂');
+        expect(await controller.flush(), isTrue);
+
+        final diary = (await database.getDiaryWithTagsByDiaryId(id))!.diary;
+        expect(diary.capsuleUnlockAt, isNull);
+        expect(diary.createdAt, now);
+        expect(meta.value.capsule, isNotNull);
+      },
+    );
   });
 
   group('publish page', () {
@@ -141,8 +151,29 @@ void main() {
         ),
       );
       await tester.tap(find.text('open'));
+      await tester.pump();
+      await PublishPanelDriver(tester).waitUntilPublished();
       await tester.pumpAndSettle();
       return h;
+    }
+
+    Future<Diary> onlyDiary(DiaryDraftsHarness h) async {
+      final diaries = (await h.tester.runAsync(
+        () => h.database.select(h.database.diaries).get(),
+      ))!;
+      expect(diaries, hasLength(1));
+      return diaries.single;
+    }
+
+    /// 返回并等到补存完成、（胶囊）封存卡片出现或页面开始退场。
+    Future<void> goBack(WidgetTester tester) async {
+      await tester.binding.handlePopRoute();
+      for (var i = 0; i < 10; i++) {
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 20)),
+        );
+        await tester.pump();
+      }
     }
 
     Finder summaryLock() => find.descendant(
@@ -150,29 +181,30 @@ void main() {
       matching: find.byIcon(FontAwesomeIcons.lock.data),
     );
 
-    String collapsedActionLabel(WidgetTester tester) => tester
-        .widget<Text>(
-          find.descendant(
-            of: find.byKey(PublishPanelSummaryBar.actionKey),
-            matching: find.byType(Text),
-          ),
-        )
-        .data!;
-
     Future<void> unmount(DiaryDraftsHarness h) async {
       await h.tester.pump(const Duration(seconds: 5));
       await h.tester.pumpAndSettle();
       await h.unmount();
     }
 
-    testWidgets('capsules on: the capsule shows in the summary, tile and '
-        'seal button', (tester) async {
+    testWidgets('capsules on: the diary is sealed, the capsule shows in the '
+        'summary and tile, and leaving plays the seal', (tester) async {
       final h = await openPublishPage(tester);
 
+      expect((await onlyDiary(h)).capsuleUnlockAt, DateTime(2030, 1, 1));
       expect(summaryLock(), findsOneWidget);
-      expect(collapsedActionLabel(tester), h.l10n.publishPanelSealShort);
       await PublishPanelDriver(tester).expand();
       expect(find.byType(PublishCapsuleTile), findsOneWidget);
+      // 返回先收起面板。
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      await goBack(tester);
+      expect(find.byType(TimeCapsuleSealOverlay), findsOneWidget);
+      // 封存卡片入场后还要停留片刻（计时器，不是动画帧）才退场。
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.byType(PublishDiaryPage), findsNothing);
       await unmount(h);
     });
 
@@ -181,7 +213,6 @@ void main() {
       final h = await openPublishPage(tester, featuresRaw: capsulesOff);
 
       expect(summaryLock(), findsNothing);
-      expect(collapsedActionLabel(tester), h.l10n.publishPanelPublishShort);
       final panel = PublishPanelDriver(tester);
       await panel.expand();
       expect(find.byType(PublishCapsuleTile), findsNothing);
@@ -189,25 +220,17 @@ void main() {
       expect(find.byIcon(FontAwesomeIcons.lock.data), findsNothing);
       expect(find.byIcon(FontAwesomeIcons.calendarDays.data), findsOneWidget);
 
-      panel.triggerPublish();
-      for (var i = 0; i < 10; i++) {
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 20)),
-        );
-        await tester.pump(const Duration(milliseconds: 50));
-      }
+      final diary = await onlyDiary(h);
+      expect(diary.capsuleUnlockAt, isNull);
+      expect(diary.capsuleLockedAt, isNull);
+
+      // 返回（先收起面板）不播封存卡片。
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await goBack(tester);
       expect(find.byType(TimeCapsuleSealOverlay), findsNothing);
       await tester.pumpAndSettle();
       expect(find.byType(PublishDiaryPage), findsNothing);
-
-      final diaries = (await tester.runAsync(
-        () => h.database.getActiveDiaryIds(),
-      ))!;
-      final diary = (await tester.runAsync(
-        () => h.database.getDiaryWithTagsByDiaryId(diaries.single),
-      ))!.diary;
-      expect(diary.capsuleUnlockAt, isNull);
-      expect(diary.capsuleLockedAt, isNull);
       await unmount(h);
     });
   });

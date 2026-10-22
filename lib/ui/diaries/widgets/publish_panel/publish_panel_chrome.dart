@@ -67,7 +67,7 @@ class PublishPanelPageScaffold extends StatelessWidget {
 
 /// 主页表头，点按切换展开状态。
 ///
-/// - 收起态：左侧双箭头 + [collapsedContent]（摘要栏，可带发表按钮）；
+/// - 收起态：左侧双箭头 + [collapsedContent]（摘要栏）；
 /// - 展开态：居中的双箭头 + “下滑收起”。
 /// 越过阈值时两种布局短交叉淡入。箭头随拖拽进度连续翻转：纵向缩放 1 → -1，
 /// 上指的双箭头先压扁成一道横线再翻成下指，跟手且不会在越过阈值的那一帧
@@ -204,49 +204,6 @@ class PublishPanelSubHeader extends StatelessWidget {
           ),
           const SizedBox(width: 48),
         ],
-      ),
-    );
-  }
-}
-
-/// 发表主按钮。[sealing] 为 true 时文案为“封存这篇日记”；[busy] 时停用并
-/// 显示“发布中…”。
-class PublishPanelActionButton extends StatelessWidget {
-  const PublishPanelActionButton({
-    super.key,
-    required this.busy,
-    required this.sealing,
-    required this.onPressed,
-  });
-
-  final bool busy;
-  final bool sealing;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    return SizedBox(
-      width: double.infinity,
-      child: FilledButton.icon(
-        style: FilledButton.styleFrom(
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          minimumSize: const Size(64, 56),
-          textStyle: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        onPressed: busy ? null : onPressed,
-        icon: const FaIcon(FontAwesomeIcons.paperPlane, size: 13),
-        label: Text(
-          busy
-              ? l10n.autoT0176
-              : sealing
-              ? l10n.timeCapsuleSealAction
-              : l10n.autoT0138,
-        ),
       ),
     );
   }

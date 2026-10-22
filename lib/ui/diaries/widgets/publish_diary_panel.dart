@@ -30,8 +30,8 @@ export 'publish_panel/publish_panel_main_page.dart' show PublishTimeOption;
 /// 发布页与编辑页底部的元数据悬浮面板（smooth_sheets 版）。
 ///
 /// 输入：面板草稿 [draft] 与动作 [actions]（与页面共享），是否忙碌、发表
-/// 时间行、是否提供时间胶囊与发表按钮。标签与心情候选由面板自己监听。
-/// 输出：草稿上的修改（区块直接写 [draft]）、[onPublish]、展开进度
+/// 时间行、是否提供时间胶囊。标签与心情候选由面板自己监听。
+/// 输出：草稿上的修改（区块直接写 [draft]，宿主页面自动保存）、展开进度
 /// [onProgressChanged]。
 ///
 /// 交互：收起态更窄、位置更高；支持上划与点击展开；上划过程中尺寸连续
@@ -47,7 +47,6 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
     this.publishTime,
     this.capsuleEnabled = false,
     this.showDraftCapsule = true,
-    this.onPublish,
     this.onProgressChanged,
   });
 
@@ -55,22 +54,20 @@ class PublishDiaryPanel extends ConsumerStatefulWidget {
   final DiaryMetaDraftController draft;
   final DiaryMetaActions actions;
 
-  /// 页面忙碌（写库中、封存中）：发表按钮停用，层级不可改。
+  /// 页面忙碌（写库中、封存中）：层级不可改。
   final bool busy;
 
   /// 发表时间行；为 null 时不显示。
   final PublishTimeOption? publishTime;
 
-  /// 是否提供时间胶囊（只有发布新日记时）。
+  /// 是否提供时间胶囊（只有发布页，新日记刚发表时）。
   final bool capsuleEnabled;
 
-  /// 是否显示草稿里已有的胶囊：收起栏的胶囊摘要、“封存”按钮文案与发表
-  /// 时间行的“跟随定时锁”。发布页在时间胶囊功能关闭时为 false——发布时会
-  /// 忽略胶囊，不能显示用户看不到、也不会生效的设置。
+  /// 是否显示草稿里已有的胶囊：收起栏的胶囊摘要与发表时间行的“跟随定时
+  /// 锁”。发布页在时间胶囊功能关闭时为 false——发布时会忽略胶囊，不能显示
+  /// 用户看不到、也不会生效的设置。
   final bool showDraftCapsule;
 
-  /// 编辑页自动保存时不传主操作，发布页仍显示发布按钮。
-  final VoidCallback? onPublish;
   final ValueChanged<double>? onProgressChanged;
 
   /// 收起态从宿主底边算起占用的高度（底部间隙 + 抬升 + 收起栏）。宿主要在
@@ -379,8 +376,6 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
               draft: widget.draft,
               tags: tags.asData?.value ?? const [],
               notebooks: notebooks ?? const <NotebookView>[],
-              busy: widget.busy,
-              onPublish: widget.onPublish,
               showCapsule: widget.showDraftCapsule,
             ),
           ),
@@ -395,7 +390,6 @@ class _PublishDiaryPanelState extends ConsumerState<PublishDiaryPanel> {
             showDraftCapsule: widget.showDraftCapsule,
             onOpenTags: _panelCoordinator.openTagPage,
             onOpenCapsule: _openCapsulePage,
-            onPublish: widget.onPublish,
             notebooks: notebooks ?? const <NotebookView>[],
             onOpenNotebooks: notebooksEnabled
                 ? _panelCoordinator.openNotebookPage

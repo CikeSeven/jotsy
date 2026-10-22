@@ -2018,10 +2018,6 @@
   "@timeCapsuleUpdateUnlock": {
     "description": "Time capsule text for timeCapsuleUpdateUnlock."
   },
-  "timeCapsuleSealAction": "Seal diary",
-  "@timeCapsuleSealAction": {
-    "description": "Time capsule text for timeCapsuleSealAction."
-  },
   "timeCapsuleSealing": "Sealing this moment...",
   "@timeCapsuleSealing": {
     "description": "Time capsule text for timeCapsuleSealing."
@@ -6473,10 +6469,6 @@
   "@cloudBackupErrorPlatformUnavailable": {
     "description": "System authorization unavailable and no fallback configured."
   },
-  "timeCapsuleUnlockPassed": "The unlock time has passed. Choose a new one before sealing.",
-  "@timeCapsuleUnlockPassed": {
-    "description": "Publish page: hint shown when the time capsule's unlock time is no longer in the future at publish time."
-  },
   "weatherInvalidHost": "The weather service host is set up incorrectly. Check qweather.api_host.",
   "@weatherInvalidHost": {
     "description": "Weather fetch hint: the configured QWeather API host is invalid."
@@ -6505,6 +6497,18 @@
   "@publishFailed": {
     "description": "Publish page hint: writing the new diary failed."
   },
+  "publishSucceeded": "Diary published",
+  "@publishSucceeded": {
+    "description": "Publish page: shown once the new diary has been saved, which happens as soon as the page opens."
+  },
+  "publishCapsuleExpired": "The unlock time had passed, so the diary was published without a time lock.",
+  "@publishCapsuleExpired": {
+    "description": "Publish page: the draft time capsule unlock time was no longer in the future, so the diary was published as a regular one."
+  },
+  "publishSaveFailed": "Couldn't save your changes. Please try again.",
+  "@publishSaveFailed": {
+    "description": "Publish page: autosaving a panel change of the just-published diary failed."
+  },
   "publishTimeFollowsCapsule": "Follows the time lock · {time}",
   "@publishTimeFollowsCapsule": {
     "description": "Publish panel: the publish time row while a time lock is set; the diary is dated at the unlock time.",
@@ -6522,14 +6526,6 @@
   "publishPanelSummaryEmpty": "Add tags, mood, place…",
   "@publishPanelSummaryEmpty": {
     "description": "Publish panel collapsed bar: shown when no metadata has been chosen yet."
-  },
-  "publishPanelPublishShort": "Publish",
-  "@publishPanelPublishShort": {
-    "description": "Publish panel collapsed bar: short label of the publish button."
-  },
-  "publishPanelSealShort": "Seal",
-  "@publishPanelSealShort": {
-    "description": "Publish panel collapsed bar: short label of the publish button when a time lock is set."
   },
   "previewShare": "Share",
   "@previewShare": {

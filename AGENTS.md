@@ -33,9 +33,9 @@
 │  ├─ l10n/                          # 国际化封装
 │  └─ utils/                         # 工具函数（pinyin/：由 Unihan 生成的汉字拼音表与名称 A–Z 索引 NameIndexKey）
 ├─ assets/                           # 静态资源
-├─ test/                             # 测试（performance/：手动启用的合成大数据微基准）
+├─ test/                             # 测试（ui/source_rules_test.dart：共用 UI 源码约束；performance/：手动启用的合成大数据微基准）
 ├─ integration_test/                 # 实机集成测试（隔离设置与数据库，验证录音/播放）
-├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart；write_update_manifest.dart：发布时生成应用内更新清单，逻辑在 update_manifest.dart；generate_pinyin_table.dart：由 Unihan 生成汉字拼音表）
+├─ tool/                             # 开发与 CI 脚本（check_arb.dart：ARB 文案规范检查，规则在 arb_lint.dart；merge_lcov.dart：合并 CI 测试分片的行覆盖率；write_update_manifest.dart：发布时生成应用内更新清单，逻辑在 update_manifest.dart；generate_pinyin_table.dart：由 Unihan 生成汉字拼音表）
 ├─ docs/                             # 项目文档（*.md、releases/ 中英版本说明）与官网（GitHub Pages 源目录：index.html / privacy.html / 404.html，样式脚本图片配色在 assets/）
 ├─ .github/                          # CI 门禁 workflows/ci.yml、发布 workflows/release-apk.yml、官网下载次数统计 workflows/download-stats.yml、共用的 actions/setup-flutter（唯一定义 Flutter 版本）、Dependabot
 ├─ android/ ios/ web/ windows/ ...  # 各平台工程
@@ -146,7 +146,7 @@
   - `flutter test`
   - `dart run build_runner build --delete-conflicting-outputs`
   - `dart run tool/check_arb.dart`（改动 ARB 后）
-- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（附覆盖率）、arm64 的 Android release 构建、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。
+- 必须：`.github/workflows/ci.yml` 是合并门禁，PR 与推送到 main 时运行（只改 `docs/`、Markdown、LICENSE 时跳过）：`dart format --set-exit-if-changed lib test integration_test tool`、`flutter analyze`（info 同样视为失败）、`dart run tool/check_arb.dart`、生成代码一致性（重跑 `flutter gen-l10n` 与 build_runner 后工作区必须无变化，含插件注册文件）、全量 `flutter test`（按文件分片，覆盖率经 `tool/merge_lcov.dart` 合并；`Tests` 门禁须等所有分片通过）、arm64 的 Android release 构建、actionlint；PR 另查每个非合并提交是否为 Conventional Commit。CI 未全绿不得合并；提交前在本地先跑与改动相关的同名命令。
 - 必须：Flutter 版本只定义在 `.github/actions/setup-flutter/action.yml`（CI 与发布共用），升级须单独提交并先让 CI 全绿；依赖以 `pubspec.lock` 为准（CI 用 `flutter pub get --enforce-lockfile`），改动 `pubspec.yaml` 的依赖必须同时提交锁文件。
 - 必须：工作流引用的 action 一律固定到 commit SHA 并在行尾注明版本（由 Dependabot 升级）；工作流默认只读权限，写权限只授予确需写入的 job。
 - 禁止：CI 门禁读取签名材料或任何 secrets（fork 的 PR 也要能跑）；CI 用一次性密钥构建的 APK 不上传（签名与正式版不同，装上后无法覆盖升级）。secrets 只在 `release-apk.yml` 的签名构建 job 中使用。

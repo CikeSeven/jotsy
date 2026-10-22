@@ -9,9 +9,6 @@ void main() {
       final source = await File(
         'lib/ui/settings/pages/about_page.dart',
       ).readAsString();
-      final zhArb = await File('lib/l10n/app_zh.arb').readAsString();
-      final enArb = await File('lib/l10n/app_en.arb').readAsString();
-
       expect(
         source,
         contains("static const String _qqFeedbackGroupNumber = '678136434'"),
@@ -27,17 +24,6 @@ void main() {
       expect(source, contains('aboutQqFeedbackGroup'));
       expect(source, contains('aboutQqFeedbackGroupSubtitle'));
       expect(source, contains('aboutQqFeedbackGroupCopied'));
-
-      for (final key in <String>[
-        'aboutQqFeedbackGroup',
-        'aboutQqFeedbackGroupSubtitle',
-        'aboutQqFeedbackGroupCopied',
-      ]) {
-        expect(zhArb, contains('"$key"'));
-        expect(zhArb, contains('"@$key"'));
-        expect(enArb, contains('"$key"'));
-        expect(enArb, contains('"@$key"'));
-      }
     },
   );
 }

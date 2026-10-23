@@ -43,11 +43,13 @@ class _InlinePage extends af.BlockComponentStatelessWidget {
   final Widget? header;
   final Widget? footer;
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-    primary: false,
-    physics: const NeverScrollableScrollPhysics(),
-    child: _InlineScrollProxy(
-      position: Scrollable.maybeOf(context)?.position,
+  Widget build(BuildContext context) => _InlineScrollProxy(
+    position: Scrollable.maybeOf(context)?.position,
+    // 连同末行把手预留的空白一起转交滚动；把手位于服务层的兄弟节点，
+    // 它与外层滚动的手势竞争由 DiaryEditorSelectionGestures 提前接管。
+    child: SingleChildScrollView(
+      primary: false,
+      physics: const NeverScrollableScrollPhysics(),
       child: _MeasureHeight(
         onHeight: onHeight,
         child: Column(

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import '../../../widgets/soft_keyboard_selection_keys.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_block_handle_layer.dart';
+import 'diary_editor_selection_gestures.dart';
 import 'diary_editor_selection_toolbar.dart';
 import 'diary_editor_viewport.dart';
 
@@ -36,6 +37,18 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
   final double contentLeft;
   @override
   Widget build(BuildContext context) {
+    // 只读正文按内容高度嵌入整页滚动时，末行的选区把手会画在文字下方。
+    // clipBehavior.none 只允许绘制溢出，不能让编辑器边界外参与命中测试；
+    // 把完整触控区计入服务视口，短正文和最后一段的把手才能接到拖动。
+    final handleSpace =
+        textSelection &&
+            (Theme.of(context).platform == TargetPlatform.android ||
+                Theme.of(context).platform == TargetPlatform.iOS)
+        ? kMinInteractiveDimension
+        : 0.0;
+    final native = shrinkWrap && controller.readOnly && handleSpace > 0
+        ? DiaryEditorSelectionGestures(controller: controller, child: editor)
+        : editor;
     final content = SoftKeyboardSelectionKeys(
       onExtendSelection: (key) {
         final focusContext = primaryFocus?.context;
@@ -64,8 +77,8 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
         controller: controller,
         enabled: textSelection,
         child: shrinkWrap
-            ? SizedBox(height: inlineHeight, child: editor)
-            : editor,
+            ? SizedBox(height: inlineHeight + handleSpace, child: native)
+            : native,
       ),
     );
     if (controller.readOnly) return content;

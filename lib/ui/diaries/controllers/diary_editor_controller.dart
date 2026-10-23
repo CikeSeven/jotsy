@@ -59,8 +59,28 @@ class DiaryEditorController extends ChangeNotifier {
   }
 
   void _onSelection() {
+    if (_isReadOnlyCaret) {
+      // 只读正文没有插入点，但上游点按（以及复制后收起选区）照样留下折叠
+      // 选区，画出闪烁光标和 Android 的水滴把手。下一个微任务里清掉，赶在
+      // 光标绘制（布局后回调）之前；不记进 _lastSelection，也不通知监听者。
+      scheduleMicrotask(() {
+        if (!state.isDisposed && _isReadOnlyCaret) state.selection = null;
+      });
+      return;
+    }
     if (state.selection != null) _lastSelection = state.selection;
     notifyListeners();
+  }
+
+  /// 只读时不该出现的折叠选区。拖动选区把手或长按扩选途中选区可能暂时
+  /// 折叠，上游后续的拖动更新依赖选区仍在，所以拖动中不算；拖动结束时
+  /// 上游会再发一次不带拖动模式的选区更新，届时仍折叠才清掉。
+  bool get _isReadOnlyCaret {
+    final selection = state.selection;
+    if (!readOnly || selection == null || !selection.isCollapsed) return false;
+    // 上游未导出该键与 MobileSelectionDragMode，自身也在多处重复这个字面量。
+    final dragMode = state.selectionExtraInfo?['selection_drag_mode'];
+    return dragMode is! Enum || dragMode.name == 'none';
   }
 
   bool get readOnly => !state.editable;

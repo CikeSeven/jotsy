@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart' show kLongPressTimeout;
+import 'package:flutter/gestures.dart'
+    show kDoubleTapTimeout, kLongPressTimeout;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
@@ -125,6 +127,55 @@ void main() {
       controller.dispose();
     },
   );
+
+  testWidgets('readonly text keeps selections but never leaves a caret', (
+    tester,
+  ) async {
+    final controller = DiaryEditorController.fromContent(
+      '只读正文 readonly body text',
+      readOnly: true,
+    );
+    await pump(tester, controller, inline: true);
+    final text = tester.getTopLeft(find.byType(af.AppFlowyEditor));
+    await tester.tapAt(text + const Offset(40, 10));
+    await tester.pump(kDoubleTapTimeout);
+    expect(controller.state.selection, isNull);
+
+    // 选中的文字照常保留，供复制。
+    final range = af.Selection.single(path: [0], startOffset: 0, endOffset: 4);
+    controller.select(range);
+    await tester.pump();
+    expect(controller.state.selection, range);
+
+    // 拖动选区把手途中选区可能暂时折叠，拖动结束仍折叠才清掉。
+    final collapsed = af.Selection.collapsed(af.Position(path: [0], offset: 2));
+    unawaited(
+      controller.state.updateSelectionWithReason(
+        collapsed,
+        reason: af.SelectionUpdateReason.uiEvent,
+        extraInfo: {'selection_drag_mode': _DragMode.leftSelectionHandle},
+      ),
+    );
+    await tester.pump();
+    expect(controller.state.selection, collapsed);
+    unawaited(
+      controller.state.updateSelectionWithReason(
+        collapsed,
+        reason: af.SelectionUpdateReason.uiEvent,
+        extraInfo: {'selection_drag_mode': _DragMode.none},
+      ),
+    );
+    await tester.pump();
+    expect(controller.state.selection, isNull);
+
+    // 复制后收起选区同样不留光标。
+    controller.select(range);
+    controller.select(af.Selection.collapsed(range.end));
+    await tester.pump();
+    expect(controller.state.selection, isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    controller.dispose();
+  });
 
   test(
     'formatting uses native transactions and preserves child nodes on undo',
@@ -307,3 +358,6 @@ class _CodeStyle extends DiaryCodeBlockStyleNotifier {
   @override
   DiaryCodeBlockStyle build() => DiaryCodeBlockStyle.defaults;
 }
+
+/// 与上游未导出的 MobileSelectionDragMode 同名的取值。
+enum _DragMode { none, leftSelectionHandle }

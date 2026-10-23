@@ -128,6 +128,18 @@ void main() {
     },
   );
 
+  test('readonly sessions preserve initial noncollapsed selections', () {
+    final range = af.Selection.single(path: [0], startOffset: 0, endOffset: 4);
+    final controller = DiaryEditorController(
+      document: diaryEditorDocument('只读正文 readonly body text'),
+      selection: range,
+      readOnly: true,
+    );
+    addTearDown(controller.dispose);
+    expect(controller.state.selection, range);
+    expect(controller.selection, range);
+  });
+
   testWidgets('readonly text keeps selections but never leaves a caret', (
     tester,
   ) async {

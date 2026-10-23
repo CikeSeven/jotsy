@@ -6,7 +6,6 @@ import '../../controllers/diary_block_language_tracker.dart';
 import '../../models/diary_toolbar_preferences.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
-import '../diary_image_options_menu.dart';
 import 'diary_code_block_surface.dart';
 import 'diary_editor_styles.dart';
 import '../../controllers/diary_editor_controller.dart';
@@ -45,15 +44,7 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   final media = DiaryMediaBlockBuilder(
     controller: controller,
     onImageOpen: onImageOpen,
-    onImageMenu:
-        onImageMenu ??
-        (context, node) => showDiaryImageOptions(
-          context,
-          controller: controller,
-          node: node,
-          source: node.attributes['url'] as String,
-          readOnly: controller.readOnly,
-        ),
+    onImageMenu: onImageMenu,
     foldLongImages: foldLongImages,
   );
   final builders = <String, af.BlockComponentBuilder>{

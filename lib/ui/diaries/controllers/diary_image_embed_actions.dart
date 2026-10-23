@@ -17,8 +17,8 @@ import 'package:node_diary/ui/widgets/long_image/long_image_policy.dart';
 /// 不依赖光标停在图片上）。副作用：改写正文（大小、删除）、写系统剪贴板、
 /// 把原图存进相册。界面（菜单、滑条、提示）由调用方负责。
 abstract final class DiaryImageEmbedActions {
-  /// 写入缩放菜单的宽高（只作显示上限）。拖动滑条时逐帧调用，所以跳过
-  /// 键盘请求，避免每帧把键盘拉起来。
+  /// 确认缩放后一次写入宽高（只作显示上限）。保持原选区，避免面板关闭时
+  /// 重新请求键盘；拖动期间的预览只在图片块内改变约束。
   static void resize(
     DiaryEditorController controller, {
     required af.Node node,

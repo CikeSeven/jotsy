@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 
@@ -12,12 +14,14 @@ import '../../../widgets/image_viewer_hero.dart';
 import '../diary_attachment_tile.dart';
 import '../diary_audio_player.dart';
 import '../diary_embedded_image.dart' show DiaryEmbeddedImage;
+import '../diary_image_options_menu.dart';
 import '../diary_playback_interaction_guard.dart';
 import '../diary_video_player.dart';
 import '../../models/diary_image_embed_data.dart';
 import '../../controllers/diary_editor_controller.dart';
 
 /// 媒体保留原生块选区，播放器内部仍接管自己的点按；文字路径不参与选区。
+/// 图片缩放草稿只改变本块的显示约束，确认后才经菜单写入正文事务。
 class DiaryMediaBlockBuilder extends af.BlockComponentBuilder {
   DiaryMediaBlockBuilder({
     required this.controller,
@@ -83,6 +87,13 @@ class _DiaryMediaBlock extends af.BlockComponentStatefulWidget {
 
 class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
     with af.SelectableMixin {
+  BoxConstraints? _imageBoundsPreview;
+
+  void _previewImageBounds(BoxConstraints? bounds) {
+    // 面板路由可能晚于正文卸载才返回，不能更新已经销毁的媒体块。
+    if (mounted) setState(() => _imageBoundsPreview = bounds);
+  }
+
   af.Node get node => widget.node;
   RenderBox? get box => context.findRenderObject() as RenderBox?;
   @override
@@ -106,14 +117,28 @@ class _DiaryMediaBlockState extends State<_DiaryMediaBlock>
                   tag == null ? null : _captureImageHero(imageContext, tag),
                 );
               } else {
-                widget.onImageMenu?.call(imageContext, node);
+                final menu = widget.onImageMenu;
+                if (menu != null) {
+                  menu(imageContext, node);
+                } else {
+                  unawaited(
+                    showDiaryImageOptions(
+                      imageContext,
+                      controller: widget.controller,
+                      node: node,
+                      source: source,
+                      readOnly: widget.controller.readOnly,
+                      onResizePreview: _previewImageBounds,
+                    ),
+                  );
+                }
               }
             },
             child: DiaryEmbeddedImage(
               source: source,
               heroTag: tag,
               foldLongImages: widget.foldLongImages,
-              bounds: diaryImageEmbedBounds(node),
+              bounds: _imageBoundsPreview ?? diaryImageEmbedBounds(node),
             ),
           ),
         );

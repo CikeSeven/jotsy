@@ -27,6 +27,7 @@ Future<void> showDiaryImageOptions(
   required af.Node node,
   required String source,
   required bool readOnly,
+  ValueChanged<BoxConstraints?>? onResizePreview,
 }) async {
   final l10n = context.l10n;
   final style = diaryImageStyleOf(node);
@@ -35,7 +36,7 @@ Future<void> showDiaryImageOptions(
     builder: (BuildContext dialogContext) =>
         _DiaryImageOptionsDialog(readOnly: readOnly),
   );
-  if (action == null || !context.mounted) {
+  if (action == null || !context.mounted || controller.isDisposed) {
     return;
   }
   switch (action) {
@@ -48,7 +49,13 @@ Future<void> showDiaryImageOptions(
         ),
       );
     case _ImageAction.resize:
-      _showResizer(context, controller, node: node, style: style);
+      await _showResizer(
+        context,
+        controller,
+        node: node,
+        style: style,
+        onPreview: onResizePreview,
+      );
     case _ImageAction.copy:
       await DiaryImageEmbedActions.copy(
         controller,
@@ -72,13 +79,15 @@ Future<void> showDiaryImageOptions(
   }
 }
 
-/// 缩放先编辑面板草稿，确认后一次事务提交，保留其他 style 声明。
-void _showResizer(
+/// 滑条逐帧更新原位图片的显示约束，不触发正文保存或堆积撤销记录。
+/// 确认后一次事务提交；取消、返回或卸载时清除预览，恢复文档里的原尺寸。
+Future<void> _showResizer(
   BuildContext context,
   DiaryEditorController controller, {
   required af.Node node,
   required String? style,
-}) {
+  required ValueChanged<BoxConstraints?>? onPreview,
+}) async {
   final bounds = diaryImageEmbedBounds(node);
   final screen = MediaQuery.sizeOf(context);
   var width = bounds.maxWidth.isFinite
@@ -87,60 +96,75 @@ void _showResizer(
   var height = bounds.maxHeight.isFinite
       ? math.min(bounds.maxHeight, screen.height)
       : screen.height;
-  showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                context.l10n.diaryImageMenuResize,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 16),
-              Text(context.l10n.diaryEditorImageWidth),
-              Slider(
-                value: width.clamp(24, screen.width),
-                min: 24,
-                max: screen.width,
-                label: '${width.round()}',
-                onChanged: (value) => setState(() => width = value),
-              ),
-              Text(context.l10n.diaryEditorImageHeight),
-              Slider(
-                value: height.clamp(24, screen.height),
-                min: 24,
-                max: screen.height,
-                label: '${height.round()}',
-                onChanged: (value) => setState(() => height = value),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    DiaryImageEmbedActions.resize(
-                      controller,
-                      node: node,
-                      style: style,
-                      width: width,
-                      height: height,
-                    );
-                    Navigator.pop(context);
-                  },
-                  child: Text(context.l10n.commonConfirm),
+  try {
+    final size = await showModalBottomSheet<Size>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  context.l10n.diaryImageMenuResize,
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Text(context.l10n.diaryEditorImageWidth),
+                Slider(
+                  value: width.clamp(24, screen.width),
+                  min: 24,
+                  max: screen.width,
+                  label: '${width.round()}',
+                  onChanged: (value) {
+                    setState(() => width = value);
+                    onPreview?.call(
+                      BoxConstraints(maxWidth: width, maxHeight: height),
+                    );
+                  },
+                ),
+                Text(context.l10n.diaryEditorImageHeight),
+                Slider(
+                  value: height.clamp(24, screen.height),
+                  min: 24,
+                  max: screen.height,
+                  label: '${height.round()}',
+                  onChanged: (value) {
+                    setState(() => height = value);
+                    onPreview?.call(
+                      BoxConstraints(maxWidth: width, maxHeight: height),
+                    );
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () =>
+                        Navigator.pop(context, Size(width, height)),
+                    child: Text(context.l10n.commonConfirm),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+    if (size != null && !controller.isDisposed) {
+      DiaryImageEmbedActions.resize(
+        controller,
+        node: node,
+        style: style,
+        width: size.width,
+        height: size.height,
+      );
+    }
+  } finally {
+    onPreview?.call(null);
+  }
 }
 
 enum _ImageAction { view, resize, copy, save, delete }

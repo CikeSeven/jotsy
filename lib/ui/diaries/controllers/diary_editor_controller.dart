@@ -22,8 +22,13 @@ class DiaryEditorController extends ChangeNotifier {
          document: document ?? af.Document.blank(withInitialText: true),
        ) {
     state.editable = !readOnly;
-    state.selection = selection;
-    _lastSelection = selection;
+    // 初始选区先于监听器赋值，也要遵循只读正文不留插入点的规则；否则
+    // 首块是图片时，上游的 cover 光标会给整行盖一层灰色，并一直留在预览里。
+    final initialSelection = readOnly && selection?.isCollapsed == true
+        ? null
+        : selection;
+    state.selection = initialSelection;
+    _lastSelection = initialSelection;
     _subscription = state.transactionStream.listen((event) {
       if (event.$1 == af.TransactionTime.after &&
           event.$2.operations.isNotEmpty) {

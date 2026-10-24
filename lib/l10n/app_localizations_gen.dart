@@ -13814,22 +13814,22 @@ abstract class AppLocalizations {
   /// **'Remove link'**
   String get diaryEditorRemoveLink;
 
-  /// Accessibility label for the diary editor paragraph drag handle, and the drag item in its menu.
+  /// Accessibility label for the diary editor paragraph drag handle.
   ///
   /// In en, this message translates to:
   /// **'Drag block'**
   String get diaryEditorDragBlock;
 
-  /// Short trailing hint on the paragraph handle menu's drag item: press and hold it to drag.
+  /// Paragraph handle menu item between move up and move down: press and hold it, then slide to move the block.
   ///
   /// In en, this message translates to:
-  /// **'Hold'**
+  /// **'Hold to drag'**
   String get diaryEditorDragBlockHold;
 
   /// Hint shown after tapping the drag item in the paragraph handle menu instead of holding it.
   ///
   /// In en, this message translates to:
-  /// **'Press and hold “Drag block” or the handle, then drag it into place'**
+  /// **'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.'**
   String get diaryEditorDragBlockTip;
 
   /// Move the selected editor block above its previous sibling.

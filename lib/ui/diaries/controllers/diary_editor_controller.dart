@@ -51,6 +51,10 @@ class DiaryEditorController extends ChangeNotifier {
   final af.EditorState state;
   late final StreamSubscription<af.EditorTransactionValue> _subscription;
   int revision = 0;
+
+  /// 正在拖动段落：块随手指实时挪到落点（`DiaryBlockDragSession`）。期间
+  /// 视口不揭示光标——揭示引起的滚动会让手指下的落点继续变化，一路连锁。
+  bool draggingBlock = false;
   int _views = 0;
   bool _disposeRequested = false;
   bool get isDisposed => _disposeRequested;

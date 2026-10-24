@@ -105,6 +105,108 @@ void main() {
     },
   );
 
+  test(
+    'a drag session previews every drop in the document and commits one undo step',
+    () {
+      final controller = DiaryEditorController.fromContent(
+        jsonEncode({
+          'document': {
+            'type': 'page',
+            'children': [
+              for (final text in ['a', 'b'])
+                {
+                  'type': 'paragraph',
+                  'data': {
+                    'delta': [
+                      {'insert': text},
+                    ],
+                  },
+                },
+              {
+                'type': 'bulleted_list',
+                'data': {
+                  'delta': [
+                    {'insert': 'list'},
+                  ],
+                },
+                'children': [
+                  for (final text in ['c1', 'c2'])
+                    {
+                      'type': 'bulleted_list',
+                      'data': {
+                        'delta': [
+                          {'insert': text},
+                        ],
+                      },
+                    },
+                ],
+              },
+              {
+                'type': 'paragraph',
+                'data': {
+                  'delta': [
+                    {'insert': 'd'},
+                  ],
+                },
+              },
+            ],
+          },
+        }),
+      );
+      final start = af.Selection.collapsed(af.Position(path: [0], offset: 1));
+      controller.select(start);
+      final before = controller.contentJson;
+      final a = controller.document.nodeAtPath([0])!;
+      String text(af.Path path) =>
+          controller.document.nodeAtPath(path)!.delta!.toPlainText();
+
+      final session = DiaryBlockDragSession(controller, a);
+      expect(controller.draggingBlock, isTrue);
+      // 预览就是真实的树：挪进列表的两个子项之间，再挪到末尾、挪回 b 之后。
+      expect(session.preview([2, 1]), isTrue);
+      expect(controller.document.nodeAtPath([1, 1]), same(a));
+      expect(text([1, 2]), 'c2');
+      expect(session.preview([3]), isTrue);
+      expect(controller.document.nodeAtPath([3]), same(a));
+      expect(session.preview([1]), isTrue);
+      expect(text([0]), 'b');
+      expect(controller.document.nodeAtPath([1]), same(a));
+      // 落在紧邻的位置等于没动。
+      expect(session.preview([1]), isFalse);
+      expect(controller.hasUndo, isFalse);
+
+      expect(session.commit(), isTrue);
+      expect(controller.draggingBlock, isFalse);
+      expect(text([0]), 'b');
+      expect(controller.document.nodeAtPath([1]), same(a));
+      expect(session.preview([0]), isFalse);
+      // 整次拖动只占一步撤销，光标回到拖动前的位置。
+      controller.undo();
+      expect(controller.contentJson, before);
+      expect(controller.selection, start);
+      expect(controller.hasUndo, isFalse);
+
+      // 取消：放回原处，不留撤销。
+      final d = controller.document.nodeAtPath([3])!;
+      final cancelled = DiaryBlockDragSession(controller, d);
+      expect(cancelled.preview([2, 0]), isTrue);
+      expect(text([2, 0]), 'd');
+      cancelled.cancel();
+      expect(controller.draggingBlock, isFalse);
+      expect(controller.contentJson, before);
+      expect(controller.hasUndo, isFalse);
+
+      // 拖回原位再松手：什么都不记。
+      final same0 = DiaryBlockDragSession(controller, a);
+      expect(same0.preview([3]), isTrue);
+      expect(same0.preview([0]), isTrue);
+      expect(same0.commit(), isFalse);
+      expect(controller.contentJson, before);
+      expect(controller.hasUndo, isFalse);
+      controller.dispose();
+    },
+  );
+
   test('native indent and outdent preserve text', () {
     final controller = DiaryEditorController.fromContent('parent\nchild');
     controller.select(af.Selection.single(path: [1], startOffset: 2));

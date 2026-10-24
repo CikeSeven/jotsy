@@ -253,7 +253,8 @@ void main() {
         lessThan(4),
       );
 
-      final gesture = await tester.startGesture(tester.getCenter(handle));
+      final grab = tester.getCenter(handle);
+      final gesture = await tester.startGesture(grab);
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
       final target = tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2);
       await gesture.moveTo(target - const Offset(0, 10));
@@ -261,6 +262,12 @@ void main() {
       await gesture.moveTo(target);
       await tester.pump();
       await tester.pump();
+      // 实时预览：松手前正文已经是移动后的样子，但还不进撤销栈。
+      expect(controller.plainText, 'second\nthird\nfirst');
+      expect(controller.hasUndo, isFalse);
+      // 把手跟着手指上下走（不随块一格一格跳），横向留在页边距里。
+      expect(tester.getCenter(handle).dy, moreOrLessEquals(target.dy));
+      expect(tester.getCenter(handle).dx, grab.dx);
       await gesture.up();
       await tester.pump();
       expect(controller.plainText, 'second\nthird\nfirst');
@@ -269,9 +276,11 @@ void main() {
         controller.selection,
         af.Selection.collapsed(af.Position(path: [2], offset: 5)),
       );
+      // 整次拖动只占一步撤销。
       controller.undo();
       await tester.pump();
       expect(controller.plainText, 'first\nsecond\nthird');
+      expect(controller.hasUndo, isFalse);
       await tester.pumpWidget(const SizedBox.shrink());
       controller.dispose();
       focus.dispose();
@@ -279,7 +288,7 @@ void main() {
   );
 
   testWidgets(
-    'the handle menu offers drag between move up and move down and holding it drags the block',
+    'holding the menu drag item folds the menu into a chip that follows the finger',
     (tester) async {
       final focus = FocusNode();
       final controller = DiaryEditorController.fromContent(
@@ -304,56 +313,85 @@ void main() {
       await tester.tap(handle);
       await frames();
       final up = find.text('上移段落');
-      final drag = find.text('拖动段落');
+      final drag = find.text('长按拖动');
       final down = find.text('下移段落');
       expect(drag, findsOneWidget);
-      expect(find.text('长按'), findsOneWidget);
       // 拖动在上移与下移之间。
       expect(tester.getCenter(up).dy, lessThan(tester.getCenter(drag).dy));
       expect(tester.getCenter(drag).dy, lessThan(tester.getCenter(down).dy));
 
-      // 轻点只收起菜单并提示长按，不移动任何段落。
+      // 轻点只收起菜单并提示用法，不移动任何段落。
       await tester.tap(drag);
       await frames();
       expect(drag, findsNothing);
-      expect(find.text('长按“拖动段落”或左侧把手，拖到目标位置后松手'), findsOneWidget);
+      expect(find.text('按住“长按拖动”后上下滑动，段落会跟着移动；也可以直接长按左侧把手'), findsOneWidget);
       expect(controller.plainText, 'first\nsecond\nthird');
 
       await tester.tap(handle);
       await frames();
-      final gesture = await tester.startGesture(tester.getCenter(drag));
-      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-      // 长按生效即收起菜单，拖动不随菜单项卸载而中断。
-      await frames();
-      expect(drag, findsNothing);
-      expect(find.byType(DiaryBlockDragFeedback), findsOneWidget);
       final blocks = find.byType(af.ParagraphBlockComponentWidget);
-      final target = tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2);
-      await gesture.moveTo(target - const Offset(0, 10));
-      await tester.pump();
-      await gesture.moveTo(target);
-      await tester.pump();
+      final item = tester.getCenter(drag);
+      final handleAt = tester.getCenter(handle);
+      double handleOpacity() => tester
+          .widget<AnimatedOpacity>(
+            find.descendant(of: handle, matching: find.byType(AnimatedOpacity)),
+          )
+          .opacity;
+      // 手指在块下方几行：落点按位移找，长按生效时块不跳。
+      final gesture = await tester.startGesture(item);
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await gesture.moveBy(const Offset(0, 1));
+      await frames();
+      expect(controller.plainText, 'first\nsecond\nthird');
+      // 菜单收起，上移 / 下移不再出现；“长按拖动”留在手指下，把手隐去。
+      expect(up, findsNothing);
+      expect(down, findsNothing);
+      expect(drag, findsOneWidget);
+      expect(tester.getCenter(drag), item + const Offset(0, 1));
+      expect(handleOpacity(), 0);
+      // 往下滑过两段：拖动条跟着手指，块在正文里跟着挪。
+      final travel = tester.getBottomLeft(blocks.at(2)).dy - 4 - handleAt.dy;
+      for (var step = 1; step <= 6; step++) {
+        await gesture.moveTo(item + Offset(0, travel * step / 6));
+        await tester.pump();
+        await tester.pump();
+      }
+      expect(controller.plainText, 'second\nthird\nfirst');
+      expect(controller.hasUndo, isFalse);
+      expect(tester.getCenter(drag), item + Offset(0, travel));
       await gesture.up();
       await tester.pump();
-      expect(find.byType(DiaryBlockDragFeedback), findsNothing);
+      // 松手后拖动条淡出，把手回到块上。
+      await frames();
+      expect(drag, findsNothing);
+      expect(handleOpacity(), 1);
       expect(controller.plainText, 'second\nthird\nfirst');
+      expect(
+        (tester.getCenter(handle).dy - tester.getCenter(blocks.at(2)).dy).abs(),
+        lessThan(4),
+      );
       controller.undo();
       await tester.pump();
       expect(controller.plainText, 'first\nsecond\nthird');
+      expect(controller.hasUndo, isFalse);
 
-      // 系统取消指针时只放下，不移动。
+      // 系统取消指针时放回原处。
       await frames();
       controller.select(af.Selection.collapsed(af.Position(path: [0])));
       focus.requestFocus();
       await frames(4);
       final again = await tester.startGesture(tester.getCenter(handle));
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
-      await again.moveTo(target);
+      await again.moveTo(
+        tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2),
+      );
       await tester.pump();
+      await tester.pump();
+      expect(controller.plainText, isNot('first\nsecond\nthird'));
       await again.cancel();
       await tester.pump();
-      expect(find.byType(DiaryBlockDragFeedback), findsNothing);
       expect(controller.plainText, 'first\nsecond\nthird');
+      expect(controller.hasUndo, isFalse);
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 5));
@@ -442,12 +480,11 @@ void main() {
   );
 
   testWidgets(
-    'the handle stays on its block while the page scrolls during a drag',
+    'the dragged block and its handle follow the finger while the page scrolls',
     (tester) async {
       final focus = FocusNode();
-      final controller = DiaryEditorController.fromContent(
-        List.generate(40, (i) => 'line $i').join('\n'),
-      );
+      final lines = List.generate(40, (i) => 'line $i').join('\n');
+      final controller = DiaryEditorController.fromContent(lines);
       controller.select(af.Selection.collapsed(af.Position(path: [1])));
       await pump(
         tester,
@@ -460,15 +497,12 @@ void main() {
         await tester.pump(const Duration(milliseconds: 50));
       }
       final handle = find.byType(DiaryBlockHandle);
-      // 只认正文里的那一段：拖动时跟手卡片也写着同样的文字。
       final block = find.descendant(
         of: find.byType(af.AppFlowyRichText),
         matching: find.text('line 1', findRichText: true),
       );
-      double gap() => tester.getCenter(handle).dy - tester.getTopLeft(block).dy;
-      final initialGap = gap();
-
-      final gesture = await tester.startGesture(tester.getCenter(handle));
+      final finger = tester.getCenter(handle);
+      final gesture = await tester.startGesture(finger);
       await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
       final position = tester
           .state<ScrollableState>(
@@ -484,29 +518,166 @@ void main() {
                 .first,
           )
           .position;
-      final before = tester.getCenter(handle).dy;
-      position.jumpTo(30);
-      await tester.pump();
-      await tester.pump();
-      // 页面滚动时把手跟着原块走，不停在原来的屏幕位置。
-      expect(tester.getCenter(handle).dy, lessThan(before - 20));
-      expect(gap(), moreOrLessEquals(initialGap, epsilon: 0.5));
-
-      // 原块滚出视口：把手随之隐藏，拖动照常继续。
-      position.jumpTo(600);
-      await tester.pump();
-      await tester.pump();
-      expect(handle, findsNothing);
-      expect(find.byType(DiaryBlockDragFeedback), findsOneWidget);
+      // 手指不动、页面滚动：块随落点挪到手指旁，把手停在手指下。
+      for (final offset in [30.0, 600.0]) {
+        position.jumpTo(offset);
+        for (var i = 0; i < 3; i++) {
+          await tester.pump();
+        }
+        final rect = tester.getRect(
+          find.ancestor(
+            of: block,
+            matching: find.byType(af.ParagraphBlockComponentWidget),
+          ),
+        );
+        // 块落在离手指最近的位置：手指在它身上，或在相邻块靠它的半边。
+        expect(
+          (rect.center.dy - finger.dy).abs(),
+          lessThanOrEqualTo(rect.height),
+        );
+        expect(tester.getCenter(handle), finger);
+      }
+      expect(controller.plainText, isNot(lines));
       await gesture.cancel();
       await tester.pump();
-      expect(find.byType(DiaryBlockDragFeedback), findsNothing);
-      expect(
-        controller.plainText,
-        List.generate(40, (i) => 'line $i').join('\n'),
-      );
+      expect(controller.plainText, lines);
 
       await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+      focus.dispose();
+    },
+  );
+
+  testWidgets(
+    'moving the list anchor block upward keeps the rest of the page in place',
+    (tester) async {
+      final focus = FocusNode();
+      final controller = DiaryEditorController.fromContent(
+        List.generate(
+          60,
+          (i) => i == 42 ? 'line $i ${List.filled(60, '长').join()}' : 'line $i',
+        ).join('\n'),
+      );
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      focus.requestFocus();
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      // 列表跳转到某一块后就以它为锚点排版（编辑页揭示光标就是这样跳的）。
+      tester
+          .widget<af.AppFlowyEditor>(find.byType(af.AppFlowyEditor))
+          .editorScrollController!
+          .itemScrollController
+          .jumpTo(index: 42, alignment: 0.3);
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final source = controller.document.nodeAtPath([42])!;
+      final previous = controller.document.nodeAtPath([41])!;
+      expect(source.rect, isNot(Rect.zero));
+      await tester.tapAt(source.rect.topLeft + const Offset(20, 8));
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final handle = find.byType(DiaryBlockHandle);
+      final previousTop = previous.rect.top;
+      // 高块：它占着锚点时直接换位，整页会按两块的高度差错开。
+      expect(source.rect.height, greaterThan(previous.rect.height * 1.5));
+
+      final start = tester.getCenter(handle);
+      final gesture = await tester.startGesture(start);
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      for (var dy = 2.0; source.path.first == 42 && dy < 60; dy += 2) {
+        await gesture.moveTo(start - Offset(0, dy));
+        await tester.pump();
+        await tester.pump();
+      }
+      expect(source.path, [41]);
+      // 与普通列表一样：块接替上一块的位置，上一块正好让出它的高度。
+      expect(source.rect.top, moreOrLessEquals(previousTop, epsilon: 1));
+      expect(
+        previous.rect.top,
+        moreOrLessEquals(previousTop + source.rect.height, epsilon: 1),
+      );
+      await gesture.cancel();
+      await tester.pump();
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+      focus.dispose();
+    },
+  );
+
+  testWidgets(
+    'holding a dragged block at the top edge scrolls the page instead of hiding the block',
+    (tester) async {
+      final focus = FocusNode();
+      final lines = List.generate(60, (i) => 'line $i').join('\n');
+      final controller = DiaryEditorController.fromContent(lines);
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      focus.requestFocus();
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final scrollable = tester.state<ScrollableState>(
+        find
+            .descendant(
+              of: find.byType(DiaryEditor),
+              matching: find.byWidgetPredicate(
+                (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+              ),
+            )
+            .first,
+      );
+      scrollable.position.jumpTo(
+        30 * controller.document.root.children.first.rect.height,
+      );
+      await tester.pump();
+      await tester.pump();
+      final source = controller.document.root.children.firstWhere(
+        (node) => node.rect.top > 200,
+      );
+      await tester.tapAt(source.rect.topLeft + const Offset(20, 8));
+      for (var i = 0; i < 6; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final from = source.path.first;
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byType(DiaryBlockHandle)),
+      );
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await gesture.moveTo(const Offset(8, 1));
+      // 按住不动：页面自动往回滚，块一路往前挪，从不回头；它停在视口顶边
+      // （滚动中可能半露），不会挪到视口外看不见的地方。
+      var last = from;
+      for (var frame = 0; frame < 400 && source.path.first > 0; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        final index = source.path.first;
+        expect(index, lessThanOrEqualTo(last));
+        last = index;
+        final rect = source.rect;
+        if (rect != Rect.zero) expect(rect.bottom, greaterThan(0));
+      }
+      expect(source.path, [0]);
+      await gesture.up();
+      await tester.pump();
+      expect(controller.plainText.split('\n').first, 'line $from');
+      expect(controller.hasUndo, isTrue);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 1));
       controller.dispose();
       focus.dispose();
     },

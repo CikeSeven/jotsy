@@ -8,7 +8,8 @@ import '../../controllers/diary_editor_controller.dart';
 
 /// 精确避让叠在原生编辑器之上的面板。上游自动滚动使用固定边缘距离，无法
 /// 得知工具栏的实际高度；这里按光标全局矩形与本帧视口校正，只在文字/选区
-/// 变化、键盘升高或遮挡增长时工作，用户滚动和单纯调色不会被拉回光标。
+/// 变化、键盘升高或遮挡增长时工作，用户滚动和单纯调色不会被拉回光标；
+/// 拖动段落期间（[DiaryEditorController.draggingBlock]）不工作。
 class DiaryEditorViewport extends StatefulWidget {
   const DiaryEditorViewport({
     super.key,
@@ -121,7 +122,8 @@ class _DiaryEditorViewportState extends State<DiaryEditorViewport>
   }
 
   void _reveal() {
-    if (!_focused || widget.controller.isDisposed) return;
+    final controller = widget.controller;
+    if (!_focused || controller.isDisposed || controller.draggingBlock) return;
     final state = widget.controller.state;
     final selection = state.selection;
     if (selection == null || !selection.isCollapsed) return;

@@ -373,5 +373,19 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
             );
           }
         },
+        // 拖动段落的预览移动后改以不受影响的块为锚点、停在原处，见
+        // `diaryBlockDragAnchor`。同一帧内生效：jumpTo 只改锚点与偏移，
+        // 随后的布局就按新锚点排。
+        pinPath: (path, alignment) {
+          if (path.isNotEmpty &&
+              alignment >= 0 &&
+              alignment <= 1 &&
+              _scroll.itemScrollController.isAttached) {
+            _scroll.itemScrollController.jumpTo(
+              index: path.first + (widget.header == null ? 0 : 1),
+              alignment: alignment,
+            );
+          }
+        },
       );
 }

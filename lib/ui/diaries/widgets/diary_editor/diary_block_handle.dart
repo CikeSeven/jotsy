@@ -2,7 +2,6 @@ import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../../../app/theme/app_effects.dart';
 import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../home/widgets/home_hint_visibility_scope.dart';
@@ -11,10 +10,12 @@ import '../../../widgets/expressive_state_blend.dart';
 import '../../controllers/diary_block_reorder.dart';
 import '../../controllers/diary_editor_controller.dart';
 
-/// 长按生效时回调：按下的指针 id 与长按位置（全局坐标）。拖动随后由
-/// `DiaryBlockHandleLayer` 经全局指针路由跟踪，与发起它的组件是否还在
-/// 树上无关。
-typedef DiaryBlockDragStart = void Function(int pointer, Offset position);
+/// 长按生效时回调：按下的指针 id、长按位置（全局坐标）；从菜单里的
+/// “长按拖动”发起时另给这一项的全局矩形，跟手的拖动条（[DiaryBlockDragChip]）
+/// 从这里接过它。拖动随后由 `DiaryBlockHandleLayer` 经全局指针路由跟踪，
+/// 与发起它的组件是否还在树上无关。
+typedef DiaryBlockDragStart =
+    void Function(int pointer, Offset position, {Rect? menuItem});
 
 /// 把手的可见尺寸：竖向小胶囊，宽 16 正好放进 16dp 的页面左边距。
 const double diaryBlockHandleWidth = 16;
@@ -26,10 +27,12 @@ const EdgeInsets diaryBlockHandleHitSlop = EdgeInsets.fromLTRB(8, 4, 2, 4);
 
 /// 段落把手本体。
 ///
-/// - 轻点：Expressive 菜单，依次为上移 / 拖动段落 / 下移（同级相邻位置）。
-/// - 长按把手，或在菜单里长按“拖动段落”：开始拖动。菜单项在长按生效时
-///   先收起菜单再交给 [onDragStart]；轻点它只提示“长按后拖动”，并告诉用户
-///   也可以直接长按把手。
+/// - 轻点：Expressive 菜单，依次为上移 / 长按拖动 / 下移（同级相邻位置）。
+/// - 长按把手：开始拖动，把手跟着手指走。
+/// - 在菜单里长按“长按拖动”：菜单收起（上移 / 下移随之消失），这一项变成
+///   跟手的拖动条留在手指下（由把手层画），把手本身隐去（[hidden]）——
+///   手里只拿着一样东西。轻点这一项只提示用法，并告诉用户也可以直接长按
+///   把手。
 class DiaryBlockHandle extends StatelessWidget {
   const DiaryBlockHandle({
     super.key,
@@ -37,12 +40,17 @@ class DiaryBlockHandle extends StatelessWidget {
     required this.controller,
     required this.dragging,
     required this.onDragStart,
+    this.hidden = false,
   });
 
   final af.Node node;
   final DiaryEditorController controller;
   final bool dragging;
   final DiaryBlockDragStart onDragStart;
+
+  /// 从菜单发起的拖动中：淡出、不接收点按。仍留在树上，正在收起的菜单
+  /// 以它为锚点。
+  final bool hidden;
 
   void _showDragTip(BuildContext context) {
     if (!context.mounted) return;
@@ -56,69 +64,82 @@ class DiaryBlockHandle extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final l10n = context.l10n;
+    final fast = ExpressiveMotion.duration(context, ExpressiveMotion.fast);
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
+      duration: fast,
       curve: ExpressiveMotion.effects,
       builder: (context, t, child) => Opacity(opacity: t, child: child),
-      child: ExpressiveMenuAnchor(
-        placement: ExpressiveMenuPlacement.start,
-        menuChildren: [
-          ExpressiveMenuItem(
-            onPressed: node.previous == null
-                ? null
-                : () => moveDiaryEditorBlock(
-                    controller,
-                    node,
-                    node.previous!.path,
-                  ),
-            leadingIcon: _menuIcon(FontAwesomeIcons.angleUp),
-            child: Text(l10n.diaryEditorMoveBlockUp),
-          ),
-          _DragMenuItem(
-            onDragStart: onDragStart,
-            // 提示挂在把手的 context 上：菜单项随菜单收起而卸载。
-            onTap: () => _showDragTip(context),
-          ),
-          ExpressiveMenuItem(
-            onPressed: node.next == null
-                ? null
-                : () => moveDiaryEditorBlock(
-                    controller,
-                    node,
-                    node.next!.path.next,
-                  ),
-            leadingIcon: _menuIcon(FontAwesomeIcons.angleDown),
-            child: Text(l10n.diaryEditorMoveBlockDown),
-          ),
-        ],
-        builder: (context, menu, _) => Semantics(
-          button: true,
-          label: l10n.diaryEditorDragBlock,
-          onTap: menu.toggle,
-          excludeSemantics: true,
-          child: _LongPressDragStarter(
-            onTap: menu.toggle,
-            onDragStart: onDragStart,
-            child: Padding(
-              padding: diaryBlockHandleHitSlop,
-              child: ExpressiveStateBlend(
-                active: menu.isExpanded || dragging,
-                builder: (context, t, _) => Container(
-                  width: diaryBlockHandleWidth,
-                  height: diaryBlockHandleHeight,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: colors.secondaryContainer.withValues(alpha: t),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: FaIcon(
-                    FontAwesomeIcons.gripVertical,
-                    size: 11,
-                    color: Color.lerp(
-                      colors.onSurfaceVariant.withValues(alpha: 0.65),
-                      colors.onSecondaryContainer,
-                      t,
+      child: IgnorePointer(
+        ignoring: hidden,
+        child: AnimatedOpacity(
+          opacity: hidden ? 0 : 1,
+          duration: fast,
+          curve: ExpressiveMotion.effects,
+          child: ExpressiveMenuAnchor(
+            placement: ExpressiveMenuPlacement.start,
+            menuChildren: [
+              ExpressiveMenuItem(
+                onPressed: node.previous == null
+                    ? null
+                    : () => moveDiaryEditorBlock(
+                        controller,
+                        node,
+                        node.previous!.path,
+                      ),
+                leadingIcon: _menuIcon(FontAwesomeIcons.angleUp),
+                child: Text(l10n.diaryEditorMoveBlockUp),
+              ),
+              _DragMenuItem(
+                onDragStart: onDragStart,
+                // 提示挂在把手的 context 上：菜单项随菜单收起而卸载。
+                onTap: () => _showDragTip(context),
+              ),
+              ExpressiveMenuItem(
+                onPressed: node.next == null
+                    ? null
+                    : () => moveDiaryEditorBlock(
+                        controller,
+                        node,
+                        node.next!.path.next,
+                      ),
+                leadingIcon: _menuIcon(FontAwesomeIcons.angleDown),
+                child: Text(l10n.diaryEditorMoveBlockDown),
+              ),
+            ],
+            builder: (context, menu, _) => Semantics(
+              button: true,
+              label: l10n.diaryEditorDragBlock,
+              onTap: menu.toggle,
+              excludeSemantics: true,
+              child: _LongPressDragStarter(
+                onTap: menu.toggle,
+                onDragStart: (pointer, position) {
+                  // 菜单开着时直接长按把手：收起菜单，只拖把手。
+                  if (menu.isExpanded) menu.close();
+                  onDragStart(pointer, position);
+                },
+                child: Padding(
+                  padding: diaryBlockHandleHitSlop,
+                  child: ExpressiveStateBlend(
+                    active: menu.isExpanded || dragging,
+                    builder: (context, t, _) => Container(
+                      width: diaryBlockHandleWidth,
+                      height: diaryBlockHandleHeight,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: colors.secondaryContainer.withValues(alpha: t),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: FaIcon(
+                        FontAwesomeIcons.gripVertical,
+                        size: 11,
+                        color: Color.lerp(
+                          colors.onSurfaceVariant.withValues(alpha: 0.65),
+                          colors.onSecondaryContainer,
+                          t,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -138,9 +159,39 @@ Widget _menuIcon(FaIconData icon) => SizedBox(
   child: Center(child: FaIcon(icon)),
 );
 
-/// 菜单里的“拖动段落”：行尾弱化的“长按”点明用法。长按生效时先收起菜单
-/// 再开始拖动——这一项随菜单卸载，拖动本身不依赖它。轻点由菜单项照常收起
-/// 菜单，再执行 [onTap]。
+/// “长按拖动”这一项的样子：菜单里与跟手的拖动条共用。[held] 时一直保持
+/// 按下的叠色与收紧的圆角（长按胜出后水波纹的按下态随点按手势一起取消，
+/// 这里接着画）。
+Widget _dragItem(
+  BuildContext context, {
+  required bool held,
+  required VoidCallback onPressed,
+}) {
+  final colors = Theme.of(context).colorScheme;
+  return ExpressiveMenuItem(
+    onPressed: onPressed,
+    leadingIcon: _menuIcon(FontAwesomeIcons.gripVertical),
+    style: held
+        ? ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              colors.primary.withValues(alpha: 0.12),
+            ),
+            shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  ExpressiveMenuItem.pressedRadius,
+                ),
+              ),
+            ),
+          )
+        : null,
+    child: Text(context.l10n.diaryEditorDragBlockHold),
+  );
+}
+
+/// 菜单里的“长按拖动”。长按生效时收起菜单，并把这一项的全局矩形交给
+/// [onDragStart]：把手层在同一位置画出跟手的拖动条，菜单淡出时它留在
+/// 手指下。轻点由菜单项照常收起菜单，再执行 [onTap]。
 class _DragMenuItem extends StatelessWidget {
   const _DragMenuItem({required this.onDragStart, required this.onTap});
 
@@ -148,29 +199,51 @@ class _DragMenuItem extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = context.l10n;
-    return _LongPressDragStarter(
-      onDragStart: (pointer, position) {
-        ExpressiveMenuAnchorState.maybeOf(context)?.close();
-        onDragStart(pointer, position);
-      },
-      child: ExpressiveMenuItem(
-        onPressed: onTap,
-        leadingIcon: _menuIcon(FontAwesomeIcons.gripVertical),
-        trailingIcon: ExcludeSemantics(
-          child: Text(
-            l10n.diaryEditorDragBlockHold,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+  Widget build(BuildContext context) => _LongPressDragStarter(
+    onDragStart: (pointer, position) {
+      final box = context.findRenderObject();
+      final rect = box is RenderBox && box.hasSize
+          ? box.localToGlobal(Offset.zero) & box.size
+          : null;
+      ExpressiveMenuAnchorState.maybeOf(context)?.close();
+      onDragStart(pointer, position, menuItem: rect);
+    },
+    child: _dragItem(context, held: false, onPressed: onTap),
+  );
+}
+
+/// 从菜单拖动时跟着手指的“长按拖动”：菜单收起后只剩这一项，带着菜单的
+/// 玻璃表面（内边距与菜单面板相同，8dp）浮在手指下，保持按下的样子。
+/// [reveal] 驱动表面与内容的显隐（松手后淡出）；玻璃不能放进透明度层。
+class DiaryBlockDragChip extends StatelessWidget {
+  const DiaryBlockDragChip({
+    super.key,
+    required this.width,
+    required this.reveal,
+  });
+
+  /// 与菜单面板相同的内边距：拖动条的内容与菜单里那一项重合。
+  static const double padding = 8;
+
+  /// 菜单项的宽度。
+  final double width;
+  final Animation<double> reveal;
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: ExcludeSemantics(
+      child: ExpressiveMenuSurface(
+        reveal: reveal,
+        child: Padding(
+          padding: const EdgeInsets.all(padding),
+          child: SizedBox(
+            width: width,
+            child: _dragItem(context, held: true, onPressed: () {}),
           ),
         ),
-        child: Text(l10n.diaryEditorDragBlock),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// 长按（系统长按时限）后交出指针 id 与位置。[GestureDetector] 的长按回调
@@ -183,7 +256,7 @@ class _LongPressDragStarter extends StatefulWidget {
     this.onTap,
   });
 
-  final DiaryBlockDragStart onDragStart;
+  final void Function(int pointer, Offset position) onDragStart;
   final VoidCallback? onTap;
   final Widget child;
 
@@ -209,86 +282,4 @@ class _LongPressDragStarterState extends State<_LongPressDragStarter> {
       child: widget.child,
     ),
   );
-}
-
-/// 落点线：2dp 圆头横线，左端一个 6dp 圆点标出插入层级的起点。
-class DiaryBlockDropLine extends StatelessWidget {
-  const DiaryBlockDropLine({super.key, required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    clipBehavior: Clip.none,
-    children: [
-      Positioned.fill(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(1),
-          ),
-        ),
-      ),
-      Positioned(
-        left: -3,
-        top: -2,
-        child: Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-      ),
-    ],
-  );
-}
-
-/// 拖动中跟手的卡片：块的前两行文字（媒体等为“拖动段落”），浮动面板的
-/// 表面与投影规格。
-class DiaryBlockDragFeedback extends StatelessWidget {
-  const DiaryBlockDragFeedback({super.key, required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Material(
-      type: MaterialType.transparency,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 260),
-        padding: const EdgeInsets.fromLTRB(12, 10, 16, 10),
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-            width: 0.8,
-          ),
-          boxShadow: AppEffects.softShadow(colors),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FaIcon(
-              FontAwesomeIcons.gripVertical,
-              size: 12,
-              color: colors.primary,
-            ),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                text,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

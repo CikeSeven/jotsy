@@ -8432,11 +8432,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryEditorDragBlock => 'Drag block';
 
   @override
-  String get diaryEditorDragBlockHold => 'Hold';
+  String get diaryEditorDragBlockHold => 'Hold to drag';
 
   @override
   String get diaryEditorDragBlockTip =>
-      'Press and hold “Drag block” or the handle, then drag it into place';
+      'Hold “Hold to drag”, then slide up or down and the block follows. You can also hold the handle.';
 
   @override
   String get diaryEditorMoveBlockUp => 'Move block up';

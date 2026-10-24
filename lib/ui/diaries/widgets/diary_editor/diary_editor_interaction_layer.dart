@@ -21,6 +21,7 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
     required this.inlineHeight,
     required this.coveredHeight,
     required this.revealPath,
+    this.pinPath,
     this.contentLeft = 0,
     this.childIndent = 28,
     this.focusNode,
@@ -33,6 +34,9 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
   final double coveredHeight;
   final FocusNode? focusNode;
   final void Function(af.Path) revealPath;
+
+  /// 让顶层块停在列表视口的给定比例处，见 [DiaryBlockHandleLayer.pinPath]。
+  final void Function(af.Path path, double alignment)? pinPath;
 
   /// 编辑器左内边距，段落把手画在这块边距里。
   final double contentLeft;
@@ -91,6 +95,8 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
       focusNode: focusNode,
       contentLeft: contentLeft,
       childIndent: childIndent,
+      coveredHeight: shrinkWrap ? 0 : coveredHeight,
+      pinPath: pinPath,
       child: content,
     );
     return shrinkWrap

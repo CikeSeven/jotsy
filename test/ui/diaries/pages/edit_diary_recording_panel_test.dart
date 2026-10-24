@@ -63,9 +63,12 @@ void main() {
     (tester) async {
       await pumpCreatePage(tester);
       expect(find.byType(DiaryRecordingPanel), findsNothing);
+      final editor = tester.element(find.byType(quill.QuillEditor));
 
       await tester.tap(find.byTooltip('录音'));
       await tester.pumpAndSettle();
+      // 实际打开和收起面板时，编辑器子树不能因 PopScope 根节点切换而重建。
+      expect(tester.element(find.byType(quill.QuillEditor)), same(editor));
       expect(find.byType(DiaryRecordingPanel), findsOneWidget);
       expect(find.byTooltip('开始录音'), findsOneWidget);
       expect(find.text('点按麦克风开始录音'), findsOneWidget);
@@ -75,6 +78,7 @@ void main() {
       await tester.tap(find.byTooltip('关闭录音'));
       await tester.pumpAndSettle();
       expect(find.byType(DiaryRecordingPanel), findsNothing);
+      expect(tester.element(find.byType(quill.QuillEditor)), same(editor));
       expect(tester.takeException(), isNull);
       await unmount(tester);
     },

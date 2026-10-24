@@ -73,10 +73,17 @@ jobs:
             exit 1
           fi
 
-  test:
-    name: Tests
+  test-shards:
+    name: Tests (shard ${{ matrix.shard }})
     runs-on: ubuntu-24.04
     timeout-minutes: 40
+    outputs:
+      shard-total: ${{ strategy.job-total }}
+    strategy:
+      # 一片失败仍跑完其他片，避免丢失失败用例与覆盖率。
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -85,8 +92,77 @@ jobs:
         uses: ./.github/actions/setup-flutter
 
       # GitHub Actions 上默认使用 github 报告器，失败用例直接标注到源码行。
+      # 先按文件分片：当前 test_core 的 --total-shards 在每个 suite 加载后
+      # 才筛选用例，所有 runner 仍会编译全部测试文件。排序后的文件轮流分配，
+      # 保证每份 *_test.dart 恰好运行一次，也把同目录的重型 UI 测试摊开。
       - name: Run tests
-        run: flutter test --no-pub --coverage
+        env:
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_TOTAL: ${{ strategy.job-total }}
+        run: |
+          mapfile -d '' -t test_files < <(git ls-files -z -- 'test/*_test.dart')
+          shard_files=()
+          for i in "${!test_files[@]}"; do
+            if (( i % SHARD_TOTAL == SHARD_INDEX )); then
+              shard_files+=("${test_files[$i]}")
+            fi
+          done
+          if (( ${#shard_files[@]} == 0 )); then
+            echo '::error::Test shard is empty; check the shard configuration.'
+            exit 1
+          fi
+          echo "Shard $((SHARD_INDEX + 1))/$SHARD_TOTAL: ${#shard_files[@]} of ${#test_files[@]} test files"
+          flutter test --no-pub --coverage "${shard_files[@]}"
+
+      - name: Upload shard coverage
+        if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-lcov-shard-${{ matrix.shard }}
+          path: coverage/lcov.info
+          retention-days: 1
+
+  # 保留名为 Tests 的单一门禁；任意分片失败时它也失败，不能误报全量通过。
+  # 覆盖率按源文件与行号合并，不能拼接 LCOV 或平均各片的覆盖率百分比。
+  test:
+    name: Tests
+    needs: test-shards
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check all test shards passed
+        env:
+          SHARD_RESULT: ${{ needs.test-shards.result }}
+        run: |
+          if [[ "$SHARD_RESULT" != 'success' ]]; then
+            echo "::error::Test shards finished with result: $SHARD_RESULT"
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Flutter
+        uses: ./.github/actions/setup-flutter
+
+      - name: Download shard coverage
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: coverage-lcov-shard-*
+          path: coverage/shards
+
+      - name: Merge coverage
+        env:
+          SHARD_TOTAL: ${{ needs.test-shards.outputs.shard-total }}
+        run: |
+          shopt -s nullglob
+          coverage_files=(coverage/shards/*/lcov.info)
+          if (( ${#coverage_files[@]} != SHARD_TOTAL )); then
+            echo "::error::Expected $SHARD_TOTAL coverage reports, found ${#coverage_files[@]}."
+            exit 1
+          fi
+          dart run tool/merge_lcov.dart coverage/lcov.info "${coverage_files[@]}"
 
       - name: Summarize coverage
         if: ${{ !cancelled() && hashFiles('coverage/lcov.info') != '' }}

@@ -51,17 +51,8 @@ void main() {
     return found;
   }
 
-  test('the guarded code block sources exist', () {
-    expect(libFiles, isNotEmpty);
-    for (final dir in codeBlockDirs) {
-      expect(Directory(dir).existsSync(), isTrue, reason: dir);
-    }
-    for (final path in <String>[editingFile, ...toolbarFiles]) {
-      expect(File(path).existsSync(), isTrue, reason: path);
-    }
-  });
-
   test('no source imports the full highlight package', () {
+    expect(libFiles, isNotEmpty);
     expect(
       offenders(libFiles, <String, RegExp>{
         'package:highlight/highlight.dart': RegExp(

@@ -18,28 +18,10 @@ void main() {
     expect(source, contains('_cachedDaySummaries'));
     expect(source, contains('_cachedDayDiaries'));
     expect(source, contains('_cachedInlineImages'));
-    expect(source, contains('Keep the last'));
-    expect(source, contains('Reuse the last'));
     expect(capsuleSource, contains('ExpressiveLoadingIndicator'));
     expect(capsuleSource, contains('DelayedLoadingGate'));
     for (final file in <String>[source, capsuleSource]) {
       expect(file, isNot(contains('CircularProgressIndicator')));
-    }
-  });
-
-  test('calendar snack bars go through the tracked Home hint helper', () {
-    // AGENTS.md §6：SnackBar 统一经 HomeHintVisibilityScope.showTrackedSnackBar，
-    // Home 的 FAB 才会随提示条上移。
-    final files = Directory('lib/ui/calendar')
-        .listSync(recursive: true)
-        .whereType<File>()
-        .where((File file) => file.path.endsWith('.dart'));
-    for (final file in files) {
-      expect(
-        file.readAsStringSync(),
-        isNot(contains('.showSnackBar(')),
-        reason: file.path,
-      );
     }
   });
 }

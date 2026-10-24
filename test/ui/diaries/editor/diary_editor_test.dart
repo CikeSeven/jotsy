@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_handle.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
@@ -232,7 +233,7 @@ void main() {
         focusNode: focus,
         padding: const EdgeInsets.symmetric(horizontal: 16),
       );
-      final handle = find.byType(LongPressDraggable<af.Node>);
+      final handle = find.byType(DiaryBlockHandle);
       // 没有焦点时不显示把手：阅读与浏览时正文左侧保持干净。
       expect(handle, findsNothing);
       focus.requestFocus();
@@ -271,6 +272,90 @@ void main() {
       await tester.pump();
       expect(controller.plainText, 'first\nsecond\nthird');
       await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+      focus.dispose();
+    },
+  );
+
+  testWidgets(
+    'the handle menu offers drag between move up and move down and holding it drags the block',
+    (tester) async {
+      final focus = FocusNode();
+      final controller = DiaryEditorController.fromContent(
+        'first\nsecond\nthird',
+      );
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      focus.requestFocus();
+      Future<void> frames([int count = 6]) async {
+        for (var i = 0; i < count; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+      }
+
+      await frames(4);
+      final handle = find.byType(DiaryBlockHandle);
+      await tester.tap(handle);
+      await frames();
+      final up = find.text('上移段落');
+      final drag = find.text('拖动段落');
+      final down = find.text('下移段落');
+      expect(drag, findsOneWidget);
+      expect(find.text('长按'), findsOneWidget);
+      // 拖动在上移与下移之间。
+      expect(tester.getCenter(up).dy, lessThan(tester.getCenter(drag).dy));
+      expect(tester.getCenter(drag).dy, lessThan(tester.getCenter(down).dy));
+
+      // 轻点只收起菜单并提示长按，不移动任何段落。
+      await tester.tap(drag);
+      await frames();
+      expect(drag, findsNothing);
+      expect(find.text('长按“拖动段落”或左侧把手，拖到目标位置后松手'), findsOneWidget);
+      expect(controller.plainText, 'first\nsecond\nthird');
+
+      await tester.tap(handle);
+      await frames();
+      final gesture = await tester.startGesture(tester.getCenter(drag));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      // 长按生效即收起菜单，拖动不随菜单项卸载而中断。
+      await frames();
+      expect(drag, findsNothing);
+      expect(find.byType(DiaryBlockDragFeedback), findsOneWidget);
+      final blocks = find.byType(af.ParagraphBlockComponentWidget);
+      final target = tester.getBottomLeft(blocks.at(2)) + const Offset(100, -2);
+      await gesture.moveTo(target - const Offset(0, 10));
+      await tester.pump();
+      await gesture.moveTo(target);
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+      expect(find.byType(DiaryBlockDragFeedback), findsNothing);
+      expect(controller.plainText, 'second\nthird\nfirst');
+      controller.undo();
+      await tester.pump();
+      expect(controller.plainText, 'first\nsecond\nthird');
+
+      // 系统取消指针时只放下，不移动。
+      await frames();
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      focus.requestFocus();
+      await frames(4);
+      final again = await tester.startGesture(tester.getCenter(handle));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      await again.moveTo(target);
+      await tester.pump();
+      await again.cancel();
+      await tester.pump();
+      expect(find.byType(DiaryBlockDragFeedback), findsNothing);
+      expect(controller.plainText, 'first\nsecond\nthird');
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(seconds: 5));
       controller.dispose();
       focus.dispose();
     },

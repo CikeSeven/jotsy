@@ -10845,7 +10845,15 @@
   },
   "diaryEditorDragBlock": "拖动段落",
   "@diaryEditorDragBlock": {
-    "description": "Accessibility label for the diary editor paragraph drag handle."
+    "description": "Accessibility label for the diary editor paragraph drag handle, and the drag item in its menu."
+  },
+  "diaryEditorDragBlockHold": "长按",
+  "@diaryEditorDragBlockHold": {
+    "description": "Short trailing hint on the paragraph handle menu's drag item: press and hold it to drag."
+  },
+  "diaryEditorDragBlockTip": "长按“拖动段落”或左侧把手，拖到目标位置后松手",
+  "@diaryEditorDragBlockTip": {
+    "description": "Hint shown after tapping the drag item in the paragraph handle menu instead of holding it."
   },
   "diaryEditorMoveBlockUp": "上移段落",
   "@diaryEditorMoveBlockUp": {

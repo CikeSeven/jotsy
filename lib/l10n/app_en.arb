@@ -10845,7 +10845,15 @@
   },
   "diaryEditorDragBlock": "Drag block",
   "@diaryEditorDragBlock": {
-    "description": "Accessibility label for the diary editor paragraph drag handle."
+    "description": "Accessibility label for the diary editor paragraph drag handle, and the drag item in its menu."
+  },
+  "diaryEditorDragBlockHold": "Hold",
+  "@diaryEditorDragBlockHold": {
+    "description": "Short trailing hint on the paragraph handle menu's drag item: press and hold it to drag."
+  },
+  "diaryEditorDragBlockTip": "Press and hold “Drag block” or the handle, then drag it into place",
+  "@diaryEditorDragBlockTip": {
+    "description": "Hint shown after tapping the drag item in the paragraph handle menu instead of holding it."
   },
   "diaryEditorMoveBlockUp": "Move block up",
   "@diaryEditorMoveBlockUp": {

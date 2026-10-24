@@ -7563,6 +7563,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get diaryEditorDragBlock => '拖动段落';
 
   @override
+  String get diaryEditorDragBlockHold => '长按';
+
+  @override
+  String get diaryEditorDragBlockTip => '长按“拖动段落”或左侧把手，拖到目标位置后松手';
+
+  @override
   String get diaryEditorMoveBlockUp => '上移段落';
 
   @override

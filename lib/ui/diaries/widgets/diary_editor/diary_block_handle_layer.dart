@@ -2,18 +2,15 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../../../app/theme/app_effects.dart';
-import '../../../../app/theme/expressive_motion.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../widgets/expressive_menu/expressive_menu.dart';
-import '../../../widgets/expressive_state_blend.dart';
 import '../../controllers/diary_block_reorder.dart';
 import '../../controllers/diary_editor_controller.dart';
+import 'diary_block_handle.dart';
 
 /// 编辑态的段落把手：整篇正文只有一个，浮在光标所在块的首行左侧。
 ///
@@ -23,11 +20,15 @@ import '../../controllers/diary_editor_controller.dart';
 /// - 位置：光标所在块（嵌套时为最内层的块）首行的垂直中线，水平落在块
 ///   左侧——顶层块在页面左边距里，子块在父块的缩进里。选区跨块、没有焦点或
 ///   块滚出视口时隐藏；出现时 `fast` 淡入。
-/// - 点按：Expressive 菜单上移 / 下移（同级相邻位置）。
-/// - 长按：拖动整棵子树。落点随手指逐帧计算（自动滚动时手指不动也会变），
-///   以 2dp `primary` 线标在目标块上沿或下沿；不能落到自身及后代上。原块
-///   盖一层半透明页面底色表示“已拿起”。松手经 [moveDiaryEditorBlock] 一次
-///   事务完成，可撤销。
+/// - 点按：Expressive 菜单上移 / 拖动段落 / 下移（见 [DiaryBlockHandle]）。
+/// - 长按把手或菜单里的“拖动段落”：拖动整棵子树。落点随手指逐帧计算（自动
+///   滚动时手指不动也会变），以 2dp `primary` 线标在目标块上沿或下沿；不能
+///   落到自身及后代上。原块盖一层半透明页面底色表示“已拿起”。松手经
+///   [moveDiaryEditorBlock] 一次事务完成，可撤销。
+/// - 拖动由本层直接跟踪指针（全局指针路由），跟手卡片经 [OverlayPortal]
+///   画在页面浮层里，不用 `Draggable`：菜单项在长按生效时随菜单收起而卸载，
+///   `Draggable` 的回调绑在它自己的元素上，卸载后全部丢失。全局路由与发起
+///   拖动的组件无关，两个入口因此共用同一条链路。
 ///
 /// 输入：编辑控制器与焦点；输出：只读写选区与块位置事务，没有其他副作用。
 class DiaryBlockHandleLayer extends StatefulWidget {
@@ -53,13 +54,9 @@ class DiaryBlockHandleLayer extends StatefulWidget {
 /// 子块相对父块的缩进（编辑器块配置的默认 indentPadding）。
 const double _childIndent = 24;
 
-/// 把手的可见尺寸：竖向小胶囊，宽 16 正好放进 16dp 的页面左边距。
-const double _handleWidth = 16;
-const double _handleHeight = 26;
-
-/// 触控区域比可见尺寸大：左侧外扩 8dp、上下各 4dp；右侧只外扩 2dp——再多
-/// 就压住正文开头，点行首放光标会误触把手。
-const EdgeInsets _handleHitSlop = EdgeInsets.fromLTRB(8, 4, 2, 4);
+/// 跟手卡片左上角相对手指的位置：浮在手指右上方，落点线就在手指所在的
+/// 块边上，不能被盖住。
+const Offset _feedbackOffset = Offset(12, -84);
 
 class _HandlePlacement {
   const _HandlePlacement(this.node, this.center);
@@ -88,7 +85,14 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
 
   // ---- 拖动状态 ----
   af.Node? _dragging;
-  Offset? _pointer;
+
+  /// 正在跟踪的指针；非 null 期间全局指针路由已登记。
+  int? _dragPointer;
+  String _dragLabel = '';
+
+  /// 手指的全局位置：驱动落点计算与跟手卡片（卡片只随它重建）。
+  final ValueNotifier<Offset?> _pointer = ValueNotifier(null);
+  final OverlayPortalController _feedback = OverlayPortalController();
   _DropTarget? _target;
   Rect? _sourceRect;
   late final Ticker _dragTicker = createTicker((_) => _trackDrag());
@@ -133,7 +137,12 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
   void dispose() {
     _unbind(widget);
     WidgetsBinding.instance.removeObserver(this);
+    // 拖动中页面被移除（如返回）：撤掉全局路由，不再提交落点。
+    if (_dragPointer != null) {
+      GestureBinding.instance.pointerRouter.removeGlobalRoute(_routePointer);
+    }
     _dragTicker.dispose();
+    _pointer.dispose();
     super.dispose();
   }
 
@@ -188,7 +197,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
         : rect.top + math.min(rect.height / 2, 20);
     final local = box.globalToLocal(Offset(rect.left, centerY));
     final left = _blockLeft(node, box, fallback: local.dx);
-    final center = Offset(left - _handleWidth / 2, local.dy);
+    final center = Offset(left - diaryBlockHandleWidth / 2, local.dy);
     // 滚出视口（被页头或底部浮层挡住的部分照常显示，交给上层裁切）。
     if (center.dy < 0 || center.dy > box.size.height) return null;
     return _HandlePlacement(node, Offset(math.max(center.dx, 8), center.dy));
@@ -222,34 +231,58 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
 
   // ---- 拖动 ----
 
-  void _startDrag(af.Node node) {
+  /// 长按生效：从此按 [pointer] 跟踪这根手指，直到抬起或被系统取消。
+  void _startDrag(af.Node node, int pointer, Offset position) {
+    if (_dragging != null || widget.controller.readOnly) return;
     HapticFeedback.mediumImpact();
+    GestureBinding.instance.pointerRouter.addGlobalRoute(_routePointer);
+    _dragPointer = pointer;
+    _pointer.value = position;
+    final text = node.delta?.toPlainText().trim() ?? '';
     setState(() {
       _dragging = node;
+      _dragLabel = text.isEmpty ? context.l10n.diaryEditorDragBlock : text;
       _target = null;
       _sourceRect = _localBlockRect(node);
     });
+    _feedback.show();
     _dragTicker.start();
   }
 
-  void _updateDrag(Offset global) {
-    _pointer = global;
-    widget.controller.state.scrollService?.startAutoScroll(global);
+  void _routePointer(PointerEvent event) {
+    if (event.pointer != _dragPointer) return;
+    if (event is PointerMoveEvent) {
+      _pointer.value = event.position;
+      widget.controller.state.scrollService?.startAutoScroll(event.position);
+    } else if (event is PointerUpEvent) {
+      _endDrag(commit: true);
+    } else if (event is PointerCancelEvent) {
+      _endDrag(commit: false);
+    }
   }
 
-  void _endDrag() {
+  /// [commit] 为 false（指针被系统取消）时只放下、不移动。
+  void _endDrag({required bool commit}) {
+    final source = _dragging;
+    if (source == null) return;
+    GestureBinding.instance.pointerRouter.removeGlobalRoute(_routePointer);
+    _dragPointer = null;
     _dragTicker.stop();
     widget.controller.state.scrollService?.stopAutoScroll();
-    final source = _dragging;
-    final target = _target;
+    _feedback.hide();
+    // 按抬起时的位置重算：最后一次移动与抬起可能落在同一帧里，还没轮到
+    // 逐帧计算。
+    final pointer = _pointer.value;
+    final target = commit && pointer != null
+        ? _resolveTarget(source, pointer)
+        : null;
+    _pointer.value = null;
     setState(() {
       _dragging = null;
-      _pointer = null;
       _target = null;
       _sourceRect = null;
     });
-    if (source != null &&
-        target != null &&
+    if (target != null &&
         moveDiaryEditorBlock(widget.controller, source, target.destination)) {
       HapticFeedback.lightImpact();
     }
@@ -259,7 +292,7 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
   /// 每帧按手指位置重算落点：自动滚动时手指不动，内容仍在移动。
   void _trackDrag() {
     final source = _dragging;
-    final pointer = _pointer;
+    final pointer = _pointer.value;
     if (source == null || !mounted) return;
     final target = pointer == null ? null : _resolveTarget(source, pointer);
     final sourceRect = _localBlockRect(source);
@@ -355,231 +388,80 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
         _schedule();
         return false;
       },
-      // 子层都带 key：拖动开始时淡化层插在把手之前，不带 key 会按位置把
-      // 把手的元素复用给淡化层，正在进行的拖动随之被销毁、回调全部丢失。
-      child: Stack(
-        children: [
-          KeyedSubtree(key: const ValueKey('editor'), child: widget.child),
-          if (_sourceRect case final rect?)
-            Positioned.fromRect(
-              key: const ValueKey('source'),
-              rect: rect,
-              child: IgnorePointer(
-                child: ColoredBox(color: colors.surface.withValues(alpha: 0.6)),
-              ),
-            ),
-          if (_target case final target?)
-            Positioned.fromRect(
-              key: const ValueKey('target'),
-              rect: target.line,
-              child: IgnorePointer(child: _DropLine(color: colors.primary)),
-            ),
-          if (placement != null)
-            Positioned(
-              key: const ValueKey('handle'),
-              left:
-                  placement.center.dx - _handleWidth / 2 - _handleHitSlop.left,
-              top: placement.center.dy - _handleHeight / 2 - _handleHitSlop.top,
-              child: _BlockHandle(
-                key: ObjectKey(placement.node),
-                node: placement.node,
-                controller: widget.controller,
-                dragging: _dragging != null,
-                onDragStarted: () => _startDrag(placement.node),
-                onDragUpdate: _updateDrag,
-                onDragEnd: _endDrag,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 落点线：2dp 圆头横线，左端一个 6dp 圆点标出插入层级的起点。
-class _DropLine extends StatelessWidget {
-  const _DropLine({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    clipBehavior: Clip.none,
-    children: [
-      Positioned.fill(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(1),
-          ),
-        ),
-      ),
-      Positioned(
-        left: -3,
-        top: -2,
-        child: Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-      ),
-    ],
-  );
-}
-
-class _BlockHandle extends StatelessWidget {
-  const _BlockHandle({
-    super.key,
-    required this.node,
-    required this.controller,
-    required this.dragging,
-    required this.onDragStarted,
-    required this.onDragUpdate,
-    required this.onDragEnd,
-  });
-
-  final af.Node node;
-  final DiaryEditorController controller;
-  final bool dragging;
-  final VoidCallback onDragStarted;
-  final ValueChanged<Offset> onDragUpdate;
-  final VoidCallback onDragEnd;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    final text = node.delta?.toPlainText().trim() ?? '';
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: ExpressiveMotion.duration(context, ExpressiveMotion.fast),
-      curve: ExpressiveMotion.effects,
-      builder: (context, t, child) => Opacity(opacity: t, child: child),
-      child: ExpressiveMenuAnchor(
-        placement: ExpressiveMenuPlacement.start,
-        menuChildren: [
-          ExpressiveMenuItem(
-            onPressed: node.previous == null
-                ? null
-                : () => moveDiaryEditorBlock(
-                    controller,
-                    node,
-                    node.previous!.path,
-                  ),
-            leadingIcon: const FaIcon(FontAwesomeIcons.angleUp),
-            child: Text(l10n.diaryEditorMoveBlockUp),
-          ),
-          ExpressiveMenuItem(
-            onPressed: node.next == null
-                ? null
-                : () => moveDiaryEditorBlock(
-                    controller,
-                    node,
-                    node.next!.path.next,
-                  ),
-            leadingIcon: const FaIcon(FontAwesomeIcons.angleDown),
-            child: Text(l10n.diaryEditorMoveBlockDown),
-          ),
-        ],
-        builder: (context, menu, _) => Semantics(
-          button: true,
-          label: l10n.diaryEditorDragBlock,
-          onTap: menu.toggle,
-          excludeSemantics: true,
-          child: LongPressDraggable<af.Node>(
-            data: node,
-            hapticFeedbackOnStart: false,
-            // 卡片浮在手指右上方：落点线就在手指所在的块边上，不能被盖住。
-            dragAnchorStrategy: (draggable, context, position) =>
-                const Offset(-12, 84),
-            onDragStarted: onDragStarted,
-            onDragUpdate: (details) => onDragUpdate(details.globalPosition),
-            onDragEnd: (_) => onDragEnd(),
-            onDraggableCanceled: (_, _) => onDragEnd(),
-            feedback: _DragFeedback(
-              text: text.isEmpty ? l10n.diaryEditorDragBlock : text,
-            ),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: menu.toggle,
-              child: Padding(
-                padding: _handleHitSlop,
-                child: ExpressiveStateBlend(
-                  active: menu.isExpanded || dragging,
-                  builder: (context, t, _) => Container(
-                    width: _handleWidth,
-                    height: _handleHeight,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: colors.secondaryContainer.withValues(alpha: t),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: FaIcon(
-                      FontAwesomeIcons.gripVertical,
-                      size: 11,
-                      color: Color.lerp(
-                        colors.onSurfaceVariant.withValues(alpha: 0.65),
-                        colors.onSecondaryContainer,
-                        t,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 拖动中跟手的卡片：块的前两行文字（媒体等为“拖动段落”），浮动面板的
-/// 表面与投影规格。
-class _DragFeedback extends StatelessWidget {
-  const _DragFeedback({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Material(
-      type: MaterialType.transparency,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 260),
-        padding: const EdgeInsets.fromLTRB(12, 10, 16, 10),
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: colors.outlineVariant.withValues(alpha: 0.5),
-            width: 0.8,
-          ),
-          boxShadow: AppEffects.softShadow(colors),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+      child: OverlayPortal(
+        controller: _feedback,
+        overlayChildBuilder: _buildFeedback,
+        // 子层都带 key：拖动开始时淡化层插在把手之前，不带 key 会按位置把
+        // 把手的元素复用给淡化层，把手连同它的菜单被重建。
+        child: Stack(
           children: [
-            FaIcon(
-              FontAwesomeIcons.gripVertical,
-              size: 12,
-              color: colors.primary,
-            ),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                text,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: colors.onSurface,
+            KeyedSubtree(key: const ValueKey('editor'), child: widget.child),
+            if (_sourceRect case final rect?)
+              Positioned.fromRect(
+                key: const ValueKey('source'),
+                rect: rect,
+                child: IgnorePointer(
+                  child: ColoredBox(
+                    color: colors.surface.withValues(alpha: 0.6),
+                  ),
                 ),
               ),
-            ),
+            if (_target case final target?)
+              Positioned.fromRect(
+                key: const ValueKey('target'),
+                rect: target.line,
+                child: IgnorePointer(
+                  child: DiaryBlockDropLine(color: colors.primary),
+                ),
+              ),
+            if (placement != null)
+              Positioned(
+                key: const ValueKey('handle'),
+                left:
+                    placement.center.dx -
+                    diaryBlockHandleWidth / 2 -
+                    diaryBlockHandleHitSlop.left,
+                top:
+                    placement.center.dy -
+                    diaryBlockHandleHeight / 2 -
+                    diaryBlockHandleHitSlop.top,
+                child: DiaryBlockHandle(
+                  key: ObjectKey(placement.node),
+                  node: placement.node,
+                  controller: widget.controller,
+                  dragging: _dragging != null,
+                  onDragStart: (pointer, position) =>
+                      _startDrag(placement.node, pointer, position),
+                ),
+              ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 跟手卡片铺在页面浮层里（不被正文区域裁切），只随手指位置重建。
+  Widget _buildFeedback(BuildContext context) {
+    final overlay = Overlay.maybeOf(context)?.context.findRenderObject();
+    return IgnorePointer(
+      child: ValueListenableBuilder<Offset?>(
+        valueListenable: _pointer,
+        builder: (context, pointer, _) {
+          if (pointer == null) return const SizedBox.shrink();
+          final local = overlay is RenderBox && overlay.hasSize
+              ? overlay.globalToLocal(pointer)
+              : pointer;
+          final at = local + _feedbackOffset;
+          return Stack(
+            children: [
+              Positioned(
+                left: at.dx,
+                top: at.dy,
+                child: DiaryBlockDragFeedback(text: _dragLabel),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

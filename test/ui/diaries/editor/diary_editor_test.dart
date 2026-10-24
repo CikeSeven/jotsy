@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/services/diary_typography.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_handle.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_block_markers.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:node_diary/ui/diaries/controllers/diary_editor_controller.dart';
 import 'package:node_diary/ui/diaries/models/diary_code_block/diary_code_block_style.dart';
@@ -356,6 +357,156 @@ void main() {
 
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump(const Duration(seconds: 5));
+      controller.dispose();
+      focus.dispose();
+    },
+  );
+
+  testWidgets(
+    'the block handle lines up with the first-line marker and sits in the child indent',
+    (tester) async {
+      final focus = FocusNode();
+      final controller = DiaryEditorController.fromContent(
+        jsonEncode({
+          'document': {
+            'type': 'page',
+            'children': [
+              {
+                'type': 'bulleted_list',
+                'data': {
+                  'delta': [
+                    // 折成多行：首行光标比文字多出下方半个行距，不能拿它居中。
+                    {'insert': List.filled(120, 'x').join()},
+                  ],
+                },
+                'children': [
+                  {
+                    'type': 'bulleted_list',
+                    'data': {
+                      'delta': [
+                        {'insert': 'child'},
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      );
+      controller.select(af.Selection.collapsed(af.Position(path: [0])));
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      focus.requestFocus();
+      Future<void> frames() async {
+        for (var i = 0; i < 4; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+      }
+
+      await frames();
+      final handle = find.byType(DiaryBlockHandle);
+      Finder dot(int index) => find.descendant(
+        of: find.byType(DiaryBulletMarker).at(index),
+        matching: find.byType(DecoratedBox),
+      );
+      // 把手与圆点同高：都落在首行的字形中线上。
+      expect(
+        tester.getCenter(handle).dy,
+        moreOrLessEquals(tester.getCenter(dot(0)).dy, epsilon: 0.5),
+      );
+
+      controller.select(af.Selection.collapsed(af.Position(path: [0, 0])));
+      await frames();
+      expect(
+        tester.getCenter(handle).dy,
+        moreOrLessEquals(tester.getCenter(dot(1)).dy, epsilon: 0.5),
+      );
+      // 子块的把手贴着子块左边界，画在父块的缩进（行首标记列宽）里。
+      final childLeft = tester
+          .getTopLeft(find.byType(DiaryBulletMarker).at(1))
+          .dx;
+      expect(
+        tester.getRect(handle).right - diaryBlockHandleHitSlop.right,
+        moreOrLessEquals(childLeft, epsilon: 0.5),
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      controller.dispose();
+      focus.dispose();
+    },
+  );
+
+  testWidgets(
+    'the handle stays on its block while the page scrolls during a drag',
+    (tester) async {
+      final focus = FocusNode();
+      final controller = DiaryEditorController.fromContent(
+        List.generate(40, (i) => 'line $i').join('\n'),
+      );
+      controller.select(af.Selection.collapsed(af.Position(path: [1])));
+      await pump(
+        tester,
+        controller,
+        focusNode: focus,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+      );
+      focus.requestFocus();
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
+      final handle = find.byType(DiaryBlockHandle);
+      // 只认正文里的那一段：拖动时跟手卡片也写着同样的文字。
+      final block = find.descendant(
+        of: find.byType(af.AppFlowyRichText),
+        matching: find.text('line 1', findRichText: true),
+      );
+      double gap() => tester.getCenter(handle).dy - tester.getTopLeft(block).dy;
+      final initialGap = gap();
+
+      final gesture = await tester.startGesture(tester.getCenter(handle));
+      await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
+      final position = tester
+          .state<ScrollableState>(
+            find
+                .descendant(
+                  of: find.byType(DiaryEditor),
+                  matching: find.byWidgetPredicate(
+                    (w) =>
+                        w is Scrollable &&
+                        w.axisDirection == AxisDirection.down,
+                  ),
+                )
+                .first,
+          )
+          .position;
+      final before = tester.getCenter(handle).dy;
+      position.jumpTo(30);
+      await tester.pump();
+      await tester.pump();
+      // 页面滚动时把手跟着原块走，不停在原来的屏幕位置。
+      expect(tester.getCenter(handle).dy, lessThan(before - 20));
+      expect(gap(), moreOrLessEquals(initialGap, epsilon: 0.5));
+
+      // 原块滚出视口：把手随之隐藏，拖动照常继续。
+      position.jumpTo(600);
+      await tester.pump();
+      await tester.pump();
+      expect(handle, findsNothing);
+      expect(find.byType(DiaryBlockDragFeedback), findsOneWidget);
+      await gesture.cancel();
+      await tester.pump();
+      expect(find.byType(DiaryBlockDragFeedback), findsNothing);
+      expect(
+        controller.plainText,
+        List.generate(40, (i) => 'line $i').join('\n'),
+      );
+
+      await tester.pumpWidget(const SizedBox.shrink());
       controller.dispose();
       focus.dispose();
     },

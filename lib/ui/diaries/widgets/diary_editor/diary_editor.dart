@@ -15,6 +15,7 @@ import '../../providers/diary_code_block_style_provider.dart';
 import '../../providers/diary_typography_provider.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
+import 'diary_block_marker_metrics.dart';
 import 'diary_editor_blocks.dart';
 import 'diary_slash_commands.dart';
 import 'diary_slash_menu.dart';
@@ -358,6 +359,10 @@ class _DiaryEditorState extends ConsumerState<DiaryEditor> {
         focusNode: widget.focusNode,
         coveredHeight: widget.autoScrollEdgeOffset,
         contentLeft: widget.padding.left,
+        childIndent: DiaryMarkerMetrics.columnWidth(
+          widget.appearance.typography.fontSize,
+          diaryEditorTextScaler(context),
+        ),
         revealPath: (path) {
           if (path.isNotEmpty &&
               widget.controller.document.nodeAtPath(path) != null &&

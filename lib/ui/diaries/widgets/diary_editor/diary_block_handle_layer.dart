@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
@@ -11,20 +12,23 @@ import '../../../../l10n/app_localizations.dart';
 import '../../controllers/diary_block_reorder.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_block_handle.dart';
+import 'diary_block_marker_metrics.dart';
 
 /// 编辑态的段落把手：整篇正文只有一个，浮在光标所在块的首行左侧。
 ///
 /// 为什么不给每个块各包一个把手：常驻的把手满屏都是，正文还要让出 24dp
 /// 沟槽，与标题对不齐、嵌套块缩进翻倍。这一层叠在编辑器之上，不改变任何
 /// 块的布局：
-/// - 位置：光标所在块（嵌套时为最内层的块）首行的垂直中线，水平落在块
+/// - 位置：光标所在块（嵌套时为最内层的块）首行的字形中线（与行首标记同一
+///   口径，见 [_DiaryBlockHandleLayerState._firstLineCenter]），水平落在块
 ///   左侧——顶层块在页面左边距里，子块在父块的缩进里。选区跨块、没有焦点或
 ///   块滚出视口时隐藏；出现时 `fast` 淡入。
 /// - 点按：Expressive 菜单上移 / 拖动段落 / 下移（见 [DiaryBlockHandle]）。
 /// - 长按把手或菜单里的“拖动段落”：拖动整棵子树。落点随手指逐帧计算（自动
 ///   滚动时手指不动也会变），以 2dp `primary` 线标在目标块上沿或下沿；不能
-///   落到自身及后代上。原块盖一层半透明页面底色表示“已拿起”。松手经
-///   [moveDiaryEditorBlock] 一次事务完成，可撤销。
+///   落到自身及后代上。原块盖一层半透明页面底色表示“已拿起”，把手留在原块
+///   上、随它滚动（滚出视口时隐藏）。松手经 [moveDiaryEditorBlock] 一次事务
+///   完成，可撤销。
 /// - 拖动由本层直接跟踪指针（全局指针路由），跟手卡片经 [OverlayPortal]
 ///   画在页面浮层里，不用 `Draggable`：菜单项在长按生效时随菜单收起而卸载，
 ///   `Draggable` 的回调绑在它自己的元素上，卸载后全部丢失。全局路由与发起
@@ -38,6 +42,7 @@ class DiaryBlockHandleLayer extends StatefulWidget {
     required this.child,
     this.focusNode,
     this.contentLeft = 0,
+    this.childIndent = 28,
   });
 
   final DiaryEditorController controller;
@@ -47,12 +52,12 @@ class DiaryBlockHandleLayer extends StatefulWidget {
   /// 编辑器的左内边距（页面左边距）：顶层块的左边界。
   final double contentLeft;
 
+  /// 子块相对父块的缩进（编辑器块配置的 indentPadding，即行首标记列宽）。
+  final double childIndent;
+
   @override
   State<DiaryBlockHandleLayer> createState() => _DiaryBlockHandleLayerState();
 }
-
-/// 子块相对父块的缩进（编辑器块配置的默认 indentPadding）。
-const double _childIndent = 24;
 
 /// 跟手卡片左上角相对手指的位置：浮在手指右上方，落点线就在手指所在的
 /// 块边上，不能被盖住。
@@ -82,6 +87,10 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
   StreamSubscription<af.EditorTransactionValue>? _transactions;
   bool _scheduled = false;
   _HandlePlacement? _placement;
+
+  /// 按块样式与缩放缓存的首行字形中心（到文字顶端的距离）：把手可见期间
+  /// 每帧都要核对位置，样式只在换块或改排版时才变。
+  final Map<(TextStyle, TextScaler), double> _glyphCenters = {};
 
   // ---- 拖动状态 ----
   af.Node? _dragging;
@@ -170,9 +179,12 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
   }
 
   void _place() {
-    // 拖动中把手保持在原块上，保证拖动手势所在的组件不被移除。
+    // 拖动中把手只跟着原块走（[_trackDrag] 逐帧更新），不随选区换块。
     if (_dragging != null) return;
-    final next = _computePlacement();
+    _setPlacement(_computePlacement());
+  }
+
+  void _setPlacement(_HandlePlacement? next) {
     if (next?.node != _placement?.node ||
         (next?.center ?? Offset.zero) != (_placement?.center ?? Offset.zero)) {
       setState(() => _placement = next);
@@ -187,14 +199,17 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
       return null;
     }
     final node = controller.state.getNodeAtPath(selection.end.path);
+    return node == null ? null : _placementFor(node);
+  }
+
+  /// [node] 首行左侧的把手位置；块不在视口里时为 null。
+  _HandlePlacement? _placementFor(af.Node node) {
     final box = context.findRenderObject();
-    if (node == null || box is! RenderBox || !box.hasSize) return null;
+    if (box is! RenderBox || !box.hasSize) return null;
     final rect = node.rect;
     if (rect == Rect.zero) return null;
-    final firstLine = _firstLineRect(node);
-    final centerY = firstLine != null
-        ? firstLine.center.dy
-        : rect.top + math.min(rect.height / 2, 20);
+    final centerY =
+        _firstLineCenter(node) ?? rect.top + math.min(rect.height / 2, 20);
     final local = box.globalToLocal(Offset(rect.left, centerY));
     final left = _blockLeft(node, box, fallback: local.dx);
     final center = Offset(left - diaryBlockHandleWidth / 2, local.dy);
@@ -214,19 +229,59 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
     final parentRect = parent.rect;
     return parentRect == Rect.zero
         ? fallback
-        : box.globalToLocal(parentRect.topLeft).dx + _childIndent;
+        : box.globalToLocal(parentRect.topLeft).dx + widget.childIndent;
   }
 
-  /// 文字块首行光标的全局矩形；媒体等没有文字的块返回 null。
-  Rect? _firstLineRect(af.Node node) {
+  /// 文字块首行字形中心的全局纵坐标：基线上方 0.37em，与列表圆点、待办框
+  /// 同一口径（见 [DiaryMarkerMetrics]）。媒体等没有文字的块返回 null。
+  ///
+  /// 为什么不取首行光标矩形的中线：正文首行上方的半个行距被裁掉、下方的
+  /// 保留（`kDiaryTextHeightBehavior`），多行段落的首行光标比文字多出下方
+  /// 半个行距，中线偏低，行距越大偏得越多。这里改读块里的占位文字段落——
+  /// 它带着与正文相同的块样式（标题字号、代码字体）与缩放，叠在正文同一
+  /// 位置，首行顶端就是文字顶端——按它的样式量出字形中心。
+  double? _firstLineCenter(af.Node node) {
     if (node.delta == null) return null;
-    final selectable = node.selectable;
-    final rect = selectable?.getCursorRectInPosition(
-      af.Position(path: node.path),
-      shiftWithBaseOffset: true,
-    );
-    if (selectable == null || rect == null) return null;
-    return selectable.transformRectToGlobal(rect, shiftWithBaseOffset: true);
+    final paragraph = _placeholderParagraph(node);
+    final style = paragraph?.text.style;
+    if (paragraph == null || style == null || !paragraph.hasSize) return null;
+    final scaler = paragraph.textScaler;
+    final center = _glyphCenters.putIfAbsent((style, scaler), () {
+      if (_glyphCenters.length >= 16) _glyphCenters.clear();
+      return DiaryMarkerMetrics.measure(style, scaler).glyphCenter;
+    });
+    return paragraph.localToGlobal(Offset(0, center)).dy;
+  }
+
+  /// 块自身文字的占位段落：块里第一个 [af.AppFlowyRichText]（子块排在自身
+  /// 文字之后）中的第一个 [RichText]——上游先画占位、再画正文。
+  static RenderParagraph? _placeholderParagraph(af.Node node) {
+    final root = node.key.currentContext;
+    if (root is! Element) return null;
+    Element? richText;
+    void findRichText(Element element) {
+      if (richText != null) return;
+      if (element.widget is af.AppFlowyRichText) {
+        richText = element;
+      } else {
+        element.visitChildElements(findRichText);
+      }
+    }
+
+    RenderParagraph? paragraph;
+    void findParagraph(Element element) {
+      if (paragraph != null) return;
+      final object = element.renderObject;
+      if (element.widget is RichText && object is RenderParagraph) {
+        paragraph = object;
+      } else {
+        element.visitChildElements(findParagraph);
+      }
+    }
+
+    findRichText(root);
+    richText?.visitChildElements(findParagraph);
+    return paragraph;
   }
 
   // ---- 拖动 ----
@@ -302,6 +357,8 @@ class _DiaryBlockHandleLayerState extends State<DiaryBlockHandleLayer>
         _sourceRect = sourceRect;
       });
     }
+    // 把手随原块滚动；滚出视口即移除，拖动由全局指针路由跟踪，不受影响。
+    _setPlacement(_placementFor(source));
   }
 
   /// 块（含子块）在本层的矩形，左边界按 [_blockLeft]。

@@ -22,6 +22,7 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
     required this.coveredHeight,
     required this.revealPath,
     this.contentLeft = 0,
+    this.childIndent = 28,
     this.focusNode,
   });
   final DiaryEditorController controller;
@@ -35,6 +36,9 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
 
   /// 编辑器左内边距，段落把手画在这块边距里。
   final double contentLeft;
+
+  /// 子块相对父块的缩进（行首标记列宽），子块的把手画在这段缩进里。
+  final double childIndent;
   @override
   Widget build(BuildContext context) {
     // 只读正文按内容高度嵌入整页滚动时，末行的选区把手会画在文字下方。
@@ -86,6 +90,7 @@ class DiaryEditorInteractionLayer extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       contentLeft: contentLeft,
+      childIndent: childIndent,
       child: content,
     );
     return shrinkWrap

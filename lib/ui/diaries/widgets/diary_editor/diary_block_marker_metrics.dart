@@ -77,5 +77,12 @@ class DiaryMarkerMetrics {
 
   /// 行首标记列宽（16sp 时 28dp）：无序、有序与待办共用，三种列表的正文
   /// 起点对齐；子块缩进同为这个宽度，嵌套的标记落在上一级的正文起点下。
-  double get width => dp(28);
+  double get width => dp(_kColumnWidth);
+
+  /// 不排版、只按正文字号算出的列宽（同 [width]），供只需要子块缩进的
+  /// 段落把手层使用。
+  static double columnWidth(double fontSize, TextScaler scaler) =>
+      _kColumnWidth * scaler.scale(fontSize) / 16;
+
+  static const double _kColumnWidth = 28;
 }

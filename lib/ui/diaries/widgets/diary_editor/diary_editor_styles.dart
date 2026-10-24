@@ -4,6 +4,22 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import '../../viewmodels/diary_text_appearance.dart';
+import 'diary_block_marker_metrics.dart';
+
+/// 正文的行高分配（与上游默认相同，这里显式写出以便共用）：首行上方与末行
+/// 下方不加行距，块与块的距离只由块的 padding 决定；多出的行距在行内上下
+/// 均分。行首标记与代码行号按同一规则测量，才能与文字首行的基线对齐。
+const TextHeightBehavior kDiaryTextHeightBehavior = TextHeightBehavior(
+  applyHeightToFirstAscent: false,
+  applyHeightToLastDescent: false,
+  leadingDistribution: TextLeadingDistribution.even,
+);
+
+/// 正文实际使用的字体缩放：上游把系统缩放折算成线性倍数
+/// （[af.EditorStyle.textScaleFactor]），与正文并排绘制的标记与行号必须用
+/// 同一个倍数，否则在非线性缩放（Android 14 起的大字体）下逐行错开。
+TextScaler diaryEditorTextScaler(BuildContext context) =>
+    TextScaler.linear(MediaQuery.textScalerOf(context).scale(1));
 
 /// 在正文所在的 Material 下解析颜色、排版与块间距；所有编辑和只读入口共用。
 af.EditorStyle buildDiaryEditorStyle(
@@ -20,10 +36,15 @@ af.EditorStyle buildDiaryEditorStyle(
     dragHandleColor: colors.primary,
     selectionColor: colors.primary.withValues(alpha: 0.24),
     enableHapticFeedbackOnAndroid: false,
-    textScaleFactor: MediaQuery.textScalerOf(context).scale(1),
+    textScaleFactor: diaryEditorTextScaler(context).scale(1),
     textStyleConfiguration: af.TextStyleConfiguration(
       text: diaryEditorBodyStyle(context, appearance),
       lineHeight: appearance.typography.lineHeight,
+      applyHeightToFirstAscent:
+          kDiaryTextHeightBehavior.applyHeightToFirstAscent,
+      applyHeightToLastDescent:
+          kDiaryTextHeightBehavior.applyHeightToLastDescent,
+      leadingDistribution: kDiaryTextHeightBehavior.leadingDistribution,
       href: TextStyle(
         color: colors.primary,
         decoration: TextDecoration.underline,
@@ -58,6 +79,17 @@ TextStyle diaryEditorBodyStyle(
 /// 标题字号相对正文字号的倍数（h1–h6）。随正文字号缩放，不写绝对像素。
 const List<double> kDiaryHeadingScales = [1.75, 1.45, 1.2, 1.1, 1.0, 0.9];
 
+/// 标题的字号与字重（[level] 为 1–6）。上游标题块在块样式之后还会叠一层
+/// 自己的默认字号（32 / 28 / 24 / 18…，不随正文字号变化），所以除了块样式，
+/// 标题块的 `textStyleBuilder` 也必须交给这里，否则倍数被上游覆盖。
+TextStyle diaryHeadingTextStyle(DiaryTextAppearance appearance, int level) =>
+    TextStyle(
+      fontSize:
+          appearance.typography.fontSize *
+          kDiaryHeadingScales[level.clamp(1, 6) - 1],
+      fontWeight: FontWeight.w700,
+    );
+
 /// 标题上方的留白（h1–h6），与前文拉开层次；文档第一块不加。
 const List<double> _headingTopSpacing = [18, 14, 10, 8, 8, 8];
 
@@ -72,17 +104,22 @@ bool _isFirstBlock(af.Node node) =>
 /// 文字块的间距与字形：
 /// - 段落：上下 3dp，段后再加用户的段间距；
 /// - 标题：上方按级别留白（文档第一块除外）、下方 4dp，字重 700、行高 1.3；
-/// - 列表与待办：上下 2dp，保持列表紧凑；
-/// - 引用：上下 4dp，文字为 `onSurfaceVariant`，与正文区分而不刺眼。
+/// - 列表与待办：上下各 2dp 再补回半个行距（[DiaryMarkerMetrics.halfLeading]），
+///   相邻两项的间距 = 一个整行 + 4dp，随行距设置变化，又不比项内换行更挤；
+/// - 引用：上下 4dp，文字为 `onSurfaceVariant`，与正文区分而不刺眼；
+/// - 子块缩进等于行首标记列宽：嵌套列表的标记正好落在上一级的正文起点下。
 af.BlockComponentConfiguration diaryTextBlockConfiguration(
   BuildContext context,
   DiaryTextAppearance appearance, {
+  required DiaryMarkerMetrics markers,
   String? placeholder,
   bool editable = true,
 }) {
   final colors = Theme.of(context).colorScheme;
   final typography = appearance.typography;
   return af.BlockComponentConfiguration(
+    indentPadding: (_, direction) =>
+        EdgeInsetsDirectional.only(start: markers.width).resolve(direction),
     padding: (node) => switch (node.type) {
       'heading' => EdgeInsets.only(
         top: _isFirstBlock(node)
@@ -92,7 +129,7 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
       ),
       'bulleted_list' ||
       'numbered_list' ||
-      'todo_list' => const EdgeInsets.symmetric(vertical: 2),
+      'todo_list' => EdgeInsets.symmetric(vertical: 2 + markers.halfLeading),
       'quote' => const EdgeInsets.symmetric(vertical: 4),
       'paragraph' => EdgeInsets.only(
         top: 3,
@@ -101,13 +138,10 @@ af.BlockComponentConfiguration diaryTextBlockConfiguration(
       _ => const EdgeInsets.symmetric(vertical: 3),
     },
     textStyle: (node, {textSpan}) => switch (node.type) {
-      'heading' => TextStyle(
-        fontFamily: appearance.fontFamily,
-        fontSize:
-            typography.fontSize * kDiaryHeadingScales[_headingLevel(node) - 1],
-        fontWeight: FontWeight.w700,
-        height: 1.3,
-      ),
+      'heading' => diaryHeadingTextStyle(
+        appearance,
+        _headingLevel(node),
+      ).copyWith(fontFamily: appearance.fontFamily, height: 1.3),
       'quote' => TextStyle(color: colors.onSurfaceVariant),
       _ => const TextStyle(),
     },

@@ -10,6 +10,7 @@ import 'diary_code_block_surface.dart';
 import 'diary_editor_styles.dart';
 import '../../controllers/diary_editor_controller.dart';
 import 'diary_media_block.dart';
+import 'diary_block_marker_metrics.dart';
 import 'diary_block_markers.dart';
 
 /// 原生块组件的单一注册点：共享排版、行首标记（列表、待办、引用）、代码
@@ -28,19 +29,19 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   required bool foldLongImages,
   Map<String, af.BlockComponentBuilder> overrides = const {},
 }) {
+  final body = diaryEditorBodyStyle(context, appearance);
+  final markers = DiaryMarkerMetrics.measure(
+    body,
+    diaryEditorTextScaler(context),
+  );
   final text = diaryTextBlockConfiguration(
     context,
     appearance,
+    markers: markers,
     placeholder: placeholder,
     editable: !controller.readOnly,
   );
   final colors = Theme.of(context).colorScheme;
-  final lineExtent = diaryMarkerLineExtent(
-    context,
-    fontSize: appearance.typography.fontSize,
-    lineHeight: appearance.typography.lineHeight,
-  );
-  final body = diaryEditorBodyStyle(context, appearance);
   final media = DiaryMediaBlockBuilder(
     controller: controller,
     onImageOpen: onImageOpen,
@@ -50,19 +51,19 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
   final builders = <String, af.BlockComponentBuilder>{
     'page': page,
     'paragraph': af.ParagraphBlockComponentBuilder(configuration: text),
-    'heading': af.HeadingBlockComponentBuilder(configuration: text),
+    'heading': af.HeadingBlockComponentBuilder(
+      configuration: text,
+      textStyleBuilder: (level) => diaryHeadingTextStyle(appearance, level),
+    ),
     'bulleted_list': af.BulletedListBlockComponentBuilder(
       configuration: text,
       iconBuilder: (context, node) =>
-          DiaryBulletMarker(node: node, lineExtent: lineExtent),
+          DiaryBulletMarker(node: node, metrics: markers),
     ),
     'numbered_list': af.NumberedListBlockComponentBuilder(
       configuration: text,
-      iconBuilder: (context, node, _) => DiaryNumberMarker(
-        node: node,
-        lineExtent: lineExtent,
-        textStyle: body,
-      ),
+      iconBuilder: (context, node, _) =>
+          DiaryNumberMarker(node: node, metrics: markers, textStyle: body),
     ),
     'quote': af.QuoteBlockComponentBuilder(
       configuration: text,
@@ -80,7 +81,7 @@ Map<String, af.BlockComponentBuilder> buildDiaryEditorBlocks(
           : const TextStyle(),
       iconBuilder: (context, node, onCheck) => DiaryTodoCheckbox(
         checked: node.attributes['checked'] == true,
-        lineExtent: lineExtent,
+        metrics: markers,
         semanticLabel: DiaryToolbarItem.checkList.label(context.l10n),
         onToggle: controller.readOnly && !todoToggle
             ? null

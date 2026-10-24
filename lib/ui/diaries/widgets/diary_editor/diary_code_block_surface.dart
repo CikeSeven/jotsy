@@ -9,6 +9,7 @@ import '../../controllers/diary_block_language_tracker.dart';
 import '../../models/diary_code_block/diary_code_language.dart';
 import '../../viewmodels/diary_code_block_look.dart';
 import 'diary_editor_spans.dart';
+import 'diary_editor_styles.dart';
 
 /// 代码块直接包住原生可选文字节点：标题栏与行号不进入文档或文字偏移，
 /// 也不参与输入法；布局跟随该节点，删除、嵌套与拖动不会留下绘制层残影。
@@ -120,7 +121,7 @@ class DiaryCodeBlockSurface extends StatelessWidget {
                                   1,
                                   double.infinity,
                                 ),
-                                MediaQuery.textScalerOf(context),
+                                diaryEditorTextScaler(context),
                               ),
                             ),
                           ),
@@ -143,6 +144,11 @@ class DiaryCodeBlockSurface extends StatelessWidget {
 
 /// 每个逻辑行按可用宽度测出换行后的高度，行号仍对齐逻辑行；宽度、字号或
 /// 系统字体缩放改变时重测，颜色改变不影响文档布局。
+///
+/// 行号与代码文字的基线必须一致：代码文字是一整段，按正文的行高规则
+/// （[kDiaryTextHeightBehavior]）只有第一行上方不加行距，其余行行距上下
+/// 均分。所以第一行按同一规则去掉上方行距，其余行保留完整行高，行号与所在
+/// 行同规则排版；缩放沿用正文的线性倍数（[diaryEditorTextScaler]）。
 class _CodeLineNumbers extends CustomPainter {
   _CodeLineNumbers(this.text, this.style, this.color, this.width, this.scaler);
   final String text;
@@ -150,15 +156,23 @@ class _CodeLineNumbers extends CustomPainter {
   final Color color;
   final double width;
   final TextScaler scaler;
+
+  /// 段内的行：上下都保留行距，均分方式与正文一致。
+  static final TextHeightBehavior _innerLine = TextHeightBehavior(
+    leadingDistribution: kDiaryTextHeightBehavior.leadingDistribution,
+  );
+
   @override
   void paint(Canvas canvas, Size size) {
     var top = 0.0;
     final lines = text.split('\n');
     for (var i = 0; i < lines.length; i++) {
+      final behavior = i == 0 ? kDiaryTextHeightBehavior : _innerLine;
       final measure = TextPainter(
         text: TextSpan(text: lines[i].isEmpty ? ' ' : lines[i], style: style),
         textDirection: TextDirection.ltr,
         textScaler: scaler,
+        textHeightBehavior: behavior,
       )..layout(maxWidth: width);
       final number = TextPainter(
         text: TextSpan(
@@ -167,6 +181,7 @@ class _CodeLineNumbers extends CustomPainter {
         ),
         textDirection: TextDirection.ltr,
         textScaler: scaler,
+        textHeightBehavior: behavior,
       )..layout();
       number.paint(canvas, Offset(22 - number.width, top));
       top += measure.height;

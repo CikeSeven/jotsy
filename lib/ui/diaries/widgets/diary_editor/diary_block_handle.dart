@@ -21,6 +21,14 @@ typedef DiaryBlockDragStart =
 const double diaryBlockHandleWidth = 16;
 const double diaryBlockHandleHeight = 26;
 
+/// 把手点阵图标的字号。
+const double _gripSize = 11;
+
+/// Font Awesome 的点阵字形在它的行框里偏下 0.034em（11dp 时实测墨迹比行框
+/// 中线低 0.375dp）。按行框居中后点阵整体比胶囊中线低，手机上差 1 个多物理
+/// 像素就能看出和首行文字没对齐；上移这么多，点阵中线才落在把手中线上。
+const double _gripInkDrop = _gripSize * 0.034;
+
 /// 触控区域比可见尺寸大：左侧外扩 8dp、上下各 4dp；右侧只外扩 2dp——再多
 /// 就压住正文开头，点行首放光标会误触把手。
 const EdgeInsets diaryBlockHandleHitSlop = EdgeInsets.fromLTRB(8, 4, 2, 4);
@@ -131,13 +139,16 @@ class DiaryBlockHandle extends StatelessWidget {
                         color: colors.secondaryContainer.withValues(alpha: t),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: FaIcon(
-                        FontAwesomeIcons.gripVertical,
-                        size: 11,
-                        color: Color.lerp(
-                          colors.onSurfaceVariant.withValues(alpha: 0.65),
-                          colors.onSecondaryContainer,
-                          t,
+                      child: Transform.translate(
+                        offset: const Offset(0, -_gripInkDrop),
+                        child: FaIcon(
+                          FontAwesomeIcons.gripVertical,
+                          size: _gripSize,
+                          color: Color.lerp(
+                            colors.onSurfaceVariant.withValues(alpha: 0.65),
+                            colors.onSecondaryContainer,
+                            t,
+                          ),
                         ),
                       ),
                     ),

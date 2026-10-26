@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show SliverConstraints;
 import 'package:node_diary/ui/widgets/delayed_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -27,6 +29,9 @@ import '../widgets/explore_shared_widgets.dart';
 /// - 不负责日记聚合统计（保持与 ExplorePageController 解耦）。
 class ExploreMediaGalleryPage extends ConsumerStatefulWidget {
   const ExploreMediaGalleryPage({super.key});
+
+  /// 网格列数：页面宽 [width] 每 160 一列，至少 3 列（手机上恒为 3 列）。
+  static int galleryColumns(double width) => math.max(3, width ~/ 160);
 
   @override
   ConsumerState<ExploreMediaGalleryPage> createState() =>
@@ -145,56 +150,63 @@ class _ExploreMediaGalleryPageState
       key: const ValueKey<String>('grid'),
       controller: _scrollController,
       slivers: <Widget>[
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.m,
-            AppSpacing.m,
-            AppSpacing.m,
-            0,
-          ),
-          sliver: SliverGrid(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final item = _mediaItems[index];
-              // 缩略图本身不透明，水波纹需画在叠于其上的透明 Material 上。
-              // Builder 提供格子自己的 context：点按时从这里抓取已绘制的缩略图
-              // 作为看图页的飞入画面（delegate 的 context 是整个网格）。
-              return Builder(
-                builder: (cellContext) => Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[
-                    ImageViewerHeroSource(
-                      tag: _heroTag(item.source),
-                      borderRadius: BorderRadius.circular(_thumbRadius),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final side = constraints.biggest.shortestSide;
-                          return ExploreMediaThumb(
-                            source: item.source,
-                            width: side,
-                            height: side,
-                            radius: _thumbRadius,
-                          );
-                        },
-                      ),
-                    ),
-                    Material(
-                      type: MaterialType.transparency,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(_thumbRadius),
-                        onTap: () => _openViewer(index, cellContext),
-                      ),
-                    ),
-                  ],
+        // 列数随页面宽度增加（见 [ExploreMediaGalleryPage.galleryColumns]），缩略图大小保持在手机上
+        // 的体感，不会在宽窗口里被放大成几张大图。
+        SliverLayoutBuilder(
+          builder: (BuildContext context, SliverConstraints constraints) =>
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.m,
+                  AppSpacing.m,
+                  AppSpacing.m,
+                  0,
                 ),
-              );
-            }, childCount: _mediaItems.length),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 6,
-              crossAxisSpacing: 6,
-              childAspectRatio: 1,
-            ),
-          ),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = _mediaItems[index];
+                    // 缩略图本身不透明，水波纹需画在叠于其上的透明 Material 上。
+                    // Builder 提供格子自己的 context：点按时从这里抓取已绘制的缩略图
+                    // 作为看图页的飞入画面（delegate 的 context 是整个网格）。
+                    return Builder(
+                      builder: (cellContext) => Stack(
+                        fit: StackFit.expand,
+                        children: <Widget>[
+                          ImageViewerHeroSource(
+                            tag: _heroTag(item.source),
+                            borderRadius: BorderRadius.circular(_thumbRadius),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final side = constraints.biggest.shortestSide;
+                                return ExploreMediaThumb(
+                                  source: item.source,
+                                  width: side,
+                                  height: side,
+                                  radius: _thumbRadius,
+                                );
+                              },
+                            ),
+                          ),
+                          Material(
+                            type: MaterialType.transparency,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(_thumbRadius),
+                              onTap: () => _openViewer(index, cellContext),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }, childCount: _mediaItems.length),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: ExploreMediaGalleryPage.galleryColumns(
+                      constraints.crossAxisExtent,
+                    ),
+                    mainAxisSpacing: 6,
+                    crossAxisSpacing: 6,
+                    childAspectRatio: 1,
+                  ),
+                ),
+              ),
         ),
         SliverToBoxAdapter(
           child: Padding(
@@ -226,9 +238,19 @@ class _ExploreMediaGalleryPageState
   }
 
   void _handleGalleryChanged() {
-    if (mounted) {
-      setState(() {});
+    if (!mounted) {
+      return;
     }
+    setState(() {});
+    // 宽窗口一行放得多，一页结果可能填不满屏幕：没有可滚动的距离就不会
+    // 触发滚动预取，这里在布局后补查一次，填满为止（或没有更多）。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted &&
+          _scrollController.hasClients &&
+          _scrollController.position.maxScrollExtent <= 0) {
+        _handleScroll();
+      }
+    });
   }
 
   Future<void> _loadMore() => _controller.loadMore();

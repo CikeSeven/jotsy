@@ -25,6 +25,7 @@ extension DiaryColorPresetLabel on DiaryColorPreset {
     DiaryColorPreset.pink => l10n.diaryColorPink,
     DiaryColorPreset.brown => l10n.diaryColorBrown,
     DiaryColorPreset.gray => l10n.diaryColorGray,
+    DiaryColorPreset.white => l10n.diaryColorWhite,
   };
 }
 

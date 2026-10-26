@@ -57,6 +57,28 @@ void main() {
     expect(harness.edits, 0);
   });
 
+  testWidgets('the white swatch writes opaque pure white for both targets', (
+    tester,
+  ) async {
+    final harness = await pumpColorPanel(tester);
+    await openTextColorPanel(tester);
+
+    await tester.tap(find.byTooltip('白'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(colorPanelBackgroundTool));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('白'));
+    await tester.pumpAndSettle();
+
+    expect(colorPanelAttributesAt(harness.controller, 0), <String, dynamic>{
+      'color': '#FFFFFFFF',
+      'background': '#FFFFFFFF',
+    });
+    // 纯白是预设，不存进我的颜色。
+    expect(harness.edits, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('the default swatch clears the text color', (tester) async {
     final controller = colorPanelController();
     controller.formatSelection(const MapEntry('font_color', '#FF3B7BE8'));

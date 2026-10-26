@@ -49,14 +49,22 @@ enum DiaryColorPreset {
   purple(Color(0xFF9150C8), Color(0x4DB57EE6)),
   pink(Color(0xFFD6409F), Color(0x4DF472B6)),
   brown(Color(0xFFA27250), Color(0x4DB98B6E)),
-  gray(Color(0xFF7E848E), Color(0x4D9AA0A6));
+  gray(Color(0xFF7E848E), Color(0x4D9AA0A6)),
+  // 纯白两种目标都是不透明 #FFFFFFFF：要的就是白本身（暗色卡片或深色背景上
+  // 的白字、盖住底色的白底），与色系页灰色系的白同值，两页选中同一格。它不
+  // 守下面两条对比度约定，白纸上的白字、暗色主题下白底上的墨色都看不清——
+  // 色块照实画出（文字目标是白圆，背景目标的白底上写墨色“A”），由用户自己
+  // 判断；内置模板的小标题不取它。
+  white(Color(0xFFFFFFFF), Color(0xFFFFFFFF));
 
   const DiaryColorPreset(this._text, this._background);
 
-  /// 文字色：不透明的中间调，在白纸与暗色卡片上都有 3:1 以上的对比度。
+  /// 文字色：不透明的中间调，在白纸与暗色卡片上都有 3:1 以上的对比度（纯白
+  /// 除外）。
   final Color _text;
 
-  /// 背景色：半透明，叠在纸面上后正文的 onSurface 墨色在亮暗主题下都清楚。
+  /// 背景色：半透明，叠在纸面上后正文的 onSurface 墨色在亮暗主题下都清楚
+  /// （纯白除外）。
   final Color _background;
 
   Color colorFor(DiaryColorTarget target) => switch (target) {
@@ -211,10 +219,10 @@ List<Color> collectDiaryDocumentColors(
 /// 色板页的排布：列数、预设占几行，以及下方“我的颜色”一行。
 ///
 /// 规则：列数按 40dp 一格取整并夹在 [minColumns, maxColumns]；第一格是默认 /
-/// 无背景，随后 11 个预设，按列数折行；预设之下隔 [stripGap] 是固定一行的
-/// “我的颜色”（首格新建、末格管理，中间横向滚动），存多少都不改变高度。纯
-/// 计算，面板高度由此直接得出，不必等测量；与保存了几个颜色无关，切换目标
-/// 时面板不会跳动。
+/// 无背景，随后 12 个预设，按列数折行（7 列起两行排完，只有 6 列的极窄窗口
+/// 排三行）；预设之下隔 [stripGap] 是固定一行的“我的颜色”（首格新建、末格
+/// 管理，中间横向滚动），存多少都不改变高度。纯计算，面板高度由此直接得出，
+/// 不必等测量；与保存了几个颜色无关，切换目标时面板不会跳动。
 class DiaryColorGridLayout {
   const DiaryColorGridLayout._({
     required this.columns,
@@ -239,7 +247,7 @@ class DiaryColorGridLayout {
   /// 预设与“我的颜色”之间的间距（中间画一道细分隔线）。
   static const double stripGap = 8;
 
-  /// 默认 / 无背景 + 11 个预设。
+  /// 默认 / 无背景 + 12 个预设。
   static final int presetCellCount = 1 + DiaryColorPreset.values.length;
 
   final int columns;

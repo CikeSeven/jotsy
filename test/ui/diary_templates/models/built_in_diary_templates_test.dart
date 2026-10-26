@@ -84,9 +84,11 @@ void main() {
 
   test('headings are bold in a readable text color and end in a plain '
       'colon', () {
+    // 纯白不守文字色预设的对比度约定（白纸上看不见），不能做小标题色。
     final readable = {
       for (final preset in DiaryColorPreset.values)
-        encodeDiaryColor(preset.colorFor(DiaryColorTarget.text)),
+        if (preset != DiaryColorPreset.white)
+          encodeDiaryColor(preset.colorFor(DiaryColorTarget.text)),
     };
     for (final l10n in [zh, en]) {
       for (final template in buildBuiltInDiaryTemplates(l10n)) {

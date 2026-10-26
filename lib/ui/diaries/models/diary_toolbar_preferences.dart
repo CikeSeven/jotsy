@@ -1,4 +1,5 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 /// 编辑器工具项标识。
@@ -221,6 +222,15 @@ String encodeDiaryToolbarHiddenItems(Set<DiaryToolbarItem> hiddenItems) {
   }
   return normalized.map((item) => item.storageKey).join(',');
 }
+
+/// 本平台不提供的工具：Linux 不支持录音（见 [AppPlatform.supportsAudioRecording]）。
+///
+/// 它们照常留在保存的顺序与隐藏项里（换到支持的平台、恢复备份时原样生效），
+/// 只是工具栏、斜杠菜单、工具栏设置页与设置预览都不列出。
+Set<DiaryToolbarItem> diaryToolbarUnavailableItems() =>
+    AppPlatform.supportsAudioRecording
+    ? const <DiaryToolbarItem>{}
+    : const <DiaryToolbarItem>{DiaryToolbarItem.recording};
 
 /// 按用户排序输出启用的工具项。
 List<DiaryToolbarItem> filterEnabledDiaryToolbarOrder(

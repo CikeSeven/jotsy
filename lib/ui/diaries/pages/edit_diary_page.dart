@@ -236,12 +236,16 @@ class _EditDiaryPageState extends ConsumerState<EditDiaryPage>
       AppPlatform.isDesktop || _toolbarAlwaysVisible;
 
   /// 录音入口（工具栏与斜杠菜单）：不支持录音的平台（Linux）不提供。
-  bool get _recordingAvailable => AppPlatform.supportsAudioRecording;
+  bool get _recordingAvailable =>
+      !diaryToolbarUnavailableItems().contains(DiaryToolbarItem.recording);
 
-  /// 工具栏实际隐藏的工具：用户隐藏的，加上本平台不支持的录音。
-  Set<DiaryToolbarItem> get _effectiveToolbarHiddenItems => _recordingAvailable
-      ? _toolbarHiddenItems
-      : <DiaryToolbarItem>{..._toolbarHiddenItems, DiaryToolbarItem.recording};
+  /// 工具栏实际隐藏的工具：用户隐藏的，加上本平台不提供的。
+  Set<DiaryToolbarItem> get _effectiveToolbarHiddenItems {
+    final unavailable = diaryToolbarUnavailableItems();
+    return unavailable.isEmpty
+        ? _toolbarHiddenItems
+        : <DiaryToolbarItem>{..._toolbarHiddenItems, ...unavailable};
+  }
 
   @override
   void initState() {

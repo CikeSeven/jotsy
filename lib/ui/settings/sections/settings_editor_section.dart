@@ -52,9 +52,13 @@ class SettingsEditorSection extends ConsumerWidget {
                     final hiddenItems = decodeDiaryToolbarHiddenItems(
                       toolbarHiddenItemsRaw,
                     );
+                    // 本平台不提供的工具（Linux 的录音）不出现在预览里。
                     final enabledOrder = filterEnabledDiaryToolbarOrder(
                       order,
-                      hiddenItems,
+                      <DiaryToolbarItem>{
+                        ...hiddenItems,
+                        ...diaryToolbarUnavailableItems(),
+                      },
                     );
                     final preview = enabledOrder
                         .take(4)

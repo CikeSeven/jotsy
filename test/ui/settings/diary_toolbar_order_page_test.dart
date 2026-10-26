@@ -155,4 +155,40 @@ void main() {
       ],
     );
   });
+
+  testWidgets(
+    'Linux leaves recording out of the list but keeps it in the saved order',
+    (tester) async {
+      _usePhoneScreen(tester);
+      final settings = await _pumpOrderPage(tester);
+      final l10n = lookupAppLocalizations(const Locale('zh'));
+      expect(find.text(DiaryToolbarItem.recording.label(l10n)), findsNothing);
+      // 分界按不含录音的顺序算：常驻一排里补上了“项目列表”。
+      final dividerY = tester.getCenter(_overflowDivider).dy;
+      expect(_labelY(tester, DiaryToolbarItem.bulletList), lessThan(dividerY));
+      expect(
+        _labelY(tester, DiaryToolbarItem.checkList),
+        greaterThan(dividerY),
+      );
+
+      // 改别的设置再保存：录音仍在保存的顺序里原来的位置，也没有被隐藏。
+      await tester.tap(find.byType(Checkbox).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, '保存'));
+      await tester.pumpAndSettle();
+      final order = decodeDiaryToolbarOrder(settings.diaryToolbarOrderRaw);
+      expect(order.indexOf(DiaryToolbarItem.recording), 2);
+      expect(
+        decodeDiaryToolbarHiddenItems(settings.diaryToolbarHiddenItemsRaw),
+        isNot(contains(DiaryToolbarItem.recording)),
+      );
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+
+  testWidgets('platforms with recording still list it', (tester) async {
+    await _pumpOrderPage(tester);
+    final l10n = lookupAppLocalizations(const Locale('zh'));
+    expect(find.text(DiaryToolbarItem.recording.label(l10n)), findsOneWidget);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.windows));
 }

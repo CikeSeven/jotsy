@@ -20,6 +20,7 @@ import '../sections/notebooks_page_lists.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebooks_empty_state.dart';
 import 'notebook_editor_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 日记本管理页（书架面板“管理”与设置首页入口）。
 ///
@@ -62,6 +63,7 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         title: Text(l10n.notebookTitle),
         actions: <Widget>[
           IconButton(
@@ -103,20 +105,32 @@ class _NotebooksPageState extends ConsumerState<NotebooksPage> {
             ),
           ],
         );
-    return CustomScrollView(
-      slivers: <Widget>[
-        if (groups.manual.isNotEmpty)
-          section(l10n.notebookSectionMine, groups.manual),
-        if (groups.smart.isNotEmpty)
-          section(l10n.notebookSectionSmart, groups.smart),
-        if (groups.closed.isNotEmpty)
-          section(l10n.notebookSectionClosed, groups.closed),
-        SliverToBoxAdapter(
-          child: SizedBox(
-            height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return CustomScrollView(
+          slivers: <Widget>[
+            // 宽窗口：每段内容都补上居中留白（各段自带左右 16，手机上补 0）。
+            for (final sliver in <Widget>[
+              if (groups.manual.isNotEmpty)
+                section(l10n.notebookSectionMine, groups.manual),
+              if (groups.smart.isNotEmpty)
+                section(l10n.notebookSectionSmart, groups.smart),
+              if (groups.closed.isNotEmpty)
+                section(l10n.notebookSectionClosed, groups.closed),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
+                ),
+              ),
+            ])
+              SliverPadding(
+                padding: EdgeInsets.symmetric(horizontal: side),
+                sliver: sliver,
+              ),
+          ],
+        );
+      },
     );
   }
 

@@ -23,6 +23,7 @@ import '../viewmodels/diary_draft_list_item.dart';
 import '../widgets/diary_draft_tile.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import 'edit_diary_page.dart';
+import '../../widgets/form_width.dart';
 
 /// 草稿箱：还没发布的新建日记，最近编辑的在前。
 ///
@@ -260,6 +261,7 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
       child: Scaffold(
         // 进入/退出多选时返回键与操作按钮缩放淡入切换，而不是硬换。
         appBar: AppTopBar(
+          contentMaxWidth: FormWidth.maxWidth,
           leading: ExpressiveIconSwap(
             switchKey: _isSelectionMode,
             child: _isSelectionMode
@@ -357,44 +359,49 @@ class _DiaryDraftsPageState extends ConsumerState<DiaryDraftsPage> {
               icon: FontAwesomeIcons.filePen,
               message: context.l10n.diaryDraftsEmpty,
             )
-          : ListView.builder(
+          : LayoutBuilder(
               key: const ValueKey<String>('drafts_list'),
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.l,
-                AppSpacing.s,
-                AppSpacing.l,
-                AppSpacing.xxl,
-              ),
-              itemCount: visible.length,
-              itemBuilder: (BuildContext context, int index) {
-                final item = visible[index];
-                final id = item.draftId;
-                // 间距放在收起容器内（收起时连同间距一起收掉），滑动背景只
-                // 覆盖卡片本身。
-                return ListItemPresence(
-                  key: ValueKey<String>('draft_$id'),
-                  visible: !_pendingHideIds.contains(id),
-                  appearing: _appearingIds.contains(id),
-                  duration: itemDuration,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.s),
-                    child: DiarySwipeActionItem(
-                      diaryId: id,
-                      enabled: !_isSelectionMode && !_operating,
-                      icon: FontAwesomeIcons.trashCan,
-                      actionColor: colorScheme.errorContainer,
-                      actionIconColor: colorScheme.onErrorContainer,
-                      borderRadius: AppRadii.input,
-                      onSwiped: () => unawaited(_deleteBySwipe(id)),
-                      child: DiaryDraftTile(
-                        item: item,
-                        selectionMode: _isSelectionMode,
-                        selected: _selectedIds.contains(id),
-                        onTap: () => _onTap(id),
-                        onLongPress: () => _toggleSelection(id),
-                      ),
-                    ),
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.gutter(constraints.maxWidth);
+                return ListView.builder(
+                  padding: EdgeInsets.fromLTRB(
+                    side,
+                    AppSpacing.s,
+                    side,
+                    AppSpacing.xxl,
                   ),
+                  itemCount: visible.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final item = visible[index];
+                    final id = item.draftId;
+                    // 间距放在收起容器内（收起时连同间距一起收掉），滑动背景只
+                    // 覆盖卡片本身。
+                    return ListItemPresence(
+                      key: ValueKey<String>('draft_$id'),
+                      visible: !_pendingHideIds.contains(id),
+                      appearing: _appearingIds.contains(id),
+                      duration: itemDuration,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.s),
+                        child: DiarySwipeActionItem(
+                          diaryId: id,
+                          enabled: !_isSelectionMode && !_operating,
+                          icon: FontAwesomeIcons.trashCan,
+                          actionColor: colorScheme.errorContainer,
+                          actionIconColor: colorScheme.onErrorContainer,
+                          borderRadius: AppRadii.input,
+                          onSwiped: () => unawaited(_deleteBySwipe(id)),
+                          child: DiaryDraftTile(
+                            item: item,
+                            selectionMode: _isSelectionMode,
+                            selected: _selectedIds.contains(id),
+                            onTap: () => _onTap(id),
+                            onLongPress: () => _toggleSelection(id),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

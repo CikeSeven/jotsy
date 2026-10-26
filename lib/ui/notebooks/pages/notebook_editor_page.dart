@@ -21,6 +21,7 @@ import '../sections/notebook_editor_behavior.dart';
 import '../sections/notebook_editor_goal.dart';
 import '../sections/notebook_editor_rules.dart';
 import '../viewmodels/notebook_view.dart';
+import '../../widgets/form_width.dart';
 
 /// 日记本编辑页：新建与编辑共用。
 ///
@@ -170,6 +171,7 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
     final editor = _editor;
     final isNew = widget.notebookId == null;
     final appBar = AppTopBar(
+      contentMaxWidth: FormWidth.maxWidth,
       leading: IconButton(
         tooltip: l10n.commonBack,
         onPressed: () => unawaited(_attemptExit()),
@@ -235,43 +237,48 @@ class _NotebookEditorPageState extends ConsumerState<NotebookEditorPage> {
     required bool templatesEnabled,
   }) {
     const gap = SizedBox(height: AppSpacing.xxl);
-    return ListView(
-      padding: EdgeInsets.fromLTRB(
-        0,
-        AppSpacing.l,
-        0,
-        AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
-      ),
-      children: <Widget>[
-        NotebookEditorPreview(controller: editor),
-        gap,
-        NotebookEditorTextFields(controller: editor, nameFocus: _nameFocus),
-        gap,
-        NotebookEditorAppearance(
-          controller: editor,
-          onPickCover: () => _pickCover(editor),
-        ),
-        if (editor.isNew) ...<Widget>[
-          gap,
-          NotebookEditorTypeSection(controller: editor),
-        ],
-        if (editor.isSmart) ...<Widget>[
-          gap,
-          NotebookEditorRulesSection(controller: editor),
-        ],
-        if (!editor.isSmart) ...<Widget>[
-          gap,
-          NotebookEditorPrivacySection(controller: editor),
-          gap,
-          NotebookEditorGoalSection(controller: editor),
-        ],
-        gap,
-        NotebookEditorSortSection(controller: editor),
-        if (templatesEnabled) ...<Widget>[
-          gap,
-          NotebookEditorTemplateSection(controller: editor),
-        ],
-      ],
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            side,
+            AppSpacing.l,
+            side,
+            AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
+          ),
+          children: <Widget>[
+            NotebookEditorPreview(controller: editor),
+            gap,
+            NotebookEditorTextFields(controller: editor, nameFocus: _nameFocus),
+            gap,
+            NotebookEditorAppearance(
+              controller: editor,
+              onPickCover: () => _pickCover(editor),
+            ),
+            if (editor.isNew) ...<Widget>[
+              gap,
+              NotebookEditorTypeSection(controller: editor),
+            ],
+            if (editor.isSmart) ...<Widget>[
+              gap,
+              NotebookEditorRulesSection(controller: editor),
+            ],
+            if (!editor.isSmart) ...<Widget>[
+              gap,
+              NotebookEditorPrivacySection(controller: editor),
+              gap,
+              NotebookEditorGoalSection(controller: editor),
+            ],
+            gap,
+            NotebookEditorSortSection(controller: editor),
+            if (templatesEnabled) ...<Widget>[
+              gap,
+              NotebookEditorTemplateSection(controller: editor),
+            ],
+          ],
+        );
+      },
     );
   }
 }

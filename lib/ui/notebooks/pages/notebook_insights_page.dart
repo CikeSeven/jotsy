@@ -22,6 +22,7 @@ import '../sections/notebook_insights_charts.dart';
 import '../viewmodels/notebook_insights_data.dart';
 import '../viewmodels/notebook_view.dart';
 import '../widgets/notebook_page_title.dart';
+import '../../widgets/form_width.dart';
 
 /// 日记本统计页（首页头部卡片“统计”，普通与智能日记本都有）。
 ///
@@ -97,6 +98,7 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
     return Scaffold(
       backgroundColor: scheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -130,59 +132,65 @@ class _NotebookInsightsPageState extends ConsumerState<NotebookInsightsPage> {
       );
     }
     const gap = SizedBox(height: AppSpacing.m);
-    return ListView(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.l,
-        AppSpacing.s,
-        AppSpacing.l,
-        AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
-      ),
-      children: <Widget>[
-        if (goal != null) ...<Widget>[
-          NotebookInsightsGoalCard(progress: goal),
-          gap,
-        ],
-        if (data.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
-            child: EmptyHint(
-              icon: FontAwesomeIcons.chartSimple,
-              message: l10n.notebookInsightsEmpty,
-            ),
-          )
-        else ...<Widget>[
-          NotebookInsightsOverviewCard(data: data, photoCount: photoCount),
-          if (data.moods.isNotEmpty) ...<Widget>[
-            gap,
-            NotebookInsightsMoodCard(moods: data.moods),
-          ],
-          if (data.topTags.isNotEmpty) ...<Widget>[
-            gap,
-            NotebookInsightsTagsCard(tags: data.topTags),
-          ],
-          gap,
-          NotebookInsightsRhythmCard(months: data.months),
-          if (data.onThisDay.isNotEmpty) ...<Widget>[
-            gap,
-            ExploreMemoryCard(
-              viewData: _memoryViewData(data.onThisDay),
-              controller: const ExplorePageController(),
-              onOpenDiary: (String diaryId) => _openPreview(diaryId, <String>[
-                for (final item in data.onThisDay) item.diaryId,
-              ]),
-              // 只在有回忆时显示本卡，空态的“补写今天”不会出现。
-              onCreateToday: () {},
-            ),
-          ],
-          const SizedBox(height: AppSpacing.l),
-          FilledButton.tonalIcon(
-            key: const ValueKey<String>('notebook_insights_random'),
-            onPressed: () => _openRandom(notebook, diaries, bookOrder),
-            icon: const FaIcon(FontAwesomeIcons.shuffle, size: 14),
-            label: Text(l10n.notebookInsightsRandom),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.gutter(constraints.maxWidth);
+        return ListView(
+          padding: EdgeInsets.fromLTRB(
+            side,
+            AppSpacing.s,
+            side,
+            AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
           ),
-        ],
-      ],
+          children: <Widget>[
+            if (goal != null) ...<Widget>[
+              NotebookInsightsGoalCard(progress: goal),
+              gap,
+            ],
+            if (data.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+                child: EmptyHint(
+                  icon: FontAwesomeIcons.chartSimple,
+                  message: l10n.notebookInsightsEmpty,
+                ),
+              )
+            else ...<Widget>[
+              NotebookInsightsOverviewCard(data: data, photoCount: photoCount),
+              if (data.moods.isNotEmpty) ...<Widget>[
+                gap,
+                NotebookInsightsMoodCard(moods: data.moods),
+              ],
+              if (data.topTags.isNotEmpty) ...<Widget>[
+                gap,
+                NotebookInsightsTagsCard(tags: data.topTags),
+              ],
+              gap,
+              NotebookInsightsRhythmCard(months: data.months),
+              if (data.onThisDay.isNotEmpty) ...<Widget>[
+                gap,
+                ExploreMemoryCard(
+                  viewData: _memoryViewData(data.onThisDay),
+                  controller: const ExplorePageController(),
+                  onOpenDiary: (String diaryId) => _openPreview(
+                    diaryId,
+                    <String>[for (final item in data.onThisDay) item.diaryId],
+                  ),
+                  // 只在有回忆时显示本卡，空态的“补写今天”不会出现。
+                  onCreateToday: () {},
+                ),
+              ],
+              const SizedBox(height: AppSpacing.l),
+              FilledButton.tonalIcon(
+                key: const ValueKey<String>('notebook_insights_random'),
+                onPressed: () => _openRandom(notebook, diaries, bookOrder),
+                icon: const FaIcon(FontAwesomeIcons.shuffle, size: 14),
+                label: Text(l10n.notebookInsightsRandom),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 

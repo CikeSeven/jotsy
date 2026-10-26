@@ -15,6 +15,7 @@ import '../../widgets/qweather_icon.dart';
 import '../models/time_capsule.dart';
 import '../providers/diary_detail_provider.dart';
 import '../widgets/energy_battery_indicator.dart';
+import '../../widgets/form_width.dart';
 
 class LockedDiaryPage extends ConsumerWidget {
   const LockedDiaryPage({super.key, required this.diaryId, this.initialDetail});
@@ -58,6 +59,7 @@ class LockedDiaryPage extends ConsumerWidget {
 
   AppTopBar _buildAppBar(BuildContext context) {
     return AppTopBar(
+      contentMaxWidth: FormWidth.maxWidth,
       leading: IconButton(
         tooltip: context.l10n.commonBack,
         onPressed: () => Navigator.of(context).maybePop(),
@@ -95,6 +97,7 @@ class _LockedDiaryContent extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: context.l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -102,93 +105,101 @@ class _LockedDiaryContent extends ConsumerWidget {
         ),
         title: Text(context.l10n.timeCapsuleLockedTitle),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
-        children: <Widget>[
-          Center(
-            child: Container(
-              width: 86,
-              height: 86,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: colorScheme.primaryContainer,
-              ),
-              alignment: Alignment.center,
-              child: FaIcon(
-                FontAwesomeIcons.lock,
-                size: 34,
-                color: colorScheme.onPrimaryContainer,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            _countdownLabel(context, state),
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 14),
-          if (unlockAt != null)
-            Text(
-              context.l10n.timeCapsuleLockedHint(
-                _formatDateTime(context, unlockAt),
-              ),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          const SizedBox(height: 24),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 10,
-            runSpacing: 10,
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final side = FormWidth.gutter(constraints.maxWidth, minGutter: 20);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(side, 28, side, 28),
             children: <Widget>[
-              if (mood != null && mood.isNotEmpty) _MetaPill(label: mood),
-              if (weather != null && weather.isNotEmpty)
-                _MetaPill(
-                  label: weather,
-                  leading: QWeatherIcon(
-                    iconCode: weatherIconCode,
-                    weatherText: weather,
-                    size: 14,
+              Center(
+                child: Container(
+                  width: 86,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colorScheme.primaryContainer,
+                  ),
+                  alignment: Alignment.center,
+                  child: FaIcon(
+                    FontAwesomeIcons.lock,
+                    size: 34,
+                    color: colorScheme.onPrimaryContainer,
                   ),
                 ),
-              if (energy != null)
-                _MetaPill(
-                  label: EnergyBatteryIndicator.descriptionForValue(
-                    energy,
-                    context.l10n,
-                  ),
-                  leading: EnergyBatteryIndicator(value: energy, iconSize: 18),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
                 ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _countdownLabel(context, state),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 14),
+              if (unlockAt != null)
+                Text(
+                  context.l10n.timeCapsuleLockedHint(
+                    _formatDateTime(context, unlockAt),
+                  ),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              const SizedBox(height: 24),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 10,
+                children: <Widget>[
+                  if (mood != null && mood.isNotEmpty) _MetaPill(label: mood),
+                  if (weather != null && weather.isNotEmpty)
+                    _MetaPill(
+                      label: weather,
+                      leading: QWeatherIcon(
+                        iconCode: weatherIconCode,
+                        weatherText: weather,
+                        size: 14,
+                      ),
+                    ),
+                  if (energy != null)
+                    _MetaPill(
+                      label: EnergyBatteryIndicator.descriptionForValue(
+                        energy,
+                        context.l10n,
+                      ),
+                      leading: EnergyBatteryIndicator(
+                        value: energy,
+                        iconSize: 18,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 32),
+              FilledButton.icon(
+                onPressed: () => _pickUnlockAt(context, ref, diary),
+                icon: const FaIcon(FontAwesomeIcons.clock, size: 14),
+                label: Text(context.l10n.timeCapsuleUpdateUnlock),
+              ),
+              const SizedBox(height: 10),
+              TextButton.icon(
+                style: TextButton.styleFrom(foregroundColor: colorScheme.error),
+                onPressed: () => _deleteDiary(context, ref, diary.diaryId),
+                icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
+                label: Text(context.l10n.commonDelete),
+              ),
             ],
-          ),
-          const SizedBox(height: 32),
-          FilledButton.icon(
-            onPressed: () => _pickUnlockAt(context, ref, diary),
-            icon: const FaIcon(FontAwesomeIcons.clock, size: 14),
-            label: Text(context.l10n.timeCapsuleUpdateUnlock),
-          ),
-          const SizedBox(height: 10),
-          TextButton.icon(
-            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-            onPressed: () => _deleteDiary(context, ref, diary.diaryId),
-            icon: const FaIcon(FontAwesomeIcons.trashCan, size: 14),
-            label: Text(context.l10n.commonDelete),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

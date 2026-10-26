@@ -17,6 +17,7 @@ import '../sections/diary_template_auto_apply_groups.dart';
 import '../sections/diary_template_auto_rule_sheet.dart';
 import '../sections/diary_template_choice_sheet.dart';
 import '../viewmodels/diary_template_library.dart';
+import '../../widgets/form_width.dart';
 
 /// 自动套用页（模板管理页 →“自动套用”）：按时间段套用的规则与其他时间的
 /// 默认模板。
@@ -40,7 +41,10 @@ class _DiaryTemplateAutoApplyPageState
     final settings = ref.watch(settingsServiceProvider).asData?.value;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppTopBar(title: Text(l10n.diaryTemplatesAutoApply)),
+      appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
+        title: Text(l10n.diaryTemplatesAutoApply),
+      ),
       body: settings == null
           ? const DelayedLoadingIndicator()
           : _buildBody(context, settings),
@@ -55,51 +59,58 @@ class _DiaryTemplateAutoApplyPageState
     final hintStyle = theme.textTheme.bodySmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
     );
-    return ListView(
-      padding: EdgeInsets.only(
-        top: AppSpacing.m,
-        bottom: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
-      ),
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.l,
-            0,
-            AppSpacing.l,
-            AppSpacing.l,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final side = FormWidth.extra(constraints.maxWidth);
+        return ListView(
+          padding: EdgeInsets.only(
+            left: side,
+            right: side,
+            top: AppSpacing.m,
+            bottom: AppSpacing.xxl + MediaQuery.paddingOf(context).bottom,
           ),
-          child: Text(
-            l10n.diaryTemplatesAutoApplyIntro,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l,
+                0,
+                AppSpacing.l,
+                AppSpacing.l,
+              ),
+              child: Text(
+                l10n.diaryTemplatesAutoApplyIntro,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
             ),
-          ),
-        ),
-        DiaryTemplateAutoRulesGroup(
-          library: library,
-          onEdit: (rule) => _editRule(controller, library, rule),
-          onAdd: () => _editRule(controller, library, null),
-        ),
-        // 分组间距与设置二级页一致。
-        const SizedBox(height: AppSpacing.l),
-        DiaryTemplateAutoDefaultGroup(
-          library: library,
-          onTap: () => _pickDefault(controller, library),
-        ),
-        // 与分组卡片的附注对齐：卡片外边距 16 + 附注缩进 12。
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.l + AppSpacing.m,
-            AppSpacing.s,
-            AppSpacing.l,
-            0,
-          ),
-          child: Text(
-            l10n.diaryTemplatesAutoApplyOverlapHint,
-            style: hintStyle,
-          ),
-        ),
-      ],
+            DiaryTemplateAutoRulesGroup(
+              library: library,
+              onEdit: (rule) => _editRule(controller, library, rule),
+              onAdd: () => _editRule(controller, library, null),
+            ),
+            // 分组间距与设置二级页一致。
+            const SizedBox(height: AppSpacing.l),
+            DiaryTemplateAutoDefaultGroup(
+              library: library,
+              onTap: () => _pickDefault(controller, library),
+            ),
+            // 与分组卡片的附注对齐：卡片外边距 16 + 附注缩进 12。
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.l + AppSpacing.m,
+                AppSpacing.s,
+                AppSpacing.l,
+                0,
+              ),
+              child: Text(
+                l10n.diaryTemplatesAutoApplyOverlapHint,
+                style: hintStyle,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

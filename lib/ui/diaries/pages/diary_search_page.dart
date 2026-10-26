@@ -24,6 +24,7 @@ import 'diary_preview_page.dart';
 import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/route_entrance_waiter.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
+import '../../widgets/form_width.dart';
 
 /// 日记搜索页（独立覆盖层）。
 ///
@@ -238,92 +239,112 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
               color: pageBackgroundColor,
               child: NotificationListener<ScrollNotification>(
                 onNotification: _handleScrollNotification,
-                child: CustomScrollView(
-                  slivers: <Widget>[
-                    SliverToBoxAdapter(
-                      child: SizedBox(height: headerOverlayHeight + 6),
-                    ),
-                    if (!query.hasAnyCondition)
-                      const SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: SizedBox.shrink(),
-                      )
-                    else if (diariesAsync!.isLoading &&
-                        displayedSearchItems.isEmpty)
-                      const SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: DelayedLoadingIndicator(size: 22),
-                      )
-                    else if (diariesAsync.hasError &&
-                        displayedSearchItems.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Center(
-                          child: Text(
-                            context.l10n.autoT0127(
-                              diariesAsync.asError?.error.toString() ?? '',
-                            ),
-                          ),
+                child: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final side = FormWidth.extra(
+                      constraints.maxWidth,
+                      childInset: ref
+                          .watch(diaryCardStyleProvider)
+                          .list
+                          .sideMargin,
+                    );
+                    return CustomScrollView(
+                      slivers: <Widget>[
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: headerOverlayHeight + 6),
                         ),
-                      )
-                    else
-                      SliverMainAxisGroup(
-                        slivers: <Widget>[
-                          // 新查询 loading 时继续展示上一份结果，避免输入停顿后整屏闪白。
-                          DiariesListSection(
-                            diaries: displayedSearchItems,
-                            layoutMode: DiaryLayoutMode.list,
-                            selectedDiaryIds: const <String>{},
-                            isSelectionMode: false,
-                            maxVisibleTags: diaryCardTagLimit,
-                            cardStyle: ref.watch(diaryCardStyleProvider),
-                            moodOptions: ref.watch(
-                              diaryCardMoodOptionsProvider,
-                            ),
-                            onCreate: () {},
-                            onOpenEditor: _openPreview,
-                            onToggleSelection: (_, __) {},
-                            isSearchResultEmpty: true,
-                          ),
-                          // 还有下一页时保留固定高度的槽位，指示器只在查询
-                          // 真正进行且超过 300ms 时出现：输入关键词触发的本地
-                          // 查询通常几毫秒即返回，常驻的循环指示器则会持续出帧。
-                          SliverToBoxAdapter(
-                            child: hasMoreDiaries || diariesAsync.isLoading
-                                ? Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: SizedBox(
-                                      height: 18,
-                                      child: diariesAsync.isLoading
-                                          ? const DelayedLoadingIndicator(
-                                              size: 18,
-                                            )
-                                          : null,
-                                    ),
-                                  )
-                                : const SizedBox.shrink(),
-                          ),
-                          if (diariesAsync.hasError)
-                            SliverToBoxAdapter(
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  AppSpacing.l,
-                                  8,
-                                  AppSpacing.l,
-                                  0,
-                                ),
-                                child: Text(
-                                  context.l10n.autoT0127(
-                                    diariesAsync.asError?.error.toString() ??
-                                        '',
-                                  ),
+                        if (!query.hasAnyCondition)
+                          const SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: SizedBox.shrink(),
+                          )
+                        else if (diariesAsync!.isLoading &&
+                            displayedSearchItems.isEmpty)
+                          const SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: DelayedLoadingIndicator(size: 22),
+                          )
+                        else if (diariesAsync.hasError &&
+                            displayedSearchItems.isEmpty)
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Center(
+                              child: Text(
+                                context.l10n.autoT0127(
+                                  diariesAsync.asError?.error.toString() ?? '',
                                 ),
                               ),
                             ),
-                        ],
-                      ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
-                  ],
+                          )
+                        else
+                          // 宽窗口：结果卡片列最宽 720 并居中（卡片自带左右边距
+                          // sideMargin，这里只补其余留白；手机上为 0）。
+                          SliverPadding(
+                            padding: EdgeInsets.symmetric(horizontal: side),
+                            sliver: SliverMainAxisGroup(
+                              slivers: <Widget>[
+                                // 新查询 loading 时继续展示上一份结果，避免输入停顿后整屏闪白。
+                                DiariesListSection(
+                                  diaries: displayedSearchItems,
+                                  layoutMode: DiaryLayoutMode.list,
+                                  selectedDiaryIds: const <String>{},
+                                  isSelectionMode: false,
+                                  maxVisibleTags: diaryCardTagLimit,
+                                  cardStyle: ref.watch(diaryCardStyleProvider),
+                                  moodOptions: ref.watch(
+                                    diaryCardMoodOptionsProvider,
+                                  ),
+                                  onCreate: () {},
+                                  onOpenEditor: _openPreview,
+                                  onToggleSelection: (_, __) {},
+                                  isSearchResultEmpty: true,
+                                ),
+                                // 还有下一页时保留固定高度的槽位，指示器只在查询
+                                // 真正进行且超过 300ms 时出现：输入关键词触发的本地
+                                // 查询通常几毫秒即返回，常驻的循环指示器则会持续出帧。
+                                SliverToBoxAdapter(
+                                  child:
+                                      hasMoreDiaries || diariesAsync.isLoading
+                                      ? Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 6,
+                                          ),
+                                          child: SizedBox(
+                                            height: 18,
+                                            child: diariesAsync.isLoading
+                                                ? const DelayedLoadingIndicator(
+                                                    size: 18,
+                                                  )
+                                                : null,
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ),
+                                if (diariesAsync.hasError)
+                                  SliverToBoxAdapter(
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        AppSpacing.l,
+                                        8,
+                                        AppSpacing.l,
+                                        0,
+                                      ),
+                                      child: Text(
+                                        context.l10n.autoT0127(
+                                          diariesAsync.asError?.error
+                                                  .toString() ??
+                                              '',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -337,36 +358,41 @@ class _DiarySearchPageState extends ConsumerState<DiarySearchPage> {
               child: Column(
                 children: <Widget>[
                   SizedBox(height: topSafeInset),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.l,
-                      AppSpacing.xs,
-                      AppSpacing.l,
-                      0,
-                    ),
-                    child: _SearchInputBar(
-                      searchController: _searchController,
-                      searchFocusNode: _searchFocusNode,
-                      autofocus: _searchAutofocusEnabled,
-                      hasSearchText: _searchInput.trim().isNotEmpty,
-                      selectedTags: selectedTags,
-                      scopeChip: _buildScopeChip(),
-                      onExitSearch: _closePage,
-                      onClearSearch: _clearSearchInPlace,
-                      onSearchChanged: _onSearchChanged,
-                      onRemoveTagCondition: _removeTagCondition,
-                      onRemoveScopeCondition: _hasScopeCondition
-                          ? _removeScopeCondition
-                          : null,
-                      onSaveAsNotebook: _saveAsNotebookAction(
-                        tagListAsync.value,
-                        notebooksEnabled: ref.watch(
-                          appFeaturesProvider.select(
-                            (features) => features.notebooks,
-                          ),
-                        ),
-                      ),
-                    ),
+                  // 宽窗口：搜索栏与结果列对齐。
+                  LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) =>
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                FormWidth.gutter(constraints.maxWidth),
+                                AppSpacing.xs,
+                                FormWidth.gutter(constraints.maxWidth),
+                                0,
+                              ),
+                              child: _SearchInputBar(
+                                searchController: _searchController,
+                                searchFocusNode: _searchFocusNode,
+                                autofocus: _searchAutofocusEnabled,
+                                hasSearchText: _searchInput.trim().isNotEmpty,
+                                selectedTags: selectedTags,
+                                scopeChip: _buildScopeChip(),
+                                onExitSearch: _closePage,
+                                onClearSearch: _clearSearchInPlace,
+                                onSearchChanged: _onSearchChanged,
+                                onRemoveTagCondition: _removeTagCondition,
+                                onRemoveScopeCondition: _hasScopeCondition
+                                    ? _removeScopeCondition
+                                    : null,
+                                onSaveAsNotebook: _saveAsNotebookAction(
+                                  tagListAsync.value,
+                                  notebooksEnabled: ref.watch(
+                                    appFeaturesProvider.select(
+                                      (features) => features.notebooks,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                   ),
                   Container(
                     height: 1,

@@ -20,6 +20,7 @@ import '../viewmodels/anniversary_rule.dart';
 import '../widgets/anniversary_detail_cards.dart';
 import '../widgets/anniversary_diary_picker.dart';
 import '../widgets/anniversary_diary_sections.dart';
+import '../../widgets/form_width.dart';
 
 /// 纪念日详情：倒数卡、信息卡、关联的日记与“历年这一天”。
 ///
@@ -108,6 +109,7 @@ class AnniversaryDetailPage extends ConsumerWidget {
     final today = DateTime(now.year, now.month, now.day);
     return Scaffold(
       appBar: AppTopBar(
+        contentMaxWidth: FormWidth.maxWidth,
         leading: IconButton(
           tooltip: l10n.commonBack,
           onPressed: () => Navigator.of(context).maybePop(),
@@ -148,29 +150,35 @@ class AnniversaryDetailPage extends ConsumerWidget {
           ? async.isLoading
                 ? const DelayedLoadingIndicator()
                 : const SizedBox.shrink()
-          : ListView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.l,
-                AppSpacing.s,
-                AppSpacing.l,
-                AppSpacing.xxxl,
-              ),
-              children: <Widget>[
-                AnniversaryHeroCard(
-                  row: row,
-                  countdown: AnniversaryCountdown.of(rule, today),
-                ),
-                const SizedBox(height: AppSpacing.m),
-                AnniversaryInfoCard(
-                  row: row,
-                  countdown: AnniversaryCountdown.of(rule, today),
-                ),
-                AnniversaryLinkedDiarySection(
-                  row: row,
-                  onPick: () => unawaited(_pickDiary(context, ref, row, rule)),
-                ),
-                AnniversaryPastDiariesSection(row: row, rule: rule),
-              ],
+          : LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                final side = FormWidth.gutter(constraints.maxWidth);
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(
+                    side,
+                    AppSpacing.s,
+                    side,
+                    AppSpacing.xxxl,
+                  ),
+                  children: <Widget>[
+                    AnniversaryHeroCard(
+                      row: row,
+                      countdown: AnniversaryCountdown.of(rule, today),
+                    ),
+                    const SizedBox(height: AppSpacing.m),
+                    AnniversaryInfoCard(
+                      row: row,
+                      countdown: AnniversaryCountdown.of(rule, today),
+                    ),
+                    AnniversaryLinkedDiarySection(
+                      row: row,
+                      onPick: () =>
+                          unawaited(_pickDiary(context, ref, row, rule)),
+                    ),
+                    AnniversaryPastDiariesSection(row: row, rule: rule),
+                  ],
+                );
+              },
             ),
     );
   }

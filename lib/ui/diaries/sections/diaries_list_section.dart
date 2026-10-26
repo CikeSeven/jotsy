@@ -52,6 +52,8 @@ class DiariesListSection extends StatelessWidget {
     this.enableCoverHero = true,
     this.opensLockedCapsulePage = true,
     this.sectionHeaderBuilder,
+    this.availableWidth,
+    this.minWaterfallColumns = 0,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -106,6 +108,15 @@ class DiariesListSection extends StatelessWidget {
   /// 其他列表（归档、搜索、全部日记）不受影响。
   final Widget? Function(BuildContext context, int index)? sectionHeaderBuilder;
 
+  /// 本区块实际可用的宽度（含卡片左右边距），卡片样式按它解析。由调用方在
+  /// 滚动视图之外量好传入（`LayoutBuilder`），不在这里用 `SliverLayoutBuilder`：
+  /// 后者的约束含滚动偏移，每个滚动帧都会重跑。null 时取屏宽，适用于铺满
+  /// 整个窗口宽度的列表。
+  final double? availableWidth;
+
+  /// 瀑布流至少的列数（宽窗口按宽度加列）；0 表示只用卡片样式里的列数。
+  final int minWaterfallColumns;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -136,15 +147,16 @@ class DiariesListSection extends StatelessWidget {
     }
 
     final isWaterfall = layoutMode == DiaryLayoutMode.waterfall;
-    // 屏宽取 MediaQuery 而不是 SliverLayoutBuilder：后者的约束含滚动偏移，
-    // 每个滚动帧都会重跑。四个调用方都是全宽页面，屏宽即可用宽度。
+    // 可用宽度由调用方量好传入（见 [availableWidth]）；没给时按铺满窗口
+    // 处理，取屏宽。
     final resolved = DiaryCardResolvedStyle.resolve(
       style: cardStyle,
       mode: isWaterfall ? DiaryCardMode.waterfall : DiaryCardMode.list,
       theme: Theme.of(context),
-      screenWidth: MediaQuery.sizeOf(context).width,
+      screenWidth: availableWidth ?? MediaQuery.sizeOf(context).width,
       textScale: MediaQuery.textScalerOf(context).scale(1),
       moodOptions: moodOptions,
+      minColumns: isWaterfall ? minWaterfallColumns : 0,
     );
     final modeStyle = resolved.modeStyle;
 

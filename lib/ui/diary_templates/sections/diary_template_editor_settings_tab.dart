@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../../../app/theme/app_spacing.dart';
+import '../../widgets/form_width.dart';
 import '../../calendar/widgets/calendar_options_controls.dart';
 import '../../widgets/color_swatch_button.dart';
 import '../../widgets/color_palette_families.dart';
@@ -26,64 +27,70 @@ class DiaryTemplateEditorSettingsTab extends StatelessWidget {
     final l10n = context.l10n;
     return ListenableBuilder(
       listenable: controller,
-      builder: (BuildContext context, Widget? child) {
-        return ListView(
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.l,
-            AppSpacing.m,
-            AppSpacing.l,
-            AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
-          ),
-          children: <Widget>[
-            CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorName),
-            TextField(
-              controller: controller.name,
-              maxLength: DiaryTemplate.maxNameLength,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                errorText: controller.nameMissing
-                    ? l10n.diaryTemplateEditorNameRequired
-                    : null,
+      builder: (BuildContext context, Widget? child) => LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          // 宽窗口里表单收成最宽 720 的一列居中（滚动视图仍铺满）；手机上为 16。
+          final side = FormWidth.gutter(constraints.maxWidth);
+          return ListView(
+            padding: EdgeInsets.fromLTRB(
+              side,
+              AppSpacing.m,
+              side,
+              AppSpacing.xxxl + MediaQuery.paddingOf(context).bottom,
+            ),
+            children: <Widget>[
+              CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorName),
+              TextField(
+                controller: controller.name,
+                maxLength: DiaryTemplate.maxNameLength,
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  errorText: controller.nameMissing
+                      ? l10n.diaryTemplateEditorNameRequired
+                      : null,
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.s),
-            CalendarOptionsFieldLabel(
-              text: l10n.diaryTemplateEditorDescription,
-            ),
-            TextField(
-              controller: controller.description,
-              maxLength: DiaryTemplate.maxDescriptionLength,
-              textInputAction: TextInputAction.done,
-            ),
-            const _GroupHeader.look(),
-            CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorCategory),
-            Wrap(
-              spacing: AppSpacing.s,
-              runSpacing: AppSpacing.s,
-              children: <Widget>[
-                for (final category in DiaryTemplateCategory.values)
-                  ChoiceChip(
-                    label: Text(diaryTemplateCategoryLabel(l10n, category)),
-                    selected: controller.category == category,
-                    onSelected: (_) => controller.category = category,
-                  ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.l),
-            CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorIcon),
-            _IconGrid(controller: controller),
-            const SizedBox(height: AppSpacing.l),
-            CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorAccent),
-            _AccentPicker(controller: controller),
-            DiaryTemplatesSectionHeader(title: l10n.diaryTemplateEditorPresets),
-            DiaryTemplateEditorPresets(controller: controller),
-            DiaryTemplatesSectionHeader(
-              title: l10n.diaryTemplateEditorRecommend,
-            ),
-            DiaryTemplateEditorRules(controller: controller),
-          ],
-        );
-      },
+              const SizedBox(height: AppSpacing.s),
+              CalendarOptionsFieldLabel(
+                text: l10n.diaryTemplateEditorDescription,
+              ),
+              TextField(
+                controller: controller.description,
+                maxLength: DiaryTemplate.maxDescriptionLength,
+                textInputAction: TextInputAction.done,
+              ),
+              const _GroupHeader.look(),
+              CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorCategory),
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.s,
+                children: <Widget>[
+                  for (final category in DiaryTemplateCategory.values)
+                    ChoiceChip(
+                      label: Text(diaryTemplateCategoryLabel(l10n, category)),
+                      selected: controller.category == category,
+                      onSelected: (_) => controller.category = category,
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.l),
+              CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorIcon),
+              _IconGrid(controller: controller),
+              const SizedBox(height: AppSpacing.l),
+              CalendarOptionsFieldLabel(text: l10n.diaryTemplateEditorAccent),
+              _AccentPicker(controller: controller),
+              DiaryTemplatesSectionHeader(
+                title: l10n.diaryTemplateEditorPresets,
+              ),
+              DiaryTemplateEditorPresets(controller: controller),
+              DiaryTemplatesSectionHeader(
+                title: l10n.diaryTemplateEditorRecommend,
+              ),
+              DiaryTemplateEditorRules(controller: controller),
+            ],
+          );
+        },
+      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:node_diary/ui/widgets/expressive_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:node_diary/core/services/app_platform.dart';
 import 'package:node_diary/core/services/diary_font_storage_service.dart';
 import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -118,9 +119,12 @@ class SettingsEditorSection extends ConsumerWidget {
                                         );
                                       },
                                     ),
-                                    _ToolbarAlwaysVisibleSwitch(
-                                      settings: settingsService,
-                                    ),
+                                    // 桌面没有软键盘，编辑页工具栏一直显示，
+                                    // 这个开关没有意义。
+                                    if (!AppPlatform.isDesktop)
+                                      _ToolbarAlwaysVisibleSwitch(
+                                        settings: settingsService,
+                                      ),
                                     ListTile(
                                       title: Text(
                                         l10n.settingsMoodOptionsTitle,

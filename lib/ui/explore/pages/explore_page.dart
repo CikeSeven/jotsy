@@ -217,7 +217,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                 ),
           ),
         ),
-        PageHeader(title: l10n.autoT0058),
+        PageHeader(
+          title: l10n.autoT0058,
+          contentMaxWidth: AppContentWidth.explore,
+        ),
       ],
     );
   }

@@ -1,7 +1,8 @@
 name: Set up Flutter project
 description: >-
   Installs the pinned Flutter SDK (plus JDK 17 for Android builds when asked)
-  and fetches pub dependencies exactly as locked in pubspec.lock.
+  and fetches pub dependencies exactly as locked in pubspec.lock. Runs on the
+  Ubuntu and Windows runners alike (the bash steps use Git Bash on Windows).
 
 inputs:
   java:

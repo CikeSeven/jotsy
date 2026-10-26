@@ -116,8 +116,9 @@ void main() {
     expect(find.byType(DiaryPreviewPage), findsNothing);
     expect(_inPane(find.byType(DiaryPreviewView)), findsOneWidget);
     expect(_inPane(find.text('click title 1')), findsOneWidget);
-    // 右栏里没有返回按钮。
+    // 右栏顶栏没有返回按钮，也没有“日记”标题。
     expect(_inPane(find.byTooltip(_l10n(tester).commonBack)), findsNothing);
+    expect(_inPane(find.text(_l10n(tester).autoT0120)), findsNothing);
     expect(_ringActive(tester, 'click title 1'), isTrue);
     expect(_ringActive(tester, 'click title 0'), isFalse);
 

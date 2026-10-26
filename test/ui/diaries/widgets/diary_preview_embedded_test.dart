@@ -70,7 +70,7 @@ Future<void> _unmount(WidgetTester tester) async {
 
 void main() {
   testWidgets(
-    'an embedded preview has no back button and hands deletion to its host',
+    'an embedded preview has no back button or title and hands deletion to its host',
     (tester) async {
       final deleted = <String>[];
       final diary = wideDiary('embedded', 0);
@@ -82,6 +82,8 @@ void main() {
       final l10n = tester.element(find.byType(DiaryPreviewView)).l10n;
 
       expect(find.byTooltip(l10n.commonBack), findsNothing);
+      // 右栏顶栏不显示“日记”标题，只留右侧的动作。
+      expect(find.text(l10n.autoT0120), findsNothing);
       expect(find.byTooltip(l10n.commonEdit), findsOneWidget);
       expect(find.byTooltip(l10n.autoT0125), findsOneWidget);
 
@@ -110,6 +112,7 @@ void main() {
     await _pump(tester, diary: wideDiary('standalone', 0));
     final l10n = tester.element(find.byType(DiaryPreviewView)).l10n;
     expect(find.byTooltip(l10n.commonBack), findsOneWidget);
+    expect(find.text(l10n.autoT0120), findsOneWidget);
     await _unmount(tester);
   });
 

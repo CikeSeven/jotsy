@@ -255,7 +255,8 @@ class _DiaryPreviewViewState extends ConsumerState<DiaryPreviewView> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppTopBar(
         centerTitle: true,
-        title: Text(context.l10n.autoT0120),
+        // 嵌入时与正文顶栏一致：不要返回按钮，也不要“日记”标题。
+        title: embedded ? null : Text(context.l10n.autoT0120),
         automaticallyImplyLeading: !embedded,
         leading: embedded ? null : const DiaryPreviewBackButton(),
       ),

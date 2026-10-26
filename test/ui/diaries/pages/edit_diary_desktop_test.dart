@@ -1,3 +1,4 @@
+import '../../../support/diary_content_test_helpers.dart';
 import 'package:appflowy_editor/appflowy_editor.dart' as af;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,6 @@ import 'package:node_diary/core/services/settings_service.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
 import 'package:node_diary/ui/diaries/pages/edit_diary_page.dart';
 import 'package:node_diary/ui/diaries/pages/publish_diary_page.dart';
-import 'package:node_diary/ui/diaries/widgets/diary_editor/diary_editor.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_mobile_toolbar.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_panel.dart';
 import 'package:node_diary/ui/diaries/widgets/publish_diary_preview.dart';
@@ -240,6 +240,44 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.linux),
   );
+
+  testWidgets('the standard desktop shortcuts format and undo in the body', (
+    tester,
+  ) async {
+    await pumpPage(
+      tester,
+      const EditDiaryPage(entryMode: EditDiaryEntryMode.create),
+    );
+    final body = tester.widget<DiaryEditor>(find.byType(DiaryEditor));
+    expect(body.focusNode!.hasFocus, isTrue);
+    final controller = body.controller;
+    controller.replaceText(0, 0, 'hello', null);
+    controller.updateSelection(
+      const TextSelection(baseOffset: 0, extentOffset: 5),
+      'local',
+    );
+    await settle(tester);
+
+    Future<void> chord(LogicalKeyboardKey key, {bool shift = false}) async {
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+      if (shift) await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyEvent(key);
+      if (shift) await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+      await settle(tester);
+    }
+
+    await chord(LogicalKeyboardKey.keyB);
+    expect(controller.selectionAttributes['bold'], isTrue);
+    await chord(LogicalKeyboardKey.keyI);
+    expect(controller.selectionAttributes['italic'], isTrue);
+    await chord(LogicalKeyboardKey.keyZ);
+    expect(controller.selectionAttributes['italic'], isNot(true));
+    await chord(LogicalKeyboardKey.keyZ, shift: true);
+    expect(controller.selectionAttributes['italic'], isTrue);
+    expect(tester.takeException(), isNull);
+    await unmount(tester);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
 
   testWidgets(
     'a phone width keeps the 16dp margins and the keyboard-bound toolbar',

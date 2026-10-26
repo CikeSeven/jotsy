@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/ui/diaries/pages/diary_preview_page.dart';
 import 'package:node_diary/ui/diaries/sections/diary_head_section.dart';
+import 'package:node_diary/ui/diaries/widgets/diary_detail_pane/diary_detail_pane.dart';
 import 'package:node_diary/ui/diaries/widgets/diary_tag_filter_bar.dart';
 
 import 'diaries_wide_test_support.dart';
@@ -26,6 +27,9 @@ void main() {
       final tagBar = tester.getRect(find.byType(DiaryTagFilterBar));
       expect(tagBar.left, 90);
       expect(tagBar.width, 720);
+
+      // 单栏：没有右栏。
+      expect(find.byType(DiaryDetailPane), findsNothing);
 
       // 卡片在内容列里，保留自己的左右边距且居中。
       final card = tester.getRect(wideListCards.first);
@@ -52,6 +56,7 @@ void main() {
       ],
     );
 
+    expect(find.byType(DiaryDetailPane), findsNothing);
     final head = tester.getRect(find.byType(DiaryHeadSection));
     expect(head.left, 0);
     expect(head.width, 400);

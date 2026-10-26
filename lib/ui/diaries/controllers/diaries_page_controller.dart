@@ -118,18 +118,27 @@ class DiariesPageController {
     );
   }
 
-  /// 预览页左右滑动的顺序：当前显示的列表，去掉正在归档、删除而暂时隐藏
-  /// 的条目；列表还有没加载的部分时带上同一查询条件，预览页据此接上。
+  /// 阅读顺序：当前显示的列表，去掉正在归档、删除而暂时隐藏的条目。预览页
+  /// 左右滑动与宽窗口右栏的上一篇 / 下一篇共用这一口径。
+  List<DiaryWithTags> readingOrder() {
+    final hidden = _readingHiddenIds();
+    return _state._lastDisplayedItems
+        .where((DiaryWithTags item) => !hidden.contains(item.diary.diaryId))
+        .toList(growable: false);
+  }
+
+  Set<String> _readingHiddenIds() => <String>{
+    ..._state._optimisticHiddenDiaryIds,
+    ..._state._pendingHideDiaryIds,
+  };
+
+  /// 预览页左右滑动的顺序（[readingOrder]）；列表还有没加载的部分时带上同一
+  /// 查询条件，预览页据此接上。
   DiaryPreviewSequence _previewSequence() {
-    final hidden = <String>{
-      ..._state._optimisticHiddenDiaryIds,
-      ..._state._pendingHideDiaryIds,
-    };
+    final hidden = _readingHiddenIds();
     final query = _state._currentDiaryPageQuery;
     return DiaryPreviewSequence.fromItems(
-      _state._lastDisplayedItems.where(
-        (DiaryWithTags item) => !hidden.contains(item.diary.diaryId),
-      ),
+      readingOrder(),
       query: _state._hasMoreDiaries && query != null
           ? DiaryPreviewListQuery(
               keyword: query.keyword,
@@ -139,6 +148,21 @@ class DiariesPageController {
               excludedIds: hidden,
             )
           : null,
+    );
+  }
+
+  /// 点按列表卡片（普通模式）：双栏时在右栏阅读（选中这一篇，不推入路由；
+  /// 双栏不抓取封面，这里只兜底释放）；否则推入预览页。
+  void openDiary(DiaryWithTags diary, ImageViewerHero? coverHero) {
+    if (_state._twoPane) {
+      coverHero?.dispose();
+      _state._readingSelection.select(diary.diary.diaryId);
+      return;
+    }
+    openPreview(
+      diary.diary.diaryId,
+      initialDetail: diary,
+      coverHero: coverHero,
     );
   }
 
@@ -176,30 +200,36 @@ class DiariesPageController {
             // - 强制刷新会导致滚动位置回跳，影响“返回后继续浏览”体验。
             // 预览页里可能已滑到别的日记再删除：恢复的是结果里的那一篇。
             if (result case DiaryPreviewResult(:final diaryId)) {
-              final l10n = _state.context.l10n;
-              final undoRequested = await feedback.showUndoSnackBar(
-                message: l10n.autoT0075,
-                duration: _DiariesPage._deleteUndoSnackDuration,
-              );
-              if (!_state.mounted || !undoRequested) {
-                return;
-              }
-              try {
-                final db = _state.ref.read(appDatabaseProvider);
-                await db.restoreDiary(diaryId, touchUpdatedAt: false);
-                if (!_state.mounted) {
-                  return;
-                }
-                await feedback.showInfoSnackBar(l10n.autoT0076);
-              } catch (_) {
-                if (!_state.mounted) {
-                  return;
-                }
-                await feedback.showInfoSnackBar(l10n.autoT0077);
-              }
+              await offerUndoForDeletedDiary(diaryId);
             }
           }),
     );
+  }
+
+  /// 预览（独立页面或宽窗口右栏）里删除了 [diaryId]：给出撤销提示，撤销时
+  /// 恢复（不改更新时间，回到原来的位置）。
+  Future<void> offerUndoForDeletedDiary(String diaryId) async {
+    final l10n = _state.context.l10n;
+    final undoRequested = await feedback.showUndoSnackBar(
+      message: l10n.autoT0075,
+      duration: _DiariesPage._deleteUndoSnackDuration,
+    );
+    if (!_state.mounted || !undoRequested) {
+      return;
+    }
+    try {
+      final db = _state.ref.read(appDatabaseProvider);
+      await db.restoreDiary(diaryId, touchUpdatedAt: false);
+      if (!_state.mounted) {
+        return;
+      }
+      await feedback.showInfoSnackBar(l10n.autoT0076);
+    } catch (_) {
+      if (!_state.mounted) {
+        return;
+      }
+      await feedback.showInfoSnackBar(l10n.autoT0077);
+    }
   }
 
   /// 从编辑页返回后主动触发刷新节拍。

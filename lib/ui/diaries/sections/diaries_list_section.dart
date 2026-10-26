@@ -8,6 +8,7 @@ import '../models/diary_card_style/diary_card_style.dart';
 import '../viewmodels/diary_card_resolved_style.dart';
 import '../widgets/diaries_empty_state.dart';
 import '../widgets/diary_card/diary_card.dart';
+import '../widgets/diary_card/diary_card_reading_ring.dart';
 import '../widgets/diary_swipe_action_item.dart';
 import '../widgets/diary_waterfall_sliver.dart';
 import 'diary_head_section.dart';
@@ -54,6 +55,9 @@ class DiariesListSection extends StatelessWidget {
     this.sectionHeaderBuilder,
     this.availableWidth,
     this.minWaterfallColumns = 0,
+    this.readingRing = false,
+    this.readingDiaryId,
+    this.readingRevealKey,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -116,6 +120,17 @@ class DiariesListSection extends StatelessWidget {
 
   /// 瀑布流至少的列数（宽窗口按宽度加列）；0 表示只用卡片样式里的列数。
   final int minWaterfallColumns;
+
+  /// 卡片是否带“正在阅读”环（宽窗口日记页双栏时）；为 false 时卡片结构
+  /// 与改版前一致。
+  final bool readingRing;
+
+  /// 正在右栏阅读的日记 id：这张卡片显示阅读环（与多选的勾选互不影响）。
+  final String? readingDiaryId;
+
+  /// 挂在正在阅读的卡片上的 key，页面据此把它滚进视口（见
+  /// [DiaryCardReadingRing.revealKey]）。
+  final GlobalKey? readingRevealKey;
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +230,7 @@ class DiariesListSection extends StatelessWidget {
     required DiaryCardResolvedStyle resolved,
   }) {
     final diaryId = diary.diary.diaryId;
-    final card = DiaryCard(
+    Widget card = DiaryCard(
       diary: diary,
       resolved: resolved,
       selected: selectedDiaryIds.contains(diaryId),
@@ -226,6 +241,17 @@ class DiariesListSection extends StatelessWidget {
       enableCoverHero: enableCoverHero,
       opensLockedCapsulePage: opensLockedCapsulePage,
     );
+    // 双栏时每张卡都包一层阅读环（结构恒定，换选时卡片不重建），环随卡片
+    // 一起左滑；单栏时不包。
+    if (readingRing) {
+      final reading = diaryId == readingDiaryId;
+      card = DiaryCardReadingRing(
+        active: reading,
+        radius: resolved.cornerRadius,
+        revealKey: reading ? readingRevealKey : null,
+        child: card,
+      );
+    }
     final animatedBaseItem = _buildAnimatedDiaryItem(
       context,
       diaryId: diaryId,

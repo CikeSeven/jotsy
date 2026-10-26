@@ -45,13 +45,16 @@ import '../../notebooks/widgets/notebook_header_sliver.dart';
 import '../../notebooks/widgets/notebook_switcher_chip.dart';
 import '../../settings/pages/diary_card_style_page.dart';
 import '../../settings/providers/app_features_provider.dart';
+import '../controllers/diary_preview_edit_flow.dart';
 import '../models/diary_card_style/diary_card_style.dart';
+import '../models/time_capsule.dart';
 import '../providers/diary_card_style_provider.dart';
 import '../viewmodels/diaries_page_layout.dart';
 import '../viewmodels/diary_view_preferences.dart';
 import '../sections/diaries_list_section.dart';
 import '../sections/diary_view_options_sheet.dart';
 import '../widgets/diaries_header_sliver.dart';
+import '../widgets/diary_card/diary_card_reading_ring.dart';
 import '../widgets/diary_detail_pane/diary_detail_pane.dart';
 import '../widgets/diary_preview/diary_pager_view.dart';
 import '../widgets/diary_preview/diary_preview_host.dart';
@@ -182,8 +185,18 @@ class _DiariesPage extends ConsumerState<DiariesPage>
   /// 变化时据此决定是否立即清除右栏的选中。
   bool _readingScopePrivate = false;
 
-  /// 挂在正在阅读的卡片上，用来把它滚进视口。
-  final GlobalKey _readingCardKey = GlobalKey(debugLabel: 'diaries_reading');
+  /// 正在阅读的卡片把位置记在这里，用来把它滚进视口。
+  final DiaryReadingCardLocator _readingCardLocator = DiaryReadingCardLocator();
+
+  /// 常驻的标签栏在列表滚动视图里的 context（构建时记下）：要揭示的卡片还
+  /// 没构建时，经它找到列表的滚动位置。切换布局换了滚动视图后旧的会被
+  /// 卸载，用时先确认 `mounted`。
+  BuildContext? _listScrollContext;
+
+  /// 日记页焦点子树的根节点：双栏时的方向键、Enter、Esc 在这里处理（见
+  /// [DiariesReadingSelectionController.handleKeyEvent]）；点卡片选中时焦点
+  /// 移回这里。
+  final FocusNode _keyboardFocusNode = FocusNode(debugLabel: 'diaries_page');
 
   // ==================== 页面职责拆分协作对象 ====================
   late final DiariesPageFeedback _feedback;
@@ -254,6 +267,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
     widget.onCreateActionChanged?.call(null);
     widget.onSearchActionChanged?.call(null);
     _transitionCoordinator.dispose();
+    _keyboardFocusNode.dispose();
     _pagingCooldownTimer?.cancel();
     _tagFilterExpansionController.dispose();
     _listRefreshPulseController.dispose();
@@ -476,9 +490,14 @@ class _DiariesPage extends ConsumerState<DiariesPage>
             grouped: true,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: contentInset),
-              child: LaunchReveal(
-                slot: LaunchRevealSlot.filters,
-                child: tagHeaderContent,
+              child: Builder(
+                builder: (BuildContext context) {
+                  _listScrollContext = context;
+                  return LaunchReveal(
+                    slot: LaunchRevealSlot.filters,
+                    child: tagHeaderContent,
+                  );
+                },
               ),
             ),
           ),
@@ -678,7 +697,7 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                                   // 封面做共享元素。
                                   readingRing: twoPane,
                                   readingDiaryId: readingId,
-                                  readingRevealKey: _readingCardKey,
+                                  readingCardLocator: _readingCardLocator,
                                   enableCoverHero: !twoPane,
                                   opensLockedCapsulePage: !twoPane,
                                   maxVisibleTags: diaryCardTagLimit,
@@ -774,13 +793,9 @@ class _DiariesPage extends ConsumerState<DiariesPage>
                   _handlePopBlocked();
                 },
                 child: Focus(
+                  focusNode: _keyboardFocusNode,
                   autofocus: true,
-                  onKeyEvent: (node, event) {
-                    if (event is! KeyDownEvent) {
-                      return KeyEventResult.ignored;
-                    }
-                    return KeyEventResult.ignored;
-                  },
+                  onKeyEvent: _readingSelection.handleKeyEvent,
                   // 按日记页拿到的宽度排布（宽窗口里已扣掉左侧导航栏）：
                   // 紧凑窗口与改版前一致；中等窗口内容列限宽居中；展开窗口
                   // 为双栏，右栏阅读选中的一篇。左栏始终是 Row 的第一个

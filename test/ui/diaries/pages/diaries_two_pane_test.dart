@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:node_diary/core/database/app_database.dart';
 import 'package:node_diary/l10n/app_localizations.dart';
@@ -29,10 +30,9 @@ bool _ringActive(WidgetTester tester, String title) => tester
     )
     .active;
 
-List<DiaryWithTags> _diaries(String prefix, {int count = 5}) =>
-    <DiaryWithTags>[
-      for (var index = 0; index < count; index++) wideDiary(prefix, index),
-    ];
+List<DiaryWithTags> _diaries(String prefix, {int count = 5}) => <DiaryWithTags>[
+  for (var index = 0; index < count; index++) wideDiary(prefix, index),
+];
 
 AppLocalizations _l10n(WidgetTester tester) =>
     tester.element(find.byType(DiariesPage)).l10n;
@@ -77,9 +77,7 @@ void main() {
     await unmountWideDiariesPage(tester);
   });
 
-  testWidgets('on desktop the empty pane also suggests Ctrl+N', (
-    tester,
-  ) async {
+  testWidgets('on desktop the empty pane also suggests Ctrl+N', (tester) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.linux;
     try {
       await pumpWideDiariesPage(
@@ -251,6 +249,38 @@ void main() {
     store.softDelete('leave-0');
     await tester.pumpAndSettle();
     expect(_inPane(find.byType(EmptyHint)), findsOneWidget);
+
+    await unmountWideDiariesPage(tester);
+  });
+
+  testWidgets('switching to the waterfall keeps reading the same entry', (
+    tester,
+  ) async {
+    await pumpWideDiariesPage(
+      tester,
+      size: const Size(1280, 800),
+      diaries: _diaries('layout'),
+    );
+    final l10n = _l10n(tester);
+
+    await tester.tap(wideCard('layout title 2'));
+    await tester.pumpAndSettle();
+
+    // 左栏刊头的“更多”（不是右栏顶栏的）→ 瀑布流。
+    await tester.tap(
+      find.descendant(
+        of: find.byType(DiaryHeadSection),
+        matching: find.byTooltip(l10n.autoT0125),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.autoT0147));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    expect(find.byType(SliverMasonryGrid), findsOneWidget);
+    expect(_inPane(find.text('layout title 2')), findsOneWidget);
+    expect(_ringActive(tester, 'layout title 2'), isTrue);
 
     await unmountWideDiariesPage(tester);
   });

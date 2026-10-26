@@ -57,7 +57,7 @@ class DiariesListSection extends StatelessWidget {
     this.minWaterfallColumns = 0,
     this.readingRing = false,
     this.readingDiaryId,
-    this.readingRevealKey,
+    this.readingCardLocator,
   });
 
   /// 视图层已过滤/排序后的日记数据。
@@ -128,9 +128,8 @@ class DiariesListSection extends StatelessWidget {
   /// 正在右栏阅读的日记 id：这张卡片显示阅读环（与多选的勾选互不影响）。
   final String? readingDiaryId;
 
-  /// 挂在正在阅读的卡片上的 key，页面据此把它滚进视口（见
-  /// [DiaryCardReadingRing.revealKey]）。
-  final GlobalKey? readingRevealKey;
+  /// 正在阅读的卡片把位置记在这里，页面据此把它滚进视口。
+  final DiaryReadingCardLocator? readingCardLocator;
 
   @override
   Widget build(BuildContext context) {
@@ -244,11 +243,11 @@ class DiariesListSection extends StatelessWidget {
     // 双栏时每张卡都包一层阅读环（结构恒定，换选时卡片不重建），环随卡片
     // 一起左滑；单栏时不包。
     if (readingRing) {
-      final reading = diaryId == readingDiaryId;
       card = DiaryCardReadingRing(
-        active: reading,
+        diaryId: diaryId,
+        active: diaryId == readingDiaryId,
         radius: resolved.cornerRadius,
-        revealKey: reading ? readingRevealKey : null,
+        locator: readingCardLocator,
         child: card,
       );
     }

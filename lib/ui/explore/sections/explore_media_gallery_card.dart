@@ -4,6 +4,7 @@ import 'package:node_diary/l10n/app_localizations.dart';
 
 import '../models/explore_view_data.dart';
 import '../widgets/explore_shared_widgets.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 媒体画廊卡片（横向队列）。
 class ExploreMediaGalleryCard extends StatelessWidget {
@@ -56,19 +57,21 @@ class ExploreMediaGalleryCard extends StatelessWidget {
             IgnorePointer(
               child: SizedBox(
                 height: 108,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: previewItems.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final item = previewItems[index];
-                    return ExploreMediaThumb(
-                      source: item.source,
-                      width: 140,
-                      height: 108,
-                      radius: 12,
-                    );
-                  },
+                child: DesktopHorizontalScroll(
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: previewItems.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final item = previewItems[index];
+                      return ExploreMediaThumb(
+                        source: item.source,
+                        width: 140,
+                        height: 108,
+                        radius: 12,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

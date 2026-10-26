@@ -8,6 +8,7 @@ import '../../../core/database/app_database.dart';
 import '../../diaries/sections/diaries_list_section.dart'
     show DiaryOpenCallback;
 import 'calendar_diary_mini_card.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 选中日下方的“那年今日”：其他年份同月同日写下的日记，横向小卡片。
 ///
@@ -69,30 +70,32 @@ class CalendarOnThisDayStrip extends StatelessWidget {
         SizedBox(
           // 卡片带静止阴影，列表上下各留 4dp，阴影不会被横向列表裁成硬边。
           height: _cardHeight + 8,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.m,
-              vertical: 4,
+          child: DesktopHorizontalScroll(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m,
+                vertical: 4,
+              ),
+              itemCount: diaries.length,
+              separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
+              itemBuilder: (BuildContext context, int index) {
+                final diary = diaries[index];
+                final createdAt = diary.diary.createdAt.toLocal();
+                final yearDiff = selectedDay.year - createdAt.year;
+                final relative = yearDiff > 0
+                    ? l10n.calendarOnThisDayYearsAgo(yearDiff)
+                    : l10n.calendarOnThisDayYearsLater(-yearDiff);
+                return CalendarDiaryMiniCard(
+                  diary: diary,
+                  eyebrow:
+                      '$relative · '
+                      '${DateFormat.y(l10n.localeName).format(createdAt)}',
+                  width: _cardWidth,
+                  onOpenDiary: onOpenDiary,
+                );
+              },
             ),
-            itemCount: diaries.length,
-            separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.s),
-            itemBuilder: (BuildContext context, int index) {
-              final diary = diaries[index];
-              final createdAt = diary.diary.createdAt.toLocal();
-              final yearDiff = selectedDay.year - createdAt.year;
-              final relative = yearDiff > 0
-                  ? l10n.calendarOnThisDayYearsAgo(yearDiff)
-                  : l10n.calendarOnThisDayYearsLater(-yearDiff);
-              return CalendarDiaryMiniCard(
-                diary: diary,
-                eyebrow:
-                    '$relative · '
-                    '${DateFormat.y(l10n.localeName).format(createdAt)}',
-                width: _cardWidth,
-                onOpenDiary: onOpenDiary,
-              );
-            },
           ),
         ),
       ],

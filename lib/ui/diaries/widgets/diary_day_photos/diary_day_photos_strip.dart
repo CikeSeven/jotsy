@@ -12,6 +12,7 @@ import '../../controllers/diary_day_photos_controller.dart';
 import 'diary_day_photo_tile.dart';
 import 'diary_day_photos_limited_hint.dart';
 import 'diary_day_photos_sheet.dart';
+import '../../../widgets/desktop_horizontal_scroll.dart';
 
 /// 补写日记时放在标题与正文之间的“这天拍的照片”提示条。
 ///
@@ -269,32 +270,34 @@ class _PhotosCard extends StatelessWidget {
           ),
           SizedBox(
             height: DiaryDayPhotosStrip.thumbnailSize,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(right: AppSpacing.s),
-              itemCount: photos.length,
-              separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s),
-              itemBuilder: (BuildContext context, int index) {
-                final photo = photos[index];
-                return SizedBox.square(
-                  dimension: DiaryDayPhotosStrip.thumbnailSize,
-                  child: DiaryDayPhotoTile(
-                    image: controller.thumbnailOf(photo),
-                    selected: controller.isSelected(photo),
-                    inserted: controller.isInserted(photo),
-                    isCover: controller.isCover(photo),
-                    onSetCover: () => onSetCover(photo),
-                    onClearCover: onClearCover,
-                    semanticLabel: dayPhotoSemanticLabel(
-                      l10n,
-                      photo,
-                      timeFormat,
+            child: DesktopHorizontalScroll(
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: AppSpacing.s),
+                itemCount: photos.length,
+                separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s),
+                itemBuilder: (BuildContext context, int index) {
+                  final photo = photos[index];
+                  return SizedBox.square(
+                    dimension: DiaryDayPhotosStrip.thumbnailSize,
+                    child: DiaryDayPhotoTile(
+                      image: controller.thumbnailOf(photo),
+                      selected: controller.isSelected(photo),
                       inserted: controller.isInserted(photo),
+                      isCover: controller.isCover(photo),
+                      onSetCover: () => onSetCover(photo),
+                      onClearCover: onClearCover,
+                      semanticLabel: dayPhotoSemanticLabel(
+                        l10n,
+                        photo,
+                        timeFormat,
+                        inserted: controller.isInserted(photo),
+                      ),
+                      onTap: () => controller.toggle(photo),
                     ),
-                    onTap: () => controller.toggle(photo),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           if (controller.isLimited)

@@ -157,4 +157,24 @@ void main() {
     expect(find.byType(DiaryCardContextMenu), findsNothing);
     await unmountWideDiariesPage(tester);
   });
+
+  testWidgets('desktop cards have no swipe-to-archive', (tester) async {
+    await pumpWideDiariesPage(
+      tester,
+      size: const Size(800, 800),
+      diaries: _diaries('noswipe', 2),
+    );
+    expect(find.byType(Dismissible), findsNothing);
+    await unmountWideDiariesPage(tester);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.linux));
+
+  testWidgets('android cards keep swipe-to-archive', (tester) async {
+    await pumpWideDiariesPage(
+      tester,
+      size: const Size(400, 800),
+      diaries: _diaries('swipe', 2),
+    );
+    expect(find.byType(Dismissible), findsNWidgets(2));
+    await unmountWideDiariesPage(tester);
+  });
 }

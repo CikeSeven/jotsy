@@ -10,6 +10,7 @@ import '../../diaries/widgets/tag_filter_chip.dart';
 import '../../widgets/expressive_icon_swap.dart';
 import '../../widgets/expressive_state_blend.dart';
 import '../models/notebook_add_filter.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 添加日记页的筛选条：时间（单选：全部 / 最近 30 天 / 今年）在前，用户的
 /// 标签（多选）在后，一行横向滚动。
@@ -83,12 +84,14 @@ class NotebookAddFilterBar extends StatelessWidget {
     ];
     return SizedBox(
       height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-        itemCount: chips.length,
-        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s),
-        itemBuilder: (_, index) => Center(child: chips[index]),
+      child: DesktopHorizontalScroll(
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+          itemCount: chips.length,
+          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s),
+          itemBuilder: (_, index) => Center(child: chips[index]),
+        ),
       ),
     );
   }

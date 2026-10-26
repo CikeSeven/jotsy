@@ -27,6 +27,7 @@ import '../../../app/theme/expressive_motion.dart';
 import '../../widgets/route_entrance_waiter.dart';
 import 'package:node_diary/ui/widgets/image_viewer_hero.dart';
 import '../../widgets/form_width.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 日记搜索页（独立覆盖层）。
 ///
@@ -705,72 +706,74 @@ class _SearchInputBar extends StatelessWidget {
                             ?.copyWith(color: colorScheme.onSurfaceVariant),
                       ),
                     )
-                  : SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: <Widget>[
-                          if (scopeChip case final chip?) ...[
-                            chip,
-                            const SizedBox(width: 6),
-                          ],
-                          for (final tag in selectedTags) ...[
-                            _TagConditionChip(
-                              tag: tag,
-                              onRemove: () => onRemoveTagCondition(tag.id),
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          SizedBox(
-                            width: 220,
-                            child: Focus(
-                              onKeyEvent: (node, event) {
-                                final isBackspace =
-                                    event is KeyDownEvent &&
-                                    event.logicalKey ==
-                                        LogicalKeyboardKey.backspace;
-                                final isInputEmpty = searchController.text
-                                    .trim()
-                                    .isEmpty;
-                                if (isBackspace &&
-                                    isInputEmpty &&
-                                    selectedTags.isNotEmpty) {
-                                  onRemoveTagCondition(selectedTags.last.id);
-                                  return KeyEventResult.handled;
-                                }
-                                final removeScope = onRemoveScopeCondition;
-                                if (isBackspace &&
-                                    isInputEmpty &&
-                                    removeScope != null) {
-                                  removeScope();
-                                  return KeyEventResult.handled;
-                                }
-                                return KeyEventResult.ignored;
-                              },
-                              child: TextField(
-                                controller: searchController,
-                                focusNode: searchFocusNode,
-                                autofocus: autofocus,
-                                textInputAction: TextInputAction.search,
-                                onChanged: onSearchChanged,
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  hintText: context.l10n.autoT0129,
-                                  border: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  filled: false,
-                                  contentPadding: EdgeInsets.zero,
-                                  hintStyle: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
+                  : DesktopHorizontalScroll(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: <Widget>[
+                            if (scopeChip case final chip?) ...[
+                              chip,
+                              const SizedBox(width: 6),
+                            ],
+                            for (final tag in selectedTags) ...[
+                              _TagConditionChip(
+                                tag: tag,
+                                onRemove: () => onRemoveTagCondition(tag.id),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            SizedBox(
+                              width: 220,
+                              child: Focus(
+                                onKeyEvent: (node, event) {
+                                  final isBackspace =
+                                      event is KeyDownEvent &&
+                                      event.logicalKey ==
+                                          LogicalKeyboardKey.backspace;
+                                  final isInputEmpty = searchController.text
+                                      .trim()
+                                      .isEmpty;
+                                  if (isBackspace &&
+                                      isInputEmpty &&
+                                      selectedTags.isNotEmpty) {
+                                    onRemoveTagCondition(selectedTags.last.id);
+                                    return KeyEventResult.handled;
+                                  }
+                                  final removeScope = onRemoveScopeCondition;
+                                  if (isBackspace &&
+                                      isInputEmpty &&
+                                      removeScope != null) {
+                                    removeScope();
+                                    return KeyEventResult.handled;
+                                  }
+                                  return KeyEventResult.ignored;
+                                },
+                                child: TextField(
+                                  controller: searchController,
+                                  focusNode: searchFocusNode,
+                                  autofocus: autofocus,
+                                  textInputAction: TextInputAction.search,
+                                  onChanged: onSearchChanged,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    hintText: context.l10n.autoT0129,
+                                    border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: InputBorder.none,
+                                    filled: false,
+                                    contentPadding: EdgeInsets.zero,
+                                    hintStyle: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
             ),

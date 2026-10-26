@@ -117,6 +117,8 @@ void main() {
       const ArchivedDiariesPage(),
       prepare: (db, id) => db.archiveDiary(id),
     );
+    // 桌面上没有左滑（Dismissible），右键菜单代替。
+    expect(find.byType(Dismissible), findsNothing);
     await tester.tap(
       _storedCard(),
       buttons: kSecondaryMouseButton,

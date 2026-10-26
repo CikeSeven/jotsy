@@ -12,6 +12,7 @@ import '../models/diary_template.dart';
 import '../providers/diary_template_providers.dart';
 import '../viewmodels/diary_template_library.dart';
 import 'diary_template_icon_badge.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 新建空白日记时放在标题下方的“从模板开始”建议条。
 ///
@@ -169,19 +170,23 @@ class _StripCard extends StatelessWidget {
                 ],
               ),
               // 横向滚动的一排模板；按内容高度排布，字号放大时不会被截断。
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(right: AppSpacing.s),
-                child: Row(
-                  children: <Widget>[
-                    for (final suggestion in suggestions) ...<Widget>[
-                      _TemplateChip(
-                        suggestion: suggestion,
-                        onTap: busy ? null : () => onApply(suggestion.template),
-                      ),
-                      const SizedBox(width: AppSpacing.s),
+              DesktopHorizontalScroll(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(right: AppSpacing.s),
+                  child: Row(
+                    children: <Widget>[
+                      for (final suggestion in suggestions) ...<Widget>[
+                        _TemplateChip(
+                          suggestion: suggestion,
+                          onTap: busy
+                              ? null
+                              : () => onApply(suggestion.template),
+                        ),
+                        const SizedBox(width: AppSpacing.s),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],

@@ -8,6 +8,7 @@ import '../providers/notebook_providers.dart';
 import '../viewmodels/notebook_book_layout.dart';
 import '../viewmodels/notebook_view.dart';
 import 'notebook_header_card.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 首页日记本头部卡片里的章节胶囊行：全部 · 各章（按章节顺序）· 未分章。
 ///
@@ -46,40 +47,44 @@ class NotebookChapterChips extends ConsumerWidget {
         count == null ? title : l10n.notebookChapterChip(title, count);
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.m),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        // 放在卡片的铺满插槽里：左右内容边距与卡片内文字一致，滚出的胶囊在
-        // 卡片边缘消失。最后一个胶囊自带的 end 间距并入右边距。
-        padding: const EdgeInsetsDirectional.only(
-          start: NotebookHeaderCard.contentPadding,
-          end: NotebookHeaderCard.contentPadding - AppSpacing.s,
-        ),
-        child: Row(
-          children: <Widget>[
-            _ChapterChip(
-              key: const ValueKey<String>('notebook_chapter_chip_all'),
-              label: label(l10n.notebookChapterAll, counts?.total),
-              selected: isAll,
-              onTap: () => onSelect(),
-            ),
-            for (final chapter in chapters)
+      child: DesktopHorizontalScroll(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          // 放在卡片的铺满插槽里：左右内容边距与卡片内文字一致，滚出的胶囊在
+          // 卡片边缘消失。最后一个胶囊自带的 end 间距并入右边距。
+          padding: const EdgeInsetsDirectional.only(
+            start: NotebookHeaderCard.contentPadding,
+            end: NotebookHeaderCard.contentPadding - AppSpacing.s,
+          ),
+          child: Row(
+            children: <Widget>[
               _ChapterChip(
-                key: ValueKey<String>('notebook_chapter_chip_${chapter.id}'),
-                label: label(chapter.title, counts?.of(chapter.id)),
-                selected: selectedChapterId == chapter.id,
-                onTap: () => onSelect(chapterId: chapter.id),
+                key: const ValueKey<String>('notebook_chapter_chip_all'),
+                label: label(l10n.notebookChapterAll, counts?.total),
+                selected: isAll,
+                onTap: () => onSelect(),
               ),
-            if ((counts?.unassigned ?? 0) > 0 || unassignedOnly)
-              _ChapterChip(
-                key: const ValueKey<String>('notebook_chapter_chip_unassigned'),
-                label: label(
-                  l10n.notebookChapterUnassigned,
-                  counts?.unassigned,
+              for (final chapter in chapters)
+                _ChapterChip(
+                  key: ValueKey<String>('notebook_chapter_chip_${chapter.id}'),
+                  label: label(chapter.title, counts?.of(chapter.id)),
+                  selected: selectedChapterId == chapter.id,
+                  onTap: () => onSelect(chapterId: chapter.id),
                 ),
-                selected: unassignedOnly,
-                onTap: () => onSelect(unassigned: true),
-              ),
-          ],
+              if ((counts?.unassigned ?? 0) > 0 || unassignedOnly)
+                _ChapterChip(
+                  key: const ValueKey<String>(
+                    'notebook_chapter_chip_unassigned',
+                  ),
+                  label: label(
+                    l10n.notebookChapterUnassigned,
+                    counts?.unassigned,
+                  ),
+                  selected: unassignedOnly,
+                  onTap: () => onSelect(unassigned: true),
+                ),
+            ],
+          ),
         ),
       ),
     );

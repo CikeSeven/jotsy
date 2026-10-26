@@ -4,6 +4,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../core/services/diary_font_storage_service.dart';
 import '../../../core/services/diary_typography.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../widgets/desktop_horizontal_scroll.dart';
 
 /// 一个可选的正文字体；[imported] 为 null 表示内置或系统字体。
 class DiaryFontOption {
@@ -48,21 +49,23 @@ class DiaryFontChipBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
-      child: Row(
-        children: <Widget>[
-          for (final option in options)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
-              child: ChoiceChip(
-                label: Text(option.label),
-                selected: option.id == selectedId,
-                onSelected: (_) => onSelected(option.id),
+    return DesktopHorizontalScroll(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.l),
+        child: Row(
+          children: <Widget>[
+            for (final option in options)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: AppSpacing.s),
+                child: ChoiceChip(
+                  label: Text(option.label),
+                  selected: option.id == selectedId,
+                  onSelected: (_) => onSelected(option.id),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

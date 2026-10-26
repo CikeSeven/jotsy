@@ -67,6 +67,10 @@ class MaterialTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: scaffoldBg,
       canvasColor: scaffoldBg,
+      // 显式取标准密度：Flutter 在桌面平台的默认是 compact，会把按钮、列表行、
+      // 输入框等整体压矮 4–8dp，DESIGN.md 的 dp 规格就不再成立。Android/iOS
+      // 的默认本来就是 standard，移动端不受影响。
+      visualDensity: VisualDensity.standard,
     );
     final resolvedTextTheme = baseTheme.textTheme
         .merge(textTheme)

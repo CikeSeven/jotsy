@@ -11,6 +11,6 @@ PRODUCT_NAME = Jotsy
 PRODUCT_BUNDLE_IDENTIFIER = com.jotsy.diary
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 CikeSeven
 
 

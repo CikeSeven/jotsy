@@ -14,6 +14,29 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+// Default and minimum window size in logical pixels. Below 400 wide the phone
+// layout starts to clip, so the window is not allowed to shrink further.
+static const gint kDefaultWindowWidth = 1280;
+static const gint kDefaultWindowHeight = 800;
+static const gint kMinWindowWidth = 400;
+static const gint kMinWindowHeight = 600;
+
+// Sets the window icon from data/app_icon.png next to the executable (the
+// bundle layout produced by linux/CMakeLists.txt). X11 window managers use
+// this icon; on Wayland the compositor looks the icon up through the .desktop
+// file matching APPLICATION_ID instead. A missing or unreadable icon is not an
+// error: the window simply keeps the default icon.
+static void set_window_icon(GtkWindow* window) {
+  g_autofree gchar* exe_path = g_file_read_link("/proc/self/exe", nullptr);
+  if (exe_path == nullptr) {
+    return;
+  }
+  g_autofree gchar* exe_dir = g_path_get_dirname(exe_path);
+  g_autofree gchar* icon_path =
+      g_build_filename(exe_dir, "data", "app_icon.png", nullptr);
+  gtk_window_set_icon_from_file(window, icon_path, nullptr);
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -47,7 +70,15 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "Jotsy");
   }
 
-  gtk_window_set_default_size(window, 1280, 720);
+  gtk_window_set_default_size(window, kDefaultWindowWidth,
+                              kDefaultWindowHeight);
+  // Geometry hints are honoured by both X11 window managers and Wayland
+  // compositors (GTK forwards them as xdg_toplevel min size).
+  GdkGeometry geometry = {};
+  geometry.min_width = kMinWindowWidth;
+  geometry.min_height = kMinWindowHeight;
+  gtk_window_set_geometry_hints(window, nullptr, &geometry, GDK_HINT_MIN_SIZE);
+  set_window_icon(window);
   gtk_widget_show(GTK_WIDGET(window));
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
